@@ -2,9 +2,9 @@
 
 **最終更新: 2025-10-23**
 
-**プロジェクト進捗: 約 75% 完了**
-- Backend: 約 80% (コア機能完了、添付ファイル・リアルタイム通知が未完)
-- Frontend: 約 75% (基本機能実装済、添付・未読バッジ・Storybook未完)
+**プロジェクト進捗: 約 60% 完了 (MVP基準)**
+- Backend: 約 80% (MVP機能完了、添付ファイル・WebSocketイベント処理が未完)
+- Frontend: 約 50% (基本UI完了、リアクション・Markdown・メンション・DM・検索など多数未実装)
 - DevOps: 約 40% (開発環境完了、本番環境未完)
 
 ## 技術スタック
@@ -195,6 +195,10 @@
 - **Observability**: OpenTelemetry, Metrics, pprof
 - **Backend Tests**: Go テストファイルなし
 - **OIDC**: 認証プロバイダー抽象化のみ
+- **Reactions API**: Schema完備、UseCase/Handler未実装
+- **Mentions API**: Schema未実装、機能設計未着手
+- **DM機能**: Channel.isDM フラグ追加必要、API未実装
+- **Search API**: PostgreSQL FTS未実装
 
 ### Frontend 実装進捗: 約75%
 
@@ -379,7 +383,7 @@
 ### 🟢 Low (Post-MVP機能拡張)
 
 13. **Message Reactions** (優先度: 低)
-    - リアクション追加/削除API
+    - リアクション追加/削除API (**Schema完備: message_reactions table**)
     - リアクション選択UI (絵文字ピッカー)
     - WebSocket同期
 
@@ -387,16 +391,19 @@
     - メッセージMarkdown表示 (react-markdown)
     - Markdown編集プレビュー
     - コードブロックシンタックスハイライト
+    - **Backend変更不要**: bodyフィールドそのまま使用
 
 15. **Mentions機能** (優先度: 低)
-    - @ユーザーメンション入力
-    - メンション通知
+    - Backend: Mentionsテーブル設計・実装
+    - @ユーザーメンション入力 (autocomplete)
+    - メンション通知API
     - メンション一覧表示
 
 16. **Direct Messages** (優先度: 低)
-    - 1対1 DM用チャンネル作成
+    - Backend: Channel.isDM フラグ追加
+    - 1対1 DM用チャンネル作成API
     - DM一覧UI
-    - Backend: isDM フラグ追加
+    - DM専用通知
 
 17. **検索機能** (優先度: 低)
     - チャンネル名検索/フィルタ
@@ -576,7 +583,7 @@
     - [ ] コードブロックシンタックスハイライト
 
 17. **Message Reactions** (2日)
-    - [ ] リアクション追加/削除API (backend)
+    - [ ] リアクション追加/削除API (backend UseCase/Handler - **Schema完備**)
     - [ ] 絵文字ピッカーUI
     - [ ] リアクション表示UI
     - [ ] WebSocket同期
@@ -603,30 +610,68 @@
     - [ ] Docker image ビルド & push
     - [ ] VPSデプロイスクリプト
 
-### Phase 6: 高度な機能 (Post-MVP)
+### Phase 6: 機能拡張 (Post-MVP)
 
-**目標**: 差別化機能
+**目標**: より高度なコミュニケーション機能
 
-21. **PWA オフライン機能** (3-4日)
-    - [ ] IndexedDB message cache
-    - [ ] 送信キュー + Background Sync
-    - [ ] オフラインUI表示
+21. **検索機能** (2-3日)
+    - [ ] Backend: チャンネル名検索API
+    - [ ] Backend: メッセージ全文検索API (PostgreSQL FTS追加)
+    - [ ] Frontend: 検索UI (モーダル, Ctrl+K)
+    - [ ] Frontend: 検索結果ハイライト
 
-22. **OIDC認証** (2-3日)
+22. **Mentions機能** (3-4日)
+    - [ ] Backend: Mentionsテーブル設計 (user_id, mentioned_by, message_id)
+    - [ ] Backend: メンション通知API
+    - [ ] Frontend: @ユーザーメンション入力 (autocomplete)
+    - [ ] Frontend: メンション一覧表示
+    - [ ] Frontend: 未読メンション管理
+
+23. **Direct Messages** (2-3日)
+    - [ ] Backend: Channel.isDM フラグ追加 (schema migration)
+    - [ ] Backend: 1対1 DM用チャンネル作成API
+    - [ ] Frontend: DM一覧UI
+    - [ ] Frontend: DM通知設定
+
+24. **User Profile & Settings** (2日)
+    - [ ] プロフィール表示/編集UI
+    - [ ] アバター画像アップロード
+    - [ ] ステータスメッセージ
+    - [ ] 通知設定UI
+
+25. **Channel Management** (2-3日)
+    - [ ] チャンネル設定画面
+    - [ ] 権限管理 (owner/admin/member)
+    - [ ] チャンネル削除/アーカイブ
+    - [ ] メンバー一覧/招待UI
+
+26. **Member Presence** (1-2日)
+    - [ ] オンライン状態管理API
+    - [ ] WebSocket presence イベント
+    - [ ] メンバー一覧にオンライン表示
+    - [ ] "最終ログイン" 表示
+
+27. **Theme Support** (1日)
+    - [ ] ダークモード実装
+    - [ ] Mantine ColorSchemeProvider統合
+    - [ ] localStorage保存
+    - [ ] システム設定連動
+
+28. **OIDC認証** (2-3日)
     - [ ] AuthProvider抽象化活用
     - [ ] Google OAuth統合
     - [ ] GitHub OAuth統合
 
-23. **リアクション機能** (2日)
-    - [ ] リアクション追加/削除API
-    - [ ] リアクションUI (絵文字ピッカー)
-    - [ ] WebSocket同期
+29. **Storybook** (1-2日)
+    - [ ] .storybook設定
+    - [ ] Mantine/Tailwind統合
+    - [ ] 主要コンポーネントのストーリー作成
 
-24. **モバイル最適化** (2-3日)
-    - [ ] タブナビゲーション (モバイル)
-    - [ ] ドロワーメニュー
-    - [ ] タッチジェスチャー (スワイプ)
-    - [ ] iOS safe-area対応
+30. **モバイル最適化** (2-3日)
+    - [ ] レスポンシブナビゲーション
+    - [ ] ドロワーメニュー (スマホ)
+    - [ ] タッチジェスチャー対応
+    - [ ] iOS/Android PWAインストール促進
 
 ## 実装済みコンポーネント一覧
 
