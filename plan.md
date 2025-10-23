@@ -134,9 +134,9 @@
 1. ✅ **スケルトン/起動** - CA構成、GORM初期化、全Domain層定義完了
 2. ✅ **Atlas導入** - 宣言的スキーマ(schema.hcl)、全テーブル定義完了
 3. ✅ **認証/セッション** - Repository実装、Auth UseCase/Handler実装、JWT/Refresh完了
-4. 🚧 **Workspace/Channel** - Repository完了、UseCase/Handler実装中
-5. ⏳ **Message** - Repository完了、UseCase/Handler未実装（CRUD + Thread + 添付presign）
-6. ⏳ **未読管理** - Repository完了、API未実装（最終既読upsert/集計API）
+4. ✅ **Workspace/Channel** - Repository + UseCase/Handler 完了
+5. ✅ **Message** - Repository + UseCase/Handler 完了（スレッド投稿対応済み、添付は別タスク）
+6. ✅ **未読管理** - Repository + ReadState API 完了（既読更新・未読数取得）
 7. ⏳ **WebSocket** - Hub/Connection骨組み完了、イベントハンドラ未実装
 8. ⏳ **フロント統合** - 基盤未着手（Router/Query/WS、未読UI）
 9. ⏳ **PWA** - manifest作成済み、SW実装未着手
@@ -144,11 +144,11 @@
 
 ## 実装状況サマリー
 
-### Backend 実装進捗: 約40%
+### Backend 実装進捗: 約65%
 - ✅ **Domain層**: 100% - 全エンティティ & Repository IF 定義完了
 - ✅ **Infrastructure層**: 100% - Config, Logger, Auth Services, DB Models, Repository実装完了
-- 🟡 **UseCase層**: 20% - Auth完了、Workspace/Channel/Message/ReadState未実装
-- 🟡 **Interface層**: 30% - Auth Handler完了、その他未実装、WebSocket骨組みのみ
+- 🟢 **UseCase層**: 70% - Auth/Workspace/Channel/Message/ReadState 実装完了、Attachment/Storage 系は未着手
+- 🟡 **Interface層**: 60% - Auth/Workspace/Channel/Message/ReadState Handler 実装済み、Attachment/WS イベント処理は未実装
 - ✅ **DB Schema**: 100% - Atlas schema.hcl全テーブル定義完了
 
 ### Frontend 実装進捗: 約60%
@@ -165,11 +165,11 @@
 - 🟡 **チャネル/メッセージ**: UI未実装
 
 ### 次の優先タスク（バックエンド）
-1. Workspace UseCase & Handler 実装
-2. Channel UseCase & Handler 実装
-3. Message UseCase & Handler 実装
-4. ReadState API 実装
-5. WebSocket イベントハンドラ実装
+1. WebSocket イベントハンドラ実装（join_channel / post_message / unread broadcast）
+2. Attachment UseCase & Handler 実装（presign / metadata / download）
+3. Wasabi S3 クライアント統合（プリサイン署名・アップロード動線）
+4. メッセージ配信/未読更新の通知連携（WS + HTTP）と回帰テスト整備
+5. Observability（構造化ログ/メトリクス/アラート方針）
 
 ### 次の優先タスク（フロントエンド）
 1. Channel 機能実装（hooks + UI）
@@ -194,12 +194,16 @@
 - [x] **Repository層実装** (100%) - User, Session, Workspace, Channel, Message, ReadState, Attachment
 - [x] **Auth UseCase実装** (100%) - Register/Login/Refresh/Logout
 - [x] **Auth Handler実装** (100%) - Register/Login/Refresh/Logout エンドポイント + バリデーション
+- [x] **Workspace UseCase/Handler 実装** (100%) - CRUD + メンバー管理
+- [x] **Channel UseCase/Handler 実装** (100%) - 公開/非公開チャンネル作成・一覧
+- [x] **Message UseCase/Handler 実装** (100%) - ページング取得・スレッド投稿
+- [x] **ReadState UseCase/Handler 実装** (100%) - 既読更新・未読数取得
 - [x] **DI/統合** - main.go で DB初期化、Repository/UseCase/Handler ワイヤリング完了
 - [x] **ビルド検証** - `go build` 成功、実行可能バイナリ生成確認
 
 ### 進行中 🚧
-- [ ] workspace/channel UseCase 実装
-- [ ] workspace/channel/message HTTP ハンドラ実装
+- [ ] WebSocket イベントハンドラ実装（join_channel / post_message / typing）
+- [ ] Attachment/Wasabi 統合（presign / upload / download）
 
 ### 完了済み（フロントエンド） ✅
 - [x] **フロント初期化** - Vite+React19+TS+Mantine8+Tailwind+ESLint/Prettier 完了
@@ -214,9 +218,8 @@
 
 ### 未着手 📋
 - [ ] AuthProvider 抽象と OIDC 下地
-- [ ] 未読管理 API 実装（upsert/集計/最適化）
-- [ ] WebSocket イベントハンドラ実装（join_channel, post_message, typing, etc.）
-- [ ] Wasabi S3 クライアント実装（presign/upload/download）
+- [ ] Observability 強化（ログ/メトリクス/pprof/レート制限統合）
+- [ ] Docker/Caddy 構成と VPS デプロイ準備
 - [ ] チャネル UI（一覧/作成/詳細）
 - [ ] メッセージ UI（一覧/送信/スレッド/仮想スクロール）
 - [ ] 添付ファイル UI: presign/アップロード/表示
@@ -224,8 +227,6 @@
 - [ ] 未読バッジ UI 実装
 - [ ] Storybook 導入・ストーリー作成
 - [ ] テスト拡充（jest-dom型定義修正、E2Eテスト）
-- [ ] Docker/Caddy 構成と VPS デプロイ準備
-- [ ] 可観測性実装（ログ/メトリクス/pprof/レート制限統合）
 - [ ] Atlas マイグレーション適用（初回 migrate apply）
 
 ## 実装済みファイル一覧

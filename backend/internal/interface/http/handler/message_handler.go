@@ -1,0 +1,163 @@
+package handler
+
+import (
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/example/chat/internal/usecase/message"
+)
+
+type MessageHandler struct {
+	messageUseCase message.MessageUseCase
+}
+
+func NewMessageHandler(messageUseCase message.MessageUseCase) *MessageHandler {
+	return &MessageHandler{messageUseCase: messageUseCase}
+}
+
+// ListMessages godoc
+// @Summary List channel messages
+// @Description Returns messages in the specified channel
+// @Tags message
+// @Produce json
+// @Param channelId path string true "Channel ID"
+// @Param limit query int false "Number of messages to return (1-100, default 50)"
+// @Param since query string false "Return messages created after this timestamp (RFC3339)"
+// @Param until query string false "Return messages created before this timestamp (RFC3339)"
+// @Success 200 {object} message.ListMessagesOutput
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/channels/{channelId}/messages [get]
+// @Security BearerAuth
+func (h *MessageHandler) ListMessages(c *gin.Context) {
+	userID, ok := requireUserID(c)
+	if !ok {
+		return
+	}
+
+	channelID := c.Param("channelId")
+	if channelID == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return
+	}
+
+	limitParam := c.Query("limit")
+	limit := 0
+	if limitParam != "" {
+		parsed, err := strconv.Atoi(limitParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid limit parameter"})
+			return
+		}
+		limit = parsed
+	}
+
+	var sincePtr *time.Time
+	if sinceParam := c.Query("since"); sinceParam != "" {
+		parsed, err := time.Parse(time.RFC3339, sinceParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid since parameter"})
+			return
+		}
+		sincePtr = &parsed
+	}
+
+	var untilPtr *time.Time
+	if untilParam := c.Query("until"); untilParam != "" {
+		parsed, err := time.Parse(time.RFC3339, untilParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid until parameter"})
+			return
+		}
+		untilPtr = &parsed
+	}
+
+	output, err := h.messageUseCase.ListMessages(message.ListMessagesInput{
+		ChannelID: channelID,
+		UserID:    userID,
+		Limit:     limit,
+		Since:     sincePtr,
+		Until:     untilPtr,
+	})
+	if err != nil {
+		switch err {
+		case message.ErrChannelNotFound:
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: err.Error()})
+		case message.ErrUnauthorized:
+			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to list messages"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, output)
+}
+
+// CreateMessage godoc
+// @Summary Create a message
+// @Description Creates a new message within the specified channel
+// @Tags message
+// @Accept json
+// @Produce json
+// @Param channelId path string true "Channel ID"
+// @Param request body CreateMessageRequest true "Create message request"
+// @Success 201 {object} message.MessageOutput
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/channels/{channelId}/messages [post]
+// @Security BearerAuth
+func (h *MessageHandler) CreateMessage(c *gin.Context) {
+	userID, ok := requireUserID(c)
+	if !ok {
+		return
+	}
+
+	channelID := c.Param("channelId")
+	if channelID == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return
+	}
+
+	var req CreateMessageRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	output, err := h.messageUseCase.CreateMessage(message.CreateMessageInput{
+		ChannelID: channelID,
+		UserID:    userID,
+		Body:      req.Body,
+		ParentID:  req.ParentID,
+	})
+	if err != nil {
+		switch err {
+		case message.ErrChannelNotFound:
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: err.Error()})
+		case message.ErrUnauthorized:
+			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
+		case message.ErrParentMessageNotFound:
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to create message"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusCreated, output)
+}

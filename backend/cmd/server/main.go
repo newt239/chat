@@ -9,11 +9,16 @@ import (
 	infradb "github.com/example/chat/internal/infrastructure/db"
 	"github.com/example/chat/internal/infrastructure/logger"
 	"github.com/example/chat/internal/infrastructure/repository"
+	"github.com/example/chat/internal/infrastructure/seed"
 	ginhttp "github.com/example/chat/internal/interface/http"
 	"github.com/example/chat/internal/interface/http/handler"
 	"github.com/example/chat/internal/interface/http/middleware"
 	"github.com/example/chat/internal/interface/ws"
 	authuc "github.com/example/chat/internal/usecase/auth"
+	channeluc "github.com/example/chat/internal/usecase/channel"
+	messageuc "github.com/example/chat/internal/usecase/message"
+	readstateuc "github.com/example/chat/internal/usecase/readstate"
+	workspaceuc "github.com/example/chat/internal/usecase/workspace"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
@@ -24,7 +29,16 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func setupRouter(cfg *config.Config, jwtService *auth.JWTService, hub *ws.Hub, authHandler *handler.AuthHandler) *gin.Engine {
+func setupRouter(
+	cfg *config.Config,
+	jwtService *auth.JWTService,
+	hub *ws.Hub,
+	authHandler *handler.AuthHandler,
+	workspaceHandler *handler.WorkspaceHandler,
+	channelHandler *handler.ChannelHandler,
+	messageHandler *handler.MessageHandler,
+	readStateHandler *handler.ReadStateHandler,
+) *gin.Engine {
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -78,7 +92,7 @@ func setupRouter(cfg *config.Config, jwtService *auth.JWTService, hub *ws.Hub, a
 	})
 
 	// HTTP API routes
-	ginhttp.RegisterRoutes(r, authHandler)
+	ginhttp.RegisterRoutes(r, jwtService, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler)
 
 	return r
 }
@@ -102,9 +116,18 @@ func main() {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
+	// Auto-seed database if empty
+	if err := seed.AutoSeed(db); err != nil {
+		log.Fatalf("failed to auto-seed database: %v", err)
+	}
+
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
 	sessionRepo := repository.NewSessionRepository(db)
+	workspaceRepo := repository.NewWorkspaceRepository(db)
+	channelRepo := repository.NewChannelRepository(db)
+	messageRepo := repository.NewMessageRepository(db)
+	readStateRepo := repository.NewReadStateRepository(db)
 
 	// Initialize services
 	jwtService := auth.NewJWTService(cfg.JWT.Secret)
@@ -112,16 +135,24 @@ func main() {
 
 	// Initialize use cases
 	authUseCase := authuc.NewAuthInteractor(userRepo, sessionRepo, jwtService, passwordService)
+	workspaceUseCase := workspaceuc.NewWorkspaceInteractor(workspaceRepo, userRepo)
+	channelUseCase := channeluc.NewChannelInteractor(channelRepo, workspaceRepo)
+	messageUseCase := messageuc.NewMessageInteractor(messageRepo, channelRepo, workspaceRepo)
+	readStateUseCase := readstateuc.NewReadStateInteractor(readStateRepo, channelRepo, workspaceRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authUseCase)
+	workspaceHandler := handler.NewWorkspaceHandler(workspaceUseCase)
+	channelHandler := handler.NewChannelHandler(channelUseCase)
+	messageHandler := handler.NewMessageHandler(messageUseCase)
+	readStateHandler := handler.NewReadStateHandler(readStateUseCase)
 
 	// Initialize WebSocket hub
 	hub := ws.NewHub()
 	go hub.Run()
 
 	// Setup and run server
-	r := setupRouter(cfg, jwtService, hub, authHandler)
+	r := setupRouter(cfg, jwtService, hub, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler)
 	addr := ":" + cfg.Server.Port
 	log.Printf("Starting server on %s", addr)
 

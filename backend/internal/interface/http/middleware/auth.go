@@ -15,7 +15,7 @@ const (
 	userEmailKey        = "userEmail"
 )
 
-func AuthMiddleware(jwtManager *auth.JWTManager) gin.HandlerFunc {
+func AuthMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader(authorizationHeader)
 		if authHeader == "" {
@@ -31,7 +31,7 @@ func AuthMiddleware(jwtManager *auth.JWTManager) gin.HandlerFunc {
 		}
 
 		token := strings.TrimPrefix(authHeader, bearerPrefix)
-		claims, err := jwtManager.ValidateToken(token)
+		claims, err := jwtService.VerifyToken(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
 			c.Abort()

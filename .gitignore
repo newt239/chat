@@ -20,6 +20,9 @@ backend/gen/
 *.test
 *.out
 vendor/
+.gocache/
+.tmp/
+bin/
 
 # Frontend
 frontend/node_modules/

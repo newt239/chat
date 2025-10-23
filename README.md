@@ -1,10 +1,10 @@
 # Chat Application
 
-Slackライクなリアルタイムチャットアプリケーション。ワークスペース、チャンネル、ファイル添付機能を備えています。
+Slack ライクなリアルタイムチャットアプリケーション。ワークスペース、チャンネル、ファイル添付機能を備えています。
 
 ## クイックスタート
 
-**Docker Composeで全て起動（推奨）:**
+**Docker Compose で全て起動（推奨）:**
 
 ```bash
 # Docker Desktopを起動してから実行
@@ -17,6 +17,14 @@ docker-compose logs -f
 → http://localhost:5173 にアクセス
 
 これで PostgreSQL、バックエンド、フロントエンドの全てが起動します。
+
+**初回起動時は自動的にシードデータが投入されます:**
+
+- テスト用のワークスペース「Test Workspace」
+- 4 つのテストアカウント（alice@example.com, bob@example.com, charlie@example.com, diana@example.com）
+- パスワード: `password123`
+- サンプルチャンネル（general, random, development, private-team）
+- サンプルメッセージとリアクション
 
 **ローカル開発（ホットリロード重視）:**
 
@@ -33,30 +41,33 @@ pnpm run dev
 ## 技術スタック
 
 ### バックエンド
+
 - Go 1.22+
-- Gin (HTTPルーター)
+- Gin (HTTP ルーター)
 - WebSocket (gorilla/websocket)
 - GORM + Gen (ORM & コード生成)
 - Atlas (宣言的スキーママイグレーション)
 - PostgreSQL
-- JWT認証
-- Wasabi S3互換ストレージ
+- JWT 認証
+- Wasabi S3 互換ストレージ
 
 ### フロントエンド
+
 - React 19
 - TypeScript
 - Vite
-- Mantine 8 (UIコンポーネント)
+- Mantine 8 (UI コンポーネント)
 - Tailwind CSS
 - TanStack Router
 - TanStack Query
-- PWA対応 (vite-plugin-pwa)
+- PWA 対応 (vite-plugin-pwa)
 - Vitest + Storybook
 
 ### インフラ
+
 - Docker Compose
 - Caddy (リバースプロキシ)
-- VPSデプロイ対応
+- VPS デプロイ対応
 
 ## プロジェクト構造
 
@@ -94,35 +105,38 @@ chat/
 ## 実装状況
 
 ### 完了
+
 - [x] モノレポ構造 (pnpm workspaces + Turbo)
 - [x] バックエンド Clean Architecture スケルトン
-- [x] ドメインエンティティ (User, Workspace, Channel, Message等)
+- [x] ドメインエンティティ (User, Workspace, Channel, Message 等)
 - [x] リポジトリインターフェース
-- [x] JWT認証インフラ
+- [x] JWT 認証インフラ
 - [x] パスワードハッシュ化 (bcrypt)
 - [x] 設定管理
 - [x] ロギング (zap)
-- [x] HTTPミドルウェア (CORS, 認証, レート制限)
+- [x] HTTP ミドルウェア (CORS, 認証, レート制限)
 - [x] WebSocket hub & コネクション管理
-- [x] 全エンティティのGORMモデル
+- [x] 全エンティティの GORM モデル
 - [x] OpenAPI 3.1 仕様
-- [x] Atlasスキーマ定義 (PostgreSQL)
+- [x] Atlas スキーマ定義 (PostgreSQL)
 - [x] フロントエンド初期化
-- [x] 認証UI (ログイン・新規登録)
+- [x] 認証 UI (ログイン・新規登録)
 - [x] TanStack Query セットアップ
 - [x] Tailwind CSS & Mantine UI
 
 ### 進行中
-- [ ] GORMを使ったリポジトリ実装
+
+- [ ] GORM を使ったリポジトリ実装
 - [ ] ユースケース層 (ビジネスロジック)
-- [ ] 全エンドポイントのHTTPハンドラー
-- [ ] Wasabi S3クライアント実装
-- [ ] チャットUIコンポーネント
-- [ ] WebSocket統合
+- [ ] 全エンドポイントの HTTP ハンドラー
+- [ ] Wasabi S3 クライアント実装
+- [ ] チャット UI コンポーネント
+- [ ] WebSocket 統合
 
 ### 予定
+
 - [ ] TanStack Router セットアップ
-- [ ] PWA機能
+- [ ] PWA 機能
 - [ ] テスト (Vitest)
 - [ ] Storybook
 - [ ] 本番デプロイ設定
@@ -131,25 +145,28 @@ chat/
 
 ### 起動方法の選択
 
-以下の2つの起動方法があります：
+以下の 2 つの起動方法があります：
 
-#### 方法A: Docker Composeで全て起動（推奨）
+#### 方法 A: Docker Compose で全て起動（推奨）
 
-全てのコンポーネント（PostgreSQL、バックエンド、フロントエンド）をDockerで起動します。
+全てのコンポーネント（PostgreSQL、バックエンド、フロントエンド）を Docker で起動します。
+
 - **メリット**: 環境構築が簡単、依存関係の問題がない
 - **デメリット**: コード変更時の反映が若干遅い
 
-#### 方法B: ローカル開発環境
+#### 方法 B: ローカル開発環境
 
-データベースのみDockerで起動し、アプリケーションはローカルで起動します。
+データベースのみ Docker で起動し、アプリケーションはローカルで起動します。
+
 - **メリット**: コード変更が即座に反映（高速ホットリロード）
-- **デメリット**: Go、Node.js、pnpmのインストールが必要
+- **デメリット**: Go、Node.js、pnpm のインストールが必要
 
 ---
 
-### 方法A: Docker Composeで全て起動
+### 方法 A: Docker Compose で全て起動
 
 #### 必要な環境
+
 - **Docker Desktop**
 
 #### 手順
@@ -183,14 +200,14 @@ docker-compose down -v
 
 ---
 
-### 方法B: ローカル開発環境
+### 方法 B: ローカル開発環境
 
 #### 必要な環境
 
-- **Go** 1.22以上
-- **Node.js** 20以上
-- **pnpm** 10以上
-- **Docker Desktop** (PostgreSQL用)
+- **Go** 1.22 以上
+- **Node.js** 20 以上
+- **pnpm** 10 以上
+- **Docker Desktop** (PostgreSQL 用)
 
 #### 1. リポジトリのクローン
 
@@ -205,7 +222,7 @@ cd chat
 pnpm install
 ```
 
-#### 3. データベースのみDockerで起動
+#### 3. データベースのみ Docker で起動
 
 ```bash
 # PostgreSQLのみ起動
@@ -224,19 +241,22 @@ pnpm run dev
 ```
 
 これで以下が起動します：
+
 - **フロントエンド**: http://localhost:5173
-- **バックエンドAPI**: http://localhost:8080
+- **バックエンド API**: http://localhost:8080
 - **データベース**: すでに起動済み（docker-compose）
 
 #### 個別に起動する場合
 
-**ターミナル1 - バックエンド:**
+**ターミナル 1 - バックエンド:**
+
 ```bash
 cd backend
 go run ./cmd/server
 ```
 
-**ターミナル2 - フロントエンド:**
+**ターミナル 2 - フロントエンド:**
+
 ```bash
 cd frontend
 pnpm dev
@@ -255,7 +275,7 @@ pnpm dev
 
 ### トラブルシューティング
 
-#### Docker Composeで起動時にエラーが出る
+#### Docker Compose で起動時にエラーが出る
 
 ```bash
 # コンテナの状態確認
@@ -274,7 +294,8 @@ docker-compose up -d --build
 
 → バックエンドサーバーが起動していません。
 
-**Docker Compose使用時:**
+**Docker Compose 使用時:**
+
 ```bash
 docker-compose logs backend
 ```
@@ -284,7 +305,7 @@ docker-compose logs backend
 
 #### バックエンドで "failed to connect to database" エラー
 
-→ PostgreSQLが起動していません。
+→ PostgreSQL が起動していません。
 
 ```bash
 # PostgreSQLコンテナの状態確認
@@ -297,7 +318,7 @@ docker-compose logs postgres
 docker-compose restart postgres
 ```
 
-#### ポート5173、8080、5432が既に使用されている
+#### ポート 5173、8080、5432 が既に使用されている
 
 → 他のプロセスまたはコンテナがポートを使用しています：
 
@@ -313,7 +334,7 @@ docker-compose down
 
 ### 環境変数の設定（オプション）
 
-#### Docker Compose使用時
+#### Docker Compose 使用時
 
 環境変数は [docker-compose.yml](docker-compose.yml) で設定済みです。変更する場合は直接編集してください。
 
@@ -322,6 +343,7 @@ docker-compose down
 デフォルト設定で動作しますが、カスタマイズする場合：
 
 **backend/.env**:
+
 ```env
 PORT=8080
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/chat?sslmode=disable
@@ -330,6 +352,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 **frontend/.env.local**:
+
 ```env
 VITE_API_BASE_URL=http://localhost:8080
 ```
@@ -369,7 +392,7 @@ docker-compose up -d --build
 
 ## API ドキュメント
 
-APIはOpenAPI 3.1で文書化されています。詳細は [backend/internal/openapi/openapi.yaml](backend/internal/openapi/openapi.yaml) を参照してください。
+API は OpenAPI 3.1 で文書化されています。詳細は [backend/internal/openapi/openapi.yaml](backend/internal/openapi/openapi.yaml) を参照してください。
 
 ### 主要なエンドポイント
 
@@ -380,15 +403,16 @@ APIはOpenAPI 3.1で文書化されています。詳細は [backend/internal/op
 - `GET /api/workspaces/{id}/channels` - チャンネル一覧
 - `GET /api/channels/{id}/messages` - メッセージ一覧
 - `POST /api/channels/{id}/messages` - メッセージ送信
-- `GET /ws?workspaceId={id}` - WebSocket接続
+- `GET /ws?workspaceId={id}` - WebSocket 接続
 
 ## データベーススキーマ
 
-データベーススキーマはAtlasの宣言的HCLファイルで管理されています。完全なスキーマ定義は [backend/schema/schema.hcl](backend/schema/schema.hcl) を参照してください。
+データベーススキーマは Atlas の宣言的 HCL ファイルで管理されています。完全なスキーマ定義は [backend/schema/schema.hcl](backend/schema/schema.hcl) を参照してください。
 
 ### 主要なテーブル
+
 - `users` - ユーザーアカウント
-- `sessions` - JWTリフレッシュトークン
+- `sessions` - JWT リフレッシュトークン
 - `workspaces` - ワークスペースコンテナ
 - `workspace_members` - ワークスペースメンバーシップとロール
 - `channels` - コミュニケーションチャンネル
@@ -398,9 +422,46 @@ APIはOpenAPI 3.1で文書化されています。詳細は [backend/internal/op
 - `channel_read_states` - 未読メッセージ追跡
 - `attachments` - ファイル添付メタデータ
 
+## データベース管理
+
+### シードデータの管理
+
+```bash
+# データベースをリセット（全データ削除）
+cd backend
+go run cmd/reset/main.go
+
+# 手動でシードデータを投入
+go run cmd/seed/main.go
+
+# 強制的にシードデータを再投入（既存データを無視）
+go run cmd/seed-manual/main.go
+```
+
+### データベースの状態確認
+
+```bash
+# PostgreSQLに接続
+docker-compose exec postgres psql -U chat_user -d chat_db
+
+# テーブル一覧
+\dt
+
+# ユーザー一覧
+SELECT email, display_name FROM users;
+
+# ワークスペース一覧
+SELECT name, description FROM workspaces;
+
+# チャンネル一覧
+SELECT c.name, w.name as workspace_name FROM channels c
+JOIN workspaces w ON c.workspace_id = w.id;
+```
+
 ## 開発
 
 ### テストの実行
+
 ```bash
 # バックエンド
 cd backend
@@ -412,6 +473,7 @@ pnpm test
 ```
 
 ### コード生成
+
 ```bash
 # フロントエンド用にOpenAPI型定義を生成
 cd frontend
