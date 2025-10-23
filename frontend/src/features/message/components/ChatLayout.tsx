@@ -8,7 +8,7 @@ interface ChatLayoutProps {
 
 export const ChatLayout = ({ workspaceId, channelId }: ChatLayoutProps) => {
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className="grid h-full min-h-0 gap-6 lg:grid-cols-[320px_1fr]">
       <div className="space-y-6">
         <ChannelList workspaceId={workspaceId} />
       </div>

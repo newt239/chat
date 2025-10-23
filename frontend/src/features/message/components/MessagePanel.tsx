@@ -18,6 +18,24 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const sendMessage = useSendMessage(channelId);
   const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dateTimeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("ja-JP", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }),
+    []
+  );
+  const orderedMessages = useMemo(() => {
+    if (!messageResponse) {
+      return [];
+    }
+    return [...messageResponse.messages].sort((first, second) => {
+      const firstTime = new Date(first.createdAt).getTime();
+      const secondTime = new Date(second.createdAt).getTime();
+      return firstTime - secondTime;
+    });
+  }, [messageResponse]);
 
   const activeChannel = useMemo(() => {
     if (!channels || channelId === null) {
@@ -75,7 +93,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <Card withBorder padding="lg" radius="md" className="shrink-0">
         <Stack gap="xs">
           <Text fw={600} size="lg">
@@ -99,24 +117,32 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
             {error?.message ?? "メッセージの取得に失敗しました"}
           </Text>
         ) : messageResponse && messageResponse.messages.length > 0 ? (
-          <div className="flex flex-col h-full">
+          <div className="flex h-full flex-col">
             {messageResponse.hasMore && (
-              <Text size="xs" c="dimmed" className="p-2 text-center">
+              <Text size="xs" c="dimmed" className="px-4 py-2 text-center">
                 さらに過去のメッセージがあります
               </Text>
             )}
-            <div className="flex-1" />
-            <Stack gap="sm" className="pb-4">
-              {messageResponse.messages.map((message) => (
-                <Card key={message.id} withBorder padding="md" radius="md">
-                  <Text>{message.body}</Text>
-                  <Text size="xs" c="dimmed" className="mt-2">
-                    {new Date(message.createdAt).toLocaleString()}
-                  </Text>
-                </Card>
-              ))}
-            </Stack>
-            <div ref={messagesEndRef} />
+            <div className="flex flex-1 flex-col justify-end">
+              <div className="space-y-3 px-4 pb-6">
+                {orderedMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className="group rounded-md px-4 py-2 transition-colors hover:bg-gray-50"
+                  >
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <Text size="xs" c="dimmed">
+                        {dateTimeFormatter.format(new Date(message.createdAt))}
+                      </Text>
+                    </div>
+                    <Text className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-900">
+                      {message.body}
+                    </Text>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
           </div>
         ) : (
           <div className="flex h-full items-center justify-center">

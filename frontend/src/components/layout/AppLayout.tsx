@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Header } from "@/components/Header";
+import { Header } from "@/components/layout/Header";
 import { AuthGuard } from "@/features/auth/components/AuthGuard";
 
 interface AppLayoutProps {
@@ -12,7 +12,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     <AuthGuard>
       <div className="h-full flex flex-col bg-gray-50">
         <Header />
-        <div className="flex-1 p-6">{children}</div>
+        <div className="flex-1 min-h-0 p-6">
+          <div className="h-full min-h-0">{children}</div>
+        </div>
       </div>
     </AuthGuard>
   );

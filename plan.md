@@ -1,12 +1,19 @@
 # Slack ライク・コミュニケーションアプリ 実装計画
 
+**最終更新: 2025-10-23**
+
+**プロジェクト進捗: 約 75% 完了**
+- Backend: 約 80% (コア機能完了、添付ファイル・リアルタイム通知が未完)
+- Frontend: 約 75% (基本機能実装済、添付・未読バッジ・Storybook未完)
+- DevOps: 約 40% (開発環境完了、本番環境未完)
+
 ## 技術スタック
 
-- フロントエンド: React 19, TypeScript, Vite, Mantine 8, Tailwind CSS, TanStack Router, TanStack Query, Vitest, Storybook, PWA（vite-plugin-pwa）
-- バックエンド: Go 1.22+, Gin, Clean Architecture, WebSocket, GORM + Gen（ORM/コード生成）, Atlas（宣言的マイグレーション）
-- データベース: PostgreSQL
+- フロントエンド: React 19, TypeScript, Vite, Mantine 8, Tailwind CSS, TanStack Router, TanStack Query, Vitest, PWA（vite-plugin-pwa）
+- バックエンド: Go 1.22+, Gin, Clean Architecture, WebSocket, GORM, Atlas（宣言的マイグレーション）
+- データベース: PostgreSQL 16
 - オブジェクトストレージ: Wasabi（S3 互換, aws-sdk-go-v2）
-- デプロイ: Docker（compose）, リバースプロキシ（Caddy または Nginx）を想定, VPS 運用
+- デプロイ: Docker Compose（開発環境完了）, リバースプロキシ（Caddy 予定）, VPS 運用予定
 
 ## ディレクトリ構成（モノレポ）
 
@@ -129,209 +136,576 @@
 - 環境変数: `DATABASE_URL`, `JWT_SECRET`, `WASABI_*`, `CORS_ALLOWED_ORIGINS`
 - TLS/圧縮/HTTP2: Caddy で終端
 
-## マイルストーン
+## 現在の実装状況（マイルストーン）
 
-1. ✅ **スケルトン/起動** - CA構成、GORM初期化、全Domain層定義完了
-2. ✅ **Atlas導入** - 宣言的スキーマ(schema.hcl)、全テーブル定義完了
-3. ✅ **認証/セッション** - Repository実装、Auth UseCase/Handler実装、JWT/Refresh完了
-4. ✅ **Workspace/Channel** - Repository + UseCase/Handler 完了
-5. ✅ **Message** - Repository + UseCase/Handler 完了（スレッド投稿対応済み、添付は別タスク）
-6. ✅ **未読管理** - Repository + ReadState API 完了（既読更新・未読数取得）
-7. ⏳ **WebSocket** - Hub/Connection骨組み完了、イベントハンドラ未実装
-8. ⏳ **フロント統合** - 基盤未着手（Router/Query/WS、未読UI）
-9. ⏳ **PWA** - manifest作成済み、SW実装未着手
-10. ⏳ **デプロイ/可観測性** - Docker/Caddy構成未着手
+### ✅ 完了済み
+1. **スケルトン/起動** - CA構成、GORM初期化、全Domain層定義
+2. **Atlas導入** - 宣言的スキーマ(schema.hcl)、全テーブル定義
+3. **認証/セッション** - Repository実装、Auth UseCase/Handler実装、JWT/Refresh
+4. **Workspace/Channel** - Repository + UseCase/Handler (CRUD + メンバー管理)
+5. **Message** - Repository + UseCase/Handler (取得・投稿・スレッド対応)
+6. **未読管理** - Repository + ReadState API (既読更新・未読数取得)
+7. **フロント基盤** - Router, Query, Auth, Workspace, Channel, Message UI
+8. **開発環境** - Docker Compose (Postgres + Backend + Frontend)
+9. **テスト基盤** - Vitest設定、27テスト実装（100%パス）
 
-## 実装状況サマリー
+### 🚧 進行中・未完了
+10. **WebSocket** - Hub/Connection完了、イベントハンドラ未実装
+11. **添付ファイル** - バックエンドRepository完了、UseCase/S3統合未完
+12. **フロント統合** - WebSocketとQuery連携未完、未読バッジUI未完
+13. **PWA** - manifest完了、IndexedDB/オフライン機能未完
+14. **本番デプロイ** - Dockerfile.prod未完、Caddy設定未完
 
-### Backend 実装進捗: 約65%
-- ✅ **Domain層**: 100% - 全エンティティ & Repository IF 定義完了
-- ✅ **Infrastructure層**: 100% - Config, Logger, Auth Services, DB Models, Repository実装完了
-- 🟢 **UseCase層**: 70% - Auth/Workspace/Channel/Message/ReadState 実装完了、Attachment/Storage 系は未着手
-- 🟡 **Interface層**: 60% - Auth/Workspace/Channel/Message/ReadState Handler 実装済み、Attachment/WS イベント処理は未実装
-- ✅ **DB Schema**: 100% - Atlas schema.hcl全テーブル定義完了
+## 実装状況詳細
 
-### Frontend 実装進捗: 約60%
-- ✅ **基盤**: Vite + PWA plugin設定完了、依存関係インストール完了、TypeScript/Tailwind/PostCSS/ESLint/Prettier/Vitest 設定完了
-- ✅ **OpenAPI型生成**: openapi-typescript でスキーマ生成完了
-- ✅ **APIクライアント**: openapi-fetch ベースのクライアント実装完了、自動認証リフレッシュ実装
-- ✅ **状態管理**: Zustand で Auth/Workspace ストア実装完了
-- ✅ **データフェッチ**: TanStack Query セットアップ完了
-- ✅ **認証機能**: Login/Register フォーム実装完了、Auth hooks 実装完了
-- ✅ **ワークスペース**: 一覧/作成 UI 実装完了、hooks 実装完了
-- ✅ **WebSocket**: クライアント骨組み実装完了（接続/再接続/イベント管理）
-- ✅ **ビルド**: 本番ビルド成功確認済み
-- ✅ **テスト**: Vitest設定完了、12個のテストケース実装済み（Login/Register/Workspace UI）、全テスト通過
-- 🟡 **チャネル/メッセージ**: UI未実装
+### Backend 実装進捗: 約80%
 
-### 次の優先タスク（バックエンド）
-1. WebSocket イベントハンドラ実装（join_channel / post_message / unread broadcast）
-2. Attachment UseCase & Handler 実装（presign / metadata / download）
-3. Wasabi S3 クライアント統合（プリサイン署名・アップロード動線）
-4. メッセージ配信/未読更新の通知連携（WS + HTTP）と回帰テスト整備
-5. Observability（構造化ログ/メトリクス/アラート方針）
+#### ✅ 完全実装 (100%)
+- **Domain層**: 全7エンティティ & Repository IF (User, Session, Workspace, Channel, Message, ReadState, Attachment)
+- **Infrastructure層**:
+  - Config, Logger (Zap), Auth Services (JWT, Password), DB (GORM), 全7 Repository実装
+  - 約700行のインフラコード
+- **DB Schema**: Atlas declarative schema - 全10+テーブル定義、インデックス、制約
+- **HTTP Handlers**:
+  - Auth (Register/Login/Refresh/Logout) - 4エンドポイント
+  - Workspace CRUD + メンバー管理 - 8エンドポイント
+  - Channel 一覧/作成 - 2エンドポイント
+  - Message 一覧/投稿 - 2エンドポイント
+  - ReadState 未読取得/更新 - 2エンドポイント
+  - 合計18エンドポイント実装済み (約1,250行)
+- **UseCase層**:
+  - Auth (216行), Workspace (379行), Channel (124行), Message (154行), ReadState (100行)
+  - 合計約1,200行のビジネスロジック
 
-### 次の優先タスク（フロントエンド）
-1. Channel 機能実装（hooks + UI）
-2. Message 機能実装（hooks + UI + 仮想スクロール）
-3. WebSocket統合（新着メッセージ/未読カウント）
-4. 添付ファイル機能実装
-5. Storybook セットアップ
+#### 🚧 部分実装 (20-70%)
+- **WebSocket (60%)**:
+  - ✅ Hub実装 (Register/Unregister/Broadcast)
+  - ✅ Connection管理 (ReadPump/WritePump, 140行)
+  - ✅ main.goでのエンドポイント登録 (JWT検証)
+  - ❌ イベントハンドラ未実装 (join_channel, leave_channel, post_message, typing, update_read_state)
+  - **課題**: connection.go:76-77でプレースホルダーのみ
+
+- **Attachment (10%)**:
+  - ✅ Domain Entity & Repository完了
+  - ❌ UseCase未実装
+  - ❌ Handler は501 Not Implemented stub
+  - ❌ S3/Wasabi統合なし (aws-sdk-go-v2未使用)
+
+#### ❌ 未実装 (0%)
+- **Observability**: OpenTelemetry, Metrics, pprof
+- **Backend Tests**: Go テストファイルなし
+- **OIDC**: 認証プロバイダー抽象化のみ
+
+### Frontend 実装進捗: 約75%
+
+#### ✅ 完全実装 (100%)
+- **ビルド環境**: Vite, TypeScript, ESLint, Prettier, Tailwind, Mantine 8
+- **ルーティング**: TanStack Router - 7ルート (Login, Register, App, Workspace, Channel)
+- **認証システム**:
+  - Login/Register フォーム
+  - Auth hooks (useAuth, useAuthGuard)
+  - Zustand store (localStorage persist)
+  - JWT refresh機能
+- **APIクライアント**:
+  - openapi-typescript型生成
+  - openapi-fetch クライアント
+  - 自動認証リフレッシュ
+- **Workspace機能**:
+  - 一覧/作成UI
+  - useWorkspace hooks
+  - WorkspaceSelection component
+- **Channel機能 (90%)**:
+  - 一覧/作成UI
+  - useChannel hooks
+  - ChannelList component
+  - **未完**: 詳細表示、設定UI
+- **Message機能 (80%)**:
+  - メッセージ表示 (MessagePanel)
+  - 送信フォーム
+  - useMessage hooks
+  - 自動スクロール
+  - **未完**: スレッドUI、仮想スクロール、編集/削除、リアクション
+- **WebSocketクライアント (70%)**:
+  - 接続/切断管理
+  - 再接続ロジック (exponential backoff)
+  - イベント送受信
+  - **未完**: TanStack Query統合、join_channelイベント送信
+- **テスト**:
+  - Vitest設定
+  - 8ファイル、27テスト (100% pass)
+  - Auth/Workspace/Layout/Headerコンポーネントカバー済み
+  - **課題**: Header.test.tsx に2つのESLintエラー (unused imports)
+
+#### 🚧 部分実装 (30%)
+- **PWA (30%)**:
+  - ✅ vite-plugin-pwa設定
+  - ✅ manifest.webmanifest
+  - ❌ Service Worker カスタマイズ
+
+#### ❌ 未実装 (0%)
+- **Storybook**: 設定ファイル、ストーリー作成
+- **Attachment UI**: アップロード/ダウンロード/プレビュー
+- **Unread UI**: バッジ、未読カウント表示
+- **Virtual Scrolling**: メッセージリスト最適化
+- **Message Threads**: スレッド表示UI
+- **Typing Indicators**: 入力中表示
+- **Message Reactions**: リアクション選択/表示UI
+- **Markdown Support**: メッセージMarkdown表示/編集
+- **Mentions**: @ユーザーメンション機能
+- **Direct Messages**: 1対1 DM機能
+- **Channel Search**: チャンネル名検索/フィルタ
+- **Message Search**: メッセージ全文検索
+- **User Profile**: プロフィール表示/編集
+- **Channel Settings**: チャンネル設定/権限管理
+- **Member List**: メンバー一覧/オンライン状態
+- **Notification Settings**: 通知設定UI
+- **Theme Support**: ダークモード切り替え
+
+### DevOps 実装進捗: 約40%
+
+#### ✅ 完全実装 (100%)
+- **Docker Compose開発環境**:
+  - PostgreSQL 16 Alpine
+  - Backend service (Dockerfile.dev)
+  - Frontend service (Dockerfile.dev)
+  - ネットワーク分離、ボリューム管理
+  - ヘルスチェック
+
+#### ❌ 未実装 (0%)
+- **本番デプロイ**:
+  - Dockerfile.prod (backend/frontend)
+  - Docker Compose production.yml
+  - Caddy/Nginx設定
+  - TLS証明書管理
+- **CI/CD**: GitHub Actions ワークフロー
+- **監視**: ログ集約、メトリクス収集、アラート
 
 ---
 
-## To-dos
+## 優先タスク (MVP向け)
 
-### 完了済み ✅
-- [x] **モノレポ構成** - frontend/backend/docker/schema
-- [x] **クリーンアーキテクチャ構成**
-  - ✅ Domain層: 全エンティティ & Repository IF (7種類)
-  - ✅ Infrastructure層: Config, Logger, Auth Services, DB, Repository実装 (7種類)
-  - ✅ Interface層: Router, Middleware (CORS/Auth/RateLimit), WebSocket骨組み
-- [x] **OpenAPI 3.1 スキーマ** - auth/workspace/channel/message/reads/attachments 完全定義
-- [x] **Atlas導入** - atlas.hcl, schema/schema.hcl 全テーブル定義完了
-- [x] **GORM導入** - 接続/モデル定義完了、ビルド成功
-- [x] **Repository層実装** (100%) - User, Session, Workspace, Channel, Message, ReadState, Attachment
-- [x] **Auth UseCase実装** (100%) - Register/Login/Refresh/Logout
-- [x] **Auth Handler実装** (100%) - Register/Login/Refresh/Logout エンドポイント + バリデーション
-- [x] **Workspace UseCase/Handler 実装** (100%) - CRUD + メンバー管理
-- [x] **Channel UseCase/Handler 実装** (100%) - 公開/非公開チャンネル作成・一覧
-- [x] **Message UseCase/Handler 実装** (100%) - ページング取得・スレッド投稿
-- [x] **ReadState UseCase/Handler 実装** (100%) - 既読更新・未読数取得
-- [x] **DI/統合** - main.go で DB初期化、Repository/UseCase/Handler ワイヤリング完了
-- [x] **ビルド検証** - `go build` 成功、実行可能バイナリ生成確認
+### 🔴 Critical (MVP必須)
 
-### 進行中 🚧
-- [ ] WebSocket イベントハンドラ実装（join_channel / post_message / typing）
-- [ ] Attachment/Wasabi 統合（presign / upload / download）
+#### Backend
+1. **WebSocket イベントハンドラ実装** (優先度: 最高)
+   - 実装内容:
+     - `join_channel`: チャンネル参加通知
+     - `post_message`: リアルタイムメッセージ配信
+     - `update_read_state`: 未読状態同期
+     - エラーハンドリング & ack応答
+   - 影響範囲: `backend/internal/interface/ws/connection.go`
+   - 前提: Message/ReadState UseCase既存のため依存少ない
 
-### 完了済み（フロントエンド） ✅
-- [x] **フロント初期化** - Vite+React19+TS+Mantine8+Tailwind+ESLint/Prettier 完了
-- [x] **OpenAPI クライアント生成** - openapi-typescript+openapi-fetch セットアップ完了
-- [x] **TanStack Query 基盤** - セットアップ完了、認証/ワークスペース hooks 実装
-- [x] **セッション管理** - Zustand で実装、localStorage連携
-- [x] **認証 UI** - Login/Register フォーム実装完了
-- [x] **ワークスペース UI** - 一覧/作成モーダル実装完了
-- [x] **WebSocket クライアント** - 基本実装完了（接続/再接続/イベント管理）
-- [x] **Vitest 導入** - 設定完了、テスト基盤構築
-- [x] **PWA 基盤** - Vite PWA plugin 設定、manifest 定義、Workbox キャッシュ戦略
+2. **Attachment UseCase & Handler実装** (優先度: 高)
+   - 実装内容:
+     - Presign URL生成 UseCase
+     - Attachment metadata登録/取得
+     - Download presign URL生成
+   - 影響範囲:
+     - `backend/internal/usecase/attachment/`
+     - `backend/internal/interface/http/handler/attachment_handler.go`
+   - 依存: S3クライアント統合 (次項)
 
-### 未着手 📋
-- [ ] AuthProvider 抽象と OIDC 下地
-- [ ] Observability 強化（ログ/メトリクス/pprof/レート制限統合）
-- [ ] Docker/Caddy 構成と VPS デプロイ準備
-- [ ] チャネル UI（一覧/作成/詳細）
-- [ ] メッセージ UI（一覧/送信/スレッド/仮想スクロール）
-- [ ] 添付ファイル UI: presign/アップロード/表示
-- [ ] WS 統合と Query 部分更新（未読/新着）
-- [ ] 未読バッジ UI 実装
-- [ ] Storybook 導入・ストーリー作成
-- [ ] テスト拡充（jest-dom型定義修正、E2Eテスト）
-- [ ] Atlas マイグレーション適用（初回 migrate apply）
+3. **Wasabi S3統合** (優先度: 高)
+   - 実装内容:
+     - aws-sdk-go-v2 初期化
+     - S3 Presigner設定
+     - エンドポイント/リージョン/認証設定
+   - 影響範囲:
+     - `backend/internal/infrastructure/storage/wasabi/client.go`
+     - `backend/cmd/server/main.go` (DI)
+   - 環境変数: `WASABI_ENDPOINT`, `WASABI_REGION`, `WASABI_ACCESS_KEY`, `WASABI_SECRET_KEY`, `WASABI_BUCKET`
 
-## 実装済みファイル一覧
+#### Frontend
+4. **WebSocket & Query統合** (優先度: 最高)
+   - 実装内容:
+     - `new_message`イベント受信 → queryClient.setQueryData
+     - `unread_count`イベント受信 → 未読カウント更新
+     - チャンネル参加時に`join_channel`イベント送信
+     - 楽観的UI更新 (メッセージ送信時)
+   - 影響範囲:
+     - `frontend/src/lib/ws/client.ts`
+     - `frontend/src/features/message/hooks/useMessage.ts`
+   - 技術的課題: queryKey構造とWebSocketイベント対応
+
+5. **未読バッジUI実装** (優先度: 中)
+   - 実装内容:
+     - チャンネルリストに未読カウント表示
+     - 未読があるチャンネルをハイライト
+     - メッセージ閲覧時に既読API呼び出し
+   - 影響範囲:
+     - `frontend/src/features/channel/components/ChannelList.tsx`
+     - `frontend/src/features/message/components/MessagePanel.tsx`
+   - 依存: ReadState API (既存)
+
+6. **ESLint エラー修正** (優先度: 最高、工数小)
+   - 実装内容: `Header.test.tsx` から未使用import削除 (waitFor, userEvent)
+   - 影響範囲: `frontend/src/components/layout/Header.test.tsx`
+   - 工数: 5分
+
+#### DevOps
+7. **本番Docker環境構築** (優先度: 中)
+   - 実装内容:
+     - Backend Dockerfile.prod (multi-stage build)
+     - Frontend Dockerfile.prod (nginx serve)
+     - docker-compose.prod.yml
+     - Caddyfile (TLS, リバースプロキシ, 圧縮)
+   - 影響範囲: `docker/`
+   - 環境変数管理: .env.production
+
+### 🟡 Medium (MVP推奨)
+
+8. **Attachment UI実装** (優先度: 中)
+   - 前提: Backend S3統合完了後
+   - 実装内容: ファイルピッカー, アップロード進捗, プレビュー, ダウンロード
+
+9. **メッセージ仮想スクロール** (優先度: 中)
+   - ライブラリ: `@tanstack/react-virtual`
+   - パフォーマンス改善: 1000+ メッセージ対応
+
+10. **Message Thread UI** (優先度: 中)
+    - スレッド表示/返信UI
+    - parent_id活用 (Backend対応済み)
+
+11. **Typing Indicators** (優先度: 中)
+    - "○○が入力中..." UI
+    - WebSocket typing イベント連携
+
+12. **Backend テスト整備** (優先度: 中)
+    - UseCase単体テスト
+    - Repository統合テスト (testcontainers)
+    - テストカバレッジ目標: 60%+
+
+### 🟢 Low (Post-MVP機能拡張)
+
+13. **Message Reactions** (優先度: 低)
+    - リアクション追加/削除API
+    - リアクション選択UI (絵文字ピッカー)
+    - WebSocket同期
+
+14. **Markdown Support** (優先度: 低)
+    - メッセージMarkdown表示 (react-markdown)
+    - Markdown編集プレビュー
+    - コードブロックシンタックスハイライト
+
+15. **Mentions機能** (優先度: 低)
+    - @ユーザーメンション入力
+    - メンション通知
+    - メンション一覧表示
+
+16. **Direct Messages** (優先度: 低)
+    - 1対1 DM用チャンネル作成
+    - DM一覧UI
+    - Backend: isDM フラグ追加
+
+17. **検索機能** (優先度: 低)
+    - チャンネル名検索/フィルタ
+    - メッセージ全文検索API (PostgreSQL FTS)
+    - 検索UI (モーダル, Ctrl+K)
+
+18. **User Profile** (優先度: 低)
+    - プロフィール表示/編集UI
+    - アバター画像アップロード
+    - ステータスメッセージ
+
+19. **Channel Settings** (優先度: 低)
+    - チャンネル設定画面
+    - 権限管理 (owner/admin/member)
+    - チャンネル削除/アーカイブ
+
+20. **Member List & Presence** (優先度: 低)
+    - メンバー一覧UI
+    - オンライン状態表示
+    - WebSocket presence イベント
+
+21. **Notification Settings** (優先度: 低)
+    - 通知設定UI
+    - チャンネル別通知ON/OFF
+    - メンション専用通知
+
+22. **Theme Support** (優先度: 低)
+    - ダークモード実装
+    - Mantine ColorSchemeProvider統合
+    - localStorage保存
+
+23. **Storybook** (優先度: 低)
+    - .storybook設定
+    - Mantine/Tailwind統合
+    - 主要コンポーネントのストーリー作成
+
+24. **Observability強化** (優先度: 低)
+    - OpenTelemetry統合
+    - Prometheus metrics
+    - pprof有効化
+
+25. **OIDC認証** (優先度: 低)
+    - Google/GitHub OAuth
+    - AuthProvider抽象化活用
+
+---
+
+## 既知の技術的課題
 
 ### Backend
-```
-backend/
-├── cmd/server/main.go                              ✅ サーバー起動 + DI/ワイヤリング完了
-├── internal/
-│   ├── domain/                                     ✅ 全エンティティ & Repository IF 完了
-│   │   ├── user.go                                 (User, UserRepository)
-│   │   ├── workspace.go                            (Workspace, WorkspaceMember, WorkspaceRepository)
-│   │   ├── channel.go                              (Channel, ChannelMember, ChannelRepository)
-│   │   ├── message.go                              (Message, MessageReaction, MessageRepository)
-│   │   ├── read_state.go                           (ChannelReadState, ReadStateRepository)
-│   │   ├── attachment.go                           (Attachment, AttachmentRepository)
-│   │   └── session.go                              (Session, SessionRepository)
-│   ├── usecase/                                    ✅ Auth UseCase 実装完了
-│   │   └── auth/
-│   │       ├── dto.go                              (RegisterInput/Output, LoginInput/Output, etc.)
-│   │       └── interactor.go                       (Register/Login/Refresh/Logout ビジネスロジック)
-│   ├── infrastructure/
-│   │   ├── config/config.go                        ✅ 環境変数管理
-│   │   ├── logger/logger.go                        ✅ Zap logger
-│   │   ├── auth/
-│   │   │   ├── jwt.go                              ✅ JWTService + 旧JWTManager
-│   │   │   └── password.go                         ✅ PasswordService + 旧関数
-│   │   ├── db/
-│   │   │   ├── db.go                               ✅ GORM 接続 + InitDB
-│   │   │   └── models.go                           ✅ 全 GORM モデル（User, Session, Workspace, Channel, Message, etc.）
-│   │   └── repository/                             ✅ 全Repository実装完了（7つ）
-│   │       ├── user_repository.go                  (UserRepository 実装)
-│   │       ├── session_repository.go               (SessionRepository 実装)
-│   │       ├── workspace_repository.go             (WorkspaceRepository 実装)
-│   │       ├── channel_repository.go               (ChannelRepository 実装)
-│   │       ├── message_repository.go               (MessageRepository 実装)
-│   │       ├── read_state_repository.go            (ReadStateRepository 実装)
-│   │       └── attachment_repository.go            (AttachmentRepository 実装)
-│   ├── interface/
-│   │   ├── http/
-│   │   │   ├── router.go                           ✅ Auth エンドポイント登録完了
-│   │   │   ├── handler/
-│   │   │   │   ├── auth_handler.go                 ✅ Register/Login/Refresh/Logout ハンドラ
-│   │   │   │   └── dto.go                          ✅ リクエスト/レスポンスDTO + バリデーション
-│   │   │   └── middleware/
-│   │   │       ├── auth.go                         ✅ JWT 認証ミドルウェア
-│   │   │       ├── cors.go                         ✅ CORS
-│   │   │       └── ratelimit.go                    ✅ レート制限
-│   │   └── ws/
-│   │       ├── hub.go                              ✅ WebSocket ハブ
-│   │       └── connection.go                       ✅ WebSocket コネクション管理
-│   └── openapi/openapi.yaml                        ✅ OpenAPI 3.1 完全定義
-├── schema/schema.hcl                               ✅ Atlas 宣言的スキーマ（全テーブル）
-├── atlas.hcl                                       ✅ Atlas 設定
-└── bin/server                                      ✅ ビルド済みバイナリ（認証機能動作可能）
-```
+1. **main.go:28** - CORS origin validation TODO (現在は全許可)
+2. **Attachment handlers** - 501 Not Implemented
+3. **WebSocket** - イベント処理プレースホルダー (connection.go:76-77)
+4. **ログ統合** - Zapロガー定義済みだがHandler層で未使用
+5. **レート制限** - Middlewareあるが適用不十分
+6. **エラーレスポンス** - 統一されたエラー構造なし
 
 ### Frontend
+1. **Header.test.tsx:3,4** - ESLint unused imports エラー
+2. **WebSocket再接続** - 最大5回で停止、手動再接続UIなし
+3. **型安全性** - 一部inferredだが明示的型推奨箇所あり
+4. **アクセシビリティ** - ARIA属性・キーボードナビ未検証
+5. **エラーバウンダリ** - グローバルエラーハンドリング未実装
+
+### DevOps
+1. **環境変数管理** - .envファイル分離未完 (dev/prod)
+2. **シークレット管理** - JWT_SECRET等ハードコード禁止ルール未設定
+3. **ヘルスチェック** - `/healthz`エンドポイント未実装
+4. **ログローテーション** - 設定なし
+5. **バックアップ戦略** - DB/添付ファイルバックアップ未計画
+
+---
+
+## 実装ロードマップ
+
+### Phase 1: MVP完成 (現在 → 1-2週間)
+
+**目標**: 基本的なチャット機能が動作する最小限のプロダクト
+
+1. **ESLint エラー修正** (30分)
+   - [ ] Header.test.tsx の未使用import削除
+
+2. **WebSocket イベントハンドラ** (2-3日)
+   - [ ] join_channel ハンドラ
+   - [ ] post_message ハンドラ (MessageUseCaseと連携)
+   - [ ] update_read_state ハンドラ (ReadStateUseCaseと連携)
+   - [ ] エラーハンドリング & ack応答
+   - [ ] 単体テスト作成
+
+3. **WebSocket & TanStack Query統合** (1-2日)
+   - [ ] new_message イベント → queryClient更新
+   - [ ] unread_count イベント → 未読カウント更新
+   - [ ] join_channel イベント送信 (チャンネル参加時)
+   - [ ] 楽観的UI更新 (メッセージ送信)
+
+4. **未読バッジUI** (1日)
+   - [ ] ChannelList に未読カウント表示
+   - [ ] 未読チャンネルのハイライト
+   - [ ] メッセージ閲覧時の既読API呼び出し
+
+5. **本番Docker環境** (1-2日)
+   - [ ] Backend Dockerfile.prod (multi-stage)
+   - [ ] Frontend Dockerfile.prod (nginx)
+   - [ ] docker-compose.prod.yml
+   - [ ] Caddyfile (TLS/proxy/compress)
+   - [ ] 環境変数管理 (.env.production)
+
+6. **ヘルスチェックエンドポイント** (1時間)
+   - [ ] GET /healthz (DB接続確認)
+   - [ ] Dockerヘルスチェック統合
+
+### Phase 2: ファイル共有機能 (1-2週間)
+
+**目標**: 添付ファイルのアップロード・ダウンロード
+
+7. **Wasabi S3クライアント** (1日)
+   - [ ] aws-sdk-go-v2 初期化
+   - [ ] Presigner設定
+   - [ ] 環境変数読み込み
+
+8. **Attachment UseCase & Handler** (2日)
+   - [ ] Presign URL生成 UseCase
+   - [ ] Metadata登録/取得 UseCase
+   - [ ] Download presign UseCase
+   - [ ] Handler実装 (3エンドポイント)
+   - [ ] OpenAPI動作確認
+
+9. **Attachment UI** (2-3日)
+   - [ ] ファイルピッカー統合
+   - [ ] アップロード進捗表示
+   - [ ] ファイルプレビュー (画像/PDF)
+   - [ ] ダウンロードボタン
+   - [ ] エラーハンドリング
+
+### Phase 3: パフォーマンス & テスト (1週間)
+
+**目標**: 安定性・パフォーマンス向上
+
+10. **仮想スクロール** (1日)
+    - [ ] @tanstack/react-virtual導入
+    - [ ] MessagePanel に適用
+    - [ ] 1000+メッセージでの動作確認
+
+11. **Backend テスト** (2-3日)
+    - [ ] UseCase単体テスト (Auth/Workspace/Channel/Message)
+    - [ ] Repository統合テスト (testcontainers)
+    - [ ] WebSocketハンドラテスト
+    - [ ] カバレッジ60%+達成
+
+12. **Frontend E2E テスト** (1-2日)
+    - [ ] Playwright導入
+    - [ ] ログイン → メッセージ送信フロー
+    - [ ] ワークスペース/チャンネル作成フロー
+
+13. **エラーハンドリング改善** (1日)
+    - [ ] 統一エラーレスポンス構造 (backend)
+    - [ ] グローバルエラーバウンダリ (frontend)
+    - [ ] Toast通知統合
+
+### Phase 4: UX向上 (1-2週間)
+
+**目標**: ユーザー体験の洗練
+
+14. **メッセージスレッド** (2-3日)
+    - [ ] スレッド表示UI
+    - [ ] 返信フォーム
+    - [ ] parent_id連携 (backend対応済み)
+
+15. **入力中表示** (1日)
+    - [ ] typing イベント送信 (WebSocket)
+    - [ ] "○○が入力中..." UI
+    - [ ] デバウンス処理
+
+16. **Markdown Support** (1-2日)
+    - [ ] react-markdown 導入
+    - [ ] メッセージMarkdown表示
+    - [ ] コードブロックシンタックスハイライト
+
+17. **Message Reactions** (2日)
+    - [ ] リアクション追加/削除API (backend)
+    - [ ] 絵文字ピッカーUI
+    - [ ] リアクション表示UI
+    - [ ] WebSocket同期
+
+### Phase 5: 運用準備 (1週間)
+
+**目標**: 本番運用に向けた監視・セキュリティ
+
+18. **Observability** (2-3日)
+    - [ ] OpenTelemetry統合
+    - [ ] Prometheus metrics (/metrics)
+    - [ ] pprof有効化 (/debug/pprof)
+    - [ ] 構造化ログ (Zap) の全Handler適用
+
+19. **セキュリティ強化** (1-2日)
+    - [ ] CORS origin validation (main.go:28 TODO解消)
+    - [ ] レート制限の全エンドポイント適用
+    - [ ] シークレット管理 (環境変数検証)
+    - [ ] CSP/X-Frame-Options ヘッダ (Caddy)
+
+20. **CI/CD** (1-2日)
+    - [ ] GitHub Actions ワークフロー
+    - [ ] Lint/Test自動実行
+    - [ ] Docker image ビルド & push
+    - [ ] VPSデプロイスクリプト
+
+### Phase 6: 高度な機能 (Post-MVP)
+
+**目標**: 差別化機能
+
+21. **PWA オフライン機能** (3-4日)
+    - [ ] IndexedDB message cache
+    - [ ] 送信キュー + Background Sync
+    - [ ] オフラインUI表示
+
+22. **OIDC認証** (2-3日)
+    - [ ] AuthProvider抽象化活用
+    - [ ] Google OAuth統合
+    - [ ] GitHub OAuth統合
+
+23. **リアクション機能** (2日)
+    - [ ] リアクション追加/削除API
+    - [ ] リアクションUI (絵文字ピッカー)
+    - [ ] WebSocket同期
+
+24. **モバイル最適化** (2-3日)
+    - [ ] タブナビゲーション (モバイル)
+    - [ ] ドロワーメニュー
+    - [ ] タッチジェスチャー (スワイプ)
+    - [ ] iOS safe-area対応
+
+## 実装済みコンポーネント一覧
+
+### Backend (約2,450行)
 ```
-frontend/
-├── vite.config.ts                                  ✅ Vite + PWA + alias 設定完了
-├── tsconfig.json                                   ✅ TypeScript設定完了
-├── tailwind.config.js                              ✅ Tailwind CSS設定完了
-├── postcss.config.js                               ✅ PostCSS + @tailwindcss/postcss 設定完了
-├── .eslintrc.json                                  ✅ ESLint設定完了
-├── .prettierrc                                     ✅ Prettier設定完了
-├── vitest.config.ts                                ✅ Vitest設定完了
-├── package.json                                    ✅ 依存関係インストール完了
-├── src/
-│   ├── main.tsx                                    ✅ エントリーポイント（MantineProvider + QueryClient + App）
-│   ├── App.tsx                                     ✅ ルーティング + 認証ガード実装
-│   ├── vite-env.d.ts                               ✅ 環境変数型定義
-│   ├── styles/globals.css                          ✅ Tailwind + グローバルスタイル
-│   ├── lib/
-│   │   ├── api/
-│   │   │   ├── schema.ts                           ✅ OpenAPI型定義（生成済み）
-│   │   │   └── client.ts                           ✅ APIクライアント + 認証インターセプター
-│   │   ├── query.ts                                ✅ TanStack Query設定
-│   │   ├── store/
-│   │   │   ├── auth.ts                             ✅ 認証ストア（Zustand + persist）
-│   │   │   └── workspace.ts                        ✅ ワークスペースストア
-│   │   └── ws/
-│   │       └── client.ts                           ✅ WebSocketクライアント（再接続機能付き）
-│   ├── features/
-│   │   ├── auth/
-│   │   │   ├── hooks/useAuth.ts                    ✅ Login/Register/Logout hooks
-│   │   │   └── components/
-│   │   │       ├── LoginForm.tsx                   ✅ ログインフォーム + テスト
-│   │   │       └── RegisterForm.tsx                ✅ 登録フォーム + テスト
-│   │   └── workspace/
-│   │       ├── hooks/useWorkspace.ts               ✅ Workspace CRUD hooks
-│   │       └── components/
-│   │           ├── WorkspaceList.tsx               ✅ ワークスペース一覧
-│   │           └── CreateWorkspaceModal.tsx        ✅ 作成モーダル
-│   └── test/setup.ts                               ✅ Vitest + Testing Library セットアップ
-└── dist/                                           ✅ ビルド成功（本番用アセット生成済み）
+backend/
+├── cmd/server/main.go                              ✅ DI/ワイヤリング/エンドポイント登録
+├── internal/
+│   ├── domain/                                     ✅ 7 Entities + 7 Repository IF
+│   │   ├── user.go, session.go, workspace.go
+│   │   ├── channel.go, message.go, read_state.go, attachment.go
+│   ├── usecase/                                    ✅ 5機能実装 (約1,200行)
+│   │   ├── auth/                                   (Register/Login/Refresh/Logout)
+│   │   ├── workspace/                              (CRUD + メンバー管理)
+│   │   ├── channel/                                (List/Create)
+│   │   ├── message/                                (List/Create + スレッド)
+│   │   └── read_state/                             (GetUnreadCount/Update)
+│   ├── infrastructure/                             ✅ (約700行)
+│   │   ├── config/, logger/                        (Zap初期化)
+│   │   ├── auth/                                   (JWT, Password bcrypt)
+│   │   ├── db/                                     (GORM, Models)
+│   │   └── repository/                             (7 Repository実装)
+│   ├── interface/                                  ✅ HTTP 18EP + WS基盤 (約1,250行)
+│   │   ├── http/
+│   │   │   ├── router.go                           (ルート登録)
+│   │   │   ├── handler/                            (Auth/Workspace/Channel/Message/ReadState)
+│   │   │   └── middleware/                         (CORS/Auth/RateLimit)
+│   │   └── ws/                                     (Hub/Connection, ⚠️ イベントハンドラ未実装)
+│   │       ├── hub.go                              (Register/Unregister/Broadcast)
+│   │       └── connection.go                       (ReadPump/WritePump, 140行)
+│   └── openapi/openapi.yaml                        ✅ 791行 OpenAPI 3.1
+├── schema/schema.hcl                               ✅ Atlas declarative schema
+└── atlas.hcl                                       ✅ Atlas config
 ```
 
-### Root
+### Frontend (約2,000+行)
+```
+frontend/
+├── vite.config.ts, tsconfig.json                   ✅ ビルド設定
+├── tailwind.config.js, postcss.config.js           ✅ スタイル設定
+├── .eslintrc.json, .prettierrc                     ✅ リント設定 (⚠️ Header.test.tsx 2エラー)
+├── vitest.config.ts                                ✅ テスト設定
+├── src/
+│   ├── main.tsx, App.tsx                           ✅ エントリーポイント
+│   ├── routes/                                     ✅ 7ルート (TanStack Router)
+│   │   ├── __root.tsx                              (Root layout)
+│   │   ├── login.tsx, register.tsx                 (認証)
+│   │   ├── app.tsx, app/index.tsx                  (App shell)
+│   │   ├── app/$workspaceId.tsx                    (Workspace)
+│   │   └── app/$workspaceId/$channelId.tsx         (Channel + Messages)
+│   ├── lib/
+│   │   ├── api/                                    ✅ OpenAPI型生成 + Client
+│   │   ├── query.ts                                ✅ TanStack Query設定
+│   │   ├── store/                                  ✅ Zustand (auth, workspace)
+│   │   └── ws/client.ts                            ✅ WebSocket (⚠️ Query統合未完)
+│   ├── features/
+│   │   ├── auth/                                   ✅ Login/Register (hooks + UI + tests)
+│   │   ├── workspace/                              ✅ List/Create (hooks + UI + tests)
+│   │   ├── channel/                                🟡 List/Create (hooks + UI, 詳細未完)
+│   │   └── message/                                🟡 List/Send (hooks + UI, スレッド/仮想スクロール未完)
+│   ├── components/
+│   │   └── layout/                                 ✅ AppLayout, Header (+ tests)
+│   └── test/                                       ✅ 8ファイル, 27テスト (100% pass)
+└── dist/                                           ✅ 本番ビルド成功
+```
+
+### DevOps
+```
+docker/
+├── docker-compose.yml                              ✅ 開発環境 (Postgres/Backend/Frontend)
+├── backend/Dockerfile.dev                          ✅
+├── frontend/Dockerfile.dev                         ✅
+└── .dockerignore                                   ✅
+```
+
+### Documentation
 ```
 .
-├── .gitignore                                      ✅ 更新済み
-├── package.json                                    ✅ Turbo スクリプト
-├── pnpm-workspace.yaml                             ✅ ワークスペース定義
-├── turbo.json                                      ✅ Turbo 設定
 ├── README.md                                       ✅ プロジェクト概要
-└── plan.md                                         ✅ 本ドキュメント
+├── plan.md                                         ✅ 本ドキュメント (更新済)
+└── CLAUDE.md                                       ✅ AI Agent ガイドライン
 ```

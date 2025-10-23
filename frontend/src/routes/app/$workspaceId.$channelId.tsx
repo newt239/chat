@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { ChatLayout } from "@/components/ChatLayout";
+import { ChatLayout } from "@/features/message/components/ChatLayout";
 import { useAuthStore } from "@/lib/store/auth";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 

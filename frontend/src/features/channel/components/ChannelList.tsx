@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { Button, Card, Group, Loader, ScrollArea, Stack, Text } from "@mantine/core";
-import { useParams } from "@tanstack/react-router";
 
 import { useChannels } from "../hooks/useChannel";
 
@@ -15,14 +14,10 @@ interface ChannelListProps {
 }
 
 export const ChannelList = ({ workspaceId }: ChannelListProps) => {
-  const params = useParams({ from: "/app/$workspaceId/$channelId" });
   const currentChannelId = useWorkspaceStore((state) => state.currentChannelId);
   const setCurrentChannel = useWorkspaceStore((state) => state.setCurrentChannel);
   const { data: channels, isLoading, isError, error } = useChannels(workspaceId);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // ルートパラメータからチャンネルIDを取得
-  const routeChannelId = params?.channelId;
 
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {
@@ -35,13 +30,6 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
       setCurrentChannel(channels[0].id);
     }
   }, [channels, currentChannelId, setCurrentChannel]);
-
-  // ルートパラメータのチャンネルIDが変更されたときにストアを更新
-  useEffect(() => {
-    if (routeChannelId && routeChannelId !== currentChannelId) {
-      setCurrentChannel(routeChannelId);
-    }
-  }, [routeChannelId, currentChannelId, setCurrentChannel]);
 
   if (workspaceId === null) {
     return (
@@ -85,8 +73,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
           <ScrollArea h={320} type="auto">
             <Stack gap={4}>
               {channels.map((channel) => {
-                // ルートパラメータのチャンネルIDまたはストアのチャンネルIDと比較
-                const isSelected = channel.id === routeChannelId || channel.id === currentChannelId;
+                const isSelected = channel.id === currentChannelId;
                 return (
                   <Button
                     key={channel.id}
