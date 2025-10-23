@@ -19,5 +19,31 @@ func NewConnection(dsn string, logLevel logger.LogLevel) (*gorm.DB, error) {
 
 // InitDB initializes the database connection with default settings
 func InitDB(dsn string) (*gorm.DB, error) {
-	return NewConnection(dsn, logger.Info)
+	db, err := NewConnection(dsn, logger.Info)
+	if err != nil {
+		return nil, err
+	}
+
+	// Run auto migrations
+	if err := AutoMigrate(db); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+// AutoMigrate runs automatic migrations for all models
+func AutoMigrate(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&User{},
+		&Session{},
+		&Workspace{},
+		&WorkspaceMember{},
+		&Channel{},
+		&ChannelMember{},
+		&Message{},
+		&MessageReaction{},
+		&ChannelReadState{},
+		&Attachment{},
+	)
 }

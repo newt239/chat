@@ -1,0 +1,11 @@
+{
+  "name": "chat-backend",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "go run ./cmd/server",
+    "build": "go build -o bin/server ./cmd/server",
+    "test": "go test ./...",
+    "lint": "golangci-lint run"
+  }
+}
