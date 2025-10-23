@@ -35,6 +35,33 @@ func (r *userRepository) FindByID(id string) (*domain.User, error) {
 	return toUserDomain(&dbUser), nil
 }
 
+func (r *userRepository) FindByIDs(ids []string) ([]*domain.User, error) {
+	if len(ids) == 0 {
+		return []*domain.User{}, nil
+	}
+
+	userIDs := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		userID, err := uuid.Parse(id)
+		if err != nil {
+			return nil, errors.New("invalid user ID format")
+		}
+		userIDs = append(userIDs, userID)
+	}
+
+	var dbUsers []db.User
+	if err := r.db.Where("id IN ?", userIDs).Find(&dbUsers).Error; err != nil {
+		return nil, err
+	}
+
+	users := make([]*domain.User, 0, len(dbUsers))
+	for i := range dbUsers {
+		users = append(users, toUserDomain(&dbUsers[i]))
+	}
+
+	return users, nil
+}
+
 func (r *userRepository) FindByEmail(email string) (*domain.User, error) {
 	var dbUser db.User
 	if err := r.db.Where("email = ?", email).First(&dbUser).Error; err != nil {

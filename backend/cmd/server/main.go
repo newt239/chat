@@ -137,7 +137,7 @@ func main() {
 	authUseCase := authuc.NewAuthInteractor(userRepo, sessionRepo, jwtService, passwordService)
 	workspaceUseCase := workspaceuc.NewWorkspaceInteractor(workspaceRepo, userRepo)
 	channelUseCase := channeluc.NewChannelInteractor(channelRepo, workspaceRepo)
-	messageUseCase := messageuc.NewMessageInteractor(messageRepo, channelRepo, workspaceRepo)
+	messageUseCase := messageuc.NewMessageInteractor(messageRepo, channelRepo, workspaceRepo, userRepo)
 	readStateUseCase := readstateuc.NewReadStateInteractor(readStateRepo, channelRepo, workspaceRepo)
 
 	// Initialize handlers

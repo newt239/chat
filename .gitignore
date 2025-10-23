@@ -21,6 +21,7 @@ backend/gen/
 *.out
 vendor/
 .gocache/
+.gomodcache/
 .tmp/
 bin/
 

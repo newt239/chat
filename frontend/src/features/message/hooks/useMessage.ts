@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { components } from "@/lib/api/schema";
+import type { MessagesResponse } from "../types";
 
 import { apiClient } from "@/lib/api/client";
+
 
 interface CreateMessageInput {
   body: string;
@@ -11,7 +12,7 @@ interface CreateMessageInput {
 export function useMessages(channelId: string | null) {
   return useQuery({
     queryKey: ["channels", channelId, "messages"],
-    queryFn: async (): Promise<components["schemas"]["MessagesResponse"]> => {
+    queryFn: async (): Promise<MessagesResponse> => {
       if (channelId === null) {
         return { messages: [], hasMore: false };
       }
@@ -24,7 +25,9 @@ export function useMessages(channelId: string | null) {
         throw new Error(error?.error ?? "Failed to fetch messages");
       }
 
-      return data;
+      // API レスポンスを MessagesResponse 型にキャスト
+      // バックエンドが user フィールドを含むようになったため
+      return data as MessagesResponse;
     },
     enabled: channelId !== null,
   });

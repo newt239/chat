@@ -55,6 +55,7 @@
   "dependencies": {
     "@mantine/core": "latest",
     "@mantine/hooks": "latest",
+    "@mantine/notifications": "^8.3.5",
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-query": "latest",
     "@tanstack/react-query-devtools": "latest",

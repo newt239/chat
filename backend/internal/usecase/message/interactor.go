@@ -28,17 +28,20 @@ type messageInteractor struct {
 	messageRepo   domain.MessageRepository
 	channelRepo   domain.ChannelRepository
 	workspaceRepo domain.WorkspaceRepository
+	userRepo      domain.UserRepository
 }
 
 func NewMessageInteractor(
 	messageRepo domain.MessageRepository,
 	channelRepo domain.ChannelRepository,
 	workspaceRepo domain.WorkspaceRepository,
+	userRepo domain.UserRepository,
 ) MessageUseCase {
 	return &messageInteractor{
 		messageRepo:   messageRepo,
 		channelRepo:   channelRepo,
 		workspaceRepo: workspaceRepo,
+		userRepo:      userRepo,
 	}
 }
 
@@ -69,9 +72,32 @@ func (i *messageInteractor) ListMessages(input ListMessagesInput) (*ListMessages
 		messages = messages[:limit]
 	}
 
+	// ユーザーIDを収集
+	userIDs := make([]string, 0, len(messages))
+	userIDSet := make(map[string]bool)
+	for _, msg := range messages {
+		if !userIDSet[msg.UserID] {
+			userIDs = append(userIDs, msg.UserID)
+			userIDSet[msg.UserID] = true
+		}
+	}
+
+	// ユーザー情報を一括取得
+	users, err := i.userRepo.FindByIDs(userIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch users: %w", err)
+	}
+
+	// ユーザー情報をマップに格納
+	userMap := make(map[string]*domain.User)
+	for _, user := range users {
+		userMap[user.ID] = user
+	}
+
 	outputs := make([]MessageOutput, 0, len(messages))
 	for _, msg := range messages {
-		outputs = append(outputs, toMessageOutput(msg))
+		user := userMap[msg.UserID]
+		outputs = append(outputs, toMessageOutput(msg, user))
 	}
 
 	return &ListMessagesOutput{Messages: outputs, HasMore: hasMore}, nil
@@ -105,7 +131,13 @@ func (i *messageInteractor) CreateMessage(input CreateMessageInput) (*MessageOut
 		return nil, fmt.Errorf("failed to create message: %w", err)
 	}
 
-	output := toMessageOutput(message)
+	// ユーザー情報を取得
+	user, err := i.userRepo.FindByID(input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user: %w", err)
+	}
+
+	output := toMessageOutput(message, user)
 	return &output, nil
 }
 
@@ -140,11 +172,26 @@ func (i *messageInteractor) ensureChannelAccess(channelID, userID string) (*doma
 	return ch, nil
 }
 
-func toMessageOutput(message *domain.Message) MessageOutput {
+func toMessageOutput(message *domain.Message, user *domain.User) MessageOutput {
+	userInfo := UserInfo{
+		ID:          "",
+		DisplayName: "Unknown User",
+		AvatarURL:   nil,
+	}
+
+	if user != nil {
+		userInfo = UserInfo{
+			ID:          user.ID,
+			DisplayName: user.DisplayName,
+			AvatarURL:   user.AvatarURL,
+		}
+	}
+
 	return MessageOutput{
 		ID:        message.ID,
 		ChannelID: message.ChannelID,
 		UserID:    message.UserID,
+		User:      userInfo,
 		ParentID:  message.ParentID,
 		Body:      message.Body,
 		CreatedAt: message.CreatedAt,

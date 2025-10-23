@@ -1,8 +1,8 @@
-# チャットUI機能拡張 実装計画
+# チャット UI 機能拡張 実装計画
 
 ## 概要
 
-Slackライクなチャット機能を実装するため、以下の機能を追加します:
+Slack ライクなチャット機能を実装するため、以下の機能を追加します:
 
 1. メッセージに投稿者のアイコンと名前を表示
 2. メッセージホバー時のアクションメニュー表示
@@ -13,7 +13,8 @@ Slackライクなチャット機能を実装するため、以下の機能を追
 ### 既存の実装
 
 - **フロントエンド**
-  - `MessagePanel.tsx`: メッセージ一覧表示とメッセージ送信UI
+
+  - `MessagePanel.tsx`: メッセージ一覧表示とメッセージ送信 UI
   - 現在のメッセージ表示: 日時とメッセージ本文のみ
   - ユーザー情報の表示なし
 
@@ -29,7 +30,7 @@ Slackライクなチャット機能を実装するため、以下の機能を追
 
 ## 実装計画
 
-### フェーズ1: バックエンド - メッセージレスポンスの拡張
+### フェーズ 1: バックエンド - メッセージレスポンスの拡張
 
 #### 1.1 DTO の拡張
 
@@ -71,9 +72,9 @@ type UserInfo struct {
 FindByIDs(ids []string) ([]*User, error)
 ```
 
-複数ユーザーを一度に取得するメソッドを追加することで、N+1問題を回避します。
+複数ユーザーを一度に取得するメソッドを追加することで、N+1 問題を回避します。
 
-### フェーズ2: フロントエンド - メッセージ表示コンポーネントの作成
+### フェーズ 2: フロントエンド - メッセージ表示コンポーネントの作成
 
 #### 2.1 Message コンポーネントの分離
 
@@ -119,7 +120,7 @@ export const MessageItem = ({ ... }: MessageItemProps) => {
           </div>
 
           {/* メッセージ本文 */}
-          <Text className="mt-1 whitespace-pre-wrap break-words text-sm">
+          <Text className="mt-1 whitespace-pre-wrap wrap-break-word text-sm">
             {message.body}
           </Text>
         </div>
@@ -220,24 +221,27 @@ export const MessageActions = ({ ... }: MessageActionsProps) => {
 
 - `MessageItem` コンポーネントを使用するように変更
 - アクションハンドラーを実装:
-  - `handleCopyLink`: メッセージURLをクリップボードにコピー
+  - `handleCopyLink`: メッセージ URL をクリップボードにコピー
   - `handleAddReaction`: リアクション追加モーダル表示
   - `handleCreateThread`: スレッドビューへ遷移
   - `handleBookmark`: ブックマーク機能 (将来実装)
 
-### フェーズ3: フロントエンド - アクション機能の実装
+### フェーズ 3: フロントエンド - アクション機能の実装
 
 #### 3.1 メッセージリンクコピー機能
 
 ```tsx
-const handleCopyLink = useCallback((messageId: string) => {
-  const url = `${window.location.origin}/app/${workspaceId}/${channelId}?message=${messageId}`;
-  navigator.clipboard.writeText(url);
-  notifications.show({
-    title: 'コピーしました',
-    message: 'メッセージリンクをクリップボードにコピーしました',
-  });
-}, [workspaceId, channelId]);
+const handleCopyLink = useCallback(
+  (messageId: string) => {
+    const url = `${window.location.origin}/app/${workspaceId}/${channelId}?message=${messageId}`;
+    navigator.clipboard.writeText(url);
+    notifications.show({
+      title: "コピーしました",
+      message: "メッセージリンクをクリップボードにコピーしました",
+    });
+  },
+  [workspaceId, channelId]
+);
 ```
 
 #### 3.2 リアクション追加モーダル
@@ -245,7 +249,7 @@ const handleCopyLink = useCallback((messageId: string) => {
 **新規ファイル**: `frontend/src/features/message/components/ReactionPicker.tsx`
 
 - Emoji Picker ライブラリの選定と統合 (例: `@emoji-mart/react`)
-- リアクション追加APIの呼び出し
+- リアクション追加 API の呼び出し
 
 **新規ファイル**: `frontend/src/features/message/hooks/useReaction.ts`
 
@@ -254,7 +258,13 @@ export function useAddReaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ messageId, emoji }: { messageId: string; emoji: string }) => {
+    mutationFn: async ({
+      messageId,
+      emoji,
+    }: {
+      messageId: string;
+      emoji: string;
+    }) => {
       const { data, error } = await apiClient.POST(
         "/api/messages/{messageId}/reactions",
         {
@@ -311,7 +321,7 @@ export function useThreadMessages(parentMessageId: string | null) {
 }
 ```
 
-### フェーズ4: バックエンド - 新規API エンドポイントの追加
+### フェーズ 4: バックエンド - 新規 API エンドポイントの追加
 
 #### 4.1 リアクション関連 API
 
@@ -339,11 +349,11 @@ func (h *MessageHandler) GetThreadReplies(c echo.Context) error
 
 ブックマーク機能は優先度が低いため、後回しにします。
 
-### フェーズ5: UI/UX の調整
+### フェーズ 5: UI/UX の調整
 
 #### 5.1 アバター表示の最適化
 
-- 連続する同一ユーザーのメッセージは、アバターを省略して日時のみ表示 (Slack風)
+- 連続する同一ユーザーのメッセージは、アバターを省略して日時のみ表示 (Slack 風)
 - 時間の経過が大きい場合は、日付セパレーターを表示
 
 #### 5.2 レスポンシブ対応
@@ -358,31 +368,36 @@ func (h *MessageHandler) GetThreadReplies(c echo.Context) error
 
 ## 実装順序
 
-1. **バックエンド - メッセージレスポンスの拡張** (フェーズ1)
+1. **バックエンド - メッセージレスポンスの拡張** (フェーズ 1)
+
    - DTO の拡張
    - UseCase の修正
    - Repository の拡張
 
-2. **フロントエンド - 基本的なUI構築** (フェーズ2)
+2. **フロントエンド - 基本的な UI 構築** (フェーズ 2)
+
    - MessageItem コンポーネント作成
    - MessageActions コンポーネント作成
    - MessagePanel の修正
 
-3. **メッセージリンクコピー機能** (フェーズ3.1)
-   - クリップボードAPI の実装
+3. **メッセージリンクコピー機能** (フェーズ 3.1)
+
+   - クリップボード API の実装
    - 通知機能の統合
 
-4. **リアクション機能** (フェーズ4.1 + フェーズ3.2)
+4. **リアクション機能** (フェーズ 4.1 + フェーズ 3.2)
+
    - バックエンド API 実装
    - フロントエンド UI 実装
    - Emoji Picker の統合
 
-5. **スレッド機能** (フェーズ4.2 + フェーズ3.3)
+5. **スレッド機能** (フェーズ 4.2 + フェーズ 3.3)
+
    - バックエンド API 実装
    - ThreadPanel コンポーネント実装
    - ルーティングの調整
 
-6. **UI/UX の最終調整** (フェーズ5)
+6. **UI/UX の最終調整** (フェーズ 5)
    - アバター表示の最適化
    - レスポンシブ対応
    - アニメーション追加
@@ -391,35 +406,35 @@ func (h *MessageHandler) GetThreadReplies(c echo.Context) error
 
 ### 依存ライブラリ
 
-- **@mantine/core**: 既存UI コンポーネント
+- **@mantine/core**: 既存 UI コンポーネント
 - **@tabler/icons-react**: アイコン
 - **@emoji-mart/react** (新規追加): Emoji Picker
 - **@tanstack/react-query**: データフェッチング (既存)
 
 ### パフォーマンス最適化
 
-- ユーザー情報の取得: N+1問題を避けるため、一括取得を実装
+- ユーザー情報の取得: N+1 問題を避けるため、一括取得を実装
 - メッセージリストの仮想化: 大量のメッセージがある場合、`react-virtual` などの検討
 - メモ化: `useMemo`, `useCallback` を適切に使用
 
 ### アクセシビリティ
 
 - キーボードナビゲーション対応
-- ARIA属性の適切な設定
+- ARIA 属性の適切な設定
 - スクリーンリーダー対応
 
 ## テスト計画
 
 ### バックエンド
 
-- ユニットテスト: 各UseCase, Repository のテスト
+- ユニットテスト: 各 UseCase, Repository のテスト
 - 統合テスト: API エンドポイントのテスト
 
 ### フロントエンド
 
 - コンポーネントテスト: MessageItem, MessageActions のテスト
 - 統合テスト: MessagePanel 全体の動作テスト
-- E2Eテスト: ユーザーフローのテスト (Playwright など)
+- E2E テスト: ユーザーフローのテスト (Playwright など)
 
 ## 今後の拡張
 
@@ -434,4 +449,4 @@ func (h *MessageHandler) GetThreadReplies(c echo.Context) error
 
 ## まとめ
 
-この実装計画に従って、段階的にSlackライクなチャット機能を実装します。各フェーズを完了後、動作確認とテストを行い、次のフェーズに進みます。
+この実装計画に従って、段階的に Slack ライクなチャット機能を実装します。各フェーズを完了後、動作確認とテストを行い、次のフェーズに進みます。

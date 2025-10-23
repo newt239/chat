@@ -1,10 +1,13 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import type { FormEvent } from "react";
 
 import { Button, Card, Loader, Stack, Text, Textarea, ActionIcon } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 import { useMessages, useSendMessage } from "../hooks/useMessage";
+
+import { MessageItem } from "./MessageItem";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
 import { useUIStore } from "@/lib/store/ui";
@@ -63,6 +66,34 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
       scrollToBottom();
     }
   }, [sendMessage.isSuccess]);
+
+  // アクションハンドラー
+  const handleCopyLink = useCallback(
+    (messageId: string) => {
+      const url = `${window.location.origin}/app/${workspaceId}/${channelId}?message=${messageId}`;
+      navigator.clipboard.writeText(url);
+      notifications.show({
+        title: "コピーしました",
+        message: "メッセージリンクをクリップボードにコピーしました",
+      });
+    },
+    [workspaceId, channelId]
+  );
+
+  const handleAddReaction = useCallback((messageId: string) => {
+    console.log("Add reaction to message:", messageId);
+    // TODO: リアクション追加機能を実装
+  }, []);
+
+  const handleCreateThread = useCallback((messageId: string) => {
+    console.log("Create thread for message:", messageId);
+    // TODO: スレッド作成機能を実装
+  }, []);
+
+  const handleBookmark = useCallback((messageId: string) => {
+    console.log("Bookmark message:", messageId);
+    // TODO: ブックマーク機能を実装
+  }, []);
 
   if (workspaceId === null) {
     return (
@@ -138,21 +169,17 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
               </Text>
             )}
             <div className="flex flex-1 flex-col justify-end">
-              <div className="space-y-3 px-4 pb-6">
+              <div className="space-y-1 px-4 pb-6">
                 {orderedMessages.map((message) => (
-                  <div
+                  <MessageItem
                     key={message.id}
-                    className="group rounded-md px-4 py-2 transition-colors hover:bg-gray-50"
-                  >
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      <Text size="xs" c="dimmed">
-                        {dateTimeFormatter.format(new Date(message.createdAt))}
-                      </Text>
-                    </div>
-                    <Text className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-900">
-                      {message.body}
-                    </Text>
-                  </div>
+                    message={message}
+                    dateTimeFormatter={dateTimeFormatter}
+                    onCopyLink={handleCopyLink}
+                    onAddReaction={handleAddReaction}
+                    onCreateThread={handleCreateThread}
+                    onBookmark={handleBookmark}
+                  />
                 ))}
                 <div ref={messagesEndRef} />
               </div>
