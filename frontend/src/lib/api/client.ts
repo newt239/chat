@@ -1,4 +1,5 @@
 import createClient from "openapi-fetch";
+
 import type { paths } from "./schema";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
@@ -26,15 +27,13 @@ apiClient.use({
             body: { refreshToken },
           });
           if (data && !error) {
-            const responseData = data as any;
-            localStorage.setItem("accessToken", responseData.accessToken);
-            localStorage.setItem("refreshToken", responseData.refreshToken);
+            localStorage.setItem("accessToken", data.accessToken);
             // 元のリクエストを再試行
             const retryRequest = new Request(response.url, {
               method: response.type,
               headers: response.headers,
             });
-            retryRequest.headers.set("Authorization", `Bearer ${responseData.accessToken}`);
+            retryRequest.headers.set("Authorization", `Bearer ${data.accessToken}`);
             return fetch(retryRequest);
           }
         } catch {

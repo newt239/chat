@@ -1,6 +1,6 @@
-import { expect, afterEach, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
+import { cleanup } from "@testing-library/react";
+import { expect, afterEach, vi } from "vitest";
 
 expect.extend(matchers);
 
@@ -20,15 +20,21 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock IntersectionObserver
-(globalThis as any).IntersectionObserver = class IntersectionObserver {
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = "";
+  readonly thresholds: ReadonlyArray<number> = [];
+
   constructor() {}
-  disconnect() {}
-  observe() {}
-  takeRecords() {
+  disconnect(): void {}
+  observe(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
     return [];
   }
-  unobserve() {}
-};
+  unobserve(): void {}
+}
+
+globalThis.IntersectionObserver = MockIntersectionObserver;
 
 afterEach(() => {
   cleanup();

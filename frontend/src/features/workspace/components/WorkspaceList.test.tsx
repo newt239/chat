@@ -1,9 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
+import { MantineProvider } from "@mantine/core";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { MantineProvider } from "@mantine/core";
+import { describe, it, expect, vi } from "vitest";
+
 import { WorkspaceList } from "./WorkspaceList";
+
 import { queryClient } from "@/lib/query";
 
 // Mock the hooks
@@ -24,7 +26,7 @@ vi.mock("../hooks/useWorkspace", () => ({
   })),
 }));
 
-function Wrapper({ children }: { children: React.ReactNode }) {
+const Wrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <MantineProvider>{children}</MantineProvider>

@@ -1,8 +1,10 @@
 import { useState } from "react";
+
 import { TextInput, PasswordInput, Button, Paper, Title, Text, Anchor } from "@mantine/core";
+
 import { useRegister } from "../hooks/useAuth";
 
-export function RegisterForm() {
+export const RegisterForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");

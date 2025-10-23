@@ -1,5 +1,7 @@
 import { useState } from "react";
+
 import { Modal, TextInput, Textarea, Button, Text } from "@mantine/core";
+
 import { useCreateWorkspace } from "../hooks/useWorkspace";
 
 interface CreateWorkspaceModalProps {
@@ -7,7 +9,7 @@ interface CreateWorkspaceModalProps {
   onClose: () => void;
 }
 
-export function CreateWorkspaceModal({ opened, onClose }: CreateWorkspaceModalProps) {
+export const CreateWorkspaceModal = ({ opened, onClose }: CreateWorkspaceModalProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const createWorkspace = useCreateWorkspace();

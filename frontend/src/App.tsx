@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useAuthStore } from "@/lib/store/auth";
+
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { WorkspaceList } from "@/features/workspace/components/WorkspaceList";
+import { useAuthStore } from "@/lib/store/auth";
 
 type Page = "login" | "register" | "app";
 
-export function App() {
+export const App = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [currentPage, setCurrentPage] = useState<Page>("login");
 

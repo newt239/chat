@@ -1,8 +1,10 @@
 import { useState } from "react";
+
 import { TextInput, PasswordInput, Button, Paper, Title, Text, Anchor } from "@mantine/core";
+
 import { useLogin } from "../hooks/useAuth";
 
-export function LoginForm() {
+export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const login = useLogin();

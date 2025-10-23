@@ -1,4 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
+
+import type { components } from "@/lib/api/schema";
+
 import { apiClient } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/store/auth";
 
@@ -11,11 +14,11 @@ export function useLogin() {
         body: data,
       });
       if (error || !response) {
-        throw new Error((error as any)?.error || "Login failed");
+        throw new Error(error?.error || "Login failed");
       }
-      return response as any;
+      return response;
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: components["schemas"]["AuthResponse"]) => {
       setAuth(data.user, data.accessToken, data.refreshToken);
     },
   });
@@ -30,11 +33,11 @@ export function useRegister() {
         body: data,
       });
       if (error || !response) {
-        throw new Error((error as any)?.error || "Registration failed");
+        throw new Error(error?.error || "Registration failed");
       }
-      return response as any;
+      return response;
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: components["schemas"]["AuthResponse"]) => {
       setAuth(data.user, data.accessToken, data.refreshToken);
     },
   });
@@ -42,15 +45,10 @@ export function useRegister() {
 
 export function useLogout() {
   const clearAuth = useAuthStore((state) => state.clearAuth);
-  const refreshToken = useAuthStore((state) => state.refreshToken);
 
   return useMutation({
     mutationFn: async () => {
-      if (refreshToken) {
-        await apiClient.POST("/api/auth/logout", {
-          body: { refreshToken } as any,
-        });
-      }
+      await apiClient.POST("/api/auth/logout", {});
     },
     onSuccess: () => {
       clearAuth();

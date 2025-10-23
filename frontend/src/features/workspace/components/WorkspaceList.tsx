@@ -1,7 +1,10 @@
-import { Card, Text, Button, Group, Stack, Loader } from "@mantine/core";
-import { useWorkspaces } from "../hooks/useWorkspace";
-import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 import { useState } from "react";
+
+import { Card, Text, Button, Group, Stack, Loader } from "@mantine/core";
+
+import { useWorkspaces } from "../hooks/useWorkspace";
+
+import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 
 interface Workspace {
   id: string;
@@ -9,7 +12,7 @@ interface Workspace {
   description?: string | null;
 }
 
-export function WorkspaceList() {
+export const WorkspaceList = () => {
   const { data: workspaces, isLoading, error } = useWorkspaces();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
