@@ -38,6 +38,24 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // ストレージから復元時にトークンを同期
+          const accessToken = localStorage.getItem("accessToken");
+          const refreshToken = localStorage.getItem("refreshToken");
+
+          if (accessToken && refreshToken) {
+            state.accessToken = accessToken;
+            state.refreshToken = refreshToken;
+          } else {
+            // トークンが存在しない場合は認証状態をリセット
+            state.user = null;
+            state.accessToken = null;
+            state.refreshToken = null;
+            state.isAuthenticated = false;
+          }
+        }
+      },
     }
   )
 );

@@ -1,0 +1,31 @@
+name: Typecheck & Lint & Format
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Enable corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typegen (for next-env.d.ts)
+        run: pnpm next typegen
+      - name: Typecheck
+        run: pnpm tsc --noEmit
+      - name: ESLint
+        run: pnpm eslint
+      - name: Prettier
+        run: pnpm prettier --check './**/*.{ts,tsx,css,yml}'
+      - name: Stylelint
+        run: pnpm stylelint

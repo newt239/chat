@@ -26,16 +26,6 @@ docker-compose logs -f
 - サンプルチャンネル（general, random, development, private-team）
 - サンプルメッセージとリアクション
 
-**ローカル開発（ホットリロード重視）:**
-
-```bash
-# 1. データベースのみDockerで起動
-docker-compose up -d postgres
-
-# 2. アプリケーションをローカルで起動
-pnpm run dev
-```
-
 詳細なセットアップ手順は [ローカル環境のセットアップ](#ローカル環境のセットアップ) を参照してください。
 
 ## 技術スタック
@@ -143,27 +133,7 @@ chat/
 
 ## ローカル環境のセットアップ
 
-### 起動方法の選択
-
-以下の 2 つの起動方法があります：
-
-#### 方法 A: Docker Compose で全て起動（推奨）
-
-全てのコンポーネント（PostgreSQL、バックエンド、フロントエンド）を Docker で起動します。
-
-- **メリット**: 環境構築が簡単、依存関係の問題がない
-- **デメリット**: コード変更時の反映が若干遅い
-
-#### 方法 B: ローカル開発環境
-
-データベースのみ Docker で起動し、アプリケーションはローカルで起動します。
-
-- **メリット**: コード変更が即座に反映（高速ホットリロード）
-- **デメリット**: Go、Node.js、pnpm のインストールが必要
-
----
-
-### 方法 A: Docker Compose で全て起動
+### 起動方法
 
 #### 必要な環境
 
@@ -197,72 +167,6 @@ docker-compose down
 # データも含めて完全削除
 docker-compose down -v
 ```
-
----
-
-### 方法 B: ローカル開発環境
-
-#### 必要な環境
-
-- **Go** 1.22 以上
-- **Node.js** 20 以上
-- **pnpm** 10 以上
-- **Docker Desktop** (PostgreSQL 用)
-
-#### 1. リポジトリのクローン
-
-```bash
-git clone <repository-url>
-cd chat
-```
-
-#### 2. 依存関係のインストール
-
-```bash
-pnpm install
-```
-
-#### 3. データベースのみ Docker で起動
-
-```bash
-# PostgreSQLのみ起動
-docker-compose up -d postgres
-
-# 起動確認
-docker-compose ps
-```
-
-#### 4. 開発サーバーの起動
-
-プロジェクトルートで実行：
-
-```bash
-pnpm run dev
-```
-
-これで以下が起動します：
-
-- **フロントエンド**: http://localhost:5173
-- **バックエンド API**: http://localhost:8080
-- **データベース**: すでに起動済み（docker-compose）
-
-#### 個別に起動する場合
-
-**ターミナル 1 - バックエンド:**
-
-```bash
-cd backend
-go run ./cmd/server
-```
-
-**ターミナル 2 - フロントエンド:**
-
-```bash
-cd frontend
-pnpm dev
-```
-
----
 
 ### アプリケーションへアクセス
 

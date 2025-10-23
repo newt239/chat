@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { WorkspaceList } from "@/features/workspace/components/WorkspaceList";
@@ -49,9 +50,11 @@ export const App = () => {
   }
 
   return (
-    <div className="h-full p-6">
-      <h1 className="text-2xl font-bold mb-4">ワークスペース</h1>
-      <WorkspaceList />
-    </div>
+    <AuthGuard>
+      <div className="h-full p-6">
+        <h1 className="text-2xl font-bold mb-4">ワークスペース</h1>
+        <WorkspaceList />
+      </div>
+    </AuthGuard>
   );
-}
+};

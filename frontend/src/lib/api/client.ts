@@ -4,9 +4,47 @@ import type { paths } from "./schema";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
+// リフレッシュ処理中かどうかを追跡するフラグ
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
 export const apiClient = createClient<paths>({
   baseUrl: API_BASE_URL,
 });
+
+// リフレッシュトークンを使用してアクセストークンを更新する関数
+async function refreshAccessToken(): Promise<string | null> {
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) {
+        return null;
+      }
+
+      const { data, error } = await apiClient.POST("/api/auth/refresh", {
+        body: { refreshToken },
+      });
+
+      if (data && !error) {
+        localStorage.setItem("accessToken", data.accessToken);
+        return data.accessToken;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
 
 // リクエストインターセプター: アクセストークンを自動付与
 apiClient.use({
@@ -17,31 +55,24 @@ apiClient.use({
     }
     return request;
   },
-  async onResponse({ response }) {
-    // 401エラーの場合はリフレッシュトークンで再認証を試みる
-    if (response.status === 401) {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (refreshToken) {
-        try {
-          const { data, error } = await apiClient.POST("/api/auth/refresh", {
-            body: { refreshToken },
-          });
-          if (data && !error) {
-            localStorage.setItem("accessToken", data.accessToken);
-            // 元のリクエストを再試行
-            const retryRequest = new Request(response.url, {
-              method: response.type,
-              headers: response.headers,
-            });
-            retryRequest.headers.set("Authorization", `Bearer ${data.accessToken}`);
-            return fetch(retryRequest);
-          }
-        } catch {
-          // リフレッシュ失敗時はログアウト
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login";
-        }
+  async onResponse({ response, request }) {
+    // 401エラーの場合のみリフレッシュを試みる
+    if (response.status === 401 && !request.url.includes("/api/auth/refresh")) {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        // 新しいトークンで元のリクエストを再試行
+        const retryRequest = new Request(request.url, {
+          method: request.method,
+          headers: request.headers,
+          body: request.body,
+        });
+        retryRequest.headers.set("Authorization", `Bearer ${newToken}`);
+        return fetch(retryRequest);
+      } else {
+        // リフレッシュ失敗時は認証情報をクリアしてログイン画面へ
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/login";
       }
     }
     return response;
