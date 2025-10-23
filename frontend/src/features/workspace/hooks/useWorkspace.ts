@@ -43,10 +43,10 @@ export function useWorkspace(workspaceId: string) {
       // Note: This endpoint doesn't exist in the API schema
       // This function may need to be implemented differently or removed
       const { data } = await apiClient.GET("/api/workspaces", {});
-      if (!data) {
+      if (!data || !data.workspaces) {
         throw new Error("Failed to fetch workspaces");
       }
-      return data.find((workspace) => workspace.id === workspaceId);
+      return data.workspaces.find((workspace) => workspace.id === workspaceId);
     },
     enabled: !!workspaceId,
   });

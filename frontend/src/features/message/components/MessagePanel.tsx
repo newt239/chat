@@ -1,11 +1,13 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import type { FormEvent } from "react";
 
-import { Button, Card, Loader, Stack, Text, Textarea } from "@mantine/core";
+import { Button, Card, Loader, Stack, Text, Textarea, ActionIcon } from "@mantine/core";
+import { IconInfoCircle } from "@tabler/icons-react";
 
 import { useMessages, useSendMessage } from "../hooks/useMessage";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
+import { useUIStore } from "@/lib/store/ui";
 
 interface MessagePanelProps {
   workspaceId: string | null;
@@ -18,6 +20,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const sendMessage = useSendMessage(channelId);
   const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const toggleMemberPanel = useUIStore((state) => state.toggleMemberPanel);
   const dateTimeFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("ja-JP", {
@@ -95,16 +98,27 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <Card withBorder padding="lg" radius="md" className="shrink-0">
-        <Stack gap="xs">
-          <Text fw={600} size="lg">
-            {activeChannel ? `#${activeChannel.name}` : "チャンネル"}
-          </Text>
-          {activeChannel?.description && (
-            <Text size="sm" c="dimmed">
-              {activeChannel.description}
+        <div className="flex items-start justify-between">
+          <Stack gap="xs" className="flex-1">
+            <Text fw={600} size="lg">
+              {activeChannel ? `#${activeChannel.name}` : "チャンネル"}
             </Text>
-          )}
-        </Stack>
+            {activeChannel?.description && (
+              <Text size="sm" c="dimmed">
+                {activeChannel.description}
+              </Text>
+            )}
+          </Stack>
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="lg"
+            onClick={toggleMemberPanel}
+            aria-label="メンバーパネルの表示切り替え"
+          >
+            <IconInfoCircle size={20} />
+          </ActionIcon>
+        </div>
       </Card>
 
       <div className="flex-1 overflow-y-auto min-h-0">

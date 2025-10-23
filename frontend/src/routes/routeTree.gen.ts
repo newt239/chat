@@ -8,14 +8,14 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppRouteImport } from './routes/app'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app/index'
-import { Route as AppWorkspaceIdRouteImport } from './routes/app/$workspaceId'
-import { Route as AppWorkspaceIdChannelIdRouteImport } from './routes/app/$workspaceId.$channelId'
+import { Route as rootRouteImport } from './__root'
+import { Route as RegisterRouteImport } from './register'
+import { Route as LoginRouteImport } from './login'
+import { Route as AppRouteImport } from './app'
+import { Route as IndexRouteImport } from './index'
+import { Route as AppIndexRouteImport } from './app/index'
+import { Route as AppWorkspaceIdRouteImport } from './app/$workspaceId'
+import { Route as AppWorkspaceIdChannelIdRouteImport } from './app/$workspaceId/$channelId'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',

@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     TanStackRouterVite({
       routesDirectory: "./src/routes",
-      generatedRouteTree: "./src/routeTree.gen.ts",
+      generatedRouteTree: "./src/routes/routeTree.gen.ts",
     }),
     VitePWA({
       registerType: "autoUpdate",
