@@ -1,4 +1,35 @@
-.turbo
-node_modules
+# General
+.DS_Store
+*.log
 .env
 .env.local
+.env.*.local
+
+# Monorepo
+.turbo
+node_modules
+
+# Backend (Go)
+backend/tmp/
+backend/gen/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/storybook-static/
+
+# Docker
+docker/data/
+
+# Atlas
+atlas.sum

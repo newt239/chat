@@ -2,18 +2,20 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+
+	"github.com/example/chat/internal/interface/http/handler"
 )
 
 // RegisterRoutes registers all HTTP routes.
-func RegisterRoutes(r *gin.Engine) {
+func RegisterRoutes(r *gin.Engine, authHandler *handler.AuthHandler) {
 	api := r.Group("/api")
 	{
 		auth := api.Group("/auth")
 		{
-			auth.POST("/register", func(c *gin.Context) { c.Status(501) })
-			auth.POST("/login", func(c *gin.Context) { c.Status(501) })
-			auth.POST("/refresh", func(c *gin.Context) { c.Status(501) })
-			auth.POST("/logout", func(c *gin.Context) { c.Status(501) })
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh", authHandler.RefreshToken)
+			auth.POST("/logout", authHandler.Logout)
 		}
 
 		api.GET("/workspaces", func(c *gin.Context) { c.Status(501) })
