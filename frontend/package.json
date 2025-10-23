@@ -57,6 +57,7 @@
     "@tanstack/react-query-devtools": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/react-virtual": "latest",
+    "@tanstack/router-vite-plugin": "^1.133.22",
     "openapi-fetch": "latest",
     "react": "latest",
     "react-dom": "latest",

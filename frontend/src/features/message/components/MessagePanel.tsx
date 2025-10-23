@@ -1,0 +1,157 @@
+import { useMemo, useState, useEffect, useRef } from "react";
+import type { FormEvent } from "react";
+
+import { Button, Card, Loader, Stack, Text, Textarea } from "@mantine/core";
+
+import { useMessages, useSendMessage } from "../hooks/useMessage";
+
+import { useChannels } from "@/features/channel/hooks/useChannel";
+
+interface MessagePanelProps {
+  workspaceId: string | null;
+  channelId: string | null;
+}
+
+export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
+  const { data: channels } = useChannels(workspaceId);
+  const { data: messageResponse, isLoading, isError, error } = useMessages(channelId);
+  const sendMessage = useSendMessage(channelId);
+  const [body, setBody] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const activeChannel = useMemo(() => {
+    if (!channels || channelId === null) {
+      return null;
+    }
+    return channels.find((channel) => channel.id === channelId) ?? null;
+  }, [channels, channelId]);
+
+  // メッセージが読み込まれた時と新しいメッセージが送信された時に最新メッセージにスクロール
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (messageResponse && !isLoading) {
+      scrollToBottom();
+    }
+  }, [messageResponse, isLoading]);
+
+  useEffect(() => {
+    if (sendMessage.isSuccess) {
+      scrollToBottom();
+    }
+  }, [sendMessage.isSuccess]);
+
+  if (workspaceId === null) {
+    return (
+      <Card withBorder padding="xl" radius="md" className="h-full flex items-center justify-center">
+        <Text c="dimmed">ワークスペースを選択してください</Text>
+      </Card>
+    );
+  }
+
+  if (channelId === null) {
+    return (
+      <Card withBorder padding="xl" radius="md" className="h-full flex items-center justify-center">
+        <Text c="dimmed">チャンネルを選択するとメッセージが表示されます</Text>
+      </Card>
+    );
+  }
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (body.trim().length === 0) {
+      return;
+    }
+    sendMessage.mutate(
+      { body: body.trim() },
+      {
+        onSuccess: () => {
+          setBody("");
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      <Card withBorder padding="lg" radius="md" className="shrink-0">
+        <Stack gap="xs">
+          <Text fw={600} size="lg">
+            {activeChannel ? `#${activeChannel.name}` : "チャンネル"}
+          </Text>
+          {activeChannel?.description && (
+            <Text size="sm" c="dimmed">
+              {activeChannel.description}
+            </Text>
+          )}
+        </Stack>
+      </Card>
+
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {isLoading ? (
+          <div className="flex h-full items-center justify-center">
+            <Loader size="sm" />
+          </div>
+        ) : isError ? (
+          <Text c="red" size="sm">
+            {error?.message ?? "メッセージの取得に失敗しました"}
+          </Text>
+        ) : messageResponse && messageResponse.messages.length > 0 ? (
+          <div className="flex flex-col h-full">
+            {messageResponse.hasMore && (
+              <Text size="xs" c="dimmed" className="p-2 text-center">
+                さらに過去のメッセージがあります
+              </Text>
+            )}
+            <div className="flex-1" />
+            <Stack gap="sm" className="pb-4">
+              {messageResponse.messages.map((message) => (
+                <Card key={message.id} withBorder padding="md" radius="md">
+                  <Text>{message.body}</Text>
+                  <Text size="xs" c="dimmed" className="mt-2">
+                    {new Date(message.createdAt).toLocaleString()}
+                  </Text>
+                </Card>
+              ))}
+            </Stack>
+            <div ref={messagesEndRef} />
+          </div>
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Text c="dimmed" size="sm">
+              メッセージはまだありません
+            </Text>
+          </div>
+        )}
+      </div>
+
+      <Card withBorder padding="lg" radius="md" className="shrink-0">
+        <form onSubmit={handleSubmit}>
+          <Textarea
+            placeholder="メッセージを入力..."
+            minRows={3}
+            autosize
+            value={body}
+            onChange={(event) => setBody(event.currentTarget.value)}
+            disabled={sendMessage.isPending}
+          />
+          {sendMessage.isError && (
+            <Text c="red" size="sm" className="mt-2">
+              {sendMessage.error?.message ?? "メッセージの送信に失敗しました"}
+            </Text>
+          )}
+          <Button
+            type="submit"
+            className="mt-2"
+            disabled={body.trim().length === 0}
+            loading={sendMessage.isPending}
+          >
+            送信
+          </Button>
+        </form>
+      </Card>
+    </div>
+  );
+};

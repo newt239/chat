@@ -14,8 +14,12 @@ interface AuthGuardProps {
 export const AuthGuard = ({ children, fallback }: AuthGuardProps) => {
   const { isAuthenticated, isLoading } = useAuthGuard();
 
+  // デバッグログを追加
+  console.log("AuthGuard - レンダリング状態:", { isAuthenticated, isLoading });
+
   // ローディング中の場合はフォールバックを表示
   if (isLoading) {
+    console.log("AuthGuard - ローディング中");
     return (
       fallback || (
         <div className="flex h-full items-center justify-center bg-gray-50">
@@ -30,9 +34,11 @@ export const AuthGuard = ({ children, fallback }: AuthGuardProps) => {
 
   // 未認証の場合は何も表示しない（useAuthGuardでリダイレクトされる）
   if (!isAuthenticated) {
+    console.log("AuthGuard - 未認証、何も表示しない");
     return null;
   }
 
   // 認証済みの場合は子コンポーネントを表示
+  console.log("AuthGuard - 認証済み、子コンポーネントを表示");
   return <>{children}</>;
 };

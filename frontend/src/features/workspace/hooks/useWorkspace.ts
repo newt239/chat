@@ -4,15 +4,34 @@ import type { components } from "@/lib/api/schema";
 
 import { apiClient } from "@/lib/api/client";
 
+// 実際のAPIレスポンスの型定義
+interface WorkspacesResponse {
+  workspaces: components["schemas"]["Workspace"][];
+}
+
 export function useWorkspaces() {
   return useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
       const { data, error } = await apiClient.GET("/api/workspaces", {});
+
       if (error || !data) {
         throw new Error(error?.error || "Failed to fetch workspaces");
       }
-      return data;
+
+      // APIレスポンスは { workspaces: [...] } の形式なので、workspacesプロパティにアクセス
+      // 型ガードを使用して安全に型チェック
+      if (data && typeof data === "object" && "workspaces" in data) {
+        const response = data as WorkspacesResponse;
+        return response.workspaces || [];
+      }
+
+      // フォールバック: データが配列の場合はそのまま返す（後方互換性のため）
+      if (Array.isArray(data)) {
+        return data;
+      }
+
+      return [];
     },
   });
 }

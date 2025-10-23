@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Card, Text, Button, Group, Stack, Loader } from "@mantine/core";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
+
+import { navigateToWorkspace } from "@/lib/navigation";
+import { useWorkspaceStore } from "@/lib/store/workspace";
 
 interface Workspace {
   id: string;
@@ -15,6 +18,19 @@ interface Workspace {
 export const WorkspaceList = () => {
   const { data: workspaces, isLoading, error } = useWorkspaces();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const currentWorkspaceId = useWorkspaceStore((state) => state.currentWorkspaceId);
+  const setCurrentWorkspace = useWorkspaceStore((state) => state.setCurrentWorkspace);
+
+  useEffect(() => {
+    if (
+      workspaces &&
+      Array.isArray(workspaces) &&
+      workspaces.length > 0 &&
+      currentWorkspaceId === null
+    ) {
+      setCurrentWorkspace(workspaces[0].id);
+    }
+  }, [workspaces, currentWorkspaceId, setCurrentWorkspace]);
 
   if (isLoading) {
     return (
@@ -44,21 +60,38 @@ export const WorkspaceList = () => {
 
         {workspaces && Array.isArray(workspaces) && workspaces.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workspaces.map((workspace: Workspace) => (
-              <Card key={workspace.id} shadow="sm" padding="lg" radius="md" withBorder>
-                <Text fw={500} size="lg" className="mb-2">
-                  {workspace.name}
-                </Text>
-                {workspace.description && (
-                  <Text size="sm" c="dimmed" className="mb-4">
-                    {workspace.description}
+            {workspaces.map((workspace: Workspace) => {
+              const isSelected = workspace.id === currentWorkspaceId;
+              return (
+                <Card
+                  key={workspace.id}
+                  shadow="sm"
+                  padding="lg"
+                  radius="md"
+                  withBorder
+                  className={isSelected ? "border-blue-500" : undefined}
+                >
+                  <Text fw={500} size="lg" className="mb-2">
+                    {workspace.name}
                   </Text>
-                )}
-                <Button variant="light" fullWidth>
-                  開く
-                </Button>
-              </Card>
-            ))}
+                  {workspace.description && (
+                    <Text size="sm" c="dimmed" className="mb-4">
+                      {workspace.description}
+                    </Text>
+                  )}
+                  <Button
+                    variant={isSelected ? "filled" : "light"}
+                    fullWidth
+                    onClick={() => {
+                      setCurrentWorkspace(workspace.id);
+                      navigateToWorkspace(workspace.id);
+                    }}
+                  >
+                    {isSelected ? "選択中" : "開く"}
+                  </Button>
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <Card shadow="sm" padding="xl" radius="md" withBorder className="text-center">
@@ -73,4 +106,4 @@ export const WorkspaceList = () => {
       <CreateWorkspaceModal opened={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   );
-}
+};
