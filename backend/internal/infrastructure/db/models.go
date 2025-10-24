@@ -7,13 +7,13 @@ import (
 )
 
 type User struct {
-	ID           uuid.UUID  `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	Email        string     `gorm:"type:text;uniqueIndex;not null"`
-	PasswordHash string     `gorm:"type:text;not null"`
-	DisplayName  string     `gorm:"type:text;not null"`
-	AvatarURL    *string    `gorm:"type:text"`
-	CreatedAt    time.Time  `gorm:"type:timestamptz;not null;default:now()"`
-	UpdatedAt    time.Time  `gorm:"type:timestamptz;not null;default:now()"`
+	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	Email        string    `gorm:"type:text;uniqueIndex;not null"`
+	PasswordHash string    `gorm:"type:text;not null"`
+	DisplayName  string    `gorm:"type:text;not null"`
+	AvatarURL    *string   `gorm:"type:text"`
+	CreatedAt    time.Time `gorm:"type:timestamptz;not null;default:now()"`
+	UpdatedAt    time.Time `gorm:"type:timestamptz;not null;default:now()"`
 }
 
 func (User) TableName() string {

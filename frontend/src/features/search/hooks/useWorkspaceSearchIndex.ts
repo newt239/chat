@@ -6,7 +6,7 @@ import type { components } from "@/lib/api/schema";
 import { messagesResponseSchema } from "@/features/message/schemas";
 import { apiClient } from "@/lib/api/client";
 
-interface WorkspaceSearchIndex {
+export interface WorkspaceSearchIndex {
   channels: components["schemas"]["Channel"][];
   members: components["schemas"]["MemberInfo"][];
   messages: MessageWithUser[];
@@ -19,7 +19,7 @@ const EMPTY_INDEX: WorkspaceSearchIndex = {
 };
 
 export function useWorkspaceSearchIndex(workspaceId: string | undefined) {
-  return useQuery({
+  return useQuery<WorkspaceSearchIndex>({
     queryKey: ["workspace-search-index", workspaceId],
     enabled: typeof workspaceId === "string" && workspaceId.length > 0,
     queryFn: async (): Promise<WorkspaceSearchIndex> => {
@@ -78,6 +78,5 @@ export function useWorkspaceSearchIndex(workspaceId: string | undefined) {
       return { channels, members, messages };
     },
     staleTime: 60_000,
-    suspense: false,
   });
 }

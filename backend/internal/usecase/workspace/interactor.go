@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	ErrWorkspaceNotFound    = errors.New("workspace not found")
-	ErrUnauthorized         = errors.New("unauthorized to perform this action")
-	ErrInvalidRole          = errors.New("invalid workspace role")
-	ErrCannotRemoveOwner    = errors.New("cannot remove workspace owner")
+	ErrWorkspaceNotFound     = errors.New("workspace not found")
+	ErrUnauthorized          = errors.New("unauthorized to perform this action")
+	ErrInvalidRole           = errors.New("invalid workspace role")
+	ErrCannotRemoveOwner     = errors.New("cannot remove workspace owner")
 	ErrCannotChangeOwnerRole = errors.New("cannot change owner role")
 )
 

@@ -15,15 +15,10 @@ const getAvatarColor = (userId: string): string => {
 
 interface MemberPanelProps {
   workspaceId: string | null;
-  isOpen: boolean;
 }
 
-export const MemberPanel = ({ workspaceId, isOpen }: MemberPanelProps) => {
+export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
   const { data: members, isLoading, error } = useMembers(workspaceId);
-
-  if (!isOpen) {
-    return null;
-  }
 
   if (isLoading) {
     return (

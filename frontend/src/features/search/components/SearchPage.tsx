@@ -5,7 +5,10 @@ import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 
 import { SearchResultList } from "./SearchResultList";
 
-import { useWorkspaceSearchIndex } from "@/features/search/hooks/useWorkspaceSearchIndex";
+import {
+  useWorkspaceSearchIndex,
+  type WorkspaceSearchIndex,
+} from "@/features/search/hooks/useWorkspaceSearchIndex";
 
 type SearchFilter = "all" | "messages" | "channels" | "users";
 
@@ -24,9 +27,10 @@ export const SearchPage = () => {
     error,
   } = useWorkspaceSearchIndex(workspaceId);
 
-  const channels = searchIndex?.channels ?? [];
-  const members = searchIndex?.members ?? [];
-  const messages = searchIndex?.messages ?? [];
+  const emptyIndex: WorkspaceSearchIndex = { channels: [], members: [], messages: [] };
+  const resolvedIndex = searchIndex ?? emptyIndex;
+
+  const { channels, members, messages } = resolvedIndex;
 
   const isLoading = isInitialLoading || isFetching;
 

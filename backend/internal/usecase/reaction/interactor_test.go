@@ -1,7 +1,6 @@
 package reaction
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -10,9 +9,9 @@ import (
 
 // Mock repositories for testing
 type mockMessageRepository struct {
-	findByIDFunc     func(id string) (*domain.Message, error)
-	findReactionsFunc func(messageID string) ([]*domain.MessageReaction, error)
-	addReactionFunc   func(reaction *domain.MessageReaction) error
+	findByIDFunc       func(id string) (*domain.Message, error)
+	findReactionsFunc  func(messageID string) ([]*domain.MessageReaction, error)
+	addReactionFunc    func(reaction *domain.MessageReaction) error
 	removeReactionFunc func(messageID, userID, emoji string) error
 }
 
@@ -80,6 +79,10 @@ func (m *mockChannelRepository) FindByWorkspaceID(workspaceID string) ([]*domain
 	return nil, nil
 }
 
+func (m *mockChannelRepository) FindAccessibleChannels(workspaceID, userID string) ([]*domain.Channel, error) {
+	return nil, nil
+}
+
 func (m *mockChannelRepository) Create(channel *domain.Channel) error {
 	return nil
 }
@@ -92,7 +95,7 @@ func (m *mockChannelRepository) Delete(id string) error {
 	return nil
 }
 
-func (m *mockChannelRepository) AddMember(channelID, userID string) error {
+func (m *mockChannelRepository) AddMember(member *domain.ChannelMember) error {
 	return nil
 }
 
@@ -105,6 +108,10 @@ func (m *mockChannelRepository) IsMember(channelID, userID string) (bool, error)
 		return m.isMemberFunc(channelID, userID)
 	}
 	return false, nil
+}
+
+func (m *mockChannelRepository) FindMembers(channelID string) ([]*domain.ChannelMember, error) {
+	return nil, nil
 }
 
 type mockWorkspaceRepository struct {
@@ -135,7 +142,7 @@ func (m *mockWorkspaceRepository) AddMember(member *domain.WorkspaceMember) erro
 	return nil
 }
 
-func (m *mockWorkspaceRepository) UpdateMemberRole(workspaceID, userID string, role domain.Role) error {
+func (m *mockWorkspaceRepository) UpdateMemberRole(workspaceID, userID string, role domain.WorkspaceRole) error {
 	return nil
 }
 
@@ -147,6 +154,10 @@ func (m *mockWorkspaceRepository) FindMember(workspaceID, userID string) (*domai
 	if m.findMemberFunc != nil {
 		return m.findMemberFunc(workspaceID, userID)
 	}
+	return nil, nil
+}
+
+func (m *mockWorkspaceRepository) FindMembersByWorkspaceID(workspaceID string) ([]*domain.WorkspaceMember, error) {
 	return nil, nil
 }
 
@@ -227,7 +238,7 @@ func TestAddReaction(t *testing.T) {
 				return &domain.WorkspaceMember{
 					WorkspaceID: "workspace-1",
 					UserID:      "user-2",
-					Role:        domain.RoleMember,
+					Role:        domain.WorkspaceRoleMember,
 				}, nil
 			},
 		}
@@ -348,7 +359,7 @@ func TestRemoveReaction(t *testing.T) {
 				return &domain.WorkspaceMember{
 					WorkspaceID: "workspace-1",
 					UserID:      "user-2",
-					Role:        domain.RoleMember,
+					Role:        domain.WorkspaceRoleMember,
 				}, nil
 			},
 		}
@@ -417,7 +428,7 @@ func TestListReactions(t *testing.T) {
 				return &domain.WorkspaceMember{
 					WorkspaceID: "workspace-1",
 					UserID:      userID,
-					Role:        domain.RoleMember,
+					Role:        domain.WorkspaceRoleMember,
 				}, nil
 			},
 		}
@@ -493,7 +504,7 @@ func TestListReactions(t *testing.T) {
 				return &domain.WorkspaceMember{
 					WorkspaceID: "workspace-1",
 					UserID:      userID,
-					Role:        domain.RoleMember,
+					Role:        domain.WorkspaceRoleMember,
 				}, nil
 			},
 		}

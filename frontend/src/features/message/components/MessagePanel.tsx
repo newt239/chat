@@ -14,7 +14,7 @@ import { MessageItem } from "./MessageItem";
 import { MessagePreview } from "./MessagePreview";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
-import { toggleMemberPanelAtom } from "@/lib/store/ui";
+import { toggleRightSidebarViewAtom } from "@/lib/store/ui";
 
 interface MessagePanelProps {
   workspaceId: string | null;
@@ -28,7 +28,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const toggleMemberPanel = useSetAtom(toggleMemberPanelAtom);
+  const toggleRightSidebarView = useSetAtom(toggleRightSidebarViewAtom);
   const { mode, toggleMode, isEditMode } = useMessageInputMode();
   const dateTimeFormatter = useMemo(
     () =>
@@ -145,8 +145,10 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
             variant="subtle"
             color="gray"
             size="lg"
-            onClick={toggleMemberPanel}
-            aria-label="メンバーパネルの表示切り替え"
+            onClick={() =>
+              toggleRightSidebarView({ type: "channel-info", channelId })
+            }
+            aria-label="サイドバーの表示切り替え"
           >
             <IconInfoCircle size={20} />
           </ActionIcon>

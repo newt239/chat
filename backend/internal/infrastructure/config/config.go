@@ -26,9 +26,9 @@ type DatabaseConfig struct {
 }
 
 type JWTConfig struct {
-	Secret           string
-	AccessTokenTTL   int // minutes
-	RefreshTokenTTL  int // days
+	Secret          string
+	AccessTokenTTL  int // minutes
+	RefreshTokenTTL int // days
 }
 
 type WasabiConfig struct {
