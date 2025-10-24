@@ -10,7 +10,7 @@ type User = components["schemas"]["User"];
 type AuthStorage = {
   user: User | null;
   isAuthenticated: boolean;
-}
+};
 
 // LocalStorageからトークンを読み込む関数
 const loadTokensFromStorage = () => {
@@ -53,18 +53,12 @@ export const refreshTokenAtom = atom<string | null>((get) => {
 export const userAtom = atom<User | null>((get) => get(authStorageAtom).user);
 
 // 認証状態
-export const isAuthenticatedAtom = atom<boolean>(
-  (get) => get(authStorageAtom).isAuthenticated
-);
+export const isAuthenticatedAtom = atom<boolean>((get) => get(authStorageAtom).isAuthenticated);
 
 // 認証情報を設定
 export const setAuthAtom = atom(
   null,
-  (
-    _get,
-    set,
-    args: { user: User; accessToken: string; refreshToken: string }
-  ) => {
+  (_get, set, args: { user: User; accessToken: string; refreshToken: string }) => {
     const { user, accessToken, refreshToken } = args;
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
@@ -86,22 +80,13 @@ export const initializeAuthAtom = atom(null, (get, set) => {
   const storage = get(authStorageAtom);
   const { accessToken, refreshToken } = loadTokensFromStorage();
 
-  console.log("AuthStore - ストレージ復元:", {
-    hasAccessToken: !!accessToken,
-    hasRefreshToken: !!refreshToken,
-    currentUser: storage.user,
-    currentIsAuthenticated: storage.isAuthenticated,
-  });
-
   if (accessToken && refreshToken) {
-    console.log("AuthStore - トークン復元成功");
     // トークンが存在する場合は認証状態を維持
     if (!storage.isAuthenticated && storage.user) {
       set(authStorageAtom, { ...storage, isAuthenticated: true });
     }
   } else {
     // トークンが存在しない場合は認証状態をリセット
-    console.log("AuthStore - トークンなし、認証状態をリセット");
     set(authStorageAtom, { user: null, isAuthenticated: false });
   }
 });

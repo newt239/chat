@@ -12,7 +12,7 @@ type WebSocketEventType =
 type WebSocketEvent = {
   type: WebSocketEventType;
   payload?: unknown;
-}
+};
 
 type EventHandler = (payload: unknown) => void;
 
@@ -33,7 +33,6 @@ export class WebSocketClient {
     this.ws = new WebSocket(this.url);
 
     this.ws.onopen = () => {
-      console.log("WebSocket connected");
       this.reconnectAttempts = 0;
     };
 
@@ -47,7 +46,6 @@ export class WebSocketClient {
     };
 
     this.ws.onclose = () => {
-      console.log("WebSocket disconnected");
       this.attemptReconnect();
     };
 
@@ -60,7 +58,6 @@ export class WebSocketClient {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       setTimeout(() => {
-        console.log(`Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
         this.connect();
       }, this.reconnectDelay * this.reconnectAttempts);
     }

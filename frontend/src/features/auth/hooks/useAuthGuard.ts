@@ -2,12 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useAtomValue, useSetAtom } from "jotai";
 
-import {
-  isAuthenticatedAtom,
-  userAtom,
-  accessTokenAtom,
-  clearAuthAtom,
-} from "@/lib/store/auth";
+import { isAuthenticatedAtom, userAtom, accessTokenAtom, clearAuthAtom } from "@/lib/store/auth";
 
 /**
  * 認証状態をチェックし、未認証の場合はログイン画面にリダイレクトするフック
@@ -31,21 +26,11 @@ export function useAuthGuard() {
   useEffect(() => {
     if (!isInitialized) return;
 
-    // デバッグログを追加
-    console.log("useAuthGuard - 認証状態チェック:", {
-      isAuthenticated,
-      hasUser: !!user,
-      hasAccessToken: !!accessToken,
-      isInitialized,
-      currentPath: window.location.pathname,
-    });
-
     // 認証状態をより厳密にチェック
     const hasValidAuth = isAuthenticated && user && accessToken;
 
     if (!hasValidAuth) {
       const currentPath = window.location.pathname;
-      console.log("useAuthGuard - 認証失敗、リダイレクト実行:", { currentPath, hasValidAuth });
       if (currentPath !== "/login" && currentPath !== "/register") {
         // 認証情報をクリアしてからリダイレクト
         clearAuth();

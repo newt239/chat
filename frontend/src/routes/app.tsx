@@ -1,14 +1,19 @@
 import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
 
-import { AppLayout } from "@/components/layout/AppLayout";
+import { Header } from "@/features/workspace/components/Header";
 import { store } from "@/lib/store";
 import { isAuthenticatedAtom } from "@/lib/store/auth";
 
 const AppComponent = () => {
   return (
-    <AppLayout>
-      <Outlet />
-    </AppLayout>
+    <div className="h-full flex flex-col bg-gray-50">
+      <Header />
+      <div className="flex-1 min-h-0 p-6">
+        <div className="h-full min-h-0">
+          <Outlet />
+        </div>
+      </div>
+    </div>
   );
 };
 
