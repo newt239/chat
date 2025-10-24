@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 // リフレッシュ処理中かどうかを追跡するフラグ
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
+const retryableRequestMap = new WeakMap<Request, Request>();
 
 export const apiClient = createClient<paths>({
   baseUrl: API_BASE_URL,
@@ -53,20 +54,35 @@ apiClient.use({
     if (token) {
       request.headers.set("Authorization", `Bearer ${token}`);
     }
+
+    try {
+      const cloned = request.clone();
+      retryableRequestMap.set(request, cloned);
+    } catch {
+      retryableRequestMap.delete(request);
+    }
     return request;
   },
   async onResponse({ response, request }) {
+    const retrySource = retryableRequestMap.get(request);
+    retryableRequestMap.delete(request);
+
     // 401エラーの場合のみリフレッシュを試みる
-    if (response.status === 401 && !request.url.includes("/api/auth/refresh")) {
+    if (
+      response.status === 401 &&
+      !request.url.includes("/api/auth/refresh") &&
+      request.headers.get("X-Auth-Retry") !== "1"
+    ) {
       const newToken = await refreshAccessToken();
       if (newToken) {
         // 新しいトークンで元のリクエストを再試行
-        const retryRequest = new Request(request.url, {
-          method: request.method,
-          headers: request.headers,
-          body: request.body,
-        });
-        retryRequest.headers.set("Authorization", `Bearer ${newToken}`);
+        const sourceRequest = retrySource ?? request;
+        const headers = new Headers(sourceRequest.headers);
+        headers.set("Authorization", `Bearer ${newToken}`);
+        headers.set("X-Auth-Retry", "1");
+
+        const retryRequest = new Request(sourceRequest, { headers });
+
         return fetch(retryRequest);
       } else {
         // リフレッシュ失敗時は認証情報をクリアしてログイン画面へ

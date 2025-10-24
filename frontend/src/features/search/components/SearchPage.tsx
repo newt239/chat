@@ -5,9 +5,7 @@ import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 
 import { SearchResultList } from "./SearchResultList";
 
-import { useChannels } from "@/features/channel/hooks/useChannel";
-import { useMessages } from "@/features/message/hooks/useMessage";
-import { useWorkspaceMembers } from "@/features/workspace/hooks/useWorkspaceMember";
+import { useWorkspaceSearchIndex } from "@/features/search/hooks/useWorkspaceSearchIndex";
 
 type SearchFilter = "all" | "messages" | "channels" | "users";
 
@@ -19,16 +17,18 @@ export const SearchPage = () => {
   const query = searchParams.q || "";
   const filter = (searchParams.filter || "all") as SearchFilter;
 
-  const { data: channels, isLoading: isLoadingChannels } = useChannels(workspaceId);
-  const { data: members, isLoading: isLoadingMembers } = useWorkspaceMembers(workspaceId);
+  const {
+    data: searchIndex,
+    isLoading: isInitialLoading,
+    isFetching,
+    error,
+  } = useWorkspaceSearchIndex(workspaceId);
 
-  // 全チャンネルのメッセージを取得（簡易実装）
-  // 本来はサーバー側で検索APIを実装すべき
-  const channelIds = useMemo(() => channels?.map((c) => c.id) || [], [channels]);
-  const firstChannelId = channelIds[0] || null;
-  const { data: messageResponse, isLoading: isLoadingMessages } = useMessages(firstChannelId);
+  const channels = searchIndex?.channels ?? [];
+  const members = searchIndex?.members ?? [];
+  const messages = searchIndex?.messages ?? [];
 
-  const isLoading = isLoadingChannels || isLoadingMembers || isLoadingMessages;
+  const isLoading = isInitialLoading || isFetching;
 
   const handleFilterChange = (value: string) => {
     navigate({
@@ -48,14 +48,12 @@ export const SearchPage = () => {
 
     const filteredMessages =
       filter === "all" || filter === "messages"
-        ? (messageResponse?.messages || []).filter((message) =>
-            message.body.toLowerCase().includes(lowerQuery)
-          )
+        ? messages.filter((message) => message.body.toLowerCase().includes(lowerQuery))
         : [];
 
     const filteredChannels =
       filter === "all" || filter === "channels"
-        ? (channels || []).filter(
+        ? channels.filter(
             (channel) =>
               channel.name.toLowerCase().includes(lowerQuery) ||
               channel.description?.toLowerCase().includes(lowerQuery)
@@ -64,7 +62,7 @@ export const SearchPage = () => {
 
     const filteredUsers =
       filter === "all" || filter === "users"
-        ? (members || []).filter(
+        ? members.filter(
             (member) =>
               member.displayName.toLowerCase().includes(lowerQuery) ||
               member.email.toLowerCase().includes(lowerQuery)
@@ -76,7 +74,7 @@ export const SearchPage = () => {
       channels: filteredChannels,
       users: filteredUsers,
     };
-  }, [query, filter, messageResponse, channels, members]);
+  }, [query, filter, messages, channels, members]);
 
   const totalResults =
     filteredResults.messages.length +
@@ -116,6 +114,12 @@ export const SearchPage = () => {
           <Card withBorder padding="xl" radius="md" className="flex items-center justify-center">
             <Text c="dimmed" size="sm">
               キーワードを入力して検索してください
+            </Text>
+          </Card>
+        ) : error ? (
+          <Card withBorder padding="xl" radius="md" className="flex items-center justify-center">
+            <Text c="red" size="sm">
+              検索用データの読み込みに失敗しました
             </Text>
           </Card>
         ) : isLoading ? (

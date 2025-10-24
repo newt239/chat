@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { messagesResponseSchema } from "../schemas";
+
 import type { MessagesResponse } from "../types";
 
 import { apiClient } from "@/lib/api/client";
-
 
 interface CreateMessageInput {
   body: string;
@@ -25,9 +26,13 @@ export function useMessages(channelId: string | null) {
         throw new Error(error?.error ?? "Failed to fetch messages");
       }
 
-      // API レスポンスを MessagesResponse 型にキャスト
-      // バックエンドが user フィールドを含むようになったため
-      return data as MessagesResponse;
+      const parsed = messagesResponseSchema.safeParse(data);
+
+      if (!parsed.success) {
+        throw new Error("Unexpected response format when fetching messages");
+      }
+
+      return parsed.data;
     },
     enabled: channelId !== null,
   });

@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { WorkspaceSummary } from "@/features/workspace/types";
 import type { components } from "@/lib/api/schema";
 
 import { apiClient } from "@/lib/api/client";
 
 // 実際のAPIレスポンスの型定義
 interface WorkspacesResponse {
-  workspaces: components["schemas"]["Workspace"][];
+  workspaces: WorkspaceSummary[];
 }
 
 export function useWorkspaces() {
@@ -22,8 +23,8 @@ export function useWorkspaces() {
       // APIレスポンスは { workspaces: [...] } の形式なので、workspacesプロパティにアクセス
       // 型ガードを使用して安全に型チェック
       if (data && typeof data === "object" && "workspaces" in data) {
-        const response = data as WorkspacesResponse;
-        return response.workspaces || [];
+        const { workspaces: workspaceList } = data as WorkspacesResponse;
+        return workspaceList || [];
       }
 
       // フォールバック: データが配列の場合はそのまま返す（後方互換性のため）

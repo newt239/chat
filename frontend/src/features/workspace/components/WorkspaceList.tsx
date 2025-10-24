@@ -7,17 +7,13 @@ import { useWorkspaces } from "../hooks/useWorkspace";
 
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 
+import type { WorkspaceSummary } from "@/features/workspace/types";
+
 import { navigateToWorkspace } from "@/lib/navigation";
 import {
   currentWorkspaceIdAtom,
   setCurrentWorkspaceAtom,
 } from "@/lib/store/workspace";
-
-interface Workspace {
-  id: string;
-  name: string;
-  description?: string | null;
-}
 
 export const WorkspaceList = () => {
   const { data: workspaces, isLoading, error } = useWorkspaces();
@@ -64,7 +60,7 @@ export const WorkspaceList = () => {
 
         {workspaces && Array.isArray(workspaces) && workspaces.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workspaces.map((workspace: Workspace) => {
+            {workspaces.map((workspace: WorkspaceSummary) => {
               const isSelected = workspace.id === currentWorkspaceId;
               return (
                 <Card

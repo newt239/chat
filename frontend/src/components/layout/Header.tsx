@@ -5,18 +5,14 @@ import { IconSearch } from "@tabler/icons-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
+import type { WorkspaceSummary } from "@/features/workspace/types";
+
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
 import { clearAuthAtom } from "@/lib/store/auth";
 import {
   currentWorkspaceIdAtom,
   setCurrentWorkspaceAtom,
 } from "@/lib/store/workspace";
-
-interface Workspace {
-  id: string;
-  name: string;
-  description?: string | null;
-}
 
 export const Header = () => {
   const { data: workspaces, isLoading } = useWorkspaces();
@@ -28,7 +24,7 @@ export const Header = () => {
   const navigate = useNavigate();
   const params = useParams({ strict: false });
 
-  const currentWorkspace = workspaces?.find((w: Workspace) => w.id === currentWorkspaceId);
+  const currentWorkspace = workspaces?.find((w: WorkspaceSummary) => w.id === currentWorkspaceId);
   const isInWorkspace = params.workspaceId !== undefined;
 
   const handleWorkspaceChange = (workspaceId: string) => {
@@ -98,7 +94,7 @@ export const Header = () => {
 
             <Menu.Dropdown>
               <Menu.Label>ワークスペース</Menu.Label>
-              {workspaces?.map((workspace: Workspace) => (
+              {workspaces?.map((workspace: WorkspaceSummary) => (
                 <Menu.Item
                   key={workspace.id}
                   onClick={() => handleWorkspaceChange(workspace.id)}
