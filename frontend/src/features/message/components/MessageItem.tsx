@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Avatar, Text } from "@mantine/core";
 
 import { MessageActions } from "./MessageActions";
+import { MessageContent } from "./MessageContent";
 
 import type { MessageWithUser } from "../types";
 
@@ -56,9 +57,9 @@ export const MessageItem = ({
           </div>
 
           {/* メッセージ本文 */}
-          <Text className="mt-1 whitespace-pre-wrap break-words text-sm">
-            {message.body}
-          </Text>
+          <div className="mt-1">
+            <MessageContent content={message.body} />
+          </div>
         </div>
       </div>
 

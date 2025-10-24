@@ -34,18 +34,11 @@ export const Header = () => {
     <header className="bg-white border-b border-gray-200 px-4 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Text size="lg" fw={600} className="text-gray-900">
-            Chat App
-          </Text>
-        </div>
-
-        <div className="flex items-center space-x-4">
           {/* ワークスペース選択メニュー */}
           <Menu
             opened={isWorkspaceMenuOpen}
             onClose={() => setIsWorkspaceMenuOpen(false)}
             position="bottom-end"
-            width={280}
           >
             <Menu.Target>
               <Button
@@ -99,7 +92,9 @@ export const Header = () => {
               ))}
             </Menu.Dropdown>
           </Menu>
+        </div>
 
+        <div className="flex items-center space-x-4">
           {/* ログアウトボタン */}
           <Button
             variant="subtle"

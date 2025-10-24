@@ -6,8 +6,11 @@ import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 import { useMessages, useSendMessage } from "../hooks/useMessage";
+import { useMessageInputMode } from "../hooks/useMessageInputMode";
 
+import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessageItem } from "./MessageItem";
+import { MessagePreview } from "./MessagePreview";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
 import { useUIStore } from "@/lib/store/ui";
@@ -24,6 +27,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toggleMemberPanel = useUIStore((state) => state.toggleMemberPanel);
+  const { mode, toggleMode, isEditMode } = useMessageInputMode();
   const dateTimeFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("ja-JP", {
@@ -196,14 +200,19 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
 
       <Card withBorder padding="lg" radius="md" className="shrink-0">
         <form onSubmit={handleSubmit}>
-          <Textarea
-            placeholder="メッセージを入力..."
-            minRows={3}
-            autosize
-            value={body}
-            onChange={(event) => setBody(event.currentTarget.value)}
-            disabled={sendMessage.isPending}
-          />
+          <MessageInputToolbar mode={mode} onToggleMode={toggleMode} />
+          {isEditMode ? (
+            <Textarea
+              placeholder="メッセージを入力..."
+              minRows={3}
+              autosize
+              value={body}
+              onChange={(event) => setBody(event.currentTarget.value)}
+              disabled={sendMessage.isPending}
+            />
+          ) : (
+            <MessagePreview content={body} />
+          )}
           {sendMessage.isError && (
             <Text c="red" size="sm" className="mt-2">
               {sendMessage.error?.message ?? "メッセージの送信に失敗しました"}
