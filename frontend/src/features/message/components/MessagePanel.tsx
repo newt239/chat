@@ -128,7 +128,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col w-full">
       <Card withBorder padding="lg" radius="md" className="shrink-0">
         <div className="flex items-start justify-between">
           <Stack gap="xs" className="flex-1">
