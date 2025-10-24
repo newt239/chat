@@ -17,6 +17,7 @@ import (
 	authuc "github.com/example/chat/internal/usecase/auth"
 	channeluc "github.com/example/chat/internal/usecase/channel"
 	messageuc "github.com/example/chat/internal/usecase/message"
+	reactionuc "github.com/example/chat/internal/usecase/reaction"
 	readstateuc "github.com/example/chat/internal/usecase/readstate"
 	workspaceuc "github.com/example/chat/internal/usecase/workspace"
 	"github.com/gin-gonic/gin"
@@ -38,6 +39,7 @@ func setupRouter(
 	channelHandler *handler.ChannelHandler,
 	messageHandler *handler.MessageHandler,
 	readStateHandler *handler.ReadStateHandler,
+	reactionHandler *handler.ReactionHandler,
 ) *gin.Engine {
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -92,7 +94,7 @@ func setupRouter(
 	})
 
 	// HTTP API routes
-	ginhttp.RegisterRoutes(r, jwtService, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler)
+	ginhttp.RegisterRoutes(r, jwtService, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler)
 
 	return r
 }
@@ -139,6 +141,7 @@ func main() {
 	channelUseCase := channeluc.NewChannelInteractor(channelRepo, workspaceRepo)
 	messageUseCase := messageuc.NewMessageInteractor(messageRepo, channelRepo, workspaceRepo, userRepo)
 	readStateUseCase := readstateuc.NewReadStateInteractor(readStateRepo, channelRepo, workspaceRepo)
+	reactionUseCase := reactionuc.NewReactionInteractor(messageRepo, channelRepo, workspaceRepo, userRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authUseCase)
@@ -146,13 +149,14 @@ func main() {
 	channelHandler := handler.NewChannelHandler(channelUseCase)
 	messageHandler := handler.NewMessageHandler(messageUseCase)
 	readStateHandler := handler.NewReadStateHandler(readStateUseCase)
+	reactionHandler := handler.NewReactionHandler(reactionUseCase)
 
 	// Initialize WebSocket hub
 	hub := ws.NewHub()
 	go hub.Run()
 
 	// Setup and run server
-	r := setupRouter(cfg, jwtService, hub, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler)
+	r := setupRouter(cfg, jwtService, hub, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler)
 	addr := ":" + cfg.Server.Port
 	log.Printf("Starting server on %s", addr)
 

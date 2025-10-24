@@ -161,3 +161,14 @@ func (r *UpdateReadStateRequest) Validate() error {
 	}
 	return nil
 }
+
+type AddReactionRequest struct {
+	Emoji string `json:"emoji"`
+}
+
+func (r *AddReactionRequest) Validate() error {
+	if strings.TrimSpace(r.Emoji) == "" {
+		return errors.New("emoji is required")
+	}
+	return nil
+}

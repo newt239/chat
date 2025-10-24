@@ -17,6 +17,7 @@ func RegisterRoutes(
 	channelHandler *handler.ChannelHandler,
 	messageHandler *handler.MessageHandler,
 	readStateHandler *handler.ReadStateHandler,
+	reactionHandler *handler.ReactionHandler,
 ) {
 	api := r.Group("/api")
 	{
@@ -55,6 +56,13 @@ func RegisterRoutes(
 			ch.POST("/messages", messageHandler.CreateMessage)
 			ch.GET("/unread_count", readStateHandler.GetUnreadCount)
 			ch.POST("/reads", readStateHandler.UpdateReadState)
+		}
+
+		msg := protected.Group("/messages/:messageId")
+		{
+			msg.GET("/reactions", reactionHandler.ListReactions)
+			msg.POST("/reactions", reactionHandler.AddReaction)
+			msg.DELETE("/reactions/:emoji", reactionHandler.RemoveReaction)
 		}
 
 		att := api.Group("/attachments")

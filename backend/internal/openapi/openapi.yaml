@@ -369,6 +369,77 @@ components:
       required:
         - role
 
+    MessageReaction:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        emoji:
+          type: string
+          description: "Unicode絵文字または将来的にカスタム絵文字ID"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - messageId
+        - userId
+        - emoji
+        - createdAt
+
+    ReactionWithUser:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            displayName:
+              type: string
+            avatarUrl:
+              type: string
+              nullable: true
+          required:
+            - id
+            - displayName
+        emoji:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - messageId
+        - user
+        - emoji
+        - createdAt
+
+    AddReactionRequest:
+      type: object
+      properties:
+        emoji:
+          type: string
+          minLength: 1
+      required:
+        - emoji
+
+    ListReactionsResponse:
+      type: object
+      properties:
+        reactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReactionWithUser'
+      required:
+        - reactions
+
 paths:
   /healthz:
     get:
@@ -996,6 +1067,107 @@ paths:
                 $ref: '#/components/schemas/Error'
         "404":
           description: Attachment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/messages/{messageId}/reactions:
+    get:
+      operationId: listReactions
+      summary: List reactions for a message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of reactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListReactionsResponse'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      operationId: addReaction
+      summary: Add a reaction to a message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddReactionRequest'
+      responses:
+        "201":
+          description: Reaction added
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/messages/{messageId}/reactions/{emoji}:
+    delete:
+      operationId: removeReaction
+      summary: Remove a reaction from a message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: emoji
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Reaction removed
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Reaction not found
           content:
             application/json:
               schema:
