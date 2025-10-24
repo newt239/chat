@@ -1,35 +1,38 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
-func CORS(allowedOrigins []string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
+func CORS(allowedOrigins []string) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			origin := c.Request().Header.Get("Origin")
 
-		// Check if origin is allowed
-		allowed := false
-		for _, o := range allowedOrigins {
-			if o == "*" || o == origin {
-				allowed = true
-				break
+			// Check if origin is allowed
+			allowed := false
+			for _, o := range allowedOrigins {
+				if o == "*" || o == origin {
+					allowed = true
+					break
+				}
 			}
-		}
 
-		if allowed {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-			c.Writer.Header().Set("Access-Control-Max-Age", "86400")
-		}
+			if allowed {
+				c.Response().Header().Set("Access-Control-Allow-Origin", origin)
+				c.Response().Header().Set("Access-Control-Allow-Credentials", "true")
+				c.Response().Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+				c.Response().Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+				c.Response().Header().Set("Access-Control-Max-Age", "86400")
+			}
 
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
+			if c.Request().Method == "OPTIONS" {
+				return c.NoContent(http.StatusNoContent)
+			}
 
-		c.Next()
+			return next(c)
+		}
 	}
 }

@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 
 	"github.com/example/chat/internal/usecase/channel"
 )
@@ -31,19 +31,19 @@ func NewChannelHandler(channelUseCase channel.ChannelUseCase) *ChannelHandler {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id}/channels [get]
 // @Security BearerAuth
-func (h *ChannelHandler) ListChannels(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *ChannelHandler) ListChannels(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID is required"})
-		return
+		return err
 	}
 
-	channels, err := h.channelUseCase.ListChannels(c.Request.Context(), channel.ListChannelsInput{
+	channels, err := h.channelUseCase.ListChannels(c.Request().Context(), channel.ListChannelsInput{
 		WorkspaceID: workspaceID,
 		UserID:      userID,
 	})
@@ -56,10 +56,10 @@ func (h *ChannelHandler) ListChannels(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to list channels"})
 		}
-		return
+		return err
 	}
 
-	c.JSON(http.StatusOK, channels)
+	return c.JSON(http.StatusOK, channels)
 }
 
 // CreateChannel godoc
@@ -78,30 +78,28 @@ func (h *ChannelHandler) ListChannels(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id}/channels [post]
 // @Security BearerAuth
-func (h *ChannelHandler) CreateChannel(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *ChannelHandler) CreateChannel(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID is required"})
-		return
+		return err
 	}
 
 	var req CreateChannelRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-		return
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
-	channelOutput, err := h.channelUseCase.CreateChannel(c.Request.Context(), channel.CreateChannelInput{
+	channelOutput, err := h.channelUseCase.CreateChannel(c.Request().Context(), channel.CreateChannelInput{
 		WorkspaceID: workspaceID,
 		UserID:      userID,
 		Name:        req.Name,
@@ -117,8 +115,8 @@ func (h *ChannelHandler) CreateChannel(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to create channel"})
 		}
-		return
+		return err
 	}
 
-	c.JSON(http.StatusCreated, channelOutput)
+	return c.JSON(http.StatusCreated, channelOutput)
 }

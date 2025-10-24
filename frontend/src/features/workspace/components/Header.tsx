@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { Menu, Button, Text, Avatar, TextInput } from "@mantine/core";
-import { IconSearch } from "@tabler/icons-react";
+import { Menu, Button, Text, Avatar, TextInput, ActionIcon } from "@mantine/core";
+import { IconSearch, IconBookmark } from "@tabler/icons-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
@@ -9,16 +9,15 @@ import type { WorkspaceSummary } from "@/features/workspace/types";
 
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
 import { clearAuthAtom } from "@/lib/store/auth";
-import {
-  currentWorkspaceIdAtom,
-  setCurrentWorkspaceAtom,
-} from "@/lib/store/workspace";
+import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/lib/store/workspace";
+import { setRightSidebarViewAtom } from "@/lib/store/ui";
 
 export const Header = () => {
   const { data: workspaces, isLoading } = useWorkspaces();
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
   const clearAuth = useSetAtom(clearAuthAtom);
+  const setRightSidebarView = useSetAtom(setRightSidebarViewAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -34,6 +33,10 @@ export const Header = () => {
 
   const handleLogout = () => {
     clearAuth();
+  };
+
+  const handleBookmarkClick = () => {
+    setRightSidebarView({ type: "bookmarks" });
   };
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -138,6 +141,19 @@ export const Header = () => {
         )}
 
         <div className="flex items-center space-x-4 shrink-0">
+          {/* ブックマークボタン */}
+          {isInWorkspace && (
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={handleBookmarkClick}
+              className="text-gray-700 hover:bg-gray-100"
+              title="ブックマーク"
+            >
+              <IconBookmark size={20} />
+            </ActionIcon>
+          )}
+
           {/* ログアウトボタン */}
           <Button
             variant="subtle"

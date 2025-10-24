@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
 type rateLimiter struct {
@@ -48,18 +48,18 @@ func (rl *rateLimiter) allow(key string) bool {
 	return true
 }
 
-func RateLimitByIP(limit int, window time.Duration) gin.HandlerFunc {
+func RateLimitByIP(limit int, window time.Duration) echo.MiddlewareFunc {
 	limiter := newRateLimiter(limit, window)
 
-	return func(c *gin.Context) {
-		ip := c.ClientIP()
-		if !limiter.allow(ip) {
-			c.JSON(http.StatusTooManyRequests, gin.H{
-				"error": "rate limit exceeded",
-			})
-			c.Abort()
-			return
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			ip := c.RealIP()
+			if !limiter.allow(ip) {
+				return c.JSON(http.StatusTooManyRequests, map[string]string{
+					"error": "rate limit exceeded",
+				})
+			}
+			return next(c)
 		}
-		c.Next()
 	}
 }

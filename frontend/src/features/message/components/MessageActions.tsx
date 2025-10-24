@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ActionIcon, Menu, Popover } from "@mantine/core";
 import {
   IconBookmark,
+  IconBookmarkFilled,
   IconDots,
   IconEdit,
   IconLink,
@@ -13,13 +14,18 @@ import {
 
 import { EmojiPicker } from "@/features/reaction/components/EmojiPicker";
 import { useAddReaction } from "@/features/reaction/hooks/useReactions";
+import {
+  useAddBookmark,
+  useRemoveBookmark,
+  useIsBookmarked,
+} from "@/features/bookmark/hooks/useBookmarks";
 
 type MessageActionsProps = {
   messageId: string;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onBookmark: (messageId: string) => void;
-}
+};
 
 export const MessageActions = ({
   messageId,
@@ -29,10 +35,22 @@ export const MessageActions = ({
 }: MessageActionsProps) => {
   const [emojiPickerOpened, setEmojiPickerOpened] = useState(false);
   const addReaction = useAddReaction();
+  const addBookmark = useAddBookmark();
+  const removeBookmark = useRemoveBookmark();
+  const isBookmarked = useIsBookmarked(messageId);
 
   const handleEmojiSelect = async (emoji: string) => {
     await addReaction.mutateAsync({ messageId, emoji });
     setEmojiPickerOpened(false);
+  };
+
+  const handleBookmarkToggle = async () => {
+    if (isBookmarked) {
+      await removeBookmark.mutateAsync({ messageId });
+    } else {
+      await addBookmark.mutateAsync({ messageId });
+    }
+    onBookmark(messageId);
   };
 
   return (
@@ -70,10 +88,11 @@ export const MessageActions = ({
       <ActionIcon
         variant="subtle"
         size="sm"
-        onClick={() => onBookmark(messageId)}
-        title="ブックマークに追加"
+        onClick={handleBookmarkToggle}
+        title={isBookmarked ? "ブックマークを削除" : "ブックマークに追加"}
+        c={isBookmarked ? "blue" : undefined}
       >
-        <IconBookmark size={16} />
+        {isBookmarked ? <IconBookmarkFilled size={16} /> : <IconBookmark size={16} />}
       </ActionIcon>
 
       <Menu position="bottom-end">
@@ -83,10 +102,7 @@ export const MessageActions = ({
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Item
-            leftSection={<IconLink size={14} />}
-            onClick={() => onCopyLink(messageId)}
-          >
+          <Menu.Item leftSection={<IconLink size={14} />} onClick={() => onCopyLink(messageId)}>
             リンクをコピー
           </Menu.Item>
           <Menu.Item leftSection={<IconEdit size={14} />}>メッセージを編集</Menu.Item>

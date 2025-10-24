@@ -1,7 +1,9 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
 
 	"github.com/example/chat/internal/interface/http/handler"
 	"github.com/example/chat/internal/interface/http/middleware"
@@ -10,7 +12,7 @@ import (
 
 // RegisterRoutes registers all HTTP routes.
 func RegisterRoutes(
-	r *gin.Engine,
+	e *echo.Echo,
 	jwtService authuc.JWTService,
 	authHandler *handler.AuthHandler,
 	workspaceHandler *handler.WorkspaceHandler,
@@ -21,7 +23,7 @@ func RegisterRoutes(
 	userGroupHandler *handler.UserGroupHandler,
 	linkHandler *handler.LinkHandler,
 ) {
-	api := r.Group("/api")
+	api := e.Group("/api")
 	{
 		auth := api.Group("/auth")
 		{
@@ -88,9 +90,9 @@ func RegisterRoutes(
 
 		att := api.Group("/attachments")
 		{
-			att.POST("/presign", func(c *gin.Context) { c.Status(501) })
-			att.GET(":id", func(c *gin.Context) { c.Status(501) })
-			att.GET(":id/download", func(c *gin.Context) { c.Status(501) })
+			att.POST("/presign", func(c echo.Context) error { return c.NoContent(http.StatusNotImplemented) })
+			att.GET("/:id", func(c echo.Context) error { return c.NoContent(http.StatusNotImplemented) })
+			att.GET("/:id/download", func(c echo.Context) error { return c.NoContent(http.StatusNotImplemented) })
 		}
 	}
 }

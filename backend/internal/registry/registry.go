@@ -10,7 +10,10 @@ import (
 	"github.com/example/chat/internal/domain/repository"
 	"github.com/example/chat/internal/infrastructure/auth"
 	"github.com/example/chat/internal/infrastructure/config"
+	infrarepository "github.com/example/chat/internal/infrastructure/repository"
+	interfacehandler "github.com/example/chat/internal/interface/http/handler"
 	authuc "github.com/example/chat/internal/usecase/auth"
+	bookmarkuc "github.com/example/chat/internal/usecase/bookmark"
 	channeluc "github.com/example/chat/internal/usecase/channel"
 	linkuc "github.com/example/chat/internal/usecase/link"
 	messageuc "github.com/example/chat/internal/usecase/message"
@@ -83,6 +86,10 @@ func (r *Registry) NewMessageLinkRepository() repository.MessageLinkRepository {
 	return persistence.NewMessageLinkRepository(r.db)
 }
 
+func (r *Registry) NewBookmarkRepository() repository.BookmarkRepository {
+	return infrarepository.NewBookmarkRepository(r.db)
+}
+
 // Use Cases
 func (r *Registry) NewAuthUseCase() authuc.AuthUseCase {
 	return authuc.NewAuthInteractor(
@@ -149,6 +156,15 @@ func (r *Registry) NewLinkUseCase() linkuc.LinkUseCase {
 	return linkuc.NewLinkInteractor()
 }
 
+func (r *Registry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
+	return bookmarkuc.NewBookmarkInteractor(
+		r.NewBookmarkRepository(),
+		r.NewMessageRepository(),
+		r.NewChannelRepository(),
+		r.NewWorkspaceRepository(),
+	)
+}
+
 // Handlers
 func (r *Registry) NewAuthHandler() *handler.AuthHandler {
 	return handler.NewAuthHandler(r.NewAuthUseCase())
@@ -182,6 +198,10 @@ func (r *Registry) NewLinkHandler() *handler.LinkHandler {
 	return handler.NewLinkHandler(r.NewLinkUseCase())
 }
 
+func (r *Registry) NewBookmarkHandler() *interfacehandler.BookmarkHandler {
+	return interfacehandler.NewBookmarkHandler(r.NewBookmarkUseCase())
+}
+
 // Router
 func (r *Registry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
@@ -195,6 +215,7 @@ func (r *Registry) NewRouter() *echo.Echo {
 		ReactionHandler:  r.NewReactionHandler(),
 		UserGroupHandler: r.NewUserGroupHandler(),
 		LinkHandler:      r.NewLinkHandler(),
+		BookmarkHandler:  r.NewBookmarkHandler(),
 	}
 
 	return http.NewRouter(routerConfig)

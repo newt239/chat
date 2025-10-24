@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 
 	"github.com/example/chat/internal/usecase/link"
 )
@@ -19,24 +19,24 @@ func NewLinkHandler(linkUseCase link.LinkUseCase) *LinkHandler {
 }
 
 // FetchOGP OGP情報取得
-func (h *LinkHandler) FetchOGP(c *gin.Context) {
+func (h *LinkHandler) FetchOGP(c echo.Context) error {
 	var input link.FetchOGPInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if err := c.Bind(&input); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	// URLの検証
 	if input.URL == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "URL is required"})
-		return
+		c.JSON(http.StatusBadRequest, map[string]string{"error": "URL is required"})
+		return echo.NewHTTPError(http.StatusBadRequest, "URL is required")
 	}
 
-	output, err := h.linkUseCase.FetchOGP(c.Request.Context(), input)
+	output, err := h.linkUseCase.FetchOGP(c.Request().Context(), input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return err
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }

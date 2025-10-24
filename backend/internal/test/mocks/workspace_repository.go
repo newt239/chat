@@ -13,6 +13,10 @@ type MockWorkspaceRepository struct {
 	mock.Mock
 }
 
+func NewMockWorkspaceRepository(t interface{}) *MockWorkspaceRepository {
+	return &MockWorkspaceRepository{}
+}
+
 func (m *MockWorkspaceRepository) FindByID(ctx context.Context, id string) (*entity.Workspace, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {

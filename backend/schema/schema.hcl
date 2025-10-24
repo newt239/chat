@@ -338,4 +338,24 @@ table "message_links" {
   index "message_links_message_id_idx" { columns = [column.message_id] }
 }
 
+table "message_bookmarks" {
+  schema = schema.public
+  column "user_id" { type = uuid, null = false }
+  column "message_id" { type = uuid, null = false }
+  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  primary_key { columns = [column.user_id, column.message_id] }
+  foreign_key "message_bookmarks_user_id_fkey" {
+    columns = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete = CASCADE
+  }
+  foreign_key "message_bookmarks_message_id_fkey" {
+    columns = [column.message_id]
+    ref_columns = [table.messages.column.id]
+    on_delete = CASCADE
+  }
+  index "message_bookmarks_user_id_idx" { columns = [column.user_id] }
+  index "message_bookmarks_created_at_idx" { columns = [column.created_at] }
+}
+
 

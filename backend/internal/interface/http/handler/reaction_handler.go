@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 
 	"github.com/example/chat/internal/usecase/reaction"
 )
@@ -29,19 +29,19 @@ func NewReactionHandler(reactionUseCase reaction.ReactionUseCase) *ReactionHandl
 // @Failure 500 {object} ErrorResponse
 // @Router /api/messages/{messageId}/reactions [get]
 // @Security BearerAuth
-func (h *ReactionHandler) ListReactions(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *ReactionHandler) ListReactions(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	messageID := c.Param("messageId")
 	if messageID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Message ID is required"})
-		return
+		return err
 	}
 
-	output, err := h.reactionUseCase.ListReactions(c.Request.Context(), messageID, userID)
+	output, err := h.reactionUseCase.ListReactions(c.Request().Context(), messageID, userID)
 	if err != nil {
 		switch err {
 		case reaction.ErrMessageNotFound:
@@ -51,10 +51,10 @@ func (h *ReactionHandler) ListReactions(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to list reactions"})
 		}
-		return
+		return err
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // AddReaction godoc
@@ -73,30 +73,28 @@ func (h *ReactionHandler) ListReactions(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/messages/{messageId}/reactions [post]
 // @Security BearerAuth
-func (h *ReactionHandler) AddReaction(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *ReactionHandler) AddReaction(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	messageID := c.Param("messageId")
 	if messageID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Message ID is required"})
-		return
+		return err
 	}
 
 	var req AddReactionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-		return
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
-	err := h.reactionUseCase.AddReaction(c.Request.Context(), reaction.AddReactionInput{
+	err = h.reactionUseCase.AddReaction(c.Request().Context(), reaction.AddReactionInput{
 		MessageID: messageID,
 		UserID:    userID,
 		Emoji:     req.Emoji,
@@ -110,10 +108,10 @@ func (h *ReactionHandler) AddReaction(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to add reaction"})
 		}
-		return
+		return err
 	}
 
-	c.Status(http.StatusCreated)
+	return c.JSON(http.StatusCreated, nil)
 }
 
 // RemoveReaction godoc
@@ -131,25 +129,25 @@ func (h *ReactionHandler) AddReaction(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/messages/{messageId}/reactions/{emoji} [delete]
 // @Security BearerAuth
-func (h *ReactionHandler) RemoveReaction(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *ReactionHandler) RemoveReaction(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	messageID := c.Param("messageId")
 	if messageID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Message ID is required"})
-		return
+		return err
 	}
 
 	emoji := c.Param("emoji")
 	if emoji == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Emoji is required"})
-		return
+		return err
 	}
 
-	err := h.reactionUseCase.RemoveReaction(c.Request.Context(), reaction.RemoveReactionInput{
+	err = h.reactionUseCase.RemoveReaction(c.Request().Context(), reaction.RemoveReactionInput{
 		MessageID: messageID,
 		UserID:    userID,
 		Emoji:     emoji,
@@ -163,8 +161,8 @@ func (h *ReactionHandler) RemoveReaction(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to remove reaction"})
 		}
-		return
+		return err
 	}
 
-	c.Status(http.StatusOK)
+	return c.JSON(http.StatusOK, nil)
 }

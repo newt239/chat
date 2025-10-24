@@ -6,6 +6,7 @@ import (
 
 	"github.com/example/chat/internal/adapter/controller/http/handler"
 	custommw "github.com/example/chat/internal/adapter/controller/http/middleware"
+	interfacehandler "github.com/example/chat/internal/interface/http/handler"
 	authuc "github.com/example/chat/internal/usecase/auth"
 )
 
@@ -22,6 +23,7 @@ type RouterConfig struct {
 	ReactionHandler  *handler.ReactionHandler
 	UserGroupHandler *handler.UserGroupHandler
 	LinkHandler      *handler.LinkHandler
+	BookmarkHandler  *interfacehandler.BookmarkHandler
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -101,6 +103,11 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	{
 		links.POST("/fetch-ogp", cfg.LinkHandler.FetchOGP)
 	}
+
+	// Bookmark routes
+	api.GET("/bookmarks", cfg.BookmarkHandler.ListBookmarks, authMw)
+	api.POST("/messages/:messageId/bookmarks", cfg.BookmarkHandler.AddBookmark, authMw)
+	api.DELETE("/messages/:messageId/bookmarks", cfg.BookmarkHandler.RemoveBookmark, authMw)
 
 	return e
 }

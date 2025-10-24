@@ -10,6 +10,7 @@ import (
 	"github.com/example/chat/internal/domain/entity"
 	domainrepository "github.com/example/chat/internal/domain/repository"
 	"github.com/example/chat/internal/infrastructure/auth"
+	"github.com/example/chat/internal/infrastructure/repository"
 	authuc "github.com/example/chat/internal/usecase/auth"
 	"gorm.io/gorm"
 )
@@ -448,6 +449,18 @@ func createSeedData(
 		if err := linkRepo.Create(ctx, link); err != nil {
 			return fmt.Errorf("failed to create message link: %w", err)
 		}
+	}
+
+	// Create a bookmark for Alice
+	bookmarkRepo := repository.NewBookmarkRepository(db)
+	bookmark := &entity.MessageBookmark{
+		UserID:    users[0].ID,    // Alice
+		MessageID: messages[1].ID, // Bob's welcome message
+		CreatedAt: time.Now().Add(-2 * time.Hour),
+	}
+
+	if err := bookmarkRepo.AddBookmark(ctx, bookmark); err != nil {
+		return fmt.Errorf("failed to create bookmark: %w", err)
 	}
 
 	return nil

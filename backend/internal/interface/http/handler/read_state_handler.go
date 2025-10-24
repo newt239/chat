@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 
 	"github.com/example/chat/internal/usecase/readstate"
 )
@@ -29,19 +29,19 @@ func NewReadStateHandler(readStateUseCase readstate.ReadStateUseCase) *ReadState
 // @Failure 500 {object} ErrorResponse
 // @Router /api/channels/{channelId}/unread_count [get]
 // @Security BearerAuth
-func (h *ReadStateHandler) GetUnreadCount(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *ReadStateHandler) GetUnreadCount(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
-		return
+		return err
 	}
 
-	output, err := h.readStateUseCase.GetUnreadCount(c.Request.Context(), readstate.GetUnreadCountInput{
+	output, err := h.readStateUseCase.GetUnreadCount(c.Request().Context(), readstate.GetUnreadCountInput{
 		ChannelID: channelID,
 		UserID:    userID,
 	})
@@ -54,10 +54,10 @@ func (h *ReadStateHandler) GetUnreadCount(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get unread count"})
 		}
-		return
+		return err
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // UpdateReadState godoc
@@ -74,36 +74,34 @@ func (h *ReadStateHandler) GetUnreadCount(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/channels/{channelId}/reads [post]
 // @Security BearerAuth
-func (h *ReadStateHandler) UpdateReadState(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *ReadStateHandler) UpdateReadState(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
-		return
+		return err
 	}
 
 	var req UpdateReadStateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-		return
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, req.LastReadAt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid lastReadAt format"})
-		return
+		return err
 	}
 
-	if err := h.readStateUseCase.UpdateReadState(c.Request.Context(), readstate.UpdateReadStateInput{
+	if err := h.readStateUseCase.UpdateReadState(c.Request().Context(), readstate.UpdateReadStateInput{
 		ChannelID:  channelID,
 		UserID:     userID,
 		LastReadAt: parsedTime,
@@ -116,8 +114,8 @@ func (h *ReadStateHandler) UpdateReadState(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to update read state"})
 		}
-		return
+		return err
 	}
 
-	c.Status(http.StatusOK)
+	return c.JSON(http.StatusOK, nil)
 }

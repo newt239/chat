@@ -7,7 +7,8 @@ export type RightSidebarView =
   | { type: "channel-info"; channelId?: string | null }
   | { type: "thread"; threadId: string }
   | { type: "user-profile"; userId: string }
-  | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" };
+  | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" }
+  | { type: "bookmarks" };
 
 const defaultRightSidebarView: RightSidebarView = { type: "hidden" };
 
@@ -24,6 +25,7 @@ const isSameRightSidebarView = (first: RightSidebarView, second: RightSidebarVie
   switch (first.type) {
     case "hidden":
     case "members":
+    case "bookmarks":
       return true;
     case "channel-info":
       return second.type === "channel-info" && first.channelId === second.channelId;
@@ -33,9 +35,7 @@ const isSameRightSidebarView = (first: RightSidebarView, second: RightSidebarVie
       return second.type === "user-profile" && first.userId === second.userId;
     case "search":
       return (
-        second.type === "search" &&
-        first.query === second.query &&
-        first.filter === second.filter
+        second.type === "search" && first.query === second.query && first.filter === second.filter
       );
   }
 };

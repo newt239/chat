@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 
 	"github.com/example/chat/internal/usecase/workspace"
 )
@@ -28,20 +28,18 @@ func NewWorkspaceHandler(workspaceUseCase workspace.WorkspaceUseCase) *Workspace
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces [get]
 // @Security BearerAuth
-func (h *WorkspaceHandler) GetWorkspaces(c *gin.Context) {
-	// Get user ID from context (set by auth middleware)
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
-	}
-
-	output, err := h.workspaceUseCase.GetWorkspacesByUserID(c.Request.Context(), userID)
+func (h *WorkspaceHandler) GetWorkspaces(c echo.Context) error {
+	userID, err := requireUserID(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get workspaces"})
-		return
+		return err
 	}
 
-	c.JSON(http.StatusOK, output)
+	output, err := h.workspaceUseCase.GetWorkspacesByUserID(c.Request().Context(), userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get workspaces"})
+	}
+
+	return c.JSON(http.StatusOK, output)
 }
 
 // GetWorkspace godoc
@@ -57,16 +55,16 @@ func (h *WorkspaceHandler) GetWorkspaces(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id} [get]
 // @Security BearerAuth
-func (h *WorkspaceHandler) GetWorkspace(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) GetWorkspace(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID is required"})
-		return
+		return err
 	}
 
 	input := workspace.GetWorkspaceInput{
@@ -74,21 +72,20 @@ func (h *WorkspaceHandler) GetWorkspace(c *gin.Context) {
 		UserID: userID,
 	}
 
-	output, err := h.workspaceUseCase.GetWorkspace(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.GetWorkspace(c.Request().Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
 		if err == workspace.ErrWorkspaceNotFound {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get workspace"})
-		return
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get workspace"})
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // CreateWorkspace godoc
@@ -104,21 +101,19 @@ func (h *WorkspaceHandler) GetWorkspace(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces [post]
 // @Security BearerAuth
-func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	var req CreateWorkspaceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-		return
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
 	input := workspace.CreateWorkspaceInput{
@@ -127,13 +122,12 @@ func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
 		CreatedBy:   userID,
 	}
 
-	output, err := h.workspaceUseCase.CreateWorkspace(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.CreateWorkspace(c.Request().Context(), input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to create workspace"})
-		return
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to create workspace"})
 	}
 
-	c.JSON(http.StatusCreated, output)
+	return c.JSON(http.StatusCreated, output)
 }
 
 // UpdateWorkspace godoc
@@ -152,27 +146,25 @@ func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id} [patch]
 // @Security BearerAuth
-func (h *WorkspaceHandler) UpdateWorkspace(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID is required"})
-		return
+		return err
 	}
 
 	var req UpdateWorkspaceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-		return
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
 	input := workspace.UpdateWorkspaceInput{
@@ -183,21 +175,20 @@ func (h *WorkspaceHandler) UpdateWorkspace(c *gin.Context) {
 		UserID:      userID,
 	}
 
-	output, err := h.workspaceUseCase.UpdateWorkspace(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.UpdateWorkspace(c.Request().Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
 		if err == workspace.ErrWorkspaceNotFound {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to update workspace"})
-		return
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to update workspace"})
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // DeleteWorkspace godoc
@@ -211,16 +202,16 @@ func (h *WorkspaceHandler) UpdateWorkspace(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id} [delete]
 // @Security BearerAuth
-func (h *WorkspaceHandler) DeleteWorkspace(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) DeleteWorkspace(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID is required"})
-		return
+		return err
 	}
 
 	input := workspace.DeleteWorkspaceInput{
@@ -228,17 +219,16 @@ func (h *WorkspaceHandler) DeleteWorkspace(c *gin.Context) {
 		UserID: userID,
 	}
 
-	output, err := h.workspaceUseCase.DeleteWorkspace(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.DeleteWorkspace(c.Request().Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to delete workspace"})
-		return
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to delete workspace"})
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // ListMembers godoc
@@ -253,16 +243,16 @@ func (h *WorkspaceHandler) DeleteWorkspace(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id}/members [get]
 // @Security BearerAuth
-func (h *WorkspaceHandler) ListMembers(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) ListMembers(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID is required"})
-		return
+		return err
 	}
 
 	input := workspace.ListMembersInput{
@@ -270,17 +260,17 @@ func (h *WorkspaceHandler) ListMembers(c *gin.Context) {
 		RequesterID: userID,
 	}
 
-	output, err := h.workspaceUseCase.ListMembers(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.ListMembers(c.Request().Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to list members"})
-		return
+		return err
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // AddMember godoc
@@ -298,27 +288,25 @@ func (h *WorkspaceHandler) ListMembers(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id}/members [post]
 // @Security BearerAuth
-func (h *WorkspaceHandler) AddMember(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) AddMember(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID is required"})
-		return
+		return err
 	}
 
 	var req AddMemberRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-		return
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
 	input := workspace.AddMemberInput{
@@ -328,21 +316,19 @@ func (h *WorkspaceHandler) AddMember(c *gin.Context) {
 		Role:        req.Role,
 	}
 
-	output, err := h.workspaceUseCase.AddMember(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.AddMember(c.Request().Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
 		if err == workspace.ErrInvalidRole {
-			c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to add member"})
-		return
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to add member"})
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // UpdateMemberRole godoc
@@ -361,28 +347,26 @@ func (h *WorkspaceHandler) AddMember(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id}/members/{userId} [patch]
 // @Security BearerAuth
-func (h *WorkspaceHandler) UpdateMemberRole(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	targetUserID := c.Param("userId")
 	if workspaceID == "" || targetUserID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID and User ID are required"})
-		return
+		return err
 	}
 
 	var req UpdateMemberRoleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-		return
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
 	input := workspace.UpdateMemberRoleInput{
@@ -392,21 +376,19 @@ func (h *WorkspaceHandler) UpdateMemberRole(c *gin.Context) {
 		Role:        req.Role,
 	}
 
-	output, err := h.workspaceUseCase.UpdateMemberRole(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.UpdateMemberRole(c.Request().Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
 		if err == workspace.ErrInvalidRole || err == workspace.ErrCannotChangeOwnerRole {
-			c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to update member role"})
-		return
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to update member role"})
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }
 
 // RemoveMember godoc
@@ -421,17 +403,17 @@ func (h *WorkspaceHandler) UpdateMemberRole(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /api/workspaces/{id}/members/{userId} [delete]
 // @Security BearerAuth
-func (h *WorkspaceHandler) RemoveMember(c *gin.Context) {
-	userID, ok := requireUserID(c)
-	if !ok {
-		return
+func (h *WorkspaceHandler) RemoveMember(c echo.Context) error {
+	userID, err := requireUserID(c)
+	if err != nil {
+		return err
 	}
 
 	workspaceID := c.Param("id")
 	targetUserID := c.Param("userId")
 	if workspaceID == "" || targetUserID == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Workspace ID and User ID are required"})
-		return
+		return err
 	}
 
 	input := workspace.RemoveMemberInput{
@@ -440,19 +422,17 @@ func (h *WorkspaceHandler) RemoveMember(c *gin.Context) {
 		RemoverID:   userID,
 	}
 
-	output, err := h.workspaceUseCase.RemoveMember(c.Request.Context(), input)
+	output, err := h.workspaceUseCase.RemoveMember(c.Request().Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
+			return err
 		}
 		if err == workspace.ErrCannotRemoveOwner {
-			c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
-			return
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to remove member"})
-		return
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to remove member"})
 	}
 
-	c.JSON(http.StatusOK, output)
+	return c.JSON(http.StatusOK, output)
 }

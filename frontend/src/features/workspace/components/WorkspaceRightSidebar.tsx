@@ -4,6 +4,8 @@ import { SearchResultsPanel } from "./SearchResultsPanel";
 import { ThreadPanel } from "./ThreadPanel";
 import { UserProfilePanel } from "./UserProfilePanel";
 
+import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
+
 import { type RightSidebarView } from "@/lib/store/ui";
 
 type WorkspaceRightSidebarProps = {
@@ -25,6 +27,8 @@ export const WorkspaceRightSidebar = ({ workspaceId, view }: WorkspaceRightSideb
       return (
         <SearchResultsPanel workspaceId={workspaceId} query={view.query} filter={view.filter} />
       );
+    case "bookmarks":
+      return <BookmarkList />;
     case "hidden":
       return null;
   }
