@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 
-import { apiClient as api } from "../../../lib/api/client";
-
 import type { LinkPreview, OGPData } from "../types";
+
+import { api } from "@/lib/api/client";
 
 type UseLinkPreviewReturn = {
   previews: LinkPreview[];

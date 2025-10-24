@@ -18,14 +18,18 @@ const eslintConfig = [
       "react-refresh": reactRefresh,
       import: importPlugin,
     },
-    settings: {
-      react: {
-        version: "detect",
-      },
-    },
     rules: {
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [{
+            group: ["../../*"],
+            message: '2階層より上のファイルをインポートする場合は@エイリアスを使用した絶対パスで記述してください。',
+          },]
+        }
+      ],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
       "no-unused-vars": "off", // typescript-eslint の no-unused-vars と競合するため無効化
@@ -47,6 +51,7 @@ const eslintConfig = [
           unnamedComponents: "arrow-function",
         },
       ],
+      "react/no-multi-comp": "error",
       "import/order": [
         "error",
         {
@@ -74,6 +79,22 @@ const eslintConfig = [
         },
       ],
     },
+  },
+  {
+    files: ["**/*.tsx"],
+    rules: {
+      "max-lines": ["error", {
+        "max": 500,
+        "skipBlankLines": true,
+        "skipComments": true
+      }],
+    }
+  },
+  {
+    files: ["**/*.test.{ts,tsx}"],
+    rules: {
+      "react/no-multi-comp": "off",
+    }
   },
   eslintConfigPrettier,
 ];

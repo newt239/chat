@@ -2,12 +2,12 @@ import { useState } from "react";
 
 import { Avatar, Text } from "@mantine/core";
 
-import { ReactionList } from "../../reaction/components/ReactionList";
-
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 
 import type { MessageWithUser } from "../types";
+
+import { ReactionList } from "@/features/reaction/components/ReactionList";
 
 type MessageItemProps = {
   message: MessageWithUser;

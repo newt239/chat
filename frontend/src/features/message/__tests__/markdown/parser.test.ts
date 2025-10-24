@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { parseMarkdown } from '../../utils/markdown/parser';
+import { parseMarkdown } from "@/features/message/utils/markdown/parser";
 
 describe('parseMarkdown', () => {
   it('基本的なMarkdownをパースできる', () => {

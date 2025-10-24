@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { components } from "@/lib/api/schema";
 
-import { apiClient } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 
 export function useMembers(workspaceId: string | null) {
   return useQuery({
@@ -12,7 +12,7 @@ export function useMembers(workspaceId: string | null) {
         return [];
       }
 
-      const { data, error } = await apiClient.GET("/api/workspaces/{id}/members", {
+      const { data, error } = await api.GET("/api/workspaces/{id}/members", {
         params: { path: { id: workspaceId } },
       });
 

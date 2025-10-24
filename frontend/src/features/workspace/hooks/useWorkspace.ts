@@ -3,18 +3,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { WorkspaceSummary } from "@/features/workspace/types";
 import type { components } from "@/lib/api/schema";
 
-import { apiClient } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 
 // 実際のAPIレスポンスの型定義
 type WorkspacesResponse = {
   workspaces: WorkspaceSummary[];
-}
+};
 
 export function useWorkspaces() {
   return useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
-      const { data, error } = await apiClient.GET("/api/workspaces", {});
+      const { data, error } = await api.GET("/api/workspaces", {});
 
       if (error || !data) {
         throw new Error(error?.error || "Failed to fetch workspaces");
@@ -43,7 +43,7 @@ export function useWorkspace(workspaceId: string) {
     queryFn: async (): Promise<components["schemas"]["Workspace"] | undefined> => {
       // Note: This endpoint doesn't exist in the API schema
       // This function may need to be implemented differently or removed
-      const { data } = await apiClient.GET("/api/workspaces", {});
+      const { data } = await api.GET("/api/workspaces", {});
       if (!data || !data.workspaces) {
         throw new Error("Failed to fetch workspaces");
       }
@@ -58,7 +58,7 @@ export function useCreateWorkspace() {
 
   return useMutation({
     mutationFn: async (data: { name: string; description?: string }) => {
-      const { data: response, error } = await apiClient.POST("/api/workspaces", {
+      const { data: response, error } = await api.POST("/api/workspaces", {
         body: data,
       });
       if (error || !response) {

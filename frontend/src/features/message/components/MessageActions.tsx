@@ -11,8 +11,8 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 
-import { EmojiPicker } from "../../reaction/components/EmojiPicker";
-import { useAddReaction } from "../../reaction/hooks/useReactions";
+import { EmojiPicker } from "@/features/reaction/components/EmojiPicker";
+import { useAddReaction } from "@/features/reaction/hooks/useReactions";
 
 type MessageActionsProps = {
   messageId: string;

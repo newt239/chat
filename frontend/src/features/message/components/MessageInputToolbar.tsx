@@ -1,6 +1,6 @@
-import type { RefObject } from 'react';
+import type { RefObject } from "react";
 
-import { Group, Button, ActionIcon } from '@mantine/core';
+import { Group, Button, ActionIcon } from "@mantine/core";
 import {
   IconBold,
   IconItalic,
@@ -13,9 +13,9 @@ import {
   IconListNumbers,
   IconInfoCircle,
   IconSend,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 
-import type { MessageInputMode } from '../hooks/useMessageInputMode';
+import type { MessageInputMode } from "../hooks/useMessageInputMode";
 
 type MessageInputToolbarProps = {
   mode: MessageInputMode;
@@ -24,7 +24,7 @@ type MessageInputToolbarProps = {
   disabled: boolean;
   loading: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
-}
+};
 
 type FormatPattern = {
   prefix: string;
@@ -33,15 +33,15 @@ type FormatPattern = {
 };
 
 const FORMAT_PATTERNS: Record<string, FormatPattern> = {
-  bold: { prefix: '**', suffix: '**', cursorOffset: 2 },
-  italic: { prefix: '_', suffix: '_', cursorOffset: 1 },
-  strikethrough: { prefix: '~~', suffix: '~~', cursorOffset: 2 },
-  heading: { prefix: '# ', suffix: '', cursorOffset: 2 },
-  link: { prefix: '[', suffix: '](url)', cursorOffset: 1 },
-  code: { prefix: '`', suffix: '`', cursorOffset: 1 },
-  quote: { prefix: '> ', suffix: '', cursorOffset: 2 },
-  list: { prefix: '- ', suffix: '', cursorOffset: 2 },
-  orderedList: { prefix: '1. ', suffix: '', cursorOffset: 3 },
+  bold: { prefix: "**", suffix: "**", cursorOffset: 2 },
+  italic: { prefix: "_", suffix: "_", cursorOffset: 1 },
+  strikethrough: { prefix: "~~", suffix: "~~", cursorOffset: 2 },
+  heading: { prefix: "# ", suffix: "", cursorOffset: 2 },
+  link: { prefix: "[", suffix: "](url)", cursorOffset: 1 },
+  code: { prefix: "`", suffix: "`", cursorOffset: 1 },
+  quote: { prefix: "> ", suffix: "", cursorOffset: 2 },
+  list: { prefix: "- ", suffix: "", cursorOffset: 2 },
+  orderedList: { prefix: "1. ", suffix: "", cursorOffset: 3 },
 };
 
 export const MessageInputToolbar = ({
@@ -57,6 +57,8 @@ export const MessageInputToolbar = ({
     if (!textarea) return;
 
     const pattern = FORMAT_PATTERNS[formatKey];
+    if (!pattern) return;
+
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
@@ -64,7 +66,8 @@ export const MessageInputToolbar = ({
     const afterText = textarea.value.substring(end);
 
     const newText = beforeText + pattern.prefix + selectedText + pattern.suffix + afterText;
-    const newCursorPos = start + pattern.prefix.length + (selectedText.length > 0 ? selectedText.length : 0);
+    const newCursorPos =
+      start + pattern.prefix.length + (selectedText.length > 0 ? selectedText.length : 0);
 
     // テキストエリアの値を更新
     textarea.value = newText;
@@ -74,7 +77,7 @@ export const MessageInputToolbar = ({
     textarea.setSelectionRange(newCursorPos, newCursorPos);
 
     // Reactの変更イベントを手動でトリガー
-    const event = new Event('input', { bubbles: true });
+    const event = new Event("input", { bubbles: true });
     textarea.dispatchEvent(event);
   };
 
@@ -85,8 +88,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('bold')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("bold")}
+          disabled={mode === "preview"}
         >
           <IconBold size={16} />
         </ActionIcon>
@@ -94,8 +97,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('italic')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("italic")}
+          disabled={mode === "preview"}
         >
           <IconItalic size={16} />
         </ActionIcon>
@@ -103,8 +106,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('strikethrough')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("strikethrough")}
+          disabled={mode === "preview"}
         >
           <IconStrikethrough size={16} />
         </ActionIcon>
@@ -112,8 +115,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('heading')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("heading")}
+          disabled={mode === "preview"}
         >
           <IconH1 size={16} />
         </ActionIcon>
@@ -121,8 +124,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('link')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("link")}
+          disabled={mode === "preview"}
         >
           <IconLink size={16} />
         </ActionIcon>
@@ -130,8 +133,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('code')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("code")}
+          disabled={mode === "preview"}
         >
           <IconCode size={16} />
         </ActionIcon>
@@ -139,8 +142,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('quote')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("quote")}
+          disabled={mode === "preview"}
         >
           <IconQuote size={16} />
         </ActionIcon>
@@ -148,8 +151,8 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('list')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("list")}
+          disabled={mode === "preview"}
         >
           <IconList size={16} />
         </ActionIcon>
@@ -157,23 +160,18 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="sm"
           color="gray"
-          onClick={() => insertFormat('orderedList')}
-          disabled={mode === 'preview'}
+          onClick={() => insertFormat("orderedList")}
+          disabled={mode === "preview"}
         >
           <IconListNumbers size={16} />
         </ActionIcon>
-        <ActionIcon variant="subtle" size="sm" color="gray" disabled={mode === 'preview'}>
+        <ActionIcon variant="subtle" size="sm" color="gray" disabled={mode === "preview"}>
           <IconInfoCircle size={16} />
         </ActionIcon>
       </Group>
       <Group gap="xs">
-        <Button
-          variant="subtle"
-          size="compact-sm"
-          onClick={onToggleMode}
-          color="gray"
-        >
-          {mode === 'edit' ? 'プレビュー' : '編集'}
+        <Button variant="subtle" size="compact-sm" onClick={onToggleMode} color="gray">
+          {mode === "edit" ? "プレビュー" : "編集"}
         </Button>
         <ActionIcon
           variant="filled"
@@ -188,4 +186,4 @@ export const MessageInputToolbar = ({
       </Group>
     </Group>
   );
-}
+};

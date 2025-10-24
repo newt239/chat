@@ -4,11 +4,11 @@ import { messagesResponseSchema } from "../schemas";
 
 import type { MessagesResponse } from "../types";
 
-import { apiClient } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 
 type CreateMessageInput = {
   body: string;
-}
+};
 
 export function useMessages(channelId: string | null) {
   return useQuery({
@@ -18,7 +18,7 @@ export function useMessages(channelId: string | null) {
         return { messages: [], hasMore: false };
       }
 
-      const { data, error } = await apiClient.GET("/api/channels/{channelId}/messages", {
+      const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
         params: { path: { channelId } },
       });
 
@@ -49,7 +49,7 @@ export function useSendMessage(channelId: string | null) {
         throw new Error("チャンネルが選択されていません");
       }
 
-      const { data, error } = await apiClient.POST("/api/channels/{channelId}/messages", {
+      const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
         params: { path: { channelId } },
         body: { body: input.body },
       });

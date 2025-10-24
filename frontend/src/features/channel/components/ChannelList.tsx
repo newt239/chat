@@ -31,7 +31,10 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
 
   useEffect(() => {
     if (channels && channels.length > 0 && currentChannelId === null) {
-      setCurrentChannel(channels[0].id);
+      const firstChannel = channels[0];
+      if (firstChannel) {
+        setCurrentChannel(firstChannel.id);
+      }
     }
   }, [channels, currentChannelId, setCurrentChannel]);
 

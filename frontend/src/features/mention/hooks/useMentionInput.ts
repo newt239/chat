@@ -1,9 +1,8 @@
 import { useCallback, useState } from "react";
 
-import { apiClient as api } from "../../../lib/api/client";
-
-import type { components } from "../../../lib/api/schema";
 import type { MentionSuggestion } from "../types";
+import type { components } from "@/lib/api/schema";
+import { api } from "@/lib/api/client";
 
 type MemberInfo = components["schemas"]["MemberInfo"];
 type UserGroup = components["schemas"]["UserGroup"];

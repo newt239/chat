@@ -28,7 +28,10 @@ export const WorkspaceList = () => {
       workspaces.length > 0 &&
       currentWorkspaceId === null
     ) {
-      setCurrentWorkspace(workspaces[0].id);
+      const firstWorkspace = workspaces[0];
+      if (firstWorkspace) {
+        setCurrentWorkspace(firstWorkspace.id);
+      }
     }
   }, [workspaces, currentWorkspaceId, setCurrentWorkspace]);
 

@@ -64,7 +64,7 @@ vi.mock("@/features/search/hooks/useWorkspaceSearchIndex", () => ({
   useWorkspaceSearchIndex: (...args: unknown[]) => mockUseWorkspaceSearchIndex(...args),
 }));
 
-let WorkspaceRightSidebar: (typeof import("../$workspaceId"))["WorkspaceRightSidebar"];
+let WorkspaceRightSidebar: (typeof import("@/features/workspace/components/WorkspaceRightSidebar"))["WorkspaceRightSidebar"];
 
 const renderSidebar = (view: RightSidebarView, workspaceId = "workspace-1") => {
   const store = createStore();
@@ -84,7 +84,9 @@ afterEach(() => {
 });
 
 beforeAll(async () => {
-  ({ WorkspaceRightSidebar } = await import("../$workspaceId"));
+  ({ WorkspaceRightSidebar } = await import(
+    "@/features/workspace/components/WorkspaceRightSidebar"
+  ));
 });
 
 beforeEach(() => {

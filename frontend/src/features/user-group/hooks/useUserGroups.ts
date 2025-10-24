@@ -7,7 +7,7 @@ import type {
   UpdateUserGroupInput,
 } from "../types";
 
-import { apiClient as api } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 
 export const useUserGroups = (workspaceId: string) => {
   const [groups, setGroups] = useState<UserGroup[]>([]);

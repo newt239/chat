@@ -9,7 +9,7 @@ let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 const retryableRequestMap = new WeakMap<Request, Request>();
 
-export const apiClient = createClient<paths>({
+export const api = createClient<paths>({
   baseUrl: API_BASE_URL,
 });
 
@@ -27,7 +27,7 @@ async function refreshAccessToken(): Promise<string | null> {
         return null;
       }
 
-      const { data, error } = await apiClient.POST("/api/auth/refresh", {
+      const { data, error } = await api.POST("/api/auth/refresh", {
         body: { refreshToken },
       });
 
@@ -48,7 +48,7 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 // リクエストインターセプター: アクセストークンを自動付与
-apiClient.use({
+api.use({
   async onRequest({ request }) {
     const token = localStorage.getItem("accessToken");
     if (token) {

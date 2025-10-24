@@ -4,13 +4,13 @@ import type { MessageWithUser } from "@/features/message/types";
 import type { components } from "@/lib/api/schema";
 
 import { messagesResponseSchema } from "@/features/message/schemas";
-import { apiClient } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 
 export type WorkspaceSearchIndex = {
   channels: components["schemas"]["Channel"][];
   members: components["schemas"]["MemberInfo"][];
   messages: MessageWithUser[];
-}
+};
 
 const EMPTY_INDEX: WorkspaceSearchIndex = {
   channels: [],
@@ -28,10 +28,10 @@ export function useWorkspaceSearchIndex(workspaceId: string | undefined) {
       }
 
       const [channelResult, memberResult] = await Promise.all([
-        apiClient.GET("/api/workspaces/{id}/channels", {
+        api.GET("/api/workspaces/{id}/channels", {
           params: { path: { id: workspaceId } },
         }),
-        apiClient.GET("/api/workspaces/{id}/members", {
+        api.GET("/api/workspaces/{id}/members", {
           params: { path: { id: workspaceId } },
         }),
       ]);
@@ -45,9 +45,7 @@ export function useWorkspaceSearchIndex(workspaceId: string | undefined) {
       }
 
       const channels = Array.isArray(channelResult.data) ? channelResult.data : [];
-      const members = Array.isArray(memberResult.data.members)
-        ? memberResult.data.members
-        : [];
+      const members = Array.isArray(memberResult.data.members) ? memberResult.data.members : [];
 
       if (channels.length === 0) {
         return { channels, members, messages: [] };
@@ -55,7 +53,7 @@ export function useWorkspaceSearchIndex(workspaceId: string | undefined) {
 
       const messagesByChannel = await Promise.all(
         channels.map(async (channel) => {
-          const { data, error } = await apiClient.GET("/api/channels/{channelId}/messages", {
+          const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
             params: { path: { channelId: channel.id } },
           });
 

@@ -2,7 +2,7 @@ import { MantineProvider } from '@mantine/core';
 import { render } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { CodeBlock } from '../../../components/markdown/CodeBlock';
+import { CodeBlock } from "@/features/message/components/markdown/CodeBlock";
 
 
 const renderWithMantine = (element: React.ReactElement) => {

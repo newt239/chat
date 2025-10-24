@@ -10,7 +10,8 @@ const getAvatarColor = (userId: string): string => {
   const hash = userId.split("").reduce((acc, char) => {
     return char.charCodeAt(0) + ((acc << 5) - acc);
   }, 0);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  const color = AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  return color ?? AVATAR_COLORS[0] ?? "#92A1C6";
 };
 
 type MemberPanelProps = {

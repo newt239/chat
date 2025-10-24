@@ -2,13 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { components } from "@/lib/api/schema";
 
-import { apiClient } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 
 type CreateChannelInput = {
   name: string;
   description?: string;
   isPrivate?: boolean;
-}
+};
 
 export function useChannels(workspaceId: string | null) {
   return useQuery({
@@ -18,7 +18,7 @@ export function useChannels(workspaceId: string | null) {
         return [];
       }
 
-      const { data, error } = await apiClient.GET("/api/workspaces/{id}/channels", {
+      const { data, error } = await api.GET("/api/workspaces/{id}/channels", {
         params: { path: { id: workspaceId } },
       });
 
@@ -41,7 +41,7 @@ export function useCreateChannel(workspaceId: string | null) {
         throw new Error("ワークスペースが選択されていません");
       }
 
-      const { data, error } = await apiClient.POST("/api/workspaces/{id}/channels", {
+      const { data, error } = await api.POST("/api/workspaces/{id}/channels", {
         params: { path: { id: workspaceId } },
         body: {
           name: input.name,

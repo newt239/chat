@@ -19,7 +19,10 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "strictNullChecks": true, // null や undefined のチェックを強制
+    "forceConsistentCasingInFileNames": true, // ファイル名の大文字・小文字の不一致によるバグを防ぐ
+    "noUncheckedIndexedAccess": true // インデックスアクセスの型安全を強制
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

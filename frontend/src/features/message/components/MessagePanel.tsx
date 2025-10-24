@@ -6,8 +6,6 @@ import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 
-import { LinkPreviewCard } from "../../link/components/LinkPreviewCard";
-import { useLinkPreview } from "../../link/hooks/useLinkPreview";
 import { useMessages, useSendMessage } from "../hooks/useMessage";
 import { useMessageInputMode } from "../hooks/useMessageInputMode";
 
@@ -16,6 +14,8 @@ import { MessageItem } from "./MessageItem";
 import { MessagePreview } from "./MessagePreview";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
+import { LinkPreviewCard } from "@/features/link/components/LinkPreviewCard";
+import { useLinkPreview } from "@/features/link/hooks/useLinkPreview";
 import { toggleRightSidebarViewAtom } from "@/lib/store/ui";
 
 type MessagePanelProps = {

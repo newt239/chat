@@ -3,7 +3,7 @@ import { useSetAtom } from "jotai";
 
 import type { components } from "@/lib/api/schema";
 
-import { apiClient } from "@/lib/api/client";
+import { api } from "@/lib/api/client";
 import { setAuthAtom, clearAuthAtom } from "@/lib/store/auth";
 
 export function useLogin() {
@@ -11,7 +11,7 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
-      const { data: response, error } = await apiClient.POST("/api/auth/login", {
+      const { data: response, error } = await api.POST("/api/auth/login", {
         body: data,
       });
       if (error || !response) {
@@ -30,7 +30,7 @@ export function useRegister() {
 
   return useMutation({
     mutationFn: async (data: { email: string; password: string; displayName: string }) => {
-      const { data: response, error } = await apiClient.POST("/api/auth/register", {
+      const { data: response, error } = await api.POST("/api/auth/register", {
         body: data,
       });
       if (error || !response) {
@@ -49,7 +49,7 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      await apiClient.POST("/api/auth/logout", {});
+      await api.POST("/api/auth/logout", {});
     },
     onSuccess: () => {
       clearAuth();

@@ -1,9 +1,10 @@
 import { Box } from "@mantine/core";
 
-import { LinkPreviewEmbed } from "../../link/components/LinkPreviewEmbed";
 import { renderMarkdown } from "../utils/markdown/renderer";
 
 import type { MessageWithUser } from "../types";
+
+import { LinkPreviewEmbed } from "@/features/link/components/LinkPreviewEmbed";
 
 type MessageContentProps = {
   message: MessageWithUser;

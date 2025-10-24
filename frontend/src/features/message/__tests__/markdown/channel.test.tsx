@@ -3,7 +3,7 @@ import { RouterProvider, createMemoryHistory, createRootRoute, createRouter, Out
 import { render } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { renderMarkdown } from '../../utils/markdown/renderer';
+import { renderMarkdown } from "@/features/message/utils/markdown/renderer";
 
 
 const rootRoute = createRootRoute({
