@@ -19,13 +19,11 @@ vi.mock("@tanstack/react-router", () => {
         ...route,
         options: config,
       }),
-      _addFileChildren: (_children: Record<string, unknown>) => route,
-      _addFileTypes: () => route,
     };
     return route;
   };
 
-  const createFileRoute = (_path: string) => (config: Record<string, unknown>) => ({
+  const createFileRoute = () => (config: Record<string, unknown>) => ({
     ...createRouteStub(),
     options: config,
   });
@@ -167,36 +165,38 @@ describe("WorkspaceRightSidebar", () => {
   it("メンバー一覧を表示する", () => {
     renderSidebar({ type: "members" });
 
-    expect(screen.getByTestId("member-panel")).toBeInTheDocument();
-    expect(screen.getByTestId("member-panel")).toHaveAttribute("data-workspace-id", "workspace-1");
+    expect(screen.getByTestId("member-panel")).toBeDefined();
+    expect(screen.getByTestId("member-panel").getAttribute("data-workspace-id")).toBe(
+      "workspace-1"
+    );
   });
 
   it("チャンネル情報を表示する", () => {
     renderSidebar({ type: "channel-info", channelId: "channel-1" });
 
-    expect(screen.getByText("チャンネル情報")).toBeInTheDocument();
-    expect(screen.getByText("#general")).toBeInTheDocument();
+    expect(screen.getByText("チャンネル情報")).toBeDefined();
+    expect(screen.getByText("#general")).toBeDefined();
   });
 
   it("スレッド情報を表示する", () => {
     renderSidebar({ type: "thread", threadId: "thread-1" });
 
-    expect(screen.getByText("スレッド")).toBeInTheDocument();
-    expect(screen.getByText(/ID: thread-1/)).toBeInTheDocument();
+    expect(screen.getByText("スレッド")).toBeDefined();
+    expect(screen.getByText(/ID: thread-1/)).toBeDefined();
   });
 
   it("ユーザープロフィールを表示する", () => {
     renderSidebar({ type: "user-profile", userId: "user-1" });
 
-    expect(screen.getByText("検索太郎")).toBeInTheDocument();
-    expect(screen.getByText("taro@example.com")).toBeInTheDocument();
+    expect(screen.getByText("検索太郎")).toBeDefined();
+    expect(screen.getByText("taro@example.com")).toBeDefined();
   });
 
   it("検索結果を表示する", () => {
     const { container } = renderSidebar({ type: "search", query: "検索", filter: "all" });
 
-    expect(screen.getByText("検索結果")).toBeInTheDocument();
-    expect(screen.getByText((text) => text.includes("検索対象のメッセージ"))).toBeInTheDocument();
+    expect(screen.getByText("検索結果")).toBeDefined();
+    expect(screen.getByText((text) => text.includes("検索対象のメッセージ"))).toBeDefined();
     const cards = container.querySelectorAll(".mantine-Card-root");
     expect(cards.length).toBeGreaterThan(0);
   });

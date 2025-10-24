@@ -4,7 +4,7 @@ import type { components } from "@/lib/api/schema";
 
 import { apiClient } from "@/lib/api/client";
 
-interface CreateChannelInput {
+type CreateChannelInput = {
   name: string;
   description?: string;
   isPrivate?: boolean;

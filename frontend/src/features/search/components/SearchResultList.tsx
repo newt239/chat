@@ -8,7 +8,7 @@ type Message = components["schemas"]["Message"];
 type Channel = components["schemas"]["Channel"];
 type MemberInfo = components["schemas"]["MemberInfo"];
 
-interface SearchResultListProps {
+type SearchResultListProps = {
   messages: Message[];
   channels: Channel[];
   users: MemberInfo[];

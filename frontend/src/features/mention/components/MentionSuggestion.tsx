@@ -2,7 +2,7 @@ import { Avatar, Text, Loader } from "@mantine/core";
 
 import type { MentionSuggestion } from "../types";
 
-interface MentionSuggestionProps {
+type MentionSuggestionProps = {
   suggestions: MentionSuggestion[];
   isLoading: boolean;
   onSelect: (suggestion: MentionSuggestion) => void;

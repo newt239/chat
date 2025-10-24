@@ -13,7 +13,7 @@ const getAvatarColor = (userId: string): string => {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 };
 
-interface MemberPanelProps {
+type MemberPanelProps = {
   workspaceId: string | null;
 }
 

@@ -9,7 +9,7 @@ import { MessageContent } from "./MessageContent";
 
 import type { MessageWithUser } from "../types";
 
-interface MessageItemProps {
+type MessageItemProps = {
   message: MessageWithUser;
   dateTimeFormatter: Intl.DateTimeFormat;
   onCopyLink: (messageId: string) => void;
@@ -62,7 +62,7 @@ export const MessageItem = ({
           </div>
 
           {/* リアクション */}
-          <ReactionList messageId={message.id} />
+          <ReactionList message={message} />
         </div>
       </div>
 

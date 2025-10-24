@@ -66,7 +66,8 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
             error: ogpData ? undefined : "Failed to fetch preview",
           })
         );
-      } catch (_error) {
+      } catch (error) {
+        console.error("Failed to fetch preview:", error);
         setPreviews((prev) =>
           new Map(prev).set(url, {
             url,

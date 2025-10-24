@@ -1,11 +1,11 @@
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
-interface EmojiPickerProps {
+type EmojiPickerProps = {
   onEmojiSelect: (emoji: string) => void;
 }
 
-interface EmojiSelectEvent {
+type EmojiSelectEvent = {
   native: string;
 }
 

@@ -2,7 +2,7 @@ import type { ReactNode, ReactElement } from 'react';
 
 import { Code } from '@mantine/core';
 
-interface CodeBlockProps {
+type CodeBlockProps = {
   children?: ReactNode;
   className?: string;
 }

@@ -5,7 +5,7 @@ import { Button, Modal, Switch, Text, TextInput, Textarea } from "@mantine/core"
 
 import { useCreateChannel } from "../hooks/useChannel";
 
-interface CreateChannelModalProps {
+type CreateChannelModalProps = {
   workspaceId: string | null;
   opened: boolean;
   onClose: () => void;

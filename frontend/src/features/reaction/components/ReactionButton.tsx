@@ -2,7 +2,7 @@ import { Button, Tooltip } from "@mantine/core";
 
 import type { UserInfo } from "../types";
 
-interface ReactionButtonProps {
+type ReactionButtonProps = {
   emoji: string;
   count: number;
   users: UserInfo[];

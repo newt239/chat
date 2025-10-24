@@ -18,7 +18,7 @@ import { MessagePreview } from "./MessagePreview";
 import { useChannels } from "@/features/channel/hooks/useChannel";
 import { toggleRightSidebarViewAtom } from "@/lib/store/ui";
 
-interface MessagePanelProps {
+type MessagePanelProps = {
   workspaceId: string | null;
   channelId: string | null;
 }

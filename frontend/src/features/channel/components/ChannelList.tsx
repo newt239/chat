@@ -13,7 +13,7 @@ import {
   setCurrentChannelAtom,
 } from "@/lib/store/workspace";
 
-interface ChannelListProps {
+type ChannelListProps = {
   workspaceId: string | null;
 }
 

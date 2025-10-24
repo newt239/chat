@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { Badge } from '@mantine/core';
 import { useNavigate, useParams } from '@tanstack/react-router';
 
-interface ChannelLinkProps {
+type ChannelLinkProps = {
   'data-channel': string;
   children?: ReactNode;
 }

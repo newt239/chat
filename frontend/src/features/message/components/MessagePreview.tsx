@@ -2,7 +2,7 @@ import { Box, Paper } from "@mantine/core";
 
 import { renderMarkdown } from "../utils/markdown/renderer";
 
-interface MessagePreviewProps {
+type MessagePreviewProps = {
   content: string;
 }
 

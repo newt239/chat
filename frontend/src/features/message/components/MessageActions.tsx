@@ -14,7 +14,7 @@ import {
 import { EmojiPicker } from "../../reaction/components/EmojiPicker";
 import { useAddReaction } from "../../reaction/hooks/useReactions";
 
-interface MessageActionsProps {
+type MessageActionsProps = {
   messageId: string;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;

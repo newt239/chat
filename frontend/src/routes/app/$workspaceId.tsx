@@ -48,7 +48,7 @@ const WorkspaceComponent = () => {
   );
 };
 
-interface WorkspaceRightSidebarProps {
+type WorkspaceRightSidebarProps = {
   workspaceId: string;
   view: RightSidebarView;
 }
@@ -76,7 +76,7 @@ export const WorkspaceRightSidebar = ({ workspaceId, view }: WorkspaceRightSideb
   }
 };
 
-interface ChannelInfoPanelProps {
+type ChannelInfoPanelProps = {
   workspaceId: string;
   channelId?: string | null;
 }
@@ -162,7 +162,7 @@ const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelProps) => 
   );
 };
 
-interface ThreadPanelProps {
+type ThreadPanelProps = {
   threadId: string;
 }
 
@@ -186,7 +186,7 @@ const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   );
 };
 
-interface UserProfilePanelProps {
+type UserProfilePanelProps = {
   workspaceId: string;
   userId: string;
 }
@@ -270,7 +270,7 @@ const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps) => {
 
 type SearchFilter = "all" | "messages" | "channels" | "users";
 
-interface SearchResultsPanelProps {
+type SearchResultsPanelProps = {
   workspaceId: string;
   query: string;
   filter: SearchFilter;

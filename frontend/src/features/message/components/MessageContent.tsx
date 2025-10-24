@@ -5,7 +5,7 @@ import { renderMarkdown } from "../utils/markdown/renderer";
 
 import type { MessageWithUser } from "../types";
 
-interface MessageContentProps {
+type MessageContentProps = {
   message: MessageWithUser;
 }
 

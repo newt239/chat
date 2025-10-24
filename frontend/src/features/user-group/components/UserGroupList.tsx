@@ -7,7 +7,7 @@ import { useUserGroups } from "../hooks/useUserGroups";
 
 import { CreateUserGroupModal } from "./CreateUserGroupModal";
 
-interface UserGroupListProps {
+type UserGroupListProps = {
   workspaceId: string;
 }
 

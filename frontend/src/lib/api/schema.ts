@@ -3,7 +3,7 @@
  * Do not make direct changes to the file.
  */
 
-export interface paths {
+export type paths = {
     "/healthz": {
         parameters: {
             query?: never;
@@ -374,7 +374,7 @@ export interface paths {
     };
 }
 export type webhooks = Record<string, never>;
-export interface components {
+export type components = {
     schemas: {
         Error: {
             error: string;
@@ -607,7 +607,7 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export interface operations {
+export type operations = {
     healthz: {
         parameters: {
             query?: never;

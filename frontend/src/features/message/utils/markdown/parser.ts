@@ -4,7 +4,7 @@ import { unified } from 'unified';
 
 import type { Root } from 'mdast';
 
-export interface ParsedMarkdown {
+export type ParsedMarkdown = {
   ast: Root;
 }
 

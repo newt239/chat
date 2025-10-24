@@ -1,6 +1,6 @@
 import { MessagePanel } from "@/features/message/components/MessagePanel";
 
-interface ChatLayoutProps {
+type ChatLayoutProps = {
   workspaceId: string;
   channelId: string | null;
 }

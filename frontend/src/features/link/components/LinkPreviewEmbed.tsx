@@ -2,7 +2,7 @@ import { Card, Image, Text, Anchor } from "@mantine/core";
 
 import type { LinkInfo } from "../types";
 
-interface LinkPreviewEmbedProps {
+type LinkPreviewEmbedProps = {
   link: LinkInfo;
 }
 

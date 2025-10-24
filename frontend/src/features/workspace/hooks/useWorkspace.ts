@@ -6,7 +6,7 @@ import type { components } from "@/lib/api/schema";
 import { apiClient } from "@/lib/api/client";
 
 // 実際のAPIレスポンスの型定義
-interface WorkspacesResponse {
+type WorkspacesResponse = {
   workspaces: WorkspaceSummary[];
 }
 

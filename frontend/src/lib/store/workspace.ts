@@ -3,7 +3,7 @@ import { atomWithStorage } from "jotai/utils";
 
 import { navigateToWorkspace, navigateToChannel } from "../navigation";
 
-interface WorkspaceStorage {
+type WorkspaceStorage = {
   currentWorkspaceId: string | null;
 }
 

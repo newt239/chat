@@ -2,13 +2,13 @@ import type { components } from "@/lib/api/schema";
 
 export type ReactionWithUser = components["schemas"]["ReactionWithUser"];
 
-export interface UserInfo {
+export type UserInfo = {
   id: string;
   displayName: string;
   avatarUrl?: string | null;
 }
 
-export interface ReactionGroup {
+export type ReactionGroup = {
   emoji: string;
   count: number;
   users: UserInfo[]; // ユーザー情報の配列
@@ -16,7 +16,7 @@ export interface ReactionGroup {
 }
 
 // 将来的なカスタム絵文字対応のための型
-export interface EmojiData {
+export type EmojiData = {
   id: string; // Unicode絵文字の場合は絵文字自体、カスタムの場合はID
   native?: string; // Unicode絵文字
   imageUrl?: string; // カスタム絵文字の画像URL

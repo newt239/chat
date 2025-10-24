@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Anchor } from '@mantine/core';
 
-interface LinkComponentProps {
+type LinkComponentProps = {
   href?: string;
   children?: ReactNode;
 }

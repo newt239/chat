@@ -29,6 +29,12 @@ const linkInfoSchema = z.object({
   cardType: z.string().nullable().optional(),
 });
 
+const reactionInfoSchema = z.object({
+  user: messageUserSchema,
+  emoji: z.string(),
+  createdAt: z.string(),
+});
+
 const baseMessageSchema = z
   .object({
     id: z.string(),
@@ -39,6 +45,7 @@ const baseMessageSchema = z
     mentions: z.array(userMentionSchema),
     groups: z.array(groupMentionSchema),
     links: z.array(linkInfoSchema),
+    reactions: z.array(reactionInfoSchema),
     createdAt: z.string(),
     editedAt: z.string().nullable().optional(),
     deletedAt: z.string().nullable().optional(),

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Header } from "@/components/layout/Header";
 import { AuthGuard } from "@/features/auth/components/AuthGuard";
 
-interface AppLayoutProps {
+type AppLayoutProps = {
   children: ReactNode;
 }
 

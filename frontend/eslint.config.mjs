@@ -26,30 +26,25 @@ const eslintConfig = [
     rules: {
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      "react/react-in-jsx-scope": "off",
-      "react-hooks/exhaustive-deps": "off",
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
-      ],
-      "react/function-component-definition": [
-        "error",
-        {
-          namedComponents: "arrow-function",
-          unnamedComponents: "arrow-function",
-        },
-      ],
+      "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+      "no-unused-vars": "off", // typescript-eslint の no-unused-vars と競合するため無効化
+      "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/consistent-type-imports": [
         "error",
         {
           prefer: "type-imports",
           fixStyle: "separate-type-imports",
           disallowTypeAnnotations: false,
+        },
+      ],
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "react/function-component-definition": [
+        "error",
+        {
+          namedComponents: "arrow-function",
+          unnamedComponents: "arrow-function",
         },
       ],
       "import/order": [

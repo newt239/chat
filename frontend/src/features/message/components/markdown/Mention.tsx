@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Badge } from '@mantine/core';
 
-interface MentionProps {
+type MentionProps = {
   'data-mention': string;
   children?: ReactNode;
 }

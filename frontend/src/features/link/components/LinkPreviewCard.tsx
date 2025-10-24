@@ -2,7 +2,7 @@ import { Card, Image, Skeleton, Text, Anchor } from "@mantine/core";
 
 import type { LinkPreview } from "../types";
 
-interface LinkPreviewCardProps {
+type LinkPreviewCardProps = {
   preview: LinkPreview;
   onRemove?: () => void;
 }

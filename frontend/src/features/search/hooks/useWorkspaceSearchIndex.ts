@@ -6,7 +6,7 @@ import type { components } from "@/lib/api/schema";
 import { messagesResponseSchema } from "@/features/message/schemas";
 import { apiClient } from "@/lib/api/client";
 
-export interface WorkspaceSearchIndex {
+export type WorkspaceSearchIndex = {
   channels: components["schemas"]["Channel"][];
   members: components["schemas"]["MemberInfo"][];
   messages: MessageWithUser[];

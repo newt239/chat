@@ -6,7 +6,7 @@ import type { MessagesResponse } from "../types";
 
 import { apiClient } from "@/lib/api/client";
 
-interface CreateMessageInput {
+type CreateMessageInput = {
   body: string;
 }
 
@@ -29,6 +29,8 @@ export function useMessages(channelId: string | null) {
       const parsed = messagesResponseSchema.safeParse(data);
 
       if (!parsed.success) {
+        console.error("メッセージ取得のスキーマ検証エラー:", parsed.error);
+        console.error("受信したデータ:", JSON.stringify(data, null, 2));
         throw new Error("Unexpected response format when fetching messages");
       }
 

@@ -7,7 +7,7 @@ import type { components } from "@/lib/api/schema";
 
 type User = components["schemas"]["User"];
 
-interface AuthStorage {
+type AuthStorage = {
   user: User | null;
   isAuthenticated: boolean;
 }

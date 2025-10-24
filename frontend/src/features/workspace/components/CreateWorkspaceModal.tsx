@@ -4,7 +4,7 @@ import { Modal, TextInput, Textarea, Button, Text } from "@mantine/core";
 
 import { useCreateWorkspace } from "../hooks/useWorkspace";
 
-interface CreateWorkspaceModalProps {
+type CreateWorkspaceModalProps = {
   opened: boolean;
   onClose: () => void;
 }

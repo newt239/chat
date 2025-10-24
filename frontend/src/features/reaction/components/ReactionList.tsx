@@ -3,31 +3,31 @@ import { useMemo } from "react";
 import { Group } from "@mantine/core";
 import { useAtomValue } from "jotai";
 
-import { useReactions, useAddReaction, useRemoveReaction } from "../hooks/useReactions";
+import { useAddReaction, useRemoveReaction } from "../hooks/useReactions";
 
 import { ReactionButton } from "./ReactionButton";
 
 import type { ReactionGroup } from "../types";
+import type { MessageWithUser } from "@/features/message/schemas";
 
 import { userAtom } from "@/lib/store/auth";
 
-interface ReactionListProps {
-  messageId: string;
+type ReactionListProps = {
+  message: MessageWithUser;
 }
 
-export const ReactionList = ({ messageId }: ReactionListProps) => {
-  const { data, isLoading } = useReactions(messageId);
+export const ReactionList = ({ message }: ReactionListProps) => {
   const addReaction = useAddReaction();
   const removeReaction = useRemoveReaction();
   const user = useAtomValue(userAtom);
 
   // リアクションをグループ化
   const reactionGroups = useMemo((): ReactionGroup[] => {
-    if (!data?.reactions) return [];
+    if (!message.reactions) return [];
 
     const groups = new Map<string, ReactionGroup>();
 
-    for (const reaction of data.reactions) {
+    for (const reaction of message.reactions) {
       const existing = groups.get(reaction.emoji);
       if (existing) {
         existing.count++;
@@ -46,17 +46,17 @@ export const ReactionList = ({ messageId }: ReactionListProps) => {
     }
 
     return Array.from(groups.values());
-  }, [data?.reactions, user]);
+  }, [message.reactions, user]);
 
   const handleReactionClick = async (emoji: string, hasUserReacted: boolean) => {
     if (hasUserReacted) {
-      await removeReaction.mutateAsync({ messageId, emoji });
+      await removeReaction.mutateAsync({ messageId: message.id, emoji });
     } else {
-      await addReaction.mutateAsync({ messageId, emoji });
+      await addReaction.mutateAsync({ messageId: message.id, emoji });
     }
   };
 
-  if (isLoading || reactionGroups.length === 0) {
+  if (reactionGroups.length === 0) {
     return null;
   }
 

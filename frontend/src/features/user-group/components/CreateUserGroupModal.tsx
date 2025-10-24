@@ -7,7 +7,7 @@ import { useUserGroups } from "../hooks/useUserGroups";
 
 import type { CreateUserGroupInput } from "../types";
 
-interface CreateUserGroupModalProps {
+type CreateUserGroupModalProps = {
   opened: boolean;
   onClose: () => void;
   workspaceId: string;

@@ -17,7 +17,7 @@ import {
 
 import type { MessageInputMode } from '../hooks/useMessageInputMode';
 
-interface MessageInputToolbarProps {
+type MessageInputToolbarProps = {
   mode: MessageInputMode;
   onToggleMode: () => void;
   onSubmit: () => void;

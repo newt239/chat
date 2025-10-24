@@ -9,7 +9,7 @@ type WebSocketEventType =
   | "ack"
   | "error";
 
-interface WebSocketEvent {
+type WebSocketEvent = {
   type: WebSocketEventType;
   payload?: unknown;
 }

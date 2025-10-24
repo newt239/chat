@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { useAuthGuard } from "../hooks/useAuthGuard";
 
-interface AuthGuardProps {
+type AuthGuardProps = {
   children: ReactNode;
   fallback?: ReactNode;
 }
