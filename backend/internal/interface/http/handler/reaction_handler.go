@@ -41,7 +41,7 @@ func (h *ReactionHandler) ListReactions(c *gin.Context) {
 		return
 	}
 
-	output, err := h.reactionUseCase.ListReactions(messageID, userID)
+	output, err := h.reactionUseCase.ListReactions(c.Request.Context(), messageID, userID)
 	if err != nil {
 		switch err {
 		case reaction.ErrMessageNotFound:
@@ -96,7 +96,7 @@ func (h *ReactionHandler) AddReaction(c *gin.Context) {
 		return
 	}
 
-	err := h.reactionUseCase.AddReaction(reaction.AddReactionInput{
+	err := h.reactionUseCase.AddReaction(c.Request.Context(), reaction.AddReactionInput{
 		MessageID: messageID,
 		UserID:    userID,
 		Emoji:     req.Emoji,
@@ -149,7 +149,7 @@ func (h *ReactionHandler) RemoveReaction(c *gin.Context) {
 		return
 	}
 
-	err := h.reactionUseCase.RemoveReaction(reaction.RemoveReactionInput{
+	err := h.reactionUseCase.RemoveReaction(c.Request.Context(), reaction.RemoveReactionInput{
 		MessageID: messageID,
 		UserID:    userID,
 		Emoji:     emoji,

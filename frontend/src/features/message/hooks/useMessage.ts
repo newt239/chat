@@ -2,8 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { messagesResponseSchema } from "../schemas";
 
-import type { MessagesResponse } from "../types";
-
 import { api } from "@/lib/api/client";
 
 type CreateMessageInput = {
@@ -13,9 +11,9 @@ type CreateMessageInput = {
 export function useMessages(channelId: string | null) {
   return useQuery({
     queryKey: ["channels", channelId, "messages"],
-    queryFn: async (): Promise<MessagesResponse> => {
+    queryFn: async () => {
       if (channelId === null) {
-        return { messages: [], hasMore: false };
+        return { messages: [], hasMore: false } as const;
       }
 
       const { data, error } = await api.GET("/api/channels/{channelId}/messages", {

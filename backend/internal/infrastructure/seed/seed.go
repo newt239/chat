@@ -1,13 +1,16 @@
 package seed
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/example/chat/internal/domain"
+	"github.com/example/chat/internal/adapter/gateway/persistence"
+	"github.com/example/chat/internal/domain/entity"
+	domainrepository "github.com/example/chat/internal/domain/repository"
 	"github.com/example/chat/internal/infrastructure/auth"
-	"github.com/example/chat/internal/infrastructure/repository"
+	authuc "github.com/example/chat/internal/usecase/auth"
 	"gorm.io/gorm"
 )
 
@@ -29,10 +32,10 @@ func AutoSeed(db *gorm.DB) error {
 	log.Println("Database is empty, seeding with initial data...")
 
 	// Initialize repositories
-	userRepo := repository.NewUserRepository(db)
-	workspaceRepo := repository.NewWorkspaceRepository(db)
-	channelRepo := repository.NewChannelRepository(db)
-	messageRepo := repository.NewMessageRepository(db)
+	userRepo := persistence.NewUserRepository(db)
+	workspaceRepo := persistence.NewWorkspaceRepository(db)
+	channelRepo := persistence.NewChannelRepository(db)
+	messageRepo := persistence.NewMessageRepository(db)
 
 	// Initialize password service
 	passwordService := auth.NewPasswordService()
@@ -48,14 +51,15 @@ func AutoSeed(db *gorm.DB) error {
 
 func createSeedData(
 	db *gorm.DB,
-	userRepo domain.UserRepository,
-	workspaceRepo domain.WorkspaceRepository,
-	channelRepo domain.ChannelRepository,
-	messageRepo domain.MessageRepository,
-	passwordService *auth.PasswordService,
+	userRepo domainrepository.UserRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
+	channelRepo domainrepository.ChannelRepository,
+	messageRepo domainrepository.MessageRepository,
+	passwordService authuc.PasswordService,
 ) error {
+	ctx := context.Background()
 	// Create test users
-	users := []*domain.User{
+	users := []*entity.User{
 		{
 			ID:           "11111111-1111-1111-1111-111111111111",
 			Email:        "alice@example.com",
@@ -88,13 +92,13 @@ func createSeedData(
 
 	// Create users
 	for _, user := range users {
-		if err := userRepo.Create(user); err != nil {
+		if err := userRepo.Create(ctx, user); err != nil {
 			return fmt.Errorf("failed to create user %s: %w", user.Email, err)
 		}
 	}
 
 	// Create test workspace
-	workspace := &domain.Workspace{
+	workspace := &entity.Workspace{
 		ID:          "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
 		Name:        "Test Workspace",
 		Description: stringPtr("A sample workspace for testing the chat application"),
@@ -102,30 +106,30 @@ func createSeedData(
 		CreatedBy:   users[0].ID,
 	}
 
-	if err := workspaceRepo.Create(workspace); err != nil {
+	if err := workspaceRepo.Create(ctx, workspace); err != nil {
 		return fmt.Errorf("failed to create workspace: %w", err)
 	}
 
 	// Add all users to workspace
 	for i, user := range users {
-		role := domain.WorkspaceRoleMember
+		role := entity.WorkspaceRoleMember
 		if i == 0 {
-			role = domain.WorkspaceRoleOwner
+			role = entity.WorkspaceRoleOwner
 		}
 
-		member := &domain.WorkspaceMember{
+		member := &entity.WorkspaceMember{
 			WorkspaceID: workspace.ID,
 			UserID:      user.ID,
 			Role:        role,
 		}
 
-		if err := workspaceRepo.AddMember(member); err != nil {
+		if err := workspaceRepo.AddMember(ctx, member); err != nil {
 			return fmt.Errorf("failed to add member %s to workspace: %w", user.DisplayName, err)
 		}
 	}
 
 	// Create channels
-	channels := []*domain.Channel{
+	channels := []*entity.Channel{
 		{
 			ID:          "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
 			WorkspaceID: workspace.ID,
@@ -161,7 +165,7 @@ func createSeedData(
 	}
 
 	for _, channel := range channels {
-		if err := channelRepo.Create(channel); err != nil {
+		if err := channelRepo.Create(ctx, channel); err != nil {
 			return fmt.Errorf("failed to create channel %s: %w", channel.Name, err)
 		}
 
@@ -172,19 +176,19 @@ func createSeedData(
 		}
 
 		for _, user := range usersToAdd {
-			member := &domain.ChannelMember{
+			member := &entity.ChannelMember{
 				ChannelID: channel.ID,
 				UserID:    user.ID,
 			}
 
-			if err := channelRepo.AddMember(member); err != nil {
+			if err := channelRepo.AddMember(ctx, member); err != nil {
 				return fmt.Errorf("failed to add member %s to channel %s: %w", user.DisplayName, channel.Name, err)
 			}
 		}
 	}
 
 	// Create sample messages
-	messages := []*domain.Message{
+	messages := []*entity.Message{
 		// General channel messages
 		{
 			ID:        "f1111111-1111-1111-1111-111111111111",
@@ -265,13 +269,13 @@ func createSeedData(
 	for i, message := range messages {
 		message.CreatedAt = baseTime.Add(time.Duration(i) * 30 * time.Minute)
 
-		if err := messageRepo.Create(message); err != nil {
+		if err := messageRepo.Create(ctx, message); err != nil {
 			return fmt.Errorf("failed to create message: %w", err)
 		}
 	}
 
 	// Create some message reactions
-	reactions := []*domain.MessageReaction{
+	reactions := []*entity.MessageReaction{
 		{
 			MessageID: messages[1].ID, // Bob's welcome message
 			UserID:    users[0].ID,    // Alice
@@ -290,30 +294,30 @@ func createSeedData(
 	}
 
 	for _, reaction := range reactions {
-		if err := messageRepo.AddReaction(reaction); err != nil {
+		if err := messageRepo.AddReaction(ctx, reaction); err != nil {
 			return fmt.Errorf("failed to create message reaction: %w", err)
 		}
 	}
 
 	// Create user groups
-	userGroupRepo := repository.NewUserGroupRepository(db)
-	groups := []*domain.UserGroup{
+	userGroupRepo := persistence.NewUserGroupRepository(db)
+	groups := []*entity.UserGroup{
 		{
-			ID:          "gggggggg-gggg-gggg-gggg-gggggggggggg",
+			ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
 			WorkspaceID: workspace.ID,
 			Name:        "developers",
 			Description: stringPtr("Development team members"),
 			CreatedBy:   users[0].ID,
 		},
 		{
-			ID:          "hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh",
+			ID:          "0bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
 			WorkspaceID: workspace.ID,
 			Name:        "marketing",
 			Description: stringPtr("Marketing team members"),
 			CreatedBy:   users[0].ID,
 		},
 		{
-			ID:          "iiiiiiii-iiii-iiii-iiii-iiiiiiiiiiii",
+			ID:          "0ccccccc-cccc-4ccc-8ccc-cccccccccccc",
 			WorkspaceID: workspace.ID,
 			Name:        "designers",
 			Description: stringPtr("Design team members"),
@@ -322,13 +326,13 @@ func createSeedData(
 	}
 
 	for _, group := range groups {
-		if err := userGroupRepo.Create(group); err != nil {
+		if err := userGroupRepo.Create(ctx, group); err != nil {
 			return fmt.Errorf("failed to create user group %s: %w", group.Name, err)
 		}
 	}
 
 	// Add members to groups
-	groupMembers := []*domain.UserGroupMember{
+	groupMembers := []*entity.UserGroupMember{
 		// developers group: Alice, Bob, Diana
 		{GroupID: groups[0].ID, UserID: users[0].ID, JoinedAt: time.Now()},
 		{GroupID: groups[0].ID, UserID: users[1].ID, JoinedAt: time.Now()},
@@ -341,13 +345,13 @@ func createSeedData(
 	}
 
 	for _, member := range groupMembers {
-		if err := userGroupRepo.AddMember(member); err != nil {
+		if err := userGroupRepo.AddMember(ctx, member); err != nil {
 			return fmt.Errorf("failed to add member to group: %w", err)
 		}
 	}
 
 	// Create messages with mentions and links
-	mentionMessages := []*domain.Message{
+	mentionMessages := []*entity.Message{
 		{
 			ID:        "fccccccc-cccc-cccc-cccc-cccccccccccc",
 			ChannelID: channels[0].ID, // general
@@ -372,14 +376,14 @@ func createSeedData(
 	for i, message := range mentionMessages {
 		message.CreatedAt = baseTime.Add(time.Duration(len(messages)+i) * 30 * time.Minute)
 
-		if err := messageRepo.Create(message); err != nil {
+		if err := messageRepo.Create(ctx, message); err != nil {
 			return fmt.Errorf("failed to create mention message: %w", err)
 		}
 	}
 
 	// Create user mentions
-	userMentionRepo := repository.NewMessageUserMentionRepository(db)
-	userMentions := []*domain.MessageUserMention{
+	userMentionRepo := persistence.NewMessageUserMentionRepository(db)
+	userMentions := []*entity.MessageUserMention{
 		{MessageID: mentionMessages[0].ID, UserID: users[1].ID, CreatedAt: mentionMessages[0].CreatedAt}, // Alice mentions Bob
 		{MessageID: mentionMessages[1].ID, UserID: users[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions Alice
 		{MessageID: mentionMessages[2].ID, UserID: users[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions Alice
@@ -388,28 +392,28 @@ func createSeedData(
 	}
 
 	for _, mention := range userMentions {
-		if err := userMentionRepo.Create(mention); err != nil {
+		if err := userMentionRepo.Create(ctx, mention); err != nil {
 			return fmt.Errorf("failed to create user mention: %w", err)
 		}
 	}
 
 	// Create group mentions
-	groupMentionRepo := repository.NewMessageGroupMentionRepository(db)
-	groupMentions := []*domain.MessageGroupMention{
+	groupMentionRepo := persistence.NewMessageGroupMentionRepository(db)
+	groupMentions := []*entity.MessageGroupMention{
 		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[2].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions designers
 	}
 
 	for _, mention := range groupMentions {
-		if err := groupMentionRepo.Create(mention); err != nil {
+		if err := groupMentionRepo.Create(ctx, mention); err != nil {
 			return fmt.Errorf("failed to create group mention: %w", err)
 		}
 	}
 
 	// Create message links (simplified OGP data)
-	linkRepo := repository.NewMessageLinkRepository(db)
-	links := []*domain.MessageLink{
+	linkRepo := persistence.NewMessageLinkRepository(db)
+	links := []*entity.MessageLink{
 		{
 			ID:          "llllllll-llll-llll-llll-llllllllllll",
 			MessageID:   mentionMessages[0].ID,
@@ -441,7 +445,7 @@ func createSeedData(
 	}
 
 	for _, link := range links {
-		if err := linkRepo.Create(link); err != nil {
+		if err := linkRepo.Create(ctx, link); err != nil {
 			return fmt.Errorf("failed to create message link: %w", err)
 		}
 	}
@@ -452,17 +456,17 @@ func createSeedData(
 // CreateSeedData creates seed data without checking if database is empty
 func CreateSeedData(
 	db *gorm.DB,
-	userRepo domain.UserRepository,
-	workspaceRepo domain.WorkspaceRepository,
-	channelRepo domain.ChannelRepository,
-	messageRepo domain.MessageRepository,
-	passwordService *auth.PasswordService,
+	userRepo domainrepository.UserRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
+	channelRepo domainrepository.ChannelRepository,
+	messageRepo domainrepository.MessageRepository,
+	passwordService authuc.PasswordService,
 ) error {
 	return createSeedData(db, userRepo, workspaceRepo, channelRepo, messageRepo, passwordService)
 }
 
 // Helper functions for password hashing
-func mustHashPassword(service *auth.PasswordService, password string) string {
+func mustHashPassword(service authuc.PasswordService, password string) string {
 	hash, err := service.HashPassword(password)
 	if err != nil {
 		panic(fmt.Sprintf("failed to hash password: %v", err))

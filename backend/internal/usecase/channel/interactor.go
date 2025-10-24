@@ -1,11 +1,13 @@
 package channel
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain"
+	"github.com/example/chat/internal/domain/entity"
+	domainrepository "github.com/example/chat/internal/domain/repository"
 )
 
 var (
@@ -14,18 +16,18 @@ var (
 )
 
 type ChannelUseCase interface {
-	ListChannels(input ListChannelsInput) ([]ChannelOutput, error)
-	CreateChannel(input CreateChannelInput) (*ChannelOutput, error)
+	ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error)
+	CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error)
 }
 
 type channelInteractor struct {
-	channelRepo   domain.ChannelRepository
-	workspaceRepo domain.WorkspaceRepository
+	channelRepo   domainrepository.ChannelRepository
+	workspaceRepo domainrepository.WorkspaceRepository
 }
 
 func NewChannelInteractor(
-	channelRepo domain.ChannelRepository,
-	workspaceRepo domain.WorkspaceRepository,
+	channelRepo domainrepository.ChannelRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
 ) ChannelUseCase {
 	return &channelInteractor{
 		channelRepo:   channelRepo,
@@ -33,8 +35,8 @@ func NewChannelInteractor(
 	}
 }
 
-func (i *channelInteractor) ListChannels(input ListChannelsInput) ([]ChannelOutput, error) {
-	workspace, err := i.workspaceRepo.FindByID(input.WorkspaceID)
+func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error) {
+	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
@@ -42,7 +44,7 @@ func (i *channelInteractor) ListChannels(input ListChannelsInput) ([]ChannelOutp
 		return nil, ErrWorkspaceNotFound
 	}
 
-	member, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.UserID)
+	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
@@ -50,7 +52,7 @@ func (i *channelInteractor) ListChannels(input ListChannelsInput) ([]ChannelOutp
 		return nil, ErrUnauthorized
 	}
 
-	channels, err := i.channelRepo.FindAccessibleChannels(input.WorkspaceID, input.UserID)
+	channels, err := i.channelRepo.FindAccessibleChannels(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch channels: %w", err)
 	}
@@ -63,8 +65,8 @@ func (i *channelInteractor) ListChannels(input ListChannelsInput) ([]ChannelOutp
 	return output, nil
 }
 
-func (i *channelInteractor) CreateChannel(input CreateChannelInput) (*ChannelOutput, error) {
-	workspace, err := i.workspaceRepo.FindByID(input.WorkspaceID)
+func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error) {
+	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
@@ -72,15 +74,15 @@ func (i *channelInteractor) CreateChannel(input CreateChannelInput) (*ChannelOut
 		return nil, ErrWorkspaceNotFound
 	}
 
-	member, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.UserID)
+	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
-	if member == nil || (member.Role != domain.WorkspaceRoleOwner && member.Role != domain.WorkspaceRoleAdmin) {
+	if member == nil || (member.Role != entity.WorkspaceRoleOwner && member.Role != entity.WorkspaceRoleAdmin) {
 		return nil, ErrUnauthorized
 	}
 
-	channel := &domain.Channel{
+	channel := &entity.Channel{
 		WorkspaceID: input.WorkspaceID,
 		Name:        input.Name,
 		Description: input.Description,
@@ -90,18 +92,18 @@ func (i *channelInteractor) CreateChannel(input CreateChannelInput) (*ChannelOut
 		UpdatedAt:   time.Now(),
 	}
 
-	if err := i.channelRepo.Create(channel); err != nil {
+	if err := i.channelRepo.Create(ctx, channel); err != nil {
 		return nil, fmt.Errorf("failed to create channel: %w", err)
 	}
 
 	// Add creator as member if channel is private
 	if channel.IsPrivate {
-		member := &domain.ChannelMember{
+		member := &entity.ChannelMember{
 			ChannelID: channel.ID,
 			UserID:    input.UserID,
 			JoinedAt:  time.Now(),
 		}
-		if err := i.channelRepo.AddMember(member); err != nil {
+		if err := i.channelRepo.AddMember(ctx, member); err != nil {
 			return nil, fmt.Errorf("failed to add creator to private channel: %w", err)
 		}
 	}
@@ -110,7 +112,7 @@ func (i *channelInteractor) CreateChannel(input CreateChannelInput) (*ChannelOut
 	return &output, nil
 }
 
-func toChannelOutput(channel *domain.Channel) ChannelOutput {
+func toChannelOutput(channel *entity.Channel) ChannelOutput {
 	return ChannelOutput{
 		ID:          channel.ID,
 		WorkspaceID: channel.WorkspaceID,

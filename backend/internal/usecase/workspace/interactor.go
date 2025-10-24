@@ -1,11 +1,13 @@
 package workspace
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain"
+	"github.com/example/chat/internal/domain/entity"
+	domainrepository "github.com/example/chat/internal/domain/repository"
 )
 
 var (
@@ -16,28 +18,26 @@ var (
 	ErrCannotChangeOwnerRole = errors.New("cannot change owner role")
 )
 
-// WorkspaceUseCase defines the interface for workspace operations
 type WorkspaceUseCase interface {
-	GetWorkspacesByUserID(userID string) (*GetWorkspacesOutput, error)
-	GetWorkspace(input GetWorkspaceInput) (*GetWorkspaceOutput, error)
-	CreateWorkspace(input CreateWorkspaceInput) (*CreateWorkspaceOutput, error)
-	UpdateWorkspace(input UpdateWorkspaceInput) (*UpdateWorkspaceOutput, error)
-	DeleteWorkspace(input DeleteWorkspaceInput) (*DeleteWorkspaceOutput, error)
-	ListMembers(input ListMembersInput) (*ListMembersOutput, error)
-	AddMember(input AddMemberInput) (*MemberActionOutput, error)
-	UpdateMemberRole(input UpdateMemberRoleInput) (*MemberActionOutput, error)
-	RemoveMember(input RemoveMemberInput) (*MemberActionOutput, error)
+	GetWorkspacesByUserID(ctx context.Context, userID string) (*GetWorkspacesOutput, error)
+	GetWorkspace(ctx context.Context, input GetWorkspaceInput) (*GetWorkspaceOutput, error)
+	CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*CreateWorkspaceOutput, error)
+	UpdateWorkspace(ctx context.Context, input UpdateWorkspaceInput) (*UpdateWorkspaceOutput, error)
+	DeleteWorkspace(ctx context.Context, input DeleteWorkspaceInput) (*DeleteWorkspaceOutput, error)
+	ListMembers(ctx context.Context, input ListMembersInput) (*ListMembersOutput, error)
+	AddMember(ctx context.Context, input AddMemberInput) (*MemberActionOutput, error)
+	UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) (*MemberActionOutput, error)
+	RemoveMember(ctx context.Context, input RemoveMemberInput) (*MemberActionOutput, error)
 }
 
 type workspaceInteractor struct {
-	workspaceRepo domain.WorkspaceRepository
-	userRepo      domain.UserRepository
+	workspaceRepo domainrepository.WorkspaceRepository
+	userRepo      domainrepository.UserRepository
 }
 
-// NewWorkspaceInteractor creates a new workspace use case interactor
 func NewWorkspaceInteractor(
-	workspaceRepo domain.WorkspaceRepository,
-	userRepo domain.UserRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
+	userRepo domainrepository.UserRepository,
 ) WorkspaceUseCase {
 	return &workspaceInteractor{
 		workspaceRepo: workspaceRepo,
@@ -45,23 +45,23 @@ func NewWorkspaceInteractor(
 	}
 }
 
-func (i *workspaceInteractor) GetWorkspacesByUserID(userID string) (*GetWorkspacesOutput, error) {
-	// Get workspaces for the user
-	workspaces, err := i.workspaceRepo.FindByUserID(userID)
+func (i *workspaceInteractor) GetWorkspacesByUserID(ctx context.Context, userID string) (*GetWorkspacesOutput, error) {
+	workspaces, err := i.workspaceRepo.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workspaces: %w", err)
 	}
 
-	// Convert to output format
 	output := &GetWorkspacesOutput{
 		Workspaces: make([]WorkspaceOutput, 0, len(workspaces)),
 	}
 
 	for _, ws := range workspaces {
-		// Get member info to retrieve role
-		member, err := i.workspaceRepo.FindMember(ws.ID, userID)
+		member, err := i.workspaceRepo.FindMember(ctx, ws.ID, userID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get member info: %w", err)
+		}
+		if member == nil {
+			continue
 		}
 
 		output.Workspaces = append(output.Workspaces, WorkspaceOutput{
@@ -79,9 +79,8 @@ func (i *workspaceInteractor) GetWorkspacesByUserID(userID string) (*GetWorkspac
 	return output, nil
 }
 
-func (i *workspaceInteractor) GetWorkspace(input GetWorkspaceInput) (*GetWorkspaceOutput, error) {
-	// Check if user is a member
-	member, err := i.workspaceRepo.FindMember(input.ID, input.UserID)
+func (i *workspaceInteractor) GetWorkspace(ctx context.Context, input GetWorkspaceInput) (*GetWorkspaceOutput, error) {
+	member, err := i.workspaceRepo.FindMember(ctx, input.ID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
@@ -89,8 +88,7 @@ func (i *workspaceInteractor) GetWorkspace(input GetWorkspaceInput) (*GetWorkspa
 		return nil, ErrUnauthorized
 	}
 
-	// Get workspace
-	ws, err := i.workspaceRepo.FindByID(input.ID)
+	ws, err := i.workspaceRepo.FindByID(ctx, input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workspace: %w", err)
 	}
@@ -112,9 +110,8 @@ func (i *workspaceInteractor) GetWorkspace(input GetWorkspaceInput) (*GetWorkspa
 	}, nil
 }
 
-func (i *workspaceInteractor) CreateWorkspace(input CreateWorkspaceInput) (*CreateWorkspaceOutput, error) {
-	// Create workspace
-	workspace := &domain.Workspace{
+func (i *workspaceInteractor) CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*CreateWorkspaceOutput, error) {
+	workspace := &entity.Workspace{
 		Name:        input.Name,
 		Description: input.Description,
 		CreatedBy:   input.CreatedBy,
@@ -122,19 +119,18 @@ func (i *workspaceInteractor) CreateWorkspace(input CreateWorkspaceInput) (*Crea
 		UpdatedAt:   time.Now(),
 	}
 
-	if err := i.workspaceRepo.Create(workspace); err != nil {
+	if err := i.workspaceRepo.Create(ctx, workspace); err != nil {
 		return nil, fmt.Errorf("failed to create workspace: %w", err)
 	}
 
-	// Add creator as owner
-	member := &domain.WorkspaceMember{
+	member := &entity.WorkspaceMember{
 		WorkspaceID: workspace.ID,
 		UserID:      input.CreatedBy,
-		Role:        domain.WorkspaceRoleOwner,
+		Role:        entity.WorkspaceRoleOwner,
 		JoinedAt:    time.Now(),
 	}
 
-	if err := i.workspaceRepo.AddMember(member); err != nil {
+	if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
 		return nil, fmt.Errorf("failed to add creator as owner: %w", err)
 	}
 
@@ -144,7 +140,7 @@ func (i *workspaceInteractor) CreateWorkspace(input CreateWorkspaceInput) (*Crea
 			Name:        workspace.Name,
 			Description: workspace.Description,
 			IconURL:     workspace.IconURL,
-			Role:        string(domain.WorkspaceRoleOwner),
+			Role:        string(entity.WorkspaceRoleOwner),
 			CreatedBy:   workspace.CreatedBy,
 			CreatedAt:   workspace.CreatedAt,
 			UpdatedAt:   workspace.UpdatedAt,
@@ -152,18 +148,16 @@ func (i *workspaceInteractor) CreateWorkspace(input CreateWorkspaceInput) (*Crea
 	}, nil
 }
 
-func (i *workspaceInteractor) UpdateWorkspace(input UpdateWorkspaceInput) (*UpdateWorkspaceOutput, error) {
-	// Check if user is admin or owner
-	member, err := i.workspaceRepo.FindMember(input.ID, input.UserID)
+func (i *workspaceInteractor) UpdateWorkspace(ctx context.Context, input UpdateWorkspaceInput) (*UpdateWorkspaceOutput, error) {
+	member, err := i.workspaceRepo.FindMember(ctx, input.ID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
-	if member == nil || (member.Role != domain.WorkspaceRoleOwner && member.Role != domain.WorkspaceRoleAdmin) {
+	if member == nil || (member.Role != entity.WorkspaceRoleOwner && member.Role != entity.WorkspaceRoleAdmin) {
 		return nil, ErrUnauthorized
 	}
 
-	// Get existing workspace
-	ws, err := i.workspaceRepo.FindByID(input.ID)
+	ws, err := i.workspaceRepo.FindByID(ctx, input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workspace: %w", err)
 	}
@@ -171,7 +165,6 @@ func (i *workspaceInteractor) UpdateWorkspace(input UpdateWorkspaceInput) (*Upda
 		return nil, ErrWorkspaceNotFound
 	}
 
-	// Update fields
 	if input.Name != nil {
 		ws.Name = *input.Name
 	}
@@ -183,7 +176,7 @@ func (i *workspaceInteractor) UpdateWorkspace(input UpdateWorkspaceInput) (*Upda
 	}
 	ws.UpdatedAt = time.Now()
 
-	if err := i.workspaceRepo.Update(ws); err != nil {
+	if err := i.workspaceRepo.Update(ctx, ws); err != nil {
 		return nil, fmt.Errorf("failed to update workspace: %w", err)
 	}
 
@@ -201,27 +194,24 @@ func (i *workspaceInteractor) UpdateWorkspace(input UpdateWorkspaceInput) (*Upda
 	}, nil
 }
 
-func (i *workspaceInteractor) DeleteWorkspace(input DeleteWorkspaceInput) (*DeleteWorkspaceOutput, error) {
-	// Check if user is owner
-	member, err := i.workspaceRepo.FindMember(input.ID, input.UserID)
+func (i *workspaceInteractor) DeleteWorkspace(ctx context.Context, input DeleteWorkspaceInput) (*DeleteWorkspaceOutput, error) {
+	member, err := i.workspaceRepo.FindMember(ctx, input.ID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
-	if member == nil || member.Role != domain.WorkspaceRoleOwner {
+	if member == nil || member.Role != entity.WorkspaceRoleOwner {
 		return nil, ErrUnauthorized
 	}
 
-	// Delete workspace
-	if err := i.workspaceRepo.Delete(input.ID); err != nil {
+	if err := i.workspaceRepo.Delete(ctx, input.ID); err != nil {
 		return nil, fmt.Errorf("failed to delete workspace: %w", err)
 	}
 
 	return &DeleteWorkspaceOutput{Success: true}, nil
 }
 
-func (i *workspaceInteractor) ListMembers(input ListMembersInput) (*ListMembersOutput, error) {
-	// Check if requester is a member
-	member, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.RequesterID)
+func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembersInput) (*ListMembersOutput, error) {
+	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.RequesterID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
@@ -229,151 +219,139 @@ func (i *workspaceInteractor) ListMembers(input ListMembersInput) (*ListMembersO
 		return nil, ErrUnauthorized
 	}
 
-	// Get all members
-	members, err := i.workspaceRepo.FindMembersByWorkspaceID(input.WorkspaceID)
+	members, err := i.workspaceRepo.FindMembersByWorkspaceID(ctx, input.WorkspaceID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get members: %w", err)
+		return nil, fmt.Errorf("failed to list members: %w", err)
 	}
 
-	// Get user details for each member
-	output := &ListMembersOutput{
-		Members: make([]MemberInfo, 0, len(members)),
-	}
-
+	// ユーザーIDを収集
+	userIDs := make([]string, 0, len(members))
 	for _, m := range members {
-		user, err := i.userRepo.FindByID(m.UserID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get user details: %w", err)
-		}
-		if user == nil {
-			continue
-		}
+		userIDs = append(userIDs, m.UserID)
+	}
 
-		output.Members = append(output.Members, MemberInfo{
-			UserID:      user.ID,
-			Email:       user.Email,
-			DisplayName: user.DisplayName,
-			AvatarURL:   user.AvatarURL,
-			Role:        string(m.Role),
-			JoinedAt:    m.JoinedAt,
-		})
+	// ユーザー情報を一括取得
+	users, err := i.userRepo.FindByIDs(ctx, userIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user info: %w", err)
+	}
+
+	// ユーザー情報をマップに格納
+	userMap := make(map[string]*entity.User)
+	for _, u := range users {
+		userMap[u.ID] = u
+	}
+
+	output := &ListMembersOutput{Members: make([]MemberInfo, 0, len(members))}
+	for _, m := range members {
+		user := userMap[m.UserID]
+		memberInfo := MemberInfo{
+			UserID:   m.UserID,
+			Role:     string(m.Role),
+			JoinedAt: m.JoinedAt,
+		}
+		if user != nil {
+			memberInfo.Email = user.Email
+			memberInfo.DisplayName = user.DisplayName
+			memberInfo.AvatarURL = user.AvatarURL
+		}
+		output.Members = append(output.Members, memberInfo)
 	}
 
 	return output, nil
 }
 
-func (i *workspaceInteractor) AddMember(input AddMemberInput) (*MemberActionOutput, error) {
-	// Check if inviter is admin or owner
-	inviterMember, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.InviterID)
+func (i *workspaceInteractor) AddMember(ctx context.Context, input AddMemberInput) (*MemberActionOutput, error) {
+	requester, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.InviterID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check inviter membership: %w", err)
+		return nil, fmt.Errorf("failed to check requester membership: %w", err)
 	}
-	if inviterMember == nil || (inviterMember.Role != domain.WorkspaceRoleOwner && inviterMember.Role != domain.WorkspaceRoleAdmin) {
+	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
 		return nil, ErrUnauthorized
 	}
 
-	// Validate role
-	role := domain.WorkspaceRole(input.Role)
-	if !isValidWorkspaceRole(role) {
-		return nil, ErrInvalidRole
+	user, err := i.userRepo.FindByID(ctx, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user not found: %s", input.UserID)
 	}
 
-	// Add member
-	member := &domain.WorkspaceMember{
+	if err := validateWorkspaceRole(input.Role); err != nil {
+		return nil, err
+	}
+
+	member := &entity.WorkspaceMember{
 		WorkspaceID: input.WorkspaceID,
 		UserID:      input.UserID,
-		Role:        role,
+		Role:        entity.WorkspaceRole(input.Role),
 		JoinedAt:    time.Now(),
 	}
 
-	if err := i.workspaceRepo.AddMember(member); err != nil {
+	if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
 		return nil, fmt.Errorf("failed to add member: %w", err)
 	}
 
 	return &MemberActionOutput{Success: true}, nil
 }
 
-func (i *workspaceInteractor) UpdateMemberRole(input UpdateMemberRoleInput) (*MemberActionOutput, error) {
-	// Check if updater is owner
-	updaterMember, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.UpdaterID)
+func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) (*MemberActionOutput, error) {
+	requester, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UpdaterID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check updater membership: %w", err)
+		return nil, fmt.Errorf("failed to check requester membership: %w", err)
 	}
-	if updaterMember == nil || updaterMember.Role != domain.WorkspaceRoleOwner {
+	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
 		return nil, ErrUnauthorized
 	}
 
-	// Check if target member exists
-	targetMember, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check target membership: %w", err)
-	}
-	if targetMember == nil {
-		return nil, ErrWorkspaceNotFound
-	}
-
-	// Cannot change owner role
-	if targetMember.Role == domain.WorkspaceRoleOwner {
+	if input.UserID == input.UpdaterID && requester.Role == entity.WorkspaceRoleOwner {
 		return nil, ErrCannotChangeOwnerRole
 	}
 
-	// Validate new role
-	role := domain.WorkspaceRole(input.Role)
-	if !isValidWorkspaceRole(role) || role == domain.WorkspaceRoleOwner {
-		return nil, ErrInvalidRole
+	if err := validateWorkspaceRole(input.Role); err != nil {
+		return nil, err
 	}
 
-	// Update role
-	if err := i.workspaceRepo.UpdateMemberRole(input.WorkspaceID, input.UserID, role); err != nil {
+	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.UserID, entity.WorkspaceRole(input.Role)); err != nil {
 		return nil, fmt.Errorf("failed to update member role: %w", err)
 	}
 
 	return &MemberActionOutput{Success: true}, nil
 }
 
-func (i *workspaceInteractor) RemoveMember(input RemoveMemberInput) (*MemberActionOutput, error) {
-	// Check if remover is admin or owner
-	removerMember, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.RemoverID)
+func (i *workspaceInteractor) RemoveMember(ctx context.Context, input RemoveMemberInput) (*MemberActionOutput, error) {
+	requester, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.RemoverID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check remover membership: %w", err)
+		return nil, fmt.Errorf("failed to check requester membership: %w", err)
 	}
-	if removerMember == nil || (removerMember.Role != domain.WorkspaceRoleOwner && removerMember.Role != domain.WorkspaceRoleAdmin) {
+	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
 		return nil, ErrUnauthorized
 	}
 
-	// Check if target member exists
-	targetMember, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.UserID)
+	target, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check target membership: %w", err)
+		return nil, fmt.Errorf("failed to get target member: %w", err)
 	}
-	if targetMember == nil {
+	if target == nil {
 		return nil, ErrWorkspaceNotFound
 	}
-
-	// Cannot remove owner
-	if targetMember.Role == domain.WorkspaceRoleOwner {
+	if target.Role == entity.WorkspaceRoleOwner {
 		return nil, ErrCannotRemoveOwner
 	}
 
-	// Admin can only remove members and guests, not other admins
-	if removerMember.Role == domain.WorkspaceRoleAdmin && targetMember.Role == domain.WorkspaceRoleAdmin {
-		return nil, ErrUnauthorized
-	}
-
-	// Remove member
-	if err := i.workspaceRepo.RemoveMember(input.WorkspaceID, input.UserID); err != nil {
+	if err := i.workspaceRepo.RemoveMember(ctx, input.WorkspaceID, input.UserID); err != nil {
 		return nil, fmt.Errorf("failed to remove member: %w", err)
 	}
 
 	return &MemberActionOutput{Success: true}, nil
 }
 
-// Helper function to validate workspace role
-func isValidWorkspaceRole(role domain.WorkspaceRole) bool {
-	switch role {
-	case domain.WorkspaceRoleOwner, domain.WorkspaceRoleAdmin, domain.WorkspaceRoleMember, domain.WorkspaceRoleGuest:
-		return true
+func validateWorkspaceRole(role string) error {
+	switch entity.WorkspaceRole(role) {
+	case entity.WorkspaceRoleOwner, entity.WorkspaceRoleAdmin, entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
+		return nil
 	default:
-		return false
+		return ErrInvalidRole
 	}
 }

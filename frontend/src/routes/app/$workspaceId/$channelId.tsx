@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 
-import { ChatLayout } from "@/features/message/components/ChatLayout";
+import { MessagePanel } from "@/features/message/components/MessagePanel";
 import { setCurrentChannelAtom } from "@/lib/store/workspace";
 
 const ChannelComponent = () => {
@@ -14,7 +14,7 @@ const ChannelComponent = () => {
     setCurrentChannel(channelId);
   }, [channelId, setCurrentChannel]);
 
-  return <ChatLayout workspaceId={workspaceId} channelId={channelId} />;
+  return <MessagePanel workspaceId={workspaceId} channelId={channelId} />;
 };
 
 export const Route = createFileRoute("/app/$workspaceId/$channelId")({

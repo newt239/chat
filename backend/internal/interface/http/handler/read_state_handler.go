@@ -41,7 +41,7 @@ func (h *ReadStateHandler) GetUnreadCount(c *gin.Context) {
 		return
 	}
 
-	output, err := h.readStateUseCase.GetUnreadCount(readstate.GetUnreadCountInput{
+	output, err := h.readStateUseCase.GetUnreadCount(c.Request.Context(), readstate.GetUnreadCountInput{
 		ChannelID: channelID,
 		UserID:    userID,
 	})
@@ -103,7 +103,7 @@ func (h *ReadStateHandler) UpdateReadState(c *gin.Context) {
 		return
 	}
 
-	if err := h.readStateUseCase.UpdateReadState(readstate.UpdateReadStateInput{
+	if err := h.readStateUseCase.UpdateReadState(c.Request.Context(), readstate.UpdateReadStateInput{
 		ChannelID:  channelID,
 		UserID:     userID,
 		LastReadAt: parsedTime,

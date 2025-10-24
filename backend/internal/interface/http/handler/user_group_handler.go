@@ -26,7 +26,7 @@ func (h *UserGroupHandler) CreateUserGroup(c *gin.Context) {
 		return
 	}
 
-	output, err := h.userGroupUseCase.CreateUserGroup(input)
+	output, err := h.userGroupUseCase.CreateUserGroup(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -50,7 +50,7 @@ func (h *UserGroupHandler) UpdateUserGroup(c *gin.Context) {
 	}
 	input.ID = id
 
-	output, err := h.userGroupUseCase.UpdateUserGroup(input)
+	output, err := h.userGroupUseCase.UpdateUserGroup(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -79,7 +79,7 @@ func (h *UserGroupHandler) DeleteUserGroup(c *gin.Context) {
 		DeletedBy: userID.(string),
 	}
 
-	output, err := h.userGroupUseCase.DeleteUserGroup(input)
+	output, err := h.userGroupUseCase.DeleteUserGroup(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -108,7 +108,7 @@ func (h *UserGroupHandler) GetUserGroup(c *gin.Context) {
 		UserID: userID.(string),
 	}
 
-	output, err := h.userGroupUseCase.GetUserGroup(input)
+	output, err := h.userGroupUseCase.GetUserGroup(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -137,7 +137,7 @@ func (h *UserGroupHandler) ListUserGroups(c *gin.Context) {
 		UserID:      userID.(string),
 	}
 
-	output, err := h.userGroupUseCase.ListUserGroups(input)
+	output, err := h.userGroupUseCase.ListUserGroups(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -175,7 +175,7 @@ func (h *UserGroupHandler) AddMember(c *gin.Context) {
 		AddedBy: userID.(string),
 	}
 
-	output, err := h.userGroupUseCase.AddMember(input)
+	output, err := h.userGroupUseCase.AddMember(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -211,7 +211,7 @@ func (h *UserGroupHandler) RemoveMember(c *gin.Context) {
 		RemovedBy: requestUserID.(string),
 	}
 
-	output, err := h.userGroupUseCase.RemoveMember(input)
+	output, err := h.userGroupUseCase.RemoveMember(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -240,7 +240,7 @@ func (h *UserGroupHandler) ListMembers(c *gin.Context) {
 		UserID:  userID.(string),
 	}
 
-	output, err := h.userGroupUseCase.ListMembers(input)
+	output, err := h.userGroupUseCase.ListMembers(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

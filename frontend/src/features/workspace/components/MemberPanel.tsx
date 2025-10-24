@@ -2,21 +2,9 @@ import { Text, Stack, Loader, Badge, Avatar } from "@mantine/core";
 
 import { useMembers } from "../hooks/useMembers";
 
-// アバター用のカラーパレット
-const AVATAR_COLORS = ["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"];
-
-// ユーザーIDからカラーを決定する関数
-const getAvatarColor = (userId: string): string => {
-  const hash = userId.split("").reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc);
-  }, 0);
-  const color = AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-  return color ?? AVATAR_COLORS[0] ?? "#92A1C6";
-};
-
 type MemberPanelProps = {
   workspaceId: string | null;
-}
+};
 
 export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
   const { data: members, isLoading, error } = useMembers(workspaceId);
@@ -88,7 +76,6 @@ export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
               alt={member.displayName}
               radius="xl"
               size="md"
-              color={getAvatarColor(member.userId)}
             >
               {member.displayName.substring(0, 2).toUpperCase()}
             </Avatar>

@@ -2,9 +2,10 @@
 
 **最終更新: 2025-10-23**
 
-**プロジェクト進捗: 約 60% 完了 (MVP基準)**
-- Backend: 約 80% (MVP機能完了、添付ファイル・WebSocketイベント処理が未完)
-- Frontend: 約 50% (基本UI完了、リアクション・Markdown・メンション・DM・検索など多数未実装)
+**プロジェクト進捗: 約 60% 完了 (MVP 基準)**
+
+- Backend: 約 80% (MVP 機能完了、添付ファイル・WebSocket イベント処理が未完)
+- Frontend: 約 50% (基本 UI 完了、リアクション・Markdown・メンション・DM・検索など多数未実装)
 - DevOps: 約 40% (開発環境完了、本番環境未完)
 
 ## 技術スタック
@@ -40,7 +41,7 @@
   - `routes/`（TanStack Router: `/login`, `/app/workspaces/:wsId/channels/:chId`）
   - `features/`（auth, workspace, channel, message, attachment, unread）
   - `components/`（再利用 UI）
-  - `lib/`（apiClient, wsClient, queryClient, store）
+  - `lib/`（api, wsClient, queryClient, store）
   - `styles/`（tailwind.css）
 - `public/manifest.webmanifest`
 - 設定: `vite.config.ts`, `eslint`, `prettier`, `tailwind`, `postcss`, `vitest`, `storybook`
@@ -139,136 +140,146 @@
 ## 現在の実装状況（マイルストーン）
 
 ### ✅ 完了済み
-1. **スケルトン/起動** - CA構成、GORM初期化、全Domain層定義
-2. **Atlas導入** - 宣言的スキーマ(schema.hcl)、全テーブル定義
-3. **認証/セッション** - Repository実装、Auth UseCase/Handler実装、JWT/Refresh
+
+1. **スケルトン/起動** - CA 構成、GORM 初期化、全 Domain 層定義
+2. **Atlas 導入** - 宣言的スキーマ(schema.hcl)、全テーブル定義
+3. **認証/セッション** - Repository 実装、Auth UseCase/Handler 実装、JWT/Refresh
 4. **Workspace/Channel** - Repository + UseCase/Handler (CRUD + メンバー管理)
 5. **Message** - Repository + UseCase/Handler (取得・投稿・スレッド対応)
 6. **未読管理** - Repository + ReadState API (既読更新・未読数取得)
 7. **フロント基盤** - Router, Query, Auth, Workspace, Channel, Message UI
 8. **開発環境** - Docker Compose (Postgres + Backend + Frontend)
-9. **テスト基盤** - Vitest設定、27テスト実装（100%パス）
+9. **テスト基盤** - Vitest 設定、27 テスト実装（100%パス）
 
 ### 🚧 進行中・未完了
-10. **WebSocket** - Hub/Connection完了、イベントハンドラ未実装
-11. **添付ファイル** - バックエンドRepository完了、UseCase/S3統合未完
-12. **フロント統合** - WebSocketとQuery連携未完、未読バッジUI未完
-13. **PWA** - manifest完了、IndexedDB/オフライン機能未完
-14. **本番デプロイ** - Dockerfile.prod未完、Caddy設定未完
+
+10. **WebSocket** - Hub/Connection 完了、イベントハンドラ未実装
+11. **添付ファイル** - バックエンド Repository 完了、UseCase/S3 統合未完
+12. **フロント統合** - WebSocket と Query 連携未完、未読バッジ UI 未完
+13. **PWA** - manifest 完了、IndexedDB/オフライン機能未完
+14. **本番デプロイ** - Dockerfile.prod 未完、Caddy 設定未完
 
 ## 実装状況詳細
 
-### Backend 実装進捗: 約80%
+### Backend 実装進捗: 約 80%
 
 #### ✅ 完全実装 (100%)
-- **Domain層**: 全7エンティティ & Repository IF (User, Session, Workspace, Channel, Message, ReadState, Attachment)
-- **Infrastructure層**:
-  - Config, Logger (Zap), Auth Services (JWT, Password), DB (GORM), 全7 Repository実装
-  - 約700行のインフラコード
-- **DB Schema**: Atlas declarative schema - 全10+テーブル定義、インデックス、制約
+
+- **Domain 層**: 全 7 エンティティ & Repository IF (User, Session, Workspace, Channel, Message, ReadState, Attachment)
+- **Infrastructure 層**:
+  - Config, Logger (Zap), Auth Services (JWT, Password), DB (GORM), 全 7 Repository 実装
+  - 約 700 行のインフラコード
+- **DB Schema**: Atlas declarative schema - 全 10+テーブル定義、インデックス、制約
 - **HTTP Handlers**:
-  - Auth (Register/Login/Refresh/Logout) - 4エンドポイント
-  - Workspace CRUD + メンバー管理 - 8エンドポイント
-  - Channel 一覧/作成 - 2エンドポイント
-  - Message 一覧/投稿 - 2エンドポイント
-  - ReadState 未読取得/更新 - 2エンドポイント
-  - 合計18エンドポイント実装済み (約1,250行)
-- **UseCase層**:
-  - Auth (216行), Workspace (379行), Channel (124行), Message (154行), ReadState (100行)
-  - 合計約1,200行のビジネスロジック
+  - Auth (Register/Login/Refresh/Logout) - 4 エンドポイント
+  - Workspace CRUD + メンバー管理 - 8 エンドポイント
+  - Channel 一覧/作成 - 2 エンドポイント
+  - Message 一覧/投稿 - 2 エンドポイント
+  - ReadState 未読取得/更新 - 2 エンドポイント
+  - 合計 18 エンドポイント実装済み (約 1,250 行)
+- **UseCase 層**:
+  - Auth (216 行), Workspace (379 行), Channel (124 行), Message (154 行), ReadState (100 行)
+  - 合計約 1,200 行のビジネスロジック
 
 #### 🚧 部分実装 (20-70%)
+
 - **WebSocket (60%)**:
-  - ✅ Hub実装 (Register/Unregister/Broadcast)
-  - ✅ Connection管理 (ReadPump/WritePump, 140行)
-  - ✅ main.goでのエンドポイント登録 (JWT検証)
+
+  - ✅ Hub 実装 (Register/Unregister/Broadcast)
+  - ✅ Connection 管理 (ReadPump/WritePump, 140 行)
+  - ✅ main.go でのエンドポイント登録 (JWT 検証)
   - ❌ イベントハンドラ未実装 (join_channel, leave_channel, post_message, typing, update_read_state)
-  - **課題**: connection.go:76-77でプレースホルダーのみ
+  - **課題**: connection.go:76-77 でプレースホルダーのみ
 
 - **Attachment (10%)**:
-  - ✅ Domain Entity & Repository完了
-  - ❌ UseCase未実装
-  - ❌ Handler は501 Not Implemented stub
-  - ❌ S3/Wasabi統合なし (aws-sdk-go-v2未使用)
+  - ✅ Domain Entity & Repository 完了
+  - ❌ UseCase 未実装
+  - ❌ Handler は 501 Not Implemented stub
+  - ❌ S3/Wasabi 統合なし (aws-sdk-go-v2 未使用)
 
 #### ❌ 未実装 (0%)
+
 - **Observability**: OpenTelemetry, Metrics, pprof
 - **Backend Tests**: Go テストファイルなし
 - **OIDC**: 認証プロバイダー抽象化のみ
-- **Reactions API**: Schema完備、UseCase/Handler未実装
-- **Mentions API**: Schema未実装、機能設計未着手
-- **DM機能**: Channel.isDM フラグ追加必要、API未実装
-- **Search API**: PostgreSQL FTS未実装
+- **Reactions API**: Schema 完備、UseCase/Handler 未実装
+- **Mentions API**: Schema 未実装、機能設計未着手
+- **DM 機能**: Channel.isDM フラグ追加必要、API 未実装
+- **Search API**: PostgreSQL FTS 未実装
 
-### Frontend 実装進捗: 約75%
+### Frontend 実装進捗: 約 75%
 
 #### ✅ 完全実装 (100%)
+
 - **ビルド環境**: Vite, TypeScript, ESLint, Prettier, Tailwind, Mantine 8
-- **ルーティング**: TanStack Router - 7ルート (Login, Register, App, Workspace, Channel)
+- **ルーティング**: TanStack Router - 7 ルート (Login, Register, App, Workspace, Channel)
 - **認証システム**:
   - Login/Register フォーム
   - Auth hooks (useAuth, useAuthGuard)
   - Zustand store (localStorage persist)
-  - JWT refresh機能
-- **APIクライアント**:
-  - openapi-typescript型生成
+  - JWT refresh 機能
+- **API クライアント**:
+  - openapi-typescript 型生成
   - openapi-fetch クライアント
   - 自動認証リフレッシュ
-- **Workspace機能**:
-  - 一覧/作成UI
+- **Workspace 機能**:
+  - 一覧/作成 UI
   - useWorkspace hooks
   - WorkspaceSelection component
-- **Channel機能 (90%)**:
-  - 一覧/作成UI
+- **Channel 機能 (90%)**:
+  - 一覧/作成 UI
   - useChannel hooks
   - ChannelList component
-  - **未完**: 詳細表示、設定UI
-- **Message機能 (80%)**:
+  - **未完**: 詳細表示、設定 UI
+- **Message 機能 (80%)**:
   - メッセージ表示 (MessagePanel)
   - 送信フォーム
   - useMessage hooks
   - 自動スクロール
-  - **未完**: スレッドUI、仮想スクロール、編集/削除、リアクション
-- **WebSocketクライアント (70%)**:
+  - **未完**: スレッド UI、仮想スクロール、編集/削除、リアクション
+- **WebSocket クライアント (70%)**:
   - 接続/切断管理
   - 再接続ロジック (exponential backoff)
   - イベント送受信
-  - **未完**: TanStack Query統合、join_channelイベント送信
+  - **未完**: TanStack Query 統合、join_channel イベント送信
 - **テスト**:
-  - Vitest設定
-  - 8ファイル、27テスト (100% pass)
-  - Auth/Workspace/Layout/Headerコンポーネントカバー済み
-  - **課題**: Header.test.tsx に2つのESLintエラー (unused imports)
+  - Vitest 設定
+  - 8 ファイル、27 テスト (100% pass)
+  - Auth/Workspace/Layout/Header コンポーネントカバー済み
+  - **課題**: Header.test.tsx に 2 つの ESLint エラー (unused imports)
 
 #### 🚧 部分実装 (30%)
+
 - **PWA (30%)**:
-  - ✅ vite-plugin-pwa設定
+  - ✅ vite-plugin-pwa 設定
   - ✅ manifest.webmanifest
   - ❌ Service Worker カスタマイズ
 
 #### ❌ 未実装 (0%)
+
 - **Storybook**: 設定ファイル、ストーリー作成
 - **Attachment UI**: アップロード/ダウンロード/プレビュー
 - **Unread UI**: バッジ、未読カウント表示
 - **Virtual Scrolling**: メッセージリスト最適化
-- **Message Threads**: スレッド表示UI
+- **Message Threads**: スレッド表示 UI
 - **Typing Indicators**: 入力中表示
-- **Message Reactions**: リアクション選択/表示UI
-- **Markdown Support**: メッセージMarkdown表示/編集
+- **Message Reactions**: リアクション選択/表示 UI
+- **Markdown Support**: メッセージ Markdown 表示/編集
 - **Mentions**: @ユーザーメンション機能
-- **Direct Messages**: 1対1 DM機能
+- **Direct Messages**: 1 対 1 DM 機能
 - **Channel Search**: チャンネル名検索/フィルタ
 - **Message Search**: メッセージ全文検索
 - **User Profile**: プロフィール表示/編集
 - **Channel Settings**: チャンネル設定/権限管理
 - **Member List**: メンバー一覧/オンライン状態
-- **Notification Settings**: 通知設定UI
+- **Notification Settings**: 通知設定 UI
 - **Theme Support**: ダークモード切り替え
 
-### DevOps 実装進捗: 約40%
+### DevOps 実装進捗: 約 40%
 
 #### ✅ 完全実装 (100%)
-- **Docker Compose開発環境**:
+
+- **Docker Compose 開発環境**:
   - PostgreSQL 16 Alpine
   - Backend service (Dockerfile.dev)
   - Frontend service (Dockerfile.dev)
@@ -276,44 +287,48 @@
   - ヘルスチェック
 
 #### ❌ 未実装 (0%)
+
 - **本番デプロイ**:
   - Dockerfile.prod (backend/frontend)
   - Docker Compose production.yml
-  - Caddy/Nginx設定
-  - TLS証明書管理
+  - Caddy/Nginx 設定
+  - TLS 証明書管理
 - **CI/CD**: GitHub Actions ワークフロー
 - **監視**: ログ集約、メトリクス収集、アラート
 
 ---
 
-## 優先タスク (MVP向け)
+## 優先タスク (MVP 向け)
 
-### 🔴 Critical (MVP必須)
+### 🔴 Critical (MVP 必須)
 
 #### Backend
+
 1. **WebSocket イベントハンドラ実装** (優先度: 最高)
+
    - 実装内容:
      - `join_channel`: チャンネル参加通知
      - `post_message`: リアルタイムメッセージ配信
      - `update_read_state`: 未読状態同期
-     - エラーハンドリング & ack応答
+     - エラーハンドリング & ack 応答
    - 影響範囲: `backend/internal/interface/ws/connection.go`
-   - 前提: Message/ReadState UseCase既存のため依存少ない
+   - 前提: Message/ReadState UseCase 既存のため依存少ない
 
-2. **Attachment UseCase & Handler実装** (優先度: 高)
+2. **Attachment UseCase & Handler 実装** (優先度: 高)
+
    - 実装内容:
-     - Presign URL生成 UseCase
-     - Attachment metadata登録/取得
-     - Download presign URL生成
+     - Presign URL 生成 UseCase
+     - Attachment metadata 登録/取得
+     - Download presign URL 生成
    - 影響範囲:
      - `backend/internal/usecase/attachment/`
      - `backend/internal/interface/http/handler/attachment_handler.go`
-   - 依存: S3クライアント統合 (次項)
+   - 依存: S3 クライアント統合 (次項)
 
-3. **Wasabi S3統合** (優先度: 高)
+3. **Wasabi S3 統合** (優先度: 高)
    - 実装内容:
      - aws-sdk-go-v2 初期化
-     - S3 Presigner設定
+     - S3 Presigner 設定
      - エンドポイント/リージョン/認証設定
    - 影響範囲:
      - `backend/internal/infrastructure/storage/wasabi/client.go`
@@ -321,34 +336,38 @@
    - 環境変数: `WASABI_ENDPOINT`, `WASABI_REGION`, `WASABI_ACCESS_KEY`, `WASABI_SECRET_KEY`, `WASABI_BUCKET`
 
 #### Frontend
-4. **WebSocket & Query統合** (優先度: 最高)
+
+4. **WebSocket & Query 統合** (優先度: 最高)
+
    - 実装内容:
      - `new_message`イベント受信 → queryClient.setQueryData
      - `unread_count`イベント受信 → 未読カウント更新
      - チャンネル参加時に`join_channel`イベント送信
-     - 楽観的UI更新 (メッセージ送信時)
+     - 楽観的 UI 更新 (メッセージ送信時)
    - 影響範囲:
      - `frontend/src/lib/ws/client.ts`
      - `frontend/src/features/message/hooks/useMessage.ts`
-   - 技術的課題: queryKey構造とWebSocketイベント対応
+   - 技術的課題: queryKey 構造と WebSocket イベント対応
 
-5. **未読バッジUI実装** (優先度: 中)
+5. **未読バッジ UI 実装** (優先度: 中)
+
    - 実装内容:
      - チャンネルリストに未読カウント表示
      - 未読があるチャンネルをハイライト
-     - メッセージ閲覧時に既読API呼び出し
+     - メッセージ閲覧時に既読 API 呼び出し
    - 影響範囲:
      - `frontend/src/features/channel/components/ChannelList.tsx`
      - `frontend/src/features/message/components/MessagePanel.tsx`
    - 依存: ReadState API (既存)
 
 6. **ESLint エラー修正** (優先度: 最高、工数小)
-   - 実装内容: `Header.test.tsx` から未使用import削除 (waitFor, userEvent)
+   - 実装内容: `Header.test.tsx` から未使用 import 削除 (waitFor, userEvent)
    - 影響範囲: `frontend/src/components/layout/Header.test.tsx`
-   - 工数: 5分
+   - 工数: 5 分
 
 #### DevOps
-7. **本番Docker環境構築** (優先度: 中)
+
+7. **本番 Docker 環境構築** (優先度: 中)
    - 実装内容:
      - Backend Dockerfile.prod (multi-stage build)
      - Frontend Dockerfile.prod (nginx serve)
@@ -357,120 +376,139 @@
    - 影響範囲: `docker/`
    - 環境変数管理: .env.production
 
-### 🟡 Medium (MVP推奨)
+### 🟡 Medium (MVP 推奨)
 
-8. **Attachment UI実装** (優先度: 中)
-   - 前提: Backend S3統合完了後
+8. **Attachment UI 実装** (優先度: 中)
+
+   - 前提: Backend S3 統合完了後
    - 実装内容: ファイルピッカー, アップロード進捗, プレビュー, ダウンロード
 
 9. **メッセージ仮想スクロール** (優先度: 中)
+
    - ライブラリ: `@tanstack/react-virtual`
    - パフォーマンス改善: 1000+ メッセージ対応
 
 10. **Message Thread UI** (優先度: 中)
-    - スレッド表示/返信UI
-    - parent_id活用 (Backend対応済み)
+
+    - スレッド表示/返信 UI
+    - parent_id 活用 (Backend 対応済み)
 
 11. **Typing Indicators** (優先度: 中)
-    - "○○が入力中..." UI
+
+    - "○○ が入力中..." UI
     - WebSocket typing イベント連携
 
 12. **Backend テスト整備** (優先度: 中)
-    - UseCase単体テスト
-    - Repository統合テスト (testcontainers)
+    - UseCase 単体テスト
+    - Repository 統合テスト (testcontainers)
     - テストカバレッジ目標: 60%+
 
-### 🟢 Low (Post-MVP機能拡張)
+### 🟢 Low (Post-MVP 機能拡張)
 
 13. **Message Reactions** (優先度: 低)
-    - リアクション追加/削除API (**Schema完備: message_reactions table**)
-    - リアクション選択UI (絵文字ピッカー)
-    - WebSocket同期
+
+    - リアクション追加/削除 API (**Schema 完備: message_reactions table**)
+    - リアクション選択 UI (絵文字ピッカー)
+    - WebSocket 同期
 
 14. **Markdown Support** (優先度: 低)
-    - メッセージMarkdown表示 (react-markdown)
-    - Markdown編集プレビュー
-    - コードブロックシンタックスハイライト
-    - **Backend変更不要**: bodyフィールドそのまま使用
 
-15. **Mentions機能** (優先度: 低)
-    - Backend: Mentionsテーブル設計・実装
+    - メッセージ Markdown 表示 (react-markdown)
+    - Markdown 編集プレビュー
+    - コードブロックシンタックスハイライト
+    - **Backend 変更不要**: body フィールドそのまま使用
+
+15. **Mentions 機能** (優先度: 低)
+
+    - Backend: Mentions テーブル設計・実装
     - @ユーザーメンション入力 (autocomplete)
-    - メンション通知API
+    - メンション通知 API
     - メンション一覧表示
 
 16. **Direct Messages** (優先度: 低)
+
     - Backend: Channel.isDM フラグ追加
-    - 1対1 DM用チャンネル作成API
-    - DM一覧UI
-    - DM専用通知
+    - 1 対 1 DM 用チャンネル作成 API
+    - DM 一覧 UI
+    - DM 専用通知
 
 17. **検索機能** (優先度: 低)
+
     - チャンネル名検索/フィルタ
-    - メッセージ全文検索API (PostgreSQL FTS)
-    - 検索UI (モーダル, Ctrl+K)
+    - メッセージ全文検索 API (PostgreSQL FTS)
+    - 検索 UI (モーダル, Ctrl+K)
 
 18. **User Profile** (優先度: 低)
-    - プロフィール表示/編集UI
+
+    - プロフィール表示/編集 UI
     - アバター画像アップロード
     - ステータスメッセージ
 
 19. **Channel Settings** (優先度: 低)
+
     - チャンネル設定画面
     - 権限管理 (owner/admin/member)
     - チャンネル削除/アーカイブ
 
 20. **Member List & Presence** (優先度: 低)
-    - メンバー一覧UI
+
+    - メンバー一覧 UI
     - オンライン状態表示
     - WebSocket presence イベント
 
 21. **Notification Settings** (優先度: 低)
-    - 通知設定UI
-    - チャンネル別通知ON/OFF
+
+    - 通知設定 UI
+    - チャンネル別通知 ON/OFF
     - メンション専用通知
 
 22. **Theme Support** (優先度: 低)
+
     - ダークモード実装
-    - Mantine ColorSchemeProvider統合
-    - localStorage保存
+    - Mantine ColorSchemeProvider 統合
+    - localStorage 保存
 
 23. **Storybook** (優先度: 低)
-    - .storybook設定
-    - Mantine/Tailwind統合
+
+    - .storybook 設定
+    - Mantine/Tailwind 統合
     - 主要コンポーネントのストーリー作成
 
-24. **Observability強化** (優先度: 低)
-    - OpenTelemetry統合
-    - Prometheus metrics
-    - pprof有効化
+24. **Observability 強化** (優先度: 低)
 
-25. **OIDC認証** (優先度: 低)
+    - OpenTelemetry 統合
+    - Prometheus metrics
+    - pprof 有効化
+
+25. **OIDC 認証** (優先度: 低)
     - Google/GitHub OAuth
-    - AuthProvider抽象化活用
+    - AuthProvider 抽象化活用
 
 ---
 
 ## 既知の技術的課題
 
 ### Backend
+
 1. **main.go:28** - CORS origin validation TODO (現在は全許可)
 2. **Attachment handlers** - 501 Not Implemented
 3. **WebSocket** - イベント処理プレースホルダー (connection.go:76-77)
-4. **ログ統合** - Zapロガー定義済みだがHandler層で未使用
-5. **レート制限** - Middlewareあるが適用不十分
+4. **ログ統合** - Zap ロガー定義済みだが Handler 層で未使用
+5. **レート制限** - Middleware あるが適用不十分
 6. **エラーレスポンス** - 統一されたエラー構造なし
 
 ### Frontend
+
 1. **Header.test.tsx:3,4** - ESLint unused imports エラー
-2. **WebSocket再接続** - 最大5回で停止、手動再接続UIなし
-3. **型安全性** - 一部inferredだが明示的型推奨箇所あり
-4. **アクセシビリティ** - ARIA属性・キーボードナビ未検証
+2. **WebSocket 再接続** - 最大 5 回で停止、手動再接続 UI なし
+3. **型安全性** - 一部 inferred だが明示的型推奨箇所あり
+4. **アクセシビリティ** - ARIA 属性・キーボードナビ未検証
 5. **エラーバウンダリ** - グローバルエラーハンドリング未実装
 
 ### DevOps
-1. **環境変数管理** - .envファイル分離未完 (dev/prod)
-2. **シークレット管理** - JWT_SECRET等ハードコード禁止ルール未設定
+
+1. **環境変数管理** - .env ファイル分離未完 (dev/prod)
+2. **シークレット管理** - JWT_SECRET 等ハードコード禁止ルール未設定
 3. **ヘルスチェック** - `/healthz`エンドポイント未実装
 4. **ログローテーション** - 設定なし
 5. **バックアップ戦略** - DB/添付ファイルバックアップ未計画
@@ -479,203 +517,228 @@
 
 ## 実装ロードマップ
 
-### Phase 1: MVP完成 (現在 → 1-2週間)
+### Phase 1: MVP 完成 (現在 → 1-2 週間)
 
 **目標**: 基本的なチャット機能が動作する最小限のプロダクト
 
-1. **ESLint エラー修正** (30分)
-   - [ ] Header.test.tsx の未使用import削除
+1. **ESLint エラー修正** (30 分)
 
-2. **WebSocket イベントハンドラ** (2-3日)
+   - [ ] Header.test.tsx の未使用 import 削除
+
+2. **WebSocket イベントハンドラ** (2-3 日)
+
    - [ ] join_channel ハンドラ
-   - [ ] post_message ハンドラ (MessageUseCaseと連携)
-   - [ ] update_read_state ハンドラ (ReadStateUseCaseと連携)
-   - [ ] エラーハンドリング & ack応答
+   - [ ] post_message ハンドラ (MessageUseCase と連携)
+   - [ ] update_read_state ハンドラ (ReadStateUseCase と連携)
+   - [ ] エラーハンドリング & ack 応答
    - [ ] 単体テスト作成
 
-3. **WebSocket & TanStack Query統合** (1-2日)
-   - [ ] new_message イベント → queryClient更新
+3. **WebSocket & TanStack Query 統合** (1-2 日)
+
+   - [ ] new_message イベント → queryClient 更新
    - [ ] unread_count イベント → 未読カウント更新
    - [ ] join_channel イベント送信 (チャンネル参加時)
-   - [ ] 楽観的UI更新 (メッセージ送信)
+   - [ ] 楽観的 UI 更新 (メッセージ送信)
 
-4. **未読バッジUI** (1日)
+4. **未読バッジ UI** (1 日)
+
    - [ ] ChannelList に未読カウント表示
    - [ ] 未読チャンネルのハイライト
-   - [ ] メッセージ閲覧時の既読API呼び出し
+   - [ ] メッセージ閲覧時の既読 API 呼び出し
 
-5. **本番Docker環境** (1-2日)
+5. **本番 Docker 環境** (1-2 日)
+
    - [ ] Backend Dockerfile.prod (multi-stage)
    - [ ] Frontend Dockerfile.prod (nginx)
    - [ ] docker-compose.prod.yml
    - [ ] Caddyfile (TLS/proxy/compress)
    - [ ] 環境変数管理 (.env.production)
 
-6. **ヘルスチェックエンドポイント** (1時間)
-   - [ ] GET /healthz (DB接続確認)
-   - [ ] Dockerヘルスチェック統合
+6. **ヘルスチェックエンドポイント** (1 時間)
+   - [ ] GET /healthz (DB 接続確認)
+   - [ ] Docker ヘルスチェック統合
 
-### Phase 2: ファイル共有機能 (1-2週間)
+### Phase 2: ファイル共有機能 (1-2 週間)
 
 **目標**: 添付ファイルのアップロード・ダウンロード
 
-7. **Wasabi S3クライアント** (1日)
+7. **Wasabi S3 クライアント** (1 日)
+
    - [ ] aws-sdk-go-v2 初期化
-   - [ ] Presigner設定
+   - [ ] Presigner 設定
    - [ ] 環境変数読み込み
 
-8. **Attachment UseCase & Handler** (2日)
-   - [ ] Presign URL生成 UseCase
-   - [ ] Metadata登録/取得 UseCase
-   - [ ] Download presign UseCase
-   - [ ] Handler実装 (3エンドポイント)
-   - [ ] OpenAPI動作確認
+8. **Attachment UseCase & Handler** (2 日)
 
-9. **Attachment UI** (2-3日)
+   - [ ] Presign URL 生成 UseCase
+   - [ ] Metadata 登録/取得 UseCase
+   - [ ] Download presign UseCase
+   - [ ] Handler 実装 (3 エンドポイント)
+   - [ ] OpenAPI 動作確認
+
+9. **Attachment UI** (2-3 日)
    - [ ] ファイルピッカー統合
    - [ ] アップロード進捗表示
    - [ ] ファイルプレビュー (画像/PDF)
    - [ ] ダウンロードボタン
    - [ ] エラーハンドリング
 
-### Phase 3: パフォーマンス & テスト (1週間)
+### Phase 3: パフォーマンス & テスト (1 週間)
 
 **目標**: 安定性・パフォーマンス向上
 
-10. **仮想スクロール** (1日)
-    - [ ] @tanstack/react-virtual導入
+10. **仮想スクロール** (1 日)
+
+    - [ ] @tanstack/react-virtual 導入
     - [ ] MessagePanel に適用
     - [ ] 1000+メッセージでの動作確認
 
-11. **Backend テスト** (2-3日)
-    - [ ] UseCase単体テスト (Auth/Workspace/Channel/Message)
-    - [ ] Repository統合テスト (testcontainers)
-    - [ ] WebSocketハンドラテスト
-    - [ ] カバレッジ60%+達成
+11. **Backend テスト** (2-3 日)
 
-12. **Frontend E2E テスト** (1-2日)
-    - [ ] Playwright導入
+    - [ ] UseCase 単体テスト (Auth/Workspace/Channel/Message)
+    - [ ] Repository 統合テスト (testcontainers)
+    - [ ] WebSocket ハンドラテスト
+    - [ ] カバレッジ 60%+達成
+
+12. **Frontend E2E テスト** (1-2 日)
+
+    - [ ] Playwright 導入
     - [ ] ログイン → メッセージ送信フロー
     - [ ] ワークスペース/チャンネル作成フロー
 
-13. **エラーハンドリング改善** (1日)
+13. **エラーハンドリング改善** (1 日)
     - [ ] 統一エラーレスポンス構造 (backend)
     - [ ] グローバルエラーバウンダリ (frontend)
-    - [ ] Toast通知統合
+    - [ ] Toast 通知統合
 
-### Phase 4: UX向上 (1-2週間)
+### Phase 4: UX 向上 (1-2 週間)
 
 **目標**: ユーザー体験の洗練
 
-14. **メッセージスレッド** (2-3日)
-    - [ ] スレッド表示UI
-    - [ ] 返信フォーム
-    - [ ] parent_id連携 (backend対応済み)
+14. **メッセージスレッド** (2-3 日)
 
-15. **入力中表示** (1日)
+    - [ ] スレッド表示 UI
+    - [ ] 返信フォーム
+    - [ ] parent_id 連携 (backend 対応済み)
+
+15. **入力中表示** (1 日)
+
     - [ ] typing イベント送信 (WebSocket)
-    - [ ] "○○が入力中..." UI
+    - [ ] "○○ が入力中..." UI
     - [ ] デバウンス処理
 
-16. **Markdown Support** (1-2日)
+16. **Markdown Support** (1-2 日)
+
     - [ ] react-markdown 導入
-    - [ ] メッセージMarkdown表示
+    - [ ] メッセージ Markdown 表示
     - [ ] コードブロックシンタックスハイライト
 
-17. **Message Reactions** (2日)
-    - [ ] リアクション追加/削除API (backend UseCase/Handler - **Schema完備**)
-    - [ ] 絵文字ピッカーUI
-    - [ ] リアクション表示UI
-    - [ ] WebSocket同期
+17. **Message Reactions** (2 日)
+    - [ ] リアクション追加/削除 API (backend UseCase/Handler - **Schema 完備**)
+    - [ ] 絵文字ピッカー UI
+    - [ ] リアクション表示 UI
+    - [ ] WebSocket 同期
 
-### Phase 5: 運用準備 (1週間)
+### Phase 5: 運用準備 (1 週間)
 
 **目標**: 本番運用に向けた監視・セキュリティ
 
-18. **Observability** (2-3日)
-    - [ ] OpenTelemetry統合
-    - [ ] Prometheus metrics (/metrics)
-    - [ ] pprof有効化 (/debug/pprof)
-    - [ ] 構造化ログ (Zap) の全Handler適用
+18. **Observability** (2-3 日)
 
-19. **セキュリティ強化** (1-2日)
-    - [ ] CORS origin validation (main.go:28 TODO解消)
+    - [ ] OpenTelemetry 統合
+    - [ ] Prometheus metrics (/metrics)
+    - [ ] pprof 有効化 (/debug/pprof)
+    - [ ] 構造化ログ (Zap) の全 Handler 適用
+
+19. **セキュリティ強化** (1-2 日)
+
+    - [ ] CORS origin validation (main.go:28 TODO 解消)
     - [ ] レート制限の全エンドポイント適用
     - [ ] シークレット管理 (環境変数検証)
     - [ ] CSP/X-Frame-Options ヘッダ (Caddy)
 
-20. **CI/CD** (1-2日)
+20. **CI/CD** (1-2 日)
     - [ ] GitHub Actions ワークフロー
-    - [ ] Lint/Test自動実行
+    - [ ] Lint/Test 自動実行
     - [ ] Docker image ビルド & push
-    - [ ] VPSデプロイスクリプト
+    - [ ] VPS デプロイスクリプト
 
 ### Phase 6: 機能拡張 (Post-MVP)
 
 **目標**: より高度なコミュニケーション機能
 
-21. **検索機能** (2-3日)
-    - [ ] Backend: チャンネル名検索API
-    - [ ] Backend: メッセージ全文検索API (PostgreSQL FTS追加)
-    - [ ] Frontend: 検索UI (モーダル, Ctrl+K)
+21. **検索機能** (2-3 日)
+
+    - [ ] Backend: チャンネル名検索 API
+    - [ ] Backend: メッセージ全文検索 API (PostgreSQL FTS 追加)
+    - [ ] Frontend: 検索 UI (モーダル, Ctrl+K)
     - [ ] Frontend: 検索結果ハイライト
 
-22. **Mentions機能** (3-4日)
-    - [ ] Backend: Mentionsテーブル設計 (user_id, mentioned_by, message_id)
-    - [ ] Backend: メンション通知API
+22. **Mentions 機能** (3-4 日)
+
+    - [ ] Backend: Mentions テーブル設計 (user_id, mentioned_by, message_id)
+    - [ ] Backend: メンション通知 API
     - [ ] Frontend: @ユーザーメンション入力 (autocomplete)
     - [ ] Frontend: メンション一覧表示
     - [ ] Frontend: 未読メンション管理
 
-23. **Direct Messages** (2-3日)
-    - [ ] Backend: Channel.isDM フラグ追加 (schema migration)
-    - [ ] Backend: 1対1 DM用チャンネル作成API
-    - [ ] Frontend: DM一覧UI
-    - [ ] Frontend: DM通知設定
+23. **Direct Messages** (2-3 日)
 
-24. **User Profile & Settings** (2日)
-    - [ ] プロフィール表示/編集UI
+    - [ ] Backend: Channel.isDM フラグ追加 (schema migration)
+    - [ ] Backend: 1 対 1 DM 用チャンネル作成 API
+    - [ ] Frontend: DM 一覧 UI
+    - [ ] Frontend: DM 通知設定
+
+24. **User Profile & Settings** (2 日)
+
+    - [ ] プロフィール表示/編集 UI
     - [ ] アバター画像アップロード
     - [ ] ステータスメッセージ
-    - [ ] 通知設定UI
+    - [ ] 通知設定 UI
 
-25. **Channel Management** (2-3日)
+25. **Channel Management** (2-3 日)
+
     - [ ] チャンネル設定画面
     - [ ] 権限管理 (owner/admin/member)
     - [ ] チャンネル削除/アーカイブ
-    - [ ] メンバー一覧/招待UI
+    - [ ] メンバー一覧/招待 UI
 
-26. **Member Presence** (1-2日)
-    - [ ] オンライン状態管理API
+26. **Member Presence** (1-2 日)
+
+    - [ ] オンライン状態管理 API
     - [ ] WebSocket presence イベント
     - [ ] メンバー一覧にオンライン表示
     - [ ] "最終ログイン" 表示
 
-27. **Theme Support** (1日)
+27. **Theme Support** (1 日)
+
     - [ ] ダークモード実装
-    - [ ] Mantine ColorSchemeProvider統合
-    - [ ] localStorage保存
+    - [ ] Mantine ColorSchemeProvider 統合
+    - [ ] localStorage 保存
     - [ ] システム設定連動
 
-28. **OIDC認証** (2-3日)
-    - [ ] AuthProvider抽象化活用
-    - [ ] Google OAuth統合
-    - [ ] GitHub OAuth統合
+28. **OIDC 認証** (2-3 日)
 
-29. **Storybook** (1-2日)
-    - [ ] .storybook設定
-    - [ ] Mantine/Tailwind統合
+    - [ ] AuthProvider 抽象化活用
+    - [ ] Google OAuth 統合
+    - [ ] GitHub OAuth 統合
+
+29. **Storybook** (1-2 日)
+
+    - [ ] .storybook 設定
+    - [ ] Mantine/Tailwind 統合
     - [ ] 主要コンポーネントのストーリー作成
 
-30. **モバイル最適化** (2-3日)
+30. **モバイル最適化** (2-3 日)
     - [ ] レスポンシブナビゲーション
     - [ ] ドロワーメニュー (スマホ)
     - [ ] タッチジェスチャー対応
-    - [ ] iOS/Android PWAインストール促進
+    - [ ] iOS/Android PWA インストール促進
 
 ## 実装済みコンポーネント一覧
 
-### Backend (約2,450行)
+### Backend (約 2,450 行)
+
 ```
 backend/
 ├── cmd/server/main.go                              ✅ DI/ワイヤリング/エンドポイント登録
@@ -707,7 +770,8 @@ backend/
 └── atlas.hcl                                       ✅ Atlas config
 ```
 
-### Frontend (約2,000+行)
+### Frontend (約 2,000+行)
+
 ```
 frontend/
 ├── vite.config.ts, tsconfig.json                   ✅ ビルド設定
@@ -739,6 +803,7 @@ frontend/
 ```
 
 ### DevOps
+
 ```
 docker/
 ├── docker-compose.yml                              ✅ 開発環境 (Postgres/Backend/Frontend)
@@ -748,6 +813,7 @@ docker/
 ```
 
 ### Documentation
+
 ```
 .
 ├── README.md                                       ✅ プロジェクト概要

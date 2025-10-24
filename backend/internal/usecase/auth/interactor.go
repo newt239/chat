@@ -1,35 +1,36 @@
 package auth
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"time"
 
-	"github.com/example/chat/internal/domain"
-	"github.com/example/chat/internal/infrastructure/auth"
+	"github.com/example/chat/internal/domain/entity"
+	domainerrors "github.com/example/chat/internal/domain/errors"
+	domainrepository "github.com/example/chat/internal/domain/repository"
 )
 
 var (
-	ErrInvalidCredentials = errors.New("invalid email or password")
-	ErrUserAlreadyExists  = errors.New("user with this email already exists")
-	ErrInvalidToken       = errors.New("invalid or expired token")
-	ErrSessionNotFound    = errors.New("session not found")
+	ErrInvalidCredentials = domainerrors.ErrInvalidCredentials
+	ErrUserAlreadyExists  = domainerrors.ErrUserAlreadyExists
+	ErrInvalidToken       = domainerrors.ErrInvalidToken
+	ErrSessionNotFound    = domainerrors.ErrSessionNotFound
 )
 
 // AuthUseCase defines the interface for authentication use cases
 type AuthUseCase interface {
-	Register(input RegisterInput) (*AuthOutput, error)
-	Login(input LoginInput) (*AuthOutput, error)
-	RefreshToken(input RefreshTokenInput) (*AuthOutput, error)
-	Logout(input LogoutInput) (*LogoutOutput, error)
+	Register(ctx context.Context, input RegisterInput) (*AuthOutput, error)
+	Login(ctx context.Context, input LoginInput) (*AuthOutput, error)
+	RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error)
+	Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error)
 }
 
 type authInteractor struct {
-	userRepo    domain.UserRepository
-	sessionRepo domain.SessionRepository
-	jwtService  *auth.JWTService
-	passwordSvc *auth.PasswordService
+	userRepo    domainrepository.UserRepository
+	sessionRepo domainrepository.SessionRepository
+	jwtService  JWTService
+	passwordSvc PasswordService
 
 	// Configuration
 	accessTokenDuration  time.Duration
@@ -38,10 +39,10 @@ type authInteractor struct {
 
 // NewAuthInteractor creates a new auth interactor
 func NewAuthInteractor(
-	userRepo domain.UserRepository,
-	sessionRepo domain.SessionRepository,
-	jwtService *auth.JWTService,
-	passwordSvc *auth.PasswordService,
+	userRepo domainrepository.UserRepository,
+	sessionRepo domainrepository.SessionRepository,
+	jwtService JWTService,
+	passwordSvc PasswordService,
 ) AuthUseCase {
 	return &authInteractor{
 		userRepo:             userRepo,
@@ -53,9 +54,9 @@ func NewAuthInteractor(
 	}
 }
 
-func (i *authInteractor) Register(input RegisterInput) (*AuthOutput, error) {
+func (i *authInteractor) Register(ctx context.Context, input RegisterInput) (*AuthOutput, error) {
 	// Check if user already exists
-	existing, err := i.userRepo.FindByEmail(input.Email)
+	existing, err := i.userRepo.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -70,23 +71,23 @@ func (i *authInteractor) Register(input RegisterInput) (*AuthOutput, error) {
 	}
 
 	// Create user
-	user := &domain.User{
+	user := &entity.User{
 		Email:        input.Email,
 		PasswordHash: hashedPassword,
 		DisplayName:  input.DisplayName,
 	}
 
-	if err := i.userRepo.Create(user); err != nil {
+	if err := i.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
 
 	// Generate tokens
-	return i.generateAuthOutput(user)
+	return i.generateAuthOutput(ctx, user)
 }
 
-func (i *authInteractor) Login(input LoginInput) (*AuthOutput, error) {
+func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
 	// Find user by email
-	user, err := i.userRepo.FindByEmail(input.Email)
+	user, err := i.userRepo.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -100,10 +101,10 @@ func (i *authInteractor) Login(input LoginInput) (*AuthOutput, error) {
 	}
 
 	// Generate tokens
-	return i.generateAuthOutput(user)
+	return i.generateAuthOutput(ctx, user)
 }
 
-func (i *authInteractor) RefreshToken(input RefreshTokenInput) (*AuthOutput, error) {
+func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error) {
 	// Verify refresh token
 	claims, err := i.jwtService.VerifyToken(input.RefreshToken)
 	if err != nil {
@@ -111,7 +112,7 @@ func (i *authInteractor) RefreshToken(input RefreshTokenInput) (*AuthOutput, err
 	}
 
 	// Find user
-	user, err := i.userRepo.FindByID(claims.UserID)
+	user, err := i.userRepo.FindByID(ctx, claims.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +121,7 @@ func (i *authInteractor) RefreshToken(input RefreshTokenInput) (*AuthOutput, err
 	}
 
 	// Find active sessions for this user
-	sessions, err := i.sessionRepo.FindActiveByUserID(user.ID)
+	sessions, err := i.sessionRepo.FindActiveByUserID(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -139,12 +140,12 @@ func (i *authInteractor) RefreshToken(input RefreshTokenInput) (*AuthOutput, err
 	}
 
 	// Generate new tokens
-	return i.generateAuthOutput(user)
+	return i.generateAuthOutput(ctx, user)
 }
 
-func (i *authInteractor) Logout(input LogoutInput) (*LogoutOutput, error) {
+func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error) {
 	// Find active sessions
-	sessions, err := i.sessionRepo.FindActiveByUserID(input.UserID)
+	sessions, err := i.sessionRepo.FindActiveByUserID(ctx, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +153,7 @@ func (i *authInteractor) Logout(input LogoutInput) (*LogoutOutput, error) {
 	// Find the session matching this refresh token and revoke it
 	for _, session := range sessions {
 		if err := i.passwordSvc.VerifyPassword(input.RefreshToken, session.RefreshTokenHash); err == nil {
-			if err := i.sessionRepo.Revoke(session.ID); err != nil {
+			if err := i.sessionRepo.Revoke(ctx, session.ID); err != nil {
 				return nil, err
 			}
 			return &LogoutOutput{Success: true}, nil
@@ -163,7 +164,7 @@ func (i *authInteractor) Logout(input LogoutInput) (*LogoutOutput, error) {
 }
 
 // Helper function to generate auth output with tokens
-func (i *authInteractor) generateAuthOutput(user *domain.User) (*AuthOutput, error) {
+func (i *authInteractor) generateAuthOutput(ctx context.Context, user *entity.User) (*AuthOutput, error) {
 	// Generate access token
 	accessToken, err := i.jwtService.GenerateToken(user.ID, i.accessTokenDuration)
 	if err != nil {
@@ -183,13 +184,13 @@ func (i *authInteractor) generateAuthOutput(user *domain.User) (*AuthOutput, err
 	}
 
 	// Store session
-	session := &domain.Session{
+	session := &entity.Session{
 		UserID:           user.ID,
 		RefreshTokenHash: refreshTokenHash,
 		ExpiresAt:        time.Now().Add(i.refreshTokenDuration),
 	}
 
-	if err := i.sessionRepo.Create(session); err != nil {
+	if err := i.sessionRepo.Create(ctx, session); err != nil {
 		return nil, err
 	}
 

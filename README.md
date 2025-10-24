@@ -4,8 +4,6 @@ Slack ライクなリアルタイムチャットアプリケーション。ワ�
 
 ## クイックスタート
 
-**Docker Compose で全て起動（推奨）:**
-
 ```bash
 # Docker Desktopを起動してから実行
 docker-compose up -d
@@ -32,14 +30,15 @@ docker-compose logs -f
 
 ### バックエンド
 
-- Go 1.22+
-- Gin (HTTP ルーター)
+- Go 1.23+
+- Echo (HTTP ルーター) - Gin から移行完了
 - WebSocket (gorilla/websocket)
-- GORM + Gen (ORM & コード生成)
+- GORM (ORM)
 - Atlas (宣言的スキーママイグレーション)
 - PostgreSQL
 - JWT 認証
 - Wasabi S3 互換ストレージ
+- クリーンアーキテクチャ実装
 
 ### フロントエンド
 

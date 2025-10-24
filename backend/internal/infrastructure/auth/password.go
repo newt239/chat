@@ -1,25 +1,23 @@
 package auth
 
 import (
+	authuc "github.com/example/chat/internal/usecase/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
 const bcryptCost = 12
 
-// PasswordService provides password hashing and verification
-type PasswordService struct {
+type passwordService struct {
 	cost int
 }
 
-// NewPasswordService creates a new password service
-func NewPasswordService() *PasswordService {
-	return &PasswordService{
+func NewPasswordService() authuc.PasswordService {
+	return &passwordService{
 		cost: bcryptCost,
 	}
 }
 
-// HashPassword hashes a password using bcrypt
-func (s *PasswordService) HashPassword(password string) (string, error) {
+func (s *passwordService) HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), s.cost)
 	if err != nil {
 		return "", err
@@ -27,8 +25,7 @@ func (s *PasswordService) HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-// VerifyPassword verifies a password against a hash
-func (s *PasswordService) VerifyPassword(password, hashedPassword string) error {
+func (s *passwordService) VerifyPassword(password, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 

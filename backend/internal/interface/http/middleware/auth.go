@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/example/chat/internal/infrastructure/auth"
 	"github.com/gin-gonic/gin"
+
+	authuc "github.com/example/chat/internal/usecase/auth"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 	userEmailKey        = "userEmail"
 )
 
-func AuthMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
+func AuthMiddleware(jwtService authuc.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader(authorizationHeader)
 		if authHeader == "" {

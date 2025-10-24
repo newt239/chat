@@ -1,107 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
-	"github.com/example/chat/internal/infrastructure/auth"
+	"github.com/example/chat/internal/adapter/controller/websocket"
 	"github.com/example/chat/internal/infrastructure/config"
-	infradb "github.com/example/chat/internal/infrastructure/db"
+	"github.com/example/chat/internal/infrastructure/db"
 	"github.com/example/chat/internal/infrastructure/logger"
-	"github.com/example/chat/internal/infrastructure/repository"
 	"github.com/example/chat/internal/infrastructure/seed"
-	ginhttp "github.com/example/chat/internal/interface/http"
-	"github.com/example/chat/internal/interface/http/handler"
-	"github.com/example/chat/internal/interface/http/middleware"
-	"github.com/example/chat/internal/interface/ws"
-	authuc "github.com/example/chat/internal/usecase/auth"
-	channeluc "github.com/example/chat/internal/usecase/channel"
-	linkuc "github.com/example/chat/internal/usecase/link"
-	messageuc "github.com/example/chat/internal/usecase/message"
-	reactionuc "github.com/example/chat/internal/usecase/reaction"
-	readstateuc "github.com/example/chat/internal/usecase/readstate"
-	usergroupuc "github.com/example/chat/internal/usecase/user_group"
-	workspaceuc "github.com/example/chat/internal/usecase/workspace"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
+	"github.com/example/chat/internal/registry"
 )
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true // TODO: validate origin based on config
-	},
-}
-
-func setupRouter(
-	cfg *config.Config,
-	jwtService *auth.JWTService,
-	hub *ws.Hub,
-	authHandler *handler.AuthHandler,
-	workspaceHandler *handler.WorkspaceHandler,
-	channelHandler *handler.ChannelHandler,
-	messageHandler *handler.MessageHandler,
-	readStateHandler *handler.ReadStateHandler,
-	reactionHandler *handler.ReactionHandler,
-	userGroupHandler *handler.UserGroupHandler,
-	linkHandler *handler.LinkHandler,
-) *gin.Engine {
-	if cfg.Server.Env == "production" {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	r := gin.New()
-	r.Use(gin.Recovery())
-	r.Use(gin.Logger())
-	r.Use(middleware.CORS(cfg.CORS.AllowedOrigins))
-
-	// Health check
-	r.GET("/healthz", func(c *gin.Context) {
-		c.String(http.StatusOK, "ok")
-	})
-
-	// WebSocket endpoint
-	r.GET("/ws", func(c *gin.Context) {
-		workspaceID := c.Query("workspaceId")
-		if workspaceID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "workspaceId required"})
-			return
-		}
-
-		// Extract and validate JWT
-		token := c.Query("token")
-		if token == "" {
-			token = c.GetHeader("Sec-WebSocket-Protocol")
-		}
-		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
-			return
-		}
-
-		claims, err := jwtService.VerifyToken(token)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-			return
-		}
-
-		// Upgrade connection
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		if err != nil {
-			log.Printf("websocket upgrade error: %v", err)
-			return
-		}
-
-		wsConn := ws.NewConnection(hub, conn, claims.UserID, workspaceID)
-		hub.Register(wsConn)
-
-		go wsConn.WritePump()
-		go wsConn.ReadPump()
-	})
-
-	// HTTP API routes
-	ginhttp.RegisterRoutes(r, jwtService, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler, userGroupHandler, linkHandler)
-
-	return r
-}
 
 func main() {
 	// Load configuration
@@ -117,7 +30,7 @@ func main() {
 	defer logger.Sync()
 
 	// Initialize database
-	db, err := infradb.InitDB(cfg.Database.URL)
+	db, err := db.InitDB(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
@@ -127,52 +40,45 @@ func main() {
 		log.Fatalf("failed to auto-seed database: %v", err)
 	}
 
-	// Initialize repositories
-	userRepo := repository.NewUserRepository(db)
-	sessionRepo := repository.NewSessionRepository(db)
-	workspaceRepo := repository.NewWorkspaceRepository(db)
-	channelRepo := repository.NewChannelRepository(db)
-	messageRepo := repository.NewMessageRepository(db)
-	readStateRepo := repository.NewReadStateRepository(db)
-	userGroupRepo := repository.NewUserGroupRepository(db)
-	userMentionRepo := repository.NewMessageUserMentionRepository(db)
-	groupMentionRepo := repository.NewMessageGroupMentionRepository(db)
-	linkRepo := repository.NewMessageLinkRepository(db)
-
-	// Initialize services
-	jwtService := auth.NewJWTService(cfg.JWT.Secret)
-	passwordService := auth.NewPasswordService()
-
-	// Initialize use cases
-	authUseCase := authuc.NewAuthInteractor(userRepo, sessionRepo, jwtService, passwordService)
-	workspaceUseCase := workspaceuc.NewWorkspaceInteractor(workspaceRepo, userRepo)
-	channelUseCase := channeluc.NewChannelInteractor(channelRepo, workspaceRepo)
-	messageUseCase := messageuc.NewMessageInteractor(messageRepo, channelRepo, workspaceRepo, userRepo, userGroupRepo, userMentionRepo, groupMentionRepo, linkRepo)
-	readStateUseCase := readstateuc.NewReadStateInteractor(readStateRepo, channelRepo, workspaceRepo)
-	reactionUseCase := reactionuc.NewReactionInteractor(messageRepo, channelRepo, workspaceRepo, userRepo)
-	userGroupUseCase := usergroupuc.NewUserGroupInteractor(userGroupRepo, workspaceRepo, userRepo)
-	linkUseCase := linkuc.NewLinkInteractor()
-
-	// Initialize handlers
-	authHandler := handler.NewAuthHandler(authUseCase)
-	workspaceHandler := handler.NewWorkspaceHandler(workspaceUseCase)
-	channelHandler := handler.NewChannelHandler(channelUseCase)
-	messageHandler := handler.NewMessageHandler(messageUseCase)
-	readStateHandler := handler.NewReadStateHandler(readStateUseCase)
-	reactionHandler := handler.NewReactionHandler(reactionUseCase)
-	userGroupHandler := handler.NewUserGroupHandler(userGroupUseCase)
-	linkHandler := handler.NewLinkHandler(linkUseCase)
+	// Initialize registry (DI container)
+	reg := registry.NewRegistry(db, cfg)
 
 	// Initialize WebSocket hub
-	hub := ws.NewHub()
+	hub := websocket.NewHub()
 	go hub.Run()
 
-	// Setup and run server
-	r := setupRouter(cfg, jwtService, hub, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler, userGroupHandler, linkHandler)
+	// Setup Echo router
+	e := reg.NewRouter()
+
+	// WebSocket endpoint
+	jwtService := reg.NewJWTService()
+	e.GET("/ws", websocket.NewHandler(hub, jwtService))
+
+	// Start server
 	addr := ":" + cfg.Server.Port
 	log.Printf("Starting server on %s", addr)
 
-	if err := r.Run(addr); err != nil {
-		log.Fatal(err)
+	// Graceful shutdown
+	go func() {
+		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server error: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+
+	log.Println("Shutting down server...")
+
+	// Graceful shutdown with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := e.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
 	}
+
+	log.Println("Server exited")
 }

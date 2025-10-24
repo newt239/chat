@@ -1,10 +1,12 @@
 package readstate
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
-	"github.com/example/chat/internal/domain"
+	"github.com/example/chat/internal/domain/entity"
+	domainrepository "github.com/example/chat/internal/domain/repository"
 )
 
 var (
@@ -13,20 +15,20 @@ var (
 )
 
 type ReadStateUseCase interface {
-	GetUnreadCount(input GetUnreadCountInput) (*UnreadCountOutput, error)
-	UpdateReadState(input UpdateReadStateInput) error
+	GetUnreadCount(ctx context.Context, input GetUnreadCountInput) (*UnreadCountOutput, error)
+	UpdateReadState(ctx context.Context, input UpdateReadStateInput) error
 }
 
 type readStateInteractor struct {
-	readStateRepo domain.ReadStateRepository
-	channelRepo   domain.ChannelRepository
-	workspaceRepo domain.WorkspaceRepository
+	readStateRepo domainrepository.ReadStateRepository
+	channelRepo   domainrepository.ChannelRepository
+	workspaceRepo domainrepository.WorkspaceRepository
 }
 
 func NewReadStateInteractor(
-	readStateRepo domain.ReadStateRepository,
-	channelRepo domain.ChannelRepository,
-	workspaceRepo domain.WorkspaceRepository,
+	readStateRepo domainrepository.ReadStateRepository,
+	channelRepo domainrepository.ChannelRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
 ) ReadStateUseCase {
 	return &readStateInteractor{
 		readStateRepo: readStateRepo,
@@ -35,13 +37,13 @@ func NewReadStateInteractor(
 	}
 }
 
-func (i *readStateInteractor) GetUnreadCount(input GetUnreadCountInput) (*UnreadCountOutput, error) {
-	channel, err := i.ensureChannelAccess(input.ChannelID, input.UserID)
+func (i *readStateInteractor) GetUnreadCount(ctx context.Context, input GetUnreadCountInput) (*UnreadCountOutput, error) {
+	channel, err := i.ensureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	count, err := i.readStateRepo.GetUnreadCount(channel.ID, input.UserID)
+	count, err := i.readStateRepo.GetUnreadCount(ctx, channel.ID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get unread count: %w", err)
 	}
@@ -49,27 +51,27 @@ func (i *readStateInteractor) GetUnreadCount(input GetUnreadCountInput) (*Unread
 	return &UnreadCountOutput{Count: count}, nil
 }
 
-func (i *readStateInteractor) UpdateReadState(input UpdateReadStateInput) error {
-	channel, err := i.ensureChannelAccess(input.ChannelID, input.UserID)
+func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateReadStateInput) error {
+	channel, err := i.ensureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return err
 	}
 
-	readState := &domain.ChannelReadState{
+	readState := &entity.ChannelReadState{
 		ChannelID:  channel.ID,
 		UserID:     input.UserID,
 		LastReadAt: input.LastReadAt,
 	}
 
-	if err := i.readStateRepo.Upsert(readState); err != nil {
+	if err := i.readStateRepo.Upsert(ctx, readState); err != nil {
 		return fmt.Errorf("failed to update read state: %w", err)
 	}
 
 	return nil
 }
 
-func (i *readStateInteractor) ensureChannelAccess(channelID, userID string) (*domain.Channel, error) {
-	ch, err := i.channelRepo.FindByID(channelID)
+func (i *readStateInteractor) ensureChannelAccess(ctx context.Context, channelID, userID string) (*entity.Channel, error) {
+	ch, err := i.channelRepo.FindByID(ctx, channelID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load channel: %w", err)
 	}
@@ -78,7 +80,7 @@ func (i *readStateInteractor) ensureChannelAccess(channelID, userID string) (*do
 	}
 
 	if ch.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ch.ID, userID)
+		isMember, err := i.channelRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
 		}
@@ -88,7 +90,7 @@ func (i *readStateInteractor) ensureChannelAccess(channelID, userID string) (*do
 		return ch, nil
 	}
 
-	member, err := i.workspaceRepo.FindMember(ch.WorkspaceID, userID)
+	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 	}

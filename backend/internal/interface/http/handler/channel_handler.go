@@ -43,7 +43,7 @@ func (h *ChannelHandler) ListChannels(c *gin.Context) {
 		return
 	}
 
-	channels, err := h.channelUseCase.ListChannels(channel.ListChannelsInput{
+	channels, err := h.channelUseCase.ListChannels(c.Request.Context(), channel.ListChannelsInput{
 		WorkspaceID: workspaceID,
 		UserID:      userID,
 	})
@@ -101,7 +101,7 @@ func (h *ChannelHandler) CreateChannel(c *gin.Context) {
 		return
 	}
 
-	channelOutput, err := h.channelUseCase.CreateChannel(channel.CreateChannelInput{
+	channelOutput, err := h.channelUseCase.CreateChannel(c.Request.Context(), channel.CreateChannelInput{
 		WorkspaceID: workspaceID,
 		UserID:      userID,
 		Name:        req.Name,

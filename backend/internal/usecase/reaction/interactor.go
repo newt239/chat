@@ -1,11 +1,13 @@
 package reaction
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain"
+	"github.com/example/chat/internal/domain/entity"
+	domainrepository "github.com/example/chat/internal/domain/repository"
 )
 
 var (
@@ -15,23 +17,23 @@ var (
 )
 
 type ReactionUseCase interface {
-	AddReaction(input AddReactionInput) error
-	RemoveReaction(input RemoveReactionInput) error
-	ListReactions(messageID string, userID string) (*ListReactionsOutput, error)
+	AddReaction(ctx context.Context, input AddReactionInput) error
+	RemoveReaction(ctx context.Context, input RemoveReactionInput) error
+	ListReactions(ctx context.Context, messageID string, userID string) (*ListReactionsOutput, error)
 }
 
 type reactionInteractor struct {
-	messageRepo   domain.MessageRepository
-	channelRepo   domain.ChannelRepository
-	workspaceRepo domain.WorkspaceRepository
-	userRepo      domain.UserRepository
+	messageRepo   domainrepository.MessageRepository
+	channelRepo   domainrepository.ChannelRepository
+	workspaceRepo domainrepository.WorkspaceRepository
+	userRepo      domainrepository.UserRepository
 }
 
 func NewReactionInteractor(
-	messageRepo domain.MessageRepository,
-	channelRepo domain.ChannelRepository,
-	workspaceRepo domain.WorkspaceRepository,
-	userRepo domain.UserRepository,
+	messageRepo domainrepository.MessageRepository,
+	channelRepo domainrepository.ChannelRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
+	userRepo domainrepository.UserRepository,
 ) ReactionUseCase {
 	return &reactionInteractor{
 		messageRepo:   messageRepo,
@@ -41,9 +43,9 @@ func NewReactionInteractor(
 	}
 }
 
-func (i *reactionInteractor) AddReaction(input AddReactionInput) error {
+func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionInput) error {
 	// メッセージの存在確認とアクセス権限チェック
-	message, err := i.messageRepo.FindByID(input.MessageID)
+	message, err := i.messageRepo.FindByID(ctx, input.MessageID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch message: %w", err)
 	}
@@ -52,28 +54,28 @@ func (i *reactionInteractor) AddReaction(input AddReactionInput) error {
 	}
 
 	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(message.ChannelID, input.UserID); err != nil {
+	if err := i.ensureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
 	// リアクションを追加
-	reaction := &domain.MessageReaction{
+	reaction := &entity.MessageReaction{
 		MessageID: input.MessageID,
 		UserID:    input.UserID,
 		Emoji:     input.Emoji,
 		CreatedAt: time.Now(),
 	}
 
-	if err := i.messageRepo.AddReaction(reaction); err != nil {
+	if err := i.messageRepo.AddReaction(ctx, reaction); err != nil {
 		return fmt.Errorf("failed to add reaction: %w", err)
 	}
 
 	return nil
 }
 
-func (i *reactionInteractor) RemoveReaction(input RemoveReactionInput) error {
+func (i *reactionInteractor) RemoveReaction(ctx context.Context, input RemoveReactionInput) error {
 	// メッセージの存在確認
-	message, err := i.messageRepo.FindByID(input.MessageID)
+	message, err := i.messageRepo.FindByID(ctx, input.MessageID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch message: %w", err)
 	}
@@ -82,21 +84,21 @@ func (i *reactionInteractor) RemoveReaction(input RemoveReactionInput) error {
 	}
 
 	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(message.ChannelID, input.UserID); err != nil {
+	if err := i.ensureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
 	// リアクションを削除
-	if err := i.messageRepo.RemoveReaction(input.MessageID, input.UserID, input.Emoji); err != nil {
+	if err := i.messageRepo.RemoveReaction(ctx, input.MessageID, input.UserID, input.Emoji); err != nil {
 		return fmt.Errorf("failed to remove reaction: %w", err)
 	}
 
 	return nil
 }
 
-func (i *reactionInteractor) ListReactions(messageID string, userID string) (*ListReactionsOutput, error) {
+func (i *reactionInteractor) ListReactions(ctx context.Context, messageID string, userID string) (*ListReactionsOutput, error) {
 	// メッセージの存在確認
-	message, err := i.messageRepo.FindByID(messageID)
+	message, err := i.messageRepo.FindByID(ctx, messageID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch message: %w", err)
 	}
@@ -105,12 +107,12 @@ func (i *reactionInteractor) ListReactions(messageID string, userID string) (*Li
 	}
 
 	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(message.ChannelID, userID); err != nil {
+	if err := i.ensureChannelAccess(ctx, message.ChannelID, userID); err != nil {
 		return nil, err
 	}
 
 	// リアクションを取得
-	reactions, err := i.messageRepo.FindReactions(messageID)
+	reactions, err := i.messageRepo.FindReactions(ctx, messageID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch reactions: %w", err)
 	}
@@ -130,13 +132,13 @@ func (i *reactionInteractor) ListReactions(messageID string, userID string) (*Li
 	}
 
 	// ユーザー情報を一括取得
-	users, err := i.userRepo.FindByIDs(userIDs)
+	users, err := i.userRepo.FindByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch users: %w", err)
 	}
 
 	// ユーザー情報をマップに格納
-	userMap := make(map[string]*domain.User)
+	userMap := make(map[string]*entity.User)
 	for _, user := range users {
 		userMap[user.ID] = user
 	}
@@ -151,8 +153,8 @@ func (i *reactionInteractor) ListReactions(messageID string, userID string) (*Li
 	return &ListReactionsOutput{Reactions: outputs}, nil
 }
 
-func (i *reactionInteractor) ensureChannelAccess(channelID, userID string) error {
-	ch, err := i.channelRepo.FindByID(channelID)
+func (i *reactionInteractor) ensureChannelAccess(ctx context.Context, channelID, userID string) error {
+	ch, err := i.channelRepo.FindByID(ctx, channelID)
 	if err != nil {
 		return fmt.Errorf("failed to load channel: %w", err)
 	}
@@ -162,7 +164,7 @@ func (i *reactionInteractor) ensureChannelAccess(channelID, userID string) error
 
 	// プライベートチャンネルの場合
 	if ch.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ch.ID, userID)
+		isMember, err := i.channelRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
 			return fmt.Errorf("failed to verify channel membership: %w", err)
 		}
@@ -173,7 +175,7 @@ func (i *reactionInteractor) ensureChannelAccess(channelID, userID string) error
 	}
 
 	// パブリックチャンネルの場合はワークスペースメンバーかチェック
-	member, err := i.workspaceRepo.FindMember(ch.WorkspaceID, userID)
+	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
@@ -184,7 +186,7 @@ func (i *reactionInteractor) ensureChannelAccess(channelID, userID string) error
 	return nil
 }
 
-func toReactionOutput(reaction *domain.MessageReaction, user *domain.User) ReactionOutput {
+func toReactionOutput(reaction *entity.MessageReaction, user *entity.User) ReactionOutput {
 	userInfo := UserInfo{
 		ID:          "",
 		DisplayName: "Unknown User",

@@ -1,42 +1,44 @@
 package user_group
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain"
+	"github.com/example/chat/internal/domain/entity"
+	domainrepository "github.com/example/chat/internal/domain/repository"
 )
 
 var (
-	ErrUserGroupNotFound     = errors.New("user group not found")
-	ErrUnauthorized          = errors.New("unauthorized to perform this action")
-	ErrUserGroupNameExists   = errors.New("user group name already exists")
-	ErrUserAlreadyInGroup    = errors.New("user is already a member of this group")
-	ErrUserNotInGroup        = errors.New("user is not a member of this group")
+	ErrUserGroupNotFound   = errors.New("user group not found")
+	ErrUnauthorized        = errors.New("unauthorized to perform this action")
+	ErrUserGroupNameExists = errors.New("user group name already exists")
+	ErrUserAlreadyInGroup  = errors.New("user is already a member of this group")
+	ErrUserNotInGroup      = errors.New("user is not a member of this group")
 )
 
 type UserGroupUseCase interface {
-	CreateUserGroup(input CreateUserGroupInput) (*CreateUserGroupOutput, error)
-	UpdateUserGroup(input UpdateUserGroupInput) (*UpdateUserGroupOutput, error)
-	DeleteUserGroup(input DeleteUserGroupInput) (*DeleteUserGroupOutput, error)
-	GetUserGroup(input GetUserGroupInput) (*GetUserGroupOutput, error)
-	ListUserGroups(input ListUserGroupsInput) (*ListUserGroupsOutput, error)
-	AddMember(input AddMemberInput) (*AddMemberOutput, error)
-	RemoveMember(input RemoveMemberInput) (*RemoveMemberOutput, error)
-	ListMembers(input ListMembersInput) (*ListMembersOutput, error)
+	CreateUserGroup(ctx context.Context, input CreateUserGroupInput) (*CreateUserGroupOutput, error)
+	UpdateUserGroup(ctx context.Context, input UpdateUserGroupInput) (*UpdateUserGroupOutput, error)
+	DeleteUserGroup(ctx context.Context, input DeleteUserGroupInput) (*DeleteUserGroupOutput, error)
+	GetUserGroup(ctx context.Context, input GetUserGroupInput) (*GetUserGroupOutput, error)
+	ListUserGroups(ctx context.Context, input ListUserGroupsInput) (*ListUserGroupsOutput, error)
+	AddMember(ctx context.Context, input AddMemberInput) (*AddMemberOutput, error)
+	RemoveMember(ctx context.Context, input RemoveMemberInput) (*RemoveMemberOutput, error)
+	ListMembers(ctx context.Context, input ListMembersInput) (*ListMembersOutput, error)
 }
 
 type userGroupInteractor struct {
-	userGroupRepo domain.UserGroupRepository
-	workspaceRepo domain.WorkspaceRepository
-	userRepo      domain.UserRepository
+	userGroupRepo domainrepository.UserGroupRepository
+	workspaceRepo domainrepository.WorkspaceRepository
+	userRepo      domainrepository.UserRepository
 }
 
 func NewUserGroupInteractor(
-	userGroupRepo domain.UserGroupRepository,
-	workspaceRepo domain.WorkspaceRepository,
-	userRepo domain.UserRepository,
+	userGroupRepo domainrepository.UserGroupRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
+	userRepo domainrepository.UserRepository,
 ) UserGroupUseCase {
 	return &userGroupInteractor{
 		userGroupRepo: userGroupRepo,
@@ -45,9 +47,9 @@ func NewUserGroupInteractor(
 	}
 }
 
-func (i *userGroupInteractor) CreateUserGroup(input CreateUserGroupInput) (*CreateUserGroupOutput, error) {
+func (i *userGroupInteractor) CreateUserGroup(ctx context.Context, input CreateUserGroupInput) (*CreateUserGroupOutput, error) {
 	// ワークスペースの存在確認と権限チェック
-	workspace, err := i.workspaceRepo.FindByID(input.WorkspaceID)
+	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
@@ -56,7 +58,7 @@ func (i *userGroupInteractor) CreateUserGroup(input CreateUserGroupInput) (*Crea
 	}
 
 	// 作成者がワークスペースのメンバーかチェック
-	member, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.CreatedBy)
+	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.CreatedBy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
@@ -65,7 +67,7 @@ func (i *userGroupInteractor) CreateUserGroup(input CreateUserGroupInput) (*Crea
 	}
 
 	// グループ名の重複チェック
-	existing, err := i.userGroupRepo.FindByName(input.WorkspaceID, input.Name)
+	existing, err := i.userGroupRepo.FindByName(ctx, input.WorkspaceID, input.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check group name: %w", err)
 	}
@@ -74,7 +76,7 @@ func (i *userGroupInteractor) CreateUserGroup(input CreateUserGroupInput) (*Crea
 	}
 
 	// グループ作成
-	group := &domain.UserGroup{
+	group := &entity.UserGroup{
 		WorkspaceID: input.WorkspaceID,
 		Name:        input.Name,
 		Description: input.Description,
@@ -83,7 +85,7 @@ func (i *userGroupInteractor) CreateUserGroup(input CreateUserGroupInput) (*Crea
 		UpdatedAt:   time.Now(),
 	}
 
-	if err := i.userGroupRepo.Create(group); err != nil {
+	if err := i.userGroupRepo.Create(ctx, group); err != nil {
 		return nil, fmt.Errorf("failed to create user group: %w", err)
 	}
 
@@ -91,9 +93,9 @@ func (i *userGroupInteractor) CreateUserGroup(input CreateUserGroupInput) (*Crea
 	return &CreateUserGroupOutput{UserGroup: output}, nil
 }
 
-func (i *userGroupInteractor) UpdateUserGroup(input UpdateUserGroupInput) (*UpdateUserGroupOutput, error) {
+func (i *userGroupInteractor) UpdateUserGroup(ctx context.Context, input UpdateUserGroupInput) (*UpdateUserGroupOutput, error) {
 	// グループの存在確認
-	group, err := i.userGroupRepo.FindByID(input.ID)
+	group, err := i.userGroupRepo.FindByID(ctx, input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user group: %w", err)
 	}
@@ -108,7 +110,7 @@ func (i *userGroupInteractor) UpdateUserGroup(input UpdateUserGroupInput) (*Upda
 
 	// 名前の更新がある場合は重複チェック
 	if input.Name != nil && *input.Name != group.Name {
-		existing, err := i.userGroupRepo.FindByName(group.WorkspaceID, *input.Name)
+		existing, err := i.userGroupRepo.FindByName(ctx, group.WorkspaceID, *input.Name)
 		if err != nil {
 			return nil, fmt.Errorf("failed to check group name: %w", err)
 		}
@@ -124,7 +126,7 @@ func (i *userGroupInteractor) UpdateUserGroup(input UpdateUserGroupInput) (*Upda
 
 	group.UpdatedAt = time.Now()
 
-	if err := i.userGroupRepo.Update(group); err != nil {
+	if err := i.userGroupRepo.Update(ctx, group); err != nil {
 		return nil, fmt.Errorf("failed to update user group: %w", err)
 	}
 
@@ -132,9 +134,9 @@ func (i *userGroupInteractor) UpdateUserGroup(input UpdateUserGroupInput) (*Upda
 	return &UpdateUserGroupOutput{UserGroup: output}, nil
 }
 
-func (i *userGroupInteractor) DeleteUserGroup(input DeleteUserGroupInput) (*DeleteUserGroupOutput, error) {
+func (i *userGroupInteractor) DeleteUserGroup(ctx context.Context, input DeleteUserGroupInput) (*DeleteUserGroupOutput, error) {
 	// グループの存在確認
-	group, err := i.userGroupRepo.FindByID(input.ID)
+	group, err := i.userGroupRepo.FindByID(ctx, input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user group: %w", err)
 	}
@@ -147,16 +149,16 @@ func (i *userGroupInteractor) DeleteUserGroup(input DeleteUserGroupInput) (*Dele
 		return nil, ErrUnauthorized
 	}
 
-	if err := i.userGroupRepo.Delete(input.ID); err != nil {
+	if err := i.userGroupRepo.Delete(ctx, input.ID); err != nil {
 		return nil, fmt.Errorf("failed to delete user group: %w", err)
 	}
 
 	return &DeleteUserGroupOutput{Success: true}, nil
 }
 
-func (i *userGroupInteractor) GetUserGroup(input GetUserGroupInput) (*GetUserGroupOutput, error) {
+func (i *userGroupInteractor) GetUserGroup(ctx context.Context, input GetUserGroupInput) (*GetUserGroupOutput, error) {
 	// グループの存在確認
-	group, err := i.userGroupRepo.FindByID(input.ID)
+	group, err := i.userGroupRepo.FindByID(ctx, input.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user group: %w", err)
 	}
@@ -165,7 +167,7 @@ func (i *userGroupInteractor) GetUserGroup(input GetUserGroupInput) (*GetUserGro
 	}
 
 	// 権限チェック（ワークスペースメンバーのみアクセス可能）
-	member, err := i.workspaceRepo.FindMember(group.WorkspaceID, input.UserID)
+	member, err := i.workspaceRepo.FindMember(ctx, group.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
@@ -177,9 +179,9 @@ func (i *userGroupInteractor) GetUserGroup(input GetUserGroupInput) (*GetUserGro
 	return &GetUserGroupOutput{UserGroup: output}, nil
 }
 
-func (i *userGroupInteractor) ListUserGroups(input ListUserGroupsInput) (*ListUserGroupsOutput, error) {
+func (i *userGroupInteractor) ListUserGroups(ctx context.Context, input ListUserGroupsInput) (*ListUserGroupsOutput, error) {
 	// ワークスペースの存在確認と権限チェック
-	workspace, err := i.workspaceRepo.FindByID(input.WorkspaceID)
+	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
@@ -187,7 +189,7 @@ func (i *userGroupInteractor) ListUserGroups(input ListUserGroupsInput) (*ListUs
 		return nil, errors.New("workspace not found")
 	}
 
-	member, err := i.workspaceRepo.FindMember(input.WorkspaceID, input.UserID)
+	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
@@ -196,7 +198,7 @@ func (i *userGroupInteractor) ListUserGroups(input ListUserGroupsInput) (*ListUs
 	}
 
 	// グループ一覧取得
-	groups, err := i.userGroupRepo.FindByWorkspaceID(input.WorkspaceID)
+	groups, err := i.userGroupRepo.FindByWorkspaceID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch user groups: %w", err)
 	}
@@ -209,9 +211,9 @@ func (i *userGroupInteractor) ListUserGroups(input ListUserGroupsInput) (*ListUs
 	return &ListUserGroupsOutput{UserGroups: outputs}, nil
 }
 
-func (i *userGroupInteractor) AddMember(input AddMemberInput) (*AddMemberOutput, error) {
+func (i *userGroupInteractor) AddMember(ctx context.Context, input AddMemberInput) (*AddMemberOutput, error) {
 	// グループの存在確認
-	group, err := i.userGroupRepo.FindByID(input.GroupID)
+	group, err := i.userGroupRepo.FindByID(ctx, input.GroupID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user group: %w", err)
 	}
@@ -225,7 +227,7 @@ func (i *userGroupInteractor) AddMember(input AddMemberInput) (*AddMemberOutput,
 	}
 
 	// 既にメンバーかチェック
-	isMember, err := i.userGroupRepo.IsMember(input.GroupID, input.UserID)
+	isMember, err := i.userGroupRepo.IsMember(ctx, input.GroupID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
@@ -234,22 +236,22 @@ func (i *userGroupInteractor) AddMember(input AddMemberInput) (*AddMemberOutput,
 	}
 
 	// メンバー追加
-	member := &domain.UserGroupMember{
+	member := &entity.UserGroupMember{
 		GroupID:  input.GroupID,
 		UserID:   input.UserID,
 		JoinedAt: time.Now(),
 	}
 
-	if err := i.userGroupRepo.AddMember(member); err != nil {
+	if err := i.userGroupRepo.AddMember(ctx, member); err != nil {
 		return nil, fmt.Errorf("failed to add member: %w", err)
 	}
 
 	return &AddMemberOutput{Success: true}, nil
 }
 
-func (i *userGroupInteractor) RemoveMember(input RemoveMemberInput) (*RemoveMemberOutput, error) {
+func (i *userGroupInteractor) RemoveMember(ctx context.Context, input RemoveMemberInput) (*RemoveMemberOutput, error) {
 	// グループの存在確認
-	group, err := i.userGroupRepo.FindByID(input.GroupID)
+	group, err := i.userGroupRepo.FindByID(ctx, input.GroupID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user group: %w", err)
 	}
@@ -263,7 +265,7 @@ func (i *userGroupInteractor) RemoveMember(input RemoveMemberInput) (*RemoveMemb
 	}
 
 	// メンバーかチェック
-	isMember, err := i.userGroupRepo.IsMember(input.GroupID, input.UserID)
+	isMember, err := i.userGroupRepo.IsMember(ctx, input.GroupID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
@@ -272,16 +274,16 @@ func (i *userGroupInteractor) RemoveMember(input RemoveMemberInput) (*RemoveMemb
 	}
 
 	// メンバー削除
-	if err := i.userGroupRepo.RemoveMember(input.GroupID, input.UserID); err != nil {
+	if err := i.userGroupRepo.RemoveMember(ctx, input.GroupID, input.UserID); err != nil {
 		return nil, fmt.Errorf("failed to remove member: %w", err)
 	}
 
 	return &RemoveMemberOutput{Success: true}, nil
 }
 
-func (i *userGroupInteractor) ListMembers(input ListMembersInput) (*ListMembersOutput, error) {
+func (i *userGroupInteractor) ListMembers(ctx context.Context, input ListMembersInput) (*ListMembersOutput, error) {
 	// グループの存在確認
-	group, err := i.userGroupRepo.FindByID(input.GroupID)
+	group, err := i.userGroupRepo.FindByID(ctx, input.GroupID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load user group: %w", err)
 	}
@@ -290,7 +292,7 @@ func (i *userGroupInteractor) ListMembers(input ListMembersInput) (*ListMembersO
 	}
 
 	// 権限チェック（ワークスペースメンバーのみアクセス可能）
-	member, err := i.workspaceRepo.FindMember(group.WorkspaceID, input.UserID)
+	member, err := i.workspaceRepo.FindMember(ctx, group.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
@@ -299,7 +301,7 @@ func (i *userGroupInteractor) ListMembers(input ListMembersInput) (*ListMembersO
 	}
 
 	// メンバー一覧取得
-	groupMembers, err := i.userGroupRepo.FindMembersByGroupID(input.GroupID)
+	groupMembers, err := i.userGroupRepo.FindMembersByGroupID(ctx, input.GroupID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch group members: %w", err)
 	}
@@ -310,13 +312,13 @@ func (i *userGroupInteractor) ListMembers(input ListMembersInput) (*ListMembersO
 		userIDs[i] = member.UserID
 	}
 
-	users, err := i.userRepo.FindByIDs(userIDs)
+	users, err := i.userRepo.FindByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch users: %w", err)
 	}
 
 	// ユーザー情報をマップに格納
-	userMap := make(map[string]*domain.User)
+	userMap := make(map[string]*entity.User)
 	for _, user := range users {
 		userMap[user.ID] = user
 	}
@@ -338,7 +340,7 @@ func (i *userGroupInteractor) ListMembers(input ListMembersInput) (*ListMembersO
 	return &ListMembersOutput{Members: members}, nil
 }
 
-func toUserGroupOutput(group *domain.UserGroup) UserGroupOutput {
+func toUserGroupOutput(group *entity.UserGroup) UserGroupOutput {
 	return UserGroupOutput{
 		ID:          group.ID,
 		WorkspaceID: group.WorkspaceID,

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/example/chat/internal/adapter/gateway/persistence"
 	"github.com/example/chat/internal/infrastructure/auth"
 	"github.com/example/chat/internal/infrastructure/config"
 	infradb "github.com/example/chat/internal/infrastructure/db"
-	"github.com/example/chat/internal/infrastructure/repository"
 	"github.com/example/chat/internal/infrastructure/seed"
 )
 
@@ -28,16 +28,16 @@ func main() {
 	fmt.Println("🌱 Manually seeding database...")
 
 	// Initialize repositories
-	userRepo := repository.NewUserRepository(db)
-	workspaceRepo := repository.NewWorkspaceRepository(db)
-	channelRepo := repository.NewChannelRepository(db)
-	messageRepo := repository.NewMessageRepository(db)
+	userRepo := persistence.NewUserRepository(db)
+	workspaceRepo := persistence.NewWorkspaceRepository(db)
+	channelRepo := persistence.NewChannelRepository(db)
+	messageRepo := persistence.NewMessageRepository(db)
 
 	// Initialize password service
 	passwordService := auth.NewPasswordService()
 
 	// Create seed data using the seed package
-	if err := seed.CreateSeedData(userRepo, workspaceRepo, channelRepo, messageRepo, passwordService); err != nil {
+	if err := seed.CreateSeedData(db, userRepo, workspaceRepo, channelRepo, messageRepo, passwordService); err != nil {
 		log.Fatalf("failed to create seed data: %v", err)
 	}
 

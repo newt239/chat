@@ -3,15 +3,15 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/example/chat/internal/infrastructure/auth"
 	"github.com/example/chat/internal/interface/http/handler"
 	"github.com/example/chat/internal/interface/http/middleware"
+	authuc "github.com/example/chat/internal/usecase/auth"
 )
 
 // RegisterRoutes registers all HTTP routes.
 func RegisterRoutes(
 	r *gin.Engine,
-	jwtService *auth.JWTService,
+	jwtService authuc.JWTService,
 	authHandler *handler.AuthHandler,
 	workspaceHandler *handler.WorkspaceHandler,
 	channelHandler *handler.ChannelHandler,

@@ -78,7 +78,7 @@ func (h *MessageHandler) ListMessages(c *gin.Context) {
 		untilPtr = &parsed
 	}
 
-	output, err := h.messageUseCase.ListMessages(message.ListMessagesInput{
+	output, err := h.messageUseCase.ListMessages(c.Request.Context(), message.ListMessagesInput{
 		ChannelID: channelID,
 		UserID:    userID,
 		Limit:     limit,
@@ -139,7 +139,7 @@ func (h *MessageHandler) CreateMessage(c *gin.Context) {
 		return
 	}
 
-	output, err := h.messageUseCase.CreateMessage(message.CreateMessageInput{
+	output, err := h.messageUseCase.CreateMessage(c.Request.Context(), message.CreateMessageInput{
 		ChannelID: channelID,
 		UserID:    userID,
 		Body:      req.Body,

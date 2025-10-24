@@ -43,6 +43,12 @@ type LinkInfo struct {
 	CardType    *string `json:"cardType"`
 }
 
+type ReactionInfo struct {
+	User      UserInfo  `json:"user"`
+	Emoji     string    `json:"emoji"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 type MessageOutput struct {
 	ID        string         `json:"id"`
 	ChannelID string         `json:"channelId"`
@@ -53,6 +59,7 @@ type MessageOutput struct {
 	Mentions  []UserMention  `json:"mentions"`
 	Groups    []GroupMention `json:"groups"`
 	Links     []LinkInfo     `json:"links"`
+	Reactions []ReactionInfo `json:"reactions"`
 	CreatedAt time.Time      `json:"createdAt"`
 	EditedAt  *time.Time     `json:"editedAt"`
 	DeletedAt *time.Time     `json:"deletedAt"`

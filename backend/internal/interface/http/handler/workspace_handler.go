@@ -35,7 +35,7 @@ func (h *WorkspaceHandler) GetWorkspaces(c *gin.Context) {
 		return
 	}
 
-	output, err := h.workspaceUseCase.GetWorkspacesByUserID(userID)
+	output, err := h.workspaceUseCase.GetWorkspacesByUserID(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get workspaces"})
 		return
@@ -74,7 +74,7 @@ func (h *WorkspaceHandler) GetWorkspace(c *gin.Context) {
 		UserID: userID,
 	}
 
-	output, err := h.workspaceUseCase.GetWorkspace(input)
+	output, err := h.workspaceUseCase.GetWorkspace(c.Request.Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
@@ -127,7 +127,7 @@ func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
 		CreatedBy:   userID,
 	}
 
-	output, err := h.workspaceUseCase.CreateWorkspace(input)
+	output, err := h.workspaceUseCase.CreateWorkspace(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to create workspace"})
 		return
@@ -183,7 +183,7 @@ func (h *WorkspaceHandler) UpdateWorkspace(c *gin.Context) {
 		UserID:      userID,
 	}
 
-	output, err := h.workspaceUseCase.UpdateWorkspace(input)
+	output, err := h.workspaceUseCase.UpdateWorkspace(c.Request.Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
@@ -228,7 +228,7 @@ func (h *WorkspaceHandler) DeleteWorkspace(c *gin.Context) {
 		UserID: userID,
 	}
 
-	output, err := h.workspaceUseCase.DeleteWorkspace(input)
+	output, err := h.workspaceUseCase.DeleteWorkspace(c.Request.Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
@@ -270,7 +270,7 @@ func (h *WorkspaceHandler) ListMembers(c *gin.Context) {
 		RequesterID: userID,
 	}
 
-	output, err := h.workspaceUseCase.ListMembers(input)
+	output, err := h.workspaceUseCase.ListMembers(c.Request.Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
@@ -328,7 +328,7 @@ func (h *WorkspaceHandler) AddMember(c *gin.Context) {
 		Role:        req.Role,
 	}
 
-	output, err := h.workspaceUseCase.AddMember(input)
+	output, err := h.workspaceUseCase.AddMember(c.Request.Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
@@ -392,7 +392,7 @@ func (h *WorkspaceHandler) UpdateMemberRole(c *gin.Context) {
 		Role:        req.Role,
 	}
 
-	output, err := h.workspaceUseCase.UpdateMemberRole(input)
+	output, err := h.workspaceUseCase.UpdateMemberRole(c.Request.Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
@@ -440,7 +440,7 @@ func (h *WorkspaceHandler) RemoveMember(c *gin.Context) {
 		RemoverID:   userID,
 	}
 
-	output, err := h.workspaceUseCase.RemoveMember(input)
+	output, err := h.workspaceUseCase.RemoveMember(c.Request.Context(), input)
 	if err != nil {
 		if err == workspace.ErrUnauthorized {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})

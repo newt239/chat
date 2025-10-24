@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	authuc "github.com/example/chat/internal/usecase/auth"
 )
 
 var (
@@ -18,20 +20,17 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// JWTService provides JWT token operations
-type JWTService struct {
+type jwtService struct {
 	secret string
 }
 
-// NewJWTService creates a new JWT service
-func NewJWTService(secret string) *JWTService {
-	return &JWTService{
+func NewJWTService(secret string) authuc.JWTService {
+	return &jwtService{
 		secret: secret,
 	}
 }
 
-// GenerateToken generates a JWT token with the given user ID and duration
-func (s *JWTService) GenerateToken(userID string, duration time.Duration) (string, error) {
+func (s *jwtService) GenerateToken(userID string, duration time.Duration) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -44,8 +43,7 @@ func (s *JWTService) GenerateToken(userID string, duration time.Duration) (strin
 	return token.SignedString([]byte(s.secret))
 }
 
-// VerifyToken verifies and parses a JWT token
-func (s *JWTService) VerifyToken(tokenString string) (*Claims, error) {
+func (s *jwtService) VerifyToken(tokenString string) (*authuc.TokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidToken
@@ -65,7 +63,10 @@ func (s *JWTService) VerifyToken(tokenString string) (*Claims, error) {
 		return nil, ErrInvalidToken
 	}
 
-	return claims, nil
+	return &authuc.TokenClaims{
+		UserID: claims.UserID,
+		Email:  claims.Email,
+	}, nil
 }
 
 // Legacy: Keep JWTManager for backward compatibility

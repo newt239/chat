@@ -49,7 +49,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		DisplayName: req.DisplayName,
 	}
 
-	output, err := h.authUseCase.Register(input)
+	output, err := h.authUseCase.Register(c.Request.Context(), input)
 	if err != nil {
 		if err == auth.ErrUserAlreadyExists {
 			c.JSON(http.StatusConflict, ErrorResponse{Error: err.Error()})
@@ -92,7 +92,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		Password: req.Password,
 	}
 
-	output, err := h.authUseCase.Login(input)
+	output, err := h.authUseCase.Login(c.Request.Context(), input)
 	if err != nil {
 		if err == auth.ErrInvalidCredentials {
 			c.JSON(http.StatusUnauthorized, ErrorResponse{Error: err.Error()})
@@ -134,7 +134,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		RefreshToken: req.RefreshToken,
 	}
 
-	output, err := h.authUseCase.RefreshToken(input)
+	output, err := h.authUseCase.RefreshToken(c.Request.Context(), input)
 	if err != nil {
 		if err == auth.ErrInvalidToken {
 			c.JSON(http.StatusUnauthorized, ErrorResponse{Error: err.Error()})
@@ -184,7 +184,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		RefreshToken: req.RefreshToken,
 	}
 
-	output, err := h.authUseCase.Logout(input)
+	output, err := h.authUseCase.Logout(c.Request.Context(), input)
 	if err != nil {
 		if err == auth.ErrSessionNotFound {
 			c.JSON(http.StatusUnauthorized, ErrorResponse{Error: err.Error()})
