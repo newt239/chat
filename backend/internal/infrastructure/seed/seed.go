@@ -38,7 +38,7 @@ func AutoSeed(db *gorm.DB) error {
 	passwordService := auth.NewPasswordService()
 
 	// Create seed data
-	if err := createSeedData(userRepo, workspaceRepo, channelRepo, messageRepo, passwordService); err != nil {
+	if err := createSeedData(db, userRepo, workspaceRepo, channelRepo, messageRepo, passwordService); err != nil {
 		return fmt.Errorf("failed to create seed data: %w", err)
 	}
 
@@ -47,6 +47,7 @@ func AutoSeed(db *gorm.DB) error {
 }
 
 func createSeedData(
+	db *gorm.DB,
 	userRepo domain.UserRepository,
 	workspaceRepo domain.WorkspaceRepository,
 	channelRepo domain.ChannelRepository,
@@ -294,18 +295,170 @@ func createSeedData(
 		}
 	}
 
+	// Create user groups
+	userGroupRepo := repository.NewUserGroupRepository(db)
+	groups := []*domain.UserGroup{
+		{
+			ID:          "gggggggg-gggg-gggg-gggg-gggggggggggg",
+			WorkspaceID: workspace.ID,
+			Name:        "developers",
+			Description: stringPtr("Development team members"),
+			CreatedBy:   users[0].ID,
+		},
+		{
+			ID:          "hhhhhhhh-hhhh-hhhh-hhhh-hhhhhhhhhhhh",
+			WorkspaceID: workspace.ID,
+			Name:        "marketing",
+			Description: stringPtr("Marketing team members"),
+			CreatedBy:   users[0].ID,
+		},
+		{
+			ID:          "iiiiiiii-iiii-iiii-iiii-iiiiiiiiiiii",
+			WorkspaceID: workspace.ID,
+			Name:        "designers",
+			Description: stringPtr("Design team members"),
+			CreatedBy:   users[1].ID,
+		},
+	}
+
+	for _, group := range groups {
+		if err := userGroupRepo.Create(group); err != nil {
+			return fmt.Errorf("failed to create user group %s: %w", group.Name, err)
+		}
+	}
+
+	// Add members to groups
+	groupMembers := []*domain.UserGroupMember{
+		// developers group: Alice, Bob, Diana
+		{GroupID: groups[0].ID, UserID: users[0].ID, JoinedAt: time.Now()},
+		{GroupID: groups[0].ID, UserID: users[1].ID, JoinedAt: time.Now()},
+		{GroupID: groups[0].ID, UserID: users[3].ID, JoinedAt: time.Now()},
+		// marketing group: Bob, Charlie
+		{GroupID: groups[1].ID, UserID: users[1].ID, JoinedAt: time.Now()},
+		{GroupID: groups[1].ID, UserID: users[2].ID, JoinedAt: time.Now()},
+		// designers group: Diana
+		{GroupID: groups[2].ID, UserID: users[3].ID, JoinedAt: time.Now()},
+	}
+
+	for _, member := range groupMembers {
+		if err := userGroupRepo.AddMember(member); err != nil {
+			return fmt.Errorf("failed to add member to group: %w", err)
+		}
+	}
+
+	// Create messages with mentions and links
+	mentionMessages := []*domain.Message{
+		{
+			ID:        "fccccccc-cccc-cccc-cccc-cccccccccccc",
+			ChannelID: channels[0].ID, // general
+			UserID:    users[0].ID,    // Alice
+			Body:      "Hey @bob, can you review the latest changes? Also check out this link: https://github.com/example/repo",
+		},
+		{
+			ID:        "fddddddd-dddd-dddd-dddd-dddddddddddd",
+			ChannelID: channels[0].ID, // general
+			UserID:    users[1].ID,    // Bob
+			Body:      "Sure @alice! @developers, let's discuss the new features. Here's a useful resource: https://docs.example.com/guide",
+		},
+		{
+			ID:        "feeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+			ChannelID: channels[2].ID, // development
+			UserID:    users[3].ID,    // Diana
+			Body:      "@developers @designers, I've updated the UI mockups. Check this out: https://figma.com/design/example",
+		},
+	}
+
+	// Create mention messages with timestamps
+	for i, message := range mentionMessages {
+		message.CreatedAt = baseTime.Add(time.Duration(len(messages)+i) * 30 * time.Minute)
+
+		if err := messageRepo.Create(message); err != nil {
+			return fmt.Errorf("failed to create mention message: %w", err)
+		}
+	}
+
+	// Create user mentions
+	userMentionRepo := repository.NewMessageUserMentionRepository(db)
+	userMentions := []*domain.MessageUserMention{
+		{MessageID: mentionMessages[0].ID, UserID: users[1].ID, CreatedAt: mentionMessages[0].CreatedAt}, // Alice mentions Bob
+		{MessageID: mentionMessages[1].ID, UserID: users[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions Alice
+		{MessageID: mentionMessages[2].ID, UserID: users[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions Alice
+		{MessageID: mentionMessages[2].ID, UserID: users[1].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions Bob
+		{MessageID: mentionMessages[2].ID, UserID: users[3].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions Diana
+	}
+
+	for _, mention := range userMentions {
+		if err := userMentionRepo.Create(mention); err != nil {
+			return fmt.Errorf("failed to create user mention: %w", err)
+		}
+	}
+
+	// Create group mentions
+	groupMentionRepo := repository.NewMessageGroupMentionRepository(db)
+	groupMentions := []*domain.MessageGroupMention{
+		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions developers
+		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions developers
+		{MessageID: mentionMessages[2].ID, GroupID: groups[2].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions designers
+	}
+
+	for _, mention := range groupMentions {
+		if err := groupMentionRepo.Create(mention); err != nil {
+			return fmt.Errorf("failed to create group mention: %w", err)
+		}
+	}
+
+	// Create message links (simplified OGP data)
+	linkRepo := repository.NewMessageLinkRepository(db)
+	links := []*domain.MessageLink{
+		{
+			ID:          "llllllll-llll-llll-llll-llllllllllll",
+			MessageID:   mentionMessages[0].ID,
+			URL:         "https://github.com/example/repo",
+			Title:       stringPtr("Example Repository"),
+			Description: stringPtr("A sample repository for demonstration"),
+			SiteName:    stringPtr("GitHub"),
+			CreatedAt:   mentionMessages[0].CreatedAt,
+		},
+		{
+			ID:          "lmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm",
+			MessageID:   mentionMessages[1].ID,
+			URL:         "https://docs.example.com/guide",
+			Title:       stringPtr("Developer Guide"),
+			Description: stringPtr("Comprehensive guide for developers"),
+			SiteName:    stringPtr("Example Docs"),
+			CreatedAt:   mentionMessages[1].CreatedAt,
+		},
+		{
+			ID:          "lnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn",
+			MessageID:   mentionMessages[2].ID,
+			URL:         "https://figma.com/design/example",
+			Title:       stringPtr("UI Design Mockups"),
+			Description: stringPtr("Latest UI mockups for the project"),
+			SiteName:    stringPtr("Figma"),
+			CardType:    stringPtr("summary_large_image"),
+			CreatedAt:   mentionMessages[2].CreatedAt,
+		},
+	}
+
+	for _, link := range links {
+		if err := linkRepo.Create(link); err != nil {
+			return fmt.Errorf("failed to create message link: %w", err)
+		}
+	}
+
 	return nil
 }
 
 // CreateSeedData creates seed data without checking if database is empty
 func CreateSeedData(
+	db *gorm.DB,
 	userRepo domain.UserRepository,
 	workspaceRepo domain.WorkspaceRepository,
 	channelRepo domain.ChannelRepository,
 	messageRepo domain.MessageRepository,
 	passwordService *auth.PasswordService,
 ) error {
-	return createSeedData(userRepo, workspaceRepo, channelRepo, messageRepo, passwordService)
+	return createSeedData(db, userRepo, workspaceRepo, channelRepo, messageRepo, passwordService)
 }
 
 // Helper functions for password hashing

@@ -132,3 +132,63 @@ type Attachment struct {
 func (Attachment) TableName() string {
 	return "attachments"
 }
+
+type UserGroup struct {
+	ID          uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	WorkspaceID uuid.UUID `gorm:"type:uuid;not null;index;uniqueIndex:idx_workspace_name"`
+	Name        string    `gorm:"type:text;not null;uniqueIndex:idx_workspace_name"`
+	Description *string   `gorm:"type:text"`
+	CreatedBy   uuid.UUID `gorm:"type:uuid;not null"`
+	CreatedAt   time.Time `gorm:"type:timestamptz;not null;default:now()"`
+	UpdatedAt   time.Time `gorm:"type:timestamptz;not null;default:now()"`
+}
+
+func (UserGroup) TableName() string {
+	return "user_groups"
+}
+
+type UserGroupMember struct {
+	GroupID   uuid.UUID `gorm:"type:uuid;primaryKey"`
+	UserID    uuid.UUID `gorm:"type:uuid;primaryKey;index"`
+	JoinedAt  time.Time `gorm:"type:timestamptz;not null;default:now()"`
+}
+
+func (UserGroupMember) TableName() string {
+	return "user_group_members"
+}
+
+type MessageUserMention struct {
+	MessageID uuid.UUID `gorm:"type:uuid;primaryKey"`
+	UserID    uuid.UUID `gorm:"type:uuid;primaryKey;index"`
+	CreatedAt time.Time `gorm:"type:timestamptz;not null;default:now()"`
+}
+
+func (MessageUserMention) TableName() string {
+	return "message_user_mentions"
+}
+
+type MessageGroupMention struct {
+	MessageID uuid.UUID `gorm:"type:uuid;primaryKey"`
+	GroupID   uuid.UUID `gorm:"type:uuid;primaryKey;index"`
+	CreatedAt time.Time `gorm:"type:timestamptz;not null;default:now()"`
+}
+
+func (MessageGroupMention) TableName() string {
+	return "message_group_mentions"
+}
+
+type MessageLink struct {
+	ID          uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	MessageID   uuid.UUID `gorm:"type:uuid;not null;index"`
+	URL         string    `gorm:"type:text;not null;uniqueIndex"`
+	Title       *string   `gorm:"type:text"`
+	Description *string   `gorm:"type:text"`
+	ImageURL    *string   `gorm:"type:text"`
+	SiteName    *string   `gorm:"type:text"`
+	CardType    *string   `gorm:"type:text"`
+	CreatedAt   time.Time `gorm:"type:timestamptz;not null;default:now()"`
+}
+
+func (MessageLink) TableName() string {
+	return "message_links"
+}

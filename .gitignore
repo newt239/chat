@@ -12,6 +12,7 @@ node_modules
 # Backend (Go)
 backend/tmp/
 backend/gen/
+backend/server
 *.exe
 *.exe~
 *.dll

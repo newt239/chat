@@ -16,9 +16,11 @@ import (
 	"github.com/example/chat/internal/interface/ws"
 	authuc "github.com/example/chat/internal/usecase/auth"
 	channeluc "github.com/example/chat/internal/usecase/channel"
+	linkuc "github.com/example/chat/internal/usecase/link"
 	messageuc "github.com/example/chat/internal/usecase/message"
 	reactionuc "github.com/example/chat/internal/usecase/reaction"
 	readstateuc "github.com/example/chat/internal/usecase/readstate"
+	usergroupuc "github.com/example/chat/internal/usecase/user_group"
 	workspaceuc "github.com/example/chat/internal/usecase/workspace"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -40,6 +42,8 @@ func setupRouter(
 	messageHandler *handler.MessageHandler,
 	readStateHandler *handler.ReadStateHandler,
 	reactionHandler *handler.ReactionHandler,
+	userGroupHandler *handler.UserGroupHandler,
+	linkHandler *handler.LinkHandler,
 ) *gin.Engine {
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -94,7 +98,7 @@ func setupRouter(
 	})
 
 	// HTTP API routes
-	ginhttp.RegisterRoutes(r, jwtService, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler)
+	ginhttp.RegisterRoutes(r, jwtService, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler, userGroupHandler, linkHandler)
 
 	return r
 }
@@ -130,6 +134,10 @@ func main() {
 	channelRepo := repository.NewChannelRepository(db)
 	messageRepo := repository.NewMessageRepository(db)
 	readStateRepo := repository.NewReadStateRepository(db)
+	userGroupRepo := repository.NewUserGroupRepository(db)
+	userMentionRepo := repository.NewMessageUserMentionRepository(db)
+	groupMentionRepo := repository.NewMessageGroupMentionRepository(db)
+	linkRepo := repository.NewMessageLinkRepository(db)
 
 	// Initialize services
 	jwtService := auth.NewJWTService(cfg.JWT.Secret)
@@ -139,9 +147,11 @@ func main() {
 	authUseCase := authuc.NewAuthInteractor(userRepo, sessionRepo, jwtService, passwordService)
 	workspaceUseCase := workspaceuc.NewWorkspaceInteractor(workspaceRepo, userRepo)
 	channelUseCase := channeluc.NewChannelInteractor(channelRepo, workspaceRepo)
-	messageUseCase := messageuc.NewMessageInteractor(messageRepo, channelRepo, workspaceRepo, userRepo)
+	messageUseCase := messageuc.NewMessageInteractor(messageRepo, channelRepo, workspaceRepo, userRepo, userGroupRepo, userMentionRepo, groupMentionRepo, linkRepo)
 	readStateUseCase := readstateuc.NewReadStateInteractor(readStateRepo, channelRepo, workspaceRepo)
 	reactionUseCase := reactionuc.NewReactionInteractor(messageRepo, channelRepo, workspaceRepo, userRepo)
+	userGroupUseCase := usergroupuc.NewUserGroupInteractor(userGroupRepo, workspaceRepo, userRepo)
+	linkUseCase := linkuc.NewLinkInteractor()
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authUseCase)
@@ -150,13 +160,15 @@ func main() {
 	messageHandler := handler.NewMessageHandler(messageUseCase)
 	readStateHandler := handler.NewReadStateHandler(readStateUseCase)
 	reactionHandler := handler.NewReactionHandler(reactionUseCase)
+	userGroupHandler := handler.NewUserGroupHandler(userGroupUseCase)
+	linkHandler := handler.NewLinkHandler(linkUseCase)
 
 	// Initialize WebSocket hub
 	hub := ws.NewHub()
 	go hub.Run()
 
 	// Setup and run server
-	r := setupRouter(cfg, jwtService, hub, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler)
+	r := setupRouter(cfg, jwtService, hub, authHandler, workspaceHandler, channelHandler, messageHandler, readStateHandler, reactionHandler, userGroupHandler, linkHandler)
 	addr := ":" + cfg.Server.Port
 	log.Printf("Starting server on %s", addr)
 

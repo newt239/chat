@@ -18,6 +18,8 @@ func RegisterRoutes(
 	messageHandler *handler.MessageHandler,
 	readStateHandler *handler.ReadStateHandler,
 	reactionHandler *handler.ReactionHandler,
+	userGroupHandler *handler.UserGroupHandler,
+	linkHandler *handler.LinkHandler,
 ) {
 	api := r.Group("/api")
 	{
@@ -63,6 +65,25 @@ func RegisterRoutes(
 			msg.GET("/reactions", reactionHandler.ListReactions)
 			msg.POST("/reactions", reactionHandler.AddReaction)
 			msg.DELETE("/reactions/:emoji", reactionHandler.RemoveReaction)
+		}
+
+		// User group routes
+		groups := protected.Group("/user-groups")
+		{
+			groups.POST("", userGroupHandler.CreateUserGroup)
+			groups.GET("", userGroupHandler.ListUserGroups)
+			groups.GET("/:id", userGroupHandler.GetUserGroup)
+			groups.PATCH("/:id", userGroupHandler.UpdateUserGroup)
+			groups.DELETE("/:id", userGroupHandler.DeleteUserGroup)
+			groups.POST("/:id/members", userGroupHandler.AddMember)
+			groups.DELETE("/:id/members", userGroupHandler.RemoveMember)
+			groups.GET("/:id/members", userGroupHandler.ListMembers)
+		}
+
+		// Link routes
+		links := protected.Group("/links")
+		{
+			links.POST("/fetch-ogp", linkHandler.FetchOGP)
 		}
 
 		att := api.Group("/attachments")

@@ -228,4 +228,114 @@ table "attachments" {
   index "attachments_message_id_idx" { columns = [column.message_id] }
 }
 
+table "user_groups" {
+  schema = schema.public
+  column "id" {
+    null = false
+    type = uuid
+    default = sql("gen_random_uuid()")
+  }
+  column "workspace_id" { type = uuid, null = false }
+  column "name" { type = text, null = false }
+  column "description" { type = text }
+  column "created_by" { type = uuid, null = false }
+  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "updated_at" { type = timestamptz, null = false, default = sql("now()") }
+  primary_key { columns = [column.id] }
+  foreign_key "user_groups_workspace_id_fkey" {
+    columns = [column.workspace_id]
+    ref_columns = [table.workspaces.column.id]
+    on_delete = CASCADE
+  }
+  foreign_key "user_groups_created_by_fkey" {
+    columns = [column.created_by]
+    ref_columns = [table.users.column.id]
+    on_delete = CASCADE
+  }
+  unique "user_groups_workspace_name_unique" { columns = [column.workspace_id, column.name] }
+  index "user_groups_workspace_id_idx" { columns = [column.workspace_id] }
+}
+
+table "user_group_members" {
+  schema = schema.public
+  column "group_id" { type = uuid, null = false }
+  column "user_id" { type = uuid, null = false }
+  column "joined_at" { type = timestamptz, null = false, default = sql("now()") }
+  primary_key { columns = [column.group_id, column.user_id] }
+  foreign_key "user_group_members_group_id_fkey" {
+    columns = [column.group_id]
+    ref_columns = [table.user_groups.column.id]
+    on_delete = CASCADE
+  }
+  foreign_key "user_group_members_user_id_fkey" {
+    columns = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete = CASCADE
+  }
+  index "user_group_members_user_id_idx" { columns = [column.user_id] }
+}
+
+table "message_user_mentions" {
+  schema = schema.public
+  column "message_id" { type = uuid, null = false }
+  column "user_id" { type = uuid, null = false }
+  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  primary_key { columns = [column.message_id, column.user_id] }
+  foreign_key "message_user_mentions_message_id_fkey" {
+    columns = [column.message_id]
+    ref_columns = [table.messages.column.id]
+    on_delete = CASCADE
+  }
+  foreign_key "message_user_mentions_user_id_fkey" {
+    columns = [column.user_id]
+    ref_columns = [table.users.column.id]
+    on_delete = CASCADE
+  }
+  index "message_user_mentions_user_id_idx" { columns = [column.user_id] }
+}
+
+table "message_group_mentions" {
+  schema = schema.public
+  column "message_id" { type = uuid, null = false }
+  column "group_id" { type = uuid, null = false }
+  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  primary_key { columns = [column.message_id, column.group_id] }
+  foreign_key "message_group_mentions_message_id_fkey" {
+    columns = [column.message_id]
+    ref_columns = [table.messages.column.id]
+    on_delete = CASCADE
+  }
+  foreign_key "message_group_mentions_group_id_fkey" {
+    columns = [column.group_id]
+    ref_columns = [table.user_groups.column.id]
+    on_delete = CASCADE
+  }
+  index "message_group_mentions_group_id_idx" { columns = [column.group_id] }
+}
+
+table "message_links" {
+  schema = schema.public
+  column "id" {
+    null = false
+    type = uuid
+    default = sql("gen_random_uuid()")
+  }
+  column "message_id" { type = uuid, null = false }
+  column "url" { type = text, null = false }
+  column "title" { type = text }
+  column "description" { type = text }
+  column "image_url" { type = text }
+  column "site_name" { type = text }
+  column "card_type" { type = text }
+  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  primary_key { columns = [column.id] }
+  foreign_key "message_links_message_id_fkey" {
+    columns = [column.message_id]
+    ref_columns = [table.messages.column.id]
+    on_delete = CASCADE
+  }
+  unique "message_links_url_unique" { columns = [column.url] }
+  index "message_links_message_id_idx" { columns = [column.message_id] }
+}
+
 

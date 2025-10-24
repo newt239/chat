@@ -9,6 +9,26 @@ const messageUserSchema = z
   })
   .passthrough();
 
+const userMentionSchema = z.object({
+  userId: z.string(),
+  displayName: z.string(),
+});
+
+const groupMentionSchema = z.object({
+  groupId: z.string(),
+  name: z.string(),
+});
+
+const linkInfoSchema = z.object({
+  id: z.string(),
+  url: z.string(),
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  imageUrl: z.string().nullable().optional(),
+  siteName: z.string().nullable().optional(),
+  cardType: z.string().nullable().optional(),
+});
+
 const baseMessageSchema = z
   .object({
     id: z.string(),
@@ -16,6 +36,9 @@ const baseMessageSchema = z
     userId: z.string(),
     parentId: z.string().nullable().optional(),
     body: z.string(),
+    mentions: z.array(userMentionSchema),
+    groups: z.array(groupMentionSchema),
+    links: z.array(linkInfoSchema),
     createdAt: z.string(),
     editedAt: z.string().nullable().optional(),
     deletedAt: z.string().nullable().optional(),

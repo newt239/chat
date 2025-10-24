@@ -6,6 +6,8 @@ import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 
+import { LinkPreviewCard } from "../../link/components/LinkPreviewCard";
+import { useLinkPreview } from "../../link/hooks/useLinkPreview";
 import { useMessages, useSendMessage } from "../hooks/useMessage";
 import { useMessageInputMode } from "../hooks/useMessageInputMode";
 
@@ -30,6 +32,35 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toggleRightSidebarView = useSetAtom(toggleRightSidebarViewAtom);
   const { mode, toggleMode, isEditMode } = useMessageInputMode();
+  const linkPreview = useLinkPreview();
+  const { previews, addPreview, removePreview, clearPreviews } = linkPreview;
+  // URL検知とリンクプレビューの処理
+  const handleBodyChange = useCallback(
+    (value: string) => {
+      setBody(value);
+
+      // URLを検出してプレビューを追加
+      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/g;
+      const urls: string[] = value.match(urlRegex) || [];
+
+      // 新しいURLを検出した場合、プレビューを追加
+      urls.forEach((url: string) => {
+        if (!previews.some((preview) => preview.url === url)) {
+          addPreview(url);
+        }
+      });
+
+      // 削除されたURLのプレビューを削除
+      previews.forEach((preview) => {
+        const previewUrl: string = preview.url;
+        if (!urls.includes(previewUrl)) {
+          removePreview(previewUrl);
+        }
+      });
+    },
+    [previews, addPreview, removePreview]
+  );
+
   const dateTimeFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("ja-JP", {
@@ -122,6 +153,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
       {
         onSuccess: () => {
           setBody("");
+          clearPreviews();
         },
       }
     );
@@ -145,9 +177,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
             variant="subtle"
             color="gray"
             size="lg"
-            onClick={() =>
-              toggleRightSidebarView({ type: "channel-info", channelId })
-            }
+            onClick={() => toggleRightSidebarView({ type: "channel-info", channelId })}
             aria-label="サイドバーの表示切り替え"
           >
             <IconInfoCircle size={20} />
@@ -213,12 +243,26 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
               minRows={3}
               autosize
               value={body}
-              onChange={(event) => setBody(event.currentTarget.value)}
+              onChange={(event) => handleBodyChange(event.currentTarget.value)}
               disabled={sendMessage.isPending}
             />
           ) : (
             <MessagePreview content={body} />
           )}
+
+          {/* リンクプレビューを表示 */}
+          {previews.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {previews.map((preview) => (
+                <LinkPreviewCard
+                  key={preview.url}
+                  preview={preview}
+                  onRemove={() => removePreview(preview.url)}
+                />
+              ))}
+            </div>
+          )}
+
           {sendMessage.isError && (
             <Text c="red" size="sm" className="mt-2">
               {sendMessage.error?.message ?? "メッセージの送信に失敗しました"}

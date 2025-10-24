@@ -58,7 +58,7 @@ export const MessageItem = ({
 
           {/* メッセージ本文 */}
           <div className="mt-1">
-            <MessageContent content={message.body} />
+            <MessageContent message={message} />
           </div>
 
           {/* リアクション */}
