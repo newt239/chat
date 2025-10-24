@@ -54,17 +54,25 @@ func (m *MockWorkspaceRepository) RemoveMember(ctx context.Context, workspaceID,
 	return args.Error(0)
 }
 
-func (m *MockWorkspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID, userID string, role string) error {
+func (m *MockWorkspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID, userID string, role entity.WorkspaceRole) error {
 	args := m.Called(ctx, workspaceID, userID, role)
 	return args.Error(0)
 }
 
-func (m *MockWorkspaceRepository) ListMembers(ctx context.Context, workspaceID string) ([]*entity.User, error) {
+func (m *MockWorkspaceRepository) FindMembersByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.WorkspaceMember, error) {
 	args := m.Called(ctx, workspaceID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*entity.User), args.Error(1)
+	return args.Get(0).([]*entity.WorkspaceMember), args.Error(1)
+}
+
+func (m *MockWorkspaceRepository) FindMember(ctx context.Context, workspaceID string, userID string) (*entity.WorkspaceMember, error) {
+	args := m.Called(ctx, workspaceID, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.WorkspaceMember), args.Error(1)
 }
 
 // TestWorkspace はテスト用のワークスペースエンティティを作成するヘルパー関数です

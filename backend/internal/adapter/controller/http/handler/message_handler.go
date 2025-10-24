@@ -19,13 +19,13 @@ func NewMessageHandler(messageUC messageuc.MessageUseCase) *MessageHandler {
 
 // CreateMessageRequest はメッセージ作成リクエストの構造体です
 type CreateMessageRequest struct {
-	Content  string  `json:"content" validate:"required,min=1"`
-	ParentID *string `json:"parent_id,omitempty"`
+	Body     string  `json:"body" validate:"required,min=1"`
+	ParentID *string `json:"parentId,omitempty"`
 }
 
 // UpdateMessageRequest はメッセージ更新リクエストの構造体です
 type UpdateMessageRequest struct {
-	Content string `json:"content" validate:"required,min=1"`
+	Body string `json:"body" validate:"required,min=1"`
 }
 
 // ListMessages はメッセージ一覧を取得します
@@ -115,7 +115,7 @@ func (h *MessageHandler) CreateMessage(c echo.Context) error {
 	input := messageuc.CreateMessageInput{
 		ChannelID: channelID,
 		UserID:    userID,
-		Body:      req.Content,
+		Body:      req.Body,
 		ParentID:  req.ParentID,
 	}
 

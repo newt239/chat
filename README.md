@@ -6,7 +6,7 @@ Slack ライクなリアルタイムチャットアプリケーション。ワ�
 
 ```bash
 # Docker Desktopを起動してから実行
-docker-compose up -d
+docker-compose up -d --build
 
 # ログを確認する場合
 docker-compose logs -f

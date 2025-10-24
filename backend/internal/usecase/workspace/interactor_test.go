@@ -27,30 +27,26 @@ func TestWorkspaceInteractor_CreateWorkspace(t *testing.T) {
 				CreatedBy:   "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
-				// ユーザー検索
-				user := mocks.TestUser("user-id", "test@example.com", "Test User")
-				userRepo.On("FindByID", mock.Anything, "user-id").Return(user, nil)
-
 				// ワークスペース作成
 				workspaceRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Workspace")).Return(nil)
 
 				// メンバー追加
-				workspaceRepo.On("AddMember", mock.Anything, mock.AnythingOfType("string"), "user-id", "admin").Return(nil)
+				workspaceRepo.On("AddMember", mock.Anything, mock.AnythingOfType("*entity.WorkspaceMember")).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
-			name: "存在しないユーザー",
+			name: "ワークスペース作成失敗",
 			input: workspaceuc.CreateWorkspaceInput{
 				Name:        "Test Workspace",
 				Description: stringPtr("Test Description"),
-				CreatedBy:   "nonexistent-user-id",
+				CreatedBy:   "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
-				// ユーザーが見つからない
-				userRepo.On("FindByID", mock.Anything, "nonexistent-user-id").Return(nil, errors.ErrNotFound)
+				// ワークスペース作成失敗
+				workspaceRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Workspace")).Return(errors.ErrInternal)
 			},
-			expectedError: errors.ErrNotFound,
+			expectedError: errors.ErrInternal,
 		},
 	}
 
@@ -76,8 +72,8 @@ func TestWorkspaceInteractor_CreateWorkspace(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, output)
-				assert.Equal(t, tt.input.Name, output.Name)
-				assert.Equal(t, tt.input.Description, output.Description)
+				assert.Equal(t, tt.input.Name, output.Workspace.Name)
+				assert.Equal(t, tt.input.Description, output.Workspace.Description)
 			}
 
 			// モックの検証
@@ -97,10 +93,18 @@ func TestWorkspaceInteractor_GetWorkspace(t *testing.T) {
 		{
 			name: "正常なワークスペース取得",
 			input: workspaceuc.GetWorkspaceInput{
-				WorkspaceID: "workspace-id",
-				UserID:      "user-id",
+				ID:     "workspace-id",
+				UserID: "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
+				// メンバーシップ確認
+				member := &entity.WorkspaceMember{
+					WorkspaceID: "workspace-id",
+					UserID:      "user-id",
+					Role:        entity.WorkspaceRoleOwner,
+				}
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-id", "user-id").Return(member, nil)
+
 				// ワークスペース検索
 				workspace := mocks.TestWorkspace("workspace-id", "Test Workspace", "Test Description")
 				workspaceRepo.On("FindByID", mock.Anything, "workspace-id").Return(workspace, nil)
@@ -108,16 +112,16 @@ func TestWorkspaceInteractor_GetWorkspace(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "存在しないワークスペース",
+			name: "権限なし",
 			input: workspaceuc.GetWorkspaceInput{
-				WorkspaceID: "nonexistent-workspace-id",
-				UserID:      "user-id",
+				ID:     "workspace-id",
+				UserID: "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
-				// ワークスペースが見つからない
-				workspaceRepo.On("FindByID", mock.Anything, "nonexistent-workspace-id").Return(nil, errors.ErrNotFound)
+				// メンバーシップなし
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-id", "user-id").Return(nil, nil)
 			},
-			expectedError: errors.ErrNotFound,
+			expectedError: workspaceuc.ErrUnauthorized,
 		},
 	}
 
@@ -143,7 +147,7 @@ func TestWorkspaceInteractor_GetWorkspace(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, output)
-				assert.Equal(t, tt.input.WorkspaceID, output.ID)
+				assert.Equal(t, tt.input.ID, output.Workspace.ID)
 			}
 
 			// モックの検証
@@ -153,19 +157,17 @@ func TestWorkspaceInteractor_GetWorkspace(t *testing.T) {
 	}
 }
 
-func TestWorkspaceInteractor_ListWorkspaces(t *testing.T) {
+func TestWorkspaceInteractor_GetWorkspacesByUserID(t *testing.T) {
 	tests := []struct {
 		name          string
-		input         workspaceuc.ListWorkspacesInput
+		userID        string
 		setupMocks    func(*mocks.MockWorkspaceRepository, *mocks.MockUserRepository)
 		expectedError error
 		expectedCount int
 	}{
 		{
-			name: "正常なワークスペース一覧取得",
-			input: workspaceuc.ListWorkspacesInput{
-				UserID: "user-id",
-			},
+			name:   "正常なワークスペース一覧取得",
+			userID: "user-id",
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
 				// ユーザーのワークスペース一覧取得
 				desc1 := "Description 1"
@@ -175,15 +177,27 @@ func TestWorkspaceInteractor_ListWorkspaces(t *testing.T) {
 					mocks.TestWorkspace("workspace-2", "Workspace 2", desc2),
 				}
 				workspaceRepo.On("FindByUserID", mock.Anything, "user-id").Return(workspaces, nil)
+
+				// メンバー情報を返す
+				member1 := &entity.WorkspaceMember{
+					WorkspaceID: "workspace-1",
+					UserID:      "user-id",
+					Role:        entity.WorkspaceRoleOwner,
+				}
+				member2 := &entity.WorkspaceMember{
+					WorkspaceID: "workspace-2",
+					UserID:      "user-id",
+					Role:        entity.WorkspaceRoleMember,
+				}
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-1", "user-id").Return(member1, nil)
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-2", "user-id").Return(member2, nil)
 			},
 			expectedError: nil,
 			expectedCount: 2,
 		},
 		{
-			name: "ワークスペースが存在しない",
-			input: workspaceuc.ListWorkspacesInput{
-				UserID: "user-id",
-			},
+			name:   "ワークスペースが存在しない",
+			userID: "user-id",
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
 				// 空のリストを返す
 				workspaceRepo.On("FindByUserID", mock.Anything, "user-id").Return([]*entity.Workspace{}, nil)
@@ -205,7 +219,7 @@ func TestWorkspaceInteractor_ListWorkspaces(t *testing.T) {
 			interactor := workspaceuc.NewWorkspaceInteractor(workspaceRepo, userRepo)
 
 			// テスト実行
-			output, err := interactor.ListWorkspaces(context.Background(), tt.input)
+			output, err := interactor.GetWorkspacesByUserID(context.Background(), tt.userID)
 
 			// 結果の検証
 			if tt.expectedError != nil {
@@ -235,12 +249,20 @@ func TestWorkspaceInteractor_UpdateWorkspace(t *testing.T) {
 		{
 			name: "正常なワークスペース更新",
 			input: workspaceuc.UpdateWorkspaceInput{
-				WorkspaceID: "workspace-id",
+				ID:          "workspace-id",
 				Name:        stringPtr("Updated Workspace"),
 				Description: stringPtr("Updated Description"),
 				UserID:      "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
+				// メンバーシップ確認
+				member := &entity.WorkspaceMember{
+					WorkspaceID: "workspace-id",
+					UserID:      "user-id",
+					Role:        entity.WorkspaceRoleOwner,
+				}
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-id", "user-id").Return(member, nil)
+
 				// ワークスペース検索
 				desc := "Original Description"
 				workspace := mocks.TestWorkspace("workspace-id", "Original Workspace", desc)
@@ -252,17 +274,17 @@ func TestWorkspaceInteractor_UpdateWorkspace(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "存在しないワークスペースの更新",
+			name: "権限なし",
 			input: workspaceuc.UpdateWorkspaceInput{
-				WorkspaceID: "nonexistent-workspace-id",
-				Name:        stringPtr("Updated Workspace"),
-				UserID:      "user-id",
+				ID:     "workspace-id",
+				Name:   stringPtr("Updated Workspace"),
+				UserID: "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
-				// ワークスペースが見つからない
-				workspaceRepo.On("FindByID", mock.Anything, "nonexistent-workspace-id").Return(nil, errors.ErrNotFound)
+				// メンバーシップなし
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-id", "user-id").Return(nil, nil)
 			},
-			expectedError: errors.ErrNotFound,
+			expectedError: workspaceuc.ErrUnauthorized,
 		},
 	}
 
@@ -289,10 +311,10 @@ func TestWorkspaceInteractor_UpdateWorkspace(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, output)
 				if tt.input.Name != nil {
-					assert.Equal(t, *tt.input.Name, output.Name)
+					assert.Equal(t, *tt.input.Name, output.Workspace.Name)
 				}
 				if tt.input.Description != nil {
-					assert.Equal(t, *tt.input.Description, output.Description)
+					assert.Equal(t, *tt.input.Description, *output.Workspace.Description)
 				}
 			}
 
@@ -313,14 +335,17 @@ func TestWorkspaceInteractor_DeleteWorkspace(t *testing.T) {
 		{
 			name: "正常なワークスペース削除",
 			input: workspaceuc.DeleteWorkspaceInput{
-				WorkspaceID: "workspace-id",
-				UserID:      "user-id",
+				ID:     "workspace-id",
+				UserID: "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
-				// ワークスペース検索
-				desc := "Test Description"
-				workspace := mocks.TestWorkspace("workspace-id", "Test Workspace", desc)
-				workspaceRepo.On("FindByID", mock.Anything, "workspace-id").Return(workspace, nil)
+				// メンバーシップ確認
+				member := &entity.WorkspaceMember{
+					WorkspaceID: "workspace-id",
+					UserID:      "user-id",
+					Role:        entity.WorkspaceRoleOwner,
+				}
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-id", "user-id").Return(member, nil)
 
 				// ワークスペース削除
 				workspaceRepo.On("Delete", mock.Anything, "workspace-id").Return(nil)
@@ -328,16 +353,16 @@ func TestWorkspaceInteractor_DeleteWorkspace(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "存在しないワークスペースの削除",
+			name: "権限なし",
 			input: workspaceuc.DeleteWorkspaceInput{
-				WorkspaceID: "nonexistent-workspace-id",
-				UserID:      "user-id",
+				ID:     "workspace-id",
+				UserID: "user-id",
 			},
 			setupMocks: func(workspaceRepo *mocks.MockWorkspaceRepository, userRepo *mocks.MockUserRepository) {
-				// ワークスペースが見つからない
-				workspaceRepo.On("FindByID", mock.Anything, "nonexistent-workspace-id").Return(nil, errors.ErrNotFound)
+				// メンバーシップなし
+				workspaceRepo.On("FindMember", mock.Anything, "workspace-id", "user-id").Return(nil, nil)
 			},
-			expectedError: errors.ErrNotFound,
+			expectedError: workspaceuc.ErrUnauthorized,
 		},
 	}
 
@@ -353,14 +378,17 @@ func TestWorkspaceInteractor_DeleteWorkspace(t *testing.T) {
 			interactor := workspaceuc.NewWorkspaceInteractor(workspaceRepo, userRepo)
 
 			// テスト実行
-			err := interactor.DeleteWorkspace(context.Background(), tt.input)
+			output, err := interactor.DeleteWorkspace(context.Background(), tt.input)
 
 			// 結果の検証
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedError.Error())
+				assert.Nil(t, output)
 			} else {
 				assert.NoError(t, err)
+				assert.NotNil(t, output)
+				assert.True(t, output.Success)
 			}
 
 			// モックの検証

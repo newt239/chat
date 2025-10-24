@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
@@ -60,8 +66,8 @@ vi.mock("@/features/channel/hooks/useChannel", () => ({
   }),
 }));
 
-vi.mock("@/features/workspace/hooks/useWorkspaceMember", () => ({
-  useWorkspaceMembers: () => ({
+vi.mock("@/features/workspace/hooks/useMember", () => ({
+  useMembers: () => ({
     data: mockMembers,
     isLoading: false,
     isError: false,
