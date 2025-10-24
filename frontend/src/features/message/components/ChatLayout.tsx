@@ -1,7 +1,9 @@
+import { useAtomValue } from "jotai";
+
 import { ChannelList } from "@/features/channel/components/ChannelList";
 import { MessagePanel } from "@/features/message/components/MessagePanel";
 import { MemberPanel } from "@/features/workspace/components/MemberPanel";
-import { useUIStore } from "@/lib/store/ui";
+import { isMemberPanelOpenAtom } from "@/lib/store/ui";
 
 interface ChatLayoutProps {
   workspaceId: string;
@@ -9,7 +11,7 @@ interface ChatLayoutProps {
 }
 
 export const ChatLayout = ({ workspaceId, channelId }: ChatLayoutProps) => {
-  const isMemberPanelOpen = useUIStore((state) => state.isMemberPanelOpen);
+  const isMemberPanelOpen = useAtomValue(isMemberPanelOpenAtom);
 
   return (
     <div

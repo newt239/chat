@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 
 import { Card, Text, Button, Group, Stack, Loader } from "@mantine/core";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 
 import { navigateToWorkspace } from "@/lib/navigation";
-import { useWorkspaceStore } from "@/lib/store/workspace";
+import {
+  currentWorkspaceIdAtom,
+  setCurrentWorkspaceAtom,
+} from "@/lib/store/workspace";
 
 interface Workspace {
   id: string;
@@ -18,8 +22,8 @@ interface Workspace {
 export const WorkspaceList = () => {
   const { data: workspaces, isLoading, error } = useWorkspaces();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const currentWorkspaceId = useWorkspaceStore((state) => state.currentWorkspaceId);
-  const setCurrentWorkspace = useWorkspaceStore((state) => state.setCurrentWorkspace);
+  const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
+  const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
 
   useEffect(() => {
     if (

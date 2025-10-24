@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { Avatar, Text } from "@mantine/core";
 
+import { ReactionList } from "../../reaction/components/ReactionList";
+
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 
@@ -11,7 +13,6 @@ interface MessageItemProps {
   message: MessageWithUser;
   dateTimeFormatter: Intl.DateTimeFormat;
   onCopyLink: (messageId: string) => void;
-  onAddReaction: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onBookmark: (messageId: string) => void;
 }
@@ -20,7 +21,6 @@ export const MessageItem = ({
   message,
   dateTimeFormatter,
   onCopyLink,
-  onAddReaction,
   onCreateThread,
   onBookmark,
 }: MessageItemProps) => {
@@ -60,6 +60,9 @@ export const MessageItem = ({
           <div className="mt-1">
             <MessageContent content={message.body} />
           </div>
+
+          {/* リアクション */}
+          <ReactionList messageId={message.id} />
         </div>
       </div>
 
@@ -68,7 +71,6 @@ export const MessageItem = ({
         <MessageActions
           messageId={message.id}
           onCopyLink={onCopyLink}
-          onAddReaction={onAddReaction}
           onCreateThread={onCreateThread}
           onBookmark={onBookmark}
         />

@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
 
 import { Button, Card, Group, Loader, ScrollArea, Stack, Text } from "@mantine/core";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { useChannels } from "../hooks/useChannel";
 
 import { CreateChannelModal } from "./CreateChannelModal";
 
 import { navigateToChannel } from "@/lib/navigation";
-import { useWorkspaceStore } from "@/lib/store/workspace";
+import {
+  currentChannelIdAtom,
+  setCurrentChannelAtom,
+} from "@/lib/store/workspace";
 
 interface ChannelListProps {
   workspaceId: string | null;
 }
 
 export const ChannelList = ({ workspaceId }: ChannelListProps) => {
-  const currentChannelId = useWorkspaceStore((state) => state.currentChannelId);
-  const setCurrentChannel = useWorkspaceStore((state) => state.setCurrentChannel);
+  const currentChannelId = useAtomValue(currentChannelIdAtom);
+  const setCurrentChannel = useSetAtom(setCurrentChannelAtom);
   const { data: channels, isLoading, isError, error } = useChannels(workspaceId);
   const [isModalOpen, setIsModalOpen] = useState(false);
 

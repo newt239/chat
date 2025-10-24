@@ -1,22 +1,21 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 
-interface UIState {
-  isMemberPanelOpen: boolean;
-  toggleMemberPanel: () => void;
-  setMemberPanelOpen: (open: boolean) => void;
-}
+// メンバーパネルの開閉状態
+export const isMemberPanelOpenAtom = atomWithStorage<boolean>(
+  "ui-storage:isMemberPanelOpen",
+  true
+);
 
-export const useUIStore = create<UIState>()(
-  persist(
-    (set) => ({
-      isMemberPanelOpen: true,
-      toggleMemberPanel: () =>
-        set((state) => ({ isMemberPanelOpen: !state.isMemberPanelOpen })),
-      setMemberPanelOpen: (open) => set({ isMemberPanelOpen: open }),
-    }),
-    {
-      name: "ui-storage",
-    }
-  )
+// メンバーパネルのトグル
+export const toggleMemberPanelAtom = atom(null, (get, set) => {
+  set(isMemberPanelOpenAtom, !get(isMemberPanelOpenAtom));
+});
+
+// メンバーパネルの開閉を設定
+export const setMemberPanelOpenAtom = atom(
+  null,
+  (_get, set, open: boolean) => {
+    set(isMemberPanelOpenAtom, open);
+  }
 );

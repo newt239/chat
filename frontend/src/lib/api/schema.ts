@@ -264,6 +264,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/messages/{messageId}/reactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List reactions for a message */
+        get: operations["listReactions"];
+        put?: never;
+        /** Add a reaction to a message */
+        post: operations["addReaction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/messages/{messageId}/reactions/{emoji}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a reaction from a message */
+        delete: operations["removeReaction"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -416,6 +451,35 @@ export interface components {
         UpdateMemberRoleRequest: {
             /** @enum {string} */
             role: "admin" | "member";
+        };
+        MessageReaction: {
+            /** Format: uuid */
+            messageId: string;
+            /** Format: uuid */
+            userId: string;
+            /** @description Unicode絵文字または将来的にカスタム絵文字ID */
+            emoji: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ReactionWithUser: {
+            /** Format: uuid */
+            messageId: string;
+            user: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                avatarUrl?: string | null;
+            };
+            emoji: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AddReactionRequest: {
+            emoji: string;
+        };
+        ListReactionsResponse: {
+            reactions: components["schemas"]["ReactionWithUser"][];
         };
     };
     responses: never;
@@ -1164,6 +1228,127 @@ export interface operations {
                 };
             };
             /** @description Attachment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listReactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of reactions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListReactionsResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Message not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    addReaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddReactionRequest"];
+            };
+        };
+        responses: {
+            /** @description Reaction added */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    removeReaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+                emoji: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reaction removed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Reaction not found */
             404: {
                 headers: {
                     [name: string]: unknown;

@@ -19,17 +19,15 @@ vi.mock("@/features/workspace/hooks/useWorkspace", () => ({
   })),
 }));
 
-vi.mock("@/lib/store/auth", () => ({
-  useAuthStore: vi.fn(() => ({
-    clearAuth: vi.fn(),
-  })),
-}));
-
-vi.mock("@/lib/store/workspace", () => ({
-  useWorkspaceStore: vi.fn(() => ({
-    currentWorkspaceId: "1",
-    setCurrentWorkspace: vi.fn(),
-  })),
+vi.mock("jotai", () => ({
+  useAtomValue: vi.fn((atom) => {
+    // currentWorkspaceIdAtomの場合
+    if (atom.toString().includes("currentWorkspaceId")) {
+      return "1";
+    }
+    return null;
+  }),
+  useSetAtom: vi.fn(() => vi.fn()),
 }));
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => {

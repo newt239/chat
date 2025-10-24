@@ -55,6 +55,8 @@
     "vitest": "latest"
   },
   "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
     "@mantine/core": "latest",
     "@mantine/hooks": "latest",
     "@mantine/notifications": "^8.3.5",
@@ -64,6 +66,7 @@
     "@tanstack/react-router": "latest",
     "@tanstack/react-virtual": "latest",
     "@tanstack/router-vite-plugin": "^1.133.22",
+    "jotai": "^2.15.0",
     "openapi-fetch": "latest",
     "react": "latest",
     "react-dom": "latest",
@@ -74,6 +77,6 @@
     "remark-rehype": "^11.1.2",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
-    "zustand": "latest"
+    "zod": "^4.1.12"
   }
 }

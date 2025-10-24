@@ -1,9 +1,10 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import type { FormEvent } from "react";
 
-import { Button, Card, Loader, Stack, Text, Textarea, ActionIcon } from "@mantine/core";
+import { Card, Loader, Stack, Text, Textarea, ActionIcon } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
+import { useSetAtom } from "jotai";
 
 import { useMessages, useSendMessage } from "../hooks/useMessage";
 import { useMessageInputMode } from "../hooks/useMessageInputMode";
@@ -13,7 +14,7 @@ import { MessageItem } from "./MessageItem";
 import { MessagePreview } from "./MessagePreview";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
-import { useUIStore } from "@/lib/store/ui";
+import { toggleMemberPanelAtom } from "@/lib/store/ui";
 
 interface MessagePanelProps {
   workspaceId: string | null;
@@ -26,7 +27,8 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const sendMessage = useSendMessage(channelId);
   const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const toggleMemberPanel = useUIStore((state) => state.toggleMemberPanel);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const toggleMemberPanel = useSetAtom(toggleMemberPanelAtom);
   const { mode, toggleMode, isEditMode } = useMessageInputMode();
   const dateTimeFormatter = useMemo(
     () =>
@@ -84,11 +86,6 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     [workspaceId, channelId]
   );
 
-  const handleAddReaction = useCallback((messageId: string) => {
-    console.log("Add reaction to message:", messageId);
-    // TODO: リアクション追加機能を実装
-  }, []);
-
   const handleCreateThread = useCallback((messageId: string) => {
     console.log("Create thread for message:", messageId);
     // TODO: スレッド作成機能を実装
@@ -115,8 +112,8 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     );
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     if (body.trim().length === 0) {
       return;
     }
@@ -180,7 +177,6 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
                     message={message}
                     dateTimeFormatter={dateTimeFormatter}
                     onCopyLink={handleCopyLink}
-                    onAddReaction={handleAddReaction}
                     onCreateThread={handleCreateThread}
                     onBookmark={handleBookmark}
                   />
@@ -200,9 +196,17 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
 
       <Card withBorder padding="lg" radius="md" className="shrink-0">
         <form onSubmit={handleSubmit}>
-          <MessageInputToolbar mode={mode} onToggleMode={toggleMode} />
+          <MessageInputToolbar
+            mode={mode}
+            onToggleMode={toggleMode}
+            onSubmit={() => handleSubmit()}
+            disabled={body.trim().length === 0}
+            loading={sendMessage.isPending}
+            textareaRef={textareaRef}
+          />
           {isEditMode ? (
             <Textarea
+              ref={textareaRef}
               placeholder="メッセージを入力..."
               minRows={3}
               autosize
@@ -218,14 +222,6 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
               {sendMessage.error?.message ?? "メッセージの送信に失敗しました"}
             </Text>
           )}
-          <Button
-            type="submit"
-            className="mt-2"
-            disabled={body.trim().length === 0}
-            loading={sendMessage.isPending}
-          >
-            送信
-          </Button>
         </form>
       </Card>
     </div>

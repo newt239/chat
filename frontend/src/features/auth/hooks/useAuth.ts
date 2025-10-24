@@ -1,12 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
 
 import type { components } from "@/lib/api/schema";
 
 import { apiClient } from "@/lib/api/client";
-import { useAuthStore } from "@/lib/store/auth";
+import { setAuthAtom, clearAuthAtom } from "@/lib/store/auth";
 
 export function useLogin() {
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const setAuth = useSetAtom(setAuthAtom);
 
   return useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
@@ -19,13 +20,13 @@ export function useLogin() {
       return response;
     },
     onSuccess: (data: components["schemas"]["AuthResponse"]) => {
-      setAuth(data.user, data.accessToken, data.refreshToken);
+      setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
     },
   });
 }
 
 export function useRegister() {
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const setAuth = useSetAtom(setAuthAtom);
 
   return useMutation({
     mutationFn: async (data: { email: string; password: string; displayName: string }) => {
@@ -38,13 +39,13 @@ export function useRegister() {
       return response;
     },
     onSuccess: (data: components["schemas"]["AuthResponse"]) => {
-      setAuth(data.user, data.accessToken, data.refreshToken);
+      setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
     },
   });
 }
 
 export function useLogout() {
-  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const clearAuth = useSetAtom(clearAuthAtom);
 
   return useMutation({
     mutationFn: async () => {

@@ -15,6 +15,8 @@ import { Route as AppRouteImport } from './app'
 import { Route as IndexRouteImport } from './index'
 import { Route as AppIndexRouteImport } from './app/index'
 import { Route as AppWorkspaceIdRouteImport } from './app/$workspaceId'
+import { Route as AppWorkspaceIdIndexRouteImport } from './app/$workspaceId/index'
+import { Route as AppWorkspaceIdSearchRouteImport } from './app/$workspaceId/search'
 import { Route as AppWorkspaceIdChannelIdRouteImport } from './app/$workspaceId/$channelId'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -47,6 +49,16 @@ const AppWorkspaceIdRoute = AppWorkspaceIdRouteImport.update({
   path: '/$workspaceId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWorkspaceIdIndexRoute = AppWorkspaceIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppWorkspaceIdRoute,
+} as any)
+const AppWorkspaceIdSearchRoute = AppWorkspaceIdSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AppWorkspaceIdRoute,
+} as any)
 const AppWorkspaceIdChannelIdRoute = AppWorkspaceIdChannelIdRouteImport.update({
   id: '/$channelId',
   path: '/$channelId',
@@ -61,14 +73,17 @@ export interface FileRoutesByFullPath {
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
   '/app/': typeof AppIndexRoute
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/$workspaceId/search': typeof AppWorkspaceIdSearchRoute
+  '/app/$workspaceId/': typeof AppWorkspaceIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
   '/app': typeof AppIndexRoute
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/$workspaceId/search': typeof AppWorkspaceIdSearchRoute
+  '/app/$workspaceId': typeof AppWorkspaceIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,6 +94,8 @@ export interface FileRoutesById {
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
   '/app/': typeof AppIndexRoute
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/$workspaceId/search': typeof AppWorkspaceIdSearchRoute
+  '/app/$workspaceId/': typeof AppWorkspaceIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,14 +107,17 @@ export interface FileRouteTypes {
     | '/app/$workspaceId'
     | '/app/'
     | '/app/$workspaceId/$channelId'
+    | '/app/$workspaceId/search'
+    | '/app/$workspaceId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/register'
-    | '/app/$workspaceId'
     | '/app'
     | '/app/$workspaceId/$channelId'
+    | '/app/$workspaceId/search'
+    | '/app/$workspaceId'
   id:
     | '__root__'
     | '/'
@@ -107,6 +127,8 @@ export interface FileRouteTypes {
     | '/app/$workspaceId'
     | '/app/'
     | '/app/$workspaceId/$channelId'
+    | '/app/$workspaceId/search'
+    | '/app/$workspaceId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -160,6 +182,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkspaceIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/$workspaceId/': {
+      id: '/app/$workspaceId/'
+      path: '/'
+      fullPath: '/app/$workspaceId/'
+      preLoaderRoute: typeof AppWorkspaceIdIndexRouteImport
+      parentRoute: typeof AppWorkspaceIdRoute
+    }
+    '/app/$workspaceId/search': {
+      id: '/app/$workspaceId/search'
+      path: '/search'
+      fullPath: '/app/$workspaceId/search'
+      preLoaderRoute: typeof AppWorkspaceIdSearchRouteImport
+      parentRoute: typeof AppWorkspaceIdRoute
+    }
     '/app/$workspaceId/$channelId': {
       id: '/app/$workspaceId/$channelId'
       path: '/$channelId'
@@ -172,10 +208,14 @@ declare module '@tanstack/react-router' {
 
 interface AppWorkspaceIdRouteChildren {
   AppWorkspaceIdChannelIdRoute: typeof AppWorkspaceIdChannelIdRoute
+  AppWorkspaceIdSearchRoute: typeof AppWorkspaceIdSearchRoute
+  AppWorkspaceIdIndexRoute: typeof AppWorkspaceIdIndexRoute
 }
 
 const AppWorkspaceIdRouteChildren: AppWorkspaceIdRouteChildren = {
   AppWorkspaceIdChannelIdRoute: AppWorkspaceIdChannelIdRoute,
+  AppWorkspaceIdSearchRoute: AppWorkspaceIdSearchRoute,
+  AppWorkspaceIdIndexRoute: AppWorkspaceIdIndexRoute,
 }
 
 const AppWorkspaceIdRouteWithChildren = AppWorkspaceIdRoute._addFileChildren(

@@ -1,4 +1,6 @@
-import { ActionIcon, Menu } from "@mantine/core";
+import { useState } from "react";
+
+import { ActionIcon, Menu, Popover } from "@mantine/core";
 import {
   IconBookmark,
   IconDots,
@@ -9,10 +11,12 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 
+import { EmojiPicker } from "../../reaction/components/EmojiPicker";
+import { useAddReaction } from "../../reaction/hooks/useReactions";
+
 interface MessageActionsProps {
   messageId: string;
   onCopyLink: (messageId: string) => void;
-  onAddReaction: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onBookmark: (messageId: string) => void;
 }
@@ -20,20 +24,39 @@ interface MessageActionsProps {
 export const MessageActions = ({
   messageId,
   onCopyLink,
-  onAddReaction,
   onCreateThread,
   onBookmark,
 }: MessageActionsProps) => {
+  const [emojiPickerOpened, setEmojiPickerOpened] = useState(false);
+  const addReaction = useAddReaction();
+
+  const handleEmojiSelect = async (emoji: string) => {
+    await addReaction.mutateAsync({ messageId, emoji });
+    setEmojiPickerOpened(false);
+  };
+
   return (
     <div className="absolute right-4 top-2 flex gap-1 rounded-md border bg-white p-1 shadow-sm">
-      <ActionIcon
-        variant="subtle"
-        size="sm"
-        onClick={() => onAddReaction(messageId)}
-        title="リアクションを追加"
+      <Popover
+        opened={emojiPickerOpened}
+        onChange={setEmojiPickerOpened}
+        position="bottom"
+        withArrow
       >
-        <IconMoodSmile size={16} />
-      </ActionIcon>
+        <Popover.Target>
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            onClick={() => setEmojiPickerOpened((o) => !o)}
+            title="リアクションを追加"
+          >
+            <IconMoodSmile size={16} />
+          </ActionIcon>
+        </Popover.Target>
+        <Popover.Dropdown>
+          <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+        </Popover.Dropdown>
+      </Popover>
 
       <ActionIcon
         variant="subtle"

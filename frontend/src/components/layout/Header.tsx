@@ -1,10 +1,16 @@
 import { useState } from "react";
 
-import { Menu, Button, Text, Avatar } from "@mantine/core";
+import { Menu, Button, Text, Avatar, TextInput } from "@mantine/core";
+import { IconSearch } from "@tabler/icons-react";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
-import { useAuthStore } from "@/lib/store/auth";
-import { useWorkspaceStore } from "@/lib/store/workspace";
+import { clearAuthAtom } from "@/lib/store/auth";
+import {
+  currentWorkspaceIdAtom,
+  setCurrentWorkspaceAtom,
+} from "@/lib/store/workspace";
 
 interface Workspace {
   id: string;
@@ -14,12 +20,16 @@ interface Workspace {
 
 export const Header = () => {
   const { data: workspaces, isLoading } = useWorkspaces();
-  const currentWorkspaceId = useWorkspaceStore((state) => state.currentWorkspaceId);
-  const setCurrentWorkspace = useWorkspaceStore((state) => state.setCurrentWorkspace);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
+  const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
+  const clearAuth = useSetAtom(clearAuthAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+  const params = useParams({ strict: false });
 
   const currentWorkspace = workspaces?.find((w: Workspace) => w.id === currentWorkspaceId);
+  const isInWorkspace = params.workspaceId !== undefined;
 
   const handleWorkspaceChange = (workspaceId: string) => {
     setCurrentWorkspace(workspaceId);
@@ -30,10 +40,31 @@ export const Header = () => {
     clearAuth();
   };
 
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (searchQuery.trim() && currentWorkspaceId) {
+      navigate({
+        to: "/app/$workspaceId/search",
+        params: { workspaceId: currentWorkspaceId },
+        search: { q: searchQuery.trim(), filter: "all" },
+      });
+    }
+  };
+
+  const handleSearchFocus = () => {
+    if (currentWorkspaceId && params.workspaceId !== currentWorkspaceId) {
+      navigate({
+        to: "/app/$workspaceId/search",
+        params: { workspaceId: currentWorkspaceId },
+        search: { q: searchQuery.trim() || undefined, filter: "all" },
+      });
+    }
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center space-x-4 shrink-0">
           {/* ワークスペース選択メニュー */}
           <Menu
             opened={isWorkspaceMenuOpen}
@@ -94,7 +125,23 @@ export const Header = () => {
           </Menu>
         </div>
 
-        <div className="flex items-center space-x-4">
+        {/* 中央に検索バー */}
+        {isInWorkspace && (
+          <div className="flex-1 max-w-2xl mx-auto">
+            <form onSubmit={handleSearchSubmit}>
+              <TextInput
+                placeholder="メッセージ、チャンネル、ユーザーを検索"
+                leftSection={<IconSearch size={16} />}
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                onFocus={handleSearchFocus}
+                className="w-full"
+              />
+            </form>
+          </div>
+        )}
+
+        <div className="flex items-center space-x-4 shrink-0">
           {/* ログアウトボタン */}
           <Button
             variant="subtle"
