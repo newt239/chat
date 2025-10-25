@@ -1,92 +1,92 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { navigateToAppWithWorkspace, navigateToLogin } from "../navigation";
-
 import type { components } from "@/lib/api/schema";
 
 type User = components["schemas"]["User"];
 
-type AuthStorage = {
+type AuthState = {
   user: User | null;
-  isAuthenticated: boolean;
+  accessToken: string | null;
+  refreshToken: string | null;
 };
 
-// LocalStorageからトークンを読み込む関数
-const loadTokensFromStorage = () => {
-  return {
-    accessToken: localStorage.getItem("accessToken"),
-    refreshToken: localStorage.getItem("refreshToken"),
-  };
-};
+const storageKey = "auth-storage";
 
-// 認証情報をストレージに保存（userとisAuthenticatedのみ）
-export const authStorageAtom = atomWithStorage<AuthStorage>(
-  "auth-storage",
-  {
-    user: null,
-    isAuthenticated: false,
-  },
-  undefined,
-  { getOnInit: true }
-);
-
-// アクセストークン（LocalStorageから動的に取得）
-export const accessTokenAtom = atom<string | null>((get) => {
-  const storage = get(authStorageAtom);
-  if (!storage.isAuthenticated) {
-    return null;
-  }
-  return localStorage.getItem("accessToken");
+const createEmptyAuthState = (): AuthState => ({
+  user: null,
+  accessToken: null,
+  refreshToken: null,
 });
 
-// リフレッシュトークン（LocalStorageから動的に取得）
-export const refreshTokenAtom = atom<string | null>((get) => {
-  const storage = get(authStorageAtom);
-  if (!storage.isAuthenticated) {
-    return null;
-  }
-  return localStorage.getItem("refreshToken");
+const sanitizeAuthState = (state: Partial<AuthState>): AuthState => ({
+  user: state.user ?? null,
+  accessToken: state.accessToken ?? null,
+  refreshToken: state.refreshToken ?? null,
 });
 
-// ユーザー情報
-export const userAtom = atom<User | null>((get) => get(authStorageAtom).user);
+const authStorageAtom = atomWithStorage<AuthState>(storageKey, createEmptyAuthState(), undefined, {
+  getOnInit: true,
+});
 
-// 認証状態
-export const isAuthenticatedAtom = atom<boolean>((get) => get(authStorageAtom).isAuthenticated);
-
-// 認証情報を設定
-export const setAuthAtom = atom(
-  null,
-  (_get, set, args: { user: User; accessToken: string; refreshToken: string }) => {
-    const { user, accessToken, refreshToken } = args;
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
-    set(authStorageAtom, { user, isAuthenticated: true });
-    navigateToAppWithWorkspace();
+export const authAtom = atom(
+  (get) => sanitizeAuthState(get(authStorageAtom)),
+  (_get, set, update: AuthState) => {
+    set(authStorageAtom, sanitizeAuthState(update));
   }
 );
 
-// 認証情報をクリア
+export const userAtom = atom<User | null>((get) => get(authAtom).user);
+export const accessTokenAtom = atom<string | null>((get) => get(authAtom).accessToken);
+export const refreshTokenAtom = atom<string | null>((get) => get(authAtom).refreshToken);
+export const isAuthenticatedAtom = atom<boolean>((get) => {
+  const state = get(authAtom);
+  return Boolean(state.user && state.accessToken && state.refreshToken);
+});
+
+type AuthPayload = {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+};
+
+export const setAuthAtom = atom(null, (_get, set, payload: AuthPayload) => {
+  set(authAtom, sanitizeAuthState(payload));
+});
+
 export const clearAuthAtom = atom(null, (_get, set) => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  set(authStorageAtom, { user: null, isAuthenticated: false });
-  navigateToLogin();
+  set(authAtom, createEmptyAuthState());
 });
 
-// 初期化時のトークン検証と復元
-export const initializeAuthAtom = atom(null, (get, set) => {
-  const storage = get(authStorageAtom);
-  const { accessToken, refreshToken } = loadTokensFromStorage();
+const authInitializationStatusAtom = atom(false);
 
-  if (accessToken && refreshToken) {
-    // トークンが存在する場合は認証状態を維持
-    if (!storage.isAuthenticated && storage.user) {
-      set(authStorageAtom, { ...storage, isAuthenticated: true });
-    }
-  } else {
-    // トークンが存在しない場合は認証状態をリセット
-    set(authStorageAtom, { user: null, isAuthenticated: false });
+export const isAuthInitializedAtom = atom((get) => get(authInitializationStatusAtom));
+
+export const initializeAuthAtom = atom(null, (get, set) => {
+  if (get(authInitializationStatusAtom)) {
+    return;
   }
+
+  const current = get(authAtom);
+
+  if (typeof window !== "undefined") {
+    const legacyAccessToken = window.localStorage.getItem("accessToken");
+    const legacyRefreshToken = window.localStorage.getItem("refreshToken");
+
+    if (!current.accessToken && !current.refreshToken && legacyAccessToken && legacyRefreshToken) {
+      set(
+        authAtom,
+        sanitizeAuthState({
+          user: current.user,
+          accessToken: legacyAccessToken,
+          refreshToken: legacyRefreshToken,
+        })
+      );
+    }
+
+    window.localStorage.removeItem("accessToken");
+    window.localStorage.removeItem("refreshToken");
+  }
+
+  set(authInitializationStatusAtom, true);
 });

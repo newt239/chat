@@ -12,6 +12,11 @@ const eslintConfig = [
   ...tseslint.configs.recommended,
   {
     files: ["**/*.{ts,tsx}"],
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
     plugins: {
       react,
       "react-hooks": reactHooks,

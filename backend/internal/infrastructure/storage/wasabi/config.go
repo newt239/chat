@@ -20,3 +20,15 @@ func NewConfig() *Config {
 		DownloadExpires: 5 * time.Minute,
 	}
 }
+
+func (c *Config) GetMaxFileSize() int64 {
+	return c.MaxFileSize
+}
+
+func (c *Config) GetUploadExpires() interface{} {
+	return c.UploadExpires
+}
+
+func (c *Config) GetDownloadExpires() interface{} {
+	return c.DownloadExpires
+}

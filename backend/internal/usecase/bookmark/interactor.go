@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
 var (
@@ -24,23 +24,26 @@ type BookmarkUseCase interface {
 }
 
 type bookmarkInteractor struct {
-	bookmarkRepo  domainrepository.BookmarkRepository
-	messageRepo   domainrepository.MessageRepository
-	channelRepo   domainrepository.ChannelRepository
-	workspaceRepo domainrepository.WorkspaceRepository
+	bookmarkRepo      domainrepository.BookmarkRepository
+	messageRepo       domainrepository.MessageRepository
+	channelRepo       domainrepository.ChannelRepository
+	channelMemberRepo domainrepository.ChannelMemberRepository
+	workspaceRepo     domainrepository.WorkspaceRepository
 }
 
 func NewBookmarkInteractor(
 	bookmarkRepo domainrepository.BookmarkRepository,
 	messageRepo domainrepository.MessageRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 ) BookmarkUseCase {
 	return &bookmarkInteractor{
-		bookmarkRepo:  bookmarkRepo,
-		messageRepo:   messageRepo,
-		channelRepo:   channelRepo,
-		workspaceRepo: workspaceRepo,
+		bookmarkRepo:      bookmarkRepo,
+		messageRepo:       messageRepo,
+		channelRepo:       channelRepo,
+		channelMemberRepo: channelMemberRepo,
+		workspaceRepo:     workspaceRepo,
 	}
 }
 
@@ -140,7 +143,7 @@ func (i *bookmarkInteractor) ensureChannelAccess(ctx context.Context, channelID,
 
 	// プライベートチャンネルの場合
 	if ch.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, ch.ID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
 			return fmt.Errorf("failed to verify channel membership: %w", err)
 		}

@@ -4,11 +4,21 @@ import (
 	"log"
 	"net/http"
 
-	authuc "github.com/example/chat/internal/usecase/auth"
-	"github.com/example/chat/internal/domain/repository"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/domain/repository"
+	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
+
+// MessageUseCase はメッセージユースケースのインターフェースです
+type MessageUseCase interface {
+	// メッセージ関連の操作（必要に応じて定義）
+}
+
+// ReadStateUseCase は既読状態ユースケースのインターフェースです
+type ReadStateUseCase interface {
+	// 既読状態関連の操作（必要に応じて定義）
+}
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -18,7 +28,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // Handler はWebSocketハンドラーを返します
-func NewHandler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository) echo.HandlerFunc {
+func NewHandler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, messageUseCase MessageUseCase, readStateUseCase ReadStateUseCase) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// 認証トークンの取得
 		// WebSocketではAuthorizationヘッダーを設定できないため、クエリパラメータからも取得を試みる
@@ -65,11 +75,13 @@ func NewHandler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository
 
 		// クライアントを作成してハブに登録
 		client := &Client{
-			hub:         hub,
-			conn:        conn,
-			send:        make(chan []byte, 256),
-			userID:      claims.UserID,
-			workspaceID: workspaceID,
+			hub:              hub,
+			conn:             conn,
+			send:             make(chan []byte, 256),
+			userID:           claims.UserID,
+			workspaceID:      workspaceID,
+			messageUseCase:   messageUseCase,
+			readStateUseCase: readStateUseCase,
 		}
 
 		client.hub.register <- client

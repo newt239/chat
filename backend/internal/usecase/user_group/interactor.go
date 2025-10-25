@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
 var (

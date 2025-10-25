@@ -4,9 +4,14 @@ import (
 	"errors"
 	"net/http"
 
-	domerr "github.com/example/chat/internal/domain/errors"
 	"github.com/labstack/echo/v4"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
+
+// ErrorResponse represents a generic error response
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
 
 // handleUseCaseError はユースケースのエラーをHTTPステータスコードに変換します
 func handleUseCaseError(err error) error {

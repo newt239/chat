@@ -1,4 +1,4 @@
-module github.com/example/chat
+module github.com/newt239/chat
 
 go 1.23.0
 

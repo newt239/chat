@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -79,4 +79,25 @@ func (m *MockMessageRepository) FindReactionsByMessageIDs(ctx context.Context, m
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(map[string][]*entity.MessageReaction), args.Error(1)
+}
+
+func (m *MockMessageRepository) FindByChannelIDIncludingDeleted(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
+	args := m.Called(ctx, channelID, limit, since, until)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.Message), args.Error(1)
+}
+
+func (m *MockMessageRepository) FindThreadRepliesIncludingDeleted(ctx context.Context, parentID string) ([]*entity.Message, error) {
+	args := m.Called(ctx, parentID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.Message), args.Error(1)
+}
+
+func (m *MockMessageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, deletedBy string) error {
+	args := m.Called(ctx, ids, deletedBy)
+	return args.Error(0)
 }

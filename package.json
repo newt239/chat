@@ -11,7 +11,7 @@
     "clean": "./scripts/clean.sh"
   },
   "devDependencies": {
-    "turbo": "latest"
+    "turbo": "2.5.8"
   },
   "packageManager": "pnpm@10.19.0"
 }

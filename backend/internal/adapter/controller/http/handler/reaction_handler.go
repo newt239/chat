@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	reactionuc "github.com/example/chat/internal/usecase/reaction"
 	"github.com/labstack/echo/v4"
+	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 )
 
 type ReactionHandler struct {

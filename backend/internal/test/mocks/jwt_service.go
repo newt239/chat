@@ -3,7 +3,7 @@ package mocks
 import (
 	"time"
 
-	"github.com/example/chat/internal/usecase/auth"
+	"github.com/newt239/chat/internal/usecase/auth"
 	"github.com/stretchr/testify/mock"
 )
 

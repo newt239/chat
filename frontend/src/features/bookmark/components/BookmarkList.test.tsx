@@ -1,26 +1,11 @@
-import { MantineProvider } from "@mantine/core";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { BookmarkList } from "./BookmarkList";
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
+import { createAppWrapper, createTestQueryClient } from "@/test/utils";
 
-  const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <MantineProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </MantineProvider>
-  );
-
-  return Wrapper;
-};
+const createWrapper = () => createAppWrapper(createTestQueryClient());
 
 // Mock the API client
 vi.mock("@/lib/api/client", () => ({

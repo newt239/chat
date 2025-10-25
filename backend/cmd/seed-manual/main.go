@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/example/chat/internal/adapter/gateway/persistence"
-	"github.com/example/chat/internal/infrastructure/auth"
-	"github.com/example/chat/internal/infrastructure/config"
-	infradb "github.com/example/chat/internal/infrastructure/db"
-	"github.com/example/chat/internal/infrastructure/seed"
+	"github.com/newt239/chat/internal/adapter/gateway/persistence"
+	"github.com/newt239/chat/internal/infrastructure/auth"
+	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/seed"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// Initialize database
-	db, err := infradb.InitDB(cfg.Database.URL)
+	database, err := db.InitDB(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
@@ -28,16 +28,17 @@ func main() {
 	fmt.Println("🌱 Manually seeding database...")
 
 	// Initialize repositories
-	userRepo := persistence.NewUserRepository(db)
-	workspaceRepo := persistence.NewWorkspaceRepository(db)
-	channelRepo := persistence.NewChannelRepository(db)
-	messageRepo := persistence.NewMessageRepository(db)
+	userRepo := persistence.NewUserRepository(database)
+	workspaceRepo := persistence.NewWorkspaceRepository(database)
+	channelRepo := persistence.NewChannelRepository(database)
+	channelMemberRepo := persistence.NewChannelMemberRepository(database)
+	messageRepo := persistence.NewMessageRepository(database)
 
 	// Initialize password service
 	passwordService := auth.NewPasswordService()
 
 	// Create seed data using the seed package
-	if err := seed.CreateSeedData(db, userRepo, workspaceRepo, channelRepo, messageRepo, passwordService); err != nil {
+	if err := seed.CreateSeedData(database, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService); err != nil {
 		log.Fatalf("failed to create seed data: %v", err)
 	}
 

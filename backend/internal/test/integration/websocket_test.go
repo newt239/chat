@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	wscontroller "github.com/example/chat/internal/adapter/controller/websocket"
-	"github.com/example/chat/internal/domain/entity"
-	"github.com/example/chat/internal/infrastructure/config"
-	"github.com/example/chat/internal/registry"
-	"github.com/example/chat/internal/test/integration"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+	wscontroller "github.com/newt239/chat/internal/adapter/controller/websocket"
+	"github.com/newt239/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/registry"
+	"github.com/newt239/chat/internal/test/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -37,10 +37,12 @@ func TestWebSocketIntegration(t *testing.T) {
 	jwtService := reg.NewJWTService()
 	workspaceRepo := reg.NewWorkspaceRepository()
 	userRepo := reg.NewUserRepository()
+	messageUseCase := reg.NewMessageUseCase()
+	readStateUseCase := reg.NewReadStateUseCase()
 
 	// Echoアプリケーションのセットアップ
 	e := echo.New()
-	e.GET("/ws", wscontroller.NewHandler(hub, jwtService, workspaceRepo))
+	e.GET("/ws", wscontroller.NewHandler(hub, jwtService, workspaceRepo, messageUseCase, readStateUseCase))
 
 	// テスト用のユーザーとWorkspaceを作成
 	ctx := context.Background()

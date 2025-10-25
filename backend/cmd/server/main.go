@@ -8,12 +8,11 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/example/chat/internal/adapter/controller/websocket"
-	"github.com/example/chat/internal/infrastructure/config"
-	"github.com/example/chat/internal/infrastructure/db"
-	"github.com/example/chat/internal/infrastructure/logger"
-	"github.com/example/chat/internal/infrastructure/seed"
-	"github.com/example/chat/internal/registry"
+	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/logger"
+	"github.com/newt239/chat/internal/infrastructure/seed"
+	"github.com/newt239/chat/internal/registry"
 )
 
 func main() {
@@ -21,6 +20,11 @@ func main() {
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
+	}
+
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("config validation failed: %v", err)
 	}
 
 	// Initialize logger
@@ -44,16 +48,11 @@ func main() {
 	reg := registry.NewRegistry(db, cfg)
 
 	// Initialize WebSocket hub
-	hub := websocket.NewHub()
+	hub := reg.NewWebSocketHub()
 	go hub.Run()
 
 	// Setup Echo router
 	e := reg.NewRouter()
-
-	// WebSocket endpoint
-	jwtService := reg.NewJWTService()
-	workspaceRepo := reg.NewWorkspaceRepository()
-	e.GET("/ws", websocket.NewHandler(hub, jwtService, workspaceRepo))
 
 	// Start server
 	addr := ":" + cfg.Server.Port

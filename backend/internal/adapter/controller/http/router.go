@@ -4,27 +4,33 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/example/chat/internal/adapter/controller/http/handler"
-	custommw "github.com/example/chat/internal/adapter/controller/http/middleware"
-	interfacehandler "github.com/example/chat/internal/interface/http/handler"
-	authuc "github.com/example/chat/internal/usecase/auth"
+	"github.com/newt239/chat/internal/adapter/controller/http/handler"
+	custommw "github.com/newt239/chat/internal/adapter/controller/http/middleware"
+	"github.com/newt239/chat/internal/adapter/controller/websocket"
+	"github.com/newt239/chat/internal/domain/repository"
+	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
 type RouterConfig struct {
 	JWTService     authuc.JWTService
 	AllowedOrigins []string
 
+	// WebSocket
+	WebSocketHub        *websocket.Hub
+	WorkspaceRepository repository.WorkspaceRepository
+
 	// Handlers
-	AuthHandler       *handler.AuthHandler
-	WorkspaceHandler  *handler.WorkspaceHandler
-	ChannelHandler    *handler.ChannelHandler
-	MessageHandler    *handler.MessageHandler
-	ReadStateHandler  *handler.ReadStateHandler
-	ReactionHandler   *handler.ReactionHandler
-	UserGroupHandler  *handler.UserGroupHandler
-	LinkHandler       *handler.LinkHandler
-	BookmarkHandler   *interfacehandler.BookmarkHandler
-	AttachmentHandler *interfacehandler.AttachmentHandler
+	AuthHandler          *handler.AuthHandler
+	WorkspaceHandler     *handler.WorkspaceHandler
+	ChannelHandler       *handler.ChannelHandler
+	ChannelMemberHandler *handler.ChannelMemberHandler
+	MessageHandler       *handler.MessageHandler
+	ReadStateHandler     *handler.ReadStateHandler
+	ReactionHandler      *handler.ReactionHandler
+	UserGroupHandler     *handler.UserGroupHandler
+	LinkHandler          *handler.LinkHandler
+	BookmarkHandler      *handler.BookmarkHandler
+	AttachmentHandler    *handler.AttachmentHandler
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -42,6 +48,9 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.GET("/healthz", func(c echo.Context) error {
 		return c.String(200, "ok")
 	})
+
+	// WebSocket endpoint
+	e.GET("/ws", websocket.NewHandler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, nil, nil))
 
 	// API routes
 	api := e.Group("/api")
@@ -72,6 +81,14 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	// Channel routes
 	api.GET("/workspaces/:id/channels", cfg.ChannelHandler.ListChannels, authMw)
 	api.POST("/workspaces/:id/channels", cfg.ChannelHandler.CreateChannel, authMw)
+
+	// Channel member routes
+	api.GET("/channels/:channelId/members", cfg.ChannelMemberHandler.ListMembers, authMw)
+	api.POST("/channels/:channelId/members", cfg.ChannelMemberHandler.InviteMember, authMw)
+	api.POST("/channels/:channelId/members/self", cfg.ChannelMemberHandler.JoinPublicChannel, authMw)
+	api.PATCH("/channels/:channelId/members/:userId/role", cfg.ChannelMemberHandler.UpdateMemberRole, authMw)
+	api.DELETE("/channels/:channelId/members/:userId", cfg.ChannelMemberHandler.RemoveMember, authMw)
+	api.DELETE("/channels/:channelId/members/self", cfg.ChannelMemberHandler.LeaveChannel, authMw)
 
 	// Message routes
 	api.GET("/channels/:channelId/messages", cfg.MessageHandler.ListMessages, authMw)

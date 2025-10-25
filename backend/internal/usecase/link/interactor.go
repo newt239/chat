@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/example/chat/internal/infrastructure/ogp"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type LinkUseCase interface {
@@ -12,12 +12,12 @@ type LinkUseCase interface {
 }
 
 type linkInteractor struct {
-	ogpService *ogp.OGPService
+	ogpService service.OGPService
 }
 
-func NewLinkInteractor() LinkUseCase {
+func NewLinkInteractor(ogpService service.OGPService) LinkUseCase {
 	return &linkInteractor{
-		ogpService: ogp.NewOGPService(),
+		ogpService: ogpService,
 	}
 }
 

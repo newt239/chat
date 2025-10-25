@@ -27,3 +27,11 @@ type WorkspaceMember struct {
 	Role        WorkspaceRole
 	JoinedAt    time.Time
 }
+
+func (m *WorkspaceMember) CanCreateChannel() bool {
+	if m == nil {
+		return false
+	}
+
+	return m.Role == WorkspaceRoleOwner || m.Role == WorkspaceRoleAdmin
+}

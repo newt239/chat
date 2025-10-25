@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
-	"github.com/example/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -21,23 +21,26 @@ type ReadStateUseCase interface {
 }
 
 type readStateInteractor struct {
-	readStateRepo   domainrepository.ReadStateRepository
-	channelRepo     domainrepository.ChannelRepository
-	workspaceRepo   domainrepository.WorkspaceRepository
-	notificationSvc service.NotificationService
+	readStateRepo     domainrepository.ReadStateRepository
+	channelRepo       domainrepository.ChannelRepository
+	channelMemberRepo domainrepository.ChannelMemberRepository
+	workspaceRepo     domainrepository.WorkspaceRepository
+	notificationSvc   service.NotificationService
 }
 
 func NewReadStateInteractor(
 	readStateRepo domainrepository.ReadStateRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	notificationSvc service.NotificationService,
 ) ReadStateUseCase {
 	return &readStateInteractor{
-		readStateRepo:   readStateRepo,
-		channelRepo:     channelRepo,
-		workspaceRepo:   workspaceRepo,
-		notificationSvc: notificationSvc,
+		readStateRepo:     readStateRepo,
+		channelRepo:       channelRepo,
+		channelMemberRepo: channelMemberRepo,
+		workspaceRepo:     workspaceRepo,
+		notificationSvc:   notificationSvc,
 	}
 }
 
@@ -94,7 +97,7 @@ func (i *readStateInteractor) ensureChannelAccess(ctx context.Context, channelID
 	}
 
 	if ch.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, ch.ID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
 		}

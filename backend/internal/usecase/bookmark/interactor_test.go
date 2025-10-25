@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	"github.com/example/chat/internal/test/mocks"
+	"github.com/newt239/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/test/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -15,7 +15,7 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 	tests := []struct {
 		name          string
 		input         AddBookmarkInput
-		setupMocks    func(*mocks.MockBookmarkRepository, *mocks.MockMessageRepository, *mocks.MockChannelRepository, *mocks.MockWorkspaceRepository)
+		setupMocks    func(*mocks.MockBookmarkRepository, *mocks.MockMessageRepository, *mocks.MockChannelRepository, *mocks.MockChannelMemberRepository, *mocks.MockWorkspaceRepository)
 		expectedError error
 	}{
 		{
@@ -24,7 +24,8 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 				UserID:    "user1",
 				MessageID: "msg1",
 			},
-			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
 				message := &entity.Message{
 					ID:        "msg1",
 					ChannelID: "ch1",
@@ -56,7 +57,8 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 				UserID:    "user1",
 				MessageID: "msg1",
 			},
-			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
 				messageRepo.On("FindByID", mock.Anything, "msg1").Return(nil, nil)
 			},
 			expectedError: ErrMessageNotFound,
@@ -67,7 +69,8 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 				UserID:    "user1",
 				MessageID: "msg1",
 			},
-			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
 				message := &entity.Message{
 					ID:        "msg1",
 					ChannelID: "ch1",
@@ -92,6 +95,32 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 			},
 			expectedError: ErrBookmarkExists,
 		},
+		{
+			name: "user not member of workspace",
+			input: AddBookmarkInput{
+				UserID:    "user1",
+				MessageID: "msg1",
+			},
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
+				message := &entity.Message{
+					ID:        "msg1",
+					ChannelID: "ch1",
+					UserID:    "user1",
+					Body:      "test message",
+				}
+				channel := &entity.Channel{
+					ID:          "ch1",
+					WorkspaceID: "ws1",
+					IsPrivate:   false,
+				}
+
+				messageRepo.On("FindByID", mock.Anything, "msg1").Return(message, nil)
+				channelRepo.On("FindByID", mock.Anything, "ch1").Return(channel, nil)
+				workspaceRepo.On("FindMember", mock.Anything, "ws1", "user1").Return(nil, nil)
+			},
+			expectedError: ErrUnauthorized,
+		},
 	}
 
 	for _, tt := range tests {
@@ -99,11 +128,12 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 			bookmarkRepo := mocks.NewMockBookmarkRepository(t)
 			messageRepo := mocks.NewMockMessageRepository(t)
 			channelRepo := mocks.NewMockChannelRepository(t)
+			channelMemberRepo := mocks.NewMockChannelMemberRepository(t)
 			workspaceRepo := mocks.NewMockWorkspaceRepository(t)
 
-			tt.setupMocks(bookmarkRepo, messageRepo, channelRepo, workspaceRepo)
+			tt.setupMocks(bookmarkRepo, messageRepo, channelRepo, channelMemberRepo, workspaceRepo)
 
-			interactor := NewBookmarkInteractor(bookmarkRepo, messageRepo, channelRepo, workspaceRepo)
+			interactor := NewBookmarkInteractor(bookmarkRepo, messageRepo, channelRepo, channelMemberRepo, workspaceRepo)
 
 			err := interactor.AddBookmark(context.Background(), tt.input)
 
@@ -117,6 +147,7 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 			bookmarkRepo.AssertExpectations(t)
 			messageRepo.AssertExpectations(t)
 			channelRepo.AssertExpectations(t)
+			channelMemberRepo.AssertExpectations(t)
 			workspaceRepo.AssertExpectations(t)
 		})
 	}
@@ -126,7 +157,7 @@ func TestBookmarkInteractor_RemoveBookmark(t *testing.T) {
 	tests := []struct {
 		name          string
 		input         RemoveBookmarkInput
-		setupMocks    func(*mocks.MockBookmarkRepository, *mocks.MockMessageRepository, *mocks.MockChannelRepository, *mocks.MockWorkspaceRepository)
+		setupMocks    func(*mocks.MockBookmarkRepository, *mocks.MockMessageRepository, *mocks.MockChannelRepository, *mocks.MockChannelMemberRepository, *mocks.MockWorkspaceRepository)
 		expectedError error
 	}{
 		{
@@ -135,7 +166,9 @@ func TestBookmarkInteractor_RemoveBookmark(t *testing.T) {
 				UserID:    "user1",
 				MessageID: "msg1",
 			},
-			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
+
 				message := &entity.Message{
 					ID:        "msg1",
 					ChannelID: "ch1",
@@ -160,6 +193,18 @@ func TestBookmarkInteractor_RemoveBookmark(t *testing.T) {
 			},
 			expectedError: nil,
 		},
+		{
+			name: "message not found",
+			input: RemoveBookmarkInput{
+				UserID:    "user1",
+				MessageID: "msg1",
+			},
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
+				messageRepo.On("FindByID", mock.Anything, "msg1").Return(nil, nil)
+			},
+			expectedError: ErrMessageNotFound,
+		},
 	}
 
 	for _, tt := range tests {
@@ -167,11 +212,12 @@ func TestBookmarkInteractor_RemoveBookmark(t *testing.T) {
 			bookmarkRepo := mocks.NewMockBookmarkRepository(t)
 			messageRepo := mocks.NewMockMessageRepository(t)
 			channelRepo := mocks.NewMockChannelRepository(t)
+			channelMemberRepo := mocks.NewMockChannelMemberRepository(t)
 			workspaceRepo := mocks.NewMockWorkspaceRepository(t)
 
-			tt.setupMocks(bookmarkRepo, messageRepo, channelRepo, workspaceRepo)
+			tt.setupMocks(bookmarkRepo, messageRepo, channelRepo, channelMemberRepo, workspaceRepo)
 
-			interactor := NewBookmarkInteractor(bookmarkRepo, messageRepo, channelRepo, workspaceRepo)
+			interactor := NewBookmarkInteractor(bookmarkRepo, messageRepo, channelRepo, channelMemberRepo, workspaceRepo)
 
 			err := interactor.RemoveBookmark(context.Background(), tt.input)
 
@@ -185,6 +231,7 @@ func TestBookmarkInteractor_RemoveBookmark(t *testing.T) {
 			bookmarkRepo.AssertExpectations(t)
 			messageRepo.AssertExpectations(t)
 			channelRepo.AssertExpectations(t)
+			channelMemberRepo.AssertExpectations(t)
 			workspaceRepo.AssertExpectations(t)
 		})
 	}
@@ -194,42 +241,60 @@ func TestBookmarkInteractor_ListBookmarks(t *testing.T) {
 	tests := []struct {
 		name           string
 		userID         string
-		setupMocks     func(*mocks.MockBookmarkRepository, *mocks.MockMessageRepository, *mocks.MockChannelRepository, *mocks.MockWorkspaceRepository)
+		setupMocks     func(*mocks.MockBookmarkRepository, *mocks.MockMessageRepository, *mocks.MockChannelRepository, *mocks.MockChannelMemberRepository, *mocks.MockWorkspaceRepository)
 		expectedOutput *ListBookmarksOutput
 		expectedError  error
 	}{
 		{
 			name:   "successful bookmark listing",
 			userID: "user1",
-			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
+
+				now := time.Now()
 				bookmarks := []*entity.MessageBookmark{
 					{
 						UserID:    "user1",
 						MessageID: "msg1",
-						CreatedAt: time.Now(),
+						CreatedAt: now,
 					},
 					{
 						UserID:    "user1",
 						MessageID: "msg2",
-						CreatedAt: time.Now().Add(-time.Hour),
+						CreatedAt: now.Add(-time.Hour),
 					},
 				}
 
 				bookmarkRepo.On("FindByUserID", mock.Anything, "user1").Return(bookmarks, nil)
 			},
+			expectedOutput: func() *ListBookmarksOutput {
+				now := time.Now()
+				return &ListBookmarksOutput{
+					Bookmarks: []BookmarkOutput{
+						{
+							UserID:    "user1",
+							MessageID: "msg1",
+							CreatedAt: now,
+						},
+						{
+							UserID:    "user1",
+							MessageID: "msg2",
+							CreatedAt: now.Add(-time.Hour),
+						},
+					},
+				}
+			}(),
+			expectedError: nil,
+		},
+		{
+			name:   "empty bookmark list",
+			userID: "user1",
+			setupMocks: func(bookmarkRepo *mocks.MockBookmarkRepository, messageRepo *mocks.MockMessageRepository, channelRepo *mocks.MockChannelRepository, channelMemberRepo *mocks.MockChannelMemberRepository, workspaceRepo *mocks.MockWorkspaceRepository) {
+				_ = channelMemberRepo
+				bookmarkRepo.On("FindByUserID", mock.Anything, "user1").Return([]*entity.MessageBookmark{}, nil)
+			},
 			expectedOutput: &ListBookmarksOutput{
-				Bookmarks: []BookmarkOutput{
-					{
-						UserID:    "user1",
-						MessageID: "msg1",
-						CreatedAt: time.Now(),
-					},
-					{
-						UserID:    "user1",
-						MessageID: "msg2",
-						CreatedAt: time.Now().Add(-time.Hour),
-					},
-				},
+				Bookmarks: []BookmarkOutput{},
 			},
 			expectedError: nil,
 		},
@@ -240,11 +305,12 @@ func TestBookmarkInteractor_ListBookmarks(t *testing.T) {
 			bookmarkRepo := mocks.NewMockBookmarkRepository(t)
 			messageRepo := mocks.NewMockMessageRepository(t)
 			channelRepo := mocks.NewMockChannelRepository(t)
+			channelMemberRepo := mocks.NewMockChannelMemberRepository(t)
 			workspaceRepo := mocks.NewMockWorkspaceRepository(t)
 
-			tt.setupMocks(bookmarkRepo, messageRepo, channelRepo, workspaceRepo)
+			tt.setupMocks(bookmarkRepo, messageRepo, channelRepo, channelMemberRepo, workspaceRepo)
 
-			interactor := NewBookmarkInteractor(bookmarkRepo, messageRepo, channelRepo, workspaceRepo)
+			interactor := NewBookmarkInteractor(bookmarkRepo, messageRepo, channelRepo, channelMemberRepo, workspaceRepo)
 
 			output, err := interactor.ListBookmarks(context.Background(), tt.userID)
 
@@ -253,12 +319,21 @@ func TestBookmarkInteractor_ListBookmarks(t *testing.T) {
 				assert.Equal(t, tt.expectedError, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedOutput, output)
+				if tt.expectedOutput != nil {
+					assert.Equal(t, len(tt.expectedOutput.Bookmarks), len(output.Bookmarks))
+					for i, expected := range tt.expectedOutput.Bookmarks {
+						assert.Equal(t, expected.UserID, output.Bookmarks[i].UserID)
+						assert.Equal(t, expected.MessageID, output.Bookmarks[i].MessageID)
+						// 時間の比較は秒単位で行う
+						assert.Equal(t, expected.CreatedAt.Unix(), output.Bookmarks[i].CreatedAt.Unix())
+					}
+				}
 			}
 
 			bookmarkRepo.AssertExpectations(t)
 			messageRepo.AssertExpectations(t)
 			channelRepo.AssertExpectations(t)
+			channelMemberRepo.AssertExpectations(t)
 			workspaceRepo.AssertExpectations(t)
 		})
 	}

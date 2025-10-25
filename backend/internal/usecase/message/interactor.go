@@ -5,14 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
-	"strings"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
-	"github.com/example/chat/internal/domain/service"
-	"github.com/example/chat/internal/infrastructure/ogp"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -40,23 +37,27 @@ type MessageUseCase interface {
 }
 
 type messageInteractor struct {
-	messageRepo      domainrepository.MessageRepository
-	channelRepo      domainrepository.ChannelRepository
-	workspaceRepo    domainrepository.WorkspaceRepository
-	userRepo         domainrepository.UserRepository
-	userGroupRepo    domainrepository.UserGroupRepository
-	userMentionRepo  domainrepository.MessageUserMentionRepository
-	groupMentionRepo domainrepository.MessageGroupMentionRepository
-	linkRepo         domainrepository.MessageLinkRepository
-	threadRepo       domainrepository.ThreadRepository
-	attachmentRepo   domainrepository.AttachmentRepository
-	ogpService       *ogp.OGPService
-	notificationSvc  service.NotificationService
+	messageRepo           domainrepository.MessageRepository
+	channelRepo           domainrepository.ChannelRepository
+	channelMemberRepo     domainrepository.ChannelMemberRepository
+	workspaceRepo         domainrepository.WorkspaceRepository
+	userRepo              domainrepository.UserRepository
+	userGroupRepo         domainrepository.UserGroupRepository
+	userMentionRepo       domainrepository.MessageUserMentionRepository
+	groupMentionRepo      domainrepository.MessageGroupMentionRepository
+	linkRepo              domainrepository.MessageLinkRepository
+	threadRepo            domainrepository.ThreadRepository
+	attachmentRepo        domainrepository.AttachmentRepository
+	ogpService            service.OGPService
+	notificationSvc       service.NotificationService
+	mentionService        service.MentionService
+	linkProcessingService service.LinkProcessingService
 }
 
 func NewMessageInteractor(
 	messageRepo domainrepository.MessageRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
@@ -65,21 +66,27 @@ func NewMessageInteractor(
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
+	ogpService service.OGPService,
 	notificationSvc service.NotificationService,
+	mentionService service.MentionService,
+	linkProcessingService service.LinkProcessingService,
 ) MessageUseCase {
 	return &messageInteractor{
-		messageRepo:      messageRepo,
-		channelRepo:      channelRepo,
-		workspaceRepo:    workspaceRepo,
-		userRepo:         userRepo,
-		userGroupRepo:    userGroupRepo,
-		userMentionRepo:  userMentionRepo,
-		groupMentionRepo: groupMentionRepo,
-		linkRepo:         linkRepo,
-		threadRepo:       threadRepo,
-		attachmentRepo:   attachmentRepo,
-		ogpService:       ogp.NewOGPService(),
-		notificationSvc:  notificationSvc,
+		messageRepo:           messageRepo,
+		channelRepo:           channelRepo,
+		channelMemberRepo:     channelMemberRepo,
+		workspaceRepo:         workspaceRepo,
+		userRepo:              userRepo,
+		userGroupRepo:         userGroupRepo,
+		userMentionRepo:       userMentionRepo,
+		groupMentionRepo:      groupMentionRepo,
+		linkRepo:              linkRepo,
+		threadRepo:            threadRepo,
+		attachmentRepo:        attachmentRepo,
+		ogpService:            ogpService,
+		notificationSvc:       notificationSvc,
+		mentionService:        mentionService,
+		linkProcessingService: linkProcessingService,
 	}
 }
 
@@ -330,7 +337,7 @@ func (i *messageInteractor) ensureChannelAccess(ctx context.Context, channelID, 
 	}
 
 	if ch.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, ch.ID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
 		}
@@ -499,7 +506,10 @@ func toMessageOutputWithMentionsAndLinks(
 // メンションとリンクの抽出・保存
 func (i *messageInteractor) extractAndSaveMentionsAndLinks(ctx context.Context, messageID, body, workspaceID string) error {
 	// ユーザーメンションの抽出
-	userMentions := i.extractUserMentions(ctx, body, workspaceID)
+	userMentions, err := i.mentionService.ExtractUserMentions(ctx, body, workspaceID)
+	if err != nil {
+		return fmt.Errorf("failed to extract user mentions: %w", err)
+	}
 	for _, mention := range userMentions {
 		mention.MessageID = messageID
 		mention.CreatedAt = time.Now()
@@ -509,7 +519,10 @@ func (i *messageInteractor) extractAndSaveMentionsAndLinks(ctx context.Context, 
 	}
 
 	// グループメンションの抽出
-	groupMentions := i.extractGroupMentions(ctx, body, workspaceID)
+	groupMentions, err := i.mentionService.ExtractGroupMentions(ctx, body, workspaceID)
+	if err != nil {
+		return fmt.Errorf("failed to extract group mentions: %w", err)
+	}
 	for _, mention := range groupMentions {
 		mention.MessageID = messageID
 		mention.CreatedAt = time.Now()
@@ -519,129 +532,40 @@ func (i *messageInteractor) extractAndSaveMentionsAndLinks(ctx context.Context, 
 	}
 
 	// リンクの抽出とOGP取得
-	urls := ogp.ExtractURLs(body)
-	for _, urlStr := range urls {
+	links, err := i.linkProcessingService.ProcessLinks(ctx, body)
+	if err != nil {
+		return fmt.Errorf("failed to process links: %w", err)
+	}
+
+	for _, link := range links {
 		// 既存のリンクをチェック
-		existingLink, err := i.linkRepo.FindByURL(ctx, urlStr)
+		existingLink, err := i.linkRepo.FindByURL(ctx, link.URL)
 		if err != nil {
 			continue // エラーは無視
 		}
 
-		var link *entity.MessageLink
 		if existingLink != nil {
 			// 既存のリンクを再利用
-			link = &entity.MessageLink{
-				MessageID:   messageID,
-				URL:         existingLink.URL,
-				Title:       existingLink.Title,
-				Description: existingLink.Description,
-				ImageURL:    existingLink.ImageURL,
-				SiteName:    existingLink.SiteName,
-				CardType:    existingLink.CardType,
-				CreatedAt:   time.Now(),
-			}
+			link.MessageID = messageID
+			link.Title = existingLink.Title
+			link.Description = existingLink.Description
+			link.ImageURL = existingLink.ImageURL
+			link.SiteName = existingLink.SiteName
+			link.CardType = existingLink.CardType
+			link.CreatedAt = time.Now()
 		} else {
-			// 新しいリンクのOGPを取得
-			ogpData, err := i.ogpService.FetchOGP(ctx, urlStr)
-			if err != nil {
-				// OGP取得に失敗してもリンクは保存
-				ogpData = &ogp.OGPData{}
-			}
-
-			link = &entity.MessageLink{
-				MessageID:   messageID,
-				URL:         urlStr,
-				Title:       ogpData.Title,
-				Description: ogpData.Description,
-				ImageURL:    ogpData.ImageURL,
-				SiteName:    ogpData.SiteName,
-				CardType:    ogpData.CardType,
-				CreatedAt:   time.Now(),
-			}
+			// 新しいリンクを保存
+			link.MessageID = messageID
+			link.CreatedAt = time.Now()
 		}
 
+		// リンクを保存
 		if err := i.linkRepo.Create(ctx, link); err != nil {
 			return fmt.Errorf("failed to create link: %w", err)
 		}
 	}
 
 	return nil
-}
-
-// ユーザーメンションの抽出
-func (i *messageInteractor) extractUserMentions(ctx context.Context, body, workspaceID string) []*entity.MessageUserMention {
-	// @username パターンを検出
-	mentionRegex := regexp.MustCompile(`@([a-zA-Z0-9_-]+)`)
-	matches := mentionRegex.FindAllStringSubmatch(body, -1)
-
-	var mentions []*entity.MessageUserMention
-	userIDSet := make(map[string]bool)
-
-	for _, match := range matches {
-		if len(match) < 2 {
-			continue
-		}
-		username := match[1]
-
-		// ユーザー名でユーザーを検索（簡略化のため、display_nameで検索）
-		// 実際の実装では、ユーザー名フィールドを追加するか、別の方法で検索
-		// ここでは簡略化のため、ワークスペースの全ユーザーを取得して検索
-		workspaceMembers, err := i.workspaceRepo.FindMembersByWorkspaceID(ctx, workspaceID)
-		if err != nil {
-			continue
-		}
-
-		for _, member := range workspaceMembers {
-			user, err := i.userRepo.FindByID(ctx, member.UserID)
-			if err != nil || user == nil {
-				continue
-			}
-			// 簡略化のため、display_nameの最初の部分でマッチング
-			if strings.HasPrefix(strings.ToLower(user.DisplayName), strings.ToLower(username)) {
-				if !userIDSet[user.ID] {
-					mentions = append(mentions, &entity.MessageUserMention{
-						UserID: user.ID,
-					})
-					userIDSet[user.ID] = true
-				}
-				break
-			}
-		}
-	}
-
-	return mentions
-}
-
-// グループメンションの抽出
-func (i *messageInteractor) extractGroupMentions(ctx context.Context, body, workspaceID string) []*entity.MessageGroupMention {
-	// @groupname パターンを検出
-	mentionRegex := regexp.MustCompile(`@([a-zA-Z0-9_-]+)`)
-	matches := mentionRegex.FindAllStringSubmatch(body, -1)
-
-	var mentions []*entity.MessageGroupMention
-	groupIDSet := make(map[string]bool)
-
-	for _, match := range matches {
-		if len(match) < 2 {
-			continue
-		}
-		groupname := match[1]
-
-		// グループ名でグループを検索
-		group, err := i.userGroupRepo.FindByName(ctx, workspaceID, groupname)
-		if err != nil || group == nil {
-			continue
-		}
-
-		if !groupIDSet[group.ID] {
-			mentions = append(mentions, &entity.MessageGroupMention{
-				GroupID: group.ID,
-			})
-			groupIDSet[group.ID] = true
-		}
-	}
-
-	return mentions
 }
 
 func (i *messageInteractor) GetThreadReplies(ctx context.Context, input GetThreadRepliesInput) (*GetThreadRepliesOutput, error) {

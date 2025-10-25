@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/example/chat/internal/infrastructure/config"
-	infradb "github.com/example/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/db"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -18,24 +18,19 @@ func main() {
 	}
 
 	// Initialize database connection
-	db, err := infradb.NewConnection(cfg.Database.URL, logger.Info)
+	database, err := db.NewConnection(cfg.Database.URL, logger.Info)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
 	// Drop all tables
-	if err := dropAllTables(db); err != nil {
+	if err := dropAllTables(database); err != nil {
 		log.Fatalf("failed to drop tables: %v", err)
 	}
 
-	// Recreate tables
-	if err := infradb.AutoMigrate(db); err != nil {
-		log.Fatalf("failed to recreate tables: %v", err)
-	}
-
 	fmt.Println("✅ Database reset successfully!")
-	fmt.Println("   All data has been cleared and tables recreated.")
-	fmt.Println("   Run 'go run cmd/seed/main.go' to populate with seed data.")
+	fmt.Println("   All data has been cleared.")
+	fmt.Println("   Run your migration tool (e.g. `atlas migrate apply`) to recreate tables.")
 }
 
 func dropAllTables(db *gorm.DB) error {

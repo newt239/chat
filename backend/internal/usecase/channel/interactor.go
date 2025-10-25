@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
+	"github.com/google/uuid"
+	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 )
 
 var (
@@ -21,21 +24,34 @@ type ChannelUseCase interface {
 }
 
 type channelInteractor struct {
-	channelRepo   domainrepository.ChannelRepository
-	workspaceRepo domainrepository.WorkspaceRepository
+	channelRepo       domainrepository.ChannelRepository
+	channelMemberRepo domainrepository.ChannelMemberRepository
+	workspaceRepo     domainrepository.WorkspaceRepository
+	txManager         domaintransaction.Manager
 }
 
 func NewChannelInteractor(
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
+	txManager domaintransaction.Manager,
 ) ChannelUseCase {
 	return &channelInteractor{
-		channelRepo:   channelRepo,
-		workspaceRepo: workspaceRepo,
+		channelRepo:       channelRepo,
+		channelMemberRepo: channelMemberRepo,
+		workspaceRepo:     workspaceRepo,
+		txManager:         txManager,
 	}
 }
 
 func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error) {
+	if err := validateUUID(input.WorkspaceID, "workspace ID"); err != nil {
+		return nil, err
+	}
+	if err := validateUUID(input.UserID, "user ID"); err != nil {
+		return nil, err
+	}
+
 	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
@@ -66,6 +82,13 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 }
 
 func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error) {
+	if err := validateUUID(input.WorkspaceID, "workspace ID"); err != nil {
+		return nil, err
+	}
+	if err := validateUUID(input.UserID, "user ID"); err != nil {
+		return nil, err
+	}
+
 	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
@@ -78,35 +101,41 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
-	if member == nil || (member.Role != entity.WorkspaceRoleOwner && member.Role != entity.WorkspaceRoleAdmin) {
+	if member == nil || !member.CanCreateChannel() {
 		return nil, ErrUnauthorized
 	}
 
-	channel := &entity.Channel{
+	channel, err := entity.NewChannel(entity.ChannelParams{
 		WorkspaceID: input.WorkspaceID,
 		Name:        input.Name,
 		Description: input.Description,
 		IsPrivate:   input.IsPrivate,
 		CreatedBy:   input.UserID,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create channel entity: %w", err)
 	}
 
-	if err := i.channelRepo.Create(ctx, channel); err != nil {
-		return nil, fmt.Errorf("failed to create channel: %w", err)
-	}
+	err = i.txManager.Do(ctx, func(txCtx context.Context) error {
+		if err := i.channelRepo.Create(txCtx, channel); err != nil {
+			return fmt.Errorf("failed to create channel: %w", err)
+		}
 
-	// Add creator as admin member if channel is private
-	if channel.IsPrivate {
-		member := &entity.ChannelMember{
-			ChannelID: channel.ID,
-			UserID:    input.UserID,
-			Role:      entity.ChannelRoleAdmin,
-			JoinedAt:  time.Now(),
+		if channel.IsPrivate {
+			member := &entity.ChannelMember{
+				ChannelID: channel.ID,
+				UserID:    input.UserID,
+				Role:      entity.ChannelRoleAdmin,
+				JoinedAt:  time.Now(),
+			}
+			if err := i.channelMemberRepo.AddMember(txCtx, member); err != nil {
+				return fmt.Errorf("failed to add creator to private channel: %w", err)
+			}
 		}
-		if err := i.channelRepo.AddMember(ctx, member); err != nil {
-			return nil, fmt.Errorf("failed to add creator to private channel: %w", err)
-		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	output := toChannelOutput(channel)
@@ -124,4 +153,11 @@ func toChannelOutput(channel *entity.Channel) ChannelOutput {
 		CreatedAt:   channel.CreatedAt,
 		UpdatedAt:   channel.UpdatedAt,
 	}
+}
+
+func validateUUID(id string, label string) error {
+	if _, err := uuid.Parse(id); err != nil {
+		return fmt.Errorf("%w: invalid %s format", domerr.ErrValidation, label)
+	}
+	return nil
 }

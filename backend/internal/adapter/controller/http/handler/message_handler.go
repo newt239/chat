@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	messageuc "github.com/example/chat/internal/usecase/message"
 	"github.com/labstack/echo/v4"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
 type MessageHandler struct {

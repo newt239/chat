@@ -8,41 +8,44 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/example/chat/internal/domain/entity"
-	"github.com/example/chat/internal/domain/repository"
-	"github.com/example/chat/internal/infrastructure/storage/wasabi"
+	"github.com/newt239/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type Interactor struct {
-	attachmentRepo repository.AttachmentRepository
-	channelRepo    repository.ChannelRepository
-	messageRepo    repository.MessageRepository
-	presignService *wasabi.PresignService
-	config         *wasabi.Config
+	attachmentRepo    repository.AttachmentRepository
+	channelRepo       repository.ChannelRepository
+	channelMemberRepo repository.ChannelMemberRepository
+	messageRepo       repository.MessageRepository
+	storageService    service.StorageService
+	config            service.StorageConfig
 }
 
 func NewInteractor(
 	attachmentRepo repository.AttachmentRepository,
 	channelRepo repository.ChannelRepository,
+	channelMemberRepo repository.ChannelMemberRepository,
 	messageRepo repository.MessageRepository,
-	presignService *wasabi.PresignService,
-	config *wasabi.Config,
+	storageService service.StorageService,
+	config service.StorageConfig,
 ) *Interactor {
 	return &Interactor{
-		attachmentRepo: attachmentRepo,
-		channelRepo:    channelRepo,
-		messageRepo:    messageRepo,
-		presignService: presignService,
-		config:         config,
+		attachmentRepo:    attachmentRepo,
+		channelRepo:       channelRepo,
+		channelMemberRepo: channelMemberRepo,
+		messageRepo:       messageRepo,
+		storageService:    storageService,
+		config:            config,
 	}
 }
 
 func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*PresignOutput, error) {
-	if input.SizeBytes > i.config.MaxFileSize {
+	if input.SizeBytes > i.config.GetMaxFileSize() {
 		return nil, fmt.Errorf("ファイルサイズが上限(1GB)を超えています")
 	}
 
-	isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.UserID)
+	isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -55,11 +58,11 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 
 	expires := time.Duration(input.ExpiresMin) * time.Minute
 	if expires == 0 {
-		expires = i.config.UploadExpires
+		expires = i.config.GetUploadExpires().(time.Duration)
 	}
 	expiresAt := time.Now().Add(expires)
 
-	uploadURL, err := i.presignService.GenerateUploadURL(storageKey, input.MimeType, input.SizeBytes, expires)
+	uploadURL, err := i.storageService.GenerateUploadURL(storageKey, input.MimeType, input.SizeBytes, expires)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +109,7 @@ func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID strin
 			return nil, errors.New("メッセージが見つかりません")
 		}
 
-		isMember, err := i.channelRepo.IsMember(ctx, message.ChannelID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, message.ChannelID, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +117,7 @@ func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID strin
 			return nil, errors.New("アクセス権限がありません")
 		}
 	} else {
-		isMember, err := i.channelRepo.IsMember(ctx, attachment.ChannelID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, attachment.ChannelID, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -154,7 +157,7 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 			return nil, errors.New("メッセージが見つかりません")
 		}
 
-		isMember, err := i.channelRepo.IsMember(ctx, message.ChannelID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, message.ChannelID, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -162,7 +165,7 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 			return nil, errors.New("アクセス権限がありません")
 		}
 	} else {
-		isMember, err := i.channelRepo.IsMember(ctx, attachment.ChannelID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, attachment.ChannelID, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -171,14 +174,14 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 		}
 	}
 
-	downloadURL, err := i.presignService.GenerateDownloadURL(attachment.StorageKey, 0)
+	downloadURL, err := i.storageService.GenerateDownloadURL(attachment.StorageKey, 0)
 	if err != nil {
 		return nil, err
 	}
 
 	return &DownloadURLOutput{
 		URL:       downloadURL,
-		ExpiresIn: int(i.config.DownloadExpires.Seconds()),
+		ExpiresIn: int(i.config.GetDownloadExpires().(time.Duration).Seconds()),
 	}, nil
 }
 

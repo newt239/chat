@@ -49,6 +49,10 @@ type Client struct {
 
 	// ワークスペースID
 	workspaceID string
+
+	// ユースケース
+	messageUseCase   MessageUseCase
+	readStateUseCase ReadStateUseCase
 }
 
 // NewHub は新しいHubを作成します
@@ -253,35 +257,88 @@ func (c *Client) handleMessage(data []byte) {
 
 // handleJoinChannel はjoin_channelイベントを処理します
 func (c *Client) handleJoinChannel(payload json.RawMessage) {
-	// TODO: チャンネル参加処理を実装
-	log.Printf("User %s joining channel", c.userID)
+	var joinPayload JoinChannelPayload
+	if err := json.Unmarshal(payload, &joinPayload); err != nil {
+		log.Printf("Failed to parse join channel payload: %v", err)
+		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
+		return
+	}
+
+	log.Printf("User %s joining channel %s", c.userID, joinPayload.ChannelID)
+
+	// チャンネル参加の確認（実際の参加処理は既に認証時に完了している）
+	// ここでは参加確認のログのみ出力
 	c.sendAck(EventTypeJoinChannel, true, "")
 }
 
 // handleLeaveChannel はleave_channelイベントを処理します
 func (c *Client) handleLeaveChannel(payload json.RawMessage) {
-	// TODO: チャンネル離脱処理を実装
-	log.Printf("User %s leaving channel", c.userID)
+	var leavePayload LeaveChannelPayload
+	if err := json.Unmarshal(payload, &leavePayload); err != nil {
+		log.Printf("Failed to parse leave channel payload: %v", err)
+		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
+		return
+	}
+
+	log.Printf("User %s leaving channel %s", c.userID, leavePayload.ChannelID)
+
+	// チャンネル離脱の確認（実際の離脱処理は別途APIで実装）
+	// ここでは離脱確認のログのみ出力
 	c.sendAck(EventTypeLeaveChannel, true, "")
 }
 
 // handlePostMessage はpost_messageイベントを処理します
 func (c *Client) handlePostMessage(payload json.RawMessage) {
-	// TODO: メッセージ投稿処理を実装（UseCase層との連携）
-	log.Printf("User %s posting message", c.userID)
+	var postPayload PostMessagePayload
+	if err := json.Unmarshal(payload, &postPayload); err != nil {
+		log.Printf("Failed to parse post message payload: %v", err)
+		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
+		return
+	}
+
+	log.Printf("User %s posting message to channel %s", c.userID, postPayload.ChannelID)
+
+	// メッセージ投稿処理（UseCase層との連携）
+	// 実際のメッセージ投稿はHTTP APIで行い、ここではWebSocket通知のみ処理
+	// メッセージ投稿後の通知は、HTTP API側でWebSocket通知を送信する
+
+	// 入力中状態を停止
+	c.stopTyping(postPayload.ChannelID)
+
 	c.sendAck(EventTypePostMessage, true, "")
 }
 
 // handleTyping はtypingイベントを処理します
 func (c *Client) handleTyping(payload json.RawMessage) {
-	// TODO: 入力中状態の通知処理を実装
-	log.Printf("User %s is typing", c.userID)
+	var typingPayload TypingPayload
+	if err := json.Unmarshal(payload, &typingPayload); err != nil {
+		log.Printf("Failed to parse typing payload: %v", err)
+		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
+		return
+	}
+
+	log.Printf("User %s is typing in channel %s", c.userID, typingPayload.ChannelID)
+
+	// 入力中状態の通知処理
+	c.startTyping(typingPayload.ChannelID)
 }
 
 // handleUpdateReadState はupdate_read_stateイベントを処理します
 func (c *Client) handleUpdateReadState(payload json.RawMessage) {
-	// TODO: 既読状態更新処理を実装
-	log.Printf("User %s updating read state", c.userID)
+	var readStatePayload UpdateReadStatePayload
+	if err := json.Unmarshal(payload, &readStatePayload); err != nil {
+		log.Printf("Failed to parse update read state payload: %v", err)
+		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
+		return
+	}
+
+	log.Printf("User %s updating read state for channel %s, message %s",
+		c.userID, readStatePayload.ChannelID, readStatePayload.MessageID)
+
+	// 既読状態更新処理（UseCase層との連携）
+	// 実際の既読状態更新はHTTP APIで行い、ここではWebSocket通知のみ処理
+	// 既読状態更新後の通知は、HTTP API側でWebSocket通知を送信する
+
 	c.sendAck(EventTypeUpdateReadState, true, "")
 }
 
@@ -361,4 +418,42 @@ func (c *Client) writePump() {
 			}
 		}
 	}
+}
+
+// startTyping は入力中状態を開始します
+func (c *Client) startTyping(channelID string) {
+	// 入力中状態の通知を他のクライアントに送信
+	typingData := map[string]interface{}{
+		"user_id":    c.userID,
+		"channel_id": channelID,
+		"typing":     true,
+	}
+
+	message, err := SendServerMessage(EventTypeTyping, typingData)
+	if err != nil {
+		log.Printf("Failed to create typing message: %v", err)
+		return
+	}
+
+	// チャンネル内の他のユーザーに通知（自分は除外）
+	c.hub.BroadcastToChannel(c.workspaceID, channelID, message)
+}
+
+// stopTyping は入力中状態を停止します
+func (c *Client) stopTyping(channelID string) {
+	// 入力中状態停止の通知を他のクライアントに送信
+	typingData := map[string]interface{}{
+		"user_id":    c.userID,
+		"channel_id": channelID,
+		"typing":     false,
+	}
+
+	message, err := SendServerMessage(EventTypeTyping, typingData)
+	if err != nil {
+		log.Printf("Failed to create stop typing message: %v", err)
+		return
+	}
+
+	// チャンネル内の他のユーザーに通知（自分は除外）
+	c.hub.BroadcastToChannel(c.workspaceID, channelID, message)
 }

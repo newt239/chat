@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	authuc "github.com/example/chat/internal/usecase/auth"
 	"github.com/labstack/echo/v4"
+	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
 type AuthHandler struct {

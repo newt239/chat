@@ -1,18 +1,31 @@
-import { useState } from "react";
-
 import { TextInput, PasswordInput, Button, Paper, Title, Text, Anchor } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { Link } from "@tanstack/react-router";
 
 import { useLogin } from "../hooks/useAuth";
 
+type LoginFormValues = {
+  email: string;
+  password: string;
+};
+
 export const LoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const login = useLogin();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    login.mutate({ email, password });
-  };
+  const form = useForm<LoginFormValues>({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validate: {
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "有効なメールアドレスを入力してください"),
+      password: (value) => (value.length >= 6 ? null : "6文字以上のパスワードを入力してください"),
+    },
+  });
+
+  const handleSubmit = form.onSubmit((values) => {
+    login.mutate(values);
+  });
 
   return (
     <Paper className="w-full max-w-md p-8" shadow="md" radius="md">
@@ -20,23 +33,22 @@ export const LoginForm = () => {
         ログイン
       </Title>
 
-      <form onSubmit={handleSubmit}>
+      <form noValidate onSubmit={handleSubmit}>
         <TextInput
           label="メールアドレス"
           placeholder="your@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.currentTarget.value)}
+          type="email"
           required
           className="mb-4"
+          {...form.getInputProps("email")}
         />
 
         <PasswordInput
           label="パスワード"
           placeholder="パスワード"
-          value={password}
-          onChange={(e) => setPassword(e.currentTarget.value)}
           required
           className="mb-6"
+          {...form.getInputProps("password")}
         />
 
         {login.isError && (
@@ -51,7 +63,7 @@ export const LoginForm = () => {
 
         <Text size="sm" className="text-center">
           アカウントをお持ちでない方は{" "}
-          <Anchor href="/register" size="sm">
+          <Anchor component={Link} to="/register" size="sm">
             新規登録
           </Anchor>
         </Text>

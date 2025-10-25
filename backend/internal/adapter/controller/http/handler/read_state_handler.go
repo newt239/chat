@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	readstateuc "github.com/example/chat/internal/usecase/readstate"
 	"github.com/labstack/echo/v4"
+	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 )
 
 type ReadStateHandler struct {

@@ -2,12 +2,33 @@ import createClient from "openapi-fetch";
 
 import type { paths } from "./schema";
 
+import { navigateToLogin } from "@/lib/navigation";
+import { store } from "@/lib/store";
+import { accessTokenAtom, authAtom, clearAuthAtom, refreshTokenAtom } from "@/lib/store/auth";
+
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 // リフレッシュ処理中かどうかを追跡するフラグ
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 const retryableRequestMap = new WeakMap<Request, Request>();
+
+const getAccessToken = () => store.get(accessTokenAtom);
+const getRefreshToken = () => store.get(refreshTokenAtom);
+
+const updateAuthTokens = (accessToken: string, refreshToken?: string) => {
+  const current = store.get(authAtom);
+  store.set(authAtom, {
+    user: current.user,
+    accessToken,
+    refreshToken: refreshToken ?? current.refreshToken,
+  });
+};
+
+const resetAuthState = () => {
+  store.set(clearAuthAtom);
+};
 
 export const api = createClient<paths>({
   baseUrl: API_BASE_URL,
@@ -22,7 +43,7 @@ async function refreshAccessToken(): Promise<string | null> {
   isRefreshing = true;
   refreshPromise = (async () => {
     try {
-      const refreshToken = localStorage.getItem("refreshToken");
+      const refreshToken = getRefreshToken();
       if (!refreshToken) {
         return null;
       }
@@ -32,7 +53,7 @@ async function refreshAccessToken(): Promise<string | null> {
       });
 
       if (data && !error) {
-        localStorage.setItem("accessToken", data.accessToken);
+        updateAuthTokens(data.accessToken);
         return data.accessToken;
       }
       return null;
@@ -50,7 +71,7 @@ async function refreshAccessToken(): Promise<string | null> {
 // リクエストインターセプター: アクセストークンを自動付与
 api.use({
   async onRequest({ request }) {
-    const token = localStorage.getItem("accessToken");
+    const token = getAccessToken();
     if (token) {
       request.headers.set("Authorization", `Bearer ${token}`);
     }
@@ -86,9 +107,8 @@ api.use({
         return fetch(retryRequest);
       } else {
         // リフレッシュ失敗時は認証情報をクリアしてログイン画面へ
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        resetAuthState();
+        navigateToLogin();
       }
     }
     return response;

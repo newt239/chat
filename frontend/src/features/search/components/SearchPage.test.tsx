@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -10,6 +9,8 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
 import { SearchPage } from "./SearchPage";
+
+import { createAppWrapper, createTestQueryClient } from "@/test/utils";
 
 // モックデータ
 const mockChannels = [
@@ -83,11 +84,7 @@ vi.mock("@/features/message/hooks/useMessage", () => ({
 }));
 
 const createTestRouter = (searchParams: { q?: string; filter?: string }) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-    },
-  });
+  const queryClient = createTestQueryClient();
 
   const rootRoute = createRootRoute();
 
@@ -118,11 +115,9 @@ describe("SearchPage", () => {
   it("検索クエリがない場合、プレースホルダーメッセージを表示する", async () => {
     const { router, queryClient } = createTestRouter({ q: "", filter: "all" });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: createAppWrapper(queryClient),
+    });
 
     expect(await screen.findByText("キーワードを入力して検索してください")).toBeInTheDocument();
   });
@@ -130,11 +125,9 @@ describe("SearchPage", () => {
   it("検索クエリがある場合、検索結果を表示する", async () => {
     const { router, queryClient } = createTestRouter({ q: "テスト", filter: "all" });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: createAppWrapper(queryClient),
+    });
 
     expect(await screen.findByText(/「テスト」の検索結果:/)).toBeInTheDocument();
   });
@@ -142,11 +135,9 @@ describe("SearchPage", () => {
   it("フィルターがmessagesの場合、メッセージのみを表示する", async () => {
     const { router, queryClient } = createTestRouter({ q: "テスト", filter: "messages" });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: createAppWrapper(queryClient),
+    });
 
     // メッセージセクションが表示される
     expect(await screen.findByText("メッセージ")).toBeInTheDocument();
@@ -155,11 +146,9 @@ describe("SearchPage", () => {
   it("フィルターがchannelsの場合、チャンネルのみを表示する", async () => {
     const { router, queryClient } = createTestRouter({ q: "general", filter: "channels" });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: createAppWrapper(queryClient),
+    });
 
     // チャンネルセクションが表示される
     expect(await screen.findByText("チャンネル")).toBeInTheDocument();
@@ -169,11 +158,9 @@ describe("SearchPage", () => {
   it("フィルターがusersの場合、ユーザーのみを表示する", async () => {
     const { router, queryClient } = createTestRouter({ q: "テストユーザー", filter: "users" });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: createAppWrapper(queryClient),
+    });
 
     // ユーザーセクションが表示される
     expect(await screen.findByText("ユーザー")).toBeInTheDocument();
@@ -183,11 +170,9 @@ describe("SearchPage", () => {
   it("検索結果が0件の場合、該当メッセージを表示する", async () => {
     const { router, queryClient } = createTestRouter({ q: "存在しないキーワード", filter: "all" });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: createAppWrapper(queryClient),
+    });
 
     expect(await screen.findByText("検索結果が見つかりませんでした")).toBeInTheDocument();
   });

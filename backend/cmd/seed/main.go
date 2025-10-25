@@ -6,14 +6,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/example/chat/internal/adapter/gateway/persistence"
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
-	"github.com/example/chat/internal/infrastructure/auth"
-	"github.com/example/chat/internal/infrastructure/config"
-	infradb "github.com/example/chat/internal/infrastructure/db"
-	authuc "github.com/example/chat/internal/usecase/auth"
 	"github.com/google/uuid"
+	"github.com/newt239/chat/internal/adapter/gateway/persistence"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/infrastructure/auth"
+	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/db"
+	authuc "github.com/newt239/chat/internal/usecase/auth"
 	"gorm.io/gorm"
 )
 
@@ -25,27 +26,28 @@ func main() {
 	}
 
 	// Initialize database
-	db, err := infradb.InitDB(cfg.Database.URL)
+	database, err := db.InitDB(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
 	// Initialize repositories
-	userRepo := persistence.NewUserRepository(db)
-	workspaceRepo := persistence.NewWorkspaceRepository(db)
-	channelRepo := persistence.NewChannelRepository(db)
-	messageRepo := persistence.NewMessageRepository(db)
+	userRepo := persistence.NewUserRepository(database)
+	workspaceRepo := persistence.NewWorkspaceRepository(database)
+	channelRepo := persistence.NewChannelRepository(database)
+	channelMemberRepo := persistence.NewChannelMemberRepository(database)
+	messageRepo := persistence.NewMessageRepository(database)
 
 	// Initialize password service for hashing
 	passwordService := auth.NewPasswordService()
 
 	// Check if seed data already exists
-	if err := checkExistingData(db); err != nil {
+	if err := checkExistingData(database); err != nil {
 		log.Fatalf("failed to check existing data: %v", err)
 	}
 
 	// Create seed data
-	if err := createSeedData(userRepo, workspaceRepo, channelRepo, messageRepo, passwordService); err != nil {
+	if err := createSeedData(userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService); err != nil {
 		log.Fatalf("failed to create seed data: %v", err)
 	}
 
@@ -54,7 +56,7 @@ func main() {
 
 func checkExistingData(db *gorm.DB) error {
 	var count int64
-	if err := db.Model(&infradb.User{}).Count(&count).Error; err != nil {
+	if err := db.Model(&database.User{}).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -71,12 +73,13 @@ func createSeedData(
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	messageRepo domainrepository.MessageRepository,
 	passwordService authuc.PasswordService,
 ) error {
 	ctx := context.Background()
 	// Create test users
-	users := []*infradb.User{
+	users := []*database.User{
 		{
 			ID:           uuid.MustParse("11111111-1111-1111-1111-111111111111"),
 			Email:        "alice@example.com",
@@ -116,7 +119,7 @@ func createSeedData(
 	}
 
 	// Create test workspace
-	workspace := &infradb.Workspace{
+	workspace := &database.Workspace{
 		ID:          uuid.MustParse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 		Name:        "Test Workspace",
 		Description: stringPtr("A sample workspace for testing the chat application"),
@@ -136,7 +139,7 @@ func createSeedData(
 			role = "owner"
 		}
 
-		member := &infradb.WorkspaceMember{
+		member := &database.WorkspaceMember{
 			WorkspaceID: workspace.ID,
 			UserID:      user.ID,
 			Role:        role,
@@ -149,7 +152,7 @@ func createSeedData(
 	}
 
 	// Create channels
-	channels := []*infradb.Channel{
+	channels := []*database.Channel{
 		{
 			ID:          uuid.MustParse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
 			WorkspaceID: workspace.ID,
@@ -197,12 +200,12 @@ func createSeedData(
 		}
 
 		for _, user := range usersToAdd {
-			member := &infradb.ChannelMember{
+			member := &database.ChannelMember{
 				ChannelID: channel.ID,
 				UserID:    user.ID,
 			}
 
-			if err := channelRepo.AddMember(ctx, domainChannelMemberFromDB(member)); err != nil {
+			if err := channelMemberRepo.AddMember(ctx, domainChannelMemberFromDB(member)); err != nil {
 				return fmt.Errorf("failed to add member %s to channel %s: %w", user.DisplayName, channel.Name, err)
 			}
 		}
@@ -210,7 +213,7 @@ func createSeedData(
 	}
 
 	// Create sample messages
-	messages := []*infradb.Message{
+	messages := []*database.Message{
 		// General channel messages
 		{
 			ID:        uuid.MustParse("f1111111-1111-1111-1111-111111111111"),
@@ -299,7 +302,7 @@ func createSeedData(
 	fmt.Printf("✅ Created %d sample messages across all channels\n", len(messages))
 
 	// Create some message reactions
-	reactions := []*infradb.MessageReaction{
+	reactions := []*database.MessageReaction{
 		{
 			MessageID: messages[1].ID, // Bob's welcome message
 			UserID:    users[0].ID,    // Alice
@@ -343,7 +346,7 @@ func stringPtr(s string) *string {
 }
 
 // Domain conversion functions
-func domainUserFromDB(user *infradb.User) *entity.User {
+func domainUserFromDB(user *database.User) *entity.User {
 	return &entity.User{
 		ID:           user.ID.String(),
 		Email:        user.Email,
@@ -355,7 +358,7 @@ func domainUserFromDB(user *infradb.User) *entity.User {
 	}
 }
 
-func domainWorkspaceFromDB(workspace *infradb.Workspace) *entity.Workspace {
+func domainWorkspaceFromDB(workspace *database.Workspace) *entity.Workspace {
 	return &entity.Workspace{
 		ID:          workspace.ID.String(),
 		Name:        workspace.Name,
@@ -367,7 +370,7 @@ func domainWorkspaceFromDB(workspace *infradb.Workspace) *entity.Workspace {
 	}
 }
 
-func domainWorkspaceMemberFromDB(member *infradb.WorkspaceMember) *entity.WorkspaceMember {
+func domainWorkspaceMemberFromDB(member *database.WorkspaceMember) *entity.WorkspaceMember {
 	return &entity.WorkspaceMember{
 		WorkspaceID: member.WorkspaceID.String(),
 		UserID:      member.UserID.String(),
@@ -376,7 +379,7 @@ func domainWorkspaceMemberFromDB(member *infradb.WorkspaceMember) *entity.Worksp
 	}
 }
 
-func domainChannelFromDB(channel *infradb.Channel) *entity.Channel {
+func domainChannelFromDB(channel *database.Channel) *entity.Channel {
 	return &entity.Channel{
 		ID:          channel.ID.String(),
 		WorkspaceID: channel.WorkspaceID.String(),
@@ -389,7 +392,7 @@ func domainChannelFromDB(channel *infradb.Channel) *entity.Channel {
 	}
 }
 
-func domainChannelMemberFromDB(member *infradb.ChannelMember) *entity.ChannelMember {
+func domainChannelMemberFromDB(member *database.ChannelMember) *entity.ChannelMember {
 	return &entity.ChannelMember{
 		ChannelID: member.ChannelID.String(),
 		UserID:    member.UserID.String(),
@@ -397,7 +400,7 @@ func domainChannelMemberFromDB(member *infradb.ChannelMember) *entity.ChannelMem
 	}
 }
 
-func domainMessageFromDB(message *infradb.Message) *entity.Message {
+func domainMessageFromDB(message *database.Message) *entity.Message {
 	var parentID *string
 	if message.ParentID != nil {
 		parentIDStr := message.ParentID.String()
@@ -416,7 +419,7 @@ func domainMessageFromDB(message *infradb.Message) *entity.Message {
 	}
 }
 
-func domainMessageReactionFromDB(reaction *infradb.MessageReaction) *entity.MessageReaction {
+func domainMessageReactionFromDB(reaction *database.MessageReaction) *entity.MessageReaction {
 	return &entity.MessageReaction{
 		MessageID: reaction.MessageID.String(),
 		UserID:    reaction.UserID.String(),

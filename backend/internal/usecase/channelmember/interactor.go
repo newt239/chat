@@ -6,19 +6,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
+	"github.com/google/uuid"
+	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
 var (
-	ErrUnauthorized       = errors.New("unauthorized to perform this action")
-	ErrChannelNotFound    = errors.New("channel not found")
-	ErrUserNotFound       = errors.New("user not found")
-	ErrAlreadyMember      = errors.New("user is already a member")
-	ErrNotMember          = errors.New("user is not a member")
-	ErrInvalidRole        = errors.New("invalid role")
-	ErrChannelNotPublic   = errors.New("channel is not public")
-	ErrLastAdminRemoval   = errors.New("cannot remove the last admin")
+	ErrUnauthorized     = errors.New("unauthorized to perform this action")
+	ErrChannelNotFound  = errors.New("channel not found")
+	ErrUserNotFound     = errors.New("user not found")
+	ErrAlreadyMember    = errors.New("user is already a member")
+	ErrNotMember        = errors.New("user is not a member")
+	ErrInvalidRole      = errors.New("invalid role")
+	ErrChannelNotPublic = errors.New("channel is not public")
+	ErrLastAdminRemoval = errors.New("cannot remove the last admin")
 )
 
 type ChannelMemberUseCase interface {
@@ -31,24 +33,34 @@ type ChannelMemberUseCase interface {
 }
 
 type channelMemberInteractor struct {
-	channelRepo   domainrepository.ChannelRepository
-	workspaceRepo domainrepository.WorkspaceRepository
-	userRepo      domainrepository.UserRepository
+	channelRepo       domainrepository.ChannelRepository
+	channelMemberRepo domainrepository.ChannelMemberRepository
+	workspaceRepo     domainrepository.WorkspaceRepository
+	userRepo          domainrepository.UserRepository
 }
 
 func NewChannelMemberInteractor(
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 ) ChannelMemberUseCase {
 	return &channelMemberInteractor{
-		channelRepo:   channelRepo,
-		workspaceRepo: workspaceRepo,
-		userRepo:      userRepo,
+		channelRepo:       channelRepo,
+		channelMemberRepo: channelMemberRepo,
+		workspaceRepo:     workspaceRepo,
+		userRepo:          userRepo,
 	}
 }
 
 func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMembersInput) (*MemberListOutput, error) {
+	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
+		return nil, err
+	}
+	if err := validateUUID(input.UserID, "user ID"); err != nil {
+		return nil, err
+	}
+
 	channel, err := i.channelRepo.FindByID(ctx, input.ChannelID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find channel: %w", err)
@@ -59,7 +71,7 @@ func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMem
 
 	// プライベートチャンネルの場合、アクセス権を確認
 	if channel.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.UserID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to check membership: %w", err)
 		}
@@ -77,7 +89,7 @@ func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMem
 		}
 	}
 
-	members, err := i.channelRepo.FindMembers(ctx, input.ChannelID)
+	members, err := i.channelMemberRepo.FindMembers(ctx, input.ChannelID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find members: %w", err)
 	}
@@ -117,6 +129,16 @@ func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMem
 }
 
 func (i *channelMemberInteractor) InviteMember(ctx context.Context, input InviteMemberInput) error {
+	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.OperatorID, "operator user ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.TargetUserID, "target user ID"); err != nil {
+		return err
+	}
+
 	// ロールの検証
 	role := entity.ChannelRole(input.Role)
 	if role != entity.ChannelRoleMember && role != entity.ChannelRoleAdmin {
@@ -142,7 +164,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 
 	// プライベートチャンネルの場合、オペレーターのアクセス権を確認
 	if channel.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.OperatorID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.OperatorID)
 		if err != nil {
 			return fmt.Errorf("failed to check operator membership: %w", err)
 		}
@@ -168,7 +190,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 	}
 
 	// 既存メンバーなら409エラー
-	isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.TargetUserID)
+	isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.TargetUserID)
 	if err != nil {
 		return fmt.Errorf("failed to check target user membership: %w", err)
 	}
@@ -183,7 +205,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 		JoinedAt:  time.Now(),
 	}
 
-	if err := i.channelRepo.AddMember(ctx, member); err != nil {
+	if err := i.channelMemberRepo.AddMember(ctx, member); err != nil {
 		return fmt.Errorf("failed to add member: %w", err)
 	}
 
@@ -191,6 +213,13 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 }
 
 func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input JoinChannelInput) error {
+	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.UserID, "user ID"); err != nil {
+		return err
+	}
+
 	channel, err := i.channelRepo.FindByID(ctx, input.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to find channel: %w", err)
@@ -214,7 +243,7 @@ func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input J
 	}
 
 	// 既存メンバーの場合は冪等に成功応答
-	isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.UserID)
+	isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return fmt.Errorf("failed to check membership: %w", err)
 	}
@@ -229,7 +258,7 @@ func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input J
 		JoinedAt:  time.Now(),
 	}
 
-	if err := i.channelRepo.AddMember(ctx, channelMember); err != nil {
+	if err := i.channelMemberRepo.AddMember(ctx, channelMember); err != nil {
 		return fmt.Errorf("failed to add member: %w", err)
 	}
 
@@ -237,6 +266,16 @@ func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input J
 }
 
 func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) error {
+	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.OperatorID, "operator user ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.TargetUserID, "target user ID"); err != nil {
+		return err
+	}
+
 	// ロールの検証
 	role := entity.ChannelRole(input.Role)
 	if role != entity.ChannelRoleMember && role != entity.ChannelRoleAdmin {
@@ -262,7 +301,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 
 	// プライベートチャンネルの場合、オペレーターのアクセス権を確認
 	if channel.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.OperatorID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.OperatorID)
 		if err != nil {
 			return fmt.Errorf("failed to check operator membership: %w", err)
 		}
@@ -279,7 +318,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 	}
 
 	// 対象ユーザーがチャンネルメンバーであることを確認
-	isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.TargetUserID)
+	isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.TargetUserID)
 	if err != nil {
 		return fmt.Errorf("failed to check target user membership: %w", err)
 	}
@@ -288,7 +327,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 	}
 
 	// ロールをmemberに降格する場合、管理者が最低1名残るか検証
-	members, err := i.channelRepo.FindMembers(ctx, input.ChannelID)
+	members, err := i.channelMemberRepo.FindMembers(ctx, input.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to find members: %w", err)
 	}
@@ -304,7 +343,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 
 	// 管理者から一般メンバーに降格する場合
 	if currentRole == entity.ChannelRoleAdmin && role == entity.ChannelRoleMember {
-		adminCount, err := i.channelRepo.CountAdmins(ctx, input.ChannelID)
+		adminCount, err := i.channelMemberRepo.CountAdmins(ctx, input.ChannelID)
 		if err != nil {
 			return fmt.Errorf("failed to count admins: %w", err)
 		}
@@ -313,7 +352,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 		}
 	}
 
-	if err := i.channelRepo.UpdateMemberRole(ctx, input.ChannelID, input.TargetUserID, role); err != nil {
+	if err := i.channelMemberRepo.UpdateMemberRole(ctx, input.ChannelID, input.TargetUserID, role); err != nil {
 		return fmt.Errorf("failed to update member role: %w", err)
 	}
 
@@ -321,6 +360,16 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 }
 
 func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input RemoveMemberInput) error {
+	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.OperatorID, "operator user ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.TargetUserID, "target user ID"); err != nil {
+		return err
+	}
+
 	channel, err := i.channelRepo.FindByID(ctx, input.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to find channel: %w", err)
@@ -340,7 +389,7 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 
 	// プライベートチャンネルの場合、オペレーターのアクセス権を確認
 	if channel.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.OperatorID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.OperatorID)
 		if err != nil {
 			return fmt.Errorf("failed to check operator membership: %w", err)
 		}
@@ -357,7 +406,7 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 	}
 
 	// 対象ユーザーがメンバーであることを確認
-	isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.TargetUserID)
+	isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.TargetUserID)
 	if err != nil {
 		return fmt.Errorf("failed to check target user membership: %w", err)
 	}
@@ -366,14 +415,14 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 	}
 
 	// 削除対象が管理者の場合、残りの管理者数を確認
-	members, err := i.channelRepo.FindMembers(ctx, input.ChannelID)
+	members, err := i.channelMemberRepo.FindMembers(ctx, input.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to find members: %w", err)
 	}
 
 	for _, m := range members {
 		if m.UserID == input.TargetUserID && m.Role == entity.ChannelRoleAdmin {
-			adminCount, err := i.channelRepo.CountAdmins(ctx, input.ChannelID)
+			adminCount, err := i.channelMemberRepo.CountAdmins(ctx, input.ChannelID)
 			if err != nil {
 				return fmt.Errorf("failed to count admins: %w", err)
 			}
@@ -384,7 +433,7 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 		}
 	}
 
-	if err := i.channelRepo.RemoveMember(ctx, input.ChannelID, input.TargetUserID); err != nil {
+	if err := i.channelMemberRepo.RemoveMember(ctx, input.ChannelID, input.TargetUserID); err != nil {
 		return fmt.Errorf("failed to remove member: %w", err)
 	}
 
@@ -392,6 +441,13 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 }
 
 func (i *channelMemberInteractor) LeaveChannel(ctx context.Context, input LeaveChannelInput) error {
+	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
+		return err
+	}
+	if err := validateUUID(input.UserID, "user ID"); err != nil {
+		return err
+	}
+
 	channel, err := i.channelRepo.FindByID(ctx, input.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to find channel: %w", err)
@@ -401,7 +457,7 @@ func (i *channelMemberInteractor) LeaveChannel(ctx context.Context, input LeaveC
 	}
 
 	// 当該ユーザーがメンバーであることを確認
-	isMember, err := i.channelRepo.IsMember(ctx, input.ChannelID, input.UserID)
+	isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return fmt.Errorf("failed to check membership: %w", err)
 	}
@@ -410,14 +466,14 @@ func (i *channelMemberInteractor) LeaveChannel(ctx context.Context, input LeaveC
 	}
 
 	// 離脱者が管理者かつ最後の1人なら離脱不可
-	members, err := i.channelRepo.FindMembers(ctx, input.ChannelID)
+	members, err := i.channelMemberRepo.FindMembers(ctx, input.ChannelID)
 	if err != nil {
 		return fmt.Errorf("failed to find members: %w", err)
 	}
 
 	for _, m := range members {
 		if m.UserID == input.UserID && m.Role == entity.ChannelRoleAdmin {
-			adminCount, err := i.channelRepo.CountAdmins(ctx, input.ChannelID)
+			adminCount, err := i.channelMemberRepo.CountAdmins(ctx, input.ChannelID)
 			if err != nil {
 				return fmt.Errorf("failed to count admins: %w", err)
 			}
@@ -428,9 +484,16 @@ func (i *channelMemberInteractor) LeaveChannel(ctx context.Context, input LeaveC
 		}
 	}
 
-	if err := i.channelRepo.RemoveMember(ctx, input.ChannelID, input.UserID); err != nil {
+	if err := i.channelMemberRepo.RemoveMember(ctx, input.ChannelID, input.UserID); err != nil {
 		return fmt.Errorf("failed to remove member: %w", err)
 	}
 
+	return nil
+}
+
+func validateUUID(id string, label string) error {
+	if _, err := uuid.Parse(id); err != nil {
+		return fmt.Errorf("%w: invalid %s format", domerr.ErrValidation, label)
+	}
 	return nil
 }

@@ -1,37 +1,24 @@
-import { MantineProvider } from "@mantine/core";
-import {
-  RouterProvider,
-  createMemoryHistory,
-  createRootRoute,
-  createRouter,
-  Outlet,
-} from "@tanstack/react-router";
+import type { ReactElement } from "react";
+
 import { render } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 
 import { renderMarkdown } from "@/features/message/utils/markdown/renderer";
+import { createAppWrapper } from "@/test/utils";
 
-const rootRoute = createRootRoute({
-  component: () => <Outlet />,
+const mockNavigate = vi.fn();
+
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ workspaceId: "workspace-1" }),
+}));
+
+const renderWithProviders = (element: ReactElement) =>
+  render(element, { wrapper: createAppWrapper() });
+
+afterEach(() => {
+  mockNavigate.mockClear();
 });
-
-const renderWithProviders = (element: React.ReactElement) => {
-  const memoryHistory = createMemoryHistory({
-    initialEntries: ["/"],
-  });
-
-  const router = createRouter({
-    routeTree: rootRoute,
-    history: memoryHistory,
-  });
-
-  return render(
-    <MantineProvider>
-      <RouterProvider router={router} />
-      {element}
-    </MantineProvider>
-  );
-};
 
 describe("Channel link rendering", () => {
   it("チャンネルリンクをレンダリングできる", () => {

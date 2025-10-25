@@ -1,11 +1,13 @@
-import { MantineProvider } from "@mantine/core";
+import type { ReactElement } from "react";
+
 import { render } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 
 import { CodeBlock } from "@/features/message/components/markdown/CodeBlock";
+import { createMantineWrapper } from "@/test/utils";
 
-const renderWithMantine = (element: React.ReactElement) => {
-  return render(<MantineProvider>{element}</MantineProvider>);
+const renderWithMantine = (element: ReactElement) => {
+  return render(element, { wrapper: createMantineWrapper() });
 };
 
 describe("CodeBlock", () => {

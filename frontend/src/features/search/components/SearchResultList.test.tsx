@@ -1,14 +1,21 @@
+import type { ReactElement } from "react";
+
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
 
 import { SearchResultList } from "./SearchResultList";
 
+import { createAppWrapper } from "@/test/utils";
+
 const mockNavigate = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
 }));
+
+const renderWithProviders = (ui: ReactElement) =>
+  render(ui, { wrapper: createAppWrapper() });
 
 const mockChannels = [
   {
@@ -78,7 +85,7 @@ const mockMessages = [
 
 describe("SearchResultList", () => {
   it("チャンネルを表示する", () => {
-    render(
+    renderWithProviders(
       <SearchResultList
         messages={[]}
         channels={mockChannels}
@@ -96,7 +103,7 @@ describe("SearchResultList", () => {
   });
 
   it("ユーザーを表示する", () => {
-    render(
+    renderWithProviders(
       <SearchResultList
         messages={[]}
         channels={[]}
@@ -114,7 +121,7 @@ describe("SearchResultList", () => {
   });
 
   it("メッセージを表示する", () => {
-    render(
+    renderWithProviders(
       <SearchResultList
         messages={mockMessages}
         channels={[]}
@@ -131,7 +138,7 @@ describe("SearchResultList", () => {
   });
 
   it("allフィルターで全種類を表示する", () => {
-    render(
+    renderWithProviders(
       <SearchResultList
         messages={mockMessages}
         channels={mockChannels}
@@ -149,7 +156,7 @@ describe("SearchResultList", () => {
   it("チャンネルをクリックすると遷移する", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithProviders(
       <SearchResultList
         messages={[]}
         channels={mockChannels}
@@ -174,7 +181,7 @@ describe("SearchResultList", () => {
   it("メッセージをクリックすると遷移する", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithProviders(
       <SearchResultList
         messages={mockMessages}
         channels={[]}

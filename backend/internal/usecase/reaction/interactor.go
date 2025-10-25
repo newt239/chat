@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
-	"github.com/example/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -25,26 +25,29 @@ type ReactionUseCase interface {
 }
 
 type reactionInteractor struct {
-	messageRepo     domainrepository.MessageRepository
-	channelRepo     domainrepository.ChannelRepository
-	workspaceRepo   domainrepository.WorkspaceRepository
-	userRepo        domainrepository.UserRepository
-	notificationSvc service.NotificationService
+	messageRepo       domainrepository.MessageRepository
+	channelRepo       domainrepository.ChannelRepository
+	channelMemberRepo domainrepository.ChannelMemberRepository
+	workspaceRepo     domainrepository.WorkspaceRepository
+	userRepo          domainrepository.UserRepository
+	notificationSvc   service.NotificationService
 }
 
 func NewReactionInteractor(
 	messageRepo domainrepository.MessageRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc service.NotificationService,
 ) ReactionUseCase {
 	return &reactionInteractor{
-		messageRepo:     messageRepo,
-		channelRepo:     channelRepo,
-		workspaceRepo:   workspaceRepo,
-		userRepo:        userRepo,
-		notificationSvc: notificationSvc,
+		messageRepo:       messageRepo,
+		channelRepo:       channelRepo,
+		channelMemberRepo: channelMemberRepo,
+		workspaceRepo:     workspaceRepo,
+		userRepo:          userRepo,
+		notificationSvc:   notificationSvc,
 	}
 }
 
@@ -184,7 +187,7 @@ func (i *reactionInteractor) ensureChannelAccess(ctx context.Context, channelID,
 
 	// プライベートチャンネルの場合
 	if ch.IsPrivate {
-		isMember, err := i.channelRepo.IsMember(ctx, ch.ID, userID)
+		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
 			return fmt.Errorf("failed to verify channel membership: %w", err)
 		}

@@ -1,46 +1,49 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
+import { useLocation } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import { isAuthenticatedAtom, userAtom, accessTokenAtom, clearAuthAtom } from "@/lib/store/auth";
+import { navigateToLogin } from "@/lib/navigation";
+import {
+  accessTokenAtom,
+  clearAuthAtom,
+  isAuthInitializedAtom,
+  isAuthenticatedAtom,
+  userAtom,
+} from "@/lib/store/auth";
+
+const publicPaths = new Set(["/login", "/register"]);
 
 /**
  * 認証状態をチェックし、未認証の場合はログイン画面にリダイレクトするフック
  */
 export function useAuthGuard() {
+  const isInitialized = useAtomValue(isAuthInitializedAtom);
   const isAuthenticated = useAtomValue(isAuthenticatedAtom);
   const user = useAtomValue(userAtom);
   const accessToken = useAtomValue(accessTokenAtom);
   const clearAuth = useSetAtom(clearAuthAtom);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
-    // ストアの初期化を待つ
-    const timer = setTimeout(() => {
-      setIsInitialized(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    // 認証状態をより厳密にチェック
-    const hasValidAuth = isAuthenticated && user && accessToken;
-
-    if (!hasValidAuth) {
-      const currentPath = window.location.pathname;
-      if (currentPath !== "/login" && currentPath !== "/register") {
-        // 認証情報をクリアしてからリダイレクト
-        clearAuth();
-        window.location.href = "/login";
-      }
+    if (!isInitialized) {
+      return;
     }
-  }, [isAuthenticated, user, accessToken, isInitialized, clearAuth]);
+
+    if (isAuthenticated) {
+      return;
+    }
+
+    if (publicPaths.has(location.pathname)) {
+      return;
+    }
+
+    clearAuth();
+    navigateToLogin();
+  }, [isInitialized, isAuthenticated, location.pathname, clearAuth]);
 
   return {
-    isAuthenticated: isAuthenticated && !!user && !!accessToken,
+    isAuthenticated: isInitialized && isAuthenticated && Boolean(user) && Boolean(accessToken),
     user,
     isLoading: !isInitialized,
   };

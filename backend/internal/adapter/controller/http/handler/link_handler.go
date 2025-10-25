@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	linkuc "github.com/example/chat/internal/usecase/link"
 	"github.com/labstack/echo/v4"
+	linkuc "github.com/newt239/chat/internal/usecase/link"
 )
 
 type LinkHandler struct {

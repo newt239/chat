@@ -36,6 +36,16 @@ class MockIntersectionObserver implements IntersectionObserver {
 
 globalThis.IntersectionObserver = MockIntersectionObserver;
 
+// Mock ResizeObserver for Mantine components (e.g., SegmentedControl)
+class MockResizeObserver implements ResizeObserver {
+  constructor() {}
+  disconnect(): void {}
+  observe(): void {}
+  unobserve(): void {}
+}
+
+globalThis.ResizeObserver = MockResizeObserver;
+
 afterEach(() => {
   cleanup();
 });

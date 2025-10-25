@@ -3,8 +3,8 @@ package integration
 import (
 	"testing"
 
-	"github.com/example/chat/internal/infrastructure/config"
-	infradb "github.com/example/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/db"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -27,13 +27,13 @@ func NewTestDB(t *testing.T) *TestDB {
 	}
 
 	// データベース接続
-	db, err := infradb.InitDB(testDBURL)
+	database, err := db.InitDB(testDBURL)
 	require.NoError(t, err)
 
 	// テスト用のテーブルをクリーンアップ
-	cleanupTestDB(t, db)
+	cleanupTestDB(t, database)
 
-	return &TestDB{DB: db}
+	return &TestDB{DB: database}
 }
 
 // Cleanup はテスト後にデータベースをクリーンアップします

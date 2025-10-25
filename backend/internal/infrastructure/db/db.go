@@ -51,32 +51,5 @@ func InitDB(dsn string) (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	// Run auto migrations
-	if err := AutoMigrate(db); err != nil {
-		return nil, err
-	}
-
 	return db, nil
-}
-
-// AutoMigrate runs automatic migrations for all models
-func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
-		&User{},
-		&Session{},
-		&Workspace{},
-		&WorkspaceMember{},
-		&Channel{},
-		&ChannelMember{},
-		&Message{},
-		&MessageReaction{},
-		&ChannelReadState{},
-		&Attachment{},
-		&UserGroup{},
-		&UserGroupMember{},
-		&MessageUserMention{},
-		&MessageGroupMention{},
-		&MessageLink{},
-		&ThreadMetadata{},
-	)
 }

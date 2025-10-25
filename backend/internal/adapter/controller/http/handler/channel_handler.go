@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	channeluc "github.com/example/chat/internal/usecase/channel"
 	"github.com/labstack/echo/v4"
+	channeluc "github.com/newt239/chat/internal/usecase/channel"
 )
 
 type ChannelHandler struct {

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/newt239/chat/internal/domain/service"
 	"golang.org/x/net/html"
 )
 
@@ -33,7 +34,7 @@ func NewOGPService() *OGPService {
 	}
 }
 
-func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*OGPData, error) {
+func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*service.OGPData, error) {
 	// URLの検証
 	parsedURL, err := url.Parse(urlStr)
 	if err != nil {
@@ -80,18 +81,18 @@ func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*OGPData, err
 	return s.parseHTML(string(body), parsedURL), nil
 }
 
-func (s *OGPService) parseHTML(htmlContent string, baseURL *url.URL) *OGPData {
+func (s *OGPService) parseHTML(htmlContent string, baseURL *url.URL) *service.OGPData {
 	doc, err := html.Parse(strings.NewReader(htmlContent))
 	if err != nil {
-		return &OGPData{}
+		return &service.OGPData{}
 	}
 
-	ogpData := &OGPData{}
+	ogpData := &service.OGPData{}
 	s.extractMetaTags(doc, ogpData, baseURL)
 	return ogpData
 }
 
-func (s *OGPService) extractMetaTags(n *html.Node, ogpData *OGPData, baseURL *url.URL) {
+func (s *OGPService) extractMetaTags(n *html.Node, ogpData *service.OGPData, baseURL *url.URL) {
 	if n.Type == html.ElementNode && n.Data == "meta" {
 		// metaタグの属性を取得
 		attrs := make(map[string]string)
@@ -187,22 +188,27 @@ func (s *OGPService) resolveURL(urlStr string, baseURL *url.URL) *string {
 	return &resolvedStr
 }
 
+// ExtractURLs はテキストからURLを抽出します
+func (s *OGPService) ExtractURLs(text string) []string {
+	return ExtractURLs(text)
+}
+
 // URLを抽出する正規表現
 var urlRegex = regexp.MustCompile(`https?://[^\s<>"{}|\\^` + "`" + `\[\]]+`)
 
 func ExtractURLs(text string) []string {
 	matches := urlRegex.FindAllString(text, -1)
-	
+
 	// 重複を除去
 	urlSet := make(map[string]bool)
 	var uniqueURLs []string
-	
+
 	for _, match := range matches {
 		if !urlSet[match] {
 			urlSet[match] = true
 			uniqueURLs = append(uniqueURLs, match)
 		}
 	}
-	
+
 	return uniqueURLs
 }

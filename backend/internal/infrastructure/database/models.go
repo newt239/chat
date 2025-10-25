@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/example/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/domain/entity"
 )
 
 func parseUUID(id string) uuid.UUID {
@@ -428,6 +428,42 @@ func (m *MessageReaction) ToEntity() *entity.MessageReaction {
 		MessageID: uuidToString(m.MessageID),
 		UserID:    uuidToString(m.UserID),
 		Emoji:     m.Emoji,
+		CreatedAt: cloneTime(m.CreatedAt),
+	}
+}
+
+// MessageBookmark represents the message_bookmarks table.
+type MessageBookmark struct {
+	UserID    uuid.UUID `gorm:"type:uuid;primaryKey"`
+	MessageID uuid.UUID `gorm:"type:uuid;primaryKey"`
+	CreatedAt time.Time `gorm:"type:timestamptz;not null;default:now()"`
+}
+
+func (MessageBookmark) TableName() string {
+	return "message_bookmarks"
+}
+
+func (m *MessageBookmark) FromEntity(e *entity.MessageBookmark) {
+	if e == nil {
+		*m = MessageBookmark{}
+		return
+	}
+
+	*m = MessageBookmark{
+		UserID:    parseUUID(e.UserID),
+		MessageID: parseUUID(e.MessageID),
+		CreatedAt: cloneTime(e.CreatedAt),
+	}
+}
+
+func (m *MessageBookmark) ToEntity() *entity.MessageBookmark {
+	if m == nil {
+		return nil
+	}
+
+	return &entity.MessageBookmark{
+		UserID:    uuidToString(m.UserID),
+		MessageID: uuidToString(m.MessageID),
 		CreatedAt: cloneTime(m.CreatedAt),
 	}
 }

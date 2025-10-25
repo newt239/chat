@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/example/chat/internal/domain/entity"
-	"github.com/example/chat/internal/domain/errors"
-	"github.com/example/chat/internal/test/mocks"
-	workspaceuc "github.com/example/chat/internal/usecase/workspace"
+	"github.com/newt239/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/domain/errors"
+	"github.com/newt239/chat/internal/test/mocks"
+	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

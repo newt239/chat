@@ -4,7 +4,10 @@ import { useSetAtom } from "jotai";
 import type { components } from "@/lib/api/schema";
 
 import { api } from "@/lib/api/client";
+import { navigateToAppWithWorkspace, navigateToLogin } from "@/lib/navigation";
 import { setAuthAtom, clearAuthAtom } from "@/lib/store/auth";
+
+type AuthResponse = components["schemas"]["AuthResponse"];
 
 export function useLogin() {
   const setAuth = useSetAtom(setAuthAtom);
@@ -19,8 +22,9 @@ export function useLogin() {
       }
       return response;
     },
-    onSuccess: (data: components["schemas"]["AuthResponse"]) => {
+    onSuccess: (data: AuthResponse) => {
       setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
+      navigateToAppWithWorkspace();
     },
   });
 }
@@ -38,8 +42,9 @@ export function useRegister() {
       }
       return response;
     },
-    onSuccess: (data: components["schemas"]["AuthResponse"]) => {
+    onSuccess: (data: AuthResponse) => {
       setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
+      navigateToAppWithWorkspace();
     },
   });
 }
@@ -53,6 +58,7 @@ export function useLogout() {
     },
     onSuccess: () => {
       clearAuth();
+      navigateToLogin();
     },
   });
 }

@@ -6,9 +6,9 @@ import (
 	"encoding/base64"
 	"time"
 
-	"github.com/example/chat/internal/domain/entity"
-	domainerrors "github.com/example/chat/internal/domain/errors"
-	domainrepository "github.com/example/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
 var (

@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	usergroupuc "github.com/example/chat/internal/usecase/user_group"
 	"github.com/labstack/echo/v4"
+	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 )
 
 type UserGroupHandler struct {

@@ -3,7 +3,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/example/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/stretchr/testify/mock"
 )
 

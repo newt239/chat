@@ -1,11 +1,11 @@
 package notification
 
 import (
-	"encoding/json"
 	"log"
+	"reflect"
 
-	"github.com/example/chat/internal/adapter/controller/websocket"
-	"github.com/example/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/adapter/controller/websocket"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 // WebSocketNotificationService はWebSocketを利用した通知サービスの実装です
@@ -114,17 +114,48 @@ func convertToMap(data interface{}) map[string]interface{} {
 		return m
 	}
 
-	// JSON経由で変換
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		log.Printf("Warning: failed to marshal data to JSON: %v", err)
-		return map[string]interface{}{}
+	// リフレクションを使った効率的な変換
+	return convertStructToMap(data)
+}
+
+// convertStructToMap はリフレクションを使って構造体をmap[string]interface{}に変換します
+func convertStructToMap(data interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	v := reflect.ValueOf(data)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
 	}
 
-	var result map[string]interface{}
-	if err := json.Unmarshal(jsonBytes, &result); err != nil {
-		log.Printf("Warning: failed to unmarshal JSON to map: %v", err)
-		return map[string]interface{}{}
+	if v.Kind() != reflect.Struct {
+		log.Printf("Warning: data is not a struct, got %v", v.Kind())
+		return result
+	}
+
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		field := t.Field(i)
+		fieldValue := v.Field(i)
+
+		// フィールド名を取得（jsonタグがあればそれを使用）
+		fieldName := field.Name
+		if jsonTag := field.Tag.Get("json"); jsonTag != "" && jsonTag != "-" {
+			// jsonタグからカンマ前の部分を取得
+			if commaIndex := len(jsonTag); commaIndex > 0 {
+				for j, c := range jsonTag {
+					if c == ',' {
+						commaIndex = j
+						break
+					}
+				}
+				fieldName = jsonTag[:commaIndex]
+			}
+		}
+
+		// フィールドが公開されている場合のみ処理
+		if fieldValue.CanInterface() {
+			result[fieldName] = fieldValue.Interface()
+		}
 	}
 
 	return result

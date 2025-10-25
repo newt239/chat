@@ -53,9 +53,14 @@ func NewPresignService(client *Client) *PresignService {
 	}
 }
 
-func (p *PresignService) GenerateUploadURL(key, contentType string, sizeBytes int64, expires time.Duration) (string, error) {
-	if expires == 0 {
-		expires = p.config.UploadExpires
+func (p *PresignService) GenerateUploadURL(key, contentType string, sizeBytes int64, expires interface{}) (string, error) {
+	var duration time.Duration
+	if expires == nil {
+		duration = p.config.UploadExpires
+	} else if d, ok := expires.(time.Duration); ok {
+		duration = d
+	} else {
+		duration = p.config.UploadExpires
 	}
 
 	input := &s3.PutObjectInput{
@@ -65,7 +70,7 @@ func (p *PresignService) GenerateUploadURL(key, contentType string, sizeBytes in
 	}
 
 	request, err := p.presignClient.PresignPutObject(context.Background(), input, func(opts *s3.PresignOptions) {
-		opts.Expires = expires
+		opts.Expires = duration
 	})
 	if err != nil {
 		return "", err
@@ -74,9 +79,14 @@ func (p *PresignService) GenerateUploadURL(key, contentType string, sizeBytes in
 	return request.URL, nil
 }
 
-func (p *PresignService) GenerateDownloadURL(key string, expires time.Duration) (string, error) {
-	if expires == 0 {
-		expires = p.config.DownloadExpires
+func (p *PresignService) GenerateDownloadURL(key string, expires interface{}) (string, error) {
+	var duration time.Duration
+	if expires == nil {
+		duration = p.config.DownloadExpires
+	} else if d, ok := expires.(time.Duration); ok {
+		duration = d
+	} else {
+		duration = p.config.DownloadExpires
 	}
 
 	input := &s3.GetObjectInput{
@@ -85,7 +95,7 @@ func (p *PresignService) GenerateDownloadURL(key string, expires time.Duration) 
 	}
 
 	request, err := p.presignClient.PresignGetObject(context.Background(), input, func(opts *s3.PresignOptions) {
-		opts.Expires = expires
+		opts.Expires = duration
 	})
 	if err != nil {
 		return "", err

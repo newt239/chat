@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/example/chat/internal/domain/errors"
-	"github.com/example/chat/internal/test/mocks"
-	authuc "github.com/example/chat/internal/usecase/auth"
+	"github.com/newt239/chat/internal/domain/errors"
+	"github.com/newt239/chat/internal/test/mocks"
+	authuc "github.com/newt239/chat/internal/usecase/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

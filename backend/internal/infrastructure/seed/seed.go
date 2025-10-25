@@ -6,12 +6,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/example/chat/internal/adapter/gateway/persistence"
-	"github.com/example/chat/internal/domain/entity"
-	domainrepository "github.com/example/chat/internal/domain/repository"
-	"github.com/example/chat/internal/infrastructure/auth"
-	"github.com/example/chat/internal/infrastructure/repository"
-	authuc "github.com/example/chat/internal/usecase/auth"
+	"github.com/newt239/chat/internal/adapter/gateway/persistence"
+	"github.com/newt239/chat/internal/domain/entity"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/infrastructure/auth"
+	authuc "github.com/newt239/chat/internal/usecase/auth"
 	"gorm.io/gorm"
 )
 
@@ -36,13 +35,14 @@ func AutoSeed(db *gorm.DB) error {
 	userRepo := persistence.NewUserRepository(db)
 	workspaceRepo := persistence.NewWorkspaceRepository(db)
 	channelRepo := persistence.NewChannelRepository(db)
+	channelMemberRepo := persistence.NewChannelMemberRepository(db)
 	messageRepo := persistence.NewMessageRepository(db)
 
 	// Initialize password service
 	passwordService := auth.NewPasswordService()
 
 	// Create seed data
-	if err := createSeedData(db, userRepo, workspaceRepo, channelRepo, messageRepo, passwordService); err != nil {
+	if err := createSeedData(db, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService); err != nil {
 		return fmt.Errorf("failed to create seed data: %w", err)
 	}
 
@@ -55,6 +55,7 @@ func createSeedData(
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	messageRepo domainrepository.MessageRepository,
 	passwordService authuc.PasswordService,
 ) error {
@@ -129,43 +130,58 @@ func createSeedData(
 		}
 	}
 
-	// Create channels
-	channels := []*entity.Channel{
+	channelDefinitions := []struct {
+		id          string
+		name        string
+		description *string
+		isPrivate   bool
+		createdBy   string
+	}{
 		{
-			ID:          "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
-			WorkspaceID: workspace.ID,
-			Name:        "general",
-			Description: stringPtr("General discussion channel"),
-			IsPrivate:   false,
-			CreatedBy:   users[0].ID,
+			id:          "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+			name:        "general",
+			description: stringPtr("General discussion channel"),
+			isPrivate:   false,
+			createdBy:   users[0].ID,
 		},
 		{
-			ID:          "cccccccc-cccc-cccc-cccc-cccccccccccc",
-			WorkspaceID: workspace.ID,
-			Name:        "random",
-			Description: stringPtr("Random thoughts and off-topic discussions"),
-			IsPrivate:   false,
-			CreatedBy:   users[1].ID,
+			id:          "cccccccc-cccc-cccc-cccc-cccccccccccc",
+			name:        "random",
+			description: stringPtr("Random thoughts and off-topic discussions"),
+			isPrivate:   false,
+			createdBy:   users[1].ID,
 		},
 		{
-			ID:          "dddddddd-dddd-dddd-dddd-dddddddddddd",
-			WorkspaceID: workspace.ID,
-			Name:        "development",
-			Description: stringPtr("Development discussions and code reviews"),
-			IsPrivate:   false,
-			CreatedBy:   users[0].ID,
+			id:          "dddddddd-dddd-dddd-dddd-dddddddddddd",
+			name:        "development",
+			description: stringPtr("Development discussions and code reviews"),
+			isPrivate:   false,
+			createdBy:   users[0].ID,
 		},
 		{
-			ID:          "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
-			WorkspaceID: workspace.ID,
-			Name:        "private-team",
-			Description: stringPtr("Private channel for team discussions"),
-			IsPrivate:   true,
-			CreatedBy:   users[0].ID,
+			id:          "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+			name:        "private-team",
+			description: stringPtr("Private channel for team discussions"),
+			isPrivate:   true,
+			createdBy:   users[0].ID,
 		},
 	}
 
-	for _, channel := range channels {
+	var channels []*entity.Channel
+	for _, def := range channelDefinitions {
+		channel, err := entity.NewChannel(entity.ChannelParams{
+			ID:          def.id,
+			WorkspaceID: workspace.ID,
+			Name:        def.name,
+			Description: def.description,
+			IsPrivate:   def.isPrivate,
+			CreatedBy:   def.createdBy,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to build channel %s: %w", def.name, err)
+		}
+		channels = append(channels, channel)
+
 		if err := channelRepo.Create(ctx, channel); err != nil {
 			return fmt.Errorf("failed to create channel %s: %w", channel.Name, err)
 		}
@@ -182,7 +198,7 @@ func createSeedData(
 				UserID:    user.ID,
 			}
 
-			if err := channelRepo.AddMember(ctx, member); err != nil {
+			if err := channelMemberRepo.AddMember(ctx, member); err != nil {
 				return fmt.Errorf("failed to add member %s to channel %s: %w", user.DisplayName, channel.Name, err)
 			}
 		}
@@ -452,7 +468,7 @@ func createSeedData(
 	}
 
 	// Create a bookmark for Alice
-	bookmarkRepo := repository.NewBookmarkRepository(db)
+	bookmarkRepo := persistence.NewBookmarkRepository(db)
 	bookmark := &entity.MessageBookmark{
 		UserID:    users[0].ID,    // Alice
 		MessageID: messages[1].ID, // Bob's welcome message
@@ -472,10 +488,11 @@ func CreateSeedData(
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	messageRepo domainrepository.MessageRepository,
 	passwordService authuc.PasswordService,
 ) error {
-	return createSeedData(db, userRepo, workspaceRepo, channelRepo, messageRepo, passwordService)
+	return createSeedData(db, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService)
 }
 
 // Helper functions for password hashing

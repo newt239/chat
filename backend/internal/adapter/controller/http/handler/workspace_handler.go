@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	workspaceuc "github.com/example/chat/internal/usecase/workspace"
 	"github.com/labstack/echo/v4"
+	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
 type WorkspaceHandler struct {
