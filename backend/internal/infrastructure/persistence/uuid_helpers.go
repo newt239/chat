@@ -13,17 +13,3 @@ func parseUUID(id string, label string) (uuid.UUID, error) {
 	}
 	return parsed, nil
 }
-
-func parseUUIDPtr(id *string, label string) (*uuid.UUID, error) {
-	if id == nil {
-		return nil, nil
-	}
-
-	parsed, err := uuid.Parse(*id)
-	if err != nil {
-		return nil, fmt.Errorf("invalid %s format", label)
-	}
-
-	value := parsed
-	return &value, nil
-}

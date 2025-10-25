@@ -43,13 +43,5 @@ func Auth(jwtService authuc.JWTService) echo.MiddlewareFunc {
 }
 
 // GetUserID はコンテキストからユーザーIDを取得します
-func GetUserID(c echo.Context) (string, bool) {
-	userID, ok := c.Get(userIDKey).(string)
-	return userID, ok
-}
 
 // GetUserEmail はコンテキストからユーザーメールアドレスを取得します
-func GetUserEmail(c echo.Context) (string, bool) {
-	email, ok := c.Get(userEmailKey).(string)
-	return email, ok
-}

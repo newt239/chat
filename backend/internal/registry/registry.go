@@ -218,6 +218,7 @@ func (r *Registry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.NewNotificationService(),
 		r.NewMentionService(),
 		r.NewLinkProcessingService(),
+		r.NewTransactionManager(),
 	)
 }
 
@@ -349,12 +350,3 @@ func (r *Registry) NewWebSocketHub() *websocket.Hub {
 }
 
 // WebSocket Handler
-func (r *Registry) NewWebSocketHandler() echo.HandlerFunc {
-	return websocket.NewHandler(
-		r.hub,
-		r.NewJWTService(),
-		r.NewWorkspaceRepository(),
-		r.NewMessageUseCase(),
-		r.NewReadStateUseCase(),
-	)
-}

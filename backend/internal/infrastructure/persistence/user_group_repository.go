@@ -37,6 +37,33 @@ func (r *userGroupRepository) FindByID(ctx context.Context, id string) (*entity.
 	return model.ToEntity(), nil
 }
 
+func (r *userGroupRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.UserGroup, error) {
+	if len(ids) == 0 {
+		return []*entity.UserGroup{}, nil
+	}
+
+	groupIDs := make([]interface{}, len(ids))
+	for i, id := range ids {
+		groupID, err := parseUUID(id, "group ID")
+		if err != nil {
+			return nil, err
+		}
+		groupIDs[i] = groupID
+	}
+
+	var models []database.UserGroup
+	if err := r.db.WithContext(ctx).Where("id IN ?", groupIDs).Find(&models).Error; err != nil {
+		return nil, err
+	}
+
+	groups := make([]*entity.UserGroup, len(models))
+	for i, model := range models {
+		groups[i] = model.ToEntity()
+	}
+
+	return groups, nil
+}
+
 func (r *userGroupRepository) FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.UserGroup, error) {
 	wsID, err := parseUUID(workspaceID, "workspace ID")
 	if err != nil {

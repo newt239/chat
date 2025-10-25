@@ -26,9 +26,3 @@ func (m *MockJWTService) VerifyToken(token string) (*auth.TokenClaims, error) {
 }
 
 // TestTokenClaims はテスト用のトークンクレームを作成するヘルパー関数です
-func TestTokenClaims(userID, email string) *auth.TokenClaims {
-	return &auth.TokenClaims{
-		UserID: userID,
-		Email:  email,
-	}
-}

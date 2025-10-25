@@ -184,26 +184,3 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 		ExpiresIn: int(i.config.GetDownloadExpires().(time.Duration).Seconds()),
 	}, nil
 }
-
-func (i *Interactor) FinalizeAttachments(ctx context.Context, userID, channelID, messageID string, attachmentIDs []string) error {
-	if len(attachmentIDs) == 0 {
-		return nil
-	}
-
-	attachments, err := i.attachmentRepo.FindPendingByIDsForUser(ctx, userID, attachmentIDs)
-	if err != nil {
-		return err
-	}
-
-	if len(attachments) != len(attachmentIDs) {
-		return fmt.Errorf("一部の添付ファイルが見つからないか、アクセス権限がありません")
-	}
-
-	for _, att := range attachments {
-		if att.ChannelID != channelID {
-			return fmt.Errorf("添付ファイルのチャネルIDが一致しません")
-		}
-	}
-
-	return i.attachmentRepo.AttachToMessage(ctx, attachmentIDs, messageID)
-}

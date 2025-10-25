@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"go.uber.org/zap"
 )
@@ -206,6 +207,7 @@ type messageInteractor struct {
 	notificationSvc       service.NotificationService
 	mentionService        service.MentionService
 	linkProcessingService service.LinkProcessingService
+	transactionManager    transaction.Manager
 	assembler             *MessageOutputAssembler
 }
 
@@ -225,6 +227,7 @@ func NewMessageInteractor(
 	notificationSvc service.NotificationService,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
+	transactionManager transaction.Manager,
 ) MessageUseCase {
 	return &messageInteractor{
 		messageRepo:           messageRepo,
@@ -242,6 +245,7 @@ func NewMessageInteractor(
 		notificationSvc:       notificationSvc,
 		mentionService:        mentionService,
 		linkProcessingService: linkProcessingService,
+		transactionManager:    transactionManager,
 		assembler:             NewMessageOutputAssembler(),
 	}
 }
@@ -403,15 +407,23 @@ func (i *messageInteractor) fetchGroups(ctx context.Context, groupMentions []*en
 		}
 	}
 
-	groups := make(map[string]*entity.UserGroup)
-	for _, groupID := range groupIDs {
-		group, err := i.userGroupRepo.FindByID(ctx, groupID)
-		if err == nil && group != nil {
-			groups[groupID] = group
-		}
+	if len(groupIDs) == 0 {
+		return make(map[string]*entity.UserGroup), nil
 	}
 
-	return groups, nil
+	// 一括でグループ情報を取得
+	groups, err := i.userGroupRepo.FindByIDs(ctx, groupIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch groups: %w", err)
+	}
+
+	// グループ情報をマップに格納
+	groupMap := make(map[string]*entity.UserGroup)
+	for _, group := range groups {
+		groupMap[group.ID] = group
+	}
+
+	return groupMap, nil
 }
 
 // buildMessageOutputs はメッセージ出力を構築します
@@ -483,71 +495,104 @@ func (i *messageInteractor) CreateMessage(ctx context.Context, input CreateMessa
 		}
 	}
 
-	message := &entity.Message{
-		ChannelID: channel.ID,
-		UserID:    input.UserID,
-		ParentID:  input.ParentID,
-		Body:      input.Body,
-		CreatedAt: time.Now(),
-	}
-
-	if err := i.messageRepo.Create(ctx, message); err != nil {
-		return nil, fmt.Errorf("failed to create message: %w", err)
-	}
-
-	// 添付ファイルをメッセージに紐付け
-	if len(input.AttachmentIDs) > 0 {
-		if err := i.attachmentRepo.AttachToMessage(ctx, input.AttachmentIDs, message.ID); err != nil {
-			return nil, fmt.Errorf("failed to attach files: %w", err)
+	var result *MessageOutput
+	err = i.transactionManager.Do(ctx, func(txCtx context.Context) error {
+		message := &entity.Message{
+			ChannelID: channel.ID,
+			UserID:    input.UserID,
+			ParentID:  input.ParentID,
+			Body:      input.Body,
+			CreatedAt: time.Now(),
 		}
-	}
 
-	// スレッド返信の場合、メタデータを更新
-	if input.ParentID != nil {
-		if err := i.threadRepo.IncrementReplyCount(ctx, *input.ParentID, input.UserID); err != nil {
-			// エラーが発生してもメッセージ作成は成功とする（ログ出力のみ）
-			logger.Get().Warn("Failed to update thread metadata", zap.Error(err))
+		if err := i.messageRepo.Create(txCtx, message); err != nil {
+			return fmt.Errorf("failed to create message: %w", err)
 		}
-	}
 
-	// メンションとリンクを抽出・保存
-	if err := i.extractAndSaveMentionsAndLinks(ctx, message.ID, input.Body, channel.WorkspaceID); err != nil {
-		// エラーが発生してもメッセージ作成は成功とする（ログ出力のみ）
-		logger.Get().Warn("Failed to extract mentions and links", zap.Error(err))
-	}
+		// 添付ファイルをメッセージに紐付け
+		if len(input.AttachmentIDs) > 0 {
+			if err := i.attachmentRepo.AttachToMessage(txCtx, input.AttachmentIDs, message.ID); err != nil {
+				return fmt.Errorf("failed to attach files: %w", err)
+			}
+		}
 
-	// ユーザー情報を取得
-	user, err := i.userRepo.FindByID(ctx, input.UserID)
+		// スレッド返信の場合、メタデータを更新
+		if input.ParentID != nil {
+			if err := i.threadRepo.IncrementReplyCount(txCtx, *input.ParentID, input.UserID); err != nil {
+				return fmt.Errorf("failed to update thread metadata: %w", err)
+			}
+		}
+
+		// メンションとリンクを抽出・保存
+		if err := i.extractAndSaveMentionsAndLinks(txCtx, message.ID, input.Body, channel.WorkspaceID); err != nil {
+			return fmt.Errorf("failed to extract mentions and links: %w", err)
+		}
+
+		// ユーザー情報を取得
+		user, err := i.userRepo.FindByID(txCtx, input.UserID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch user: %w", err)
+		}
+
+		// メンションとリンクの情報を取得してレスポンスに含める
+		userMentions, err := i.userMentionRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch user mentions: %w", err)
+		}
+		groupMentions, err := i.groupMentionRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch group mentions: %w", err)
+		}
+		links, err := i.linkRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch links: %w", err)
+		}
+		attachmentList, err := i.attachmentRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch attachments: %w", err)
+		}
+
+		// グループ情報を取得
+		groupIDs := make([]string, 0)
+		groupIDSet := make(map[string]bool)
+		for _, mention := range groupMentions {
+			if !groupIDSet[mention.GroupID] {
+				groupIDs = append(groupIDs, mention.GroupID)
+				groupIDSet[mention.GroupID] = true
+			}
+		}
+
+		groups := make(map[string]*entity.UserGroup)
+		if len(groupIDs) > 0 {
+			groupList, err := i.userGroupRepo.FindByIDs(txCtx, groupIDs)
+			if err != nil {
+				return fmt.Errorf("failed to fetch groups: %w", err)
+			}
+			for _, group := range groupList {
+				groups[group.ID] = group
+			}
+		}
+
+		// リアクションは新規作成メッセージには存在しないため空配列
+		reactions := []*entity.MessageReaction{}
+
+		// ユーザーマップを作成
+		userMap := map[string]*entity.User{user.ID: user}
+
+		output := i.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
+		result = &output
+
+		return nil
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch user: %w", err)
+		return nil, err
 	}
-
-	// メンションとリンクの情報を取得してレスポンスに含める
-	userMentions, _ := i.userMentionRepo.FindByMessageID(ctx, message.ID)
-	groupMentions, _ := i.groupMentionRepo.FindByMessageID(ctx, message.ID)
-	links, _ := i.linkRepo.FindByMessageID(ctx, message.ID)
-	attachmentList, _ := i.attachmentRepo.FindByMessageID(ctx, message.ID)
-
-	// グループ情報を取得
-	groups := make(map[string]*entity.UserGroup)
-	for _, mention := range groupMentions {
-		if group, err := i.userGroupRepo.FindByID(ctx, mention.GroupID); err == nil && group != nil {
-			groups[mention.GroupID] = group
-		}
-	}
-
-	// リアクションは新規作成メッセージには存在しないため空配列
-	reactions := []*entity.MessageReaction{}
-
-	// ユーザーマップを作成
-	userMap := map[string]*entity.User{user.ID: user}
-
-	output := i.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
 
 	// WebSocket通知を送信（nilチェックを追加）
 	if i.notificationSvc != nil {
 		// outputをmap[string]interface{}に変換
-		messageMap, err := convertStructToMap(output)
+		messageMap, err := convertStructToMap(*result)
 		if err == nil {
 			i.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, messageMap)
 		} else {
@@ -555,7 +600,7 @@ func (i *messageInteractor) CreateMessage(ctx context.Context, input CreateMessa
 		}
 	}
 
-	return &output, nil
+	return result, nil
 }
 
 func (i *messageInteractor) ensureChannelAccess(ctx context.Context, channelID, userID string) (*entity.Channel, error) {
@@ -587,38 +632,6 @@ func (i *messageInteractor) ensureChannelAccess(ctx context.Context, channelID, 
 	}
 
 	return ch, nil
-}
-
-func toMessageOutput(message *entity.Message, user *entity.User) MessageOutput {
-	userInfo := UserInfo{
-		ID:          "",
-		DisplayName: "Unknown User",
-		AvatarURL:   nil,
-	}
-
-	if user != nil {
-		userInfo = UserInfo{
-			ID:          user.ID,
-			DisplayName: user.DisplayName,
-			AvatarURL:   user.AvatarURL,
-		}
-	}
-
-	return MessageOutput{
-		ID:        message.ID,
-		ChannelID: message.ChannelID,
-		UserID:    message.UserID,
-		User:      userInfo,
-		ParentID:  message.ParentID,
-		Body:      message.Body,
-		Mentions:  []UserMention{},
-		Groups:    []GroupMention{},
-		Links:     []LinkInfo{},
-		Reactions: []ReactionInfo{},
-		CreatedAt: message.CreatedAt,
-		EditedAt:  message.EditedAt,
-		DeletedAt: message.DeletedAt,
-	}
 }
 
 // メンションとリンクの抽出・保存
@@ -774,10 +787,12 @@ func (i *messageInteractor) GetThreadReplies(ctx context.Context, input GetThrea
 	}
 
 	groups := make(map[string]*entity.UserGroup)
-	for _, groupID := range groupIDs {
-		group, err := i.userGroupRepo.FindByID(ctx, groupID)
-		if err == nil && group != nil {
-			groups[groupID] = group
+	if len(groupIDs) > 0 {
+		groupList, err := i.userGroupRepo.FindByIDs(ctx, groupIDs)
+		if err == nil {
+			for _, group := range groupList {
+				groups[group.ID] = group
+			}
 		}
 	}
 
@@ -1018,84 +1033,101 @@ func (i *messageInteractor) UpdateMessage(ctx context.Context, input UpdateMessa
 		return nil, ErrUnauthorized
 	}
 
-	// メッセージ本文を更新
-	message.Body = input.Body
-	now := time.Now()
-	message.EditedAt = &now
+	var result *MessageOutput
+	err = i.transactionManager.Do(ctx, func(txCtx context.Context) error {
+		// メッセージ本文を更新
+		message.Body = input.Body
+		now := time.Now()
+		message.EditedAt = &now
 
-	// データベース更新
-	if err := i.messageRepo.Update(ctx, message); err != nil {
-		return nil, fmt.Errorf("メッセージの更新に失敗しました: %w", err)
-	}
-
-	// 既存のメンション・リンクを削除
-	if err := i.userMentionRepo.DeleteByMessageID(ctx, message.ID); err != nil {
-		logger.Get().Warn("Failed to delete user mentions", zap.Error(err))
-	}
-	if err := i.groupMentionRepo.DeleteByMessageID(ctx, message.ID); err != nil {
-		logger.Get().Warn("Failed to delete group mentions", zap.Error(err))
-	}
-	if err := i.linkRepo.DeleteByMessageID(ctx, message.ID); err != nil {
-		logger.Get().Warn("Failed to delete links", zap.Error(err))
-	}
-
-	// 新しいメンション・リンクを抽出・保存
-	if err := i.extractAndSaveMentionsAndLinks(ctx, message.ID, input.Body, channel.WorkspaceID); err != nil {
-		logger.Get().Warn("Failed to extract and save mentions/links", zap.Error(err))
-	}
-
-	// 更新後のデータを取得してMessageOutputを構築
-	userMentions, err := i.userMentionRepo.FindByMessageID(ctx, message.ID)
-	if err != nil {
-		logger.Get().Warn("Failed to fetch user mentions", zap.Error(err))
-		userMentions = []*entity.MessageUserMention{}
-	}
-
-	groupMentions, err := i.groupMentionRepo.FindByMessageID(ctx, message.ID)
-	if err != nil {
-		logger.Get().Warn("Failed to fetch group mentions", zap.Error(err))
-		groupMentions = []*entity.MessageGroupMention{}
-	}
-
-	links, err := i.linkRepo.FindByMessageID(ctx, message.ID)
-	if err != nil {
-		logger.Get().Warn("Failed to fetch links", zap.Error(err))
-		links = []*entity.MessageLink{}
-	}
-
-	reactions, err := i.messageRepo.FindReactions(ctx, message.ID)
-	if err != nil {
-		logger.Get().Warn("Failed to fetch reactions", zap.Error(err))
-		reactions = []*entity.MessageReaction{}
-	}
-
-	attachmentList, err := i.attachmentRepo.FindByMessageID(ctx, message.ID)
-	if err != nil {
-		logger.Get().Warn("Failed to fetch attachments", zap.Error(err))
-		attachmentList = []*entity.Attachment{}
-	}
-
-	// ユーザー情報を取得
-	user, err := i.userRepo.FindByID(ctx, message.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("ユーザー情報の取得に失敗しました: %w", err)
-	}
-
-	// グループ情報を取得
-	groups := make(map[string]*entity.UserGroup)
-	for _, gm := range groupMentions {
-		group, err := i.userGroupRepo.FindByID(ctx, gm.GroupID)
-		if err == nil && group != nil {
-			groups[gm.GroupID] = group
+		// データベース更新
+		if err := i.messageRepo.Update(txCtx, message); err != nil {
+			return fmt.Errorf("メッセージの更新に失敗しました: %w", err)
 		}
-	}
 
-	userMap := map[string]*entity.User{user.ID: user}
-	output := i.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
+		// 既存のメンション・リンクを削除
+		if err := i.userMentionRepo.DeleteByMessageID(txCtx, message.ID); err != nil {
+			return fmt.Errorf("failed to delete user mentions: %w", err)
+		}
+		if err := i.groupMentionRepo.DeleteByMessageID(txCtx, message.ID); err != nil {
+			return fmt.Errorf("failed to delete group mentions: %w", err)
+		}
+		if err := i.linkRepo.DeleteByMessageID(txCtx, message.ID); err != nil {
+			return fmt.Errorf("failed to delete links: %w", err)
+		}
+
+		// 新しいメンション・リンクを抽出・保存
+		if err := i.extractAndSaveMentionsAndLinks(txCtx, message.ID, input.Body, channel.WorkspaceID); err != nil {
+			return fmt.Errorf("failed to extract and save mentions/links: %w", err)
+		}
+
+		// 更新後のデータを取得してMessageOutputを構築
+		userMentions, err := i.userMentionRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch user mentions: %w", err)
+		}
+
+		groupMentions, err := i.groupMentionRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch group mentions: %w", err)
+		}
+
+		links, err := i.linkRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch links: %w", err)
+		}
+
+		reactions, err := i.messageRepo.FindReactions(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch reactions: %w", err)
+		}
+
+		attachmentList, err := i.attachmentRepo.FindByMessageID(txCtx, message.ID)
+		if err != nil {
+			return fmt.Errorf("failed to fetch attachments: %w", err)
+		}
+
+		// ユーザー情報を取得
+		user, err := i.userRepo.FindByID(txCtx, message.UserID)
+		if err != nil {
+			return fmt.Errorf("ユーザー情報の取得に失敗しました: %w", err)
+		}
+
+		// グループ情報を取得
+		groupIDs := make([]string, 0)
+		groupIDSet := make(map[string]bool)
+		for _, gm := range groupMentions {
+			if !groupIDSet[gm.GroupID] {
+				groupIDs = append(groupIDs, gm.GroupID)
+				groupIDSet[gm.GroupID] = true
+			}
+		}
+
+		groups := make(map[string]*entity.UserGroup)
+		if len(groupIDs) > 0 {
+			groupList, err := i.userGroupRepo.FindByIDs(txCtx, groupIDs)
+			if err != nil {
+				return fmt.Errorf("failed to fetch groups: %w", err)
+			}
+			for _, group := range groupList {
+				groups[group.ID] = group
+			}
+		}
+
+		userMap := map[string]*entity.User{user.ID: user}
+		output := i.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
+		result = &output
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	// WebSocket通知を送信
 	if i.notificationSvc != nil {
-		messageMap, err := convertStructToMap(output)
+		messageMap, err := convertStructToMap(*result)
 		if err == nil {
 			i.notificationSvc.NotifyUpdatedMessage(channel.WorkspaceID, channel.ID, messageMap)
 		} else {
@@ -1103,7 +1135,7 @@ func (i *messageInteractor) UpdateMessage(ctx context.Context, input UpdateMessa
 		}
 	}
 
-	return &output, nil
+	return result, nil
 }
 
 func (i *messageInteractor) DeleteMessage(ctx context.Context, input DeleteMessageInput) error {
