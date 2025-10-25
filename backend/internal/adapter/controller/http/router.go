@@ -15,15 +15,16 @@ type RouterConfig struct {
 	AllowedOrigins []string
 
 	// Handlers
-	AuthHandler      *handler.AuthHandler
-	WorkspaceHandler *handler.WorkspaceHandler
-	ChannelHandler   *handler.ChannelHandler
-	MessageHandler   *handler.MessageHandler
-	ReadStateHandler *handler.ReadStateHandler
-	ReactionHandler  *handler.ReactionHandler
-	UserGroupHandler *handler.UserGroupHandler
-	LinkHandler      *handler.LinkHandler
-	BookmarkHandler  *interfacehandler.BookmarkHandler
+	AuthHandler       *handler.AuthHandler
+	WorkspaceHandler  *handler.WorkspaceHandler
+	ChannelHandler    *handler.ChannelHandler
+	MessageHandler    *handler.MessageHandler
+	ReadStateHandler  *handler.ReadStateHandler
+	ReactionHandler   *handler.ReactionHandler
+	UserGroupHandler  *handler.UserGroupHandler
+	LinkHandler       *handler.LinkHandler
+	BookmarkHandler   *interfacehandler.BookmarkHandler
+	AttachmentHandler *interfacehandler.AttachmentHandler
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -108,6 +109,14 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	api.GET("/bookmarks", cfg.BookmarkHandler.ListBookmarks, authMw)
 	api.POST("/messages/:messageId/bookmarks", cfg.BookmarkHandler.AddBookmark, authMw)
 	api.DELETE("/messages/:messageId/bookmarks", cfg.BookmarkHandler.RemoveBookmark, authMw)
+
+	// Attachment routes
+	att := api.Group("/attachments", authMw)
+	{
+		att.POST("/presign", cfg.AttachmentHandler.PresignUpload)
+		att.GET("/:attachmentId", cfg.AttachmentHandler.GetMetadata)
+		att.GET("/:attachmentId/download", cfg.AttachmentHandler.GetDownloadURL)
+	}
 
 	return e
 }

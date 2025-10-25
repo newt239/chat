@@ -34,7 +34,7 @@ type JWTConfig struct {
 type WasabiConfig struct {
 	Endpoint        string
 	Region          string
-	Bucket          string
+	BucketName      string
 	AccessKeyID     string
 	SecretAccessKey string
 }
@@ -63,7 +63,7 @@ func Load() (*Config, error) {
 		Wasabi: WasabiConfig{
 			Endpoint:        getEnv("WASABI_ENDPOINT", "https://s3.wasabisys.com"),
 			Region:          getEnv("WASABI_REGION", "us-east-1"),
-			Bucket:          getEnv("WASABI_BUCKET", "chat-attachments"),
+			BucketName:      getEnv("WASABI_BUCKET", "chat-attachments"),
 			AccessKeyID:     getEnv("WASABI_ACCESS_KEY_ID", ""),
 			SecretAccessKey: getEnv("WASABI_SECRET_ACCESS_KEY", ""),
 		},

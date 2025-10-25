@@ -12,26 +12,34 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 
-import { EmojiPicker } from "@/features/reaction/components/EmojiPicker";
-import { useAddReaction } from "@/features/reaction/hooks/useReactions";
 import {
   useAddBookmark,
   useRemoveBookmark,
   useIsBookmarked,
 } from "@/features/bookmark/hooks/useBookmarks";
+import { EmojiPicker } from "@/features/reaction/components/EmojiPicker";
+import { useAddReaction } from "@/features/reaction/hooks/useReactions";
 
 type MessageActionsProps = {
   messageId: string;
+  isAuthor: boolean;
+  isDeleted: boolean;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onBookmark: (messageId: string) => void;
+  onEdit?: (messageId: string) => void;
+  onDelete?: (messageId: string) => void;
 };
 
 export const MessageActions = ({
   messageId,
+  isAuthor,
+  isDeleted,
   onCopyLink,
   onCreateThread,
   onBookmark,
+  onEdit,
+  onDelete,
 }: MessageActionsProps) => {
   const [emojiPickerOpened, setEmojiPickerOpened] = useState(false);
   const addReaction = useAddReaction();
@@ -105,10 +113,16 @@ export const MessageActions = ({
           <Menu.Item leftSection={<IconLink size={14} />} onClick={() => onCopyLink(messageId)}>
             リンクをコピー
           </Menu.Item>
-          <Menu.Item leftSection={<IconEdit size={14} />}>メッセージを編集</Menu.Item>
-          <Menu.Item leftSection={<IconTrash size={14} />} c="red">
-            メッセージを削除
-          </Menu.Item>
+          {isAuthor && !isDeleted && onEdit && (
+            <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => onEdit(messageId)}>
+              メッセージを編集
+            </Menu.Item>
+          )}
+          {isAuthor && !isDeleted && onDelete && (
+            <Menu.Item leftSection={<IconTrash size={14} />} c="red" onClick={() => onDelete(messageId)}>
+              メッセージを削除
+            </Menu.Item>
+          )}
         </Menu.Dropdown>
       </Menu>
     </div>

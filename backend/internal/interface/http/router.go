@@ -22,6 +22,7 @@ func RegisterRoutes(
 	reactionHandler *handler.ReactionHandler,
 	userGroupHandler *handler.UserGroupHandler,
 	linkHandler *handler.LinkHandler,
+	attachmentHandler *handler.AttachmentHandler,
 ) {
 	api := e.Group("/api")
 	{
@@ -57,6 +58,7 @@ func RegisterRoutes(
 		ch := protected.Group("/channels/:channelId")
 		{
 			ch.GET("/messages", messageHandler.ListMessages)
+			ch.GET("/messages/with-threads", messageHandler.ListMessagesWithThread)
 			ch.POST("/messages", messageHandler.CreateMessage)
 			ch.GET("/unread_count", readStateHandler.GetUnreadCount)
 			ch.POST("/reads", readStateHandler.UpdateReadState)
@@ -64,9 +66,13 @@ func RegisterRoutes(
 
 		msg := protected.Group("/messages/:messageId")
 		{
+			msg.PATCH("", messageHandler.UpdateMessage)
+			msg.DELETE("", messageHandler.DeleteMessage)
 			msg.GET("/reactions", reactionHandler.ListReactions)
 			msg.POST("/reactions", reactionHandler.AddReaction)
 			msg.DELETE("/reactions/:emoji", reactionHandler.RemoveReaction)
+			msg.GET("/thread", messageHandler.GetThreadReplies)
+			msg.GET("/thread/metadata", messageHandler.GetThreadMetadata)
 		}
 
 		// User group routes
@@ -88,11 +94,12 @@ func RegisterRoutes(
 			links.POST("/fetch-ogp", linkHandler.FetchOGP)
 		}
 
-		att := api.Group("/attachments")
+		// Attachment routes
+		att := protected.Group("/attachments")
 		{
-			att.POST("/presign", func(c echo.Context) error { return c.NoContent(http.StatusNotImplemented) })
-			att.GET("/:id", func(c echo.Context) error { return c.NoContent(http.StatusNotImplemented) })
-			att.GET("/:id/download", func(c echo.Context) error { return c.NoContent(http.StatusNotImplemented) })
+			att.POST("/presign", attachmentHandler.PresignUpload)
+			att.GET("/:attachmentId", attachmentHandler.GetMetadata)
+			att.GET("/:attachmentId/download", attachmentHandler.GetDownloadURL)
 		}
 	}
 }

@@ -226,3 +226,35 @@ func (r *channelRepository) IsMember(ctx context.Context, channelID string, user
 
 	return count > 0, nil
 }
+
+func (r *channelRepository) UpdateMemberRole(ctx context.Context, channelID string, userID string, role entity.ChannelRole) error {
+	chID, err := parseUUID(channelID, "channel ID")
+	if err != nil {
+		return err
+	}
+
+	uid, err := parseUUID(userID, "user ID")
+	if err != nil {
+		return err
+	}
+
+	return r.db.WithContext(ctx).Model(&database.ChannelMember{}).
+		Where("channel_id = ? AND user_id = ?", chID, uid).
+		Update("role", string(role)).Error
+}
+
+func (r *channelRepository) CountAdmins(ctx context.Context, channelID string) (int, error) {
+	chID, err := parseUUID(channelID, "channel ID")
+	if err != nil {
+		return 0, err
+	}
+
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&database.ChannelMember{}).
+		Where("channel_id = ? AND role = ?", chID, string(entity.ChannelRoleAdmin)).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}

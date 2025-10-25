@@ -2,12 +2,14 @@ package reaction
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/example/chat/internal/domain/entity"
 	domainrepository "github.com/example/chat/internal/domain/repository"
+	"github.com/example/chat/internal/domain/service"
 )
 
 var (
@@ -23,10 +25,11 @@ type ReactionUseCase interface {
 }
 
 type reactionInteractor struct {
-	messageRepo   domainrepository.MessageRepository
-	channelRepo   domainrepository.ChannelRepository
-	workspaceRepo domainrepository.WorkspaceRepository
-	userRepo      domainrepository.UserRepository
+	messageRepo     domainrepository.MessageRepository
+	channelRepo     domainrepository.ChannelRepository
+	workspaceRepo   domainrepository.WorkspaceRepository
+	userRepo        domainrepository.UserRepository
+	notificationSvc service.NotificationService
 }
 
 func NewReactionInteractor(
@@ -34,12 +37,14 @@ func NewReactionInteractor(
 	channelRepo domainrepository.ChannelRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
+	notificationSvc service.NotificationService,
 ) ReactionUseCase {
 	return &reactionInteractor{
-		messageRepo:   messageRepo,
-		channelRepo:   channelRepo,
-		workspaceRepo: workspaceRepo,
-		userRepo:      userRepo,
+		messageRepo:     messageRepo,
+		channelRepo:     channelRepo,
+		workspaceRepo:   workspaceRepo,
+		userRepo:        userRepo,
+		notificationSvc: notificationSvc,
 	}
 }
 
@@ -68,6 +73,21 @@ func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionI
 
 	if err := i.messageRepo.AddReaction(ctx, reaction); err != nil {
 		return fmt.Errorf("failed to add reaction: %w", err)
+	}
+
+	// WebSocket通知を送信（nilチェックを追加）
+	if i.notificationSvc != nil {
+		// チャンネル情報を取得
+		channel, err := i.channelRepo.FindByID(ctx, message.ChannelID)
+		if err == nil && channel != nil {
+			// reactionをmap[string]interface{}に変換
+			reactionMap, err := convertStructToMap(toReactionOutput(reaction, nil))
+			if err == nil {
+				i.notificationSvc.NotifyReaction(channel.WorkspaceID, channel.ID, reactionMap)
+			} else {
+				fmt.Printf("Warning: failed to convert reaction to map: %v\n", err)
+			}
+		}
 	}
 
 	return nil
@@ -184,6 +204,19 @@ func (i *reactionInteractor) ensureChannelAccess(ctx context.Context, channelID,
 	}
 
 	return nil
+}
+
+// convertStructToMap は構造体をmap[string]interface{}に変換します
+func convertStructToMap(data interface{}) (map[string]interface{}, error) {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	var result map[string]interface{}
+	if err := json.Unmarshal(jsonBytes, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func toReactionOutput(reaction *entity.MessageReaction, user *entity.User) ReactionOutput {

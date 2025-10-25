@@ -32,8 +32,11 @@
         "false"
       ]
     },
-    "Figma Desktop": {
-      "url": "http://127.0.0.1:3845/mcp"
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest"
+      ]
     }
   }
 }

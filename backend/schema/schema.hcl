@@ -119,6 +119,7 @@ table "channel_members" {
   schema = schema.public
   column "channel_id" { type = uuid, null = false }
   column "user_id" { type = uuid, null = false }
+  column "role" { type = text, null = false, default = "member" }
   column "joined_at" { type = timestamptz, null = false, default = sql("now()") }
   primary_key { columns = [column.channel_id, column.user_id] }
   foreign_key "channel_members_channel_id_fkey" {
@@ -132,6 +133,9 @@ table "channel_members" {
     on_delete = CASCADE
   }
   index "channel_members_user_id_idx" { columns = [column.user_id] }
+  check "channel_members_role_check" {
+    expr = "role IN ('member', 'admin')"
+  }
 }
 
 table "messages" {
@@ -148,6 +152,7 @@ table "messages" {
   column "created_at" { type = timestamptz, null = false, default = sql("now()") }
   column "edited_at" { type = timestamptz }
   column "deleted_at" { type = timestamptz }
+  column "deleted_by" { type = uuid }
   primary_key { columns = [column.id] }
   foreign_key "messages_channel_id_fkey" {
     columns = [column.channel_id]
@@ -213,11 +218,16 @@ table "attachments" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "message_id" { type = uuid, null = false }
+  column "message_id" { type = uuid }
+  column "uploader_id" { type = uuid, null = false }
+  column "channel_id" { type = uuid, null = false }
   column "file_name" { type = text, null = false }
   column "mime_type" { type = text, null = false }
   column "size_bytes" { type = bigint, null = false }
   column "storage_key" { type = text, null = false }
+  column "status" { type = text, null = false, default = "pending" }
+  column "uploaded_at" { type = timestamptz }
+  column "expires_at" { type = timestamptz }
   column "created_at" { type = timestamptz, null = false, default = sql("now()") }
   primary_key { columns = [column.id] }
   foreign_key "attachments_message_id_fkey" {
@@ -225,7 +235,19 @@ table "attachments" {
     ref_columns = [table.messages.column.id]
     on_delete = CASCADE
   }
+  foreign_key "attachments_uploader_id_fkey" {
+    columns = [column.uploader_id]
+    ref_columns = [table.users.column.id]
+    on_delete = CASCADE
+  }
+  foreign_key "attachments_channel_id_fkey" {
+    columns = [column.channel_id]
+    ref_columns = [table.channels.column.id]
+    on_delete = CASCADE
+  }
   index "attachments_message_id_idx" { columns = [column.message_id] }
+  index "attachments_uploader_status_idx" { columns = [column.uploader_id, column.status] }
+  index "attachments_channel_id_idx" { columns = [column.channel_id] }
 }
 
 table "user_groups" {
@@ -356,6 +378,29 @@ table "message_bookmarks" {
   }
   index "message_bookmarks_user_id_idx" { columns = [column.user_id] }
   index "message_bookmarks_created_at_idx" { columns = [column.created_at] }
+}
+
+table "thread_metadata" {
+  schema = schema.public
+  column "message_id" { type = uuid, null = false }
+  column "reply_count" { type = integer, null = false, default = 0 }
+  column "last_reply_at" { type = timestamptz }
+  column "last_reply_user_id" { type = uuid }
+  column "participant_user_ids" { type = sql("uuid[]"), null = false, default = sql("'{}'") }
+  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "updated_at" { type = timestamptz, null = false, default = sql("now()") }
+  primary_key { columns = [column.message_id] }
+  foreign_key "thread_metadata_message_id_fkey" {
+    columns = [column.message_id]
+    ref_columns = [table.messages.column.id]
+    on_delete = CASCADE
+  }
+  foreign_key "thread_metadata_last_reply_user_id_fkey" {
+    columns = [column.last_reply_user_id]
+    ref_columns = [table.users.column.id]
+    on_delete = SET_NULL
+  }
+  index "thread_metadata_last_reply_at_idx" { columns = [column.last_reply_at], type = BTREE }
 }
 
 

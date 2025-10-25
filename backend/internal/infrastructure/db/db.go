@@ -77,5 +77,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&MessageUserMention{},
 		&MessageGroupMention{},
 		&MessageLink{},
+		&ThreadMetadata{},
 	)
 }

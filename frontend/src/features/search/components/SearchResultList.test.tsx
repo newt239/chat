@@ -60,6 +60,7 @@ const mockMessages = [
     createdAt: "2025-01-01T12:00:00Z",
     editedAt: null,
     deletedAt: null,
+    isDeleted: false,
   },
   {
     id: "message-2",
@@ -70,6 +71,7 @@ const mockMessages = [
     createdAt: "2025-01-01T13:00:00Z",
     editedAt: "2025-01-01T14:00:00Z",
     deletedAt: null,
+    isDeleted: false,
   },
 ];
 

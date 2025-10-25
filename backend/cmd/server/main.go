@@ -52,7 +52,8 @@ func main() {
 
 	// WebSocket endpoint
 	jwtService := reg.NewJWTService()
-	e.GET("/ws", websocket.NewHandler(hub, jwtService))
+	workspaceRepo := reg.NewWorkspaceRepository()
+	e.GET("/ws", websocket.NewHandler(hub, jwtService, workspaceRepo))
 
 	// Start server
 	addr := ":" + cfg.Server.Port

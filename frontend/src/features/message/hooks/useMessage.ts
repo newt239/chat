@@ -6,6 +6,16 @@ import { api } from "@/lib/api/client";
 
 type CreateMessageInput = {
   body: string;
+  attachmentIds?: string[];
+};
+
+type UpdateMessageInput = {
+  messageId: string;
+  body: string;
+};
+
+type DeleteMessageInput = {
+  messageId: string;
 };
 
 export function useMessages(channelId: string | null) {
@@ -49,7 +59,7 @@ export function useSendMessage(channelId: string | null) {
 
       const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
         params: { path: { channelId } },
-        body: { body: input.body },
+        body: { body: input.body, attachmentIds: input.attachmentIds },
       });
 
       if (error || data === undefined) {
@@ -57,6 +67,51 @@ export function useSendMessage(channelId: string | null) {
       }
 
       return data;
+    },
+    onSuccess: async () => {
+      if (channelId !== null) {
+        await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "messages"] });
+      }
+    },
+  });
+}
+
+export function useUpdateMessage(channelId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: UpdateMessageInput) => {
+      const { data, error } = await api.PATCH("/api/messages/{messageId}", {
+        params: { path: { messageId: input.messageId } },
+        body: { body: input.body },
+      });
+
+      if (error || data === undefined) {
+        throw new Error(error?.error ?? "メッセージの更新に失敗しました");
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      if (channelId !== null) {
+        await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "messages"] });
+      }
+    },
+  });
+}
+
+export function useDeleteMessage(channelId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: DeleteMessageInput) => {
+      const { error } = await api.DELETE("/api/messages/{messageId}", {
+        params: { path: { messageId: input.messageId } },
+      });
+
+      if (error) {
+        throw new Error(error?.error ?? "メッセージの削除に失敗しました");
+      }
     },
     onSuccess: async () => {
       if (channelId !== null) {

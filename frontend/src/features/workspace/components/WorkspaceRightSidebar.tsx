@@ -5,7 +5,6 @@ import { ThreadPanel } from "./ThreadPanel";
 import { UserProfilePanel } from "./UserProfilePanel";
 
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
-
 import { type RightSidebarView } from "@/lib/store/ui";
 
 type WorkspaceRightSidebarProps = {

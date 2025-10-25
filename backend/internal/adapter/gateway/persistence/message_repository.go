@@ -166,6 +166,91 @@ func (r *messageRepository) Delete(ctx context.Context, id string) error {
 		Update("deleted_at", now).Error
 }
 
+func (r *messageRepository) FindByChannelIDIncludingDeleted(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
+	chID, err := parseUUID(channelID, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+
+	query := r.db.WithContext(ctx).Where("channel_id = ? AND parent_id IS NULL", chID)
+
+	if since != nil {
+		query = query.Where("created_at > ?", since)
+	}
+
+	if until != nil {
+		query = query.Where("created_at < ?", until)
+	}
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+
+	var models []database.Message
+	if err := query.Order("created_at desc").Find(&models).Error; err != nil {
+		return nil, err
+	}
+
+	messages := make([]*entity.Message, len(models))
+	for i, model := range models {
+		messages[i] = model.ToEntity()
+	}
+
+	return messages, nil
+}
+
+func (r *messageRepository) FindThreadRepliesIncludingDeleted(ctx context.Context, parentID string) ([]*entity.Message, error) {
+	pID, err := parseUUID(parentID, "parent ID")
+	if err != nil {
+		return nil, err
+	}
+
+	var models []database.Message
+	if err := r.db.WithContext(ctx).
+		Where("parent_id = ?", pID).
+		Order("created_at asc").
+		Find(&models).Error; err != nil {
+		return nil, err
+	}
+
+	messages := make([]*entity.Message, len(models))
+	for i, model := range models {
+		messages[i] = model.ToEntity()
+	}
+
+	return messages, nil
+}
+
+func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, deletedBy string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	uuids := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		msgID, err := parseUUID(id, "message ID")
+		if err != nil {
+			return err
+		}
+		uuids = append(uuids, msgID)
+	}
+
+	deletedByUUID, err := parseUUID(deletedBy, "deleted by user ID")
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	updates := map[string]interface{}{
+		"deleted_at": now,
+		"deleted_by": deletedByUUID,
+	}
+
+	return r.db.WithContext(ctx).Model(&database.Message{}).
+		Where("id IN ?", uuids).
+		Updates(updates).Error
+}
+
 func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.MessageReaction) error {
 	messageID, err := parseUUID(reaction.MessageID, "message ID")
 	if err != nil {

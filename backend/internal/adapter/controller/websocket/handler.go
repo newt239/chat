@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	authuc "github.com/example/chat/internal/usecase/auth"
+	"github.com/example/chat/internal/domain/repository"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
@@ -17,23 +18,42 @@ var upgrader = websocket.Upgrader{
 }
 
 // Handler はWebSocketハンドラーを返します
-func NewHandler(hub *Hub, jwtService authuc.JWTService) echo.HandlerFunc {
+func NewHandler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		// 認証チェック
+		// 認証トークンの取得
+		// WebSocketではAuthorizationヘッダーを設定できないため、クエリパラメータからも取得を試みる
+		var token string
 		authHeader := c.Request().Header.Get("Authorization")
-		if authHeader == "" {
-			return echo.NewHTTPError(http.StatusUnauthorized, "authorization header required")
+		if authHeader != "" {
+			token = authHeader
+			if len(token) > 7 && token[:7] == "Bearer " {
+				token = token[7:]
+			}
+		} else {
+			// クエリパラメータからトークンを取得
+			token = c.QueryParam("token")
+			if token == "" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "authentication token required")
+			}
 		}
 
 		// JWTトークンの検証
-		token := authHeader
-		if len(token) > 7 && token[:7] == "Bearer " {
-			token = token[7:]
-		}
-
 		claims, err := jwtService.VerifyToken(token)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized, "invalid or expired token")
+		}
+
+		// WorkspaceIDの取得
+		workspaceID := c.QueryParam("workspaceId")
+		if workspaceID == "" {
+			return echo.NewHTTPError(http.StatusBadRequest, "workspaceId query parameter required")
+		}
+
+		// Workspace所属確認
+		ctx := c.Request().Context()
+		member, err := workspaceRepo.FindMember(ctx, workspaceID, claims.UserID)
+		if err != nil || member == nil {
+			return echo.NewHTTPError(http.StatusForbidden, "user is not a member of this workspace")
 		}
 
 		// WebSocket接続のアップグレード
@@ -45,10 +65,11 @@ func NewHandler(hub *Hub, jwtService authuc.JWTService) echo.HandlerFunc {
 
 		// クライアントを作成してハブに登録
 		client := &Client{
-			hub:    hub,
-			conn:   conn,
-			send:   make(chan []byte, 256),
-			userID: claims.UserID,
+			hub:         hub,
+			conn:        conn,
+			send:        make(chan []byte, 256),
+			userID:      claims.UserID,
+			workspaceID: workspaceID,
 		}
 
 		client.hub.register <- client

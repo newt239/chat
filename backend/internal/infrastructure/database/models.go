@@ -304,6 +304,7 @@ func (m *Channel) ToEntity() *entity.Channel {
 type ChannelMember struct {
 	ChannelID uuid.UUID `gorm:"type:uuid;primaryKey"`
 	UserID    uuid.UUID `gorm:"type:uuid;primaryKey;index"`
+	Role      string    `gorm:"type:text;not null;default:member"`
 	JoinedAt  time.Time `gorm:"type:timestamptz;not null;default:now()"`
 }
 
@@ -320,6 +321,7 @@ func (m *ChannelMember) FromEntity(e *entity.ChannelMember) {
 	*m = ChannelMember{
 		ChannelID: parseUUID(e.ChannelID),
 		UserID:    parseUUID(e.UserID),
+		Role:      string(e.Role),
 		JoinedAt:  cloneTime(e.JoinedAt),
 	}
 }
@@ -332,6 +334,7 @@ func (m *ChannelMember) ToEntity() *entity.ChannelMember {
 	return &entity.ChannelMember{
 		ChannelID: uuidToString(m.ChannelID),
 		UserID:    uuidToString(m.UserID),
+		Role:      entity.ChannelRole(m.Role),
 		JoinedAt:  cloneTime(m.JoinedAt),
 	}
 }
@@ -346,6 +349,7 @@ type Message struct {
 	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:now();index:idx_channel_created,idx_parent_created"`
 	EditedAt  *time.Time `gorm:"type:timestamptz"`
 	DeletedAt *time.Time `gorm:"type:timestamptz"`
+	DeletedBy *uuid.UUID `gorm:"type:uuid"`
 }
 
 func (Message) TableName() string {
@@ -367,6 +371,7 @@ func (m *Message) FromEntity(e *entity.Message) {
 		CreatedAt: cloneTime(e.CreatedAt),
 		EditedAt:  cloneTimePtr(e.EditedAt),
 		DeletedAt: cloneTimePtr(e.DeletedAt),
+		DeletedBy: parseUUIDPtr(e.DeletedBy),
 	}
 }
 
@@ -384,6 +389,7 @@ func (m *Message) ToEntity() *entity.Message {
 		CreatedAt: cloneTime(m.CreatedAt),
 		EditedAt:  cloneTimePtr(m.EditedAt),
 		DeletedAt: cloneTimePtr(m.DeletedAt),
+		DeletedBy: uuidPtrToStringPtr(m.DeletedBy),
 	}
 }
 
@@ -464,13 +470,18 @@ func (m *ChannelReadState) ToEntity() *entity.ChannelReadState {
 
 // Attachment represents the attachments table.
 type Attachment struct {
-	ID         uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	MessageID  uuid.UUID `gorm:"type:uuid;not null;index"`
-	FileName   string    `gorm:"type:text;not null"`
-	MimeType   string    `gorm:"type:text;not null"`
-	SizeBytes  int64     `gorm:"type:bigint;not null"`
-	StorageKey string    `gorm:"type:text;not null"`
-	CreatedAt  time.Time `gorm:"type:timestamptz;not null;default:now()"`
+	ID         uuid.UUID  `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	MessageID  *uuid.UUID `gorm:"type:uuid;index"`
+	UploaderID uuid.UUID  `gorm:"type:uuid;not null;index:idx_uploader_status"`
+	ChannelID  uuid.UUID  `gorm:"type:uuid;not null;index"`
+	FileName   string     `gorm:"type:text;not null"`
+	MimeType   string     `gorm:"type:text;not null"`
+	SizeBytes  int64      `gorm:"type:bigint;not null"`
+	StorageKey string     `gorm:"type:text;not null"`
+	Status     string     `gorm:"type:text;not null;default:pending;index:idx_uploader_status"`
+	UploadedAt *time.Time `gorm:"type:timestamptz"`
+	ExpiresAt  *time.Time `gorm:"type:timestamptz"`
+	CreatedAt  time.Time  `gorm:"type:timestamptz;not null;default:now()"`
 }
 
 func (Attachment) TableName() string {
@@ -485,11 +496,16 @@ func (m *Attachment) FromEntity(e *entity.Attachment) {
 
 	*m = Attachment{
 		ID:         parseUUID(e.ID),
-		MessageID:  parseUUID(e.MessageID),
+		MessageID:  parseUUIDPtr(e.MessageID),
+		UploaderID: parseUUID(e.UploaderID),
+		ChannelID:  parseUUID(e.ChannelID),
 		FileName:   e.FileName,
 		MimeType:   e.MimeType,
 		SizeBytes:  e.SizeBytes,
 		StorageKey: e.StorageKey,
+		Status:     string(e.Status),
+		UploadedAt: cloneTimePtr(e.UploadedAt),
+		ExpiresAt:  cloneTimePtr(e.ExpiresAt),
 		CreatedAt:  cloneTime(e.CreatedAt),
 	}
 }
@@ -501,11 +517,16 @@ func (m *Attachment) ToEntity() *entity.Attachment {
 
 	return &entity.Attachment{
 		ID:         uuidToString(m.ID),
-		MessageID:  uuidToString(m.MessageID),
+		MessageID:  uuidPtrToStringPtr(m.MessageID),
+		UploaderID: uuidToString(m.UploaderID),
+		ChannelID:  uuidToString(m.ChannelID),
 		FileName:   m.FileName,
 		MimeType:   m.MimeType,
 		SizeBytes:  m.SizeBytes,
 		StorageKey: m.StorageKey,
+		Status:     entity.AttachmentStatus(m.Status),
+		UploadedAt: cloneTimePtr(m.UploadedAt),
+		ExpiresAt:  cloneTimePtr(m.ExpiresAt),
 		CreatedAt:  cloneTime(m.CreatedAt),
 	}
 }
@@ -717,5 +738,63 @@ func (m *MessageLink) ToEntity() *entity.MessageLink {
 		SiteName:    cloneStringPtr(m.SiteName),
 		CardType:    cloneStringPtr(m.CardType),
 		CreatedAt:   cloneTime(m.CreatedAt),
+	}
+}
+
+// ThreadMetadata represents the thread_metadata table.
+type ThreadMetadata struct {
+	MessageID          uuid.UUID   `gorm:"type:uuid;primaryKey"`
+	ReplyCount         int         `gorm:"type:integer;not null;default:0"`
+	LastReplyAt        *time.Time  `gorm:"type:timestamptz;index"`
+	LastReplyUserID    *uuid.UUID  `gorm:"type:uuid"`
+	ParticipantUserIDs []uuid.UUID `gorm:"type:uuid[];not null;default:'{}'"`
+	CreatedAt          time.Time   `gorm:"type:timestamptz;not null;default:now()"`
+	UpdatedAt          time.Time   `gorm:"type:timestamptz;not null;default:now()"`
+}
+
+func (ThreadMetadata) TableName() string {
+	return "thread_metadata"
+}
+
+func (m *ThreadMetadata) FromEntity(e *entity.ThreadMetadata) {
+	if e == nil {
+		*m = ThreadMetadata{}
+		return
+	}
+
+	participantIDs := make([]uuid.UUID, 0, len(e.ParticipantUserIDs))
+	for _, id := range e.ParticipantUserIDs {
+		participantIDs = append(participantIDs, parseUUID(id))
+	}
+
+	*m = ThreadMetadata{
+		MessageID:          parseUUID(e.MessageID),
+		ReplyCount:         e.ReplyCount,
+		LastReplyAt:        cloneTimePtr(e.LastReplyAt),
+		LastReplyUserID:    parseUUIDPtr(e.LastReplyUserID),
+		ParticipantUserIDs: participantIDs,
+		CreatedAt:          cloneTime(e.CreatedAt),
+		UpdatedAt:          cloneTime(e.UpdatedAt),
+	}
+}
+
+func (m *ThreadMetadata) ToEntity() *entity.ThreadMetadata {
+	if m == nil {
+		return nil
+	}
+
+	participantIDs := make([]string, 0, len(m.ParticipantUserIDs))
+	for _, id := range m.ParticipantUserIDs {
+		participantIDs = append(participantIDs, uuidToString(id))
+	}
+
+	return &entity.ThreadMetadata{
+		MessageID:          uuidToString(m.MessageID),
+		ReplyCount:         m.ReplyCount,
+		LastReplyAt:        cloneTimePtr(m.LastReplyAt),
+		LastReplyUserID:    uuidPtrToStringPtr(m.LastReplyUserID),
+		ParticipantUserIDs: participantIDs,
+		CreatedAt:          cloneTime(m.CreatedAt),
+		UpdatedAt:          cloneTime(m.UpdatedAt),
 	}
 }

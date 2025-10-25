@@ -1,11 +1,13 @@
 package integration_test
 
 import (
+	"context"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	wscontroller "github.com/example/chat/internal/adapter/controller/websocket"
+	"github.com/example/chat/internal/domain/entity"
 	"github.com/example/chat/internal/infrastructure/config"
 	"github.com/example/chat/internal/registry"
 	"github.com/example/chat/internal/test/integration"
@@ -31,16 +33,50 @@ func TestWebSocketIntegration(t *testing.T) {
 	hub := wscontroller.NewHub()
 	go hub.Run()
 
-	// JWTサービスの作成
+	// JWTサービスとWorkspaceRepositoryの作成
 	jwtService := reg.NewJWTService()
+	workspaceRepo := reg.NewWorkspaceRepository()
+	userRepo := reg.NewUserRepository()
 
 	// Echoアプリケーションのセットアップ
 	e := echo.New()
-	e.GET("/ws", wscontroller.NewHandler(hub, jwtService))
+	e.GET("/ws", wscontroller.NewHandler(hub, jwtService, workspaceRepo))
+
+	// テスト用のユーザーとWorkspaceを作成
+	ctx := context.Background()
+	aliceUserID := "11111111-1111-1111-1111-111111111111"
+	testWorkspaceID := "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+
+	// ユーザーを作成
+	testUser := &entity.User{
+		ID:           aliceUserID,
+		Email:        "alice@example.com",
+		PasswordHash: "dummy-hash",
+		DisplayName:  "Alice Johnson",
+	}
+	err = userRepo.Create(ctx, testUser)
+	require.NoError(t, err)
+
+	// Workspaceを作成
+	testWorkspace := &entity.Workspace{
+		ID:        testWorkspaceID,
+		Name:      "Test Workspace",
+		CreatedBy: aliceUserID,
+	}
+	err = workspaceRepo.Create(ctx, testWorkspace)
+	require.NoError(t, err)
+
+	// ユーザーをWorkspaceに追加
+	member := &entity.WorkspaceMember{
+		WorkspaceID: testWorkspaceID,
+		UserID:      aliceUserID,
+		Role:        entity.WorkspaceRoleOwner,
+	}
+	err = workspaceRepo.AddMember(ctx, member)
+	require.NoError(t, err)
 
 	// テスト用のJWTトークンを生成
-	userID := "test-user-id"
-	accessToken, err := jwtService.GenerateToken(userID, time.Hour)
+	accessToken, err := jwtService.GenerateToken(aliceUserID, time.Hour)
 	require.NoError(t, err)
 
 	t.Run("WebSocket接続の確立", func(t *testing.T) {
@@ -49,7 +85,7 @@ func TestWebSocketIntegration(t *testing.T) {
 		defer server.Close()
 
 		// WebSocket URLの構築
-		wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=test-workspace-id&token=" + accessToken
+		wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=" + testWorkspaceID + "&token=" + accessToken
 
 		// WebSocket接続
 		conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
@@ -71,7 +107,21 @@ func TestWebSocketIntegration(t *testing.T) {
 		defer server.Close()
 
 		// 無効なトークンでWebSocket URLを構築
-		wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=test-workspace-id&token=invalid-token"
+		wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=" + testWorkspaceID + "&token=invalid-token"
+
+		// WebSocket接続（エラーが期待される）
+		_, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("所属していないWorkspaceへの接続", func(t *testing.T) {
+		// WebSocket接続のテスト
+		server := httptest.NewServer(e)
+		defer server.Close()
+
+		// 存在しないWorkspaceIDでWebSocket URLを構築
+		nonExistentWorkspaceID := "99999999-9999-9999-9999-999999999999"
+		wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=" + nonExistentWorkspaceID + "&token=" + accessToken
 
 		// WebSocket接続（エラーが期待される）
 		_, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
@@ -84,7 +134,7 @@ func TestWebSocketIntegration(t *testing.T) {
 		defer server.Close()
 
 		// WebSocket URLの構築
-		wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=test-workspace-id&token=" + accessToken
+		wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=" + testWorkspaceID + "&token=" + accessToken
 
 		// WebSocket接続
 		conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
@@ -117,7 +167,7 @@ func TestWebSocketIntegration(t *testing.T) {
 		// 複数のWebSocket接続を作成
 		connections := make([]*websocket.Conn, 3)
 		for i := 0; i < 3; i++ {
-			wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=test-workspace-id&token=" + accessToken
+			wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=" + testWorkspaceID + "&token=" + accessToken
 			conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 			require.NoError(t, err)
 			connections[i] = conn

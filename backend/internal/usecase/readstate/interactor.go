@@ -7,6 +7,7 @@ import (
 
 	"github.com/example/chat/internal/domain/entity"
 	domainrepository "github.com/example/chat/internal/domain/repository"
+	"github.com/example/chat/internal/domain/service"
 )
 
 var (
@@ -20,20 +21,23 @@ type ReadStateUseCase interface {
 }
 
 type readStateInteractor struct {
-	readStateRepo domainrepository.ReadStateRepository
-	channelRepo   domainrepository.ChannelRepository
-	workspaceRepo domainrepository.WorkspaceRepository
+	readStateRepo   domainrepository.ReadStateRepository
+	channelRepo     domainrepository.ChannelRepository
+	workspaceRepo   domainrepository.WorkspaceRepository
+	notificationSvc service.NotificationService
 }
 
 func NewReadStateInteractor(
 	readStateRepo domainrepository.ReadStateRepository,
 	channelRepo domainrepository.ChannelRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
+	notificationSvc service.NotificationService,
 ) ReadStateUseCase {
 	return &readStateInteractor{
-		readStateRepo: readStateRepo,
-		channelRepo:   channelRepo,
-		workspaceRepo: workspaceRepo,
+		readStateRepo:   readStateRepo,
+		channelRepo:     channelRepo,
+		workspaceRepo:   workspaceRepo,
+		notificationSvc: notificationSvc,
 	}
 }
 
@@ -65,6 +69,16 @@ func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateR
 
 	if err := i.readStateRepo.Upsert(ctx, readState); err != nil {
 		return fmt.Errorf("failed to update read state: %w", err)
+	}
+
+	// 未読数を取得してWebSocket通知を送信（nilチェックを追加）
+	if i.notificationSvc != nil {
+		count, err := i.readStateRepo.GetUnreadCount(ctx, channel.ID, input.UserID)
+		if err == nil {
+			i.notificationSvc.NotifyUnreadCount(channel.WorkspaceID, input.UserID, channel.ID, count)
+		} else {
+			fmt.Printf("Warning: failed to get unread count for notification: %v\n", err)
+		}
 	}
 
 	return nil

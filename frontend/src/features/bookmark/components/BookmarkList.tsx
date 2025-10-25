@@ -1,7 +1,7 @@
-import { useNavigate } from "@tanstack/react-router";
 
 import { Button, Text, Stack, ScrollArea, Group, Avatar } from "@mantine/core";
 import { IconBookmark, IconMessage } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 
 import { useBookmarks } from "../hooks/useBookmarks";
 
@@ -63,7 +63,7 @@ export const BookmarkList = () => {
         <Stack gap="xs">
           {bookmarks.bookmarks.map((bookmark) => (
             <Button
-              key={`${bookmark.userId}-${bookmark.messageId}`}
+              key={`${bookmark.userId}-${bookmark.message.id}`}
               variant="subtle"
               className="h-auto p-3 text-left justify-start"
               onClick={() => handleBookmarkClick(bookmark.message.channelId, bookmark.message.id)}

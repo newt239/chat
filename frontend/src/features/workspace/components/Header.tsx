@@ -9,8 +9,8 @@ import type { WorkspaceSummary } from "@/features/workspace/types";
 
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
 import { clearAuthAtom } from "@/lib/store/auth";
-import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/lib/store/workspace";
 import { setRightSidebarViewAtom } from "@/lib/store/ui";
+import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/lib/store/workspace";
 
 export const Header = () => {
   const { data: workspaces, isLoading } = useWorkspaces();

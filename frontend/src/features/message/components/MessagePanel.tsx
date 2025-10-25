@@ -4,19 +4,24 @@ import type { FormEvent } from "react";
 import { Card, Loader, Stack, Text, Textarea, ActionIcon } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
-import { useMessages, useSendMessage } from "../hooks/useMessage";
+import { useMessages, useSendMessage, useUpdateMessage, useDeleteMessage } from "../hooks/useMessage";
 import { useMessageInputMode } from "../hooks/useMessageInputMode";
 
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessageItem } from "./MessageItem";
 import { MessagePreview } from "./MessagePreview";
+import { ThreadSidePanel } from "./ThreadSidePanel";
 
+import { AttachmentList } from "@/features/attachment/components/AttachmentList";
+import { FileInput } from "@/features/attachment/components/FileInput";
+import { useFileUpload } from "@/features/attachment/hooks/useFileUpload";
 import { useChannels } from "@/features/channel/hooks/useChannel";
 import { LinkPreviewCard } from "@/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "@/features/link/hooks/useLinkPreview";
-import { toggleRightSidebarViewAtom } from "@/lib/store/ui";
+import { userAtom } from "@/lib/store/auth";
+import { rightSidebarViewAtom, setRightSidebarViewAtom, toggleRightSidebarViewAtom } from "@/lib/store/ui";
 
 type MessagePanelProps = {
   workspaceId: string | null;
@@ -24,16 +29,30 @@ type MessagePanelProps = {
 }
 
 export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
+  const currentUser = useAtomValue(userAtom);
   const { data: channels } = useChannels(workspaceId);
   const { data: messageResponse, isLoading, isError, error } = useMessages(channelId);
   const sendMessage = useSendMessage(channelId);
+  const updateMessage = useUpdateMessage(channelId);
+  const deleteMessage = useDeleteMessage(channelId);
   const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toggleRightSidebarView = useSetAtom(toggleRightSidebarViewAtom);
+  const setRightSidebarView = useSetAtom(setRightSidebarViewAtom);
+  const [rightSidebarView] = useAtom(rightSidebarViewAtom);
   const { mode, toggleMode, isEditMode } = useMessageInputMode();
   const linkPreview = useLinkPreview();
   const { previews, addPreview, removePreview, clearPreviews } = linkPreview;
+  const fileUpload = useFileUpload();
+  const {
+    pendingAttachments,
+    uploadFile,
+    removeAttachment,
+    clearAttachments,
+    getCompletedAttachmentIds,
+    isUploading,
+  } = fileUpload;
   // URL検知とリンクプレビューの処理
   const handleBodyChange = useCallback(
     (value: string) => {
@@ -117,15 +136,90 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     [workspaceId, channelId]
   );
 
-  const handleCreateThread = useCallback((messageId: string) => {
-    console.log("Create thread for message:", messageId);
-    // TODO: スレッド作成機能を実装
-  }, []);
+  const handleCreateThread = useCallback(
+    (messageId: string) => {
+      setRightSidebarView({ type: "thread", threadId: messageId });
+    },
+    [setRightSidebarView]
+  );
+
+  const handleOpenThread = useCallback(
+    (messageId: string) => {
+      setRightSidebarView({ type: "thread", threadId: messageId });
+    },
+    [setRightSidebarView]
+  );
+
+  const handleCloseThread = useCallback(() => {
+    setRightSidebarView({ type: "hidden" });
+  }, [setRightSidebarView]);
 
   const handleBookmark = useCallback((messageId: string) => {
     console.log("Bookmark message:", messageId);
     // TODO: ブックマーク機能を実装
   }, []);
+
+  const handleEdit = useCallback(
+    (messageId: string, currentBody: string) => {
+      updateMessage.mutate(
+        { messageId, body: currentBody },
+        {
+          onSuccess: () => {
+            notifications.show({
+              title: "更新しました",
+              message: "メッセージを更新しました",
+            });
+          },
+          onError: (err) => {
+            notifications.show({
+              title: "エラー",
+              message: err.message ?? "メッセージの更新に失敗しました",
+              color: "red",
+            });
+          },
+        }
+      );
+    },
+    [updateMessage]
+  );
+
+  const handleDelete = useCallback(
+    (messageId: string) => {
+      deleteMessage.mutate(
+        { messageId },
+        {
+          onSuccess: () => {
+            notifications.show({
+              title: "削除しました",
+              message: "メッセージを削除しました",
+            });
+          },
+          onError: (err) => {
+            notifications.show({
+              title: "エラー",
+              message: err.message ?? "メッセージの削除に失敗しました",
+              color: "red",
+            });
+          },
+        }
+      );
+    },
+    [deleteMessage]
+  );
+
+  const handleFileSelect = useCallback(
+    async (files: File[]) => {
+      if (!channelId) return;
+
+      for (const file of files) {
+        await uploadFile(file, { channelId });
+      }
+    },
+    [channelId, uploadFile]
+  );
+
+  const isThreadOpen = rightSidebarView.type === "thread";
+  const openThreadId = isThreadOpen ? rightSidebarView.threadId : null;
 
   if (workspaceId === null) {
     return (
@@ -145,15 +239,26 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
 
   const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    if (body.trim().length === 0) {
+    if (body.trim().length === 0 && pendingAttachments.length === 0) {
       return;
     }
+    if (isUploading) {
+      notifications.show({
+        title: "アップロード中",
+        message: "ファイルのアップロードが完了するまでお待ちください",
+        color: "yellow",
+      });
+      return;
+    }
+
+    const attachmentIds = getCompletedAttachmentIds();
     sendMessage.mutate(
-      { body: body.trim() },
+      { body: body.trim(), attachmentIds },
       {
         onSuccess: () => {
           setBody("");
           clearPreviews();
+          clearAttachments();
         },
       }
     );
@@ -207,10 +312,14 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
                   <MessageItem
                     key={message.id}
                     message={message}
+                    currentUserId={currentUser?.id ?? null}
                     dateTimeFormatter={dateTimeFormatter}
                     onCopyLink={handleCopyLink}
                     onCreateThread={handleCreateThread}
                     onBookmark={handleBookmark}
+                    onOpenThread={handleOpenThread}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                   />
                 ))}
                 <div ref={messagesEndRef} />
@@ -228,14 +337,19 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
 
       <Card withBorder padding="lg" radius="md" className="shrink-0">
         <form onSubmit={handleSubmit}>
-          <MessageInputToolbar
-            mode={mode}
-            onToggleMode={toggleMode}
-            onSubmit={() => handleSubmit()}
-            disabled={body.trim().length === 0}
-            loading={sendMessage.isPending}
-            textareaRef={textareaRef}
-          />
+          <div className="flex items-center gap-2">
+            <FileInput onFileSelect={handleFileSelect} disabled={sendMessage.isPending || isUploading} />
+            <div className="flex-1">
+              <MessageInputToolbar
+                mode={mode}
+                onToggleMode={toggleMode}
+                onSubmit={() => handleSubmit()}
+                disabled={(body.trim().length === 0 && pendingAttachments.length === 0) || isUploading}
+                loading={sendMessage.isPending}
+                textareaRef={textareaRef}
+              />
+            </div>
+          </div>
           {isEditMode ? (
             <Textarea
               ref={textareaRef}
@@ -249,6 +363,9 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
           ) : (
             <MessagePreview content={body} />
           )}
+
+          {/* 添付ファイル一覧 */}
+          <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
 
           {/* リンクプレビューを表示 */}
           {previews.length > 0 && (
@@ -270,6 +387,17 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
           )}
         </form>
       </Card>
+
+      {/* スレッドサイドパネル */}
+      {workspaceId && channelId && (
+        <ThreadSidePanel
+          opened={isThreadOpen}
+          onClose={handleCloseThread}
+          messageId={openThreadId}
+          workspaceId={workspaceId}
+          channelId={channelId}
+        />
+      )}
     </div>
   );
 };

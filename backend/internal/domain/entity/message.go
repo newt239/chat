@@ -11,6 +11,7 @@ type Message struct {
 	CreatedAt time.Time
 	EditedAt  *time.Time
 	DeletedAt *time.Time
+	DeletedBy *string
 }
 
 type MessageReaction struct {
@@ -18,4 +19,14 @@ type MessageReaction struct {
 	UserID    string
 	Emoji     string
 	CreatedAt time.Time
+}
+
+type ThreadMetadata struct {
+	MessageID          string
+	ReplyCount         int
+	LastReplyAt        *time.Time
+	LastReplyUserID    *string
+	ParticipantUserIDs []string
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }

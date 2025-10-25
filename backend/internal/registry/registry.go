@@ -1,6 +1,8 @@
 package registry
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 
 	"github.com/example/chat/internal/adapter/controller/http"
@@ -8,13 +10,18 @@ import (
 	"github.com/example/chat/internal/adapter/controller/websocket"
 	"github.com/example/chat/internal/adapter/gateway/persistence"
 	"github.com/example/chat/internal/domain/repository"
+	"github.com/example/chat/internal/domain/service"
 	"github.com/example/chat/internal/infrastructure/auth"
 	"github.com/example/chat/internal/infrastructure/config"
+	"github.com/example/chat/internal/infrastructure/notification"
 	infrarepository "github.com/example/chat/internal/infrastructure/repository"
+	"github.com/example/chat/internal/infrastructure/storage/wasabi"
 	interfacehandler "github.com/example/chat/internal/interface/http/handler"
+	attachmentuc "github.com/example/chat/internal/usecase/attachment"
 	authuc "github.com/example/chat/internal/usecase/auth"
 	bookmarkuc "github.com/example/chat/internal/usecase/bookmark"
 	channeluc "github.com/example/chat/internal/usecase/channel"
+	channelmemberuc "github.com/example/chat/internal/usecase/channelmember"
 	linkuc "github.com/example/chat/internal/usecase/link"
 	messageuc "github.com/example/chat/internal/usecase/message"
 	reactionuc "github.com/example/chat/internal/usecase/reaction"
@@ -27,12 +34,14 @@ import (
 type Registry struct {
 	db     *gorm.DB
 	config *config.Config
+	hub    *websocket.Hub
 }
 
 func NewRegistry(db *gorm.DB, cfg *config.Config) *Registry {
 	return &Registry{
 		db:     db,
 		config: cfg,
+		hub:    websocket.NewHub(),
 	}
 }
 
@@ -43,6 +52,10 @@ func (r *Registry) NewJWTService() authuc.JWTService {
 
 func (r *Registry) NewPasswordService() authuc.PasswordService {
 	return auth.NewPasswordService()
+}
+
+func (r *Registry) NewNotificationService() service.NotificationService {
+	return notification.NewWebSocketNotificationService(r.hub)
 }
 
 // Repositories
@@ -90,6 +103,14 @@ func (r *Registry) NewBookmarkRepository() repository.BookmarkRepository {
 	return infrarepository.NewBookmarkRepository(r.db)
 }
 
+func (r *Registry) NewThreadRepository() repository.ThreadRepository {
+	return persistence.NewThreadRepository(r.db)
+}
+
+func (r *Registry) NewAttachmentRepository() repository.AttachmentRepository {
+	return persistence.NewAttachmentRepository(r.db)
+}
+
 // Use Cases
 func (r *Registry) NewAuthUseCase() authuc.AuthUseCase {
 	return authuc.NewAuthInteractor(
@@ -124,6 +145,9 @@ func (r *Registry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.NewMessageUserMentionRepository(),
 		r.NewMessageGroupMentionRepository(),
 		r.NewMessageLinkRepository(),
+		r.NewThreadRepository(),
+		r.NewAttachmentRepository(),
+		r.NewNotificationService(),
 	)
 }
 
@@ -132,6 +156,7 @@ func (r *Registry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
 		r.NewReadStateRepository(),
 		r.NewChannelRepository(),
 		r.NewWorkspaceRepository(),
+		r.NewNotificationService(),
 	)
 }
 
@@ -141,6 +166,7 @@ func (r *Registry) NewReactionUseCase() reactionuc.ReactionUseCase {
 		r.NewChannelRepository(),
 		r.NewWorkspaceRepository(),
 		r.NewUserRepository(),
+		r.NewNotificationService(),
 	)
 }
 
@@ -162,6 +188,31 @@ func (r *Registry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
 		r.NewMessageRepository(),
 		r.NewChannelRepository(),
 		r.NewWorkspaceRepository(),
+	)
+}
+
+func (r *Registry) NewAttachmentUseCase() *attachmentuc.Interactor {
+	wasabiCfg := wasabi.NewConfig()
+	// TODO: 環境変数から設定を読み込む
+	wasabiCfg.Endpoint = r.config.Wasabi.Endpoint
+	wasabiCfg.Region = r.config.Wasabi.Region
+	wasabiCfg.AccessKeyID = r.config.Wasabi.AccessKeyID
+	wasabiCfg.SecretAccessKey = r.config.Wasabi.SecretAccessKey
+	wasabiCfg.BucketName = r.config.Wasabi.BucketName
+
+	wasabiClient, err := wasabi.NewClient(context.Background(), wasabiCfg)
+	if err != nil {
+		panic(err) // TODO: エラーハンドリングを改善
+	}
+
+	presignService := wasabi.NewPresignService(wasabiClient)
+
+	return attachmentuc.NewInteractor(
+		r.NewAttachmentRepository(),
+		r.NewChannelRepository(),
+		r.NewMessageRepository(),
+		presignService,
+		wasabiCfg,
 	)
 }
 
@@ -202,20 +253,25 @@ func (r *Registry) NewBookmarkHandler() *interfacehandler.BookmarkHandler {
 	return interfacehandler.NewBookmarkHandler(r.NewBookmarkUseCase())
 }
 
+func (r *Registry) NewAttachmentHandler() *interfacehandler.AttachmentHandler {
+	return interfacehandler.NewAttachmentHandler(r.NewAttachmentUseCase())
+}
+
 // Router
 func (r *Registry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
-		JWTService:       r.NewJWTService(),
-		AllowedOrigins:   r.config.CORS.AllowedOrigins,
-		AuthHandler:      r.NewAuthHandler(),
-		WorkspaceHandler: r.NewWorkspaceHandler(),
-		ChannelHandler:   r.NewChannelHandler(),
-		MessageHandler:   r.NewMessageHandler(),
-		ReadStateHandler: r.NewReadStateHandler(),
-		ReactionHandler:  r.NewReactionHandler(),
-		UserGroupHandler: r.NewUserGroupHandler(),
-		LinkHandler:      r.NewLinkHandler(),
-		BookmarkHandler:  r.NewBookmarkHandler(),
+		JWTService:        r.NewJWTService(),
+		AllowedOrigins:    r.config.CORS.AllowedOrigins,
+		AuthHandler:       r.NewAuthHandler(),
+		WorkspaceHandler:  r.NewWorkspaceHandler(),
+		ChannelHandler:    r.NewChannelHandler(),
+		MessageHandler:    r.NewMessageHandler(),
+		ReadStateHandler:  r.NewReadStateHandler(),
+		ReactionHandler:   r.NewReactionHandler(),
+		UserGroupHandler:  r.NewUserGroupHandler(),
+		LinkHandler:       r.NewLinkHandler(),
+		BookmarkHandler:   r.NewBookmarkHandler(),
+		AttachmentHandler: r.NewAttachmentHandler(),
 	}
 
 	return http.NewRouter(routerConfig)
@@ -223,5 +279,5 @@ func (r *Registry) NewRouter() *echo.Echo {
 
 // WebSocket Hub
 func (r *Registry) NewWebSocketHub() *websocket.Hub {
-	return websocket.NewHub()
+	return r.hub
 }

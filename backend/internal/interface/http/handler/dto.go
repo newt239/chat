@@ -140,8 +140,9 @@ func (r *CreateChannelRequest) Validate() error {
 }
 
 type CreateMessageRequest struct {
-	Body     string  `json:"body"`
-	ParentID *string `json:"parentId"`
+	Body          string   `json:"body"`
+	ParentID      *string  `json:"parentId"`
+	AttachmentIDs []string `json:"attachmentIds"`
 }
 
 func (r *CreateMessageRequest) Validate() error {
@@ -171,4 +172,23 @@ func (r *AddReactionRequest) Validate() error {
 		return errors.New("emoji is required")
 	}
 	return nil
+}
+
+type InviteMemberRequest struct {
+	UserID string  `json:"userId"`
+	Role   *string `json:"role"`
+}
+
+func (r *InviteMemberRequest) Validate() error {
+	if strings.TrimSpace(r.UserID) == "" {
+		return errors.New("userId is required")
+	}
+	if r.Role != nil && (*r.Role != "member" && *r.Role != "admin") {
+		return errors.New("role must be either 'member' or 'admin'")
+	}
+	return nil
+}
+
+type SuccessResponse struct {
+	Success bool `json:"success"`
 }

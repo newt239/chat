@@ -1,1 +1,7 @@
-export type { MessageWithUser, MessagesResponse } from "./schemas";
+export type {
+  MessageWithUser,
+  MessagesResponse,
+  ThreadMetadata,
+  ThreadRepliesResponse,
+  MessageWithThread,
+} from "./schemas";

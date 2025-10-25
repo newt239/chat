@@ -8,7 +8,7 @@ export const useBookmarks = () => {
     queryFn: async () => {
       const response = await api.GET("/api/bookmarks");
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(response.error.error);
       }
       return response.data;
     },
@@ -24,7 +24,7 @@ export const useAddBookmark = () => {
         params: { path: { messageId } },
       });
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(response.error.error);
       }
       return response.data;
     },
@@ -43,7 +43,7 @@ export const useRemoveBookmark = () => {
         params: { path: { messageId } },
       });
       if (response.error) {
-        throw new Error(response.error.message);
+        throw new Error(response.error.error);
       }
       return response.data;
     },

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 
 import type { MentionSuggestion } from "../types";
 import type { components } from "@/lib/api/schema";
+
 import { api } from "@/lib/api/client";
 
 type MemberInfo = components["schemas"]["MemberInfo"];

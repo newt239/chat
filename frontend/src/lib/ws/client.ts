@@ -5,6 +5,8 @@ type WebSocketEventType =
   | "typing"
   | "update_read_state"
   | "new_message"
+  | "message_updated"
+  | "message_deleted"
   | "unread_count"
   | "ack"
   | "error";
@@ -18,19 +20,25 @@ type EventHandler = (payload: unknown) => void;
 
 export class WebSocketClient {
   private ws: WebSocket | null = null;
-  private url: string;
+  private workspaceId: string;
+  private accessToken: string;
   private eventHandlers: Map<WebSocketEventType, EventHandler[]> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
 
   constructor(workspaceId: string, accessToken: string) {
-    const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
-    this.url = `${wsUrl}/ws?workspaceId=${workspaceId}&token=${accessToken}`;
+    this.workspaceId = workspaceId;
+    this.accessToken = accessToken;
   }
 
   connect() {
-    this.ws = new WebSocket(this.url);
+    const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+    // WebSocketはブラウザAPIのためAuthorizationヘッダーを直接設定できない
+    // クエリパラメータでトークンとWorkspaceIDを送信
+    const url = `${wsUrl}/ws?workspaceId=${this.workspaceId}&token=${this.accessToken}`;
+
+    this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
       this.reconnectAttempts = 0;

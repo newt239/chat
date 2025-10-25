@@ -207,12 +207,31 @@ components:
           type: string
           format: date-time
           nullable: true
+        isDeleted:
+          type: boolean
+        deletedBy:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            displayName:
+              type: string
+            avatarUrl:
+              type: string
+              nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attachment"
       required:
         - id
         - channelId
         - userId
         - body
         - createdAt
+        - isDeleted
 
     CreateMessageRequest:
       type: object
@@ -223,6 +242,21 @@ components:
         parentId:
           type: string
           format: uuid
+        attachmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - body
+
+    UpdateMessageRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 10000
       required:
         - body
 
@@ -266,10 +300,14 @@ components:
           type: string
         sizeBytes:
           type: integer
+        channelId:
+          type: string
+          format: uuid
       required:
         - fileName
         - contentType
         - sizeBytes
+        - channelId
 
     PresignResponse:
       type: object
@@ -589,6 +627,60 @@ components:
             $ref: "#/components/schemas/BookmarkWithMessage"
       required:
         - bookmarks
+
+    ThreadMetadata:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        replyCount:
+          type: integer
+          minimum: 0
+        lastReplyAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastReplyUser:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            displayName:
+              type: string
+            avatarUrl:
+              type: string
+              nullable: true
+          required:
+            - id
+            - displayName
+        participantUserIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - messageId
+        - replyCount
+        - participantUserIds
+
+    ThreadRepliesResponse:
+      type: object
+      properties:
+        parentMessage:
+          $ref: "#/components/schemas/Message"
+        replies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        hasMore:
+          type: boolean
+      required:
+        - parentMessage
+        - replies
+        - hasMore
 
 paths:
   /healthz:
@@ -1063,6 +1155,72 @@ paths:
                 $ref: "#/components/schemas/Error"
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/channels/{channelId}/messages/with-threads:
+    get:
+      operationId: listMessagesWithThread
+      summary: List messages in channel with thread metadata
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: until
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: List of messages with thread metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Message"
+                        - type: object
+                          properties:
+                            threadMetadata:
+                              $ref: "#/components/schemas/ThreadMetadata"
+                              nullable: true
+                  hasMore:
+                    type: boolean
+                required:
+                  - messages
+                  - hasMore
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Channel not found
           content:
             application/json:
               schema:
@@ -1708,6 +1866,184 @@ paths:
                 $ref: "#/components/schemas/Error"
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/messages/{messageId}/thread:
+    get:
+      operationId: getThreadReplies
+      summary: Get thread replies for a message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Thread replies retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreadRepliesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/messages/{messageId}/thread/metadata:
+    get:
+      operationId: getThreadMetadata
+      summary: Get thread metadata for a message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Thread metadata retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreadMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Message or metadata not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/messages/{messageId}:
+    patch:
+      operationId: updateMessage
+      summary: Update a message
+      description: Updates a message body (author or admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMessageRequest"
+      responses:
+        "200":
+          description: Message updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: Bad request or message already deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - not message author or admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      operationId: deleteMessage
+      summary: Delete a message
+      description: Deletes a message (author or admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Message deleted successfully
+        "400":
+          description: Bad request or message already deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - not message author or admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
           content:
             application/json:
               schema:

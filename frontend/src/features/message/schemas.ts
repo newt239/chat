@@ -35,6 +35,15 @@ const reactionInfoSchema = z.object({
   createdAt: z.string(),
 });
 
+const attachmentSchema = z.object({
+  id: z.string(),
+  messageId: z.string(),
+  fileName: z.string(),
+  mimeType: z.string(),
+  sizeBytes: z.number(),
+  createdAt: z.string(),
+});
+
 const baseMessageSchema = z
   .object({
     id: z.string(),
@@ -46,9 +55,12 @@ const baseMessageSchema = z
     groups: z.array(groupMentionSchema),
     links: z.array(linkInfoSchema),
     reactions: z.array(reactionInfoSchema),
+    attachments: z.array(attachmentSchema).optional(),
     createdAt: z.string(),
     editedAt: z.string().nullable().optional(),
     deletedAt: z.string().nullable().optional(),
+    isDeleted: z.boolean(),
+    deletedBy: messageUserSchema.nullable().optional(),
   })
   .passthrough();
 
@@ -61,6 +73,33 @@ export const messagesResponseSchema = z.object({
   hasMore: z.boolean(),
 });
 
+// スレッドメタデータスキーマ
+export const threadMetadataSchema = z.object({
+  messageId: z.string(),
+  replyCount: z.number(),
+  lastReplyAt: z.string().nullable().optional(),
+  lastReplyUser: messageUserSchema.nullable().optional(),
+  participantUserIds: z.array(z.string()),
+});
+
+// スレッド返信一覧レスポンススキーマ
+export const threadRepliesResponseSchema = z.object({
+  parentMessage: messageWithUserSchema,
+  replies: z.array(messageWithUserSchema),
+  hasMore: z.boolean(),
+});
+
+// スレッドメタデータ付きメッセージスキーマ
+export const messageWithThreadSchema = messageWithUserSchema.extend({
+  threadMetadata: threadMetadataSchema.nullable().optional(),
+});
+
 export type MessageWithUser = z.infer<typeof messageWithUserSchema>;
 
 export type MessagesResponse = z.infer<typeof messagesResponseSchema>;
+
+export type ThreadMetadata = z.infer<typeof threadMetadataSchema>;
+
+export type ThreadRepliesResponse = z.infer<typeof threadRepliesResponseSchema>;
+
+export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;

@@ -4,27 +4,40 @@ import { Avatar, Text } from "@mantine/core";
 
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
+import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 
-import type { MessageWithUser } from "../types";
+import type { MessageWithUser, ThreadMetadata } from "../types";
 
+import { MessageAttachment } from "@/features/attachment/components/MessageAttachment";
 import { ReactionList } from "@/features/reaction/components/ReactionList";
 
 type MessageItemProps = {
   message: MessageWithUser;
   dateTimeFormatter: Intl.DateTimeFormat;
+  currentUserId: string | null;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onBookmark: (messageId: string) => void;
+  onEdit?: (messageId: string, currentBody: string) => void;
+  onDelete?: (messageId: string) => void;
+  threadMetadata?: ThreadMetadata | null;
+  onOpenThread?: (messageId: string) => void;
 }
 
 export const MessageItem = ({
   message,
   dateTimeFormatter,
+  currentUserId,
   onCopyLink,
   onCreateThread,
   onBookmark,
+  onEdit,
+  onDelete,
+  threadMetadata,
+  onOpenThread,
 }: MessageItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const isAuthor = message.userId === currentUserId;
 
   return (
     <div
@@ -58,11 +71,35 @@ export const MessageItem = ({
 
           {/* メッセージ本文 */}
           <div className="mt-1">
-            <MessageContent message={message} />
+            {message.isDeleted ? (
+              <Text size="sm" c="dimmed" fs="italic">
+                このメッセージは削除されました
+                {message.deletedBy && ` (削除者: ${message.deletedBy.displayName})`}
+              </Text>
+            ) : (
+              <MessageContent message={message} />
+            )}
           </div>
+
+          {/* 添付ファイル */}
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {message.attachments.map((attachment) => (
+                <MessageAttachment key={attachment.id} attachment={attachment} />
+              ))}
+            </div>
+          )}
 
           {/* リアクション */}
           <ReactionList message={message} />
+
+          {/* スレッドメタデータプレビュー */}
+          {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (
+            <ThreadMetadataPreview
+              metadata={threadMetadata}
+              onClick={() => onOpenThread(message.id)}
+            />
+          )}
         </div>
       </div>
 
@@ -70,9 +107,13 @@ export const MessageItem = ({
       {isHovered && (
         <MessageActions
           messageId={message.id}
+          isAuthor={isAuthor}
+          isDeleted={message.isDeleted}
           onCopyLink={onCopyLink}
           onCreateThread={onCreateThread}
           onBookmark={onBookmark}
+          onEdit={onEdit ? (id) => onEdit(id, message.body) : undefined}
+          onDelete={onDelete}
         />
       )}
     </div>

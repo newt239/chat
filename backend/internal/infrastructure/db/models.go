@@ -19,4 +19,5 @@ type (
 	MessageUserMention  = database.MessageUserMention
 	MessageGroupMention = database.MessageGroupMention
 	MessageLink         = database.MessageLink
+	ThreadMetadata      = database.ThreadMetadata
 )

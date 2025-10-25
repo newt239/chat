@@ -96,11 +96,12 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, fmt.Errorf("failed to create channel: %w", err)
 	}
 
-	// Add creator as member if channel is private
+	// Add creator as admin member if channel is private
 	if channel.IsPrivate {
 		member := &entity.ChannelMember{
 			ChannelID: channel.ID,
 			UserID:    input.UserID,
+			Role:      entity.ChannelRoleAdmin,
 			JoinedAt:  time.Now(),
 		}
 		if err := i.channelRepo.AddMember(ctx, member); err != nil {
