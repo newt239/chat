@@ -2,14 +2,17 @@ package message
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/infrastructure/logger"
+	"go.uber.org/zap"
 )
 
 var (
@@ -25,6 +28,157 @@ const (
 	defaultMessageLimit = 50
 	maxMessageLimit     = 100
 )
+
+// RelatedData はメッセージに関連するデータをまとめた構造体です
+type RelatedData struct {
+	UserMentions  []*entity.MessageUserMention
+	GroupMentions []*entity.MessageGroupMention
+	Links         []*entity.MessageLink
+	Reactions     map[string][]*entity.MessageReaction
+	Attachments   map[string][]*entity.Attachment
+}
+
+// MessageOutputAssembler はMessageOutputの構築を担当するコンポーネントです
+type MessageOutputAssembler struct{}
+
+// NewMessageOutputAssembler は新しいMessageOutputAssemblerを作成します
+func NewMessageOutputAssembler() *MessageOutputAssembler {
+	return &MessageOutputAssembler{}
+}
+
+// AssembleMessageOutput はメッセージと関連データからMessageOutputを構築します
+func (a *MessageOutputAssembler) AssembleMessageOutput(
+	message *entity.Message,
+	user *entity.User,
+	userMentions []*entity.MessageUserMention,
+	groupMentions []*entity.MessageGroupMention,
+	links []*entity.MessageLink,
+	reactions []*entity.MessageReaction,
+	attachments []*entity.Attachment,
+	groups map[string]*entity.UserGroup,
+	userMap map[string]*entity.User,
+) MessageOutput {
+	userInfo := a.buildUserInfo(user)
+
+	return MessageOutput{
+		ID:          message.ID,
+		ChannelID:   message.ChannelID,
+		UserID:      message.UserID,
+		User:        userInfo,
+		ParentID:    message.ParentID,
+		Body:        message.Body,
+		Mentions:    a.buildUserMentions(userMentions),
+		Groups:      a.buildGroupMentions(groupMentions, groups),
+		Links:       a.buildLinks(links),
+		Reactions:   a.buildReactions(reactions, userMap),
+		Attachments: a.buildAttachments(attachments),
+		CreatedAt:   message.CreatedAt,
+		EditedAt:    message.EditedAt,
+		DeletedAt:   message.DeletedAt,
+	}
+}
+
+// buildUserInfo はユーザー情報を構築します
+func (a *MessageOutputAssembler) buildUserInfo(user *entity.User) UserInfo {
+	if user == nil {
+		return UserInfo{
+			ID:          "",
+			DisplayName: "Unknown User",
+			AvatarURL:   nil,
+		}
+	}
+
+	return UserInfo{
+		ID:          user.ID,
+		DisplayName: user.DisplayName,
+		AvatarURL:   user.AvatarURL,
+	}
+}
+
+// buildUserMentions はユーザーメンションを構築します
+func (a *MessageOutputAssembler) buildUserMentions(userMentions []*entity.MessageUserMention) []UserMention {
+	mentions := make([]UserMention, 0, len(userMentions))
+	for _, mention := range userMentions {
+		mentions = append(mentions, UserMention{
+			UserID:      mention.UserID,
+			DisplayName: "", // 必要に応じてユーザー情報を取得
+		})
+	}
+	return mentions
+}
+
+// buildGroupMentions はグループメンションを構築します
+func (a *MessageOutputAssembler) buildGroupMentions(groupMentions []*entity.MessageGroupMention, groups map[string]*entity.UserGroup) []GroupMention {
+	groupMentionsOutput := make([]GroupMention, 0, len(groupMentions))
+	for _, mention := range groupMentions {
+		groupName := ""
+		if group, exists := groups[mention.GroupID]; exists {
+			groupName = group.Name
+		}
+		groupMentionsOutput = append(groupMentionsOutput, GroupMention{
+			GroupID: mention.GroupID,
+			Name:    groupName,
+		})
+	}
+	return groupMentionsOutput
+}
+
+// buildLinks はリンク情報を構築します
+func (a *MessageOutputAssembler) buildLinks(links []*entity.MessageLink) []LinkInfo {
+	linksOutput := make([]LinkInfo, 0, len(links))
+	for _, link := range links {
+		linksOutput = append(linksOutput, LinkInfo{
+			ID:          link.ID,
+			URL:         link.URL,
+			Title:       link.Title,
+			Description: link.Description,
+			ImageURL:    link.ImageURL,
+			SiteName:    link.SiteName,
+			CardType:    link.CardType,
+		})
+	}
+	return linksOutput
+}
+
+// buildReactions はリアクション情報を構築します
+func (a *MessageOutputAssembler) buildReactions(reactions []*entity.MessageReaction, userMap map[string]*entity.User) []ReactionInfo {
+	reactionsOutput := make([]ReactionInfo, 0, len(reactions))
+	for _, reaction := range reactions {
+		reactionUser, exists := userMap[reaction.UserID]
+		reactionUserInfo := UserInfo{
+			ID:          reaction.UserID,
+			DisplayName: "Unknown User",
+			AvatarURL:   nil,
+		}
+		if exists && reactionUser != nil {
+			reactionUserInfo = UserInfo{
+				ID:          reactionUser.ID,
+				DisplayName: reactionUser.DisplayName,
+				AvatarURL:   reactionUser.AvatarURL,
+			}
+		}
+		reactionsOutput = append(reactionsOutput, ReactionInfo{
+			User:      reactionUserInfo,
+			Emoji:     reaction.Emoji,
+			CreatedAt: reaction.CreatedAt,
+		})
+	}
+	return reactionsOutput
+}
+
+// buildAttachments は添付ファイル情報を構築します
+func (a *MessageOutputAssembler) buildAttachments(attachments []*entity.Attachment) []AttachmentInfo {
+	attachmentsOutput := make([]AttachmentInfo, 0, len(attachments))
+	for _, attachment := range attachments {
+		attachmentsOutput = append(attachmentsOutput, AttachmentInfo{
+			ID:        attachment.ID,
+			FileName:  attachment.FileName,
+			MimeType:  attachment.MimeType,
+			SizeBytes: attachment.SizeBytes,
+		})
+	}
+	return attachmentsOutput
+}
 
 type MessageUseCase interface {
 	ListMessages(ctx context.Context, input ListMessagesInput) (*ListMessagesOutput, error)
@@ -52,6 +206,7 @@ type messageInteractor struct {
 	notificationSvc       service.NotificationService
 	mentionService        service.MentionService
 	linkProcessingService service.LinkProcessingService
+	assembler             *MessageOutputAssembler
 }
 
 func NewMessageInteractor(
@@ -87,6 +242,7 @@ func NewMessageInteractor(
 		notificationSvc:       notificationSvc,
 		mentionService:        mentionService,
 		linkProcessingService: linkProcessingService,
+		assembler:             NewMessageOutputAssembler(),
 	}
 }
 
@@ -96,34 +252,73 @@ func (i *messageInteractor) ListMessages(ctx context.Context, input ListMessages
 		return nil, err
 	}
 
+	// リミット正規化
 	limit := input.Limit
 	if limit <= 0 {
 		limit = defaultMessageLimit
-	}
-	if limit > maxMessageLimit {
+	} else if limit > maxMessageLimit {
 		limit = maxMessageLimit
 	}
 
-	fetchLimit := limit + 1
-
-	messages, err := i.messageRepo.FindByChannelID(ctx, channel.ID, fetchLimit, input.Since, input.Until)
+	messages, err := i.messageRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch messages: %w", err)
 	}
 
+	// メッセージリストの準備（リミット処理とID抽出）
+	messageIDs, hasMore := i.prepareMessageList(messages, limit)
+
+	// 関連データを一括取得
+	relatedData, err := i.fetchRelatedData(ctx, messageIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// ユーザー情報を取得
+	userMap, err := i.fetchUserMap(ctx, messages, relatedData.Reactions)
+	if err != nil {
+		return nil, err
+	}
+
+	// グループ情報を取得
+	groups, err := i.fetchGroups(ctx, relatedData.GroupMentions)
+	if err != nil {
+		return nil, err
+	}
+
+	// メッセージ出力を構築
+	outputs := i.buildMessageOutputs(messages, relatedData, userMap, groups)
+
+	return &ListMessagesOutput{Messages: outputs, HasMore: hasMore}, nil
+}
+
+// prepareMessageList はメッセージリストを準備し、リミット処理とID抽出を行います
+func (i *messageInteractor) prepareMessageList(messages []*entity.Message, limit int) ([]string, bool) {
+	// リミット正規化
+	if limit <= 0 {
+		limit = defaultMessageLimit
+	} else if limit > maxMessageLimit {
+		limit = maxMessageLimit
+	}
+
+	// メッセージ切り詰め
 	hasMore := false
 	if len(messages) > limit {
 		hasMore = true
 		messages = messages[:limit]
 	}
 
-	// メッセージIDを収集
+	// メッセージID抽出
 	messageIDs := make([]string, len(messages))
-	for i, msg := range messages {
-		messageIDs[i] = msg.ID
+	for idx, msg := range messages {
+		messageIDs[idx] = msg.ID
 	}
 
-	// メンション、リンク、リアクションを一括取得
+	return messageIDs, hasMore
+}
+
+// fetchRelatedData はメッセージに関連するデータを一括取得します
+func (i *messageInteractor) fetchRelatedData(ctx context.Context, messageIDs []string) (*RelatedData, error) {
 	userMentions, err := i.userMentionRepo.FindByMessageIDs(ctx, messageIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch user mentions: %w", err)
@@ -149,16 +344,29 @@ func (i *messageInteractor) ListMessages(ctx context.Context, input ListMessages
 		return nil, fmt.Errorf("failed to fetch attachments: %w", err)
 	}
 
-	// ユーザーIDを収集（メッセージ作成者とリアクションユーザー）
-	userIDs := make([]string, 0, len(messages))
+	return &RelatedData{
+		UserMentions:  userMentions,
+		GroupMentions: groupMentions,
+		Links:         links,
+		Reactions:     reactions,
+		Attachments:   attachments,
+	}, nil
+}
+
+// fetchUserMap はユーザー情報を取得してマップに格納します
+func (i *messageInteractor) fetchUserMap(ctx context.Context, messages []*entity.Message, reactions map[string][]*entity.MessageReaction) (map[string]*entity.User, error) {
+	userIDs := make([]string, 0)
 	userIDSet := make(map[string]bool)
+
+	// メッセージ作成者のユーザーIDを収集
 	for _, msg := range messages {
 		if !userIDSet[msg.UserID] {
 			userIDs = append(userIDs, msg.UserID)
 			userIDSet[msg.UserID] = true
 		}
 	}
-	// リアクションユーザーIDも追加
+
+	// リアクションユーザーIDも収集
 	for _, reactionList := range reactions {
 		for _, reaction := range reactionList {
 			if !userIDSet[reaction.UserID] {
@@ -180,25 +388,14 @@ func (i *messageInteractor) ListMessages(ctx context.Context, input ListMessages
 		userMap[user.ID] = user
 	}
 
-	// メンション、リンク、リアクションをメッセージIDでグループ化
-	userMentionsByMessage := make(map[string][]*entity.MessageUserMention)
-	for _, mention := range userMentions {
-		userMentionsByMessage[mention.MessageID] = append(userMentionsByMessage[mention.MessageID], mention)
-	}
+	return userMap, nil
+}
 
-	groupMentionsByMessage := make(map[string][]*entity.MessageGroupMention)
-	for _, mention := range groupMentions {
-		groupMentionsByMessage[mention.MessageID] = append(groupMentionsByMessage[mention.MessageID], mention)
-	}
-
-	linksByMessage := make(map[string][]*entity.MessageLink)
-	for _, link := range links {
-		linksByMessage[link.MessageID] = append(linksByMessage[link.MessageID], link)
-	}
-
-	// グループ情報を取得（グループメンションがある場合）
+// fetchGroups はグループ情報を取得します
+func (i *messageInteractor) fetchGroups(ctx context.Context, groupMentions []*entity.MessageGroupMention) (map[string]*entity.UserGroup, error) {
 	groupIDs := make([]string, 0)
 	groupIDSet := make(map[string]bool)
+
 	for _, mention := range groupMentions {
 		if !groupIDSet[mention.GroupID] {
 			groupIDs = append(groupIDs, mention.GroupID)
@@ -207,33 +404,67 @@ func (i *messageInteractor) ListMessages(ctx context.Context, input ListMessages
 	}
 
 	groups := make(map[string]*entity.UserGroup)
-	if len(groupIDs) > 0 {
-		// グループ情報を一括取得（簡略化のため、個別に取得）
-		for _, groupID := range groupIDs {
-			group, err := i.userGroupRepo.FindByID(ctx, groupID)
-			if err == nil && group != nil {
-				groups[groupID] = group
-			}
+	for _, groupID := range groupIDs {
+		group, err := i.userGroupRepo.FindByID(ctx, groupID)
+		if err == nil && group != nil {
+			groups[groupID] = group
 		}
 	}
+
+	return groups, nil
+}
+
+// buildMessageOutputs はメッセージ出力を構築します
+func (i *messageInteractor) buildMessageOutputs(messages []*entity.Message, relatedData *RelatedData, userMap map[string]*entity.User, groups map[string]*entity.UserGroup) []MessageOutput {
+	// メンション、リンク、リアクションをメッセージIDでグループ化
+	userMentionsByMessage := i.groupUserMentionsByMessage(relatedData.UserMentions)
+	groupMentionsByMessage := i.groupGroupMentionsByMessage(relatedData.GroupMentions)
+	linksByMessage := i.groupLinksByMessage(relatedData.Links)
 
 	outputs := make([]MessageOutput, 0, len(messages))
 	for _, msg := range messages {
 		user := userMap[msg.UserID]
-		outputs = append(outputs, toMessageOutputWithMentionsAndLinks(
+		outputs = append(outputs, i.assembler.AssembleMessageOutput(
 			msg,
 			user,
 			userMentionsByMessage[msg.ID],
 			groupMentionsByMessage[msg.ID],
 			linksByMessage[msg.ID],
-			reactions[msg.ID],
-			attachments[msg.ID],
+			relatedData.Reactions[msg.ID],
+			relatedData.Attachments[msg.ID],
 			groups,
 			userMap,
 		))
 	}
 
-	return &ListMessagesOutput{Messages: outputs, HasMore: hasMore}, nil
+	return outputs
+}
+
+// groupUserMentionsByMessage はユーザーメンションをメッセージIDでグループ化します
+func (i *messageInteractor) groupUserMentionsByMessage(userMentions []*entity.MessageUserMention) map[string][]*entity.MessageUserMention {
+	userMentionsByMessage := make(map[string][]*entity.MessageUserMention)
+	for _, mention := range userMentions {
+		userMentionsByMessage[mention.MessageID] = append(userMentionsByMessage[mention.MessageID], mention)
+	}
+	return userMentionsByMessage
+}
+
+// groupGroupMentionsByMessage はグループメンションをメッセージIDでグループ化します
+func (i *messageInteractor) groupGroupMentionsByMessage(groupMentions []*entity.MessageGroupMention) map[string][]*entity.MessageGroupMention {
+	groupMentionsByMessage := make(map[string][]*entity.MessageGroupMention)
+	for _, mention := range groupMentions {
+		groupMentionsByMessage[mention.MessageID] = append(groupMentionsByMessage[mention.MessageID], mention)
+	}
+	return groupMentionsByMessage
+}
+
+// groupLinksByMessage はリンクをメッセージIDでグループ化します
+func (i *messageInteractor) groupLinksByMessage(links []*entity.MessageLink) map[string][]*entity.MessageLink {
+	linksByMessage := make(map[string][]*entity.MessageLink)
+	for _, link := range links {
+		linksByMessage[link.MessageID] = append(linksByMessage[link.MessageID], link)
+	}
+	return linksByMessage
 }
 
 func (i *messageInteractor) CreateMessage(ctx context.Context, input CreateMessageInput) (*MessageOutput, error) {
@@ -275,14 +506,14 @@ func (i *messageInteractor) CreateMessage(ctx context.Context, input CreateMessa
 	if input.ParentID != nil {
 		if err := i.threadRepo.IncrementReplyCount(ctx, *input.ParentID, input.UserID); err != nil {
 			// エラーが発生してもメッセージ作成は成功とする（ログ出力のみ）
-			fmt.Printf("Warning: failed to update thread metadata: %v\n", err)
+			logger.Get().Warn("Failed to update thread metadata", zap.Error(err))
 		}
 	}
 
 	// メンションとリンクを抽出・保存
 	if err := i.extractAndSaveMentionsAndLinks(ctx, message.ID, input.Body, channel.WorkspaceID); err != nil {
 		// エラーが発生してもメッセージ作成は成功とする（ログ出力のみ）
-		fmt.Printf("Warning: failed to extract mentions and links: %v\n", err)
+		logger.Get().Warn("Failed to extract mentions and links", zap.Error(err))
 	}
 
 	// ユーザー情報を取得
@@ -311,7 +542,7 @@ func (i *messageInteractor) CreateMessage(ctx context.Context, input CreateMessa
 	// ユーザーマップを作成
 	userMap := map[string]*entity.User{user.ID: user}
 
-	output := toMessageOutputWithMentionsAndLinks(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
+	output := i.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
 
 	// WebSocket通知を送信（nilチェックを追加）
 	if i.notificationSvc != nil {
@@ -320,7 +551,7 @@ func (i *messageInteractor) CreateMessage(ctx context.Context, input CreateMessa
 		if err == nil {
 			i.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, messageMap)
 		} else {
-			fmt.Printf("Warning: failed to convert message to map: %v\n", err)
+			logger.Get().Warn("Failed to convert message to map", zap.Error(err))
 		}
 	}
 
@@ -387,119 +618,6 @@ func toMessageOutput(message *entity.Message, user *entity.User) MessageOutput {
 		CreatedAt: message.CreatedAt,
 		EditedAt:  message.EditedAt,
 		DeletedAt: message.DeletedAt,
-	}
-}
-
-func toMessageOutputWithMentionsAndLinks(
-	message *entity.Message,
-	user *entity.User,
-	userMentions []*entity.MessageUserMention,
-	groupMentions []*entity.MessageGroupMention,
-	links []*entity.MessageLink,
-	reactions []*entity.MessageReaction,
-	attachments []*entity.Attachment,
-	groups map[string]*entity.UserGroup,
-	userMap map[string]*entity.User,
-) MessageOutput {
-	userInfo := UserInfo{
-		ID:          "",
-		DisplayName: "Unknown User",
-		AvatarURL:   nil,
-	}
-
-	if user != nil {
-		userInfo = UserInfo{
-			ID:          user.ID,
-			DisplayName: user.DisplayName,
-			AvatarURL:   user.AvatarURL,
-		}
-	}
-
-	// ユーザーメンションを変換
-	mentions := make([]UserMention, 0, len(userMentions))
-	for _, mention := range userMentions {
-		mentions = append(mentions, UserMention{
-			UserID:      mention.UserID,
-			DisplayName: "", // 必要に応じてユーザー情報を取得
-		})
-	}
-
-	// グループメンションを変換
-	groupMentionsOutput := make([]GroupMention, 0, len(groupMentions))
-	for _, mention := range groupMentions {
-		groupName := ""
-		if group, exists := groups[mention.GroupID]; exists {
-			groupName = group.Name
-		}
-		groupMentionsOutput = append(groupMentionsOutput, GroupMention{
-			GroupID: mention.GroupID,
-			Name:    groupName,
-		})
-	}
-
-	// リンク情報を変換
-	linksOutput := make([]LinkInfo, 0, len(links))
-	for _, link := range links {
-		linksOutput = append(linksOutput, LinkInfo{
-			ID:          link.ID,
-			URL:         link.URL,
-			Title:       link.Title,
-			Description: link.Description,
-			ImageURL:    link.ImageURL,
-			SiteName:    link.SiteName,
-			CardType:    link.CardType,
-		})
-	}
-
-	// リアクション情報を変換
-	reactionsOutput := make([]ReactionInfo, 0, len(reactions))
-	for _, reaction := range reactions {
-		reactionUser, exists := userMap[reaction.UserID]
-		reactionUserInfo := UserInfo{
-			ID:          reaction.UserID,
-			DisplayName: "Unknown User",
-			AvatarURL:   nil,
-		}
-		if exists && reactionUser != nil {
-			reactionUserInfo = UserInfo{
-				ID:          reactionUser.ID,
-				DisplayName: reactionUser.DisplayName,
-				AvatarURL:   reactionUser.AvatarURL,
-			}
-		}
-		reactionsOutput = append(reactionsOutput, ReactionInfo{
-			User:      reactionUserInfo,
-			Emoji:     reaction.Emoji,
-			CreatedAt: reaction.CreatedAt,
-		})
-	}
-
-	// 添付ファイル情報を変換
-	attachmentsOutput := make([]AttachmentInfo, 0, len(attachments))
-	for _, attachment := range attachments {
-		attachmentsOutput = append(attachmentsOutput, AttachmentInfo{
-			ID:        attachment.ID,
-			FileName:  attachment.FileName,
-			MimeType:  attachment.MimeType,
-			SizeBytes: attachment.SizeBytes,
-		})
-	}
-
-	return MessageOutput{
-		ID:          message.ID,
-		ChannelID:   message.ChannelID,
-		UserID:      message.UserID,
-		User:        userInfo,
-		ParentID:    message.ParentID,
-		Body:        message.Body,
-		Mentions:    mentions,
-		Groups:      groupMentionsOutput,
-		Links:       linksOutput,
-		Reactions:   reactionsOutput,
-		Attachments: attachmentsOutput,
-		CreatedAt:   message.CreatedAt,
-		EditedAt:    message.EditedAt,
-		DeletedAt:   message.DeletedAt,
 	}
 }
 
@@ -664,7 +782,7 @@ func (i *messageInteractor) GetThreadReplies(ctx context.Context, input GetThrea
 	}
 
 	// 親メッセージ出力を作成
-	parentOutput := toMessageOutputWithMentionsAndLinks(
+	parentOutput := i.assembler.AssembleMessageOutput(
 		parentMessage,
 		userMap[parentMessage.UserID],
 		userMentionsByMessage[parentMessage.ID],
@@ -679,7 +797,7 @@ func (i *messageInteractor) GetThreadReplies(ctx context.Context, input GetThrea
 	// リプライ出力を作成
 	replyOutputs := make([]MessageOutput, 0, len(replies))
 	for _, reply := range replies {
-		replyOutputs = append(replyOutputs, toMessageOutputWithMentionsAndLinks(
+		replyOutputs = append(replyOutputs, i.assembler.AssembleMessageOutput(
 			reply,
 			userMap[reply.UserID],
 			userMentionsByMessage[reply.ID],
@@ -755,15 +873,47 @@ func (i *messageInteractor) GetThreadMetadata(ctx context.Context, input GetThre
 }
 
 // convertStructToMap は構造体をmap[string]interface{}に変換します
+// より効率的なreflectパッケージを使用した実装
 func convertStructToMap(data interface{}) (map[string]interface{}, error) {
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
+	v := reflect.ValueOf(data)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
 	}
-	var result map[string]interface{}
-	if err := json.Unmarshal(jsonBytes, &result); err != nil {
-		return nil, err
+
+	if v.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("expected struct, got %v", v.Kind())
 	}
+
+	t := v.Type()
+	result := make(map[string]interface{})
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldType := t.Field(i)
+
+		// 非公開フィールドはスキップ
+		if !field.CanInterface() {
+			continue
+		}
+
+		// JSONタグからフィールド名を取得、なければ構造体フィールド名を使用
+		jsonTag := fieldType.Tag.Get("json")
+		fieldName := fieldType.Name
+		if jsonTag != "" && jsonTag != "-" {
+			// カンマ以降を除去（omitempty等のオプションを除去）
+			if commaIndex := strings.Index(jsonTag, ","); commaIndex > 0 {
+				fieldName = jsonTag[:commaIndex]
+			} else {
+				fieldName = jsonTag
+			}
+		}
+
+		// フィールドがnilポインタでない場合のみ追加
+		if field.IsValid() && !field.IsZero() {
+			result[fieldName] = field.Interface()
+		}
+	}
+
 	return result, nil
 }
 
@@ -880,48 +1030,48 @@ func (i *messageInteractor) UpdateMessage(ctx context.Context, input UpdateMessa
 
 	// 既存のメンション・リンクを削除
 	if err := i.userMentionRepo.DeleteByMessageID(ctx, message.ID); err != nil {
-		fmt.Printf("Warning: failed to delete user mentions: %v\n", err)
+		logger.Get().Warn("Failed to delete user mentions", zap.Error(err))
 	}
 	if err := i.groupMentionRepo.DeleteByMessageID(ctx, message.ID); err != nil {
-		fmt.Printf("Warning: failed to delete group mentions: %v\n", err)
+		logger.Get().Warn("Failed to delete group mentions", zap.Error(err))
 	}
 	if err := i.linkRepo.DeleteByMessageID(ctx, message.ID); err != nil {
-		fmt.Printf("Warning: failed to delete links: %v\n", err)
+		logger.Get().Warn("Failed to delete links", zap.Error(err))
 	}
 
 	// 新しいメンション・リンクを抽出・保存
 	if err := i.extractAndSaveMentionsAndLinks(ctx, message.ID, input.Body, channel.WorkspaceID); err != nil {
-		fmt.Printf("Warning: failed to extract and save mentions/links: %v\n", err)
+		logger.Get().Warn("Failed to extract and save mentions/links", zap.Error(err))
 	}
 
 	// 更新後のデータを取得してMessageOutputを構築
 	userMentions, err := i.userMentionRepo.FindByMessageID(ctx, message.ID)
 	if err != nil {
-		fmt.Printf("Warning: failed to fetch user mentions: %v\n", err)
+		logger.Get().Warn("Failed to fetch user mentions", zap.Error(err))
 		userMentions = []*entity.MessageUserMention{}
 	}
 
 	groupMentions, err := i.groupMentionRepo.FindByMessageID(ctx, message.ID)
 	if err != nil {
-		fmt.Printf("Warning: failed to fetch group mentions: %v\n", err)
+		logger.Get().Warn("Failed to fetch group mentions", zap.Error(err))
 		groupMentions = []*entity.MessageGroupMention{}
 	}
 
 	links, err := i.linkRepo.FindByMessageID(ctx, message.ID)
 	if err != nil {
-		fmt.Printf("Warning: failed to fetch links: %v\n", err)
+		logger.Get().Warn("Failed to fetch links", zap.Error(err))
 		links = []*entity.MessageLink{}
 	}
 
 	reactions, err := i.messageRepo.FindReactions(ctx, message.ID)
 	if err != nil {
-		fmt.Printf("Warning: failed to fetch reactions: %v\n", err)
+		logger.Get().Warn("Failed to fetch reactions", zap.Error(err))
 		reactions = []*entity.MessageReaction{}
 	}
 
 	attachmentList, err := i.attachmentRepo.FindByMessageID(ctx, message.ID)
 	if err != nil {
-		fmt.Printf("Warning: failed to fetch attachments: %v\n", err)
+		logger.Get().Warn("Failed to fetch attachments", zap.Error(err))
 		attachmentList = []*entity.Attachment{}
 	}
 
@@ -941,7 +1091,7 @@ func (i *messageInteractor) UpdateMessage(ctx context.Context, input UpdateMessa
 	}
 
 	userMap := map[string]*entity.User{user.ID: user}
-	output := toMessageOutputWithMentionsAndLinks(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
+	output := i.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
 
 	// WebSocket通知を送信
 	if i.notificationSvc != nil {
@@ -949,7 +1099,7 @@ func (i *messageInteractor) UpdateMessage(ctx context.Context, input UpdateMessa
 		if err == nil {
 			i.notificationSvc.NotifyUpdatedMessage(channel.WorkspaceID, channel.ID, messageMap)
 		} else {
-			fmt.Printf("Warning: failed to convert message to map: %v\n", err)
+			logger.Get().Warn("Failed to convert message to map", zap.Error(err))
 		}
 	}
 
@@ -1001,7 +1151,7 @@ func (i *messageInteractor) DeleteMessage(ctx context.Context, input DeleteMessa
 
 		// スレッドメタデータも削除
 		if err := i.threadRepo.DeleteMetadata(ctx, message.ID); err != nil {
-			fmt.Printf("Warning: failed to delete thread metadata: %v\n", err)
+			logger.Get().Warn("Failed to delete thread metadata", zap.Error(err))
 		}
 	}
 

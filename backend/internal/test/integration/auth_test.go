@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
-	"github.com/newt239/chat/internal/adapter/gateway/persistence"
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/persistence"
 	"github.com/newt239/chat/internal/registry"
 	"github.com/newt239/chat/internal/test/integration"
 	"github.com/stretchr/testify/assert"

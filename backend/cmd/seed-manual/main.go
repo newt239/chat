@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/newt239/chat/internal/adapter/gateway/persistence"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/persistence"
 	"github.com/newt239/chat/internal/infrastructure/seed"
 )
 

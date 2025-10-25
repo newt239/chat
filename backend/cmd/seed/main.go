@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/newt239/chat/internal/adapter/gateway/persistence"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
 	"github.com/newt239/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/persistence"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	"gorm.io/gorm"
 )
