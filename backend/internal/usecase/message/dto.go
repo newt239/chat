@@ -1,6 +1,25 @@
 package message
 
-import "time"
+import (
+	"errors"
+	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
+)
+
+var (
+	ErrChannelNotFound       = errors.New("channel not found")
+	ErrUnauthorized          = errors.New("unauthorized to perform this action")
+	ErrParentMessageNotFound = errors.New("parent message not found")
+	ErrMessageNotFound       = errors.New("message not found")
+	ErrMessageAlreadyDeleted = errors.New("message already deleted")
+	ErrCannotEditDeleted     = errors.New("cannot edit deleted message")
+)
+
+const (
+	defaultMessageLimit = 50
+	maxMessageLimit     = 100
+)
 
 type ListMessagesInput struct {
 	ChannelID string
@@ -26,8 +45,8 @@ type UpdateMessageInput struct {
 }
 
 type DeleteMessageInput struct {
-	MessageID string
-	ChannelID string
+	MessageID  string
+	ChannelID  string
 	ExecutorID string
 }
 
@@ -71,22 +90,22 @@ type AttachmentInfo struct {
 }
 
 type MessageOutput struct {
-	ID          string         `json:"id"`
-	ChannelID   string         `json:"channelId"`
-	UserID      string         `json:"userId"`
-	User        UserInfo       `json:"user"`
-	ParentID    *string        `json:"parentId"`
-	Body        string         `json:"body"`
-	Mentions    []UserMention  `json:"mentions"`
-	Groups      []GroupMention `json:"groups"`
-	Links       []LinkInfo     `json:"links"`
-	Reactions   []ReactionInfo `json:"reactions"`
+	ID          string           `json:"id"`
+	ChannelID   string           `json:"channelId"`
+	UserID      string           `json:"userId"`
+	User        UserInfo         `json:"user"`
+	ParentID    *string          `json:"parentId"`
+	Body        string           `json:"body"`
+	Mentions    []UserMention    `json:"mentions"`
+	Groups      []GroupMention   `json:"groups"`
+	Links       []LinkInfo       `json:"links"`
+	Reactions   []ReactionInfo   `json:"reactions"`
 	Attachments []AttachmentInfo `json:"attachments"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	EditedAt    *time.Time     `json:"editedAt"`
-	DeletedAt   *time.Time     `json:"deletedAt"`
-	IsDeleted   bool           `json:"isDeleted"`
-	DeletedBy   *UserInfo      `json:"deletedBy,omitempty"`
+	CreatedAt   time.Time        `json:"createdAt"`
+	EditedAt    *time.Time       `json:"editedAt"`
+	DeletedAt   *time.Time       `json:"deletedAt"`
+	IsDeleted   bool             `json:"isDeleted"`
+	DeletedBy   *UserInfo        `json:"deletedBy,omitempty"`
 }
 
 type ListMessagesOutput struct {
@@ -122,4 +141,155 @@ type GetThreadMetadataInput struct {
 type MessageWithThreadOutput struct {
 	MessageOutput
 	ThreadMetadata *ThreadMetadataOutput `json:"threadMetadata,omitempty"`
+}
+
+// RelatedData はメッセージに関連するデータをまとめた構造体です
+type RelatedData struct {
+	UserMentions  []*entity.MessageUserMention
+	GroupMentions []*entity.MessageGroupMention
+	Links         []*entity.MessageLink
+	Reactions     map[string][]*entity.MessageReaction
+	Attachments   map[string][]*entity.Attachment
+}
+
+// MessageOutputAssembler はMessageOutputの構築を担当するコンポーネントです
+type MessageOutputAssembler struct{}
+
+// NewMessageOutputAssembler は新しいMessageOutputAssemblerを作成します
+func NewMessageOutputAssembler() *MessageOutputAssembler {
+	return &MessageOutputAssembler{}
+}
+
+// AssembleMessageOutput はメッセージと関連データからMessageOutputを構築します
+func (a *MessageOutputAssembler) AssembleMessageOutput(
+	message *entity.Message,
+	user *entity.User,
+	userMentions []*entity.MessageUserMention,
+	groupMentions []*entity.MessageGroupMention,
+	links []*entity.MessageLink,
+	reactions []*entity.MessageReaction,
+	attachments []*entity.Attachment,
+	groups map[string]*entity.UserGroup,
+	userMap map[string]*entity.User,
+) MessageOutput {
+	userInfo := a.buildUserInfo(user)
+
+	return MessageOutput{
+		ID:          message.ID,
+		ChannelID:   message.ChannelID,
+		UserID:      message.UserID,
+		User:        userInfo,
+		ParentID:    message.ParentID,
+		Body:        message.Body,
+		Mentions:    a.buildUserMentions(userMentions),
+		Groups:      a.buildGroupMentions(groupMentions, groups),
+		Links:       a.buildLinks(links),
+		Reactions:   a.buildReactions(reactions, userMap),
+		Attachments: a.buildAttachments(attachments),
+		CreatedAt:   message.CreatedAt,
+		EditedAt:    message.EditedAt,
+		DeletedAt:   message.DeletedAt,
+	}
+}
+
+// buildUserInfo はユーザー情報を構築します
+func (a *MessageOutputAssembler) buildUserInfo(user *entity.User) UserInfo {
+	if user == nil {
+		return UserInfo{
+			ID:          "",
+			DisplayName: "Unknown User",
+			AvatarURL:   nil,
+		}
+	}
+
+	return UserInfo{
+		ID:          user.ID,
+		DisplayName: user.DisplayName,
+		AvatarURL:   user.AvatarURL,
+	}
+}
+
+// buildUserMentions はユーザーメンションを構築します
+func (a *MessageOutputAssembler) buildUserMentions(userMentions []*entity.MessageUserMention) []UserMention {
+	mentions := make([]UserMention, 0, len(userMentions))
+	for _, mention := range userMentions {
+		mentions = append(mentions, UserMention{
+			UserID:      mention.UserID,
+			DisplayName: "", // 必要に応じてユーザー情報を取得
+		})
+	}
+	return mentions
+}
+
+// buildGroupMentions はグループメンションを構築します
+func (a *MessageOutputAssembler) buildGroupMentions(groupMentions []*entity.MessageGroupMention, groups map[string]*entity.UserGroup) []GroupMention {
+	groupMentionsOutput := make([]GroupMention, 0, len(groupMentions))
+	for _, mention := range groupMentions {
+		groupName := ""
+		if group, exists := groups[mention.GroupID]; exists {
+			groupName = group.Name
+		}
+		groupMentionsOutput = append(groupMentionsOutput, GroupMention{
+			GroupID: mention.GroupID,
+			Name:    groupName,
+		})
+	}
+	return groupMentionsOutput
+}
+
+// buildLinks はリンク情報を構築します
+func (a *MessageOutputAssembler) buildLinks(links []*entity.MessageLink) []LinkInfo {
+	linksOutput := make([]LinkInfo, 0, len(links))
+	for _, link := range links {
+		linksOutput = append(linksOutput, LinkInfo{
+			ID:          link.ID,
+			URL:         link.URL,
+			Title:       link.Title,
+			Description: link.Description,
+			ImageURL:    link.ImageURL,
+			SiteName:    link.SiteName,
+			CardType:    link.CardType,
+		})
+	}
+	return linksOutput
+}
+
+// buildReactions はリアクション情報を構築します
+func (a *MessageOutputAssembler) buildReactions(reactions []*entity.MessageReaction, userMap map[string]*entity.User) []ReactionInfo {
+	reactionsOutput := make([]ReactionInfo, 0, len(reactions))
+	for _, reaction := range reactions {
+		reactionUser, exists := userMap[reaction.UserID]
+		reactionUserInfo := UserInfo{
+			ID:          reaction.UserID,
+			DisplayName: "Unknown User",
+			AvatarURL:   nil,
+		}
+		if exists && reactionUser != nil {
+			reactionUserInfo = UserInfo{
+				ID:          reactionUser.ID,
+				DisplayName: reactionUser.DisplayName,
+				AvatarURL:   reactionUser.AvatarURL,
+			}
+		}
+		reactionsOutput = append(reactionsOutput, ReactionInfo{
+			User:      reactionUserInfo,
+			Emoji:     reaction.Emoji,
+			CreatedAt: reaction.CreatedAt,
+		})
+	}
+	return reactionsOutput
+}
+
+// buildAttachments は添付ファイル情報を構築します
+func (a *MessageOutputAssembler) buildAttachments(attachments []*entity.Attachment) []AttachmentInfo {
+	attachmentsOutput := make([]AttachmentInfo, 0, len(attachments))
+	for _, attachment := range attachments {
+		attachmentsOutput = append(attachmentsOutput, AttachmentInfo{
+			ID:        attachment.ID,
+			FileName:  attachment.FileName,
+			MimeType:  attachment.MimeType,
+			SizeBytes: attachment.SizeBytes,
+		})
+	}
+	return attachmentsOutput
 }

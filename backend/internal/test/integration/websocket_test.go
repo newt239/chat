@@ -34,11 +34,11 @@ func TestWebSocketIntegration(t *testing.T) {
 	go hub.Run()
 
 	// JWTサービスとWorkspaceRepositoryの作成
-	jwtService := reg.NewJWTService()
-	workspaceRepo := reg.NewWorkspaceRepository()
-	userRepo := reg.NewUserRepository()
-	messageUseCase := reg.NewMessageUseCase()
-	readStateUseCase := reg.NewReadStateUseCase()
+	jwtService := reg.Infrastructure().NewJWTService()
+	workspaceRepo := reg.Domain().NewWorkspaceRepository()
+	userRepo := reg.Domain().NewUserRepository()
+	messageUseCase := reg.UseCase().NewMessageUseCase()
+	readStateUseCase := reg.UseCase().NewReadStateUseCase()
 
 	// Echoアプリケーションのセットアップ
 	e := echo.New()

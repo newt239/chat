@@ -12,6 +12,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type threadRepository struct {
@@ -23,7 +24,7 @@ func NewThreadRepository(db *gorm.DB) domainrepository.ThreadRepository {
 }
 
 func (r *threadRepository) FindMetadataByMessageID(ctx context.Context, messageID string) (*entity.ThreadMetadata, error) {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (r *threadRepository) FindMetadataByMessageIDs(ctx context.Context, message
 
 	msgIDs := make([]uuid.UUID, 0, len(messageIDs))
 	for _, id := range messageIDs {
-		msgID, err := parseUUID(id, "message ID")
+		msgID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}
@@ -81,12 +82,12 @@ func (r *threadRepository) CreateOrUpdateMetadata(ctx context.Context, metadata 
 }
 
 func (r *threadRepository) IncrementReplyCount(ctx context.Context, messageID string, replyUserID string) error {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
 
-	replyUID, err := parseUUID(replyUserID, "reply user ID")
+	replyUID, err := utils.ParseUUID(replyUserID, "reply user ID")
 	if err != nil {
 		return err
 	}
@@ -142,7 +143,7 @@ func (r *threadRepository) IncrementReplyCount(ctx context.Context, messageID st
 }
 
 func (r *threadRepository) DeleteMetadata(ctx context.Context, messageID string) error {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}

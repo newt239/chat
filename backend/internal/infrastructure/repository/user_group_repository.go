@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type userGroupRepository struct {
@@ -21,7 +22,7 @@ func NewUserGroupRepository(db *gorm.DB) domainrepository.UserGroupRepository {
 }
 
 func (r *userGroupRepository) FindByID(ctx context.Context, id string) (*entity.UserGroup, error) {
-	groupID, err := parseUUID(id, "group ID")
+	groupID, err := utils.ParseUUID(id, "group ID")
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func (r *userGroupRepository) FindByIDs(ctx context.Context, ids []string) ([]*e
 
 	groupIDs := make([]interface{}, len(ids))
 	for i, id := range ids {
-		groupID, err := parseUUID(id, "group ID")
+		groupID, err := utils.ParseUUID(id, "group ID")
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +66,7 @@ func (r *userGroupRepository) FindByIDs(ctx context.Context, ids []string) ([]*e
 }
 
 func (r *userGroupRepository) FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.UserGroup, error) {
-	wsID, err := parseUUID(workspaceID, "workspace ID")
+	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +85,7 @@ func (r *userGroupRepository) FindByWorkspaceID(ctx context.Context, workspaceID
 }
 
 func (r *userGroupRepository) FindByName(ctx context.Context, workspaceID string, name string) (*entity.UserGroup, error) {
-	wsID, err := parseUUID(workspaceID, "workspace ID")
+	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return nil, err
 	}
@@ -101,12 +102,12 @@ func (r *userGroupRepository) FindByName(ctx context.Context, workspaceID string
 }
 
 func (r *userGroupRepository) Create(ctx context.Context, group *entity.UserGroup) error {
-	workspaceID, err := parseUUID(group.WorkspaceID, "workspace ID")
+	workspaceID, err := utils.ParseUUID(group.WorkspaceID, "workspace ID")
 	if err != nil {
 		return err
 	}
 
-	createdBy, err := parseUUID(group.CreatedBy, "created by ID")
+	createdBy, err := utils.ParseUUID(group.CreatedBy, "created by ID")
 	if err != nil {
 		return err
 	}
@@ -117,7 +118,7 @@ func (r *userGroupRepository) Create(ctx context.Context, group *entity.UserGrou
 	model.CreatedBy = createdBy
 
 	if group.ID != "" {
-		groupID, err := parseUUID(group.ID, "group ID")
+		groupID, err := utils.ParseUUID(group.ID, "group ID")
 		if err != nil {
 			return err
 		}
@@ -133,7 +134,7 @@ func (r *userGroupRepository) Create(ctx context.Context, group *entity.UserGrou
 }
 
 func (r *userGroupRepository) Update(ctx context.Context, group *entity.UserGroup) error {
-	groupID, err := parseUUID(group.ID, "group ID")
+	groupID, err := utils.ParseUUID(group.ID, "group ID")
 	if err != nil {
 		return err
 	}
@@ -155,7 +156,7 @@ func (r *userGroupRepository) Update(ctx context.Context, group *entity.UserGrou
 }
 
 func (r *userGroupRepository) Delete(ctx context.Context, id string) error {
-	groupID, err := parseUUID(id, "group ID")
+	groupID, err := utils.ParseUUID(id, "group ID")
 	if err != nil {
 		return err
 	}
@@ -164,12 +165,12 @@ func (r *userGroupRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.UserGroupMember) error {
-	groupID, err := parseUUID(member.GroupID, "group ID")
+	groupID, err := utils.ParseUUID(member.GroupID, "group ID")
 	if err != nil {
 		return err
 	}
 
-	userID, err := parseUUID(member.UserID, "user ID")
+	userID, err := utils.ParseUUID(member.UserID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -183,12 +184,12 @@ func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.User
 }
 
 func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID string, userID string) error {
-	gID, err := parseUUID(groupID, "group ID")
+	gID, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {
 		return err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -197,7 +198,7 @@ func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID string, 
 }
 
 func (r *userGroupRepository) FindMembersByGroupID(ctx context.Context, groupID string) ([]*entity.UserGroupMember, error) {
-	gID, err := parseUUID(groupID, "group ID")
+	gID, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +217,7 @@ func (r *userGroupRepository) FindMembersByGroupID(ctx context.Context, groupID 
 }
 
 func (r *userGroupRepository) FindGroupsByUserID(ctx context.Context, userID string) ([]*entity.UserGroup, error) {
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -239,12 +240,12 @@ func (r *userGroupRepository) FindGroupsByUserID(ctx context.Context, userID str
 }
 
 func (r *userGroupRepository) IsMember(ctx context.Context, groupID string, userID string) (bool, error) {
-	gID, err := parseUUID(groupID, "group ID")
+	gID, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {
 		return false, err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return false, err
 	}

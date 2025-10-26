@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type messageUserMentionRepository struct {
@@ -21,7 +22,7 @@ func NewMessageUserMentionRepository(db *gorm.DB) domainrepository.MessageUserMe
 }
 
 func (r *messageUserMentionRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.MessageUserMention, error) {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (r *messageUserMentionRepository) FindByMessageIDs(ctx context.Context, mes
 
 	msgIDs := make([]uuid.UUID, len(messageIDs))
 	for i, id := range messageIDs {
-		msgID, err := parseUUID(id, "message ID")
+		msgID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +68,7 @@ func (r *messageUserMentionRepository) FindByMessageIDs(ctx context.Context, mes
 }
 
 func (r *messageUserMentionRepository) FindByUserID(ctx context.Context, userID string, limit int, since *time.Time) ([]*entity.MessageUserMention, error) {
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -96,12 +97,12 @@ func (r *messageUserMentionRepository) FindByUserID(ctx context.Context, userID 
 }
 
 func (r *messageUserMentionRepository) Create(ctx context.Context, mention *entity.MessageUserMention) error {
-	messageID, err := parseUUID(mention.MessageID, "message ID")
+	messageID, err := utils.ParseUUID(mention.MessageID, "message ID")
 	if err != nil {
 		return err
 	}
 
-	userID, err := parseUUID(mention.UserID, "user ID")
+	userID, err := utils.ParseUUID(mention.UserID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -115,7 +116,7 @@ func (r *messageUserMentionRepository) Create(ctx context.Context, mention *enti
 }
 
 func (r *messageUserMentionRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
@@ -132,7 +133,7 @@ func NewMessageGroupMentionRepository(db *gorm.DB) domainrepository.MessageGroup
 }
 
 func (r *messageGroupMentionRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.MessageGroupMention, error) {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +158,7 @@ func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, me
 
 	msgIDs := make([]uuid.UUID, len(messageIDs))
 	for i, id := range messageIDs {
-		msgID, err := parseUUID(id, "message ID")
+		msgID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}
@@ -178,7 +179,7 @@ func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, me
 }
 
 func (r *messageGroupMentionRepository) FindByGroupID(ctx context.Context, groupID string, limit int, since *time.Time) ([]*entity.MessageGroupMention, error) {
-	gID, err := parseUUID(groupID, "group ID")
+	gID, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {
 		return nil, err
 	}
@@ -207,12 +208,12 @@ func (r *messageGroupMentionRepository) FindByGroupID(ctx context.Context, group
 }
 
 func (r *messageGroupMentionRepository) Create(ctx context.Context, mention *entity.MessageGroupMention) error {
-	messageID, err := parseUUID(mention.MessageID, "message ID")
+	messageID, err := utils.ParseUUID(mention.MessageID, "message ID")
 	if err != nil {
 		return err
 	}
 
-	groupID, err := parseUUID(mention.GroupID, "group ID")
+	groupID, err := utils.ParseUUID(mention.GroupID, "group ID")
 	if err != nil {
 		return err
 	}
@@ -226,7 +227,7 @@ func (r *messageGroupMentionRepository) Create(ctx context.Context, mention *ent
 }
 
 func (r *messageGroupMentionRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}

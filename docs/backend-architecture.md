@@ -25,25 +25,48 @@ backend/
 │   ├── seed/                     # データベースシード
 │   └── reset/                    # データベースリセット
 ├── internal/                     # 内部パッケージ
-│   ├── adapter/                  # アダプター層
-│   │   └── controller/           # 外部インターフェース
-│   │       ├── http/             # HTTPコントローラー
-│   │       └── websocket/        # WebSocketコントローラー
+│   ├── interfaces/               # インターフェース層
+│   │   └── handler/              # 外部インターフェース
+│   │       ├── http/             # HTTPハンドラー
+│   │       │   ├── handler/       # HTTPハンドラー実装
+│   │       │   └── middleware/   # ミドルウェア
+│   │       └── websocket/        # WebSocketハンドラー
 │   ├── domain/                   # ドメイン層
 │   │   ├── entity/               # エンティティ
-│   │   ├── repository/           # リポジトリインターフェース
+│   │   ├── repository/              # リポジトリインターフェース
 │   │   ├── service/              # ドメインサービス
-│   │   └── transaction/          # トランザクション管理
+│   │   ├── errors/               # ドメインエラー
+│   │   └── transaction/           # トランザクション管理
 │   ├── infrastructure/           # インフラストラクチャ層
 │   │   ├── auth/                 # 認証関連
 │   │   ├── config/               # 設定管理
 │   │   ├── database/             # データベースモデル
-│   │   ├── persistence/          # リポジトリ実装
+│   │   ├── repository/           # リポジトリ実装
 │   │   ├── storage/              # ストレージ関連
+│   │   ├── logger/               # ログ機能
+│   │   ├── observability/        # 監視・観測性
+│   │   ├── notification/         # 通知機能
+│   │   ├── link/                 # リンク処理
+│   │   ├── mention/              # メンション機能
+│   │   ├── ogp/                  # OGP処理
 │   │   └── seed/                 # データシード
 │   ├── registry/                 # 依存性注入コンテナ
 │   ├── usecase/                  # ユースケース層
+│   │   ├── auth/                 # 認証ユースケース
+│   │   ├── workspace/            # ワークスペースユースケース
+│   │   ├── channel/              # チャンネルユースケース
+│   │   ├── channelmember/        # チャンネルメンバーユースケース
+│   │   ├── message/              # メッセージユースケース
+│   │   ├── attachment/           # 添付ファイルユースケース
+│   │   ├── bookmark/            # ブックマークユースケース
+│   │   ├── link/                 # リンクユースケース
+│   │   ├── reaction/             # リアクションユースケース
+│   │   ├── readstate/            # 既読状態ユースケース
+│   │   └── user_group/            # ユーザーグループユースケース
+│   ├── openapi/                  # OpenAPI仕様
 │   └── test/                     # テスト関連
+│       ├── integration/          # 統合テスト
+│       └── mocks/               # モック実装
 └── schema/                       # データベーススキーマ
 ```
 
@@ -65,11 +88,12 @@ backend/
    - ドメイン層のインターフェースに依存
    - 各機能ごとに分離されたユースケース
 
-3. **アダプター層 (Adapter Layer)**
+3. **インターフェース層 (Interface Layer)**
 
    - 外部システムとの接続
-   - HTTP コントローラー、WebSocket ハンドラー
+   - HTTP ハンドラー、WebSocket ハンドラー
    - 外部からの入力をユースケースに変換
+   - ミドルウェアによる共通処理
 
 4. **インフラストラクチャ層 (Infrastructure Layer)**
    - 外部システムの実装
@@ -188,7 +212,37 @@ func (r *Registry) NewAuthUseCase() authuc.AuthUseCase {
 - プリサインド URL 生成
 - メタデータ管理
 
-### 6. 通知システム
+### 6. ブックマーク機能
+
+- メッセージのブックマーク
+- ブックマーク一覧表示
+- ブックマーク削除
+
+### 7. リンク機能
+
+- URL の自動検出
+- OGP メタデータの取得
+- リンクプレビュー表示
+
+### 8. リアクション機能
+
+- メッセージへのリアクション
+- リアクション一覧表示
+- リアクション削除
+
+### 9. 既読状態管理
+
+- チャンネル別の既読状態
+- 未読メッセージカウント
+- 既読状態の更新
+
+### 10. ユーザーグループ機能
+
+- ユーザーグループの作成・管理
+- グループメンバー管理
+- グループ権限管理
+
+### 11. 通知システム
 
 - WebSocket ベースのリアルタイム通知
 - 未読メッセージカウント
@@ -199,17 +253,60 @@ func (r *Registry) NewAuthUseCase() authuc.AuthUseCase {
 ### RESTful API
 
 ```
+# ワークスペース
 GET    /api/workspaces                    # ワークスペース一覧
 POST   /api/workspaces                    # ワークスペース作成
 GET    /api/workspaces/:id                # ワークスペース詳細
 PATCH  /api/workspaces/:id                # ワークスペース更新
 DELETE /api/workspaces/:id                # ワークスペース削除
 
+# チャンネル
 GET    /api/workspaces/:id/channels       # チャンネル一覧
 POST   /api/workspaces/:id/channels       # チャンネル作成
+GET    /api/channels/:id                  # チャンネル詳細
+PATCH  /api/channels/:id                  # チャンネル更新
+DELETE /api/channels/:id                  # チャンネル削除
 
-GET    /api/channels/:channelId/messages # メッセージ一覧
-POST   /api/channels/:channelId/messages # メッセージ送信
+# チャンネルメンバー
+GET    /api/channels/:id/members          # チャンネルメンバー一覧
+POST   /api/channels/:id/members          # チャンネルメンバー追加
+DELETE /api/channels/:id/members/:userId  # チャンネルメンバー削除
+
+# メッセージ
+GET    /api/channels/:id/messages         # メッセージ一覧
+POST   /api/channels/:id/messages         # メッセージ送信
+PATCH  /api/messages/:id                  # メッセージ更新
+DELETE /api/messages/:id                  # メッセージ削除
+
+# 添付ファイル
+POST   /api/attachments                   # ファイルアップロード
+GET    /api/attachments/:id               # ファイル情報取得
+DELETE /api/attachments/:id               # ファイル削除
+
+# ブックマーク
+GET    /api/bookmarks                     # ブックマーク一覧
+POST   /api/bookmarks                     # ブックマーク作成
+DELETE /api/bookmarks/:id                 # ブックマーク削除
+
+# リンク
+GET    /api/links                         # リンク一覧
+POST   /api/links                         # リンク作成
+
+# リアクション
+GET    /api/messages/:id/reactions        # リアクション一覧
+POST   /api/messages/:id/reactions        # リアクション作成
+DELETE /api/messages/:id/reactions/:emoji  # リアクション削除
+
+# 既読状態
+GET    /api/read-states                   # 既読状態一覧
+POST   /api/read-states                   # 既読状態更新
+
+# ユーザーグループ
+GET    /api/user-groups                   # ユーザーグループ一覧
+POST   /api/user-groups                   # ユーザーグループ作成
+GET    /api/user-groups/:id               # ユーザーグループ詳細
+PATCH  /api/user-groups/:id               # ユーザーグループ更新
+DELETE /api/user-groups/:id               # ユーザーグループ削除
 ```
 
 ### WebSocket
@@ -231,6 +328,12 @@ POST   /api/channels/:channelId/messages # メッセージ送信
 - `messages` - メッセージ
 - `message_reactions` - メッセージリアクション
 - `sessions` - セッション管理
+- `attachments` - 添付ファイル
+- `bookmarks` - ブックマーク
+- `links` - リンク情報
+- `read_states` - 既読状態
+- `user_groups` - ユーザーグループ
+- `mentions` - メンション情報
 
 ### リレーション
 
@@ -238,6 +341,14 @@ POST   /api/channels/:channelId/messages # メッセージ送信
 - ワークスペース → チャンネル（1 対多）
 - チャンネル → メッセージ（1 対多）
 - メッセージ → リアクション（1 対多）
+- メッセージ → 添付ファイル（1 対多）
+- ユーザー → ブックマーク（1 対多）
+- メッセージ → ブックマーク（1 対多）
+- メッセージ → リンク（1 対多）
+- ユーザー → 既読状態（1 対多）
+- チャンネル → 既読状態（1 対多）
+- ユーザー → ユーザーグループ（多対多）
+- メッセージ → メンション（1 対多）
 
 ## 設定管理
 
@@ -250,6 +361,7 @@ type Config struct {
     JWT      JWTConfig
     Wasabi   WasabiConfig
     CORS     CORSConfig
+    Logger   LoggerConfig
 }
 ```
 
@@ -310,8 +422,16 @@ type Config struct {
 - Zap による構造化ログ
 - ログレベル管理
 - エラートラッキング
+- リクエスト/レスポンスログ
+
+### 観測性
+
+- メトリクス収集
+- トレーシング
+- パフォーマンス監視
 
 ### ヘルスチェック
 
 - `/healthz` エンドポイント
 - データベース接続確認
+- 外部サービス接続確認

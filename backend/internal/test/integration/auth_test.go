@@ -32,7 +32,7 @@ func TestAuthIntegration(t *testing.T) {
 	reg := registry.NewRegistry(testDB.DB, cfg)
 
 	// 認証ハンドラーの作成
-	authHandler := reg.NewAuthHandler()
+	authHandler := reg.Interface().NewAuthHandler()
 
 	// Echoアプリケーションのセットアップ
 	e := echo.New()

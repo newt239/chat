@@ -9,6 +9,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type workspaceRepository struct {
@@ -20,7 +21,7 @@ func NewWorkspaceRepository(db *gorm.DB) domainrepository.WorkspaceRepository {
 }
 
 func (r *workspaceRepository) FindByID(ctx context.Context, id string) (*entity.Workspace, error) {
-	workspaceID, err := parseUUID(id, "workspace ID")
+	workspaceID, err := utils.ParseUUID(id, "workspace ID")
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +38,7 @@ func (r *workspaceRepository) FindByID(ctx context.Context, id string) (*entity.
 }
 
 func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) ([]*entity.Workspace, error) {
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,7 @@ func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) (
 }
 
 func (r *workspaceRepository) Create(ctx context.Context, workspace *entity.Workspace) error {
-	createdBy, err := parseUUID(workspace.CreatedBy, "created_by user ID")
+	createdBy, err := utils.ParseUUID(workspace.CreatedBy, "created_by user ID")
 	if err != nil {
 		return err
 	}
@@ -70,7 +71,7 @@ func (r *workspaceRepository) Create(ctx context.Context, workspace *entity.Work
 	model.CreatedBy = createdBy
 
 	if workspace.ID != "" {
-		workspaceID, err := parseUUID(workspace.ID, "workspace ID")
+		workspaceID, err := utils.ParseUUID(workspace.ID, "workspace ID")
 		if err != nil {
 			return err
 		}
@@ -86,7 +87,7 @@ func (r *workspaceRepository) Create(ctx context.Context, workspace *entity.Work
 }
 
 func (r *workspaceRepository) Update(ctx context.Context, workspace *entity.Workspace) error {
-	workspaceID, err := parseUUID(workspace.ID, "workspace ID")
+	workspaceID, err := utils.ParseUUID(workspace.ID, "workspace ID")
 	if err != nil {
 		return err
 	}
@@ -111,7 +112,7 @@ func (r *workspaceRepository) Update(ctx context.Context, workspace *entity.Work
 }
 
 func (r *workspaceRepository) Delete(ctx context.Context, id string) error {
-	workspaceID, err := parseUUID(id, "workspace ID")
+	workspaceID, err := utils.ParseUUID(id, "workspace ID")
 	if err != nil {
 		return err
 	}
@@ -120,12 +121,12 @@ func (r *workspaceRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.WorkspaceMember) error {
-	workspaceID, err := parseUUID(member.WorkspaceID, "workspace ID")
+	workspaceID, err := utils.ParseUUID(member.WorkspaceID, "workspace ID")
 	if err != nil {
 		return err
 	}
 
-	userID, err := parseUUID(member.UserID, "user ID")
+	userID, err := utils.ParseUUID(member.UserID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -139,12 +140,12 @@ func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.Work
 }
 
 func (r *workspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID string, userID string, role entity.WorkspaceRole) error {
-	wsID, err := parseUUID(workspaceID, "workspace ID")
+	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -155,12 +156,12 @@ func (r *workspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID 
 }
 
 func (r *workspaceRepository) RemoveMember(ctx context.Context, workspaceID string, userID string) error {
-	wsID, err := parseUUID(workspaceID, "workspace ID")
+	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -169,7 +170,7 @@ func (r *workspaceRepository) RemoveMember(ctx context.Context, workspaceID stri
 }
 
 func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.WorkspaceMember, error) {
-	wsID, err := parseUUID(workspaceID, "workspace ID")
+	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return nil, err
 	}
@@ -188,12 +189,12 @@ func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, work
 }
 
 func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string, userID string) (*entity.WorkspaceMember, error) {
-	wsID, err := parseUUID(workspaceID, "workspace ID")
+	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}

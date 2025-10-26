@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type messageLinkRepository struct {
@@ -21,7 +22,7 @@ func NewMessageLinkRepository(db *gorm.DB) domainrepository.MessageLinkRepositor
 }
 
 func (r *messageLinkRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.MessageLink, error) {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (r *messageLinkRepository) FindByMessageIDs(ctx context.Context, messageIDs
 
 	msgIDs := make([]uuid.UUID, len(messageIDs))
 	for i, id := range messageIDs {
-		msgID, err := parseUUID(id, "message ID")
+		msgID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +80,7 @@ func (r *messageLinkRepository) FindByURL(ctx context.Context, url string) (*ent
 }
 
 func (r *messageLinkRepository) Create(ctx context.Context, link *entity.MessageLink) error {
-	messageID, err := parseUUID(link.MessageID, "message ID")
+	messageID, err := utils.ParseUUID(link.MessageID, "message ID")
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func (r *messageLinkRepository) Create(ctx context.Context, link *entity.Message
 	model.MessageID = messageID
 
 	if link.ID != "" {
-		linkID, err := parseUUID(link.ID, "link ID")
+		linkID, err := utils.ParseUUID(link.ID, "link ID")
 		if err != nil {
 			return err
 		}
@@ -106,7 +107,7 @@ func (r *messageLinkRepository) Create(ctx context.Context, link *entity.Message
 }
 
 func (r *messageLinkRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}

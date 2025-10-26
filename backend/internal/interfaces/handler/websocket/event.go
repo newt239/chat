@@ -10,19 +10,19 @@ type EventType string
 
 const (
 	// クライアント→サーバー
-	EventTypeJoinChannel      EventType = "join_channel"
-	EventTypeLeaveChannel     EventType = "leave_channel"
-	EventTypePostMessage      EventType = "post_message"
-	EventTypeTyping           EventType = "typing"
-	EventTypeUpdateReadState  EventType = "update_read_state"
+	EventTypeJoinChannel     EventType = "join_channel"
+	EventTypeLeaveChannel    EventType = "leave_channel"
+	EventTypePostMessage     EventType = "post_message"
+	EventTypeTyping          EventType = "typing"
+	EventTypeUpdateReadState EventType = "update_read_state"
 
 	// サーバー→クライアント
-	EventTypeNewMessage      EventType = "new_message"
-	EventTypeMessageUpdated  EventType = "message_updated"
-	EventTypeMessageDeleted  EventType = "message_deleted"
-	EventTypeUnreadCount     EventType = "unread_count"
-	EventTypeAck             EventType = "ack"
-	EventTypeError           EventType = "error"
+	EventTypeNewMessage     EventType = "new_message"
+	EventTypeMessageUpdated EventType = "message_updated"
+	EventTypeMessageDeleted EventType = "message_deleted"
+	EventTypeUnreadCount    EventType = "unread_count"
+	EventTypeAck            EventType = "ack"
+	EventTypeError          EventType = "error"
 )
 
 // ClientMessage はクライアントから受信するメッセージを表します
@@ -84,8 +84,8 @@ type MessageDeletedPayload struct {
 
 // UnreadCountPayload はunread_countイベントのペイロードを表します
 type UnreadCountPayload struct {
-	ChannelID    string `json:"channel_id"`
-	UnreadCount  int    `json:"unread_count"`
+	ChannelID   string `json:"channel_id"`
+	UnreadCount int    `json:"unread_count"`
 }
 
 // AckPayload はackイベントのペイロードを表します

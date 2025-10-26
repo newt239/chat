@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type readStateRepository struct {
@@ -22,12 +23,12 @@ func NewReadStateRepository(db *gorm.DB) domainrepository.ReadStateRepository {
 }
 
 func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelID string, userID string) (*entity.ChannelReadState, error) {
-	chID, err := parseUUID(channelID, "channel ID")
+	chID, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -44,12 +45,12 @@ func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelI
 }
 
 func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.ChannelReadState) error {
-	channelID, err := parseUUID(readState.ChannelID, "channel ID")
+	channelID, err := utils.ParseUUID(readState.ChannelID, "channel ID")
 	if err != nil {
 		return err
 	}
 
-	userID, err := parseUUID(readState.UserID, "user ID")
+	userID, err := utils.ParseUUID(readState.UserID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -66,12 +67,12 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 }
 
 func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID string, userID string) (int, error) {
-	chID, err := parseUUID(channelID, "channel ID")
+	chID, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return 0, err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return 0, err
 	}
@@ -102,7 +103,7 @@ func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID stri
 }
 
 func (r *readStateRepository) GetUnreadChannels(ctx context.Context, userID string) (map[string]int, error) {
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}

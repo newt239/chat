@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -55,18 +56,14 @@ func (h *WorkspaceHandler) GetWorkspaces(c echo.Context) error {
 
 // CreateWorkspace はワークスペースを作成します
 func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
-	userID, ok := c.Get("userID").(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
 	}
 
 	var req CreateWorkspaceRequest
-	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	if err := utils.ValidateRequest(c, &req); err != nil {
+		return err
 	}
 
 	var description *string
@@ -90,14 +87,14 @@ func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
 
 // GetWorkspace はワークスペース詳細を取得します
 func (h *WorkspaceHandler) GetWorkspace(c echo.Context) error {
-	workspaceID := c.Param("id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+	workspaceID, err := utils.GetParamFromContext(c, "id")
+	if err != nil {
+		return err
 	}
 
-	userID, ok := c.Get("userID").(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
 	}
 
 	input := workspaceuc.GetWorkspaceInput{

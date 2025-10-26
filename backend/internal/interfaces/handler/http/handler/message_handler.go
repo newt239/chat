@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
@@ -93,23 +94,19 @@ func (h *MessageHandler) ListMessages(c echo.Context) error {
 
 // CreateMessage はメッセージを作成します
 func (h *MessageHandler) CreateMessage(c echo.Context) error {
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Channel ID is required")
+	channelID, err := utils.GetParamFromContext(c, "channelId")
+	if err != nil {
+		return err
 	}
 
-	userID, ok := c.Get("userID").(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
 	}
 
 	var req CreateMessageRequest
-	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	if err := utils.ValidateRequest(c, &req); err != nil {
+		return err
 	}
 
 	input := messageuc.CreateMessageInput{

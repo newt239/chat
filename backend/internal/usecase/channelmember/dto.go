@@ -8,10 +8,10 @@ type ListMembersInput struct {
 }
 
 type InviteMemberInput struct {
-	ChannelID  string
-	OperatorID string
+	ChannelID    string
+	OperatorID   string
 	TargetUserID string
-	Role       string
+	Role         string
 }
 
 type JoinChannelInput struct {

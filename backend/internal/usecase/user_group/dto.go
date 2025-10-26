@@ -19,13 +19,13 @@ type UpdateUserGroupInput struct {
 }
 
 type DeleteUserGroupInput struct {
-	ID       string
+	ID        string
 	DeletedBy string
 }
 
 type GetUserGroupInput struct {
-	ID       string
-	UserID   string // For authorization check
+	ID     string
+	UserID string // For authorization check
 }
 
 type ListUserGroupsInput struct {
@@ -59,7 +59,7 @@ type UserGroupOutput struct {
 	Description *string   `json:"description"`
 	CreatedBy   string    `json:"createdBy"`
 	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 type CreateUserGroupOutput struct {

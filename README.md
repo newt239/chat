@@ -31,7 +31,7 @@ docker-compose logs -f
 ### バックエンド
 
 - Go 1.23+
-- Echo (HTTP ルーター) - Gin から移行完了
+- Echo (HTTP ルーター)
 - WebSocket (gorilla/websocket)
 - GORM (ORM)
 - Atlas (宣言的スキーママイグレーション)
@@ -68,17 +68,20 @@ chat/
 │   ├── internal/
 │   │   ├── domain/         # Domain entities & repository interfaces
 │   │   ├── usecase/        # Business logic (to be implemented)
-│   │   ├── interface/
+│   │   ├── interfaces/handler/
 │   │   │   ├── http/       # HTTP handlers & routes
-│   │   │   └── ws/         # WebSocket hub & connections
+│   │   │   └── websocket/ # WebSocket hub & connections
 │   │   └── infrastructure/
 │   │       ├── auth/       # JWT & password hashing
 │   │       ├── config/     # Configuration management
-│   │       ├── db/         # GORM models & connection
+│   │       ├── database/         # GORM models & connection
 │   │       ├── logger/     # Zap logger setup
-│   │       └── storage/    # Wasabi S3 client (to be implemented)
-│   ├── schema/       # Atlas declarative schema (HCL)
-│   └── atlas.hcl     # Atlas configuration
+│   │       ├── repository/   # Repository implementation
+│   │       ├── storage/      # Wasabi S3 client (to be implemented)
+│   │       ├── utils/        # Utility functions
+│   │       └── logger/       # Zap logger setup
+│   ├── schema/             # Atlas declarative schema (HCL)
+│   └── atlas.hcl           # Atlas configuration
 ├── frontend/         # React frontend
 │   ├── src/
 │   │   ├── routes/   # TanStack Router routes
@@ -90,45 +93,6 @@ chat/
 └── schema/           # Shared schema files
 
 ```
-
-## 実装状況
-
-### 完了
-
-- [x] モノレポ構造 (pnpm workspaces + Turbo)
-- [x] バックエンド Clean Architecture スケルトン
-- [x] ドメインエンティティ (User, Workspace, Channel, Message 等)
-- [x] リポジトリインターフェース
-- [x] JWT 認証インフラ
-- [x] パスワードハッシュ化 (bcrypt)
-- [x] 設定管理
-- [x] ロギング (zap)
-- [x] HTTP ミドルウェア (CORS, 認証, レート制限)
-- [x] WebSocket hub & コネクション管理
-- [x] 全エンティティの GORM モデル
-- [x] OpenAPI 3.1 仕様
-- [x] Atlas スキーマ定義 (PostgreSQL)
-- [x] フロントエンド初期化
-- [x] 認証 UI (ログイン・新規登録)
-- [x] TanStack Query セットアップ
-- [x] Tailwind CSS & Mantine UI
-
-### 進行中
-
-- [ ] GORM を使ったリポジトリ実装
-- [ ] ユースケース層 (ビジネスロジック)
-- [ ] 全エンドポイントの HTTP ハンドラー
-- [ ] Wasabi S3 クライアント実装
-- [ ] チャット UI コンポーネント
-- [ ] WebSocket 統合
-
-### 予定
-
-- [ ] TanStack Router セットアップ
-- [ ] PWA 機能
-- [ ] テスト (Vitest)
-- [ ] Storybook
-- [ ] 本番デプロイ設定
 
 ## ローカル環境のセットアップ
 

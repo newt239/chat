@@ -2,7 +2,6 @@ package reaction
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -83,13 +82,7 @@ func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionI
 		// チャンネル情報を取得
 		channel, err := i.channelRepo.FindByID(ctx, message.ChannelID)
 		if err == nil && channel != nil {
-			// reactionをmap[string]interface{}に変換
-			reactionMap, err := convertStructToMap(toReactionOutput(reaction, nil))
-			if err == nil {
-				i.notificationSvc.NotifyReaction(channel.WorkspaceID, channel.ID, reactionMap)
-			} else {
-				fmt.Printf("Warning: failed to convert reaction to map: %v\n", err)
-			}
+			i.notificationSvc.NotifyReaction(channel.WorkspaceID, channel.ID, toReactionOutput(reaction, nil))
 		}
 	}
 
@@ -207,19 +200,6 @@ func (i *reactionInteractor) ensureChannelAccess(ctx context.Context, channelID,
 	}
 
 	return nil
-}
-
-// convertStructToMap は構造体をmap[string]interface{}に変換します
-func convertStructToMap(data interface{}) (map[string]interface{}, error) {
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-	var result map[string]interface{}
-	if err := json.Unmarshal(jsonBytes, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
 }
 
 func toReactionOutput(reaction *entity.MessageReaction, user *entity.User) ReactionOutput {

@@ -6,68 +6,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
-
-func parseUUID(id string) uuid.UUID {
-	if id == "" {
-		return uuid.Nil
-	}
-	parsed, err := uuid.Parse(id)
-	if err != nil {
-		return uuid.Nil
-	}
-	return parsed
-}
-
-func parseUUIDPtr(id *string) *uuid.UUID {
-	if id == nil {
-		return nil
-	}
-	parsed, err := uuid.Parse(*id)
-	if err != nil {
-		return nil
-	}
-	val := parsed
-	return &val
-}
-
-func uuidToString(id uuid.UUID) string {
-	if id == uuid.Nil {
-		return ""
-	}
-	return id.String()
-}
-
-func uuidPtrToStringPtr(id *uuid.UUID) *string {
-	if id == nil {
-		return nil
-	}
-	value := uuidToString(*id)
-	if value == "" {
-		return nil
-	}
-	return &value
-}
-
-func cloneTime(t time.Time) time.Time {
-	return t
-}
-
-func cloneTimePtr(t *time.Time) *time.Time {
-	if t == nil {
-		return nil
-	}
-	value := *t
-	return &value
-}
-
-func cloneStringPtr(s *string) *string {
-	if s == nil {
-		return nil
-	}
-	value := *s
-	return &value
-}
 
 // User represents the GORM model for the users table.
 type User struct {
@@ -90,14 +30,15 @@ func (m *User) FromEntity(e *entity.User) {
 		return
 	}
 
+	userID, _ := utils.ParseUUID(e.ID, "user ID")
 	*m = User{
-		ID:           parseUUID(e.ID),
+		ID:           userID,
 		Email:        e.Email,
 		PasswordHash: e.PasswordHash,
 		DisplayName:  e.DisplayName,
-		AvatarURL:    cloneStringPtr(e.AvatarURL),
-		CreatedAt:    cloneTime(e.CreatedAt),
-		UpdatedAt:    cloneTime(e.UpdatedAt),
+		AvatarURL:    e.AvatarURL,
+		CreatedAt:    e.CreatedAt,
+		UpdatedAt:    e.UpdatedAt,
 	}
 }
 
@@ -107,13 +48,13 @@ func (m *User) ToEntity() *entity.User {
 	}
 
 	return &entity.User{
-		ID:           uuidToString(m.ID),
+		ID:           utils.UUIDToString(m.ID),
 		Email:        m.Email,
 		PasswordHash: m.PasswordHash,
 		DisplayName:  m.DisplayName,
-		AvatarURL:    cloneStringPtr(m.AvatarURL),
-		CreatedAt:    cloneTime(m.CreatedAt),
-		UpdatedAt:    cloneTime(m.UpdatedAt),
+		AvatarURL:    m.AvatarURL,
+		CreatedAt:    m.CreatedAt,
+		UpdatedAt:    m.UpdatedAt,
 	}
 }
 
@@ -137,13 +78,15 @@ func (m *Session) FromEntity(e *entity.Session) {
 		return
 	}
 
+	sessionID, _ := utils.ParseUUID(e.ID, "session ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = Session{
-		ID:               parseUUID(e.ID),
-		UserID:           parseUUID(e.UserID),
+		ID:               sessionID,
+		UserID:           userID,
 		RefreshTokenHash: e.RefreshTokenHash,
-		ExpiresAt:        cloneTime(e.ExpiresAt),
-		RevokedAt:        cloneTimePtr(e.RevokedAt),
-		CreatedAt:        cloneTime(e.CreatedAt),
+		ExpiresAt:        e.ExpiresAt,
+		RevokedAt:        e.RevokedAt,
+		CreatedAt:        e.CreatedAt,
 	}
 }
 
@@ -153,12 +96,12 @@ func (m *Session) ToEntity() *entity.Session {
 	}
 
 	return &entity.Session{
-		ID:               uuidToString(m.ID),
-		UserID:           uuidToString(m.UserID),
+		ID:               utils.UUIDToString(m.ID),
+		UserID:           utils.UUIDToString(m.UserID),
 		RefreshTokenHash: m.RefreshTokenHash,
-		ExpiresAt:        cloneTime(m.ExpiresAt),
-		RevokedAt:        cloneTimePtr(m.RevokedAt),
-		CreatedAt:        cloneTime(m.CreatedAt),
+		ExpiresAt:        m.ExpiresAt,
+		RevokedAt:        m.RevokedAt,
+		CreatedAt:        m.CreatedAt,
 	}
 }
 
@@ -183,14 +126,16 @@ func (m *Workspace) FromEntity(e *entity.Workspace) {
 		return
 	}
 
+	workspaceID, _ := utils.ParseUUID(e.ID, "workspace ID")
+	createdByID, _ := utils.ParseUUID(e.CreatedBy, "created by ID")
 	*m = Workspace{
-		ID:          parseUUID(e.ID),
+		ID:          workspaceID,
 		Name:        e.Name,
-		Description: cloneStringPtr(e.Description),
-		IconURL:     cloneStringPtr(e.IconURL),
-		CreatedBy:   parseUUID(e.CreatedBy),
-		CreatedAt:   cloneTime(e.CreatedAt),
-		UpdatedAt:   cloneTime(e.UpdatedAt),
+		Description: e.Description,
+		IconURL:     e.IconURL,
+		CreatedBy:   createdByID,
+		CreatedAt:   e.CreatedAt,
+		UpdatedAt:   e.UpdatedAt,
 	}
 }
 
@@ -200,13 +145,13 @@ func (m *Workspace) ToEntity() *entity.Workspace {
 	}
 
 	return &entity.Workspace{
-		ID:          uuidToString(m.ID),
+		ID:          utils.UUIDToString(m.ID),
 		Name:        m.Name,
-		Description: cloneStringPtr(m.Description),
-		IconURL:     cloneStringPtr(m.IconURL),
-		CreatedBy:   uuidToString(m.CreatedBy),
-		CreatedAt:   cloneTime(m.CreatedAt),
-		UpdatedAt:   cloneTime(m.UpdatedAt),
+		Description: m.Description,
+		IconURL:     m.IconURL,
+		CreatedBy:   utils.UUIDToString(m.CreatedBy),
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
 	}
 }
 
@@ -228,11 +173,13 @@ func (m *WorkspaceMember) FromEntity(e *entity.WorkspaceMember) {
 		return
 	}
 
+	workspaceID, _ := utils.ParseUUID(e.WorkspaceID, "workspace ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = WorkspaceMember{
-		WorkspaceID: parseUUID(e.WorkspaceID),
-		UserID:      parseUUID(e.UserID),
+		WorkspaceID: workspaceID,
+		UserID:      userID,
 		Role:        string(e.Role),
-		JoinedAt:    cloneTime(e.JoinedAt),
+		JoinedAt:    e.JoinedAt,
 	}
 }
 
@@ -242,10 +189,10 @@ func (m *WorkspaceMember) ToEntity() *entity.WorkspaceMember {
 	}
 
 	return &entity.WorkspaceMember{
-		WorkspaceID: uuidToString(m.WorkspaceID),
-		UserID:      uuidToString(m.UserID),
+		WorkspaceID: utils.UUIDToString(m.WorkspaceID),
+		UserID:      utils.UUIDToString(m.UserID),
 		Role:        entity.WorkspaceRole(m.Role),
-		JoinedAt:    cloneTime(m.JoinedAt),
+		JoinedAt:    m.JoinedAt,
 	}
 }
 
@@ -271,15 +218,18 @@ func (m *Channel) FromEntity(e *entity.Channel) {
 		return
 	}
 
+	channelID, _ := utils.ParseUUID(e.ID, "channel ID")
+	workspaceID, _ := utils.ParseUUID(e.WorkspaceID, "workspace ID")
+	createdByID, _ := utils.ParseUUID(e.CreatedBy, "created by ID")
 	*m = Channel{
-		ID:          parseUUID(e.ID),
-		WorkspaceID: parseUUID(e.WorkspaceID),
+		ID:          channelID,
+		WorkspaceID: workspaceID,
 		Name:        e.Name,
-		Description: cloneStringPtr(e.Description),
+		Description: e.Description,
 		IsPrivate:   e.IsPrivate,
-		CreatedBy:   parseUUID(e.CreatedBy),
-		CreatedAt:   cloneTime(e.CreatedAt),
-		UpdatedAt:   cloneTime(e.UpdatedAt),
+		CreatedBy:   createdByID,
+		CreatedAt:   e.CreatedAt,
+		UpdatedAt:   e.UpdatedAt,
 	}
 }
 
@@ -289,14 +239,14 @@ func (m *Channel) ToEntity() *entity.Channel {
 	}
 
 	return &entity.Channel{
-		ID:          uuidToString(m.ID),
-		WorkspaceID: uuidToString(m.WorkspaceID),
+		ID:          utils.UUIDToString(m.ID),
+		WorkspaceID: utils.UUIDToString(m.WorkspaceID),
 		Name:        m.Name,
-		Description: cloneStringPtr(m.Description),
+		Description: m.Description,
 		IsPrivate:   m.IsPrivate,
-		CreatedBy:   uuidToString(m.CreatedBy),
-		CreatedAt:   cloneTime(m.CreatedAt),
-		UpdatedAt:   cloneTime(m.UpdatedAt),
+		CreatedBy:   utils.UUIDToString(m.CreatedBy),
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
 	}
 }
 
@@ -318,11 +268,13 @@ func (m *ChannelMember) FromEntity(e *entity.ChannelMember) {
 		return
 	}
 
+	channelID, _ := utils.ParseUUID(e.ChannelID, "channel ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = ChannelMember{
-		ChannelID: parseUUID(e.ChannelID),
-		UserID:    parseUUID(e.UserID),
+		ChannelID: channelID,
+		UserID:    userID,
 		Role:      string(e.Role),
-		JoinedAt:  cloneTime(e.JoinedAt),
+		JoinedAt:  e.JoinedAt,
 	}
 }
 
@@ -332,10 +284,10 @@ func (m *ChannelMember) ToEntity() *entity.ChannelMember {
 	}
 
 	return &entity.ChannelMember{
-		ChannelID: uuidToString(m.ChannelID),
-		UserID:    uuidToString(m.UserID),
+		ChannelID: utils.UUIDToString(m.ChannelID),
+		UserID:    utils.UUIDToString(m.UserID),
 		Role:      entity.ChannelRole(m.Role),
-		JoinedAt:  cloneTime(m.JoinedAt),
+		JoinedAt:  m.JoinedAt,
 	}
 }
 
@@ -362,16 +314,19 @@ func (m *Message) FromEntity(e *entity.Message) {
 		return
 	}
 
+	messageID, _ := utils.ParseUUID(e.ID, "message ID")
+	channelID, _ := utils.ParseUUID(e.ChannelID, "channel ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = Message{
-		ID:        parseUUID(e.ID),
-		ChannelID: parseUUID(e.ChannelID),
-		UserID:    parseUUID(e.UserID),
-		ParentID:  parseUUIDPtr(e.ParentID),
+		ID:        messageID,
+		ChannelID: channelID,
+		UserID:    userID,
+		ParentID:  utils.ParseUUIDPtr(e.ParentID),
 		Body:      e.Body,
-		CreatedAt: cloneTime(e.CreatedAt),
-		EditedAt:  cloneTimePtr(e.EditedAt),
-		DeletedAt: cloneTimePtr(e.DeletedAt),
-		DeletedBy: parseUUIDPtr(e.DeletedBy),
+		CreatedAt: e.CreatedAt,
+		EditedAt:  e.EditedAt,
+		DeletedAt: e.DeletedAt,
+		DeletedBy: utils.ParseUUIDPtr(e.DeletedBy),
 	}
 }
 
@@ -381,15 +336,15 @@ func (m *Message) ToEntity() *entity.Message {
 	}
 
 	return &entity.Message{
-		ID:        uuidToString(m.ID),
-		ChannelID: uuidToString(m.ChannelID),
-		UserID:    uuidToString(m.UserID),
-		ParentID:  uuidPtrToStringPtr(m.ParentID),
+		ID:        utils.UUIDToString(m.ID),
+		ChannelID: utils.UUIDToString(m.ChannelID),
+		UserID:    utils.UUIDToString(m.UserID),
+		ParentID:  utils.UUIDPtrToStringPtr(m.ParentID),
 		Body:      m.Body,
-		CreatedAt: cloneTime(m.CreatedAt),
-		EditedAt:  cloneTimePtr(m.EditedAt),
-		DeletedAt: cloneTimePtr(m.DeletedAt),
-		DeletedBy: uuidPtrToStringPtr(m.DeletedBy),
+		CreatedAt: m.CreatedAt,
+		EditedAt:  m.EditedAt,
+		DeletedAt: m.DeletedAt,
+		DeletedBy: utils.UUIDPtrToStringPtr(m.DeletedBy),
 	}
 }
 
@@ -411,11 +366,13 @@ func (m *MessageReaction) FromEntity(e *entity.MessageReaction) {
 		return
 	}
 
+	messageID, _ := utils.ParseUUID(e.MessageID, "message ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = MessageReaction{
-		MessageID: parseUUID(e.MessageID),
-		UserID:    parseUUID(e.UserID),
+		MessageID: messageID,
+		UserID:    userID,
 		Emoji:     e.Emoji,
-		CreatedAt: cloneTime(e.CreatedAt),
+		CreatedAt: e.CreatedAt,
 	}
 }
 
@@ -425,10 +382,10 @@ func (m *MessageReaction) ToEntity() *entity.MessageReaction {
 	}
 
 	return &entity.MessageReaction{
-		MessageID: uuidToString(m.MessageID),
-		UserID:    uuidToString(m.UserID),
+		MessageID: utils.UUIDToString(m.MessageID),
+		UserID:    utils.UUIDToString(m.UserID),
 		Emoji:     m.Emoji,
-		CreatedAt: cloneTime(m.CreatedAt),
+		CreatedAt: m.CreatedAt,
 	}
 }
 
@@ -449,10 +406,12 @@ func (m *MessageBookmark) FromEntity(e *entity.MessageBookmark) {
 		return
 	}
 
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
+	messageID, _ := utils.ParseUUID(e.MessageID, "message ID")
 	*m = MessageBookmark{
-		UserID:    parseUUID(e.UserID),
-		MessageID: parseUUID(e.MessageID),
-		CreatedAt: cloneTime(e.CreatedAt),
+		UserID:    userID,
+		MessageID: messageID,
+		CreatedAt: e.CreatedAt,
 	}
 }
 
@@ -462,9 +421,9 @@ func (m *MessageBookmark) ToEntity() *entity.MessageBookmark {
 	}
 
 	return &entity.MessageBookmark{
-		UserID:    uuidToString(m.UserID),
-		MessageID: uuidToString(m.MessageID),
-		CreatedAt: cloneTime(m.CreatedAt),
+		UserID:    utils.UUIDToString(m.UserID),
+		MessageID: utils.UUIDToString(m.MessageID),
+		CreatedAt: m.CreatedAt,
 	}
 }
 
@@ -485,10 +444,12 @@ func (m *ChannelReadState) FromEntity(e *entity.ChannelReadState) {
 		return
 	}
 
+	channelID, _ := utils.ParseUUID(e.ChannelID, "channel ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = ChannelReadState{
-		ChannelID:  parseUUID(e.ChannelID),
-		UserID:     parseUUID(e.UserID),
-		LastReadAt: cloneTime(e.LastReadAt),
+		ChannelID:  channelID,
+		UserID:     userID,
+		LastReadAt: e.LastReadAt,
 	}
 }
 
@@ -498,9 +459,9 @@ func (m *ChannelReadState) ToEntity() *entity.ChannelReadState {
 	}
 
 	return &entity.ChannelReadState{
-		ChannelID:  uuidToString(m.ChannelID),
-		UserID:     uuidToString(m.UserID),
-		LastReadAt: cloneTime(m.LastReadAt),
+		ChannelID:  utils.UUIDToString(m.ChannelID),
+		UserID:     utils.UUIDToString(m.UserID),
+		LastReadAt: m.LastReadAt,
 	}
 }
 
@@ -530,19 +491,22 @@ func (m *Attachment) FromEntity(e *entity.Attachment) {
 		return
 	}
 
+	attachmentID, _ := utils.ParseUUID(e.ID, "attachment ID")
+	uploaderID, _ := utils.ParseUUID(e.UploaderID, "uploader ID")
+	channelID, _ := utils.ParseUUID(e.ChannelID, "channel ID")
 	*m = Attachment{
-		ID:         parseUUID(e.ID),
-		MessageID:  parseUUIDPtr(e.MessageID),
-		UploaderID: parseUUID(e.UploaderID),
-		ChannelID:  parseUUID(e.ChannelID),
+		ID:         attachmentID,
+		MessageID:  utils.ParseUUIDPtr(e.MessageID),
+		UploaderID: uploaderID,
+		ChannelID:  channelID,
 		FileName:   e.FileName,
 		MimeType:   e.MimeType,
 		SizeBytes:  e.SizeBytes,
 		StorageKey: e.StorageKey,
 		Status:     string(e.Status),
-		UploadedAt: cloneTimePtr(e.UploadedAt),
-		ExpiresAt:  cloneTimePtr(e.ExpiresAt),
-		CreatedAt:  cloneTime(e.CreatedAt),
+		UploadedAt: e.UploadedAt,
+		ExpiresAt:  e.ExpiresAt,
+		CreatedAt:  e.CreatedAt,
 	}
 }
 
@@ -552,18 +516,18 @@ func (m *Attachment) ToEntity() *entity.Attachment {
 	}
 
 	return &entity.Attachment{
-		ID:         uuidToString(m.ID),
-		MessageID:  uuidPtrToStringPtr(m.MessageID),
-		UploaderID: uuidToString(m.UploaderID),
-		ChannelID:  uuidToString(m.ChannelID),
+		ID:         utils.UUIDToString(m.ID),
+		MessageID:  utils.UUIDPtrToStringPtr(m.MessageID),
+		UploaderID: utils.UUIDToString(m.UploaderID),
+		ChannelID:  utils.UUIDToString(m.ChannelID),
 		FileName:   m.FileName,
 		MimeType:   m.MimeType,
 		SizeBytes:  m.SizeBytes,
 		StorageKey: m.StorageKey,
 		Status:     entity.AttachmentStatus(m.Status),
-		UploadedAt: cloneTimePtr(m.UploadedAt),
-		ExpiresAt:  cloneTimePtr(m.ExpiresAt),
-		CreatedAt:  cloneTime(m.CreatedAt),
+		UploadedAt: m.UploadedAt,
+		ExpiresAt:  m.ExpiresAt,
+		CreatedAt:  m.CreatedAt,
 	}
 }
 
@@ -588,14 +552,17 @@ func (m *UserGroup) FromEntity(e *entity.UserGroup) {
 		return
 	}
 
+	groupID, _ := utils.ParseUUID(e.ID, "group ID")
+	workspaceID, _ := utils.ParseUUID(e.WorkspaceID, "workspace ID")
+	createdByID, _ := utils.ParseUUID(e.CreatedBy, "created by ID")
 	*m = UserGroup{
-		ID:          parseUUID(e.ID),
-		WorkspaceID: parseUUID(e.WorkspaceID),
+		ID:          groupID,
+		WorkspaceID: workspaceID,
 		Name:        e.Name,
-		Description: cloneStringPtr(e.Description),
-		CreatedBy:   parseUUID(e.CreatedBy),
-		CreatedAt:   cloneTime(e.CreatedAt),
-		UpdatedAt:   cloneTime(e.UpdatedAt),
+		Description: e.Description,
+		CreatedBy:   createdByID,
+		CreatedAt:   e.CreatedAt,
+		UpdatedAt:   e.UpdatedAt,
 	}
 }
 
@@ -605,13 +572,13 @@ func (m *UserGroup) ToEntity() *entity.UserGroup {
 	}
 
 	return &entity.UserGroup{
-		ID:          uuidToString(m.ID),
-		WorkspaceID: uuidToString(m.WorkspaceID),
+		ID:          utils.UUIDToString(m.ID),
+		WorkspaceID: utils.UUIDToString(m.WorkspaceID),
 		Name:        m.Name,
-		Description: cloneStringPtr(m.Description),
-		CreatedBy:   uuidToString(m.CreatedBy),
-		CreatedAt:   cloneTime(m.CreatedAt),
-		UpdatedAt:   cloneTime(m.UpdatedAt),
+		Description: m.Description,
+		CreatedBy:   utils.UUIDToString(m.CreatedBy),
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
 	}
 }
 
@@ -632,10 +599,12 @@ func (m *UserGroupMember) FromEntity(e *entity.UserGroupMember) {
 		return
 	}
 
+	groupID, _ := utils.ParseUUID(e.GroupID, "group ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = UserGroupMember{
-		GroupID:  parseUUID(e.GroupID),
-		UserID:   parseUUID(e.UserID),
-		JoinedAt: cloneTime(e.JoinedAt),
+		GroupID:  groupID,
+		UserID:   userID,
+		JoinedAt: e.JoinedAt,
 	}
 }
 
@@ -645,9 +614,9 @@ func (m *UserGroupMember) ToEntity() *entity.UserGroupMember {
 	}
 
 	return &entity.UserGroupMember{
-		GroupID:  uuidToString(m.GroupID),
-		UserID:   uuidToString(m.UserID),
-		JoinedAt: cloneTime(m.JoinedAt),
+		GroupID:  utils.UUIDToString(m.GroupID),
+		UserID:   utils.UUIDToString(m.UserID),
+		JoinedAt: m.JoinedAt,
 	}
 }
 
@@ -668,10 +637,12 @@ func (m *MessageUserMention) FromEntity(e *entity.MessageUserMention) {
 		return
 	}
 
+	messageID, _ := utils.ParseUUID(e.MessageID, "message ID")
+	userID, _ := utils.ParseUUID(e.UserID, "user ID")
 	*m = MessageUserMention{
-		MessageID: parseUUID(e.MessageID),
-		UserID:    parseUUID(e.UserID),
-		CreatedAt: cloneTime(e.CreatedAt),
+		MessageID: messageID,
+		UserID:    userID,
+		CreatedAt: e.CreatedAt,
 	}
 }
 
@@ -681,9 +652,9 @@ func (m *MessageUserMention) ToEntity() *entity.MessageUserMention {
 	}
 
 	return &entity.MessageUserMention{
-		MessageID: uuidToString(m.MessageID),
-		UserID:    uuidToString(m.UserID),
-		CreatedAt: cloneTime(m.CreatedAt),
+		MessageID: utils.UUIDToString(m.MessageID),
+		UserID:    utils.UUIDToString(m.UserID),
+		CreatedAt: m.CreatedAt,
 	}
 }
 
@@ -704,10 +675,12 @@ func (m *MessageGroupMention) FromEntity(e *entity.MessageGroupMention) {
 		return
 	}
 
+	messageID, _ := utils.ParseUUID(e.MessageID, "message ID")
+	groupID, _ := utils.ParseUUID(e.GroupID, "group ID")
 	*m = MessageGroupMention{
-		MessageID: parseUUID(e.MessageID),
-		GroupID:   parseUUID(e.GroupID),
-		CreatedAt: cloneTime(e.CreatedAt),
+		MessageID: messageID,
+		GroupID:   groupID,
+		CreatedAt: e.CreatedAt,
 	}
 }
 
@@ -717,9 +690,9 @@ func (m *MessageGroupMention) ToEntity() *entity.MessageGroupMention {
 	}
 
 	return &entity.MessageGroupMention{
-		MessageID: uuidToString(m.MessageID),
-		GroupID:   uuidToString(m.GroupID),
-		CreatedAt: cloneTime(m.CreatedAt),
+		MessageID: utils.UUIDToString(m.MessageID),
+		GroupID:   utils.UUIDToString(m.GroupID),
+		CreatedAt: m.CreatedAt,
 	}
 }
 
@@ -746,16 +719,18 @@ func (m *MessageLink) FromEntity(e *entity.MessageLink) {
 		return
 	}
 
+	linkID, _ := utils.ParseUUID(e.ID, "link ID")
+	messageID, _ := utils.ParseUUID(e.MessageID, "message ID")
 	*m = MessageLink{
-		ID:          parseUUID(e.ID),
-		MessageID:   parseUUID(e.MessageID),
+		ID:          linkID,
+		MessageID:   messageID,
 		URL:         e.URL,
-		Title:       cloneStringPtr(e.Title),
-		Description: cloneStringPtr(e.Description),
-		ImageURL:    cloneStringPtr(e.ImageURL),
-		SiteName:    cloneStringPtr(e.SiteName),
-		CardType:    cloneStringPtr(e.CardType),
-		CreatedAt:   cloneTime(e.CreatedAt),
+		Title:       e.Title,
+		Description: e.Description,
+		ImageURL:    e.ImageURL,
+		SiteName:    e.SiteName,
+		CardType:    e.CardType,
+		CreatedAt:   e.CreatedAt,
 	}
 }
 
@@ -765,15 +740,15 @@ func (m *MessageLink) ToEntity() *entity.MessageLink {
 	}
 
 	return &entity.MessageLink{
-		ID:          uuidToString(m.ID),
-		MessageID:   uuidToString(m.MessageID),
+		ID:          utils.UUIDToString(m.ID),
+		MessageID:   utils.UUIDToString(m.MessageID),
 		URL:         m.URL,
-		Title:       cloneStringPtr(m.Title),
-		Description: cloneStringPtr(m.Description),
-		ImageURL:    cloneStringPtr(m.ImageURL),
-		SiteName:    cloneStringPtr(m.SiteName),
-		CardType:    cloneStringPtr(m.CardType),
-		CreatedAt:   cloneTime(m.CreatedAt),
+		Title:       m.Title,
+		Description: m.Description,
+		ImageURL:    m.ImageURL,
+		SiteName:    m.SiteName,
+		CardType:    m.CardType,
+		CreatedAt:   m.CreatedAt,
 	}
 }
 
@@ -800,17 +775,19 @@ func (m *ThreadMetadata) FromEntity(e *entity.ThreadMetadata) {
 
 	participantIDs := make([]uuid.UUID, 0, len(e.ParticipantUserIDs))
 	for _, id := range e.ParticipantUserIDs {
-		participantIDs = append(participantIDs, parseUUID(id))
+		participantID, _ := utils.ParseUUID(id, "participant ID")
+		participantIDs = append(participantIDs, participantID)
 	}
 
+	messageID, _ := utils.ParseUUID(e.MessageID, "message ID")
 	*m = ThreadMetadata{
-		MessageID:          parseUUID(e.MessageID),
+		MessageID:          messageID,
 		ReplyCount:         e.ReplyCount,
-		LastReplyAt:        cloneTimePtr(e.LastReplyAt),
-		LastReplyUserID:    parseUUIDPtr(e.LastReplyUserID),
+		LastReplyAt:        e.LastReplyAt,
+		LastReplyUserID:    utils.ParseUUIDPtr(e.LastReplyUserID),
 		ParticipantUserIDs: participantIDs,
-		CreatedAt:          cloneTime(e.CreatedAt),
-		UpdatedAt:          cloneTime(e.UpdatedAt),
+		CreatedAt:          e.CreatedAt,
+		UpdatedAt:          e.UpdatedAt,
 	}
 }
 
@@ -821,16 +798,16 @@ func (m *ThreadMetadata) ToEntity() *entity.ThreadMetadata {
 
 	participantIDs := make([]string, 0, len(m.ParticipantUserIDs))
 	for _, id := range m.ParticipantUserIDs {
-		participantIDs = append(participantIDs, uuidToString(id))
+		participantIDs = append(participantIDs, utils.UUIDToString(id))
 	}
 
 	return &entity.ThreadMetadata{
-		MessageID:          uuidToString(m.MessageID),
+		MessageID:          utils.UUIDToString(m.MessageID),
 		ReplyCount:         m.ReplyCount,
-		LastReplyAt:        cloneTimePtr(m.LastReplyAt),
-		LastReplyUserID:    uuidPtrToStringPtr(m.LastReplyUserID),
+		LastReplyAt:        m.LastReplyAt,
+		LastReplyUserID:    utils.UUIDPtrToStringPtr(m.LastReplyUserID),
 		ParticipantUserIDs: participantIDs,
-		CreatedAt:          cloneTime(m.CreatedAt),
-		UpdatedAt:          cloneTime(m.UpdatedAt),
+		CreatedAt:          m.CreatedAt,
+		UpdatedAt:          m.UpdatedAt,
 	}
 }

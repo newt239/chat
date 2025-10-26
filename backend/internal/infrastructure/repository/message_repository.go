@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type messageRepository struct {
@@ -22,7 +23,7 @@ func NewMessageRepository(db *gorm.DB) domainrepository.MessageRepository {
 }
 
 func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Message, error) {
-	messageID, err := parseUUID(id, "message ID")
+	messageID, err := utils.ParseUUID(id, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +40,7 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 }
 
 func (r *messageRepository) FindByChannelID(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
-	chID, err := parseUUID(channelID, "channel ID")
+	chID, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +73,7 @@ func (r *messageRepository) FindByChannelID(ctx context.Context, channelID strin
 }
 
 func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID string) ([]*entity.Message, error) {
-	pID, err := parseUUID(parentID, "parent ID")
+	pID, err := utils.ParseUUID(parentID, "parent ID")
 	if err != nil {
 		return nil, err
 	}
@@ -94,12 +95,12 @@ func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID stri
 }
 
 func (r *messageRepository) Create(ctx context.Context, message *entity.Message) error {
-	channelID, err := parseUUID(message.ChannelID, "channel ID")
+	channelID, err := utils.ParseUUID(message.ChannelID, "channel ID")
 	if err != nil {
 		return err
 	}
 
-	userID, err := parseUUID(message.UserID, "user ID")
+	userID, err := utils.ParseUUID(message.UserID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -110,7 +111,7 @@ func (r *messageRepository) Create(ctx context.Context, message *entity.Message)
 	model.UserID = userID
 
 	if message.ID != "" {
-		messageID, err := parseUUID(message.ID, "message ID")
+		messageID, err := utils.ParseUUID(message.ID, "message ID")
 		if err != nil {
 			return err
 		}
@@ -118,7 +119,7 @@ func (r *messageRepository) Create(ctx context.Context, message *entity.Message)
 	}
 
 	if message.ParentID != nil {
-		parentID, err := parseUUID(*message.ParentID, "parent ID")
+		parentID, err := utils.ParseUUID(*message.ParentID, "parent ID")
 		if err != nil {
 			return err
 		}
@@ -134,7 +135,7 @@ func (r *messageRepository) Create(ctx context.Context, message *entity.Message)
 }
 
 func (r *messageRepository) Update(ctx context.Context, message *entity.Message) error {
-	messageID, err := parseUUID(message.ID, "message ID")
+	messageID, err := utils.ParseUUID(message.ID, "message ID")
 	if err != nil {
 		return err
 	}
@@ -155,7 +156,7 @@ func (r *messageRepository) Update(ctx context.Context, message *entity.Message)
 }
 
 func (r *messageRepository) Delete(ctx context.Context, id string) error {
-	messageID, err := parseUUID(id, "message ID")
+	messageID, err := utils.ParseUUID(id, "message ID")
 	if err != nil {
 		return err
 	}
@@ -167,7 +168,7 @@ func (r *messageRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (r *messageRepository) FindByChannelIDIncludingDeleted(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
-	chID, err := parseUUID(channelID, "channel ID")
+	chID, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +201,7 @@ func (r *messageRepository) FindByChannelIDIncludingDeleted(ctx context.Context,
 }
 
 func (r *messageRepository) FindThreadRepliesIncludingDeleted(ctx context.Context, parentID string) ([]*entity.Message, error) {
-	pID, err := parseUUID(parentID, "parent ID")
+	pID, err := utils.ParseUUID(parentID, "parent ID")
 	if err != nil {
 		return nil, err
 	}
@@ -228,14 +229,14 @@ func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, d
 
 	uuids := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {
-		msgID, err := parseUUID(id, "message ID")
+		msgID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return err
 		}
 		uuids = append(uuids, msgID)
 	}
 
-	deletedByUUID, err := parseUUID(deletedBy, "deleted by user ID")
+	deletedByUUID, err := utils.ParseUUID(deletedBy, "deleted by user ID")
 	if err != nil {
 		return err
 	}
@@ -252,12 +253,12 @@ func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, d
 }
 
 func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.MessageReaction) error {
-	messageID, err := parseUUID(reaction.MessageID, "message ID")
+	messageID, err := utils.ParseUUID(reaction.MessageID, "message ID")
 	if err != nil {
 		return err
 	}
 
-	userID, err := parseUUID(reaction.UserID, "user ID")
+	userID, err := utils.ParseUUID(reaction.UserID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -271,12 +272,12 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 }
 
 func (r *messageRepository) RemoveReaction(ctx context.Context, messageID string, userID string, emoji string) error {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
 
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -285,7 +286,7 @@ func (r *messageRepository) RemoveReaction(ctx context.Context, messageID string
 }
 
 func (r *messageRepository) FindReactions(ctx context.Context, messageID string) ([]*entity.MessageReaction, error) {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +311,7 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 
 	uuids := make([]uuid.UUID, 0, len(messageIDs))
 	for _, id := range messageIDs {
-		msgID, err := parseUUID(id, "message ID")
+		msgID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}

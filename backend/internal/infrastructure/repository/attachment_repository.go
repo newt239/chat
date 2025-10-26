@@ -9,6 +9,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type attachmentRepository struct {
@@ -20,7 +21,7 @@ func NewAttachmentRepository(db *gorm.DB) domainrepository.AttachmentRepository 
 }
 
 func (r *attachmentRepository) FindByID(ctx context.Context, id string) (*entity.Attachment, error) {
-	attachmentID, err := parseUUID(id, "attachment ID")
+	attachmentID, err := utils.ParseUUID(id, "attachment ID")
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +38,7 @@ func (r *attachmentRepository) FindByID(ctx context.Context, id string) (*entity
 }
 
 func (r *attachmentRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.Attachment, error) {
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (r *attachmentRepository) FindByMessageIDs(ctx context.Context, messageIDs 
 
 	msgIDs := make([]interface{}, len(messageIDs))
 	for i, id := range messageIDs {
-		parsed, err := parseUUID(id, "message ID")
+		parsed, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}
@@ -90,14 +91,14 @@ func (r *attachmentRepository) FindPendingByIDsForUser(ctx context.Context, user
 		return []*entity.Attachment{}, nil
 	}
 
-	userUUID, err := parseUUID(userID, "user ID")
+	userUUID, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 
 	ids := make([]interface{}, len(attachmentIDs))
 	for i, id := range attachmentIDs {
-		parsed, err := parseUUID(id, "attachment ID")
+		parsed, err := utils.ParseUUID(id, "attachment ID")
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +127,7 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, attachment *en
 	model.FromEntity(attachment)
 
 	if attachment.ID != "" {
-		attachmentID, err := parseUUID(attachment.ID, "attachment ID")
+		attachmentID, err := utils.ParseUUID(attachment.ID, "attachment ID")
 		if err != nil {
 			return err
 		}
@@ -146,14 +147,14 @@ func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentID
 		return nil
 	}
 
-	msgID, err := parseUUID(messageID, "message ID")
+	msgID, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
 
 	ids := make([]interface{}, len(attachmentIDs))
 	for i, id := range attachmentIDs {
-		parsed, err := parseUUID(id, "attachment ID")
+		parsed, err := utils.ParseUUID(id, "attachment ID")
 		if err != nil {
 			return err
 		}
@@ -175,7 +176,7 @@ func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentID
 }
 
 func (r *attachmentRepository) Delete(ctx context.Context, id string) error {
-	attachmentID, err := parseUUID(id, "attachment ID")
+	attachmentID, err := utils.ParseUUID(id, "attachment ID")
 	if err != nil {
 		return err
 	}

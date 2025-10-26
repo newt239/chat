@@ -11,6 +11,22 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
+// Service interfaces
+type TokenClaims struct {
+	UserID string
+	Email  string
+}
+
+type JWTService interface {
+	GenerateToken(userID string, duration time.Duration) (string, error)
+	VerifyToken(token string) (*TokenClaims, error)
+}
+
+type PasswordService interface {
+	HashPassword(password string) (string, error)
+	VerifyPassword(password, hash string) error
+}
+
 var (
 	ErrInvalidCredentials = domainerrors.ErrInvalidCredentials
 	ErrUserAlreadyExists  = domainerrors.ErrUserAlreadyExists

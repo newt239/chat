@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type userRepository struct {
@@ -21,7 +22,7 @@ func NewUserRepository(db *gorm.DB) domainrepository.UserRepository {
 }
 
 func (r *userRepository) FindByID(ctx context.Context, id string) (*entity.User, error) {
-	userID, err := parseUUID(id, "user ID")
+	userID, err := utils.ParseUUID(id, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func (r *userRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity
 
 	userIDs := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {
-		userID, err := parseUUID(id, "user ID")
+		userID, err := utils.ParseUUID(id, "user ID")
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +82,7 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
 	model.FromEntity(user)
 
 	if user.ID != "" {
-		userID, err := parseUUID(user.ID, "user ID")
+		userID, err := utils.ParseUUID(user.ID, "user ID")
 		if err != nil {
 			return err
 		}
@@ -97,7 +98,7 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
 }
 
 func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
-	userID, err := parseUUID(user.ID, "user ID")
+	userID, err := utils.ParseUUID(user.ID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -120,7 +121,7 @@ func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
 }
 
 func (r *userRepository) Delete(ctx context.Context, id string) error {
-	userID, err := parseUUID(id, "user ID")
+	userID, err := utils.ParseUUID(id, "user ID")
 	if err != nil {
 		return err
 	}

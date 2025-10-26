@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type sessionRepository struct {
@@ -21,7 +22,7 @@ func NewSessionRepository(db *gorm.DB) domainrepository.SessionRepository {
 }
 
 func (r *sessionRepository) FindByID(ctx context.Context, id string) (*entity.Session, error) {
-	sessionID, err := parseUUID(id, "session ID")
+	sessionID, err := utils.ParseUUID(id, "session ID")
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +39,7 @@ func (r *sessionRepository) FindByID(ctx context.Context, id string) (*entity.Se
 }
 
 func (r *sessionRepository) FindActiveByUserID(ctx context.Context, userID string) ([]*entity.Session, error) {
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (r *sessionRepository) FindActiveByUserID(ctx context.Context, userID strin
 }
 
 func (r *sessionRepository) Create(ctx context.Context, session *entity.Session) error {
-	userID, err := parseUUID(session.UserID, "user ID")
+	userID, err := utils.ParseUUID(session.UserID, "user ID")
 	if err != nil {
 		return err
 	}
@@ -72,7 +73,7 @@ func (r *sessionRepository) Create(ctx context.Context, session *entity.Session)
 	model.UserID = userID
 
 	if session.ID != "" {
-		sessionID, err := parseUUID(session.ID, "session ID")
+		sessionID, err := utils.ParseUUID(session.ID, "session ID")
 		if err != nil {
 			return err
 		}
@@ -88,7 +89,7 @@ func (r *sessionRepository) Create(ctx context.Context, session *entity.Session)
 }
 
 func (r *sessionRepository) Revoke(ctx context.Context, id string) error {
-	sessionID, err := parseUUID(id, "session ID")
+	sessionID, err := utils.ParseUUID(id, "session ID")
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func (r *sessionRepository) Revoke(ctx context.Context, id string) error {
 }
 
 func (r *sessionRepository) RevokeAllByUserID(ctx context.Context, userID string) error {
-	uid, err := parseUUID(userID, "user ID")
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return err
 	}
