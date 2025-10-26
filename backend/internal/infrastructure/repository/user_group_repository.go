@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type userGroupRepository struct {
@@ -26,7 +26,7 @@ func (r *userGroupRepository) FindByID(ctx context.Context, id string) (*entity.
 		return nil, err
 	}
 
-	var model database.UserGroup
+	var model models.UserGroup
 	if err := r.db.WithContext(ctx).Where("id = ?", groupID).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -51,7 +51,7 @@ func (r *userGroupRepository) FindByIDs(ctx context.Context, ids []string) ([]*e
 		groupIDs[i] = groupID
 	}
 
-	var models []database.UserGroup
+	var models []models.UserGroup
 	if err := r.db.WithContext(ctx).Where("id IN ?", groupIDs).Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (r *userGroupRepository) FindByWorkspaceID(ctx context.Context, workspaceID
 		return nil, err
 	}
 
-	var models []database.UserGroup
+	var models []models.UserGroup
 	if err := r.db.WithContext(ctx).Where("workspace_id = ?", wsID).Order("name asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (r *userGroupRepository) FindByName(ctx context.Context, workspaceID string
 		return nil, err
 	}
 
-	var model database.UserGroup
+	var model models.UserGroup
 	if err := r.db.WithContext(ctx).Where("workspace_id = ? AND name = ?", wsID, name).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -111,7 +111,7 @@ func (r *userGroupRepository) Create(ctx context.Context, group *entity.UserGrou
 		return err
 	}
 
-	model := &database.UserGroup{}
+	model := &models.UserGroup{}
 	model.FromEntity(group)
 	model.WorkspaceID = workspaceID
 	model.CreatedBy = createdBy
@@ -145,7 +145,7 @@ func (r *userGroupRepository) Update(ctx context.Context, group *entity.UserGrou
 		"updated_at":  now,
 	}
 
-	if err := r.db.WithContext(ctx).Model(&database.UserGroup{}).Where("id = ?", groupID).Updates(updates).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&models.UserGroup{}).Where("id = ?", groupID).Updates(updates).Error; err != nil {
 		return err
 	}
 
@@ -160,7 +160,7 @@ func (r *userGroupRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.UserGroup{}, "id = ?", groupID).Error
+	return r.db.WithContext(ctx).Delete(&models.UserGroup{}, "id = ?", groupID).Error
 }
 
 func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.UserGroupMember) error {
@@ -174,7 +174,7 @@ func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.User
 		return err
 	}
 
-	model := &database.UserGroupMember{}
+	model := &models.UserGroupMember{}
 	model.FromEntity(member)
 	model.GroupID = groupID
 	model.UserID = userID
@@ -193,7 +193,7 @@ func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID string, 
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.UserGroupMember{}, "group_id = ? AND user_id = ?", gID, uid).Error
+	return r.db.WithContext(ctx).Delete(&models.UserGroupMember{}, "group_id = ? AND user_id = ?", gID, uid).Error
 }
 
 func (r *userGroupRepository) FindMembersByGroupID(ctx context.Context, groupID string) ([]*entity.UserGroupMember, error) {
@@ -202,7 +202,7 @@ func (r *userGroupRepository) FindMembersByGroupID(ctx context.Context, groupID 
 		return nil, err
 	}
 
-	var models []database.UserGroupMember
+	var models []models.UserGroupMember
 	if err := r.db.WithContext(ctx).Where("group_id = ?", gID).Order("joined_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -221,7 +221,7 @@ func (r *userGroupRepository) FindGroupsByUserID(ctx context.Context, userID str
 		return nil, err
 	}
 
-	var models []database.UserGroup
+	var models []models.UserGroup
 	if err := r.db.WithContext(ctx).
 		Joins("JOIN user_group_members ON user_groups.id = user_group_members.group_id").
 		Where("user_group_members.user_id = ?", uid).
@@ -250,7 +250,7 @@ func (r *userGroupRepository) IsMember(ctx context.Context, groupID string, user
 	}
 
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&database.UserGroupMember{}).
+	if err := r.db.WithContext(ctx).Model(&models.UserGroupMember{}).
 		Where("group_id = ? AND user_id = ?", gID, uid).
 		Count(&count).Error; err != nil {
 		return false, err

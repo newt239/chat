@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type messageUserMentionRepository struct {
@@ -26,7 +26,7 @@ func (r *messageUserMentionRepository) FindByMessageID(ctx context.Context, mess
 		return nil, err
 	}
 
-	var models []database.MessageUserMention
+	var models []models.MessageUserMention
 	if err := r.db.WithContext(ctx).Where("message_id = ?", msgID).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (r *messageUserMentionRepository) FindByMessageIDs(ctx context.Context, mes
 		msgIDs[i] = msgID
 	}
 
-	var models []database.MessageUserMention
+	var models []models.MessageUserMention
 	if err := r.db.WithContext(ctx).Where("message_id IN ?", msgIDs).Order("message_id, created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (r *messageUserMentionRepository) FindByUserID(ctx context.Context, userID 
 		query = query.Limit(limit)
 	}
 
-	var models []database.MessageUserMention
+	var models []models.MessageUserMention
 	if err := query.Order("created_at desc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (r *messageUserMentionRepository) Create(ctx context.Context, mention *enti
 		return err
 	}
 
-	model := &database.MessageUserMention{}
+	model := &models.MessageUserMention{}
 	model.FromEntity(mention)
 	model.MessageID = messageID
 	model.UserID = userID
@@ -120,7 +120,7 @@ func (r *messageUserMentionRepository) DeleteByMessageID(ctx context.Context, me
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.MessageUserMention{}, "message_id = ?", msgID).Error
+	return r.db.WithContext(ctx).Delete(&models.MessageUserMention{}, "message_id = ?", msgID).Error
 }
 
 type messageGroupMentionRepository struct {
@@ -137,7 +137,7 @@ func (r *messageGroupMentionRepository) FindByMessageID(ctx context.Context, mes
 		return nil, err
 	}
 
-	var models []database.MessageGroupMention
+	var models []models.MessageGroupMention
 	if err := r.db.WithContext(ctx).Where("message_id = ?", msgID).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, me
 		msgIDs[i] = msgID
 	}
 
-	var models []database.MessageGroupMention
+	var models []models.MessageGroupMention
 	if err := r.db.WithContext(ctx).Where("message_id IN ?", msgIDs).Order("message_id, created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func (r *messageGroupMentionRepository) FindByGroupID(ctx context.Context, group
 		query = query.Limit(limit)
 	}
 
-	var models []database.MessageGroupMention
+	var models []models.MessageGroupMention
 	if err := query.Order("created_at desc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func (r *messageGroupMentionRepository) Create(ctx context.Context, mention *ent
 		return err
 	}
 
-	model := &database.MessageGroupMention{}
+	model := &models.MessageGroupMention{}
 	model.FromEntity(mention)
 	model.MessageID = messageID
 	model.GroupID = groupID
@@ -231,5 +231,5 @@ func (r *messageGroupMentionRepository) DeleteByMessageID(ctx context.Context, m
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.MessageGroupMention{}, "message_id = ?", msgID).Error
+	return r.db.WithContext(ctx).Delete(&models.MessageGroupMention{}, "message_id = ?", msgID).Error
 }

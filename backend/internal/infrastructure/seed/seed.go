@@ -9,7 +9,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/auth"
-	"github.com/newt239/chat/internal/infrastructure/persistence"
+	"github.com/newt239/chat/internal/infrastructure/repository"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	"gorm.io/gorm"
 )
@@ -32,11 +32,11 @@ func AutoSeed(db *gorm.DB) error {
 	log.Println("Database is empty, seeding with initial data...")
 
 	// Initialize repositories
-	userRepo := persistence.NewUserRepository(db)
-	workspaceRepo := persistence.NewWorkspaceRepository(db)
-	channelRepo := persistence.NewChannelRepository(db)
-	channelMemberRepo := persistence.NewChannelMemberRepository(db)
-	messageRepo := persistence.NewMessageRepository(db)
+	userRepo := repository.NewUserRepository(db)
+	workspaceRepo := repository.NewWorkspaceRepository(db)
+	channelRepo := repository.NewChannelRepository(db)
+	channelMemberRepo := repository.NewChannelMemberRepository(db)
+	messageRepo := repository.NewMessageRepository(db)
 
 	// Initialize password service
 	passwordService := auth.NewPasswordService()
@@ -317,7 +317,7 @@ func createSeedData(
 	}
 
 	// Create user groups
-	userGroupRepo := persistence.NewUserGroupRepository(db)
+	userGroupRepo := repository.NewUserGroupRepository(db)
 	groups := []*entity.UserGroup{
 		{
 			ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -399,7 +399,7 @@ func createSeedData(
 	}
 
 	// Create user mentions
-	userMentionRepo := persistence.NewMessageUserMentionRepository(db)
+	userMentionRepo := repository.NewMessageUserMentionRepository(db)
 	userMentions := []*entity.MessageUserMention{
 		{MessageID: mentionMessages[0].ID, UserID: users[1].ID, CreatedAt: mentionMessages[0].CreatedAt}, // Alice mentions Bob
 		{MessageID: mentionMessages[1].ID, UserID: users[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions Alice
@@ -415,7 +415,7 @@ func createSeedData(
 	}
 
 	// Create group mentions
-	groupMentionRepo := persistence.NewMessageGroupMentionRepository(db)
+	groupMentionRepo := repository.NewMessageGroupMentionRepository(db)
 	groupMentions := []*entity.MessageGroupMention{
 		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions developers
@@ -429,7 +429,7 @@ func createSeedData(
 	}
 
 	// Create message links (simplified OGP data)
-	linkRepo := persistence.NewMessageLinkRepository(db)
+	linkRepo := repository.NewMessageLinkRepository(db)
 	links := []*entity.MessageLink{
 		{
 			ID:          "llllllll-llll-llll-llll-llllllllllll",
@@ -468,7 +468,7 @@ func createSeedData(
 	}
 
 	// Create a bookmark for Alice
-	bookmarkRepo := persistence.NewBookmarkRepository(db)
+	bookmarkRepo := repository.NewBookmarkRepository(db)
 	bookmark := &entity.MessageBookmark{
 		UserID:    users[0].ID,    // Alice
 		MessageID: messages[1].ID, // Bob's welcome message

@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -7,7 +7,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/transaction"
 )
 
 type channelMemberRepository struct {
@@ -19,22 +20,22 @@ func NewChannelMemberRepository(db *gorm.DB) domainrepository.ChannelMemberRepos
 }
 
 func (r *channelMemberRepository) dbWithContext(ctx context.Context) *gorm.DB {
-	return resolveDB(ctx, r.db)
+	return transaction.ResolveDB(ctx, r.db)
 }
 
 func (r *channelMemberRepository) AddMember(ctx context.Context, member *entity.ChannelMember) error {
-	model := &database.ChannelMember{}
+	model := &models.ChannelMember{}
 	model.FromEntity(member)
 
 	return r.dbWithContext(ctx).Create(model).Error
 }
 
 func (r *channelMemberRepository) RemoveMember(ctx context.Context, channelID string, userID string) error {
-	return r.dbWithContext(ctx).Delete(&database.ChannelMember{}, "channel_id = ? AND user_id = ?", channelID, userID).Error
+	return r.dbWithContext(ctx).Delete(&models.ChannelMember{}, "channel_id = ? AND user_id = ?", channelID, userID).Error
 }
 
 func (r *channelMemberRepository) FindMembers(ctx context.Context, channelID string) ([]*entity.ChannelMember, error) {
-	var models []database.ChannelMember
+	var models []models.ChannelMember
 	if err := r.dbWithContext(ctx).Where("channel_id = ?", channelID).Order("joined_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func (r *channelMemberRepository) FindMembers(ctx context.Context, channelID str
 
 func (r *channelMemberRepository) IsMember(ctx context.Context, channelID string, userID string) (bool, error) {
 	var count int64
-	if err := r.dbWithContext(ctx).Model(&database.ChannelMember{}).
+	if err := r.dbWithContext(ctx).Model(&models.ChannelMember{}).
 		Where("channel_id = ? AND user_id = ?", channelID, userID).
 		Count(&count).Error; err != nil {
 		return false, err
@@ -59,14 +60,14 @@ func (r *channelMemberRepository) IsMember(ctx context.Context, channelID string
 }
 
 func (r *channelMemberRepository) UpdateMemberRole(ctx context.Context, channelID string, userID string, role entity.ChannelRole) error {
-	return r.dbWithContext(ctx).Model(&database.ChannelMember{}).
+	return r.dbWithContext(ctx).Model(&models.ChannelMember{}).
 		Where("channel_id = ? AND user_id = ?", channelID, userID).
 		Update("role", string(role)).Error
 }
 
 func (r *channelMemberRepository) CountAdmins(ctx context.Context, channelID string) (int, error) {
 	var count int64
-	if err := r.dbWithContext(ctx).Model(&database.ChannelMember{}).
+	if err := r.dbWithContext(ctx).Model(&models.ChannelMember{}).
 		Where("channel_id = ? AND role = ?", channelID, string(entity.ChannelRoleAdmin)).
 		Count(&count).Error; err != nil {
 		return 0, err

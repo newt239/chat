@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/newt239/chat/internal/infrastructure/config"
-	"github.com/newt239/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/database"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -18,7 +18,7 @@ func main() {
 	}
 
 	// Initialize database connection
-	database, err := db.NewConnection(cfg.Database.URL, logger.Info)
+	database, err := database.NewConnection(cfg.Database.URL, logger.Info)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}

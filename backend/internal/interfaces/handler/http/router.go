@@ -4,10 +4,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/newt239/chat/internal/adapter/controller/http/handler"
-	custommw "github.com/newt239/chat/internal/adapter/controller/http/middleware"
-	"github.com/newt239/chat/internal/adapter/controller/websocket"
 	"github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/interfaces/handler/http/handler"
+	custommw "github.com/newt239/chat/internal/interfaces/handler/http/middleware"
+	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 

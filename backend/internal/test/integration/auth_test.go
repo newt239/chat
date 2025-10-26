@@ -12,7 +12,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
-	"github.com/newt239/chat/internal/infrastructure/persistence"
+	"github.com/newt239/chat/internal/infrastructure/repository"
 	"github.com/newt239/chat/internal/registry"
 	"github.com/newt239/chat/internal/test/integration"
 	"github.com/stretchr/testify/assert"
@@ -74,7 +74,7 @@ func TestAuthIntegration(t *testing.T) {
 
 	t.Run("ユーザーログイン", func(t *testing.T) {
 		// テスト用ユーザーの作成
-		userRepo := persistence.NewUserRepository(testDB.DB)
+		userRepo := repository.NewUserRepository(testDB.DB)
 		passwordService := auth.NewPasswordService()
 
 		hashedPassword, err := passwordService.HashPassword("password123")

@@ -211,7 +211,7 @@ type messageInteractor struct {
 	assembler             *MessageOutputAssembler
 }
 
-func NewMessageInteractor(
+func NewMessageUseCase(
 	messageRepo domainrepository.MessageRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,

@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type messageRepository struct {
@@ -27,7 +27,7 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 		return nil, err
 	}
 
-	var model database.Message
+	var model models.Message
 	if err := r.db.WithContext(ctx).Where("id = ?", messageID).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -58,7 +58,7 @@ func (r *messageRepository) FindByChannelID(ctx context.Context, channelID strin
 		query = query.Limit(limit)
 	}
 
-	var models []database.Message
+	var models []models.Message
 	if err := query.Order("created_at desc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID stri
 		return nil, err
 	}
 
-	var models []database.Message
+	var models []models.Message
 	if err := r.db.WithContext(ctx).
 		Where("parent_id = ? AND deleted_at IS NULL", pID).
 		Order("created_at asc").
@@ -104,7 +104,7 @@ func (r *messageRepository) Create(ctx context.Context, message *entity.Message)
 		return err
 	}
 
-	model := &database.Message{}
+	model := &models.Message{}
 	model.FromEntity(message)
 	model.ChannelID = channelID
 	model.UserID = userID
@@ -145,7 +145,7 @@ func (r *messageRepository) Update(ctx context.Context, message *entity.Message)
 		"edited_at": now,
 	}
 
-	if err := r.db.WithContext(ctx).Model(&database.Message{}).Where("id = ?", messageID).Updates(updates).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&models.Message{}).Where("id = ?", messageID).Updates(updates).Error; err != nil {
 		return err
 	}
 
@@ -161,7 +161,7 @@ func (r *messageRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	now := time.Now()
-	return r.db.WithContext(ctx).Model(&database.Message{}).
+	return r.db.WithContext(ctx).Model(&models.Message{}).
 		Where("id = ?", messageID).
 		Update("deleted_at", now).Error
 }
@@ -186,7 +186,7 @@ func (r *messageRepository) FindByChannelIDIncludingDeleted(ctx context.Context,
 		query = query.Limit(limit)
 	}
 
-	var models []database.Message
+	var models []models.Message
 	if err := query.Order("created_at desc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (r *messageRepository) FindThreadRepliesIncludingDeleted(ctx context.Contex
 		return nil, err
 	}
 
-	var models []database.Message
+	var models []models.Message
 	if err := r.db.WithContext(ctx).
 		Where("parent_id = ?", pID).
 		Order("created_at asc").
@@ -246,7 +246,7 @@ func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, d
 		"deleted_by": deletedByUUID,
 	}
 
-	return r.db.WithContext(ctx).Model(&database.Message{}).
+	return r.db.WithContext(ctx).Model(&models.Message{}).
 		Where("id IN ?", uuids).
 		Updates(updates).Error
 }
@@ -262,7 +262,7 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 		return err
 	}
 
-	model := &database.MessageReaction{}
+	model := &models.MessageReaction{}
 	model.FromEntity(reaction)
 	model.MessageID = messageID
 	model.UserID = userID
@@ -281,7 +281,7 @@ func (r *messageRepository) RemoveReaction(ctx context.Context, messageID string
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.MessageReaction{}, "message_id = ? AND user_id = ? AND emoji = ?", msgID, uid, emoji).Error
+	return r.db.WithContext(ctx).Delete(&models.MessageReaction{}, "message_id = ? AND user_id = ? AND emoji = ?", msgID, uid, emoji).Error
 }
 
 func (r *messageRepository) FindReactions(ctx context.Context, messageID string) ([]*entity.MessageReaction, error) {
@@ -290,7 +290,7 @@ func (r *messageRepository) FindReactions(ctx context.Context, messageID string)
 		return nil, err
 	}
 
-	var models []database.MessageReaction
+	var models []models.MessageReaction
 	if err := r.db.WithContext(ctx).Where("message_id = ?", msgID).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -317,7 +317,7 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 		uuids = append(uuids, msgID)
 	}
 
-	var models []database.MessageReaction
+	var models []models.MessageReaction
 	if err := r.db.WithContext(ctx).Where("message_id IN ?", uuids).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}

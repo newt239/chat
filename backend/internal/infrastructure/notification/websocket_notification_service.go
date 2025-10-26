@@ -4,8 +4,8 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/newt239/chat/internal/adapter/controller/websocket"
 	"github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
 // WebSocketNotificationService はWebSocketを利用した通知サービスの実装です

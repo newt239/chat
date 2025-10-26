@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/infrastructure/config"
-	"github.com/newt239/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/database"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/infrastructure/seed"
 	"github.com/newt239/chat/internal/registry"
@@ -34,7 +34,7 @@ func main() {
 	defer logger.Sync()
 
 	// Initialize database
-	db, err := db.InitDB(cfg.Database.URL)
+	db, err := database.InitDB(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}

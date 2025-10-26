@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type readStateRepository struct {
@@ -32,7 +32,7 @@ func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelI
 		return nil, err
 	}
 
-	var model database.ChannelReadState
+	var model models.ChannelReadState
 	if err := r.db.WithContext(ctx).Where("channel_id = ? AND user_id = ?", chID, uid).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -54,7 +54,7 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 		return err
 	}
 
-	model := &database.ChannelReadState{}
+	model := &models.ChannelReadState{}
 	model.FromEntity(readState)
 	model.ChannelID = channelID
 	model.UserID = userID
@@ -76,12 +76,12 @@ func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID stri
 		return 0, err
 	}
 
-	var readState database.ChannelReadState
+	var readState models.ChannelReadState
 	err = r.db.WithContext(ctx).Where("channel_id = ? AND user_id = ?", chID, uid).First(&readState).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			var count int64
-			if err := r.db.WithContext(ctx).Model(&database.Message{}).
+			if err := r.db.WithContext(ctx).Model(&models.Message{}).
 				Where("channel_id = ? AND deleted_at IS NULL", chID).
 				Count(&count).Error; err != nil {
 				return 0, err
@@ -92,7 +92,7 @@ func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID stri
 	}
 
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&database.Message{}).
+	if err := r.db.WithContext(ctx).Model(&models.Message{}).
 		Where("channel_id = ? AND created_at > ? AND deleted_at IS NULL", chID, readState.LastReadAt).
 		Count(&count).Error; err != nil {
 		return 0, err

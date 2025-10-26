@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type attachmentRepository struct {
@@ -25,7 +25,7 @@ func (r *attachmentRepository) FindByID(ctx context.Context, id string) (*entity
 		return nil, err
 	}
 
-	var model database.Attachment
+	var model models.Attachment
 	if err := r.db.WithContext(ctx).Where("id = ?", attachmentID).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -42,7 +42,7 @@ func (r *attachmentRepository) FindByMessageID(ctx context.Context, messageID st
 		return nil, err
 	}
 
-	var models []database.Attachment
+	var models []models.Attachment
 	if err := r.db.WithContext(ctx).Where("message_id = ?", msgID).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (r *attachmentRepository) FindByMessageIDs(ctx context.Context, messageIDs 
 		msgIDs[i] = parsed
 	}
 
-	var models []database.Attachment
+	var models []models.Attachment
 	if err := r.db.WithContext(ctx).Where("message_id IN ?", msgIDs).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (r *attachmentRepository) FindPendingByIDsForUser(ctx context.Context, user
 		ids[i] = parsed
 	}
 
-	var models []database.Attachment
+	var models []models.Attachment
 	if err := r.db.WithContext(ctx).
 		Where("id IN ?", ids).
 		Where("uploader_id = ?", userUUID).
@@ -122,7 +122,7 @@ func (r *attachmentRepository) FindPendingByIDsForUser(ctx context.Context, user
 }
 
 func (r *attachmentRepository) CreatePending(ctx context.Context, attachment *entity.Attachment) error {
-	model := &database.Attachment{}
+	model := &models.Attachment{}
 	model.FromEntity(attachment)
 
 	if attachment.ID != "" {
@@ -168,7 +168,7 @@ func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentID
 	}
 
 	return r.db.WithContext(ctx).
-		Model(&database.Attachment{}).
+		Model(&models.Attachment{}).
 		Where("id IN ?", ids).
 		Updates(updates).
 		Error
@@ -180,5 +180,5 @@ func (r *attachmentRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.Attachment{}, "id = ?", attachmentID).Error
+	return r.db.WithContext(ctx).Delete(&models.Attachment{}, "id = ?", attachmentID).Error
 }

@@ -8,9 +8,9 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
-	wscontroller "github.com/newt239/chat/internal/adapter/controller/websocket"
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/infrastructure/config"
+	wscontroller "github.com/newt239/chat/internal/interfaces/handler/websocket"
 	"github.com/newt239/chat/internal/registry"
 	"github.com/newt239/chat/internal/test/integration"
 	"github.com/stretchr/testify/assert"

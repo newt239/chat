@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -8,7 +8,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/transaction"
 )
 
 type channelRepository struct {
@@ -20,11 +21,11 @@ func NewChannelRepository(db *gorm.DB) domainrepository.ChannelRepository {
 }
 
 func (r *channelRepository) dbWithContext(ctx context.Context) *gorm.DB {
-	return resolveDB(ctx, r.db)
+	return transaction.ResolveDB(ctx, r.db)
 }
 
 func (r *channelRepository) FindByID(ctx context.Context, id string) (*entity.Channel, error) {
-	var model database.Channel
+	var model models.Channel
 	if err := r.dbWithContext(ctx).Where("id = ?", id).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -36,7 +37,7 @@ func (r *channelRepository) FindByID(ctx context.Context, id string) (*entity.Ch
 }
 
 func (r *channelRepository) FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.Channel, error) {
-	var models []database.Channel
+	var models []models.Channel
 	if err := r.dbWithContext(ctx).Where("workspace_id = ?", workspaceID).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func (r *channelRepository) FindByWorkspaceID(ctx context.Context, workspaceID s
 }
 
 func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error) {
-	var models []database.Channel
+	var models []models.Channel
 
 	subQuery := r.dbWithContext(ctx).
 		Table("channel_members").
@@ -73,7 +74,7 @@ func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspac
 }
 
 func (r *channelRepository) Create(ctx context.Context, channel *entity.Channel) error {
-	model := &database.Channel{}
+	model := &models.Channel{}
 	model.FromEntity(channel)
 
 	if err := r.dbWithContext(ctx).Create(model).Error; err != nil {
@@ -92,7 +93,7 @@ func (r *channelRepository) Update(ctx context.Context, channel *entity.Channel)
 	}
 
 	if err := r.dbWithContext(ctx).
-		Model(&database.Channel{}).
+		Model(&models.Channel{}).
 		Where("id = ?", channel.ID).
 		Select("name", "description", "is_private").
 		Updates(channelUpdate{
@@ -103,7 +104,7 @@ func (r *channelRepository) Update(ctx context.Context, channel *entity.Channel)
 		return err
 	}
 
-	var updated database.Channel
+	var updated models.Channel
 	if err := r.dbWithContext(ctx).Where("id = ?", channel.ID).First(&updated).Error; err != nil {
 		return err
 	}
@@ -113,5 +114,5 @@ func (r *channelRepository) Update(ctx context.Context, channel *entity.Channel)
 }
 
 func (r *channelRepository) Delete(ctx context.Context, id string) error {
-	return r.dbWithContext(ctx).Delete(&database.Channel{}, "id = ?", id).Error
+	return r.dbWithContext(ctx).Delete(&models.Channel{}, "id = ?", id).Error
 }

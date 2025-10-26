@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type userRepository struct {
@@ -26,7 +26,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*entity.User,
 		return nil, err
 	}
 
-	var model database.User
+	var model models.User
 	if err := r.db.WithContext(ctx).Where("id = ?", userID).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -51,7 +51,7 @@ func (r *userRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity
 		userIDs = append(userIDs, userID)
 	}
 
-	var models []database.User
+	var models []models.User
 	if err := r.db.WithContext(ctx).Where("id IN ?", userIDs).Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (r *userRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity
 }
 
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
-	var model database.User
+	var model models.User
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -77,7 +77,7 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity
 }
 
 func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
-	model := &database.User{}
+	model := &models.User{}
 	model.FromEntity(user)
 
 	if user.ID != "" {
@@ -102,15 +102,15 @@ func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
 		return err
 	}
 
-	model := &database.User{}
+	model := &models.User{}
 	model.FromEntity(user)
 	model.ID = userID
 
-	if err := r.db.WithContext(ctx).Model(&database.User{}).Where("id = ?", userID).Updates(model).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Updates(model).Error; err != nil {
 		return err
 	}
 
-	var updated database.User
+	var updated models.User
 	if err := r.db.WithContext(ctx).Where("id = ?", userID).First(&updated).Error; err != nil {
 		return err
 	}
@@ -125,5 +125,5 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.User{}, "id = ?", userID).Error
+	return r.db.WithContext(ctx).Delete(&models.User{}, "id = ?", userID).Error
 }

@@ -1,4 +1,4 @@
-package persistence
+package transaction
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func txFromContext(ctx context.Context) (*gorm.DB, bool) {
 	return tx, ok && tx != nil
 }
 
-func resolveDB(ctx context.Context, db *gorm.DB) *gorm.DB {
+func ResolveDB(ctx context.Context, db *gorm.DB) *gorm.DB {
 	if tx, ok := txFromContext(ctx); ok {
 		return tx.WithContext(ctx)
 	}

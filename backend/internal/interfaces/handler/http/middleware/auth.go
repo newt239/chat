@@ -41,7 +41,3 @@ func Auth(jwtService authuc.JWTService) echo.MiddlewareFunc {
 		}
 	}
 }
-
-// GetUserID はコンテキストからユーザーIDを取得します
-
-// GetUserEmail はコンテキストからユーザーメールアドレスを取得します

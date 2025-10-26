@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/infrastructure/config"
-	"github.com/newt239/chat/internal/infrastructure/db"
+	"github.com/newt239/chat/internal/infrastructure/database"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -27,7 +27,7 @@ func NewTestDB(t *testing.T) *TestDB {
 	}
 
 	// データベース接続
-	database, err := db.InitDB(testDBURL)
+	database, err := database.InitDB(testDBURL)
 	require.NoError(t, err)
 
 	// テスト用のテーブルをクリーンアップ

@@ -12,8 +12,8 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
-	"github.com/newt239/chat/internal/infrastructure/db"
-	"github.com/newt239/chat/internal/infrastructure/persistence"
+	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/repository"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	"gorm.io/gorm"
 )
@@ -26,17 +26,17 @@ func main() {
 	}
 
 	// Initialize database
-	database, err := db.InitDB(cfg.Database.URL)
+	database, err := database.InitDB(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
 	// Initialize repositories
-	userRepo := persistence.NewUserRepository(database)
-	workspaceRepo := persistence.NewWorkspaceRepository(database)
-	channelRepo := persistence.NewChannelRepository(database)
-	channelMemberRepo := persistence.NewChannelMemberRepository(database)
-	messageRepo := persistence.NewMessageRepository(database)
+	userRepo := repository.NewUserRepository(database)
+	workspaceRepo := repository.NewWorkspaceRepository(database)
+	channelRepo := repository.NewChannelRepository(database)
+	channelMemberRepo := repository.NewChannelMemberRepository(database)
+	messageRepo := repository.NewMessageRepository(database)
 
 	// Initialize password service for hashing
 	passwordService := auth.NewPasswordService()
@@ -56,7 +56,7 @@ func main() {
 
 func checkExistingData(db *gorm.DB) error {
 	var count int64
-	if err := db.Model(&database.User{}).Count(&count).Error; err != nil {
+	if err := db.Model(&models.User{}).Count(&count).Error; err != nil {
 		return err
 	}
 
@@ -79,7 +79,7 @@ func createSeedData(
 ) error {
 	ctx := context.Background()
 	// Create test users
-	users := []*database.User{
+	users := []*models.User{
 		{
 			ID:           uuid.MustParse("11111111-1111-1111-1111-111111111111"),
 			Email:        "alice@example.com",
@@ -119,7 +119,7 @@ func createSeedData(
 	}
 
 	// Create test workspace
-	workspace := &database.Workspace{
+	workspace := &models.Workspace{
 		ID:          uuid.MustParse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 		Name:        "Test Workspace",
 		Description: stringPtr("A sample workspace for testing the chat application"),
@@ -139,7 +139,7 @@ func createSeedData(
 			role = "owner"
 		}
 
-		member := &database.WorkspaceMember{
+		member := &models.WorkspaceMember{
 			WorkspaceID: workspace.ID,
 			UserID:      user.ID,
 			Role:        role,
@@ -152,7 +152,7 @@ func createSeedData(
 	}
 
 	// Create channels
-	channels := []*database.Channel{
+	channels := []*models.Channel{
 		{
 			ID:          uuid.MustParse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
 			WorkspaceID: workspace.ID,
@@ -200,7 +200,7 @@ func createSeedData(
 		}
 
 		for _, user := range usersToAdd {
-			member := &database.ChannelMember{
+			member := &models.ChannelMember{
 				ChannelID: channel.ID,
 				UserID:    user.ID,
 			}
@@ -213,7 +213,7 @@ func createSeedData(
 	}
 
 	// Create sample messages
-	messages := []*database.Message{
+	messages := []*models.Message{
 		// General channel messages
 		{
 			ID:        uuid.MustParse("f1111111-1111-1111-1111-111111111111"),
@@ -302,7 +302,7 @@ func createSeedData(
 	fmt.Printf("✅ Created %d sample messages across all channels\n", len(messages))
 
 	// Create some message reactions
-	reactions := []*database.MessageReaction{
+	reactions := []*models.MessageReaction{
 		{
 			MessageID: messages[1].ID, // Bob's welcome message
 			UserID:    users[0].ID,    // Alice
@@ -346,7 +346,7 @@ func stringPtr(s string) *string {
 }
 
 // Domain conversion functions
-func domainUserFromDB(user *database.User) *entity.User {
+func domainUserFromDB(user *models.User) *entity.User {
 	return &entity.User{
 		ID:           user.ID.String(),
 		Email:        user.Email,
@@ -358,7 +358,7 @@ func domainUserFromDB(user *database.User) *entity.User {
 	}
 }
 
-func domainWorkspaceFromDB(workspace *database.Workspace) *entity.Workspace {
+func domainWorkspaceFromDB(workspace *models.Workspace) *entity.Workspace {
 	return &entity.Workspace{
 		ID:          workspace.ID.String(),
 		Name:        workspace.Name,
@@ -370,7 +370,7 @@ func domainWorkspaceFromDB(workspace *database.Workspace) *entity.Workspace {
 	}
 }
 
-func domainWorkspaceMemberFromDB(member *database.WorkspaceMember) *entity.WorkspaceMember {
+func domainWorkspaceMemberFromDB(member *models.WorkspaceMember) *entity.WorkspaceMember {
 	return &entity.WorkspaceMember{
 		WorkspaceID: member.WorkspaceID.String(),
 		UserID:      member.UserID.String(),
@@ -379,7 +379,7 @@ func domainWorkspaceMemberFromDB(member *database.WorkspaceMember) *entity.Works
 	}
 }
 
-func domainChannelFromDB(channel *database.Channel) *entity.Channel {
+func domainChannelFromDB(channel *models.Channel) *entity.Channel {
 	return &entity.Channel{
 		ID:          channel.ID.String(),
 		WorkspaceID: channel.WorkspaceID.String(),
@@ -392,7 +392,7 @@ func domainChannelFromDB(channel *database.Channel) *entity.Channel {
 	}
 }
 
-func domainChannelMemberFromDB(member *database.ChannelMember) *entity.ChannelMember {
+func domainChannelMemberFromDB(member *models.ChannelMember) *entity.ChannelMember {
 	return &entity.ChannelMember{
 		ChannelID: member.ChannelID.String(),
 		UserID:    member.UserID.String(),
@@ -400,7 +400,7 @@ func domainChannelMemberFromDB(member *database.ChannelMember) *entity.ChannelMe
 	}
 }
 
-func domainMessageFromDB(message *database.Message) *entity.Message {
+func domainMessageFromDB(message *models.Message) *entity.Message {
 	var parentID *string
 	if message.ParentID != nil {
 		parentIDStr := message.ParentID.String()
@@ -419,7 +419,7 @@ func domainMessageFromDB(message *database.Message) *entity.Message {
 	}
 }
 
-func domainMessageReactionFromDB(reaction *database.MessageReaction) *entity.MessageReaction {
+func domainMessageReactionFromDB(reaction *models.MessageReaction) *entity.MessageReaction {
 	return &entity.MessageReaction{
 		MessageID: reaction.MessageID.String(),
 		UserID:    reaction.UserID.String(),

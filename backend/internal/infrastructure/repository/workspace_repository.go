@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type workspaceRepository struct {
@@ -25,7 +25,7 @@ func (r *workspaceRepository) FindByID(ctx context.Context, id string) (*entity.
 		return nil, err
 	}
 
-	var model database.Workspace
+	var model models.Workspace
 	if err := r.db.WithContext(ctx).Where("id = ?", workspaceID).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -42,7 +42,7 @@ func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) (
 		return nil, err
 	}
 
-	var models []database.Workspace
+	var models []models.Workspace
 	if err := r.db.WithContext(ctx).
 		Joins("JOIN workspace_members ON workspaces.id = workspace_members.workspace_id").
 		Where("workspace_members.user_id = ?", uid).
@@ -65,7 +65,7 @@ func (r *workspaceRepository) Create(ctx context.Context, workspace *entity.Work
 		return err
 	}
 
-	model := &database.Workspace{}
+	model := &models.Workspace{}
 	model.FromEntity(workspace)
 	model.CreatedBy = createdBy
 
@@ -97,11 +97,11 @@ func (r *workspaceRepository) Update(ctx context.Context, workspace *entity.Work
 		"icon_url":    workspace.IconURL,
 	}
 
-	if err := r.db.WithContext(ctx).Model(&database.Workspace{}).Where("id = ?", workspaceID).Updates(updates).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&models.Workspace{}).Where("id = ?", workspaceID).Updates(updates).Error; err != nil {
 		return err
 	}
 
-	var updated database.Workspace
+	var updated models.Workspace
 	if err := r.db.WithContext(ctx).Where("id = ?", workspaceID).First(&updated).Error; err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (r *workspaceRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.Workspace{}, "id = ?", workspaceID).Error
+	return r.db.WithContext(ctx).Delete(&models.Workspace{}, "id = ?", workspaceID).Error
 }
 
 func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.WorkspaceMember) error {
@@ -130,7 +130,7 @@ func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.Work
 		return err
 	}
 
-	model := &database.WorkspaceMember{}
+	model := &models.WorkspaceMember{}
 	model.FromEntity(member)
 	model.WorkspaceID = workspaceID
 	model.UserID = userID
@@ -149,7 +149,7 @@ func (r *workspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID 
 		return err
 	}
 
-	return r.db.WithContext(ctx).Model(&database.WorkspaceMember{}).
+	return r.db.WithContext(ctx).Model(&models.WorkspaceMember{}).
 		Where("workspace_id = ? AND user_id = ?", wsID, uid).
 		Update("role", string(role)).Error
 }
@@ -165,7 +165,7 @@ func (r *workspaceRepository) RemoveMember(ctx context.Context, workspaceID stri
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.WorkspaceMember{}, "workspace_id = ? AND user_id = ?", wsID, uid).Error
+	return r.db.WithContext(ctx).Delete(&models.WorkspaceMember{}, "workspace_id = ? AND user_id = ?", wsID, uid).Error
 }
 
 func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.WorkspaceMember, error) {
@@ -174,7 +174,7 @@ func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, work
 		return nil, err
 	}
 
-	var models []database.WorkspaceMember
+	var models []models.WorkspaceMember
 	if err := r.db.WithContext(ctx).Where("workspace_id = ?", wsID).Order("joined_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string
 		return nil, err
 	}
 
-	var model database.WorkspaceMember
+	var model models.WorkspaceMember
 	if err := r.db.WithContext(ctx).Where("workspace_id = ? AND user_id = ?", wsID, uid).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

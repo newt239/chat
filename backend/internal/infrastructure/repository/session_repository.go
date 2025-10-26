@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type sessionRepository struct {
@@ -26,7 +26,7 @@ func (r *sessionRepository) FindByID(ctx context.Context, id string) (*entity.Se
 		return nil, err
 	}
 
-	var model database.Session
+	var model models.Session
 	if err := r.db.WithContext(ctx).Where("id = ?", sessionID).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -43,7 +43,7 @@ func (r *sessionRepository) FindActiveByUserID(ctx context.Context, userID strin
 		return nil, err
 	}
 
-	var models []database.Session
+	var models []models.Session
 	now := time.Now()
 
 	if err := r.db.WithContext(ctx).
@@ -67,7 +67,7 @@ func (r *sessionRepository) Create(ctx context.Context, session *entity.Session)
 		return err
 	}
 
-	model := &database.Session{}
+	model := &models.Session{}
 	model.FromEntity(session)
 	model.UserID = userID
 
@@ -94,7 +94,7 @@ func (r *sessionRepository) Revoke(ctx context.Context, id string) error {
 	}
 
 	now := time.Now()
-	return r.db.WithContext(ctx).Model(&database.Session{}).
+	return r.db.WithContext(ctx).Model(&models.Session{}).
 		Where("id = ?", sessionID).
 		Update("revoked_at", now).Error
 }
@@ -106,12 +106,12 @@ func (r *sessionRepository) RevokeAllByUserID(ctx context.Context, userID string
 	}
 
 	now := time.Now()
-	return r.db.WithContext(ctx).Model(&database.Session{}).
+	return r.db.WithContext(ctx).Model(&models.Session{}).
 		Where("user_id = ? AND revoked_at IS NULL", uid).
 		Update("revoked_at", now).Error
 }
 
 func (r *sessionRepository) DeleteExpired(ctx context.Context) error {
 	now := time.Now()
-	return r.db.WithContext(ctx).Where("expires_at < ?", now).Delete(&database.Session{}).Error
+	return r.db.WithContext(ctx).Where("expires_at < ?", now).Delete(&models.Session{}).Error
 }

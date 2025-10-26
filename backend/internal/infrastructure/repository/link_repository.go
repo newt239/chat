@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type messageLinkRepository struct {
@@ -26,7 +26,7 @@ func (r *messageLinkRepository) FindByMessageID(ctx context.Context, messageID s
 		return nil, err
 	}
 
-	var models []database.MessageLink
+	var models []models.MessageLink
 	if err := r.db.WithContext(ctx).Where("message_id = ?", msgID).Order("created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (r *messageLinkRepository) FindByMessageIDs(ctx context.Context, messageIDs
 		msgIDs[i] = msgID
 	}
 
-	var models []database.MessageLink
+	var models []models.MessageLink
 	if err := r.db.WithContext(ctx).Where("message_id IN ?", msgIDs).Order("message_id, created_at asc").Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (r *messageLinkRepository) FindByMessageIDs(ctx context.Context, messageIDs
 }
 
 func (r *messageLinkRepository) FindByURL(ctx context.Context, url string) (*entity.MessageLink, error) {
-	var model database.MessageLink
+	var model models.MessageLink
 	if err := r.db.WithContext(ctx).Where("url = ?", url).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -84,7 +84,7 @@ func (r *messageLinkRepository) Create(ctx context.Context, link *entity.Message
 		return err
 	}
 
-	model := &database.MessageLink{}
+	model := &models.MessageLink{}
 	model.FromEntity(link)
 	model.MessageID = messageID
 
@@ -111,5 +111,5 @@ func (r *messageLinkRepository) DeleteByMessageID(ctx context.Context, messageID
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.MessageLink{}, "message_id = ?", msgID).Error
+	return r.db.WithContext(ctx).Delete(&models.MessageLink{}, "message_id = ?", msgID).Error
 }

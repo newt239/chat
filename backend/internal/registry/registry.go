@@ -6,10 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v4"
-	"github.com/newt239/chat/internal/adapter/controller/http"
-	"github.com/newt239/chat/internal/adapter/controller/http/handler"
-	"github.com/newt239/chat/internal/adapter/controller/websocket"
-	"github.com/newt239/chat/internal/domain/repository"
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/infrastructure/auth"
@@ -18,8 +15,12 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/mention"
 	"github.com/newt239/chat/internal/infrastructure/notification"
 	"github.com/newt239/chat/internal/infrastructure/ogp"
-	"github.com/newt239/chat/internal/infrastructure/persistence"
+	"github.com/newt239/chat/internal/infrastructure/repository"
 	"github.com/newt239/chat/internal/infrastructure/storage/wasabi"
+	"github.com/newt239/chat/internal/infrastructure/transaction"
+	"github.com/newt239/chat/internal/interfaces/handler/http"
+	"github.com/newt239/chat/internal/interfaces/handler/http/handler"
+	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
@@ -106,64 +107,64 @@ func (r *Registry) NewLinkProcessingService() service.LinkProcessingService {
 }
 
 // Repositories
-func (r *Registry) NewUserRepository() repository.UserRepository {
-	return persistence.NewUserRepository(r.db)
+func (r *Registry) NewUserRepository() domainrepository.UserRepository {
+	return repository.NewUserRepository(r.db)
 }
 
-func (r *Registry) NewSessionRepository() repository.SessionRepository {
-	return persistence.NewSessionRepository(r.db)
+func (r *Registry) NewSessionRepository() domainrepository.SessionRepository {
+	return repository.NewSessionRepository(r.db)
 }
 
-func (r *Registry) NewWorkspaceRepository() repository.WorkspaceRepository {
-	return persistence.NewWorkspaceRepository(r.db)
+func (r *Registry) NewWorkspaceRepository() domainrepository.WorkspaceRepository {
+	return repository.NewWorkspaceRepository(r.db)
 }
 
-func (r *Registry) NewChannelRepository() repository.ChannelRepository {
-	return persistence.NewChannelRepository(r.db)
+func (r *Registry) NewChannelRepository() domainrepository.ChannelRepository {
+	return repository.NewChannelRepository(r.db)
 }
 
-func (r *Registry) NewChannelMemberRepository() repository.ChannelMemberRepository {
-	return persistence.NewChannelMemberRepository(r.db)
+func (r *Registry) NewChannelMemberRepository() domainrepository.ChannelMemberRepository {
+	return repository.NewChannelMemberRepository(r.db)
 }
 
-func (r *Registry) NewMessageRepository() repository.MessageRepository {
-	return persistence.NewMessageRepository(r.db)
+func (r *Registry) NewMessageRepository() domainrepository.MessageRepository {
+	return repository.NewMessageRepository(r.db)
 }
 
-func (r *Registry) NewReadStateRepository() repository.ReadStateRepository {
-	return persistence.NewReadStateRepository(r.db)
+func (r *Registry) NewReadStateRepository() domainrepository.ReadStateRepository {
+	return repository.NewReadStateRepository(r.db)
 }
 
-func (r *Registry) NewUserGroupRepository() repository.UserGroupRepository {
-	return persistence.NewUserGroupRepository(r.db)
+func (r *Registry) NewUserGroupRepository() domainrepository.UserGroupRepository {
+	return repository.NewUserGroupRepository(r.db)
 }
 
-func (r *Registry) NewMessageUserMentionRepository() repository.MessageUserMentionRepository {
-	return persistence.NewMessageUserMentionRepository(r.db)
+func (r *Registry) NewMessageUserMentionRepository() domainrepository.MessageUserMentionRepository {
+	return repository.NewMessageUserMentionRepository(r.db)
 }
 
-func (r *Registry) NewMessageGroupMentionRepository() repository.MessageGroupMentionRepository {
-	return persistence.NewMessageGroupMentionRepository(r.db)
+func (r *Registry) NewMessageGroupMentionRepository() domainrepository.MessageGroupMentionRepository {
+	return repository.NewMessageGroupMentionRepository(r.db)
 }
 
-func (r *Registry) NewMessageLinkRepository() repository.MessageLinkRepository {
-	return persistence.NewMessageLinkRepository(r.db)
+func (r *Registry) NewMessageLinkRepository() domainrepository.MessageLinkRepository {
+	return repository.NewMessageLinkRepository(r.db)
 }
 
-func (r *Registry) NewBookmarkRepository() repository.BookmarkRepository {
-	return persistence.NewBookmarkRepository(r.db)
+func (r *Registry) NewBookmarkRepository() domainrepository.BookmarkRepository {
+	return repository.NewBookmarkRepository(r.db)
 }
 
-func (r *Registry) NewThreadRepository() repository.ThreadRepository {
-	return persistence.NewThreadRepository(r.db)
+func (r *Registry) NewThreadRepository() domainrepository.ThreadRepository {
+	return repository.NewThreadRepository(r.db)
 }
 
-func (r *Registry) NewAttachmentRepository() repository.AttachmentRepository {
-	return persistence.NewAttachmentRepository(r.db)
+func (r *Registry) NewAttachmentRepository() domainrepository.AttachmentRepository {
+	return repository.NewAttachmentRepository(r.db)
 }
 
 func (r *Registry) NewTransactionManager() domaintransaction.Manager {
-	return persistence.NewTransactionManager(r.db)
+	return transaction.NewTransactionManager(r.db)
 }
 
 // Use Cases
@@ -202,7 +203,7 @@ func (r *Registry) NewChannelMemberUseCase() channelmemberuc.ChannelMemberUseCas
 }
 
 func (r *Registry) NewMessageUseCase() messageuc.MessageUseCase {
-	return messageuc.NewMessageInteractor(
+	return messageuc.NewMessageUseCase(
 		r.NewMessageRepository(),
 		r.NewChannelRepository(),
 		r.NewChannelMemberRepository(),

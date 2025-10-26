@@ -1,4 +1,4 @@
-package persistence
+package repository
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/models"
 )
 
 type threadRepository struct {
@@ -28,7 +28,7 @@ func (r *threadRepository) FindMetadataByMessageID(ctx context.Context, messageI
 		return nil, err
 	}
 
-	var model database.ThreadMetadata
+	var model models.ThreadMetadata
 	if err := r.db.WithContext(ctx).Where("message_id = ?", msgID).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -53,7 +53,7 @@ func (r *threadRepository) FindMetadataByMessageIDs(ctx context.Context, message
 		msgIDs = append(msgIDs, msgID)
 	}
 
-	var models []database.ThreadMetadata
+	var models []models.ThreadMetadata
 	if err := r.db.WithContext(ctx).Where("message_id IN ?", msgIDs).Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (r *threadRepository) FindMetadataByMessageIDs(ctx context.Context, message
 }
 
 func (r *threadRepository) CreateOrUpdateMetadata(ctx context.Context, metadata *entity.ThreadMetadata) error {
-	var model database.ThreadMetadata
+	var model models.ThreadMetadata
 	model.FromEntity(metadata)
 
 	if err := r.db.WithContext(ctx).Clauses(clause.OnConflict{
@@ -94,7 +94,7 @@ func (r *threadRepository) IncrementReplyCount(ctx context.Context, messageID st
 	now := time.Now()
 
 	// 既存のメタデータを取得
-	var existing database.ThreadMetadata
+	var existing models.ThreadMetadata
 	err = r.db.WithContext(ctx).Where("message_id = ?", msgID).First(&existing).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
@@ -102,7 +102,7 @@ func (r *threadRepository) IncrementReplyCount(ctx context.Context, messageID st
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// 新規作成
-		newMetadata := database.ThreadMetadata{
+		newMetadata := models.ThreadMetadata{
 			MessageID:          msgID,
 			ReplyCount:         1,
 			LastReplyAt:        &now,
@@ -136,7 +136,7 @@ func (r *threadRepository) IncrementReplyCount(ctx context.Context, messageID st
 		"updated_at":           now,
 	}
 
-	return r.db.WithContext(ctx).Model(&database.ThreadMetadata{}).
+	return r.db.WithContext(ctx).Model(&models.ThreadMetadata{}).
 		Where("message_id = ?", msgID).
 		Updates(updates).Error
 }
@@ -147,5 +147,5 @@ func (r *threadRepository) DeleteMetadata(ctx context.Context, messageID string)
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&database.ThreadMetadata{}, "message_id = ?", msgID).Error
+	return r.db.WithContext(ctx).Delete(&models.ThreadMetadata{}, "message_id = ?", msgID).Error
 }
