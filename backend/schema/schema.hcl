@@ -20,7 +20,7 @@ table "users" {
     type = text
     null = false
   }
-  column "avatar_url" { 
+  column "avatar_url" {
     type = text
     null = true
   }

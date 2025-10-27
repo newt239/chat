@@ -56,5 +56,5 @@ export const useRemoveBookmark = () => {
 export const useIsBookmarked = (messageId: string) => {
   const { data: bookmarks } = useBookmarks();
 
-  return bookmarks?.bookmarks.some((bookmark) => bookmark.message.id === messageId) ?? false;
+  return bookmarks?.bookmarks.some((bookmark) => bookmark.message?.id === messageId) ?? false;
 };

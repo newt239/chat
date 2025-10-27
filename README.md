@@ -30,9 +30,6 @@ docker-compose exec backend go run cmd/reset/main.go
 # シードデータを作成
 docker-compose exec backend go run cmd/seed/main.go
 
-# コンテナを再起動
-docker-compose restart
-
 # ログを表示
 docker-compose logs -f
 
@@ -231,20 +228,16 @@ JOIN workspaces w ON c.workspace_id = w.id;
 ### テストの実行
 
 ```bash
-# バックエンド（Dockerコンテナ内で実行）
+# バックエンド
 docker-compose exec backend go test ./...
 
-# フロントエンド（Dockerコンテナ内で実行）
+# フロントエンド
 docker-compose exec frontend pnpm test
 ```
 
 ### コード生成
 
 ```bash
-# フロントエンド用にOpenAPI型定義を生成（Dockerコンテナ内で実行）
+# フロントエンド用にOpenAPI型定義を生成
 docker-compose exec frontend pnpm run generate:api
 ```
-
-## ライセンス
-
-MIT
