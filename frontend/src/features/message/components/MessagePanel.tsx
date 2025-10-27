@@ -6,7 +6,12 @@ import { notifications } from "@mantine/notifications";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
-import { useMessages, useSendMessage, useUpdateMessage, useDeleteMessage } from "../hooks/useMessage";
+import {
+  useMessages,
+  useSendMessage,
+  useUpdateMessage,
+  useDeleteMessage,
+} from "../hooks/useMessage";
 import { useMessageInputMode } from "../hooks/useMessageInputMode";
 
 import { MessageInputToolbar } from "./MessageInputToolbar";
@@ -20,21 +25,29 @@ import { useFileUpload } from "@/features/attachment/hooks/useFileUpload";
 import { useChannels } from "@/features/channel/hooks/useChannel";
 import { LinkPreviewCard } from "@/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "@/features/link/hooks/useLinkPreview";
-import { userAtom } from "@/lib/store/auth";
-import { rightSidebarViewAtom, setRightSidebarViewAtom, toggleRightSidebarViewAtom } from "@/lib/store/ui";
+import { userAtom } from "@/providers/store/auth";
+import {
+  rightSidebarViewAtom,
+  setRightSidebarViewAtom,
+  toggleRightSidebarViewAtom,
+} from "@/providers/store/ui";
+import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
+import { useReadStateEvents } from "@/providers/websocket/useReadStateEvents";
+import { useWebSocketEvents } from "@/providers/websocket/useWebSocketEvents";
 
-type MessagePanelProps = {
-  workspaceId: string | null;
-  channelId: string | null;
-}
-
-export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
+export const MessagePanel = () => {
+  const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
+  const [currentChannelId] = useAtom(currentChannelIdAtom);
   const currentUser = useAtomValue(userAtom);
-  const { data: channels } = useChannels(workspaceId);
-  const { data: messageResponse, isLoading, isError, error } = useMessages(channelId);
-  const sendMessage = useSendMessage(channelId);
-  const updateMessage = useUpdateMessage(channelId);
-  const deleteMessage = useDeleteMessage(channelId);
+  const { data: channels } = useChannels(currentWorkspaceId);
+  const { data: messageResponse, isLoading, isError, error } = useMessages(currentChannelId);
+  const sendMessage = useSendMessage(currentChannelId);
+  const updateMessage = useUpdateMessage(currentChannelId);
+  const deleteMessage = useDeleteMessage(currentChannelId);
+
+  // WebSocketイベントを処理
+  useWebSocketEvents();
+  const { updateReadState } = useReadStateEvents();
   const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -100,11 +113,11 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   }, [messageResponse]);
 
   const activeChannel = useMemo(() => {
-    if (!channels || channelId === null) {
+    if (!channels || currentChannelId === null) {
       return null;
     }
-    return channels.find((channel) => channel.id === channelId) ?? null;
-  }, [channels, channelId]);
+    return channels.find((channel) => channel.id === currentChannelId) ?? null;
+  }, [channels, currentChannelId]);
 
   // メッセージが読み込まれた時と新しいメッセージが送信された時に最新メッセージにスクロール
   const scrollToBottom = () => {
@@ -123,17 +136,27 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     }
   }, [sendMessage.isSuccess]);
 
+  // メッセージが表示されたときに既読状態を更新
+  useEffect(() => {
+    if (currentChannelId && messageResponse && !isLoading) {
+      const lastMessage = orderedMessages[orderedMessages.length - 1];
+      if (lastMessage) {
+        updateReadState(currentChannelId, lastMessage.id);
+      }
+    }
+  }, [currentChannelId, messageResponse, isLoading, orderedMessages, updateReadState]);
+
   // アクションハンドラー
   const handleCopyLink = useCallback(
     (messageId: string) => {
-      const url = `${window.location.origin}/app/${workspaceId}/${channelId}?message=${messageId}`;
+      const url = `${window.location.origin}/app/${currentWorkspaceId}/${currentChannelId}?message=${messageId}`;
       navigator.clipboard.writeText(url);
       notifications.show({
         title: "コピーしました",
         message: "メッセージリンクをクリップボードにコピーしました",
       });
     },
-    [workspaceId, channelId]
+    [currentWorkspaceId, currentChannelId]
   );
 
   const handleCreateThread = useCallback(
@@ -209,19 +232,19 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
 
   const handleFileSelect = useCallback(
     async (files: File[]) => {
-      if (!channelId) return;
+      if (!currentChannelId) return;
 
       for (const file of files) {
-        await uploadFile(file, { channelId });
+        await uploadFile(file, { channelId: currentChannelId });
       }
     },
-    [channelId, uploadFile]
+    [currentChannelId, uploadFile]
   );
 
   const isThreadOpen = rightSidebarView.type === "thread";
   const openThreadId = isThreadOpen ? rightSidebarView.threadId : null;
 
-  if (workspaceId === null) {
+  if (currentWorkspaceId === null) {
     return (
       <Card withBorder padding="xl" radius="md" className="h-full flex items-center justify-center">
         <Text c="dimmed">ワークスペースを選択してください</Text>
@@ -229,7 +252,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     );
   }
 
-  if (channelId === null) {
+  if (currentChannelId === null) {
     return (
       <Card withBorder padding="xl" radius="md" className="h-full flex items-center justify-center">
         <Text c="dimmed">チャンネルを選択するとメッセージが表示されます</Text>
@@ -282,7 +305,9 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
             variant="subtle"
             color="gray"
             size="lg"
-            onClick={() => toggleRightSidebarView({ type: "channel-info", channelId })}
+            onClick={() =>
+              toggleRightSidebarView({ type: "channel-info", channelId: currentChannelId })
+            }
             aria-label="サイドバーの表示切り替え"
           >
             <IconInfoCircle size={20} />
@@ -338,13 +363,18 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
       <Card withBorder padding="lg" radius="md" className="shrink-0">
         <form onSubmit={handleSubmit}>
           <div className="flex items-center gap-2">
-            <FileInput onFileSelect={handleFileSelect} disabled={sendMessage.isPending || isUploading} />
+            <FileInput
+              onFileSelect={handleFileSelect}
+              disabled={sendMessage.isPending || isUploading}
+            />
             <div className="flex-1">
               <MessageInputToolbar
                 mode={mode}
                 onToggleMode={toggleMode}
                 onSubmit={() => handleSubmit()}
-                disabled={(body.trim().length === 0 && pendingAttachments.length === 0) || isUploading}
+                disabled={
+                  (body.trim().length === 0 && pendingAttachments.length === 0) || isUploading
+                }
                 loading={sendMessage.isPending}
                 textareaRef={textareaRef}
               />
@@ -389,13 +419,13 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
       </Card>
 
       {/* スレッドサイドパネル */}
-      {workspaceId && channelId && (
+      {currentWorkspaceId && currentChannelId && (
         <ThreadSidePanel
           opened={isThreadOpen}
           onClose={handleCloseThread}
           messageId={openThreadId}
-          workspaceId={workspaceId}
-          channelId={channelId}
+          workspaceId={currentWorkspaceId}
+          channelId={currentChannelId}
         />
       )}
     </div>

@@ -5,14 +5,18 @@ import { ThreadPanel } from "./ThreadPanel";
 import { UserProfilePanel } from "./UserProfilePanel";
 
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
-import { type RightSidebarView } from "@/lib/store/ui";
+import { type PanelView } from "@/providers/store/ui";
 
 type WorkspaceRightSidebarProps = {
-  workspaceId: string;
-  view: RightSidebarView;
+  workspaceId: string | null;
+  view: PanelView;
 };
 
 export const WorkspaceRightSidebar = ({ workspaceId, view }: WorkspaceRightSidebarProps) => {
+  if (!workspaceId) {
+    return null;
+  }
+
   switch (view.type) {
     case "members":
       return <MemberPanel workspaceId={workspaceId} />;

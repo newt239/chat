@@ -11,7 +11,7 @@ import { navigateToChannel } from "@/lib/navigation";
 import {
   currentChannelIdAtom,
   setCurrentChannelAtom,
-} from "@/lib/store/workspace";
+} from "@/providers/store/workspace";
 
 type ChannelListProps = {
   workspaceId: string | null;

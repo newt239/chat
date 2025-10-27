@@ -8,8 +8,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Provider as JotaiProvider } from "jotai";
 
 import { App } from "./App";
-import { queryClient } from "./lib/query";
-import { store } from "./lib/store";
+import { queryClient } from "./providers/query/query";
+import { store } from "./providers/store";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./styles/globals.css";

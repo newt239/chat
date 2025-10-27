@@ -11,7 +11,7 @@ import { MessageItem } from "./MessageItem";
 import { ThreadReplyInput } from "./ThreadReplyInput";
 import { ThreadReplyList } from "./ThreadReplyList";
 
-import { userAtom } from "@/lib/store/auth";
+import { userAtom } from "@/providers/store/auth";
 
 type ThreadSidePanelProps = {
   opened: boolean;

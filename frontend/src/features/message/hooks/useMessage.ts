@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { messagesResponseSchema } from "../schemas";
 
 import { api } from "@/lib/api/client";
+import { useWebSocket } from "@/providers/websocket/WebSocketProvider";
 
 type CreateMessageInput = {
   body: string;
@@ -50,6 +51,7 @@ export function useMessages(channelId: string | null) {
 
 export function useSendMessage(channelId: string | null) {
   const queryClient = useQueryClient();
+  const { client } = useWebSocket();
 
   return useMutation({
     mutationFn: async (input: CreateMessageInput) => {
@@ -57,6 +59,16 @@ export function useSendMessage(channelId: string | null) {
         throw new Error("チャンネルが選択されていません");
       }
 
+      // WebSocketが利用可能な場合はWebSocketで送信
+      if (client) {
+        client.send("post_message", {
+          channel_id: channelId,
+          body: input.body,
+        });
+        return { success: true };
+      }
+
+      // WebSocketが利用できない場合はHTTP APIで送信
       const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
         params: { path: { channelId } },
         body: { body: input.body, attachmentIds: input.attachmentIds },
@@ -70,7 +82,10 @@ export function useSendMessage(channelId: string | null) {
     },
     onSuccess: async () => {
       if (channelId !== null) {
-        await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "messages"] });
+        // WebSocketが利用できない場合のみクエリを無効化
+        if (!client) {
+          await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "messages"] });
+        }
       }
     },
   });

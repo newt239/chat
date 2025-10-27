@@ -5,7 +5,7 @@ import type { components } from "@/lib/api/schema";
 
 import { api } from "@/lib/api/client";
 import { navigateToAppWithWorkspace, navigateToLogin } from "@/lib/navigation";
-import { setAuthAtom, clearAuthAtom } from "@/lib/store/auth";
+import { setAuthAtom, clearAuthAtom } from "@/providers/store/auth";
 
 type AuthResponse = components["schemas"]["AuthResponse"];
 

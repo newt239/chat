@@ -4,7 +4,7 @@ import { Badge, Loader, Stack, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
-import { currentChannelIdAtom } from "@/lib/store/workspace";
+import { currentChannelIdAtom } from "@/providers/store/workspace";
 
 const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
 

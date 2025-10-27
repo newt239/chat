@@ -10,7 +10,7 @@ import { ReactionButton } from "./ReactionButton";
 import type { ReactionGroup } from "../types";
 import type { MessageWithUser } from "@/features/message/schemas";
 
-import { userAtom } from "@/lib/store/auth";
+import { userAtom } from "@/providers/store/auth";
 
 type ReactionListProps = {
   message: MessageWithUser;

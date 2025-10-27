@@ -13,7 +13,7 @@ import { navigateToWorkspace } from "@/lib/navigation";
 import {
   currentWorkspaceIdAtom,
   setCurrentWorkspaceAtom,
-} from "@/lib/store/workspace";
+} from "@/providers/store/workspace";
 
 export const WorkspaceList = () => {
   const { data: workspaces, isLoading, error } = useWorkspaces();

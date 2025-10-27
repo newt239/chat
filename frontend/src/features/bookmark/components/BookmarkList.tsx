@@ -89,7 +89,7 @@ export const BookmarkList = () => {
                   </div>
                 </Group>
               </Button>
-            )) || []}
+            ))}
         </Stack>
       </ScrollArea>
     </div>

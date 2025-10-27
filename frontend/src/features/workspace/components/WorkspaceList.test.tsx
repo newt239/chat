@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from "vitest";
 
 import { WorkspaceList } from "./WorkspaceList";
 
-import { queryClient } from "@/lib/query";
+import { queryClient } from "@/providers/query/query";
 
 // Mock the hooks
 vi.mock("../hooks/useWorkspace", () => ({

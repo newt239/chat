@@ -5,7 +5,7 @@ import { useSetAtom } from "jotai";
 import { WorkspaceList } from "@/features/workspace/components/WorkspaceList";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
 import { navigateToWorkspace } from "@/lib/navigation";
-import { setCurrentWorkspaceAtom } from "@/lib/store/workspace";
+import { setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
 type WorkspaceStorageState = {
   state?: {

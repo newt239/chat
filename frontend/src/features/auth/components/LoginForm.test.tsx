@@ -16,7 +16,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 import { LoginForm } from "./LoginForm";
 
-import { queryClient } from "@/lib/query";
+import { queryClient } from "@/providers/query/query";
 
 // Mock the useLogin hook
 vi.mock("../hooks/useAuth", () => ({

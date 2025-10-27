@@ -1,13 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { WorkspaceComponent } from "@/features/workspace/components/WorkspaceComponent";
-import { store } from "@/lib/store";
-import { isAuthenticatedAtom } from "@/lib/store/auth";
-
-const WorkspaceRouteComponent = () => {
-  const { workspaceId } = Route.useParams();
-  return <WorkspaceComponent workspaceId={workspaceId} />;
-};
+import { store } from "@/providers/store";
+import { isAuthenticatedAtom } from "@/providers/store/auth";
 
 export const Route = createFileRoute("/app/$workspaceId")({
   beforeLoad: () => {
@@ -16,5 +11,5 @@ export const Route = createFileRoute("/app/$workspaceId")({
       throw redirect({ to: "/login" });
     }
   },
-  component: WorkspaceRouteComponent,
+  component: WorkspaceComponent,
 });

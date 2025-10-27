@@ -1,11 +1,11 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { navigateToWorkspace, navigateToChannel } from "../navigation";
+import { navigateToWorkspace, navigateToChannel } from "@/lib/navigation";
 
 type WorkspaceStorage = {
   currentWorkspaceId: string | null;
-}
+};
 
 // ワークスペースIDをストレージに保存
 export const workspaceStorageAtom = atomWithStorage<WorkspaceStorage>(
@@ -26,31 +26,22 @@ export const currentWorkspaceIdAtom = atom<string | null>(
 export const currentChannelIdAtom = atom<string | null>(null);
 
 // ワークスペースを設定
-export const setCurrentWorkspaceAtom = atom(
-  null,
-  (_get, set, workspaceId: string) => {
-    set(workspaceStorageAtom, { currentWorkspaceId: workspaceId });
-    set(currentChannelIdAtom, null);
-  }
-);
+export const setCurrentWorkspaceAtom = atom(null, (_get, set, workspaceId: string) => {
+  set(workspaceStorageAtom, { currentWorkspaceId: workspaceId });
+  set(currentChannelIdAtom, null);
+});
 
 // チャンネルを設定
-export const setCurrentChannelAtom = atom(
-  null,
-  (_get, set, channelId: string) => {
-    set(currentChannelIdAtom, channelId);
-  }
-);
+export const setCurrentChannelAtom = atom(null, (_get, set, channelId: string) => {
+  set(currentChannelIdAtom, channelId);
+});
 
 // ワークスペースを設定してナビゲート
-export const setCurrentWorkspaceAndNavigateAtom = atom(
-  null,
-  (_get, set, workspaceId: string) => {
-    set(workspaceStorageAtom, { currentWorkspaceId: workspaceId });
-    set(currentChannelIdAtom, null);
-    navigateToWorkspace(workspaceId);
-  }
-);
+export const setCurrentWorkspaceAndNavigateAtom = atom(null, (_get, set, workspaceId: string) => {
+  set(workspaceStorageAtom, { currentWorkspaceId: workspaceId });
+  set(currentChannelIdAtom, null);
+  navigateToWorkspace(workspaceId);
+});
 
 // チャンネルを設定してナビゲート
 export const setCurrentChannelAndNavigateAtom = atom(

@@ -3,9 +3,9 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RightSidebarView } from "@/lib/store/ui";
+import type { PanelView } from "@/providers/store/ui";
 
-import { currentChannelIdAtom } from "@/lib/store/workspace";
+import { currentChannelIdAtom } from "@/providers/store/workspace";
 
 const mockUseChannels = vi.fn();
 const mockUseMembers = vi.fn();
@@ -66,7 +66,7 @@ vi.mock("@/features/search/hooks/useWorkspaceSearchIndex", () => ({
 
 let WorkspaceRightSidebar: (typeof import("@/features/workspace/components/WorkspaceRightSidebar"))["WorkspaceRightSidebar"];
 
-const renderSidebar = (view: RightSidebarView, workspaceId = "workspace-1") => {
+const renderSidebar = (view: PanelView, workspaceId = "workspace-1") => {
   const store = createStore();
   store.set(currentChannelIdAtom, "channel-1");
 

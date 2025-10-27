@@ -4,7 +4,7 @@ import { MantineProvider } from "@mantine/core";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { Provider as JotaiProvider } from "jotai";
 
-import { store } from "@/lib/store";
+import { store } from "@/providers/store";
 
 type AppTestWrapperProps = {
   children: ReactNode;

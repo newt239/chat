@@ -1,23 +1,24 @@
 import { useState } from "react";
 
 import { Menu, Button, Text, Avatar, TextInput, ActionIcon } from "@mantine/core";
-import { IconSearch, IconBookmark } from "@tabler/icons-react";
+import { IconSearch, IconBookmark, IconSettings } from "@tabler/icons-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import type { WorkspaceSummary } from "@/features/workspace/types";
 
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
-import { clearAuthAtom } from "@/lib/store/auth";
-import { setRightSidebarViewAtom } from "@/lib/store/ui";
-import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/lib/store/workspace";
+import { clearAuthAtom } from "@/providers/store/auth";
+import { setRightSidePanelViewAtom, isMobileAtom } from "@/providers/store/ui";
+import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
-export const Header = () => {
+export const GlobalHeaderPanel = () => {
   const { data: workspaces, isLoading } = useWorkspaces();
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
   const clearAuth = useSetAtom(clearAuthAtom);
-  const setRightSidebarView = useSetAtom(setRightSidebarViewAtom);
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const isMobile = useAtomValue(isMobileAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -25,6 +26,11 @@ export const Header = () => {
 
   const currentWorkspace = workspaces?.find((w: WorkspaceSummary) => w.id === currentWorkspaceId);
   const isInWorkspace = params.workspaceId !== undefined;
+
+  // モバイルビューでは非表示
+  if (isMobile) {
+    return null;
+  }
 
   const handleWorkspaceChange = (workspaceId: string) => {
     setCurrentWorkspace(workspaceId);
@@ -36,7 +42,12 @@ export const Header = () => {
   };
 
   const handleBookmarkClick = () => {
-    setRightSidebarView({ type: "bookmarks" });
+    setRightSidePanelView({ type: "bookmarks" });
+  };
+
+  const handleSettingsClick = () => {
+    // TODO: アプリ設定画面への導線を実装
+    console.log("Settings clicked");
   };
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -151,6 +162,19 @@ export const Header = () => {
               title="ブックマーク"
             >
               <IconBookmark size={20} />
+            </ActionIcon>
+          )}
+
+          {/* 設定ボタン */}
+          {isInWorkspace && (
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={handleSettingsClick}
+              className="text-gray-700 hover:bg-gray-100"
+              title="設定"
+            >
+              <IconSettings size={20} />
             </ActionIcon>
           )}
 

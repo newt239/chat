@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { useSetAtom } from "jotai";
 
-import { initializeAuthAtom } from "@/lib/store/auth";
+import { initializeAuthAtom } from "@/providers/store/auth";
 
 export const AuthInitializer = () => {
   const initializeAuth = useSetAtom(initializeAuthAtom);

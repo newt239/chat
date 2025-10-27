@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from "vitest";
 
 import { RegisterForm } from "./RegisterForm";
 
-import { queryClient } from "@/lib/query";
+import { queryClient } from "@/providers/query/query";
 
 // Mock the useRegister hook
 vi.mock("../hooks/useAuth", () => ({

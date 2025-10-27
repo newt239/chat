@@ -10,7 +10,7 @@ import {
   isAuthInitializedAtom,
   isAuthenticatedAtom,
   userAtom,
-} from "@/lib/store/auth";
+} from "@/providers/store/auth";
 
 const publicPaths = new Set(["/login", "/register"]);
 

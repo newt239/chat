@@ -3,8 +3,8 @@ import createClient from "openapi-fetch";
 import type { paths } from "./schema";
 
 import { navigateToLogin } from "@/lib/navigation";
-import { store } from "@/lib/store";
-import { accessTokenAtom, authAtom, clearAuthAtom, refreshTokenAtom } from "@/lib/store/auth";
+import { store } from "@/providers/store";
+import { accessTokenAtom, authAtom, clearAuthAtom, refreshTokenAtom } from "@/providers/store/auth";
 
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";

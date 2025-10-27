@@ -26,6 +26,13 @@ export class WebSocketClient {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
+  private onOpenCallback?: () => void;
+  private onCloseCallback?: () => void;
+  private onErrorCallback?: () => void;
+
+  get webSocket() {
+    return this.ws;
+  }
 
   constructor(workspaceId: string, accessToken: string) {
     this.workspaceId = workspaceId;
@@ -42,6 +49,7 @@ export class WebSocketClient {
 
     this.ws.onopen = () => {
       this.reconnectAttempts = 0;
+      this.onOpenCallback?.();
     };
 
     this.ws.onmessage = (event) => {
@@ -54,11 +62,13 @@ export class WebSocketClient {
     };
 
     this.ws.onclose = () => {
+      this.onCloseCallback?.();
       this.attemptReconnect();
     };
 
     this.ws.onerror = (error) => {
       console.error("WebSocket error:", error);
+      this.onErrorCallback?.();
     };
   }
 
@@ -105,5 +115,11 @@ export class WebSocketClient {
       this.ws.close();
       this.ws = null;
     }
+  }
+
+  setConnectionCallbacks(onOpen?: () => void, onClose?: () => void, onError?: () => void) {
+    this.onOpenCallback = onOpen;
+    this.onCloseCallback = onClose;
+    this.onErrorCallback = onError;
   }
 }
