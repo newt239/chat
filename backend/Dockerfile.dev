@@ -1,5 +1,9 @@
 FROM golang:1.23-alpine
 
+# Install Atlas CLI
+RUN apk add --no-cache curl && \
+    curl -sSf https://atlasgo.sh | sh
+
 WORKDIR /app
 
 # Copy go mod files

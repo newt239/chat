@@ -30,7 +30,7 @@ func main() {
 
 	fmt.Println("✅ Database reset successfully!")
 	fmt.Println("   All data has been cleared.")
-	fmt.Println("   Run your migration tool (e.g. `atlas migrate apply`) to recreate tables.")
+	fmt.Println("   Tables have been dropped and will be recreated on next migration.")
 }
 
 func dropAllTables(db *gorm.DB) error {
@@ -45,6 +45,7 @@ func dropAllTables(db *gorm.DB) error {
 		"workspaces",
 		"sessions",
 		"users",
+		"atlas_schema_revisions", // Atlas migration history table
 	}
 
 	for _, table := range tables {

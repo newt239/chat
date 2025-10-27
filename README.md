@@ -109,10 +109,15 @@ chat/
 git clone <repository-url>
 cd chat
 
-# 2. Docker Composeで全て起動
-docker-compose up -d
+# 2. 環境変数ファイルの設定
+cp .env.example .env
+cp backend/.env.example backend/.env
+# .envファイルを編集して必要に応じて設定を変更
 
-# 3. ログ確認（オプション）
+# 3. Docker Composeで全て起動（初回は自動的にシードデータが投入されます）
+docker-compose up -d --build
+
+# 4. ログ確認（オプション）
 docker-compose logs -f
 
 # 起動完了後、http://localhost:5173 にアクセス
@@ -138,21 +143,58 @@ docker-compose down -v
 1. 初回は「新規登録」からアカウントを作成
 2. ログイン後、ワークスペースを作成して利用開始
 
+## 環境変数の設定
+
+### 環境変数ファイル
+
+バックエンドディレクトリの`.env.example`ファイルをコピーして`.env`ファイルを作成し、必要に応じて設定を変更してください。
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+### 主要な環境変数
+
+- `POSTGRES_USER`: PostgreSQL のユーザー名（デフォルト: postgres）
+- `POSTGRES_PASSWORD`: PostgreSQL のパスワード（デフォルト: postgres）
+- `POSTGRES_DB`: PostgreSQL のデータベース名（デフォルト: chat）
+- `POSTGRES_HOST`: PostgreSQL のホスト名（デフォルト: db）
+- `POSTGRES_PORT`: PostgreSQL のポート番号（デフォルト: 5432）
+- `POSTGRES_URL`: PostgreSQL の接続 URL（上記の変数から自動生成）
+
 ## データベース管理
 
 ### シードデータの管理
 
 ```bash
-# データベースをリセット（全データ削除）
-cd backend
-go run cmd/reset/main.go
+# データベースをリセット
+docker-compose exec backend go run cmd/reset/main.go
 
 # 手動でシードデータを投入
-go run cmd/seed/main.go
-
-# 強制的にシードデータを再投入（既存データを無視）
-go run cmd/seed-manual/main.go
+docker-compose exec backend go run cmd/seed/main.go
 ```
+
+### マイグレーション管理
+
+```bash
+# 例: Docker環境でカラムを追加するマイグレーションを生成
+pnpm run migrate:generate docker add_email_column
+
+# 例: Docker環境にマイグレーションを適用
+docker-compose exec backend atlas migrate apply --env docker
+```
+
+**利用可能な環境:**
+
+- `dev` - ローカル開発環境 (postgres://postgres:postgres@localhost:5432/chat)
+- `docker` - Docker 環境 (postgres://postgres:postgres@db:5432/chat)
+
+**マイグレーション生成の流れ:**
+
+1. `schema/schema.hcl` ファイルを編集してスキーマを変更
+2. `pnpm run migrate:generate [環境名] [マイグレーション名]` でマイグレーションファイルを生成
+3. 生成されたマイグレーションファイルを確認・編集（必要に応じて）
+4. `docker-compose exec backend atlas migrate apply --env [環境名]` でマイグレーションを適用
 
 ### データベースの状態確認
 
@@ -179,9 +221,8 @@ JOIN workspaces w ON c.workspace_id = w.id;
 ### テストの実行
 
 ```bash
-# バックエンド
-cd backend
-go test ./...
+# バックエンド（Dockerコンテナ内で実行）
+docker-compose exec backend go test ./...
 
 # フロントエンド
 cd frontend

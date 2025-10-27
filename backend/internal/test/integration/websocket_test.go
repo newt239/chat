@@ -157,8 +157,7 @@ func TestWebSocketIntegration(t *testing.T) {
 
 		var response map[string]interface{}
 		err = conn.ReadJSON(&response)
-		// レスポンスの有無は実装によって異なるため、エラーの有無のみを確認
-		// 実際の実装では、メッセージの処理結果に応じてレスポンスが返される
+		require.NoError(t, err)
 	})
 
 	t.Run("複数クライアントの接続", func(t *testing.T) {
@@ -168,7 +167,7 @@ func TestWebSocketIntegration(t *testing.T) {
 
 		// 複数のWebSocket接続を作成
 		connections := make([]*websocket.Conn, 3)
-		for i := 0; i < 3; i++ {
+		for i := range 3 {
 			wsURL := "ws" + server.URL[4:] + "/ws?workspaceId=" + testWorkspaceID + "&token=" + accessToken
 			conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 			require.NoError(t, err)
