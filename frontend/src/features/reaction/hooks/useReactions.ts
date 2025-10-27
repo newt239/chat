@@ -1,19 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/lib/api/client";
-
-export const useReactions = (messageId: string) => {
-  return useQuery({
-    queryKey: ["reactions", messageId],
-    queryFn: async () => {
-      const { data, error } = await api.GET("/api/messages/{messageId}/reactions", {
-        params: { path: { messageId } },
-      });
-      if (error) throw error;
-      return data;
-    },
-  });
-};
 
 export const useAddReaction = () => {
   const queryClient = useQueryClient();

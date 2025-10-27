@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import type { PresignRequest } from "./types";
 
@@ -17,26 +17,6 @@ export const usePresignUpload = () => {
 
       return data;
     },
-  });
-};
-
-export const useAttachmentMetadata = (attachmentId: string) => {
-  return useQuery({
-    queryKey: ["attachment", attachmentId],
-    queryFn: async () => {
-      const { data, error } = await api.GET("/api/attachments/{id}", {
-        params: {
-          path: { id: attachmentId },
-        },
-      });
-
-      if (error) {
-        throw new Error(error.error || "添付ファイル情報の取得に失敗しました");
-      }
-
-      return data;
-    },
-    enabled: Boolean(attachmentId),
   });
 };
 

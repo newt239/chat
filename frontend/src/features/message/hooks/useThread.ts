@@ -1,48 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  threadMetadataSchema,
-  threadRepliesResponseSchema,
-} from "../schemas";
+import { threadRepliesResponseSchema } from "../schemas";
 
 import { api } from "@/lib/api/client";
 
 type CreateThreadReplyInput = {
   body: string;
 };
-
-/**
- * スレッドのメタデータを取得するフック
- */
-export function useThreadMetadata(messageId: string | null) {
-  return useQuery({
-    queryKey: ["messages", messageId, "thread", "metadata"],
-    queryFn: async () => {
-      if (messageId === null) {
-        return null;
-      }
-
-      const { data, error } = await api.GET("/api/messages/{messageId}/thread/metadata", {
-        params: { path: { messageId } },
-      });
-
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to fetch thread metadata");
-      }
-
-      const parsed = threadMetadataSchema.safeParse(data);
-
-      if (!parsed.success) {
-        console.error("スレッドメタデータ取得のスキーマ検証エラー:", parsed.error);
-        console.error("受信したデータ:", JSON.stringify(data, null, 2));
-        throw new Error("Unexpected response format when fetching thread metadata");
-      }
-
-      return parsed.data;
-    },
-    enabled: messageId !== null,
-  });
-}
 
 /**
  * スレッドの返信一覧を取得するフック

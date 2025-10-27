@@ -4,8 +4,8 @@ import { useSetAtom } from "jotai";
 import type { components } from "@/lib/api/schema";
 
 import { api } from "@/lib/api/client";
-import { navigateToAppWithWorkspace, navigateToLogin } from "@/lib/navigation";
-import { setAuthAtom, clearAuthAtom } from "@/providers/store/auth";
+import { navigateToAppWithWorkspace } from "@/lib/navigation";
+import { setAuthAtom } from "@/providers/store/auth";
 
 type AuthResponse = components["schemas"]["AuthResponse"];
 
@@ -45,20 +45,6 @@ export function useRegister() {
     onSuccess: (data: AuthResponse) => {
       setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
       navigateToAppWithWorkspace();
-    },
-  });
-}
-
-export function useLogout() {
-  const clearAuth = useSetAtom(clearAuthAtom);
-
-  return useMutation({
-    mutationFn: async () => {
-      await api.POST("/api/auth/logout", {});
-    },
-    onSuccess: () => {
-      clearAuth();
-      navigateToLogin();
     },
   });
 }

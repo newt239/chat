@@ -1,0 +1,23 @@
+{
+  "entry": [
+    "src/main.tsx",
+    "src/App.tsx"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "src/test/**/*",
+    "src/**/*.test.{ts,tsx}",
+    "src/**/*.spec.{ts,tsx}",
+    "dist/**/*",
+    "node_modules/**/*"
+  ],
+  "ignoreDependencies": [
+    "@types/*"
+  ],
+  "ignoreBinaries": [
+    "only-allow",
+    "storybook"
+  ]
+}

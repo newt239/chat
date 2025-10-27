@@ -1,17 +1,15 @@
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
+import remarkGfm from "remark-gfm";
+import remarkParse from "remark-parse";
+import { unified } from "unified";
 
-import type { Root } from 'mdast';
+import type { Root } from "mdast";
 
-export type ParsedMarkdown = {
+type ParsedMarkdown = {
   ast: Root;
-}
+};
 
 export function parseMarkdown(content: string): ParsedMarkdown {
-  const processor = unified()
-    .use(remarkParse)
-    .use(remarkGfm);
+  const processor = unified().use(remarkParse).use(remarkGfm);
 
   const ast = processor.parse(content) as Root;
   return { ast };

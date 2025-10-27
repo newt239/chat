@@ -60,8 +60,6 @@ export const clearAuthAtom = atom(null, (_get, set) => {
 
 const authInitializationStatusAtom = atom(false);
 
-export const isAuthInitializedAtom = atom((get) => get(authInitializationStatusAtom));
-
 export const initializeAuthAtom = atom(null, (get, set) => {
   if (get(authInitializationStatusAtom)) {
     return;

@@ -14,16 +14,8 @@ export const navigateToChannel = (workspaceId: string, channelId: string) => {
   });
 };
 
-export const navigateToApp = () => {
-  router.navigate({ to: "/app" });
-};
-
 export const navigateToLogin = () => {
   router.navigate({ to: "/login" });
-};
-
-export const navigateToRegister = () => {
-  router.navigate({ to: "/register" });
 };
 
 export const navigateToAppWithWorkspace = () => {
@@ -46,5 +38,5 @@ export const navigateToAppWithWorkspace = () => {
   }
 
   // ワークスペース情報がない場合は通常のアプリページにリダイレクト
-  navigateToApp();
+  router.navigate({ to: "/app" });
 };

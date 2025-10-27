@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { WorkspaceSummary } from "@/features/workspace/types";
-import type { components } from "@/lib/api/schema";
 
 import { api } from "@/lib/api/client";
 
@@ -34,22 +33,6 @@ export function useWorkspaces() {
 
       return [];
     },
-  });
-}
-
-export function useWorkspace(workspaceId: string) {
-  return useQuery({
-    queryKey: ["workspaces", workspaceId],
-    queryFn: async (): Promise<components["schemas"]["Workspace"] | undefined> => {
-      // Note: This endpoint doesn't exist in the API schema
-      // This function may need to be implemented differently or removed
-      const { data } = await api.GET("/api/workspaces", {});
-      if (!data || !data.workspaces) {
-        throw new Error("Failed to fetch workspaces");
-      }
-      return data.workspaces.find((workspace) => workspace.id === workspaceId);
-    },
-    enabled: !!workspaceId,
   });
 }
 

@@ -23,9 +23,6 @@ export class WebSocketClient {
   private workspaceId: string;
   private accessToken: string;
   private eventHandlers: Map<WebSocketEventType, EventHandler[]> = new Map();
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000;
   private onOpenCallback?: () => void;
   private onCloseCallback?: () => void;
   private onErrorCallback?: () => void;
@@ -40,47 +37,50 @@ export class WebSocketClient {
   }
 
   connect() {
+    // 既存の接続がある場合は切断
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+
     const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
     // WebSocketはブラウザAPIのためAuthorizationヘッダーを直接設定できない
     // クエリパラメータでトークンとWorkspaceIDを送信
     const url = `${wsUrl}/ws?workspaceId=${this.workspaceId}&token=${this.accessToken}`;
 
-    this.ws = new WebSocket(url);
+    try {
+      this.ws = new WebSocket(url);
 
-    this.ws.onopen = () => {
-      this.reconnectAttempts = 0;
-      this.onOpenCallback?.();
-    };
+      this.ws.onopen = () => {
+        console.log("WebSocket connected successfully");
+        this.onOpenCallback?.();
+      };
 
-    this.ws.onmessage = (event) => {
-      try {
-        const message: WebSocketEvent = JSON.parse(event.data);
-        this.handleEvent(message);
-      } catch (error) {
-        console.error("Failed to parse WebSocket message:", error);
-      }
-    };
+      this.ws.onmessage = (event) => {
+        try {
+          const message: WebSocketEvent = JSON.parse(event.data);
+          this.handleEvent(message);
+        } catch (error) {
+          console.error("Failed to parse WebSocket message:", error);
+        }
+      };
 
-    this.ws.onclose = () => {
-      this.onCloseCallback?.();
-      this.attemptReconnect();
-    };
+      this.ws.onclose = (event) => {
+        console.log("WebSocket closed:", event.code, event.reason);
+        this.onCloseCallback?.();
+        // 再接続はWebSocketProviderで制御するため、ここでは行わない
+      };
 
-    this.ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      console.error("WebSocket URL:", url);
-      console.error("Workspace ID:", this.workspaceId);
-      console.error("Access Token:", this.accessToken ? "Present" : "Missing");
+      this.ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        console.error("WebSocket URL:", url);
+        console.error("Workspace ID:", this.workspaceId);
+        console.error("Access Token:", this.accessToken ? "Present" : "Missing");
+        this.onErrorCallback?.();
+      };
+    } catch (error) {
+      console.error("Failed to create WebSocket connection:", error);
       this.onErrorCallback?.();
-    };
-  }
-
-  private attemptReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      setTimeout(() => {
-        this.connect();
-      }, this.reconnectDelay * this.reconnectAttempts);
     }
   }
 
@@ -115,7 +115,8 @@ export class WebSocketClient {
 
   disconnect() {
     if (this.ws) {
-      this.ws.close();
+      // 正常な切断コード（1000）で閉じる
+      this.ws.close(1000, "Client disconnect");
       this.ws = null;
     }
   }

@@ -9,7 +9,7 @@ import { useMessages, useUpdateMessage, useDeleteMessage } from "../hooks/useMes
 import { MessageItem } from "./MessageItem";
 
 import { userAtom } from "@/providers/store/auth";
-import { setRightSidebarViewAtom } from "@/providers/store/ui";
+import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
 import { useReadStateEvents } from "@/providers/websocket/useReadStateEvents";
 import { useWebSocketEvents } from "@/providers/websocket/useWebSocketEvents";
@@ -26,7 +26,7 @@ export const MessagePanel = () => {
   useWebSocketEvents();
   const { updateReadState } = useReadStateEvents();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const setRightSidebarView = useSetAtom(setRightSidebarViewAtom);
+  const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
 
   const dateTimeFormatter = useMemo(
     () =>

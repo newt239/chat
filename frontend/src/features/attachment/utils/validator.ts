@@ -1,8 +1,6 @@
 const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 
-export type ValidationResult =
-  | { valid: true }
-  | { valid: false; error: string };
+type ValidationResult = { valid: true } | { valid: false; error: string };
 
 export const validateFile = (file: File): ValidationResult => {
   if (file.size > MAX_FILE_SIZE) {

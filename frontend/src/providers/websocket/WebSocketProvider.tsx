@@ -34,6 +34,8 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
   const workspaceId = useAtomValue(currentWorkspaceIdAtom);
   const clientRef = useRef<WebSocketClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const isConnectingRef = useRef(false);
+  const shouldReconnectRef = useRef(true);
 
   useEffect(() => {
     if (!accessToken || !workspaceId) {
@@ -43,6 +45,7 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
         clientRef.current = null;
         setIsConnected(false);
       }
+      isConnectingRef.current = false;
       return;
     }
 
@@ -51,6 +54,16 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
       console.warn("Access token is empty, skipping WebSocket connection");
       return;
     }
+
+    // 既に接続中または接続済みの場合は何もしない
+    if (
+      isConnectingRef.current ||
+      (clientRef.current && clientRef.current.webSocket?.readyState === WebSocket.OPEN)
+    ) {
+      return;
+    }
+
+    isConnectingRef.current = true;
 
     // 既存の接続がある場合は切断
     if (clientRef.current) {
@@ -63,18 +76,35 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
 
     // 接続状態を監視するためのコールバックを設定
     client.setConnectionCallbacks(
-      () => setIsConnected(true), // onOpen
-      () => setIsConnected(false), // onClose
-      () => setIsConnected(false) // onError
+      () => {
+        console.log("WebSocket connected successfully");
+        setIsConnected(true);
+        isConnectingRef.current = false;
+      }, // onOpen
+      () => {
+        console.log("WebSocket disconnected");
+        setIsConnected(false);
+        isConnectingRef.current = false;
+      }, // onClose
+      () => {
+        console.log("WebSocket error occurred");
+        setIsConnected(false);
+        isConnectingRef.current = false;
+      } // onError
     );
 
     // 接続を開始
     client.connect();
 
     return () => {
-      client.disconnect();
-      clientRef.current = null;
-      setIsConnected(false);
+      console.log("WebSocketProvider cleanup");
+      shouldReconnectRef.current = false;
+      isConnectingRef.current = false;
+      if (clientRef.current) {
+        clientRef.current.disconnect();
+        clientRef.current = null;
+        setIsConnected(false);
+      }
     };
   }, [accessToken, workspaceId]);
 
