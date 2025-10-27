@@ -9,7 +9,6 @@ import {
   showLeftSidePanelAtom,
   showMobileLeftPanelAtom,
   showMobileRightPanelAtom,
-  isMobileAtom,
 } from "@/providers/store/ui";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
@@ -23,25 +22,20 @@ export const CenterPanel = () => {
   const showMobileLeftPanel = useSetAtom(showMobileLeftPanelAtom);
   const showMobileRightPanel = useSetAtom(showMobileRightPanelAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
-  const isMobile = useAtomValue(isMobileAtom);
 
   const { data: channels } = useChannels(currentWorkspaceId || "");
   const channel = channels?.find((c) => c.id === (channelId || currentChannelId));
 
   const handleLeftPanelToggle = () => {
-    if (isMobile) {
-      showMobileLeftPanel();
-    } else {
-      showLeftSidePanel();
-    }
+    // デスクトップでは左パネルを表示、モバイルではモバイル左パネルを表示
+    showLeftSidePanel();
+    showMobileLeftPanel();
   };
 
   const handleRightPanelToggle = () => {
-    if (isMobile) {
-      showMobileRightPanel();
-    } else {
-      setRightSidePanelView({ type: "channel-info", channelId: channelId || currentChannelId });
-    }
+    // デスクトップでは右パネルを表示、モバイルではモバイル右パネルを表示
+    setRightSidePanelView({ type: "channel-info", channelId: channelId || currentChannelId });
+    showMobileRightPanel();
   };
 
   return (
@@ -49,18 +43,16 @@ export const CenterPanel = () => {
       {/* CenterPanel ヘッダー */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
         <div className="flex items-center space-x-3">
-          {/* モバイル用の左パネル切り替えボタン */}
-          {isMobile && (
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              onClick={handleLeftPanelToggle}
-              className="text-gray-700 hover:bg-gray-100"
-              title="チャンネル一覧"
-            >
-              <IconMenu2 size={20} />
-            </ActionIcon>
-          )}
+          {/* モバイル用の左パネル切り替えボタン（CSSで表示制御） */}
+          <ActionIcon
+            variant="subtle"
+            size="lg"
+            onClick={handleLeftPanelToggle}
+            className="text-gray-700 hover:bg-gray-100 md:hidden"
+            title="チャンネル一覧"
+          >
+            <IconMenu2 size={20} />
+          </ActionIcon>
 
           {/* チャンネル情報 */}
           <div className="flex-1 min-w-0">

@@ -3,7 +3,6 @@ import { IconMenu2, IconInfoCircle, IconBookmark, IconSearch } from "@tabler/ico
 import { useAtomValue, useSetAtom } from "jotai";
 
 import {
-  isMobileAtom,
   mobileActivePanelAtom,
   showMobileLeftPanelAtom,
   showMobileRightPanelAtom,
@@ -11,16 +10,10 @@ import {
 } from "@/providers/store/ui";
 
 export const MobileBottomBar = () => {
-  const isMobile = useAtomValue(isMobileAtom);
   const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
   const showMobileLeftPanel = useSetAtom(showMobileLeftPanelAtom);
   const showMobileRightPanel = useSetAtom(showMobileRightPanelAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
-
-  // モバイルでない場合は非表示
-  if (!isMobile) {
-    return null;
-  }
 
   const handleLeftPanelClick = () => {
     if (mobileActivePanel === "left") {

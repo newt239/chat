@@ -3,6 +3,7 @@ import { vi } from "vitest";
 
 import { BookmarkList } from "./BookmarkList";
 
+import { api } from "@/lib/api/client";
 import { createAppWrapper, createTestQueryClient } from "@/test/utils";
 
 const createWrapper = () => createAppWrapper(createTestQueryClient());
@@ -27,7 +28,6 @@ describe("BookmarkList", () => {
 
   it("renders empty state", async () => {
     // Mock empty response
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.GET).mockResolvedValueOnce({
       data: { bookmarks: [] },
       error: undefined,
@@ -39,7 +39,6 @@ describe("BookmarkList", () => {
 
   it("renders error state", async () => {
     // Mock error response
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.GET).mockRejectedValueOnce(new Error("API Error"));
 
     render(<BookmarkList />, { wrapper: createWrapper() });

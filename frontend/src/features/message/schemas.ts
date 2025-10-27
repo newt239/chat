@@ -9,6 +9,14 @@ const messageUserSchema = z
   })
   .passthrough();
 
+const threadMetadataSchema = z.object({
+  messageId: z.string(),
+  replyCount: z.number(),
+  lastReplyAt: z.string().nullable().optional(),
+  lastReplyUser: messageUserSchema.nullable().optional(),
+  participantUserIds: z.array(z.string()),
+});
+
 const userMentionSchema = z.object({
   userId: z.string(),
   displayName: z.string(),
@@ -51,10 +59,10 @@ const baseMessageSchema = z
     userId: z.string(),
     parentId: z.string().nullable().optional(),
     body: z.string(),
-    mentions: z.array(userMentionSchema),
-    groups: z.array(groupMentionSchema),
-    links: z.array(linkInfoSchema),
-    reactions: z.array(reactionInfoSchema),
+    mentions: z.array(userMentionSchema).optional(),
+    groups: z.array(groupMentionSchema).optional(),
+    links: z.array(linkInfoSchema).optional(),
+    reactions: z.array(reactionInfoSchema).optional(),
     attachments: z.array(attachmentSchema).optional(),
     createdAt: z.string(),
     editedAt: z.string().nullable().optional(),
@@ -73,6 +81,15 @@ export const messagesResponseSchema = z.object({
   hasMore: z.boolean(),
 });
 
+const messageWithThreadSchema = messageWithUserSchema.extend({
+  threadMetadata: threadMetadataSchema.nullable().optional(),
+});
+
+export const messagesWithThreadResponseSchema = z.object({
+  messages: z.array(messageWithThreadSchema),
+  hasMore: z.boolean(),
+});
+
 // スレッド返信一覧レスポンススキーマ
 export const threadRepliesResponseSchema = z.object({
   parentMessage: messageWithUserSchema,
@@ -81,11 +98,6 @@ export const threadRepliesResponseSchema = z.object({
 });
 
 export type MessageWithUser = z.infer<typeof messageWithUserSchema>;
-
-export type ThreadMetadata = {
-  messageId: string;
-  replyCount: number;
-  lastReplyAt?: string | null;
-  lastReplyUser?: z.infer<typeof messageUserSchema> | null;
-  participantUserIds: string[];
-};
+export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;
+export type ThreadMetadata = z.infer<typeof threadMetadataSchema>;
+export { threadMetadataSchema };

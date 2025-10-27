@@ -9,7 +9,7 @@ import type { WorkspaceSummary } from "@/features/workspace/types";
 
 import { SettingsModal } from "@/features/layout/components/SettingsModal";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
-import { setRightSidePanelViewAtom, isMobileAtom } from "@/providers/store/ui";
+import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
 export const GlobalHeaderPanel = () => {
@@ -17,7 +17,6 @@ export const GlobalHeaderPanel = () => {
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
-  const isMobile = useAtomValue(isMobileAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,11 +25,6 @@ export const GlobalHeaderPanel = () => {
 
   const currentWorkspace = workspaces?.find((w: WorkspaceSummary) => w.id === currentWorkspaceId);
   const isInWorkspace = params.workspaceId !== undefined;
-
-  // モバイルビューでは非表示
-  if (isMobile) {
-    return null;
-  }
 
   const handleWorkspaceChange = (workspaceId: string) => {
     setCurrentWorkspace(workspaceId);

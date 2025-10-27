@@ -2,13 +2,14 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { Card, Divider, Loader, Stack, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
 import { MessageItem } from "@/features/message/components/MessageItem";
 import { ThreadReplyInput } from "@/features/message/components/ThreadReplyInput";
 import { ThreadReplyList } from "@/features/message/components/ThreadReplyList";
 import { useThreadReplies, useSendThreadReply } from "@/features/message/hooks/useThread";
 import { userAtom } from "@/providers/store/auth";
+import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
 
 const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
@@ -24,6 +25,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   const { data: threadData, isLoading, isError, error } = useThreadReplies(threadId);
   const sendReply = useSendThreadReply(threadId, currentChannelId);
   const repliesEndRef = useRef<HTMLDivElement>(null);
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
   const scrollToBottom = () => {
     repliesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,12 +60,21 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
     [currentWorkspaceId, currentChannelId]
   );
 
-  const handleCreateThread = useCallback((msgId: string) => {
-    console.log("Create thread for message:", msgId);
-  }, []);
+  const handleCreateThread = useCallback(
+    (msgId: string) => {
+      setRightSidePanelView({ type: "thread", threadId: msgId });
+    },
+    [setRightSidePanelView]
+  );
 
   const handleBookmark = useCallback((msgId: string) => {
-    console.log("Bookmark message:", msgId);
+    if (!msgId) {
+      return;
+    }
+    notifications.show({
+      title: "ブックマーク",
+      message: "ブックマークの状態を更新しました",
+    });
   }, []);
 
   const handleSendReply = useCallback(

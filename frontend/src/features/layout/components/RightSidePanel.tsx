@@ -12,8 +12,6 @@ import { ThreadPanel } from "@/features/sidebar/components/ThreadPanel";
 import { UserProfilePanel } from "@/features/sidebar/components/UserProfilePanel";
 import {
   rightSidePanelViewAtom,
-  isMobileAtom,
-  mobileActivePanelAtom,
   hideMobilePanelsAtom,
   closeRightSidePanelAtom,
 } from "@/providers/store/ui";
@@ -26,8 +24,6 @@ type RightSidePanelProps = {
 export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
   const workspaceId = useAtomValue(currentWorkspaceIdAtom);
   const rightSidePanelView = useAtomValue(rightSidePanelViewAtom);
-  const isMobile = useAtomValue(isMobileAtom);
-  const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
   const hideMobilePanels = useSetAtom(hideMobilePanelsAtom);
   const closeRightSidePanel = useSetAtom(closeRightSidePanelAtom);
 
@@ -36,21 +32,14 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
     return null;
   }
 
-  // モバイルで右パネルがアクティブでない場合は非表示
-  if (isMobile && mobileActivePanel !== "right") {
-    return null;
-  }
-
   if (!workspaceId) {
     return null;
   }
 
   const handleClose = () => {
-    if (isMobile) {
-      hideMobilePanels();
-    } else {
-      closeRightSidePanel();
-    }
+    // デスクトップでは右パネルを閉じる、モバイルではモバイルパネルを閉じる
+    closeRightSidePanel();
+    hideMobilePanels();
   };
 
   const renderPanelContent = (view: PanelView) => {

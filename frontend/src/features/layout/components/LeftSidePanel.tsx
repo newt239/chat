@@ -3,12 +3,7 @@ import { IconX, IconPlus } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { ChannelList } from "@/features/channel/components/ChannelList";
-import {
-  leftSidePanelVisibleAtom,
-  isMobileAtom,
-  mobileActivePanelAtom,
-  hideMobilePanelsAtom,
-} from "@/providers/store/ui";
+import { leftSidePanelVisibleAtom, hideMobilePanelsAtom } from "@/providers/store/ui";
 import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
 
 type LeftSidePanelProps = {
@@ -18,24 +13,16 @@ type LeftSidePanelProps = {
 export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const leftSidePanelVisible = useAtomValue(leftSidePanelVisibleAtom);
-  const isMobile = useAtomValue(isMobileAtom);
-  const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
   const hideMobilePanels = useSetAtom(hideMobilePanelsAtom);
 
-  // モバイルで左パネルがアクティブでない場合は非表示
-  if (isMobile && mobileActivePanel !== "left") {
-    return null;
-  }
-
   // デスクトップで左パネルが非表示の場合は非表示
-  if (!isMobile && !leftSidePanelVisible) {
+  if (!leftSidePanelVisible) {
     return null;
   }
 
   const handleClose = () => {
-    if (isMobile) {
-      hideMobilePanels();
-    }
+    // モバイルでのみ閉じるボタンが表示されるため、常にモバイルパネルを閉じる
+    hideMobilePanels();
   };
 
   const handleCreateChannel = () => {
@@ -59,17 +46,15 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
           >
             <IconPlus size={16} />
           </ActionIcon>
-          {/* モバイル用の閉じるボタン */}
-          {isMobile && (
-            <ActionIcon
-              variant="subtle"
-              size="sm"
-              onClick={handleClose}
-              className="text-gray-500 hover:bg-gray-100"
-            >
-              <IconX size={16} />
-            </ActionIcon>
-          )}
+          {/* モバイル用の閉じるボタン（CSSで表示制御） */}
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            onClick={handleClose}
+            className="text-gray-500 hover:bg-gray-100 md:hidden"
+          >
+            <IconX size={16} />
+          </ActionIcon>
         </div>
       </div>
 

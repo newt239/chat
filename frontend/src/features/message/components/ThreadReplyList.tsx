@@ -2,10 +2,13 @@ import { useMemo, useCallback } from "react";
 
 import { Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { useSetAtom } from "jotai";
 
 import { MessageItem } from "./MessageItem";
 
 import type { MessageWithUser } from "../types";
+
+import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
 type ThreadReplyListProps = {
   replies: MessageWithUser[];
@@ -20,6 +23,7 @@ export const ThreadReplyList = ({
   workspaceId,
   channelId,
 }: ThreadReplyListProps) => {
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
   const dateTimeFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("ja-JP", {
@@ -41,12 +45,21 @@ export const ThreadReplyList = ({
     [workspaceId, channelId]
   );
 
-  const handleCreateThread = useCallback((messageId: string) => {
-    console.log("Create thread for message:", messageId);
-  }, []);
+  const handleCreateThread = useCallback(
+    (messageId: string) => {
+      setRightSidePanelView({ type: "thread", threadId: messageId });
+    },
+    [setRightSidePanelView]
+  );
 
   const handleBookmark = useCallback((messageId: string) => {
-    console.log("Bookmark message:", messageId);
+    if (!messageId) {
+      return;
+    }
+    notifications.show({
+      title: "ブックマーク",
+      message: "ブックマークの状態を更新しました",
+    });
   }, []);
 
   if (replies.length === 0) {

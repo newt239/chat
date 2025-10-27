@@ -13,7 +13,9 @@ export const useAddReaction = () => {
       if (error) throw error;
     },
     onSuccess: (_, { messageId }) => {
+      // リアクションとメッセージのクエリを無効化
       queryClient.invalidateQueries({ queryKey: ["reactions", messageId] });
+      queryClient.invalidateQueries({ queryKey: ["channels"] });
     },
   });
 };
@@ -28,7 +30,9 @@ export const useRemoveReaction = () => {
       if (error) throw error;
     },
     onSuccess: (_, { messageId }) => {
+      // リアクションとメッセージのクエリを無効化
       queryClient.invalidateQueries({ queryKey: ["reactions", messageId] });
+      queryClient.invalidateQueries({ queryKey: ["channels"] });
     },
   });
 };

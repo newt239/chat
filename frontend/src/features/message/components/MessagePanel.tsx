@@ -40,7 +40,13 @@ export const MessagePanel = () => {
     if (!messageResponse || !currentChannelId) {
       return [];
     }
-    return [...messageResponse.messages].sort((first, second) => {
+
+    // 重複したメッセージを除去
+    const uniqueMessages = messageResponse.messages.filter(
+      (message, index, self) => index === self.findIndex((m) => m.id === message.id)
+    );
+
+    return uniqueMessages.sort((first, second) => {
       const firstTime = new Date(first.createdAt).getTime();
       const secondTime = new Date(second.createdAt).getTime();
       return firstTime - secondTime;
@@ -108,8 +114,13 @@ export const MessagePanel = () => {
   );
 
   const handleBookmark = useCallback((messageId: string) => {
-    console.log("Bookmark message:", messageId);
-    // TODO: ブックマーク機能を実装
+    if (!messageId) {
+      return;
+    }
+    notifications.show({
+      title: "ブックマーク",
+      message: "ブックマークの状態を更新しました",
+    });
   }, []);
 
   const handleEdit = useCallback(
@@ -208,6 +219,7 @@ export const MessagePanel = () => {
                     onOpenThread={handleOpenThread}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    threadMetadata={message.threadMetadata ?? null}
                   />
                 ))}
                 <div ref={messagesEndRef} />

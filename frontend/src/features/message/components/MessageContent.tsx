@@ -8,10 +8,10 @@ import { LinkPreviewEmbed } from "@/features/link/components/LinkPreviewEmbed";
 
 type MessageContentProps = {
   message: MessageWithUser;
-}
+};
 
 export const MessageContent = ({ message }: MessageContentProps) => {
-  const { body, mentions, groups, links } = message;
+  const { body, mentions = [], groups = [], links = [] } = message;
 
   // メンションをハイライトするための処理
   const processMentions = (text: string) => {

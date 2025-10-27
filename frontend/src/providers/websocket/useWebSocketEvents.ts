@@ -55,9 +55,14 @@ export const useWebSocketEvents = () => {
             return oldData;
           }
 
+          // 重複を除去してから新しいメッセージを追加
+          const uniqueMessages = existingMessages.filter(
+            (msg: MessageWithUser) => msg.id !== message.id
+          );
+
           return {
             ...oldData,
-            messages: [...existingMessages, message],
+            messages: [...uniqueMessages, message],
           };
         }
       );
@@ -99,11 +104,14 @@ export const useWebSocketEvents = () => {
         (oldData: { messages: MessageWithUser[]; hasMore: boolean } | undefined) => {
           if (!oldData) return oldData;
 
+          // 重複を除去してから更新
+          const uniqueMessages = oldData.messages.filter(
+            (msg: MessageWithUser) => msg.id !== updatedMessage.id
+          );
+
           return {
             ...oldData,
-            messages: oldData.messages.map((msg: MessageWithUser) =>
-              msg.id === updatedMessage.id ? updatedMessage : msg
-            ),
+            messages: [...uniqueMessages, updatedMessage],
           };
         }
       );

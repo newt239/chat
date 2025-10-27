@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { messagesResponseSchema } from "../schemas";
+import { messagesWithThreadResponseSchema } from "../schemas";
 
 import { api } from "@/lib/api/client";
 import { useWebSocket } from "@/providers/websocket/WebSocketProvider";
@@ -27,7 +27,7 @@ export function useMessages(channelId: string | null) {
         return { messages: [], hasMore: false } as const;
       }
 
-      const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
+      const { data, error } = await api.GET("/api/channels/{channelId}/messages/with-threads", {
         params: { path: { channelId } },
       });
 
@@ -35,7 +35,7 @@ export function useMessages(channelId: string | null) {
         throw new Error(error?.error ?? "Failed to fetch messages");
       }
 
-      const parsed = messagesResponseSchema.safeParse(data);
+      const parsed = messagesWithThreadResponseSchema.safeParse(data);
 
       if (!parsed.success) {
         console.error("メッセージ取得のスキーマ検証エラー:", parsed.error);

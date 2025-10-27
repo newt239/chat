@@ -10,6 +10,7 @@ import {
   useUpdateChannelMemberRole,
 } from "./useChannelMembers";
 
+import { api } from "@/lib/api/client";
 import { createAppWrapper, createTestQueryClient } from "@/test/utils";
 
 const createWrapper = () => createAppWrapper(createTestQueryClient());
@@ -36,7 +37,6 @@ describe("useChannelMembers", () => {
       },
     ];
 
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.GET).mockResolvedValueOnce({
       data: { members: mockMembers },
       error: undefined,
@@ -65,7 +65,6 @@ describe("useChannelMembers", () => {
 
 describe("useInviteChannelMember", () => {
   it("invites member successfully", async () => {
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.POST).mockResolvedValueOnce({
       data: undefined,
       error: undefined,
@@ -86,7 +85,6 @@ describe("useInviteChannelMember", () => {
 
 describe("useJoinChannel", () => {
   it("joins channel successfully", async () => {
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.POST).mockResolvedValueOnce({
       data: undefined,
       error: undefined,
@@ -107,7 +105,6 @@ describe("useJoinChannel", () => {
 
 describe("useLeaveChannel", () => {
   it("leaves channel successfully", async () => {
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.DELETE).mockResolvedValueOnce({
       data: undefined,
       error: undefined,
@@ -128,7 +125,6 @@ describe("useLeaveChannel", () => {
 
 describe("useUpdateChannelMemberRole", () => {
   it("updates member role successfully", async () => {
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.PATCH).mockResolvedValueOnce({
       data: undefined,
       error: undefined,
@@ -149,7 +145,6 @@ describe("useUpdateChannelMemberRole", () => {
 
 describe("useRemoveChannelMember", () => {
   it("removes member successfully", async () => {
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.DELETE).mockResolvedValueOnce({
       data: undefined,
       error: undefined,

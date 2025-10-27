@@ -3,6 +3,7 @@ import { vi } from "vitest";
 
 import { ChannelMembersModal } from "./ChannelMembersModal";
 
+import { api } from "@/lib/api/client";
 import { createAppWrapper, createTestQueryClient } from "@/test/utils";
 
 const createWrapper = () => createAppWrapper(createTestQueryClient());
@@ -32,7 +33,6 @@ describe("ChannelMembersModal", () => {
   });
 
   it("renders when opened", async () => {
-    const { api } = await import("@/lib/api/client");
     vi.mocked(api.GET).mockResolvedValue({
       data: { members: [] },
       error: undefined,

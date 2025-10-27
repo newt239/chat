@@ -82,7 +82,11 @@ func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionI
 		// チャンネル情報を取得
 		channel, err := i.channelRepo.FindByID(ctx, message.ChannelID)
 		if err == nil && channel != nil {
-			i.notificationSvc.NotifyReaction(channel.WorkspaceID, channel.ID, toReactionOutput(reaction, nil))
+			// ユーザー情報を取得
+			user, err := i.userRepo.FindByID(ctx, input.UserID)
+			if err == nil && user != nil {
+				i.notificationSvc.NotifyReaction(channel.WorkspaceID, channel.ID, toReactionOutput(reaction, user))
+			}
 		}
 	}
 
