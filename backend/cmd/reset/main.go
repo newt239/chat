@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
@@ -30,7 +32,21 @@ func main() {
 
 	fmt.Println("✅ Database reset successfully!")
 	fmt.Println("   All data has been cleared.")
-	fmt.Println("   Tables have been dropped and will be recreated on next migration.")
+	fmt.Println("   Tables have been dropped.")
+
+	// Reset Atlas migration state and apply migrations to recreate tables
+	fmt.Println("🔄 Resetting Atlas migration state...")
+	if err := resetAtlasState(); err != nil {
+		log.Fatalf("failed to reset Atlas state: %v", err)
+	}
+
+	fmt.Println("🔄 Applying migrations to recreate tables...")
+	if err := applyMigrations(); err != nil {
+		log.Fatalf("failed to apply migrations: %v", err)
+	}
+
+	fmt.Println("✅ Migrations applied successfully!")
+	fmt.Println("   Tables have been recreated and are ready for use.")
 }
 
 func dropAllTables(db *gorm.DB) error {
@@ -45,7 +61,7 @@ func dropAllTables(db *gorm.DB) error {
 		"workspaces",
 		"sessions",
 		"users",
-		"atlas_schema_revisions", // Atlas migration history table
+		// Note: atlas_schema_revisions is intentionally not dropped to preserve migration history
 	}
 
 	for _, table := range tables {
@@ -56,4 +72,19 @@ func dropAllTables(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func resetAtlasState() error {
+	// Reset Atlas migration state to force re-application of all migrations
+	cmd := exec.Command("atlas", "migrate", "set", "--env", "docker", "0")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func applyMigrations() error {
+	cmd := exec.Command("atlas", "migrate", "apply", "--env", "docker")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

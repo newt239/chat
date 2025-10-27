@@ -12,11 +12,28 @@ table "users" {
     null = false
     type = text
   }
-  column "password_hash" { type = text, null = false }
-  column "display_name" { type = text, null = false }
-  column "avatar_url" { type = text }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
-  column "updated_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "password_hash" {
+    type = text
+    null = false
+  }
+  column "display_name" {
+    type = text
+    null = false
+  }
+  column "avatar_url" { 
+    type = text
+    null = true
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
+  column "updated_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.id] }
   unique "users_email_unique" { columns = [column.email] }
   index "users_email_idx" { columns = [column.email] }
@@ -29,11 +46,27 @@ table "sessions" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "user_id" { type = uuid, null = false }
-  column "refresh_token_hash" { type = text, null = false }
-  column "expires_at" { type = timestamptz, null = false }
-  column "revoked_at" { type = timestamptz }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "refresh_token_hash" {
+    type = text
+    null = false
+  }
+  column "expires_at" {
+    type = timestamptz
+    null = false
+  }
+  column "revoked_at" { 
+    type = timestamptz
+    null = true
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.id] }
   foreign_key "sessions_user_id_fkey" {
     columns = [column.user_id]
@@ -51,12 +84,32 @@ table "workspaces" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "name" { type = text, null = false }
-  column "description" { type = text }
-  column "icon_url" { type = text }
-  column "created_by" { type = uuid, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
-  column "updated_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "name" {
+    type = text
+    null = false
+  }
+  column "description" { 
+    type = text
+    null = true
+  }
+  column "icon_url" { 
+    type = text
+    null = true
+  }
+  column "created_by" {
+    type = uuid
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
+  column "updated_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.id] }
   foreign_key "workspaces_created_by_fkey" {
     columns = [column.created_by]
@@ -67,10 +120,23 @@ table "workspaces" {
 
 table "workspace_members" {
   schema = schema.public
-  column "workspace_id" { type = uuid, null = false }
-  column "user_id" { type = uuid, null = false }
-  column "role" { type = text, null = false }
-  column "joined_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "workspace_id" {
+    type = uuid
+    null = false
+  }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "role" {
+    type = text
+    null = false
+  }
+  column "joined_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.workspace_id, column.user_id] }
   foreign_key "workspace_members_workspace_id_fkey" {
     columns = [column.workspace_id]
@@ -92,13 +158,37 @@ table "channels" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "workspace_id" { type = uuid, null = false }
-  column "name" { type = text, null = false }
-  column "description" { type = text }
-  column "is_private" { type = boolean, null = false, default = false }
-  column "created_by" { type = uuid, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
-  column "updated_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "workspace_id" {
+    type = uuid
+    null = false
+  }
+  column "name" {
+    type = text
+    null = false
+  }
+  column "description" { 
+    type = text
+    null = true
+  }
+  column "is_private" {
+    type = boolean
+    null = false
+    default = false
+  }
+  column "created_by" {
+    type = uuid
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
+  column "updated_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.id] }
   foreign_key "channels_workspace_id_fkey" {
     columns = [column.workspace_id]
@@ -117,10 +207,24 @@ table "channels" {
 
 table "channel_members" {
   schema = schema.public
-  column "channel_id" { type = uuid, null = false }
-  column "user_id" { type = uuid, null = false }
-  column "role" { type = text, null = false, default = "member" }
-  column "joined_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "channel_id" {
+    type = uuid
+    null = false
+  }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "role" {
+    type = text
+    null = false
+    default = "member"
+  }
+  column "joined_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.channel_id, column.user_id] }
   foreign_key "channel_members_channel_id_fkey" {
     columns = [column.channel_id]
@@ -145,14 +249,39 @@ table "messages" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "channel_id" { type = uuid, null = false }
-  column "user_id" { type = uuid, null = false }
-  column "parent_id" { type = uuid }
-  column "body" { type = text, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
-  column "edited_at" { type = timestamptz }
-  column "deleted_at" { type = timestamptz }
-  column "deleted_by" { type = uuid }
+  column "channel_id" {
+    type = uuid
+    null = false
+  }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "parent_id" { 
+    type = uuid
+    null = true
+  }
+  column "body" {
+    type = text
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
+  column "edited_at" { 
+    type = timestamptz
+    null = true
+  }
+  column "deleted_at" { 
+    type = timestamptz
+    null = true
+  }
+  column "deleted_by" { 
+    type = uuid
+    null = true
+  }
   primary_key { columns = [column.id] }
   foreign_key "messages_channel_id_fkey" {
     columns = [column.channel_id]
@@ -169,16 +298,35 @@ table "messages" {
     ref_columns = [table.messages.column.id]
     on_delete = CASCADE
   }
-  index "messages_channel_id_created_at_idx" { columns = [column.channel_id, column.created_at], type = BTREE }
-  index "messages_parent_id_created_at_idx" { columns = [column.parent_id, column.created_at], type = BTREE }
+  index "messages_channel_id_created_at_idx" {
+    columns = [column.channel_id, column.created_at]
+    type = BTREE
+  }
+  index "messages_parent_id_created_at_idx" {
+    columns = [column.parent_id, column.created_at]
+    type = BTREE
+  }
 }
 
 table "message_reactions" {
   schema = schema.public
-  column "message_id" { type = uuid, null = false }
-  column "user_id" { type = uuid, null = false }
-  column "emoji" { type = text, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "message_id" {
+    type = uuid
+    null = false
+  }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "emoji" {
+    type = text
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.message_id, column.user_id, column.emoji] }
   foreign_key "message_reactions_message_id_fkey" {
     columns = [column.message_id]
@@ -194,9 +342,19 @@ table "message_reactions" {
 
 table "channel_read_states" {
   schema = schema.public
-  column "channel_id" { type = uuid, null = false }
-  column "user_id" { type = uuid, null = false }
-  column "last_read_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "channel_id" {
+    type = uuid
+    null = false
+  }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "last_read_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.channel_id, column.user_id] }
   foreign_key "channel_read_states_channel_id_fkey" {
     columns = [column.channel_id]
@@ -208,7 +366,10 @@ table "channel_read_states" {
     ref_columns = [table.users.column.id]
     on_delete = CASCADE
   }
-  index "channel_read_states_user_last_read_idx" { columns = [column.user_id, column.last_read_at], type = BTREE }
+  index "channel_read_states_user_last_read_idx" {
+    columns = [column.user_id]
+    type = BTREE
+  }
 }
 
 table "attachments" {
@@ -218,17 +379,52 @@ table "attachments" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "message_id" { type = uuid }
-  column "uploader_id" { type = uuid, null = false }
-  column "channel_id" { type = uuid, null = false }
-  column "file_name" { type = text, null = false }
-  column "mime_type" { type = text, null = false }
-  column "size_bytes" { type = bigint, null = false }
-  column "storage_key" { type = text, null = false }
-  column "status" { type = text, null = false, default = "pending" }
-  column "uploaded_at" { type = timestamptz }
-  column "expires_at" { type = timestamptz }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "message_id" { 
+    type = uuid
+    null = true
+  }
+  column "uploader_id" {
+    type = uuid
+    null = false
+  }
+  column "channel_id" {
+    type = uuid
+    null = false
+  }
+  column "file_name" {
+    type = text
+    null = false
+  }
+  column "mime_type" {
+    type = text
+    null = false
+  }
+  column "size_bytes" {
+    type = bigint
+    null = false
+  }
+  column "storage_key" {
+    type = text
+    null = false
+  }
+  column "status" {
+    type = text
+    null = false
+    default = "pending"
+  }
+  column "uploaded_at" { 
+    type = timestamptz
+    null = true
+  }
+  column "expires_at" { 
+    type = timestamptz
+    null = true
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.id] }
   foreign_key "attachments_message_id_fkey" {
     columns = [column.message_id]
@@ -257,12 +453,32 @@ table "user_groups" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "workspace_id" { type = uuid, null = false }
-  column "name" { type = text, null = false }
-  column "description" { type = text }
-  column "created_by" { type = uuid, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
-  column "updated_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "workspace_id" {
+    type = uuid
+    null = false
+  }
+  column "name" {
+    type = text
+    null = false
+  }
+  column "description" { 
+    type = text
+    null = true
+  }
+  column "created_by" {
+    type = uuid
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
+  column "updated_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.id] }
   foreign_key "user_groups_workspace_id_fkey" {
     columns = [column.workspace_id]
@@ -280,9 +496,19 @@ table "user_groups" {
 
 table "user_group_members" {
   schema = schema.public
-  column "group_id" { type = uuid, null = false }
-  column "user_id" { type = uuid, null = false }
-  column "joined_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "group_id" {
+    type = uuid
+    null = false
+  }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "joined_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.group_id, column.user_id] }
   foreign_key "user_group_members_group_id_fkey" {
     columns = [column.group_id]
@@ -299,9 +525,19 @@ table "user_group_members" {
 
 table "message_user_mentions" {
   schema = schema.public
-  column "message_id" { type = uuid, null = false }
-  column "user_id" { type = uuid, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "message_id" {
+    type = uuid
+    null = false
+  }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.message_id, column.user_id] }
   foreign_key "message_user_mentions_message_id_fkey" {
     columns = [column.message_id]
@@ -318,9 +554,19 @@ table "message_user_mentions" {
 
 table "message_group_mentions" {
   schema = schema.public
-  column "message_id" { type = uuid, null = false }
-  column "group_id" { type = uuid, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "message_id" {
+    type = uuid
+    null = false
+  }
+  column "group_id" {
+    type = uuid
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.message_id, column.group_id] }
   foreign_key "message_group_mentions_message_id_fkey" {
     columns = [column.message_id]
@@ -342,14 +588,39 @@ table "message_links" {
     type = uuid
     default = sql("gen_random_uuid()")
   }
-  column "message_id" { type = uuid, null = false }
-  column "url" { type = text, null = false }
-  column "title" { type = text }
-  column "description" { type = text }
-  column "image_url" { type = text }
-  column "site_name" { type = text }
-  column "card_type" { type = text }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "message_id" {
+    type = uuid
+    null = false
+  }
+  column "url" {
+    type = text
+    null = false
+  }
+  column "title" { 
+    type = text
+    null = true
+  }
+  column "description" { 
+    type = text
+    null = true
+  }
+  column "image_url" { 
+    type = text
+    null = true
+  }
+  column "site_name" { 
+    type = text
+    null = true
+  }
+  column "card_type" { 
+    type = text
+    null = true
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.id] }
   foreign_key "message_links_message_id_fkey" {
     columns = [column.message_id]
@@ -362,9 +633,19 @@ table "message_links" {
 
 table "message_bookmarks" {
   schema = schema.public
-  column "user_id" { type = uuid, null = false }
-  column "message_id" { type = uuid, null = false }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "user_id" {
+    type = uuid
+    null = false
+  }
+  column "message_id" {
+    type = uuid
+    null = false
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.user_id, column.message_id] }
   foreign_key "message_bookmarks_user_id_fkey" {
     columns = [column.user_id]
@@ -382,13 +663,38 @@ table "message_bookmarks" {
 
 table "thread_metadata" {
   schema = schema.public
-  column "message_id" { type = uuid, null = false }
-  column "reply_count" { type = integer, null = false, default = 0 }
-  column "last_reply_at" { type = timestamptz }
-  column "last_reply_user_id" { type = uuid }
-  column "participant_user_ids" { type = sql("uuid[]"), null = false, default = sql("'{}'") }
-  column "created_at" { type = timestamptz, null = false, default = sql("now()") }
-  column "updated_at" { type = timestamptz, null = false, default = sql("now()") }
+  column "message_id" {
+    type = uuid
+    null = false
+  }
+  column "reply_count" {
+    type = integer
+    null = false
+    default = 0
+  }
+  column "last_reply_at" { 
+    type = timestamptz
+    null = true
+  }
+  column "last_reply_user_id" { 
+    type = uuid
+    null = true
+  }
+  column "participant_user_ids" {
+    type = sql("uuid[]")
+    null = false
+    default = sql("ARRAY[]::uuid[]")
+  }
+  column "created_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
+  column "updated_at" {
+    type = timestamptz
+    null = false
+    default = sql("now()")
+  }
   primary_key { columns = [column.message_id] }
   foreign_key "thread_metadata_message_id_fkey" {
     columns = [column.message_id]
@@ -400,7 +706,10 @@ table "thread_metadata" {
     ref_columns = [table.users.column.id]
     on_delete = SET_NULL
   }
-  index "thread_metadata_last_reply_at_idx" { columns = [column.last_reply_at], type = BTREE }
+  index "thread_metadata_last_reply_at_idx" {
+    columns = [column.last_reply_at]
+    type = BTREE
+  }
 }
 
 

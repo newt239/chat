@@ -5,24 +5,45 @@ Slack ライクなリアルタイムチャットアプリケーション。ワ�
 ## クイックスタート
 
 ```bash
-# Docker Desktopを起動してから実行
+# 1. Docker Desktopを起動
+# 2. アプリケーションを起動
 docker-compose up -d --build
 
-# ログを確認する場合
-docker-compose logs -f
+# 3. シードデータを作成（初回のみ）
+docker-compose exec backend go run cmd/seed/main.go
 ```
 
 → http://localhost:5173 にアクセス
 
-これで PostgreSQL、バックエンド、フロントエンドの全てが起動します。
+### 利用可能なコマンド
 
-**初回起動時は自動的にシードデータが投入されます:**
+```bash
+# アプリケーションを起動
+docker-compose up -d --build
 
-- テスト用のワークスペース「Test Workspace」
-- 4 つのテストアカウント（alice@example.com, bob@example.com, charlie@example.com, diana@example.com）
-- パスワード: `password123`
-- サンプルチャンネル（general, random, development, private-team）
-- サンプルメッセージとリアクション
+# アプリケーションを停止
+docker-compose down
+
+# データベースをリセット
+docker-compose exec backend go run cmd/reset/main.go
+
+# シードデータを作成
+docker-compose exec backend go run cmd/seed/main.go
+
+# コンテナを再起動
+docker-compose restart
+
+# ログを表示
+docker-compose logs -f
+
+# コンテナの状態を確認
+docker-compose ps
+```
+
+### テストアカウント
+
+- **メールアドレス**: alice@example.com
+- **パスワード**: password123
 
 詳細なセットアップ手順は [ローカル環境のセットアップ](#ローカル環境のセットアップ) を参照してください。
 
@@ -109,27 +130,19 @@ chat/
 git clone <repository-url>
 cd chat
 
-# 2. 環境変数ファイルの設定
-cp .env.example .env
-cp backend/.env.example backend/.env
-# .envファイルを編集して必要に応じて設定を変更
-
-# 3. Docker Composeで全て起動（初回は自動的にシードデータが投入されます）
+# 2. アプリケーションを起動
 docker-compose up -d --build
 
-# 4. ログ確認（オプション）
-docker-compose logs -f
+# 3. シードデータを作成（初回のみ）
+docker-compose exec backend go run cmd/seed/main.go
 
-# 起動完了後、http://localhost:5173 にアクセス
+# 4. 起動完了後、http://localhost:5173 にアクセス
 ```
 
 #### 停止方法
 
 ```bash
-# コンテナを停止（データは保持）
-docker-compose stop
-
-# コンテナを削除（データは保持）
+# アプリケーションを停止
 docker-compose down
 
 # データも含めて完全削除
@@ -170,37 +183,34 @@ cp backend/.env.example backend/.env
 # データベースをリセット
 docker-compose exec backend go run cmd/reset/main.go
 
-# 手動でシードデータを投入
+# シードデータを作成
 docker-compose exec backend go run cmd/seed/main.go
 ```
 
 ### マイグレーション管理
 
 ```bash
-# 例: Docker環境でカラムを追加するマイグレーションを生成
-pnpm run migrate:generate docker add_email_column
+# 例: カラムを追加するマイグレーションを生成（Dockerコンテナ内で実行）
+pnpm run migrate:generate add_email_column
 
-# 例: Docker環境にマイグレーションを適用
+# 例: マイグレーションを適用（Dockerコンテナ内で実行）
 docker-compose exec backend atlas migrate apply --env docker
 ```
 
-**利用可能な環境:**
-
-- `dev` - ローカル開発環境 (postgres://postgres:postgres@localhost:5432/chat)
-- `docker` - Docker 環境 (postgres://postgres:postgres@db:5432/chat)
-
 **マイグレーション生成の流れ:**
 
-1. `schema/schema.hcl` ファイルを編集してスキーマを変更
-2. `pnpm run migrate:generate [環境名] [マイグレーション名]` でマイグレーションファイルを生成
+1. `backend/schema/schema.hcl` ファイルを編集してスキーマを変更
+2. `pnpm run migrate:generate [マイグレーション名]` でマイグレーションファイルを生成（Docker コンテナ内で実行）
 3. 生成されたマイグレーションファイルを確認・編集（必要に応じて）
-4. `docker-compose exec backend atlas migrate apply --env [環境名]` でマイグレーションを適用
+4. `docker-compose exec backend atlas migrate apply --env docker` でマイグレーションを適用
+
+**注意:** マイグレーションは Docker 環境でのみサポートされています。
 
 ### データベースの状態確認
 
 ```bash
-# PostgreSQLに接続
-docker-compose exec postgres psql -U chat_user -d chat_db
+# PostgreSQLに接続（Dockerコンテナ内で実行）
+docker-compose exec db psql -U postgres -d chat
 
 # テーブル一覧
 \dt
@@ -224,17 +234,15 @@ JOIN workspaces w ON c.workspace_id = w.id;
 # バックエンド（Dockerコンテナ内で実行）
 docker-compose exec backend go test ./...
 
-# フロントエンド
-cd frontend
-pnpm test
+# フロントエンド（Dockerコンテナ内で実行）
+docker-compose exec frontend pnpm test
 ```
 
 ### コード生成
 
 ```bash
-# フロントエンド用にOpenAPI型定義を生成
-cd frontend
-pnpm run generate:api
+# フロントエンド用にOpenAPI型定義を生成（Dockerコンテナ内で実行）
+docker-compose exec frontend pnpm run generate:api
 ```
 
 ## ライセンス

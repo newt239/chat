@@ -2,16 +2,17 @@ services:
   db:
     image: postgres:16-alpine
     container_name: chat-postgres
-    env_file:
-      - ./backend/.env
     environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chat
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d chat"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -25,8 +26,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     container_name: chat-backend
-    env_file:
-      - ./backend/.env
     environment:
       - PORT=8080
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat
@@ -45,11 +44,6 @@ services:
     restart: unless-stopped
     command: >
       sh -c "
-        echo 'Waiting for database to be ready...' &&
-        sleep 5 &&
-        echo 'Running database migrations...' &&
-        atlas migrate apply --env docker --dir file://migrations &&
-        echo 'Starting server...' &&
         go run cmd/server/main.go
       "
 

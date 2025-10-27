@@ -11,25 +11,15 @@ import (
 
 func main() {
 	// 引数の確認
-	if len(os.Args) < 3 {
-		fmt.Println("使用方法: go run cmd/migrate/main.go [環境名] [マイグレーション名]")
-		fmt.Println("例: go run cmd/migrate/main.go dev add_user_table")
+	if len(os.Args) < 2 {
+		fmt.Println("使用方法: go run cmd/migrate/main.go [マイグレーション名]")
+		fmt.Println("例: go run cmd/migrate/main.go add_user_table")
 		fmt.Println("")
-		fmt.Println("利用可能な環境:")
-		fmt.Println("  dev    - ローカル開発環境 (postgres://postgres:postgres@localhost:5432/chat)")
-		fmt.Println("  docker - Docker環境 (postgres://postgres:postgres@db:5432/chat)")
 		os.Exit(1)
 	}
 
-	env := os.Args[1]
-	migrationName := os.Args[2]
-
-	// 環境の検証
-	if env != "dev" && env != "docker" {
-		fmt.Printf("エラー: 無効な環境名 '%s'\n", env)
-		fmt.Println("利用可能な環境: dev, docker")
-		os.Exit(1)
-	}
+	migrationName := os.Args[1]
+	env := "docker" // Docker環境固定
 
 	// マイグレーション名の検証
 	if migrationName == "" {
@@ -43,7 +33,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("環境: %s\n", env)
 	fmt.Printf("マイグレーション名: %s\n", migrationName)
 	fmt.Println("")
 
@@ -89,7 +78,7 @@ func main() {
 	fmt.Println("次のステップ:")
 	fmt.Println("1. 生成されたマイグレーションファイルを確認")
 	fmt.Println("2. 必要に応じてマイグレーションファイルを編集")
-	fmt.Printf("3. マイグレーションを適用: docker-compose exec backend atlas migrate apply --env %s\n", env)
+	fmt.Println("3. マイグレーションを適用: docker-compose exec backend atlas migrate apply --env docker")
 }
 
 func isAtlasInstalled() bool {
