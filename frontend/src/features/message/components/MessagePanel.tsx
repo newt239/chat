@@ -1,36 +1,15 @@
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import type { FormEvent } from "react";
+import { useMemo, useEffect, useRef, useCallback } from "react";
 
-import { Card, Loader, Stack, Text, Textarea, ActionIcon } from "@mantine/core";
+import { Card, Loader, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconInfoCircle } from "@tabler/icons-react";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
-import {
-  useMessages,
-  useSendMessage,
-  useUpdateMessage,
-  useDeleteMessage,
-} from "../hooks/useMessage";
-import { useMessageInputMode } from "../hooks/useMessageInputMode";
+import { useMessages, useUpdateMessage, useDeleteMessage } from "../hooks/useMessage";
 
-import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessageItem } from "./MessageItem";
-import { MessagePreview } from "./MessagePreview";
-import { ThreadSidePanel } from "./ThreadSidePanel";
 
-import { AttachmentList } from "@/features/attachment/components/AttachmentList";
-import { FileInput } from "@/features/attachment/components/FileInput";
-import { useFileUpload } from "@/features/attachment/hooks/useFileUpload";
-import { useChannels } from "@/features/channel/hooks/useChannel";
-import { LinkPreviewCard } from "@/features/link/components/LinkPreviewCard";
-import { useLinkPreview } from "@/features/link/hooks/useLinkPreview";
 import { userAtom } from "@/providers/store/auth";
-import {
-  rightSidebarViewAtom,
-  setRightSidebarViewAtom,
-  toggleRightSidebarViewAtom,
-} from "@/providers/store/ui";
+import { setRightSidebarViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
 import { useReadStateEvents } from "@/providers/websocket/useReadStateEvents";
 import { useWebSocketEvents } from "@/providers/websocket/useWebSocketEvents";
@@ -39,59 +18,15 @@ export const MessagePanel = () => {
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
   const [currentChannelId] = useAtom(currentChannelIdAtom);
   const currentUser = useAtomValue(userAtom);
-  const { data: channels } = useChannels(currentWorkspaceId);
   const { data: messageResponse, isLoading, isError, error } = useMessages(currentChannelId);
-  const sendMessage = useSendMessage(currentChannelId);
   const updateMessage = useUpdateMessage(currentChannelId);
   const deleteMessage = useDeleteMessage(currentChannelId);
 
   // WebSocketイベントを処理
   useWebSocketEvents();
   const { updateReadState } = useReadStateEvents();
-  const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const toggleRightSidebarView = useSetAtom(toggleRightSidebarViewAtom);
   const setRightSidebarView = useSetAtom(setRightSidebarViewAtom);
-  const [rightSidebarView] = useAtom(rightSidebarViewAtom);
-  const { mode, toggleMode, isEditMode } = useMessageInputMode();
-  const linkPreview = useLinkPreview();
-  const { previews, addPreview, removePreview, clearPreviews } = linkPreview;
-  const fileUpload = useFileUpload();
-  const {
-    pendingAttachments,
-    uploadFile,
-    removeAttachment,
-    clearAttachments,
-    getCompletedAttachmentIds,
-    isUploading,
-  } = fileUpload;
-  // URL検知とリンクプレビューの処理
-  const handleBodyChange = useCallback(
-    (value: string) => {
-      setBody(value);
-
-      // URLを検出してプレビューを追加
-      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/g;
-      const urls: string[] = value.match(urlRegex) || [];
-
-      // 新しいURLを検出した場合、プレビューを追加
-      urls.forEach((url: string) => {
-        if (!previews.some((preview) => preview.url === url)) {
-          addPreview(url);
-        }
-      });
-
-      // 削除されたURLのプレビューを削除
-      previews.forEach((preview) => {
-        const previewUrl: string = preview.url;
-        if (!urls.includes(previewUrl)) {
-          removePreview(previewUrl);
-        }
-      });
-    },
-    [previews, addPreview, removePreview]
-  );
 
   const dateTimeFormatter = useMemo(
     () =>
@@ -102,7 +37,7 @@ export const MessagePanel = () => {
     []
   );
   const orderedMessages = useMemo(() => {
-    if (!messageResponse) {
+    if (!messageResponse || !currentChannelId) {
       return [];
     }
     return [...messageResponse.messages].sort((first, second) => {
@@ -110,14 +45,7 @@ export const MessagePanel = () => {
       const secondTime = new Date(second.createdAt).getTime();
       return firstTime - secondTime;
     });
-  }, [messageResponse]);
-
-  const activeChannel = useMemo(() => {
-    if (!channels || currentChannelId === null) {
-      return null;
-    }
-    return channels.find((channel) => channel.id === currentChannelId) ?? null;
-  }, [channels, currentChannelId]);
+  }, [messageResponse, currentChannelId]);
 
   // メッセージが読み込まれた時と新しいメッセージが送信された時に最新メッセージにスクロール
   const scrollToBottom = () => {
@@ -130,11 +58,17 @@ export const MessagePanel = () => {
     }
   }, [messageResponse, isLoading]);
 
+  // チャンネルが変更された時にスクロールをリセット
   useEffect(() => {
-    if (sendMessage.isSuccess) {
+    if (currentChannelId) {
       scrollToBottom();
     }
-  }, [sendMessage.isSuccess]);
+  }, [currentChannelId]);
+
+  // チャンネルが変更された時にスレッドパネルを閉じる
+  useEffect(() => {
+    setRightSidebarView({ type: "hidden" });
+  }, [currentChannelId, setRightSidebarView]);
 
   // メッセージが表示されたときに既読状態を更新
   useEffect(() => {
@@ -172,10 +106,6 @@ export const MessagePanel = () => {
     },
     [setRightSidebarView]
   );
-
-  const handleCloseThread = useCallback(() => {
-    setRightSidebarView({ type: "hidden" });
-  }, [setRightSidebarView]);
 
   const handleBookmark = useCallback((messageId: string) => {
     console.log("Bookmark message:", messageId);
@@ -230,20 +160,6 @@ export const MessagePanel = () => {
     [deleteMessage]
   );
 
-  const handleFileSelect = useCallback(
-    async (files: File[]) => {
-      if (!currentChannelId) return;
-
-      for (const file of files) {
-        await uploadFile(file, { channelId: currentChannelId });
-      }
-    },
-    [currentChannelId, uploadFile]
-  );
-
-  const isThreadOpen = rightSidebarView.type === "thread";
-  const openThreadId = isThreadOpen ? rightSidebarView.threadId : null;
-
   if (currentWorkspaceId === null) {
     return (
       <Card withBorder padding="xl" radius="md" className="h-full flex items-center justify-center">
@@ -260,61 +176,8 @@ export const MessagePanel = () => {
     );
   }
 
-  const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
-    if (body.trim().length === 0 && pendingAttachments.length === 0) {
-      return;
-    }
-    if (isUploading) {
-      notifications.show({
-        title: "アップロード中",
-        message: "ファイルのアップロードが完了するまでお待ちください",
-        color: "yellow",
-      });
-      return;
-    }
-
-    const attachmentIds = getCompletedAttachmentIds();
-    sendMessage.mutate(
-      { body: body.trim(), attachmentIds },
-      {
-        onSuccess: () => {
-          setBody("");
-          clearPreviews();
-          clearAttachments();
-        },
-      }
-    );
-  };
-
   return (
     <div className="flex h-full min-h-0 flex-col w-full">
-      <Card withBorder padding="lg" radius="md" className="shrink-0">
-        <div className="flex items-start justify-between">
-          <Stack gap="xs" className="flex-1">
-            <Text fw={600} size="lg">
-              {activeChannel ? `#${activeChannel.name}` : "チャンネル"}
-            </Text>
-            {activeChannel?.description && (
-              <Text size="sm" c="dimmed">
-                {activeChannel.description}
-              </Text>
-            )}
-          </Stack>
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="lg"
-            onClick={() =>
-              toggleRightSidebarView({ type: "channel-info", channelId: currentChannelId })
-            }
-            aria-label="サイドバーの表示切り替え"
-          >
-            <IconInfoCircle size={20} />
-          </ActionIcon>
-        </div>
-      </Card>
-
       <div className="flex-1 overflow-y-auto min-h-0">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
@@ -324,7 +187,7 @@ export const MessagePanel = () => {
           <Text c="red" size="sm">
             {error?.message ?? "メッセージの取得に失敗しました"}
           </Text>
-        ) : messageResponse && messageResponse.messages.length > 0 ? (
+        ) : messageResponse && messageResponse.messages.length > 0 && currentChannelId ? (
           <div className="flex h-full flex-col">
             {messageResponse.hasMore && (
               <Text size="xs" c="dimmed" className="px-4 py-2 text-center">
@@ -359,75 +222,6 @@ export const MessagePanel = () => {
           </div>
         )}
       </div>
-
-      <Card withBorder padding="lg" radius="md" className="shrink-0">
-        <form onSubmit={handleSubmit}>
-          <div className="flex items-center gap-2">
-            <FileInput
-              onFileSelect={handleFileSelect}
-              disabled={sendMessage.isPending || isUploading}
-            />
-            <div className="flex-1">
-              <MessageInputToolbar
-                mode={mode}
-                onToggleMode={toggleMode}
-                onSubmit={() => handleSubmit()}
-                disabled={
-                  (body.trim().length === 0 && pendingAttachments.length === 0) || isUploading
-                }
-                loading={sendMessage.isPending}
-                textareaRef={textareaRef}
-              />
-            </div>
-          </div>
-          {isEditMode ? (
-            <Textarea
-              ref={textareaRef}
-              placeholder="メッセージを入力..."
-              minRows={3}
-              autosize
-              value={body}
-              onChange={(event) => handleBodyChange(event.currentTarget.value)}
-              disabled={sendMessage.isPending}
-            />
-          ) : (
-            <MessagePreview content={body} />
-          )}
-
-          {/* 添付ファイル一覧 */}
-          <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
-
-          {/* リンクプレビューを表示 */}
-          {previews.length > 0 && (
-            <div className="mt-3 space-y-2">
-              {previews.map((preview) => (
-                <LinkPreviewCard
-                  key={preview.url}
-                  preview={preview}
-                  onRemove={() => removePreview(preview.url)}
-                />
-              ))}
-            </div>
-          )}
-
-          {sendMessage.isError && (
-            <Text c="red" size="sm" className="mt-2">
-              {sendMessage.error?.message ?? "メッセージの送信に失敗しました"}
-            </Text>
-          )}
-        </form>
-      </Card>
-
-      {/* スレッドサイドパネル */}
-      {currentWorkspaceId && currentChannelId && (
-        <ThreadSidePanel
-          opened={isThreadOpen}
-          onClose={handleCloseThread}
-          messageId={openThreadId}
-          workspaceId={currentWorkspaceId}
-          channelId={currentChannelId}
-        />
-      )}
     </div>
   );
 };

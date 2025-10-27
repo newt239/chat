@@ -4,6 +4,7 @@ import { Outlet, useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { useChannels } from "@/features/channel/hooks/useChannel";
+import { MessageInput } from "@/features/message/components/MessageInput";
 import {
   showLeftSidePanelAtom,
   showMobileLeftPanelAtom,
@@ -100,6 +101,9 @@ export const CenterPanel = () => {
       <div className="flex-1 min-h-0">
         <Outlet />
       </div>
+
+      {/* メッセージ入力エリア */}
+      <MessageInput channelId={channelId || currentChannelId} />
     </div>
   );
 };

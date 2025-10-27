@@ -21,6 +21,8 @@ export type LayoutState = {
   isMobile: boolean;
   // モバイルで表示中のパネル（left, right, none）
   mobileActivePanel: "left" | "right" | "none";
+  // 現在のルートがチャンネルページかどうか
+  isChannelPage: boolean;
 };
 
 const defaultLayoutState: LayoutState = {
@@ -28,6 +30,7 @@ const defaultLayoutState: LayoutState = {
   rightSidePanelView: { type: "hidden" },
   isMobile: false,
   mobileActivePanel: "none",
+  isChannelPage: false,
 };
 
 // レイアウト状態のAtom
@@ -44,6 +47,8 @@ export const rightSidePanelViewAtom = atom((get) => get(layoutStateAtom).rightSi
 export const isMobileAtom = atom((get) => get(layoutStateAtom).isMobile);
 
 export const mobileActivePanelAtom = atom((get) => get(layoutStateAtom).mobileActivePanel);
+
+export const isChannelPageAtom = atom((get) => get(layoutStateAtom).isChannelPage);
 
 // パネル表示状態の比較関数
 const isSamePanelView = (first: PanelView, second: PanelView): boolean => {
@@ -177,6 +182,15 @@ export const hideMobilePanelsAtom = atom(null, (_get, set) => {
   set(layoutStateAtom, {
     ...current,
     mobileActivePanel: "none",
+  });
+});
+
+// チャンネルページの状態を設定する
+export const setIsChannelPageAtom = atom(null, (_get, set, isChannelPage: boolean) => {
+  const current = _get(layoutStateAtom);
+  set(layoutStateAtom, {
+    ...current,
+    isChannelPage,
   });
 });
 

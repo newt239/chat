@@ -1,4 +1,4 @@
-import { Button, Text, ActionIcon, Group, ScrollArea } from "@mantine/core";
+import { Text, ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX, IconPlus } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
@@ -43,19 +43,22 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
     console.log("Create channel clicked");
   };
 
-  const handleJoinChannel = () => {
-    // TODO: チャンネル参加モーダルを開く
-    console.log("Join channel clicked");
-  };
-
   return (
     <div className={`bg-white border-r border-gray-200 flex flex-col h-full ${className}`}>
       {/* ヘッダー */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 py-3">
         <Text size="lg" fw={600} className="text-gray-900">
           チャンネル
         </Text>
         <div className="flex items-center space-x-2">
+          <ActionIcon
+            variant="subtle"
+            size="sm"
+            onClick={handleCreateChannel}
+            className="text-gray-500 hover:bg-gray-100"
+          >
+            <IconPlus size={16} />
+          </ActionIcon>
           {/* モバイル用の閉じるボタン */}
           {isMobile && (
             <ActionIcon
@@ -70,30 +73,10 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
         </div>
       </div>
 
-      {/* チャンネル作成・参加ボタン */}
-      <div className="px-4 py-3 border-b border-gray-100">
-        <Group gap="xs">
-          <Button
-            size="xs"
-            variant="light"
-            leftSection={<IconPlus size={14} />}
-            onClick={handleCreateChannel}
-            className="flex-1"
-          >
-            作成
-          </Button>
-          <Button size="xs" variant="outline" onClick={handleJoinChannel} className="flex-1">
-            参加
-          </Button>
-        </Group>
-      </div>
-
       {/* チャンネル一覧 */}
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full">
-          <div className="p-2">
-            <ChannelList workspaceId={currentWorkspaceId} />
-          </div>
+          <ChannelList workspaceId={currentWorkspaceId} />
         </ScrollArea>
       </div>
     </div>

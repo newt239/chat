@@ -3,17 +3,18 @@ import { useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { CenterPanel } from "./CenterPanel";
-import { GlobalHeaderPanel } from "./Header";
 import { LeftSidePanel } from "./LeftSidePanel";
 import { MobileBottomBar } from "./MobileBottomBar";
 import { RightSidePanel } from "./RightSidePanel";
 
+import { GlobalHeaderPanel } from "@/features/workspace/components/Header";
 import {
   isMobileAtom,
   setIsMobileAtom,
   leftSidePanelVisibleAtom,
   rightSidePanelViewAtom,
   mobileActivePanelAtom,
+  isChannelPageAtom,
 } from "@/providers/store/ui";
 
 export const ResponsiveLayout = () => {
@@ -22,6 +23,7 @@ export const ResponsiveLayout = () => {
   const leftSidePanelVisible = useAtomValue(leftSidePanelVisibleAtom);
   const rightSidePanelView = useAtomValue(rightSidePanelViewAtom);
   const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
+  const isChannelPage = useAtomValue(isChannelPageAtom);
 
   // 画面サイズの変更を監視してモバイル状態を更新
   useEffect(() => {
@@ -102,8 +104,8 @@ export const ResponsiveLayout = () => {
         )}
       </div>
 
-      {/* モバイルボトムバー */}
-      <MobileBottomBar />
+      {/* モバイルボトムバー（チャンネルページでない場合のみ表示） */}
+      {!isChannelPage && <MobileBottomBar />}
     </div>
   );
 };

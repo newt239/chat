@@ -44,7 +44,7 @@ vi.mock("@tanstack/react-router", () => {
   };
 });
 
-vi.mock("@/features/workspace/components/MemberPanel", () => ({
+vi.mock("@/features/sidebar/components/MemberPanel", () => ({
   MemberPanel: ({ workspaceId }: { workspaceId: string | null }) => (
     <div data-testid="member-panel" data-workspace-id={workspaceId}>
       メンバー
@@ -56,7 +56,7 @@ vi.mock("@/features/channel/hooks/useChannel", () => ({
   useChannels: (...args: unknown[]) => mockUseChannels(...args),
 }));
 
-vi.mock("@/features/workspace/hooks/useMembers", () => ({
+vi.mock("@/features/user/hooks/useMembers", () => ({
   useMembers: (...args: unknown[]) => mockUseMembers(...args),
 }));
 
@@ -64,7 +64,7 @@ vi.mock("@/features/search/hooks/useWorkspaceSearchIndex", () => ({
   useWorkspaceSearchIndex: (...args: unknown[]) => mockUseWorkspaceSearchIndex(...args),
 }));
 
-let WorkspaceRightSidebar: (typeof import("@/features/workspace/components/WorkspaceRightSidebar"))["WorkspaceRightSidebar"];
+let WorkspaceRightSidebar: (typeof import("@/features/sidebar/components/RightSidePanel"))["RightSidePanel"];
 
 const renderSidebar = (view: PanelView, workspaceId = "workspace-1") => {
   const store = createStore();
@@ -84,8 +84,8 @@ afterEach(() => {
 });
 
 beforeAll(async () => {
-  ({ WorkspaceRightSidebar } = await import(
-    "@/features/workspace/components/WorkspaceRightSidebar"
+  ({ RightSidePanel: WorkspaceRightSidebar } = await import(
+    "@/features/sidebar/components/RightSidePanel"
   ));
 });
 

@@ -1,6 +1,6 @@
 import { Text, Stack, Loader, Badge, Avatar } from "@mantine/core";
 
-import { useMembers } from "../hooks/useMembers";
+import { useMembers } from "@/features/user/hooks/useMembers";
 
 type MemberPanelProps = {
   workspaceId: string | null;

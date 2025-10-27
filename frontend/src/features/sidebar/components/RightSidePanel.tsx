@@ -7,12 +7,12 @@ import { UserProfilePanel } from "./UserProfilePanel";
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
 import { type PanelView } from "@/providers/store/ui";
 
-type WorkspaceRightSidebarProps = {
+type RightSidePanelProps = {
   workspaceId: string | null;
   view: PanelView;
 };
 
-export const WorkspaceRightSidebar = ({ workspaceId, view }: WorkspaceRightSidebarProps) => {
+export const RightSidePanel = ({ workspaceId, view }: RightSidePanelProps) => {
   if (!workspaceId) {
     return null;
   }

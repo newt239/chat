@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { Avatar, Badge, Loader, Stack, Text } from "@mantine/core";
 
-import { useMembers } from "@/features/workspace/hooks/useMembers";
+import { useMembers } from "@/features/user/hooks/useMembers";
 
 const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
 

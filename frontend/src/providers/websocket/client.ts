@@ -68,6 +68,9 @@ export class WebSocketClient {
 
     this.ws.onerror = (error) => {
       console.error("WebSocket error:", error);
+      console.error("WebSocket URL:", url);
+      console.error("Workspace ID:", this.workspaceId);
+      console.error("Access Token:", this.accessToken ? "Present" : "Missing");
       this.onErrorCallback?.();
     };
   }

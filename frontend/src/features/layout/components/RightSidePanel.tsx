@@ -2,15 +2,14 @@ import { ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import { ChannelInfoPanel } from "./ChannelInfoPanel";
-import { MemberPanel } from "./MemberPanel";
-import { SearchResultsPanel } from "./SearchResultsPanel";
-import { ThreadPanel } from "./ThreadPanel";
-import { UserProfilePanel } from "./UserProfilePanel";
-
 import type { PanelView } from "@/providers/store/ui";
 
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
+import { ChannelInfoPanel } from "@/features/sidebar/components/ChannelInfoPanel";
+import { MemberPanel } from "@/features/sidebar/components/MemberPanel";
+import { SearchResultsPanel } from "@/features/sidebar/components/SearchResultsPanel";
+import { ThreadPanel } from "@/features/sidebar/components/ThreadPanel";
+import { UserProfilePanel } from "@/features/sidebar/components/UserProfilePanel";
 import {
   rightSidePanelViewAtom,
   isMobileAtom,

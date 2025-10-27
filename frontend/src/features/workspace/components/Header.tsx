@@ -7,8 +7,8 @@ import { useAtomValue, useSetAtom } from "jotai";
 
 import type { WorkspaceSummary } from "@/features/workspace/types";
 
+import { SettingsModal } from "@/features/layout/components/SettingsModal";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
-import { clearAuthAtom } from "@/providers/store/auth";
 import { setRightSidePanelViewAtom, isMobileAtom } from "@/providers/store/ui";
 import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
@@ -16,10 +16,10 @@ export const GlobalHeaderPanel = () => {
   const { data: workspaces, isLoading } = useWorkspaces();
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
-  const clearAuth = useSetAtom(clearAuthAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
   const isMobile = useAtomValue(isMobileAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const params = useParams({ strict: false });
@@ -37,17 +37,12 @@ export const GlobalHeaderPanel = () => {
     setIsWorkspaceMenuOpen(false);
   };
 
-  const handleLogout = () => {
-    clearAuth();
-  };
-
   const handleBookmarkClick = () => {
     setRightSidePanelView({ type: "bookmarks" });
   };
 
   const handleSettingsClick = () => {
-    // TODO: アプリ設定画面への導線を実装
-    console.log("Settings clicked");
+    setIsSettingsModalOpen(true);
   };
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -177,17 +172,11 @@ export const GlobalHeaderPanel = () => {
               <IconSettings size={20} />
             </ActionIcon>
           )}
-
-          {/* ログアウトボタン */}
-          <Button
-            variant="subtle"
-            onClick={handleLogout}
-            className="text-gray-700 hover:bg-gray-100"
-          >
-            ログアウト
-          </Button>
         </div>
       </div>
+
+      {/* 設定モーダル */}
+      <SettingsModal opened={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
     </header>
   );
 };

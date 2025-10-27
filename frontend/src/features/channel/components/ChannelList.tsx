@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Button, Card, Group, Loader, ScrollArea, Stack, Text } from "@mantine/core";
+import { Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { useChannels } from "../hooks/useChannel";
@@ -8,14 +8,11 @@ import { useChannels } from "../hooks/useChannel";
 import { CreateChannelModal } from "./CreateChannelModal";
 
 import { navigateToChannel } from "@/lib/navigation";
-import {
-  currentChannelIdAtom,
-  setCurrentChannelAtom,
-} from "@/providers/store/workspace";
+import { currentChannelIdAtom, setCurrentChannelAtom } from "@/providers/store/workspace";
 
 type ChannelListProps = {
   workspaceId: string | null;
-}
+};
 
 export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   const currentChannelId = useAtomValue(currentChannelIdAtom);
@@ -25,6 +22,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
 
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {
+      setCurrentChannel(channelId);
       navigateToChannel(workspaceId, channelId);
     }
   };
@@ -68,14 +66,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
 
   return (
     <>
-      <Stack gap="sm">
-        <Group justify="space-between">
-          <Text fw={500}>チャンネル</Text>
-          <Button size="xs" onClick={() => setIsModalOpen(true)}>
-            作成
-          </Button>
-        </Group>
-
+      <Stack gap="sm" className="p-2">
         {channels && channels.length > 0 ? (
           <ScrollArea h={320} type="auto">
             <Stack gap={4}>

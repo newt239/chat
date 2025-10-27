@@ -1,10 +1,21 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-import { ResponsiveLayout } from "@/features/workspace/components/ResponsiveLayout";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
+
+import { ResponsiveLayout } from "@/features/layout/components/ResponsiveLayout";
 import { store } from "@/providers/store";
 import { isAuthenticatedAtom } from "@/providers/store/auth";
+import { setIsChannelPageAtom } from "@/providers/store/ui";
 
 const AppComponent = () => {
+  const setIsChannelPage = useSetAtom(setIsChannelPageAtom);
+
+  useEffect(() => {
+    // チャンネルページでないことを設定
+    setIsChannelPage(false);
+  }, [setIsChannelPage]);
+
   return <ResponsiveLayout />;
 };
 

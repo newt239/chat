@@ -20,8 +20,7 @@ import {
   useRemoveChannelMember,
   useUpdateChannelMemberRole,
 } from "@/features/channel/hooks/useChannelMembers";
-import { useMembers } from "@/features/workspace/hooks/useMembers";
-
+import { useMembers } from "@/features/user/hooks/useMembers";
 
 type ChannelMembersModalProps = {
   channelId: string | null;
@@ -46,9 +45,7 @@ export const ChannelMembersModal = ({
   const [selectedRole, setSelectedRole] = useState<"member" | "admin">("member");
 
   const availableMembers =
-    workspaceMembers?.filter(
-      (wm) => !channelMembers?.some((cm) => cm.userId === wm.userId)
-    ) ?? [];
+    workspaceMembers?.filter((wm) => !channelMembers?.some((cm) => cm.userId === wm.userId)) ?? [];
 
   const handleInvite = () => {
     if (!selectedUserId) return;

@@ -46,6 +46,12 @@ export const WebSocketProvider = ({ children }: WebSocketProviderProps) => {
       return;
     }
 
+    // アクセストークンが有効かチェック
+    if (accessToken.length === 0) {
+      console.warn("Access token is empty, skipping WebSocket connection");
+      return;
+    }
+
     // 既存の接続がある場合は切断
     if (clientRef.current) {
       clientRef.current.disconnect();
