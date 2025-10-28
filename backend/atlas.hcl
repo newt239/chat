@@ -1,21 +1,25 @@
-env "dev" {
-  url = "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"
+env "local" {
+  url = "postgres://postgres:password@localhost:5432/chat?sslmode=disable"
+  dev = "postgres://postgres:password@localhost:5432/chat_dev?sslmode=disable"
   migration {
-    dir = "file://migrations"
+    dir = "file://ent/migrate/migrations"
   }
-  schema {
-    src = ["file://schema"]
+  format {
+    migrate {
+      diff = "{{ sql . \"  \" }}"
+    }
   }
 }
 
 env "docker" {
-  url = "postgres://postgres:postgres@db:5432/chat?sslmode=disable"
+  url = "postgres://postgres:password@db:5432/chat?sslmode=disable"
+  dev = "postgres://postgres:password@db:5432/chat_dev?sslmode=disable"
   migration {
-    dir = "file://migrations"
+    dir = "file://ent/migrate/migrations"
   }
-  schema {
-    src = ["file://schema"]
+  format {
+    migrate {
+      diff = "{{ sql . \"  \" }}"
+    }
   }
 }
-
-

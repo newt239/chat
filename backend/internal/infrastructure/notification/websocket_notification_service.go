@@ -92,9 +92,13 @@ func (s *WebSocketNotificationService) NotifyDeletedMessage(workspaceID string, 
 
 // NotifyUnreadCount は未読数の更新を特定ユーザーに通知します
 func (s *WebSocketNotificationService) NotifyUnreadCount(workspaceID string, userID string, channelID string, unreadCount int) {
+	// TODO: メンション検知の実装（現在は未読数が0より大きい場合にtrueとする）
+	hasMention := unreadCount > 0
+
 	payload := websocket.UnreadCountPayload{
 		ChannelID:   channelID,
 		UnreadCount: unreadCount,
+		HasMention:  hasMention,
 	}
 
 	data, err := websocket.SendServerMessage(websocket.EventTypeUnreadCount, payload)
@@ -104,7 +108,7 @@ func (s *WebSocketNotificationService) NotifyUnreadCount(workspaceID string, use
 	}
 
 	s.hub.BroadcastToUser(workspaceID, userID, data)
-	log.Printf("Notified unread count to workspace=%s user=%s channel=%s count=%d", workspaceID, userID, channelID, unreadCount)
+	log.Printf("Notified unread count to workspace=%s user=%s channel=%s count=%d mention=%t", workspaceID, userID, channelID, unreadCount, hasMention)
 }
 
 // convertToMap は任意の構造体をmap[string]interface{}に変換します

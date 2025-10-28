@@ -34,18 +34,18 @@ func main() {
 	defer logger.Sync()
 
 	// Initialize database
-	db, err := database.InitDB(cfg.Database.URL)
+	client, err := database.InitDB(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
 	// Auto-seed database if empty
-	if err := seed.AutoSeed(db); err != nil {
+	if err := seed.AutoSeed(client); err != nil {
 		log.Fatalf("failed to auto-seed database: %v", err)
 	}
 
 	// Initialize registry (DI container)
-	reg := registry.NewRegistry(db, cfg)
+	reg := registry.NewRegistry(client, cfg)
 
 	// Initialize WebSocket hub
 	hub := reg.NewWebSocketHub()

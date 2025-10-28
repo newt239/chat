@@ -13,6 +13,7 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/repository"
+	httpv "github.com/newt239/chat/internal/interfaces/handler/http"
 	"github.com/newt239/chat/internal/registry"
 	"github.com/newt239/chat/internal/test/integration"
 	"github.com/stretchr/testify/assert"
@@ -29,13 +30,14 @@ func TestAuthIntegration(t *testing.T) {
 	require.NoError(t, err)
 
 	// レジストリの作成
-	reg := registry.NewRegistry(testDB.DB, cfg)
+	reg := registry.NewRegistry(testDB.Client, cfg)
 
 	// 認証ハンドラーの作成
 	authHandler := reg.Interface().NewAuthHandler()
 
 	// Echoアプリケーションのセットアップ
 	e := echo.New()
+	e.Validator = httpv.NewValidator()
 	e.POST("/auth/register", authHandler.Register)
 	e.POST("/auth/login", authHandler.Login)
 	e.POST("/auth/refresh", authHandler.RefreshToken)
@@ -74,14 +76,13 @@ func TestAuthIntegration(t *testing.T) {
 
 	t.Run("ユーザーログイン", func(t *testing.T) {
 		// テスト用ユーザーの作成
-		userRepo := repository.NewUserRepository(testDB.DB)
+		userRepo := repository.NewUserRepository(testDB.Client)
 		passwordService := auth.NewPasswordService()
 
 		hashedPassword, err := passwordService.HashPassword("password123")
 		require.NoError(t, err)
 
 		user := &entity.User{
-			ID:           "test-user-id",
 			Email:        "testuser@example.com",
 			PasswordHash: hashedPassword,
 			DisplayName:  "Test User",

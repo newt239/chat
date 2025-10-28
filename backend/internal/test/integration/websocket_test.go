@@ -27,7 +27,7 @@ func TestWebSocketIntegration(t *testing.T) {
 	require.NoError(t, err)
 
 	// レジストリの作成
-	reg := registry.NewRegistry(testDB.DB, cfg)
+	reg := registry.NewRegistry(testDB.Client, cfg)
 
 	// WebSocketハブの作成
 	hub := wscontroller.NewHub()

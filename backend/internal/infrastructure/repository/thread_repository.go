@@ -2,42 +2,156 @@ package repository
 
 import (
 	"context"
-	"errors"
-	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-
+	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/message"
+	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type threadRepository struct {
-	db *gorm.DB
+	client *ent.Client
 }
 
-func NewThreadRepository(db *gorm.DB) domainrepository.ThreadRepository {
-	return &threadRepository{db: db}
+func NewThreadRepository(client *ent.Client) domainrepository.ThreadRepository {
+	return &threadRepository{client: client}
 }
 
 func (r *threadRepository) FindMetadataByMessageID(ctx context.Context, messageID string) (*entity.ThreadMetadata, error) {
-	msgID, err := utils.ParseUUID(messageID, "message ID")
+	mid, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
 
-	var model models.ThreadMetadata
-	if err := r.db.WithContext(ctx).Where("message_id = ?", msgID).First(&model).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	client := transaction.ResolveClient(ctx, r.client)
+	tm, err := client.ThreadMetadata.Query().
+		Where(threadmetadata.HasMessageWith(message.ID(mid))).
+		WithMessage(func(q *ent.MessageQuery) {
+			q.WithChannel(func(q2 *ent.ChannelQuery) {
+				q2.WithWorkspace().WithCreatedBy()
+			}).WithUser()
+		}).
+		WithLastReplyUser().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return model.ToEntity(), nil
+	return utils.ThreadMetadataToEntity(tm), nil
+}
+
+func (r *threadRepository) Upsert(ctx context.Context, metadata *entity.ThreadMetadata) error {
+	mid, err := utils.ParseUUID(metadata.MessageID, "message ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	// Try to find existing
+	existing, err := client.ThreadMetadata.Query().
+		Where(threadmetadata.HasMessageWith(message.ID(mid))).
+		Only(ctx)
+
+	participantIDs := make([]uuid.UUID, len(metadata.ParticipantUserIDs))
+	for i, id := range metadata.ParticipantUserIDs {
+		participantIDs[i] = utils.ParseUUIDOrNil(id)
+	}
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			// Create new
+			builder := client.ThreadMetadata.Create().
+				SetMessageID(mid).
+				SetReplyCount(metadata.ReplyCount).
+				SetParticipantUserIds(participantIDs)
+
+			if metadata.LastReplyAt != nil {
+				builder = builder.SetLastReplyAt(*metadata.LastReplyAt)
+			}
+
+			if metadata.LastReplyUserID != nil {
+				lruid, err := utils.ParseUUID(*metadata.LastReplyUserID, "last reply user ID")
+				if err != nil {
+					return err
+				}
+				builder = builder.SetLastReplyUserID(lruid)
+			}
+
+			tm, err := builder.Save(ctx)
+			if err != nil {
+				return err
+			}
+
+			// Load edges
+			tm, err = client.ThreadMetadata.Query().
+				Where(threadmetadata.HasMessageWith(message.ID(mid))).
+				WithMessage(func(q *ent.MessageQuery) {
+					q.WithChannel(func(q2 *ent.ChannelQuery) {
+						q2.WithWorkspace().WithCreatedBy()
+					}).WithUser()
+				}).
+				WithLastReplyUser().
+				Only(ctx)
+			if err != nil {
+				return err
+			}
+
+			*metadata = *utils.ThreadMetadataToEntity(tm)
+			return nil
+		}
+		return err
+	}
+
+	// Update existing
+	builder := client.ThreadMetadata.UpdateOne(existing).
+		SetReplyCount(metadata.ReplyCount).
+		SetParticipantUserIds(participantIDs)
+
+	if metadata.LastReplyAt != nil {
+		builder = builder.SetLastReplyAt(*metadata.LastReplyAt)
+	} else {
+		builder = builder.ClearLastReplyAt()
+	}
+
+	if metadata.LastReplyUserID != nil {
+		lruid, err := utils.ParseUUID(*metadata.LastReplyUserID, "last reply user ID")
+		if err != nil {
+			return err
+		}
+		builder = builder.SetLastReplyUserID(lruid)
+	} else {
+		builder = builder.ClearLastReplyUser()
+	}
+
+	tm, err := builder.Save(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Load edges
+	tm, err = client.ThreadMetadata.Query().
+		Where(threadmetadata.HasMessageWith(message.ID(mid))).
+		WithMessage(func(q *ent.MessageQuery) {
+			q.WithChannel(func(q2 *ent.ChannelQuery) {
+				q2.WithWorkspace().WithCreatedBy()
+			}).WithUser()
+		}).
+		WithLastReplyUser().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	*metadata = *utils.ThreadMetadataToEntity(tm)
+	return nil
 }
 
 func (r *threadRepository) FindMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*entity.ThreadMetadata, error) {
@@ -45,108 +159,84 @@ func (r *threadRepository) FindMetadataByMessageIDs(ctx context.Context, message
 		return make(map[string]*entity.ThreadMetadata), nil
 	}
 
-	msgIDs := make([]uuid.UUID, 0, len(messageIDs))
+	// Parse all message IDs
+	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
 	for _, id := range messageIDs {
-		msgID, err := utils.ParseUUID(id, "message ID")
+		parsedID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}
-		msgIDs = append(msgIDs, msgID)
+		parsedIDs = append(parsedIDs, parsedID)
 	}
 
-	var models []models.ThreadMetadata
-	if err := r.db.WithContext(ctx).Where("message_id IN ?", msgIDs).Find(&models).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+	metadataList, err := client.ThreadMetadata.Query().
+		Where(threadmetadata.HasMessageWith(message.IDIn(parsedIDs...))).
+		WithMessage(func(q *ent.MessageQuery) {
+			q.WithChannel(func(q2 *ent.ChannelQuery) {
+				q2.WithWorkspace().WithCreatedBy()
+			}).WithUser()
+		}).
+		WithLastReplyUser().
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	result := make(map[string]*entity.ThreadMetadata, len(models))
-	for _, model := range models {
-		result[model.MessageID.String()] = model.ToEntity()
+	result := make(map[string]*entity.ThreadMetadata)
+	for _, tm := range metadataList {
+		messageID := tm.Edges.Message.ID.String()
+		result[messageID] = utils.ThreadMetadataToEntity(tm)
 	}
 
 	return result, nil
 }
 
 func (r *threadRepository) CreateOrUpdateMetadata(ctx context.Context, metadata *entity.ThreadMetadata) error {
-	var model models.ThreadMetadata
-	model.FromEntity(metadata)
-
-	if err := r.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "message_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"reply_count", "last_reply_at", "last_reply_user_id", "participant_user_ids", "updated_at"}),
-	}).Create(&model).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return r.Upsert(ctx, metadata)
 }
 
 func (r *threadRepository) IncrementReplyCount(ctx context.Context, messageID string, replyUserID string) error {
-	msgID, err := utils.ParseUUID(messageID, "message ID")
+	mid, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
 
-	replyUID, err := utils.ParseUUID(replyUserID, "reply user ID")
+	client := transaction.ResolveClient(ctx, r.client)
+
+	// Try to find existing
+	existing, err := client.ThreadMetadata.Query().
+		Where(threadmetadata.HasMessageWith(message.ID(mid))).
+		Only(ctx)
+
 	if err != nil {
+		if ent.IsNotFound(err) {
+			// Create new with count 1
+			_, err := client.ThreadMetadata.Create().
+				SetMessageID(mid).
+				SetReplyCount(1).
+				SetParticipantUserIds([]uuid.UUID{}).
+				Save(ctx)
+			return err
+		}
 		return err
 	}
 
-	now := time.Now()
-
-	// 既存のメタデータを取得
-	var existing models.ThreadMetadata
-	err = r.db.WithContext(ctx).Where("message_id = ?", msgID).First(&existing).Error
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
-	}
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		// 新規作成
-		newMetadata := models.ThreadMetadata{
-			MessageID:          msgID,
-			ReplyCount:         1,
-			LastReplyAt:        &now,
-			LastReplyUserID:    &replyUID,
-			ParticipantUserIDs: []uuid.UUID{replyUID},
-			CreatedAt:          now,
-			UpdatedAt:          now,
-		}
-		return r.db.WithContext(ctx).Create(&newMetadata).Error
-	}
-
-	// 参加者リストに追加（重複チェック）
-	participants := existing.ParticipantUserIDs
-	found := false
-	for _, pid := range participants {
-		if pid == replyUID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		participants = append(participants, replyUID)
-	}
-
-	// 更新
-	updates := map[string]interface{}{
-		"reply_count":          gorm.Expr("reply_count + 1"),
-		"last_reply_at":        now,
-		"last_reply_user_id":   replyUID,
-		"participant_user_ids": participants,
-		"updated_at":           now,
-	}
-
-	return r.db.WithContext(ctx).Model(&models.ThreadMetadata{}).
-		Where("message_id = ?", msgID).
-		Updates(updates).Error
+	// Update existing
+	return client.ThreadMetadata.UpdateOne(existing).
+		SetReplyCount(existing.ReplyCount + 1).
+		Exec(ctx)
 }
 
 func (r *threadRepository) DeleteMetadata(ctx context.Context, messageID string) error {
-	msgID, err := utils.ParseUUID(messageID, "message ID")
+	mid, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&models.ThreadMetadata{}, "message_id = ?", msgID).Error
+	client := transaction.ResolveClient(ctx, r.client)
+	_, err = client.ThreadMetadata.Delete().
+		Where(threadmetadata.HasMessageWith(message.ID(mid))).
+		Exec(ctx)
+	return err
 }

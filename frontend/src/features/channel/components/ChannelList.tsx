@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/core";
+import { Badge, Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { useChannels } from "../hooks/useChannel";
@@ -72,14 +72,38 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
             <Stack gap={4}>
               {channels.map((channel) => {
                 const isSelected = channel.id === currentChannelId;
+                const channelData = channel as typeof channel & {
+                  unreadCount?: number;
+                  hasMention?: boolean;
+                };
+                const hasUnread = (channelData.unreadCount || 0) > 0;
+                const hasMention = channelData.hasMention || false;
+                const unreadCount = channelData.unreadCount || 0;
+
                 return (
                   <Button
                     key={channel.id}
                     variant={isSelected ? "filled" : "light"}
                     justify="flex-start"
                     onClick={() => handleChannelClick(channel.id)}
+                    className="relative"
                   >
-                    #{channel.name}
+                    <div className="flex items-center justify-between w-full">
+                      <span>#{channel.name}</span>
+                      <div className="flex items-center gap-1">
+                        {hasMention && unreadCount > 0 ? (
+                          <Badge
+                            color="red"
+                            size="xs"
+                            className="min-w-[18px] h-[18px] flex items-center justify-center p-0 text-xs"
+                          >
+                            {unreadCount > 99 ? "99+" : unreadCount}
+                          </Badge>
+                        ) : hasUnread ? (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                        ) : null}
+                      </div>
+                    </div>
                   </Button>
                 );
               })}

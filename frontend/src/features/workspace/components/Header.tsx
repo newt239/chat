@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { Menu, Button, Text, Avatar, TextInput, ActionIcon } from "@mantine/core";
-import { IconSearch, IconBookmark, IconSettings } from "@tabler/icons-react";
+import { Menu, Button, Text, Avatar, TextInput, ActionIcon, Badge } from "@mantine/core";
+import { IconSearch, IconBookmark, IconSettings, IconBell } from "@tabler/icons-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
@@ -9,6 +9,7 @@ import type { WorkspaceSummary } from "@/features/workspace/types";
 
 import { SettingsModal } from "@/features/layout/components/SettingsModal";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
+import { unreadNotificationCountAtom } from "@/providers/store/notification";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
@@ -17,6 +18,7 @@ export const GlobalHeaderPanel = () => {
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const unreadNotificationCount = useAtomValue(unreadNotificationCountAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,6 +35,10 @@ export const GlobalHeaderPanel = () => {
 
   const handleBookmarkClick = () => {
     setRightSidePanelView({ type: "bookmarks" });
+  };
+
+  const handleNotificationClick = () => {
+    setRightSidePanelView({ type: "notifications" });
   };
 
   const handleSettingsClick = () => {
@@ -141,6 +147,28 @@ export const GlobalHeaderPanel = () => {
         )}
 
         <div className="flex items-center space-x-4 shrink-0">
+          {/* 通知ボタン */}
+          {isInWorkspace && (
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={handleNotificationClick}
+              className="text-gray-700 hover:bg-gray-100 relative"
+              title="通知"
+            >
+              <IconBell size={20} />
+              {unreadNotificationCount > 0 && (
+                <Badge
+                  color="red"
+                  size="xs"
+                  className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center p-0 text-xs"
+                >
+                  {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                </Badge>
+              )}
+            </ActionIcon>
+          )}
+
           {/* ブックマークボタン */}
           {isInWorkspace && (
             <ActionIcon

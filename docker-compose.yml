@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: chat-postgres
     environment:
       POSTGRES_USER: postgres
@@ -42,10 +42,41 @@ services:
     networks:
       - chat-network
     restart: unless-stopped
-    command: >
-      sh -c "
-        go run cmd/server/main.go
-      "
+    command: air -c air.toml
+
+  reset:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: chat-reset
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - chat-network
+    command: go run cmd/reset/main.go
+    restart: "no"
+
+  seed:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: chat-seed
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat
+    volumes:
+      - ./backend:/app
+    depends_on:
+      reset:
+        condition: service_completed_successfully
+    networks:
+      - chat-network
+    command: go run cmd/seed/main.go
+    restart: "no"
 
   frontend:
     build:
@@ -63,7 +94,7 @@ services:
       - ./package.json:/app/package.json:ro
       - frontend_node_modules:/app/node_modules
     depends_on:
-      - backend
+      - seed
     networks:
       - chat-network
     restart: unless-stopped

@@ -24,4 +24,6 @@ type ChannelOutput struct {
 	CreatedBy   string    `json:"createdBy"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
+	UnreadCount int       `json:"unreadCount"`
+	HasMention  bool      `json:"hasMention"`
 }

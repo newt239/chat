@@ -1,4 +1,4 @@
-import { TextInput, PasswordInput, Button, Paper, Title, Text, Anchor } from "@mantine/core";
+import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Link } from "@tanstack/react-router";
 
@@ -70,4 +70,4 @@ export const LoginForm = () => {
       </form>
     </Paper>
   );
-}
+};

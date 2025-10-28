@@ -9,7 +9,8 @@ export type PanelView =
   | { type: "thread"; threadId: string }
   | { type: "user-profile"; userId: string }
   | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" }
-  | { type: "bookmarks" };
+  | { type: "bookmarks" }
+  | { type: "notifications" };
 
 // レイアウトの状態を管理する型定義
 type LayoutState = {

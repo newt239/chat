@@ -3,6 +3,7 @@ package registry
 import (
 	"context"
 
+	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/infrastructure/auth"
@@ -15,21 +16,20 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
-	"gorm.io/gorm"
 )
 
 // InfrastructureRegistry はインフラストラクチャ層の依存関係を管理します
 type InfrastructureRegistry struct {
-	db             *gorm.DB
+	client         *ent.Client
 	config         *config.Config
 	hub            *websocket.Hub
 	domainRegistry *DomainRegistry
 }
 
 // NewInfrastructureRegistry は新しいInfrastructureRegistryを作成します
-func NewInfrastructureRegistry(db *gorm.DB, cfg *config.Config, hub *websocket.Hub, domainRegistry *DomainRegistry) *InfrastructureRegistry {
+func NewInfrastructureRegistry(client *ent.Client, cfg *config.Config, hub *websocket.Hub, domainRegistry *DomainRegistry) *InfrastructureRegistry {
 	return &InfrastructureRegistry{
-		db:             db,
+		client:         client,
 		config:         cfg,
 		hub:            hub,
 		domainRegistry: domainRegistry,
@@ -95,5 +95,5 @@ func (r *InfrastructureRegistry) NewLinkProcessingService() service.LinkProcessi
 }
 
 func (r *InfrastructureRegistry) NewTransactionManager() domaintransaction.Manager {
-	return transaction.NewTransactionManager(r.db)
+	return transaction.NewTransactionManager(r.client)
 }

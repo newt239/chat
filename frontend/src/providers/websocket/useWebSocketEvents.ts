@@ -2,10 +2,17 @@ import { useEffect, useCallback } from "react";
 
 import { notifications } from "@mantine/notifications";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { useWebSocket } from "./WebSocketProvider";
 
 import type { MessageWithUser } from "@/features/message/schemas";
+
+import { useBrowserNotification } from "@/features/notification/hooks/useBrowserNotification";
+import {
+  addNotificationAtom,
+  notificationSettingsAtomReadOnly,
+} from "@/providers/store/notification";
 
 type NewMessagePayload = {
   channel_id: string;
@@ -27,11 +34,15 @@ type MessageDeletedPayload = {
 type UnreadCountPayload = {
   channel_id: string;
   unread_count: number;
+  has_mention: boolean;
 };
 
 export const useWebSocketEvents = () => {
   const { client } = useWebSocket();
   const queryClient = useQueryClient();
+  const addNotification = useSetAtom(addNotificationAtom);
+  const notificationSettings = useAtomValue(notificationSettingsAtomReadOnly);
+  const { showMentionNotification, showMessageNotification } = useBrowserNotification();
 
   const handleNewMessage = useCallback(
     (payload: unknown) => {
@@ -88,8 +99,70 @@ export const useWebSocketEvents = () => {
           };
         }
       );
+
+      // 通知処理（自分が送信したメッセージは除外）
+      const currentUserId = localStorage.getItem("currentUserId");
+      if (currentUserId && message.user?.id !== currentUserId) {
+        // チャンネル名を取得
+        const workspaceId = channelId.split("-")[0] || "";
+        const channelsData = queryClient.getQueryData(["workspaces", workspaceId, "channels"]);
+
+        if (channelsData && typeof channelsData === "object") {
+          const data = channelsData as { channels?: Array<{ id: string; name?: string }> };
+          const channels = data?.channels || [];
+          const channel = channels.find((ch) => ch.id === channelId);
+          const channelName = String(channel?.name || "Unknown");
+
+          // メンション検知（簡易版：メッセージ本文に@が含まれているかチェック）
+          const isMention = message.body?.includes("@") || false;
+
+          if (isMention) {
+            // メンション通知
+            addNotification({
+              type: "mention",
+              title: `${message.user?.displayName || "Unknown"} が #${channelName} でメンションしました`,
+              message: message.body || "",
+              channelId,
+              channelName,
+              messageId: message.id,
+              userId: String(message.user?.id || ""),
+              userName: String(message.user?.displayName || ""),
+              workspaceId,
+            });
+
+            // ブラウザ通知
+            if (message.user?.displayName && message.body) {
+              showMentionNotification(channelName, message.user.displayName, message.body);
+            }
+          } else if (!notificationSettings.mentionOnly) {
+            // 通常のメッセージ通知（設定で有効な場合のみ）
+            addNotification({
+              type: "message",
+              title: `${message.user?.displayName || "Unknown"} が #${channelName} にメッセージを投稿しました`,
+              message: message.body || "",
+              channelId,
+              channelName,
+              messageId: message.id,
+              userId: String(message.user?.id || ""),
+              userName: String(message.user?.displayName || ""),
+              workspaceId,
+            });
+
+            // ブラウザ通知
+            if (message.user?.displayName && message.body) {
+              showMessageNotification(channelName, message.user.displayName, message.body);
+            }
+          }
+        }
+      }
     },
-    [queryClient]
+    [
+      queryClient,
+      addNotification,
+      notificationSettings.mentionOnly,
+      showMentionNotification,
+      showMessageNotification,
+    ]
   );
 
   const handleMessageUpdated = useCallback(
@@ -146,13 +219,21 @@ export const useWebSocketEvents = () => {
       const data = payload as UnreadCountPayload;
       const channelId = data.channel_id;
       const unreadCount = data.unread_count;
+      const hasMention = data.has_mention;
 
       // チャンネルリストの未読数を更新
       queryClient.setQueryData(
         ["workspaces", channelId.split("-")[0], "channels"],
         (
           oldData:
-            | { channels: Array<{ id: string; unread_count: number; [key: string]: unknown }> }
+            | {
+                channels: Array<{
+                  id: string;
+                  unread_count: number;
+                  has_mention: boolean;
+                  [key: string]: unknown;
+                }>;
+              }
             | undefined
         ) => {
           if (!oldData) return oldData;
@@ -164,6 +245,7 @@ export const useWebSocketEvents = () => {
                 return {
                   ...channel,
                   unread_count: unreadCount,
+                  has_mention: hasMention,
                 };
               }
               return channel;

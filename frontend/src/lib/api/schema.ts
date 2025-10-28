@@ -615,6 +615,10 @@ export type components = {
             createdBy: string;
             /** Format: date-time */
             createdAt: string;
+            /** @description 未読メッセージ数 */
+            unreadCount?: number;
+            /** @description 未読メンションの有無 */
+            hasMention?: boolean;
         };
         CreateChannelRequest: {
             name: string;

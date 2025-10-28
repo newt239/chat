@@ -3,69 +3,135 @@ package repository
 import (
 	"context"
 
-	"gorm.io/gorm"
-
+	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/message"
+	"github.com/newt239/chat/ent/messagebookmark"
+	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/models"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type bookmarkRepository struct {
-	db *gorm.DB
+	client *ent.Client
 }
 
-func NewBookmarkRepository(db *gorm.DB) domainrepository.BookmarkRepository {
-	return &bookmarkRepository{db: db}
-}
-
-func (r *bookmarkRepository) dbWithContext(ctx context.Context) *gorm.DB {
-	return transaction.ResolveDB(ctx, r.db)
+func NewBookmarkRepository(client *ent.Client) domainrepository.BookmarkRepository {
+	return &bookmarkRepository{client: client}
 }
 
 func (r *bookmarkRepository) AddBookmark(ctx context.Context, bookmark *entity.MessageBookmark) error {
-	model := &models.MessageBookmark{}
-	model.FromEntity(bookmark)
-
-	if err := r.dbWithContext(ctx).Create(model).Error; err != nil {
+	uid, err := utils.ParseUUID(bookmark.UserID, "user ID")
+	if err != nil {
 		return err
 	}
 
-	bookmark.CreatedAt = model.CreatedAt
+	mid, err := utils.ParseUUID(bookmark.MessageID, "message ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	mb, err := client.MessageBookmark.Create().
+		SetUserID(uid).
+		SetMessageID(mid).
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Load edges
+	mb, err = client.MessageBookmark.Query().
+		Where(
+			messagebookmark.HasUserWith(user.ID(uid)),
+			messagebookmark.HasMessageWith(message.ID(mid)),
+		).
+		WithUser().
+		WithMessage(func(q *ent.MessageQuery) {
+			q.WithChannel(func(q2 *ent.ChannelQuery) {
+				q2.WithWorkspace().WithCreatedBy()
+			}).WithUser()
+		}).
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	*bookmark = *utils.MessageBookmarkToEntity(mb)
 	return nil
 }
 
 func (r *bookmarkRepository) RemoveBookmark(ctx context.Context, userID, messageID string) error {
-	return r.dbWithContext(ctx).
-		Delete(&models.MessageBookmark{}, "user_id = ? AND message_id = ?", userID, messageID).
-		Error
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return err
+	}
+
+	mid, err := utils.ParseUUID(messageID, "message ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	_, err = client.MessageBookmark.Delete().
+		Where(
+			messagebookmark.HasUserWith(user.ID(uid)),
+			messagebookmark.HasMessageWith(message.ID(mid)),
+		).
+		Exec(ctx)
+
+	return err
 }
 
 func (r *bookmarkRepository) FindByUserID(ctx context.Context, userID string) ([]*entity.MessageBookmark, error) {
-	var models []models.MessageBookmark
-	if err := r.dbWithContext(ctx).
-		Where("user_id = ?", userID).
-		Order("created_at desc").
-		Find(&models).Error; err != nil {
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
 		return nil, err
 	}
 
-	bookmarks := make([]*entity.MessageBookmark, len(models))
-	for i := range models {
-		bookmarks[i] = models[i].ToEntity()
+	client := transaction.ResolveClient(ctx, r.client)
+	bookmarks, err := client.MessageBookmark.Query().
+		Where(messagebookmark.HasUserWith(user.ID(uid))).
+		WithUser().
+		WithMessage(func(q *ent.MessageQuery) {
+			q.WithChannel(func(q2 *ent.ChannelQuery) {
+				q2.WithWorkspace().WithCreatedBy()
+			}).WithUser()
+		}).
+		Order(ent.Desc(messagebookmark.FieldCreatedAt)).
+		All(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	return bookmarks, nil
+	result := make([]*entity.MessageBookmark, 0, len(bookmarks))
+	for _, mb := range bookmarks {
+		result = append(result, utils.MessageBookmarkToEntity(mb))
+	}
+
+	return result, nil
 }
 
 func (r *bookmarkRepository) IsBookmarked(ctx context.Context, userID, messageID string) (bool, error) {
-	var count int64
-	if err := r.dbWithContext(ctx).
-		Model(&models.MessageBookmark{}).
-		Where("user_id = ? AND message_id = ?", userID, messageID).
-		Count(&count).Error; err != nil {
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
 		return false, err
 	}
 
-	return count > 0, nil
+	mid, err := utils.ParseUUID(messageID, "message ID")
+	if err != nil {
+		return false, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	exists, err := client.MessageBookmark.Query().
+		Where(
+			messagebookmark.HasUserWith(user.ID(uid)),
+			messagebookmark.HasMessageWith(message.ID(mid)),
+		).
+		Exist(ctx)
+
+	return exists, err
 }

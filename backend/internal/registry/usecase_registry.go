@@ -50,6 +50,7 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewReadStateRepository(),
 		r.infrastructureRegistry.NewTransactionManager(),
 	)
 }

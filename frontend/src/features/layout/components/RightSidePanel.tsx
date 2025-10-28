@@ -5,6 +5,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import type { PanelView } from "@/providers/store/ui";
 
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
+import { NotificationPanel } from "@/features/notification/components/NotificationPanel";
 import { ChannelInfoPanel } from "@/features/sidebar/components/ChannelInfoPanel";
 import { MemberPanel } from "@/features/sidebar/components/MemberPanel";
 import { SearchResultsPanel } from "@/features/sidebar/components/SearchResultsPanel";
@@ -58,6 +59,8 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
         );
       case "bookmarks":
         return <BookmarkList />;
+      case "notifications":
+        return <NotificationPanel />;
       case "hidden":
         return null;
     }
@@ -77,6 +80,8 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
         return "検索結果";
       case "bookmarks":
         return "ブックマーク";
+      case "notifications":
+        return "通知";
       case "hidden":
         return "";
     }

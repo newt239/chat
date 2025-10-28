@@ -101,3 +101,13 @@ func (m *MockMessageRepository) SoftDeleteByIDs(ctx context.Context, ids []strin
 	args := m.Called(ctx, ids, deletedBy)
 	return args.Error(0)
 }
+
+func (m *MockMessageRepository) AddUserMention(ctx context.Context, mention *entity.MessageUserMention) error {
+	args := m.Called(ctx, mention)
+	return args.Error(0)
+}
+
+func (m *MockMessageRepository) AddGroupMention(ctx context.Context, mention *entity.MessageGroupMention) error {
+	args := m.Called(ctx, mention)
+	return args.Error(0)
+}

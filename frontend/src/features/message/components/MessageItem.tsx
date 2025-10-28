@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Avatar, Text } from "@mantine/core";
+import { Avatar, Button, Group, Text, Textarea } from "@mantine/core";
 
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
@@ -18,11 +18,11 @@ type MessageItemProps = {
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onBookmark: (messageId: string) => void;
-  onEdit?: (messageId: string, currentBody: string) => void;
-  onDelete?: (messageId: string) => void;
+  onEdit?: (messageId: string, nextBody: string) => Promise<void>;
+  onDelete?: (messageId: string) => Promise<void>;
   threadMetadata?: ThreadMetadata | null;
   onOpenThread?: (messageId: string) => void;
-}
+};
 
 export const MessageItem = ({
   message,
@@ -37,7 +37,65 @@ export const MessageItem = ({
   onOpenThread,
 }: MessageItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(message.body);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   const isAuthor = message.userId === currentUserId;
+
+  useEffect(() => {
+    if (!isEditing) {
+      setDraft(message.body);
+      setEditError(null);
+    }
+  }, [isEditing, message.body]);
+
+  const handleStartEdit = () => {
+    if (message.isDeleted || !isAuthor) {
+      return;
+    }
+    setDraft(message.body);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setDraft(message.body);
+    setEditError(null);
+    setIsEditing(false);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!onEdit) {
+      return;
+    }
+
+    const trimmed = draft.trim();
+    if (trimmed.length === 0) {
+      setEditError("メッセージ本文を入力してください");
+      return;
+    }
+
+    if (trimmed === message.body) {
+      setIsEditing(false);
+      setEditError(null);
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await onEdit(message.id, trimmed);
+      setIsEditing(false);
+      setEditError(null);
+    } catch (error) {
+      if (error instanceof Error && error.message) {
+        setEditError(error.message);
+      } else {
+        setEditError("メッセージの更新に失敗しました");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div
@@ -76,6 +134,30 @@ export const MessageItem = ({
                 このメッセージは削除されました
                 {message.deletedBy && ` (削除者: ${message.deletedBy.displayName})`}
               </Text>
+            ) : isEditing ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={draft}
+                  onChange={(event) => setDraft(event.currentTarget.value)}
+                  minRows={3}
+                  autosize
+                  disabled={isSaving}
+                  data-autofocus
+                />
+                {editError && (
+                  <Text size="xs" c="red">
+                    {editError}
+                  </Text>
+                )}
+                <Group gap="xs">
+                  <Button size="xs" onClick={handleSaveEdit} loading={isSaving} disabled={isSaving}>
+                    保存
+                  </Button>
+                  <Button size="xs" variant="subtle" onClick={handleCancelEdit} disabled={isSaving}>
+                    キャンセル
+                  </Button>
+                </Group>
+              </div>
             ) : (
               <MessageContent message={message} />
             )}
@@ -104,7 +186,7 @@ export const MessageItem = ({
       </div>
 
       {/* ホバー時のアクションメニュー */}
-      {isHovered && (
+      {isHovered && !isEditing && (
         <MessageActions
           messageId={message.id}
           isAuthor={isAuthor}
@@ -112,7 +194,7 @@ export const MessageItem = ({
           onCopyLink={onCopyLink}
           onCreateThread={onCreateThread}
           onBookmark={onBookmark}
-          onEdit={onEdit ? (id) => onEdit(id, message.body) : undefined}
+          onEditRequest={handleStartEdit}
           onDelete={onDelete}
         />
       )}

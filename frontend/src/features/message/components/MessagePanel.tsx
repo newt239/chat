@@ -14,6 +14,13 @@ import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/
 import { useReadStateEvents } from "@/providers/websocket/useReadStateEvents";
 import { useWebSocketEvents } from "@/providers/websocket/useWebSocketEvents";
 
+const resolveErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
+};
+
 export const MessagePanel = () => {
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
   const [currentChannelId] = useAtom(currentChannelIdAtom);
@@ -124,49 +131,40 @@ export const MessagePanel = () => {
   }, []);
 
   const handleEdit = useCallback(
-    (messageId: string, currentBody: string) => {
-      updateMessage.mutate(
-        { messageId, body: currentBody },
-        {
-          onSuccess: () => {
-            notifications.show({
-              title: "更新しました",
-              message: "メッセージを更新しました",
-            });
-          },
-          onError: (err) => {
-            notifications.show({
-              title: "エラー",
-              message: err.message ?? "メッセージの更新に失敗しました",
-              color: "red",
-            });
-          },
-        }
-      );
+    async (messageId: string, nextBody: string) => {
+      try {
+        await updateMessage.mutateAsync({ messageId, body: nextBody });
+        notifications.show({
+          title: "更新しました",
+          message: "メッセージを更新しました",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "エラー",
+          message: resolveErrorMessage(error, "メッセージの更新に失敗しました"),
+          color: "red",
+        });
+        throw error;
+      }
     },
     [updateMessage]
   );
 
   const handleDelete = useCallback(
-    (messageId: string) => {
-      deleteMessage.mutate(
-        { messageId },
-        {
-          onSuccess: () => {
-            notifications.show({
-              title: "削除しました",
-              message: "メッセージを削除しました",
-            });
-          },
-          onError: (err) => {
-            notifications.show({
-              title: "エラー",
-              message: err.message ?? "メッセージの削除に失敗しました",
-              color: "red",
-            });
-          },
-        }
-      );
+    async (messageId: string) => {
+      try {
+        await deleteMessage.mutateAsync({ messageId });
+        notifications.show({
+          title: "削除しました",
+          message: "メッセージを削除しました",
+        });
+      } catch (error) {
+        notifications.show({
+          title: "エラー",
+          message: resolveErrorMessage(error, "メッセージの削除に失敗しました"),
+          color: "red",
+        });
+      }
     },
     [deleteMessage]
   );

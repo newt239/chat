@@ -2,9 +2,9 @@ package registry
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
-	"gorm.io/gorm"
 )
 
 // Registry は分割されたRegistryを統合するメインのRegistryです
@@ -16,15 +16,15 @@ type Registry struct {
 }
 
 // NewRegistry は新しいRegistryを作成します
-func NewRegistry(db *gorm.DB, cfg *config.Config) *Registry {
+func NewRegistry(client *ent.Client, cfg *config.Config) *Registry {
 	// ドメイン層のRegistryを作成
-	domainRegistry := NewDomainRegistry(db)
+	domainRegistry := NewDomainRegistry(client)
 
 	// WebSocketハブを作成
 	hub := websocket.NewHub()
 
 	// インフラストラクチャ層のRegistryを作成
-	infrastructureRegistry := NewInfrastructureRegistry(db, cfg, hub, domainRegistry)
+	infrastructureRegistry := NewInfrastructureRegistry(client, cfg, hub, domainRegistry)
 
 	// ユースケース層のRegistryを作成
 	usecaseRegistry := NewUseCaseRegistry(domainRegistry, infrastructureRegistry)

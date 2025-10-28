@@ -86,6 +86,7 @@ type MessageDeletedPayload struct {
 type UnreadCountPayload struct {
 	ChannelID   string `json:"channel_id"`
 	UnreadCount int    `json:"unread_count"`
+	HasMention  bool   `json:"has_mention"`
 }
 
 // AckPayload はackイベントのペイロードを表します

@@ -2,28 +2,111 @@ package repository
 
 import (
 	"context"
-	"errors"
+	"time"
 
-	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-
+	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channelmember"
+	"github.com/newt239/chat/ent/channelreadstate"
+	"github.com/newt239/chat/ent/message"
+	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type readStateRepository struct {
-	db *gorm.DB
+	client *ent.Client
 }
 
-func NewReadStateRepository(db *gorm.DB) domainrepository.ReadStateRepository {
-	return &readStateRepository{db: db}
+func NewReadStateRepository(client *ent.Client) domainrepository.ReadStateRepository {
+	return &readStateRepository{client: client}
 }
 
-func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelID string, userID string) (*entity.ChannelReadState, error) {
-	chID, err := utils.ParseUUID(channelID, "channel ID")
+func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.ChannelReadState) error {
+	cid, err := utils.ParseUUID(readState.ChannelID, "channel ID")
+	if err != nil {
+		return err
+	}
+
+	uid, err := utils.ParseUUID(readState.UserID, "user ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	// Try to find existing
+	existing, err := client.ChannelReadState.Query().
+		Where(
+			channelreadstate.HasChannelWith(channel.ID(cid)),
+			channelreadstate.HasUserWith(user.ID(uid)),
+		).
+		Only(ctx)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			// Create new
+			crs, err := client.ChannelReadState.Create().
+				SetChannelID(cid).
+				SetUserID(uid).
+				SetLastReadAt(readState.LastReadAt).
+				Save(ctx)
+			if err != nil {
+				return err
+			}
+
+			// Load edges
+			crs, err = client.ChannelReadState.Query().
+				Where(
+					channelreadstate.HasChannelWith(channel.ID(cid)),
+					channelreadstate.HasUserWith(user.ID(uid)),
+				).
+				WithChannel(func(q *ent.ChannelQuery) {
+					q.WithWorkspace().WithCreatedBy()
+				}).
+				WithUser().
+				Only(ctx)
+			if err != nil {
+				return err
+			}
+
+			*readState = *utils.ChannelReadStateToEntity(crs)
+			return nil
+		}
+		return err
+	}
+
+	// Update existing
+	crs, err := client.ChannelReadState.UpdateOne(existing).
+		SetLastReadAt(readState.LastReadAt).
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Load edges
+	crs, err = client.ChannelReadState.Query().
+		Where(
+			channelreadstate.HasChannelWith(channel.ID(cid)),
+			channelreadstate.HasUserWith(user.ID(uid)),
+		).
+		WithChannel(func(q *ent.ChannelQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	*readState = *utils.ChannelReadStateToEntity(crs)
+	return nil
+}
+
+func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelID, userID string) (*entity.ChannelReadState, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
 	}
@@ -33,41 +116,38 @@ func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelI
 		return nil, err
 	}
 
-	var model models.ChannelReadState
-	if err := r.db.WithContext(ctx).Where("channel_id = ? AND user_id = ?", chID, uid).First(&model).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	client := transaction.ResolveClient(ctx, r.client)
+	crs, err := client.ChannelReadState.Query().
+		Where(
+			channelreadstate.HasChannelWith(channel.ID(cid)),
+			channelreadstate.HasUserWith(user.ID(uid)),
+		).
+		WithChannel(func(q *ent.ChannelQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return model.ToEntity(), nil
+	return utils.ChannelReadStateToEntity(crs), nil
 }
 
-func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.ChannelReadState) error {
-	channelID, err := utils.ParseUUID(readState.ChannelID, "channel ID")
-	if err != nil {
-		return err
+func (r *readStateRepository) UpdateLastReadAt(ctx context.Context, channelID, userID string, lastReadAt time.Time) error {
+	readState := &entity.ChannelReadState{
+		ChannelID:  channelID,
+		UserID:     userID,
+		LastReadAt: lastReadAt,
 	}
-
-	userID, err := utils.ParseUUID(readState.UserID, "user ID")
-	if err != nil {
-		return err
-	}
-
-	model := &models.ChannelReadState{}
-	model.FromEntity(readState)
-	model.ChannelID = channelID
-	model.UserID = userID
-
-	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "channel_id"}, {Name: "user_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"last_read_at"}),
-	}).Create(model).Error
+	return r.Upsert(ctx, readState)
 }
 
-func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID string, userID string) (int, error) {
-	chID, err := utils.ParseUUID(channelID, "channel ID")
+func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID, userID string) (int, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return 0, err
 	}
@@ -77,29 +157,38 @@ func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID stri
 		return 0, err
 	}
 
-	var readState models.ChannelReadState
-	err = r.db.WithContext(ctx).Where("channel_id = ? AND user_id = ?", chID, uid).First(&readState).Error
+	client := transaction.ResolveClient(ctx, r.client)
+
+	// Get the last read time for this user in this channel
+	readState, err := client.ChannelReadState.Query().
+		Where(
+			channelreadstate.HasChannelWith(channel.ID(cid)),
+			channelreadstate.HasUserWith(user.ID(uid)),
+		).
+		Only(ctx)
+
+	var lastReadAt time.Time
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			var count int64
-			if err := r.db.WithContext(ctx).Model(&models.Message{}).
-				Where("channel_id = ? AND deleted_at IS NULL", chID).
-				Count(&count).Error; err != nil {
-				return 0, err
-			}
-			return int(count), nil
+		if ent.IsNotFound(err) {
+			// User has never read this channel, count all messages
+			lastReadAt = time.Time{}
+		} else {
+			return 0, err
 		}
-		return 0, err
+	} else {
+		lastReadAt = readState.LastReadAt
 	}
 
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&models.Message{}).
-		Where("channel_id = ? AND created_at > ? AND deleted_at IS NULL", chID, readState.LastReadAt).
-		Count(&count).Error; err != nil {
-		return 0, err
-	}
+	// Count messages created after the last read time
+	count, err := client.Message.Query().
+		Where(
+			message.HasChannelWith(channel.ID(cid)),
+			message.CreatedAtGT(lastReadAt),
+			message.DeletedAtIsNil(),
+		).
+		Count(ctx)
 
-	return int(count), nil
+	return count, err
 }
 
 func (r *readStateRepository) GetUnreadChannels(ctx context.Context, userID string) (map[string]int, error) {
@@ -108,38 +197,24 @@ func (r *readStateRepository) GetUnreadChannels(ctx context.Context, userID stri
 		return nil, err
 	}
 
-	var channelIDs []uuid.UUID
+	client := transaction.ResolveClient(ctx, r.client)
 
-	var workspaceIDs []uuid.UUID
-	if err := r.db.WithContext(ctx).Table("workspace_members").
-		Select("workspace_id").
-		Where("user_id = ?", uid).
-		Pluck("workspace_id", &workspaceIDs).Error; err != nil {
-		return nil, err
-	}
-
-	publicChannelQuery := r.db.WithContext(ctx).Table("channels").
-		Select("id").
-		Where("workspace_id IN ? AND is_private = false", workspaceIDs)
-
-	privateChannelQuery := r.db.WithContext(ctx).Table("channel_members").
-		Select("channel_id").
-		Where("user_id = ?", uid)
-
-	if err := r.db.WithContext(ctx).Raw("(?) UNION (?)", publicChannelQuery, privateChannelQuery).
-		Scan(&channelIDs).Error; err != nil {
+	// Get all channels the user is a member of
+	channels, err := client.Channel.Query().
+		Where(channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid)))).
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
 	result := make(map[string]int)
-
-	for _, chID := range channelIDs {
-		count, err := r.GetUnreadCount(ctx, chID.String(), userID)
+	for _, ch := range channels {
+		count, err := r.GetUnreadCount(ctx, ch.ID.String(), userID)
 		if err != nil {
 			return nil, err
 		}
 		if count > 0 {
-			result[chID.String()] = count
+			result[ch.ID.String()] = count
 		}
 	}
 

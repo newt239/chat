@@ -27,6 +27,7 @@ type channelInteractor struct {
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
+	readStateRepo     domainrepository.ReadStateRepository
 	txManager         domaintransaction.Manager
 }
 
@@ -34,12 +35,14 @@ func NewChannelInteractor(
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
+	readStateRepo domainrepository.ReadStateRepository,
 	txManager domaintransaction.Manager,
 ) ChannelUseCase {
 	return &channelInteractor{
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		workspaceRepo:     workspaceRepo,
+		readStateRepo:     readStateRepo,
 		txManager:         txManager,
 	}
 }
@@ -75,7 +78,17 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 
 	output := make([]ChannelOutput, 0, len(channels))
 	for _, ch := range channels {
-		output = append(output, toChannelOutput(ch))
+		// 未読数を取得
+		unreadCount, err := i.readStateRepo.GetUnreadCount(ctx, ch.ID, input.UserID)
+		if err != nil {
+			// エラーの場合は0として扱う
+			unreadCount = 0
+		}
+
+		// TODO: メンション検知の実装（現在は未読数が0より大きい場合にtrueとする）
+		hasMention := unreadCount > 0
+
+		output = append(output, toChannelOutputWithUnread(ch, unreadCount, hasMention))
 	}
 
 	return output, nil
@@ -138,11 +151,15 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, err
 	}
 
-	output := toChannelOutput(channel)
+	output := toChannelOutputWithUnread(channel, 0, false) // 新規作成時は未読数0
 	return &output, nil
 }
 
 func toChannelOutput(channel *entity.Channel) ChannelOutput {
+	return toChannelOutputWithUnread(channel, 0, false)
+}
+
+func toChannelOutputWithUnread(channel *entity.Channel, unreadCount int, hasMention bool) ChannelOutput {
 	return ChannelOutput{
 		ID:          channel.ID,
 		WorkspaceID: channel.WorkspaceID,
@@ -152,6 +169,8 @@ func toChannelOutput(channel *entity.Channel) ChannelOutput {
 		CreatedBy:   channel.CreatedBy,
 		CreatedAt:   channel.CreatedAt,
 		UpdatedAt:   channel.UpdatedAt,
+		UnreadCount: unreadCount,
+		HasMention:  hasMention,
 	}
 }
 

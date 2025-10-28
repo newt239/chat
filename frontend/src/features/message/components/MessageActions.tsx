@@ -27,8 +27,8 @@ type MessageActionsProps = {
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onBookmark: (messageId: string) => void;
-  onEdit?: (messageId: string) => void;
-  onDelete?: (messageId: string) => void;
+  onEditRequest?: () => void;
+  onDelete?: (messageId: string) => Promise<void> | void;
 };
 
 export const MessageActions = ({
@@ -38,7 +38,7 @@ export const MessageActions = ({
   onCopyLink,
   onCreateThread,
   onBookmark,
-  onEdit,
+  onEditRequest,
   onDelete,
 }: MessageActionsProps) => {
   const [emojiPickerOpened, setEmojiPickerOpened] = useState(false);
@@ -113,8 +113,8 @@ export const MessageActions = ({
           <Menu.Item leftSection={<IconLink size={14} />} onClick={() => onCopyLink(messageId)}>
             リンクをコピー
           </Menu.Item>
-          {isAuthor && !isDeleted && onEdit && (
-            <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => onEdit(messageId)}>
+          {isAuthor && !isDeleted && onEditRequest && (
+            <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => onEditRequest()}>
               メッセージを編集
             </Menu.Item>
           )}

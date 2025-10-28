@@ -123,3 +123,71 @@ func (h *MessageHandler) CreateMessage(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, message)
 }
+
+// UpdateMessage はメッセージを更新します
+func (h *MessageHandler) UpdateMessage(c echo.Context) error {
+	messageID, err := utils.GetParamFromContext(c, "messageId")
+	if err != nil {
+		return err
+	}
+
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	var req UpdateMessageRequest
+	if err := utils.ValidateRequest(c, &req); err != nil {
+		return err
+	}
+
+	input := messageuc.UpdateMessageInput{
+		MessageID: messageID,
+		EditorID:  userID,
+		Body:      req.Body,
+	}
+
+	message, err := h.messageUC.UpdateMessage(c.Request().Context(), input)
+	if err != nil {
+		return mapMessageError(err)
+	}
+
+	return c.JSON(http.StatusOK, message)
+}
+
+// DeleteMessage はメッセージを削除します
+func (h *MessageHandler) DeleteMessage(c echo.Context) error {
+	messageID, err := utils.GetParamFromContext(c, "messageId")
+	if err != nil {
+		return err
+	}
+
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	input := messageuc.DeleteMessageInput{
+		MessageID:  messageID,
+		ExecutorID: userID,
+	}
+
+	if err := h.messageUC.DeleteMessage(c.Request().Context(), input); err != nil {
+		return mapMessageError(err)
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
+func mapMessageError(err error) error {
+	switch err {
+	case messageuc.ErrMessageNotFound, messageuc.ErrChannelNotFound:
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	case messageuc.ErrUnauthorized:
+		return echo.NewHTTPError(http.StatusForbidden, err.Error())
+	case messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted:
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	default:
+		return handleUseCaseError(err)
+	}
+}

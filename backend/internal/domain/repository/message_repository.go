@@ -21,4 +21,6 @@ type MessageRepository interface {
 	RemoveReaction(ctx context.Context, messageID string, userID string, emoji string) error
 	FindReactions(ctx context.Context, messageID string) ([]*entity.MessageReaction, error)
 	FindReactionsByMessageIDs(ctx context.Context, messageIDs []string) (map[string][]*entity.MessageReaction, error)
+	AddUserMention(ctx context.Context, mention *entity.MessageUserMention) error
+	AddGroupMention(ctx context.Context, mention *entity.MessageGroupMention) error
 }

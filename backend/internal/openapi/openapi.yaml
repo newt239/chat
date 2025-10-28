@@ -156,6 +156,13 @@ components:
         createdAt:
           type: string
           format: date-time
+        unreadCount:
+          type: integer
+          description: 未読メッセージ数
+          minimum: 0
+        hasMention:
+          type: boolean
+          description: 未読メンションの有無
       required:
         - id
         - workspaceId

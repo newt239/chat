@@ -1,33 +1,35 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	entsql "entgo.io/ent/dialect/sql"
+	_ "github.com/lib/pq"
+
+	"github.com/newt239/chat/ent"
 )
 
-func NewConnection(dsn string, logLevel logger.LogLevel) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logLevel),
-	})
+// NewConnection creates a new ent client connection
+func NewConnection(dsn string) (*ent.Client, error) {
+	drv, err := entsql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	client := ent.NewClient(ent.Driver(drv))
+	return client, nil
 }
 
 // InitDB initializes the database connection with default settings
-func InitDB(dsn string) (*gorm.DB, error) {
-	var db *gorm.DB
+func InitDB(dsn string) (*ent.Client, error) {
+	var client *ent.Client
 	var err error
 
 	// Retry connection with exponential backoff
 	maxRetries := 10
 	for i := 0; i < maxRetries; i++ {
-		db, err = NewConnection(dsn, logger.Info)
+		client, err = NewConnection(dsn)
 		if err == nil {
 			break
 		}
@@ -42,14 +44,15 @@ func InitDB(dsn string) (*gorm.DB, error) {
 	}
 
 	// Configure connection pool
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
+	// Note: ent client doesn't expose DB directly, connection pool is managed by the driver
 
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(time.Hour)
+	return client, nil
+}
 
-	return db, nil
+// GetDB extracts the sql.DB from ent client
+// Note: ent client doesn't expose DB directly, this function is deprecated
+func GetDB(client *ent.Client) *sql.DB {
+	// This function is no longer needed with ent
+	// Use client.Schema.Create() for migrations instead
+	return nil
 }

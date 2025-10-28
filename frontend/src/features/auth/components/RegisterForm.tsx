@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { TextInput, PasswordInput, Button, Paper, Title, Text, Anchor } from "@mantine/core";
+import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@mantine/core";
+import { Link } from "@tanstack/react-router";
 
 import { useRegister } from "../hooks/useAuth";
 
@@ -10,8 +11,8 @@ export const RegisterForm = () => {
   const [displayName, setDisplayName] = useState("");
   const register = useRegister();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     register.mutate({ email, password, displayName });
   };
 
@@ -26,7 +27,7 @@ export const RegisterForm = () => {
           label="表示名"
           placeholder="山田太郎"
           value={displayName}
-          onChange={(e) => setDisplayName(e.currentTarget.value)}
+          onChange={(event) => setDisplayName(event.currentTarget.value)}
           required
           className="mb-4"
         />
@@ -36,7 +37,7 @@ export const RegisterForm = () => {
           placeholder="your@email.com"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.currentTarget.value)}
+          onChange={(event) => setEmail(event.currentTarget.value)}
           required
           className="mb-4"
         />
@@ -45,7 +46,7 @@ export const RegisterForm = () => {
           label="パスワード"
           placeholder="パスワード"
           value={password}
-          onChange={(e) => setPassword(e.currentTarget.value)}
+          onChange={(event) => setPassword(event.currentTarget.value)}
           required
           className="mb-6"
         />
@@ -62,11 +63,11 @@ export const RegisterForm = () => {
 
         <Text size="sm" className="text-center">
           すでにアカウントをお持ちの方は{" "}
-          <Anchor href="/login" size="sm">
+          <Anchor component={Link} to="/login" size="sm">
             ログイン
           </Anchor>
         </Text>
       </form>
     </Paper>
   );
-}
+};

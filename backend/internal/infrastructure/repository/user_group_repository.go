@@ -2,40 +2,47 @@ package repository
 
 import (
 	"context"
-	"errors"
-	"time"
 
-	"gorm.io/gorm"
-
+	"github.com/google/uuid"
+	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/user"
+	"github.com/newt239/chat/ent/usergroup"
+	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type userGroupRepository struct {
-	db *gorm.DB
+	client *ent.Client
 }
 
-func NewUserGroupRepository(db *gorm.DB) domainrepository.UserGroupRepository {
-	return &userGroupRepository{db: db}
+func NewUserGroupRepository(client *ent.Client) domainrepository.UserGroupRepository {
+	return &userGroupRepository{client: client}
 }
 
 func (r *userGroupRepository) FindByID(ctx context.Context, id string) (*entity.UserGroup, error) {
-	groupID, err := utils.ParseUUID(id, "group ID")
+	gid, err := utils.ParseUUID(id, "group ID")
 	if err != nil {
 		return nil, err
 	}
 
-	var model models.UserGroup
-	if err := r.db.WithContext(ctx).Where("id = ?", groupID).First(&model).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	client := transaction.ResolveClient(ctx, r.client)
+	ug, err := client.UserGroup.Query().
+		Where(usergroup.ID(gid)).
+		WithWorkspace().
+		WithCreatedBy().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return model.ToEntity(), nil
+	return utils.UserGroupToEntity(ug), nil
 }
 
 func (r *userGroupRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.UserGroup, error) {
@@ -43,148 +50,229 @@ func (r *userGroupRepository) FindByIDs(ctx context.Context, ids []string) ([]*e
 		return []*entity.UserGroup{}, nil
 	}
 
-	groupIDs := make([]interface{}, len(ids))
-	for i, id := range ids {
-		groupID, err := utils.ParseUUID(id, "group ID")
+	// Parse all group IDs
+	parsedIDs := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		parsedID, err := utils.ParseUUID(id, "group ID")
 		if err != nil {
 			return nil, err
 		}
-		groupIDs[i] = groupID
+		parsedIDs = append(parsedIDs, parsedID)
 	}
 
-	var models []models.UserGroup
-	if err := r.db.WithContext(ctx).Where("id IN ?", groupIDs).Find(&models).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+	groups, err := client.UserGroup.Query().
+		Where(usergroup.IDIn(parsedIDs...)).
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	groups := make([]*entity.UserGroup, len(models))
-	for i, model := range models {
-		groups[i] = model.ToEntity()
+	result := make([]*entity.UserGroup, 0, len(groups))
+	for _, ug := range groups {
+		result = append(result, utils.UserGroupToEntity(ug))
 	}
 
-	return groups, nil
+	return result, nil
 }
 
 func (r *userGroupRepository) FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.UserGroup, error) {
-	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
+	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return nil, err
 	}
 
-	var models []models.UserGroup
-	if err := r.db.WithContext(ctx).Where("workspace_id = ?", wsID).Order("name asc").Find(&models).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+	groups, err := client.UserGroup.Query().
+		Where(usergroup.HasWorkspaceWith(workspace.ID(wid))).
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	groups := make([]*entity.UserGroup, len(models))
-	for i, model := range models {
-		groups[i] = model.ToEntity()
+	result := make([]*entity.UserGroup, 0, len(groups))
+	for _, ug := range groups {
+		result = append(result, utils.UserGroupToEntity(ug))
 	}
 
-	return groups, nil
+	return result, nil
 }
 
 func (r *userGroupRepository) FindByName(ctx context.Context, workspaceID string, name string) (*entity.UserGroup, error) {
-	wsID, err := utils.ParseUUID(workspaceID, "workspace ID")
+	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
 		return nil, err
 	}
 
-	var model models.UserGroup
-	if err := r.db.WithContext(ctx).Where("workspace_id = ? AND name = ?", wsID, name).First(&model).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	client := transaction.ResolveClient(ctx, r.client)
+	ug, err := client.UserGroup.Query().
+		Where(
+			usergroup.HasWorkspaceWith(workspace.ID(wid)),
+			usergroup.Name(name),
+		).
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return model.ToEntity(), nil
+	return utils.UserGroupToEntity(ug), nil
 }
 
 func (r *userGroupRepository) Create(ctx context.Context, group *entity.UserGroup) error {
-	workspaceID, err := utils.ParseUUID(group.WorkspaceID, "workspace ID")
+	wid, err := utils.ParseUUID(group.WorkspaceID, "workspace ID")
 	if err != nil {
 		return err
 	}
 
-	createdBy, err := utils.ParseUUID(group.CreatedBy, "created by ID")
+	cid, err := utils.ParseUUID(group.CreatedBy, "created by user ID")
 	if err != nil {
 		return err
 	}
 
-	model := &models.UserGroup{}
-	model.FromEntity(group)
-	model.WorkspaceID = workspaceID
-	model.CreatedBy = createdBy
+	client := transaction.ResolveClient(ctx, r.client)
+
+	builder := client.UserGroup.Create().
+		SetWorkspaceID(wid).
+		SetCreatedByID(cid).
+		SetName(group.Name)
 
 	if group.ID != "" {
-		groupID, err := utils.ParseUUID(group.ID, "group ID")
+		gid, err := utils.ParseUUID(group.ID, "group ID")
 		if err != nil {
 			return err
 		}
-		model.ID = groupID
+		builder = builder.SetID(gid)
 	}
 
-	if err := r.db.WithContext(ctx).Create(model).Error; err != nil {
+	if group.Description != nil {
+		builder = builder.SetDescription(*group.Description)
+	}
+
+	ug, err := builder.Save(ctx)
+	if err != nil {
 		return err
 	}
 
-	*group = *model.ToEntity()
+	// Load edges
+	ug, err = client.UserGroup.Query().
+		Where(usergroup.ID(ug.ID)).
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	*group = *utils.UserGroupToEntity(ug)
 	return nil
 }
 
 func (r *userGroupRepository) Update(ctx context.Context, group *entity.UserGroup) error {
-	groupID, err := utils.ParseUUID(group.ID, "group ID")
+	gid, err := utils.ParseUUID(group.ID, "group ID")
 	if err != nil {
 		return err
 	}
 
-	now := time.Now()
-	updates := map[string]interface{}{
-		"name":        group.Name,
-		"description": group.Description,
-		"updated_at":  now,
+	client := transaction.ResolveClient(ctx, r.client)
+
+	builder := client.UserGroup.UpdateOneID(gid).
+		SetName(group.Name)
+
+	if group.Description != nil {
+		builder = builder.SetDescription(*group.Description)
 	}
 
-	if err := r.db.WithContext(ctx).Model(&models.UserGroup{}).Where("id = ?", groupID).Updates(updates).Error; err != nil {
+	ug, err := builder.Save(ctx)
+	if err != nil {
 		return err
 	}
 
-	group.UpdatedAt = now
+	// Load edges
+	ug, err = client.UserGroup.Query().
+		Where(usergroup.ID(ug.ID)).
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
 
+	*group = *utils.UserGroupToEntity(ug)
 	return nil
 }
 
 func (r *userGroupRepository) Delete(ctx context.Context, id string) error {
-	groupID, err := utils.ParseUUID(id, "group ID")
+	gid, err := utils.ParseUUID(id, "group ID")
 	if err != nil {
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&models.UserGroup{}, "id = ?", groupID).Error
+	client := transaction.ResolveClient(ctx, r.client)
+	return client.UserGroup.DeleteOneID(gid).Exec(ctx)
 }
 
 func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.UserGroupMember) error {
-	groupID, err := utils.ParseUUID(member.GroupID, "group ID")
+	gid, err := utils.ParseUUID(member.GroupID, "group ID")
 	if err != nil {
 		return err
 	}
 
-	userID, err := utils.ParseUUID(member.UserID, "user ID")
+	uid, err := utils.ParseUUID(member.UserID, "user ID")
 	if err != nil {
 		return err
 	}
 
-	model := &models.UserGroupMember{}
-	model.FromEntity(member)
-	model.GroupID = groupID
-	model.UserID = userID
+	client := transaction.ResolveClient(ctx, r.client)
 
-	return r.db.WithContext(ctx).Create(model).Error
+	ugm, err := client.UserGroupMember.Create().
+		SetGroupID(gid).
+		SetUserID(uid).
+		SetJoinedAt(member.JoinedAt).
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Load edges
+	ugm, err = client.UserGroupMember.Query().
+		Where(
+			usergroupmember.HasGroupWith(usergroup.ID(gid)),
+			usergroupmember.HasUserWith(user.ID(uid)),
+		).
+		WithGroup(func(q *ent.UserGroupQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	*member = *utils.UserGroupMemberToEntity(ugm)
+	return nil
 }
 
-func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID string, userID string) error {
-	gID, err := utils.ParseUUID(groupID, "group ID")
+func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID, userID string) error {
+	gid, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {
 		return err
 	}
@@ -194,26 +282,41 @@ func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID string, 
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&models.UserGroupMember{}, "group_id = ? AND user_id = ?", gID, uid).Error
+	client := transaction.ResolveClient(ctx, r.client)
+	_, err = client.UserGroupMember.Delete().
+		Where(
+			usergroupmember.HasGroupWith(usergroup.ID(gid)),
+			usergroupmember.HasUserWith(user.ID(uid)),
+		).
+		Exec(ctx)
+
+	return err
 }
 
 func (r *userGroupRepository) FindMembersByGroupID(ctx context.Context, groupID string) ([]*entity.UserGroupMember, error) {
-	gID, err := utils.ParseUUID(groupID, "group ID")
+	gid, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {
 		return nil, err
 	}
 
-	var models []models.UserGroupMember
-	if err := r.db.WithContext(ctx).Where("group_id = ?", gID).Order("joined_at asc").Find(&models).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+	members, err := client.UserGroupMember.Query().
+		Where(usergroupmember.HasGroupWith(usergroup.ID(gid))).
+		WithGroup(func(q *ent.UserGroupQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	members := make([]*entity.UserGroupMember, len(models))
-	for i, model := range models {
-		members[i] = model.ToEntity()
+	result := make([]*entity.UserGroupMember, 0, len(members))
+	for _, ugm := range members {
+		result = append(result, utils.UserGroupMemberToEntity(ugm))
 	}
 
-	return members, nil
+	return result, nil
 }
 
 func (r *userGroupRepository) FindGroupsByUserID(ctx context.Context, userID string) ([]*entity.UserGroup, error) {
@@ -222,25 +325,28 @@ func (r *userGroupRepository) FindGroupsByUserID(ctx context.Context, userID str
 		return nil, err
 	}
 
-	var models []models.UserGroup
-	if err := r.db.WithContext(ctx).
-		Joins("JOIN user_group_members ON user_groups.id = user_group_members.group_id").
-		Where("user_group_members.user_id = ?", uid).
-		Order("user_groups.name asc").
-		Find(&models).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+	groups, err := client.UserGroup.Query().
+		Where(usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(uid)))).
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	groups := make([]*entity.UserGroup, len(models))
-	for i, model := range models {
-		groups[i] = model.ToEntity()
+	result := make([]*entity.UserGroup, 0, len(groups))
+	for _, ug := range groups {
+		result = append(result, utils.UserGroupToEntity(ug))
 	}
 
-	return groups, nil
+	return result, nil
 }
 
 func (r *userGroupRepository) IsMember(ctx context.Context, groupID string, userID string) (bool, error) {
-	gID, err := utils.ParseUUID(groupID, "group ID")
+	gid, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {
 		return false, err
 	}
@@ -250,12 +356,16 @@ func (r *userGroupRepository) IsMember(ctx context.Context, groupID string, user
 		return false, err
 	}
 
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&models.UserGroupMember{}).
-		Where("group_id = ? AND user_id = ?", gID, uid).
-		Count(&count).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+	exists, err := client.UserGroupMember.Query().
+		Where(
+			usergroupmember.HasGroupWith(usergroup.ID(gid)),
+			usergroupmember.HasUserWith(user.ID(uid)),
+		).
+		Exist(ctx)
+	if err != nil {
 		return false, err
 	}
 
-	return count > 0, nil
+	return exists, nil
 }

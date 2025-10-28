@@ -3,75 +3,203 @@ package repository
 import (
 	"context"
 
-	"gorm.io/gorm"
-
+	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channelmember"
+	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/models"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type channelMemberRepository struct {
-	db *gorm.DB
+	client *ent.Client
 }
 
-func NewChannelMemberRepository(db *gorm.DB) domainrepository.ChannelMemberRepository {
-	return &channelMemberRepository{db: db}
+func NewChannelMemberRepository(client *ent.Client) domainrepository.ChannelMemberRepository {
+	return &channelMemberRepository{client: client}
 }
 
-func (r *channelMemberRepository) dbWithContext(ctx context.Context) *gorm.DB {
-	return transaction.ResolveDB(ctx, r.db)
-}
-
-func (r *channelMemberRepository) AddMember(ctx context.Context, member *entity.ChannelMember) error {
-	model := &models.ChannelMember{}
-	model.FromEntity(member)
-
-	return r.dbWithContext(ctx).Create(model).Error
-}
-
-func (r *channelMemberRepository) RemoveMember(ctx context.Context, channelID string, userID string) error {
-	return r.dbWithContext(ctx).Delete(&models.ChannelMember{}, "channel_id = ? AND user_id = ?", channelID, userID).Error
-}
-
-func (r *channelMemberRepository) FindMembers(ctx context.Context, channelID string) ([]*entity.ChannelMember, error) {
-	var models []models.ChannelMember
-	if err := r.dbWithContext(ctx).Where("channel_id = ?", channelID).Order("joined_at asc").Find(&models).Error; err != nil {
+func (r *channelMemberRepository) FindByChannelAndUser(ctx context.Context, channelID, userID string) (*entity.ChannelMember, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
 		return nil, err
 	}
 
-	members := make([]*entity.ChannelMember, len(models))
-	for i, model := range models {
-		members[i] = model.ToEntity()
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, err
 	}
 
-	return members, nil
+	client := transaction.ResolveClient(ctx, r.client)
+	cm, err := client.ChannelMember.Query().
+		Where(
+			channelmember.HasChannelWith(channel.ID(cid)),
+			channelmember.HasUserWith(user.ID(uid)),
+		).
+		WithChannel(func(q *ent.ChannelQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return utils.ChannelMemberToEntity(cm), nil
 }
 
-func (r *channelMemberRepository) IsMember(ctx context.Context, channelID string, userID string) (bool, error) {
-	var count int64
-	if err := r.dbWithContext(ctx).Model(&models.ChannelMember{}).
-		Where("channel_id = ? AND user_id = ?", channelID, userID).
-		Count(&count).Error; err != nil {
+func (r *channelMemberRepository) AddMember(ctx context.Context, member *entity.ChannelMember) error {
+	cid, err := utils.ParseUUID(member.ChannelID, "channel ID")
+	if err != nil {
+		return err
+	}
+
+	uid, err := utils.ParseUUID(member.UserID, "user ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	cm, err := client.ChannelMember.Create().
+		SetChannelID(cid).
+		SetUserID(uid).
+		SetRole(string(member.Role)).
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Load edges
+	cm, err = client.ChannelMember.Query().
+		Where(
+			channelmember.HasChannelWith(channel.ID(cid)),
+			channelmember.HasUserWith(user.ID(uid)),
+		).
+		WithChannel(func(q *ent.ChannelQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		Only(ctx)
+	if err != nil {
+		return err
+	}
+
+	*member = *utils.ChannelMemberToEntity(cm)
+	return nil
+}
+
+func (r *channelMemberRepository) RemoveMember(ctx context.Context, channelID, userID string) error {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
+		return err
+	}
+
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	_, err = client.ChannelMember.Delete().
+		Where(
+			channelmember.HasChannelWith(channel.ID(cid)),
+			channelmember.HasUserWith(user.ID(uid)),
+		).
+		Exec(ctx)
+
+	return err
+}
+
+func (r *channelMemberRepository) FindMembers(ctx context.Context, channelID string) ([]*entity.ChannelMember, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	members, err := client.ChannelMember.Query().
+		Where(channelmember.HasChannelWith(channel.ID(cid))).
+		WithChannel(func(q *ent.ChannelQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*entity.ChannelMember, 0, len(members))
+	for _, cm := range members {
+		result = append(result, utils.ChannelMemberToEntity(cm))
+	}
+
+	return result, nil
+}
+
+func (r *channelMemberRepository) IsMember(ctx context.Context, channelID, userID string) (bool, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
 		return false, err
 	}
 
-	return count > 0, nil
-}
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return false, err
+	}
 
-func (r *channelMemberRepository) UpdateMemberRole(ctx context.Context, channelID string, userID string, role entity.ChannelRole) error {
-	return r.dbWithContext(ctx).Model(&models.ChannelMember{}).
-		Where("channel_id = ? AND user_id = ?", channelID, userID).
-		Update("role", string(role)).Error
+	client := transaction.ResolveClient(ctx, r.client)
+	exists, err := client.ChannelMember.Query().
+		Where(
+			channelmember.HasChannelWith(channel.ID(cid)),
+			channelmember.HasUserWith(user.ID(uid)),
+		).
+		Exist(ctx)
+
+	return exists, err
 }
 
 func (r *channelMemberRepository) CountAdmins(ctx context.Context, channelID string) (int, error) {
-	var count int64
-	if err := r.dbWithContext(ctx).Model(&models.ChannelMember{}).
-		Where("channel_id = ? AND role = ?", channelID, string(entity.ChannelRoleAdmin)).
-		Count(&count).Error; err != nil {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
 		return 0, err
 	}
 
-	return int(count), nil
+	client := transaction.ResolveClient(ctx, r.client)
+	count, err := client.ChannelMember.Query().
+		Where(
+			channelmember.HasChannelWith(channel.ID(cid)),
+			channelmember.RoleEQ(string(entity.ChannelRoleAdmin)),
+		).
+		Count(ctx)
+
+	return count, err
+}
+
+func (r *channelMemberRepository) UpdateMemberRole(ctx context.Context, channelID, userID string, role entity.ChannelRole) error {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
+		return err
+	}
+
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	_, err = client.ChannelMember.Update().
+		Where(
+			channelmember.HasChannelWith(channel.ID(cid)),
+			channelmember.HasUserWith(user.ID(uid)),
+		).
+		SetRole(string(role)).
+		Save(ctx)
+
+	return err
 }

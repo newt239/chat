@@ -2,23 +2,23 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
+	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/models"
+	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type userRepository struct {
-	db *gorm.DB
+	client *ent.Client
 }
 
-func NewUserRepository(db *gorm.DB) domainrepository.UserRepository {
-	return &userRepository{db: db}
+func NewUserRepository(client *ent.Client) domainrepository.UserRepository {
+	return &userRepository{client: client}
 }
 
 func (r *userRepository) FindByID(ctx context.Context, id string) (*entity.User, error) {
@@ -27,15 +27,18 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*entity.User,
 		return nil, err
 	}
 
-	var model models.User
-	if err := r.db.WithContext(ctx).Where("id = ?", userID).First(&model).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	client := transaction.ResolveClient(ctx, r.client)
+	u, err := client.User.Query().
+		Where(user.ID(userID)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return model.ToEntity(), nil
+	return utils.UserToEntity(u), nil
 }
 
 func (r *userRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.User, error) {
@@ -52,71 +55,91 @@ func (r *userRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity
 		userIDs = append(userIDs, userID)
 	}
 
-	var models []models.User
-	if err := r.db.WithContext(ctx).Where("id IN ?", userIDs).Find(&models).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+	users, err := client.User.Query().
+		Where(user.IDIn(userIDs...)).
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	users := make([]*entity.User, 0, len(models))
-	for i := range models {
-		users = append(users, models[i].ToEntity())
+	result := make([]*entity.User, 0, len(users))
+	for _, u := range users {
+		result = append(result, utils.UserToEntity(u))
 	}
 
-	return users, nil
+	return result, nil
 }
 
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
-	var model models.User
-	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&model).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	client := transaction.ResolveClient(ctx, r.client)
+	u, err := client.User.Query().
+		Where(user.Email(email)).
+		Only(ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return model.ToEntity(), nil
+	return utils.UserToEntity(u), nil
 }
 
-func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
-	model := &models.User{}
-	model.FromEntity(user)
+func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
+	client := transaction.ResolveClient(ctx, r.client)
 
-	if user.ID != "" {
-		userID, err := utils.ParseUUID(user.ID, "user ID")
+	builder := client.User.Create().
+		SetEmail(usr.Email).
+		SetPasswordHash(usr.PasswordHash).
+		SetDisplayName(usr.DisplayName)
+
+	if usr.ID != "" {
+		userID, err := utils.ParseUUID(usr.ID, "user ID")
 		if err != nil {
 			return err
 		}
-		model.ID = userID
+		builder = builder.SetID(userID)
 	}
 
-	if err := r.db.WithContext(ctx).Create(model).Error; err != nil {
-		return err
+	if usr.AvatarURL != nil {
+		builder = builder.SetAvatarURL(*usr.AvatarURL)
 	}
 
-	*user = *model.ToEntity()
-	return nil
-}
-
-func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
-	userID, err := utils.ParseUUID(user.ID, "user ID")
+	u, err := builder.Save(ctx)
 	if err != nil {
 		return err
 	}
 
-	model := &models.User{}
-	model.FromEntity(user)
-	model.ID = userID
+	*usr = *utils.UserToEntity(u)
+	return nil
+}
 
-	if err := r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Updates(model).Error; err != nil {
+func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
+	userID, err := utils.ParseUUID(usr.ID, "user ID")
+	if err != nil {
 		return err
 	}
 
-	var updated models.User
-	if err := r.db.WithContext(ctx).Where("id = ?", userID).First(&updated).Error; err != nil {
+	client := transaction.ResolveClient(ctx, r.client)
+
+	builder := client.User.UpdateOneID(userID).
+		SetEmail(usr.Email).
+		SetPasswordHash(usr.PasswordHash).
+		SetDisplayName(usr.DisplayName)
+
+	if usr.AvatarURL != nil {
+		builder = builder.SetAvatarURL(*usr.AvatarURL)
+	} else {
+		builder = builder.ClearAvatarURL()
+	}
+
+	u, err := builder.Save(ctx)
+	if err != nil {
 		return err
 	}
 
-	user.UpdatedAt = updated.UpdatedAt
+	usr.UpdatedAt = u.UpdatedAt
 	return nil
 }
 
@@ -126,5 +149,6 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	return r.db.WithContext(ctx).Delete(&models.User{}, "id = ?", userID).Error
+	client := transaction.ResolveClient(ctx, r.client)
+	return client.User.DeleteOneID(userID).Exec(ctx)
 }

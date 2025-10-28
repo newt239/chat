@@ -6,21 +6,21 @@ import (
 	"log"
 	"time"
 
+	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/repository"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
-	"gorm.io/gorm"
 )
 
 // AutoSeed checks if the database is empty and seeds it with initial data
-func AutoSeed(db *gorm.DB) error {
+func AutoSeed(client *ent.Client) error {
+	ctx := context.Background()
+
 	// Check if database is empty
-	var userCount int64
-	if err := db.Model(&struct {
-		ID string `gorm:"primaryKey"`
-	}{}).Table("users").Count(&userCount).Error; err != nil {
+	userCount, err := client.User.Query().Count(ctx)
+	if err != nil {
 		return fmt.Errorf("failed to check user count: %w", err)
 	}
 
@@ -32,17 +32,17 @@ func AutoSeed(db *gorm.DB) error {
 	log.Println("Database is empty, seeding with initial data...")
 
 	// Initialize repositories
-	userRepo := repository.NewUserRepository(db)
-	workspaceRepo := repository.NewWorkspaceRepository(db)
-	channelRepo := repository.NewChannelRepository(db)
-	channelMemberRepo := repository.NewChannelMemberRepository(db)
-	messageRepo := repository.NewMessageRepository(db)
+	userRepo := repository.NewUserRepository(client)
+	workspaceRepo := repository.NewWorkspaceRepository(client)
+	channelRepo := repository.NewChannelRepository(client)
+	channelMemberRepo := repository.NewChannelMemberRepository(client)
+	messageRepo := repository.NewMessageRepository(client)
 
 	// Initialize password service
 	passwordService := auth.NewPasswordService()
 
 	// Create seed data
-	if err := createSeedData(db, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService); err != nil {
+	if err := createSeedData(ctx, client, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService); err != nil {
 		return fmt.Errorf("failed to create seed data: %w", err)
 	}
 
@@ -51,7 +51,8 @@ func AutoSeed(db *gorm.DB) error {
 }
 
 func createSeedData(
-	db *gorm.DB,
+	ctx context.Context,
+	client *ent.Client,
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelRepo domainrepository.ChannelRepository,
@@ -59,7 +60,6 @@ func createSeedData(
 	messageRepo domainrepository.MessageRepository,
 	passwordService authuc.PasswordService,
 ) error {
-	ctx := context.Background()
 	// Create test users
 	users := []*entity.User{
 		{
@@ -317,7 +317,7 @@ func createSeedData(
 	}
 
 	// Create user groups
-	userGroupRepo := repository.NewUserGroupRepository(db)
+	userGroupRepo := repository.NewUserGroupRepository(client)
 	groups := []*entity.UserGroup{
 		{
 			ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -398,8 +398,7 @@ func createSeedData(
 		}
 	}
 
-	// Create user mentions
-	userMentionRepo := repository.NewMessageUserMentionRepository(db)
+	// Create user mentions using message repository
 	userMentions := []*entity.MessageUserMention{
 		{MessageID: mentionMessages[0].ID, UserID: users[1].ID, CreatedAt: mentionMessages[0].CreatedAt}, // Alice mentions Bob
 		{MessageID: mentionMessages[1].ID, UserID: users[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions Alice
@@ -409,13 +408,12 @@ func createSeedData(
 	}
 
 	for _, mention := range userMentions {
-		if err := userMentionRepo.Create(ctx, mention); err != nil {
+		if err := messageRepo.AddUserMention(ctx, mention); err != nil {
 			return fmt.Errorf("failed to create user mention: %w", err)
 		}
 	}
 
-	// Create group mentions
-	groupMentionRepo := repository.NewMessageGroupMentionRepository(db)
+	// Create group mentions using message repository
 	groupMentions := []*entity.MessageGroupMention{
 		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions developers
@@ -423,13 +421,13 @@ func createSeedData(
 	}
 
 	for _, mention := range groupMentions {
-		if err := groupMentionRepo.Create(ctx, mention); err != nil {
+		if err := messageRepo.AddGroupMention(ctx, mention); err != nil {
 			return fmt.Errorf("failed to create group mention: %w", err)
 		}
 	}
 
 	// Create message links (simplified OGP data)
-	linkRepo := repository.NewMessageLinkRepository(db)
+	linkRepo := repository.NewLinkRepository(client)
 	links := []*entity.MessageLink{
 		{
 			ID:          "llllllll-llll-llll-llll-llllllllllll",
@@ -468,7 +466,7 @@ func createSeedData(
 	}
 
 	// Create a bookmark for Alice
-	bookmarkRepo := repository.NewBookmarkRepository(db)
+	bookmarkRepo := repository.NewBookmarkRepository(client)
 	bookmark := &entity.MessageBookmark{
 		UserID:    users[0].ID,    // Alice
 		MessageID: messages[1].ID, // Bob's welcome message
@@ -484,15 +482,17 @@ func createSeedData(
 
 // CreateSeedData creates seed data without checking if database is empty
 func CreateSeedData(
-	db *gorm.DB,
-	userRepo domainrepository.UserRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
-	channelRepo domainrepository.ChannelRepository,
-	channelMemberRepo domainrepository.ChannelMemberRepository,
-	messageRepo domainrepository.MessageRepository,
+	client *ent.Client,
 	passwordService authuc.PasswordService,
 ) error {
-	return createSeedData(db, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService)
+	// Build repositories from client for simplicity
+	userRepo := repository.NewUserRepository(client)
+	workspaceRepo := repository.NewWorkspaceRepository(client)
+	channelRepo := repository.NewChannelRepository(client)
+	channelMemberRepo := repository.NewChannelMemberRepository(client)
+	messageRepo := repository.NewMessageRepository(client)
+
+	return createSeedData(context.Background(), client, userRepo, workspaceRepo, channelRepo, channelMemberRepo, messageRepo, passwordService)
 }
 
 // Helper functions for password hashing

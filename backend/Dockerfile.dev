@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine
+FROM golang:1.25-alpine
 
 # Install Atlas CLI
 RUN apk add --no-cache curl && \
@@ -16,5 +16,8 @@ COPY . .
 # Expose port
 EXPOSE 8080
 
-# Run directly without air (Docker's volume mount provides hot reload via restart)
-CMD ["go", "run", "./cmd/server"]
+# Install air for hot reload
+RUN go install github.com/air-verse/air@latest
+
+# Run with air for hot reload
+CMD ["air", "-c", "air.toml"]

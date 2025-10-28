@@ -6,11 +6,8 @@ Slack ライクなリアルタイムチャットアプリケーション。ワ�
 
 ```bash
 # 1. Docker Desktopを起動
-# 2. アプリケーションを起動
+# 2. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
 docker-compose up -d --build
-
-# 3. シードデータを作成（初回のみ）
-docker-compose exec backend go run cmd/seed/main.go
 ```
 
 → http://localhost:5173 にアクセス
@@ -24,10 +21,10 @@ docker-compose up -d --build
 # アプリケーションを停止
 docker-compose down
 
-# データベースをリセット
+# データベーススキーマをリセット
 docker-compose exec backend go run cmd/reset/main.go
 
-# シードデータを作成
+# シードデータを投入（通常は自動実行されます）
 docker-compose exec backend go run cmd/seed/main.go
 
 # ログを表示
@@ -51,8 +48,7 @@ docker-compose ps
 - Go 1.23+
 - Echo (HTTP ルーター)
 - WebSocket (gorilla/websocket)
-- GORM (ORM)
-- Atlas (宣言的スキーママイグレーション)
+- ent (ORM)
 - PostgreSQL
 - JWT 認証
 - Wasabi S3 互換ストレージ
@@ -78,28 +74,28 @@ docker-compose ps
 
 ## プロジェクト構造
 
-```
+```bash
 chat/
 ├── backend/          # Go backend
 │   ├── cmd/
-│   │   └── server/  # Main application entry point
+│   │   ├── server/  # Main application entry point
+│   │   ├── reset/   # Database schema reset tool
+│   │   └── seed/    # Seed data tool
 │   ├── internal/
 │   │   ├── domain/         # Domain entities & repository interfaces
-│   │   ├── usecase/        # Business logic (to be implemented)
+│   │   ├── usecase/        # Business logic
 │   │   ├── interfaces/handler/
 │   │   │   ├── http/       # HTTP handlers & routes
 │   │   │   └── websocket/ # WebSocket hub & connections
 │   │   └── infrastructure/
 │   │       ├── auth/       # JWT & password hashing
 │   │       ├── config/     # Configuration management
-│   │       ├── database/         # GORM models & connection
+│   │       ├── database/   # ent client connection
 │   │       ├── logger/     # Zap logger setup
-│   │       ├── repository/   # Repository implementation
-│   │       ├── storage/      # Wasabi S3 client (to be implemented)
-│   │       ├── utils/        # Utility functions
-│   │       └── logger/       # Zap logger setup
-│   ├── schema/             # Atlas declarative schema (HCL)
-│   └── atlas.hcl           # Atlas configuration
+│   │       ├── repository/ # Repository implementation
+│   │       ├── storage/    # Wasabi S3 client
+│   │       └── utils/      # Utility functions
+│   └── ent/              # ent schema definitions & generated code
 ├── frontend/         # React frontend
 │   ├── src/
 │   │   ├── routes/   # TanStack Router routes
@@ -107,8 +103,7 @@ chat/
 │   │   ├── components/ # Reusable UI components
 │   │   └── lib/      # API client, WS client, etc.
 │   └── public/       # Static assets & PWA manifest
-├── docker/           # Docker configurations
-└── schema/           # Shared schema files
+└── docker/           # Docker configurations
 
 ```
 
@@ -127,13 +122,10 @@ chat/
 git clone <repository-url>
 cd chat
 
-# 2. アプリケーションを起動
+# 2. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
 docker-compose up -d --build
 
-# 3. シードデータを作成（初回のみ）
-docker-compose exec backend go run cmd/seed/main.go
-
-# 4. 起動完了後、http://localhost:5173 にアクセス
+# 3. 起動完了後、http://localhost:5173 にアクセス
 ```
 
 #### 停止方法
@@ -142,7 +134,7 @@ docker-compose exec backend go run cmd/seed/main.go
 # アプリケーションを停止
 docker-compose down
 
-# データも含めて完全削除
+# データベースも含めて完全削除
 docker-compose down -v
 ```
 
@@ -174,34 +166,30 @@ cp backend/.env.example backend/.env
 
 ## データベース管理
 
-### シードデータの管理
+### スキーマ管理
+
+このプロジェクトでは [ent](https://entgo.io/) を使用してデータベーススキーマを管理しています。
 
 ```bash
-# データベースをリセット
+# データベーススキーマをリセット（全テーブルを再作成）
 docker-compose exec backend go run cmd/reset/main.go
 
-# シードデータを作成
+# シードデータを投入（通常は自動実行されます）
 docker-compose exec backend go run cmd/seed/main.go
 ```
 
-### マイグレーション管理
+### スキーマの変更
 
-```bash
-# 例: カラムを追加するマイグレーションを生成（Dockerコンテナ内で実行）
-pnpm run migrate:generate add_email_column
+スキーマを変更する場合は、以下の手順で行います：
 
-# 例: マイグレーションを適用（Dockerコンテナ内で実行）
-docker-compose exec backend atlas migrate apply --env docker
-```
+1. `backend/ent/schema/` ディレクトリ内のスキーマファイルを編集
+2. ent のコード生成を実行:
+   ```bash
+   docker-compose exec backend go generate ./ent
+   ```
+3. アプリケーションを再起動すると、自動的にスキーマが適用されます
 
-**マイグレーション生成の流れ:**
-
-1. `backend/schema/schema.hcl` ファイルを編集してスキーマを変更
-2. `pnpm run migrate:generate [マイグレーション名]` でマイグレーションファイルを生成（Docker コンテナ内で実行）
-3. 生成されたマイグレーションファイルを確認・編集（必要に応じて）
-4. `docker-compose exec backend atlas migrate apply --env docker` でマイグレーションを適用
-
-**注意:** マイグレーションは Docker 環境でのみサポートされています。
+**注意:** ent はコードファーストのアプローチを採用しており、SQL マイグレーションファイルを使用しません。スキーマの変更は全て Go コードで管理されます。
 
 ### データベースの状態確認
 
@@ -238,6 +226,9 @@ docker-compose exec frontend pnpm test
 ### コード生成
 
 ```bash
+# entのコード生成（スキーマ変更時）
+docker-compose exec backend go generate ./ent
+
 # フロントエンド用にOpenAPI型定義を生成
 docker-compose exec frontend pnpm run generate:api
 ```
