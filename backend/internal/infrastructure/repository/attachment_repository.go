@@ -154,7 +154,7 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	a, err := client.Attachment.Create().
+	_, err = client.Attachment.Create().
 		SetID(aid).
 		SetUploaderID(uid).
 		SetChannelID(cid).
@@ -171,7 +171,7 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 	}
 
 	// Load edges
-	a, err = client.Attachment.Query().
+	a, err := client.Attachment.Query().
 		Where(attachment.IDEQ(aid)).
 		WithUploader().
 		WithChannel(func(q *ent.ChannelQuery) {

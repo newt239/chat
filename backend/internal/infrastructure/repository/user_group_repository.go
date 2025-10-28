@@ -243,7 +243,7 @@ func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.User
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	ugm, err := client.UserGroupMember.Create().
+	_, err = client.UserGroupMember.Create().
 		SetGroupID(gid).
 		SetUserID(uid).
 		SetJoinedAt(member.JoinedAt).
@@ -253,7 +253,7 @@ func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.User
 	}
 
 	// Load edges
-	ugm, err = client.UserGroupMember.Query().
+	ugm, err := client.UserGroupMember.Query().
 		Where(
 			usergroupmember.HasGroupWith(usergroup.ID(gid)),
 			usergroupmember.HasUserWith(user.ID(uid)),

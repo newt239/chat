@@ -5,6 +5,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 
 import { useChannels } from "../hooks/useChannel";
 
+import { ChannelName } from "./ChannelName";
 import { CreateChannelModal } from "./CreateChannelModal";
 
 import { navigateToChannel } from "@/lib/navigation";
@@ -87,22 +88,19 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                     justify="flex-start"
                     onClick={() => handleChannelClick(channel.id)}
                     className="relative"
+                    classNames={{
+                      label: "w-full flex items-center justify-between",
+                    }}
                   >
-                    <div className="flex items-center justify-between w-full">
-                      <span>#{channel.name}</span>
-                      <div className="flex items-center gap-1">
-                        {hasMention && unreadCount > 0 ? (
-                          <Badge
-                            color="red"
-                            size="xs"
-                            className="min-w-[18px] h-[18px] flex items-center justify-center p-0 text-xs"
-                          >
-                            {unreadCount > 99 ? "99+" : unreadCount}
-                          </Badge>
-                        ) : hasUnread ? (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                        ) : null}
-                      </div>
+                    <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
+                    <div className="flex items-center gap-1">
+                      {hasMention && unreadCount > 0 ? (
+                        <Badge color="blue" size="xs" className="flex items-center justify-center">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </Badge>
+                      ) : hasUnread ? (
+                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      ) : null}
                     </div>
                   </Button>
                 );

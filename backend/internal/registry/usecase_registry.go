@@ -125,6 +125,12 @@ func (r *UseCaseRegistry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewMessageUserMentionRepository(),
+		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.domainRegistry.NewMessageLinkRepository(),
+		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewUserGroupRepository(),
 	)
 }
 

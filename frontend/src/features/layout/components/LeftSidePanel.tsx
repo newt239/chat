@@ -1,8 +1,11 @@
+import { useState } from "react";
+
 import { Text, ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX, IconPlus } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { ChannelList } from "@/features/channel/components/ChannelList";
+import { CreateChannelModal } from "@/features/channel/components/CreateChannelModal";
 import { leftSidePanelVisibleAtom, hideMobilePanelsAtom } from "@/providers/store/ui";
 import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
 
@@ -14,6 +17,7 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const leftSidePanelVisible = useAtomValue(leftSidePanelVisibleAtom);
   const hideMobilePanels = useSetAtom(hideMobilePanelsAtom);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // デスクトップで左パネルが非表示の場合は非表示
   if (!leftSidePanelVisible) {
@@ -26,8 +30,7 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
   };
 
   const handleCreateChannel = () => {
-    // TODO: チャンネル作成モーダルを開く
-    console.log("Create channel clicked");
+    setIsCreateModalOpen(true);
   };
 
   return (
@@ -40,21 +43,22 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
         <div className="flex items-center space-x-2">
           <ActionIcon
             variant="subtle"
-            size="sm"
+            size="lg"
             onClick={handleCreateChannel}
             className="text-gray-500 hover:bg-gray-100"
           >
-            <IconPlus size={16} />
+            <IconPlus size={16} title="チャンネルを作成" />
           </ActionIcon>
-          {/* モバイル用の閉じるボタン（CSSで表示制御） */}
-          <ActionIcon
-            variant="subtle"
-            size="sm"
-            onClick={handleClose}
-            className="text-gray-500 hover:bg-gray-100 md:hidden"
-          >
-            <IconX size={16} />
-          </ActionIcon>
+          <div className="md:hidden">
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={handleClose}
+              className="text-gray-500 hover:bg-gray-100 md:hidden"
+            >
+              <IconX size={16} title="チャンネル一覧を閉じる" />
+            </ActionIcon>
+          </div>
         </div>
       </div>
 
@@ -64,6 +68,13 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
           <ChannelList workspaceId={currentWorkspaceId} />
         </ScrollArea>
       </div>
+
+      {/* チャンネル作成モーダル */}
+      <CreateChannelModal
+        workspaceId={currentWorkspaceId}
+        opened={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   );
 };

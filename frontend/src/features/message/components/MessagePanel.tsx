@@ -204,24 +204,22 @@ export const MessagePanel = () => {
               </Text>
             )}
             <div className="flex flex-1 flex-col justify-end">
-              <div className="space-y-1 px-4 pb-6">
-                {orderedMessages.map((message) => (
-                  <MessageItem
-                    key={message.id}
-                    message={message}
-                    currentUserId={currentUser?.id ?? null}
-                    dateTimeFormatter={dateTimeFormatter}
-                    onCopyLink={handleCopyLink}
-                    onCreateThread={handleCreateThread}
-                    onBookmark={handleBookmark}
-                    onOpenThread={handleOpenThread}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    threadMetadata={message.threadMetadata ?? null}
-                  />
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
+              {orderedMessages.map((message) => (
+                <MessageItem
+                  key={message.id}
+                  message={message}
+                  currentUserId={currentUser?.id ?? null}
+                  dateTimeFormatter={dateTimeFormatter}
+                  onCopyLink={handleCopyLink}
+                  onCreateThread={handleCreateThread}
+                  onBookmark={handleBookmark}
+                  onOpenThread={handleOpenThread}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  threadMetadata={message.threadMetadata ?? null}
+                />
+              ))}
+              <div ref={messagesEndRef} />
             </div>
           </div>
         ) : (

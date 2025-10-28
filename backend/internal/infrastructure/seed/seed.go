@@ -430,7 +430,6 @@ func createSeedData(
 	linkRepo := repository.NewLinkRepository(client)
 	links := []*entity.MessageLink{
 		{
-			ID:          "llllllll-llll-llll-llll-llllllllllll",
 			MessageID:   mentionMessages[0].ID,
 			URL:         "https://github.com/example/repo",
 			Title:       stringPtr("Example Repository"),
@@ -439,7 +438,6 @@ func createSeedData(
 			CreatedAt:   mentionMessages[0].CreatedAt,
 		},
 		{
-			ID:          "lmmmmmmm-mmmm-mmmm-mmmm-mmmmmmmmmmmm",
 			MessageID:   mentionMessages[1].ID,
 			URL:         "https://docs.example.com/guide",
 			Title:       stringPtr("Developer Guide"),
@@ -448,7 +446,6 @@ func createSeedData(
 			CreatedAt:   mentionMessages[1].CreatedAt,
 		},
 		{
-			ID:          "lnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn",
 			MessageID:   mentionMessages[2].ID,
 			URL:         "https://figma.com/design/example",
 			Title:       stringPtr("UI Design Mockups"),

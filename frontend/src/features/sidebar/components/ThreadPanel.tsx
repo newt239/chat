@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-import { Card, Divider, Loader, Stack, Text } from "@mantine/core";
+import { Divider, Loader, Stack, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
@@ -11,8 +11,6 @@ import { useThreadReplies, useSendThreadReply } from "@/features/message/hooks/u
 import { userAtom } from "@/providers/store/auth";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
-
-const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
 
 type ThreadPanelProps = {
   threadId: string;
@@ -86,7 +84,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
 
   if (!currentWorkspaceId || !currentChannelId) {
     return (
-      <div className={SIDEBAR_CONTAINER_CLASS}>
+      <div className="p-4">
         <Text c="dimmed" size="sm">
           ワークスペースまたはチャンネルが選択されていません
         </Text>
@@ -95,7 +93,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   }
 
   return (
-    <div className={SIDEBAR_CONTAINER_CLASS}>
+    <div>
       <div className="flex h-full flex-col">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
@@ -110,16 +108,14 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
             <div className="flex-1 overflow-y-auto">
               <Stack gap="md">
                 {/* 親メッセージ */}
-                <Card withBorder padding="md" radius="md">
-                  <MessageItem
-                    message={threadData.parentMessage}
-                    currentUserId={currentUser?.id ?? null}
-                    dateTimeFormatter={dateTimeFormatter}
-                    onCopyLink={handleCopyLink}
-                    onCreateThread={handleCreateThread}
-                    onBookmark={handleBookmark}
-                  />
-                </Card>
+                <MessageItem
+                  message={threadData.parentMessage}
+                  currentUserId={currentUser?.id ?? null}
+                  dateTimeFormatter={dateTimeFormatter}
+                  onCopyLink={handleCopyLink}
+                  onCreateThread={handleCreateThread}
+                  onBookmark={handleBookmark}
+                />
 
                 <Divider label={`${threadData.replies.length}件の返信`} labelPosition="center" />
 

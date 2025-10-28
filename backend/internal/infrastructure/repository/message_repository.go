@@ -249,14 +249,14 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 		builder = builder.SetDeletedBy(deletedBy)
 	}
 
-	m, err := builder.Save(ctx)
+	saved, err := builder.Save(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Load edges
-	m, err = client.Message.Query().
-		Where(message.ID(m.ID)).
+	m, err := client.Message.Query().
+		Where(message.ID(saved.ID)).
 		WithChannel(func(q *ent.ChannelQuery) {
 			q.WithWorkspace().WithCreatedBy()
 		}).
@@ -286,14 +286,14 @@ func (r *messageRepository) Update(ctx context.Context, msg *entity.Message) err
 		builder = builder.SetEditedAt(*msg.EditedAt)
 	}
 
-	m, err := builder.Save(ctx)
+	saved, err := builder.Save(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Load edges
-	m, err = client.Message.Query().
-		Where(message.ID(m.ID)).
+	m, err := client.Message.Query().
+		Where(message.ID(saved.ID)).
 		WithChannel(func(q *ent.ChannelQuery) {
 			q.WithWorkspace().WithCreatedBy()
 		}).
@@ -360,7 +360,7 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	mr, err := client.MessageReaction.Create().
+	_, err = client.MessageReaction.Create().
 		SetMessageID(messageID).
 		SetUserID(userID).
 		SetEmoji(reaction.Emoji).
@@ -370,7 +370,7 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 	}
 
 	// Load edges
-	mr, err = client.MessageReaction.Query().
+	mr, err := client.MessageReaction.Query().
 		Where(
 			messagereaction.HasMessageWith(message.ID(messageID)),
 			messagereaction.HasUserWith(user.ID(userID)),

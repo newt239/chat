@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
+import { useRef, useState, useEffect } from "react";
 
-import { Group, Button, ActionIcon } from "@mantine/core";
+import { Group, ActionIcon, Menu } from "@mantine/core";
 import {
   IconBold,
   IconItalic,
@@ -13,6 +14,9 @@ import {
   IconListNumbers,
   IconInfoCircle,
   IconSend,
+  IconPaperclip,
+  IconDots,
+  IconEye,
 } from "@tabler/icons-react";
 
 import type { MessageInputMode } from "../hooks/useMessageInputMode";
@@ -24,6 +28,8 @@ type MessageInputToolbarProps = {
   disabled: boolean;
   loading: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
+  onFileSelect: (files: File[]) => void;
+  isFileUploadDisabled: boolean;
 };
 
 type FormatPattern = {
@@ -44,6 +50,18 @@ const FORMAT_PATTERNS: Record<string, FormatPattern> = {
   orderedList: { prefix: "1. ", suffix: "", cursorOffset: 3 },
 };
 
+type ActiveFormats = {
+  bold: boolean;
+  italic: boolean;
+  strikethrough: boolean;
+  heading: boolean;
+  link: boolean;
+  code: boolean;
+  quote: boolean;
+  list: boolean;
+  orderedList: boolean;
+};
+
 export const MessageInputToolbar = ({
   mode,
   onToggleMode,
@@ -51,7 +69,70 @@ export const MessageInputToolbar = ({
   disabled,
   loading,
   textareaRef,
+  onFileSelect,
+  isFileUploadDisabled,
 }: MessageInputToolbarProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
+    bold: false,
+    italic: false,
+    strikethrough: false,
+    heading: false,
+    link: false,
+    code: false,
+    quote: false,
+    list: false,
+    orderedList: false,
+  });
+
+  // カーソル位置の変更を監視してアクティブなフォーマットを更新
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const updateActiveFormats = () => {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+
+      // カーソル位置の前後のテキストを取得
+      const beforeCursor = text.substring(0, start);
+      const afterCursor = text.substring(end);
+
+      // 現在の行を取得
+      const lineStart = beforeCursor.lastIndexOf("\n") + 1;
+      const lineEnd = text.indexOf("\n", end);
+      const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
+
+      // 各フォーマットがアクティブかチェック
+      const newActiveFormats: ActiveFormats = {
+        bold: /\*\*[^*]*$/.test(beforeCursor) && /^[^*]*\*\*/.test(afterCursor),
+        italic: /_[^_]*$/.test(beforeCursor) && /^[^_]*_/.test(afterCursor),
+        strikethrough: /~~[^~]*$/.test(beforeCursor) && /^[^~]*~~/.test(afterCursor),
+        heading: currentLine.trimStart().startsWith("#"),
+        link: /\[[^\]]*$/.test(beforeCursor) && /^[^\]]*\]/.test(afterCursor),
+        code: /`[^`]*$/.test(beforeCursor) && /^[^`]*`/.test(afterCursor),
+        quote: currentLine.trimStart().startsWith(">"),
+        list: /^-\s/.test(currentLine.trimStart()),
+        orderedList: /^\d+\.\s/.test(currentLine.trimStart()),
+      };
+
+      setActiveFormats(newActiveFormats);
+    };
+
+    textarea.addEventListener("selectionchange", updateActiveFormats);
+    textarea.addEventListener("input", updateActiveFormats);
+    textarea.addEventListener("click", updateActiveFormats);
+    textarea.addEventListener("keyup", updateActiveFormats);
+
+    return () => {
+      textarea.removeEventListener("selectionchange", updateActiveFormats);
+      textarea.removeEventListener("input", updateActiveFormats);
+      textarea.removeEventListener("click", updateActiveFormats);
+      textarea.removeEventListener("keyup", updateActiveFormats);
+    };
+  }, [textareaRef]);
+
   const insertFormat = (formatKey: string) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -81,98 +162,151 @@ export const MessageInputToolbar = ({
     textarea.dispatchEvent(event);
   };
 
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      onFileSelect(files);
+    }
+    // 同じファイルを再選択できるようにリセット
+    e.target.value = "";
+  };
+
   return (
-    <Group gap="xs" mb="xs" justify="space-between">
+    <Group gap="xs" mt="xs" justify="space-between">
       <Group gap={4}>
         <ActionIcon
           variant="subtle"
-          size="sm"
+          size="lg"
           color="gray"
+          onClick={handleFileClick}
+          disabled={isFileUploadDisabled}
+        >
+          <IconPaperclip size={16} />
+        </ActionIcon>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          className="hidden"
+          disabled={isFileUploadDisabled}
+        />
+
+        <ActionIcon
+          variant={activeFormats.bold ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.bold ? "blue" : "gray"}
           onClick={() => insertFormat("bold")}
           disabled={mode === "preview"}
         >
           <IconBold size={16} />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.italic ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.italic ? "blue" : "gray"}
           onClick={() => insertFormat("italic")}
           disabled={mode === "preview"}
         >
           <IconItalic size={16} />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.strikethrough ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.strikethrough ? "blue" : "gray"}
           onClick={() => insertFormat("strikethrough")}
           disabled={mode === "preview"}
         >
           <IconStrikethrough size={16} />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.heading ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.heading ? "blue" : "gray"}
           onClick={() => insertFormat("heading")}
           disabled={mode === "preview"}
         >
           <IconH1 size={16} />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.link ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.link ? "blue" : "gray"}
           onClick={() => insertFormat("link")}
           disabled={mode === "preview"}
         >
-          <IconLink size={16} />
+          <IconLink size={16} title="リンクを挿入" />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.code ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.code ? "blue" : "gray"}
           onClick={() => insertFormat("code")}
           disabled={mode === "preview"}
         >
-          <IconCode size={16} />
+          <IconCode size={16} title="コードを挿入" />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.quote ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.quote ? "blue" : "gray"}
           onClick={() => insertFormat("quote")}
           disabled={mode === "preview"}
         >
-          <IconQuote size={16} />
+          <IconQuote size={16} title="引用を挿入" />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.list ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.list ? "blue" : "gray"}
           onClick={() => insertFormat("list")}
           disabled={mode === "preview"}
         >
-          <IconList size={16} />
+          <IconList size={16} title="箇条書きを挿入" />
         </ActionIcon>
+
         <ActionIcon
-          variant="subtle"
-          size="sm"
-          color="gray"
+          variant={activeFormats.orderedList ? "filled" : "subtle"}
+          size="lg"
+          color={activeFormats.orderedList ? "blue" : "gray"}
           onClick={() => insertFormat("orderedList")}
           disabled={mode === "preview"}
         >
-          <IconListNumbers size={16} />
+          <IconListNumbers size={16} title="番号付きリストを挿入" />
         </ActionIcon>
-        <ActionIcon variant="subtle" size="sm" color="gray" disabled={mode === "preview"}>
-          <IconInfoCircle size={16} />
-        </ActionIcon>
+        <Menu shadow="md" width={200}>
+          <Menu.Target>
+            <ActionIcon variant="subtle" size="lg" color="gray" disabled={mode === "preview"}>
+              <IconDots size={16} title="その他のオプション" />
+            </ActionIcon>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Label>その他</Menu.Label>
+            <Menu.Item leftSection={<IconInfoCircle size={16} />}>ヘルプ</Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
       </Group>
       <Group gap="xs">
-        <Button variant="subtle" size="compact-sm" onClick={onToggleMode} color="gray">
-          {mode === "edit" ? "プレビュー" : "編集"}
-        </Button>
+        <ActionIcon
+          variant="subtle"
+          size="lg"
+          onClick={onToggleMode}
+          title="プレビューモードに切り替え"
+        >
+          <IconEye size={16} title="プレビューモードに切り替え" />
+        </ActionIcon>
         <ActionIcon
           variant="filled"
           size="lg"
@@ -181,7 +315,7 @@ export const MessageInputToolbar = ({
           disabled={disabled}
           loading={loading}
         >
-          <IconSend size={18} />
+          <IconSend size={18} title="メッセージを送信" />
         </ActionIcon>
       </Group>
     </Group>

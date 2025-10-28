@@ -85,13 +85,13 @@ func (r *threadRepository) Upsert(ctx context.Context, metadata *entity.ThreadMe
 				builder = builder.SetLastReplyUserID(lruid)
 			}
 
-			tm, err := builder.Save(ctx)
+			_, err := builder.Save(ctx)
 			if err != nil {
 				return err
 			}
 
 			// Load edges
-			tm, err = client.ThreadMetadata.Query().
+			tm, err := client.ThreadMetadata.Query().
 				Where(threadmetadata.HasMessageWith(message.ID(mid))).
 				WithMessage(func(q *ent.MessageQuery) {
 					q.WithChannel(func(q2 *ent.ChannelQuery) {
@@ -131,13 +131,13 @@ func (r *threadRepository) Upsert(ctx context.Context, metadata *entity.ThreadMe
 		builder = builder.ClearLastReplyUser()
 	}
 
-	tm, err := builder.Save(ctx)
+	_, err = builder.Save(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Load edges
-	tm, err = client.ThreadMetadata.Query().
+	tm, err := client.ThreadMetadata.Query().
 		Where(threadmetadata.HasMessageWith(message.ID(mid))).
 		WithMessage(func(q *ent.MessageQuery) {
 			q.WithChannel(func(q2 *ent.ChannelQuery) {

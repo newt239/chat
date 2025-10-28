@@ -92,9 +92,12 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 
 	// Message routes
 	api.GET("/channels/:channelId/messages", cfg.MessageHandler.ListMessages, authMw)
+	api.GET("/channels/:channelId/messages/with-threads", cfg.MessageHandler.ListMessagesWithThread, authMw)
 	api.POST("/channels/:channelId/messages", cfg.MessageHandler.CreateMessage, authMw)
 	api.PATCH("/messages/:messageId", cfg.MessageHandler.UpdateMessage, authMw)
 	api.DELETE("/messages/:messageId", cfg.MessageHandler.DeleteMessage, authMw)
+	api.GET("/messages/:messageId/thread", cfg.MessageHandler.GetThreadReplies, authMw)
+	api.GET("/messages/:messageId/thread/metadata", cfg.MessageHandler.GetThreadMetadata, authMw)
 
 	// Read state routes
 	api.GET("/channels/:channelId/unread_count", cfg.ReadStateHandler.GetUnreadCount, authMw)

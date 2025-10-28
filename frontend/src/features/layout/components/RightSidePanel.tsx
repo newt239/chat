@@ -90,11 +90,11 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
   return (
     <div className={`bg-white border-l border-gray-200 flex flex-col h-full ${className}`}>
       {/* ヘッダー */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 py-3">
         <h3 className="text-lg font-semibold text-gray-900">{getPanelTitle(rightSidePanelView)}</h3>
         <ActionIcon
           variant="subtle"
-          size="sm"
+          size="lg"
           onClick={handleClose}
           className="text-gray-500 hover:bg-gray-100"
         >

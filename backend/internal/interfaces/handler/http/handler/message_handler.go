@@ -14,8 +14,131 @@ type MessageHandler struct {
 	messageUC messageuc.MessageUseCase
 }
 
+// ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
+func (h *MessageHandler) ListMessagesWithThread(c echo.Context) error {
+	channelID := c.Param("channelId")
+	if channelID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Channel ID is required")
+	}
+
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+	}
+
+	limit := 20
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
+			limit = l
+		}
+	}
+
+	var sinceTime *time.Time
+	if sinceStr := c.QueryParam("since"); sinceStr != "" {
+		if t, err := time.Parse(time.RFC3339, sinceStr); err == nil {
+			sinceTime = &t
+		}
+	}
+
+	var untilTime *time.Time
+	if untilStr := c.QueryParam("until"); untilStr != "" {
+		if t, err := time.Parse(time.RFC3339, untilStr); err == nil {
+			untilTime = &t
+		}
+	}
+
+	input := messageuc.ListMessagesInput{
+		ChannelID: channelID,
+		UserID:    userID,
+		Limit:     limit,
+		Since:     sinceTime,
+		Until:     untilTime,
+	}
+
+	// hasMore を取得するため通常の一覧も取得
+	listRes, err := h.messageUC.ListMessages(c.Request().Context(), input)
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+
+	// スレッド情報付きの一覧を取得
+	outputs, err := h.messageUC.ListMessagesWithThread(c.Request().Context(), input)
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"messages": outputs,
+		"hasMore":  listRes.HasMore,
+	})
+}
+
 func NewMessageHandler(messageUC messageuc.MessageUseCase) *MessageHandler {
 	return &MessageHandler{messageUC: messageUC}
+}
+
+// GetThreadReplies は特定のメッセージのスレッド返信一覧と親メッセージを取得します
+func (h *MessageHandler) GetThreadReplies(c echo.Context) error {
+	messageID, err := utils.GetParamFromContext(c, "messageId")
+	if err != nil {
+		return err
+	}
+
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	input := messageuc.GetThreadRepliesInput{
+		MessageID: messageID,
+		UserID:    userID,
+	}
+
+	output, err := h.messageUC.GetThreadReplies(c.Request().Context(), input)
+	if err != nil {
+		switch err {
+		case messageuc.ErrParentMessageNotFound:
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		case messageuc.ErrUnauthorized:
+			return echo.NewHTTPError(http.StatusForbidden, err.Error())
+		default:
+			return handleUseCaseError(err)
+		}
+	}
+
+	return c.JSON(http.StatusOK, output)
+}
+
+// GetThreadMetadata は特定のメッセージのスレッドメタデータを取得します
+func (h *MessageHandler) GetThreadMetadata(c echo.Context) error {
+	messageID, err := utils.GetParamFromContext(c, "messageId")
+	if err != nil {
+		return err
+	}
+
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	input := messageuc.GetThreadMetadataInput{
+		MessageID: messageID,
+		UserID:    userID,
+	}
+
+	output, err := h.messageUC.GetThreadMetadata(c.Request().Context(), input)
+	if err != nil {
+		switch err {
+		case messageuc.ErrParentMessageNotFound:
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		case messageuc.ErrUnauthorized:
+			return echo.NewHTTPError(http.StatusForbidden, err.Error())
+		default:
+			return handleUseCaseError(err)
+		}
+	}
+
+	return c.JSON(http.StatusOK, output)
 }
 
 // CreateMessageRequest はメッセージ作成リクエストの構造体です

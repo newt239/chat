@@ -6,8 +6,6 @@ import { useAtomValue } from "jotai";
 import { useChannels } from "@/features/channel/hooks/useChannel";
 import { currentChannelIdAtom } from "@/providers/store/workspace";
 
-const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
-
 type ChannelInfoPanelProps = {
   workspaceId: string;
   channelId?: string | null;
@@ -26,10 +24,8 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
 
   if (isLoading) {
     return (
-      <div className={SIDEBAR_CONTAINER_CLASS}>
-        <div className="flex h-full items-center justify-center">
-          <Loader size="sm" />
-        </div>
+      <div>
+        <Loader size="sm" />
       </div>
     );
   }
@@ -37,7 +33,7 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
   if (isError) {
     const message = error instanceof Error ? error.message : "チャンネル情報の取得に失敗しました";
     return (
-      <div className={SIDEBAR_CONTAINER_CLASS}>
+      <div>
         <Text c="red" size="sm">
           {message}
         </Text>
@@ -47,7 +43,7 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
 
   if (!activeChannel) {
     return (
-      <div className={SIDEBAR_CONTAINER_CLASS}>
+      <div>
         <Text size="sm" c="dimmed">
           チャンネル情報が見つかりませんでした
         </Text>
@@ -56,16 +52,11 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
   }
 
   return (
-    <div className={SIDEBAR_CONTAINER_CLASS}>
+    <div className="p-4">
       <Stack gap="md">
-        <div>
-          <Text size="sm" fw={600} className="mb-1">
-            チャンネル情報
-          </Text>
-          <Text size="xs" c="dimmed">
-            #{activeChannel.name}
-          </Text>
-        </div>
+        <Text size="sm" fw={600} className="mb-1">
+          #{activeChannel.name}
+        </Text>
         {typeof activeChannel.description === "string" && activeChannel.description.length > 0 ? (
           <Text size="sm">{activeChannel.description}</Text>
         ) : (

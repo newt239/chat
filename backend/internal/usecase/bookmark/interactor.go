@@ -8,6 +8,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/usecase/message"
 )
 
 var (
@@ -29,6 +30,13 @@ type bookmarkInteractor struct {
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
+	userRepo          domainrepository.UserRepository
+	mentionRepo       domainrepository.MessageUserMentionRepository
+	groupMentionRepo  domainrepository.MessageGroupMentionRepository
+	linkRepo          domainrepository.MessageLinkRepository
+	attachmentRepo    domainrepository.AttachmentRepository
+	userGroupRepo     domainrepository.UserGroupRepository
+	messageAssembler  *message.MessageOutputAssembler
 }
 
 func NewBookmarkInteractor(
@@ -37,6 +45,12 @@ func NewBookmarkInteractor(
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
+	userRepo domainrepository.UserRepository,
+	mentionRepo domainrepository.MessageUserMentionRepository,
+	groupMentionRepo domainrepository.MessageGroupMentionRepository,
+	linkRepo domainrepository.MessageLinkRepository,
+	attachmentRepo domainrepository.AttachmentRepository,
+	userGroupRepo domainrepository.UserGroupRepository,
 ) BookmarkUseCase {
 	return &bookmarkInteractor{
 		bookmarkRepo:      bookmarkRepo,
@@ -44,6 +58,13 @@ func NewBookmarkInteractor(
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		workspaceRepo:     workspaceRepo,
+		userRepo:          userRepo,
+		mentionRepo:       mentionRepo,
+		groupMentionRepo:  groupMentionRepo,
+		linkRepo:          linkRepo,
+		attachmentRepo:    attachmentRepo,
+		userGroupRepo:     userGroupRepo,
+		messageAssembler:  message.NewMessageOutputAssembler(),
 	}
 }
 
@@ -115,12 +136,109 @@ func (i *bookmarkInteractor) ListBookmarks(ctx context.Context, userID string) (
 		return nil, fmt.Errorf("failed to fetch bookmarks: %w", err)
 	}
 
-	// BookmarkOutputに変換
-	outputs := make([]BookmarkOutput, 0, len(bookmarks))
+	if len(bookmarks) == 0 {
+		return &ListBookmarksOutput{Bookmarks: []BookmarkWithMessageOutput{}}, nil
+	}
+
+	// メッセージIDを収集
+	messageIDs := make([]string, 0, len(bookmarks))
 	for _, bookmark := range bookmarks {
-		outputs = append(outputs, BookmarkOutput{
+		if bookmark.Message != nil {
+			messageIDs = append(messageIDs, bookmark.Message.ID)
+		}
+	}
+
+	// 関連データを一括取得
+	userMentions, _ := i.mentionRepo.FindByMessageIDs(ctx, messageIDs)
+	groupMentions, _ := i.groupMentionRepo.FindByMessageIDs(ctx, messageIDs)
+	links, _ := i.linkRepo.FindByMessageIDs(ctx, messageIDs)
+	reactions, _ := i.messageRepo.FindReactionsByMessageIDs(ctx, messageIDs)
+	attachments, _ := i.attachmentRepo.FindByMessageIDs(ctx, messageIDs)
+
+	// ユーザーIDを収集
+	userIDSet := make(map[string]bool)
+	userIDList := make([]string, 0)
+	for _, bookmark := range bookmarks {
+		if bookmark.Message != nil && !userIDSet[bookmark.Message.UserID] {
+			userIDList = append(userIDList, bookmark.Message.UserID)
+			userIDSet[bookmark.Message.UserID] = true
+		}
+	}
+	for _, reactionList := range reactions {
+		for _, reaction := range reactionList {
+			if !userIDSet[reaction.UserID] {
+				userIDList = append(userIDList, reaction.UserID)
+				userIDSet[reaction.UserID] = true
+			}
+		}
+	}
+
+	// ユーザー情報を一括取得
+	users, _ := i.userRepo.FindByIDs(ctx, userIDList)
+	userMap := make(map[string]*entity.User)
+	for _, user := range users {
+		userMap[user.ID] = user
+	}
+
+	// グループIDを収集
+	groupIDSet := make(map[string]bool)
+	groupIDList := make([]string, 0)
+	for _, mention := range groupMentions {
+		if !groupIDSet[mention.GroupID] {
+			groupIDList = append(groupIDList, mention.GroupID)
+			groupIDSet[mention.GroupID] = true
+		}
+	}
+
+	// グループ情報を一括取得
+	groups := make(map[string]*entity.UserGroup)
+	if len(groupIDList) > 0 {
+		groupList, err := i.userGroupRepo.FindByIDs(ctx, groupIDList)
+		if err == nil {
+			for _, group := range groupList {
+				groups[group.ID] = group
+			}
+		}
+	}
+
+	// メッセージIDごとにデータをグループ化
+	userMentionsByMessage := make(map[string][]*entity.MessageUserMention)
+	for _, mention := range userMentions {
+		userMentionsByMessage[mention.MessageID] = append(userMentionsByMessage[mention.MessageID], mention)
+	}
+
+	groupMentionsByMessage := make(map[string][]*entity.MessageGroupMention)
+	for _, mention := range groupMentions {
+		groupMentionsByMessage[mention.MessageID] = append(groupMentionsByMessage[mention.MessageID], mention)
+	}
+
+	linksByMessage := make(map[string][]*entity.MessageLink)
+	for _, link := range links {
+		linksByMessage[link.MessageID] = append(linksByMessage[link.MessageID], link)
+	}
+
+	// BookmarkWithMessageOutputに変換
+	outputs := make([]BookmarkWithMessageOutput, 0, len(bookmarks))
+	for _, bookmark := range bookmarks {
+		if bookmark.Message == nil {
+			continue
+		}
+
+		messageOutput := i.messageAssembler.AssembleMessageOutput(
+			bookmark.Message,
+			userMap[bookmark.Message.UserID],
+			userMentionsByMessage[bookmark.Message.ID],
+			groupMentionsByMessage[bookmark.Message.ID],
+			linksByMessage[bookmark.Message.ID],
+			reactions[bookmark.Message.ID],
+			attachments[bookmark.Message.ID],
+			groups,
+			userMap,
+		)
+
+		outputs = append(outputs, BookmarkWithMessageOutput{
 			UserID:    bookmark.UserID,
-			MessageID: bookmark.MessageID,
+			Message:   messageOutput,
 			CreatedAt: bookmark.CreatedAt,
 		})
 	}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Avatar, Button, Group, Text, Textarea } from "@mantine/core";
+import { useSetAtom } from "jotai";
 
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
@@ -9,7 +10,9 @@ import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 import type { MessageWithUser, ThreadMetadata } from "../types";
 
 import { MessageAttachment } from "@/features/attachment/components/MessageAttachment";
+import { useIsBookmarked } from "@/features/bookmark/hooks/useBookmarks";
 import { ReactionList } from "@/features/reaction/components/ReactionList";
+import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
 type MessageItemProps = {
   message: MessageWithUser;
@@ -42,6 +45,12 @@ export const MessageItem = ({
   const [isSaving, setIsSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const isAuthor = message.userId === currentUserId;
+  const isBookmarked = useIsBookmarked(message.id);
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+
+  const handleUserClick = () => {
+    setRightSidePanelView({ type: "user-profile", userId: message.userId });
+  };
 
   useEffect(() => {
     if (!isEditing) {
@@ -101,7 +110,9 @@ export const MessageItem = ({
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative group rounded-md px-4 py-2 transition-colors hover:bg-gray-50"
+      className={`relative group px-4 py-2 transition-colors ${
+        isBookmarked ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-gray-50"
+      }`}
     >
       {/* アバターとメッセージコンテンツ */}
       <div className="flex gap-3">
@@ -111,6 +122,8 @@ export const MessageItem = ({
           size="md"
           color="blue"
           radius="xl"
+          onClick={handleUserClick}
+          className="cursor-pointer"
         >
           {message.user.displayName.charAt(0).toUpperCase()}
         </Avatar>
@@ -119,7 +132,7 @@ export const MessageItem = ({
         <div className="flex-1 min-w-0">
           {/* ヘッダー: 名前と日時 */}
           <div className="flex items-baseline gap-2">
-            <Text fw={600} size="sm">
+            <Text fw={600} size="sm" onClick={handleUserClick} className="cursor-pointer hover:underline">
               {message.user.displayName}
             </Text>
             <Text size="xs" c="dimmed">

@@ -206,15 +206,18 @@ func MessageBookmarkToEntity(mb *ent.MessageBookmark) *entity.MessageBookmark {
 		return nil
 	}
 	var userID, messageID string
+	var message *entity.Message
 	if mb.Edges.User != nil {
 		userID = mb.Edges.User.ID.String()
 	}
 	if mb.Edges.Message != nil {
 		messageID = mb.Edges.Message.ID.String()
+		message = MessageToEntity(mb.Edges.Message)
 	}
 	return &entity.MessageBookmark{
 		UserID:    userID,
 		MessageID: messageID,
+		Message:   message,
 		CreatedAt: mb.CreatedAt,
 	}
 }

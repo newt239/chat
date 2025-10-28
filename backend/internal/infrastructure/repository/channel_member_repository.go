@@ -66,7 +66,7 @@ func (r *channelMemberRepository) AddMember(ctx context.Context, member *entity.
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	cm, err := client.ChannelMember.Create().
+	_, err = client.ChannelMember.Create().
 		SetChannelID(cid).
 		SetUserID(uid).
 		SetRole(string(member.Role)).
@@ -76,7 +76,7 @@ func (r *channelMemberRepository) AddMember(ctx context.Context, member *entity.
 	}
 
 	// Load edges
-	cm, err = client.ChannelMember.Query().
+	cm, err := client.ChannelMember.Query().
 		Where(
 			channelmember.HasChannelWith(channel.ID(cid)),
 			channelmember.HasUserWith(user.ID(uid)),

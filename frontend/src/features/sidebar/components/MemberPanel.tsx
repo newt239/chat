@@ -1,6 +1,8 @@
 import { Text, Stack, Loader, Badge, Avatar } from "@mantine/core";
+import { useSetAtom } from "jotai";
 
 import { useMembers } from "@/features/user/hooks/useMembers";
+import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
 type MemberPanelProps = {
   workspaceId: string | null;
@@ -8,6 +10,11 @@ type MemberPanelProps = {
 
 export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
   const { data: members, isLoading, error } = useMembers(workspaceId);
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+
+  const handleUserClick = (userId: string) => {
+    setRightSidePanelView({ type: "user-profile", userId });
+  };
 
   if (isLoading) {
     return (
@@ -70,7 +77,11 @@ export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
       </Text>
       <Stack gap="md">
         {members.map((member) => (
-          <div key={member.userId} className="flex items-start gap-3">
+          <div
+            key={member.userId}
+            className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors"
+            onClick={() => handleUserClick(member.userId)}
+          >
             <Avatar
               src={member.avatarUrl ?? undefined}
               alt={member.displayName}

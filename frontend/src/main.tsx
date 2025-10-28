@@ -4,7 +4,6 @@ import { createRoot } from "react-dom/client";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Provider as JotaiProvider } from "jotai";
 
 import { App } from "./App";
@@ -23,7 +22,6 @@ if (rootEl) {
           <MantineProvider>
             <Notifications />
             <App />
-            {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
           </MantineProvider>
         </QueryClientProvider>
       </JotaiProvider>

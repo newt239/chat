@@ -4,37 +4,26 @@ import type { UserInfo } from "../types";
 
 type ReactionButtonProps = {
   emoji: string;
-  count: number;
   users: UserInfo[];
   isActive: boolean;
   onClick: () => void;
-}
+};
 
-export const ReactionButton = ({
-  emoji,
-  count,
-  users,
-  isActive,
-  onClick,
-}: ReactionButtonProps) => {
+export const ReactionButton = ({ emoji, users, isActive, onClick }: ReactionButtonProps) => {
   const tooltipLabel = users.map((user) => user.displayName).join("、 ");
 
   return (
     <Tooltip label={tooltipLabel} position="top" withArrow>
       <Button
+        px={8}
         size="xs"
-        variant={isActive ? "filled" : "light"}
+        color="cyan"
+        variant={isActive ? "light" : "outline"}
         onClick={onClick}
-        styles={{
-          root: {
-            padding: "4px 8px",
-            height: "auto",
-            fontSize: "14px",
-          },
-        }}
+        radius="full"
       >
-        <span style={{ marginRight: "4px" }}>{emoji}</span>
-        <span>{count}</span>
+        <span className="mr-2">{emoji}</span>
+        <span>{users.length}</span>
       </Button>
     </Tooltip>
   );

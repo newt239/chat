@@ -34,7 +34,7 @@ func (r *bookmarkRepository) AddBookmark(ctx context.Context, bookmark *entity.M
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	mb, err := client.MessageBookmark.Create().
+	_, err = client.MessageBookmark.Create().
 		SetUserID(uid).
 		SetMessageID(mid).
 		Save(ctx)
@@ -43,7 +43,7 @@ func (r *bookmarkRepository) AddBookmark(ctx context.Context, bookmark *entity.M
 	}
 
 	// Load edges
-	mb, err = client.MessageBookmark.Query().
+	mb, err := client.MessageBookmark.Query().
 		Where(
 			messagebookmark.HasUserWith(user.ID(uid)),
 			messagebookmark.HasMessageWith(message.ID(mid)),

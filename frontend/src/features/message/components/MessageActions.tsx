@@ -52,11 +52,11 @@ export const MessageActions = ({
     setEmojiPickerOpened(false);
   };
 
-  const handleBookmarkToggle = async () => {
+  const handleBookmarkToggle = () => {
     if (isBookmarked) {
-      await removeBookmark.mutateAsync({ messageId });
+      removeBookmark.mutate({ messageId });
     } else {
-      await addBookmark.mutateAsync({ messageId });
+      addBookmark.mutate({ messageId });
     }
     onBookmark(messageId);
   };

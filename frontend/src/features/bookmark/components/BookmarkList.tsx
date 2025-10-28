@@ -74,7 +74,7 @@ export const BookmarkList = () => {
                     <IconMessage size={16} />
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <Text size="sm" fw={500} lineClamp={2}>
+                    <Text size="sm" fw={500} className="whitespace-pre-wrap">
                       {bookmark.message.body}
                     </Text>
                     <Text size="xs" c="dimmed" mt={4}>

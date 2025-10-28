@@ -48,7 +48,7 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 	if err != nil {
 		if ent.IsNotFound(err) {
 			// Create new
-			crs, err := client.ChannelReadState.Create().
+			_, err := client.ChannelReadState.Create().
 				SetChannelID(cid).
 				SetUserID(uid).
 				SetLastReadAt(readState.LastReadAt).
@@ -58,7 +58,7 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 			}
 
 			// Load edges
-			crs, err = client.ChannelReadState.Query().
+			crs, err := client.ChannelReadState.Query().
 				Where(
 					channelreadstate.HasChannelWith(channel.ID(cid)),
 					channelreadstate.HasUserWith(user.ID(uid)),
@@ -79,7 +79,7 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 	}
 
 	// Update existing
-	crs, err := client.ChannelReadState.UpdateOne(existing).
+	_, err = client.ChannelReadState.UpdateOne(existing).
 		SetLastReadAt(readState.LastReadAt).
 		Save(ctx)
 	if err != nil {
@@ -87,7 +87,7 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 	}
 
 	// Load edges
-	crs, err = client.ChannelReadState.Query().
+	crs, err := client.ChannelReadState.Query().
 		Where(
 			channelreadstate.HasChannelWith(channel.ID(cid)),
 			channelreadstate.HasUserWith(user.ID(uid)),

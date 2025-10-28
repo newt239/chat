@@ -5,6 +5,7 @@ import { useAtomValue } from "jotai";
 
 import { useAddReaction, useRemoveReaction } from "../hooks/useReactions";
 
+import AddAnotherEmojiButton from "./AddAnotherEmojiButton";
 import { ReactionButton } from "./ReactionButton";
 
 import type { ReactionGroup } from "../types";
@@ -14,7 +15,7 @@ import { userAtom } from "@/providers/store/auth";
 
 type ReactionListProps = {
   message: MessageWithUser;
-}
+};
 
 export const ReactionList = ({ message }: ReactionListProps) => {
   const addReaction = useAddReaction();
@@ -66,12 +67,12 @@ export const ReactionList = ({ message }: ReactionListProps) => {
         <ReactionButton
           key={group.emoji}
           emoji={group.emoji}
-          count={group.count}
           users={group.users}
           isActive={group.hasUserReacted}
           onClick={() => handleReactionClick(group.emoji, group.hasUserReacted)}
         />
       ))}
+      <AddAnotherEmojiButton />
     </Group>
   );
 };

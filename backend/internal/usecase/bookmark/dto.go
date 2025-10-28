@@ -1,6 +1,10 @@
 package bookmark
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/usecase/message"
+)
 
 type AddBookmarkInput struct {
 	UserID    string
@@ -18,6 +22,12 @@ type BookmarkOutput struct {
 	CreatedAt time.Time
 }
 
+type BookmarkWithMessageOutput struct {
+	UserID    string                `json:"userId"`
+	Message   message.MessageOutput `json:"message"`
+	CreatedAt time.Time             `json:"createdAt"`
+}
+
 type ListBookmarksOutput struct {
-	Bookmarks []BookmarkOutput
+	Bookmarks []BookmarkWithMessageOutput `json:"bookmarks"`
 }

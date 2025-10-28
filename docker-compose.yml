@@ -28,7 +28,7 @@ services:
     container_name: chat-backend
     environment:
       - PORT=8080
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
       - JWT_SECRET=development-secret-key
       - CORS_ALLOWED_ORIGINS=http://localhost:5173
     ports:
@@ -50,7 +50,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: chat-reset
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
     volumes:
       - ./backend:/app
     depends_on:
@@ -67,7 +67,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: chat-seed
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
     volumes:
       - ./backend:/app
     depends_on:

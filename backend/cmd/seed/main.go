@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
 	"github.com/newt239/chat/internal/infrastructure/seed"
@@ -21,16 +20,13 @@ func main() {
 		log.Fatalf("DB初期化に失敗しました: %v", err)
 	}
 
-	// DBが空なら自動シード
+	// DBが空なら自動シード（空でない場合はスキップ）
 	if err := seed.AutoSeed(client); err != nil {
-		// 空でない等の理由でスキップされる場合もあるため致命にはしない
 		log.Printf("自動シード: %v", err)
 	}
 
-	// 明示的に投入（必要に応じて）
-	if err := seed.CreateSeedData(client, auth.NewPasswordService()); err != nil {
-		log.Fatalf("シード投入に失敗しました: %v", err)
-	}
+	// 明示的投入は重複の原因となるためデフォルトでは実行しない
+	// 必要なら手動で AutoSeed を実行せずに CreateSeedData を呼ぶ専用コマンドを用意してください
 
-	fmt.Println("✅ Seed data created successfully!")
+	fmt.Println("✅ Seed process finished!")
 }

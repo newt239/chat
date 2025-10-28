@@ -52,7 +52,6 @@ export class WebSocketClient {
       this.ws = new WebSocket(url);
 
       this.ws.onopen = () => {
-        console.log("WebSocket connected successfully");
         this.onOpenCallback?.();
       };
 

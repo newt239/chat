@@ -175,7 +175,7 @@ func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.Work
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	wm, err := client.WorkspaceMember.Create().
+	_, err = client.WorkspaceMember.Create().
 		SetWorkspaceID(wid).
 		SetUserID(uid).
 		SetRole(string(member.Role)).
@@ -185,7 +185,7 @@ func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.Work
 	}
 
 	// Load edges
-	wm, err = client.WorkspaceMember.Query().
+	wm, err := client.WorkspaceMember.Query().
 		Where(
 			workspacemember.HasWorkspaceWith(workspace.ID(wid)),
 			workspacemember.HasUserWith(user.ID(uid)),
