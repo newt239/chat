@@ -162,7 +162,6 @@ export const BaseMessageInput = ({
         loading={isPending}
         textareaRef={textareaRef}
         onFileSelect={handleFileSelect}
-        isFileUploadDisabled={isPending || isUploading}
       />
 
       {error && (

@@ -11,8 +11,6 @@ import { MessageItem } from "./MessageItem";
 import { userAtom } from "@/providers/store/auth";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
-import { useReadStateEvents } from "@/providers/websocket/useReadStateEvents";
-import { useWebSocketEvents } from "@/providers/websocket/useWebSocketEvents";
 
 const resolveErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error && error.message) {
@@ -29,9 +27,6 @@ export const MessagePanel = () => {
   const updateMessage = useUpdateMessage(currentChannelId);
   const deleteMessage = useDeleteMessage(currentChannelId);
 
-  // WebSocketイベントを処理
-  useWebSocketEvents();
-  const { updateReadState } = useReadStateEvents();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
 
@@ -83,16 +78,6 @@ export const MessagePanel = () => {
     setRightSidebarView({ type: "hidden" });
   }, [currentChannelId, setRightSidebarView]);
 
-  // メッセージが表示されたときに既読状態を更新
-  useEffect(() => {
-    if (currentChannelId && messageResponse && !isLoading) {
-      const lastMessage = orderedMessages[orderedMessages.length - 1];
-      if (lastMessage) {
-        updateReadState(currentChannelId, lastMessage.id);
-      }
-    }
-  }, [currentChannelId, messageResponse, isLoading, orderedMessages, updateReadState]);
-
   // アクションハンドラー
   const handleCopyLink = useCallback(
     (messageId: string) => {
@@ -119,16 +104,6 @@ export const MessagePanel = () => {
     },
     [setRightSidebarView]
   );
-
-  const handleBookmark = useCallback((messageId: string) => {
-    if (!messageId) {
-      return;
-    }
-    notifications.show({
-      title: "ブックマーク",
-      message: "ブックマークの状態を更新しました",
-    });
-  }, []);
 
   const handleEdit = useCallback(
     async (messageId: string, nextBody: string) => {
@@ -212,7 +187,6 @@ export const MessagePanel = () => {
                   dateTimeFormatter={dateTimeFormatter}
                   onCopyLink={handleCopyLink}
                   onCreateThread={handleCreateThread}
-                  onBookmark={handleBookmark}
                   onOpenThread={handleOpenThread}
                   onEdit={handleEdit}
                   onDelete={handleDelete}

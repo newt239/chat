@@ -20,7 +20,6 @@ type MessageItemProps = {
   currentUserId: string | null;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
-  onBookmark: (messageId: string) => void;
   onEdit?: (messageId: string, nextBody: string) => Promise<void>;
   onDelete?: (messageId: string) => Promise<void>;
   threadMetadata?: ThreadMetadata | null;
@@ -33,7 +32,6 @@ export const MessageItem = ({
   currentUserId,
   onCopyLink,
   onCreateThread,
-  onBookmark,
   onEdit,
   onDelete,
   threadMetadata,
@@ -132,7 +130,12 @@ export const MessageItem = ({
         <div className="flex-1 min-w-0">
           {/* ヘッダー: 名前と日時 */}
           <div className="flex items-baseline gap-2">
-            <Text fw={600} size="sm" onClick={handleUserClick} className="cursor-pointer hover:underline">
+            <Text
+              fw={600}
+              size="sm"
+              onClick={handleUserClick}
+              className="cursor-pointer hover:underline"
+            >
               {message.user.displayName}
             </Text>
             <Text size="xs" c="dimmed">
@@ -206,7 +209,6 @@ export const MessageItem = ({
           isDeleted={message.isDeleted}
           onCopyLink={onCopyLink}
           onCreateThread={onCreateThread}
-          onBookmark={onBookmark}
           onEditRequest={handleStartEdit}
           onDelete={onDelete}
         />

@@ -4,8 +4,6 @@ import { Avatar, Badge, Loader, Stack, Text } from "@mantine/core";
 
 import { useMembers } from "@/features/user/hooks/useMembers";
 
-const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
-
 type UserProfilePanelProps = {
   workspaceId: string;
   userId: string;
@@ -22,7 +20,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
 
   if (isLoading) {
     return (
-      <div className={SIDEBAR_CONTAINER_CLASS}>
+      <div>
         <div className="flex h-full items-center justify-center">
           <Loader size="sm" />
         </div>
@@ -34,7 +32,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
     const message =
       error instanceof Error ? error.message : "ユーザープロフィールの取得に失敗しました";
     return (
-      <div className={SIDEBAR_CONTAINER_CLASS}>
+      <div>
         <Text c="red" size="sm">
           {message}
         </Text>
@@ -44,7 +42,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
 
   if (member === null) {
     return (
-      <div className={SIDEBAR_CONTAINER_CLASS}>
+      <div>
         <Text size="sm" c="dimmed">
           指定されたユーザーが見つかりませんでした
         </Text>
@@ -53,7 +51,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
   }
 
   return (
-    <div className={SIDEBAR_CONTAINER_CLASS}>
+    <div className="p-4">
       <Stack gap="md">
         <div className="flex items-center gap-3">
           <Avatar src={member.avatarUrl ?? undefined} radius="xl" size="lg">

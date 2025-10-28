@@ -52,16 +52,6 @@ export const ThreadReplyList = ({
     [setRightSidePanelView]
   );
 
-  const handleBookmark = useCallback((messageId: string) => {
-    if (!messageId) {
-      return;
-    }
-    notifications.show({
-      title: "ブックマーク",
-      message: "ブックマークの状態を更新しました",
-    });
-  }, []);
-
   if (replies.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -82,7 +72,6 @@ export const ThreadReplyList = ({
           dateTimeFormatter={dateTimeFormatter}
           onCopyLink={handleCopyLink}
           onCreateThread={handleCreateThread}
-          onBookmark={handleBookmark}
         />
       ))}
     </div>

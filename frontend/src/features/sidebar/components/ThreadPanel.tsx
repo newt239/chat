@@ -65,16 +65,6 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
     [setRightSidePanelView]
   );
 
-  const handleBookmark = useCallback((msgId: string) => {
-    if (!msgId) {
-      return;
-    }
-    notifications.show({
-      title: "ブックマーク",
-      message: "ブックマークの状態を更新しました",
-    });
-  }, []);
-
   const handleSendReply = useCallback(
     (body: string) => {
       sendReply.mutate({ body });
@@ -114,7 +104,6 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
                   dateTimeFormatter={dateTimeFormatter}
                   onCopyLink={handleCopyLink}
                   onCreateThread={handleCreateThread}
-                  onBookmark={handleBookmark}
                 />
 
                 <Divider label={`${threadData.replies.length}件の返信`} labelPosition="center" />

@@ -29,7 +29,6 @@ type MessageInputToolbarProps = {
   loading: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
   onFileSelect: (files: File[]) => void;
-  isFileUploadDisabled: boolean;
 };
 
 type FormatPattern = {
@@ -70,7 +69,6 @@ export const MessageInputToolbar = ({
   loading,
   textareaRef,
   onFileSelect,
-  isFileUploadDisabled,
 }: MessageInputToolbarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
@@ -182,8 +180,9 @@ export const MessageInputToolbar = ({
           variant="subtle"
           size="lg"
           color="gray"
+          title="ファイルを添付"
           onClick={handleFileClick}
-          disabled={isFileUploadDisabled}
+          disabled={mode === "preview"}
         >
           <IconPaperclip size={16} />
         </ActionIcon>
@@ -193,7 +192,7 @@ export const MessageInputToolbar = ({
           multiple
           onChange={handleFileChange}
           className="hidden"
-          disabled={isFileUploadDisabled}
+          disabled={mode === "preview"}
         />
 
         <ActionIcon
@@ -300,12 +299,12 @@ export const MessageInputToolbar = ({
       </Group>
       <Group gap="xs">
         <ActionIcon
-          variant="subtle"
+          variant={mode === "preview" ? "filled" : "subtle"}
           size="lg"
           onClick={onToggleMode}
           title="プレビューモードに切り替え"
         >
-          <IconEye size={16} title="プレビューモードに切り替え" />
+          <IconEye size={16} />
         </ActionIcon>
         <ActionIcon
           variant="filled"
@@ -314,8 +313,9 @@ export const MessageInputToolbar = ({
           onClick={onSubmit}
           disabled={disabled}
           loading={loading}
+          title="メッセージを送信"
         >
-          <IconSend size={18} title="メッセージを送信" />
+          <IconSend size={18} />
         </ActionIcon>
       </Group>
     </Group>

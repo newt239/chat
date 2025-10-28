@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { ActionIcon, Menu, Popover } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconBookmark,
   IconBookmarkFilled,
@@ -26,7 +27,6 @@ type MessageActionsProps = {
   isDeleted: boolean;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
-  onBookmark: (messageId: string) => void;
   onEditRequest?: () => void;
   onDelete?: (messageId: string) => Promise<void> | void;
 };
@@ -37,7 +37,6 @@ export const MessageActions = ({
   isDeleted,
   onCopyLink,
   onCreateThread,
-  onBookmark,
   onEditRequest,
   onDelete,
 }: MessageActionsProps) => {
@@ -55,10 +54,17 @@ export const MessageActions = ({
   const handleBookmarkToggle = () => {
     if (isBookmarked) {
       removeBookmark.mutate({ messageId });
+      notifications.show({
+        title: "ブックマーク",
+        message: "ブックマークから削除しました",
+      });
     } else {
       addBookmark.mutate({ messageId });
+      notifications.show({
+        title: "ブックマーク",
+        message: "ブックマークに追加しました",
+      });
     }
-    onBookmark(messageId);
   };
 
   return (
@@ -119,7 +125,11 @@ export const MessageActions = ({
             </Menu.Item>
           )}
           {isAuthor && !isDeleted && onDelete && (
-            <Menu.Item leftSection={<IconTrash size={14} />} c="red" onClick={() => onDelete(messageId)}>
+            <Menu.Item
+              leftSection={<IconTrash size={14} />}
+              c="red"
+              onClick={() => onDelete(messageId)}
+            >
               メッセージを削除
             </Menu.Item>
           )}
