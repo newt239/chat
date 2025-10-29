@@ -30,6 +30,7 @@ type RouterConfig struct {
 	UserGroupHandler     *handler.UserGroupHandler
 	LinkHandler          *handler.LinkHandler
 	BookmarkHandler      *handler.BookmarkHandler
+	PinHandler           *handler.PinHandler
 	AttachmentHandler    *handler.AttachmentHandler
 	SearchHandler        *handler.SearchHandler
 	DMHandler            *handler.DMHandler
@@ -135,6 +136,11 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	api.GET("/bookmarks", cfg.BookmarkHandler.ListBookmarks, authMw)
 	api.POST("/messages/:messageId/bookmarks", cfg.BookmarkHandler.AddBookmark, authMw)
 	api.DELETE("/messages/:messageId/bookmarks", cfg.BookmarkHandler.RemoveBookmark, authMw)
+
+	// Pin routes
+	api.POST("/channels/:channelId/pins", cfg.PinHandler.CreatePin, authMw)
+	api.DELETE("/channels/:channelId/pins/:messageId", cfg.PinHandler.DeletePin, authMw)
+	api.GET("/channels/:channelId/pins", cfg.PinHandler.ListPins, authMw)
 
 	// Attachment routes
 	att := api.Group("/attachments", authMw)

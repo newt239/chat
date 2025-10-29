@@ -1,5 +1,5 @@
-import { ActionIcon } from "@mantine/core";
-import { IconInfoCircle, IconMenu2, IconUsers } from "@tabler/icons-react";
+import { ActionIcon, Badge, Group, Tooltip } from "@mantine/core";
+import { IconInfoCircle, IconMenu2, IconUsers, IconPin } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { ChannelName } from "./ChannelName";
@@ -9,8 +9,9 @@ import {
   showLeftSidePanelAtom,
   showMobileLeftPanelAtom,
   showMobileRightPanelAtom,
+  pinsCountByChannelAtom,
+  setRightSidePanelViewAtom,
 } from "@/providers/store/ui";
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
 
 type ChannelHeaderProps = {
@@ -24,6 +25,7 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
   const showMobileLeftPanel = useSetAtom(showMobileLeftPanelAtom);
   const showMobileRightPanel = useSetAtom(showMobileRightPanelAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const pinsCountByChannel = useAtomValue(pinsCountByChannelAtom);
 
   const { data: channels } = useChannels(currentWorkspaceId || "");
 
@@ -47,6 +49,12 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
   const handleRightPanelToggle = () => {
     // デスクトップでは右パネルを表示、モバイルではモバイル右パネルを表示
     setRightSidePanelView({ type: "channel-info", channelId: channelId });
+    showMobileRightPanel();
+  };
+
+  const handlePinsPanelOpen = () => {
+    if (!channelId) return;
+    setRightSidePanelView({ type: "pins", channelId });
     showMobileRightPanel();
   };
 
@@ -80,6 +88,26 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
       </div>
 
       <div className="flex items-center space-x-2">
+        <Tooltip label="ピン留め一覧" withArrow>
+          <ActionIcon
+            variant="subtle"
+            size="lg"
+            onClick={handlePinsPanelOpen}
+            className="text-gray-700 hover:bg-gray-100 relative"
+            title="ピン留め一覧"
+          >
+            <Group gap={4} align="center">
+              <IconPin size={20} />
+              {channelId && (pinsCountByChannel[channelId] ?? 0) > 0 && (
+                <Badge size="xs" color="grape" variant="filled">
+                  {(pinsCountByChannel[channelId] ?? 0) > 99
+                    ? "99+"
+                    : pinsCountByChannel[channelId]}
+                </Badge>
+              )}
+            </Group>
+          </ActionIcon>
+        </Tooltip>
         <ActionIcon
           variant="subtle"
           size="lg"

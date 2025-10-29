@@ -9,6 +9,7 @@ import (
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
+	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
@@ -134,6 +135,18 @@ func (r *UseCaseRegistry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewUserGroupRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
+	return pinuc.NewPinInteractor(
+		r.domainRegistry.NewPinRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
 

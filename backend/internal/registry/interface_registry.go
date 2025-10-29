@@ -64,6 +64,10 @@ func (r *InterfaceRegistry) NewBookmarkHandler() *handler.BookmarkHandler {
 	return handler.NewBookmarkHandler(r.usecaseRegistry.NewBookmarkUseCase())
 }
 
+func (r *InterfaceRegistry) NewPinHandler() *handler.PinHandler {
+	return handler.NewPinHandler(r.usecaseRegistry.NewPinUseCase())
+}
+
 func (r *InterfaceRegistry) NewAttachmentHandler() *handler.AttachmentHandler {
 	return handler.NewAttachmentHandler(r.usecaseRegistry.NewAttachmentUseCase())
 }
@@ -100,6 +104,7 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		UserGroupHandler:     r.NewUserGroupHandler(),
 		LinkHandler:          r.NewLinkHandler(),
 		BookmarkHandler:      r.NewBookmarkHandler(),
+		PinHandler:           r.NewPinHandler(),
 		AttachmentHandler:    r.NewAttachmentHandler(),
 		SearchHandler:        r.NewSearchHandler(),
 		DMHandler:            r.NewDMHandler(),

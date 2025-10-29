@@ -1,20 +1,34 @@
-import { useState } from "react";
-
 import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import { Link } from "@tanstack/react-router";
 
 import { useRegister } from "../hooks/useAuth";
 
+type RegisterFormValues = {
+  displayName: string;
+  email: string;
+  password: string;
+};
+
 export const RegisterForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const register = useRegister();
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    register.mutate({ email, password, displayName });
-  };
+  const form = useForm<RegisterFormValues>({
+    initialValues: {
+      displayName: "",
+      email: "",
+      password: "",
+    },
+    validate: {
+      displayName: (value) => (value.length >= 1 ? null : "1文字以上の表示名を入力してください"),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : "有効なメールアドレスを入力してください"),
+      password: (value) => (value.length >= 8 ? null : "8文字以上のパスワードを入力してください"),
+    },
+  });
+
+  const handleSubmit = form.onSubmit((values) => {
+    register.mutate(values);
+  });
 
   return (
     <Paper className="w-full max-w-md p-8" shadow="md" radius="md">
@@ -25,19 +39,17 @@ export const RegisterForm = () => {
       <form onSubmit={handleSubmit}>
         <TextInput
           label="表示名"
-          placeholder="山田太郎"
-          value={displayName}
-          onChange={(event) => setDisplayName(event.currentTarget.value)}
+          placeholder="newt"
+          {...form.getInputProps("displayName")}
           required
           className="mb-4"
         />
 
         <TextInput
           label="メールアドレス"
-          placeholder="your@email.com"
+          placeholder="email@example.com"
           type="email"
-          value={email}
-          onChange={(event) => setEmail(event.currentTarget.value)}
+          {...form.getInputProps("email")}
           required
           className="mb-4"
         />
@@ -45,8 +57,7 @@ export const RegisterForm = () => {
         <PasswordInput
           label="パスワード"
           placeholder="パスワード"
-          value={password}
-          onChange={(event) => setPassword(event.currentTarget.value)}
+          {...form.getInputProps("password")}
           required
           className="mb-6"
         />

@@ -1,20 +1,11 @@
-import { Button, Text, Stack, ScrollArea, Group, Avatar } from "@mantine/core";
-import { IconBookmark, IconMessage } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import { Text, Stack, ScrollArea, Card } from "@mantine/core";
+import { IconBookmark } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 
 import { useBookmarks } from "../hooks/useBookmarks";
 
 export const BookmarkList = () => {
   const { data: bookmarks, isLoading, error } = useBookmarks();
-  const navigate = useNavigate();
-
-  const handleBookmarkClick = (channelId: string, messageId: string) => {
-    navigate({
-      to: "/app/$workspaceId/channels/$channelId",
-      params: { workspaceId: "current", channelId },
-      search: { messageId },
-    });
-  };
 
   if (isLoading) {
     return (
@@ -48,50 +39,37 @@ export const BookmarkList = () => {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <Text size="lg" fw={600}>
-          ブックマーク
-        </Text>
-        <Text size="sm" c="dimmed">
-          {bookmarks?.bookmarks?.length || 0}件のメッセージ
-        </Text>
-      </div>
-
-      <ScrollArea h={400}>
-        <Stack gap="xs">
-          {bookmarks?.bookmarks
-            ?.filter((bookmark) => bookmark.message)
-            .map((bookmark) => (
-              <Button
-                key={`${bookmark.userId}-${bookmark.message.id}`}
-                variant="subtle"
-                className="h-auto p-3 text-left justify-start"
-                onClick={() => handleBookmarkClick(bookmark.message.channelId, bookmark.message.id)}
-              >
-                <Group className="w-full" gap="sm" align="flex-start">
-                  <Avatar size="sm" color="blue">
-                    <IconMessage size={16} />
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <Text size="sm" fw={500} className="whitespace-pre-wrap">
-                      {bookmark.message.body}
-                    </Text>
-                    <Text size="xs" c="dimmed" mt={4}>
-                      {new Date(bookmark.createdAt).toLocaleDateString("ja-JP", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </Text>
-                  </div>
-                </Group>
-              </Button>
-            ))}
-        </Stack>
-      </ScrollArea>
-    </div>
+    <ScrollArea h={400}>
+      <Stack gap="xs" p="xs">
+        {bookmarks?.bookmarks
+          ?.filter((bookmark) => bookmark.message)
+          .map((bookmark) => (
+            <Card
+              key={`${bookmark.userId}-${bookmark.message.id}`}
+              withBorder
+              padding="md"
+              radius="md"
+              component={Link}
+              to={`/app/$workspaceId/channels/$channelId?messageId=${bookmark.message.id}`}
+              className="h-auto text-left justify-start"
+            >
+              <div className="flex-1 min-w-0">
+                <Text size="sm" fw={500} className="whitespace-pre-wrap">
+                  {bookmark.message.body}
+                </Text>
+                <Text size="xs" c="dimmed" mt={4}>
+                  {new Date(bookmark.createdAt).toLocaleDateString("ja-JP", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </div>
+            </Card>
+          ))}
+      </Stack>
+    </ScrollArea>
   );
 };

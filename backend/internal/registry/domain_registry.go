@@ -67,6 +67,10 @@ func (r *DomainRegistry) NewBookmarkRepository() domainrepository.BookmarkReposi
 	return repository.NewBookmarkRepository(r.client)
 }
 
+func (r *DomainRegistry) NewPinRepository() domainrepository.PinRepository {
+	return repository.NewPinRepository(r.client)
+}
+
 func (r *DomainRegistry) NewThreadRepository() domainrepository.ThreadRepository {
 	return repository.NewThreadRepository(r.client)
 }

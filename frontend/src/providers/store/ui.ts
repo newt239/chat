@@ -7,6 +7,7 @@ export type PanelView =
   | { type: "channel-members"; channelId: string }
   | { type: "channel-info"; channelId?: string | null }
   | { type: "thread"; threadId: string }
+  | { type: "pins"; channelId: string }
   | { type: "user-profile"; userId: string }
   | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" }
   | { type: "bookmarks" }
@@ -22,6 +23,8 @@ type LayoutState = {
   mobileActivePanel: "left" | "right" | "none";
   // 現在のルートがチャンネルページかどうか
   isChannelPage: boolean;
+  // チャンネル別のピン件数
+  pinsCountByChannel: Record<string, number>;
 };
 
 const defaultLayoutState: LayoutState = {
@@ -29,6 +32,7 @@ const defaultLayoutState: LayoutState = {
   rightSidePanelView: { type: "hidden" },
   mobileActivePanel: "none",
   isChannelPage: false,
+  pinsCountByChannel: {},
 };
 
 // レイアウト状態のAtom
@@ -42,6 +46,41 @@ export const rightSidePanelViewAtom = atom((get) => get(layoutStateAtom).rightSi
 export const mobileActivePanelAtom = atom((get) => get(layoutStateAtom).mobileActivePanel);
 
 export const isChannelPageAtom = atom((get) => get(layoutStateAtom).isChannelPage);
+
+// チャンネル別ピン件数の取得
+export const pinsCountByChannelAtom = atom((get) => get(layoutStateAtom).pinsCountByChannel);
+
+// チャンネルのピン件数を設定
+export const setChannelPinsCountAtom = atom(
+  null,
+  (_get, set, payload: { channelId: string; count: number }) => {
+    const current = _get(layoutStateAtom);
+    set(layoutStateAtom, {
+      ...current,
+      pinsCountByChannel: {
+        ...current.pinsCountByChannel,
+        [payload.channelId]: payload.count,
+      },
+    });
+  }
+);
+
+// チャンネルのピン件数をインクリメント/デクリメント
+export const addChannelPinsDeltaAtom = atom(
+  null,
+  (_get, set, payload: { channelId: string; delta: number }) => {
+    const current = _get(layoutStateAtom);
+    const prev = current.pinsCountByChannel[payload.channelId] ?? 0;
+    const next = Math.max(0, prev + payload.delta);
+    set(layoutStateAtom, {
+      ...current,
+      pinsCountByChannel: {
+        ...current.pinsCountByChannel,
+        [payload.channelId]: next,
+      },
+    });
+  }
+);
 
 // 左サイドパネルを表示する
 export const showLeftSidePanelAtom = atom(null, (_get, set) => {

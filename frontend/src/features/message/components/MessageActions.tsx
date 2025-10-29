@@ -12,14 +12,18 @@ import {
   IconMoodSmile,
   IconTrash,
 } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 
 import {
   useAddBookmark,
   useRemoveBookmark,
   useIsBookmarked,
 } from "@/features/bookmark/hooks/useBookmarks";
+import { usePinActions } from "@/features/pin/hooks/usePinActions";
+import { useIsPinned } from "@/features/pin/hooks/usePinnedMessages";
 import { EmojiPicker } from "@/features/reaction/components/EmojiPicker";
 import { useAddReaction } from "@/features/reaction/hooks/useReactions";
+import { currentChannelIdAtom } from "@/providers/store/workspace";
 
 type MessageActionsProps = {
   messageId: string;
@@ -45,6 +49,9 @@ export const MessageActions = ({
   const addBookmark = useAddBookmark();
   const removeBookmark = useRemoveBookmark();
   const isBookmarked = useIsBookmarked(messageId);
+  const channelId = useAtomValue(currentChannelIdAtom);
+  const { pin, unpin } = usePinActions(channelId);
+  const isPinned = useIsPinned(messageId, channelId);
 
   const handleEmojiSelect = async (emoji: string) => {
     await addReaction.mutateAsync({ messageId, emoji });
@@ -116,8 +123,23 @@ export const MessageActions = ({
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
+          <Menu.Item
+            leftSection={<IconMessage size={14} />}
+            onClick={() => onCreateThread(messageId)}
+          >
+            スレッドで返信
+          </Menu.Item>
           <Menu.Item leftSection={<IconLink size={14} />} onClick={() => onCopyLink(messageId)}>
             リンクをコピー
+          </Menu.Item>
+          <Menu.Item leftSection={<IconBookmark size={14} />} onClick={handleBookmarkToggle}>
+            {isBookmarked ? "ブックマークを削除" : "ブックマークに追加"}
+          </Menu.Item>
+          <Menu.Item
+            leftSection={<IconBookmark size={14} />}
+            onClick={() => (isPinned ? unpin.mutate({ messageId }) : pin.mutate({ messageId }))}
+          >
+            {isPinned ? "ピン留めを解除" : "ピン留めする"}
           </Menu.Item>
           {isAuthor && !isDeleted && onEditRequest && (
             <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => onEditRequest()}>

@@ -69,7 +69,7 @@ export const GlobalHeaderPanel = () => {
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center space-x-4 shrink-0">
+        <div className="flex items-center shrink-0">
           {/* ワークスペース選択メニュー */}
           <Menu
             opened={isWorkspaceMenuOpen}

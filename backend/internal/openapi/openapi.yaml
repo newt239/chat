@@ -15,6 +15,30 @@ components:
       bearerFormat: JWT
 
   schemas:
+    PinnedMessage:
+      type: object
+      properties:
+        message:
+          $ref: "#/components/schemas/Message"
+        pinnedAt:
+          type: string
+          format: date-time
+        pinnedBy:
+          type: string
+          format: uuid
+      required: [message, pinnedAt, pinnedBy]
+
+    ListPinsResponse:
+      type: object
+      properties:
+        pins:
+          type: array
+          items:
+            $ref: "#/components/schemas/PinnedMessage"
+        nextCursor:
+          type: string
+          nullable: true
+      required: [pins]
     Error:
       type: object
       properties:
@@ -978,6 +1002,136 @@ components:
         - items
 
 paths:
+  /api/channels/{channelId}/pins:
+    get:
+      operationId: listPins
+      summary: List pinned messages in a channel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Pinned messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListPinsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      operationId: createPin
+      summary: Pin a message in a channel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+                  format: uuid
+              required: [messageId]
+      responses:
+        "200":
+          description: Pinned
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/channels/{channelId}/pins/{messageId}:
+    delete:
+      operationId: deletePin
+      summary: Unpin a message in a channel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Unpinned
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /healthz:
     get:
       operationId: healthz

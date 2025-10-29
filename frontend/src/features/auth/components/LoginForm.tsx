@@ -33,10 +33,10 @@ export const LoginForm = () => {
         ログイン
       </Title>
 
-      <form noValidate onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <TextInput
           label="メールアドレス"
-          placeholder="your@email.com"
+          placeholder="email@example.com"
           type="email"
           required
           className="mb-4"

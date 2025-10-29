@@ -7,6 +7,7 @@ import type { PanelView } from "@/providers/store/ui";
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
 import { ChannelMemberPanel } from "@/features/channel/components/ChannelMemberPanel";
 import { NotificationPanel } from "@/features/notification/components/NotificationPanel";
+import { PinnedPanel } from "@/features/pin/components/PinnedPanel";
 import { ChannelInfoPanel } from "@/features/sidebar/components/ChannelInfoPanel";
 import { SearchResultsPanel } from "@/features/sidebar/components/SearchResultsPanel";
 import { ThreadPanel } from "@/features/sidebar/components/ThreadPanel";
@@ -51,6 +52,8 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
         return <ChannelInfoPanel workspaceId={workspaceId} channelId={view.channelId} />;
       case "thread":
         return <ThreadPanel threadId={view.threadId} />;
+      case "pins":
+        return <PinnedPanel channelId={view.channelId} />;
       case "user-profile":
         return <UserProfilePanel workspaceId={workspaceId} userId={view.userId} />;
       case "search":
@@ -74,6 +77,8 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
         return "チャンネル情報";
       case "thread":
         return "スレッド";
+      case "pins":
+        return "ピン留め";
       case "user-profile":
         return "ユーザープロフィール";
       case "search":

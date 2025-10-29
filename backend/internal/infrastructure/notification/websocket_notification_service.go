@@ -90,6 +90,51 @@ func (s *WebSocketNotificationService) NotifyDeletedMessage(workspaceID string, 
 	log.Printf("Notified message deleted to workspace=%s channel=%s", workspaceID, channelID)
 }
 
+// NotifyPinCreated はピン追加をチャンネル参加者に通知します
+func (s *WebSocketNotificationService) NotifyPinCreated(workspaceID string, channelID string, pin interface{}) {
+	payload := websocket.PinPayload{
+		ChannelID: channelID,
+		Message:   convertToMap(pin),
+		// PinnedBy/PinnedAt は pin の中に含めている前提。トップレベルにも複製しておく
+	}
+	if m, ok := pin.(map[string]interface{}); ok {
+		if v, ok := m["pinnedBy"].(string); ok {
+			payload.PinnedBy = v
+		}
+		if v, ok := m["pinnedAt"].(string); ok {
+			payload.PinnedAt = v
+		}
+	}
+	data, err := websocket.SendServerMessage(websocket.EventTypePinCreated, payload)
+	if err != nil {
+		log.Printf("Failed to encode pin_created event: %v", err)
+		return
+	}
+	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+}
+
+// NotifyPinDeleted はピン削除をチャンネル参加者に通知します
+func (s *WebSocketNotificationService) NotifyPinDeleted(workspaceID string, channelID string, pin interface{}) {
+	payload := websocket.PinPayload{
+		ChannelID: channelID,
+		Message:   convertToMap(pin),
+	}
+	if m, ok := pin.(map[string]interface{}); ok {
+		if v, ok := m["pinnedBy"].(string); ok {
+			payload.PinnedBy = v
+		}
+		if v, ok := m["pinnedAt"].(string); ok {
+			payload.PinnedAt = v
+		}
+	}
+	data, err := websocket.SendServerMessage(websocket.EventTypePinDeleted, payload)
+	if err != nil {
+		log.Printf("Failed to encode pin_deleted event: %v", err)
+		return
+	}
+	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+}
+
 // NotifyUnreadCount は未読数の更新を特定ユーザーに通知します
 func (s *WebSocketNotificationService) NotifyUnreadCount(workspaceID string, userID string, channelID string, unreadCount int) {
 	// TODO: メンション検知の実装（現在は未読数が0より大きい場合にtrueとする）

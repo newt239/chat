@@ -21,6 +21,8 @@ const (
 	EventTypeMessageUpdated EventType = "message_updated"
 	EventTypeMessageDeleted EventType = "message_deleted"
 	EventTypeUnreadCount    EventType = "unread_count"
+	EventTypePinCreated     EventType = "pin_created"
+	EventTypePinDeleted     EventType = "pin_deleted"
 	EventTypeAck            EventType = "ack"
 	EventTypeError          EventType = "error"
 )
@@ -80,6 +82,14 @@ type MessageUpdatedPayload struct {
 type MessageDeletedPayload struct {
 	ChannelID  string                 `json:"channel_id"`
 	DeleteData map[string]interface{} `json:"deleteData"`
+}
+
+// PinPayload はpin_created/pin_deletedイベントのペイロードを表します
+type PinPayload struct {
+	ChannelID string                 `json:"channel_id"`
+	Message   map[string]interface{} `json:"message"`
+	PinnedBy  string                 `json:"pinned_by"`
+	PinnedAt  string                 `json:"pinned_at"`
 }
 
 // UnreadCountPayload はunread_countイベントのペイロードを表します

@@ -16,4 +16,8 @@ type NotificationService interface {
 
 	// NotifyUnreadCount は未読数の更新を特定ユーザーに通知します
 	NotifyUnreadCount(workspaceID string, userID string, channelID string, unreadCount int)
+
+	// ピン関連
+	NotifyPinCreated(workspaceID string, channelID string, pin interface{})
+	NotifyPinDeleted(workspaceID string, channelID string, pin interface{})
 }
