@@ -79,6 +79,16 @@ func (m *MockWorkspaceRepository) FindMember(ctx context.Context, workspaceID st
 	return args.Get(0).(*entity.WorkspaceMember), args.Error(1)
 }
 
+func (m *MockWorkspaceRepository) SearchMembers(ctx context.Context, workspaceID string, query string, limit int, offset int) ([]*entity.WorkspaceMember, int, error) {
+	args := m.Called(ctx, workspaceID, query, limit, offset)
+	var members []*entity.WorkspaceMember
+	if result := args.Get(0); result != nil {
+		members = result.([]*entity.WorkspaceMember)
+	}
+	total, _ := args.Get(1).(int)
+	return members, total, args.Error(2)
+}
+
 // TestWorkspace はテスト用のワークスペースエンティティを作成するヘルパー関数です
 func TestWorkspace(id, name, description string) *entity.Workspace {
 	now := time.Now()

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { Avatar, Badge, Loader, Stack, Text } from "@mantine/core";
 
-import { useMembers } from "@/features/user/hooks/useMembers";
+import { useMembers } from "@/features/member/hooks/useMembers";
 
 type UserProfilePanelProps = {
   workspaceId: string;

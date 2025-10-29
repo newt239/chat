@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -197,6 +198,72 @@ func (r *messageRepository) FindThreadRepliesIncludingDeleted(ctx context.Contex
 	}
 
 	return result, nil
+}
+
+func (r *messageRepository) SearchByChannelIDs(ctx context.Context, channelIDs []string, query string, limit int, offset int) ([]*entity.Message, int, error) {
+	if len(channelIDs) == 0 {
+		return []*entity.Message{}, 0, nil
+	}
+
+	parsedChannelIDs := make([]uuid.UUID, 0, len(channelIDs))
+	for _, chID := range channelIDs {
+		parsedID, err := utils.ParseUUID(chID, "channel ID")
+		if err != nil {
+			return nil, 0, err
+		}
+		parsedChannelIDs = append(parsedChannelIDs, parsedID)
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	trimmedQuery := strings.TrimSpace(query)
+
+	messageQuery := client.Message.Query().
+		Where(
+			message.HasChannelWith(channel.IDIn(parsedChannelIDs...)),
+			message.DeletedAtIsNil(),
+		)
+
+	if trimmedQuery != "" {
+		messageQuery = messageQuery.Where(
+			message.Or(
+				message.BodyContainsFold(trimmedQuery),
+				message.HasUserWith(user.DisplayNameContainsFold(trimmedQuery)),
+				message.HasChannelWith(channel.NameContainsFold(trimmedQuery)),
+			),
+		)
+	}
+
+	total, err := messageQuery.Clone().Count(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if offset > 0 {
+		messageQuery = messageQuery.Offset(offset)
+	}
+
+	if limit > 0 {
+		messageQuery = messageQuery.Limit(limit)
+	}
+
+	messages, err := messageQuery.
+		WithChannel(func(q *ent.ChannelQuery) {
+			q.WithWorkspace().WithCreatedBy()
+		}).
+		WithUser().
+		WithParent().
+		Order(ent.Desc(message.FieldCreatedAt)).
+		All(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result := make([]*entity.Message, 0, len(messages))
+	for _, m := range messages {
+		result = append(result, utils.MessageToEntity(m))
+	}
+
+	return result, total, nil
 }
 
 func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) error {

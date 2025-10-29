@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
@@ -129,7 +130,8 @@ func (r *channelRepository) Create(ctx context.Context, ch *entity.Channel) erro
 		SetWorkspaceID(wid).
 		SetCreatedByID(createdBy).
 		SetName(ch.Name).
-		SetIsPrivate(ch.IsPrivate)
+		SetIsPrivate(ch.IsPrivate).
+		SetChannelType(string(ch.Type))
 
 	if ch.ID != "" {
 		channelID, err := utils.ParseUUID(ch.ID, "channel ID")
@@ -208,6 +210,67 @@ func (r *channelRepository) Delete(ctx context.Context, id string) error {
 	return client.Channel.DeleteOneID(channelID).Exec(ctx)
 }
 
+func (r *channelRepository) SearchAccessibleChannels(ctx context.Context, workspaceID, userID string, query string, limit int, offset int) ([]*entity.Channel, int, error) {
+	wID, err := utils.ParseUUID(workspaceID, "workspace ID")
+	if err != nil {
+		return nil, 0, err
+	}
+
+	uID, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, 0, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	trimmedQuery := strings.TrimSpace(query)
+
+	channelQuery := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(wID)),
+			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uID))),
+		)
+
+	if trimmedQuery != "" {
+		channelQuery = channelQuery.Where(
+			channel.Or(
+				channel.NameContainsFold(trimmedQuery),
+				channel.DescriptionContainsFold(trimmedQuery),
+			),
+		)
+	}
+
+	total, err := channelQuery.Clone().Count(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if offset > 0 {
+		channelQuery = channelQuery.Offset(offset)
+	}
+
+	if limit > 0 {
+		channelQuery = channelQuery.Limit(limit)
+	}
+
+	channels, err := channelQuery.
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		Order(ent.Asc(channel.FieldName)).
+		All(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result := make([]*entity.Channel, 0, len(channels))
+	for _, c := range channels {
+		result = append(result, utils.ChannelToEntity(c))
+	}
+
+	return result, total, nil
+}
+
 func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspaceID, userID string) ([]*entity.Channel, error) {
 	wID, err := utils.ParseUUID(workspaceID, "workspace ID")
 	if err != nil {
@@ -230,6 +293,177 @@ func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspac
 		}).
 		WithCreatedBy().
 		Order(ent.Asc(channel.FieldName)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*entity.Channel, 0, len(channels))
+	for _, c := range channels {
+		result = append(result, utils.ChannelToEntity(c))
+	}
+
+	return result, nil
+}
+
+func (r *channelRepository) FindOrCreateDM(ctx context.Context, workspaceID string, userID1 string, userID2 string) (*entity.Channel, error) {
+	wID, err := utils.ParseUUID(workspaceID, "workspace ID")
+	if err != nil {
+		return nil, err
+	}
+
+	uid1, err := utils.ParseUUID(userID1, "user ID 1")
+	if err != nil {
+		return nil, err
+	}
+
+	uid2, err := utils.ParseUUID(userID2, "user ID 2")
+	if err != nil {
+		return nil, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	existingChannels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(wID)),
+			channel.ChannelTypeEQ("dm"),
+			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid1))),
+			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid2))),
+		).
+		WithWorkspace().
+		WithCreatedBy().
+		WithMembers(func(q *ent.ChannelMemberQuery) {
+			q.WithUser()
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ch := range existingChannels {
+		if len(ch.Edges.Members) == 2 {
+			return utils.ChannelToEntity(ch), nil
+		}
+	}
+
+	dmChannel := &entity.Channel{
+		WorkspaceID: workspaceID,
+		Name:        "dm_" + uid1.String() + "_" + uid2.String(),
+		IsPrivate:   true,
+		Type:        entity.ChannelTypeDM,
+		CreatedBy:   userID1,
+	}
+
+	if err := r.Create(ctx, dmChannel); err != nil {
+		return nil, err
+	}
+
+	return dmChannel, nil
+}
+
+func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error) {
+	wID, err := utils.ParseUUID(workspaceID, "workspace ID")
+	if err != nil {
+		return nil, err
+	}
+
+	cID, err := utils.ParseUUID(creatorID, "creator ID")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(memberIDs) > 9 {
+		return nil, entity.ErrGroupDMMaxMembers
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	existingChannels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(wID)),
+			channel.ChannelTypeEQ("group_dm"),
+			channel.HasCreatedByWith(user.ID(cID)),
+		).
+		WithWorkspace().
+		WithCreatedBy().
+		WithMembers(func(q *ent.ChannelMemberQuery) {
+			q.WithUser()
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ch := range existingChannels {
+		if len(ch.Edges.Members) == len(memberIDs) {
+			memberMap := make(map[string]bool)
+			for _, m := range ch.Edges.Members {
+				if m.Edges.User != nil {
+					memberMap[m.Edges.User.ID.String()] = true
+				}
+			}
+
+			allMatch := true
+			for _, mid := range memberIDs {
+				if !memberMap[mid] {
+					allMatch = false
+					break
+				}
+			}
+
+			if allMatch {
+				return utils.ChannelToEntity(ch), nil
+			}
+		}
+	}
+
+	channelName := name
+	if channelName == "" {
+		channelName = "group_dm_" + cID.String()
+	}
+
+	groupDMChannel := &entity.Channel{
+		WorkspaceID: workspaceID,
+		Name:        channelName,
+		IsPrivate:   true,
+		Type:        entity.ChannelTypeGroupDM,
+		CreatedBy:   creatorID,
+	}
+
+	if err := r.Create(ctx, groupDMChannel); err != nil {
+		return nil, err
+	}
+
+	return groupDMChannel, nil
+}
+
+func (r *channelRepository) FindUserDMs(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error) {
+	wID, err := utils.ParseUUID(workspaceID, "workspace ID")
+	if err != nil {
+		return nil, err
+	}
+
+	uID, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	channels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(wID)),
+			channel.ChannelTypeIn("dm", "group_dm"),
+			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uID))),
+		).
+		WithWorkspace(func(q *ent.WorkspaceQuery) {
+			q.WithCreatedBy()
+		}).
+		WithCreatedBy().
+		WithMembers(func(q *ent.ChannelMemberQuery) {
+			q.WithUser()
+		}).
+		Order(ent.Desc(channel.FieldUpdatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err

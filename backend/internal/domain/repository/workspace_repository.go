@@ -17,4 +17,5 @@ type WorkspaceRepository interface {
 	RemoveMember(ctx context.Context, workspaceID string, userID string) error
 	FindMembersByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.WorkspaceMember, error)
 	FindMember(ctx context.Context, workspaceID string, userID string) (*entity.WorkspaceMember, error)
+	SearchMembers(ctx context.Context, workspaceID string, query string, limit int, offset int) ([]*entity.WorkspaceMember, int, error)
 }

@@ -1,12 +1,7 @@
-import { useMemo } from "react";
-
 import { Avatar, Badge, Card, Loader, Stack, Text } from "@mantine/core";
 import { useSetAtom } from "jotai";
 
-import {
-  useWorkspaceSearchIndex,
-  type WorkspaceSearchIndex,
-} from "@/features/search/hooks/useWorkspaceSearchIndex";
+import { useWorkspaceSearch } from "@/features/search/hooks/useWorkspaceSearchIndex";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
 const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
@@ -21,36 +16,18 @@ type SearchResultsPanelProps = {
 
 export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResultsPanelProps) => {
   const trimmedQuery = query.trim();
-  const lowercaseQuery = trimmedQuery.toLowerCase();
-  const { data, isLoading, isError, error } = useWorkspaceSearchIndex(workspaceId);
+  const { data, isLoading, isFetching, error } = useWorkspaceSearch({
+    workspaceId,
+    query,
+    filter,
+    page: 1,
+    perPage: 10,
+  });
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
   const handleUserClick = (userId: string) => {
     setRightSidePanelView({ type: "user-profile", userId });
   };
-
-  const filteredResults = useMemo<WorkspaceSearchIndex>(() => {
-    const emptyResults: WorkspaceSearchIndex = { channels: [], members: [], messages: [] };
-
-    if (data === undefined || lowercaseQuery.length === 0) {
-      return emptyResults;
-    }
-
-    const includesQuery = (value: string | null | undefined) =>
-      typeof value === "string" && value.toLowerCase().includes(lowercaseQuery);
-
-    const channels = data.channels.filter(
-      (channel) => includesQuery(channel.name) || includesQuery(channel.description)
-    );
-
-    const members = data.members.filter(
-      (member) => includesQuery(member.displayName) || includesQuery(member.email ?? null)
-    );
-
-    const messages = data.messages.filter((message) => includesQuery(message.body));
-
-    return { channels, members, messages };
-  }, [data, lowercaseQuery]);
 
   if (trimmedQuery.length === 0) {
     return (
@@ -62,7 +39,7 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
     );
   }
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className={SIDEBAR_CONTAINER_CLASS}>
         <div className="flex h-full items-center justify-center">
@@ -72,7 +49,7 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
     );
   }
 
-  if (isError || data === undefined) {
+  if (error || data === undefined) {
     const message = error instanceof Error ? error.message : "検索結果の取得に失敗しました";
     return (
       <div className={SIDEBAR_CONTAINER_CLASS}>
@@ -88,9 +65,9 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
   const shouldShowMessages = filter === "all" || filter === "messages";
 
   const hasResults =
-    (shouldShowChannels && filteredResults.channels.length > 0) ||
-    (shouldShowMembers && filteredResults.members.length > 0) ||
-    (shouldShowMessages && filteredResults.messages.length > 0);
+    (shouldShowChannels && data.channels.items.length > 0) ||
+    (shouldShowMembers && data.users.items.length > 0) ||
+    (shouldShowMessages && data.messages.items.length > 0);
 
   if (!hasResults) {
     return (
@@ -113,12 +90,12 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
         <Text size="sm" fw={600}>
           検索結果
         </Text>
-        {shouldShowChannels && filteredResults.channels.length > 0 && (
+        {shouldShowChannels && data.channels.items.length > 0 && (
           <Stack gap="xs">
             <Text size="xs" c="dimmed">
               チャンネル
             </Text>
-            {filteredResults.channels.map((channel) => (
+            {data.channels.items.map((channel) => (
               <Card key={channel.id} withBorder padding="md" radius="md">
                 <Stack gap="4">
                   <Text size="sm" fw={600}>
@@ -137,12 +114,12 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
             ))}
           </Stack>
         )}
-        {shouldShowMembers && filteredResults.members.length > 0 && (
+        {shouldShowMembers && data.users.items.length > 0 && (
           <Stack gap="xs">
             <Text size="xs" c="dimmed">
               ユーザー
             </Text>
-            {filteredResults.members.map((member) => (
+            {data.users.items.map((member) => (
               <Card
                 key={member.userId}
                 withBorder
@@ -166,12 +143,12 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
             ))}
           </Stack>
         )}
-        {shouldShowMessages && filteredResults.messages.length > 0 && (
+        {shouldShowMessages && data.messages.items.length > 0 && (
           <Stack gap="xs">
             <Text size="xs" c="dimmed">
               メッセージ
             </Text>
-            {filteredResults.messages.map((message) => (
+            {data.messages.items.map((message) => (
               <Card key={message.id} withBorder padding="md" radius="md">
                 <Stack gap="4">
                   <Text size="xs" c="dimmed">

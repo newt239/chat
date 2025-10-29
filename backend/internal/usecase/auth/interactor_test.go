@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/test/mocks"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
@@ -31,7 +32,8 @@ func TestAuthInteractor_Register(t *testing.T) {
 				userRepo.On("FindByEmail", mock.Anything, "test@example.com").Return(nil, nil)
 
 				// パスワードハッシュ化
-				passwordService.On("HashPassword", "password123").Return("hashed_password", nil)
+				passwordService.On("HashPassword", "password123").Return("hashed_password", nil).Once()
+				passwordService.On("HashPassword", mock.AnythingOfType("string")).Return("hashed_refresh_token", nil)
 
 				// ユーザー作成
 				userRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.User")).Return(nil)
@@ -40,7 +42,7 @@ func TestAuthInteractor_Register(t *testing.T) {
 				sessionRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Session")).Return(nil)
 
 				// JWTトークン生成
-				jwtService.On("GenerateToken", mock.AnythingOfType("string"), mock.AnythingOfType("time.Duration")).Return("access_token", nil).Twice()
+				jwtService.On("GenerateToken", mock.AnythingOfType("string"), mock.AnythingOfType("time.Duration")).Return("access_token", nil).Once()
 			},
 			expectedError: nil,
 		},
@@ -119,12 +121,13 @@ func TestAuthInteractor_Login(t *testing.T) {
 
 				// パスワード検証
 				passwordService.On("VerifyPassword", "password123", "hashed_password").Return(nil)
+				passwordService.On("HashPassword", mock.AnythingOfType("string")).Return("hashed_refresh_token", nil)
 
 				// セッション作成
 				sessionRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Session")).Return(nil)
 
 				// JWTトークン生成
-				jwtService.On("GenerateToken", mock.AnythingOfType("string"), mock.AnythingOfType("time.Duration")).Return("access_token", nil).Twice()
+				jwtService.On("GenerateToken", mock.AnythingOfType("string"), mock.AnythingOfType("time.Duration")).Return("access_token", nil).Once()
 			},
 			expectedError: nil,
 		},
@@ -208,19 +211,20 @@ func TestAuthInteractor_RefreshToken(t *testing.T) {
 				RefreshToken: "valid_refresh_token",
 			},
 			setupMocks: func(userRepo *mocks.MockUserRepository, sessionRepo *mocks.MockSessionRepository, jwtService *mocks.MockJWTService, passwordService *mocks.MockPasswordService) {
-				// セッション検索
-				session := mocks.TestSession("session-id", "user-id", "valid_refresh_token")
-				sessionRepo.On("FindByRefreshToken", mock.Anything, "valid_refresh_token").Return(session, nil)
+				claims := &authuc.TokenClaims{UserID: "user-id"}
+				jwtService.On("VerifyToken", "valid_refresh_token").Return(claims, nil)
 
-				// ユーザー検索
 				user := mocks.TestUser("user-id", "test@example.com", "Test User")
 				userRepo.On("FindByID", mock.Anything, "user-id").Return(user, nil)
 
-				// セッション更新
-				sessionRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.Session")).Return(nil)
+				session := mocks.TestSession("session-id", "user-id", "hashed_refresh_token")
+				sessionRepo.On("FindActiveByUserID", mock.Anything, "user-id").Return([]*entity.Session{session}, nil)
+				passwordService.On("VerifyPassword", "valid_refresh_token", session.RefreshTokenHash).Return(nil)
 
-				// JWTトークン生成
-				jwtService.On("GenerateToken", mock.AnythingOfType("string"), mock.AnythingOfType("time.Duration")).Return("new_access_token", nil).Twice()
+				sessionRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Session")).Return(nil)
+				passwordService.On("HashPassword", mock.AnythingOfType("string")).Return("hashed_refresh_token", nil)
+
+				jwtService.On("GenerateToken", mock.AnythingOfType("string"), mock.AnythingOfType("time.Duration")).Return("new_access_token", nil).Once()
 			},
 			expectedError: nil,
 		},
@@ -230,8 +234,7 @@ func TestAuthInteractor_RefreshToken(t *testing.T) {
 				RefreshToken: "invalid_refresh_token",
 			},
 			setupMocks: func(userRepo *mocks.MockUserRepository, sessionRepo *mocks.MockSessionRepository, jwtService *mocks.MockJWTService, passwordService *mocks.MockPasswordService) {
-				// セッションが見つからない
-				sessionRepo.On("FindByRefreshToken", mock.Anything, "invalid_refresh_token").Return(nil, nil)
+				jwtService.On("VerifyToken", "invalid_refresh_token").Return(nil, errors.ErrInvalidToken)
 			},
 			expectedError: errors.ErrInvalidToken,
 		},
@@ -288,12 +291,10 @@ func TestAuthInteractor_Logout(t *testing.T) {
 				RefreshToken: "refresh_token",
 			},
 			setupMocks: func(userRepo *mocks.MockUserRepository, sessionRepo *mocks.MockSessionRepository, jwtService *mocks.MockJWTService, passwordService *mocks.MockPasswordService) {
-				// セッション検索
-				session := mocks.TestSession("session-id", "user-id", "refresh_token")
-				sessionRepo.On("FindByRefreshToken", mock.Anything, "refresh_token").Return(session, nil)
-
-				// セッション削除
-				sessionRepo.On("Delete", mock.Anything, "session-id").Return(nil)
+				session := mocks.TestSession("session-id", "user-id", "hashed_refresh")
+				sessionRepo.On("FindActiveByUserID", mock.Anything, "user-id").Return([]*entity.Session{session}, nil)
+				passwordService.On("VerifyPassword", "refresh_token", session.RefreshTokenHash).Return(nil)
+				sessionRepo.On("Revoke", mock.Anything, "session-id").Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -304,10 +305,9 @@ func TestAuthInteractor_Logout(t *testing.T) {
 				RefreshToken: "invalid_refresh_token",
 			},
 			setupMocks: func(userRepo *mocks.MockUserRepository, sessionRepo *mocks.MockSessionRepository, jwtService *mocks.MockJWTService, passwordService *mocks.MockPasswordService) {
-				// セッションが見つからない
-				sessionRepo.On("FindByRefreshToken", mock.Anything, "invalid_refresh_token").Return(nil, nil)
+				sessionRepo.On("FindActiveByUserID", mock.Anything, "user-id").Return([]*entity.Session{}, nil)
 			},
-			expectedError: errors.ErrInvalidToken,
+			expectedError: authuc.ErrSessionNotFound,
 		},
 	}
 

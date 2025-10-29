@@ -1,15 +1,13 @@
 import { z } from "zod";
 
-const messageUserSchema = z
-  .object({
-    id: z.string(),
-    displayName: z.string(),
-    avatarUrl: z.string().nullable().optional(),
-    email: z.string().email().optional(),
-  })
-  .passthrough();
+const messageUserSchema = z.object({
+  id: z.string(),
+  displayName: z.string(),
+  avatarUrl: z.string().nullable().optional(),
+  email: z.string().email().optional(),
+});
 
-const threadMetadataSchema = z.object({
+export const threadMetadataSchema = z.object({
   messageId: z.string(),
   replyCount: z.number(),
   lastReplyAt: z.string().nullable().optional(),
@@ -52,28 +50,26 @@ const attachmentSchema = z.object({
   createdAt: z.string(),
 });
 
-const baseMessageSchema = z
-  .object({
-    id: z.string(),
-    channelId: z.string(),
-    userId: z.string(),
-    parentId: z.string().nullable().optional(),
-    body: z.string(),
-    mentions: z.array(userMentionSchema).optional(),
-    groups: z.array(groupMentionSchema).optional(),
-    links: z.array(linkInfoSchema).optional(),
-    reactions: z.array(reactionInfoSchema).optional(),
-    attachments: z.array(attachmentSchema).optional(),
-    createdAt: z.string(),
-    editedAt: z.string().nullable().optional(),
-    deletedAt: z.string().nullable().optional(),
-    isDeleted: z.boolean(),
-    deletedBy: messageUserSchema.nullable().optional(),
-  })
-  .passthrough();
+const baseMessageSchema = z.object({
+  id: z.string(),
+  channelId: z.string(),
+  userId: z.string(),
+  parentId: z.string().nullable().optional(),
+  body: z.string(),
+  mentions: z.array(userMentionSchema).optional(),
+  groups: z.array(groupMentionSchema).optional(),
+  links: z.array(linkInfoSchema).optional(),
+  reactions: z.array(reactionInfoSchema).optional(),
+  attachments: z.array(attachmentSchema).optional(),
+  createdAt: z.string(),
+  editedAt: z.string().nullable().optional(),
+  deletedAt: z.string().nullable().optional(),
+  isDeleted: z.boolean(),
+  deletedBy: messageUserSchema.nullable().optional(),
+});
 
-const messageWithUserSchema = baseMessageSchema.extend({
-  user: messageUserSchema,
+export const messageWithUserSchema = baseMessageSchema.extend({
+	user: messageUserSchema,
 });
 
 export const messagesResponseSchema = z.object({
@@ -100,4 +96,3 @@ export const threadRepliesResponseSchema = z.object({
 export type MessageWithUser = z.infer<typeof messageWithUserSchema>;
 export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;
 export type ThreadMetadata = z.infer<typeof threadMetadataSchema>;
-export { threadMetadataSchema };

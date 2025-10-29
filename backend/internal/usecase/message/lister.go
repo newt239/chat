@@ -22,6 +22,7 @@ type MessageLister struct {
 	threadRepo        domainrepository.ThreadRepository
 	attachmentRepo    domainrepository.AttachmentRepository
 	assembler         *MessageOutputAssembler
+	outputBuilder     *MessageOutputBuilder
 }
 
 // NewMessageLister は新しいMessageListerを作成します
@@ -38,6 +39,7 @@ func NewMessageLister(
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 ) *MessageLister {
+	assembler := NewMessageOutputAssembler()
 	return &MessageLister{
 		messageRepo:       messageRepo,
 		channelRepo:       channelRepo,
@@ -50,7 +52,17 @@ func NewMessageLister(
 		linkRepo:          linkRepo,
 		threadRepo:        threadRepo,
 		attachmentRepo:    attachmentRepo,
-		assembler:         NewMessageOutputAssembler(),
+		assembler:         assembler,
+		outputBuilder: NewMessageOutputBuilder(
+			messageRepo,
+			userRepo,
+			userGroupRepo,
+			userMentionRepo,
+			groupMentionRepo,
+			linkRepo,
+			attachmentRepo,
+			assembler,
+		),
 	}
 }
 
@@ -74,29 +86,12 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 		return nil, fmt.Errorf("failed to fetch messages: %w", err)
 	}
 
-	// メッセージリストの準備（リミット処理とID抽出）
-	messageIDs, hasMore := l.prepareMessageList(messages, limit)
+	messages, hasMore := l.prepareMessageList(messages, limit)
 
-	// 関連データを一括取得
-	relatedData, err := l.fetchRelatedData(ctx, messageIDs)
+	outputs, err := l.outputBuilder.Build(ctx, messages)
 	if err != nil {
 		return nil, err
 	}
-
-	// ユーザー情報を取得
-	userMap, err := l.fetchUserMap(ctx, messages, relatedData.Reactions)
-	if err != nil {
-		return nil, err
-	}
-
-	// グループ情報を取得
-	groups, err := l.fetchGroups(ctx, relatedData.GroupMentions)
-	if err != nil {
-		return nil, err
-	}
-
-	// メッセージ出力を構築
-	outputs := l.buildMessageOutputs(messages, relatedData, userMap, groups)
 
 	return &ListMessagesOutput{Messages: outputs, HasMore: hasMore}, nil
 }
@@ -217,6 +212,10 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 		if !userIDSet[msg.UserID] {
 			userIDs = append(userIDs, msg.UserID)
 			userIDSet[msg.UserID] = true
+		}
+		if msg.DeletedBy != nil && !userIDSet[*msg.DeletedBy] {
+			userIDs = append(userIDs, *msg.DeletedBy)
+			userIDSet[*msg.DeletedBy] = true
 		}
 	}
 	for _, reactionList := range reactions {
@@ -395,185 +394,19 @@ func (l *MessageLister) ensureChannelAccess(ctx context.Context, channelID, user
 	return ch, nil
 }
 
-// prepareMessageList はメッセージリストを準備し、リミット処理とID抽出を行います
-func (l *MessageLister) prepareMessageList(messages []*entity.Message, limit int) ([]string, bool) {
-	// リミット正規化
+// prepareMessageList はメッセージリストを準備し、リミット処理を行います
+func (l *MessageLister) prepareMessageList(messages []*entity.Message, limit int) ([]*entity.Message, bool) {
 	if limit <= 0 {
 		limit = defaultMessageLimit
 	} else if limit > maxMessageLimit {
 		limit = maxMessageLimit
 	}
 
-	// メッセージ切り詰め
 	hasMore := false
 	if len(messages) > limit {
 		hasMore = true
 		messages = messages[:limit]
 	}
 
-	// メッセージID抽出
-	messageIDs := make([]string, len(messages))
-	for idx, msg := range messages {
-		messageIDs[idx] = msg.ID
-	}
-
-	return messageIDs, hasMore
-}
-
-// fetchRelatedData はメッセージに関連するデータを一括取得します
-func (l *MessageLister) fetchRelatedData(ctx context.Context, messageIDs []string) (*RelatedData, error) {
-	userMentions, err := l.userMentionRepo.FindByMessageIDs(ctx, messageIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch user mentions: %w", err)
-	}
-
-	groupMentions, err := l.groupMentionRepo.FindByMessageIDs(ctx, messageIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch group mentions: %w", err)
-	}
-
-	links, err := l.linkRepo.FindByMessageIDs(ctx, messageIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch links: %w", err)
-	}
-
-	reactions, err := l.messageRepo.FindReactionsByMessageIDs(ctx, messageIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch reactions: %w", err)
-	}
-
-	attachments, err := l.attachmentRepo.FindByMessageIDs(ctx, messageIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch attachments: %w", err)
-	}
-
-	return &RelatedData{
-		UserMentions:  userMentions,
-		GroupMentions: groupMentions,
-		Links:         links,
-		Reactions:     reactions,
-		Attachments:   attachments,
-	}, nil
-}
-
-// fetchUserMap はユーザー情報を取得してマップに格納します
-func (l *MessageLister) fetchUserMap(ctx context.Context, messages []*entity.Message, reactions map[string][]*entity.MessageReaction) (map[string]*entity.User, error) {
-	userIDs := make([]string, 0)
-	userIDSet := make(map[string]bool)
-
-	// メッセージ作成者のユーザーIDを収集
-	for _, msg := range messages {
-		if !userIDSet[msg.UserID] {
-			userIDs = append(userIDs, msg.UserID)
-			userIDSet[msg.UserID] = true
-		}
-	}
-
-	// リアクションユーザーIDも収集
-	for _, reactionList := range reactions {
-		for _, reaction := range reactionList {
-			if !userIDSet[reaction.UserID] {
-				userIDs = append(userIDs, reaction.UserID)
-				userIDSet[reaction.UserID] = true
-			}
-		}
-	}
-
-	// ユーザー情報を一括取得
-	users, err := l.userRepo.FindByIDs(ctx, userIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch users: %w", err)
-	}
-
-	// ユーザー情報をマップに格納
-	userMap := make(map[string]*entity.User)
-	for _, user := range users {
-		userMap[user.ID] = user
-	}
-
-	return userMap, nil
-}
-
-// fetchGroups はグループ情報を取得します
-func (l *MessageLister) fetchGroups(ctx context.Context, groupMentions []*entity.MessageGroupMention) (map[string]*entity.UserGroup, error) {
-	groupIDs := make([]string, 0)
-	groupIDSet := make(map[string]bool)
-
-	for _, mention := range groupMentions {
-		if !groupIDSet[mention.GroupID] {
-			groupIDs = append(groupIDs, mention.GroupID)
-			groupIDSet[mention.GroupID] = true
-		}
-	}
-
-	if len(groupIDs) == 0 {
-		return make(map[string]*entity.UserGroup), nil
-	}
-
-	// 一括でグループ情報を取得
-	groups, err := l.userGroupRepo.FindByIDs(ctx, groupIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch groups: %w", err)
-	}
-
-	// グループ情報をマップに格納
-	groupMap := make(map[string]*entity.UserGroup)
-	for _, group := range groups {
-		groupMap[group.ID] = group
-	}
-
-	return groupMap, nil
-}
-
-// buildMessageOutputs はメッセージ出力を構築します
-func (l *MessageLister) buildMessageOutputs(messages []*entity.Message, relatedData *RelatedData, userMap map[string]*entity.User, groups map[string]*entity.UserGroup) []MessageOutput {
-	// メンション、リンク、リアクションをメッセージIDでグループ化
-	userMentionsByMessage := l.groupUserMentionsByMessage(relatedData.UserMentions)
-	groupMentionsByMessage := l.groupGroupMentionsByMessage(relatedData.GroupMentions)
-	linksByMessage := l.groupLinksByMessage(relatedData.Links)
-
-	outputs := make([]MessageOutput, 0, len(messages))
-	for _, msg := range messages {
-		user := userMap[msg.UserID]
-		outputs = append(outputs, l.assembler.AssembleMessageOutput(
-			msg,
-			user,
-			userMentionsByMessage[msg.ID],
-			groupMentionsByMessage[msg.ID],
-			linksByMessage[msg.ID],
-			relatedData.Reactions[msg.ID],
-			relatedData.Attachments[msg.ID],
-			groups,
-			userMap,
-		))
-	}
-
-	return outputs
-}
-
-// groupUserMentionsByMessage はユーザーメンションをメッセージIDでグループ化します
-func (l *MessageLister) groupUserMentionsByMessage(userMentions []*entity.MessageUserMention) map[string][]*entity.MessageUserMention {
-	userMentionsByMessage := make(map[string][]*entity.MessageUserMention)
-	for _, mention := range userMentions {
-		userMentionsByMessage[mention.MessageID] = append(userMentionsByMessage[mention.MessageID], mention)
-	}
-	return userMentionsByMessage
-}
-
-// groupGroupMentionsByMessage はグループメンションをメッセージIDでグループ化します
-func (l *MessageLister) groupGroupMentionsByMessage(groupMentions []*entity.MessageGroupMention) map[string][]*entity.MessageGroupMention {
-	groupMentionsByMessage := make(map[string][]*entity.MessageGroupMention)
-	for _, mention := range groupMentions {
-		groupMentionsByMessage[mention.MessageID] = append(groupMentionsByMessage[mention.MessageID], mention)
-	}
-	return groupMentionsByMessage
-}
-
-// groupLinksByMessage はリンクをメッセージIDでグループ化します
-func (l *MessageLister) groupLinksByMessage(links []*entity.MessageLink) map[string][]*entity.MessageLink {
-	linksByMessage := make(map[string][]*entity.MessageLink)
-	for _, link := range links {
-		linksByMessage[link.MessageID] = append(linksByMessage[link.MessageID], link)
-	}
-	return linksByMessage
+	return messages, hasMore
 }

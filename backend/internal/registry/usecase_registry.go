@@ -6,10 +6,12 @@ import (
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
+	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
+	searchuc "github.com/newt239/chat/internal/usecase/search"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
@@ -142,5 +144,27 @@ func (r *UseCaseRegistry) NewAttachmentUseCase() *attachmentuc.Interactor {
 		r.domainRegistry.NewMessageRepository(),
 		r.infrastructureRegistry.NewStorageService(),
 		r.infrastructureRegistry.NewStorageConfig(),
+	)
+}
+
+func (r *UseCaseRegistry) NewSearchUseCase() searchuc.SearchUseCase {
+	return searchuc.NewSearchUseCase(
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewUserGroupRepository(),
+		r.domainRegistry.NewMessageUserMentionRepository(),
+		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.domainRegistry.NewMessageLinkRepository(),
+		r.domainRegistry.NewAttachmentRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
+	return dmuc.NewInteractor(
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewUserRepository(),
 	)
 }

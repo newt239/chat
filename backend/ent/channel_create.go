@@ -61,6 +61,20 @@ func (_c *ChannelCreate) SetNillableIsPrivate(v *bool) *ChannelCreate {
 	return _c
 }
 
+// SetChannelType sets the "channel_type" field.
+func (_c *ChannelCreate) SetChannelType(v string) *ChannelCreate {
+	_c.mutation.SetChannelType(v)
+	return _c
+}
+
+// SetNillableChannelType sets the "channel_type" field if the given value is not nil.
+func (_c *ChannelCreate) SetNillableChannelType(v *string) *ChannelCreate {
+	if v != nil {
+		_c.SetChannelType(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ChannelCreate) SetCreatedAt(v time.Time) *ChannelCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -224,6 +238,10 @@ func (_c *ChannelCreate) defaults() {
 		v := channel.DefaultIsPrivate
 		_c.mutation.SetIsPrivate(v)
 	}
+	if _, ok := _c.mutation.ChannelType(); !ok {
+		v := channel.DefaultChannelType
+		_c.mutation.SetChannelType(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := channel.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -309,6 +327,10 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsPrivate(); ok {
 		_spec.SetField(channel.FieldIsPrivate, field.TypeBool, value)
 		_node.IsPrivate = value
+	}
+	if value, ok := _c.mutation.ChannelType(); ok {
+		_spec.SetField(channel.FieldChannelType, field.TypeString, value)
+		_node.ChannelType = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(channel.FieldCreatedAt, field.TypeTime, value)

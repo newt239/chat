@@ -1,80 +1,83 @@
+import { useMemo } from "react";
+
 import { useQuery } from "@tanstack/react-query";
 
-import type { MessageWithUser } from "@/features/message/types";
-import type { components } from "@/lib/api/schema";
-
-import { messagesResponseSchema } from "@/features/message/schemas";
+import {
+	searchFilterValues,
+	type SearchFilter,
+	workspaceSearchResponseSchema,
+	type WorkspaceSearchResponse,
+} from "@/features/search/schemas";
 import { api } from "@/lib/api/client";
 
-export type WorkspaceSearchIndex = {
-  channels: components["schemas"]["Channel"][];
-  members: components["schemas"]["MemberInfo"][];
-  messages: MessageWithUser[];
+const searchFilterSet = new Set<SearchFilter>(searchFilterValues);
+
+type WorkspaceSearchParams = {
+	workspaceId: string | undefined;
+	query: string;
+	filter: SearchFilter;
+	page: number;
+	perPage: number;
 };
 
-const EMPTY_INDEX: WorkspaceSearchIndex = {
-  channels: [],
-  members: [],
-  messages: [],
-};
-
-export function useWorkspaceSearchIndex(workspaceId: string | undefined) {
-  return useQuery<WorkspaceSearchIndex>({
-    queryKey: ["workspace-search-index", workspaceId],
-    enabled: typeof workspaceId === "string" && workspaceId.length > 0,
-    queryFn: async (): Promise<WorkspaceSearchIndex> => {
-      if (!workspaceId) {
-        return EMPTY_INDEX;
-      }
-
-      const [channelResult, memberResult] = await Promise.all([
-        api.GET("/api/workspaces/{id}/channels", {
-          params: { path: { id: workspaceId } },
-        }),
-        api.GET("/api/workspaces/{id}/members", {
-          params: { path: { id: workspaceId } },
-        }),
-      ]);
-
-      if (channelResult.error || channelResult.data === undefined) {
-        throw new Error(channelResult.error?.error ?? "Failed to fetch channels");
-      }
-
-      if (memberResult.error || memberResult.data === undefined) {
-        throw new Error(memberResult.error?.error ?? "Failed to fetch workspace members");
-      }
-
-      const channels = Array.isArray(channelResult.data) ? channelResult.data : [];
-      const members = Array.isArray(memberResult.data.members) ? memberResult.data.members : [];
-
-      if (channels.length === 0) {
-        return { channels, members, messages: [] };
-      }
-
-      const messagesByChannel = await Promise.all(
-        channels.map(async (channel) => {
-          const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
-            params: { path: { channelId: channel.id } },
-          });
-
-          if (error || data === undefined) {
-            throw new Error(error?.error ?? "Failed to fetch messages for search");
-          }
-
-          const parsed = messagesResponseSchema.safeParse(data);
-
-          if (!parsed.success) {
-            throw new Error("Unexpected response format when loading search messages");
-          }
-
-          return parsed.data.messages;
-        })
-      );
-
-      const messages: MessageWithUser[] = messagesByChannel.flat();
-
-      return { channels, members, messages };
-    },
-    staleTime: 60_000,
-  });
+function normalizeFilter(filter: SearchFilter): SearchFilter {
+	return searchFilterSet.has(filter) ? filter : "all";
 }
+
+export function useWorkspaceSearch(params: WorkspaceSearchParams) {
+	const { workspaceId, query, filter, page, perPage } = params;
+	const trimmedQuery = useMemo(() => query.trim(), [query]);
+	const normalizedFilter = normalizeFilter(filter);
+
+	const isEnabled =
+		typeof workspaceId === "string" &&
+		workspaceId.length > 0 &&
+		trimmedQuery.length > 0 &&
+		page > 0 &&
+		perPage > 0;
+
+	return useQuery<WorkspaceSearchResponse>({
+		queryKey: [
+			"workspace-search",
+			workspaceId,
+			trimmedQuery,
+			normalizedFilter,
+			page,
+			perPage,
+		],
+		enabled: isEnabled,
+		staleTime: 30_000,
+		retry: 1,
+		queryFn: async () => {
+			if (!workspaceId) {
+				throw new Error("Workspace ID is required to perform search");
+			}
+
+			const { data, error } = await api.GET("/api/workspaces/{workspaceId}/search", {
+				params: {
+					path: { workspaceId },
+					query: {
+						q: trimmedQuery,
+						filter: normalizedFilter,
+						page,
+						perPage,
+					},
+				},
+			});
+
+			if (error || data === undefined) {
+				throw new Error(error?.error ?? "ワークスペース検索に失敗しました");
+			}
+
+			const parsed = workspaceSearchResponseSchema.safeParse(data);
+			if (!parsed.success) {
+				throw new Error("検索レスポンスの形式が想定と異なります");
+			}
+
+			return parsed.data;
+		},
+	});
+}
+
+// 後方互換性のためのエクスポート。新しい実装では useWorkspaceSearch を利用してください。
+export const useWorkspaceSearchIndex = useWorkspaceSearch;

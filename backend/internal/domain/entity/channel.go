@@ -13,7 +13,26 @@ var (
 	ErrChannelNameRequired       = errors.New("channel name is required")
 	ErrChannelWorkspaceIDInvalid = errors.New("workspace ID must be a valid UUID")
 	ErrChannelCreatorInvalid     = errors.New("creator ID must be a valid UUID")
+	ErrInvalidChannelType        = errors.New("invalid channel type")
+	ErrGroupDMMaxMembers         = errors.New("group DM cannot have more than 9 members")
 )
+
+type ChannelType string
+
+const (
+	ChannelTypePublic  ChannelType = "public"
+	ChannelTypePrivate ChannelType = "private"
+	ChannelTypeDM      ChannelType = "dm"
+	ChannelTypeGroupDM ChannelType = "group_dm"
+)
+
+func (t ChannelType) IsValid() bool {
+	switch t {
+	case ChannelTypePublic, ChannelTypePrivate, ChannelTypeDM, ChannelTypeGroupDM:
+		return true
+	}
+	return false
+}
 
 type Channel struct {
 	ID          string
@@ -21,6 +40,7 @@ type Channel struct {
 	Name        string
 	Description *string
 	IsPrivate   bool
+	Type        ChannelType
 	CreatedBy   string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -32,6 +52,7 @@ type ChannelParams struct {
 	Name        string
 	Description *string
 	IsPrivate   bool
+	Type        ChannelType
 	CreatedBy   string
 	CreatedAt   time.Time
 }
@@ -47,8 +68,16 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 		return nil, fmt.Errorf("%w: %v", ErrChannelCreatorInvalid, err)
 	}
 
+	channelType := params.Type
+	if channelType == "" {
+		channelType = ChannelTypePublic
+	}
+	if !channelType.IsValid() {
+		return nil, ErrInvalidChannelType
+	}
+
 	name := strings.TrimSpace(params.Name)
-	if name == "" {
+	if name == "" && (channelType == ChannelTypePublic || channelType == ChannelTypePrivate) {
 		return nil, ErrChannelNameRequired
 	}
 
@@ -67,12 +96,18 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 		createdAt = time.Now().UTC()
 	}
 
+	isPrivate := params.IsPrivate
+	if channelType == ChannelTypeDM || channelType == ChannelTypeGroupDM {
+		isPrivate = true
+	}
+
 	return &Channel{
 		ID:          id,
 		WorkspaceID: workspaceID,
 		Name:        name,
 		Description: cloneString(params.Description),
-		IsPrivate:   params.IsPrivate,
+		IsPrivate:   isPrivate,
+		Type:        channelType,
 		CreatedBy:   creatorID,
 		CreatedAt:   createdAt,
 		UpdatedAt:   createdAt,

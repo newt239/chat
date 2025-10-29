@@ -1041,6 +1041,7 @@ type ChannelMutation struct {
 	name               *string
 	description        *string
 	is_private         *bool
+	channel_type       *string
 	created_at         *time.Time
 	updated_at         *time.Time
 	clearedFields      map[string]struct{}
@@ -1288,6 +1289,55 @@ func (m *ChannelMutation) OldIsPrivate(ctx context.Context) (v bool, err error) 
 // ResetIsPrivate resets all changes to the "is_private" field.
 func (m *ChannelMutation) ResetIsPrivate() {
 	m.is_private = nil
+}
+
+// SetChannelType sets the "channel_type" field.
+func (m *ChannelMutation) SetChannelType(s string) {
+	m.channel_type = &s
+}
+
+// ChannelType returns the value of the "channel_type" field in the mutation.
+func (m *ChannelMutation) ChannelType() (r string, exists bool) {
+	v := m.channel_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelType returns the old "channel_type" field's value of the Channel entity.
+// If the Channel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ChannelMutation) OldChannelType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelType: %w", err)
+	}
+	return oldValue.ChannelType, nil
+}
+
+// ClearChannelType clears the value of the "channel_type" field.
+func (m *ChannelMutation) ClearChannelType() {
+	m.channel_type = nil
+	m.clearedFields[channel.FieldChannelType] = struct{}{}
+}
+
+// ChannelTypeCleared returns if the "channel_type" field was cleared in this mutation.
+func (m *ChannelMutation) ChannelTypeCleared() bool {
+	_, ok := m.clearedFields[channel.FieldChannelType]
+	return ok
+}
+
+// ResetChannelType resets all changes to the "channel_type" field.
+func (m *ChannelMutation) ResetChannelType() {
+	m.channel_type = nil
+	delete(m.clearedFields, channel.FieldChannelType)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1690,7 +1740,7 @@ func (m *ChannelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ChannelMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, channel.FieldName)
 	}
@@ -1699,6 +1749,9 @@ func (m *ChannelMutation) Fields() []string {
 	}
 	if m.is_private != nil {
 		fields = append(fields, channel.FieldIsPrivate)
+	}
+	if m.channel_type != nil {
+		fields = append(fields, channel.FieldChannelType)
 	}
 	if m.created_at != nil {
 		fields = append(fields, channel.FieldCreatedAt)
@@ -1720,6 +1773,8 @@ func (m *ChannelMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case channel.FieldIsPrivate:
 		return m.IsPrivate()
+	case channel.FieldChannelType:
+		return m.ChannelType()
 	case channel.FieldCreatedAt:
 		return m.CreatedAt()
 	case channel.FieldUpdatedAt:
@@ -1739,6 +1794,8 @@ func (m *ChannelMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDescription(ctx)
 	case channel.FieldIsPrivate:
 		return m.OldIsPrivate(ctx)
+	case channel.FieldChannelType:
+		return m.OldChannelType(ctx)
 	case channel.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case channel.FieldUpdatedAt:
@@ -1772,6 +1829,13 @@ func (m *ChannelMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsPrivate(v)
+		return nil
+	case channel.FieldChannelType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelType(v)
 		return nil
 	case channel.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1820,6 +1884,9 @@ func (m *ChannelMutation) ClearedFields() []string {
 	if m.FieldCleared(channel.FieldDescription) {
 		fields = append(fields, channel.FieldDescription)
 	}
+	if m.FieldCleared(channel.FieldChannelType) {
+		fields = append(fields, channel.FieldChannelType)
+	}
 	return fields
 }
 
@@ -1837,6 +1904,9 @@ func (m *ChannelMutation) ClearField(name string) error {
 	case channel.FieldDescription:
 		m.ClearDescription()
 		return nil
+	case channel.FieldChannelType:
+		m.ClearChannelType()
+		return nil
 	}
 	return fmt.Errorf("unknown Channel nullable field %s", name)
 }
@@ -1853,6 +1923,9 @@ func (m *ChannelMutation) ResetField(name string) error {
 		return nil
 	case channel.FieldIsPrivate:
 		m.ResetIsPrivate()
+		return nil
+	case channel.FieldChannelType:
+		m.ResetChannelType()
 		return nil
 	case channel.FieldCreatedAt:
 		m.ResetCreatedAt()

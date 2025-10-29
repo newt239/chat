@@ -150,6 +150,9 @@ components:
           nullable: true
         isPrivate:
           type: boolean
+        channelType:
+          type: string
+          enum: [public, private, dm, group_dm]
         createdBy:
           type: string
           format: uuid
@@ -279,6 +282,95 @@ components:
       required:
         - messages
         - hasMore
+
+    PaginatedMessages:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - total
+        - page
+        - perPage
+        - hasMore
+
+    PaginatedChannels:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - total
+        - page
+        - perPage
+        - hasMore
+
+    PaginatedUsers:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemberInfo"
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - total
+        - page
+        - perPage
+        - hasMore
+
+    WorkspaceSearchResponse:
+      type: object
+      properties:
+        messages:
+          $ref: "#/components/schemas/PaginatedMessages"
+        channels:
+          $ref: "#/components/schemas/PaginatedChannels"
+        users:
+          $ref: "#/components/schemas/PaginatedUsers"
+      required:
+        - messages
+        - channels
+        - users
 
     UnreadCountResponse:
       type: object
@@ -748,6 +840,81 @@ components:
       required:
         - role
 
+    CreateDMRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+      required:
+        - userId
+
+    CreateGroupDMRequest:
+      type: object
+      properties:
+        userIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 2
+          maxItems: 9
+        name:
+          type: string
+      required:
+        - userIds
+
+    DMMember:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - userId
+        - displayName
+
+    DMOutput:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [dm, group_dm]
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/DMMember"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - workspaceId
+        - name
+        - type
+        - members
+        - createdAt
+        - updatedAt
+
     SuccessResponse:
       type: object
       properties:
@@ -916,6 +1083,72 @@ paths:
                 $ref: "#/components/schemas/Error"
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/workspaces/{workspaceId}/search:
+    get:
+      operationId: searchWorkspace
+      summary: Search workspace content
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [all, messages, channels, users]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: perPage
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        "200":
+          description: Search results returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceSearchResponse"
+        "400":
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Workspace not found
           content:
             application/json:
               schema:
@@ -2404,6 +2637,112 @@ paths:
                 $ref: "#/components/schemas/Error"
         "409":
           description: Cannot remove - last admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/workspaces/{id}/dms:
+    get:
+      operationId: listDMs
+      summary: List DMs in workspace
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of DMs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DMOutput"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      operationId: createDM
+      summary: Create a 1:1 DM
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDMRequest"
+      responses:
+        "200":
+          description: DM created or retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DMOutput"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/workspaces/{id}/group-dms:
+    post:
+      operationId: createGroupDM
+      summary: Create a group DM
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroupDMRequest"
+      responses:
+        "200":
+          description: Group DM created or retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DMOutput"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:

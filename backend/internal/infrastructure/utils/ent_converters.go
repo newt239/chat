@@ -99,12 +99,19 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 	if c.Edges.CreatedBy != nil {
 		createdBy = c.Edges.CreatedBy.ID.String()
 	}
+
+	channelType := entity.ChannelTypePublic
+	if c.ChannelType != "" {
+		channelType = entity.ChannelType(c.ChannelType)
+	}
+
 	return &entity.Channel{
 		ID:          c.ID.String(),
 		WorkspaceID: workspaceID,
 		Name:        c.Name,
 		Description: StringPtrFromNullable(c.Description),
 		IsPrivate:   c.IsPrivate,
+		Type:        channelType,
 		CreatedBy:   createdBy,
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,

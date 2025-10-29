@@ -149,11 +149,34 @@ func (i *bookmarkInteractor) ListBookmarks(ctx context.Context, userID string) (
 	}
 
 	// 関連データを一括取得
-	userMentions, _ := i.mentionRepo.FindByMessageIDs(ctx, messageIDs)
-	groupMentions, _ := i.groupMentionRepo.FindByMessageIDs(ctx, messageIDs)
-	links, _ := i.linkRepo.FindByMessageIDs(ctx, messageIDs)
-	reactions, _ := i.messageRepo.FindReactionsByMessageIDs(ctx, messageIDs)
-	attachments, _ := i.attachmentRepo.FindByMessageIDs(ctx, messageIDs)
+	var userMentions []*entity.MessageUserMention
+	if i.mentionRepo != nil && len(messageIDs) > 0 {
+		userMentions, _ = i.mentionRepo.FindByMessageIDs(ctx, messageIDs)
+	}
+
+	var groupMentions []*entity.MessageGroupMention
+	if i.groupMentionRepo != nil && len(messageIDs) > 0 {
+		groupMentions, _ = i.groupMentionRepo.FindByMessageIDs(ctx, messageIDs)
+	}
+
+	var links []*entity.MessageLink
+	if i.linkRepo != nil && len(messageIDs) > 0 {
+		links, _ = i.linkRepo.FindByMessageIDs(ctx, messageIDs)
+	}
+
+	reactions := make(map[string][]*entity.MessageReaction)
+	if len(messageIDs) > 0 {
+		if result, err := i.messageRepo.FindReactionsByMessageIDs(ctx, messageIDs); err == nil {
+			reactions = result
+		}
+	}
+
+	attachments := make(map[string][]*entity.Attachment)
+	if i.attachmentRepo != nil && len(messageIDs) > 0 {
+		if result, err := i.attachmentRepo.FindByMessageIDs(ctx, messageIDs); err == nil {
+			attachments = result
+		}
+	}
 
 	// ユーザーIDを収集
 	userIDSet := make(map[string]bool)
@@ -174,10 +197,12 @@ func (i *bookmarkInteractor) ListBookmarks(ctx context.Context, userID string) (
 	}
 
 	// ユーザー情報を一括取得
-	users, _ := i.userRepo.FindByIDs(ctx, userIDList)
 	userMap := make(map[string]*entity.User)
-	for _, user := range users {
-		userMap[user.ID] = user
+	if i.userRepo != nil && len(userIDList) > 0 {
+		users, _ := i.userRepo.FindByIDs(ctx, userIDList)
+		for _, user := range users {
+			userMap[user.ID] = user
+		}
 	}
 
 	// グループIDを収集
@@ -192,7 +217,7 @@ func (i *bookmarkInteractor) ListBookmarks(ctx context.Context, userID string) (
 
 	// グループ情報を一括取得
 	groups := make(map[string]*entity.UserGroup)
-	if len(groupIDList) > 0 {
+	if i.userGroupRepo != nil && len(groupIDList) > 0 {
 		groupList, err := i.userGroupRepo.FindByIDs(ctx, groupIDList)
 		if err == nil {
 			for _, group := range groupList {

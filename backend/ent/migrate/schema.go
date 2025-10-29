@@ -62,6 +62,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "is_private", Type: field.TypeBool, Default: false},
+		{Name: "channel_type", Type: field.TypeString, Nullable: true, Default: "public"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "channel_workspace", Type: field.TypeUUID},
@@ -75,13 +76,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "channels_workspaces_workspace",
-				Columns:    []*schema.Column{ChannelsColumns[6]},
+				Columns:    []*schema.Column{ChannelsColumns[7]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "channels_users_created_by",
-				Columns:    []*schema.Column{ChannelsColumns[7]},
+				Columns:    []*schema.Column{ChannelsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

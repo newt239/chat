@@ -68,6 +68,14 @@ func (r *InterfaceRegistry) NewAttachmentHandler() *handler.AttachmentHandler {
 	return handler.NewAttachmentHandler(r.usecaseRegistry.NewAttachmentUseCase())
 }
 
+func (r *InterfaceRegistry) NewSearchHandler() *handler.SearchHandler {
+	return handler.NewSearchHandler(r.usecaseRegistry.NewSearchUseCase())
+}
+
+func (r *InterfaceRegistry) NewDMHandler() *handler.DMHandler {
+	return handler.NewDMHandler(r.usecaseRegistry.NewDMInteractor())
+}
+
 // Router
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
@@ -86,6 +94,8 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		LinkHandler:          r.NewLinkHandler(),
 		BookmarkHandler:      r.NewBookmarkHandler(),
 		AttachmentHandler:    r.NewAttachmentHandler(),
+		SearchHandler:        r.NewSearchHandler(),
+		DMHandler:            r.NewDMHandler(),
 	}
 
 	return http.NewRouter(routerConfig)

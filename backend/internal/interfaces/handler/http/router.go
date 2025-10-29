@@ -31,6 +31,8 @@ type RouterConfig struct {
 	LinkHandler          *handler.LinkHandler
 	BookmarkHandler      *handler.BookmarkHandler
 	AttachmentHandler    *handler.AttachmentHandler
+	SearchHandler        *handler.SearchHandler
+	DMHandler            *handler.DMHandler
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -77,6 +79,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	api.POST("/workspaces/:id/members", cfg.WorkspaceHandler.AddMember, authMw)
 	api.PATCH("/workspaces/:id/members/:userId", cfg.WorkspaceHandler.UpdateMemberRole, authMw)
 	api.DELETE("/workspaces/:id/members/:userId", cfg.WorkspaceHandler.RemoveMember, authMw)
+	api.GET("/workspaces/:workspaceId/search", cfg.SearchHandler.SearchWorkspace, authMw)
 
 	// Channel routes
 	api.GET("/workspaces/:id/channels", cfg.ChannelHandler.ListChannels, authMw)
@@ -139,6 +142,11 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 		att.GET("/:attachmentId", cfg.AttachmentHandler.GetMetadata)
 		att.GET("/:attachmentId/download", cfg.AttachmentHandler.GetDownloadURL)
 	}
+
+	// DM routes
+	api.GET("/workspaces/:id/dms", cfg.DMHandler.ListDMs, authMw)
+	api.POST("/workspaces/:id/dms", cfg.DMHandler.CreateDM, authMw)
+	api.POST("/workspaces/:id/group-dms", cfg.DMHandler.CreateGroupDM, authMw)
 
 	return e
 }

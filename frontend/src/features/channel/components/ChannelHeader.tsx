@@ -1,5 +1,5 @@
 import { ActionIcon } from "@mantine/core";
-import { IconInfoCircle, IconMenu2 } from "@tabler/icons-react";
+import { IconInfoCircle, IconMenu2, IconUsers } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { ChannelName } from "./ChannelName";
@@ -39,6 +39,11 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
     showMobileLeftPanel();
   };
 
+  const handleMembersPanelToggle = () => {
+    setRightSidePanelView({ type: "channel-members", channelId });
+    showMobileRightPanel();
+  };
+
   const handleRightPanelToggle = () => {
     // デスクトップでは右パネルを表示、モバイルではモバイル右パネルを表示
     setRightSidePanelView({ type: "channel-info", channelId: channelId });
@@ -75,6 +80,15 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
       </div>
 
       <div className="flex items-center space-x-2">
+        <ActionIcon
+          variant="subtle"
+          size="lg"
+          onClick={handleMembersPanelToggle}
+          className="text-gray-700 hover:bg-gray-100"
+          title="メンバー"
+        >
+          <IconUsers size={20} />
+        </ActionIcon>
         {/* チャンネル情報ボタン */}
         <ActionIcon
           variant="subtle"

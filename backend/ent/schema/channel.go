@@ -27,6 +27,9 @@ func (Channel) Fields() []ent.Field {
 			Optional(),
 		field.Bool("is_private").
 			Default(false),
+		field.String("channel_type").
+			Default("public").
+			Optional(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

@@ -71,6 +71,11 @@ func IsPrivate(v bool) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldIsPrivate, v))
 }
 
+// ChannelType applies equality check predicate on the "channel_type" field. It's identical to ChannelTypeEQ.
+func ChannelType(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldChannelType, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldCreatedAt, v))
@@ -229,6 +234,81 @@ func IsPrivateEQ(v bool) predicate.Channel {
 // IsPrivateNEQ applies the NEQ predicate on the "is_private" field.
 func IsPrivateNEQ(v bool) predicate.Channel {
 	return predicate.Channel(sql.FieldNEQ(FieldIsPrivate, v))
+}
+
+// ChannelTypeEQ applies the EQ predicate on the "channel_type" field.
+func ChannelTypeEQ(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldChannelType, v))
+}
+
+// ChannelTypeNEQ applies the NEQ predicate on the "channel_type" field.
+func ChannelTypeNEQ(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldNEQ(FieldChannelType, v))
+}
+
+// ChannelTypeIn applies the In predicate on the "channel_type" field.
+func ChannelTypeIn(vs ...string) predicate.Channel {
+	return predicate.Channel(sql.FieldIn(FieldChannelType, vs...))
+}
+
+// ChannelTypeNotIn applies the NotIn predicate on the "channel_type" field.
+func ChannelTypeNotIn(vs ...string) predicate.Channel {
+	return predicate.Channel(sql.FieldNotIn(FieldChannelType, vs...))
+}
+
+// ChannelTypeGT applies the GT predicate on the "channel_type" field.
+func ChannelTypeGT(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldGT(FieldChannelType, v))
+}
+
+// ChannelTypeGTE applies the GTE predicate on the "channel_type" field.
+func ChannelTypeGTE(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldGTE(FieldChannelType, v))
+}
+
+// ChannelTypeLT applies the LT predicate on the "channel_type" field.
+func ChannelTypeLT(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldLT(FieldChannelType, v))
+}
+
+// ChannelTypeLTE applies the LTE predicate on the "channel_type" field.
+func ChannelTypeLTE(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldLTE(FieldChannelType, v))
+}
+
+// ChannelTypeContains applies the Contains predicate on the "channel_type" field.
+func ChannelTypeContains(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldContains(FieldChannelType, v))
+}
+
+// ChannelTypeHasPrefix applies the HasPrefix predicate on the "channel_type" field.
+func ChannelTypeHasPrefix(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldHasPrefix(FieldChannelType, v))
+}
+
+// ChannelTypeHasSuffix applies the HasSuffix predicate on the "channel_type" field.
+func ChannelTypeHasSuffix(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldHasSuffix(FieldChannelType, v))
+}
+
+// ChannelTypeIsNil applies the IsNil predicate on the "channel_type" field.
+func ChannelTypeIsNil() predicate.Channel {
+	return predicate.Channel(sql.FieldIsNull(FieldChannelType))
+}
+
+// ChannelTypeNotNil applies the NotNil predicate on the "channel_type" field.
+func ChannelTypeNotNil() predicate.Channel {
+	return predicate.Channel(sql.FieldNotNull(FieldChannelType))
+}
+
+// ChannelTypeEqualFold applies the EqualFold predicate on the "channel_type" field.
+func ChannelTypeEqualFold(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldEqualFold(FieldChannelType, v))
+}
+
+// ChannelTypeContainsFold applies the ContainsFold predicate on the "channel_type" field.
+func ChannelTypeContainsFold(v string) predicate.Channel {
+	return predicate.Channel(sql.FieldContainsFold(FieldChannelType, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

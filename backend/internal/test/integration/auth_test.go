@@ -46,9 +46,9 @@ func TestAuthIntegration(t *testing.T) {
 	t.Run("ユーザー登録", func(t *testing.T) {
 		// リクエストボディの準備
 		reqBody := map[string]string{
-			"email":       "newuser@example.com",
-			"password":    "password123",
-			"displayName": "New User",
+			"email":        "newuser@example.com",
+			"password":     "password123",
+			"display_name": "New User",
 		}
 		reqJSON, _ := json.Marshal(reqBody)
 

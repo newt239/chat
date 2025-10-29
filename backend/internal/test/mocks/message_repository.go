@@ -111,3 +111,13 @@ func (m *MockMessageRepository) AddGroupMention(ctx context.Context, mention *en
 	args := m.Called(ctx, mention)
 	return args.Error(0)
 }
+
+func (m *MockMessageRepository) SearchByChannelIDs(ctx context.Context, channelIDs []string, query string, limit int, offset int) ([]*entity.Message, int, error) {
+	args := m.Called(ctx, channelIDs, query, limit, offset)
+	var messages []*entity.Message
+	if result := args.Get(0); result != nil {
+		messages = result.([]*entity.Message)
+	}
+	total, _ := args.Get(1).(int)
+	return messages, total, args.Error(2)
+}

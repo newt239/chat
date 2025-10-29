@@ -26,6 +26,9 @@ const mockChannels = [
     isPrivate: false,
     createdBy: "user-1",
     createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-01-02T00:00:00Z",
+    unreadCount: 0,
+    hasMention: false,
   },
   {
     id: "channel-2",
@@ -35,6 +38,9 @@ const mockChannels = [
     isPrivate: true,
     createdBy: "user-1",
     createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-01-02T00:00:00Z",
+    unreadCount: 0,
+    hasMention: false,
   },
 ];
 

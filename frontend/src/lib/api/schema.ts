@@ -107,6 +107,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspaceId}/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search workspace content */
+        get: operations["searchWorkspace"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{id}/members": {
         parameters: {
             query?: never;
@@ -552,6 +569,41 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{id}/dms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List DMs in workspace */
+        get: operations["listDMs"];
+        put?: never;
+        /** Create a 1:1 DM */
+        post: operations["createDM"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{id}/group-dms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a group DM */
+        post: operations["createGroupDM"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export type components = {
@@ -611,6 +663,8 @@ export type components = {
             name: string;
             description?: string | null;
             isPrivate: boolean;
+            /** @enum {string} */
+            channelType?: "public" | "private" | "dm" | "group_dm";
             /** Format: uuid */
             createdBy: string;
             /** Format: date-time */
@@ -663,6 +717,32 @@ export type components = {
         MessagesResponse: {
             messages: components["schemas"]["Message"][];
             hasMore: boolean;
+        };
+        PaginatedMessages: {
+            items: components["schemas"]["Message"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
+        PaginatedChannels: {
+            items: components["schemas"]["Channel"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
+        PaginatedUsers: {
+            items: components["schemas"]["MemberInfo"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
+        WorkspaceSearchResponse: {
+            messages: components["schemas"]["PaginatedMessages"];
+            channels: components["schemas"]["PaginatedChannels"];
+            users: components["schemas"]["PaginatedUsers"];
         };
         UnreadCountResponse: {
             count: number;
@@ -861,6 +941,35 @@ export type components = {
         UpdateChannelMemberRoleRequest: {
             /** @enum {string} */
             role: "member" | "admin";
+        };
+        CreateDMRequest: {
+            /** Format: uuid */
+            userId: string;
+        };
+        CreateGroupDMRequest: {
+            userIds: string[];
+            name?: string;
+        };
+        DMMember: {
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            avatarUrl?: string | null;
+        };
+        DMOutput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            workspaceId: string;
+            name: string;
+            description?: string | null;
+            /** @enum {string} */
+            type: "dm" | "group_dm";
+            members: components["schemas"]["DMMember"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         SuccessResponse: {
             success: boolean;
@@ -1086,6 +1195,69 @@ export type operations = {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    searchWorkspace: {
+        parameters: {
+            query: {
+                q: string;
+                filter?: "all" | "messages" | "channels" | "users";
+                page?: number;
+                perPage?: number;
+            };
+            header?: never;
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Search results returned successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkspaceSearchResponse"];
+                };
+            };
+            /** @description Invalid query parameters */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Workspace not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2845,6 +3017,125 @@ export type operations = {
             };
             /** @description Cannot remove - last admin */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    listDMs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of DMs */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DMOutput"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    createDM: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDMRequest"];
+            };
+        };
+        responses: {
+            /** @description DM created or retrieved */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DMOutput"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    createGroupDM: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupDMRequest"];
+            };
+        };
+        responses: {
+            /** @description Group DM created or retrieved */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DMOutput"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

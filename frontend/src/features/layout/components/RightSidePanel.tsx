@@ -5,9 +5,9 @@ import { useAtomValue, useSetAtom } from "jotai";
 import type { PanelView } from "@/providers/store/ui";
 
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
+import { ChannelMemberPanel } from "@/features/channel/components/ChannelMemberPanel";
 import { NotificationPanel } from "@/features/notification/components/NotificationPanel";
 import { ChannelInfoPanel } from "@/features/sidebar/components/ChannelInfoPanel";
-import { MemberPanel } from "@/features/sidebar/components/MemberPanel";
 import { SearchResultsPanel } from "@/features/sidebar/components/SearchResultsPanel";
 import { ThreadPanel } from "@/features/sidebar/components/ThreadPanel";
 import { UserProfilePanel } from "@/features/sidebar/components/UserProfilePanel";
@@ -45,8 +45,8 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
 
   const renderPanelContent = (view: PanelView) => {
     switch (view.type) {
-      case "members":
-        return <MemberPanel workspaceId={workspaceId} />;
+      case "channel-members":
+        return <ChannelMemberPanel channelId={view.channelId} />;
       case "channel-info":
         return <ChannelInfoPanel workspaceId={workspaceId} channelId={view.channelId} />;
       case "thread":
@@ -68,7 +68,7 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
 
   const getPanelTitle = (view: PanelView) => {
     switch (view.type) {
-      case "members":
+      case "channel-members":
         return "メンバー";
       case "channel-info":
         return "チャンネル情報";

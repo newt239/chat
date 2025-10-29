@@ -4,7 +4,7 @@ import { atomWithStorage } from "jotai/utils";
 // パネルの表示状態を管理する型定義
 export type PanelView =
   | { type: "hidden" }
-  | { type: "members" }
+  | { type: "channel-members"; channelId: string }
   | { type: "channel-info"; channelId?: string | null }
   | { type: "thread"; threadId: string }
   | { type: "user-profile"; userId: string }

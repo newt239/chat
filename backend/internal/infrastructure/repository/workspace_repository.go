@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/user"
@@ -307,4 +308,57 @@ func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string
 	}
 
 	return utils.WorkspaceMemberToEntity(wm), nil
+}
+
+func (r *workspaceRepository) SearchMembers(ctx context.Context, workspaceID string, query string, limit int, offset int) ([]*entity.WorkspaceMember, int, error) {
+	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
+	if err != nil {
+		return nil, 0, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	trimmedQuery := strings.TrimSpace(query)
+
+	memberQuery := client.WorkspaceMember.Query().
+		Where(workspacemember.HasWorkspaceWith(workspace.ID(wid))).
+		WithWorkspace().
+		WithUser()
+
+	if trimmedQuery != "" {
+		memberQuery = memberQuery.Where(
+			workspacemember.HasUserWith(
+				user.Or(
+					user.DisplayNameContainsFold(trimmedQuery),
+					user.EmailContainsFold(trimmedQuery),
+				),
+			),
+		)
+	}
+
+	total, err := memberQuery.Clone().Count(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if offset > 0 {
+		memberQuery = memberQuery.Offset(offset)
+	}
+
+	if limit > 0 {
+		memberQuery = memberQuery.Limit(limit)
+	}
+
+	members, err := memberQuery.
+		Order(ent.Asc(workspacemember.FieldJoinedAt)).
+		All(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result := make([]*entity.WorkspaceMember, 0, len(members))
+	for _, wm := range members {
+		result = append(result, utils.WorkspaceMemberToEntity(wm))
+	}
+
+	return result, total, nil
 }

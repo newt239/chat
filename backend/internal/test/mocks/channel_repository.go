@@ -54,6 +54,40 @@ func (m *MockChannelRepository) Delete(ctx context.Context, id string) error {
 	return args.Error(0)
 }
 
+func (m *MockChannelRepository) SearchAccessibleChannels(ctx context.Context, workspaceID string, userID string, query string, limit int, offset int) ([]*entity.Channel, int, error) {
+	args := m.Called(ctx, workspaceID, userID, query, limit, offset)
+	var channels []*entity.Channel
+	if result := args.Get(0); result != nil {
+		channels = result.([]*entity.Channel)
+	}
+	total, _ := args.Get(1).(int)
+	return channels, total, args.Error(2)
+}
+
+func (m *MockChannelRepository) FindOrCreateDM(ctx context.Context, workspaceID string, userID1 string, userID2 string) (*entity.Channel, error) {
+	args := m.Called(ctx, workspaceID, userID1, userID2)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.Channel), args.Error(1)
+}
+
+func (m *MockChannelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error) {
+	args := m.Called(ctx, workspaceID, creatorID, memberIDs, name)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.Channel), args.Error(1)
+}
+
+func (m *MockChannelRepository) FindUserDMs(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error) {
+	args := m.Called(ctx, workspaceID, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.Channel), args.Error(1)
+}
+
 type MockChannelMemberRepository struct {
 	mock.Mock
 }

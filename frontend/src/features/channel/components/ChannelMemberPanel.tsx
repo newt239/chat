@@ -1,15 +1,15 @@
 import { Text, Stack, Loader, Badge, Avatar } from "@mantine/core";
 import { useSetAtom } from "jotai";
 
-import { useMembers } from "@/features/user/hooks/useMembers";
+import { useChannelMembers } from "@/features/channel/hooks/useChannelMembers";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
-type MemberPanelProps = {
-  workspaceId: string | null;
+type ChannelMemberPanelProps = {
+  channelId: string;
 };
 
-export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
-  const { data: members, isLoading, error } = useMembers(workspaceId);
+export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
+  const { data: members, isLoading, error } = useChannelMembers(channelId);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
   const handleUserClick = (userId: string) => {
@@ -46,8 +46,6 @@ export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case "owner":
-        return "blue";
       case "admin":
         return "grape";
       case "member":
@@ -59,8 +57,6 @@ export const MemberPanel = ({ workspaceId }: MemberPanelProps) => {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case "owner":
-        return "オーナー";
       case "admin":
         return "管理者";
       case "member":

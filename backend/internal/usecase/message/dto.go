@@ -174,6 +174,25 @@ func (a *MessageOutputAssembler) AssembleMessageOutput(
 ) MessageOutput {
 	userInfo := a.buildUserInfo(user)
 
+	isDeleted := message.DeletedAt != nil
+
+	var deletedByInfo *UserInfo
+	if message.DeletedBy != nil {
+		if deletedByUser, exists := userMap[*message.DeletedBy]; exists && deletedByUser != nil {
+			deletedByInfo = &UserInfo{
+				ID:          deletedByUser.ID,
+				DisplayName: deletedByUser.DisplayName,
+				AvatarURL:   deletedByUser.AvatarURL,
+			}
+		} else {
+			deletedByInfo = &UserInfo{
+				ID:          *message.DeletedBy,
+				DisplayName: "Unknown User",
+				AvatarURL:   nil,
+			}
+		}
+	}
+
 	return MessageOutput{
 		ID:          message.ID,
 		ChannelID:   message.ChannelID,
@@ -189,6 +208,8 @@ func (a *MessageOutputAssembler) AssembleMessageOutput(
 		CreatedAt:   message.CreatedAt,
 		EditedAt:    message.EditedAt,
 		DeletedAt:   message.DeletedAt,
+		IsDeleted:   isDeleted,
+		DeletedBy:   deletedByInfo,
 	}
 }
 

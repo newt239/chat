@@ -1,37 +1,21 @@
 import { useCallback } from "react";
 
-import {
-  ActionIcon,
-  Badge,
-  Button,
-  Card,
-  Group,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
-import { IconBell, IconCheck, IconX } from "@tabler/icons-react";
+import { ActionIcon, Badge, Card, ScrollArea, Stack, Text } from "@mantine/core";
+import { IconBell, IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import {
   notificationsAtomReadOnly,
-  unreadNotificationCountAtom,
   markNotificationAsReadAtom,
-  markAllNotificationsAsReadAtom,
   removeNotificationAtom,
-  cleanupOldNotificationsAtom,
   type NotificationItem,
 } from "@/providers/store/notification";
 
 export const NotificationPanel = () => {
   const notifications = useAtomValue(notificationsAtomReadOnly);
-  const unreadCount = useAtomValue(unreadNotificationCountAtom);
   const markAsRead = useSetAtom(markNotificationAsReadAtom);
-  const markAllAsRead = useSetAtom(markAllNotificationsAsReadAtom);
   const removeNotification = useSetAtom(removeNotificationAtom);
-  const cleanupOld = useSetAtom(cleanupOldNotificationsAtom);
   const navigate = useNavigate();
 
   const handleNotificationClick = useCallback(
@@ -54,10 +38,6 @@ export const NotificationPanel = () => {
     [markAsRead, navigate]
   );
 
-  const handleMarkAllAsRead = useCallback(() => {
-    markAllAsRead();
-  }, [markAllAsRead]);
-
   const handleRemoveNotification = useCallback(
     (notificationId: string, event: React.MouseEvent) => {
       event.stopPropagation();
@@ -65,10 +45,6 @@ export const NotificationPanel = () => {
     },
     [removeNotification]
   );
-
-  const handleCleanup = useCallback(() => {
-    cleanupOld();
-  }, [cleanupOld]);
 
   const formatTimestamp = (timestamp: Date) => {
     const now = new Date();
@@ -119,33 +95,6 @@ export const NotificationPanel = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* ヘッダー */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <Title order={4}>通知</Title>
-          {unreadCount > 0 && (
-            <Badge color="red" size="sm">
-              {unreadCount}
-            </Badge>
-          )}
-        </div>
-        <Group gap="xs">
-          {unreadCount > 0 && (
-            <Button
-              size="xs"
-              variant="light"
-              leftSection={<IconCheck size={14} />}
-              onClick={handleMarkAllAsRead}
-            >
-              全て既読
-            </Button>
-          )}
-          <Button size="xs" variant="light" color="gray" onClick={handleCleanup}>
-            古い通知を削除
-          </Button>
-        </Group>
-      </div>
-
       {/* 通知一覧 */}
       <ScrollArea className="flex-1">
         {notifications.length === 0 ? (

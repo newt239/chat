@@ -21,6 +21,8 @@ const (
 	FieldDescription = "description"
 	// FieldIsPrivate holds the string denoting the is_private field in the database.
 	FieldIsPrivate = "is_private"
+	// FieldChannelType holds the string denoting the channel_type field in the database.
+	FieldChannelType = "channel_type"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -89,6 +91,7 @@ var Columns = []string{
 	FieldName,
 	FieldDescription,
 	FieldIsPrivate,
+	FieldChannelType,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -120,6 +123,8 @@ var (
 	NameValidator func(string) error
 	// DefaultIsPrivate holds the default value on creation for the "is_private" field.
 	DefaultIsPrivate bool
+	// DefaultChannelType holds the default value on creation for the "channel_type" field.
+	DefaultChannelType string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -151,6 +156,11 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // ByIsPrivate orders the results by the is_private field.
 func ByIsPrivate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsPrivate, opts...).ToFunc()
+}
+
+// ByChannelType orders the results by the channel_type field.
+func ByChannelType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelType, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
