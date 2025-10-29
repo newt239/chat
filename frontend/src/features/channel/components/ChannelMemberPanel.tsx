@@ -1,4 +1,4 @@
-import { Text, Stack, Loader, Badge, Avatar } from "@mantine/core";
+import { Text, Stack, Loader, Avatar, Box } from "@mantine/core";
 import { useSetAtom } from "jotai";
 
 import { useChannelMembers } from "@/features/channel/hooks/useChannelMembers";
@@ -44,38 +44,13 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
     );
   }
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "grape";
-      case "member":
-        return "gray";
-      default:
-        return "gray";
-    }
-  };
-
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "管理者";
-      case "member":
-        return "メンバー";
-      default:
-        return role;
-    }
-  };
-
   return (
-    <div className="border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto">
-      <Text size="sm" fw={600} className="mb-4">
-        メンバー ({members.length})
-      </Text>
-      <Stack gap="md">
+    <div className="h-full overflow-y-auto">
+      <Stack gap={0}>
         {members.map((member) => (
-          <div
+          <Box
             key={member.userId}
-            className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors"
+            className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 p-2 transition-colors"
             onClick={() => handleUserClick(member.userId)}
           >
             <Avatar
@@ -91,15 +66,12 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
                 <Text size="sm" fw={500} className="truncate">
                   {member.displayName}
                 </Text>
-                <Badge size="xs" color={getRoleBadgeColor(member.role)}>
-                  {getRoleLabel(member.role)}
-                </Badge>
               </div>
               <Text size="xs" c="dimmed" className="truncate">
                 {member.email}
               </Text>
             </div>
-          </div>
+          </Box>
         ))}
       </Stack>
     </div>

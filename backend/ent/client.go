@@ -28,9 +28,11 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/threadmetadata"
+	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -64,12 +66,16 @@ type Client struct {
 	Session *SessionClient
 	// ThreadMetadata is the client for interacting with the ThreadMetadata builders.
 	ThreadMetadata *ThreadMetadataClient
+	// ThreadReadState is the client for interacting with the ThreadReadState builders.
+	ThreadReadState *ThreadReadStateClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserGroup is the client for interacting with the UserGroup builders.
 	UserGroup *UserGroupClient
 	// UserGroupMember is the client for interacting with the UserGroupMember builders.
 	UserGroupMember *UserGroupMemberClient
+	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
+	UserThreadFollow *UserThreadFollowClient
 	// Workspace is the client for interacting with the Workspace builders.
 	Workspace *WorkspaceClient
 	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
@@ -97,9 +103,11 @@ func (c *Client) init() {
 	c.MessageUserMention = NewMessageUserMentionClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.ThreadMetadata = NewThreadMetadataClient(c.config)
+	c.ThreadReadState = NewThreadReadStateClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserGroup = NewUserGroupClient(c.config)
 	c.UserGroupMember = NewUserGroupMemberClient(c.config)
+	c.UserThreadFollow = NewUserThreadFollowClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
 	c.WorkspaceMember = NewWorkspaceMemberClient(c.config)
 }
@@ -206,9 +214,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		Session:             NewSessionClient(cfg),
 		ThreadMetadata:      NewThreadMetadataClient(cfg),
+		ThreadReadState:     NewThreadReadStateClient(cfg),
 		User:                NewUserClient(cfg),
 		UserGroup:           NewUserGroupClient(cfg),
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
+		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
 	}, nil
@@ -242,9 +252,11 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		Session:             NewSessionClient(cfg),
 		ThreadMetadata:      NewThreadMetadataClient(cfg),
+		ThreadReadState:     NewThreadReadStateClient(cfg),
 		User:                NewUserClient(cfg),
 		UserGroup:           NewUserGroupClient(cfg),
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
+		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
 	}, nil
@@ -278,8 +290,9 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
 		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessageReaction,
-		c.MessageUserMention, c.Session, c.ThreadMetadata, c.User, c.UserGroup,
-		c.UserGroupMember, c.Workspace, c.WorkspaceMember,
+		c.MessageUserMention, c.Session, c.ThreadMetadata, c.ThreadReadState, c.User,
+		c.UserGroup, c.UserGroupMember, c.UserThreadFollow, c.Workspace,
+		c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -291,8 +304,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
 		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessageReaction,
-		c.MessageUserMention, c.Session, c.ThreadMetadata, c.User, c.UserGroup,
-		c.UserGroupMember, c.Workspace, c.WorkspaceMember,
+		c.MessageUserMention, c.Session, c.ThreadMetadata, c.ThreadReadState, c.User,
+		c.UserGroup, c.UserGroupMember, c.UserThreadFollow, c.Workspace,
+		c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -325,12 +339,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Session.mutate(ctx, m)
 	case *ThreadMetadataMutation:
 		return c.ThreadMetadata.mutate(ctx, m)
+	case *ThreadReadStateMutation:
+		return c.ThreadReadState.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	case *UserGroupMutation:
 		return c.UserGroup.mutate(ctx, m)
 	case *UserGroupMemberMutation:
 		return c.UserGroupMember.mutate(ctx, m)
+	case *UserThreadFollowMutation:
+		return c.UserThreadFollow.mutate(ctx, m)
 	case *WorkspaceMutation:
 		return c.Workspace.mutate(ctx, m)
 	case *WorkspaceMemberMutation:
@@ -1357,6 +1375,38 @@ func (c *MessageClient) QueryThreadMetadata(_m *Message) *ThreadMetadataQuery {
 			sqlgraph.From(message.Table, message.FieldID, id),
 			sqlgraph.To(threadmetadata.Table, threadmetadata.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, message.ThreadMetadataTable, message.ThreadMetadataColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserThreadFollows queries the user_thread_follows edge of a Message.
+func (c *MessageClient) QueryUserThreadFollows(_m *Message) *UserThreadFollowQuery {
+	query := (&UserThreadFollowClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, id),
+			sqlgraph.To(userthreadfollow.Table, userthreadfollow.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, message.UserThreadFollowsTable, message.UserThreadFollowsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryThreadReadStates queries the thread_read_states edge of a Message.
+func (c *MessageClient) QueryThreadReadStates(_m *Message) *ThreadReadStateQuery {
+	query := (&ThreadReadStateClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, id),
+			sqlgraph.To(threadreadstate.Table, threadreadstate.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, message.ThreadReadStatesTable, message.ThreadReadStatesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2512,6 +2562,171 @@ func (c *ThreadMetadataClient) mutate(ctx context.Context, m *ThreadMetadataMuta
 	}
 }
 
+// ThreadReadStateClient is a client for the ThreadReadState schema.
+type ThreadReadStateClient struct {
+	config
+}
+
+// NewThreadReadStateClient returns a client for the ThreadReadState from the given config.
+func NewThreadReadStateClient(c config) *ThreadReadStateClient {
+	return &ThreadReadStateClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `threadreadstate.Hooks(f(g(h())))`.
+func (c *ThreadReadStateClient) Use(hooks ...Hook) {
+	c.hooks.ThreadReadState = append(c.hooks.ThreadReadState, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `threadreadstate.Intercept(f(g(h())))`.
+func (c *ThreadReadStateClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ThreadReadState = append(c.inters.ThreadReadState, interceptors...)
+}
+
+// Create returns a builder for creating a ThreadReadState entity.
+func (c *ThreadReadStateClient) Create() *ThreadReadStateCreate {
+	mutation := newThreadReadStateMutation(c.config, OpCreate)
+	return &ThreadReadStateCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ThreadReadState entities.
+func (c *ThreadReadStateClient) CreateBulk(builders ...*ThreadReadStateCreate) *ThreadReadStateCreateBulk {
+	return &ThreadReadStateCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ThreadReadStateClient) MapCreateBulk(slice any, setFunc func(*ThreadReadStateCreate, int)) *ThreadReadStateCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ThreadReadStateCreateBulk{err: fmt.Errorf("calling to ThreadReadStateClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ThreadReadStateCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ThreadReadStateCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ThreadReadState.
+func (c *ThreadReadStateClient) Update() *ThreadReadStateUpdate {
+	mutation := newThreadReadStateMutation(c.config, OpUpdate)
+	return &ThreadReadStateUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ThreadReadStateClient) UpdateOne(_m *ThreadReadState) *ThreadReadStateUpdateOne {
+	mutation := newThreadReadStateMutation(c.config, OpUpdateOne, withThreadReadState(_m))
+	return &ThreadReadStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ThreadReadStateClient) UpdateOneID(id uuid.UUID) *ThreadReadStateUpdateOne {
+	mutation := newThreadReadStateMutation(c.config, OpUpdateOne, withThreadReadStateID(id))
+	return &ThreadReadStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ThreadReadState.
+func (c *ThreadReadStateClient) Delete() *ThreadReadStateDelete {
+	mutation := newThreadReadStateMutation(c.config, OpDelete)
+	return &ThreadReadStateDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ThreadReadStateClient) DeleteOne(_m *ThreadReadState) *ThreadReadStateDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ThreadReadStateClient) DeleteOneID(id uuid.UUID) *ThreadReadStateDeleteOne {
+	builder := c.Delete().Where(threadreadstate.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ThreadReadStateDeleteOne{builder}
+}
+
+// Query returns a query builder for ThreadReadState.
+func (c *ThreadReadStateClient) Query() *ThreadReadStateQuery {
+	return &ThreadReadStateQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeThreadReadState},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ThreadReadState entity by its id.
+func (c *ThreadReadStateClient) Get(ctx context.Context, id uuid.UUID) (*ThreadReadState, error) {
+	return c.Query().Where(threadreadstate.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ThreadReadStateClient) GetX(ctx context.Context, id uuid.UUID) *ThreadReadState {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a ThreadReadState.
+func (c *ThreadReadStateClient) QueryUser(_m *ThreadReadState) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(threadreadstate.Table, threadreadstate.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, threadreadstate.UserTable, threadreadstate.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryThread queries the thread edge of a ThreadReadState.
+func (c *ThreadReadStateClient) QueryThread(_m *ThreadReadState) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(threadreadstate.Table, threadreadstate.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, threadreadstate.ThreadTable, threadreadstate.ThreadColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ThreadReadStateClient) Hooks() []Hook {
+	return c.hooks.ThreadReadState
+}
+
+// Interceptors returns the client interceptors.
+func (c *ThreadReadStateClient) Interceptors() []Interceptor {
+	return c.inters.ThreadReadState
+}
+
+func (c *ThreadReadStateClient) mutate(ctx context.Context, m *ThreadReadStateMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ThreadReadStateCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ThreadReadStateUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ThreadReadStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ThreadReadStateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ThreadReadState mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -3231,6 +3446,171 @@ func (c *UserGroupMemberClient) mutate(ctx context.Context, m *UserGroupMemberMu
 	}
 }
 
+// UserThreadFollowClient is a client for the UserThreadFollow schema.
+type UserThreadFollowClient struct {
+	config
+}
+
+// NewUserThreadFollowClient returns a client for the UserThreadFollow from the given config.
+func NewUserThreadFollowClient(c config) *UserThreadFollowClient {
+	return &UserThreadFollowClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `userthreadfollow.Hooks(f(g(h())))`.
+func (c *UserThreadFollowClient) Use(hooks ...Hook) {
+	c.hooks.UserThreadFollow = append(c.hooks.UserThreadFollow, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `userthreadfollow.Intercept(f(g(h())))`.
+func (c *UserThreadFollowClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserThreadFollow = append(c.inters.UserThreadFollow, interceptors...)
+}
+
+// Create returns a builder for creating a UserThreadFollow entity.
+func (c *UserThreadFollowClient) Create() *UserThreadFollowCreate {
+	mutation := newUserThreadFollowMutation(c.config, OpCreate)
+	return &UserThreadFollowCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserThreadFollow entities.
+func (c *UserThreadFollowClient) CreateBulk(builders ...*UserThreadFollowCreate) *UserThreadFollowCreateBulk {
+	return &UserThreadFollowCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserThreadFollowClient) MapCreateBulk(slice any, setFunc func(*UserThreadFollowCreate, int)) *UserThreadFollowCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserThreadFollowCreateBulk{err: fmt.Errorf("calling to UserThreadFollowClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserThreadFollowCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserThreadFollowCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserThreadFollow.
+func (c *UserThreadFollowClient) Update() *UserThreadFollowUpdate {
+	mutation := newUserThreadFollowMutation(c.config, OpUpdate)
+	return &UserThreadFollowUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserThreadFollowClient) UpdateOne(_m *UserThreadFollow) *UserThreadFollowUpdateOne {
+	mutation := newUserThreadFollowMutation(c.config, OpUpdateOne, withUserThreadFollow(_m))
+	return &UserThreadFollowUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserThreadFollowClient) UpdateOneID(id uuid.UUID) *UserThreadFollowUpdateOne {
+	mutation := newUserThreadFollowMutation(c.config, OpUpdateOne, withUserThreadFollowID(id))
+	return &UserThreadFollowUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserThreadFollow.
+func (c *UserThreadFollowClient) Delete() *UserThreadFollowDelete {
+	mutation := newUserThreadFollowMutation(c.config, OpDelete)
+	return &UserThreadFollowDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserThreadFollowClient) DeleteOne(_m *UserThreadFollow) *UserThreadFollowDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserThreadFollowClient) DeleteOneID(id uuid.UUID) *UserThreadFollowDeleteOne {
+	builder := c.Delete().Where(userthreadfollow.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserThreadFollowDeleteOne{builder}
+}
+
+// Query returns a query builder for UserThreadFollow.
+func (c *UserThreadFollowClient) Query() *UserThreadFollowQuery {
+	return &UserThreadFollowQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserThreadFollow},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserThreadFollow entity by its id.
+func (c *UserThreadFollowClient) Get(ctx context.Context, id uuid.UUID) (*UserThreadFollow, error) {
+	return c.Query().Where(userthreadfollow.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserThreadFollowClient) GetX(ctx context.Context, id uuid.UUID) *UserThreadFollow {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a UserThreadFollow.
+func (c *UserThreadFollowClient) QueryUser(_m *UserThreadFollow) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userthreadfollow.Table, userthreadfollow.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, userthreadfollow.UserTable, userthreadfollow.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryThread queries the thread edge of a UserThreadFollow.
+func (c *UserThreadFollowClient) QueryThread(_m *UserThreadFollow) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userthreadfollow.Table, userthreadfollow.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, userthreadfollow.ThreadTable, userthreadfollow.ThreadColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserThreadFollowClient) Hooks() []Hook {
+	return c.hooks.UserThreadFollow
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserThreadFollowClient) Interceptors() []Interceptor {
+	return c.inters.UserThreadFollow
+}
+
+func (c *UserThreadFollowClient) mutate(ctx context.Context, m *UserThreadFollowMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserThreadFollowCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserThreadFollowUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserThreadFollowUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserThreadFollowDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserThreadFollow mutation op: %q", m.Op())
+	}
+}
+
 // WorkspaceClient is a client for the Workspace schema.
 type WorkspaceClient struct {
 	config
@@ -3598,13 +3978,13 @@ type (
 	hooks struct {
 		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
 		MessageGroupMention, MessageLink, MessageReaction, MessageUserMention, Session,
-		ThreadMetadata, User, UserGroup, UserGroupMember, Workspace,
-		WorkspaceMember []ent.Hook
+		ThreadMetadata, ThreadReadState, User, UserGroup, UserGroupMember,
+		UserThreadFollow, Workspace, WorkspaceMember []ent.Hook
 	}
 	inters struct {
 		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
 		MessageGroupMention, MessageLink, MessageReaction, MessageUserMention, Session,
-		ThreadMetadata, User, UserGroup, UserGroupMember, Workspace,
-		WorkspaceMember []ent.Interceptor
+		ThreadMetadata, ThreadReadState, User, UserGroup, UserGroupMember,
+		UserThreadFollow, Workspace, WorkspaceMember []ent.Interceptor
 	}
 )

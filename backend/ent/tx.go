@@ -36,12 +36,16 @@ type Tx struct {
 	Session *SessionClient
 	// ThreadMetadata is the client for interacting with the ThreadMetadata builders.
 	ThreadMetadata *ThreadMetadataClient
+	// ThreadReadState is the client for interacting with the ThreadReadState builders.
+	ThreadReadState *ThreadReadStateClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserGroup is the client for interacting with the UserGroup builders.
 	UserGroup *UserGroupClient
 	// UserGroupMember is the client for interacting with the UserGroupMember builders.
 	UserGroupMember *UserGroupMemberClient
+	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
+	UserThreadFollow *UserThreadFollowClient
 	// Workspace is the client for interacting with the Workspace builders.
 	Workspace *WorkspaceClient
 	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
@@ -189,9 +193,11 @@ func (tx *Tx) init() {
 	tx.MessageUserMention = NewMessageUserMentionClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.ThreadMetadata = NewThreadMetadataClient(tx.config)
+	tx.ThreadReadState = NewThreadReadStateClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserGroup = NewUserGroupClient(tx.config)
 	tx.UserGroupMember = NewUserGroupMemberClient(tx.config)
+	tx.UserThreadFollow = NewUserThreadFollowClient(tx.config)
 	tx.Workspace = NewWorkspaceClient(tx.config)
 	tx.WorkspaceMember = NewWorkspaceMemberClient(tx.config)
 }

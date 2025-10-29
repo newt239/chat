@@ -76,6 +76,13 @@ func (r *InterfaceRegistry) NewDMHandler() *handler.DMHandler {
 	return handler.NewDMHandler(r.usecaseRegistry.NewDMInteractor())
 }
 
+func (r *InterfaceRegistry) NewThreadHandler() *handler.ThreadHandler {
+	return handler.NewThreadHandler(
+		r.usecaseRegistry.NewThreadLister(),
+		r.usecaseRegistry.NewThreadReader(),
+	)
+}
+
 // Router
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
@@ -96,6 +103,7 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		AttachmentHandler:    r.NewAttachmentHandler(),
 		SearchHandler:        r.NewSearchHandler(),
 		DMHandler:            r.NewDMHandler(),
+		ThreadHandler:        r.NewThreadHandler(),
 	}
 
 	return http.NewRouter(routerConfig)

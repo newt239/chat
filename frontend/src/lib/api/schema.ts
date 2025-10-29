@@ -604,6 +604,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspaceId}/threads/participating": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get participating threads */
+        get: operations["getParticipatingThreads"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/threads/{threadId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark thread as read */
+        post: operations["markThreadRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export type components = {
@@ -973,6 +1007,27 @@ export type components = {
         };
         SuccessResponse: {
             success: boolean;
+        };
+        ParticipatingThread: {
+            /** Format: uuid */
+            thread_id: string;
+            /** Format: uuid */
+            channel_id?: string | null;
+            first_message: components["schemas"]["Message"];
+            reply_count: number;
+            /** Format: date-time */
+            last_activity_at: string;
+            unread_count: number;
+        };
+        ThreadCursor: {
+            /** Format: date-time */
+            last_activity_at: string;
+            /** Format: uuid */
+            thread_id: string;
+        };
+        ParticipatingThreadsOutput: {
+            items: components["schemas"]["ParticipatingThread"][];
+            next_cursor?: components["schemas"]["ThreadCursor"];
         };
     };
     responses: never;
@@ -3124,6 +3179,88 @@ export type operations = {
                 content: {
                     "application/json": components["schemas"]["DMOutput"];
                 };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getParticipatingThreads: {
+        parameters: {
+            query?: {
+                cursorLastActivityAt?: string;
+                cursorThreadId?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                workspaceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of participating threads */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParticipatingThreadsOutput"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    markThreadRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                threadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Thread marked as read */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Bad request */
             400: {

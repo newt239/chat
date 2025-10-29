@@ -23,28 +23,32 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/threadmetadata"
+	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
+	"github.com/newt239/chat/ent/userthreadfollow"
 )
 
 // MessageQuery is the builder for querying Message entities.
 type MessageQuery struct {
 	config
-	ctx                *QueryContext
-	order              []message.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.Message
-	withChannel        *ChannelQuery
-	withUser           *UserQuery
-	withParent         *MessageQuery
-	withReplies        *MessageQuery
-	withReactions      *MessageReactionQuery
-	withBookmarks      *MessageBookmarkQuery
-	withUserMentions   *MessageUserMentionQuery
-	withGroupMentions  *MessageGroupMentionQuery
-	withLinks          *MessageLinkQuery
-	withAttachments    *AttachmentQuery
-	withThreadMetadata *ThreadMetadataQuery
-	withFKs            bool
+	ctx                   *QueryContext
+	order                 []message.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.Message
+	withChannel           *ChannelQuery
+	withUser              *UserQuery
+	withParent            *MessageQuery
+	withReplies           *MessageQuery
+	withReactions         *MessageReactionQuery
+	withBookmarks         *MessageBookmarkQuery
+	withUserMentions      *MessageUserMentionQuery
+	withGroupMentions     *MessageGroupMentionQuery
+	withLinks             *MessageLinkQuery
+	withAttachments       *AttachmentQuery
+	withThreadMetadata    *ThreadMetadataQuery
+	withUserThreadFollows *UserThreadFollowQuery
+	withThreadReadStates  *ThreadReadStateQuery
+	withFKs               bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -323,6 +327,50 @@ func (_q *MessageQuery) QueryThreadMetadata() *ThreadMetadataQuery {
 	return query
 }
 
+// QueryUserThreadFollows chains the current query on the "user_thread_follows" edge.
+func (_q *MessageQuery) QueryUserThreadFollows() *UserThreadFollowQuery {
+	query := (&UserThreadFollowClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, selector),
+			sqlgraph.To(userthreadfollow.Table, userthreadfollow.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, message.UserThreadFollowsTable, message.UserThreadFollowsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryThreadReadStates chains the current query on the "thread_read_states" edge.
+func (_q *MessageQuery) QueryThreadReadStates() *ThreadReadStateQuery {
+	query := (&ThreadReadStateClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, selector),
+			sqlgraph.To(threadreadstate.Table, threadreadstate.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, message.ThreadReadStatesTable, message.ThreadReadStatesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Message entity from the query.
 // Returns a *NotFoundError when no Message was found.
 func (_q *MessageQuery) First(ctx context.Context) (*Message, error) {
@@ -510,22 +558,24 @@ func (_q *MessageQuery) Clone() *MessageQuery {
 		return nil
 	}
 	return &MessageQuery{
-		config:             _q.config,
-		ctx:                _q.ctx.Clone(),
-		order:              append([]message.OrderOption{}, _q.order...),
-		inters:             append([]Interceptor{}, _q.inters...),
-		predicates:         append([]predicate.Message{}, _q.predicates...),
-		withChannel:        _q.withChannel.Clone(),
-		withUser:           _q.withUser.Clone(),
-		withParent:         _q.withParent.Clone(),
-		withReplies:        _q.withReplies.Clone(),
-		withReactions:      _q.withReactions.Clone(),
-		withBookmarks:      _q.withBookmarks.Clone(),
-		withUserMentions:   _q.withUserMentions.Clone(),
-		withGroupMentions:  _q.withGroupMentions.Clone(),
-		withLinks:          _q.withLinks.Clone(),
-		withAttachments:    _q.withAttachments.Clone(),
-		withThreadMetadata: _q.withThreadMetadata.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]message.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.Message{}, _q.predicates...),
+		withChannel:           _q.withChannel.Clone(),
+		withUser:              _q.withUser.Clone(),
+		withParent:            _q.withParent.Clone(),
+		withReplies:           _q.withReplies.Clone(),
+		withReactions:         _q.withReactions.Clone(),
+		withBookmarks:         _q.withBookmarks.Clone(),
+		withUserMentions:      _q.withUserMentions.Clone(),
+		withGroupMentions:     _q.withGroupMentions.Clone(),
+		withLinks:             _q.withLinks.Clone(),
+		withAttachments:       _q.withAttachments.Clone(),
+		withThreadMetadata:    _q.withThreadMetadata.Clone(),
+		withUserThreadFollows: _q.withUserThreadFollows.Clone(),
+		withThreadReadStates:  _q.withThreadReadStates.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -653,6 +703,28 @@ func (_q *MessageQuery) WithThreadMetadata(opts ...func(*ThreadMetadataQuery)) *
 	return _q
 }
 
+// WithUserThreadFollows tells the query-builder to eager-load the nodes that are connected to
+// the "user_thread_follows" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *MessageQuery) WithUserThreadFollows(opts ...func(*UserThreadFollowQuery)) *MessageQuery {
+	query := (&UserThreadFollowClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUserThreadFollows = query
+	return _q
+}
+
+// WithThreadReadStates tells the query-builder to eager-load the nodes that are connected to
+// the "thread_read_states" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *MessageQuery) WithThreadReadStates(opts ...func(*ThreadReadStateQuery)) *MessageQuery {
+	query := (&ThreadReadStateClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withThreadReadStates = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -732,7 +804,7 @@ func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 		nodes       = []*Message{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [11]bool{
+		loadedTypes = [13]bool{
 			_q.withChannel != nil,
 			_q.withUser != nil,
 			_q.withParent != nil,
@@ -744,6 +816,8 @@ func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 			_q.withLinks != nil,
 			_q.withAttachments != nil,
 			_q.withThreadMetadata != nil,
+			_q.withUserThreadFollows != nil,
+			_q.withThreadReadStates != nil,
 		}
 	)
 	if _q.withChannel != nil || _q.withUser != nil || _q.withParent != nil {
@@ -841,6 +915,22 @@ func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 		if err := _q.loadThreadMetadata(ctx, query, nodes,
 			func(n *Message) { n.Edges.ThreadMetadata = []*ThreadMetadata{} },
 			func(n *Message, e *ThreadMetadata) { n.Edges.ThreadMetadata = append(n.Edges.ThreadMetadata, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUserThreadFollows; query != nil {
+		if err := _q.loadUserThreadFollows(ctx, query, nodes,
+			func(n *Message) { n.Edges.UserThreadFollows = []*UserThreadFollow{} },
+			func(n *Message, e *UserThreadFollow) {
+				n.Edges.UserThreadFollows = append(n.Edges.UserThreadFollows, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withThreadReadStates; query != nil {
+		if err := _q.loadThreadReadStates(ctx, query, nodes,
+			func(n *Message) { n.Edges.ThreadReadStates = []*ThreadReadState{} },
+			func(n *Message, e *ThreadReadState) { n.Edges.ThreadReadStates = append(n.Edges.ThreadReadStates, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1186,6 +1276,68 @@ func (_q *MessageQuery) loadThreadMetadata(ctx context.Context, query *ThreadMet
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "thread_metadata_message" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *MessageQuery) loadUserThreadFollows(ctx context.Context, query *UserThreadFollowQuery, nodes []*Message, init func(*Message), assign func(*Message, *UserThreadFollow)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Message)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.UserThreadFollow(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(message.UserThreadFollowsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_thread_follow_thread
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_thread_follow_thread" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_thread_follow_thread" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *MessageQuery) loadThreadReadStates(ctx context.Context, query *ThreadReadStateQuery, nodes []*Message, init func(*Message), assign func(*Message, *ThreadReadState)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Message)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ThreadReadState(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(message.ThreadReadStatesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.thread_read_state_thread
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "thread_read_state_thread" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "thread_read_state_thread" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

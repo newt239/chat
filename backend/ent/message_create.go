@@ -20,7 +20,9 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/threadmetadata"
+	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
+	"github.com/newt239/chat/ent/userthreadfollow"
 )
 
 // MessageCreate is the builder for creating a Message entity.
@@ -265,6 +267,36 @@ func (_c *MessageCreate) AddThreadMetadata(v ...*ThreadMetadata) *MessageCreate 
 		ids[i] = v[i].ID
 	}
 	return _c.AddThreadMetadatumIDs(ids...)
+}
+
+// AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
+func (_c *MessageCreate) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageCreate {
+	_c.mutation.AddUserThreadFollowIDs(ids...)
+	return _c
+}
+
+// AddUserThreadFollows adds the "user_thread_follows" edges to the UserThreadFollow entity.
+func (_c *MessageCreate) AddUserThreadFollows(v ...*UserThreadFollow) *MessageCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddUserThreadFollowIDs(ids...)
+}
+
+// AddThreadReadStateIDs adds the "thread_read_states" edge to the ThreadReadState entity by IDs.
+func (_c *MessageCreate) AddThreadReadStateIDs(ids ...uuid.UUID) *MessageCreate {
+	_c.mutation.AddThreadReadStateIDs(ids...)
+	return _c
+}
+
+// AddThreadReadStates adds the "thread_read_states" edges to the ThreadReadState entity.
+func (_c *MessageCreate) AddThreadReadStates(v ...*ThreadReadState) *MessageCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddThreadReadStateIDs(ids...)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -558,6 +590,38 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UserThreadFollowsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.UserThreadFollowsTable,
+			Columns: []string{message.UserThreadFollowsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userthreadfollow.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ThreadReadStatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.ThreadReadStatesTable,
+			Columns: []string{message.ThreadReadStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

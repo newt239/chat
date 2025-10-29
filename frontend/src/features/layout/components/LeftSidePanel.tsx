@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { Text, ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX, IconPlus } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { ChannelList } from "@/features/channel/components/ChannelList";
@@ -46,6 +47,19 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full">
           <div className="px-2 py-3 space-y-4">
+            {/* スレッド エントリ */}
+            <div className="px-2">
+              {currentWorkspaceId && (
+                <Link
+                  to="/app/$workspaceId/threads"
+                  params={{ workspaceId: currentWorkspaceId }}
+                  className="block rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  スレッド
+                </Link>
+              )}
+            </div>
+
             {/* チャンネルセクション */}
             <div>
               <div className="flex items-center justify-between px-2 mb-2">

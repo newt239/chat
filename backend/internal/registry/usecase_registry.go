@@ -12,6 +12,7 @@ import (
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
+	threaduc "github.com/newt239/chat/internal/usecase/thread"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
@@ -166,5 +167,17 @@ func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewUserRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewThreadLister() *threaduc.ThreadLister {
+	return threaduc.NewThreadLister(
+		r.domainRegistry.NewThreadRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewThreadReader() *threaduc.ThreadReader {
+	return threaduc.NewThreadReader(
+		r.domainRegistry.NewThreadRepository(),
 	)
 }

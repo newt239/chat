@@ -33,6 +33,7 @@ type RouterConfig struct {
 	AttachmentHandler    *handler.AttachmentHandler
 	SearchHandler        *handler.SearchHandler
 	DMHandler            *handler.DMHandler
+	ThreadHandler        *handler.ThreadHandler
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -147,6 +148,10 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	api.GET("/workspaces/:id/dms", cfg.DMHandler.ListDMs, authMw)
 	api.POST("/workspaces/:id/dms", cfg.DMHandler.CreateDM, authMw)
 	api.POST("/workspaces/:id/group-dms", cfg.DMHandler.CreateGroupDM, authMw)
+
+	// Thread routes
+	api.GET("/workspaces/:workspaceId/threads/participating", cfg.ThreadHandler.GetParticipatingThreads, authMw)
+	api.POST("/threads/:threadId/read", cfg.ThreadHandler.MarkThreadRead, authMw)
 
 	return e
 }

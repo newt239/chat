@@ -24,9 +24,11 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/threadmetadata"
+	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -101,9 +103,11 @@ func checkColumn(t, c string) error {
 			messageusermention.Table:  messageusermention.ValidColumn,
 			session.Table:             session.ValidColumn,
 			threadmetadata.Table:      threadmetadata.ValidColumn,
+			threadreadstate.Table:     threadreadstate.ValidColumn,
 			user.Table:                user.ValidColumn,
 			usergroup.Table:           usergroup.ValidColumn,
 			usergroupmember.Table:     usergroupmember.ValidColumn,
+			userthreadfollow.Table:    userthreadfollow.ValidColumn,
 			workspace.Table:           workspace.ValidColumn,
 			workspacemember.Table:     workspacemember.ValidColumn,
 		})

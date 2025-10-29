@@ -42,6 +42,9 @@ type Session func(*sql.Selector)
 // ThreadMetadata is the predicate function for threadmetadata builders.
 type ThreadMetadata func(*sql.Selector)
 
+// ThreadReadState is the predicate function for threadreadstate builders.
+type ThreadReadState func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 
@@ -50,6 +53,9 @@ type UserGroup func(*sql.Selector)
 
 // UserGroupMember is the predicate function for usergroupmember builders.
 type UserGroupMember func(*sql.Selector)
+
+// UserThreadFollow is the predicate function for userthreadfollow builders.
+type UserThreadFollow func(*sql.Selector)
 
 // Workspace is the predicate function for workspace builders.
 type Workspace func(*sql.Selector)

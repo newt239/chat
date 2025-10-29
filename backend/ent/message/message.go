@@ -47,6 +47,10 @@ const (
 	EdgeAttachments = "attachments"
 	// EdgeThreadMetadata holds the string denoting the thread_metadata edge name in mutations.
 	EdgeThreadMetadata = "thread_metadata"
+	// EdgeUserThreadFollows holds the string denoting the user_thread_follows edge name in mutations.
+	EdgeUserThreadFollows = "user_thread_follows"
+	// EdgeThreadReadStates holds the string denoting the thread_read_states edge name in mutations.
+	EdgeThreadReadStates = "thread_read_states"
 	// Table holds the table name of the message in the database.
 	Table = "messages"
 	// ChannelTable is the table that holds the channel relation/edge.
@@ -120,6 +124,20 @@ const (
 	ThreadMetadataInverseTable = "thread_metadata"
 	// ThreadMetadataColumn is the table column denoting the thread_metadata relation/edge.
 	ThreadMetadataColumn = "thread_metadata_message"
+	// UserThreadFollowsTable is the table that holds the user_thread_follows relation/edge.
+	UserThreadFollowsTable = "user_thread_follows"
+	// UserThreadFollowsInverseTable is the table name for the UserThreadFollow entity.
+	// It exists in this package in order to avoid circular dependency with the "userthreadfollow" package.
+	UserThreadFollowsInverseTable = "user_thread_follows"
+	// UserThreadFollowsColumn is the table column denoting the user_thread_follows relation/edge.
+	UserThreadFollowsColumn = "user_thread_follow_thread"
+	// ThreadReadStatesTable is the table that holds the thread_read_states relation/edge.
+	ThreadReadStatesTable = "thread_read_states"
+	// ThreadReadStatesInverseTable is the table name for the ThreadReadState entity.
+	// It exists in this package in order to avoid circular dependency with the "threadreadstate" package.
+	ThreadReadStatesInverseTable = "thread_read_states"
+	// ThreadReadStatesColumn is the table column denoting the thread_read_states relation/edge.
+	ThreadReadStatesColumn = "thread_read_state_thread"
 )
 
 // Columns holds all SQL columns for message fields.
@@ -329,6 +347,34 @@ func ByThreadMetadata(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newThreadMetadataStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByUserThreadFollowsCount orders the results by user_thread_follows count.
+func ByUserThreadFollowsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUserThreadFollowsStep(), opts...)
+	}
+}
+
+// ByUserThreadFollows orders the results by user_thread_follows terms.
+func ByUserThreadFollows(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserThreadFollowsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByThreadReadStatesCount orders the results by thread_read_states count.
+func ByThreadReadStatesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newThreadReadStatesStep(), opts...)
+	}
+}
+
+// ByThreadReadStates orders the results by thread_read_states terms.
+func ByThreadReadStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newThreadReadStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newChannelStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -404,5 +450,19 @@ func newThreadMetadataStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ThreadMetadataInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ThreadMetadataTable, ThreadMetadataColumn),
+	)
+}
+func newUserThreadFollowsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserThreadFollowsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, UserThreadFollowsTable, UserThreadFollowsColumn),
+	)
+}
+func newThreadReadStatesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ThreadReadStatesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ThreadReadStatesTable, ThreadReadStatesColumn),
 	)
 }

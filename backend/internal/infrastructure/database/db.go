@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"time"
 
 	entsql "entgo.io/ent/dialect/sql"
@@ -47,12 +46,4 @@ func InitDB(dsn string) (*ent.Client, error) {
 	// Note: ent client doesn't expose DB directly, connection pool is managed by the driver
 
 	return client, nil
-}
-
-// GetDB extracts the sql.DB from ent client
-// Note: ent client doesn't expose DB directly, this function is deprecated
-func GetDB(client *ent.Client) *sql.DB {
-	// This function is no longer needed with ent
-	// Use client.Schema.Create() for migrations instead
-	return nil
 }

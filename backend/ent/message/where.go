@@ -589,6 +589,52 @@ func HasThreadMetadataWith(preds ...predicate.ThreadMetadata) predicate.Message 
 	})
 }
 
+// HasUserThreadFollows applies the HasEdge predicate on the "user_thread_follows" edge.
+func HasUserThreadFollows() predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, UserThreadFollowsTable, UserThreadFollowsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserThreadFollowsWith applies the HasEdge predicate on the "user_thread_follows" edge with a given conditions (other predicates).
+func HasUserThreadFollowsWith(preds ...predicate.UserThreadFollow) predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := newUserThreadFollowsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasThreadReadStates applies the HasEdge predicate on the "thread_read_states" edge.
+func HasThreadReadStates() predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ThreadReadStatesTable, ThreadReadStatesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasThreadReadStatesWith applies the HasEdge predicate on the "thread_read_states" edge with a given conditions (other predicates).
+func HasThreadReadStatesWith(preds ...predicate.ThreadReadState) predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := newThreadReadStatesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Message) predicate.Message {
 	return predicate.Message(sql.AndPredicates(predicates...))

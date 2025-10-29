@@ -19,9 +19,11 @@ import (
 	"github.com/newt239/chat/ent/schema"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/threadmetadata"
+	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -224,6 +226,26 @@ func init() {
 	threadmetadataDescID := threadmetadataFields[0].Descriptor()
 	// threadmetadata.DefaultID holds the default value on creation for the id field.
 	threadmetadata.DefaultID = threadmetadataDescID.Default.(func() uuid.UUID)
+	threadreadstateFields := schema.ThreadReadState{}.Fields()
+	_ = threadreadstateFields
+	// threadreadstateDescLastReadAt is the schema descriptor for last_read_at field.
+	threadreadstateDescLastReadAt := threadreadstateFields[1].Descriptor()
+	// threadreadstate.DefaultLastReadAt holds the default value on creation for the last_read_at field.
+	threadreadstate.DefaultLastReadAt = threadreadstateDescLastReadAt.Default.(func() time.Time)
+	// threadreadstateDescCreatedAt is the schema descriptor for created_at field.
+	threadreadstateDescCreatedAt := threadreadstateFields[2].Descriptor()
+	// threadreadstate.DefaultCreatedAt holds the default value on creation for the created_at field.
+	threadreadstate.DefaultCreatedAt = threadreadstateDescCreatedAt.Default.(func() time.Time)
+	// threadreadstateDescUpdatedAt is the schema descriptor for updated_at field.
+	threadreadstateDescUpdatedAt := threadreadstateFields[3].Descriptor()
+	// threadreadstate.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	threadreadstate.DefaultUpdatedAt = threadreadstateDescUpdatedAt.Default.(func() time.Time)
+	// threadreadstate.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	threadreadstate.UpdateDefaultUpdatedAt = threadreadstateDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// threadreadstateDescID is the schema descriptor for id field.
+	threadreadstateDescID := threadreadstateFields[0].Descriptor()
+	// threadreadstate.DefaultID holds the default value on creation for the id field.
+	threadreadstate.DefaultID = threadreadstateDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescEmail is the schema descriptor for email field.
@@ -282,6 +304,16 @@ func init() {
 	usergroupmemberDescID := usergroupmemberFields[0].Descriptor()
 	// usergroupmember.DefaultID holds the default value on creation for the id field.
 	usergroupmember.DefaultID = usergroupmemberDescID.Default.(func() uuid.UUID)
+	userthreadfollowFields := schema.UserThreadFollow{}.Fields()
+	_ = userthreadfollowFields
+	// userthreadfollowDescCreatedAt is the schema descriptor for created_at field.
+	userthreadfollowDescCreatedAt := userthreadfollowFields[1].Descriptor()
+	// userthreadfollow.DefaultCreatedAt holds the default value on creation for the created_at field.
+	userthreadfollow.DefaultCreatedAt = userthreadfollowDescCreatedAt.Default.(func() time.Time)
+	// userthreadfollowDescID is the schema descriptor for id field.
+	userthreadfollowDescID := userthreadfollowFields[0].Descriptor()
+	// userthreadfollow.DefaultID holds the default value on creation for the id field.
+	userthreadfollow.DefaultID = userthreadfollowDescID.Default.(func() uuid.UUID)
 	workspaceFields := schema.Workspace{}.Fields()
 	_ = workspaceFields
 	// workspaceDescName is the schema descriptor for name field.

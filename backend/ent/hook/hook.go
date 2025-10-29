@@ -153,6 +153,18 @@ func (f ThreadMetadataFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ThreadMetadataMutation", m)
 }
 
+// The ThreadReadStateFunc type is an adapter to allow the use of ordinary
+// function as ThreadReadState mutator.
+type ThreadReadStateFunc func(context.Context, *ent.ThreadReadStateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ThreadReadStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ThreadReadStateMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ThreadReadStateMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
@@ -187,6 +199,18 @@ func (f UserGroupMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserGroupMemberMutation", m)
+}
+
+// The UserThreadFollowFunc type is an adapter to allow the use of ordinary
+// function as UserThreadFollow mutator.
+type UserThreadFollowFunc func(context.Context, *ent.UserThreadFollowMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserThreadFollowFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserThreadFollowMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserThreadFollowMutation", m)
 }
 
 // The WorkspaceFunc type is an adapter to allow the use of ordinary

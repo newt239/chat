@@ -923,6 +923,60 @@ components:
       required:
         - success
 
+    ParticipatingThread:
+      type: object
+      properties:
+        thread_id:
+          type: string
+          format: uuid
+        channel_id:
+          type: string
+          format: uuid
+          nullable: true
+        first_message:
+          $ref: "#/components/schemas/Message"
+        reply_count:
+          type: integer
+          minimum: 0
+        last_activity_at:
+          type: string
+          format: date-time
+        unread_count:
+          type: integer
+          minimum: 0
+      required:
+        - thread_id
+        - first_message
+        - reply_count
+        - last_activity_at
+        - unread_count
+
+    ThreadCursor:
+      type: object
+      properties:
+        last_activity_at:
+          type: string
+          format: date-time
+        thread_id:
+          type: string
+          format: uuid
+      required:
+        - last_activity_at
+        - thread_id
+
+    ParticipatingThreadsOutput:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParticipatingThread"
+        next_cursor:
+          $ref: "#/components/schemas/ThreadCursor"
+          nullable: true
+      required:
+        - items
+
 paths:
   /healthz:
     get:
@@ -2735,6 +2789,88 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DMOutput"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/workspaces/{workspaceId}/threads/participating:
+    get:
+      operationId: getParticipatingThreads
+      summary: Get participating threads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: cursorLastActivityAt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: cursorThreadId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: List of participating threads
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParticipatingThreadsOutput"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/threads/{threadId}/read:
+    post:
+      operationId: markThreadRead
+      summary: Mark thread as read
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: threadId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Thread marked as read
         "400":
           description: Bad request
           content:

@@ -424,6 +424,42 @@ var (
 			},
 		},
 	}
+	// ThreadReadStatesColumns holds the columns for the "thread_read_states" table.
+	ThreadReadStatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "last_read_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "thread_read_state_user", Type: field.TypeUUID},
+		{Name: "thread_read_state_thread", Type: field.TypeUUID},
+	}
+	// ThreadReadStatesTable holds the schema information for the "thread_read_states" table.
+	ThreadReadStatesTable = &schema.Table{
+		Name:       "thread_read_states",
+		Columns:    ThreadReadStatesColumns,
+		PrimaryKey: []*schema.Column{ThreadReadStatesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "thread_read_states_users_user",
+				Columns:    []*schema.Column{ThreadReadStatesColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "thread_read_states_messages_thread",
+				Columns:    []*schema.Column{ThreadReadStatesColumns[5]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "threadreadstate_thread_read_state_user_thread_read_state_thread",
+				Unique:  true,
+				Columns: []*schema.Column{ThreadReadStatesColumns[4], ThreadReadStatesColumns[5]},
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -511,6 +547,45 @@ var (
 			},
 		},
 	}
+	// UserThreadFollowsColumns holds the columns for the "user_thread_follows" table.
+	UserThreadFollowsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_thread_follow_user", Type: field.TypeUUID},
+		{Name: "user_thread_follow_thread", Type: field.TypeUUID},
+	}
+	// UserThreadFollowsTable holds the schema information for the "user_thread_follows" table.
+	UserThreadFollowsTable = &schema.Table{
+		Name:       "user_thread_follows",
+		Columns:    UserThreadFollowsColumns,
+		PrimaryKey: []*schema.Column{UserThreadFollowsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_thread_follows_users_user",
+				Columns:    []*schema.Column{UserThreadFollowsColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "user_thread_follows_messages_thread",
+				Columns:    []*schema.Column{UserThreadFollowsColumns[3]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userthreadfollow_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{UserThreadFollowsColumns[1]},
+			},
+			{
+				Name:    "userthreadfollow_user_thread_follow_user_user_thread_follow_thread",
+				Unique:  true,
+				Columns: []*schema.Column{UserThreadFollowsColumns[2], UserThreadFollowsColumns[3]},
+			},
+		},
+	}
 	// WorkspacesColumns holds the columns for the "workspaces" table.
 	WorkspacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -577,9 +652,11 @@ var (
 		MessageUserMentionsTable,
 		SessionsTable,
 		ThreadMetadataTable,
+		ThreadReadStatesTable,
 		UsersTable,
 		UserGroupsTable,
 		UserGroupMembersTable,
+		UserThreadFollowsTable,
 		WorkspacesTable,
 		WorkspaceMembersTable,
 	}
@@ -610,10 +687,14 @@ func init() {
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	ThreadMetadataTable.ForeignKeys[0].RefTable = MessagesTable
 	ThreadMetadataTable.ForeignKeys[1].RefTable = UsersTable
+	ThreadReadStatesTable.ForeignKeys[0].RefTable = UsersTable
+	ThreadReadStatesTable.ForeignKeys[1].RefTable = MessagesTable
 	UserGroupsTable.ForeignKeys[0].RefTable = WorkspacesTable
 	UserGroupsTable.ForeignKeys[1].RefTable = UsersTable
 	UserGroupMembersTable.ForeignKeys[0].RefTable = UserGroupsTable
 	UserGroupMembersTable.ForeignKeys[1].RefTable = UsersTable
+	UserThreadFollowsTable.ForeignKeys[0].RefTable = UsersTable
+	UserThreadFollowsTable.ForeignKeys[1].RefTable = MessagesTable
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[0].RefTable = WorkspacesTable
 	WorkspaceMembersTable.ForeignKeys[1].RefTable = UsersTable

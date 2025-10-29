@@ -63,9 +63,13 @@ type MessageEdges struct {
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// ThreadMetadata holds the value of the thread_metadata edge.
 	ThreadMetadata []*ThreadMetadata `json:"thread_metadata,omitempty"`
+	// UserThreadFollows holds the value of the user_thread_follows edge.
+	UserThreadFollows []*UserThreadFollow `json:"user_thread_follows,omitempty"`
+	// ThreadReadStates holds the value of the thread_read_states edge.
+	ThreadReadStates []*ThreadReadState `json:"thread_read_states,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [11]bool
+	loadedTypes [13]bool
 }
 
 // ChannelOrErr returns the Channel value or an error if the edge
@@ -171,6 +175,24 @@ func (e MessageEdges) ThreadMetadataOrErr() ([]*ThreadMetadata, error) {
 		return e.ThreadMetadata, nil
 	}
 	return nil, &NotLoadedError{edge: "thread_metadata"}
+}
+
+// UserThreadFollowsOrErr returns the UserThreadFollows value or an error if the edge
+// was not loaded in eager-loading.
+func (e MessageEdges) UserThreadFollowsOrErr() ([]*UserThreadFollow, error) {
+	if e.loadedTypes[11] {
+		return e.UserThreadFollows, nil
+	}
+	return nil, &NotLoadedError{edge: "user_thread_follows"}
+}
+
+// ThreadReadStatesOrErr returns the ThreadReadStates value or an error if the edge
+// was not loaded in eager-loading.
+func (e MessageEdges) ThreadReadStatesOrErr() ([]*ThreadReadState, error) {
+	if e.loadedTypes[12] {
+		return e.ThreadReadStates, nil
+	}
+	return nil, &NotLoadedError{edge: "thread_read_states"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -328,6 +350,16 @@ func (_m *Message) QueryAttachments() *AttachmentQuery {
 // QueryThreadMetadata queries the "thread_metadata" edge of the Message entity.
 func (_m *Message) QueryThreadMetadata() *ThreadMetadataQuery {
 	return NewMessageClient(_m.config).QueryThreadMetadata(_m)
+}
+
+// QueryUserThreadFollows queries the "user_thread_follows" edge of the Message entity.
+func (_m *Message) QueryUserThreadFollows() *UserThreadFollowQuery {
+	return NewMessageClient(_m.config).QueryUserThreadFollows(_m)
+}
+
+// QueryThreadReadStates queries the "thread_read_states" edge of the Message entity.
+func (_m *Message) QueryThreadReadStates() *ThreadReadStateQuery {
+	return NewMessageClient(_m.config).QueryThreadReadStates(_m)
 }
 
 // Update returns a builder for updating this Message.
