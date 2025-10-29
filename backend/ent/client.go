@@ -24,6 +24,7 @@ import (
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/messagelink"
+	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/session"
@@ -58,6 +59,8 @@ type Client struct {
 	MessageGroupMention *MessageGroupMentionClient
 	// MessageLink is the client for interacting with the MessageLink builders.
 	MessageLink *MessageLinkClient
+	// MessagePin is the client for interacting with the MessagePin builders.
+	MessagePin *MessagePinClient
 	// MessageReaction is the client for interacting with the MessageReaction builders.
 	MessageReaction *MessageReactionClient
 	// MessageUserMention is the client for interacting with the MessageUserMention builders.
@@ -99,6 +102,7 @@ func (c *Client) init() {
 	c.MessageBookmark = NewMessageBookmarkClient(c.config)
 	c.MessageGroupMention = NewMessageGroupMentionClient(c.config)
 	c.MessageLink = NewMessageLinkClient(c.config)
+	c.MessagePin = NewMessagePinClient(c.config)
 	c.MessageReaction = NewMessageReactionClient(c.config)
 	c.MessageUserMention = NewMessageUserMentionClient(c.config)
 	c.Session = NewSessionClient(c.config)
@@ -210,6 +214,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
 		MessageLink:         NewMessageLinkClient(cfg),
+		MessagePin:          NewMessagePinClient(cfg),
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		Session:             NewSessionClient(cfg),
@@ -248,6 +253,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
 		MessageLink:         NewMessageLinkClient(cfg),
+		MessagePin:          NewMessagePinClient(cfg),
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		Session:             NewSessionClient(cfg),
@@ -289,10 +295,10 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessageReaction,
-		c.MessageUserMention, c.Session, c.ThreadMetadata, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserThreadFollow, c.Workspace,
-		c.WorkspaceMember,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.Session, c.ThreadMetadata,
+		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserThreadFollow,
+		c.Workspace, c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -303,10 +309,10 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessageReaction,
-		c.MessageUserMention, c.Session, c.ThreadMetadata, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserThreadFollow, c.Workspace,
-		c.WorkspaceMember,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.Session, c.ThreadMetadata,
+		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserThreadFollow,
+		c.Workspace, c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -331,6 +337,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MessageGroupMention.mutate(ctx, m)
 	case *MessageLinkMutation:
 		return c.MessageLink.mutate(ctx, m)
+	case *MessagePinMutation:
+		return c.MessagePin.mutate(ctx, m)
 	case *MessageReactionMutation:
 		return c.MessageReaction.mutate(ctx, m)
 	case *MessageUserMentionMutation:
@@ -1915,6 +1923,187 @@ func (c *MessageLinkClient) mutate(ctx context.Context, m *MessageLinkMutation) 
 		return (&MessageLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown MessageLink mutation op: %q", m.Op())
+	}
+}
+
+// MessagePinClient is a client for the MessagePin schema.
+type MessagePinClient struct {
+	config
+}
+
+// NewMessagePinClient returns a client for the MessagePin from the given config.
+func NewMessagePinClient(c config) *MessagePinClient {
+	return &MessagePinClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `messagepin.Hooks(f(g(h())))`.
+func (c *MessagePinClient) Use(hooks ...Hook) {
+	c.hooks.MessagePin = append(c.hooks.MessagePin, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `messagepin.Intercept(f(g(h())))`.
+func (c *MessagePinClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MessagePin = append(c.inters.MessagePin, interceptors...)
+}
+
+// Create returns a builder for creating a MessagePin entity.
+func (c *MessagePinClient) Create() *MessagePinCreate {
+	mutation := newMessagePinMutation(c.config, OpCreate)
+	return &MessagePinCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MessagePin entities.
+func (c *MessagePinClient) CreateBulk(builders ...*MessagePinCreate) *MessagePinCreateBulk {
+	return &MessagePinCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MessagePinClient) MapCreateBulk(slice any, setFunc func(*MessagePinCreate, int)) *MessagePinCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MessagePinCreateBulk{err: fmt.Errorf("calling to MessagePinClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MessagePinCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MessagePinCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MessagePin.
+func (c *MessagePinClient) Update() *MessagePinUpdate {
+	mutation := newMessagePinMutation(c.config, OpUpdate)
+	return &MessagePinUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MessagePinClient) UpdateOne(_m *MessagePin) *MessagePinUpdateOne {
+	mutation := newMessagePinMutation(c.config, OpUpdateOne, withMessagePin(_m))
+	return &MessagePinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MessagePinClient) UpdateOneID(id uuid.UUID) *MessagePinUpdateOne {
+	mutation := newMessagePinMutation(c.config, OpUpdateOne, withMessagePinID(id))
+	return &MessagePinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MessagePin.
+func (c *MessagePinClient) Delete() *MessagePinDelete {
+	mutation := newMessagePinMutation(c.config, OpDelete)
+	return &MessagePinDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MessagePinClient) DeleteOne(_m *MessagePin) *MessagePinDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MessagePinClient) DeleteOneID(id uuid.UUID) *MessagePinDeleteOne {
+	builder := c.Delete().Where(messagepin.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MessagePinDeleteOne{builder}
+}
+
+// Query returns a query builder for MessagePin.
+func (c *MessagePinClient) Query() *MessagePinQuery {
+	return &MessagePinQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMessagePin},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MessagePin entity by its id.
+func (c *MessagePinClient) Get(ctx context.Context, id uuid.UUID) (*MessagePin, error) {
+	return c.Query().Where(messagepin.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MessagePinClient) GetX(ctx context.Context, id uuid.UUID) *MessagePin {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryChannel queries the channel edge of a MessagePin.
+func (c *MessagePinClient) QueryChannel(_m *MessagePin) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(messagepin.Table, messagepin.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, messagepin.ChannelTable, messagepin.ChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMessage queries the message edge of a MessagePin.
+func (c *MessagePinClient) QueryMessage(_m *MessagePin) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(messagepin.Table, messagepin.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, messagepin.MessageTable, messagepin.MessageColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPinnedBy queries the pinned_by edge of a MessagePin.
+func (c *MessagePinClient) QueryPinnedBy(_m *MessagePin) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(messagepin.Table, messagepin.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, messagepin.PinnedByTable, messagepin.PinnedByColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MessagePinClient) Hooks() []Hook {
+	return c.hooks.MessagePin
+}
+
+// Interceptors returns the client interceptors.
+func (c *MessagePinClient) Interceptors() []Interceptor {
+	return c.inters.MessagePin
+}
+
+func (c *MessagePinClient) mutate(ctx context.Context, m *MessagePinMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MessagePinCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MessagePinUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MessagePinUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MessagePinDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MessagePin mutation op: %q", m.Op())
 	}
 }
 
@@ -3977,14 +4166,14 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 type (
 	hooks struct {
 		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessageReaction, MessageUserMention, Session,
-		ThreadMetadata, ThreadReadState, User, UserGroup, UserGroupMember,
-		UserThreadFollow, Workspace, WorkspaceMember []ent.Hook
+		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		MessageUserMention, Session, ThreadMetadata, ThreadReadState, User, UserGroup,
+		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember []ent.Hook
 	}
 	inters struct {
 		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessageReaction, MessageUserMention, Session,
-		ThreadMetadata, ThreadReadState, User, UserGroup, UserGroupMember,
-		UserThreadFollow, Workspace, WorkspaceMember []ent.Interceptor
+		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		MessageUserMention, Session, ThreadMetadata, ThreadReadState, User, UserGroup,
+		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember []ent.Interceptor
 	}
 )

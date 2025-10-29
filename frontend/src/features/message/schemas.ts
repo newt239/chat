@@ -7,7 +7,7 @@ const messageUserSchema = z.object({
   email: z.string().email().optional(),
 });
 
-export const threadMetadataSchema = z.object({
+const threadMetadataSchema = z.object({
   messageId: z.string(),
   replyCount: z.number(),
   lastReplyAt: z.string().nullable().optional(),
@@ -72,11 +72,6 @@ export const messageWithUserSchema = baseMessageSchema.extend({
 	user: messageUserSchema,
 });
 
-export const messagesResponseSchema = z.object({
-  messages: z.array(messageWithUserSchema),
-  hasMore: z.boolean(),
-});
-
 const messageWithThreadSchema = messageWithUserSchema.extend({
   threadMetadata: threadMetadataSchema.nullable().optional(),
 });
@@ -94,5 +89,4 @@ export const threadRepliesResponseSchema = z.object({
 });
 
 export type MessageWithUser = z.infer<typeof messageWithUserSchema>;
-export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;
 export type ThreadMetadata = z.infer<typeof threadMetadataSchema>;

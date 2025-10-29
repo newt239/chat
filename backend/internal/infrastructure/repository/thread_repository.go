@@ -396,7 +396,7 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		// スレッドメタデータから情報取得
 		replyCount := 0
 		lastActivityAt := thread.CreatedAt
-		if thread.Edges.ThreadMetadata != nil && len(thread.Edges.ThreadMetadata) > 0 {
+		if len(thread.Edges.ThreadMetadata) > 0 {
 			metadata := thread.Edges.ThreadMetadata[0]
 			replyCount = metadata.ReplyCount
 			if !metadata.LastReplyAt.IsZero() {

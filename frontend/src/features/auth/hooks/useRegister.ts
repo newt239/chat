@@ -1,0 +1,30 @@
+import { useMutation } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
+
+import type { components } from "@/lib/api/schema";
+
+import { api } from "@/lib/api/client";
+import { navigateToAppWithWorkspace } from "@/lib/navigation";
+import { setAuthAtom } from "@/providers/store/auth";
+
+type AuthResponse = components["schemas"]["AuthResponse"];
+
+export function useRegister() {
+  const setAuth = useSetAtom(setAuthAtom);
+
+  return useMutation({
+    mutationFn: async (data: { email: string; password: string; displayName: string }) => {
+      const { data: response, error } = await api.POST("/api/auth/register", {
+        body: data,
+      });
+      if (error || !response) {
+        throw new Error(error?.error || "登録に失敗しました");
+      }
+      return response as AuthResponse;
+    },
+    onSuccess: (data: AuthResponse) => {
+      setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
+      navigateToAppWithWorkspace();
+    },
+  });
+}

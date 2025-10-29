@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { CreateDMRequest, CreateGroupDMRequest } from "../schemas";
+import type { CreateDMRequest } from "../schemas";
 import type { components } from "@/lib/api/schema";
 
 import { api } from "@/lib/api/client";
@@ -41,30 +41,6 @@ export const useCreateDM = (workspaceId: string) => {
 
       if (response.error) {
         throw new Error(response.error.error || "Failed to create DM");
-      }
-
-      return response.data as DMOutput;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dms", workspaceId] });
-    },
-  });
-};
-
-export const useCreateGroupDM = (workspaceId: string) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: CreateGroupDMRequest) => {
-      const response = await api.POST("/api/workspaces/{id}/group-dms", {
-        params: {
-          path: { id: workspaceId },
-        },
-        body: data,
-      });
-
-      if (response.error) {
-        throw new Error(response.error.error || "Failed to create group DM");
       }
 
       return response.data as DMOutput;

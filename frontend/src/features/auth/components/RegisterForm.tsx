@@ -2,7 +2,7 @@ import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@m
 import { useForm } from "@mantine/form";
 import { Link } from "@tanstack/react-router";
 
-import { useRegister } from "../hooks/useAuth";
+import { useRegister } from "@/features/auth/hooks/useRegister";
 
 type RegisterFormValues = {
   displayName: string;

@@ -35,8 +35,30 @@ const defaultLayoutState: LayoutState = {
   pinsCountByChannel: {},
 };
 
-// レイアウト状態のAtom
-const layoutStateAtom = atomWithStorage<LayoutState>("ui-storage:layoutState", defaultLayoutState);
+// レイアウト状態のAtom（ストレージ保持用と実際に利用する値を分離して、欠損プロパティを補完）
+const layoutStateStorageAtom = atomWithStorage<LayoutState>(
+  "ui-storage:layoutState",
+  defaultLayoutState
+);
+
+const layoutStateAtom = atom(
+  (get) => {
+    const stored = get(layoutStateStorageAtom);
+    return {
+      ...defaultLayoutState,
+      ...stored,
+      pinsCountByChannel: stored.pinsCountByChannel ?? defaultLayoutState.pinsCountByChannel,
+    };
+  },
+  (_get, set, update: LayoutState) => {
+    const next = {
+      ...defaultLayoutState,
+      ...update,
+      pinsCountByChannel: update.pinsCountByChannel ?? defaultLayoutState.pinsCountByChannel,
+    };
+    set(layoutStateStorageAtom, next);
+  }
+);
 
 // 個別の状態を取得するAtom
 export const leftSidePanelVisibleAtom = atom((get) => get(layoutStateAtom).leftSidePanelVisible);

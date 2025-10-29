@@ -10,10 +10,7 @@ import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 import type { WorkspaceSummary } from "@/features/workspace/types";
 
 import { navigateToWorkspace } from "@/lib/navigation";
-import {
-  currentWorkspaceIdAtom,
-  setCurrentWorkspaceAtom,
-} from "@/providers/store/workspace";
+import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
 export const WorkspaceList = () => {
   const { data: workspaces, isLoading, error } = useWorkspaces();
@@ -61,7 +58,7 @@ export const WorkspaceList = () => {
           <Button onClick={() => setIsModalOpen(true)}>新規作成</Button>
         </Group>
 
-        {workspaces && Array.isArray(workspaces) && workspaces.length > 0 ? (
+        {workspaces && Array.isArray(workspaces) && workspaces.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {workspaces.map((workspace: WorkspaceSummary) => {
               const isSelected = workspace.id === currentWorkspaceId;
@@ -96,13 +93,6 @@ export const WorkspaceList = () => {
               );
             })}
           </div>
-        ) : (
-          <Card shadow="sm" padding="xl" radius="md" withBorder className="text-center">
-            <Text c="dimmed" className="mb-4">
-              ワークスペースがありません
-            </Text>
-            <Button onClick={() => setIsModalOpen(true)}>最初のワークスペースを作成</Button>
-          </Card>
         )}
       </Stack>
 

@@ -9,8 +9,6 @@ const searchParamsSchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
 });
 
-export type SearchParams = z.infer<typeof searchParamsSchema>;
-
 export const Route = createFileRoute("/app/$workspaceId/search")({
   validateSearch: searchParamsSchema,
   component: SearchPage,

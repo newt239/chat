@@ -28,6 +28,8 @@ type Tx struct {
 	MessageGroupMention *MessageGroupMentionClient
 	// MessageLink is the client for interacting with the MessageLink builders.
 	MessageLink *MessageLinkClient
+	// MessagePin is the client for interacting with the MessagePin builders.
+	MessagePin *MessagePinClient
 	// MessageReaction is the client for interacting with the MessageReaction builders.
 	MessageReaction *MessageReactionClient
 	// MessageUserMention is the client for interacting with the MessageUserMention builders.
@@ -189,6 +191,7 @@ func (tx *Tx) init() {
 	tx.MessageBookmark = NewMessageBookmarkClient(tx.config)
 	tx.MessageGroupMention = NewMessageGroupMentionClient(tx.config)
 	tx.MessageLink = NewMessageLinkClient(tx.config)
+	tx.MessagePin = NewMessagePinClient(tx.config)
 	tx.MessageReaction = NewMessageReactionClient(tx.config)
 	tx.MessageUserMention = NewMessageUserMentionClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)

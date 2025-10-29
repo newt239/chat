@@ -2,7 +2,7 @@ import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@m
 import { useForm } from "@mantine/form";
 import { Link } from "@tanstack/react-router";
 
-import { useLogin } from "../hooks/useAuth";
+import { useLogin } from "@/features/auth/hooks/useLogin";
 
 type LoginFormValues = {
   email: string;

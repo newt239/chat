@@ -301,6 +301,52 @@ var (
 			},
 		},
 	}
+	// MessagePinsColumns holds the columns for the "message_pins" table.
+	MessagePinsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "message_pin_channel", Type: field.TypeUUID},
+		{Name: "message_pin_message", Type: field.TypeUUID},
+		{Name: "message_pin_pinned_by", Type: field.TypeUUID},
+	}
+	// MessagePinsTable holds the schema information for the "message_pins" table.
+	MessagePinsTable = &schema.Table{
+		Name:       "message_pins",
+		Columns:    MessagePinsColumns,
+		PrimaryKey: []*schema.Column{MessagePinsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "message_pins_channels_channel",
+				Columns:    []*schema.Column{MessagePinsColumns[2]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "message_pins_messages_message",
+				Columns:    []*schema.Column{MessagePinsColumns[3]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "message_pins_users_pinned_by",
+				Columns:    []*schema.Column{MessagePinsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "messagepin_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessagePinsColumns[1]},
+			},
+			{
+				Name:    "messagepin_message_pin_channel_message_pin_message",
+				Unique:  true,
+				Columns: []*schema.Column{MessagePinsColumns[2], MessagePinsColumns[3]},
+			},
+		},
+	}
 	// MessageReactionsColumns holds the columns for the "message_reactions" table.
 	MessageReactionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -648,6 +694,7 @@ var (
 		MessageBookmarksTable,
 		MessageGroupMentionsTable,
 		MessageLinksTable,
+		MessagePinsTable,
 		MessageReactionsTable,
 		MessageUserMentionsTable,
 		SessionsTable,
@@ -680,6 +727,9 @@ func init() {
 	MessageGroupMentionsTable.ForeignKeys[0].RefTable = MessagesTable
 	MessageGroupMentionsTable.ForeignKeys[1].RefTable = UserGroupsTable
 	MessageLinksTable.ForeignKeys[0].RefTable = MessagesTable
+	MessagePinsTable.ForeignKeys[0].RefTable = ChannelsTable
+	MessagePinsTable.ForeignKeys[1].RefTable = MessagesTable
+	MessagePinsTable.ForeignKeys[2].RefTable = UsersTable
 	MessageReactionsTable.ForeignKeys[0].RefTable = MessagesTable
 	MessageReactionsTable.ForeignKeys[1].RefTable = UsersTable
 	MessageUserMentionsTable.ForeignKeys[0].RefTable = MessagesTable

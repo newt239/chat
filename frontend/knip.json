@@ -11,7 +11,9 @@
     "src/**/*.test.{ts,tsx}",
     "src/**/*.spec.{ts,tsx}",
     "dist/**/*",
-    "node_modules/**/*"
+    "node_modules/**/*",
+    "src/lib/api/schema.ts",
+    "src/routes/routeTree.gen.ts"
   ],
   "ignoreDependencies": [
     "@types/*"

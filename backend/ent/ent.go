@@ -20,6 +20,7 @@ import (
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/messagelink"
+	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/session"
@@ -99,6 +100,7 @@ func checkColumn(t, c string) error {
 			messagebookmark.Table:     messagebookmark.ValidColumn,
 			messagegroupmention.Table: messagegroupmention.ValidColumn,
 			messagelink.Table:         messagelink.ValidColumn,
+			messagepin.Table:          messagepin.ValidColumn,
 			messagereaction.Table:     messagereaction.ValidColumn,
 			messageusermention.Table:  messageusermention.ValidColumn,
 			session.Table:             session.ValidColumn,

@@ -53,6 +53,3 @@ export const workspaceSearchResponseSchema = z.object({
 });
 
 export type WorkspaceSearchResponse = z.infer<typeof workspaceSearchResponseSchema>;
-export type PaginatedMessages = z.infer<typeof paginatedMessagesSchema>;
-export type PaginatedChannels = z.infer<typeof paginatedChannelsSchema>;
-export type PaginatedUsers = z.infer<typeof paginatedUsersSchema>;

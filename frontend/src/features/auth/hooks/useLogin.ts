@@ -18,29 +18,9 @@ export function useLogin() {
         body: data,
       });
       if (error || !response) {
-        throw new Error(error?.error || "Login failed");
+        throw new Error(error?.error || "ログインに失敗しました");
       }
-      return response;
-    },
-    onSuccess: (data: AuthResponse) => {
-      setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
-      navigateToAppWithWorkspace();
-    },
-  });
-}
-
-export function useRegister() {
-  const setAuth = useSetAtom(setAuthAtom);
-
-  return useMutation({
-    mutationFn: async (data: { email: string; password: string; displayName: string }) => {
-      const { data: response, error } = await api.POST("/api/auth/register", {
-        body: data,
-      });
-      if (error || !response) {
-        throw new Error(error?.error || "Registration failed");
-      }
-      return response;
+      return response as AuthResponse;
     },
     onSuccess: (data: AuthResponse) => {
       setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });

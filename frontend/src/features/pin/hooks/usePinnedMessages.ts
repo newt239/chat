@@ -6,7 +6,7 @@ import { useSetAtom } from "jotai";
 import { api } from "@/lib/api/client";
 import { setChannelPinsCountAtom } from "@/providers/store/ui";
 
-export type PinnedMessage = {
+type PinnedMessage = {
   id: string;
   messageId: string;
   channelId: string;
@@ -25,7 +25,7 @@ export type PinnedMessage = {
   } | null;
 };
 
-export type PinnedListResponse = {
+type PinnedListResponse = {
   pins: PinnedMessage[];
   nextCursor?: string | null;
 };

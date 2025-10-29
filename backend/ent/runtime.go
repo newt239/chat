@@ -14,6 +14,7 @@ import (
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/messagelink"
+	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/schema"
@@ -162,6 +163,16 @@ func init() {
 	messagelinkDescID := messagelinkFields[0].Descriptor()
 	// messagelink.DefaultID holds the default value on creation for the id field.
 	messagelink.DefaultID = messagelinkDescID.Default.(func() uuid.UUID)
+	messagepinFields := schema.MessagePin{}.Fields()
+	_ = messagepinFields
+	// messagepinDescCreatedAt is the schema descriptor for created_at field.
+	messagepinDescCreatedAt := messagepinFields[1].Descriptor()
+	// messagepin.DefaultCreatedAt holds the default value on creation for the created_at field.
+	messagepin.DefaultCreatedAt = messagepinDescCreatedAt.Default.(func() time.Time)
+	// messagepinDescID is the schema descriptor for id field.
+	messagepinDescID := messagepinFields[0].Descriptor()
+	// messagepin.DefaultID holds the default value on creation for the id field.
+	messagepin.DefaultID = messagepinDescID.Default.(func() uuid.UUID)
 	messagereactionFields := schema.MessageReaction{}.Fields()
 	_ = messagereactionFields
 	// messagereactionDescEmoji is the schema descriptor for emoji field.

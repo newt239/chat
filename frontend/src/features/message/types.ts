@@ -1,1 +1,1 @@
-export type { MessageWithUser, MessageWithThread, ThreadMetadata } from "./schemas";
+export type { MessageWithUser, ThreadMetadata } from "./schemas";

@@ -639,7 +639,6 @@ export type paths = {
         trace?: never;
     };
 }
-export type webhooks = Record<string, never>;
 export type components = {
     schemas: {
         Error: {
@@ -1036,7 +1035,6 @@ export type components = {
     headers: never;
     pathItems: never;
 }
-export type $defs = Record<string, never>;
 export type operations = {
     healthz: {
         parameters: {

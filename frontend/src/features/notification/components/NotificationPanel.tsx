@@ -6,14 +6,14 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import {
-  notificationsAtomReadOnly,
   markNotificationAsReadAtom,
   removeNotificationAtom,
   type NotificationItem,
+  notificationItemsAtom,
 } from "@/providers/store/notification";
 
 export const NotificationPanel = () => {
-  const notifications = useAtomValue(notificationsAtomReadOnly);
+  const notifications = useAtomValue(notificationItemsAtom);
   const markAsRead = useSetAtom(markNotificationAsReadAtom);
   const removeNotification = useSetAtom(removeNotificationAtom);
   const navigate = useNavigate();

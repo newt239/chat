@@ -105,6 +105,18 @@ func (f MessageLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MessageLinkMutation", m)
 }
 
+// The MessagePinFunc type is an adapter to allow the use of ordinary
+// function as MessagePin mutator.
+type MessagePinFunc func(context.Context, *ent.MessagePinMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MessagePinFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MessagePinMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MessagePinMutation", m)
+}
+
 // The MessageReactionFunc type is an adapter to allow the use of ordinary
 // function as MessageReaction mutator.
 type MessageReactionFunc func(context.Context, *ent.MessageReactionMutation) (ent.Value, error)

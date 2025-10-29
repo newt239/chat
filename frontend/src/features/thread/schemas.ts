@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // APIのParticipatingThreadsOutputに対応する最小限のzodスキーマ
-export const participatingThreadSchema = z.object({
+const participatingThreadSchema = z.object({
   thread_id: z.string(),
   channel_id: z.string().nullable().optional(),
   first_message: z.object({
@@ -51,4 +51,3 @@ export const participatingThreadsResponseSchema = z.object({
 });
 
 export type ParticipatingThread = z.infer<typeof participatingThreadSchema>;
-export type ParticipatingThreadsResponse = z.infer<typeof participatingThreadsResponseSchema>;

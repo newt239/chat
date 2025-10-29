@@ -30,6 +30,9 @@ type MessageGroupMention func(*sql.Selector)
 // MessageLink is the predicate function for messagelink builders.
 type MessageLink func(*sql.Selector)
 
+// MessagePin is the predicate function for messagepin builders.
+type MessagePin func(*sql.Selector)
+
 // MessageReaction is the predicate function for messagereaction builders.
 type MessageReaction func(*sql.Selector)
 

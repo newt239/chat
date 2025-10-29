@@ -78,6 +78,3 @@ export function useWorkspaceSearch(params: WorkspaceSearchParams) {
 		},
 	});
 }
-
-// 後方互換性のためのエクスポート。新しい実装では useWorkspaceSearch を利用してください。
-export const useWorkspaceSearchIndex = useWorkspaceSearch;
