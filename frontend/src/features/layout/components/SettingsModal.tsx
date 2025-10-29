@@ -2,7 +2,7 @@ import { Modal, Button, Text, Group, Stack } from "@mantine/core";
 import { IconLogout } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 
-import { navigateToLogin } from "@/lib/navigation";
+import { router } from "@/lib/router";
 import { clearAuthAtom } from "@/providers/store/auth";
 
 type SettingsModalProps = {
@@ -16,7 +16,7 @@ export const SettingsModal = ({ opened, onClose }: SettingsModalProps) => {
   const handleLogout = () => {
     clearAuth();
     onClose();
-    navigateToLogin();
+    router.navigate({ to: "/login" });
   };
 
   return (

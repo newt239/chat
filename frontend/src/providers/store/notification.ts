@@ -17,14 +17,6 @@ export type NotificationItem = {
   userName?: string;
   timestamp: Date;
   isRead: boolean;
-  workspaceId: string;
-};
-
-// 通知設定の型定義
-type NotificationSettings = {
-  browserNotificationEnabled: boolean;
-  soundEnabled: boolean;
-  mentionOnly: boolean;
 };
 
 // 通知履歴の状態管理
@@ -32,13 +24,6 @@ const notificationsAtom = atomWithStorage<NotificationItem[]>("notifications", [
 
 // 通知一覧の読み取り用 Atom（読み取り専用に公開）
 export const notificationItemsAtom = atom((get) => get(notificationsAtom));
-
-// 通知設定の状態管理
-const notificationSettingsAtom = atomWithStorage<NotificationSettings>("notification-settings", {
-  browserNotificationEnabled: false,
-  soundEnabled: true,
-  mentionOnly: true,
-});
 
 // 未読通知数の計算
 export const unreadNotificationCountAtom = atom((get) => {

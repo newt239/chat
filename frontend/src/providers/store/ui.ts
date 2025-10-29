@@ -21,8 +21,6 @@ type LayoutState = {
   rightSidePanelView: PanelView;
   // モバイルで表示中のパネル（left, right, none）
   mobileActivePanel: "left" | "right" | "none";
-  // 現在のルートがチャンネルページかどうか
-  isChannelPage: boolean;
   // チャンネル別のピン件数
   pinsCountByChannel: Record<string, number>;
 };
@@ -31,7 +29,6 @@ const defaultLayoutState: LayoutState = {
   leftSidePanelVisible: true,
   rightSidePanelView: { type: "hidden" },
   mobileActivePanel: "none",
-  isChannelPage: false,
   pinsCountByChannel: {},
 };
 
@@ -66,8 +63,6 @@ export const leftSidePanelVisibleAtom = atom((get) => get(layoutStateAtom).leftS
 export const rightSidePanelViewAtom = atom((get) => get(layoutStateAtom).rightSidePanelView);
 
 export const mobileActivePanelAtom = atom((get) => get(layoutStateAtom).mobileActivePanel);
-
-export const isChannelPageAtom = atom((get) => get(layoutStateAtom).isChannelPage);
 
 // チャンネル別ピン件数の取得
 export const pinsCountByChannelAtom = atom((get) => get(layoutStateAtom).pinsCountByChannel);
@@ -155,14 +150,5 @@ export const hideMobilePanelsAtom = atom(null, (_get, set) => {
   set(layoutStateAtom, {
     ...current,
     mobileActivePanel: "none",
-  });
-});
-
-// チャンネルページの状態を設定する
-export const setIsChannelPageAtom = atom(null, (_get, set, isChannelPage: boolean) => {
-  const current = _get(layoutStateAtom);
-  set(layoutStateAtom, {
-    ...current,
-    isChannelPage,
   });
 });

@@ -2,15 +2,13 @@ import createClient from "openapi-fetch";
 
 import type { paths } from "./schema";
 
-import { navigateToLogin } from "@/lib/navigation";
+import { router } from "@/lib/router";
 import { store } from "@/providers/store";
 import { accessTokenAtom, authAtom, clearAuthAtom, refreshTokenAtom } from "@/providers/store/auth";
 
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
-// リフレッシュ処理中かどうかを追跡するフラグ
-let isRefreshing = false;
+// リフレッシュ処理の単一フライト制御
 let refreshPromise: Promise<string | null> | null = null;
 const retryableRequestMap = new WeakMap<Request, Request>();
 
@@ -36,22 +34,15 @@ export const api = createClient<paths>({
 
 // リフレッシュトークンを使用してアクセストークンを更新する関数
 async function refreshAccessToken(): Promise<string | null> {
-  if (isRefreshing && refreshPromise) {
-    return refreshPromise;
-  }
+  if (refreshPromise) return refreshPromise;
 
-  isRefreshing = true;
   refreshPromise = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return null;
     try {
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) {
-        return null;
-      }
-
       const { data, error } = await api.POST("/api/auth/refresh", {
         body: { refreshToken },
       });
-
       if (data && !error) {
         updateAuthTokens(data.accessToken);
         return data.accessToken;
@@ -60,13 +51,20 @@ async function refreshAccessToken(): Promise<string | null> {
     } catch {
       return null;
     } finally {
-      isRefreshing = false;
       refreshPromise = null;
     }
   })();
 
   return refreshPromise;
 }
+
+// 401時の再試行用リクエスト生成
+const buildRetriedRequest = (source: Request, token: string) => {
+  const headers = new Headers(source.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("X-Auth-Retry", "1");
+  return new Request(source, { headers });
+};
 
 // リクエストインターセプター: アクセストークンを自動付与
 api.use({
@@ -88,29 +86,22 @@ api.use({
     const retrySource = retryableRequestMap.get(request);
     retryableRequestMap.delete(request);
 
-    // 401エラーの場合のみリフレッシュを試みる
-    if (
-      response.status === 401 &&
-      !request.url.includes("/api/auth/refresh") &&
-      request.headers.get("X-Auth-Retry") !== "1"
-    ) {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        // 新しいトークンで元のリクエストを再試行
-        const sourceRequest = retrySource ?? request;
-        const headers = new Headers(sourceRequest.headers);
-        headers.set("Authorization", `Bearer ${newToken}`);
-        headers.set("X-Auth-Retry", "1");
-
-        const retryRequest = new Request(sourceRequest, { headers });
-
-        return fetch(retryRequest);
-      } else {
-        // リフレッシュ失敗時は認証情報をクリアしてログイン画面へ
-        resetAuthState();
-        navigateToLogin();
-      }
+    const isRefreshEndpoint = request.url.includes("/api/auth/refresh");
+    const hasRetried = request.headers.get("X-Auth-Retry") === "1";
+    if (response.status !== 401 || isRefreshEndpoint || hasRetried) {
+      return response;
     }
+
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      const sourceRequest = retrySource ?? request;
+      const retryRequest = buildRetriedRequest(sourceRequest, newToken);
+      return fetch(retryRequest);
+    }
+
+    // リフレッシュ失敗時は認証情報をクリアしてログイン画面へ
+    resetAuthState();
+    router.navigate({ to: "/login" });
     return response;
   },
 });

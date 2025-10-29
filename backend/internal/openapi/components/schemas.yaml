@@ -1,0 +1,985 @@
+PinnedMessage:
+  type: object
+  properties:
+    message:
+      $ref: "#/components/schemas/Message"
+    pinnedAt:
+      type: string
+      format: date-time
+    pinnedBy:
+      type: string
+      format: uuid
+  required: [message, pinnedAt, pinnedBy]
+
+ListPinsResponse:
+  type: object
+  properties:
+    pins:
+      type: array
+      items:
+        $ref: "#/components/schemas/PinnedMessage"
+    nextCursor:
+      type: string
+      nullable: true
+  required: [pins]
+Error:
+  type: object
+  properties:
+    error:
+      type: string
+  required:
+    - error
+
+User:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    email:
+      type: string
+      format: email
+    displayName:
+      type: string
+    avatarUrl:
+      type: string
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - email
+    - displayName
+    - createdAt
+
+RegisterRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+    password:
+      type: string
+      minLength: 8
+    displayName:
+      type: string
+      minLength: 1
+  required:
+    - email
+    - password
+    - displayName
+
+LoginRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+    password:
+      type: string
+  required:
+    - email
+    - password
+
+AuthResponse:
+  type: object
+  properties:
+    accessToken:
+      type: string
+    refreshToken:
+      type: string
+    user:
+      $ref: "#/components/schemas/User"
+  required:
+    - accessToken
+    - refreshToken
+    - user
+
+RefreshRequest:
+  type: object
+  properties:
+    refreshToken:
+      type: string
+  required:
+    - refreshToken
+
+Workspace:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    iconUrl:
+      type: string
+      nullable: true
+    createdBy:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - name
+    - createdBy
+    - createdAt
+
+CreateWorkspaceRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+    description:
+      type: string
+  required:
+    - name
+
+Channel:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    workspaceId:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    isPrivate:
+      type: boolean
+    channelType:
+      type: string
+      enum: [public, private, dm, group_dm]
+    createdBy:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+    unreadCount:
+      type: integer
+      description: 未読メッセージ数
+      minimum: 0
+    hasMention:
+      type: boolean
+      description: 未読メンションの有無
+  required:
+    - id
+    - workspaceId
+    - name
+    - isPrivate
+    - createdBy
+    - createdAt
+
+CreateChannelRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+    description:
+      type: string
+    isPrivate:
+      type: boolean
+      default: false
+  required:
+    - name
+
+Message:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    channelId:
+      type: string
+      format: uuid
+    userId:
+      type: string
+      format: uuid
+    parentId:
+      type: string
+      format: uuid
+      nullable: true
+    body:
+      type: string
+    createdAt:
+      type: string
+      format: date-time
+    editedAt:
+      type: string
+      format: date-time
+      nullable: true
+    deletedAt:
+      type: string
+      format: date-time
+      nullable: true
+    isDeleted:
+      type: boolean
+    deletedBy:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+    attachments:
+      type: array
+      items:
+        $ref: "#/components/schemas/Attachment"
+  required:
+    - id
+    - channelId
+    - userId
+    - body
+    - createdAt
+    - isDeleted
+
+CreateMessageRequest:
+  type: object
+  properties:
+    body:
+      type: string
+      minLength: 1
+    parentId:
+      type: string
+      format: uuid
+    attachmentIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+  required:
+    - body
+
+UpdateMessageRequest:
+  type: object
+  properties:
+    body:
+      type: string
+      minLength: 1
+      maxLength: 10000
+  required:
+    - body
+
+MessagesResponse:
+  type: object
+  properties:
+    messages:
+      type: array
+      items:
+        $ref: "#/components/schemas/Message"
+    hasMore:
+      type: boolean
+  required:
+    - messages
+    - hasMore
+
+PaginatedMessages:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "#/components/schemas/Message"
+    total:
+      type: integer
+      minimum: 0
+    page:
+      type: integer
+      minimum: 1
+    perPage:
+      type: integer
+      minimum: 1
+    hasMore:
+      type: boolean
+  required:
+    - items
+    - total
+    - page
+    - perPage
+    - hasMore
+
+PaginatedChannels:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "#/components/schemas/Channel"
+    total:
+      type: integer
+      minimum: 0
+    page:
+      type: integer
+      minimum: 1
+    perPage:
+      type: integer
+      minimum: 1
+    hasMore:
+      type: boolean
+  required:
+    - items
+    - total
+    - page
+    - perPage
+    - hasMore
+
+PaginatedUsers:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "#/components/schemas/MemberInfo"
+    total:
+      type: integer
+      minimum: 0
+    page:
+      type: integer
+      minimum: 1
+    perPage:
+      type: integer
+      minimum: 1
+    hasMore:
+      type: boolean
+  required:
+    - items
+    - total
+    - page
+    - perPage
+    - hasMore
+
+WorkspaceSearchResponse:
+  type: object
+  properties:
+    messages:
+      $ref: "#/components/schemas/PaginatedMessages"
+    channels:
+      $ref: "#/components/schemas/PaginatedChannels"
+    users:
+      $ref: "#/components/schemas/PaginatedUsers"
+  required:
+    - messages
+    - channels
+    - users
+
+UnreadCountResponse:
+  type: object
+  properties:
+    count:
+      type: integer
+      minimum: 0
+  required:
+    - count
+
+UpdateReadStateRequest:
+  type: object
+  properties:
+    lastReadAt:
+      type: string
+      format: date-time
+  required:
+    - lastReadAt
+
+PresignRequest:
+  type: object
+  properties:
+    fileName:
+      type: string
+    contentType:
+      type: string
+    sizeBytes:
+      type: integer
+    channelId:
+      type: string
+      format: uuid
+  required:
+    - fileName
+    - contentType
+    - sizeBytes
+    - channelId
+
+PresignResponse:
+  type: object
+  properties:
+    uploadUrl:
+      type: string
+      format: uri
+    attachmentId:
+      type: string
+      format: uuid
+  required:
+    - uploadUrl
+    - attachmentId
+
+Attachment:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    messageId:
+      type: string
+      format: uuid
+    fileName:
+      type: string
+    mimeType:
+      type: string
+    sizeBytes:
+      type: integer
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - messageId
+    - fileName
+    - mimeType
+    - sizeBytes
+    - createdAt
+
+MemberInfo:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    email:
+      type: string
+      format: email
+    displayName:
+      type: string
+    avatarUrl:
+      type: string
+      nullable: true
+    role:
+      type: string
+      enum: [owner, admin, member]
+    joinedAt:
+      type: string
+      format: date-time
+  required:
+    - userId
+    - email
+    - displayName
+    - role
+    - joinedAt
+
+ListMembersResponse:
+  type: object
+  properties:
+    members:
+      type: array
+      items:
+        $ref: "#/components/schemas/MemberInfo"
+  required:
+    - members
+
+AddMemberRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+    role:
+      type: string
+      enum: [admin, member]
+      default: member
+  required:
+    - email
+
+UpdateMemberRoleRequest:
+  type: object
+  properties:
+    role:
+      type: string
+      enum: [admin, member]
+  required:
+    - role
+
+MessageReaction:
+  type: object
+  properties:
+    messageId:
+      type: string
+      format: uuid
+    userId:
+      type: string
+      format: uuid
+    emoji:
+      type: string
+      description: "Unicode絵文字または将来的にカスタム絵文字ID"
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - messageId
+    - userId
+    - emoji
+    - createdAt
+
+ReactionWithUser:
+  type: object
+  properties:
+    messageId:
+      type: string
+      format: uuid
+    user:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - displayName
+    emoji:
+      type: string
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - messageId
+    - user
+    - emoji
+    - createdAt
+
+AddReactionRequest:
+  type: object
+  properties:
+    emoji:
+      type: string
+      minLength: 1
+  required:
+    - emoji
+
+ListReactionsResponse:
+  type: object
+  properties:
+    reactions:
+      type: array
+      items:
+        $ref: "#/components/schemas/ReactionWithUser"
+  required:
+    - reactions
+
+UserGroup:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    workspaceId:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    createdBy:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - workspaceId
+    - name
+    - createdBy
+    - createdAt
+    - updatedAt
+
+CreateUserGroupRequest:
+  type: object
+  properties:
+    workspaceId:
+      type: string
+      format: uuid
+    name:
+      type: string
+      minLength: 1
+    description:
+      type: string
+  required:
+    - workspaceId
+    - name
+
+UpdateUserGroupRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+    description:
+      type: string
+  required:
+    - name
+
+UserGroupMember:
+  type: object
+  properties:
+    groupId:
+      type: string
+      format: uuid
+    userId:
+      type: string
+      format: uuid
+    joinedAt:
+      type: string
+      format: date-time
+  required:
+    - groupId
+    - userId
+    - joinedAt
+
+FetchOGPRequest:
+  type: object
+  properties:
+    url:
+      type: string
+      format: uri
+  required:
+    - url
+
+FetchOGPResponse:
+  type: object
+  properties:
+    ogpData:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        siteName:
+          type: string
+          nullable: true
+        cardType:
+          type: string
+          nullable: true
+  required:
+    - ogpData
+
+MessageBookmark:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    messageId:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - userId
+    - messageId
+    - createdAt
+
+BookmarkWithMessage:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    message:
+      $ref: "#/components/schemas/Message"
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - userId
+    - message
+    - createdAt
+
+ListBookmarksResponse:
+  type: object
+  properties:
+    bookmarks:
+      type: array
+      items:
+        $ref: "#/components/schemas/BookmarkWithMessage"
+  required:
+    - bookmarks
+
+ThreadMetadata:
+  type: object
+  properties:
+    messageId:
+      type: string
+      format: uuid
+    replyCount:
+      type: integer
+      minimum: 0
+    lastReplyAt:
+      type: string
+      format: date-time
+      nullable: true
+    lastReplyUser:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - displayName
+    participantUserIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+  required:
+    - messageId
+    - replyCount
+    - participantUserIds
+
+ThreadRepliesResponse:
+  type: object
+  properties:
+    parentMessage:
+      $ref: "#/components/schemas/Message"
+    replies:
+      type: array
+      items:
+        $ref: "#/components/schemas/Message"
+    hasMore:
+      type: boolean
+  required:
+    - parentMessage
+    - replies
+    - hasMore
+
+ChannelMemberInfo:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    email:
+      type: string
+      format: email
+    displayName:
+      type: string
+    avatarUrl:
+      type: string
+      nullable: true
+    role:
+      type: string
+      enum: [member, admin]
+    joinedAt:
+      type: string
+      format: date-time
+  required:
+    - userId
+    - email
+    - displayName
+    - role
+    - joinedAt
+
+ListChannelMembersResponse:
+  type: object
+  properties:
+    members:
+      type: array
+      items:
+        $ref: "#/components/schemas/ChannelMemberInfo"
+  required:
+    - members
+
+InviteChannelMemberRequest:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    role:
+      type: string
+      enum: [member, admin]
+      default: member
+  required:
+    - userId
+
+UpdateChannelMemberRoleRequest:
+  type: object
+  properties:
+    role:
+      type: string
+      enum: [member, admin]
+  required:
+    - role
+
+CreateDMRequest:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+  required:
+    - userId
+
+CreateGroupDMRequest:
+  type: object
+  properties:
+    userIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+      minItems: 2
+      maxItems: 9
+    name:
+      type: string
+  required:
+    - userIds
+
+DMMember:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    displayName:
+      type: string
+    avatarUrl:
+      type: string
+      nullable: true
+  required:
+    - userId
+    - displayName
+
+DMOutput:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    workspaceId:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    type:
+      type: string
+      enum: [dm, group_dm]
+    members:
+      type: array
+      items:
+        $ref: "#/components/schemas/DMMember"
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - workspaceId
+    - name
+    - type
+    - members
+    - createdAt
+    - updatedAt
+
+SuccessResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+  required:
+    - success
+
+ParticipatingThread:
+  type: object
+  properties:
+    thread_id:
+      type: string
+      format: uuid
+    channel_id:
+      type: string
+      format: uuid
+      nullable: true
+    first_message:
+      $ref: "#/components/schemas/Message"
+    reply_count:
+      type: integer
+      minimum: 0
+    last_activity_at:
+      type: string
+      format: date-time
+    unread_count:
+      type: integer
+      minimum: 0
+  required:
+    - thread_id
+    - first_message
+    - reply_count
+    - last_activity_at
+    - unread_count
+
+ThreadCursor:
+  type: object
+  properties:
+    last_activity_at:
+      type: string
+      format: date-time
+    thread_id:
+      type: string
+      format: uuid
+  required:
+    - last_activity_at
+    - thread_id
+
+ParticipatingThreadsOutput:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "#/components/schemas/ParticipatingThread"
+    next_cursor:
+      $ref: "#/components/schemas/ThreadCursor"
+      nullable: true
+  required:
+    - items

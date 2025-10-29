@@ -4,7 +4,7 @@ import { useSetAtom } from "jotai";
 
 import { WorkspaceList } from "@/features/workspace/components/WorkspaceList";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
-import { navigateToWorkspace } from "@/lib/navigation";
+import { router } from "@/lib/router";
 import { setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
 type WorkspaceStorageState = {
@@ -62,7 +62,7 @@ export const WorkspaceSelection = () => {
       if (storedExists) {
         hasRedirected.current = true;
         setCurrentWorkspace(storedWorkspaceId);
-        navigateToWorkspace(storedWorkspaceId);
+        router.navigate({ to: "/app/$workspaceId", params: { workspaceId: storedWorkspaceId } });
         return;
       }
     }
@@ -72,7 +72,7 @@ export const WorkspaceSelection = () => {
     if (firstWorkspace) {
       hasRedirected.current = true;
       setCurrentWorkspace(firstWorkspace.id);
-      navigateToWorkspace(firstWorkspace.id);
+      router.navigate({ to: "/app/$workspaceId", params: { workspaceId: firstWorkspace.id } });
     }
   }, [setCurrentWorkspace, workspaces]);
 

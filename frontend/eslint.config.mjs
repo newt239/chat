@@ -7,7 +7,7 @@ import tseslint from "typescript-eslint";
 
 const eslintConfig = [
   {
-    ignores: ["node_modules/", "dist/", "storybook-static/", ".storybook/", "routeTree.gen.ts"],
+    ignores: ["node_modules/", "dist/", "storybook-static/", ".storybook/", "routeTree.gen.ts", "lib/api/schema.ts"],
   },
   ...tseslint.configs.recommended,
   {

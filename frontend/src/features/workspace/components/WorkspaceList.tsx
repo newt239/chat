@@ -7,30 +7,23 @@ import { useWorkspaces } from "../hooks/useWorkspace";
 
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 
-import type { WorkspaceSummary } from "@/features/workspace/types";
-
-import { navigateToWorkspace } from "@/lib/navigation";
+import { router } from "@/lib/router";
 import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
 export const WorkspaceList = () => {
-  const { data: workspaces, isLoading, error } = useWorkspaces();
+  const { data, isLoading, error } = useWorkspaces();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
 
   useEffect(() => {
-    if (
-      workspaces &&
-      Array.isArray(workspaces) &&
-      workspaces.length > 0 &&
-      currentWorkspaceId === null
-    ) {
-      const firstWorkspace = workspaces[0];
+    if (data && data.length > 0 && currentWorkspaceId === null) {
+      const firstWorkspace = data[0];
       if (firstWorkspace) {
         setCurrentWorkspace(firstWorkspace.id);
       }
     }
-  }, [workspaces, currentWorkspaceId, setCurrentWorkspace]);
+  }, [data, currentWorkspaceId, setCurrentWorkspace]);
 
   if (isLoading) {
     return (
@@ -58,9 +51,9 @@ export const WorkspaceList = () => {
           <Button onClick={() => setIsModalOpen(true)}>新規作成</Button>
         </Group>
 
-        {workspaces && Array.isArray(workspaces) && workspaces.length > 0 && (
+        {data && Array.isArray(data) && data.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workspaces.map((workspace: WorkspaceSummary) => {
+            {data.map((workspace) => {
               const isSelected = workspace.id === currentWorkspaceId;
               return (
                 <Card
@@ -84,7 +77,10 @@ export const WorkspaceList = () => {
                     fullWidth
                     onClick={() => {
                       setCurrentWorkspace(workspace.id);
-                      navigateToWorkspace(workspace.id);
+                      router.navigate({
+                        to: "/app/$workspaceId",
+                        params: { workspaceId: workspace.id },
+                      });
                     }}
                   >
                     {isSelected ? "選択中" : "開く"}

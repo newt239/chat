@@ -25,7 +25,7 @@ export const GlobalHeaderPanel = () => {
   const navigate = useNavigate();
   const params = useParams({ strict: false });
 
-  const currentWorkspace = workspaces?.find((w: WorkspaceSummary) => w.id === currentWorkspaceId);
+  const currentWorkspace = workspaces?.find((w) => w.id === currentWorkspaceId);
   const isInWorkspace = params.workspaceId !== undefined;
 
   const handleWorkspaceChange = (workspaceId: string) => {

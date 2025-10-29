@@ -4,7 +4,7 @@ import { useSetAtom } from "jotai";
 import type { components } from "@/lib/api/schema";
 
 import { api } from "@/lib/api/client";
-import { navigateToAppWithWorkspace } from "@/lib/navigation";
+import { router } from "@/lib/router";
 import { setAuthAtom } from "@/providers/store/auth";
 
 type AuthResponse = components["schemas"]["AuthResponse"];
@@ -24,7 +24,7 @@ export function useRegister() {
     },
     onSuccess: (data: AuthResponse) => {
       setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
-      navigateToAppWithWorkspace();
+      router.navigate({ to: "/app" });
     },
   });
 }

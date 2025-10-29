@@ -10,14 +10,12 @@ import {
   leftSidePanelVisibleAtom,
   rightSidePanelViewAtom,
   mobileActivePanelAtom,
-  isChannelPageAtom,
 } from "@/providers/store/ui";
 
 export const ResponsiveLayout = () => {
   const leftSidePanelVisible = useAtomValue(leftSidePanelVisibleAtom);
   const rightSidePanelView = useAtomValue(rightSidePanelViewAtom);
   const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
-  const isChannelPage = useAtomValue(isChannelPageAtom);
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
@@ -66,12 +64,10 @@ export const ResponsiveLayout = () => {
         )}
       </div>
 
-      {/* モバイルボトムバー（チャンネルページでない場合のみ表示） */}
-      {!isChannelPage && (
-        <div className="md:hidden">
-          <MobileBottomBar />
-        </div>
-      )}
+      {/* モバイルボトムバー */}
+      <div className="md:hidden">
+        <MobileBottomBar />
+      </div>
     </div>
   );
 };

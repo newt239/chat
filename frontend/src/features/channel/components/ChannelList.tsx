@@ -8,7 +8,7 @@ import { useChannels } from "../hooks/useChannel";
 import { ChannelName } from "./ChannelName";
 import { CreateChannelModal } from "./CreateChannelModal";
 
-import { navigateToChannel } from "@/lib/navigation";
+import { router } from "@/lib/router";
 import { currentChannelIdAtom, setCurrentChannelAtom } from "@/providers/store/workspace";
 
 type ChannelListProps = {
@@ -24,7 +24,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {
       setCurrentChannel(channelId);
-      navigateToChannel(workspaceId, channelId);
+      router.navigate({ to: "/app/$workspaceId/$channelId", params: { workspaceId, channelId } });
     }
   };
 
