@@ -31,7 +31,7 @@ export function useMessages(channelId: string | null) {
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to fetch messages");
+        throw new Error(error?.error ?? "メッセージ一覧の取得に失敗しました");
       }
 
       const parsed = messagesWithThreadResponseSchema.safeParse(data);
@@ -39,7 +39,7 @@ export function useMessages(channelId: string | null) {
       if (!parsed.success) {
         console.error("メッセージ取得のスキーマ検証エラー:", parsed.error);
         console.error("受信したデータ:", JSON.stringify(data, null, 2));
-        throw new Error("Unexpected response format when fetching messages");
+        throw new Error("メッセージ取得のレスポンス形式が想定と異なります");
       }
 
       return parsed.data;
@@ -63,7 +63,7 @@ export function useSendMessage(channelId: string | null) {
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to send message");
+        throw new Error(error?.error ?? "メッセージの送信に失敗しました");
       }
 
       return data;

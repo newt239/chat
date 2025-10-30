@@ -43,20 +43,20 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 			// クエリパラメータからトークンを取得
 			token = c.QueryParam("token")
 			if token == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "authentication token required")
+				return echo.NewHTTPError(http.StatusUnauthorized, "認証トークンが指定されていません")
 			}
 		}
 
 		// JWTトークンの検証
 		claims, err := jwtService.VerifyToken(token)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusUnauthorized, "invalid or expired token")
+			return echo.NewHTTPError(http.StatusUnauthorized, "トークンが無効または期限切れです")
 		}
 
 		// WorkspaceIDの取得
 		workspaceID := c.QueryParam("workspaceId")
 		if workspaceID == "" {
-			return echo.NewHTTPError(http.StatusBadRequest, "workspaceId query parameter required")
+			return echo.NewHTTPError(http.StatusBadRequest, "workspaceIdクエリパラメータは必須です")
 		}
 
 		// Workspace所属確認
@@ -64,17 +64,17 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 		member, err := workspaceRepo.FindMember(ctx, workspaceID, claims.UserID)
 		if err != nil {
 			log.Printf("[WebSocket] FindMember error: userID=%s workspaceID=%s err=%v", claims.UserID, workspaceID, err)
-			return echo.NewHTTPError(http.StatusForbidden, "user is not a member of this workspace")
+			return echo.NewHTTPError(http.StatusForbidden, "ユーザーはこのワークスペースのメンバーではありません")
 		}
 		if member == nil {
 			log.Printf("[WebSocket] Member not found: userID=%s workspaceID=%s", claims.UserID, workspaceID)
-			return echo.NewHTTPError(http.StatusForbidden, "user is not a member of this workspace")
+			return echo.NewHTTPError(http.StatusForbidden, "ユーザーはこのワークスペースのメンバーではありません")
 		}
 
 		// WebSocket接続のアップグレード
 		conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 		if err != nil {
-			log.Printf("WebSocket upgrade error: %v", err)
+			log.Printf("WebSocketのアップグレードに失敗しました: %v", err)
 			return err
 		}
 

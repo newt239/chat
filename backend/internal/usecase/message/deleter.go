@@ -91,7 +91,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 
 		// スレッドメタデータも削除
 		if err := d.threadRepo.DeleteMetadata(ctx, message.ID); err != nil {
-			d.logger.Warn("Failed to delete thread metadata", service.LogField{Key: "error", Value: err})
+			d.logger.Warn("スレッドメタデータの削除に失敗しました", service.LogField{Key: "error", Value: err})
 		}
 	}
 

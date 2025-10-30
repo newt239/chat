@@ -25,10 +25,10 @@ type InviteMemberRequest struct {
 
 func (r *InviteMemberRequest) Validate() error {
 	if strings.TrimSpace(r.UserID) == "" {
-		return errors.New("userId is required")
+		return errors.New("userIdは必須です")
 	}
 	if r.Role != nil && (*r.Role != "member" && *r.Role != "admin") {
-		return errors.New("role must be either 'member' or 'admin'")
+		return errors.New("roleは'member'または'admin'を指定してください")
 	}
 	return nil
 }
@@ -39,7 +39,7 @@ type ChannelMemberUpdateRoleRequest struct {
 
 func (r *ChannelMemberUpdateRoleRequest) Validate() error {
 	if strings.TrimSpace(r.Role) == "" {
-		return errors.New("role is required")
+		return errors.New("roleは必須です")
 	}
 	return nil
 }
@@ -65,12 +65,12 @@ type SuccessResponse struct {
 func (h *ChannelMemberHandler) ListMembers(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "User not authenticated"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
 	output, err := h.channelMemberUseCase.ListMembers(c.Request().Context(), channelmember.ListMembersInput{
@@ -84,7 +84,7 @@ func (h *ChannelMemberHandler) ListMembers(c echo.Context) error {
 		case channelmember.ErrUnauthorized:
 			return c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to list members"})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "メンバー一覧の取得に失敗しました"})
 		}
 	}
 
@@ -111,17 +111,17 @@ func (h *ChannelMemberHandler) ListMembers(c echo.Context) error {
 func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "User not authenticated"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
 	var req InviteMemberRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "リクエストボディが不正です: " + err.Error()})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -152,7 +152,7 @@ func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
 		case channelmember.ErrInvalidRole:
 			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to invite member"})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "メンバー招待に失敗しました"})
 		}
 	}
 
@@ -176,12 +176,12 @@ func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
 func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "User not authenticated"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
 	err := h.channelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
@@ -197,7 +197,7 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
 		case channelmember.ErrUnauthorized:
 			return c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to join channel"})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "チャンネルへの参加に失敗しました"})
 		}
 	}
 
@@ -225,22 +225,22 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
 func (h *ChannelMemberHandler) UpdateMemberRole(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "User not authenticated"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
 	targetUserID := c.Param("userId")
 	if targetUserID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "User ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "ユーザーIDは必須です"})
 	}
 
 	var req ChannelMemberUpdateRoleRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "リクエストボディが不正です: " + err.Error()})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -266,7 +266,7 @@ func (h *ChannelMemberHandler) UpdateMemberRole(c echo.Context) error {
 		case channelmember.ErrLastAdminRemoval:
 			return c.JSON(http.StatusConflict, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to update member role"})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "メンバー権限の更新に失敗しました"})
 		}
 	}
 
@@ -292,17 +292,17 @@ func (h *ChannelMemberHandler) UpdateMemberRole(c echo.Context) error {
 func (h *ChannelMemberHandler) RemoveMember(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "User not authenticated"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
 	targetUserID := c.Param("userId")
 	if targetUserID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "User ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "ユーザーIDは必須です"})
 	}
 
 	err := h.channelMemberUseCase.RemoveMember(c.Request().Context(), channelmember.RemoveMemberInput{
@@ -321,7 +321,7 @@ func (h *ChannelMemberHandler) RemoveMember(c echo.Context) error {
 		case channelmember.ErrLastAdminRemoval:
 			return c.JSON(http.StatusConflict, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to remove member"})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "メンバーの削除に失敗しました"})
 		}
 	}
 
@@ -345,12 +345,12 @@ func (h *ChannelMemberHandler) RemoveMember(c echo.Context) error {
 func (h *ChannelMemberHandler) LeaveChannel(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "User not authenticated"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Channel ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
 	err := h.channelMemberUseCase.LeaveChannel(c.Request().Context(), channelmember.LeaveChannelInput{
@@ -366,7 +366,7 @@ func (h *ChannelMemberHandler) LeaveChannel(c echo.Context) error {
 		case channelmember.ErrLastAdminRemoval:
 			return c.JSON(http.StatusConflict, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to leave channel"})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "チャンネルからの退出に失敗しました"})
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 )
 
@@ -24,7 +25,7 @@ type FetchOGPRequest struct {
 func (h *LinkHandler) FetchOGP(c echo.Context) error {
 	var req FetchOGPRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {

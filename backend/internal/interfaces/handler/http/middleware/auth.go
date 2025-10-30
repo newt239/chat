@@ -21,17 +21,17 @@ func Auth(jwtService authuc.JWTService) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			authHeader := c.Request().Header.Get(authorizationHeader)
 			if authHeader == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "authorization header required")
+				return echo.NewHTTPError(http.StatusUnauthorized, "Authorizationヘッダーが指定されていません")
 			}
 
 			if !strings.HasPrefix(authHeader, bearerPrefix) {
-				return echo.NewHTTPError(http.StatusUnauthorized, "invalid authorization header format")
+				return echo.NewHTTPError(http.StatusUnauthorized, "Authorizationヘッダーの形式が不正です")
 			}
 
 			token := strings.TrimPrefix(authHeader, bearerPrefix)
 			claims, err := jwtService.VerifyToken(token)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "invalid or expired token")
+				return echo.NewHTTPError(http.StatusUnauthorized, "トークンが無効または期限切れです")
 			}
 
 			c.Set(userIDKey, claims.UserID)

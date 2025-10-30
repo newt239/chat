@@ -18,12 +18,12 @@ type MessageHandler struct {
 func (h *MessageHandler) ListMessagesWithThread(c echo.Context) error {
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Channel ID is required")
+		return utils.HandleParamError("channelId")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	limit := 20
@@ -156,12 +156,12 @@ type UpdateMessageRequest struct {
 func (h *MessageHandler) ListMessages(c echo.Context) error {
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Channel ID is required")
+		return utils.HandleParamError("channelId")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	limitStr := c.QueryParam("limit")

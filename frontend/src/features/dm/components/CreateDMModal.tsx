@@ -29,7 +29,7 @@ export const CreateDMModal = ({
         params: { path: { id: workspaceId } },
       });
       if (response.error || !response.data) {
-        throw new Error("Failed to fetch workspace members");
+        throw new Error("ワークスペースメンバーの取得に失敗しました");
       }
       return response.data;
     },
@@ -51,7 +51,7 @@ export const CreateDMModal = ({
         params: { workspaceId, channelId: dm.id },
       });
     } catch (error) {
-      console.error("Failed to create DM:", error);
+      console.error("DMの作成に失敗しました:", error);
     }
   };
 

@@ -37,12 +37,12 @@ type AddUserGroupMemberRequest struct {
 func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	var req CreateUserGroupRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -73,12 +73,12 @@ func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 func (h *UserGroupHandler) ListUserGroups(c echo.Context) error {
 	workspaceID := c.QueryParam("workspace_id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.ListUserGroupsInput{
@@ -98,12 +98,12 @@ func (h *UserGroupHandler) ListUserGroups(c echo.Context) error {
 func (h *UserGroupHandler) GetUserGroup(c echo.Context) error {
 	userGroupID := c.Param("id")
 	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "User Group ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.GetUserGroupInput{
@@ -123,12 +123,12 @@ func (h *UserGroupHandler) GetUserGroup(c echo.Context) error {
 func (h *UserGroupHandler) UpdateUserGroup(c echo.Context) error {
 	userGroupID := c.Param("id")
 	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "User Group ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
 	}
 
 	var req UpdateUserGroupRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -153,12 +153,12 @@ func (h *UserGroupHandler) UpdateUserGroup(c echo.Context) error {
 func (h *UserGroupHandler) DeleteUserGroup(c echo.Context) error {
 	userGroupID := c.Param("id")
 	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "User Group ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.DeleteUserGroupInput{
@@ -178,12 +178,12 @@ func (h *UserGroupHandler) DeleteUserGroup(c echo.Context) error {
 func (h *UserGroupHandler) AddMember(c echo.Context) error {
 	userGroupID := c.Param("id")
 	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "User Group ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
 	}
 
 	var req AddUserGroupMemberRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -192,7 +192,7 @@ func (h *UserGroupHandler) AddMember(c echo.Context) error {
 
 	addedBy, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.AddMemberInput{
@@ -214,12 +214,12 @@ func (h *UserGroupHandler) RemoveMember(c echo.Context) error {
 	userGroupID := c.Param("id")
 	userID := c.Param("userId")
 	if userGroupID == "" || userID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "User Group ID and User ID are required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDとユーザーIDは必須です")
 	}
 
 	removedBy, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.RemoveMemberInput{
@@ -240,12 +240,12 @@ func (h *UserGroupHandler) RemoveMember(c echo.Context) error {
 func (h *UserGroupHandler) ListMembers(c echo.Context) error {
 	userGroupID := c.Param("id")
 	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "User Group ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.ListMembersInput{

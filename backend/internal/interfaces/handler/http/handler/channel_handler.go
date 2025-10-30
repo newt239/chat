@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 )
 
@@ -33,12 +34,12 @@ type UpdateChannelRequest struct {
 func (h *ChannelHandler) ListChannels(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	input := channeluc.ListChannelsInput{
@@ -58,17 +59,17 @@ func (h *ChannelHandler) ListChannels(c echo.Context) error {
 func (h *ChannelHandler) CreateChannel(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	var req CreateChannelRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {

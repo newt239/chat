@@ -18,9 +18,9 @@ const (
 )
 
 var (
-	ErrInvalidQuery      = errors.New("query must not be empty")
-	ErrWorkspaceNotFound = errors.New("workspace not found")
-	ErrUnauthorized      = errors.New("unauthorized to search this workspace")
+	ErrInvalidQuery      = errors.New("検索キーワードを入力してください")
+	ErrWorkspaceNotFound = errors.New("ワークスペースが見つかりません")
+	ErrUnauthorized      = errors.New("このワークスペースを検索する権限がありません")
 )
 
 type WorkspaceSearchInput struct {

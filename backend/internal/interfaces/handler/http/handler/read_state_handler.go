@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 )
 
@@ -25,12 +26,12 @@ type UpdateReadStateRequest struct {
 func (h *ReadStateHandler) GetUnreadCount(c echo.Context) error {
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Channel ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "チャンネルIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	input := readstateuc.GetUnreadCountInput{
@@ -50,17 +51,17 @@ func (h *ReadStateHandler) GetUnreadCount(c echo.Context) error {
 func (h *ReadStateHandler) UpdateReadState(c echo.Context) error {
 	channelID := c.Param("channelId")
 	if channelID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Channel ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "チャンネルIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	var req UpdateReadStateRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -69,7 +70,7 @@ func (h *ReadStateHandler) UpdateReadState(c echo.Context) error {
 
 	lastReadAt, parseErr := time.Parse(time.RFC3339, req.LastReadAt)
 	if parseErr != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid last_read_at format")
+		return echo.NewHTTPError(http.StatusBadRequest, "last_read_atの形式が不正です")
 	}
 
 	input := readstateuc.UpdateReadStateInput{

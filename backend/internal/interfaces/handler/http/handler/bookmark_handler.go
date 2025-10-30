@@ -20,12 +20,12 @@ func NewBookmarkHandler(bookmarkUC bookmark.BookmarkUseCase) *BookmarkHandler {
 func (h *BookmarkHandler) ListBookmarks(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	bookmarks, err := h.bookmarkUC.ListBookmarks(c.Request().Context(), userID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "ブックマーク一覧の取得に失敗しました: " + err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"bookmarks": bookmarks.Bookmarks})
@@ -34,12 +34,12 @@ func (h *BookmarkHandler) ListBookmarks(c echo.Context) error {
 func (h *BookmarkHandler) AddBookmark(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	messageID := c.Param("messageId")
 	if messageID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "message ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "メッセージIDは必須です"})
 	}
 
 	input := bookmark.AddBookmarkInput{
@@ -51,13 +51,13 @@ func (h *BookmarkHandler) AddBookmark(c echo.Context) error {
 	if err != nil {
 		switch err {
 		case bookmark.ErrMessageNotFound:
-			return c.JSON(http.StatusNotFound, map[string]string{"error": "message not found"})
+			return c.JSON(http.StatusNotFound, ErrorResponse{Error: err.Error()})
 		case bookmark.ErrBookmarkExists:
-			return c.JSON(http.StatusBadRequest, map[string]string{"error": "bookmark already exists"})
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		case bookmark.ErrUnauthorized:
-			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "ブックマークの追加に失敗しました: " + err.Error()})
 		}
 	}
 
@@ -67,12 +67,12 @@ func (h *BookmarkHandler) AddBookmark(c echo.Context) error {
 func (h *BookmarkHandler) RemoveBookmark(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
 	messageID := c.Param("messageId")
 	if messageID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "message ID is required"})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "メッセージIDは必須です"})
 	}
 
 	input := bookmark.RemoveBookmarkInput{
@@ -84,11 +84,11 @@ func (h *BookmarkHandler) RemoveBookmark(c echo.Context) error {
 	if err != nil {
 		switch err {
 		case bookmark.ErrMessageNotFound:
-			return c.JSON(http.StatusNotFound, map[string]string{"error": "message not found"})
+			return c.JSON(http.StatusNotFound, ErrorResponse{Error: err.Error()})
 		case bookmark.ErrUnauthorized:
-			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: err.Error()})
 		default:
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "ブックマークの削除に失敗しました: " + err.Error()})
 		}
 	}
 

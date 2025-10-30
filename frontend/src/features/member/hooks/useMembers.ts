@@ -17,7 +17,7 @@ export function useMembers(workspaceId: string | null) {
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to fetch members");
+        throw new Error(error?.error ?? "メンバー一覧の取得に失敗しました");
       }
 
       return data.members;

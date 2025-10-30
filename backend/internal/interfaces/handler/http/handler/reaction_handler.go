@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 )
 
@@ -24,12 +25,12 @@ type AddReactionRequest struct {
 func (h *ReactionHandler) ListReactions(c echo.Context) error {
 	messageID := c.Param("messageId")
 	if messageID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Message ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "メッセージIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	reactions, err := h.reactionUC.ListReactions(c.Request().Context(), messageID, userID)
@@ -44,17 +45,17 @@ func (h *ReactionHandler) ListReactions(c echo.Context) error {
 func (h *ReactionHandler) AddReaction(c echo.Context) error {
 	messageID := c.Param("messageId")
 	if messageID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Message ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "メッセージIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	var req AddReactionRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -80,12 +81,12 @@ func (h *ReactionHandler) RemoveReaction(c echo.Context) error {
 	messageID := c.Param("messageId")
 	emoji := c.Param("emoji")
 	if messageID == "" || emoji == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Message ID and emoji are required")
+		return echo.NewHTTPError(http.StatusBadRequest, "メッセージIDと絵文字は必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	input := reactionuc.RemoveReactionInput{

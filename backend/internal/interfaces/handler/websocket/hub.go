@@ -383,7 +383,7 @@ func (c *Client) handleMessage(data []byte) {
 func (c *Client) handleJoinChannel(payload json.RawMessage) {
 	var joinPayload JoinChannelPayload
 	if err := json.Unmarshal(payload, &joinPayload); err != nil {
-		log.Printf("Failed to parse join channel payload: %v", err)
+		log.Printf("join_channelペイロードの解析に失敗しました: %v", err)
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
@@ -408,7 +408,7 @@ func (c *Client) handleJoinChannel(payload json.RawMessage) {
 func (c *Client) handleLeaveChannel(payload json.RawMessage) {
 	var leavePayload LeaveChannelPayload
 	if err := json.Unmarshal(payload, &leavePayload); err != nil {
-		log.Printf("Failed to parse leave channel payload: %v", err)
+		log.Printf("leave_channelペイロードの解析に失敗しました: %v", err)
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
@@ -433,12 +433,12 @@ func (c *Client) handleLeaveChannel(payload json.RawMessage) {
 func (c *Client) handlePostMessage(payload json.RawMessage) {
 	var postPayload PostMessagePayload
 	if err := json.Unmarshal(payload, &postPayload); err != nil {
-		log.Printf("Failed to parse post message payload: %v", err)
+		log.Printf("post_messageペイロードの解析に失敗しました: %v", err)
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
 
-	log.Printf("User %s posting message to channel %s", c.userID, postPayload.ChannelID)
+	log.Printf("ユーザー%sがチャンネル%sへメッセージを投稿しました", c.userID, postPayload.ChannelID)
 
 	// メッセージ投稿処理（UseCase層との連携）
 	// 実際のメッセージ投稿はHTTP APIで行い、ここではWebSocket通知のみ処理
@@ -454,12 +454,12 @@ func (c *Client) handlePostMessage(payload json.RawMessage) {
 func (c *Client) handleTyping(payload json.RawMessage) {
 	var typingPayload TypingPayload
 	if err := json.Unmarshal(payload, &typingPayload); err != nil {
-		log.Printf("Failed to parse typing payload: %v", err)
+		log.Printf("typingペイロードの解析に失敗しました: %v", err)
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
 
-	log.Printf("User %s is typing in channel %s", c.userID, typingPayload.ChannelID)
+	log.Printf("ユーザー%sがチャンネル%sで入力中です", c.userID, typingPayload.ChannelID)
 
 	// 入力中状態の通知処理
 	c.startTyping(typingPayload.ChannelID)
@@ -469,12 +469,12 @@ func (c *Client) handleTyping(payload json.RawMessage) {
 func (c *Client) handleUpdateReadState(payload json.RawMessage) {
 	var readStatePayload UpdateReadStatePayload
 	if err := json.Unmarshal(payload, &readStatePayload); err != nil {
-		log.Printf("Failed to parse update read state payload: %v", err)
+		log.Printf("update_read_stateペイロードの解析に失敗しました: %v", err)
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
 
-	log.Printf("User %s updating read state for channel %s, message %s",
+	log.Printf("ユーザー%sがチャンネル%sのメッセージ%sを既読更新しました",
 		c.userID, readStatePayload.ChannelID, readStatePayload.MessageID)
 
 	// 既読状態更新処理（UseCase層との連携）
@@ -493,7 +493,7 @@ func (c *Client) sendAck(eventType EventType, success bool, message string) {
 	}
 	data, err := SendServerMessage(EventTypeAck, payload)
 	if err != nil {
-		log.Printf("Failed to send ACK: %v", err)
+		log.Printf("ACKの送信に失敗しました: %v", err)
 		return
 	}
 	select {
@@ -510,7 +510,7 @@ func (c *Client) sendError(code string, message string) {
 	}
 	data, err := SendServerMessage(EventTypeError, payload)
 	if err != nil {
-		log.Printf("Failed to send error: %v", err)
+		log.Printf("エラー送信に失敗しました: %v", err)
 		return
 	}
 	select {
@@ -573,7 +573,7 @@ func (c *Client) startTyping(channelID string) {
 
 	message, err := SendServerMessage(EventTypeTyping, typingData)
 	if err != nil {
-		log.Printf("Failed to create typing message: %v", err)
+		log.Printf("typingメッセージの生成に失敗しました: %v", err)
 		return
 	}
 
@@ -592,7 +592,7 @@ func (c *Client) stopTyping(channelID string) {
 
 	message, err := SendServerMessage(EventTypeTyping, typingData)
 	if err != nil {
-		log.Printf("Failed to create stop typing message: %v", err)
+		log.Printf("typing停止メッセージの生成に失敗しました: %v", err)
 		return
 	}
 

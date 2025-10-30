@@ -49,9 +49,9 @@ export function useWorkspaceSearch(params: WorkspaceSearchParams) {
 		staleTime: 30_000,
 		retry: 1,
 		queryFn: async () => {
-			if (!workspaceId) {
-				throw new Error("Workspace ID is required to perform search");
-			}
+		if (!workspaceId) {
+			throw new Error("検索を実行するにはワークスペースIDが必要です");
+		}
 
 			const { data, error } = await api.GET("/api/workspaces/{workspaceId}/search", {
 				params: {

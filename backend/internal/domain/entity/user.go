@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrUserNotFound = errors.New("user not found")
+	ErrUserNotFound = errors.New("ユーザーが見つかりません")
 )
 
 type User struct {

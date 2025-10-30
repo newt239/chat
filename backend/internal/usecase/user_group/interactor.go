@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	ErrUserGroupNotFound   = errors.New("user group not found")
-	ErrUnauthorized        = errors.New("unauthorized to perform this action")
-	ErrUserGroupNameExists = errors.New("user group name already exists")
-	ErrUserAlreadyInGroup  = errors.New("user is already a member of this group")
-	ErrUserNotInGroup      = errors.New("user is not a member of this group")
+	ErrUserGroupNotFound   = errors.New("ユーザーグループが見つかりません")
+	ErrUnauthorized        = errors.New("この操作を行う権限がありません")
+	ErrUserGroupNameExists = errors.New("同じ名前のユーザーグループが既に存在します")
+	ErrUserAlreadyInGroup  = errors.New("ユーザーは既にこのグループに参加しています")
+	ErrUserNotInGroup      = errors.New("ユーザーはこのグループに参加していません")
 )
 
 type UserGroupUseCase interface {
@@ -54,7 +54,7 @@ func (i *userGroupInteractor) CreateUserGroup(ctx context.Context, input CreateU
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
 	if workspace == nil {
-		return nil, errors.New("workspace not found")
+		return nil, errors.New("ワークスペースが見つかりません")
 	}
 
 	// 作成者がワークスペースのメンバーかチェック
@@ -186,7 +186,7 @@ func (i *userGroupInteractor) ListUserGroups(ctx context.Context, input ListUser
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
 	if workspace == nil {
-		return nil, errors.New("workspace not found")
+		return nil, errors.New("ワークスペースが見つかりません")
 	}
 
 	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)

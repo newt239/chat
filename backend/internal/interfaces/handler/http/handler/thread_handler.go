@@ -34,7 +34,7 @@ func (h *ThreadHandler) GetParticipatingThreads(c echo.Context) error {
 
 	workspaceID := c.Param("workspaceId")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "workspace_id is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "workspaceIdは必須です")
 	}
 
 	// クエリパラメータの取得
@@ -44,7 +44,7 @@ func (h *ThreadHandler) GetParticipatingThreads(c echo.Context) error {
 	if cursorLastActivityAtStr := c.QueryParam("cursorLastActivityAt"); cursorLastActivityAtStr != "" {
 		parsed, err := time.Parse(time.RFC3339, cursorLastActivityAtStr)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid cursorLastActivityAt format")
+			return echo.NewHTTPError(http.StatusBadRequest, "cursorLastActivityAtの形式が不正です")
 		}
 		cursorLastActivityAt = &parsed
 	}
@@ -57,7 +57,7 @@ func (h *ThreadHandler) GetParticipatingThreads(c echo.Context) error {
 	if limitStr := c.QueryParam("limit"); limitStr != "" {
 		parsedLimit, err := strconv.Atoi(limitStr)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid limit format")
+			return echo.NewHTTPError(http.StatusBadRequest, "limitの形式が不正です")
 		}
 		limit = parsedLimit
 	}
@@ -87,7 +87,7 @@ func (h *ThreadHandler) MarkThreadRead(c echo.Context) error {
 
 	threadID := c.Param("threadId")
 	if threadID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "thread_id is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "threadIdは必須です")
 	}
 
 	input := threaduc.MarkThreadReadInput{

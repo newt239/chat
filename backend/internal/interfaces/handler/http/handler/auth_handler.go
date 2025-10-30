@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
-    "github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type AuthHandler struct {
@@ -43,7 +43,7 @@ type LogoutRequest struct {
 func (h *AuthHandler) Register(c echo.Context) error {
 	var req RegisterRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	// Validation
@@ -69,7 +69,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 func (h *AuthHandler) Login(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -93,7 +93,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 func (h *AuthHandler) RefreshToken(c echo.Context) error {
 	var req RefreshTokenRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -116,18 +116,18 @@ func (h *AuthHandler) RefreshToken(c echo.Context) error {
 func (h *AuthHandler) Logout(c echo.Context) error {
 	var req LogoutRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-    // コンテキストからユーザーIDを取得（統一ヘルパー）
-    userID, err := utils.GetUserIDFromContext(c)
-    if err != nil {
-        return err
-    }
+	// コンテキストからユーザーIDを取得（統一ヘルパー）
+	userID, err := utils.GetUserIDFromContext(c)
+	if err != nil {
+		return err
+	}
 
 	input := authuc.LogoutInput{
 		UserID:       userID,

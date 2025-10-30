@@ -23,7 +23,7 @@ export function useChannels(workspaceId: string | null) {
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to fetch channels");
+        throw new Error(error?.error ?? "チャンネル一覧の取得に失敗しました");
       }
 
       return data;
@@ -51,7 +51,7 @@ export function useCreateChannel(workspaceId: string | null) {
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to create channel");
+        throw new Error(error?.error ?? "チャンネルの作成に失敗しました");
       }
 
       return data;

@@ -8,14 +8,14 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-    domainservice "github.com/newt239/chat/internal/domain/service"
+	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
 )
 
 var (
-	ErrMessageNotFound = errors.New("message not found")
-	ErrUnauthorized    = errors.New("unauthorized to perform this action")
-	ErrBookmarkExists  = errors.New("bookmark already exists")
+	ErrMessageNotFound = errors.New("メッセージが見つかりません")
+	ErrUnauthorized    = errors.New("この操作を行う権限がありません")
+	ErrBookmarkExists  = errors.New("このメッセージは既にブックマークされています")
 )
 
 type BookmarkUseCase interface {
@@ -28,9 +28,9 @@ type BookmarkUseCase interface {
 type bookmarkInteractor struct {
 	bookmarkRepo      domainrepository.BookmarkRepository
 	messageRepo       domainrepository.MessageRepository
-    channelRepo       domainrepository.ChannelRepository
-    channelMemberRepo domainrepository.ChannelMemberRepository
-    workspaceRepo     domainrepository.WorkspaceRepository
+	channelRepo       domainrepository.ChannelRepository
+	channelMemberRepo domainrepository.ChannelMemberRepository
+	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
 	mentionRepo       domainrepository.MessageUserMentionRepository
 	groupMentionRepo  domainrepository.MessageGroupMentionRepository
@@ -38,7 +38,7 @@ type bookmarkInteractor struct {
 	attachmentRepo    domainrepository.AttachmentRepository
 	userGroupRepo     domainrepository.UserGroupRepository
 	messageAssembler  *message.MessageOutputAssembler
-    channelAccessSvc  domainservice.ChannelAccessService
+	channelAccessSvc  domainservice.ChannelAccessService
 }
 
 func NewBookmarkInteractor(
@@ -53,7 +53,7 @@ func NewBookmarkInteractor(
 	linkRepo domainrepository.MessageLinkRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
-    channelAccessSvc domainservice.ChannelAccessService,
+	channelAccessSvc domainservice.ChannelAccessService,
 ) BookmarkUseCase {
 	return &bookmarkInteractor{
 		bookmarkRepo:      bookmarkRepo,
@@ -68,7 +68,7 @@ func NewBookmarkInteractor(
 		attachmentRepo:    attachmentRepo,
 		userGroupRepo:     userGroupRepo,
 		messageAssembler:  message.NewMessageOutputAssembler(),
-        channelAccessSvc:  channelAccessSvc,
+		channelAccessSvc:  channelAccessSvc,
 	}
 }
 
@@ -82,8 +82,8 @@ func (i *bookmarkInteractor) AddBookmark(ctx context.Context, input AddBookmarkI
 		return ErrMessageNotFound
 	}
 
-    // チャンネルへのアクセス権限チェック
-    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+	// チャンネルへのアクセス権限チェック
+	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -120,8 +120,8 @@ func (i *bookmarkInteractor) RemoveBookmark(ctx context.Context, input RemoveBoo
 		return ErrMessageNotFound
 	}
 
-    // チャンネルへのアクセス権限チェック
-    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+	// チャンネルへのアクセス権限チェック
+	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 

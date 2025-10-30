@@ -24,7 +24,7 @@ export function useThreadReplies(messageId: string | null) {
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to fetch thread replies");
+        throw new Error(error?.error ?? "スレッド返信の取得に失敗しました");
       }
 
       const parsed = threadRepliesResponseSchema.safeParse(data);
@@ -32,7 +32,7 @@ export function useThreadReplies(messageId: string | null) {
       if (!parsed.success) {
         console.error("スレッド返信取得のスキーマ検証エラー:", parsed.error);
         console.error("受信したデータ:", JSON.stringify(data, null, 2));
-        throw new Error("Unexpected response format when fetching thread replies");
+        throw new Error("スレッド返信取得のレスポンス形式が想定と異なります");
       }
 
       return parsed.data;
@@ -66,7 +66,7 @@ export function useSendThreadReply(messageId: string | null, channelId: string |
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to send thread reply");
+        throw new Error(error?.error ?? "スレッドへの返信送信に失敗しました");
       }
 
       return data;

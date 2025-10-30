@@ -18,7 +18,7 @@ export const useDMs = (workspaceId: string) => {
       });
 
       if (response.error) {
-        throw new Error(response.error.error || "Failed to fetch DMs");
+        throw new Error(response.error.error || "DMの取得に失敗しました");
       }
 
       return response.data as DMOutput[];
@@ -40,7 +40,7 @@ export const useCreateDM = (workspaceId: string) => {
       });
 
       if (response.error) {
-        throw new Error(response.error.error || "Failed to create DM");
+        throw new Error(response.error.error || "DMの作成に失敗しました");
       }
 
       return response.data as DMOutput;

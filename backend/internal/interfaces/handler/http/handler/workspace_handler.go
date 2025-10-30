@@ -43,7 +43,7 @@ type UpdateMemberRoleRequest struct {
 func (h *WorkspaceHandler) GetWorkspaces(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	workspaces, err := h.workspaceUC.GetWorkspacesByUserID(c.Request().Context(), userID)
@@ -114,12 +114,12 @@ func (h *WorkspaceHandler) GetWorkspace(c echo.Context) error {
 func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	var req UpdateWorkspaceRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -144,12 +144,12 @@ func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context) error {
 func (h *WorkspaceHandler) DeleteWorkspace(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := workspaceuc.DeleteWorkspaceInput{
@@ -169,12 +169,12 @@ func (h *WorkspaceHandler) DeleteWorkspace(c echo.Context) error {
 func (h *WorkspaceHandler) ListMembers(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := workspaceuc.ListMembersInput{
@@ -194,12 +194,12 @@ func (h *WorkspaceHandler) ListMembers(c echo.Context) error {
 func (h *WorkspaceHandler) AddMember(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	var req AddMemberRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -225,12 +225,12 @@ func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context) error {
 	workspaceID := c.Param("id")
 	userID := c.Param("userId")
 	if workspaceID == "" || userID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID and User ID are required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDとユーザーIDは必須です")
 	}
 
 	var req UpdateMemberRoleRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -256,12 +256,12 @@ func (h *WorkspaceHandler) RemoveMember(c echo.Context) error {
 	workspaceID := c.Param("id")
 	userID := c.Param("userId")
 	if workspaceID == "" || userID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID and User ID are required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDとユーザーIDは必須です")
 	}
 
 	removerID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	input := workspaceuc.RemoveMemberInput{

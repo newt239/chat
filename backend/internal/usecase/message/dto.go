@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	ErrChannelNotFound       = errors.New("channel not found")
-	ErrUnauthorized          = errors.New("unauthorized to perform this action")
-	ErrParentMessageNotFound = errors.New("parent message not found")
-	ErrMessageNotFound       = errors.New("message not found")
-	ErrMessageAlreadyDeleted = errors.New("message already deleted")
-	ErrCannotEditDeleted     = errors.New("cannot edit deleted message")
+	ErrChannelNotFound       = errors.New("チャンネルが見つかりません")
+	ErrUnauthorized          = errors.New("この操作を行う権限がありません")
+	ErrParentMessageNotFound = errors.New("親メッセージが見つかりません")
+	ErrMessageNotFound       = errors.New("メッセージが見つかりません")
+	ErrMessageAlreadyDeleted = errors.New("メッセージは既に削除されています")
+	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
 )
 
 const (

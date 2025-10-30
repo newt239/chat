@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	ErrChannelNameRequired       = errors.New("channel name is required")
-	ErrChannelWorkspaceIDInvalid = errors.New("workspace ID must be a valid UUID")
-	ErrChannelCreatorInvalid     = errors.New("creator ID must be a valid UUID")
-	ErrInvalidChannelType        = errors.New("invalid channel type")
-	ErrGroupDMMaxMembers         = errors.New("group DM cannot have more than 9 members")
+	ErrChannelNameRequired       = errors.New("チャンネル名は必須です")
+	ErrChannelWorkspaceIDInvalid = errors.New("ワークスペースIDはUUID形式で指定してください")
+	ErrChannelCreatorInvalid     = errors.New("作成者IDはUUID形式で指定してください")
+	ErrInvalidChannelType        = errors.New("無効なチャンネル種別です")
+	ErrGroupDMMaxMembers         = errors.New("グループDMには9人までしか追加できません")
 )
 
 type ChannelType string
@@ -86,7 +86,7 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 		id = uuid.NewString()
 	} else {
 		if _, err := uuid.Parse(params.ID); err != nil {
-			return nil, fmt.Errorf("channel ID must be a valid UUID: %w", err)
+			return nil, fmt.Errorf("チャネルIDがUUID形式ではありません: %w", err)
 		}
 		id = params.ID
 	}
@@ -116,7 +116,7 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 
 func (c *Channel) ChangeName(newName string) error {
 	if c == nil {
-		return errors.New("channel is nil")
+		return errors.New("チャンネルが未初期化です")
 	}
 
 	name := strings.TrimSpace(newName)

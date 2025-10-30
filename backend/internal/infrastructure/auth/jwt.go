@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ErrInvalidToken = errors.New("invalid token")
-	ErrExpiredToken = errors.New("expired token")
+	ErrInvalidToken = errors.New("トークンが無効です")
+	ErrExpiredToken = errors.New("トークンの有効期限が切れています")
 )
 
 type Claims struct {

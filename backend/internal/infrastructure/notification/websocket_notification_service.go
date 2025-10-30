@@ -29,7 +29,7 @@ func (s *WebSocketNotificationService) NotifyNewMessage(workspaceID string, chan
 
 	data, err := websocket.SendServerMessage(websocket.EventTypeNewMessage, payload)
 	if err != nil {
-		log.Printf("Failed to encode new_message event: %v", err)
+		log.Printf("new_messageイベントのエンコードに失敗しました: %v", err)
 		return
 	}
 
@@ -48,7 +48,7 @@ func (s *WebSocketNotificationService) NotifyReaction(workspaceID string, channe
 
 	data, err := websocket.SendServerMessage(websocket.EventTypeNewMessage, payload)
 	if err != nil {
-		log.Printf("Failed to encode reaction event: %v", err)
+		log.Printf("reactionイベントのエンコードに失敗しました: %v", err)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (s *WebSocketNotificationService) NotifyUpdatedMessage(workspaceID string, 
 
 	data, err := websocket.SendServerMessage(websocket.EventTypeMessageUpdated, payload)
 	if err != nil {
-		log.Printf("Failed to encode message_updated event: %v", err)
+		log.Printf("message_updatedイベントのエンコードに失敗しました: %v", err)
 		return
 	}
 
@@ -82,7 +82,7 @@ func (s *WebSocketNotificationService) NotifyDeletedMessage(workspaceID string, 
 
 	data, err := websocket.SendServerMessage(websocket.EventTypeMessageDeleted, payload)
 	if err != nil {
-		log.Printf("Failed to encode message_deleted event: %v", err)
+		log.Printf("message_deletedイベントのエンコードに失敗しました: %v", err)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (s *WebSocketNotificationService) NotifyPinCreated(workspaceID string, chan
 	}
 	data, err := websocket.SendServerMessage(websocket.EventTypePinCreated, payload)
 	if err != nil {
-		log.Printf("Failed to encode pin_created event: %v", err)
+		log.Printf("pin_createdイベントのエンコードに失敗しました: %v", err)
 		return
 	}
 	s.hub.BroadcastToChannel(workspaceID, channelID, data)
@@ -129,7 +129,7 @@ func (s *WebSocketNotificationService) NotifyPinDeleted(workspaceID string, chan
 	}
 	data, err := websocket.SendServerMessage(websocket.EventTypePinDeleted, payload)
 	if err != nil {
-		log.Printf("Failed to encode pin_deleted event: %v", err)
+		log.Printf("pin_deletedイベントのエンコードに失敗しました: %v", err)
 		return
 	}
 	s.hub.BroadcastToChannel(workspaceID, channelID, data)
@@ -148,7 +148,7 @@ func (s *WebSocketNotificationService) NotifyUnreadCount(workspaceID string, use
 
 	data, err := websocket.SendServerMessage(websocket.EventTypeUnreadCount, payload)
 	if err != nil {
-		log.Printf("Failed to encode unread_count event: %v", err)
+		log.Printf("unread_countイベントのエンコードに失敗しました: %v", err)
 		return
 	}
 
@@ -177,7 +177,7 @@ func convertStructToMap(data interface{}) map[string]interface{} {
 	}
 
 	if v.Kind() != reflect.Struct {
-		log.Printf("Warning: data is not a struct, got %v", v.Kind())
+		log.Printf("警告: データが構造体ではありません (kind=%v)", v.Kind())
 		return result
 	}
 

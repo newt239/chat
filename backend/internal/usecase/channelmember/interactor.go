@@ -13,14 +13,14 @@ import (
 )
 
 var (
-	ErrUnauthorized     = errors.New("unauthorized to perform this action")
-	ErrChannelNotFound  = errors.New("channel not found")
-	ErrUserNotFound     = errors.New("user not found")
-	ErrAlreadyMember    = errors.New("user is already a member")
-	ErrNotMember        = errors.New("user is not a member")
-	ErrInvalidRole      = errors.New("invalid role")
-	ErrChannelNotPublic = errors.New("channel is not public")
-	ErrLastAdminRemoval = errors.New("cannot remove the last admin")
+	ErrUnauthorized     = errors.New("この操作を行う権限がありません")
+	ErrChannelNotFound  = errors.New("チャンネルが見つかりません")
+	ErrUserNotFound     = errors.New("ユーザーが見つかりません")
+	ErrAlreadyMember    = errors.New("ユーザーは既にメンバーです")
+	ErrNotMember        = errors.New("ユーザーはメンバーではありません")
+	ErrInvalidRole      = errors.New("無効なロールです")
+	ErrChannelNotPublic = errors.New("このチャンネルは公開されていません")
+	ErrLastAdminRemoval = errors.New("最後の管理者は削除できません")
 )
 
 type ChannelMemberUseCase interface {

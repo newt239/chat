@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	ErrUnauthorized      = errors.New("unauthorized to perform this action")
-	ErrWorkspaceNotFound = errors.New("workspace not found")
+	ErrUnauthorized      = errors.New("この操作を行う権限がありません")
+	ErrWorkspaceNotFound = errors.New("ワークスペースが見つかりません")
 )
 
 type ChannelUseCase interface {

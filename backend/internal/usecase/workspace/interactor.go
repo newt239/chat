@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	ErrWorkspaceNotFound     = errors.New("workspace not found")
-	ErrUnauthorized          = errors.New("unauthorized to perform this action")
-	ErrInvalidRole           = errors.New("invalid workspace role")
-	ErrCannotRemoveOwner     = errors.New("cannot remove workspace owner")
-	ErrCannotChangeOwnerRole = errors.New("cannot change owner role")
+	ErrWorkspaceNotFound     = errors.New("ワークスペースが見つかりません")
+	ErrUnauthorized          = errors.New("この操作を行う権限がありません")
+	ErrInvalidRole           = errors.New("無効なワークスペースロールです")
+	ErrCannotRemoveOwner     = errors.New("ワークスペースのオーナーは削除できません")
+	ErrCannotChangeOwnerRole = errors.New("オーナーのロールは変更できません")
 )
 
 type WorkspaceUseCase interface {

@@ -17,7 +17,7 @@ export const useChannelMembers = (channelId: string | null) => {
       });
 
       if (error || data === undefined) {
-        throw new Error(error?.error ?? "Failed to fetch channel members");
+        throw new Error(error?.error ?? "チャンネルメンバーの取得に失敗しました");
       }
 
       return data.members;

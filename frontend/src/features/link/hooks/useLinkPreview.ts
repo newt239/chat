@@ -22,7 +22,7 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
       });
 
       if (response.error) {
-        throw new Error(response.error.error || "Failed to fetch OGP");
+        throw new Error(response.error.error || "OGPの取得に失敗しました");
       }
 
       return response.data?.ogpData
@@ -35,7 +35,7 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
           }
         : null;
     } catch (_error) {
-      console.error("Failed to fetch OGP:", _error);
+      console.error("OGPの取得に失敗しました:", _error);
       return null;
     }
   }, []);
@@ -63,17 +63,17 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
             url,
             ogpData: ogpData || {},
             isLoading: false,
-            error: ogpData ? undefined : "Failed to fetch preview",
+            error: ogpData ? undefined : "プレビューの取得に失敗しました",
           })
         );
       } catch (error) {
-        console.error("Failed to fetch preview:", error);
+        console.error("プレビューの取得に失敗しました:", error);
         setPreviews((prev) =>
           new Map(prev).set(url, {
             url,
             ogpData: {},
             isLoading: false,
-            error: "Failed to fetch preview",
+            error: "プレビューの取得に失敗しました",
           })
         );
       }

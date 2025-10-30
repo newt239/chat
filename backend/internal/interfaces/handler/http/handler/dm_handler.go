@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/newt239/chat/internal/infrastructure/utils"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 )
 
@@ -27,17 +28,17 @@ type CreateGroupDMRequest struct {
 func (h *DMHandler) CreateDM(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	var req CreateDMRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -61,17 +62,17 @@ func (h *DMHandler) CreateDM(c echo.Context) error {
 func (h *DMHandler) CreateGroupDM(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	var req CreateGroupDMRequest
 	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return utils.HandleBindError(err)
 	}
 
 	if err := c.Validate(&req); err != nil {
@@ -96,18 +97,17 @@ func (h *DMHandler) CreateGroupDM(c echo.Context) error {
 func (h *DMHandler) ListDMs(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, ok := c.Get("userID").(string)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
+		return utils.HandleAuthError()
 	}
 
 	input := dmuc.ListDMsInput{
 		WorkspaceID: workspaceID,
 		UserID:      userID,
-		RequestUserID: userID,
 	}
 
 	dms, err := h.dmInteractor.ListDMs(c.Request().Context(), input)

@@ -20,7 +20,7 @@ func NewSearchHandler(searchUC searchuc.SearchUseCase) *SearchHandler {
 func (h *SearchHandler) SearchWorkspace(c echo.Context) error {
 	workspaceID := c.Param("workspaceId")
 	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Workspace ID is required")
+		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
 	}
 
 	userID, err := utils.GetUserIDFromContext(c)
