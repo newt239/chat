@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"github.com/newt239/chat/internal/domain/service"
 	"go.uber.org/zap"
 )
 
@@ -35,4 +36,45 @@ func Sync() {
 	if globalLogger != nil {
 		_ = globalLogger.Sync()
 	}
+}
+
+// zapLogger はドメインサービスのLoggerインターフェースを実装します
+type zapLogger struct {
+	logger *zap.Logger
+}
+
+// NewLogger は新しいLoggerを作成します
+func NewLogger() service.Logger {
+	return &zapLogger{
+		logger: Get(),
+	}
+}
+
+// Info は情報レベルのログを出力します
+func (l *zapLogger) Info(msg string, fields ...service.LogField) {
+	l.logger.Info(msg, convertFields(fields)...)
+}
+
+// Warn は警告レベルのログを出力します
+func (l *zapLogger) Warn(msg string, fields ...service.LogField) {
+	l.logger.Warn(msg, convertFields(fields)...)
+}
+
+// Error はエラーレベルのログを出力します
+func (l *zapLogger) Error(msg string, fields ...service.LogField) {
+	l.logger.Error(msg, convertFields(fields)...)
+}
+
+// Debug はデバッグレベルのログを出力します
+func (l *zapLogger) Debug(msg string, fields ...service.LogField) {
+	l.logger.Debug(msg, convertFields(fields)...)
+}
+
+// convertFields はドメインサービスのLogFieldをzapのFieldに変換します
+func convertFields(fields []service.LogField) []zap.Field {
+	zapFields := make([]zap.Field, len(fields))
+	for i, f := range fields {
+		zapFields[i] = zap.Any(f.Key, f.Value)
+	}
+	return zapFields
 }

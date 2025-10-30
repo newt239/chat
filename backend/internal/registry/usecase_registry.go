@@ -86,7 +86,8 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.infrastructureRegistry.NewMentionService(),
 		r.infrastructureRegistry.NewLinkProcessingService(),
 		r.infrastructureRegistry.NewTransactionManager(),
-        r.domainRegistry.NewChannelAccessService(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 

@@ -141,6 +141,7 @@ func TestBookmarkInteractor_AddBookmark(t *testing.T) {
 				nil, // linkRepo
 				nil, // attachmentRepo
 				nil, // userGroupRepo
+				nil, // channelAccessSvc
 			)
 
 			err := interactor.AddBookmark(context.Background(), tt.input)
@@ -235,6 +236,7 @@ func TestBookmarkInteractor_RemoveBookmark(t *testing.T) {
 				nil, // linkRepo
 				nil, // attachmentRepo
 				nil, // userGroupRepo
+				nil, // channelAccessSvc
 			)
 
 			err := interactor.RemoveBookmark(context.Background(), tt.input)
@@ -326,6 +328,7 @@ func TestBookmarkInteractor_ListBookmarks(t *testing.T) {
 				nil, // linkRepo
 				nil, // attachmentRepo
 				nil, // userGroupRepo
+				nil, // channelAccessSvc
 			)
 
 			output, err := interactor.ListBookmarks(context.Background(), tt.userID)

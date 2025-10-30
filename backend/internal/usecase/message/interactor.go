@@ -45,7 +45,8 @@ func NewMessageUseCase(
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
-    channelAccessSvc service.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
+	logger service.Logger,
 ) MessageUseCase {
 	// 各機能のユースケースを作成
 	creator := NewMessageCreator(
@@ -93,7 +94,8 @@ func NewMessageUseCase(
 		workspaceRepo,
 		threadRepo,
 		notificationSvc,
-        channelAccessSvc,
+		channelAccessSvc,
+		logger,
 	)
 
 	lister := NewMessageLister(

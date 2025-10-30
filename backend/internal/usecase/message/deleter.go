@@ -6,10 +6,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-    "github.com/newt239/chat/internal/domain/service"
-    domainservice "github.com/newt239/chat/internal/domain/service"
-	"github.com/newt239/chat/internal/infrastructure/logger"
-	"go.uber.org/zap"
+	"github.com/newt239/chat/internal/domain/service"
+	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 // MessageDeleter はメッセージ削除を担当するユースケースです
@@ -20,7 +18,8 @@ type MessageDeleter struct {
 	workspaceRepo     domainrepository.WorkspaceRepository
 	threadRepo        domainrepository.ThreadRepository
 	notificationSvc   service.NotificationService
-    channelAccessSvc  domainservice.ChannelAccessService
+	channelAccessSvc  domainservice.ChannelAccessService
+	logger            service.Logger
 }
 
 // NewMessageDeleter は新しいMessageDeleterを作成します
@@ -31,7 +30,8 @@ func NewMessageDeleter(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	threadRepo domainrepository.ThreadRepository,
 	notificationSvc service.NotificationService,
-    channelAccessSvc domainservice.ChannelAccessService,
+	channelAccessSvc domainservice.ChannelAccessService,
+	logger service.Logger,
 ) *MessageDeleter {
 	return &MessageDeleter{
 		messageRepo:       messageRepo,
@@ -40,7 +40,8 @@ func NewMessageDeleter(
 		workspaceRepo:     workspaceRepo,
 		threadRepo:        threadRepo,
 		notificationSvc:   notificationSvc,
-        channelAccessSvc:  channelAccessSvc,
+		channelAccessSvc:  channelAccessSvc,
+		logger:            logger,
 	}
 }
 
@@ -90,7 +91,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 
 		// スレッドメタデータも削除
 		if err := d.threadRepo.DeleteMetadata(ctx, message.ID); err != nil {
-			logger.Get().Warn("Failed to delete thread metadata", zap.Error(err))
+			d.logger.Warn("Failed to delete thread metadata", service.LogField{Key: "error", Value: err})
 		}
 	}
 
