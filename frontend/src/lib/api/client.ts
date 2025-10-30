@@ -44,7 +44,7 @@ async function refreshAccessToken(): Promise<string | null> {
         body: { refreshToken },
       });
       if (data && !error) {
-        updateAuthTokens(data.accessToken);
+        updateAuthTokens(data.accessToken, data.refreshToken);
         return data.accessToken;
       }
       return null;

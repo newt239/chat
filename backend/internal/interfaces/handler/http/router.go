@@ -54,7 +54,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	})
 
 	// WebSocket endpoint
-	e.GET("/ws", websocket.NewHandler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, nil, nil))
+	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, nil, nil))
 
 	// API routes
 	api := e.Group("/api")

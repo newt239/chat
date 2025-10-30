@@ -10,7 +10,7 @@ Slack風コミュニケーションアプリのフロントエンドアプリケ
 - **Mantine 8** - UIコンポーネントライブラリ
 - **Tailwind CSS** - ユーティリティファーストCSS
 - **TanStack Query** - サーバー状態管理
-- **Zustand** - クライアント状態管理
+- **Jotai** - クライアント状態管理
 - **openapi-fetch** - 型安全なAPIクライアント
 - **Vitest** - テストフレームワーク
 - **PWA** - プログレッシブウェブアプリ対応
@@ -85,7 +85,7 @@ src/
 ├── lib/                     # 共通ライブラリ
 │   ├── api/                 # APIクライアント
 │   ├── query.ts             # TanStack Query設定
-│   ├── store/               # Zustand状態管理
+│   ├── store/               # Jotai状態管理
 │   └── ws/                  # WebSocketクライアント
 ├── features/                # 機能別モジュール
 │   ├── auth/                # 認証機能

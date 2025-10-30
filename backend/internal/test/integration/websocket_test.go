@@ -42,19 +42,19 @@ func TestWebSocketIntegration(t *testing.T) {
 
 	// Echoアプリケーションのセットアップ
 	e := echo.New()
-	e.GET("/ws", wscontroller.NewHandler(hub, jwtService, workspaceRepo, messageUseCase, readStateUseCase))
+	e.GET("/ws", wscontroller.Handler(hub, jwtService, workspaceRepo, messageUseCase, readStateUseCase))
 
 	// テスト用のユーザーとWorkspaceを作成
 	ctx := context.Background()
-	aliceUserID := "11111111-1111-1111-1111-111111111111"
-	testWorkspaceID := "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+	aliceUserID := "fade1111-1111-1111-1111-111111111111"
+	testWorkspaceID := "fadeaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 
 	// ユーザーを作成
 	testUser := &entity.User{
 		ID:           aliceUserID,
-		Email:        "alice@example.com",
+		Email:        "alice-ws-test@example.com",
 		PasswordHash: "dummy-hash",
-		DisplayName:  "Alice Johnson",
+		DisplayName:  "Alice Johnson WS Test",
 	}
 	err = userRepo.Create(ctx, testUser)
 	require.NoError(t, err)

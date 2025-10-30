@@ -15,6 +15,10 @@ type Hub struct {
 	// workspaceID -> userID -> []*Client (同一ユーザーの複数接続をサポート)
 	workspaces map[string]map[string][]*Client
 
+	// チャンネルごとの購読者を管理
+	// workspaceID -> channelID -> userID -> bool
+	channelSubscribers map[string]map[string]map[string]bool
+
 	// クライアントからの登録要求
 	register chan *Client
 
@@ -23,6 +27,24 @@ type Hub struct {
 
 	// ブロードキャスト用のチャンネル
 	broadcast chan *BroadcastMessage
+
+	// チャンネル購読管理用チャンネル
+	subscribe   chan *SubscribeRequest
+	unsubscribe chan *UnsubscribeRequest
+}
+
+// SubscribeRequest はチャンネル購読リクエストを表します
+type SubscribeRequest struct {
+	WorkspaceID string
+	ChannelID   string
+	UserID      string
+}
+
+// UnsubscribeRequest はチャンネル購読解除リクエストを表します
+type UnsubscribeRequest struct {
+	WorkspaceID string
+	ChannelID   string
+	UserID      string
 }
 
 // BroadcastMessage はブロードキャストメッセージを表します
@@ -50,6 +72,9 @@ type Client struct {
 	// ワークスペースID
 	workspaceID string
 
+	// 購読中のチャンネルID一覧
+	subscribedChannels map[string]bool
+
 	// ユースケース
 	messageUseCase   MessageUseCase
 	readStateUseCase ReadStateUseCase
@@ -58,10 +83,13 @@ type Client struct {
 // NewHub は新しいHubを作成します
 func NewHub() *Hub {
 	return &Hub{
-		workspaces: make(map[string]map[string][]*Client),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan *BroadcastMessage, 256),
+		workspaces:         make(map[string]map[string][]*Client),
+		channelSubscribers: make(map[string]map[string]map[string]bool),
+		register:           make(chan *Client),
+		unregister:         make(chan *Client),
+		broadcast:          make(chan *BroadcastMessage, 256),
+		subscribe:          make(chan *SubscribeRequest),
+		unsubscribe:        make(chan *UnsubscribeRequest),
 	}
 }
 
@@ -96,6 +124,8 @@ func (h *Hub) Run() {
 					// クライアントがいなくなったらユーザーを削除
 					if len(workspace[client.userID]) == 0 {
 						delete(workspace, client.userID)
+						// このユーザーが購読していた全チャンネルから削除
+						h.removeUserFromAllChannels(client.workspaceID, client.userID)
 					}
 					// Workspaceにユーザーがいなくなったら削除
 					if len(workspace) == 0 {
@@ -106,6 +136,31 @@ func (h *Hub) Run() {
 				}
 			}
 
+		case req := <-h.subscribe:
+			// チャンネル購読者リストに追加
+			if h.channelSubscribers[req.WorkspaceID] == nil {
+				h.channelSubscribers[req.WorkspaceID] = make(map[string]map[string]bool)
+			}
+			if h.channelSubscribers[req.WorkspaceID][req.ChannelID] == nil {
+				h.channelSubscribers[req.WorkspaceID][req.ChannelID] = make(map[string]bool)
+			}
+			h.channelSubscribers[req.WorkspaceID][req.ChannelID][req.UserID] = true
+			log.Printf("[WebSocket] チャンネル購読者登録: user=%s workspace=%s channel=%s",
+				req.UserID, req.WorkspaceID, req.ChannelID)
+
+		case req := <-h.unsubscribe:
+			// チャンネル購読者リストから削除
+			if wsChannels, ok := h.channelSubscribers[req.WorkspaceID]; ok {
+				if subscribers, ok := wsChannels[req.ChannelID]; ok {
+					delete(subscribers, req.UserID)
+					if len(subscribers) == 0 {
+						delete(wsChannels, req.ChannelID)
+					}
+					log.Printf("[WebSocket] チャンネル購読者解除: user=%s workspace=%s channel=%s",
+						req.UserID, req.WorkspaceID, req.ChannelID)
+				}
+			}
+
 		case msg := <-h.broadcast:
 			if workspace, ok := h.workspaces[msg.WorkspaceID]; ok {
 				for userID, clients := range workspace {
@@ -113,7 +168,15 @@ func (h *Hub) Run() {
 					if msg.ExcludeUser != nil && userID == *msg.ExcludeUser {
 						continue
 					}
-					// TODO: ChannelIDによるフィルタリングを実装
+
+					// ChannelIDが指定されている場合は購読チェック
+					if msg.ChannelID != nil {
+						// そのチャンネルを購読しているかチェック
+						if !h.isUserSubscribedToChannel(msg.WorkspaceID, *msg.ChannelID, userID) {
+							continue
+						}
+					}
+
 					for _, client := range clients {
 						select {
 						case client.send <- msg.Data:
@@ -125,6 +188,28 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+// removeUserFromAllChannels はユーザーが購読している全チャンネルから削除します
+func (h *Hub) removeUserFromAllChannels(workspaceID, userID string) {
+	if wsChannels, ok := h.channelSubscribers[workspaceID]; ok {
+		for channelID, subscribers := range wsChannels {
+			delete(subscribers, userID)
+			if len(subscribers) == 0 {
+				delete(wsChannels, channelID)
+			}
+		}
+	}
+}
+
+// isUserSubscribedToChannel はユーザーが指定されたチャンネルを購読しているかチェックします
+func (h *Hub) isUserSubscribedToChannel(workspaceID, channelID, userID string) bool {
+	if wsChannels, ok := h.channelSubscribers[workspaceID]; ok {
+		if subscribers, ok := wsChannels[channelID]; ok {
+			return subscribers[userID]
+		}
+	}
+	return false
 }
 
 // BroadcastToWorkspace はWorkspace内の全クライアントにメッセージを送信します
@@ -161,6 +246,45 @@ func (h *Hub) BroadcastToUser(workspaceID string, userID string, message []byte)
 			log.Printf("[WebSocket] ユーザー宛送信: workspace=%s user=%s 接続数=%d サイズ=%d bytes",
 				workspaceID, userID, len(clients), len(message))
 		}
+	}
+}
+
+// BroadcastToChannelSubscribers はチャンネルを購読している全ユーザーにメッセージを送信します
+// メッセージイベント(新着/編集/削除)の配信に使用します
+func (h *Hub) BroadcastToChannelSubscribers(workspaceID string, channelID string, message []byte) {
+	// チャンネルの購読者を取得
+	var subscribers []string
+	if wsChannels, ok := h.channelSubscribers[workspaceID]; ok {
+		if subs, ok := wsChannels[channelID]; ok {
+			subscribers = make([]string, 0, len(subs))
+			for userID := range subs {
+				subscribers = append(subscribers, userID)
+			}
+		}
+	}
+
+	if len(subscribers) == 0 {
+		log.Printf("[WebSocket] 購読者なし: workspace=%s channel=%s", workspaceID, channelID)
+		return
+	}
+
+	// 購読者全員にメッセージを送信
+	if workspace, ok := h.workspaces[workspaceID]; ok {
+		sentCount := 0
+		for _, userID := range subscribers {
+			if clients, ok := workspace[userID]; ok {
+				for _, client := range clients {
+					select {
+					case client.send <- message:
+						sentCount++
+					default:
+						close(client.send)
+					}
+				}
+			}
+		}
+		log.Printf("[WebSocket] 購読者向けブロードキャスト: workspace=%s channel=%s 購読者数=%d 送信数=%d サイズ=%d bytes",
+			workspaceID, channelID, len(subscribers), sentCount, len(message))
 	}
 }
 
@@ -264,10 +388,19 @@ func (c *Client) handleJoinChannel(payload json.RawMessage) {
 		return
 	}
 
-	log.Printf("User %s joining channel %s", c.userID, joinPayload.ChannelID)
+	// 購読チャンネルリストに追加
+	c.subscribedChannels[joinPayload.ChannelID] = true
 
-	// チャンネル参加の確認（実際の参加処理は既に認証時に完了している）
-	// ここでは参加確認のログのみ出力
+	// Hubに購読情報を通知
+	c.hub.subscribe <- &SubscribeRequest{
+		WorkspaceID: c.workspaceID,
+		ChannelID:   joinPayload.ChannelID,
+		UserID:      c.userID,
+	}
+
+	log.Printf("[WebSocket] チャンネル購読追加: user=%s workspace=%s channel=%s 購読数=%d",
+		c.userID, c.workspaceID, joinPayload.ChannelID, len(c.subscribedChannels))
+
 	c.sendAck(EventTypeJoinChannel, true, "")
 }
 
@@ -280,10 +413,19 @@ func (c *Client) handleLeaveChannel(payload json.RawMessage) {
 		return
 	}
 
-	log.Printf("User %s leaving channel %s", c.userID, leavePayload.ChannelID)
+	// 購読チャンネルリストから削除
+	delete(c.subscribedChannels, leavePayload.ChannelID)
 
-	// チャンネル離脱の確認（実際の離脱処理は別途APIで実装）
-	// ここでは離脱確認のログのみ出力
+	// Hubに購読解除情報を通知
+	c.hub.unsubscribe <- &UnsubscribeRequest{
+		WorkspaceID: c.workspaceID,
+		ChannelID:   leavePayload.ChannelID,
+		UserID:      c.userID,
+	}
+
+	log.Printf("[WebSocket] チャンネル購読解除: user=%s workspace=%s channel=%s 購読数=%d",
+		c.userID, c.workspaceID, leavePayload.ChannelID, len(c.subscribedChannels))
+
 	c.sendAck(EventTypeLeaveChannel, true, "")
 }
 

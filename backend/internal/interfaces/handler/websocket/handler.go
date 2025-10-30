@@ -28,7 +28,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // Handler はWebSocketハンドラーを返します
-func NewHandler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, messageUseCase MessageUseCase, readStateUseCase ReadStateUseCase) echo.HandlerFunc {
+func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, messageUseCase MessageUseCase, readStateUseCase ReadStateUseCase) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// 認証トークンの取得
 		// WebSocketではAuthorizationヘッダーを設定できないため、クエリパラメータからも取得を試みる
@@ -75,13 +75,14 @@ func NewHandler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository
 
 		// クライアントを作成してハブに登録
 		client := &Client{
-			hub:              hub,
-			conn:             conn,
-			send:             make(chan []byte, 256),
-			userID:           claims.UserID,
-			workspaceID:      workspaceID,
-			messageUseCase:   messageUseCase,
-			readStateUseCase: readStateUseCase,
+			hub:                hub,
+			conn:               conn,
+			send:               make(chan []byte, 256),
+			userID:             claims.UserID,
+			workspaceID:        workspaceID,
+			subscribedChannels: make(map[string]bool),
+			messageUseCase:     messageUseCase,
+			readStateUseCase:   readStateUseCase,
 		}
 
 		client.hub.register <- client

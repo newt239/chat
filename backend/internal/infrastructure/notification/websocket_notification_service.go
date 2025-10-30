@@ -20,7 +20,7 @@ func NewWebSocketNotificationService(hub *websocket.Hub) service.NotificationSer
 	}
 }
 
-// NotifyNewMessage は新しいメッセージをチャンネル参加者に通知します
+// NotifyNewMessage は新しいメッセージをチャンネル購読者に通知します
 func (s *WebSocketNotificationService) NotifyNewMessage(workspaceID string, channelID string, message interface{}) {
 	payload := websocket.NewMessagePayload{
 		ChannelID: channelID,
@@ -33,11 +33,11 @@ func (s *WebSocketNotificationService) NotifyNewMessage(workspaceID string, chan
 		return
 	}
 
-	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+	s.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
 	log.Printf("Notified new message to workspace=%s channel=%s", workspaceID, channelID)
 }
 
-// NotifyReaction はリアクション追加をチャンネル参加者に通知します
+// NotifyReaction はリアクション追加をチャンネル購読者に通知します
 func (s *WebSocketNotificationService) NotifyReaction(workspaceID string, channelID string, reaction interface{}) {
 	// リアクションは new_message イベントの一種として扱う
 	// 将来的に専用のイベントタイプを追加することも検討
@@ -52,11 +52,11 @@ func (s *WebSocketNotificationService) NotifyReaction(workspaceID string, channe
 		return
 	}
 
-	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+	s.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
 	log.Printf("Notified reaction to workspace=%s channel=%s", workspaceID, channelID)
 }
 
-// NotifyUpdatedMessage はメッセージ更新をチャンネル参加者に通知します
+// NotifyUpdatedMessage はメッセージ更新をチャンネル購読者に通知します
 func (s *WebSocketNotificationService) NotifyUpdatedMessage(workspaceID string, channelID string, message interface{}) {
 	payload := websocket.MessageUpdatedPayload{
 		ChannelID: channelID,
@@ -69,11 +69,11 @@ func (s *WebSocketNotificationService) NotifyUpdatedMessage(workspaceID string, 
 		return
 	}
 
-	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+	s.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
 	log.Printf("Notified message updated to workspace=%s channel=%s", workspaceID, channelID)
 }
 
-// NotifyDeletedMessage はメッセージ削除をチャンネル参加者に通知します
+// NotifyDeletedMessage はメッセージ削除をチャンネル購読者に通知します
 func (s *WebSocketNotificationService) NotifyDeletedMessage(workspaceID string, channelID string, deleteData interface{}) {
 	payload := websocket.MessageDeletedPayload{
 		ChannelID:  channelID,
@@ -86,7 +86,7 @@ func (s *WebSocketNotificationService) NotifyDeletedMessage(workspaceID string, 
 		return
 	}
 
-	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+	s.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
 	log.Printf("Notified message deleted to workspace=%s channel=%s", workspaceID, channelID)
 }
 
