@@ -6,6 +6,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 // MessageLister はメッセージ一覧取得を担当するユースケースです
@@ -23,6 +24,7 @@ type MessageLister struct {
 	attachmentRepo    domainrepository.AttachmentRepository
 	assembler         *MessageOutputAssembler
 	outputBuilder     *MessageOutputBuilder
+    channelAccessSvc  domainservice.ChannelAccessService
 }
 
 // NewMessageLister は新しいMessageListerを作成します
@@ -38,6 +40,7 @@ func NewMessageLister(
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) *MessageLister {
 	assembler := NewMessageOutputAssembler()
 	return &MessageLister{
@@ -63,12 +66,13 @@ func NewMessageLister(
 			attachmentRepo,
 			assembler,
 		),
+        channelAccessSvc: channelAccessSvc,
 	}
 }
 
 // ListMessages はメッセージ一覧を取得します
 func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInput) (*ListMessagesOutput, error) {
-	channel, err := l.ensureChannelAccess(ctx, input.ChannelID, input.UserID)
+    channel, err := l.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +184,7 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 	}
 
 	// チャンネルアクセス権限を確認
-	_, err = l.ensureChannelAccess(ctx, parentMessage.ChannelID, input.UserID)
+    _, err = l.channelAccessSvc.EnsureChannelAccess(ctx, parentMessage.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -318,7 +322,7 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 	}
 
 	// チャンネルアクセス権限を確認
-	_, err = l.ensureChannelAccess(ctx, message.ChannelID, input.UserID)
+    _, err = l.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -363,36 +367,7 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 }
 
 // ensureChannelAccess はチャンネルアクセス権限を確認します
-func (l *MessageLister) ensureChannelAccess(ctx context.Context, channelID, userID string) (*entity.Channel, error) {
-	ch, err := l.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return nil, ErrChannelNotFound
-	}
-
-	if ch.IsPrivate {
-		isMember, err := l.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return nil, ErrUnauthorized
-		}
-		return ch, nil
-	}
-
-	member, err := l.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, ErrUnauthorized
-	}
-
-	return ch, nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み
 
 // prepareMessageList はメッセージリストを準備し、リミット処理を行います
 func (l *MessageLister) prepareMessageList(messages []*entity.Message, limit int) ([]*entity.Message, bool) {

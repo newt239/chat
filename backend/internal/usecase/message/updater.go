@@ -7,7 +7,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
+    "github.com/newt239/chat/internal/domain/service"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/domain/transaction"
 )
 
@@ -28,6 +29,7 @@ type MessageUpdater struct {
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
 	assembler             *MessageOutputAssembler
+    channelAccessSvc      domainservice.ChannelAccessService
 }
 
 // NewMessageUpdater は新しいMessageUpdaterを作成します
@@ -46,6 +48,7 @@ func NewMessageUpdater(
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) *MessageUpdater {
 	return &MessageUpdater{
 		messageRepo:           messageRepo,
@@ -63,6 +66,7 @@ func NewMessageUpdater(
 		linkProcessingService: linkProcessingService,
 		transactionManager:    transactionManager,
 		assembler:             NewMessageOutputAssembler(),
+        channelAccessSvc:      channelAccessSvc,
 	}
 }
 
@@ -78,7 +82,7 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 	}
 
 	// チャンネルアクセス確認
-	channel, err := u.ensureChannelAccess(ctx, message.ChannelID, input.EditorID)
+    channel, err := u.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.EditorID)
 	if err != nil {
 		return nil, err
 	}
@@ -197,37 +201,7 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 	return result, nil
 }
 
-// ensureChannelAccess はチャンネルアクセス権限を確認します
-func (u *MessageUpdater) ensureChannelAccess(ctx context.Context, channelID, userID string) (*entity.Channel, error) {
-	ch, err := u.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return nil, ErrChannelNotFound
-	}
-
-	if ch.IsPrivate {
-		isMember, err := u.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return nil, ErrUnauthorized
-		}
-		return ch, nil
-	}
-
-	member, err := u.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, ErrUnauthorized
-	}
-
-	return ch, nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み
 
 // canModifyMessage はユーザーがメッセージを編集・削除できるかどうかを確認します
 func (u *MessageUpdater) canModifyMessage(ctx context.Context, workspaceID, messageOwnerID, executorID string) (bool, error) {

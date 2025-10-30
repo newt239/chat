@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
+    "github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type AuthHandler struct {
@@ -122,11 +123,11 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	// コンテキストからユーザーIDを取得
-	userID, ok := c.Get("userID").(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "User ID not found in context")
-	}
+    // コンテキストからユーザーIDを取得（統一ヘルパー）
+    userID, err := utils.GetUserIDFromContext(c)
+    if err != nil {
+        return err
+    }
 
 	input := authuc.LogoutInput{
 		UserID:       userID,

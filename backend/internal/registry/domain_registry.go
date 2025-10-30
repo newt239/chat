@@ -1,9 +1,10 @@
 package registry
 
 import (
-	"github.com/newt239/chat/ent"
-	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/repository"
+    "github.com/newt239/chat/ent"
+    domainrepository "github.com/newt239/chat/internal/domain/repository"
+    "github.com/newt239/chat/internal/infrastructure/repository"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 // DomainRegistry はドメイン層の依存関係を管理します
@@ -77,4 +78,13 @@ func (r *DomainRegistry) NewThreadRepository() domainrepository.ThreadRepository
 
 func (r *DomainRegistry) NewAttachmentRepository() domainrepository.AttachmentRepository {
 	return repository.NewAttachmentRepository(r.client)
+}
+
+// Domain Services
+func (r *DomainRegistry) NewChannelAccessService() domainservice.ChannelAccessService {
+    return domainservice.NewChannelAccessService(
+        r.NewChannelRepository(),
+        r.NewChannelMemberRepository(),
+        r.NewWorkspaceRepository(),
+    )
 }

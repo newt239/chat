@@ -8,7 +8,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
+    "github.com/newt239/chat/internal/domain/service"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
 )
 
@@ -33,6 +34,7 @@ type interactor struct {
 	userRepo          domainrepository.UserRepository
 	notificationSvc   service.NotificationService
 	messageAssembler  *message.MessageOutputAssembler
+    channelAccessSvc  domainservice.ChannelAccessService
 }
 
 func NewPinInteractor(
@@ -43,6 +45,7 @@ func NewPinInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc service.NotificationService,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) PinUseCase {
 	return &interactor{
 		pinRepo:           pinRepo,
@@ -53,6 +56,7 @@ func NewPinInteractor(
 		userRepo:          userRepo,
 		notificationSvc:   notificationSvc,
 		messageAssembler:  message.NewMessageOutputAssembler(),
+        channelAccessSvc:  channelAccessSvc,
 	}
 }
 
@@ -96,8 +100,8 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 		return ErrMessageNotFound
 	}
 
-	// アクセス権確認
-	if err := i.ensureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
+    // アクセス権確認
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -143,8 +147,8 @@ func (i *interactor) UnpinMessage(ctx context.Context, input UnpinMessageInput) 
 		return ErrMessageNotFound
 	}
 
-	// アクセス権確認
-	if err := i.ensureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
+    // アクセス権確認
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -170,7 +174,7 @@ func (i *interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPi
 		input.Limit = 100
 	}
 
-	if err := i.ensureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
 		return nil, err
 	}
 
@@ -228,30 +232,4 @@ func (i *interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPi
 	return &ListPinsOutput{Pins: outputs, NextCursor: next}, nil
 }
 
-func (i *interactor) ensureChannelAccess(ctx context.Context, channelID, userID string) error {
-	ch, err := i.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return errors.New("channel not found")
-	}
-	if ch.IsPrivate {
-		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return ErrUnauthorized
-		}
-		return nil
-	}
-	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return ErrUnauthorized
-	}
-	return nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み

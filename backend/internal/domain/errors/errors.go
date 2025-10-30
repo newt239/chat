@@ -3,6 +3,17 @@ package errors
 import "errors"
 
 var (
+    ErrMessageNotFound = errors.New("message not found")
+    ErrChannelNotFound = errors.New("channel not found")
+    ErrUnauthorized    = errors.New("unauthorized")
+    ErrForbidden       = errors.New("forbidden")
+)
+
+package errors
+
+import "errors"
+
+var (
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrUserAlreadyExists  = errors.New("user already exists")
 	ErrInvalidToken       = errors.New("invalid or expired token")

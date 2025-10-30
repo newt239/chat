@@ -8,6 +8,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
 )
 
@@ -27,9 +28,9 @@ type BookmarkUseCase interface {
 type bookmarkInteractor struct {
 	bookmarkRepo      domainrepository.BookmarkRepository
 	messageRepo       domainrepository.MessageRepository
-	channelRepo       domainrepository.ChannelRepository
-	channelMemberRepo domainrepository.ChannelMemberRepository
-	workspaceRepo     domainrepository.WorkspaceRepository
+    channelRepo       domainrepository.ChannelRepository
+    channelMemberRepo domainrepository.ChannelMemberRepository
+    workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
 	mentionRepo       domainrepository.MessageUserMentionRepository
 	groupMentionRepo  domainrepository.MessageGroupMentionRepository
@@ -37,6 +38,7 @@ type bookmarkInteractor struct {
 	attachmentRepo    domainrepository.AttachmentRepository
 	userGroupRepo     domainrepository.UserGroupRepository
 	messageAssembler  *message.MessageOutputAssembler
+    channelAccessSvc  domainservice.ChannelAccessService
 }
 
 func NewBookmarkInteractor(
@@ -51,6 +53,7 @@ func NewBookmarkInteractor(
 	linkRepo domainrepository.MessageLinkRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) BookmarkUseCase {
 	return &bookmarkInteractor{
 		bookmarkRepo:      bookmarkRepo,
@@ -65,6 +68,7 @@ func NewBookmarkInteractor(
 		attachmentRepo:    attachmentRepo,
 		userGroupRepo:     userGroupRepo,
 		messageAssembler:  message.NewMessageOutputAssembler(),
+        channelAccessSvc:  channelAccessSvc,
 	}
 }
 
@@ -78,8 +82,8 @@ func (i *bookmarkInteractor) AddBookmark(ctx context.Context, input AddBookmarkI
 		return ErrMessageNotFound
 	}
 
-	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+    // チャンネルへのアクセス権限チェック
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -116,8 +120,8 @@ func (i *bookmarkInteractor) RemoveBookmark(ctx context.Context, input RemoveBoo
 		return ErrMessageNotFound
 	}
 
-	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+    // チャンネルへのアクセス権限チェック
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -275,35 +279,4 @@ func (i *bookmarkInteractor) IsBookmarked(ctx context.Context, userID, messageID
 	return i.bookmarkRepo.IsBookmarked(ctx, userID, messageID)
 }
 
-func (i *bookmarkInteractor) ensureChannelAccess(ctx context.Context, channelID, userID string) error {
-	ch, err := i.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return errors.New("channel not found")
-	}
-
-	// プライベートチャンネルの場合
-	if ch.IsPrivate {
-		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return ErrUnauthorized
-		}
-		return nil
-	}
-
-	// パブリックチャンネルの場合はワークスペースメンバーかチェック
-	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return ErrUnauthorized
-	}
-
-	return nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み

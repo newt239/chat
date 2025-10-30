@@ -6,7 +6,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
+    "github.com/newt239/chat/internal/domain/service"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"go.uber.org/zap"
 )
@@ -19,6 +20,7 @@ type MessageDeleter struct {
 	workspaceRepo     domainrepository.WorkspaceRepository
 	threadRepo        domainrepository.ThreadRepository
 	notificationSvc   service.NotificationService
+    channelAccessSvc  domainservice.ChannelAccessService
 }
 
 // NewMessageDeleter は新しいMessageDeleterを作成します
@@ -29,6 +31,7 @@ func NewMessageDeleter(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	threadRepo domainrepository.ThreadRepository,
 	notificationSvc service.NotificationService,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) *MessageDeleter {
 	return &MessageDeleter{
 		messageRepo:       messageRepo,
@@ -37,6 +40,7 @@ func NewMessageDeleter(
 		workspaceRepo:     workspaceRepo,
 		threadRepo:        threadRepo,
 		notificationSvc:   notificationSvc,
+        channelAccessSvc:  channelAccessSvc,
 	}
 }
 
@@ -52,7 +56,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	}
 
 	// チャンネルアクセス確認
-	channel, err := d.ensureChannelAccess(ctx, message.ChannelID, input.ExecutorID)
+    channel, err := d.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.ExecutorID)
 	if err != nil {
 		return err
 	}
@@ -108,37 +112,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	return nil
 }
 
-// ensureChannelAccess はチャンネルアクセス権限を確認します
-func (d *MessageDeleter) ensureChannelAccess(ctx context.Context, channelID, userID string) (*entity.Channel, error) {
-	ch, err := d.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return nil, ErrChannelNotFound
-	}
-
-	if ch.IsPrivate {
-		isMember, err := d.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return nil, ErrUnauthorized
-		}
-		return ch, nil
-	}
-
-	member, err := d.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, ErrUnauthorized
-	}
-
-	return ch, nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み
 
 // canModifyMessage はユーザーがメッセージを編集・削除できるかどうかを確認します
 func (d *MessageDeleter) canModifyMessage(ctx context.Context, workspaceID, messageOwnerID, executorID string) (bool, error) {

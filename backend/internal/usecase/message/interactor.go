@@ -45,6 +45,7 @@ func NewMessageUseCase(
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
+    channelAccessSvc service.ChannelAccessService,
 ) MessageUseCase {
 	// 各機能のユースケースを作成
 	creator := NewMessageCreator(
@@ -64,6 +65,7 @@ func NewMessageUseCase(
 		mentionService,
 		linkProcessingService,
 		transactionManager,
+        channelAccessSvc,
 	)
 
 	updater := NewMessageUpdater(
@@ -81,6 +83,7 @@ func NewMessageUseCase(
 		mentionService,
 		linkProcessingService,
 		transactionManager,
+        channelAccessSvc,
 	)
 
 	deleter := NewMessageDeleter(
@@ -90,6 +93,7 @@ func NewMessageUseCase(
 		workspaceRepo,
 		threadRepo,
 		notificationSvc,
+        channelAccessSvc,
 	)
 
 	lister := NewMessageLister(
@@ -104,6 +108,7 @@ func NewMessageUseCase(
 		linkRepo,
 		threadRepo,
 		attachmentRepo,
+        channelAccessSvc,
 	)
 
 	return &messageInteractor{

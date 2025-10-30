@@ -86,6 +86,7 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.infrastructureRegistry.NewMentionService(),
 		r.infrastructureRegistry.NewLinkProcessingService(),
 		r.infrastructureRegistry.NewTransactionManager(),
+        r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -95,7 +96,8 @@ func (r *UseCaseRegistry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
-		r.infrastructureRegistry.NewNotificationService(),
+        r.infrastructureRegistry.NewNotificationService(),
+        r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -106,7 +108,8 @@ func (r *UseCaseRegistry) NewReactionUseCase() reactionuc.ReactionUseCase {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
-		r.infrastructureRegistry.NewNotificationService(),
+        r.infrastructureRegistry.NewNotificationService(),
+        r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -135,6 +138,7 @@ func (r *UseCaseRegistry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewUserGroupRepository(),
+        r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -146,7 +150,8 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
-		r.infrastructureRegistry.NewNotificationService(),
+        r.infrastructureRegistry.NewNotificationService(),
+        r.domainRegistry.NewChannelAccessService(),
 	)
 }
 

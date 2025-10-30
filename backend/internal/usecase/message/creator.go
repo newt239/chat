@@ -7,7 +7,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
+    "github.com/newt239/chat/internal/domain/service"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/domain/transaction"
 )
 
@@ -30,6 +31,7 @@ type MessageCreator struct {
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
 	assembler             *MessageOutputAssembler
+    channelAccessSvc      domainservice.ChannelAccessService
 }
 
 // NewMessageCreator は新しいMessageCreatorを作成します
@@ -50,6 +52,7 @@ func NewMessageCreator(
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) *MessageCreator {
 	return &MessageCreator{
 		messageRepo:           messageRepo,
@@ -69,12 +72,13 @@ func NewMessageCreator(
 		linkProcessingService: linkProcessingService,
 		transactionManager:    transactionManager,
 		assembler:             NewMessageOutputAssembler(),
+        channelAccessSvc:      channelAccessSvc,
 	}
 }
 
 // CreateMessage はメッセージを作成します
 func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageInput) (*MessageOutput, error) {
-	channel, err := c.ensureChannelAccess(ctx, input.ChannelID, input.UserID)
+    channel, err := c.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -191,37 +195,7 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 	return result, nil
 }
 
-// ensureChannelAccess はチャンネルアクセス権限を確認します
-func (c *MessageCreator) ensureChannelAccess(ctx context.Context, channelID, userID string) (*entity.Channel, error) {
-	ch, err := c.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return nil, ErrChannelNotFound
-	}
-
-	if ch.IsPrivate {
-		isMember, err := c.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return nil, ErrUnauthorized
-		}
-		return ch, nil
-	}
-
-	member, err := c.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, ErrUnauthorized
-	}
-
-	return ch, nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み
 
 // extractAndSaveMentionsAndLinks はメンションとリンクの抽出・保存を行います
 func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, messageID, body, workspaceID string) error {

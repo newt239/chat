@@ -8,7 +8,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
+    "github.com/newt239/chat/internal/domain/service"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -30,6 +31,7 @@ type reactionInteractor struct {
 	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
 	notificationSvc   service.NotificationService
+    channelAccessSvc  domainservice.ChannelAccessService
 }
 
 func NewReactionInteractor(
@@ -39,6 +41,7 @@ func NewReactionInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc service.NotificationService,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) ReactionUseCase {
 	return &reactionInteractor{
 		messageRepo:       messageRepo,
@@ -47,6 +50,7 @@ func NewReactionInteractor(
 		workspaceRepo:     workspaceRepo,
 		userRepo:          userRepo,
 		notificationSvc:   notificationSvc,
+        channelAccessSvc:  channelAccessSvc,
 	}
 }
 
@@ -60,8 +64,8 @@ func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionI
 		return ErrMessageNotFound
 	}
 
-	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+    // チャンネルへのアクセス権限チェック
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -103,8 +107,8 @@ func (i *reactionInteractor) RemoveReaction(ctx context.Context, input RemoveRea
 		return ErrMessageNotFound
 	}
 
-	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+    // チャンネルへのアクセス権限チェック
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -126,8 +130,8 @@ func (i *reactionInteractor) ListReactions(ctx context.Context, messageID string
 		return nil, ErrMessageNotFound
 	}
 
-	// チャンネルへのアクセス権限チェック
-	if err := i.ensureChannelAccess(ctx, message.ChannelID, userID); err != nil {
+    // チャンネルへのアクセス権限チェック
+    if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, userID); err != nil {
 		return nil, err
 	}
 
@@ -173,38 +177,7 @@ func (i *reactionInteractor) ListReactions(ctx context.Context, messageID string
 	return &ListReactionsOutput{Reactions: outputs}, nil
 }
 
-func (i *reactionInteractor) ensureChannelAccess(ctx context.Context, channelID, userID string) error {
-	ch, err := i.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return errors.New("channel not found")
-	}
-
-	// プライベートチャンネルの場合
-	if ch.IsPrivate {
-		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return ErrUnauthorized
-		}
-		return nil
-	}
-
-	// パブリックチャンネルの場合はワークスペースメンバーかチェック
-	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return ErrUnauthorized
-	}
-
-	return nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み
 
 func toReactionOutput(reaction *entity.MessageReaction, user *entity.User) ReactionOutput {
 	userInfo := UserInfo{

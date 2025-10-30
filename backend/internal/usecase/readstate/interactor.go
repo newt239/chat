@@ -7,7 +7,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
+    "github.com/newt239/chat/internal/domain/service"
+    domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -26,6 +27,7 @@ type readStateInteractor struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 	notificationSvc   service.NotificationService
+    channelAccessSvc  domainservice.ChannelAccessService
 }
 
 func NewReadStateInteractor(
@@ -33,7 +35,8 @@ func NewReadStateInteractor(
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
-	notificationSvc service.NotificationService,
+    notificationSvc service.NotificationService,
+    channelAccessSvc domainservice.ChannelAccessService,
 ) ReadStateUseCase {
 	return &readStateInteractor{
 		readStateRepo:     readStateRepo,
@@ -41,11 +44,12 @@ func NewReadStateInteractor(
 		channelMemberRepo: channelMemberRepo,
 		workspaceRepo:     workspaceRepo,
 		notificationSvc:   notificationSvc,
+        channelAccessSvc:  channelAccessSvc,
 	}
 }
 
 func (i *readStateInteractor) GetUnreadCount(ctx context.Context, input GetUnreadCountInput) (*UnreadCountOutput, error) {
-	channel, err := i.ensureChannelAccess(ctx, input.ChannelID, input.UserID)
+    channel, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +63,7 @@ func (i *readStateInteractor) GetUnreadCount(ctx context.Context, input GetUnrea
 }
 
 func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateReadStateInput) error {
-	channel, err := i.ensureChannelAccess(ctx, input.ChannelID, input.UserID)
+    channel, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return err
 	}
@@ -87,33 +91,4 @@ func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateR
 	return nil
 }
 
-func (i *readStateInteractor) ensureChannelAccess(ctx context.Context, channelID, userID string) (*entity.Channel, error) {
-	ch, err := i.channelRepo.FindByID(ctx, channelID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load channel: %w", err)
-	}
-	if ch == nil {
-		return nil, ErrChannelNotFound
-	}
-
-	if ch.IsPrivate {
-		isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
-		}
-		if !isMember {
-			return nil, ErrUnauthorized
-		}
-		return ch, nil
-	}
-
-	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, ErrUnauthorized
-	}
-
-	return ch, nil
-}
+// ensureChannelAccess は ChannelAccessService に委譲済み
