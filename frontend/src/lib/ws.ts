@@ -1,17 +1,17 @@
-// WebSocketコアユーティリティ（初版/any型排除版）
+import type { ClientToServerMessage, WsEventPayloadMap } from "@/types/wsEvents";
+
+import { router } from "@/lib/router";
 
 const WS_BC_NAME = "ws-control";
 
 /**
  * サーバWebSocketエンドポイント取得
- * 例: ws://localhost:8080/ws?token=xxxx
+ * 例: ws://localhost:8080/ws?token=xxxx&workspaceId=xxxx
  */
-function getWsUrl(token: string): string {
+function getWsUrl(token: string, workspaceId: string): string {
   const base = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
-  return `${base}/ws?token=${encodeURIComponent(token)}`;
+  return `${base}/ws?token=${encodeURIComponent(token)}&workspaceId=${encodeURIComponent(workspaceId)}`;
 }
-
-import type { ClientToServerMessage, WsEventPayloadMap } from "@/types/wsEvents";
 
 export class WsClient {
   private ws: WebSocket | null = null;
@@ -21,6 +21,7 @@ export class WsClient {
   private reconnectDelay = 2000; // ms
 
   private token: string;
+  private workspaceId: string;
   private bc: BroadcastChannel;
   private isActiveLeader: boolean = false;
   // 各イベント専用callback配列で厳密管理
@@ -35,8 +36,9 @@ export class WsClient {
     error: [] as ((payload: WsEventPayloadMap["error"]) => void)[],
   };
 
-  constructor(token: string) {
+  constructor(token: string, workspaceId: string) {
     this.token = token;
+    this.workspaceId = workspaceId;
     this.bc = new BroadcastChannel(WS_BC_NAME);
     this.listenBroadcast();
     this.initTabActivityControl();
@@ -74,6 +76,9 @@ export class WsClient {
           this.handlers.ack.forEach((cb) => cb(payload));
           break;
         case "error":
+          if (typeof payload === "object" && "code" in payload && payload.code === "401") {
+            router.navigate({ to: "/login" });
+          }
           this.handlers.error.forEach((cb) => cb(payload));
           break;
       }
@@ -82,7 +87,6 @@ export class WsClient {
     }
   };
 
-  // ========== 個別 onXxx イベント登録API ===========
   public onNewMessage(cb: (payload: WsEventPayloadMap["new_message"]) => void) {
     this.handlers.new_message.push(cb);
   }
@@ -109,7 +113,7 @@ export class WsClient {
   }
 
   private connect() {
-    const url = getWsUrl(this.token);
+    const url = getWsUrl(this.token, this.workspaceId);
     this.ws = new WebSocket(url);
     this.ws.addEventListener("open", this.onOpen);
     this.ws.addEventListener("close", this.onClose);
@@ -119,7 +123,7 @@ export class WsClient {
 
   private onOpen = () => {
     this.startHeartbeat();
-    // console.log("WebSocket接続が開きました");
+    console.log("WebSocket接続が開きました", this.workspaceId);
   };
 
   private startHeartbeat() {
@@ -138,6 +142,7 @@ export class WsClient {
   private onClose = () => {
     this.stopHeartbeat();
     this.tryReconnect();
+    console.log("WebSocket接続が閉じました", this.workspaceId);
   };
 
   private onError = () => {
@@ -153,7 +158,6 @@ export class WsClient {
     }, this.reconnectDelay);
   }
 
-  // 型安全なイベント送信API
   public joinChannel(channel_id: string) {
     this.send({ type: "join_channel", payload: { channel_id } });
   }

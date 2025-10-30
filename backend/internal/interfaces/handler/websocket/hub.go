@@ -335,7 +335,7 @@ func (c *Client) readPump() {
 				log.Printf("[WebSocket] 予期しない切断エラー: user=%s workspace=%s error=%v",
 					c.userID, c.workspaceID, err)
 			} else {
-				log.Printf("[WebSocket] 接続切断: user=%s workspace=%s", c.userID, c.workspaceID)
+				log.Printf("[WebSocket] 接続切断: user=%s workspace=%s error=%v", c.userID, c.workspaceID, err)
 			}
 			break
 		}

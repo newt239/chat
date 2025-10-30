@@ -58,13 +58,7 @@ export const clearAuthAtom = atom(null, (_get, set) => {
   set(authAtom, createEmptyAuthState());
 });
 
-const authInitializationStatusAtom = atom(false);
-
 export const initializeAuthAtom = atom(null, (get, set) => {
-  if (get(authInitializationStatusAtom)) {
-    return;
-  }
-
   const current = get(authAtom);
 
   if (typeof window !== "undefined") {
@@ -85,6 +79,4 @@ export const initializeAuthAtom = atom(null, (get, set) => {
     window.localStorage.removeItem("accessToken");
     window.localStorage.removeItem("refreshToken");
   }
-
-  set(authInitializationStatusAtom, true);
 });

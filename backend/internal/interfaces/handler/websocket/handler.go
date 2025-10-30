@@ -62,7 +62,12 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 		// Workspace所属確認
 		ctx := c.Request().Context()
 		member, err := workspaceRepo.FindMember(ctx, workspaceID, claims.UserID)
-		if err != nil || member == nil {
+		if err != nil {
+			log.Printf("[WebSocket] FindMember error: userID=%s workspaceID=%s err=%v", claims.UserID, workspaceID, err)
+			return echo.NewHTTPError(http.StatusForbidden, "user is not a member of this workspace")
+		}
+		if member == nil {
+			log.Printf("[WebSocket] Member not found: userID=%s workspaceID=%s", claims.UserID, workspaceID)
 			return echo.NewHTTPError(http.StatusForbidden, "user is not a member of this workspace")
 		}
 

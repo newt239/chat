@@ -1,16 +1,21 @@
-import { useMemo, useEffect, useRef, useCallback } from "react";
+import { useMemo, useEffect, useRef, useCallback, useState } from "react";
 
 import { Card, Loader, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
 import { useMessages, useUpdateMessage, useDeleteMessage } from "../hooks/useMessage";
+import { messageWithThreadSchema } from "../schemas";
 
 import { MessageItem } from "./MessageItem";
+
+import type { MessageWithThread } from "../schemas";
+import type { NewMessagePayload } from "@/types/wsEvents";
 
 import { userAtom } from "@/providers/store/auth";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
+import { useWsClient } from "@/providers/ws/WsProvider";
 
 const resolveErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error && error.message) {
@@ -26,6 +31,33 @@ export const MessagePanel = () => {
   const { data: messageResponse, isLoading, isError, error } = useMessages(currentChannelId);
   const updateMessage = useUpdateMessage(currentChannelId);
   const deleteMessage = useDeleteMessage(currentChannelId);
+  const { wsClient } = useWsClient();
+
+  const [messages, setMessages] = useState<MessageWithThread[]>([]);
+  // メッセージロード・チャンネル変更時に初期ロード
+  useEffect(() => {
+    setMessages((messageResponse?.messages ?? []) as MessageWithThread[]);
+  }, [messageResponse, currentChannelId]);
+
+  // new_message(Ws)購読とjoin/leave管理
+  useEffect(() => {
+    if (!wsClient || !currentChannelId) return;
+    wsClient.joinChannel(currentChannelId);
+    // new_message購読
+    const handleNewMessage = (payload: NewMessagePayload) => {
+      const result = messageWithThreadSchema.safeParse(payload.message);
+      if (!result.success) return;
+      setMessages((prev: MessageWithThread[]): MessageWithThread[] => {
+        // 同一ID重複は排除
+        if (prev.some((m) => m.id === result.data.id)) return prev;
+        return [...prev, result.data];
+      });
+    };
+    wsClient.onNewMessage(handleNewMessage);
+    return () => {
+      wsClient.leaveChannel(currentChannelId);
+    };
+  }, [wsClient, currentChannelId]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
@@ -39,23 +71,20 @@ export const MessagePanel = () => {
     []
   );
   const orderedMessages = useMemo(() => {
-    if (!messageResponse || !currentChannelId) {
+    if (!messages || !currentChannelId) {
       return [];
     }
-
-    // 重複したメッセージを除去
-    const uniqueMessages = messageResponse.messages.filter(
-      (message, index, self) => index === self.findIndex((m) => m.id === message.id)
+    const uniqueMessages = messages.filter(
+      (message: MessageWithThread, index: number, self: MessageWithThread[]) =>
+        index === self.findIndex((m) => m.id === message.id)
     );
-
-    return uniqueMessages.sort((first, second) => {
+    return uniqueMessages.sort((first: MessageWithThread, second: MessageWithThread) => {
       const firstTime = new Date(first.createdAt).getTime();
       const secondTime = new Date(second.createdAt).getTime();
       return firstTime - secondTime;
     });
-  }, [messageResponse, currentChannelId]);
+  }, [messages, currentChannelId]);
 
-  // メッセージが読み込まれた時と新しいメッセージが送信された時に最新メッセージにスクロール
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -66,19 +95,16 @@ export const MessagePanel = () => {
     }
   }, [messageResponse, isLoading]);
 
-  // チャンネルが変更された時にスクロールをリセット
   useEffect(() => {
     if (currentChannelId) {
       scrollToBottom();
     }
   }, [currentChannelId]);
 
-  // チャンネルが変更された時にスレッドパネルを閉じる
   useEffect(() => {
     setRightSidebarView({ type: "hidden" });
   }, [currentChannelId, setRightSidebarView]);
 
-  // アクションハンドラー
   const handleCopyLink = useCallback(
     (messageId: string) => {
       const url = `${window.location.origin}/app/${currentWorkspaceId}/${currentChannelId}?message=${messageId}`;

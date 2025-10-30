@@ -76,6 +76,8 @@ const messageWithThreadSchema = messageWithUserSchema.extend({
   threadMetadata: threadMetadataSchema.nullable().optional(),
 });
 
+export { messageWithThreadSchema };
+
 export const messagesWithThreadResponseSchema = z.object({
   messages: z.array(messageWithThreadSchema),
   hasMore: z.boolean(),
@@ -90,3 +92,4 @@ export const threadRepliesResponseSchema = z.object({
 
 export type MessageWithUser = z.infer<typeof messageWithUserSchema>;
 export type ThreadMetadata = z.infer<typeof threadMetadataSchema>;
+export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;

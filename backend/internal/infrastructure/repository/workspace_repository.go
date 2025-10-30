@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/workspace"
@@ -293,10 +294,10 @@ func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string
 
 	client := transaction.ResolveClient(ctx, r.client)
 	wm, err := client.WorkspaceMember.Query().
-		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(wid)),
-			workspacemember.HasUserWith(user.ID(uid)),
-		).
+		Where(func(s *sql.Selector) {
+			s.Where(sql.EQ(workspacemember.WorkspaceColumn, wid))
+			s.Where(sql.EQ(workspacemember.UserColumn, uid))
+		}).
 		WithWorkspace().
 		WithUser().
 		Only(ctx)
