@@ -14,12 +14,10 @@ export function usePinActions(channelIdParam?: string | null) {
   const pin = useMutation({
     mutationFn: async ({ messageId }: { messageId: string }) => {
       if (!currentChannelId) throw new Error("チャンネルが選択されていません");
-      // @ts-expect-error OpenAPI スキーマに pins が未反映
       const { data, error } = await api.POST("/api/channels/{channelId}/pins", {
         params: { path: { channelId: currentChannelId } },
         body: { messageId },
       });
-      // @ts-expect-error error 型はスキーマ反映後に解消
       if (error) throw new Error(error.error);
       return data;
     },
@@ -33,7 +31,6 @@ export function usePinActions(channelIdParam?: string | null) {
   const unpin = useMutation({
     mutationFn: async ({ messageId }: { messageId: string }) => {
       if (!currentChannelId) throw new Error("チャンネルが選択されていません");
-      // @ts-expect-error OpenAPI スキーマに pins が未反映
       const { error } = await api.DELETE("/api/channels/{channelId}/pins/{messageId}", {
         params: { path: { channelId: currentChannelId, messageId } },
       });

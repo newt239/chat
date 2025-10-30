@@ -4,15 +4,15 @@ import { vi } from "vitest";
 
 import { SettingsModal } from "./SettingsModal";
 
-import * as navigation from "@/lib/navigation";
 import { MantineTestWrapper } from "@/test/MantineTestWrapper";
 
-// モック設定
-vi.mock("@/lib/navigation", () => ({
-  navigateToLogin: vi.fn(),
+// router.navigateのモック
+const mockNavigate = vi.fn();
+vi.mock("@/lib/router", () => ({
+  router: {
+    navigate: mockNavigate,
+  },
 }));
-
-const mockNavigateToLogin = vi.mocked(navigation.navigateToLogin);
 
 // useSetAtomのモック
 const mockClearAuth = vi.fn();
@@ -49,7 +49,7 @@ describe("SettingsModal", () => {
 
     expect(mockClearAuth).toHaveBeenCalled();
     expect(mockOnClose).toHaveBeenCalled();
-    expect(mockNavigateToLogin).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith({ to: "/login" });
   });
 
   it("キャンセルボタンをクリックするとモーダルが閉じられる", () => {

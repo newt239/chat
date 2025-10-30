@@ -3,7 +3,7 @@
  * Do not make direct changes to the file.
  */
 
-export interface paths {
+export type paths = {
     "/api/channels/{channelId}/pins": {
         parameters: {
             query?: never;
@@ -675,7 +675,7 @@ export interface paths {
     };
 }
 export type webhooks = Record<string, never>;
-export interface components {
+export type components = {
     schemas: {
         PinnedMessage: {
             message: components["schemas"]["Message"];
@@ -1083,7 +1083,7 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export interface operations {
+export type operations = {
     listPins: {
         parameters: {
             query?: {

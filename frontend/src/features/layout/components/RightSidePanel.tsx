@@ -5,13 +5,13 @@ import { useAtomValue, useSetAtom } from "jotai";
 import type { PanelView } from "@/providers/store/ui";
 
 import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
+import { ChannelInfoPanel } from "@/features/channel/components/ChannelInfoPanel";
 import { ChannelMemberPanel } from "@/features/channel/components/ChannelMemberPanel";
+import { UserProfilePanel } from "@/features/member/components/UserProfilePanel";
 import { NotificationPanel } from "@/features/notification/components/NotificationPanel";
 import { PinnedPanel } from "@/features/pin/components/PinnedPanel";
-import { ChannelInfoPanel } from "@/features/sidebar/components/ChannelInfoPanel";
-import { SearchResultsPanel } from "@/features/sidebar/components/SearchResultsPanel";
-import { ThreadPanel } from "@/features/sidebar/components/ThreadPanel";
-import { UserProfilePanel } from "@/features/sidebar/components/UserProfilePanel";
+import { SearchResultsPanel } from "@/features/search/components/SearchResultsPanel";
+import { ThreadPanel } from "@/features/thread/components/ThreadPanel";
 import {
   rightSidePanelViewAtom,
   hideMobilePanelsAtom,

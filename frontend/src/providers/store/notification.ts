@@ -10,6 +10,7 @@ export type NotificationItem = {
   type: NotificationType;
   title: string;
   message: string;
+  workspaceId: string;
   channelId: string;
   channelName: string;
   messageId?: string;

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const createDMRequestSchema = z.object({
+export const createDMRequestSchema = z.object({
   userId: z.string().uuid(),
 });
 

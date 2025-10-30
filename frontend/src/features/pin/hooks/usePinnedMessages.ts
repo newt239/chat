@@ -39,18 +39,14 @@ export function usePinnedMessages(channelId: string | null, limit = 100) {
     queryFn: async () => {
       if (channelId === null) return { pins: [], nextCursor: null } as PinnedListResponse;
 
-      // OpenAPI スキーマ更新前の一時対応
-      // @ts-expect-error OpenAPI スキーマに pins が未反映
       const { data, error } = await api.GET("/api/channels/{channelId}/pins", {
         params: { path: { channelId }, query: { limit } },
       });
 
       if (error || !data) {
-        // @ts-expect-error error 型はスキーマ反映後に解消
         throw new Error(error?.error ?? "ピン一覧の取得に失敗しました");
       }
 
-      // API スキーマ準拠前提。必要であれば zod 検証を追加
       return data as unknown as PinnedListResponse;
     },
   });

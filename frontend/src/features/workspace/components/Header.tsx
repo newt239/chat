@@ -7,7 +7,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 
 import type { WorkspaceSummary } from "@/features/workspace/types";
 
-import { SettingsModal } from "@/features/layout/components/SettingsModal";
+import { SettingsModal } from "@/features/settings/components/SettingsModal";
 import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
 import { unreadNotificationCountAtom } from "@/providers/store/notification";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
