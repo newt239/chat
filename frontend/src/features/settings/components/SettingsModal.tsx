@@ -1,7 +1,8 @@
-import { Modal, Button, Text, Group, Stack } from "@mantine/core";
+import { Modal, Button, Text, Group, Stack, Divider } from "@mantine/core";
 import { IconLogout } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 
+import { ProfileSettingsPanel } from "@/features/settings/components/ProfileSettingsPanel";
 import { router } from "@/lib/router";
 import { clearAuthAtom } from "@/providers/store/auth";
 
@@ -25,6 +26,10 @@ export const SettingsModal = ({ opened, onClose }: SettingsModalProps) => {
         <Text size="sm" c="dimmed">
           アプリケーションの設定とアカウント管理を行えます。
         </Text>
+
+        <ProfileSettingsPanel />
+
+        <Divider />
 
         <Group justify="flex-end">
           <Button variant="outline" onClick={onClose}>

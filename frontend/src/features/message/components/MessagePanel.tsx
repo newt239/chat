@@ -20,8 +20,6 @@ import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
 import { useWsClient } from "@/providers/ws/WsProvider";
 
-//
-
 export const MessagePanel = () => {
   const router = useRouter();
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
@@ -47,8 +45,6 @@ export const MessagePanel = () => {
       }),
     []
   );
-
-  //
 
   useAutoScrollToBottom(messagesEndRef, [messageResponse, isLoading]);
   useAutoScrollToBottom(messagesEndRef, [currentChannelId]);

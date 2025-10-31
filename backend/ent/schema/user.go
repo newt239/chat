@@ -28,6 +28,9 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("display_name").
 			NotEmpty(),
+		// 自己紹介文（任意）
+		field.String("bio").
+			Optional(),
 		field.String("avatar_url").
 			Optional(),
 		field.Time("created_at").

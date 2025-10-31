@@ -87,6 +87,10 @@ func (r *InterfaceRegistry) NewThreadHandler() *handler.ThreadHandler {
 	)
 }
 
+func (r *InterfaceRegistry) NewUserHandler() *handler.UserHandler {
+    return handler.NewUserHandler(r.usecaseRegistry.NewUserUseCase())
+}
+
 // Router
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
@@ -109,6 +113,7 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		SearchHandler:        r.NewSearchHandler(),
 		DMHandler:            r.NewDMHandler(),
 		ThreadHandler:        r.NewThreadHandler(),
+        UserHandler:          r.NewUserHandler(),
 	}
 
 	return http.NewRouter(routerConfig)

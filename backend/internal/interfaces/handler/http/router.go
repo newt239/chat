@@ -35,6 +35,7 @@ type RouterConfig struct {
 	SearchHandler        *handler.SearchHandler
 	DMHandler            *handler.DMHandler
 	ThreadHandler        *handler.ThreadHandler
+    UserHandler          *handler.UserHandler
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -159,6 +160,9 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	// Thread routes
 	api.GET("/workspaces/:workspaceId/threads/participating", cfg.ThreadHandler.GetParticipatingThreads, authMw)
 	api.POST("/threads/:threadId/read", cfg.ThreadHandler.MarkThreadRead, authMw)
+
+    // User routes (self)
+    api.PATCH("/users/me", cfg.UserHandler.UpdateMe, authMw)
 
 	return e
 }

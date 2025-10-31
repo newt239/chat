@@ -16,6 +16,7 @@ import (
 	systemmsguc "github.com/newt239/chat/internal/usecase/systemmessage"
 	threaduc "github.com/newt239/chat/internal/usecase/thread"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
+    useruc "github.com/newt239/chat/internal/usecase/user"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -211,4 +212,10 @@ func (r *UseCaseRegistry) NewThreadReader() *threaduc.ThreadReader {
 	return threaduc.NewThreadReader(
 		r.domainRegistry.NewThreadRepository(),
 	)
+}
+
+func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
+    return useruc.NewInteractor(
+        r.domainRegistry.NewUserRepository(),
+    )
 }
