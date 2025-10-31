@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -12,6 +13,7 @@ import (
 // MessageLister はメッセージ一覧取得を担当するユースケースです
 type MessageLister struct {
 	messageRepo       domainrepository.MessageRepository
+    systemMsgRepo     domainrepository.SystemMessageRepository
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
@@ -30,6 +32,7 @@ type MessageLister struct {
 // NewMessageLister は新しいMessageListerを作成します
 func NewMessageLister(
 	messageRepo domainrepository.MessageRepository,
+    systemMsgRepo domainrepository.SystemMessageRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -42,9 +45,10 @@ func NewMessageLister(
 	attachmentRepo domainrepository.AttachmentRepository,
     channelAccessSvc domainservice.ChannelAccessService,
 ) *MessageLister {
-	assembler := NewMessageOutputAssembler()
+    assembler := NewMessageOutputAssembler()
 	return &MessageLister{
 		messageRepo:       messageRepo,
+        systemMsgRepo:     systemMsgRepo,
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		workspaceRepo:     workspaceRepo,
@@ -85,34 +89,66 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 		limit = maxMessageLimit
 	}
 
-	messages, err := l.messageRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
+    messages, err := l.messageRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch messages: %w", err)
 	}
 
-	messages, hasMore := l.prepareMessageList(messages, limit)
-
-	outputs, err := l.outputBuilder.Build(ctx, messages)
+    // システムメッセージ取得
+    systemMessages, err := l.systemMsgRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
 	if err != nil {
-		return nil, err
+        return nil, fmt.Errorf("failed to fetch system messages: %w", err)
 	}
 
-	return &ListMessagesOutput{Messages: outputs, HasMore: hasMore}, nil
+    // ユーザーメッセージの出力へ変換
+    messages, hasMoreUser := l.prepareMessageList(messages, limit)
+    userOutputs, err := l.outputBuilder.Build(ctx, messages)
+    if err != nil {
+        return nil, err
+    }
+
+    // タイムラインへマージ
+    timeline := make([]TimelineItem, 0, len(userOutputs)+len(systemMessages))
+    for _, m := range userOutputs {
+        timeline = append(timeline, TimelineItem{Type: "user", UserMessage: &m, CreatedAt: m.CreatedAt})
+    }
+    for _, sm := range systemMessages {
+        timeline = append(timeline, TimelineItem{Type: "system", SystemMessage: &SystemMessageOutput{
+            ID:        sm.ID,
+            ChannelID: sm.ChannelID,
+            Kind:      string(sm.Kind),
+            Payload:   sm.Payload,
+            ActorID:   sm.ActorID,
+            CreatedAt: sm.CreatedAt,
+        }, CreatedAt: sm.CreatedAt})
+    }
+    sort.Slice(timeline, func(i, j int) bool { return timeline[i].CreatedAt.After(timeline[j].CreatedAt) })
+    hasMore := false
+    if len(timeline) > limit {
+        hasMore = true
+        timeline = timeline[:limit]
+    }
+
+    return &ListMessagesOutput{Messages: timeline, HasMore: hasMore || hasMoreUser}, nil
 }
 
 // ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
 func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) ([]MessageWithThreadOutput, error) {
-	// 通常のメッセージ一覧を取得
-	listOutput, err := l.ListMessages(ctx, input)
+    // 通常のメッセージ一覧を取得（統合タイムライン）
+    listOutput, err := l.ListMessages(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 
-	// メッセージIDを収集
-	messageIDs := make([]string, len(listOutput.Messages))
-	for idx, msg := range listOutput.Messages {
-		messageIDs[idx] = msg.ID
-	}
+    // ユーザーメッセージのみ抽出しID収集
+    userMessages := make([]MessageOutput, 0)
+    messageIDs := make([]string, 0)
+    for _, item := range listOutput.Messages {
+        if item.Type == "user" && item.UserMessage != nil {
+            userMessages = append(userMessages, *item.UserMessage)
+            messageIDs = append(messageIDs, item.UserMessage.ID)
+        }
+    }
 
 	// スレッドメタデータを一括取得
 	metadataMap, err := l.threadRepo.FindMetadataByMessageIDs(ctx, messageIDs)
@@ -137,12 +173,10 @@ func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMe
 		userMap[user.ID] = user
 	}
 
-	// メッセージとスレッドメタデータを結合
-	outputs := make([]MessageWithThreadOutput, 0, len(listOutput.Messages))
-	for _, msg := range listOutput.Messages {
-		output := MessageWithThreadOutput{
-			MessageOutput: msg,
-		}
+    // メッセージとスレッドメタデータを結合
+    outputs := make([]MessageWithThreadOutput, 0, len(userMessages))
+    for _, msg := range userMessages {
+        output := MessageWithThreadOutput{ MessageOutput: msg }
 
 		if metadata, exists := metadataMap[msg.ID]; exists {
 			var lastReplyUser *UserInfo

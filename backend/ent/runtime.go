@@ -19,6 +19,7 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/schema"
 	"github.com/newt239/chat/ent/session"
+	"github.com/newt239/chat/ent/systemmessage"
 	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
@@ -211,6 +212,20 @@ func init() {
 	sessionDescID := sessionFields[0].Descriptor()
 	// session.DefaultID holds the default value on creation for the id field.
 	session.DefaultID = sessionDescID.Default.(func() uuid.UUID)
+	systemmessageFields := schema.SystemMessage{}.Fields()
+	_ = systemmessageFields
+	// systemmessageDescKind is the schema descriptor for kind field.
+	systemmessageDescKind := systemmessageFields[1].Descriptor()
+	// systemmessage.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	systemmessage.KindValidator = systemmessageDescKind.Validators[0].(func(string) error)
+	// systemmessageDescCreatedAt is the schema descriptor for created_at field.
+	systemmessageDescCreatedAt := systemmessageFields[3].Descriptor()
+	// systemmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemmessage.DefaultCreatedAt = systemmessageDescCreatedAt.Default.(func() time.Time)
+	// systemmessageDescID is the schema descriptor for id field.
+	systemmessageDescID := systemmessageFields[0].Descriptor()
+	// systemmessage.DefaultID holds the default value on creation for the id field.
+	systemmessage.DefaultID = systemmessageDescID.Default.(func() uuid.UUID)
 	threadmetadataFields := schema.ThreadMetadata{}.Fields()
 	_ = threadmetadataFields
 	// threadmetadataDescReplyCount is the schema descriptor for reply_count field.

@@ -23,6 +23,7 @@ const (
 	EventTypeUnreadCount    EventType = "unread_count"
 	EventTypePinCreated     EventType = "pin_created"
 	EventTypePinDeleted     EventType = "pin_deleted"
+		EventTypeSystemMessageCreated EventType = "system_message_created"
 	EventTypeAck            EventType = "ack"
 	EventTypeError          EventType = "error"
 )

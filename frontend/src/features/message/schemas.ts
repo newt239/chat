@@ -93,3 +93,28 @@ export const threadRepliesResponseSchema = z.object({
 export type MessageWithUser = z.infer<typeof messageWithUserSchema>;
 export type ThreadMetadata = z.infer<typeof threadMetadataSchema>;
 export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;
+
+// System message and timeline unified schema
+const systemMessageSchema = z.object({
+  id: z.string(),
+  channelId: z.string(),
+  kind: z.string(),
+  payload: z.record(z.string(), z.unknown()),
+  actorId: z.string().nullable().optional(),
+  createdAt: z.string(),
+});
+
+export const timelineItemSchema = z.object({
+  type: z.enum(["user", "system"]),
+  userMessage: messageWithUserSchema.optional(),
+  systemMessage: systemMessageSchema.optional(),
+  createdAt: z.string(),
+});
+
+export const messagesTimelineResponseSchema = z.object({
+  messages: z.array(timelineItemSchema),
+  hasMore: z.boolean(),
+});
+
+export type SystemMessage = z.infer<typeof systemMessageSchema>;
+export type TimelineItem = z.infer<typeof timelineItemSchema>;

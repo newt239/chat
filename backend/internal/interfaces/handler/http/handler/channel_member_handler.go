@@ -8,14 +8,17 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/newt239/chat/internal/usecase/channelmember"
+	"github.com/newt239/chat/internal/usecase/systemmessage"
+	"github.com/newt239/chat/internal/domain/entity"
 )
 
 type ChannelMemberHandler struct {
 	channelMemberUseCase channelmember.ChannelMemberUseCase
+    systemMessageUC      systemmessage.UseCase
 }
 
-func NewChannelMemberHandler(channelMemberUseCase channelmember.ChannelMemberUseCase) *ChannelMemberHandler {
-	return &ChannelMemberHandler{channelMemberUseCase: channelMemberUseCase}
+func NewChannelMemberHandler(channelMemberUseCase channelmember.ChannelMemberUseCase, systemMessageUC systemmessage.UseCase) *ChannelMemberHandler {
+    return &ChannelMemberHandler{channelMemberUseCase: channelMemberUseCase, systemMessageUC: systemMessageUC}
 }
 
 type InviteMemberRequest struct {
@@ -133,7 +136,7 @@ func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
 		role = *req.Role
 	}
 
-	err := h.channelMemberUseCase.InviteMember(c.Request().Context(), channelmember.InviteMemberInput{
+    err := h.channelMemberUseCase.InviteMember(c.Request().Context(), channelmember.InviteMemberInput{
 		ChannelID:    channelID,
 		OperatorID:   userID,
 		TargetUserID: req.UserID,
@@ -155,6 +158,18 @@ func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "メンバー招待に失敗しました"})
 		}
 	}
+
+    // システムメッセージ: member_added
+    if h.systemMessageUC != nil {
+        actorID := userID
+        payload := map[string]any{"userId": req.UserID, "addedBy": userID}
+        _, _ = h.systemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
+            ChannelID: channelID,
+            Kind:      entity.SystemMessageKindMemberAdded,
+            Payload:   payload,
+            ActorID:   &actorID,
+        })
+    }
 
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
@@ -184,7 +199,7 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
-	err := h.channelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
+    err := h.channelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
 		ChannelID: channelID,
 		UserID:    userID,
 	})
@@ -200,6 +215,18 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "チャンネルへの参加に失敗しました"})
 		}
 	}
+
+    // システムメッセージ: member_joined
+    if h.systemMessageUC != nil {
+        actorID := userID
+        payload := map[string]any{"userId": userID}
+        _, _ = h.systemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
+            ChannelID: channelID,
+            Kind:      entity.SystemMessageKindMemberJoined,
+            Payload:   payload,
+            ActorID:   &actorID,
+        })
+    }
 
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }

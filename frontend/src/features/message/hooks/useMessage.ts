@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { messagesWithThreadResponseSchema } from "../schemas";
+import { messagesTimelineResponseSchema } from "../schemas";
 
 import { api } from "@/lib/api/client";
 
@@ -26,7 +26,7 @@ export function useMessages(channelId: string | null) {
         return { messages: [], hasMore: false } as const;
       }
 
-      const { data, error } = await api.GET("/api/channels/{channelId}/messages/with-threads", {
+      const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
         params: { path: { channelId } },
       });
 
@@ -34,7 +34,7 @@ export function useMessages(channelId: string | null) {
         throw new Error(error?.error ?? "メッセージ一覧の取得に失敗しました");
       }
 
-      const parsed = messagesWithThreadResponseSchema.safeParse(data);
+      const parsed = messagesTimelineResponseSchema.safeParse(data);
 
       if (!parsed.success) {
         console.error("メッセージ取得のスキーマ検証エラー:", parsed.error);

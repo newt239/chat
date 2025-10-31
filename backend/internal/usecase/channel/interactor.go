@@ -11,6 +11,7 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
+	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
 
 var (
@@ -21,6 +22,7 @@ var (
 type ChannelUseCase interface {
 	ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error)
 	CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error)
+	UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error)
 }
 
 type channelInteractor struct {
@@ -29,6 +31,7 @@ type channelInteractor struct {
 	workspaceRepo     domainrepository.WorkspaceRepository
 	readStateRepo     domainrepository.ReadStateRepository
 	txManager         domaintransaction.Manager
+	systemMessageUC   systemmessage.UseCase
 }
 
 func NewChannelInteractor(
@@ -37,6 +40,7 @@ func NewChannelInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	readStateRepo domainrepository.ReadStateRepository,
 	txManager domaintransaction.Manager,
+	systemMessageUC systemmessage.UseCase,
 ) ChannelUseCase {
 	return &channelInteractor{
 		channelRepo:       channelRepo,
@@ -44,6 +48,7 @@ func NewChannelInteractor(
 		workspaceRepo:     workspaceRepo,
 		readStateRepo:     readStateRepo,
 		txManager:         txManager,
+		systemMessageUC:   systemMessageUC,
 	}
 }
 
@@ -153,6 +158,117 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 
 	output := toChannelOutputWithUnread(channel, 0, false) // 新規作成時は未読数0
 	return &output, nil
+}
+
+func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error) {
+	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
+		return nil, err
+	}
+	if err := validateUUID(input.UserID, "user ID"); err != nil {
+		return nil, err
+	}
+
+	ch, err := i.channelRepo.FindByID(ctx, input.ChannelID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch channel: %w", err)
+	}
+	if ch == nil {
+		return nil, errors.New("チャンネルが見つかりません")
+	}
+
+	// 権限: ワークスペースの管理権限（チャンネル編集権限として流用）
+	wsMember, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
+	if err != nil || wsMember == nil || !wsMember.CanCreateChannel() {
+		return nil, ErrUnauthorized
+	}
+
+	// 変更適用
+	originalName := ch.Name
+	originalDesc := ch.Description
+	originalPrivate := ch.IsPrivate
+
+	nameChanged := false
+	descChanged := false
+	privChanged := false
+
+	if input.Name != nil {
+		_ = ch.ChangeName(*input.Name)
+		nameChanged = (originalName != ch.Name)
+	}
+	if input.Description != nil {
+		ch.Description = input.Description
+		ch.UpdatedAt = time.Now().UTC()
+		// detect change
+		old := ""
+		if originalDesc != nil {
+			old = *originalDesc
+		}
+		now := ""
+		if ch.Description != nil {
+			now = *ch.Description
+		}
+		descChanged = (old != now)
+	}
+	if input.IsPrivate != nil {
+		ch.IsPrivate = *input.IsPrivate
+		ch.UpdatedAt = time.Now().UTC()
+		privChanged = (originalPrivate != ch.IsPrivate)
+	}
+
+	if err := i.channelRepo.Update(ctx, ch); err != nil {
+		return nil, fmt.Errorf("failed to update channel: %w", err)
+	}
+
+	// 変更に応じてシステムメッセージ作成
+	actorID := input.UserID
+	if i.systemMessageUC != nil {
+		if nameChanged {
+			_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+				ChannelID: ch.ID,
+				Kind:      entity.SystemMessageKindChannelNameChanged,
+				Payload:   map[string]any{"from": originalName, "to": ch.Name},
+				ActorID:   &actorID,
+			})
+		}
+		if descChanged {
+			from := ""
+			if originalDesc != nil {
+				from = *originalDesc
+			}
+			to := ""
+			if ch.Description != nil {
+				to = *ch.Description
+			}
+			_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+				ChannelID: ch.ID,
+				Kind:      entity.SystemMessageKindChannelDescriptionChanged,
+				Payload:   map[string]any{"from": from, "to": to},
+				ActorID:   &actorID,
+			})
+		}
+		if privChanged {
+			from := "public"
+			if originalPrivate {
+				from = "private"
+			}
+			to := "public"
+			if ch.IsPrivate {
+				to = "private"
+			}
+			_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+				ChannelID: ch.ID,
+				Kind:      entity.SystemMessageKindChannelPrivacyChanged,
+				Payload:   map[string]any{"from": from, "to": to},
+				ActorID:   &actorID,
+			})
+		}
+	}
+
+	out := toChannelOutput(ch)
+	// 補足: 未読数/メンションは0/falseで返す（一覧APIの責務と分離）
+	out.UnreadCount = 0
+	out.HasMention = false
+	return &out, nil
 }
 
 func toChannelOutput(channel *entity.Channel) ChannelOutput {

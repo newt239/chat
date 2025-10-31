@@ -12,6 +12,7 @@ export const WS_EVENT_TYPE = {
   UNREAD_COUNT: "unread_count",
   PIN_CREATED: "pin_created",
   PIN_DELETED: "pin_deleted",
+  SYSTEM_MESSAGE_CREATED: "system_message_created",
   ACK: "ack",
   ERROR: "error",
 } as const;
@@ -34,6 +35,7 @@ export type PinPayload = {
   pinned_at: string;
 };
 export type UnreadCountPayload = { channel_id: string; unread_count: number; has_mention: boolean };
+export type SystemMessageCreatedPayload = { channel_id: string; message: Record<string, unknown> };
 export type AckPayload = { type: WsEventType; success: boolean; message?: string };
 export type ErrorPayload = { code: string; message: string };
 
@@ -55,6 +57,7 @@ export type ServerToClientMessage =
       type: typeof WS_EVENT_TYPE.PIN_CREATED | typeof WS_EVENT_TYPE.PIN_DELETED;
       payload: PinPayload;
     }
+  | { type: typeof WS_EVENT_TYPE.SYSTEM_MESSAGE_CREATED; payload: SystemMessageCreatedPayload }
   | { type: typeof WS_EVENT_TYPE.ACK; payload: AckPayload }
   | { type: typeof WS_EVENT_TYPE.ERROR; payload: ErrorPayload };
 
@@ -65,6 +68,7 @@ export type WsEventPayloadMap = {
   unread_count: UnreadCountPayload;
   pin_created: PinPayload;
   pin_deleted: PinPayload;
+  system_message_created: SystemMessageCreatedPayload;
   ack: AckPayload;
   error: ErrorPayload;
 };

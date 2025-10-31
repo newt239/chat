@@ -44,6 +44,10 @@ func (r *DomainRegistry) NewMessageRepository() domainrepository.MessageReposito
 	return repository.NewMessageRepository(r.client)
 }
 
+func (r *DomainRegistry) NewSystemMessageRepository() domainrepository.SystemMessageRepository {
+    return repository.NewSystemMessageRepository(r.client)
+}
+
 func (r *DomainRegistry) NewReadStateRepository() domainrepository.ReadStateRepository {
 	return repository.NewReadStateRepository(r.client)
 }

@@ -1,63 +1,40 @@
-import { useMemo, useEffect, useRef, useCallback, useState } from "react";
+import { useMemo, useEffect, useRef, useCallback } from "react";
 
 import { Card, Loader, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { useRouter } from "@tanstack/react-router";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
-import { useMessages, useUpdateMessage, useDeleteMessage } from "../hooks/useMessage";
-import { messageWithThreadSchema } from "../schemas";
+import { useMessages } from "../hooks/useMessage";
 
 import { MessageItem } from "./MessageItem";
+import { SystemMessageItem } from "./SystemMessageItem";
 
-import type { MessageWithThread } from "../schemas";
-import type { NewMessagePayload } from "@/types/wsEvents";
+import type { TimelineItem } from "../schemas";
 
+import { useAutoScrollToBottom } from "@/features/message/hooks/useAutoScrollToBottom";
+import { useChannelTimeline } from "@/features/message/hooks/useChannelTimeline";
+import { useMessageActions } from "@/features/message/hooks/useMessageActions";
 import { userAtom } from "@/providers/store/auth";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
 import { useWsClient } from "@/providers/ws/WsProvider";
 
-const resolveErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
-};
+//
 
 export const MessagePanel = () => {
+  const router = useRouter();
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
   const [currentChannelId] = useAtom(currentChannelIdAtom);
   const currentUser = useAtomValue(userAtom);
   const { data: messageResponse, isLoading, isError, error } = useMessages(currentChannelId);
-  const updateMessage = useUpdateMessage(currentChannelId);
-  const deleteMessage = useDeleteMessage(currentChannelId);
   const { wsClient } = useWsClient();
 
-  const [messages, setMessages] = useState<MessageWithThread[]>([]);
-  // メッセージロード・チャンネル変更時に初期ロード
-  useEffect(() => {
-    setMessages((messageResponse?.messages ?? []) as MessageWithThread[]);
-  }, [messageResponse, currentChannelId]);
-
-  // new_message(Ws)購読とjoin/leave管理
-  useEffect(() => {
-    if (!wsClient || !currentChannelId) return;
-    wsClient.joinChannel(currentChannelId);
-    // new_message購読
-    const handleNewMessage = (payload: NewMessagePayload) => {
-      const result = messageWithThreadSchema.safeParse(payload.message);
-      if (!result.success) return;
-      setMessages((prev: MessageWithThread[]): MessageWithThread[] => {
-        // 同一ID重複は排除
-        if (prev.some((m) => m.id === result.data.id)) return prev;
-        return [...prev, result.data];
-      });
-    };
-    wsClient.onNewMessage(handleNewMessage);
-    return () => {
-      wsClient.leaveChannel(currentChannelId);
-    };
-  }, [wsClient, currentChannelId]);
+  const { orderedItems } = useChannelTimeline({
+    currentChannelId,
+    wsClient: wsClient ?? null,
+    initialMessages: (messageResponse?.messages as TimelineItem[]) ?? undefined,
+  });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
@@ -70,36 +47,11 @@ export const MessagePanel = () => {
       }),
     []
   );
-  const orderedMessages = useMemo(() => {
-    if (!messages || !currentChannelId) {
-      return [];
-    }
-    const uniqueMessages = messages.filter(
-      (message: MessageWithThread, index: number, self: MessageWithThread[]) =>
-        index === self.findIndex((m) => m.id === message.id)
-    );
-    return uniqueMessages.sort((first: MessageWithThread, second: MessageWithThread) => {
-      const firstTime = new Date(first.createdAt).getTime();
-      const secondTime = new Date(second.createdAt).getTime();
-      return firstTime - secondTime;
-    });
-  }, [messages, currentChannelId]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  //
 
-  useEffect(() => {
-    if (messageResponse && !isLoading) {
-      scrollToBottom();
-    }
-  }, [messageResponse, isLoading]);
-
-  useEffect(() => {
-    if (currentChannelId) {
-      scrollToBottom();
-    }
-  }, [currentChannelId]);
+  useAutoScrollToBottom(messagesEndRef, [messageResponse, isLoading]);
+  useAutoScrollToBottom(messagesEndRef, [currentChannelId]);
 
   useEffect(() => {
     setRightSidebarView({ type: "hidden" });
@@ -107,14 +59,19 @@ export const MessagePanel = () => {
 
   const handleCopyLink = useCallback(
     (messageId: string) => {
-      const url = `${window.location.origin}/app/${currentWorkspaceId}/${currentChannelId}?message=${messageId}`;
-      navigator.clipboard.writeText(url);
+      if (!currentWorkspaceId || !currentChannelId) return;
+      const { href } = router.buildLocation({
+        to: "/app/$workspaceId/$channelId",
+        params: { workspaceId: String(currentWorkspaceId), channelId: String(currentChannelId) },
+        search: { message: messageId },
+      });
+      navigator.clipboard.writeText(href);
       notifications.show({
         title: "コピーしました",
         message: "メッセージリンクをクリップボードにコピーしました",
       });
     },
-    [currentWorkspaceId, currentChannelId]
+    [router, currentWorkspaceId, currentChannelId]
   );
 
   const handleCreateThread = useCallback(
@@ -131,44 +88,7 @@ export const MessagePanel = () => {
     [setRightSidebarView]
   );
 
-  const handleEdit = useCallback(
-    async (messageId: string, nextBody: string) => {
-      try {
-        await updateMessage.mutateAsync({ messageId, body: nextBody });
-        notifications.show({
-          title: "更新しました",
-          message: "メッセージを更新しました",
-        });
-      } catch (error) {
-        notifications.show({
-          title: "エラー",
-          message: resolveErrorMessage(error, "メッセージの更新に失敗しました"),
-          color: "red",
-        });
-        throw error;
-      }
-    },
-    [updateMessage]
-  );
-
-  const handleDelete = useCallback(
-    async (messageId: string) => {
-      try {
-        await deleteMessage.mutateAsync({ messageId });
-        notifications.show({
-          title: "削除しました",
-          message: "メッセージを削除しました",
-        });
-      } catch (error) {
-        notifications.show({
-          title: "エラー",
-          message: resolveErrorMessage(error, "メッセージの削除に失敗しました"),
-          color: "red",
-        });
-      }
-    },
-    [deleteMessage]
-  );
+  const { handleEdit, handleDelete } = useMessageActions(currentChannelId);
 
   if (currentWorkspaceId === null) {
     return (
@@ -205,20 +125,34 @@ export const MessagePanel = () => {
               </Text>
             )}
             <div className="flex flex-1 flex-col justify-end">
-              {orderedMessages.map((message) => (
-                <MessageItem
-                  key={message.id}
-                  message={message}
-                  currentUserId={currentUser?.id ?? null}
-                  dateTimeFormatter={dateTimeFormatter}
-                  onCopyLink={handleCopyLink}
-                  onCreateThread={handleCreateThread}
-                  onOpenThread={handleOpenThread}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  threadMetadata={message.threadMetadata ?? null}
-                />
-              ))}
+              {orderedItems.map((item, idx) => {
+                if (item.type === "user" && item.userMessage) {
+                  const msg = item.userMessage;
+                  return (
+                    <MessageItem
+                      key={`u-${msg.id}`}
+                      message={msg}
+                      currentUserId={currentUser?.id ?? null}
+                      dateTimeFormatter={dateTimeFormatter}
+                      onCopyLink={handleCopyLink}
+                      onCreateThread={handleCreateThread}
+                      onOpenThread={handleOpenThread}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  );
+                }
+                if (item.type === "system" && item.systemMessage) {
+                  return (
+                    <SystemMessageItem
+                      key={`s-${item.systemMessage.id}`}
+                      message={item.systemMessage}
+                      dateTimeFormatter={dateTimeFormatter}
+                    />
+                  );
+                }
+                return <div key={`x-${idx}`} />;
+              })}
               <div ref={messagesEndRef} />
             </div>
           </div>

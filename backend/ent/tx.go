@@ -36,6 +36,8 @@ type Tx struct {
 	MessageUserMention *MessageUserMentionClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// SystemMessage is the client for interacting with the SystemMessage builders.
+	SystemMessage *SystemMessageClient
 	// ThreadMetadata is the client for interacting with the ThreadMetadata builders.
 	ThreadMetadata *ThreadMetadataClient
 	// ThreadReadState is the client for interacting with the ThreadReadState builders.
@@ -195,6 +197,7 @@ func (tx *Tx) init() {
 	tx.MessageReaction = NewMessageReactionClient(tx.config)
 	tx.MessageUserMention = NewMessageUserMentionClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
+	tx.SystemMessage = NewSystemMessageClient(tx.config)
 	tx.ThreadMetadata = NewThreadMetadataClient(tx.config)
 	tx.ThreadReadState = NewThreadReadStateClient(tx.config)
 	tx.User = NewUserClient(tx.config)

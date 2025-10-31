@@ -42,6 +42,9 @@ type MessageUserMention func(*sql.Selector)
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
 
+// SystemMessage is the predicate function for systemmessage builders.
+type SystemMessage func(*sql.Selector)
+
 // ThreadMetadata is the predicate function for threadmetadata builders.
 type ThreadMetadata func(*sql.Selector)
 

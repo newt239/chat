@@ -32,6 +32,7 @@ export class WsClient {
     unread_count: [] as ((payload: WsEventPayloadMap["unread_count"]) => void)[],
     pin_created: [] as ((payload: WsEventPayloadMap["pin_created"]) => void)[],
     pin_deleted: [] as ((payload: WsEventPayloadMap["pin_deleted"]) => void)[],
+    system_message_created: [] as ((payload: WsEventPayloadMap["system_message_created"]) => void)[],
     ack: [] as ((payload: WsEventPayloadMap["ack"]) => void)[],
     error: [] as ((payload: WsEventPayloadMap["error"]) => void)[],
   };
@@ -72,6 +73,9 @@ export class WsClient {
         case "pin_deleted":
           this.handlers.pin_deleted.forEach((cb) => cb(payload));
           break;
+        case "system_message_created":
+          this.handlers.system_message_created.forEach((cb) => cb(payload));
+          break;
         case "ack":
           this.handlers.ack.forEach((cb) => cb(payload));
           break;
@@ -104,6 +108,9 @@ export class WsClient {
   }
   public onPinDeleted(cb: (payload: WsEventPayloadMap["pin_deleted"]) => void) {
     this.handlers.pin_deleted.push(cb);
+  }
+  public onSystemMessageCreated(cb: (payload: WsEventPayloadMap["system_message_created"]) => void) {
+    this.handlers.system_message_created.push(cb);
   }
   public onAck(cb: (payload: WsEventPayloadMap["ack"]) => void) {
     this.handlers.ack.push(cb);

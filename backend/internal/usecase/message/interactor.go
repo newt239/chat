@@ -30,6 +30,7 @@ type messageInteractor struct {
 // NewMessageUseCase は新しいメッセージユースケースを作成します
 func NewMessageUseCase(
 	messageRepo domainrepository.MessageRepository,
+    systemMsgRepo domainrepository.SystemMessageRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -98,8 +99,9 @@ func NewMessageUseCase(
 		logger,
 	)
 
-	lister := NewMessageLister(
-		messageRepo,
+    lister := NewMessageLister(
+        messageRepo,
+        systemMsgRepo,
 		channelRepo,
 		channelMemberRepo,
 		workspaceRepo,

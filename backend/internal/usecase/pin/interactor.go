@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/service"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
+	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
 
 var (
@@ -35,6 +36,7 @@ type interactor struct {
 	notificationSvc   service.NotificationService
 	messageAssembler  *message.MessageOutputAssembler
 	channelAccessSvc  domainservice.ChannelAccessService
+	systemMessageUC   systemmessage.UseCase
 }
 
 func NewPinInteractor(
@@ -46,6 +48,7 @@ func NewPinInteractor(
 	userRepo domainrepository.UserRepository,
 	notificationSvc service.NotificationService,
 	channelAccessSvc domainservice.ChannelAccessService,
+	systemMessageUC systemmessage.UseCase,
 ) PinUseCase {
 	return &interactor{
 		pinRepo:           pinRepo,
@@ -57,6 +60,7 @@ func NewPinInteractor(
 		notificationSvc:   notificationSvc,
 		messageAssembler:  message.NewMessageOutputAssembler(),
 		channelAccessSvc:  channelAccessSvc,
+		systemMessageUC:   systemMessageUC,
 	}
 }
 
@@ -114,6 +118,21 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 	}
 	if err := i.pinRepo.Create(ctx, p); err != nil {
 		return err
+	}
+
+	// システムメッセージ作成（ピン留め）
+	if i.systemMessageUC != nil {
+		payload := map[string]any{
+			"messageId": input.MessageID,
+			"pinnedBy":  input.UserID,
+		}
+		actorID := input.UserID
+		_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+			ChannelID: input.ChannelID,
+			Kind:      entity.SystemMessageKindMessagePinned,
+			Payload:   payload,
+			ActorID:   &actorID,
+		})
 	}
 	// 通知
 	if i.notificationSvc != nil && p.Message != nil {

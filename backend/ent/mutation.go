@@ -25,6 +25,7 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/session"
+	"github.com/newt239/chat/ent/systemmessage"
 	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
@@ -56,6 +57,7 @@ const (
 	TypeMessageReaction     = "MessageReaction"
 	TypeMessageUserMention  = "MessageUserMention"
 	TypeSession             = "Session"
+	TypeSystemMessage       = "SystemMessage"
 	TypeThreadMetadata      = "ThreadMetadata"
 	TypeThreadReadState     = "ThreadReadState"
 	TypeUser                = "User"
@@ -8541,6 +8543,572 @@ func (m *SessionMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Session edge %s", name)
+}
+
+// SystemMessageMutation represents an operation that mutates the SystemMessage nodes in the graph.
+type SystemMessageMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	kind           *string
+	payload        *map[string]interface{}
+	created_at     *time.Time
+	clearedFields  map[string]struct{}
+	channel        *uuid.UUID
+	clearedchannel bool
+	actor          *uuid.UUID
+	clearedactor   bool
+	done           bool
+	oldValue       func(context.Context) (*SystemMessage, error)
+	predicates     []predicate.SystemMessage
+}
+
+var _ ent.Mutation = (*SystemMessageMutation)(nil)
+
+// systemmessageOption allows management of the mutation configuration using functional options.
+type systemmessageOption func(*SystemMessageMutation)
+
+// newSystemMessageMutation creates new mutation for the SystemMessage entity.
+func newSystemMessageMutation(c config, op Op, opts ...systemmessageOption) *SystemMessageMutation {
+	m := &SystemMessageMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSystemMessage,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSystemMessageID sets the ID field of the mutation.
+func withSystemMessageID(id uuid.UUID) systemmessageOption {
+	return func(m *SystemMessageMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SystemMessage
+		)
+		m.oldValue = func(ctx context.Context) (*SystemMessage, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SystemMessage.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSystemMessage sets the old SystemMessage of the mutation.
+func withSystemMessage(node *SystemMessage) systemmessageOption {
+	return func(m *SystemMessageMutation) {
+		m.oldValue = func(context.Context) (*SystemMessage, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SystemMessageMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SystemMessageMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SystemMessage entities.
+func (m *SystemMessageMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SystemMessageMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SystemMessageMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SystemMessage.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetKind sets the "kind" field.
+func (m *SystemMessageMutation) SetKind(s string) {
+	m.kind = &s
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *SystemMessageMutation) Kind() (r string, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the SystemMessage entity.
+// If the SystemMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMessageMutation) OldKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *SystemMessageMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetPayload sets the "payload" field.
+func (m *SystemMessageMutation) SetPayload(value map[string]interface{}) {
+	m.payload = &value
+}
+
+// Payload returns the value of the "payload" field in the mutation.
+func (m *SystemMessageMutation) Payload() (r map[string]interface{}, exists bool) {
+	v := m.payload
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPayload returns the old "payload" field's value of the SystemMessage entity.
+// If the SystemMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMessageMutation) OldPayload(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPayload is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPayload requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPayload: %w", err)
+	}
+	return oldValue.Payload, nil
+}
+
+// ResetPayload resets all changes to the "payload" field.
+func (m *SystemMessageMutation) ResetPayload() {
+	m.payload = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SystemMessageMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SystemMessageMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SystemMessage entity.
+// If the SystemMessage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemMessageMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SystemMessageMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetChannelID sets the "channel" edge to the Channel entity by id.
+func (m *SystemMessageMutation) SetChannelID(id uuid.UUID) {
+	m.channel = &id
+}
+
+// ClearChannel clears the "channel" edge to the Channel entity.
+func (m *SystemMessageMutation) ClearChannel() {
+	m.clearedchannel = true
+}
+
+// ChannelCleared reports if the "channel" edge to the Channel entity was cleared.
+func (m *SystemMessageMutation) ChannelCleared() bool {
+	return m.clearedchannel
+}
+
+// ChannelID returns the "channel" edge ID in the mutation.
+func (m *SystemMessageMutation) ChannelID() (id uuid.UUID, exists bool) {
+	if m.channel != nil {
+		return *m.channel, true
+	}
+	return
+}
+
+// ChannelIDs returns the "channel" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChannelID instead. It exists only for internal usage by the builders.
+func (m *SystemMessageMutation) ChannelIDs() (ids []uuid.UUID) {
+	if id := m.channel; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChannel resets all changes to the "channel" edge.
+func (m *SystemMessageMutation) ResetChannel() {
+	m.channel = nil
+	m.clearedchannel = false
+}
+
+// SetActorID sets the "actor" edge to the User entity by id.
+func (m *SystemMessageMutation) SetActorID(id uuid.UUID) {
+	m.actor = &id
+}
+
+// ClearActor clears the "actor" edge to the User entity.
+func (m *SystemMessageMutation) ClearActor() {
+	m.clearedactor = true
+}
+
+// ActorCleared reports if the "actor" edge to the User entity was cleared.
+func (m *SystemMessageMutation) ActorCleared() bool {
+	return m.clearedactor
+}
+
+// ActorID returns the "actor" edge ID in the mutation.
+func (m *SystemMessageMutation) ActorID() (id uuid.UUID, exists bool) {
+	if m.actor != nil {
+		return *m.actor, true
+	}
+	return
+}
+
+// ActorIDs returns the "actor" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ActorID instead. It exists only for internal usage by the builders.
+func (m *SystemMessageMutation) ActorIDs() (ids []uuid.UUID) {
+	if id := m.actor; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetActor resets all changes to the "actor" edge.
+func (m *SystemMessageMutation) ResetActor() {
+	m.actor = nil
+	m.clearedactor = false
+}
+
+// Where appends a list predicates to the SystemMessageMutation builder.
+func (m *SystemMessageMutation) Where(ps ...predicate.SystemMessage) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SystemMessageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SystemMessageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.SystemMessage, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SystemMessageMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SystemMessageMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (SystemMessage).
+func (m *SystemMessageMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SystemMessageMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.kind != nil {
+		fields = append(fields, systemmessage.FieldKind)
+	}
+	if m.payload != nil {
+		fields = append(fields, systemmessage.FieldPayload)
+	}
+	if m.created_at != nil {
+		fields = append(fields, systemmessage.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SystemMessageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case systemmessage.FieldKind:
+		return m.Kind()
+	case systemmessage.FieldPayload:
+		return m.Payload()
+	case systemmessage.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SystemMessageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case systemmessage.FieldKind:
+		return m.OldKind(ctx)
+	case systemmessage.FieldPayload:
+		return m.OldPayload(ctx)
+	case systemmessage.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown SystemMessage field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemMessageMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case systemmessage.FieldKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case systemmessage.FieldPayload:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPayload(v)
+		return nil
+	case systemmessage.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMessage field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SystemMessageMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SystemMessageMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemMessageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown SystemMessage numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SystemMessageMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SystemMessageMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SystemMessageMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown SystemMessage nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SystemMessageMutation) ResetField(name string) error {
+	switch name {
+	case systemmessage.FieldKind:
+		m.ResetKind()
+		return nil
+	case systemmessage.FieldPayload:
+		m.ResetPayload()
+		return nil
+	case systemmessage.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMessage field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SystemMessageMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.channel != nil {
+		edges = append(edges, systemmessage.EdgeChannel)
+	}
+	if m.actor != nil {
+		edges = append(edges, systemmessage.EdgeActor)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SystemMessageMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case systemmessage.EdgeChannel:
+		if id := m.channel; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemmessage.EdgeActor:
+		if id := m.actor; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SystemMessageMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SystemMessageMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SystemMessageMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedchannel {
+		edges = append(edges, systemmessage.EdgeChannel)
+	}
+	if m.clearedactor {
+		edges = append(edges, systemmessage.EdgeActor)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SystemMessageMutation) EdgeCleared(name string) bool {
+	switch name {
+	case systemmessage.EdgeChannel:
+		return m.clearedchannel
+	case systemmessage.EdgeActor:
+		return m.clearedactor
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SystemMessageMutation) ClearEdge(name string) error {
+	switch name {
+	case systemmessage.EdgeChannel:
+		m.ClearChannel()
+		return nil
+	case systemmessage.EdgeActor:
+		m.ClearActor()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMessage unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SystemMessageMutation) ResetEdge(name string) error {
+	switch name {
+	case systemmessage.EdgeChannel:
+		m.ResetChannel()
+		return nil
+	case systemmessage.EdgeActor:
+		m.ResetActor()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemMessage edge %s", name)
 }
 
 // ThreadMetadataMutation represents an operation that mutates the ThreadMetadata nodes in the graph.

@@ -432,6 +432,47 @@ var (
 			},
 		},
 	}
+	// SystemMessagesColumns holds the columns for the "system_messages" table.
+	SystemMessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "payload", Type: field.TypeJSON},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "system_message_channel", Type: field.TypeUUID},
+		{Name: "system_message_actor", Type: field.TypeUUID, Nullable: true},
+	}
+	// SystemMessagesTable holds the schema information for the "system_messages" table.
+	SystemMessagesTable = &schema.Table{
+		Name:       "system_messages",
+		Columns:    SystemMessagesColumns,
+		PrimaryKey: []*schema.Column{SystemMessagesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_messages_channels_channel",
+				Columns:    []*schema.Column{SystemMessagesColumns[4]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_messages_users_actor",
+				Columns:    []*schema.Column{SystemMessagesColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemmessage_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{SystemMessagesColumns[3]},
+			},
+			{
+				Name:    "systemmessage_kind",
+				Unique:  false,
+				Columns: []*schema.Column{SystemMessagesColumns[1]},
+			},
+		},
+	}
 	// ThreadMetadataColumns holds the columns for the "thread_metadata" table.
 	ThreadMetadataColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -698,6 +739,7 @@ var (
 		MessageReactionsTable,
 		MessageUserMentionsTable,
 		SessionsTable,
+		SystemMessagesTable,
 		ThreadMetadataTable,
 		ThreadReadStatesTable,
 		UsersTable,
@@ -735,6 +777,8 @@ func init() {
 	MessageUserMentionsTable.ForeignKeys[0].RefTable = MessagesTable
 	MessageUserMentionsTable.ForeignKeys[1].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
+	SystemMessagesTable.ForeignKeys[0].RefTable = ChannelsTable
+	SystemMessagesTable.ForeignKeys[1].RefTable = UsersTable
 	ThreadMetadataTable.ForeignKeys[0].RefTable = MessagesTable
 	ThreadMetadataTable.ForeignKeys[1].RefTable = UsersTable
 	ThreadReadStatesTable.ForeignKeys[0].RefTable = UsersTable

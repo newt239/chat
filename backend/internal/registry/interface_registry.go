@@ -37,7 +37,7 @@ func (r *InterfaceRegistry) NewChannelHandler() *handler.ChannelHandler {
 }
 
 func (r *InterfaceRegistry) NewChannelMemberHandler() *handler.ChannelMemberHandler {
-	return handler.NewChannelMemberHandler(r.usecaseRegistry.NewChannelMemberUseCase())
+    return handler.NewChannelMemberHandler(r.usecaseRegistry.NewChannelMemberUseCase(), r.usecaseRegistry.NewSystemMessageUseCase())
 }
 
 func (r *InterfaceRegistry) NewMessageHandler() *handler.MessageHandler {

@@ -86,6 +86,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	// Channel routes
 	api.GET("/workspaces/:id/channels", cfg.ChannelHandler.ListChannels, authMw)
 	api.POST("/workspaces/:id/channels", cfg.ChannelHandler.CreateChannel, authMw)
+	api.PATCH("/channels/:channelId", cfg.ChannelHandler.UpdateChannel, authMw)
 
 	// Channel member routes
 	api.GET("/channels/:channelId/members", cfg.ChannelMemberHandler.ListMembers, authMw)

@@ -181,6 +181,9 @@ func (r *channelRepository) Update(ctx context.Context, ch *entity.Channel) erro
 		builder = builder.ClearDescription()
 	}
 
+	// is_private 更新
+	builder = builder.SetIsPrivate(ch.IsPrivate)
+
 	c, err := builder.Save(ctx)
 	if err != nil {
 		return err

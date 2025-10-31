@@ -96,3 +96,35 @@ func (h *ChannelHandler) CreateChannel(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, channel)
 }
+
+// UpdateChannel はチャンネル情報を更新します
+func (h *ChannelHandler) UpdateChannel(c echo.Context) error {
+    channelID := c.Param("channelId")
+    if channelID == "" {
+        return echo.NewHTTPError(http.StatusBadRequest, "チャンネルIDは必須です")
+    }
+
+    userID, ok := c.Get("userID").(string)
+    if !ok {
+        return utils.HandleAuthError()
+    }
+
+    var req UpdateChannelRequest
+    if err := c.Bind(&req); err != nil {
+        return utils.HandleBindError(err)
+    }
+
+    input := channeluc.UpdateChannelInput{
+        ChannelID:   channelID,
+        UserID:      userID,
+        Name:        req.Name,
+        Description: req.Description,
+        IsPrivate:   req.IsPrivate,
+    }
+
+    ch, err := h.channelUC.UpdateChannel(c.Request().Context(), input)
+    if err != nil {
+        return handleUseCaseError(err)
+    }
+    return c.JSON(http.StatusOK, ch)
+}

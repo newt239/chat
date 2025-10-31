@@ -15,6 +15,14 @@ type CreateChannelInput struct {
 	IsPrivate   bool
 }
 
+type UpdateChannelInput struct {
+    ChannelID   string
+    UserID      string
+    Name        *string
+    Description *string
+    IsPrivate   *bool
+}
+
 type ChannelOutput struct {
 	ID          string    `json:"id"`
 	WorkspaceID string    `json:"workspaceId"`
