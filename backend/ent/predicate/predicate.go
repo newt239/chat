@@ -45,9 +45,6 @@ type Session func(*sql.Selector)
 // SystemMessage is the predicate function for systemmessage builders.
 type SystemMessage func(*sql.Selector)
 
-// ThreadMetadata is the predicate function for threadmetadata builders.
-type ThreadMetadata func(*sql.Selector)
-
 // ThreadReadState is the predicate function for threadreadstate builders.
 type ThreadReadState func(*sql.Selector)
 

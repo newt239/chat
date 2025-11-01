@@ -84,9 +84,6 @@ func (User) Edges() []ent.Edge {
 		// Channel read states
 		edge.From("channel_read_states", ChannelReadState.Type).
 			Ref("user"),
-		// Thread metadata last reply user
-		edge.From("thread_metadata_last_reply", ThreadMetadata.Type).
-			Ref("last_reply_user"),
 	}
 }
 

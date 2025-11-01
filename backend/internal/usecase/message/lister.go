@@ -150,10 +150,10 @@ func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMe
         }
     }
 
-	// スレッドメタデータを一括取得
-	metadataMap, err := l.threadRepo.FindMetadataByMessageIDs(ctx, messageIDs)
+	// スレッドメタデータを一括計算
+	metadataMap, err := l.threadRepo.CalculateMetadataByMessageIDs(ctx, messageIDs)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch thread metadata: %w", err)
+		return nil, fmt.Errorf("failed to calculate thread metadata: %w", err)
 	}
 
 	// 最新返信者のユーザーIDを収集
@@ -361,10 +361,10 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 		return nil, err
 	}
 
-	// スレッドメタデータを取得
-	metadata, err := l.threadRepo.FindMetadataByMessageID(ctx, input.MessageID)
+	// スレッドメタデータを計算
+	metadata, err := l.threadRepo.CalculateMetadataByMessageID(ctx, input.MessageID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch thread metadata: %w", err)
+		return nil, fmt.Errorf("failed to calculate thread metadata: %w", err)
 	}
 
 	// メタデータが存在しない場合は空のメタデータを返す

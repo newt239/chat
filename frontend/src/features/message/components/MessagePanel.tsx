@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 import { Card, Loader, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -36,15 +36,6 @@ export const MessagePanel = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
-
-  const dateTimeFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat("ja-JP", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }),
-    []
-  );
 
   useAutoScrollToBottom(messagesEndRef, [messageResponse, isLoading]);
   useAutoScrollToBottom(messagesEndRef, [currentChannelId]);
@@ -129,7 +120,6 @@ export const MessagePanel = () => {
                       key={`u-${msg.id}`}
                       message={msg}
                       currentUserId={currentUser?.id ?? null}
-                      dateTimeFormatter={dateTimeFormatter}
                       onCopyLink={handleCopyLink}
                       onCreateThread={handleCreateThread}
                       onOpenThread={handleOpenThread}
@@ -143,7 +133,6 @@ export const MessagePanel = () => {
                     <SystemMessageItem
                       key={`s-${item.systemMessage.id}`}
                       message={item.systemMessage}
-                      dateTimeFormatter={dateTimeFormatter}
                     />
                   );
                 }

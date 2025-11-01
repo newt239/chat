@@ -6,11 +6,11 @@ import { WsClient } from "@/lib/ws";
 import { accessTokenAtom } from "@/providers/store/auth";
 import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
 
-export type WsClientContextType = {
+type WsClientContextValue = {
   wsClient: WsClient | null;
 };
 
-const WsClientContext = createContext<WsClientContextType>({ wsClient: null });
+const WsClientContext = createContext<WsClientContextValue>({ wsClient: null });
 
 export const useWsClient = () => useContext(WsClientContext);
 

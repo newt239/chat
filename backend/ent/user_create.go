@@ -20,7 +20,6 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/session"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
@@ -50,6 +49,20 @@ func (_c *UserCreate) SetPasswordHash(v string) *UserCreate {
 // SetDisplayName sets the "display_name" field.
 func (_c *UserCreate) SetDisplayName(v string) *UserCreate {
 	_c.mutation.SetDisplayName(v)
+	return _c
+}
+
+// SetBio sets the "bio" field.
+func (_c *UserCreate) SetBio(v string) *UserCreate {
+	_c.mutation.SetBio(v)
+	return _c
+}
+
+// SetNillableBio sets the "bio" field if the given value is not nil.
+func (_c *UserCreate) SetNillableBio(v *string) *UserCreate {
+	if v != nil {
+		_c.SetBio(*v)
+	}
 	return _c
 }
 
@@ -304,21 +317,6 @@ func (_c *UserCreate) AddChannelReadStates(v ...*ChannelReadState) *UserCreate {
 	return _c.AddChannelReadStateIDs(ids...)
 }
 
-// AddThreadMetadataLastReplyIDs adds the "thread_metadata_last_reply" edge to the ThreadMetadata entity by IDs.
-func (_c *UserCreate) AddThreadMetadataLastReplyIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddThreadMetadataLastReplyIDs(ids...)
-	return _c
-}
-
-// AddThreadMetadataLastReply adds the "thread_metadata_last_reply" edges to the ThreadMetadata entity.
-func (_c *UserCreate) AddThreadMetadataLastReply(v ...*ThreadMetadata) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddThreadMetadataLastReplyIDs(ids...)
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (_c *UserCreate) Mutation() *UserMutation {
 	return _c.mutation
@@ -446,6 +444,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DisplayName(); ok {
 		_spec.SetField(user.FieldDisplayName, field.TypeString, value)
 		_node.DisplayName = value
+	}
+	if value, ok := _c.mutation.Bio(); ok {
+		_spec.SetField(user.FieldBio, field.TypeString, value)
+		_node.Bio = value
 	}
 	if value, ok := _c.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
@@ -660,22 +662,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ThreadMetadataLastReplyIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadMetadataLastReplyTable,
-			Columns: []string{user.ThreadMetadataLastReplyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

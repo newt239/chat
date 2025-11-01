@@ -71,6 +71,11 @@ func DisplayName(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldDisplayName, v))
 }
 
+// Bio applies equality check predicate on the "bio" field. It's identical to BioEQ.
+func Bio(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldBio, v))
+}
+
 // AvatarURL applies equality check predicate on the "avatar_url" field. It's identical to AvatarURLEQ.
 func AvatarURL(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAvatarURL, v))
@@ -279,6 +284,81 @@ func DisplayNameEqualFold(v string) predicate.User {
 // DisplayNameContainsFold applies the ContainsFold predicate on the "display_name" field.
 func DisplayNameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldDisplayName, v))
+}
+
+// BioEQ applies the EQ predicate on the "bio" field.
+func BioEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldBio, v))
+}
+
+// BioNEQ applies the NEQ predicate on the "bio" field.
+func BioNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldBio, v))
+}
+
+// BioIn applies the In predicate on the "bio" field.
+func BioIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldBio, vs...))
+}
+
+// BioNotIn applies the NotIn predicate on the "bio" field.
+func BioNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldBio, vs...))
+}
+
+// BioGT applies the GT predicate on the "bio" field.
+func BioGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldBio, v))
+}
+
+// BioGTE applies the GTE predicate on the "bio" field.
+func BioGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldBio, v))
+}
+
+// BioLT applies the LT predicate on the "bio" field.
+func BioLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldBio, v))
+}
+
+// BioLTE applies the LTE predicate on the "bio" field.
+func BioLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldBio, v))
+}
+
+// BioContains applies the Contains predicate on the "bio" field.
+func BioContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldBio, v))
+}
+
+// BioHasPrefix applies the HasPrefix predicate on the "bio" field.
+func BioHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldBio, v))
+}
+
+// BioHasSuffix applies the HasSuffix predicate on the "bio" field.
+func BioHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldBio, v))
+}
+
+// BioIsNil applies the IsNil predicate on the "bio" field.
+func BioIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldBio))
+}
+
+// BioNotNil applies the NotNil predicate on the "bio" field.
+func BioNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldBio))
+}
+
+// BioEqualFold applies the EqualFold predicate on the "bio" field.
+func BioEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldBio, v))
+}
+
+// BioContainsFold applies the ContainsFold predicate on the "bio" field.
+func BioContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldBio, v))
 }
 
 // AvatarURLEQ applies the EQ predicate on the "avatar_url" field.
@@ -727,29 +807,6 @@ func HasChannelReadStates() predicate.User {
 func HasChannelReadStatesWith(preds ...predicate.ChannelReadState) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newChannelReadStatesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasThreadMetadataLastReply applies the HasEdge predicate on the "thread_metadata_last_reply" edge.
-func HasThreadMetadataLastReply() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ThreadMetadataLastReplyTable, ThreadMetadataLastReplyColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasThreadMetadataLastReplyWith applies the HasEdge predicate on the "thread_metadata_last_reply" edge with a given conditions (other predicates).
-func HasThreadMetadataLastReplyWith(preds ...predicate.ThreadMetadata) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newThreadMetadataLastReplyStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -191,44 +191,30 @@ docker-compose exec backend go run cmd/seed/main.go
 
 **注意:** ent はコードファーストのアプローチを採用しており、SQL マイグレーションファイルを使用しません。スキーマの変更は全て Go コードで管理されます。
 
-### データベースの状態確認
+### ER 図の生成と確認
+
+このプロジェクトでは [entviz](https://github.com/hedwigz/entviz) を使用して ER 図を自動生成できます。
+
+#### ER 図の更新手順
+
+スキーマを変更した際は、以下のコマンドで ER 図を更新します：
 
 ```bash
-# PostgreSQLに接続（Dockerコンテナ内で実行）
-docker-compose exec db psql -U postgres -d chat
-
-# テーブル一覧
-\dt
-
-# ユーザー一覧
-SELECT email, display_name FROM users;
-
-# ワークスペース一覧
-SELECT name, description FROM workspaces;
-
-# チャンネル一覧
-SELECT c.name, w.name as workspace_name FROM channels c
-JOIN workspaces w ON c.workspace_id = w.id;
-```
-
-## 開発
-
-### テストの実行
-
-```bash
-# バックエンド
-docker-compose exec backend go test ./...
-
-# フロントエンド
-docker-compose exec frontend pnpm test
-```
-
-### コード生成
-
-```bash
-# entのコード生成（スキーマ変更時）
+# ER図を生成（entのコード生成と同時に実行されます）
 docker-compose exec backend go generate ./ent
+```
 
-# フロントエンド用にOpenAPI型定義を生成
-docker-compose exec frontend pnpm run generate:api
+#### ER 図の確認手順
+
+生成された ER 図を確認するには、`backend/ent/schema-viz.html` をブラウザで開いてください：
+
+```bash
+# Macの場合
+open backend/ent/schema-viz.html
+
+# Windowsの場合
+start backend/ent/schema-viz.html
+
+# Linuxの場合
+xdg-open backend/ent/schema-viz.html
 ```

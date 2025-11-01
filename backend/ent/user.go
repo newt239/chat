@@ -24,6 +24,8 @@ type User struct {
 	PasswordHash string `json:"password_hash,omitempty"`
 	// DisplayName holds the value of the "display_name" field.
 	DisplayName string `json:"display_name,omitempty"`
+	// Bio holds the value of the "bio" field.
+	Bio string `json:"bio,omitempty"`
 	// AvatarURL holds the value of the "avatar_url" field.
 	AvatarURL string `json:"avatar_url,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -64,11 +66,9 @@ type UserEdges struct {
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// ChannelReadStates holds the value of the channel_read_states edge.
 	ChannelReadStates []*ChannelReadState `json:"channel_read_states,omitempty"`
-	// ThreadMetadataLastReply holds the value of the thread_metadata_last_reply edge.
-	ThreadMetadataLastReply []*ThreadMetadata `json:"thread_metadata_last_reply,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [14]bool
+	loadedTypes [13]bool
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
@@ -188,21 +188,12 @@ func (e UserEdges) ChannelReadStatesOrErr() ([]*ChannelReadState, error) {
 	return nil, &NotLoadedError{edge: "channel_read_states"}
 }
 
-// ThreadMetadataLastReplyOrErr returns the ThreadMetadataLastReply value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) ThreadMetadataLastReplyOrErr() ([]*ThreadMetadata, error) {
-	if e.loadedTypes[13] {
-		return e.ThreadMetadataLastReply, nil
-	}
-	return nil, &NotLoadedError{edge: "thread_metadata_last_reply"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldDisplayName, user.FieldAvatarURL:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -246,6 +237,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field display_name", values[i])
 			} else if value.Valid {
 				_m.DisplayName = value.String
+			}
+		case user.FieldBio:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field bio", values[i])
+			} else if value.Valid {
+				_m.Bio = value.String
 			}
 		case user.FieldAvatarURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -343,11 +340,6 @@ func (_m *User) QueryChannelReadStates() *ChannelReadStateQuery {
 	return NewUserClient(_m.config).QueryChannelReadStates(_m)
 }
 
-// QueryThreadMetadataLastReply queries the "thread_metadata_last_reply" edge of the User entity.
-func (_m *User) QueryThreadMetadataLastReply() *ThreadMetadataQuery {
-	return NewUserClient(_m.config).QueryThreadMetadataLastReply(_m)
-}
-
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -379,6 +371,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("display_name=")
 	builder.WriteString(_m.DisplayName)
+	builder.WriteString(", ")
+	builder.WriteString("bio=")
+	builder.WriteString(_m.Bio)
 	builder.WriteString(", ")
 	builder.WriteString("avatar_url=")
 	builder.WriteString(_m.AvatarURL)

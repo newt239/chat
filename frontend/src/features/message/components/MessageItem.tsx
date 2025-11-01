@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Avatar, Button, Group, Text, Textarea } from "@mantine/core";
 import { useSetAtom } from "jotai";
 
+import { dateTimeFormatter } from "../utils/time";
+
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
@@ -16,7 +18,6 @@ import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
 type MessageItemProps = {
   message: MessageWithUser;
-  dateTimeFormatter: Intl.DateTimeFormat;
   currentUserId: string | null;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
@@ -28,7 +29,6 @@ type MessageItemProps = {
 
 export const MessageItem = ({
   message,
-  dateTimeFormatter,
   currentUserId,
   onCopyLink,
   onCreateThread,
@@ -139,7 +139,7 @@ export const MessageItem = ({
               {message.user.displayName}
             </Text>
             <Text size="xs" c="dimmed">
-              {dateTimeFormatter.format(new Date(message.createdAt))}
+              {dateTimeFormatter().format(new Date(message.createdAt))}
             </Text>
           </div>
 
@@ -189,7 +189,7 @@ export const MessageItem = ({
           )}
 
           {/* リアクション */}
-          <ReactionList message={message} />
+          <ReactionList messageId={message.id} reactions={message.reactions ?? []} />
 
           {/* スレッドメタデータプレビュー */}
           {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (

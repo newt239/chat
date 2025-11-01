@@ -1,14 +1,15 @@
 import { Text } from "@mantine/core";
 
+import { dateTimeFormatter } from "../utils/time";
+
 import type { SystemMessage } from "../schemas";
 
 type Props = {
   message: SystemMessage;
-  dateTimeFormatter: Intl.DateTimeFormat;
 };
 
-export const SystemMessageItem = ({ message, dateTimeFormatter }: Props) => {
-  const time = dateTimeFormatter.format(new Date(message.createdAt));
+export const SystemMessageItem = ({ message }: Props) => {
+  const time = dateTimeFormatter().format(new Date(message.createdAt));
   const payload = message.payload as Record<string, unknown>;
 
   const renderText = () => {
@@ -46,10 +47,12 @@ export const SystemMessageItem = ({ message, dateTimeFormatter }: Props) => {
 
   return (
     <div className="px-4 py-2">
-      <Text size="xs" c="dimmed">{time}</Text>
-      <Text size="sm" c="dimmed">{renderText()}</Text>
+      <Text size="xs" c="dimmed">
+        {time}
+      </Text>
+      <Text size="sm" c="dimmed">
+        {renderText()}
+      </Text>
     </div>
   );
 };
-
-

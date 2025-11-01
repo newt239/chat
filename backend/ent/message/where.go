@@ -566,29 +566,6 @@ func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Message {
 	})
 }
 
-// HasThreadMetadata applies the HasEdge predicate on the "thread_metadata" edge.
-func HasThreadMetadata() predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ThreadMetadataTable, ThreadMetadataColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasThreadMetadataWith applies the HasEdge predicate on the "thread_metadata" edge with a given conditions (other predicates).
-func HasThreadMetadataWith(preds ...predicate.ThreadMetadata) predicate.Message {
-	return predicate.Message(func(s *sql.Selector) {
-		step := newThreadMetadataStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasUserThreadFollows applies the HasEdge predicate on the "user_thread_follows" edge.
 func HasUserThreadFollows() predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {

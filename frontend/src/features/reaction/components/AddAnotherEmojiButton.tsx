@@ -1,8 +1,9 @@
 import { useState } from "react";
 
-import EmojiPicker from "@emoji-mart/react";
 import { ActionIcon, Popover } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
+
+import { EmojiPicker } from "./EmojiPicker";
 
 type AddAnotherEmojiButtonProps = {
   onClick?: (emoji: string) => void;

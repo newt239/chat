@@ -89,7 +89,7 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity
 func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 	client := transaction.ResolveClient(ctx, r.client)
 
-    builder := client.User.Create().
+	builder := client.User.Create().
 		SetEmail(usr.Email).
 		SetPasswordHash(usr.PasswordHash).
 		SetDisplayName(usr.DisplayName)
@@ -105,10 +105,6 @@ func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 	if usr.AvatarURL != nil {
 		builder = builder.SetAvatarURL(*usr.AvatarURL)
 	}
-
-    if usr.Bio != nil {
-        builder = builder.SetBio(*usr.Bio)
-    }
 
 	u, err := builder.Save(ctx)
 	if err != nil {
@@ -127,7 +123,7 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-    builder := client.User.UpdateOneID(userID).
+	builder := client.User.UpdateOneID(userID).
 		SetEmail(usr.Email).
 		SetPasswordHash(usr.PasswordHash).
 		SetDisplayName(usr.DisplayName)
@@ -137,12 +133,6 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 	} else {
 		builder = builder.ClearAvatarURL()
 	}
-
-    if usr.Bio != nil {
-        builder = builder.SetBio(*usr.Bio)
-    } else {
-        builder = builder.ClearBio()
-    }
 
 	u, err := builder.Save(ctx)
 	if err != nil {

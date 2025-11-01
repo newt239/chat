@@ -26,7 +26,6 @@ import (
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
@@ -58,7 +57,6 @@ const (
 	TypeMessageUserMention  = "MessageUserMention"
 	TypeSession             = "Session"
 	TypeSystemMessage       = "SystemMessage"
-	TypeThreadMetadata      = "ThreadMetadata"
 	TypeThreadReadState     = "ThreadReadState"
 	TypeUser                = "User"
 	TypeUserGroup           = "UserGroup"
@@ -3152,9 +3150,6 @@ type MessageMutation struct {
 	attachments                map[uuid.UUID]struct{}
 	removedattachments         map[uuid.UUID]struct{}
 	clearedattachments         bool
-	thread_metadata            map[uuid.UUID]struct{}
-	removedthread_metadata     map[uuid.UUID]struct{}
-	clearedthread_metadata     bool
 	user_thread_follows        map[uuid.UUID]struct{}
 	removeduser_thread_follows map[uuid.UUID]struct{}
 	cleareduser_thread_follows bool
@@ -3984,60 +3979,6 @@ func (m *MessageMutation) ResetAttachments() {
 	m.removedattachments = nil
 }
 
-// AddThreadMetadatumIDs adds the "thread_metadata" edge to the ThreadMetadata entity by ids.
-func (m *MessageMutation) AddThreadMetadatumIDs(ids ...uuid.UUID) {
-	if m.thread_metadata == nil {
-		m.thread_metadata = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.thread_metadata[ids[i]] = struct{}{}
-	}
-}
-
-// ClearThreadMetadata clears the "thread_metadata" edge to the ThreadMetadata entity.
-func (m *MessageMutation) ClearThreadMetadata() {
-	m.clearedthread_metadata = true
-}
-
-// ThreadMetadataCleared reports if the "thread_metadata" edge to the ThreadMetadata entity was cleared.
-func (m *MessageMutation) ThreadMetadataCleared() bool {
-	return m.clearedthread_metadata
-}
-
-// RemoveThreadMetadatumIDs removes the "thread_metadata" edge to the ThreadMetadata entity by IDs.
-func (m *MessageMutation) RemoveThreadMetadatumIDs(ids ...uuid.UUID) {
-	if m.removedthread_metadata == nil {
-		m.removedthread_metadata = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.thread_metadata, ids[i])
-		m.removedthread_metadata[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedThreadMetadata returns the removed IDs of the "thread_metadata" edge to the ThreadMetadata entity.
-func (m *MessageMutation) RemovedThreadMetadataIDs() (ids []uuid.UUID) {
-	for id := range m.removedthread_metadata {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ThreadMetadataIDs returns the "thread_metadata" edge IDs in the mutation.
-func (m *MessageMutation) ThreadMetadataIDs() (ids []uuid.UUID) {
-	for id := range m.thread_metadata {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetThreadMetadata resets all changes to the "thread_metadata" edge.
-func (m *MessageMutation) ResetThreadMetadata() {
-	m.thread_metadata = nil
-	m.clearedthread_metadata = false
-	m.removedthread_metadata = nil
-}
-
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by ids.
 func (m *MessageMutation) AddUserThreadFollowIDs(ids ...uuid.UUID) {
 	if m.user_thread_follows == nil {
@@ -4368,7 +4309,7 @@ func (m *MessageMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MessageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 12)
 	if m.channel != nil {
 		edges = append(edges, message.EdgeChannel)
 	}
@@ -4398,9 +4339,6 @@ func (m *MessageMutation) AddedEdges() []string {
 	}
 	if m.attachments != nil {
 		edges = append(edges, message.EdgeAttachments)
-	}
-	if m.thread_metadata != nil {
-		edges = append(edges, message.EdgeThreadMetadata)
 	}
 	if m.user_thread_follows != nil {
 		edges = append(edges, message.EdgeUserThreadFollows)
@@ -4469,12 +4407,6 @@ func (m *MessageMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case message.EdgeThreadMetadata:
-		ids := make([]ent.Value, 0, len(m.thread_metadata))
-		for id := range m.thread_metadata {
-			ids = append(ids, id)
-		}
-		return ids
 	case message.EdgeUserThreadFollows:
 		ids := make([]ent.Value, 0, len(m.user_thread_follows))
 		for id := range m.user_thread_follows {
@@ -4493,7 +4425,7 @@ func (m *MessageMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MessageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 12)
 	if m.removedreplies != nil {
 		edges = append(edges, message.EdgeReplies)
 	}
@@ -4514,9 +4446,6 @@ func (m *MessageMutation) RemovedEdges() []string {
 	}
 	if m.removedattachments != nil {
 		edges = append(edges, message.EdgeAttachments)
-	}
-	if m.removedthread_metadata != nil {
-		edges = append(edges, message.EdgeThreadMetadata)
 	}
 	if m.removeduser_thread_follows != nil {
 		edges = append(edges, message.EdgeUserThreadFollows)
@@ -4573,12 +4502,6 @@ func (m *MessageMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case message.EdgeThreadMetadata:
-		ids := make([]ent.Value, 0, len(m.removedthread_metadata))
-		for id := range m.removedthread_metadata {
-			ids = append(ids, id)
-		}
-		return ids
 	case message.EdgeUserThreadFollows:
 		ids := make([]ent.Value, 0, len(m.removeduser_thread_follows))
 		for id := range m.removeduser_thread_follows {
@@ -4597,7 +4520,7 @@ func (m *MessageMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MessageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 12)
 	if m.clearedchannel {
 		edges = append(edges, message.EdgeChannel)
 	}
@@ -4627,9 +4550,6 @@ func (m *MessageMutation) ClearedEdges() []string {
 	}
 	if m.clearedattachments {
 		edges = append(edges, message.EdgeAttachments)
-	}
-	if m.clearedthread_metadata {
-		edges = append(edges, message.EdgeThreadMetadata)
 	}
 	if m.cleareduser_thread_follows {
 		edges = append(edges, message.EdgeUserThreadFollows)
@@ -4664,8 +4584,6 @@ func (m *MessageMutation) EdgeCleared(name string) bool {
 		return m.clearedlinks
 	case message.EdgeAttachments:
 		return m.clearedattachments
-	case message.EdgeThreadMetadata:
-		return m.clearedthread_metadata
 	case message.EdgeUserThreadFollows:
 		return m.cleareduser_thread_follows
 	case message.EdgeThreadReadStates:
@@ -4724,9 +4642,6 @@ func (m *MessageMutation) ResetEdge(name string) error {
 		return nil
 	case message.EdgeAttachments:
 		m.ResetAttachments()
-		return nil
-	case message.EdgeThreadMetadata:
-		m.ResetThreadMetadata()
 		return nil
 	case message.EdgeUserThreadFollows:
 		m.ResetUserThreadFollows()
@@ -9111,754 +9026,6 @@ func (m *SystemMessageMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown SystemMessage edge %s", name)
 }
 
-// ThreadMetadataMutation represents an operation that mutates the ThreadMetadata nodes in the graph.
-type ThreadMetadataMutation struct {
-	config
-	op                         Op
-	typ                        string
-	id                         *uuid.UUID
-	reply_count                *int
-	addreply_count             *int
-	last_reply_at              *time.Time
-	participant_user_ids       *[]uuid.UUID
-	appendparticipant_user_ids []uuid.UUID
-	created_at                 *time.Time
-	updated_at                 *time.Time
-	clearedFields              map[string]struct{}
-	message                    *uuid.UUID
-	clearedmessage             bool
-	last_reply_user            *uuid.UUID
-	clearedlast_reply_user     bool
-	done                       bool
-	oldValue                   func(context.Context) (*ThreadMetadata, error)
-	predicates                 []predicate.ThreadMetadata
-}
-
-var _ ent.Mutation = (*ThreadMetadataMutation)(nil)
-
-// threadmetadataOption allows management of the mutation configuration using functional options.
-type threadmetadataOption func(*ThreadMetadataMutation)
-
-// newThreadMetadataMutation creates new mutation for the ThreadMetadata entity.
-func newThreadMetadataMutation(c config, op Op, opts ...threadmetadataOption) *ThreadMetadataMutation {
-	m := &ThreadMetadataMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeThreadMetadata,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withThreadMetadataID sets the ID field of the mutation.
-func withThreadMetadataID(id uuid.UUID) threadmetadataOption {
-	return func(m *ThreadMetadataMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ThreadMetadata
-		)
-		m.oldValue = func(ctx context.Context) (*ThreadMetadata, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ThreadMetadata.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withThreadMetadata sets the old ThreadMetadata of the mutation.
-func withThreadMetadata(node *ThreadMetadata) threadmetadataOption {
-	return func(m *ThreadMetadataMutation) {
-		m.oldValue = func(context.Context) (*ThreadMetadata, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ThreadMetadataMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ThreadMetadataMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ThreadMetadata entities.
-func (m *ThreadMetadataMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ThreadMetadataMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ThreadMetadataMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ThreadMetadata.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetReplyCount sets the "reply_count" field.
-func (m *ThreadMetadataMutation) SetReplyCount(i int) {
-	m.reply_count = &i
-	m.addreply_count = nil
-}
-
-// ReplyCount returns the value of the "reply_count" field in the mutation.
-func (m *ThreadMetadataMutation) ReplyCount() (r int, exists bool) {
-	v := m.reply_count
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldReplyCount returns the old "reply_count" field's value of the ThreadMetadata entity.
-// If the ThreadMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadMetadataMutation) OldReplyCount(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldReplyCount is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldReplyCount requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldReplyCount: %w", err)
-	}
-	return oldValue.ReplyCount, nil
-}
-
-// AddReplyCount adds i to the "reply_count" field.
-func (m *ThreadMetadataMutation) AddReplyCount(i int) {
-	if m.addreply_count != nil {
-		*m.addreply_count += i
-	} else {
-		m.addreply_count = &i
-	}
-}
-
-// AddedReplyCount returns the value that was added to the "reply_count" field in this mutation.
-func (m *ThreadMetadataMutation) AddedReplyCount() (r int, exists bool) {
-	v := m.addreply_count
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetReplyCount resets all changes to the "reply_count" field.
-func (m *ThreadMetadataMutation) ResetReplyCount() {
-	m.reply_count = nil
-	m.addreply_count = nil
-}
-
-// SetLastReplyAt sets the "last_reply_at" field.
-func (m *ThreadMetadataMutation) SetLastReplyAt(t time.Time) {
-	m.last_reply_at = &t
-}
-
-// LastReplyAt returns the value of the "last_reply_at" field in the mutation.
-func (m *ThreadMetadataMutation) LastReplyAt() (r time.Time, exists bool) {
-	v := m.last_reply_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastReplyAt returns the old "last_reply_at" field's value of the ThreadMetadata entity.
-// If the ThreadMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadMetadataMutation) OldLastReplyAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastReplyAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastReplyAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastReplyAt: %w", err)
-	}
-	return oldValue.LastReplyAt, nil
-}
-
-// ClearLastReplyAt clears the value of the "last_reply_at" field.
-func (m *ThreadMetadataMutation) ClearLastReplyAt() {
-	m.last_reply_at = nil
-	m.clearedFields[threadmetadata.FieldLastReplyAt] = struct{}{}
-}
-
-// LastReplyAtCleared returns if the "last_reply_at" field was cleared in this mutation.
-func (m *ThreadMetadataMutation) LastReplyAtCleared() bool {
-	_, ok := m.clearedFields[threadmetadata.FieldLastReplyAt]
-	return ok
-}
-
-// ResetLastReplyAt resets all changes to the "last_reply_at" field.
-func (m *ThreadMetadataMutation) ResetLastReplyAt() {
-	m.last_reply_at = nil
-	delete(m.clearedFields, threadmetadata.FieldLastReplyAt)
-}
-
-// SetParticipantUserIds sets the "participant_user_ids" field.
-func (m *ThreadMetadataMutation) SetParticipantUserIds(u []uuid.UUID) {
-	m.participant_user_ids = &u
-	m.appendparticipant_user_ids = nil
-}
-
-// ParticipantUserIds returns the value of the "participant_user_ids" field in the mutation.
-func (m *ThreadMetadataMutation) ParticipantUserIds() (r []uuid.UUID, exists bool) {
-	v := m.participant_user_ids
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldParticipantUserIds returns the old "participant_user_ids" field's value of the ThreadMetadata entity.
-// If the ThreadMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadMetadataMutation) OldParticipantUserIds(ctx context.Context) (v []uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldParticipantUserIds is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldParticipantUserIds requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldParticipantUserIds: %w", err)
-	}
-	return oldValue.ParticipantUserIds, nil
-}
-
-// AppendParticipantUserIds adds u to the "participant_user_ids" field.
-func (m *ThreadMetadataMutation) AppendParticipantUserIds(u []uuid.UUID) {
-	m.appendparticipant_user_ids = append(m.appendparticipant_user_ids, u...)
-}
-
-// AppendedParticipantUserIds returns the list of values that were appended to the "participant_user_ids" field in this mutation.
-func (m *ThreadMetadataMutation) AppendedParticipantUserIds() ([]uuid.UUID, bool) {
-	if len(m.appendparticipant_user_ids) == 0 {
-		return nil, false
-	}
-	return m.appendparticipant_user_ids, true
-}
-
-// ResetParticipantUserIds resets all changes to the "participant_user_ids" field.
-func (m *ThreadMetadataMutation) ResetParticipantUserIds() {
-	m.participant_user_ids = nil
-	m.appendparticipant_user_ids = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *ThreadMetadataMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ThreadMetadataMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the ThreadMetadata entity.
-// If the ThreadMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadMetadataMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ThreadMetadataMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *ThreadMetadataMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *ThreadMetadataMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the ThreadMetadata entity.
-// If the ThreadMetadata object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ThreadMetadataMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *ThreadMetadataMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetMessageID sets the "message" edge to the Message entity by id.
-func (m *ThreadMetadataMutation) SetMessageID(id uuid.UUID) {
-	m.message = &id
-}
-
-// ClearMessage clears the "message" edge to the Message entity.
-func (m *ThreadMetadataMutation) ClearMessage() {
-	m.clearedmessage = true
-}
-
-// MessageCleared reports if the "message" edge to the Message entity was cleared.
-func (m *ThreadMetadataMutation) MessageCleared() bool {
-	return m.clearedmessage
-}
-
-// MessageID returns the "message" edge ID in the mutation.
-func (m *ThreadMetadataMutation) MessageID() (id uuid.UUID, exists bool) {
-	if m.message != nil {
-		return *m.message, true
-	}
-	return
-}
-
-// MessageIDs returns the "message" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// MessageID instead. It exists only for internal usage by the builders.
-func (m *ThreadMetadataMutation) MessageIDs() (ids []uuid.UUID) {
-	if id := m.message; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetMessage resets all changes to the "message" edge.
-func (m *ThreadMetadataMutation) ResetMessage() {
-	m.message = nil
-	m.clearedmessage = false
-}
-
-// SetLastReplyUserID sets the "last_reply_user" edge to the User entity by id.
-func (m *ThreadMetadataMutation) SetLastReplyUserID(id uuid.UUID) {
-	m.last_reply_user = &id
-}
-
-// ClearLastReplyUser clears the "last_reply_user" edge to the User entity.
-func (m *ThreadMetadataMutation) ClearLastReplyUser() {
-	m.clearedlast_reply_user = true
-}
-
-// LastReplyUserCleared reports if the "last_reply_user" edge to the User entity was cleared.
-func (m *ThreadMetadataMutation) LastReplyUserCleared() bool {
-	return m.clearedlast_reply_user
-}
-
-// LastReplyUserID returns the "last_reply_user" edge ID in the mutation.
-func (m *ThreadMetadataMutation) LastReplyUserID() (id uuid.UUID, exists bool) {
-	if m.last_reply_user != nil {
-		return *m.last_reply_user, true
-	}
-	return
-}
-
-// LastReplyUserIDs returns the "last_reply_user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// LastReplyUserID instead. It exists only for internal usage by the builders.
-func (m *ThreadMetadataMutation) LastReplyUserIDs() (ids []uuid.UUID) {
-	if id := m.last_reply_user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetLastReplyUser resets all changes to the "last_reply_user" edge.
-func (m *ThreadMetadataMutation) ResetLastReplyUser() {
-	m.last_reply_user = nil
-	m.clearedlast_reply_user = false
-}
-
-// Where appends a list predicates to the ThreadMetadataMutation builder.
-func (m *ThreadMetadataMutation) Where(ps ...predicate.ThreadMetadata) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ThreadMetadataMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ThreadMetadataMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ThreadMetadata, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ThreadMetadataMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ThreadMetadataMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ThreadMetadata).
-func (m *ThreadMetadataMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ThreadMetadataMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.reply_count != nil {
-		fields = append(fields, threadmetadata.FieldReplyCount)
-	}
-	if m.last_reply_at != nil {
-		fields = append(fields, threadmetadata.FieldLastReplyAt)
-	}
-	if m.participant_user_ids != nil {
-		fields = append(fields, threadmetadata.FieldParticipantUserIds)
-	}
-	if m.created_at != nil {
-		fields = append(fields, threadmetadata.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, threadmetadata.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ThreadMetadataMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case threadmetadata.FieldReplyCount:
-		return m.ReplyCount()
-	case threadmetadata.FieldLastReplyAt:
-		return m.LastReplyAt()
-	case threadmetadata.FieldParticipantUserIds:
-		return m.ParticipantUserIds()
-	case threadmetadata.FieldCreatedAt:
-		return m.CreatedAt()
-	case threadmetadata.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ThreadMetadataMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case threadmetadata.FieldReplyCount:
-		return m.OldReplyCount(ctx)
-	case threadmetadata.FieldLastReplyAt:
-		return m.OldLastReplyAt(ctx)
-	case threadmetadata.FieldParticipantUserIds:
-		return m.OldParticipantUserIds(ctx)
-	case threadmetadata.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case threadmetadata.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown ThreadMetadata field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ThreadMetadataMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case threadmetadata.FieldReplyCount:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetReplyCount(v)
-		return nil
-	case threadmetadata.FieldLastReplyAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastReplyAt(v)
-		return nil
-	case threadmetadata.FieldParticipantUserIds:
-		v, ok := value.([]uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetParticipantUserIds(v)
-		return nil
-	case threadmetadata.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case threadmetadata.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ThreadMetadata field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ThreadMetadataMutation) AddedFields() []string {
-	var fields []string
-	if m.addreply_count != nil {
-		fields = append(fields, threadmetadata.FieldReplyCount)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ThreadMetadataMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case threadmetadata.FieldReplyCount:
-		return m.AddedReplyCount()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ThreadMetadataMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case threadmetadata.FieldReplyCount:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddReplyCount(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ThreadMetadata numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ThreadMetadataMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(threadmetadata.FieldLastReplyAt) {
-		fields = append(fields, threadmetadata.FieldLastReplyAt)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ThreadMetadataMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ThreadMetadataMutation) ClearField(name string) error {
-	switch name {
-	case threadmetadata.FieldLastReplyAt:
-		m.ClearLastReplyAt()
-		return nil
-	}
-	return fmt.Errorf("unknown ThreadMetadata nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ThreadMetadataMutation) ResetField(name string) error {
-	switch name {
-	case threadmetadata.FieldReplyCount:
-		m.ResetReplyCount()
-		return nil
-	case threadmetadata.FieldLastReplyAt:
-		m.ResetLastReplyAt()
-		return nil
-	case threadmetadata.FieldParticipantUserIds:
-		m.ResetParticipantUserIds()
-		return nil
-	case threadmetadata.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case threadmetadata.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown ThreadMetadata field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ThreadMetadataMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.message != nil {
-		edges = append(edges, threadmetadata.EdgeMessage)
-	}
-	if m.last_reply_user != nil {
-		edges = append(edges, threadmetadata.EdgeLastReplyUser)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ThreadMetadataMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case threadmetadata.EdgeMessage:
-		if id := m.message; id != nil {
-			return []ent.Value{*id}
-		}
-	case threadmetadata.EdgeLastReplyUser:
-		if id := m.last_reply_user; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ThreadMetadataMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ThreadMetadataMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ThreadMetadataMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedmessage {
-		edges = append(edges, threadmetadata.EdgeMessage)
-	}
-	if m.clearedlast_reply_user {
-		edges = append(edges, threadmetadata.EdgeLastReplyUser)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ThreadMetadataMutation) EdgeCleared(name string) bool {
-	switch name {
-	case threadmetadata.EdgeMessage:
-		return m.clearedmessage
-	case threadmetadata.EdgeLastReplyUser:
-		return m.clearedlast_reply_user
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ThreadMetadataMutation) ClearEdge(name string) error {
-	switch name {
-	case threadmetadata.EdgeMessage:
-		m.ClearMessage()
-		return nil
-	case threadmetadata.EdgeLastReplyUser:
-		m.ClearLastReplyUser()
-		return nil
-	}
-	return fmt.Errorf("unknown ThreadMetadata unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ThreadMetadataMutation) ResetEdge(name string) error {
-	switch name {
-	case threadmetadata.EdgeMessage:
-		m.ResetMessage()
-		return nil
-	case threadmetadata.EdgeLastReplyUser:
-		m.ResetLastReplyUser()
-		return nil
-	}
-	return fmt.Errorf("unknown ThreadMetadata edge %s", name)
-}
-
 // ThreadReadStateMutation represents an operation that mutates the ThreadReadState nodes in the graph.
 type ThreadReadStateMutation struct {
 	config
@@ -10428,61 +9595,59 @@ func (m *ThreadReadStateMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                                Op
-	typ                               string
-	id                                *uuid.UUID
-	email                             *string
-	password_hash                     *string
-	display_name                      *string
-	avatar_url                        *string
-	created_at                        *time.Time
-	updated_at                        *time.Time
-	clearedFields                     map[string]struct{}
-	sessions                          map[uuid.UUID]struct{}
-	removedsessions                   map[uuid.UUID]struct{}
-	clearedsessions                   bool
-	created_workspaces                map[uuid.UUID]struct{}
-	removedcreated_workspaces         map[uuid.UUID]struct{}
-	clearedcreated_workspaces         bool
-	workspace_members                 map[uuid.UUID]struct{}
-	removedworkspace_members          map[uuid.UUID]struct{}
-	clearedworkspace_members          bool
-	created_channels                  map[uuid.UUID]struct{}
-	removedcreated_channels           map[uuid.UUID]struct{}
-	clearedcreated_channels           bool
-	channel_members                   map[uuid.UUID]struct{}
-	removedchannel_members            map[uuid.UUID]struct{}
-	clearedchannel_members            bool
-	messages                          map[uuid.UUID]struct{}
-	removedmessages                   map[uuid.UUID]struct{}
-	clearedmessages                   bool
-	message_reactions                 map[uuid.UUID]struct{}
-	removedmessage_reactions          map[uuid.UUID]struct{}
-	clearedmessage_reactions          bool
-	message_bookmarks                 map[uuid.UUID]struct{}
-	removedmessage_bookmarks          map[uuid.UUID]struct{}
-	clearedmessage_bookmarks          bool
-	user_mentions                     map[uuid.UUID]struct{}
-	removeduser_mentions              map[uuid.UUID]struct{}
-	cleareduser_mentions              bool
-	user_group_members                map[uuid.UUID]struct{}
-	removeduser_group_members         map[uuid.UUID]struct{}
-	cleareduser_group_members         bool
-	created_user_groups               map[uuid.UUID]struct{}
-	removedcreated_user_groups        map[uuid.UUID]struct{}
-	clearedcreated_user_groups        bool
-	attachments                       map[uuid.UUID]struct{}
-	removedattachments                map[uuid.UUID]struct{}
-	clearedattachments                bool
-	channel_read_states               map[uuid.UUID]struct{}
-	removedchannel_read_states        map[uuid.UUID]struct{}
-	clearedchannel_read_states        bool
-	thread_metadata_last_reply        map[uuid.UUID]struct{}
-	removedthread_metadata_last_reply map[uuid.UUID]struct{}
-	clearedthread_metadata_last_reply bool
-	done                              bool
-	oldValue                          func(context.Context) (*User, error)
-	predicates                        []predicate.User
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	email                      *string
+	password_hash              *string
+	display_name               *string
+	bio                        *string
+	avatar_url                 *string
+	created_at                 *time.Time
+	updated_at                 *time.Time
+	clearedFields              map[string]struct{}
+	sessions                   map[uuid.UUID]struct{}
+	removedsessions            map[uuid.UUID]struct{}
+	clearedsessions            bool
+	created_workspaces         map[uuid.UUID]struct{}
+	removedcreated_workspaces  map[uuid.UUID]struct{}
+	clearedcreated_workspaces  bool
+	workspace_members          map[uuid.UUID]struct{}
+	removedworkspace_members   map[uuid.UUID]struct{}
+	clearedworkspace_members   bool
+	created_channels           map[uuid.UUID]struct{}
+	removedcreated_channels    map[uuid.UUID]struct{}
+	clearedcreated_channels    bool
+	channel_members            map[uuid.UUID]struct{}
+	removedchannel_members     map[uuid.UUID]struct{}
+	clearedchannel_members     bool
+	messages                   map[uuid.UUID]struct{}
+	removedmessages            map[uuid.UUID]struct{}
+	clearedmessages            bool
+	message_reactions          map[uuid.UUID]struct{}
+	removedmessage_reactions   map[uuid.UUID]struct{}
+	clearedmessage_reactions   bool
+	message_bookmarks          map[uuid.UUID]struct{}
+	removedmessage_bookmarks   map[uuid.UUID]struct{}
+	clearedmessage_bookmarks   bool
+	user_mentions              map[uuid.UUID]struct{}
+	removeduser_mentions       map[uuid.UUID]struct{}
+	cleareduser_mentions       bool
+	user_group_members         map[uuid.UUID]struct{}
+	removeduser_group_members  map[uuid.UUID]struct{}
+	cleareduser_group_members  bool
+	created_user_groups        map[uuid.UUID]struct{}
+	removedcreated_user_groups map[uuid.UUID]struct{}
+	clearedcreated_user_groups bool
+	attachments                map[uuid.UUID]struct{}
+	removedattachments         map[uuid.UUID]struct{}
+	clearedattachments         bool
+	channel_read_states        map[uuid.UUID]struct{}
+	removedchannel_read_states map[uuid.UUID]struct{}
+	clearedchannel_read_states bool
+	done                       bool
+	oldValue                   func(context.Context) (*User, error)
+	predicates                 []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -10695,6 +9860,55 @@ func (m *UserMutation) OldDisplayName(ctx context.Context) (v string, err error)
 // ResetDisplayName resets all changes to the "display_name" field.
 func (m *UserMutation) ResetDisplayName() {
 	m.display_name = nil
+}
+
+// SetBio sets the "bio" field.
+func (m *UserMutation) SetBio(s string) {
+	m.bio = &s
+}
+
+// Bio returns the value of the "bio" field in the mutation.
+func (m *UserMutation) Bio() (r string, exists bool) {
+	v := m.bio
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBio returns the old "bio" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldBio(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBio is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBio requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBio: %w", err)
+	}
+	return oldValue.Bio, nil
+}
+
+// ClearBio clears the value of the "bio" field.
+func (m *UserMutation) ClearBio() {
+	m.bio = nil
+	m.clearedFields[user.FieldBio] = struct{}{}
+}
+
+// BioCleared returns if the "bio" field was cleared in this mutation.
+func (m *UserMutation) BioCleared() bool {
+	_, ok := m.clearedFields[user.FieldBio]
+	return ok
+}
+
+// ResetBio resets all changes to the "bio" field.
+func (m *UserMutation) ResetBio() {
+	m.bio = nil
+	delete(m.clearedFields, user.FieldBio)
 }
 
 // SetAvatarURL sets the "avatar_url" field.
@@ -11520,60 +10734,6 @@ func (m *UserMutation) ResetChannelReadStates() {
 	m.removedchannel_read_states = nil
 }
 
-// AddThreadMetadataLastReplyIDs adds the "thread_metadata_last_reply" edge to the ThreadMetadata entity by ids.
-func (m *UserMutation) AddThreadMetadataLastReplyIDs(ids ...uuid.UUID) {
-	if m.thread_metadata_last_reply == nil {
-		m.thread_metadata_last_reply = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.thread_metadata_last_reply[ids[i]] = struct{}{}
-	}
-}
-
-// ClearThreadMetadataLastReply clears the "thread_metadata_last_reply" edge to the ThreadMetadata entity.
-func (m *UserMutation) ClearThreadMetadataLastReply() {
-	m.clearedthread_metadata_last_reply = true
-}
-
-// ThreadMetadataLastReplyCleared reports if the "thread_metadata_last_reply" edge to the ThreadMetadata entity was cleared.
-func (m *UserMutation) ThreadMetadataLastReplyCleared() bool {
-	return m.clearedthread_metadata_last_reply
-}
-
-// RemoveThreadMetadataLastReplyIDs removes the "thread_metadata_last_reply" edge to the ThreadMetadata entity by IDs.
-func (m *UserMutation) RemoveThreadMetadataLastReplyIDs(ids ...uuid.UUID) {
-	if m.removedthread_metadata_last_reply == nil {
-		m.removedthread_metadata_last_reply = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.thread_metadata_last_reply, ids[i])
-		m.removedthread_metadata_last_reply[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedThreadMetadataLastReply returns the removed IDs of the "thread_metadata_last_reply" edge to the ThreadMetadata entity.
-func (m *UserMutation) RemovedThreadMetadataLastReplyIDs() (ids []uuid.UUID) {
-	for id := range m.removedthread_metadata_last_reply {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ThreadMetadataLastReplyIDs returns the "thread_metadata_last_reply" edge IDs in the mutation.
-func (m *UserMutation) ThreadMetadataLastReplyIDs() (ids []uuid.UUID) {
-	for id := range m.thread_metadata_last_reply {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetThreadMetadataLastReply resets all changes to the "thread_metadata_last_reply" edge.
-func (m *UserMutation) ResetThreadMetadataLastReply() {
-	m.thread_metadata_last_reply = nil
-	m.clearedthread_metadata_last_reply = false
-	m.removedthread_metadata_last_reply = nil
-}
-
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -11608,7 +10768,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -11617,6 +10777,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.display_name != nil {
 		fields = append(fields, user.FieldDisplayName)
+	}
+	if m.bio != nil {
+		fields = append(fields, user.FieldBio)
 	}
 	if m.avatar_url != nil {
 		fields = append(fields, user.FieldAvatarURL)
@@ -11641,6 +10804,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.PasswordHash()
 	case user.FieldDisplayName:
 		return m.DisplayName()
+	case user.FieldBio:
+		return m.Bio()
 	case user.FieldAvatarURL:
 		return m.AvatarURL()
 	case user.FieldCreatedAt:
@@ -11662,6 +10827,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPasswordHash(ctx)
 	case user.FieldDisplayName:
 		return m.OldDisplayName(ctx)
+	case user.FieldBio:
+		return m.OldBio(ctx)
 	case user.FieldAvatarURL:
 		return m.OldAvatarURL(ctx)
 	case user.FieldCreatedAt:
@@ -11697,6 +10864,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDisplayName(v)
+		return nil
+	case user.FieldBio:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBio(v)
 		return nil
 	case user.FieldAvatarURL:
 		v, ok := value.(string)
@@ -11749,6 +10923,9 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldBio) {
+		fields = append(fields, user.FieldBio)
+	}
 	if m.FieldCleared(user.FieldAvatarURL) {
 		fields = append(fields, user.FieldAvatarURL)
 	}
@@ -11766,6 +10943,9 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldBio:
+		m.ClearBio()
+		return nil
 	case user.FieldAvatarURL:
 		m.ClearAvatarURL()
 		return nil
@@ -11786,6 +10966,9 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldDisplayName:
 		m.ResetDisplayName()
 		return nil
+	case user.FieldBio:
+		m.ResetBio()
+		return nil
 	case user.FieldAvatarURL:
 		m.ResetAvatarURL()
 		return nil
@@ -11801,7 +10984,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 13)
 	if m.sessions != nil {
 		edges = append(edges, user.EdgeSessions)
 	}
@@ -11840,9 +11023,6 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.channel_read_states != nil {
 		edges = append(edges, user.EdgeChannelReadStates)
-	}
-	if m.thread_metadata_last_reply != nil {
-		edges = append(edges, user.EdgeThreadMetadataLastReply)
 	}
 	return edges
 }
@@ -11929,19 +11109,13 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeThreadMetadataLastReply:
-		ids := make([]ent.Value, 0, len(m.thread_metadata_last_reply))
-		for id := range m.thread_metadata_last_reply {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 13)
 	if m.removedsessions != nil {
 		edges = append(edges, user.EdgeSessions)
 	}
@@ -11980,9 +11154,6 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedchannel_read_states != nil {
 		edges = append(edges, user.EdgeChannelReadStates)
-	}
-	if m.removedthread_metadata_last_reply != nil {
-		edges = append(edges, user.EdgeThreadMetadataLastReply)
 	}
 	return edges
 }
@@ -12069,19 +11240,13 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeThreadMetadataLastReply:
-		ids := make([]ent.Value, 0, len(m.removedthread_metadata_last_reply))
-		for id := range m.removedthread_metadata_last_reply {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 13)
 	if m.clearedsessions {
 		edges = append(edges, user.EdgeSessions)
 	}
@@ -12121,9 +11286,6 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedchannel_read_states {
 		edges = append(edges, user.EdgeChannelReadStates)
 	}
-	if m.clearedthread_metadata_last_reply {
-		edges = append(edges, user.EdgeThreadMetadataLastReply)
-	}
 	return edges
 }
 
@@ -12157,8 +11319,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedattachments
 	case user.EdgeChannelReadStates:
 		return m.clearedchannel_read_states
-	case user.EdgeThreadMetadataLastReply:
-		return m.clearedthread_metadata_last_reply
 	}
 	return false
 }
@@ -12213,9 +11373,6 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeChannelReadStates:
 		m.ResetChannelReadStates()
-		return nil
-	case user.EdgeThreadMetadataLastReply:
-		m.ResetThreadMetadataLastReply()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

@@ -1,65 +1,50 @@
-// event.go由来 WebSocket TypeScript型定義
+type ClientEventType =
+  | "join_channel"
+  | "leave_channel"
+  | "post_message"
+  | "typing"
+  | "update_read_state";
 
-export const WS_EVENT_TYPE = {
-  JOIN_CHANNEL: "join_channel",
-  LEAVE_CHANNEL: "leave_channel",
-  POST_MESSAGE: "post_message",
-  TYPING: "typing",
-  UPDATE_READ_STATE: "update_read_state",
-  NEW_MESSAGE: "new_message",
-  MESSAGE_UPDATED: "message_updated",
-  MESSAGE_DELETED: "message_deleted",
-  UNREAD_COUNT: "unread_count",
-  PIN_CREATED: "pin_created",
-  PIN_DELETED: "pin_deleted",
-  SYSTEM_MESSAGE_CREATED: "system_message_created",
-  ACK: "ack",
-  ERROR: "error",
-} as const;
+type ServerEventType =
+  | "new_message"
+  | "message_updated"
+  | "message_deleted"
+  | "unread_count"
+  | "pin_created"
+  | "pin_deleted"
+  | "system_message_created"
+  | "ack"
+  | "error";
 
-export type WsEventType = (typeof WS_EVENT_TYPE)[keyof typeof WS_EVENT_TYPE];
+type WsEventType = ClientEventType | ServerEventType;
 
 // ペイロード型定義
-export type JoinChannelPayload = { channel_id: string };
-export type LeaveChannelPayload = { channel_id: string };
-export type PostMessagePayload = { channel_id: string; body: string };
-export type TypingPayload = { channel_id: string };
-export type UpdateReadStatePayload = { channel_id: string; message_id: string };
+type JoinChannelPayload = { channel_id: string };
+type LeaveChannelPayload = { channel_id: string };
+type PostMessagePayload = { channel_id: string; body: string };
+type TypingPayload = { channel_id: string };
+type UpdateReadStatePayload = { channel_id: string; message_id: string };
 export type NewMessagePayload = { channel_id: string; message: Record<string, unknown> };
-export type MessageUpdatedPayload = { channel_id: string; message: Record<string, unknown> };
-export type MessageDeletedPayload = { channel_id: string; deleteData: Record<string, unknown> };
-export type PinPayload = {
+type MessageUpdatedPayload = { channel_id: string; message: Record<string, unknown> };
+type MessageDeletedPayload = { channel_id: string; deleteData: Record<string, unknown> };
+type PinPayload = {
   channel_id: string;
   message: Record<string, unknown>;
   pinned_by: string;
   pinned_at: string;
 };
-export type UnreadCountPayload = { channel_id: string; unread_count: number; has_mention: boolean };
+type UnreadCountPayload = { channel_id: string; unread_count: number; has_mention: boolean };
 export type SystemMessageCreatedPayload = { channel_id: string; message: Record<string, unknown> };
-export type AckPayload = { type: WsEventType; success: boolean; message?: string };
-export type ErrorPayload = { code: string; message: string };
+type AckPayload = { type: WsEventType; success: boolean; message?: string };
+type ErrorPayload = { code: string; message: string };
 
 // クライアント→サーバーメッセージ
 export type ClientToServerMessage =
-  | { type: typeof WS_EVENT_TYPE.JOIN_CHANNEL; payload: JoinChannelPayload }
-  | { type: typeof WS_EVENT_TYPE.LEAVE_CHANNEL; payload: LeaveChannelPayload }
-  | { type: typeof WS_EVENT_TYPE.POST_MESSAGE; payload: PostMessagePayload }
-  | { type: typeof WS_EVENT_TYPE.TYPING; payload: TypingPayload }
-  | { type: typeof WS_EVENT_TYPE.UPDATE_READ_STATE; payload: UpdateReadStatePayload };
-
-// サーバー→クライアントメッセージ
-export type ServerToClientMessage =
-  | { type: typeof WS_EVENT_TYPE.NEW_MESSAGE; payload: NewMessagePayload }
-  | { type: typeof WS_EVENT_TYPE.MESSAGE_UPDATED; payload: MessageUpdatedPayload }
-  | { type: typeof WS_EVENT_TYPE.MESSAGE_DELETED; payload: MessageDeletedPayload }
-  | { type: typeof WS_EVENT_TYPE.UNREAD_COUNT; payload: UnreadCountPayload }
-  | {
-      type: typeof WS_EVENT_TYPE.PIN_CREATED | typeof WS_EVENT_TYPE.PIN_DELETED;
-      payload: PinPayload;
-    }
-  | { type: typeof WS_EVENT_TYPE.SYSTEM_MESSAGE_CREATED; payload: SystemMessageCreatedPayload }
-  | { type: typeof WS_EVENT_TYPE.ACK; payload: AckPayload }
-  | { type: typeof WS_EVENT_TYPE.ERROR; payload: ErrorPayload };
+  | { type: "join_channel"; payload: JoinChannelPayload }
+  | { type: "leave_channel"; payload: LeaveChannelPayload }
+  | { type: "post_message"; payload: PostMessagePayload }
+  | { type: "typing"; payload: TypingPayload }
+  | { type: "update_read_state"; payload: UpdateReadStatePayload };
 
 export type WsEventPayloadMap = {
   new_message: NewMessagePayload;

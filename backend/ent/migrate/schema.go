@@ -473,44 +473,6 @@ var (
 			},
 		},
 	}
-	// ThreadMetadataColumns holds the columns for the "thread_metadata" table.
-	ThreadMetadataColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "reply_count", Type: field.TypeInt, Default: 0},
-		{Name: "last_reply_at", Type: field.TypeTime, Nullable: true},
-		{Name: "participant_user_ids", Type: field.TypeJSON},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "thread_metadata_message", Type: field.TypeUUID},
-		{Name: "thread_metadata_last_reply_user", Type: field.TypeUUID, Nullable: true},
-	}
-	// ThreadMetadataTable holds the schema information for the "thread_metadata" table.
-	ThreadMetadataTable = &schema.Table{
-		Name:       "thread_metadata",
-		Columns:    ThreadMetadataColumns,
-		PrimaryKey: []*schema.Column{ThreadMetadataColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "thread_metadata_messages_message",
-				Columns:    []*schema.Column{ThreadMetadataColumns[6]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "thread_metadata_users_last_reply_user",
-				Columns:    []*schema.Column{ThreadMetadataColumns[7]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "threadmetadata_last_reply_at",
-				Unique:  false,
-				Columns: []*schema.Column{ThreadMetadataColumns[2]},
-			},
-		},
-	}
 	// ThreadReadStatesColumns holds the columns for the "thread_read_states" table.
 	ThreadReadStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -553,6 +515,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString},
+		{Name: "bio", Type: field.TypeString, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -740,7 +703,6 @@ var (
 		MessageUserMentionsTable,
 		SessionsTable,
 		SystemMessagesTable,
-		ThreadMetadataTable,
 		ThreadReadStatesTable,
 		UsersTable,
 		UserGroupsTable,
@@ -779,8 +741,6 @@ func init() {
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	SystemMessagesTable.ForeignKeys[0].RefTable = ChannelsTable
 	SystemMessagesTable.ForeignKeys[1].RefTable = UsersTable
-	ThreadMetadataTable.ForeignKeys[0].RefTable = MessagesTable
-	ThreadMetadataTable.ForeignKeys[1].RefTable = UsersTable
 	ThreadReadStatesTable.ForeignKeys[0].RefTable = UsersTable
 	ThreadReadStatesTable.ForeignKeys[1].RefTable = MessagesTable
 	UserGroupsTable.ForeignKeys[0].RefTable = WorkspacesTable

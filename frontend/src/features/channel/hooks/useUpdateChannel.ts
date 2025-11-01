@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 //
-
-export type UpdateChannelInput = {
+type UpdateChannelInput = {
   channelId: string;
   name?: string;
   description?: string | null;
@@ -23,5 +22,4 @@ export function useUpdateChannel() {
     },
   });
 }
-
 

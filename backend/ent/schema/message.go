@@ -60,8 +60,6 @@ func (Message) Edges() []ent.Edge {
 			Ref("message"),
 		edge.From("attachments", Attachment.Type).
 			Ref("message"),
-		edge.From("thread_metadata", ThreadMetadata.Type).
-			Ref("message"),
 		edge.From("user_thread_follows", UserThreadFollow.Type).
 			Ref("thread"),
 		edge.From("thread_read_states", ThreadReadState.Type).

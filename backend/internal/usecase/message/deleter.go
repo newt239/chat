@@ -88,11 +88,6 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 		for _, reply := range replies {
 			deleteIDs = append(deleteIDs, reply.ID)
 		}
-
-		// スレッドメタデータも削除
-		if err := d.threadRepo.DeleteMetadata(ctx, message.ID); err != nil {
-			d.logger.Warn("スレッドメタデータの削除に失敗しました", service.LogField{Key: "error", Value: err})
-		}
 	}
 
 	// ソフトデリート実行

@@ -20,13 +20,3 @@ type MessageReaction struct {
 	Emoji     string
 	CreatedAt time.Time
 }
-
-type ThreadMetadata struct {
-	MessageID          string
-	ReplyCount         int
-	LastReplyAt        *time.Time
-	LastReplyUserID    *string
-	ParticipantUserIDs []string
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
-}

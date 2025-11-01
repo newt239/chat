@@ -4,6 +4,12 @@ export type UserInfo = {
   avatarUrl?: string | null;
 };
 
+export type Reaction = {
+  user: UserInfo;
+  emoji: string;
+  createdAt: string;
+};
+
 export type ReactionGroup = {
   emoji: string;
   count: number;

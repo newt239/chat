@@ -19,7 +19,6 @@ import (
 	"github.com/newt239/chat/ent/messagelink"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
@@ -252,21 +251,6 @@ func (_c *MessageCreate) AddAttachments(v ...*Attachment) *MessageCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddAttachmentIDs(ids...)
-}
-
-// AddThreadMetadatumIDs adds the "thread_metadata" edge to the ThreadMetadata entity by IDs.
-func (_c *MessageCreate) AddThreadMetadatumIDs(ids ...uuid.UUID) *MessageCreate {
-	_c.mutation.AddThreadMetadatumIDs(ids...)
-	return _c
-}
-
-// AddThreadMetadata adds the "thread_metadata" edges to the ThreadMetadata entity.
-func (_c *MessageCreate) AddThreadMetadata(v ...*ThreadMetadata) *MessageCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddThreadMetadatumIDs(ids...)
 }
 
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
@@ -574,22 +558,6 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ThreadMetadataIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadMetadataTable,
-			Columns: []string{message.ThreadMetadataColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

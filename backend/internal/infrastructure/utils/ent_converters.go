@@ -385,38 +385,6 @@ func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 	}
 }
 
-// ThreadMetadata converters
-func ThreadMetadataToEntity(tm *ent.ThreadMetadata) *entity.ThreadMetadata {
-	if tm == nil {
-		return nil
-	}
-
-	var lastReplyUserID *string
-	if tm.Edges.LastReplyUser != nil {
-		lruid := tm.Edges.LastReplyUser.ID.String()
-		lastReplyUserID = &lruid
-	}
-
-	participantIDs := make([]string, len(tm.ParticipantUserIds))
-	for i, id := range tm.ParticipantUserIds {
-		participantIDs[i] = id.String()
-	}
-
-	var messageID string
-	if tm.Edges.Message != nil {
-		messageID = tm.Edges.Message.ID.String()
-	}
-	return &entity.ThreadMetadata{
-		MessageID:          messageID,
-		ReplyCount:         tm.ReplyCount,
-		LastReplyAt:        &tm.LastReplyAt,
-		LastReplyUserID:    lastReplyUserID,
-		ParticipantUserIDs: participantIDs,
-		CreatedAt:          tm.CreatedAt,
-		UpdatedAt:          tm.UpdatedAt,
-	}
-}
-
 // Helper functions
 func StringPtrFromNullable(s string) *string {
 	if s == "" {

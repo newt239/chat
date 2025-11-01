@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useCallback } from "react";
 
 import { Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -24,14 +24,6 @@ export const ThreadReplyList = ({
   channelId,
 }: ThreadReplyListProps) => {
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
-  const dateTimeFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat("ja-JP", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }),
-    []
-  );
 
   const handleCopyLink = useCallback(
     (messageId: string) => {
@@ -69,7 +61,6 @@ export const ThreadReplyList = ({
           key={reply.id}
           message={reply}
           currentUserId={currentUserId}
-          dateTimeFormatter={dateTimeFormatter}
           onCopyLink={handleCopyLink}
           onCreateThread={handleCreateThread}
         />

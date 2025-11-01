@@ -22,7 +22,6 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/session"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
@@ -82,6 +81,26 @@ func (_u *UserUpdate) SetNillableDisplayName(v *string) *UserUpdate {
 	if v != nil {
 		_u.SetDisplayName(*v)
 	}
+	return _u
+}
+
+// SetBio sets the "bio" field.
+func (_u *UserUpdate) SetBio(v string) *UserUpdate {
+	_u.mutation.SetBio(v)
+	return _u
+}
+
+// SetNillableBio sets the "bio" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableBio(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetBio(*v)
+	}
+	return _u
+}
+
+// ClearBio clears the value of the "bio" field.
+func (_u *UserUpdate) ClearBio() *UserUpdate {
+	_u.mutation.ClearBio()
 	return _u
 }
 
@@ -304,21 +323,6 @@ func (_u *UserUpdate) AddChannelReadStates(v ...*ChannelReadState) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddChannelReadStateIDs(ids...)
-}
-
-// AddThreadMetadataLastReplyIDs adds the "thread_metadata_last_reply" edge to the ThreadMetadata entity by IDs.
-func (_u *UserUpdate) AddThreadMetadataLastReplyIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.AddThreadMetadataLastReplyIDs(ids...)
-	return _u
-}
-
-// AddThreadMetadataLastReply adds the "thread_metadata_last_reply" edges to the ThreadMetadata entity.
-func (_u *UserUpdate) AddThreadMetadataLastReply(v ...*ThreadMetadata) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddThreadMetadataLastReplyIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -599,27 +603,6 @@ func (_u *UserUpdate) RemoveChannelReadStates(v ...*ChannelReadState) *UserUpdat
 	return _u.RemoveChannelReadStateIDs(ids...)
 }
 
-// ClearThreadMetadataLastReply clears all "thread_metadata_last_reply" edges to the ThreadMetadata entity.
-func (_u *UserUpdate) ClearThreadMetadataLastReply() *UserUpdate {
-	_u.mutation.ClearThreadMetadataLastReply()
-	return _u
-}
-
-// RemoveThreadMetadataLastReplyIDs removes the "thread_metadata_last_reply" edge to ThreadMetadata entities by IDs.
-func (_u *UserUpdate) RemoveThreadMetadataLastReplyIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.RemoveThreadMetadataLastReplyIDs(ids...)
-	return _u
-}
-
-// RemoveThreadMetadataLastReply removes "thread_metadata_last_reply" edges to ThreadMetadata entities.
-func (_u *UserUpdate) RemoveThreadMetadataLastReply(v ...*ThreadMetadata) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveThreadMetadataLastReplyIDs(ids...)
-}
-
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *UserUpdate) Save(ctx context.Context) (int, error) {
 	_u.defaults()
@@ -696,6 +679,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(user.FieldDisplayName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Bio(); ok {
+		_spec.SetField(user.FieldBio, field.TypeString, value)
+	}
+	if _u.mutation.BioCleared() {
+		_spec.ClearField(user.FieldBio, field.TypeString)
 	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
@@ -1291,51 +1280,6 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ThreadMetadataLastReplyCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadMetadataLastReplyTable,
-			Columns: []string{user.ThreadMetadataLastReplyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedThreadMetadataLastReplyIDs(); len(nodes) > 0 && !_u.mutation.ThreadMetadataLastReplyCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadMetadataLastReplyTable,
-			Columns: []string{user.ThreadMetadataLastReplyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ThreadMetadataLastReplyIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadMetadataLastReplyTable,
-			Columns: []string{user.ThreadMetadataLastReplyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -1395,6 +1339,26 @@ func (_u *UserUpdateOne) SetNillableDisplayName(v *string) *UserUpdateOne {
 	if v != nil {
 		_u.SetDisplayName(*v)
 	}
+	return _u
+}
+
+// SetBio sets the "bio" field.
+func (_u *UserUpdateOne) SetBio(v string) *UserUpdateOne {
+	_u.mutation.SetBio(v)
+	return _u
+}
+
+// SetNillableBio sets the "bio" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableBio(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetBio(*v)
+	}
+	return _u
+}
+
+// ClearBio clears the value of the "bio" field.
+func (_u *UserUpdateOne) ClearBio() *UserUpdateOne {
+	_u.mutation.ClearBio()
 	return _u
 }
 
@@ -1617,21 +1581,6 @@ func (_u *UserUpdateOne) AddChannelReadStates(v ...*ChannelReadState) *UserUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.AddChannelReadStateIDs(ids...)
-}
-
-// AddThreadMetadataLastReplyIDs adds the "thread_metadata_last_reply" edge to the ThreadMetadata entity by IDs.
-func (_u *UserUpdateOne) AddThreadMetadataLastReplyIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.AddThreadMetadataLastReplyIDs(ids...)
-	return _u
-}
-
-// AddThreadMetadataLastReply adds the "thread_metadata_last_reply" edges to the ThreadMetadata entity.
-func (_u *UserUpdateOne) AddThreadMetadataLastReply(v ...*ThreadMetadata) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddThreadMetadataLastReplyIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -1912,27 +1861,6 @@ func (_u *UserUpdateOne) RemoveChannelReadStates(v ...*ChannelReadState) *UserUp
 	return _u.RemoveChannelReadStateIDs(ids...)
 }
 
-// ClearThreadMetadataLastReply clears all "thread_metadata_last_reply" edges to the ThreadMetadata entity.
-func (_u *UserUpdateOne) ClearThreadMetadataLastReply() *UserUpdateOne {
-	_u.mutation.ClearThreadMetadataLastReply()
-	return _u
-}
-
-// RemoveThreadMetadataLastReplyIDs removes the "thread_metadata_last_reply" edge to ThreadMetadata entities by IDs.
-func (_u *UserUpdateOne) RemoveThreadMetadataLastReplyIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.RemoveThreadMetadataLastReplyIDs(ids...)
-	return _u
-}
-
-// RemoveThreadMetadataLastReply removes "thread_metadata_last_reply" edges to ThreadMetadata entities.
-func (_u *UserUpdateOne) RemoveThreadMetadataLastReply(v ...*ThreadMetadata) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveThreadMetadataLastReplyIDs(ids...)
-}
-
 // Where appends a list predicates to the UserUpdate builder.
 func (_u *UserUpdateOne) Where(ps ...predicate.User) *UserUpdateOne {
 	_u.mutation.Where(ps...)
@@ -2039,6 +1967,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(user.FieldDisplayName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Bio(); ok {
+		_spec.SetField(user.FieldBio, field.TypeString, value)
+	}
+	if _u.mutation.BioCleared() {
+		_spec.ClearField(user.FieldBio, field.TypeString)
 	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
@@ -2627,51 +2561,6 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ThreadMetadataLastReplyCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadMetadataLastReplyTable,
-			Columns: []string{user.ThreadMetadataLastReplyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedThreadMetadataLastReplyIDs(); len(nodes) > 0 && !_u.mutation.ThreadMetadataLastReplyCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadMetadataLastReplyTable,
-			Columns: []string{user.ThreadMetadataLastReplyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ThreadMetadataLastReplyIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.ThreadMetadataLastReplyTable,
-			Columns: []string{user.ThreadMetadataLastReplyColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

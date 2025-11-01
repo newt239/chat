@@ -114,13 +114,6 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 			}
 		}
 
-		// スレッド返信の場合、メタデータを更新
-		if input.ParentID != nil {
-			if err := c.threadRepo.IncrementReplyCount(txCtx, *input.ParentID, input.UserID); err != nil {
-				return fmt.Errorf("failed to update thread metadata: %w", err)
-			}
-		}
-
 		// メンションとリンクを抽出・保存
 		if err := c.extractAndSaveMentionsAndLinks(txCtx, message.ID, input.Body, channel.WorkspaceID); err != nil {
 			return fmt.Errorf("failed to extract mentions and links: %w", err)

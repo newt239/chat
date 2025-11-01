@@ -21,6 +21,8 @@ const (
 	FieldPasswordHash = "password_hash"
 	// FieldDisplayName holds the string denoting the display_name field in the database.
 	FieldDisplayName = "display_name"
+	// FieldBio holds the string denoting the bio field in the database.
+	FieldBio = "bio"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -53,8 +55,6 @@ const (
 	EdgeAttachments = "attachments"
 	// EdgeChannelReadStates holds the string denoting the channel_read_states edge name in mutations.
 	EdgeChannelReadStates = "channel_read_states"
-	// EdgeThreadMetadataLastReply holds the string denoting the thread_metadata_last_reply edge name in mutations.
-	EdgeThreadMetadataLastReply = "thread_metadata_last_reply"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SessionsTable is the table that holds the sessions relation/edge.
@@ -148,13 +148,6 @@ const (
 	ChannelReadStatesInverseTable = "channel_read_states"
 	// ChannelReadStatesColumn is the table column denoting the channel_read_states relation/edge.
 	ChannelReadStatesColumn = "channel_read_state_user"
-	// ThreadMetadataLastReplyTable is the table that holds the thread_metadata_last_reply relation/edge.
-	ThreadMetadataLastReplyTable = "thread_metadata"
-	// ThreadMetadataLastReplyInverseTable is the table name for the ThreadMetadata entity.
-	// It exists in this package in order to avoid circular dependency with the "threadmetadata" package.
-	ThreadMetadataLastReplyInverseTable = "thread_metadata"
-	// ThreadMetadataLastReplyColumn is the table column denoting the thread_metadata_last_reply relation/edge.
-	ThreadMetadataLastReplyColumn = "thread_metadata_last_reply_user"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -163,6 +156,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldPasswordHash,
 	FieldDisplayName,
+	FieldBio,
 	FieldAvatarURL,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -216,6 +210,11 @@ func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 // ByDisplayName orders the results by the display_name field.
 func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
+}
+
+// ByBio orders the results by the bio field.
+func ByBio(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBio, opts...).ToFunc()
 }
 
 // ByAvatarURL orders the results by the avatar_url field.
@@ -414,20 +413,6 @@ func ByChannelReadStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newChannelReadStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByThreadMetadataLastReplyCount orders the results by thread_metadata_last_reply count.
-func ByThreadMetadataLastReplyCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newThreadMetadataLastReplyStep(), opts...)
-	}
-}
-
-// ByThreadMetadataLastReply orders the results by thread_metadata_last_reply terms.
-func ByThreadMetadataLastReply(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newThreadMetadataLastReplyStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newSessionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -517,12 +502,5 @@ func newChannelReadStatesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ChannelReadStatesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ChannelReadStatesTable, ChannelReadStatesColumn),
-	)
-}
-func newThreadMetadataLastReplyStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ThreadMetadataLastReplyInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ThreadMetadataLastReplyTable, ThreadMetadataLastReplyColumn),
 	)
 }

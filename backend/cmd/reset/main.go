@@ -11,13 +11,11 @@ import (
 )
 
 func main() {
-	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	// Initialize database connection
 	client, err := database.NewConnection(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
@@ -26,7 +24,6 @@ func main() {
 
 	ctx := context.Background()
 
-	// Drop all tables and recreate schema
 	if err := client.Schema.Create(
 		ctx,
 		migrate.WithDropIndex(true),
@@ -38,6 +35,4 @@ func main() {
 	}
 
 	fmt.Println("✅ Database reset successfully!")
-	fmt.Println("   All data has been cleared.")
-	fmt.Println("   Tables have been dropped and recreated.")
 }

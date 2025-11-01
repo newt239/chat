@@ -10,13 +10,11 @@ import (
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messageusermention"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
-	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -30,224 +28,164 @@ func NewThreadRepository(client *ent.Client) domainrepository.ThreadRepository {
 	return &threadRepository{client: client}
 }
 
-func (r *threadRepository) FindMetadataByMessageID(ctx context.Context, messageID string) (*entity.ThreadMetadata, error) {
+// CalculateMetadataByMessageID は指定されたメッセージIDのスレッドメタデータを計算します
+func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, messageID string) (*domainrepository.ThreadMetadata, error) {
 	mid, err := utils.ParseUUID(messageID, "message ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	tm, err := client.ThreadMetadata.Query().
-		Where(threadmetadata.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithLastReplyUser().
-		Only(ctx)
+
+	// メッセージの存在確認
+	exists, err := client.Message.Query().Where(message.ID(mid)).Exist(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
+		return nil, err
+	}
+	if !exists {
+		return nil, nil
+	}
+
+	// 返信を取得
+	replies, err := client.Message.Query().
+		Where(message.HasParentWith(message.ID(mid))).
+		Order(ent.Desc(message.FieldCreatedAt)).
+		All(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	return utils.ThreadMetadataToEntity(tm), nil
+	// メタデータを計算
+	replyCount := len(replies)
+	var lastReplyAt *time.Time
+	var lastReplyUserID *string
+
+	if replyCount > 0 {
+		lastReply := replies[0]
+		lastReplyAt = &lastReply.CreatedAt
+		userID := lastReply.Edges.User.ID.String()
+		lastReplyUserID = &userID
+	}
+
+	// 参加者を取得（UserThreadFollowから）
+	follows, err := client.UserThreadFollow.Query().
+		Where(userthreadfollow.HasThreadWith(message.ID(mid))).
+		WithUser().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	participantUserIDs := make([]string, 0, len(follows))
+	for _, follow := range follows {
+		if follow.Edges.User != nil {
+			participantUserIDs = append(participantUserIDs, follow.Edges.User.ID.String())
+		}
+	}
+
+	return &domainrepository.ThreadMetadata{
+		MessageID:          messageID,
+		ReplyCount:         replyCount,
+		LastReplyAt:        lastReplyAt,
+		LastReplyUserID:    lastReplyUserID,
+		ParticipantUserIDs: participantUserIDs,
+	}, nil
 }
 
-func (r *threadRepository) Upsert(ctx context.Context, metadata *entity.ThreadMetadata) error {
-	mid, err := utils.ParseUUID(metadata.MessageID, "message ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	// Try to find existing
-	existing, err := client.ThreadMetadata.Query().
-		Where(threadmetadata.HasMessageWith(message.ID(mid))).
-		Only(ctx)
-
-	participantIDs := make([]uuid.UUID, len(metadata.ParticipantUserIDs))
-	for i, id := range metadata.ParticipantUserIDs {
-		participantIDs[i] = utils.ParseUUIDOrNil(id)
-	}
-
-	if err != nil {
-		if ent.IsNotFound(err) {
-			// Create new
-			builder := client.ThreadMetadata.Create().
-				SetMessageID(mid).
-				SetReplyCount(metadata.ReplyCount).
-				SetParticipantUserIds(participantIDs)
-
-			if metadata.LastReplyAt != nil {
-				builder = builder.SetLastReplyAt(*metadata.LastReplyAt)
-			}
-
-			if metadata.LastReplyUserID != nil {
-				lruid, err := utils.ParseUUID(*metadata.LastReplyUserID, "last reply user ID")
-				if err != nil {
-					return err
-				}
-				builder = builder.SetLastReplyUserID(lruid)
-			}
-
-			_, err := builder.Save(ctx)
-			if err != nil {
-				return err
-			}
-
-			// Load edges
-			tm, err := client.ThreadMetadata.Query().
-				Where(threadmetadata.HasMessageWith(message.ID(mid))).
-				WithMessage(func(q *ent.MessageQuery) {
-					q.WithChannel(func(q2 *ent.ChannelQuery) {
-						q2.WithWorkspace().WithCreatedBy()
-					}).WithUser()
-				}).
-				WithLastReplyUser().
-				Only(ctx)
-			if err != nil {
-				return err
-			}
-
-			*metadata = *utils.ThreadMetadataToEntity(tm)
-			return nil
-		}
-		return err
-	}
-
-	// Update existing
-	builder := client.ThreadMetadata.UpdateOne(existing).
-		SetReplyCount(metadata.ReplyCount).
-		SetParticipantUserIds(participantIDs)
-
-	if metadata.LastReplyAt != nil {
-		builder = builder.SetLastReplyAt(*metadata.LastReplyAt)
-	} else {
-		builder = builder.ClearLastReplyAt()
-	}
-
-	if metadata.LastReplyUserID != nil {
-		lruid, err := utils.ParseUUID(*metadata.LastReplyUserID, "last reply user ID")
-		if err != nil {
-			return err
-		}
-		builder = builder.SetLastReplyUserID(lruid)
-	} else {
-		builder = builder.ClearLastReplyUser()
-	}
-
-	_, err = builder.Save(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Load edges
-	tm, err := client.ThreadMetadata.Query().
-		Where(threadmetadata.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithLastReplyUser().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*metadata = *utils.ThreadMetadataToEntity(tm)
-	return nil
-}
-
-func (r *threadRepository) FindMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*entity.ThreadMetadata, error) {
+// CalculateMetadataByMessageIDs は複数のメッセージIDのスレッドメタデータを一括計算します
+func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*domainrepository.ThreadMetadata, error) {
 	if len(messageIDs) == 0 {
-		return make(map[string]*entity.ThreadMetadata), nil
+		return make(map[string]*domainrepository.ThreadMetadata), nil
 	}
 
 	// Parse all message IDs
 	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
+	idStrMap := make(map[uuid.UUID]string)
 	for _, id := range messageIDs {
 		parsedID, err := utils.ParseUUID(id, "message ID")
 		if err != nil {
 			return nil, err
 		}
 		parsedIDs = append(parsedIDs, parsedID)
+		idStrMap[parsedID] = id
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	metadataList, err := client.ThreadMetadata.Query().
-		Where(threadmetadata.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithLastReplyUser().
+
+	// 全ての返信を取得
+	replies, err := client.Message.Query().
+		Where(message.HasParentWith(message.IDIn(parsedIDs...))).
+		WithUser().
+		Order(ent.Desc(message.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make(map[string]*entity.ThreadMetadata)
-	for _, tm := range metadataList {
-		messageID := tm.Edges.Message.ID.String()
-		result[messageID] = utils.ThreadMetadataToEntity(tm)
+	// 親メッセージごとにグループ化
+	repliesByParent := make(map[uuid.UUID][]*ent.Message)
+	for _, reply := range replies {
+		parentEdges := reply.QueryParent().IDsX(ctx)
+		if len(parentEdges) > 0 {
+			parentID := parentEdges[0]
+			repliesByParent[parentID] = append(repliesByParent[parentID], reply)
+		}
+	}
+
+	// 全てのフォローを取得
+	follows, err := client.UserThreadFollow.Query().
+		Where(userthreadfollow.HasThreadWith(message.IDIn(parsedIDs...))).
+		WithUser().
+		WithThread().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// スレッドごとにフォロワーをグループ化
+	followersByThread := make(map[uuid.UUID][]string)
+	for _, follow := range follows {
+		if follow.Edges.Thread != nil && follow.Edges.User != nil {
+			threadID := follow.Edges.Thread.ID
+			userID := follow.Edges.User.ID.String()
+			followersByThread[threadID] = append(followersByThread[threadID], userID)
+		}
+	}
+
+	// 結果を構築
+	result := make(map[string]*domainrepository.ThreadMetadata)
+	for _, parsedID := range parsedIDs {
+		messageID := idStrMap[parsedID]
+		threadReplies := repliesByParent[parsedID]
+		replyCount := len(threadReplies)
+
+		var lastReplyAt *time.Time
+		var lastReplyUserID *string
+
+		if replyCount > 0 {
+			lastReply := threadReplies[0]
+			lastReplyAt = &lastReply.CreatedAt
+			if lastReply.Edges.User != nil {
+				userID := lastReply.Edges.User.ID.String()
+				lastReplyUserID = &userID
+			}
+		}
+
+		participantUserIDs := followersByThread[parsedID]
+		if participantUserIDs == nil {
+			participantUserIDs = []string{}
+		}
+
+		result[messageID] = &domainrepository.ThreadMetadata{
+			MessageID:          messageID,
+			ReplyCount:         replyCount,
+			LastReplyAt:        lastReplyAt,
+			LastReplyUserID:    lastReplyUserID,
+			ParticipantUserIDs: participantUserIDs,
+		}
 	}
 
 	return result, nil
-}
-
-func (r *threadRepository) CreateOrUpdateMetadata(ctx context.Context, metadata *entity.ThreadMetadata) error {
-	return r.Upsert(ctx, metadata)
-}
-
-func (r *threadRepository) IncrementReplyCount(ctx context.Context, messageID string, replyUserID string) error {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	// Try to find existing
-	existing, err := client.ThreadMetadata.Query().
-		Where(threadmetadata.HasMessageWith(message.ID(mid))).
-		Only(ctx)
-
-	if err != nil {
-		if ent.IsNotFound(err) {
-			// Create new with count 1
-			_, err := client.ThreadMetadata.Create().
-				SetMessageID(mid).
-				SetReplyCount(1).
-				SetParticipantUserIds([]uuid.UUID{}).
-				Save(ctx)
-			return err
-		}
-		return err
-	}
-
-	// Update existing
-	return client.ThreadMetadata.UpdateOne(existing).
-		SetReplyCount(existing.ReplyCount + 1).
-		Exec(ctx)
-}
-
-func (r *threadRepository) DeleteMetadata(ctx context.Context, messageID string) error {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	_, err = client.ThreadMetadata.Delete().
-		Where(threadmetadata.HasMessageWith(message.ID(mid))).
-		Exec(ctx)
-	return err
 }
 
 func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input domainrepository.FindParticipatingThreadsInput) (*domainrepository.FindParticipatingThreadsOutput, error) {
@@ -342,10 +280,7 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		Order(ent.Desc(message.FieldCreatedAt), ent.Desc(message.FieldID)).
 		Limit(input.Limit + 1). // 次のページがあるか確認するため+1
 		WithChannel().
-		WithUser().
-		WithThreadMetadata(func(q *ent.ThreadMetadataQuery) {
-			q.WithLastReplyUser()
-		})
+		WithUser()
 
 	threads, err := query.All(ctx)
 	if err != nil {
@@ -360,8 +295,16 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 
 	// スレッドIDリストを作成
 	threadIDs := make([]uuid.UUID, len(threads))
+	threadIDStrs := make([]string, len(threads))
 	for i, t := range threads {
 		threadIDs[i] = t.ID
+		threadIDStrs[i] = t.ID.String()
+	}
+
+	// 各スレッドのメタデータを計算
+	metadataMap, err := r.CalculateMetadataByMessageIDs(ctx, threadIDStrs)
+	if err != nil {
+		return nil, err
 	}
 
 	// 各スレッドの未読数を計算
@@ -396,11 +339,10 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		// スレッドメタデータから情報取得
 		replyCount := 0
 		lastActivityAt := thread.CreatedAt
-		if len(thread.Edges.ThreadMetadata) > 0 {
-			metadata := thread.Edges.ThreadMetadata[0]
+		if metadata, ok := metadataMap[thread.ID.String()]; ok {
 			replyCount = metadata.ReplyCount
-			if !metadata.LastReplyAt.IsZero() {
-				lastActivityAt = metadata.LastReplyAt
+			if metadata.LastReplyAt != nil {
+				lastActivityAt = *metadata.LastReplyAt
 			}
 		}
 

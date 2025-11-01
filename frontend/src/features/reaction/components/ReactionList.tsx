@@ -8,27 +8,27 @@ import { useAddReaction, useRemoveReaction } from "../hooks/useReactions";
 import AddAnotherEmojiButton from "./AddAnotherEmojiButton";
 import { ReactionButton } from "./ReactionButton";
 
-import type { ReactionGroup } from "../types";
-import type { MessageWithUser } from "@/features/message/schemas";
+import type { Reaction, ReactionGroup } from "../types";
 
 import { userAtom } from "@/providers/store/auth";
 
 type ReactionListProps = {
-  message: MessageWithUser;
+  messageId: string;
+  reactions: Reaction[];
 };
 
-export const ReactionList = ({ message }: ReactionListProps) => {
+export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
   const addReaction = useAddReaction();
   const removeReaction = useRemoveReaction();
   const user = useAtomValue(userAtom);
 
   // リアクションをグループ化
   const reactionGroups = useMemo((): ReactionGroup[] => {
-    if (!message.reactions) return [];
+    if (!reactions) return [];
 
     const groups = new Map<string, ReactionGroup>();
 
-    for (const reaction of message.reactions) {
+    for (const reaction of reactions) {
       const existing = groups.get(reaction.emoji);
       if (existing) {
         existing.count++;
@@ -47,14 +47,18 @@ export const ReactionList = ({ message }: ReactionListProps) => {
     }
 
     return Array.from(groups.values());
-  }, [message.reactions, user]);
+  }, [reactions, user]);
 
   const handleReactionClick = async (emoji: string, hasUserReacted: boolean) => {
     if (hasUserReacted) {
-      await removeReaction.mutateAsync({ messageId: message.id, emoji });
+      await removeReaction.mutateAsync({ messageId, emoji });
     } else {
-      await addReaction.mutateAsync({ messageId: message.id, emoji });
+      await addReaction.mutateAsync({ messageId, emoji });
     }
+  };
+
+  const handleAddReaction = async (emoji: string) => {
+    await addReaction.mutateAsync({ messageId, emoji });
   };
 
   if (reactionGroups.length === 0) {
@@ -72,7 +76,7 @@ export const ReactionList = ({ message }: ReactionListProps) => {
           onClick={() => handleReactionClick(group.emoji, group.hasUserReacted)}
         />
       ))}
-      <AddAnotherEmojiButton />
+      <AddAnotherEmojiButton onClick={handleAddReaction} />
     </Group>
   );
 };

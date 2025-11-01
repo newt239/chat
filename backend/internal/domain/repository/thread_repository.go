@@ -7,12 +7,19 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 )
 
+// ThreadMetadata はスレッドのメタデータを表します（計算結果）
+type ThreadMetadata struct {
+	MessageID          string
+	ReplyCount         int
+	LastReplyAt        *time.Time
+	LastReplyUserID    *string
+	ParticipantUserIDs []string
+}
+
 type ThreadRepository interface {
-	FindMetadataByMessageID(ctx context.Context, messageID string) (*entity.ThreadMetadata, error)
-	FindMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*entity.ThreadMetadata, error)
-	CreateOrUpdateMetadata(ctx context.Context, metadata *entity.ThreadMetadata) error
-	IncrementReplyCount(ctx context.Context, messageID string, replyUserID string) error
-	DeleteMetadata(ctx context.Context, messageID string) error
+	// スレッドメタデータを計算して取得
+	CalculateMetadataByMessageID(ctx context.Context, messageID string) (*ThreadMetadata, error)
+	CalculateMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*ThreadMetadata, error)
 
 	// 参加中スレッド一覧取得
 	FindParticipatingThreads(ctx context.Context, input FindParticipatingThreadsInput) (*FindParticipatingThreadsOutput, error)

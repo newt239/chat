@@ -45,8 +45,6 @@ const (
 	EdgeLinks = "links"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
-	// EdgeThreadMetadata holds the string denoting the thread_metadata edge name in mutations.
-	EdgeThreadMetadata = "thread_metadata"
 	// EdgeUserThreadFollows holds the string denoting the user_thread_follows edge name in mutations.
 	EdgeUserThreadFollows = "user_thread_follows"
 	// EdgeThreadReadStates holds the string denoting the thread_read_states edge name in mutations.
@@ -117,13 +115,6 @@ const (
 	AttachmentsInverseTable = "attachments"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
 	AttachmentsColumn = "attachment_message"
-	// ThreadMetadataTable is the table that holds the thread_metadata relation/edge.
-	ThreadMetadataTable = "thread_metadata"
-	// ThreadMetadataInverseTable is the table name for the ThreadMetadata entity.
-	// It exists in this package in order to avoid circular dependency with the "threadmetadata" package.
-	ThreadMetadataInverseTable = "thread_metadata"
-	// ThreadMetadataColumn is the table column denoting the thread_metadata relation/edge.
-	ThreadMetadataColumn = "thread_metadata_message"
 	// UserThreadFollowsTable is the table that holds the user_thread_follows relation/edge.
 	UserThreadFollowsTable = "user_thread_follows"
 	// UserThreadFollowsInverseTable is the table name for the UserThreadFollow entity.
@@ -334,20 +325,6 @@ func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByThreadMetadataCount orders the results by thread_metadata count.
-func ByThreadMetadataCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newThreadMetadataStep(), opts...)
-	}
-}
-
-// ByThreadMetadata orders the results by thread_metadata terms.
-func ByThreadMetadata(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newThreadMetadataStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByUserThreadFollowsCount orders the results by user_thread_follows count.
 func ByUserThreadFollowsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -443,13 +420,6 @@ func newAttachmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AttachmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, AttachmentsTable, AttachmentsColumn),
-	)
-}
-func newThreadMetadataStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ThreadMetadataInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ThreadMetadataTable, ThreadMetadataColumn),
 	)
 }
 func newUserThreadFollowsStep() *sqlgraph.Step {

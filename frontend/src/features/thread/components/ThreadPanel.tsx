@@ -41,11 +41,6 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
     }
   }, [sendReply.isSuccess]);
 
-  const dateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
-
   const handleCopyLink = useCallback(
     (msgId: string) => {
       const url = `${window.location.origin}/app/${currentWorkspaceId}/${currentChannelId}?message=${msgId}`;
@@ -101,7 +96,6 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
                 <MessageItem
                   message={threadData.parentMessage}
                   currentUserId={currentUser?.id ?? null}
-                  dateTimeFormatter={dateTimeFormatter}
                   onCopyLink={handleCopyLink}
                   onCreateThread={handleCreateThread}
                 />

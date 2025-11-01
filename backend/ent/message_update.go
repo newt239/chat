@@ -21,7 +21,6 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
@@ -260,21 +259,6 @@ func (_u *MessageUpdate) AddAttachments(v ...*Attachment) *MessageUpdate {
 	return _u.AddAttachmentIDs(ids...)
 }
 
-// AddThreadMetadatumIDs adds the "thread_metadata" edge to the ThreadMetadata entity by IDs.
-func (_u *MessageUpdate) AddThreadMetadatumIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddThreadMetadatumIDs(ids...)
-	return _u
-}
-
-// AddThreadMetadata adds the "thread_metadata" edges to the ThreadMetadata entity.
-func (_u *MessageUpdate) AddThreadMetadata(v ...*ThreadMetadata) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddThreadMetadatumIDs(ids...)
-}
-
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
 func (_u *MessageUpdate) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageUpdate {
 	_u.mutation.AddUserThreadFollowIDs(ids...)
@@ -473,27 +457,6 @@ func (_u *MessageUpdate) RemoveAttachments(v ...*Attachment) *MessageUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
-}
-
-// ClearThreadMetadata clears all "thread_metadata" edges to the ThreadMetadata entity.
-func (_u *MessageUpdate) ClearThreadMetadata() *MessageUpdate {
-	_u.mutation.ClearThreadMetadata()
-	return _u
-}
-
-// RemoveThreadMetadatumIDs removes the "thread_metadata" edge to ThreadMetadata entities by IDs.
-func (_u *MessageUpdate) RemoveThreadMetadatumIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemoveThreadMetadatumIDs(ids...)
-	return _u
-}
-
-// RemoveThreadMetadata removes "thread_metadata" edges to ThreadMetadata entities.
-func (_u *MessageUpdate) RemoveThreadMetadata(v ...*ThreadMetadata) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveThreadMetadatumIDs(ids...)
 }
 
 // ClearUserThreadFollows clears all "user_thread_follows" edges to the UserThreadFollow entity.
@@ -1016,51 +979,6 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ThreadMetadataCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadMetadataTable,
-			Columns: []string{message.ThreadMetadataColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedThreadMetadataIDs(); len(nodes) > 0 && !_u.mutation.ThreadMetadataCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadMetadataTable,
-			Columns: []string{message.ThreadMetadataColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ThreadMetadataIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadMetadataTable,
-			Columns: []string{message.ThreadMetadataColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserThreadFollowsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1391,21 +1309,6 @@ func (_u *MessageUpdateOne) AddAttachments(v ...*Attachment) *MessageUpdateOne {
 	return _u.AddAttachmentIDs(ids...)
 }
 
-// AddThreadMetadatumIDs adds the "thread_metadata" edge to the ThreadMetadata entity by IDs.
-func (_u *MessageUpdateOne) AddThreadMetadatumIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddThreadMetadatumIDs(ids...)
-	return _u
-}
-
-// AddThreadMetadata adds the "thread_metadata" edges to the ThreadMetadata entity.
-func (_u *MessageUpdateOne) AddThreadMetadata(v ...*ThreadMetadata) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddThreadMetadatumIDs(ids...)
-}
-
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
 func (_u *MessageUpdateOne) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageUpdateOne {
 	_u.mutation.AddUserThreadFollowIDs(ids...)
@@ -1604,27 +1507,6 @@ func (_u *MessageUpdateOne) RemoveAttachments(v ...*Attachment) *MessageUpdateOn
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
-}
-
-// ClearThreadMetadata clears all "thread_metadata" edges to the ThreadMetadata entity.
-func (_u *MessageUpdateOne) ClearThreadMetadata() *MessageUpdateOne {
-	_u.mutation.ClearThreadMetadata()
-	return _u
-}
-
-// RemoveThreadMetadatumIDs removes the "thread_metadata" edge to ThreadMetadata entities by IDs.
-func (_u *MessageUpdateOne) RemoveThreadMetadatumIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemoveThreadMetadatumIDs(ids...)
-	return _u
-}
-
-// RemoveThreadMetadata removes "thread_metadata" edges to ThreadMetadata entities.
-func (_u *MessageUpdateOne) RemoveThreadMetadata(v ...*ThreadMetadata) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveThreadMetadatumIDs(ids...)
 }
 
 // ClearUserThreadFollows clears all "user_thread_follows" edges to the UserThreadFollow entity.
@@ -2170,51 +2052,6 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ThreadMetadataCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadMetadataTable,
-			Columns: []string{message.ThreadMetadataColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedThreadMetadataIDs(); len(nodes) > 0 && !_u.mutation.ThreadMetadataCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadMetadataTable,
-			Columns: []string{message.ThreadMetadataColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ThreadMetadataIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadMetadataTable,
-			Columns: []string{message.ThreadMetadataColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadmetadata.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

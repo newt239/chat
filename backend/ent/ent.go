@@ -25,7 +25,6 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
@@ -106,7 +105,6 @@ func checkColumn(t, c string) error {
 			messageusermention.Table:  messageusermention.ValidColumn,
 			session.Table:             session.ValidColumn,
 			systemmessage.Table:       systemmessage.ValidColumn,
-			threadmetadata.Table:      threadmetadata.ValidColumn,
 			threadreadstate.Table:     threadreadstate.ValidColumn,
 			user.Table:                user.ValidColumn,
 			usergroup.Table:           usergroup.ValidColumn,

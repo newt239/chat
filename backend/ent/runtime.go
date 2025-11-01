@@ -20,7 +20,6 @@ import (
 	"github.com/newt239/chat/ent/schema"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
-	"github.com/newt239/chat/ent/threadmetadata"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
@@ -226,32 +225,6 @@ func init() {
 	systemmessageDescID := systemmessageFields[0].Descriptor()
 	// systemmessage.DefaultID holds the default value on creation for the id field.
 	systemmessage.DefaultID = systemmessageDescID.Default.(func() uuid.UUID)
-	threadmetadataFields := schema.ThreadMetadata{}.Fields()
-	_ = threadmetadataFields
-	// threadmetadataDescReplyCount is the schema descriptor for reply_count field.
-	threadmetadataDescReplyCount := threadmetadataFields[1].Descriptor()
-	// threadmetadata.DefaultReplyCount holds the default value on creation for the reply_count field.
-	threadmetadata.DefaultReplyCount = threadmetadataDescReplyCount.Default.(int)
-	// threadmetadata.ReplyCountValidator is a validator for the "reply_count" field. It is called by the builders before save.
-	threadmetadata.ReplyCountValidator = threadmetadataDescReplyCount.Validators[0].(func(int) error)
-	// threadmetadataDescParticipantUserIds is the schema descriptor for participant_user_ids field.
-	threadmetadataDescParticipantUserIds := threadmetadataFields[3].Descriptor()
-	// threadmetadata.DefaultParticipantUserIds holds the default value on creation for the participant_user_ids field.
-	threadmetadata.DefaultParticipantUserIds = threadmetadataDescParticipantUserIds.Default.([]uuid.UUID)
-	// threadmetadataDescCreatedAt is the schema descriptor for created_at field.
-	threadmetadataDescCreatedAt := threadmetadataFields[4].Descriptor()
-	// threadmetadata.DefaultCreatedAt holds the default value on creation for the created_at field.
-	threadmetadata.DefaultCreatedAt = threadmetadataDescCreatedAt.Default.(func() time.Time)
-	// threadmetadataDescUpdatedAt is the schema descriptor for updated_at field.
-	threadmetadataDescUpdatedAt := threadmetadataFields[5].Descriptor()
-	// threadmetadata.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	threadmetadata.DefaultUpdatedAt = threadmetadataDescUpdatedAt.Default.(func() time.Time)
-	// threadmetadata.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	threadmetadata.UpdateDefaultUpdatedAt = threadmetadataDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// threadmetadataDescID is the schema descriptor for id field.
-	threadmetadataDescID := threadmetadataFields[0].Descriptor()
-	// threadmetadata.DefaultID holds the default value on creation for the id field.
-	threadmetadata.DefaultID = threadmetadataDescID.Default.(func() uuid.UUID)
 	threadreadstateFields := schema.ThreadReadState{}.Fields()
 	_ = threadreadstateFields
 	// threadreadstateDescLastReadAt is the schema descriptor for last_read_at field.
@@ -287,11 +260,11 @@ func init() {
 	// user.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[5].Descriptor()
+	userDescCreatedAt := userFields[6].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[6].Descriptor()
+	userDescUpdatedAt := userFields[7].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

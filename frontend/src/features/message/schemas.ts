@@ -78,11 +78,6 @@ const messageWithThreadSchema = messageWithUserSchema.extend({
 
 export { messageWithThreadSchema };
 
-export const messagesWithThreadResponseSchema = z.object({
-  messages: z.array(messageWithThreadSchema),
-  hasMore: z.boolean(),
-});
-
 // スレッド返信一覧レスポンススキーマ
 export const threadRepliesResponseSchema = z.object({
   parentMessage: messageWithUserSchema,
@@ -92,8 +87,6 @@ export const threadRepliesResponseSchema = z.object({
 
 export type MessageWithUser = z.infer<typeof messageWithUserSchema>;
 export type ThreadMetadata = z.infer<typeof threadMetadataSchema>;
-export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;
-
 // System message and timeline unified schema
 const systemMessageSchema = z.object({
   id: z.string(),
