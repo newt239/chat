@@ -117,6 +117,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
             {/* 返信入力 */}
             <div className="shrink-0">
               <ThreadReplyInput
+                channelId={currentChannelId ?? ""}
                 onSubmit={handleSendReply}
                 isPending={sendReply.isPending}
                 isError={sendReply.isError}

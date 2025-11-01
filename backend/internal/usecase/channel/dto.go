@@ -24,14 +24,14 @@ type UpdateChannelInput struct {
 }
 
 type ChannelOutput struct {
-	ID          string    `json:"id"`
-	WorkspaceID string    `json:"workspaceId"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
-	IsPrivate   bool      `json:"isPrivate"`
-	CreatedBy   string    `json:"createdBy"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	UnreadCount int       `json:"unreadCount"`
-	HasMention  bool      `json:"hasMention"`
+	ID           string    `json:"id"`
+	WorkspaceID  string    `json:"workspaceId"`
+	Name         string    `json:"name"`
+	Description  *string   `json:"description"`
+	IsPrivate    bool      `json:"isPrivate"`
+	CreatedBy    string    `json:"createdBy"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	HasMention   bool      `json:"hasMention"`
+	MentionCount int       `json:"mentionCount"`
 }

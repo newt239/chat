@@ -20,7 +20,7 @@ export function useLogin() {
       if (error || !response) {
         throw new Error(error?.error || "ログインに失敗しました");
       }
-      return response as AuthResponse;
+      return response;
     },
     onSuccess: (data: AuthResponse) => {
       setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });

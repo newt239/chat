@@ -4,11 +4,16 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/message"
+	"github.com/newt239/chat/ent/messagegroupmention"
+	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/usergroup"
+	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -146,6 +151,25 @@ func (r *readStateRepository) UpdateLastReadAt(ctx context.Context, channelID, u
 	return r.Upsert(ctx, readState)
 }
 
+// getLastReadAt は指定されたチャネルとユーザーの既読時刻を取得します
+func (r *readStateRepository) getLastReadAt(ctx context.Context, client *ent.Client, cid, uid uuid.UUID) (time.Time, error) {
+	readState, err := client.ChannelReadState.Query().
+		Where(
+			channelreadstate.HasChannelWith(channel.ID(cid)),
+			channelreadstate.HasUserWith(user.ID(uid)),
+		).
+		Only(ctx)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return time.Time{}, nil
+		}
+		return time.Time{}, err
+	}
+
+	return readState.LastReadAt, nil
+}
+
 func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID, userID string) (int, error) {
 	cid, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
@@ -159,24 +183,9 @@ func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID, use
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	// Get the last read time for this user in this channel
-	readState, err := client.ChannelReadState.Query().
-		Where(
-			channelreadstate.HasChannelWith(channel.ID(cid)),
-			channelreadstate.HasUserWith(user.ID(uid)),
-		).
-		Only(ctx)
-
-	var lastReadAt time.Time
+	lastReadAt, err := r.getLastReadAt(ctx, client, cid, uid)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			// User has never read this channel, count all messages
-			lastReadAt = time.Time{}
-		} else {
-			return 0, err
-		}
-	} else {
-		lastReadAt = readState.LastReadAt
+		return 0, err
 	}
 
 	// Count messages created after the last read time
@@ -215,6 +224,197 @@ func (r *readStateRepository) GetUnreadChannels(ctx context.Context, userID stri
 		}
 		if count > 0 {
 			result[ch.ID.String()] = count
+		}
+	}
+
+	return result, nil
+}
+
+func (r *readStateRepository) GetUnreadMentionCount(ctx context.Context, channelID, userID string) (int, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
+		return 0, err
+	}
+
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return 0, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	lastReadAt, err := r.getLastReadAt(ctx, client, cid, uid)
+	if err != nil {
+		return 0, err
+	}
+
+	// Get user's group IDs
+	userGroups, err := client.UserGroup.Query().
+		Where(usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(uid)))).
+		All(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	groupIDs := make([]uuid.UUID, len(userGroups))
+	for i, g := range userGroups {
+		groupIDs[i] = g.ID
+	}
+
+	// Count unique messages with mentions after lastReadAt
+	// 1. User mentions: messages where the user is mentioned
+	userMentionMessages, err := client.MessageUserMention.Query().
+		Where(
+			messageusermention.HasUserWith(user.ID(uid)),
+			messageusermention.HasMessageWith(
+				message.HasChannelWith(channel.ID(cid)),
+				message.CreatedAtGT(lastReadAt),
+				message.DeletedAtIsNil(),
+			),
+		).
+		QueryMessage().
+		IDs(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	// 2. Group mentions: messages where user's groups are mentioned
+	var groupMentionMessages []uuid.UUID
+	if len(groupIDs) > 0 {
+		groupMentionMessages, err = client.MessageGroupMention.Query().
+			Where(
+				messagegroupmention.HasGroupWith(usergroup.IDIn(groupIDs...)),
+				messagegroupmention.HasMessageWith(
+					message.HasChannelWith(channel.ID(cid)),
+					message.CreatedAtGT(lastReadAt),
+					message.DeletedAtIsNil(),
+				),
+			).
+			QueryMessage().
+			IDs(ctx)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	// Combine and deduplicate message IDs
+	messageIDSet := make(map[uuid.UUID]bool)
+	for _, id := range userMentionMessages {
+		messageIDSet[id] = true
+	}
+	for _, id := range groupMentionMessages {
+		messageIDSet[id] = true
+	}
+
+	return len(messageIDSet), nil
+}
+
+func (r *readStateRepository) GetUnreadMentionCountBatch(ctx context.Context, channelIDs []string, userID string) (map[string]int, error) {
+	if len(channelIDs) == 0 {
+		return make(map[string]int), nil
+	}
+
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	cids := make([]uuid.UUID, 0, len(channelIDs))
+	for _, cid := range channelIDs {
+		parsed, err := utils.ParseUUID(cid, "channel ID")
+		if err != nil {
+			return nil, err
+		}
+		cids = append(cids, parsed)
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+
+	// Get all read states for these channels
+	readStates, err := client.ChannelReadState.Query().
+		Where(
+			channelreadstate.HasChannelWith(channel.IDIn(cids...)),
+			channelreadstate.HasUserWith(user.ID(uid)),
+		).
+		WithChannel().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Map channelID -> lastReadAt
+	lastReadAtMap := make(map[uuid.UUID]time.Time)
+	for _, rs := range readStates {
+		if rs.Edges.Channel != nil {
+			lastReadAtMap[rs.Edges.Channel.ID] = rs.LastReadAt
+		}
+	}
+
+	// Get user's group IDs
+	userGroups, err := client.UserGroup.Query().
+		Where(usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(uid)))).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	groupIDs := make([]uuid.UUID, len(userGroups))
+	for i, g := range userGroups {
+		groupIDs[i] = g.ID
+	}
+
+	result := make(map[string]int)
+
+	for _, cid := range cids {
+		lastReadAt := lastReadAtMap[cid] // Zero value if not found
+
+		// User mentions
+		userMentionMessages, err := client.MessageUserMention.Query().
+			Where(
+				messageusermention.HasUserWith(user.ID(uid)),
+				messageusermention.HasMessageWith(
+					message.HasChannelWith(channel.ID(cid)),
+					message.CreatedAtGT(lastReadAt),
+					message.DeletedAtIsNil(),
+				),
+			).
+			QueryMessage().
+			IDs(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		// Group mentions
+		var groupMentionMessages []uuid.UUID
+		if len(groupIDs) > 0 {
+			groupMentionMessages, err = client.MessageGroupMention.Query().
+				Where(
+					messagegroupmention.HasGroupWith(usergroup.IDIn(groupIDs...)),
+					messagegroupmention.HasMessageWith(
+						message.HasChannelWith(channel.ID(cid)),
+						message.CreatedAtGT(lastReadAt),
+						message.DeletedAtIsNil(),
+					),
+				).
+				QueryMessage().
+				IDs(ctx)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// Deduplicate
+		messageIDSet := make(map[uuid.UUID]bool)
+		for _, id := range userMentionMessages {
+			messageIDSet[id] = true
+		}
+		for _, id := range groupMentionMessages {
+			messageIDSet[id] = true
+		}
+
+		count := len(messageIDSet)
+		if count > 0 {
+			result[cid.String()] = count
 		}
 	}
 

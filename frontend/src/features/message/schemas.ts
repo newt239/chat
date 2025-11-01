@@ -72,11 +72,11 @@ export const messageWithUserSchema = baseMessageSchema.extend({
 	user: messageUserSchema,
 });
 
-const messageWithThreadSchema = messageWithUserSchema.extend({
+export const messageWithThreadSchema = messageWithUserSchema.extend({
   threadMetadata: threadMetadataSchema.nullable().optional(),
 });
 
-export { messageWithThreadSchema };
+export type MessageWithThread = z.infer<typeof messageWithThreadSchema>;
 
 // スレッド返信一覧レスポンススキーマ
 export const threadRepliesResponseSchema = z.object({

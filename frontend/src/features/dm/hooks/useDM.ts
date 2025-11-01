@@ -1,11 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { CreateDMRequest } from "../schemas";
-import type { components } from "@/lib/api/schema";
 
 import { api } from "@/lib/api/client";
-
-type DMOutput = components["schemas"]["DMOutput"];
 
 export const useDMs = (workspaceId: string) => {
   return useQuery({
@@ -21,7 +18,7 @@ export const useDMs = (workspaceId: string) => {
         throw new Error(response.error.error || "DMの取得に失敗しました");
       }
 
-      return response.data as DMOutput[];
+      return response.data;
     },
     enabled: !!workspaceId,
   });
@@ -43,7 +40,7 @@ export const useCreateDM = (workspaceId: string) => {
         throw new Error(response.error.error || "DMの作成に失敗しました");
       }
 
-      return response.data as DMOutput;
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dms", workspaceId] });

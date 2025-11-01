@@ -81,19 +81,25 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 		return nil, fmt.Errorf("failed to fetch channels: %w", err)
 	}
 
+	// チャネルIDリストを作成
+	channelIDs := make([]string, len(channels))
+	for idx, ch := range channels {
+		channelIDs[idx] = ch.ID
+	}
+
+	// バッチでメンション数を取得
+	mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, channelIDs, input.UserID)
+	if err != nil {
+		// エラーの場合はログに記録し、空のマップとして扱う
+		fmt.Printf("[WARN] Failed to get unread mention counts: userID=%s err=%v\n", input.UserID, err)
+		mentionCounts = make(map[string]int)
+	}
+
 	output := make([]ChannelOutput, 0, len(channels))
 	for _, ch := range channels {
-		// 未読数を取得
-		unreadCount, err := i.readStateRepo.GetUnreadCount(ctx, ch.ID, input.UserID)
-		if err != nil {
-			// エラーの場合は0として扱う
-			unreadCount = 0
-		}
-
-		// TODO: メンション検知の実装（現在は未読数が0より大きい場合にtrueとする）
-		hasMention := unreadCount > 0
-
-		output = append(output, toChannelOutputWithUnread(ch, unreadCount, hasMention))
+		mentionCount := mentionCounts[ch.ID]
+		hasMention := mentionCount > 0
+		output = append(output, toChannelOutputWithUnread(ch, hasMention, mentionCount))
 	}
 
 	return output, nil
@@ -156,7 +162,7 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, err
 	}
 
-	output := toChannelOutputWithUnread(channel, 0, false) // 新規作成時は未読数0
+	output := toChannelOutputWithUnread(channel, false, 0) // 新規作成時はメンション数0
 	return &output, nil
 }
 
@@ -223,12 +229,14 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 	actorID := input.UserID
 	if i.systemMessageUC != nil {
 		if nameChanged {
-			_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+			if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
 				ChannelID: ch.ID,
 				Kind:      entity.SystemMessageKindChannelNameChanged,
 				Payload:   map[string]any{"from": originalName, "to": ch.Name},
 				ActorID:   &actorID,
-			})
+			}); err != nil {
+				fmt.Printf("[WARN] Failed to create system message for channel name change: channelID=%s err=%v\n", ch.ID, err)
+			}
 		}
 		if descChanged {
 			from := ""
@@ -239,12 +247,14 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 			if ch.Description != nil {
 				to = *ch.Description
 			}
-			_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+			if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
 				ChannelID: ch.ID,
 				Kind:      entity.SystemMessageKindChannelDescriptionChanged,
 				Payload:   map[string]any{"from": from, "to": to},
 				ActorID:   &actorID,
-			})
+			}); err != nil {
+				fmt.Printf("[WARN] Failed to create system message for channel description change: channelID=%s err=%v\n", ch.ID, err)
+			}
 		}
 		if privChanged {
 			from := "public"
@@ -255,38 +265,40 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 			if ch.IsPrivate {
 				to = "private"
 			}
-			_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+			if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
 				ChannelID: ch.ID,
 				Kind:      entity.SystemMessageKindChannelPrivacyChanged,
 				Payload:   map[string]any{"from": from, "to": to},
 				ActorID:   &actorID,
-			})
+			}); err != nil {
+				fmt.Printf("[WARN] Failed to create system message for channel privacy change: channelID=%s err=%v\n", ch.ID, err)
+			}
 		}
 	}
 
 	out := toChannelOutput(ch)
-	// 補足: 未読数/メンションは0/falseで返す（一覧APIの責務と分離）
-	out.UnreadCount = 0
+	// 補足: メンションはfalse/0で返す（一覧APIの責務と分離）
 	out.HasMention = false
+	out.MentionCount = 0
 	return &out, nil
 }
 
 func toChannelOutput(channel *entity.Channel) ChannelOutput {
-	return toChannelOutputWithUnread(channel, 0, false)
+	return toChannelOutputWithUnread(channel, false, 0)
 }
 
-func toChannelOutputWithUnread(channel *entity.Channel, unreadCount int, hasMention bool) ChannelOutput {
+func toChannelOutputWithUnread(channel *entity.Channel, hasMention bool, mentionCount int) ChannelOutput {
 	return ChannelOutput{
-		ID:          channel.ID,
-		WorkspaceID: channel.WorkspaceID,
-		Name:        channel.Name,
-		Description: channel.Description,
-		IsPrivate:   channel.IsPrivate,
-		CreatedBy:   channel.CreatedBy,
-		CreatedAt:   channel.CreatedAt,
-		UpdatedAt:   channel.UpdatedAt,
-		UnreadCount: unreadCount,
-		HasMention:  hasMention,
+		ID:           channel.ID,
+		WorkspaceID:  channel.WorkspaceID,
+		Name:         channel.Name,
+		Description:  channel.Description,
+		IsPrivate:    channel.IsPrivate,
+		CreatedBy:    channel.CreatedBy,
+		CreatedAt:    channel.CreatedAt,
+		UpdatedAt:    channel.UpdatedAt,
+		HasMention:   hasMention,
+		MentionCount: mentionCount,
 	}
 }
 

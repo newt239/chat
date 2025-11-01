@@ -19,8 +19,8 @@ type BaseMessageInputProps = {
   placeholder?: string;
   isPending?: boolean;
   error?: string;
-  channelId?: string | null;
-  onReset?: () => void;
+  channelId: string;
+  resetTrigger?: number;
 };
 
 export const BaseMessageInput = ({
@@ -29,7 +29,7 @@ export const BaseMessageInput = ({
   isPending = false,
   error,
   channelId,
-  onReset,
+  resetTrigger,
 }: BaseMessageInputProps) => {
   const [body, setBody] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -50,26 +50,23 @@ export const BaseMessageInput = ({
     (newValue: string) => {
       setBody(newValue);
 
-      // URLを検出してプレビューを追加
+      // URLを検出してプレビューを追加・削除
       const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/g;
       const urls: string[] = newValue.match(urlRegex) || [];
 
-      // 新しいURLを検出した場合、プレビューを追加
+      // プレビュー操作はセッター関数の形式で実行
       urls.forEach((url: string) => {
-        if (!previews.some((preview) => preview.url === url)) {
-          addPreview(url);
-        }
+        addPreview(url);
       });
 
-      // 削除されたURLのプレビューを削除
+      // 最新のpreviewsを使って削除
       previews.forEach((preview) => {
-        const previewUrl: string = preview.url;
-        if (!urls.includes(previewUrl)) {
-          removePreview(previewUrl);
+        if (!urls.includes(preview.url)) {
+          removePreview(preview.url);
         }
       });
     },
-    [previews, addPreview, removePreview]
+    [addPreview, removePreview]
   );
 
   const handleFileSelect = useCallback(
@@ -106,12 +103,12 @@ export const BaseMessageInput = ({
 
   // 外部からリセットが呼ばれた場合
   useEffect(() => {
-    if (onReset) {
+    if (resetTrigger && resetTrigger > 0) {
       setBody("");
       clearPreviews();
       clearAttachments();
     }
-  }, [onReset, clearPreviews, clearAttachments]);
+  }, [resetTrigger, clearPreviews, clearAttachments]);
 
   const isDisabled =
     isPending || (body.trim().length === 0 && pendingAttachments.length === 0) || isUploading;

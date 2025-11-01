@@ -15,6 +15,7 @@ import type { TimelineItem } from "../schemas";
 import { useAutoScrollToBottom } from "@/features/message/hooks/useAutoScrollToBottom";
 import { useChannelTimeline } from "@/features/message/hooks/useChannelTimeline";
 import { useMessageActions } from "@/features/message/hooks/useMessageActions";
+import { useMessageViewportDetection } from "@/features/message/hooks/useMessageViewportDetection";
 import { userAtom } from "@/providers/store/auth";
 import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
@@ -36,6 +37,26 @@ export const MessagePanel = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
+
+  // 最新メッセージのIDを取得（ユーザーメッセージのみ）
+  const latestUserMessageId =
+    orderedItems && orderedItems.length > 0
+      ? (() => {
+          for (let i = orderedItems.length - 1; i >= 0; i--) {
+            const item = orderedItems[i];
+            if (item && item.type === "user" && item.userMessage) {
+              return item.userMessage.id;
+            }
+          }
+          return null;
+        })()
+      : null;
+
+  const { latestMessageRef } = useMessageViewportDetection({
+    channelId: currentChannelId,
+    workspaceId: currentWorkspaceId,
+    latestMessageId: latestUserMessageId,
+  });
 
   useAutoScrollToBottom(messagesEndRef, [messageResponse, isLoading]);
   useAutoScrollToBottom(messagesEndRef, [currentChannelId]);
@@ -115,17 +136,22 @@ export const MessagePanel = () => {
               {orderedItems.map((item, idx) => {
                 if (item.type === "user" && item.userMessage) {
                   const msg = item.userMessage;
+                  const isLatestMessage = msg.id === latestUserMessageId;
                   return (
-                    <MessageItem
+                    <div
                       key={`u-${msg.id}`}
-                      message={msg}
-                      currentUserId={currentUser?.id ?? null}
-                      onCopyLink={handleCopyLink}
-                      onCreateThread={handleCreateThread}
-                      onOpenThread={handleOpenThread}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
+                      ref={isLatestMessage ? latestMessageRef : undefined}
+                    >
+                      <MessageItem
+                        message={msg}
+                        currentUserId={currentUser?.id ?? null}
+                        onCopyLink={handleCopyLink}
+                        onCreateThread={handleCreateThread}
+                        onOpenThread={handleOpenThread}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    </div>
                   );
                 }
                 if (item.type === "system" && item.systemMessage) {

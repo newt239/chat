@@ -9,6 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	MaxGroupDMMembers = 9
+)
+
 var (
 	ErrChannelNameRequired       = errors.New("チャンネル名は必須です")
 	ErrChannelWorkspaceIDInvalid = errors.New("ワークスペースIDはUUID形式で指定してください")

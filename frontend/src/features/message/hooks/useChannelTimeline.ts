@@ -9,7 +9,9 @@ type WsClientMinimal = {
   joinChannel: (channelId: string) => void;
   leaveChannel: (channelId: string) => void;
   onNewMessage: (cb: (payload: NewMessagePayload) => void) => void;
+  offNewMessage: (cb: (payload: NewMessagePayload) => void) => void;
   onSystemMessageCreated: (cb: (payload: SystemMessageCreatedPayload) => void) => void;
+  offSystemMessageCreated: (cb: (payload: SystemMessageCreatedPayload) => void) => void;
 };
 
 type UseChannelTimelineArgs = {
@@ -62,6 +64,8 @@ export const useChannelTimeline = ({
     wsClient.onNewMessage(handleNewMessage);
     wsClient.onSystemMessageCreated(handleSystem);
     return () => {
+      wsClient.offNewMessage(handleNewMessage);
+      wsClient.offSystemMessageCreated(handleSystem);
       wsClient.leaveChannel(currentChannelId);
     };
   }, [wsClient, currentChannelId]);

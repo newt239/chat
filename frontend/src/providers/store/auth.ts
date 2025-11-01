@@ -3,6 +3,8 @@ import { atomWithStorage } from "jotai/utils";
 
 import type { components } from "@/lib/api/schema";
 
+import { storage } from "@/lib/storage";
+
 type User = components["schemas"]["User"];
 
 type AuthState = {
@@ -61,22 +63,20 @@ export const clearAuthAtom = atom(null, (_get, set) => {
 export const initializeAuthAtom = atom(null, (get, set) => {
   const current = get(authAtom);
 
-  if (typeof window !== "undefined") {
-    const legacyAccessToken = window.localStorage.getItem("accessToken");
-    const legacyRefreshToken = window.localStorage.getItem("refreshToken");
+  const legacyAccessToken = storage.getItem("accessToken");
+  const legacyRefreshToken = storage.getItem("refreshToken");
 
-    if (!current.accessToken && !current.refreshToken && legacyAccessToken && legacyRefreshToken) {
-      set(
-        authAtom,
-        sanitizeAuthState({
-          user: current.user,
-          accessToken: legacyAccessToken,
-          refreshToken: legacyRefreshToken,
-        })
-      );
-    }
-
-    window.localStorage.removeItem("accessToken");
-    window.localStorage.removeItem("refreshToken");
+  if (!current.accessToken && !current.refreshToken && legacyAccessToken && legacyRefreshToken) {
+    set(
+      authAtom,
+      sanitizeAuthState({
+        user: current.user,
+        accessToken: legacyAccessToken,
+        refreshToken: legacyRefreshToken,
+      })
+    );
   }
+
+  storage.removeItem("accessToken");
+  storage.removeItem("refreshToken");
 });

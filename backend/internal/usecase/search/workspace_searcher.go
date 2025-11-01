@@ -225,16 +225,16 @@ func (s *WorkspaceSearcher) searchChannels(
 	items := make([]channeluc.ChannelOutput, 0, len(channels))
 	for _, ch := range channels {
 		items = append(items, channeluc.ChannelOutput{
-			ID:          ch.ID,
-			WorkspaceID: ch.WorkspaceID,
-			Name:        ch.Name,
-			Description: ch.Description,
-			IsPrivate:   ch.IsPrivate,
-			CreatedBy:   ch.CreatedBy,
-			CreatedAt:   ch.CreatedAt,
-			UpdatedAt:   ch.UpdatedAt,
-			UnreadCount: 0,
-			HasMention:  false,
+			ID:           ch.ID,
+			WorkspaceID:  ch.WorkspaceID,
+			Name:         ch.Name,
+			Description:  ch.Description,
+			IsPrivate:    ch.IsPrivate,
+			CreatedBy:    ch.CreatedBy,
+			CreatedAt:    ch.CreatedAt,
+			UpdatedAt:    ch.UpdatedAt,
+			HasMention:   false,
+			MentionCount: 0,
 		})
 	}
 

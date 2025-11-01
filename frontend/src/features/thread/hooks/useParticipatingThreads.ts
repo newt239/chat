@@ -28,7 +28,7 @@ export function useParticipatingThreads(params: UseParticipatingThreadsParams) {
     enabled: typeof workspaceId === "string" && workspaceId.length > 0,
     queryFn: async (): Promise<ParticipatingThreadsOutput> => {
       if (!workspaceId) {
-        return { items: [], next_cursor: undefined } as unknown as ParticipatingThreadsOutput;
+        return { items: [], next_cursor: undefined };
       }
 
       const { data, error } = await api.GET("/api/workspaces/{workspaceId}/threads/participating", {
@@ -51,7 +51,7 @@ export function useParticipatingThreads(params: UseParticipatingThreadsParams) {
         throw new Error("スレッド一覧レスポンスの形式が想定と異なります");
       }
 
-      return parsed.data as unknown as ParticipatingThreadsOutput;
+      return parsed.data;
     },
     staleTime: 15_000,
   });

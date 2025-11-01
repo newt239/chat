@@ -1,3 +1,5 @@
+import type { MessageWithThread, SystemMessage } from "@/features/message/schemas";
+
 type ClientEventType =
   | "join_channel"
   | "leave_channel"
@@ -24,17 +26,23 @@ type LeaveChannelPayload = { channel_id: string };
 type PostMessagePayload = { channel_id: string; body: string };
 type TypingPayload = { channel_id: string };
 type UpdateReadStatePayload = { channel_id: string; message_id: string };
-export type NewMessagePayload = { channel_id: string; message: Record<string, unknown> };
-type MessageUpdatedPayload = { channel_id: string; message: Record<string, unknown> };
-type MessageDeletedPayload = { channel_id: string; deleteData: Record<string, unknown> };
+export type NewMessagePayload = { channel_id: string; message: MessageWithThread };
+type MessageUpdatedPayload = { channel_id: string; message: MessageWithThread };
+type MessageDeletedPayload = {
+  channel_id: string;
+  deleteData: {
+    id: string;
+    deleted_at: string;
+  };
+};
 type PinPayload = {
   channel_id: string;
-  message: Record<string, unknown>;
+  message: MessageWithThread;
   pinned_by: string;
   pinned_at: string;
 };
 type UnreadCountPayload = { channel_id: string; unread_count: number; has_mention: boolean };
-export type SystemMessageCreatedPayload = { channel_id: string; message: Record<string, unknown> };
+export type SystemMessageCreatedPayload = { channel_id: string; message: SystemMessage };
 type AckPayload = { type: WsEventType; success: boolean; message?: string };
 type ErrorPayload = { code: string; message: string };
 

@@ -37,7 +37,7 @@ export function usePinnedMessages(channelId: string | null, limit = 100) {
     queryKey: ["channels", channelId, "pins"],
     enabled: channelId !== null,
     queryFn: async () => {
-      if (channelId === null) return { pins: [], nextCursor: null } as PinnedListResponse;
+      if (channelId === null) return { pins: [], nextCursor: null };
 
       const { data, error } = await api.GET("/api/channels/{channelId}/pins", {
         params: { path: { channelId }, query: { limit } },
@@ -47,7 +47,7 @@ export function usePinnedMessages(channelId: string | null, limit = 100) {
         throw new Error(error?.error ?? "ピン一覧の取得に失敗しました");
       }
 
-      return data as unknown as PinnedListResponse;
+      return data;
     },
   });
 

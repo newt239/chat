@@ -27,20 +27,12 @@ export const WsProvider = ({ children }: { children: React.ReactNode }) => {
       });
       return;
     }
-    if (!wsClient) {
-      setWsClient((prev) => {
-        prev?.close();
-        return null;
-      });
-      const instance = new WsClient(accessToken, workspaceId);
-      setWsClient(instance);
-    }
+
+    const instance = new WsClient(accessToken, workspaceId);
+    setWsClient(instance);
 
     return () => {
-      setWsClient((prev) => {
-        prev?.close();
-        return null;
-      });
+      instance.close();
     };
   }, [accessToken, workspaceId]);
 

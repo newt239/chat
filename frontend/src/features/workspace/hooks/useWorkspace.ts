@@ -9,8 +9,7 @@ export function useWorkspaces() {
       const { data, error } = await api.GET("/api/workspaces", {});
 
       if (error || !data) {
-        console.error(error);
-        return [];
+        throw new Error(error?.error ?? "ワークスペースの取得に失敗しました");
       }
 
       return data.workspaces;
@@ -27,8 +26,7 @@ export function useCreateWorkspace() {
         body: data,
       });
       if (error || !response) {
-        console.error(error);
-        return null;
+        throw new Error(error?.error ?? "ワークスペースの作成に失敗しました");
       }
       return response;
     },

@@ -3,9 +3,10 @@ import { IconHash, IconLock } from "@tabler/icons-react";
 type ChannelNameProps = {
   name: string;
   isPrivate: boolean;
+  isBold?: boolean;
 };
 
-export const ChannelName = ({ name, isPrivate }: ChannelNameProps) => {
+export const ChannelName = ({ name, isPrivate, isBold = false }: ChannelNameProps) => {
   return (
     <div>
       <div className="flex items-center gap-2">
@@ -14,7 +15,7 @@ export const ChannelName = ({ name, isPrivate }: ChannelNameProps) => {
         ) : (
           <IconHash size={20} title="パブリックチャンネル" />
         )}
-        <span>{name}</span>
+        <span className={isBold ? "font-bold" : ""}>{name}</span>
       </div>
     </div>
   );

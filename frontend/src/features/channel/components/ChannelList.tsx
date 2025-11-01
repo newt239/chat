@@ -74,12 +74,13 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
               {channels.map((channel) => {
                 const isSelected = channel.id === currentChannelId;
                 const channelData = channel as typeof channel & {
-                  unreadCount?: number;
                   hasMention?: boolean;
+                  mentionCount?: number;
                 };
-                const hasUnread = (channelData.unreadCount || 0) > 0;
-                const hasMention = channelData.hasMention || false;
-                const unreadCount = channelData.unreadCount || 0;
+                const mentionCount = channelData.mentionCount || 0;
+                const hasMentionCount = mentionCount > 0;
+                // 未読のメッセージがある場合はメンション数が0より大きい場合とする
+                const hasUnread = hasMentionCount;
 
                 return (
                   <Button
@@ -92,14 +93,12 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                       label: "w-full flex items-center justify-between",
                     }}
                   >
-                    <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
+                    <ChannelName name={channel.name} isPrivate={channel.isPrivate} isBold={hasUnread} />
                     <div className="flex items-center gap-1">
-                      {hasMention && unreadCount > 0 ? (
+                      {hasMentionCount ? (
                         <Badge color="blue" size="xs" className="flex items-center justify-center">
-                          {unreadCount > 99 ? "99+" : unreadCount}
+                          {mentionCount > 99 ? "99+" : mentionCount}
                         </Badge>
-                      ) : hasUnread ? (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
                       ) : null}
                     </div>
                   </Button>

@@ -376,7 +376,7 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 		return nil, err
 	}
 
-	if len(memberIDs) > 9 {
+	if len(memberIDs) > entity.MaxGroupDMMembers {
 		return nil, entity.ErrGroupDMMaxMembers
 	}
 

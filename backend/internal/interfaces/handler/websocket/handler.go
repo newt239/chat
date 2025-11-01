@@ -30,6 +30,8 @@ var upgrader = websocket.Upgrader{
 // Handler はWebSocketハンドラーを返します
 func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, messageUseCase MessageUseCase, readStateUseCase ReadStateUseCase) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		log.Printf("[WebSocket] 接続リクエスト受信: RemoteAddr=%s", c.Request().RemoteAddr)
+
 		// 認証トークンの取得
 		// WebSocketではAuthorizationヘッダーを設定できないため、クエリパラメータからも取得を試みる
 		var token string
@@ -43,6 +45,7 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 			// クエリパラメータからトークンを取得
 			token = c.QueryParam("token")
 			if token == "" {
+				log.Printf("[WebSocket] 認証トークンが指定されていません: RemoteAddr=%s", c.Request().RemoteAddr)
 				return echo.NewHTTPError(http.StatusUnauthorized, "認証トークンが指定されていません")
 			}
 		}
@@ -50,12 +53,14 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 		// JWTトークンの検証
 		claims, err := jwtService.VerifyToken(token)
 		if err != nil {
+			log.Printf("[WebSocket] トークン検証失敗: err=%v RemoteAddr=%s", err, c.Request().RemoteAddr)
 			return echo.NewHTTPError(http.StatusUnauthorized, "トークンが無効または期限切れです")
 		}
 
 		// WorkspaceIDの取得
 		workspaceID := c.QueryParam("workspaceId")
 		if workspaceID == "" {
+			log.Printf("[WebSocket] workspaceIdが指定されていません: userID=%s RemoteAddr=%s", claims.UserID, c.Request().RemoteAddr)
 			return echo.NewHTTPError(http.StatusBadRequest, "workspaceIdクエリパラメータは必須です")
 		}
 
@@ -71,12 +76,16 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 			return echo.NewHTTPError(http.StatusForbidden, "ユーザーはこのワークスペースのメンバーではありません")
 		}
 
+		log.Printf("[WebSocket] 認証成功、アップグレード開始: userID=%s workspaceID=%s", claims.UserID, workspaceID)
+
 		// WebSocket接続のアップグレード
 		conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 		if err != nil {
-			log.Printf("WebSocketのアップグレードに失敗しました: %v", err)
+			log.Printf("[WebSocket] アップグレード失敗: userID=%s workspaceID=%s err=%v", claims.UserID, workspaceID, err)
 			return err
 		}
+
+		log.Printf("[WebSocket] アップグレード成功: userID=%s workspaceID=%s", claims.UserID, workspaceID)
 
 		// クライアントを作成してハブに登録
 		client := &Client{

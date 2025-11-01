@@ -1,8 +1,10 @@
 import type { ClientToServerMessage, WsEventPayloadMap } from "@/types/wsEvents";
 
+import { logger } from "@/lib/logger";
 import { router } from "@/lib/router";
 
 const WS_BC_NAME = "ws-control";
+const WS_RECONNECT_DELAY = 2_000; // 2秒
 
 /**
  * サーバWebSocketエンドポイント取得
@@ -15,10 +17,8 @@ function getWsUrl(token: string, workspaceId: string): string {
 
 export class WsClient {
   private ws: WebSocket | null = null;
-  private heartbeatInterval: number = 30000; // 30秒
-  private pingIntervalId: ReturnType<typeof setInterval> | null = null;
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private reconnectDelay = 2000; // ms
+  private reconnectDelay = WS_RECONNECT_DELAY;
 
   private token: string;
   private workspaceId: string;
@@ -94,74 +94,128 @@ export class WsClient {
   public onNewMessage(cb: (payload: WsEventPayloadMap["new_message"]) => void) {
     this.handlers.new_message.push(cb);
   }
+  public offNewMessage(cb: (payload: WsEventPayloadMap["new_message"]) => void) {
+    const index = this.handlers.new_message.indexOf(cb);
+    if (index > -1) {
+      this.handlers.new_message.splice(index, 1);
+    }
+  }
   public onMessageUpdated(cb: (payload: WsEventPayloadMap["message_updated"]) => void) {
     this.handlers.message_updated.push(cb);
+  }
+  public offMessageUpdated(cb: (payload: WsEventPayloadMap["message_updated"]) => void) {
+    const index = this.handlers.message_updated.indexOf(cb);
+    if (index > -1) {
+      this.handlers.message_updated.splice(index, 1);
+    }
   }
   public onMessageDeleted(cb: (payload: WsEventPayloadMap["message_deleted"]) => void) {
     this.handlers.message_deleted.push(cb);
   }
+  public offMessageDeleted(cb: (payload: WsEventPayloadMap["message_deleted"]) => void) {
+    const index = this.handlers.message_deleted.indexOf(cb);
+    if (index > -1) {
+      this.handlers.message_deleted.splice(index, 1);
+    }
+  }
   public onUnreadCount(cb: (payload: WsEventPayloadMap["unread_count"]) => void) {
     this.handlers.unread_count.push(cb);
+  }
+  public offUnreadCount(cb: (payload: WsEventPayloadMap["unread_count"]) => void) {
+    const index = this.handlers.unread_count.indexOf(cb);
+    if (index > -1) {
+      this.handlers.unread_count.splice(index, 1);
+    }
   }
   public onPinCreated(cb: (payload: WsEventPayloadMap["pin_created"]) => void) {
     this.handlers.pin_created.push(cb);
   }
+  public offPinCreated(cb: (payload: WsEventPayloadMap["pin_created"]) => void) {
+    const index = this.handlers.pin_created.indexOf(cb);
+    if (index > -1) {
+      this.handlers.pin_created.splice(index, 1);
+    }
+  }
   public onPinDeleted(cb: (payload: WsEventPayloadMap["pin_deleted"]) => void) {
     this.handlers.pin_deleted.push(cb);
+  }
+  public offPinDeleted(cb: (payload: WsEventPayloadMap["pin_deleted"]) => void) {
+    const index = this.handlers.pin_deleted.indexOf(cb);
+    if (index > -1) {
+      this.handlers.pin_deleted.splice(index, 1);
+    }
   }
   public onSystemMessageCreated(cb: (payload: WsEventPayloadMap["system_message_created"]) => void) {
     this.handlers.system_message_created.push(cb);
   }
+  public offSystemMessageCreated(cb: (payload: WsEventPayloadMap["system_message_created"]) => void) {
+    const index = this.handlers.system_message_created.indexOf(cb);
+    if (index > -1) {
+      this.handlers.system_message_created.splice(index, 1);
+    }
+  }
   public onAck(cb: (payload: WsEventPayloadMap["ack"]) => void) {
     this.handlers.ack.push(cb);
+  }
+  public offAck(cb: (payload: WsEventPayloadMap["ack"]) => void) {
+    const index = this.handlers.ack.indexOf(cb);
+    if (index > -1) {
+      this.handlers.ack.splice(index, 1);
+    }
   }
   public onWsError(cb: (payload: WsEventPayloadMap["error"]) => void) {
     this.handlers.error.push(cb);
   }
+  public offWsError(cb: (payload: WsEventPayloadMap["error"]) => void) {
+    const index = this.handlers.error.indexOf(cb);
+    if (index > -1) {
+      this.handlers.error.splice(index, 1);
+    }
+  }
 
   private connect() {
     const url = getWsUrl(this.token, this.workspaceId);
-    this.ws = new WebSocket(url);
-    this.ws.addEventListener("open", this.onOpen);
-    this.ws.addEventListener("close", this.onClose);
-    this.ws.addEventListener("error", this.onError);
-    this.ws.addEventListener("message", this.eventDispatcher);
+    logger.info("WebSocket接続開始:", url);
+    try {
+      this.ws = new WebSocket(url);
+      this.ws.addEventListener("open", this.onOpen);
+      this.ws.addEventListener("close", this.onClose);
+      this.ws.addEventListener("error", this.onError);
+      this.ws.addEventListener("message", this.eventDispatcher);
+    } catch (error) {
+      logger.error("WebSocket接続作成時エラー:", error);
+      this.tryReconnect();
+    }
   }
 
   private onOpen = () => {
-    this.startHeartbeat();
-    console.log("WebSocket接続が開きました", this.workspaceId);
+    logger.info("WebSocket接続が開きました", this.workspaceId);
   };
-
-  private startHeartbeat() {
-    this.pingIntervalId = setInterval(() => {
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ type: "ping" }));
-      }
-    }, this.heartbeatInterval);
-  }
-
-  private stopHeartbeat() {
-    if (this.pingIntervalId) clearInterval(this.pingIntervalId);
-    this.pingIntervalId = null;
-  }
 
   private onClose = () => {
-    this.stopHeartbeat();
-    this.tryReconnect();
-    console.log("WebSocket接続が閉じました", this.workspaceId);
+    logger.info("WebSocket接続が閉じました", this.workspaceId);
+    // リーダーの場合のみ再接続を試みる
+    if (this.isActiveLeader) {
+      this.tryReconnect();
+    }
   };
 
-  private onError = () => {
-    this.close();
-    this.tryReconnect();
+  private onError = (event: Event) => {
+    logger.error("WebSocketエラーが発生しました", event);
+    // リーダーの場合のみ再接続を試みる
+    if (this.isActiveLeader) {
+      this.tryReconnect();
+    }
   };
 
   private tryReconnect() {
     if (this.reconnectTimeoutId) return;
+    if (!this.isActiveLeader) return;
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
-      this.connect();
+      if (this.isActiveLeader) {
+        this.connect();
+      }
     }, this.reconnectDelay);
   }
 
@@ -188,7 +242,7 @@ export class WsClient {
   }
 
   public close() {
-    this.stopHeartbeat();
+    this.isActiveLeader = false;
     if (this.ws) {
       this.ws.removeEventListener("open", this.onOpen);
       this.ws.removeEventListener("close", this.onClose);
@@ -201,6 +255,10 @@ export class WsClient {
       clearTimeout(this.reconnectTimeoutId);
       this.reconnectTimeoutId = null;
     }
+    window.removeEventListener("visibilitychange", this.handleVisibility, false);
+    window.removeEventListener("focus", this.handleFocus, false);
+    window.removeEventListener("beforeunload", this.handleUnload, false);
+    this.bc.close();
   }
 
   private listenBroadcast() {
@@ -218,12 +276,10 @@ export class WsClient {
     window.addEventListener("visibilitychange", this.handleVisibility, false);
     window.addEventListener("focus", this.handleFocus, false);
     window.addEventListener("beforeunload", this.handleUnload, false);
-    // 初回ロード判定
-    setTimeout(() => {
-      if (document.visibilityState === "visible") {
-        this.becomeLeaderAndConnect();
-      }
-    }, 0);
+    // 初回ロード時、ページが可視状態であれば接続
+    if (document.visibilityState === "visible" && document.hasFocus()) {
+      this.becomeLeaderAndConnect();
+    }
   }
 
   private handleVisibility = () => {

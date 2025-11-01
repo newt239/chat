@@ -10,6 +10,7 @@ import {
   IconLink,
   IconMessage,
   IconMoodSmile,
+  IconPin,
   IconTrash,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
@@ -136,7 +137,7 @@ export const MessageActions = ({
             {isBookmarked ? "ブックマークを削除" : "ブックマークに追加"}
           </Menu.Item>
           <Menu.Item
-            leftSection={<IconBookmark size={14} />}
+            leftSection={<IconPin size={14} />}
             onClick={() => (isPinned ? unpin.mutate({ messageId }) : pin.mutate({ messageId }))}
           >
             {isPinned ? "ピン留めを解除" : "ピン留めする"}
