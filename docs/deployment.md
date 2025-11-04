@@ -91,13 +91,7 @@ su - deploy
 sudo apt update && sudo apt upgrade -y
 
 # 必要なパッケージをインストール
-sudo apt install -y \
-    git \
-    curl \
-    ca-certificates \
-    gnupg \
-    lsb-release \
-    awscli
+sudo apt install -y git curl ca-certificates gnupg lsb-release awscli
 ```
 
 ### 4. Docker のインストール
@@ -109,10 +103,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o 
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
 # Dockerリポジトリを追加
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null > /dev/null
 
 # Dockerをインストール
 sudo apt update
@@ -146,7 +137,7 @@ sudo chown deploy:deploy /opt/chat-preview
 
 ```bash
 cd /opt/chat
-git clone https://github.com/<your-username>/<your-repo>.git .
+git clone https://github.com/newt239/chat.git .
 ```
 
 ### 7. 環境変数ファイルの作成
@@ -172,19 +163,18 @@ DATABASE_URL=postgresql://postgres:<パスワード>@db:5432/chat?sslmode=disabl
 # バックエンド設定
 PORT=8080
 JWT_SECRET=<ランダムな文字列を生成して設定>
-CORS_ALLOWED_ORIGINS=https://your-domain.com
+CORS_ALLOWED_ORIGINS=https://chat.newt239.dev
 
 # Wasabi S3設定（バックアップアップロードに使用）
 WASABI_ACCESS_KEY_ID=<WasabiアクセスキーID>
 WASABI_SECRET_ACCESS_KEY=<Wasabiシークレットアクセスキー>
 WASABI_BUCKET_NAME=<バケット名>
-# 任意: リージョン/エンドポイント（未設定時は us-east-1 / https://s3.wasabisys.com）
-# WASABI_REGION=us-east-1
-# WASABI_ENDPOINT=https://s3.wasabisys.com
+WASABI_REGION=us-east-1
+WASABI_ENDPOINT=https://s3.wasabisys.com
 
 # Caddy設定
-DOMAIN=your-domain.com
-CADDY_EMAIL=your-email@example.com
+DOMAIN=chat.newt239.dev
+CADDY_EMAIL=contact@newt239.dev
 ```
 
 **JWT_SECRET の生成例：**
@@ -230,7 +220,7 @@ docker compose -f docker-compose.production.yml logs -f
 
 ### 10. 動作確認
 
-ブラウザで `https://your-domain.com` にアクセスし、アプリケーションが正常に動作することを確認します。
+ブラウザで `https://chat.newt239.dev` にアクセスし、アプリケーションが正常に動作することを確認します。
 
 ---
 
@@ -240,7 +230,7 @@ docker compose -f docker-compose.production.yml logs -f
 
 ```bash
 # SSH鍵ペアを生成
-ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions_chat
+ssh-keygen -t ed25519 -C "github-actions-chat" -f ~/.ssh/github_actions_chat
 
 # 公開鍵の内容を確認
 cat ~/.ssh/github_actions_chat.pub
@@ -274,7 +264,7 @@ GitHub リポジトリの「Settings」→「Secrets and variables」→「Actio
 | `SSH_USER`            | `deploy`                  | SSH 接続ユーザー名                              |
 | `PRODUCTION_HOST`     | ConoHa VPS の IP アドレス | 本番環境のホスト                                |
 | `PRODUCTION_SSH_PORT` | `22`                      | SSH 接続ポート                                  |
-| `PRODUCTION_DOMAIN`   | `your-domain.com`         | 本番環境のドメイン                              |
+| `PRODUCTION_DOMAIN`   | `chat.newt239.dev`        | 本番環境のドメイン                              |
 
 #### プレビュー環境用（任意）
 
