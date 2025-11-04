@@ -149,7 +149,7 @@ GitHub リポジトリの「Settings」→「Secrets and variables」→「Actio
 | `WASABI_REGION`            | `ap-northeast-1` など                     | テンプレートに環境変数で注入                    |
 | `WASABI_ENDPOINT`          | `https://ap-northeast-1.s3.wasabisys.com` | テンプレートに環境変数で注入                    |
 
-#### プレビュー環境用（任意）
+#### プレビュー環境用
 
 | Secret 名          | 値                                            | 説明                   |
 | ------------------ | --------------------------------------------- | ---------------------- |

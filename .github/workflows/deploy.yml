@@ -11,6 +11,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: "False"
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      WASABI_ACCESS_KEY_ID: ${{ secrets.WASABI_ACCESS_KEY_ID }}
+      WASABI_SECRET_ACCESS_KEY: ${{ secrets.WASABI_SECRET_ACCESS_KEY }}
+      WASABI_BUCKET_NAME: ${{ secrets.WASABI_BUCKET_NAME }}
+      WASABI_REGION: ${{ secrets.WASABI_REGION }}
+      WASABI_ENDPOINT: ${{ secrets.WASABI_ENDPOINT }}
 
     steps:
       - name: リポジトリをチェックアウト
@@ -24,20 +33,21 @@ jobs:
             echo "host=${{ secrets.PRODUCTION_HOST }}" >> $GITHUB_OUTPUT
             echo "port=${{ secrets.PRODUCTION_SSH_PORT }}" >> $GITHUB_OUTPUT
           else
-            BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///g' | sed 's/\//-/g')
+            BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
             echo "environment=preview" >> $GITHUB_OUTPUT
             echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
             echo "host=${{ secrets.PREVIEW_HOST }}" >> $GITHUB_OUTPUT
             echo "port=${{ secrets.PREVIEW_SSH_PORT }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Python/Ansible をセットアップ
+      - name: Python をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Ansible をインストール
         run: |
-          python3 -m pip install --user pipx
-          ~/.local/bin/pipx ensurepath
-          ~/.local/bin/pipx install ansible-core
-          ~/.local/bin/pipx inject ansible-core jmespath
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          pip install ansible-core jmespath
 
       - name: Ansible コレクションをインストール
         run: |
@@ -50,31 +60,13 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ steps.env.outputs.port }} -H ${{ steps.env.outputs.host }} >> ~/.ssh/known_hosts
 
-      - name: 本番へデプロイ（Ansible）
-        if: ${{ steps.env.outputs.environment == 'production' }}
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          WASABI_ACCESS_KEY_ID: ${{ secrets.WASABI_ACCESS_KEY_ID }}
-          WASABI_SECRET_ACCESS_KEY: ${{ secrets.WASABI_SECRET_ACCESS_KEY }}
-          WASABI_BUCKET_NAME: ${{ secrets.WASABI_BUCKET_NAME }}
-          WASABI_REGION: ${{ secrets.WASABI_REGION }}
-          WASABI_ENDPOINT: ${{ secrets.WASABI_ENDPOINT }}
+      - name: 本番へデプロイ
+        if: steps.env.outputs.environment == 'production'
         run: |
           ansible-playbook -i ansible/inventory/production.ini ansible/playbooks/site.yml
 
-      - name: プレビューへデプロイ（Ansible）
-        if: ${{ steps.env.outputs.environment == 'preview' }}
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          WASABI_ACCESS_KEY_ID: ${{ secrets.WASABI_ACCESS_KEY_ID }}
-          WASABI_SECRET_ACCESS_KEY: ${{ secrets.WASABI_SECRET_ACCESS_KEY }}
-          WASABI_BUCKET_NAME: ${{ secrets.WASABI_BUCKET_NAME }}
-          WASABI_REGION: ${{ secrets.WASABI_REGION }}
-          WASABI_ENDPOINT: ${{ secrets.WASABI_ENDPOINT }}
+      - name: プレビューへデプロイ
+        if: steps.env.outputs.environment == 'preview'
         run: |
           BRANCH_NAME="${{ steps.env.outputs.branch_name }}"
           # 低衝突なポートを算出（範囲: +1〜+400）
@@ -90,16 +82,10 @@ jobs:
       - name: デプロイ完了通知
         if: success()
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          if [ "${{ steps.env.outputs.environment }}" = "production" ]; then
             echo "✅ 本番環境へのデプロイが完了しました"
             echo "URL: https://${{ secrets.PRODUCTION_DOMAIN }}"
           else
             echo "✅ プレビュー環境へのデプロイが完了しました"
             echo "ブランチ: ${{ steps.env.outputs.branch_name }}"
           fi
-
-      - name: デプロイ失敗通知
-        if: failure()
-        run: |
-          echo "❌ デプロイに失敗しました"
-          echo "ログを確認してください"
