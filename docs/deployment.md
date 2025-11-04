@@ -1,13 +1,13 @@
 # ConoHa VPS デプロイ手順書
 
-このドキュメントでは、チャットアプリケーションをConoHa VPSにデプロイし、GitHub Actionsによる自動デプロイを設定する手順を説明します。
+このドキュメントでは、チャットアプリケーションを ConoHa VPS にデプロイし、GitHub Actions による自動デプロイを設定する手順を説明します。
 
 ## 目次
 
 1. [必要なもの](#必要なもの)
-2. [ConoHa VPSの初期設定](#conoha-vpsの初期設定)
+2. [ConoHa VPS の初期設定](#conoha-vpsの初期設定)
 3. [サーバーの準備](#サーバーの準備)
-4. [GitHub Actionsの設定](#github-actionsの設定)
+4. [GitHub Actions の設定](#github-actionsの設定)
 5. [本番環境のデプロイ](#本番環境のデプロイ)
 6. [プレビュー環境のデプロイ](#プレビュー環境のデプロイ)
 7. [トラブルシューティング](#トラブルシューティング)
@@ -18,10 +18,10 @@
 
 ### サービス・アカウント
 
-- ConoHa VPSアカウント
-- GitHubアカウント
+- ConoHa VPS アカウント
+- GitHub アカウント
 - ドメイン名（本番環境用）
-- Wasabiアカウント（S3互換ストレージ）
+- Wasabi アカウント（S3 互換ストレージ）
 
 ### ローカル環境
 
@@ -30,11 +30,11 @@
 
 ---
 
-## ConoHa VPSの初期設定
+## ConoHa VPS の初期設定
 
-### 1. VPSインスタンスの作成
+### 1. VPS インスタンスの作成
 
-1. ConoHaコントロールパネルにログイン
+1. ConoHa コントロールパネルにログイン
 2. 「サーバー追加」をクリック
 3. 以下の設定を推奨：
 
@@ -45,11 +45,11 @@ rootパスワード: 強固なパスワードを設定
 SSH Key: 公開鍵を登録（推奨）
 ```
 
-4. サーバーを起動し、IPアドレスを確認
+4. サーバーを起動し、IP アドレスを確認
 
 ### 2. ドメインの設定
 
-1. DNSレコードを設定
+1. DNS レコードを設定
 
 ```
 # 本番環境
@@ -59,13 +59,13 @@ A レコード: your-domain.com → ConoHa VPSのIPアドレス
 A レコード: *.preview.your-domain.com → ConoHa VPSのIPアドレス
 ```
 
-2. DNS設定が反映されるまで待機（最大48時間）
+2. DNS 設定が反映されるまで待機（最大 48 時間）
 
 ---
 
 ## サーバーの準備
 
-### 1. サーバーにSSH接続
+### 1. サーバーに SSH 接続
 
 ```bash
 ssh root@<ConoHa VPSのIPアドレス>
@@ -96,10 +96,11 @@ sudo apt install -y \
     curl \
     ca-certificates \
     gnupg \
-    lsb-release
+    lsb-release \
+    awscli
 ```
 
-### 4. Dockerのインストール
+### 4. Docker のインストール
 
 ```bash
 # Dockerの公式GPGキーを追加
@@ -173,17 +174,20 @@ PORT=8080
 JWT_SECRET=<ランダムな文字列を生成して設定>
 CORS_ALLOWED_ORIGINS=https://your-domain.com
 
-# Wasabi S3設定
+# Wasabi S3設定（バックアップアップロードに使用）
 WASABI_ACCESS_KEY_ID=<WasabiアクセスキーID>
 WASABI_SECRET_ACCESS_KEY=<Wasabiシークレットアクセスキー>
 WASABI_BUCKET_NAME=<バケット名>
+# 任意: リージョン/エンドポイント（未設定時は us-east-1 / https://s3.wasabisys.com）
+# WASABI_REGION=us-east-1
+# WASABI_ENDPOINT=https://s3.wasabisys.com
 
 # Caddy設定
 DOMAIN=your-domain.com
 CADDY_EMAIL=your-email@example.com
 ```
 
-**JWT_SECRETの生成例：**
+**JWT_SECRET の生成例：**
 
 ```bash
 openssl rand -base64 32
@@ -230,19 +234,19 @@ docker compose -f docker-compose.production.yml logs -f
 
 ---
 
-## GitHub Actionsの設定
+## GitHub Actions の設定
 
-### 1. SSH鍵の作成（ローカル環境）
+### 1. SSH 鍵の作成（ローカル環境）
 
 ```bash
 # SSH鍵ペアを生成
-ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions
+ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions_chat
 
 # 公開鍵の内容を確認
-cat ~/.ssh/github_actions.pub
+cat ~/.ssh/github_actions_chat.pub
 
 # 秘密鍵の内容を確認（GitHubに設定する）
-cat ~/.ssh/github_actions
+cat ~/.ssh/github_actions_chat
 ```
 
 ### 2. サーバーに公開鍵を追加
@@ -258,30 +262,30 @@ echo "<公開鍵の内容>" >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-### 3. GitHubリポジトリにSecretsを設定
+### 3. GitHub リポジトリに Secrets を設定
 
-GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」から、以下のSecretsを追加します：
+GitHub リポジトリの「Settings」→「Secrets and variables」→「Actions」から、以下の Secrets を追加します：
 
 #### 本番環境用
 
-| Secret名 | 値 | 説明 |
-|---------|-----|------|
-| `SSH_PRIVATE_KEY` | SSH秘密鍵の内容 | GitHub Actionsがサーバーに接続するための秘密鍵 |
-| `SSH_USER` | `deploy` | SSH接続ユーザー名 |
-| `PRODUCTION_HOST` | ConoHa VPSのIPアドレス | 本番環境のホスト |
-| `PRODUCTION_SSH_PORT` | `22` | SSH接続ポート |
-| `PRODUCTION_DOMAIN` | `your-domain.com` | 本番環境のドメイン |
+| Secret 名             | 値                        | 説明                                            |
+| --------------------- | ------------------------- | ----------------------------------------------- |
+| `SSH_PRIVATE_KEY`     | SSH 秘密鍵の内容          | GitHub Actions がサーバーに接続するための秘密鍵 |
+| `SSH_USER`            | `deploy`                  | SSH 接続ユーザー名                              |
+| `PRODUCTION_HOST`     | ConoHa VPS の IP アドレス | 本番環境のホスト                                |
+| `PRODUCTION_SSH_PORT` | `22`                      | SSH 接続ポート                                  |
+| `PRODUCTION_DOMAIN`   | `your-domain.com`         | 本番環境のドメイン                              |
 
 #### プレビュー環境用（任意）
 
-| Secret名 | 値 | 説明 |
-|---------|-----|------|
-| `PREVIEW_HOST` | ConoHa VPSのIPアドレス（本番と同じでも可） | プレビュー環境のホスト |
-| `PREVIEW_SSH_PORT` | `22` | SSH接続ポート |
+| Secret 名          | 値                                            | 説明                   |
+| ------------------ | --------------------------------------------- | ---------------------- |
+| `PREVIEW_HOST`     | ConoHa VPS の IP アドレス（本番と同じでも可） | プレビュー環境のホスト |
+| `PREVIEW_SSH_PORT` | `22`                                          | SSH 接続ポート         |
 
-### 4. GitHub Actionsの動作確認
+### 4. GitHub Actions の動作確認
 
-1. mainブランチにプッシュして、自動デプロイが実行されることを確認
+1. main ブランチにプッシュして、自動デプロイが実行されることを確認
 
 ```bash
 git add .
@@ -289,7 +293,7 @@ git commit -m "feat: GitHub Actionsのセットアップ"
 git push origin main
 ```
 
-2. GitHubの「Actions」タブでワークフローの実行状況を確認
+2. GitHub の「Actions」タブでワークフローの実行状況を確認
 
 ---
 
@@ -297,7 +301,7 @@ git push origin main
 
 ### 自動デプロイ
 
-mainブランチにプッシュすると、GitHub Actionsが自動的にデプロイを実行します。
+main ブランチにプッシュすると、GitHub Actions が自動的にデプロイを実行します。
 
 ```bash
 git push origin main
@@ -305,7 +309,7 @@ git push origin main
 
 ### 手動デプロイ
 
-サーバーに直接SSH接続して手動デプロイすることも可能です。
+サーバーに直接 SSH 接続して手動デプロイすることも可能です。
 
 ```bash
 # サーバーにSSH接続
@@ -314,6 +318,11 @@ ssh deploy@<ConoHa VPSのIPアドレス>
 # デプロイスクリプトを実行
 cd /opt/chat
 ./scripts/deploy.sh production main
+
+# デプロイ前自動バックアップについて
+# 上記のデプロイスクリプトおよび GitHub Actions は、デプロイ直前に
+# `scripts/backup.sh` を実行し、PostgreSQL のダンプを Wasabi にアップロードします。
+# バケット内の保存先: s3://$WASABI_BUCKET_NAME/db-backups/<DB名>_YYYYmmdd_HHMMSS.sql.gz
 ```
 
 ### デプロイの確認
@@ -332,7 +341,7 @@ docker compose -f docker-compose.production.yml logs -f
 
 ### 自動デプロイ
 
-main以外のブランチにプッシュすると、プレビュー環境が自動的に作成されます。
+main 以外のブランチにプッシュすると、プレビュー環境が自動的に作成されます。
 
 ```bash
 # 新しいブランチを作成
@@ -410,12 +419,12 @@ docker compose -f docker-compose.production.yml logs db
 docker compose -f docker-compose.production.yml exec db psql -U postgres -d chat
 ```
 
-### SSL証明書の問題
+### SSL 証明書の問題
 
-Caddyは自動的にLet's EncryptからSSL証明書を取得しますが、以下の条件が必要です：
+Caddy は自動的に Let's Encrypt から SSL 証明書を取得しますが、以下の条件が必要です：
 
-1. ドメインのDNS設定が正しいこと
-2. ポート80と443が開いていること
+1. ドメインの DNS 設定が正しいこと
+2. ポート 80 と 443 が開いていること
 3. ドメインが正しく解決されること
 
 ```bash
@@ -462,7 +471,7 @@ docker compose -f docker-compose.production.yml pull
 docker compose -f docker-compose.production.yml up -d
 ```
 
-### 2. SSH接続の強化
+### 2. SSH 接続の強化
 
 ```bash
 # SSH設定を編集
@@ -498,27 +507,27 @@ sudo journalctl -u docker -n 100
 
 ## バックアップ
 
-### データベースのバックアップ
+### データベースのバックアップ（手動）
 
 ```bash
 # バックアップディレクトリを作成
 mkdir -p /opt/backups
 
-# データベースをバックアップ
-docker compose -f docker-compose.production.yml exec -T db pg_dump -U postgres chat > /opt/backups/chat_$(date +%Y%m%d_%H%M%S).sql
+# データベースをバックアップ（手動実行）
+/opt/chat/scripts/backup.sh
 
 # 古いバックアップを削除（30日以上前）
 find /opt/backups -name "chat_*.sql" -mtime +30 -delete
 ```
 
-### 自動バックアップの設定
+### 自動バックアップの設定（任意）
 
 ```bash
 # cronで毎日午前3時にバックアップを実行
 crontab -e
 
-# 以下を追加
-0 3 * * * cd /opt/chat && docker compose -f docker-compose.production.yml exec -T db pg_dump -U postgres chat > /opt/backups/chat_$(date +\%Y\%m\%d_\%H\%M\%S).sql
+# 以下を追加（毎日3時にWasabiへアップロードも行う）
+0 3 * * * /opt/chat/scripts/backup.sh >> /var/log/chat_backup.log 2>&1
 ```
 
 ### バックアップからのリストア
@@ -532,7 +541,7 @@ docker compose -f docker-compose.production.yml exec -T db psql -U postgres chat
 
 ## パフォーマンス最適化
 
-### 1. Dockerのログローテーション
+### 1. Docker のログローテーション
 
 ```bash
 # /etc/docker/daemon.json を編集
@@ -565,7 +574,7 @@ htop
 
 ## まとめ
 
-このドキュメントでは、ConoHa VPSへのデプロイとGitHub Actionsによる自動デプロイの設定方法を説明しました。
+このドキュメントでは、ConoHa VPS へのデプロイと GitHub Actions による自動デプロイの設定方法を説明しました。
 
 ### デプロイフロー
 
@@ -587,9 +596,9 @@ Dockerイメージをビルド
 
 ### 重要なポイント
 
-- mainブランチへのプッシュで本番環境が自動更新されます
+- main ブランチへのプッシュで本番環境が自動更新されます
 - 他のブランチへのプッシュでプレビュー環境が作成されます
-- SSL証明書はCaddyが自動で管理します
+- SSL 証明書は Caddy が自動で管理します
 - 環境変数は適切に設定してください
 - 定期的なバックアップとセキュリティアップデートを忘れずに
 
@@ -597,7 +606,7 @@ Dockerイメージをビルド
 
 問題が発生した場合は、以下を確認してください：
 
-1. GitHub Actionsのログ
-2. Dockerコンテナのログ
+1. GitHub Actions のログ
+2. Docker コンテナのログ
 3. サーバーのシステムログ
 4. このドキュメントのトラブルシューティングセクション

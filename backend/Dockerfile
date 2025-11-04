@@ -12,6 +12,7 @@ COPY . .
 
 # バイナリをビルド
 RUN CGO_ENABLED=0 GOOS=linux go build -o /server cmd/server/main.go && \
+    CGO_ENABLED=0 GOOS=linux go build -o /migrate cmd/migrate/main.go && \
     CGO_ENABLED=0 GOOS=linux go build -o /reset cmd/reset/main.go && \
     CGO_ENABLED=0 GOOS=linux go build -o /seed cmd/seed/main.go
 
@@ -25,6 +26,7 @@ WORKDIR /root/
 
 # ビルドステージからバイナリをコピー
 COPY --from=builder /server .
+COPY --from=builder /migrate .
 COPY --from=builder /reset .
 COPY --from=builder /seed .
 

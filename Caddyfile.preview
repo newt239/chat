@@ -1,0 +1,36 @@
+{
+    email {$CADDY_EMAIL}
+}
+
+{$DOMAIN} {
+    # バックエンドAPIへのリバースプロキシ
+    handle /api/* {
+        reverse_proxy chat-backend-preview-{$BRANCH_NAME}:{$BACKEND_PORT}
+    }
+
+    # WebSocketへのリバースプロキシ
+    handle /ws {
+        reverse_proxy chat-backend-preview-{$BRANCH_NAME}:{$BACKEND_PORT}
+    }
+
+    # フロントエンドへのリバースプロキシ
+    handle {
+        reverse_proxy chat-frontend-preview-{$BRANCH_NAME}:80
+    }
+
+    # ログ設定
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+
+    # セキュリティヘッダー
+    header {
+        X-XSS-Protection "1; mode=block"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+    }
+
+    # Gzip圧縮を有効化
+    encode gzip
+}
