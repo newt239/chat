@@ -1,0 +1,88 @@
+name: Deploy to ConoHa VPS
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'preview/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: デプロイ環境を判定
+        id: env
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "host=${{ secrets.PRODUCTION_HOST }}" >> $GITHUB_OUTPUT
+            echo "port=${{ secrets.PRODUCTION_SSH_PORT }}" >> $GITHUB_OUTPUT
+            echo "compose_file=docker-compose.production.yml" >> $GITHUB_OUTPUT
+          else
+            BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///g' | sed 's/\//-/g')
+            echo "environment=preview-${BRANCH_NAME}" >> $GITHUB_OUTPUT
+            echo "host=${{ secrets.PREVIEW_HOST }}" >> $GITHUB_OUTPUT
+            echo "port=${{ secrets.PREVIEW_SSH_PORT }}" >> $GITHUB_OUTPUT
+            echo "compose_file=docker-compose.production.yml" >> $GITHUB_OUTPUT
+            echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: SSH秘密鍵を設定
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ steps.env.outputs.port }} -H ${{ steps.env.outputs.host }} >> ~/.ssh/known_hosts
+
+      - name: サーバーにデプロイ
+        env:
+          HOST: ${{ steps.env.outputs.host }}
+          PORT: ${{ steps.env.outputs.port }}
+          USER: ${{ secrets.SSH_USER }}
+          ENVIRONMENT: ${{ steps.env.outputs.environment }}
+          COMPOSE_FILE: ${{ steps.env.outputs.compose_file }}
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            # 本番環境へのデプロイ
+            ssh -p ${PORT} ${USER}@${HOST} "cd /opt/chat && \
+              git fetch origin && \
+              git reset --hard origin/main && \
+              docker compose -f ${COMPOSE_FILE} pull && \
+              docker compose -f ${COMPOSE_FILE} down && \
+              docker compose -f ${COMPOSE_FILE} up -d --build && \
+              docker compose -f ${COMPOSE_FILE} logs --tail=50"
+          else
+            # プレビュー環境へのデプロイ
+            BRANCH_NAME="${{ steps.env.outputs.branch_name }}"
+            ssh -p ${PORT} ${USER}@${HOST} "mkdir -p /opt/chat-preview/${BRANCH_NAME} && \
+              cd /opt/chat-preview/${BRANCH_NAME} && \
+              if [ ! -d .git ]; then git clone ${{ github.repositoryUrl }} .; fi && \
+              git fetch origin && \
+              git reset --hard origin/${BRANCH_NAME} || git reset --hard ${{ github.sha }} && \
+              docker compose -f ${COMPOSE_FILE} -p chat-preview-${BRANCH_NAME} down && \
+              docker compose -f ${COMPOSE_FILE} -p chat-preview-${BRANCH_NAME} up -d --build && \
+              docker compose -f ${COMPOSE_FILE} -p chat-preview-${BRANCH_NAME} logs --tail=50"
+          fi
+
+      - name: デプロイ完了通知
+        if: success()
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "✅ 本番環境へのデプロイが完了しました"
+            echo "URL: https://${{ secrets.PRODUCTION_DOMAIN }}"
+          else
+            echo "✅ プレビュー環境へのデプロイが完了しました"
+            echo "ブランチ: ${{ steps.env.outputs.branch_name }}"
+          fi
+
+      - name: デプロイ失敗通知
+        if: failure()
+        run: |
+          echo "❌ デプロイに失敗しました"
+          echo "ログを確認してください"

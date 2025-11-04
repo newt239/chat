@@ -218,3 +218,36 @@ start backend/ent/schema-viz.html
 # Linuxの場合
 xdg-open backend/ent/schema-viz.html
 ```
+
+## デプロイ
+
+### 本番環境へのデプロイ
+
+このプロジェクトは、ConoHa VPSへのデプロイに対応しています。GitHub Actionsによる自動デプロイが設定されており、mainブランチへのプッシュで本番環境が自動的に更新されます。
+
+詳細な手順は以下のドキュメントを参照してください：
+
+- **[デプロイ手順書](docs/deployment.md)** - ConoHa VPSへのデプロイ手順
+- **[デプロイチェックリスト](docs/deployment-checklist.md)** - デプロイ作業のチェックリスト
+
+### プレビュー環境
+
+mainブランチ以外へのプッシュで、自動的にプレビュー環境が作成されます。これにより、本番環境に影響を与えることなく、新機能や修正をテストできます。
+
+```bash
+# 新しいブランチを作成してプッシュ
+git checkout -b feature/new-feature
+git push origin feature/new-feature
+# → GitHub Actionsが自動的にプレビュー環境を作成します
+```
+
+### デプロイの仕組み
+
+```
+開発者がコードをプッシュ
+    ↓
+GitHub Actionsが自動実行
+    ↓
+mainブランチ → 本番環境へデプロイ
+その他のブランチ → プレビュー環境へデプロイ
+```
