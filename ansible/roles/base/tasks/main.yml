@@ -6,7 +6,6 @@
       - ca-certificates
       - gnupg
       - lsb-release
-      - awscli
       - ufw
     update_cache: true
     state: present
