@@ -14,7 +14,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    $ref: "./components/schemas.yaml"
+    $ref: "./components/schemas.yaml#/"
 
 paths:
-  $ref: "./paths.yaml"
+  $ref: "./paths.yaml#/"

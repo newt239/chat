@@ -18,6 +18,8 @@ type RouterConfig struct {
 	// WebSocket
 	WebSocketHub        *websocket.Hub
 	WorkspaceRepository repository.WorkspaceRepository
+	MessageUseCase      websocket.MessageUseCase
+	ReadStateUseCase    websocket.ReadStateUseCase
 
 	// Handlers
 	AuthHandler          *handler.AuthHandler
@@ -55,7 +57,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	})
 
 	// WebSocket endpoint
-	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, nil, nil))
+	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase))
 
 	// API routes
 	api := e.Group("/api")

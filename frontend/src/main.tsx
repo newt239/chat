@@ -11,6 +11,7 @@ import { queryClient } from "./providers/query/query";
 import { store } from "./providers/store";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "@mantine/code-highlight/styles.css";
 import "./styles/globals.css";
 
 const rootEl = document.getElementById("root");

@@ -4,7 +4,9 @@ import { logger } from "@/lib/logger";
 import { router } from "@/lib/router";
 
 const WS_BC_NAME = "ws-control";
-const WS_RECONNECT_DELAY = 2_000; // 2秒
+const WS_RECONNECT_DELAY = 2_000; // 初期遅延: 2秒
+const WS_MAX_RECONNECT_DELAY = 30_000; // 最大遅延: 30秒
+const WS_MAX_RECONNECT_ATTEMPTS = 5; // 最大再接続試行回数
 
 /**
  * サーバWebSocketエンドポイント取得
@@ -19,12 +21,14 @@ export class WsClient {
   private ws: WebSocket | null = null;
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private reconnectDelay = WS_RECONNECT_DELAY;
+  private reconnectAttempts = 0;
+  private shouldStopReconnecting = false;
 
   private token: string;
   private workspaceId: string;
   private bc: BroadcastChannel;
   private isActiveLeader: boolean = false;
-  // 各イベント専用callback配列で厳密管理
+
   private handlers = {
     new_message: [] as ((payload: WsEventPayloadMap["new_message"]) => void)[],
     message_updated: [] as ((payload: WsEventPayloadMap["message_updated"]) => void)[],
@@ -32,7 +36,9 @@ export class WsClient {
     unread_count: [] as ((payload: WsEventPayloadMap["unread_count"]) => void)[],
     pin_created: [] as ((payload: WsEventPayloadMap["pin_created"]) => void)[],
     pin_deleted: [] as ((payload: WsEventPayloadMap["pin_deleted"]) => void)[],
-    system_message_created: [] as ((payload: WsEventPayloadMap["system_message_created"]) => void)[],
+    system_message_created: [] as ((
+      payload: WsEventPayloadMap["system_message_created"]
+    ) => void)[],
     ack: [] as ((payload: WsEventPayloadMap["ack"]) => void)[],
     error: [] as ((payload: WsEventPayloadMap["error"]) => void)[],
   };
@@ -45,7 +51,6 @@ export class WsClient {
     this.initTabActivityControl();
   }
 
-  // JSON文字列しか来ない前提で型安全に
   private eventDispatcher = (event: MessageEvent<string>) => {
     try {
       type EventUnion = {
@@ -86,8 +91,8 @@ export class WsClient {
           this.handlers.error.forEach((cb) => cb(payload));
           break;
       }
-    } catch {
-      // nop
+    } catch (error) {
+      logger.error("WebSocketイベント処理エラー:", error);
     }
   };
 
@@ -145,10 +150,14 @@ export class WsClient {
       this.handlers.pin_deleted.splice(index, 1);
     }
   }
-  public onSystemMessageCreated(cb: (payload: WsEventPayloadMap["system_message_created"]) => void) {
+  public onSystemMessageCreated(
+    cb: (payload: WsEventPayloadMap["system_message_created"]) => void
+  ) {
     this.handlers.system_message_created.push(cb);
   }
-  public offSystemMessageCreated(cb: (payload: WsEventPayloadMap["system_message_created"]) => void) {
+  public offSystemMessageCreated(
+    cb: (payload: WsEventPayloadMap["system_message_created"]) => void
+  ) {
     const index = this.handlers.system_message_created.indexOf(cb);
     if (index > -1) {
       this.handlers.system_message_created.splice(index, 1);
@@ -174,6 +183,11 @@ export class WsClient {
   }
 
   private connect() {
+    if (this.shouldStopReconnecting) {
+      logger.info("WebSocket再接続を停止しました", this.workspaceId);
+      return;
+    }
+
     const url = getWsUrl(this.token, this.workspaceId);
     logger.info("WebSocket接続開始:", url);
     try {
@@ -184,39 +198,111 @@ export class WsClient {
       this.ws.addEventListener("message", this.eventDispatcher);
     } catch (error) {
       logger.error("WebSocket接続作成時エラー:", error);
-      this.tryReconnect();
+      this.handleConnectionFailure("接続作成エラー", error);
     }
   }
 
   private onOpen = () => {
     logger.info("WebSocket接続が開きました", this.workspaceId);
+    // 接続成功時は再接続試行回数をリセット
+    this.reconnectAttempts = 0;
+    this.reconnectDelay = WS_RECONNECT_DELAY;
+    this.shouldStopReconnecting = false;
   };
 
-  private onClose = () => {
-    logger.info("WebSocket接続が閉じました", this.workspaceId);
+  private onClose = (event: CloseEvent) => {
+    logger.info("WebSocket接続が閉じました", {
+      workspaceId: this.workspaceId,
+      code: event.code,
+      reason: event.reason,
+      wasClean: event.wasClean,
+    });
     // リーダーの場合のみ再接続を試みる
-    if (this.isActiveLeader) {
-      this.tryReconnect();
+    if (this.isActiveLeader && !this.shouldStopReconnecting) {
+      // 正常終了（1000）の場合は再接続を試みない
+      if (event.code === 1000) {
+        logger.info("WebSocket正常終了のため再接続しません", this.workspaceId);
+        return;
+      }
+      // 認証エラー（1008）の場合は再接続を停止
+      if (event.code === 1008) {
+        logger.error("WebSocket認証エラーのため再接続を停止します", this.workspaceId);
+        this.shouldStopReconnecting = true;
+        return;
+      }
+      this.handleConnectionFailure("接続が閉じられました", event);
     }
   };
 
   private onError = (event: Event) => {
-    logger.error("WebSocketエラーが発生しました", event);
+    const errorInfo = this.getErrorInfo(event);
+    logger.error("WebSocketエラーが発生しました", {
+      workspaceId: this.workspaceId,
+      error: errorInfo,
+      readyState: this.ws?.readyState,
+    });
     // リーダーの場合のみ再接続を試みる
-    if (this.isActiveLeader) {
-      this.tryReconnect();
+    if (this.isActiveLeader && !this.shouldStopReconnecting) {
+      this.handleConnectionFailure("WebSocketエラー", event);
     }
   };
+
+  private handleConnectionFailure(context: string, error: unknown) {
+    if (this.shouldStopReconnecting) {
+      return;
+    }
+
+    this.reconnectAttempts += 1;
+
+    if (this.reconnectAttempts >= WS_MAX_RECONNECT_ATTEMPTS) {
+      logger.error("WebSocket最大再接続試行回数に達しました", {
+        workspaceId: this.workspaceId,
+        attempts: this.reconnectAttempts,
+        context,
+        error: this.getErrorInfo(error as Event),
+      });
+      this.shouldStopReconnecting = true;
+      return;
+    }
+
+    logger.info("WebSocket再接続を試みます", {
+      workspaceId: this.workspaceId,
+      attempt: this.reconnectAttempts,
+      maxAttempts: WS_MAX_RECONNECT_ATTEMPTS,
+      delay: this.reconnectDelay,
+      context,
+      error: this.getErrorInfo(error as Event),
+    });
+
+    this.tryReconnect();
+  }
 
   private tryReconnect() {
     if (this.reconnectTimeoutId) return;
     if (!this.isActiveLeader) return;
+    if (this.shouldStopReconnecting) return;
+
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
-      if (this.isActiveLeader) {
+      if (this.isActiveLeader && !this.shouldStopReconnecting) {
+        // 指数バックオフ: 2秒, 4秒, 8秒, 16秒, 最大30秒
+        this.reconnectDelay = Math.min(
+          WS_RECONNECT_DELAY * Math.pow(2, this.reconnectAttempts - 1),
+          WS_MAX_RECONNECT_DELAY
+        );
         this.connect();
       }
     }, this.reconnectDelay);
+  }
+
+  private getErrorInfo(event: Event): string {
+    if (event instanceof ErrorEvent) {
+      return event.message || String(event.error);
+    }
+    if (event instanceof CloseEvent) {
+      return `CloseEvent: code=${event.code}, reason=${event.reason}`;
+    }
+    return String(event);
   }
 
   public joinChannel(channel_id: string) {
@@ -243,6 +329,7 @@ export class WsClient {
 
   public close() {
     this.isActiveLeader = false;
+    this.shouldStopReconnecting = true;
     if (this.ws) {
       this.ws.removeEventListener("open", this.onOpen);
       this.ws.removeEventListener("close", this.onClose);
@@ -259,6 +346,9 @@ export class WsClient {
     window.removeEventListener("focus", this.handleFocus, false);
     window.removeEventListener("beforeunload", this.handleUnload, false);
     this.bc.close();
+    // 再接続状態をリセット
+    this.reconnectAttempts = 0;
+    this.reconnectDelay = WS_RECONNECT_DELAY;
   }
 
   private listenBroadcast() {
@@ -306,6 +396,9 @@ export class WsClient {
   private becomeLeaderAndConnect() {
     if (!this.isActiveLeader) {
       this.isActiveLeader = true;
+      this.shouldStopReconnecting = false;
+      this.reconnectAttempts = 0;
+      this.reconnectDelay = WS_RECONNECT_DELAY;
       this.bc.postMessage({ type: "ws_active" });
       this.connect();
     }

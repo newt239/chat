@@ -2447,15 +2447,6 @@ export type operations = {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description User group not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
         };
     };
     addUserGroupMember: {

@@ -57,7 +57,7 @@ export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
         {pins.map((pin) =>
           pin.message ? (
             <Card
-              key={pin.id}
+              key={pin.message.id}
               withBorder
               padding="md"
               radius="md"
