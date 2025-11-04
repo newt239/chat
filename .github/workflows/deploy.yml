@@ -5,8 +5,8 @@ on:
     branches:
       - main
       - develop
-      - 'feature/**'
-      - 'preview/**'
+      - "feature/**"
+      - "preview/**"
 
 jobs:
   deploy:
@@ -23,15 +23,25 @@ jobs:
             echo "environment=production" >> $GITHUB_OUTPUT
             echo "host=${{ secrets.PRODUCTION_HOST }}" >> $GITHUB_OUTPUT
             echo "port=${{ secrets.PRODUCTION_SSH_PORT }}" >> $GITHUB_OUTPUT
-            echo "compose_file=docker-compose.production.yml" >> $GITHUB_OUTPUT
           else
             BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///g' | sed 's/\//-/g')
-            echo "environment=preview-${BRANCH_NAME}" >> $GITHUB_OUTPUT
+            echo "environment=preview" >> $GITHUB_OUTPUT
+            echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
             echo "host=${{ secrets.PREVIEW_HOST }}" >> $GITHUB_OUTPUT
             echo "port=${{ secrets.PREVIEW_SSH_PORT }}" >> $GITHUB_OUTPUT
-            echo "compose_file=docker-compose.production.yml" >> $GITHUB_OUTPUT
-            echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Python/Ansible をセットアップ
+        run: |
+          python3 -m pip install --user pipx
+          ~/.local/bin/pipx ensurepath
+          ~/.local/bin/pipx install ansible-core
+          ~/.local/bin/pipx inject ansible-core jmespath
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Ansible コレクションをインストール
+        run: |
+          ansible-galaxy collection install -r ansible/requirements.yml
 
       - name: SSH秘密鍵を設定
         run: |
@@ -40,36 +50,42 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ steps.env.outputs.port }} -H ${{ steps.env.outputs.host }} >> ~/.ssh/known_hosts
 
-      - name: サーバーにデプロイ
+      - name: 本番へデプロイ（Ansible）
+        if: ${{ steps.env.outputs.environment == 'production' }}
         env:
-          HOST: ${{ steps.env.outputs.host }}
-          PORT: ${{ steps.env.outputs.port }}
-          USER: ${{ secrets.SSH_USER }}
-          ENVIRONMENT: ${{ steps.env.outputs.environment }}
-          COMPOSE_FILE: ${{ steps.env.outputs.compose_file }}
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          WASABI_ACCESS_KEY_ID: ${{ secrets.WASABI_ACCESS_KEY_ID }}
+          WASABI_SECRET_ACCESS_KEY: ${{ secrets.WASABI_SECRET_ACCESS_KEY }}
+          WASABI_BUCKET_NAME: ${{ secrets.WASABI_BUCKET_NAME }}
+          WASABI_REGION: ${{ secrets.WASABI_REGION }}
+          WASABI_ENDPOINT: ${{ secrets.WASABI_ENDPOINT }}
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            # 本番環境へのデプロイ
-            ssh -p ${PORT} ${USER}@${HOST} "cd /opt/chat && \
-              git fetch origin && \
-              git reset --hard origin/main && \
-              ./scripts/backup.sh && \
-              docker compose -f ${COMPOSE_FILE} pull && \
-              docker compose -f ${COMPOSE_FILE} down && \
-              docker compose -f ${COMPOSE_FILE} up -d --build && \
-              docker compose -f ${COMPOSE_FILE} logs --tail=50"
-          else
-            # プレビュー環境へのデプロイ
-            BRANCH_NAME="${{ steps.env.outputs.branch_name }}"
-            ssh -p ${PORT} ${USER}@${HOST} "mkdir -p /opt/chat-preview/${BRANCH_NAME} && \
-              cd /opt/chat-preview/${BRANCH_NAME} && \
-              if [ ! -d .git ]; then git clone ${{ github.repositoryUrl }} .; fi && \
-              git fetch origin && \
-              git reset --hard origin/${BRANCH_NAME} || git reset --hard ${{ github.sha }} && \
-              docker compose -f ${COMPOSE_FILE} -p chat-preview-${BRANCH_NAME} down && \
-              docker compose -f ${COMPOSE_FILE} -p chat-preview-${BRANCH_NAME} up -d --build && \
-              docker compose -f ${COMPOSE_FILE} -p chat-preview-${BRANCH_NAME} logs --tail=50"
-          fi
+          ansible-playbook -i ansible/inventory/production.ini ansible/playbooks/site.yml
+
+      - name: プレビューへデプロイ（Ansible）
+        if: ${{ steps.env.outputs.environment == 'preview' }}
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          WASABI_ACCESS_KEY_ID: ${{ secrets.WASABI_ACCESS_KEY_ID }}
+          WASABI_SECRET_ACCESS_KEY: ${{ secrets.WASABI_SECRET_ACCESS_KEY }}
+          WASABI_BUCKET_NAME: ${{ secrets.WASABI_BUCKET_NAME }}
+          WASABI_REGION: ${{ secrets.WASABI_REGION }}
+          WASABI_ENDPOINT: ${{ secrets.WASABI_ENDPOINT }}
+        run: |
+          BRANCH_NAME="${{ steps.env.outputs.branch_name }}"
+          # 低衝突なポートを算出（範囲: +1〜+400）
+          N=$(echo -n "$BRANCH_NAME" | cksum | awk '{print $1%400+1}')
+          PREVIEW_PORT=$((10080 + N))
+          CADDY_HTTP_PORT=$((18000 + N))
+          CADDY_HTTPS_PORT=$((18400 + N))
+          PREVIEW_DOMAIN="preview-${BRANCH_NAME}.${{ secrets.PRODUCTION_DOMAIN }}"
+
+          ansible-playbook -i ansible/inventory/production.ini ansible/playbooks/preview.yml \
+            --extra-vars "branch=$BRANCH_NAME preview_port=$PREVIEW_PORT caddy_http_port=$CADDY_HTTP_PORT caddy_https_port=$CADDY_HTTPS_PORT preview_domain=$PREVIEW_DOMAIN"
 
       - name: デプロイ完了通知
         if: success()

@@ -30,6 +30,45 @@
 
 ---
 
+## IaC 概要（Ansible/Terraform/GitHub Actions）
+
+このリポジトリでは以下をコードで管理します：
+
+- 本番/プレビュー環境のサーバー初期設定・デプロイ: Ansible
+- DNS（任意）: Terraform（例: Cloudflare）
+- 自動デプロイ: GitHub Actions（Ansible を実行）
+
+初回のみブートストラップとして Ansible をローカルから実行し、以後は GitHub Actions が自動で適用します。
+
+### 初回ブートストラップ（ローカル実行）
+
+```bash
+# Ansible のセットアップ（ローカル）
+python3 -m pip install --user pipx
+~/.local/bin/pipx ensurepath
+~/.local/bin/pipx install ansible-core
+
+# コレクションを取得
+ansible-galaxy collection install -r ansible/requirements.yml
+
+# 初回は root で接続して構築（deploy ユーザーを作成し、Docker 等をセットアップ）
+# ansible/inventory/production.ini の ansible_user を root に一時変更して実行
+ansible-playbook -i ansible/inventory/production.ini ansible/playbooks/site.yml
+
+# 2回目以降は deploy ユーザーでOK（inventory を deploy に戻す）
+```
+
+Terraform で DNS を管理する場合は `terraform/cloudflare` 配下の README を参照してください。
+
+### Ansible の冪等性について
+
+- 本手順のロールは、Ansible の宣言的モジュールで構成しており、何度流しても同じ状態を保ちます（冪等）。
+- 代表例:
+  - `apt`/`user`/`ufw`/`file`/`copy`/`template` は `state: present` 等で意図状態を宣言
+  - `community.docker.docker_compose_v2` は `state: present` で compose の望ましい状態を適用
+  - `cron` は同一エントリ名で重複作成せず更新
+- 実行結果は `changed`/`ok` で可視化され、不要変更は発生しません。
+
 ## ConoHa VPS の初期設定
 
 ### 1. VPS インスタンスの作成
@@ -60,169 +99,6 @@ A レコード: *.preview.your-domain.com → ConoHa VPSのIPアドレス
 ```
 
 2. DNS 設定が反映されるまで待機（最大 48 時間）
-
----
-
-## サーバーの準備
-
-### 1. サーバーに SSH 接続
-
-```bash
-ssh root@<ConoHa VPSのIPアドレス>
-```
-
-### 2. 作業用ユーザーの作成
-
-```bash
-# ユーザーを作成
-adduser deploy
-
-# sudo権限を付与
-usermod -aG sudo deploy
-
-# deployユーザーに切り替え
-su - deploy
-```
-
-### 3. 必要なパッケージのインストール
-
-```bash
-# システムアップデート
-sudo apt update && sudo apt upgrade -y
-
-# 必要なパッケージをインストール
-sudo apt install -y git curl ca-certificates gnupg lsb-release awscli
-```
-
-### 4. Docker のインストール
-
-```bash
-# Dockerの公式GPGキーを追加
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# Dockerリポジトリを追加
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null > /dev/null
-
-# Dockerをインストール
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# deployユーザーをdockerグループに追加
-sudo usermod -aG docker deploy
-
-# 設定を反映するため一度ログアウトして再ログイン
-exit
-su - deploy
-
-# Dockerの動作確認
-docker --version
-docker compose version
-```
-
-### 5. アプリケーションディレクトリの作成
-
-```bash
-# 本番環境用ディレクトリ
-sudo mkdir -p /opt/chat
-sudo chown deploy:deploy /opt/chat
-
-# プレビュー環境用ディレクトリ
-sudo mkdir -p /opt/chat-preview
-sudo chown deploy:deploy /opt/chat-preview
-```
-
-### 6. リポジトリのクローン
-
-```bash
-cd /opt/chat
-git clone https://github.com/newt239/chat.git .
-```
-
-### 7. 環境変数ファイルの作成
-
-```bash
-# 本番環境の環境変数を設定
-cd /opt/chat
-cp .env.production.example .env.production
-
-# エディタで環境変数を編集
-nano .env.production
-```
-
-以下の環境変数を設定してください：
-
-```bash
-# データベース設定
-POSTGRES_DB=chat
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=<強固なパスワードを設定>
-DATABASE_URL=postgresql://postgres:<パスワード>@db:5432/chat?sslmode=disable
-
-# バックエンド設定
-PORT=8080
-JWT_SECRET=<ランダムな文字列を生成して設定>
-CORS_ALLOWED_ORIGINS=https://chat.newt239.dev
-
-# Wasabi S3設定（バックアップアップロードに使用）
-WASABI_ACCESS_KEY_ID=<WasabiアクセスキーID>
-WASABI_SECRET_ACCESS_KEY=<Wasabiシークレットアクセスキー>
-WASABI_BUCKET_NAME=<バケット名>
-WASABI_REGION=us-east-1
-WASABI_ENDPOINT=https://s3.wasabisys.com
-
-# Caddy設定
-DOMAIN=chat.newt239.dev
-CADDY_EMAIL=contact@newt239.dev
-```
-
-**JWT_SECRET の生成例：**
-
-```bash
-openssl rand -base64 32
-```
-
-### 8. ファイアウォールの設定
-
-```bash
-# UFWをインストール（未インストールの場合）
-sudo apt install -y ufw
-
-# SSH接続を許可
-sudo ufw allow 22/tcp
-
-# HTTP/HTTPSを許可
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-
-# ファイアウォールを有効化
-sudo ufw enable
-
-# 設定確認
-sudo ufw status
-```
-
-### 9. 初回デプロイの実行
-
-```bash
-cd /opt/chat
-
-# 環境変数をロード
-export $(cat .env.production | grep -v '^#' | xargs)
-
-# Dockerコンテナを起動
-docker compose -f docker-compose.production.yml up -d --build
-
-# ログを確認
-docker compose -f docker-compose.production.yml logs -f
-```
-
-### 10. 動作確認
-
-ブラウザで `https://chat.newt239.dev` にアクセスし、アプリケーションが正常に動作することを確認します。
-
----
 
 ## GitHub Actions の設定
 
@@ -258,13 +134,20 @@ GitHub リポジトリの「Settings」→「Secrets and variables」→「Actio
 
 #### 本番環境用
 
-| Secret 名             | 値                        | 説明                                            |
-| --------------------- | ------------------------- | ----------------------------------------------- |
-| `SSH_PRIVATE_KEY`     | SSH 秘密鍵の内容          | GitHub Actions がサーバーに接続するための秘密鍵 |
-| `SSH_USER`            | `deploy`                  | SSH 接続ユーザー名                              |
-| `PRODUCTION_HOST`     | ConoHa VPS の IP アドレス | 本番環境のホスト                                |
-| `PRODUCTION_SSH_PORT` | `22`                      | SSH 接続ポート                                  |
-| `PRODUCTION_DOMAIN`   | `chat.newt239.dev`        | 本番環境のドメイン                              |
+| Secret 名                  | 値                                        | 説明                                            |
+| -------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| `SSH_PRIVATE_KEY`          | SSH 秘密鍵の内容                          | GitHub Actions がサーバーに接続するための秘密鍵 |
+| `SSH_USER`                 | `deploy`                                  | SSH 接続ユーザー名                              |
+| `PRODUCTION_HOST`          | ConoHa VPS の IP アドレス                 | 本番環境のホスト                                |
+| `PRODUCTION_SSH_PORT`      | `22`                                      | SSH 接続ポート                                  |
+| `PRODUCTION_DOMAIN`        | `chat.newt239.dev`                        | 本番環境のドメイン                              |
+| `POSTGRES_PASSWORD`        | DB のパスワード                           | テンプレートに環境変数で注入                    |
+| `JWT_SECRET`               | ランダム文字列                            | テンプレートに環境変数で注入                    |
+| `WASABI_ACCESS_KEY_ID`     | Wasabi のアクセスキー                     | テンプレートに環境変数で注入                    |
+| `WASABI_SECRET_ACCESS_KEY` | Wasabi のシークレット                     | テンプレートに環境変数で注入                    |
+| `WASABI_BUCKET_NAME`       | バケット名                                | テンプレートに環境変数で注入                    |
+| `WASABI_REGION`            | `ap-northeast-1` など                     | テンプレートに環境変数で注入                    |
+| `WASABI_ENDPOINT`          | `https://ap-northeast-1.s3.wasabisys.com` | テンプレートに環境変数で注入                    |
 
 #### プレビュー環境用（任意）
 
@@ -297,22 +180,20 @@ main ブランチにプッシュすると、GitHub Actions が自動的にデプ
 git push origin main
 ```
 
-### 手動デプロイ
+### 手動デプロイ（Ansible）
 
-サーバーに直接 SSH 接続して手動デプロイすることも可能です。
+CI を使わずに手動適用する場合：
 
 ```bash
-# サーバーにSSH接続
-ssh deploy@<ConoHa VPSのIPアドレス>
-
-# デプロイスクリプトを実行
-cd /opt/chat
-./scripts/deploy.sh production main
-
-# デプロイ前自動バックアップについて
-# 上記のデプロイスクリプトおよび GitHub Actions は、デプロイ直前に
-# `scripts/backup.sh` を実行し、PostgreSQL のダンプを Wasabi にアップロードします。
-# バケット内の保存先: s3://$WASABI_BUCKET_NAME/db-backups/<DB名>_YYYYmmdd_HHMMSS.sql.gz
+ansible-galaxy collection install -r ansible/requirements.yml
+export POSTGRES_PASSWORD=......
+export JWT_SECRET=......
+export WASABI_ACCESS_KEY_ID=......
+export WASABI_SECRET_ACCESS_KEY=......
+export WASABI_BUCKET_NAME=......
+export WASABI_REGION=ap-northeast-1
+export WASABI_ENDPOINT=https://ap-northeast-1.s3.wasabisys.com
+ansible-playbook -i ansible/inventory/production.ini ansible/playbooks/site.yml
 ```
 
 ### デプロイの確認
@@ -345,29 +226,31 @@ git commit -m "feat: 新機能の実装"
 git push origin feature/new-feature
 ```
 
-### 手動デプロイ
+### 手動デプロイ（Ansible）
 
 ```bash
-# サーバーにSSH接続
-ssh deploy@<ConoHa VPSのIPアドレス>
+BRANCH=feature/new-feature
+N=$(echo -n "$BRANCH" | cksum | awk '{print $1%400+1}')
+PREVIEW_PORT=$((10080 + N))
+CADDY_HTTP_PORT=$((18000 + N))
+CADDY_HTTPS_PORT=$((18400 + N))
+PREVIEW_DOMAIN="preview-$(echo "$BRANCH" | sed 's/\//-/g').chat.newt239.dev"
 
-# デプロイスクリプトを実行
-cd /opt/chat
-./scripts/deploy.sh preview feature/new-feature
+ansible-galaxy collection install -r ansible/requirements.yml
+export POSTGRES_PASSWORD=......
+export JWT_SECRET=......
+export WASABI_ACCESS_KEY_ID=......
+export WASABI_SECRET_ACCESS_KEY=......
+export WASABI_BUCKET_NAME=......
+export WASABI_REGION=ap-northeast-1
+export WASABI_ENDPOINT=https://ap-northeast-1.s3.wasabisys.com
+ansible-playbook -i ansible/inventory/production.ini ansible/playbooks/preview.yml \
+  --extra-vars "branch=$BRANCH preview_port=$PREVIEW_PORT caddy_http_port=$CADDY_HTTP_PORT caddy_https_port=$CADDY_HTTPS_PORT preview_domain=$PREVIEW_DOMAIN"
 ```
 
-### プレビュー環境のクリーンアップ
+### プレビュー環境のクリーンアップ（任意）
 
-不要になったプレビュー環境は、以下のコマンドで削除できます。
-
-```bash
-# サーバーにSSH接続
-ssh deploy@<ConoHa VPSのIPアドレス>
-
-# クリーンアップスクリプトを実行
-cd /opt/chat
-./scripts/cleanup-preview.sh feature/new-feature
-```
+不要になったプレビュー環境は、Ansible で `state: absent` を指定するプレイブックを用意して削除するか、既存の `scripts/cleanup-preview.sh` を使用してください。
 
 ---
 

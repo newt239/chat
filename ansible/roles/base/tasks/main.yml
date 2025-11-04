@@ -1,0 +1,37 @@
+- name: 必要パッケージをインストール
+  apt:
+    name:
+      - git
+      - curl
+      - ca-certificates
+      - gnupg
+      - lsb-release
+      - awscli
+      - ufw
+    update_cache: true
+    state: present
+
+- name: deployユーザーをsudoグループに追加
+  user:
+    name: deploy
+    groups: sudo
+    append: true
+
+- name: UFWで必要ポートを許可
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop: ["22", "80", "443"]
+
+- name: 作業ディレクトリ作成
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: "0755"
+  loop:
+    - /opt/chat
+    - /opt/chat-preview
+    - /opt/backups

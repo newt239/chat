@@ -1,0 +1,31 @@
+- name: リポジトリを取得/更新
+  become_user: deploy
+  git:
+    repo: "https://github.com/newt239/chat.git"
+    dest: "/opt/chat"
+    version: "main"
+    force: true
+
+- name: .env.production をテンプレートから生成
+  template:
+    src: env.production.j2
+    dest: /opt/chat/.env.production
+    owner: deploy
+    group: deploy
+    mode: "0640"
+
+- name: Docker Compose (production) を起動
+  community.docker.docker_compose_v2:
+    project_src: /opt/chat
+    files:
+      - docker-compose.production.yml
+    build: true
+    state: present
+
+- name: バックアップcronを設定（毎日3時）
+  cron:
+    name: "chat db backup"
+    user: deploy
+    minute: "0"
+    hour: "3"
+    job: "cd /opt/chat && ./scripts/backup.sh >> /var/log/chat_backup.log 2>&1"

@@ -1,0 +1,41 @@
+- name: ブランチ名をサニタイズ（/ → -）
+  set_fact:
+    sanitized_branch: "{{ branch | regex_replace('/', '-') }}"
+
+- name: プレビュー用ディレクトリ作成
+  file:
+    path: "/opt/chat-preview/{{ sanitized_branch }}"
+    state: directory
+    owner: deploy
+    group: deploy
+    mode: "0755"
+
+- name: リポジトリを取得/更新（プレビュー）
+  become_user: deploy
+  git:
+    repo: "https://github.com/newt239/chat.git"
+    dest: "/opt/chat-preview/{{ sanitized_branch }}"
+    version: "{{ branch }}"
+    force: true
+
+- name: .env.preview をテンプレートから生成
+  template:
+    src: env.preview.j2
+    dest: "/opt/chat-preview/{{ sanitized_branch }}/.env.preview"
+    owner: deploy
+    group: deploy
+    mode: "0640"
+
+- name: 外部ネットワーク chat_chat-network を作成（存在しない場合）
+  community.docker.docker_network:
+    name: chat_chat-network
+    state: present
+
+- name: Docker Compose (preview) を起動
+  community.docker.docker_compose_v2:
+    project_src: "/opt/chat-preview/{{ sanitized_branch }}"
+    files:
+      - docker-compose.preview.yml
+    project_name: "chat-preview-{{ sanitized_branch }}"
+    build: true
+    state: present

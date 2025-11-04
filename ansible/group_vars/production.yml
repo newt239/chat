@@ -1,0 +1,19 @@
+domain: "chat.newt239.dev"
+caddy_email: "contact@newt239.dev"
+
+postgres:
+  user: "postgres"
+  password: "<CHANGE_ME_STRONG_PASSWORD>"
+  db: "chat"
+
+jwt_secret: "<CHANGE_ME_OPENSSL_BASE64_32>"
+cors_allowed_origins: "https://chat.newt239.dev"
+
+wasabi:
+  access_key_id: "<CHANGE_ME>"
+  secret_access_key: "<CHANGE_ME>"
+  bucket: "<CHANGE_ME_BUCKET>"
+  region: "ap-northeast-1"
+  endpoint: "https://ap-northeast-1.s3.wasabisys.com"
+
+

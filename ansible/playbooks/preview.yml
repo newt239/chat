@@ -1,0 +1,12 @@
+- hosts: chat
+  become: true
+  vars_files:
+    - ../group_vars/production.yml
+  vars:
+    branch: ""
+    preview_port: 8081
+    caddy_http_port: 18080
+    caddy_https_port: 18443
+    preview_domain: ""
+  roles:
+    - app_preview

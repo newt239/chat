@@ -1,0 +1,10 @@
+- hosts: chat
+  become: true
+  vars_files:
+    - ../group_vars/production.yml
+  roles:
+    - base
+    - docker
+    - app
+
+

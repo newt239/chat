@@ -19,31 +19,13 @@ services:
       - chat-network
     restart: unless-stopped
 
-  db-preview:
-    image: postgres:18-alpine
-    container_name: chat-postgres-preview
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}_preview
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
-    volumes:
-      - postgres_preview_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}_preview"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
-    networks:
-      - chat-network
-    restart: unless-stopped
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: chat-backend-prod
+    env_file:
+      - ./.env.production
     environment:
       - PORT=${PORT:-8080}
       - DATABASE_URL=${DATABASE_URL}
@@ -82,6 +64,11 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    env_file:
+      - ./.env.production
+    environment:
+      - DOMAIN=${DOMAIN}
+      - CADDY_EMAIL=${CADDY_EMAIL}
     depends_on:
       - frontend
       - backend
@@ -91,7 +78,6 @@ services:
 
 volumes:
   postgres_data:
-  postgres_preview_data:
   caddy_data:
   caddy_config:
 
