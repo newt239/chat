@@ -9,8 +9,6 @@ ConoHa VPS 上の Ubuntu サーバーに対して、Docker Compose を使用し�
 
 ```
 ansible/
-├── inventory/
-│   └── production.ini        # デプロイ先サーバーの定義
 ├── group_vars/
 │   └── production.yml        # 環境変数・設定値
 ├── playbooks/
@@ -23,22 +21,6 @@ ansible/
 │   └── app_preview/          # プレビュー環境アプリケーション
 └── requirements.yml          # Ansible コレクション依存関係
 ```
-
-## インベントリ設定
-
-### production.ini
-
-デプロイ先のサーバー情報を定義しています。
-
-```ini
-[chat]
-conoha-prod ansible_host=<VPS_IP> ansible_user=deploy ansible_port=22
-```
-
-- **ホスト名**: `conoha-prod`
-- **接続ユーザー**: `deploy`
-- **接続ポート**: `22` (SSH)
-- **グループ名**: `chat`
 
 ## 環境変数設定
 
@@ -79,7 +61,7 @@ conoha-prod ansible_host=<VPS_IP> ansible_user=deploy ansible_port=22
 本番環境へのデプロイを行うプレイブックです。
 
 ```yaml
-- hosts: chat
+- hosts: chat-prod
   become: true
   vars_files:
     - ../group_vars/production.yml
@@ -100,7 +82,7 @@ conoha-prod ansible_host=<VPS_IP> ansible_user=deploy ansible_port=22
 プレビュー環境へのデプロイを行うプレイブックです。
 
 ```yaml
-- hosts: chat
+- hosts: chat-preview
   become: true
   vars_files:
     - ../group_vars/production.yml
@@ -257,27 +239,44 @@ GitHub Actions では、リポジトリの Secrets に登録された環境変�
    set -a
    source .env
    set +a
-
-   # Ansibleを実行
-   cd ansible
-   ansible-playbook -i inventory/production.ini playbooks/site.yml
    ```
+
+# Ansible を実行
+
+# サーバーの IP アドレス、SSH ポート、ユーザー名を指定してください
+
+# 初回実行時は ansible_user=root に変更してください
+
+cd ansible
+ansible-playbook \
+ -i "chat-prod ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
+ playbooks/site.yml
+
+````
 
 ### 本番環境へのデプロイ
 
 ```bash
 cd ansible
-ansible-playbook -i inventory/production.ini playbooks/site.yml
-```
+ansible-playbook \
+-i "chat-prod ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
+playbooks/site.yml
+````
+
+**注意**: `YOUR_SERVER_IP` を実際のサーバーの IP アドレスに置き換えてください。初回実行時は `ansible_user=root` に変更してください。
 
 ### プレビュー環境へのデプロイ
 
 ```bash
 cd ansible
-ansible-playbook -i inventory/production.ini playbooks/preview.yml \
+ansible-playbook \
+  -i "chat-preview ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
+  playbooks/preview.yml \
   -e "branch=feature/new-feature" \
   -e "preview_domain=preview.chat.newt239.dev"
 ```
+
+**注意**: `YOUR_SERVER_IP` を実際のサーバーの IP アドレスに置き換えてください。
 
 ## 依存パッケージ
 

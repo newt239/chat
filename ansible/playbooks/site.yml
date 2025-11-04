@@ -1,4 +1,4 @@
-- hosts: chat
+- hosts: chat-prod
   become: true
   vars_files:
     - ../group_vars/production.yml
