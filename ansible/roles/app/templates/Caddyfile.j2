@@ -1,5 +1,7 @@
 {
     email {{ caddy_email | default('contact@newt239.dev') }}
+    # IPv6を無効化
+    default_bind 0.0.0.0
 }
 
 {{ domain | default('chat.newt239.dev') }} {
