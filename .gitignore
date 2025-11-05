@@ -42,3 +42,6 @@ docker/data/
 
 # Atlas
 atlas.sum
+
+# Ansible
+ansible/inventory.ini

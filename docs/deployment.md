@@ -52,15 +52,10 @@ python3 -m pip install --user pipx
 ansible-galaxy collection install -r ansible/requirements.yml
 
 # 初回は root で接続して構築（deploy ユーザーを作成し、Docker 等をセットアップ）
-# YOUR_SERVER_IP と YOUR_SSH_PORT を実際の値に置き換えてください
-ansible-playbook \
-  -i "chat-prod ansible_host=YOUR_SERVER_IP ansible_user=root ansible_port=22," \
-  ansible/playbooks/site.yml
+ansible-playbook -i 'chat-prod,' -e "ansible_host=YOUR_SERVER_IP ansible_user=root ansible_port=22" ansible/playbooks/site.yml
 
 # 2回目以降は deploy ユーザーでOK
-ansible-playbook \
-  -i "chat-prod ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
-  ansible/playbooks/site.yml
+ansible-playbook -i 'chat-prod,' -e "ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22" ansible/playbooks/site.yml
 ```
 
 Terraform で DNS を管理する場合は `terraform/cloudflare` 配下の README を参照してください。
@@ -199,7 +194,8 @@ export WASABI_BUCKET_NAME=......
 export WASABI_REGION=ap-northeast-1
 export WASABI_ENDPOINT=https://ap-northeast-1.s3.wasabisys.com
 ansible-playbook \
-  -i "chat-prod ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
+  -i 'chat-prod,' \
+  -e "ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22" \
   ansible/playbooks/site.yml
 ```
 
@@ -252,7 +248,8 @@ export WASABI_BUCKET_NAME=......
 export WASABI_REGION=ap-northeast-1
 export WASABI_ENDPOINT=https://ap-northeast-1.s3.wasabisys.com
 ansible-playbook \
-  -i "chat-preview ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
+  -i 'chat-preview,' \
+  -e "ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22" \
   ansible/playbooks/preview.yml \
   --extra-vars "branch=$BRANCH preview_port=$PREVIEW_PORT caddy_http_port=$CADDY_HTTP_PORT caddy_https_port=$CADDY_HTTPS_PORT preview_domain=$PREVIEW_DOMAIN"
 ```

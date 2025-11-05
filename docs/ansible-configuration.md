@@ -241,42 +241,37 @@ GitHub Actions では、リポジトリの Secrets に登録された環境変�
    set +a
    ```
 
-# Ansible を実行
-
-# サーバーの IP アドレス、SSH ポート、ユーザー名を指定してください
-
-# 初回実行時は ansible_user=root に変更してください
-
-cd ansible
-ansible-playbook \
- -i "chat-prod ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
- playbooks/site.yml
-
-````
-
 ### 本番環境へのデプロイ
 
 ```bash
 cd ansible
 ansible-playbook \
--i "chat-prod ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
-playbooks/site.yml
-````
+  -i 'chat-prod,' \
+  -e "ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22" \
+  playbooks/site.yml
+```
 
-**注意**: `YOUR_SERVER_IP` を実際のサーバーの IP アドレスに置き換えてください。初回実行時は `ansible_user=root` に変更してください。
+**注意**:
+
+- 初回実行時は `ansible_user=root` に変更してください
+- 2 回目以降は `ansible_user=deploy` を使用してください
+- `YOUR_SERVER_IP` を実際のサーバーの IP アドレスに置き換えてください
 
 ### プレビュー環境へのデプロイ
 
 ```bash
 cd ansible
 ansible-playbook \
-  -i "chat-preview ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22," \
+  -i 'chat-preview,' \
+  -e "ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22" \
   playbooks/preview.yml \
   -e "branch=feature/new-feature" \
   -e "preview_domain=preview.chat.newt239.dev"
 ```
 
-**注意**: `YOUR_SERVER_IP` を実際のサーバーの IP アドレスに置き換えてください。
+**注意**:
+
+- `YOUR_SERVER_IP` を実際のサーバーの IP アドレスに置き換えてください
 
 ## 依存パッケージ
 
@@ -318,3 +313,7 @@ ansible-galaxy collection install -r requirements.yml
 - Ansible 公式ドキュメント: https://docs.ansible.com/
 - Docker Compose Ansible モジュール: https://docs.ansible.com/ansible/latest/collections/community/docker/
 - UFW (Uncomplicated Firewall): https://help.ubuntu.com/community/UFW
+
+```
+
+```

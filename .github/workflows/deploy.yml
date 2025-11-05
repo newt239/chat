@@ -64,7 +64,8 @@ jobs:
         if: steps.env.outputs.environment == 'production'
         run: |
           ansible-playbook \
-            -i "chat-prod ansible_host=${{ steps.env.outputs.host }} ansible_user=deploy ansible_port=${{ steps.env.outputs.port }}," \
+            -i 'chat-prod,' \
+            -e "ansible_host=${{ steps.env.outputs.host }} ansible_user=deploy ansible_port=${{ steps.env.outputs.port }}" \
             ansible/playbooks/site.yml
 
       - name: プレビューへデプロイ
@@ -78,7 +79,8 @@ jobs:
           CADDY_HTTPS_PORT=$((18400 + N))
           PREVIEW_DOMAIN="preview-${BRANCH_NAME}.${{ secrets.PRODUCTION_DOMAIN }}"
           ansible-playbook \
-            -i "chat-preview ansible_host=${{ steps.env.outputs.host }} ansible_user=deploy ansible_port=${{ steps.env.outputs.port }}," \
+            -i 'chat-preview,' \
+            -e "ansible_host=${{ steps.env.outputs.host }} ansible_user=deploy ansible_port=${{ steps.env.outputs.port }}" \
             ansible/playbooks/preview.yml \
             --extra-vars "branch=$BRANCH_NAME preview_port=$PREVIEW_PORT caddy_http_port=$CADDY_HTTP_PORT caddy_https_port=$CADDY_HTTPS_PORT preview_domain=$PREVIEW_DOMAIN"
 
