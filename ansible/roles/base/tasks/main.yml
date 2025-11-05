@@ -24,12 +24,24 @@
     mode: "0440"
     validate: "visudo -cf %s"
 
+- name: UFWのデフォルトポリシーを設定
+  ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: 'incoming', policy: 'deny' }
+    - { direction: 'outgoing', policy: 'allow' }
+
 - name: UFWで必要ポートを許可
   ufw:
     rule: allow
     port: "{{ item }}"
     proto: tcp
   loop: ["22", "80", "443"]
+
+- name: UFWを有効化
+  ufw:
+    state: enabled
 
 - name: 作業ディレクトリ作成
   file:

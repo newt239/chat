@@ -1,3 +1,5 @@
+ansible_python_interpreter: "/usr/bin/python3.12"
+
 domain: "chat.newt239.dev"
 caddy_email: "contact@newt239.dev"
 
