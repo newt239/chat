@@ -19,7 +19,7 @@
     project_src: /opt/chat
     files:
       - docker-compose.production.yml
-    build: true
+    build: always
     state: present
 
 - name: バックアップcronを設定（毎日3時）
