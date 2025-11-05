@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/newt239/chat/ent"
@@ -21,6 +22,10 @@ func AutoSeed(client *ent.Client) error {
 	// Check if database is empty
 	userCount, err := client.User.Query().Count(ctx)
 	if err != nil {
+		// Check if the error is due to missing tables
+		if strings.Contains(err.Error(), "does not exist") {
+			return fmt.Errorf("database tables do not exist. Please run migration first: %w", err)
+		}
 		return fmt.Errorf("failed to check user count: %w", err)
 	}
 

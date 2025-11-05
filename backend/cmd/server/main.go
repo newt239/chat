@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
+	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
 	"github.com/newt239/chat/internal/infrastructure/logger"
@@ -34,13 +36,43 @@ func main() {
 	defer logger.Sync()
 
 	// Initialize database
+	log.Println("Initializing database connection...")
 	client, err := database.InitDB(cfg.Database.URL)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
+	log.Println("✅ Database connection established")
+
+	// Run migration (schema changes are detected and applied automatically)
+	log.Println("Running database migration...")
+	ctx := context.Background()
+	if err := client.Schema.Create(
+		ctx,
+		migrate.WithGlobalUniqueID(true),
+		migrate.WithForeignKeys(true),
+	); err != nil {
+		log.Fatalf("failed to migrate database schema: %v", err)
+	}
+	log.Println("✅ Database migration completed successfully!")
+
+	// Verify migration by checking if users table exists
+	log.Println("Verifying migration...")
+	if _, err := client.User.Query().Limit(1).All(ctx); err != nil {
+		if strings.Contains(err.Error(), "does not exist") {
+			log.Fatalf("migration verification failed: users table does not exist after migration. This indicates the migration did not create the tables. Error: %v", err)
+		}
+		log.Printf("Warning: could not verify migration (non-fatal): %v", err)
+	} else {
+		log.Println("✅ Migration verified: users table exists")
+	}
 
 	// Auto-seed database if empty
+	// Note: AutoSeed will skip if database already contains data
 	if err := seed.AutoSeed(client); err != nil {
+		// Check if error is due to missing tables (should not happen after migration)
+		if strings.Contains(err.Error(), "does not exist") {
+			log.Fatalf("database tables do not exist after migration. This indicates a migration failure: %v", err)
+		}
 		log.Fatalf("failed to auto-seed database: %v", err)
 	}
 

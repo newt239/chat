@@ -58,17 +58,6 @@ ansible-playbook -i 'chat-prod,' -e "ansible_host=YOUR_SERVER_IP ansible_user=ro
 ansible-playbook -i 'chat-prod,' -e "ansible_host=YOUR_SERVER_IP ansible_user=deploy ansible_port=22" --ask-pass ansible/playbooks/site.yml
 ```
 
-Terraform で DNS を管理する場合は `terraform/cloudflare` 配下の README を参照してください。
-
-### Ansible の冪等性について
-
-- 本手順のロールは、Ansible の宣言的モジュールで構成しており、何度流しても同じ状態を保ちます（冪等）。
-- 代表例:
-  - `apt`/`user`/`ufw`/`file`/`copy`/`template` は `state: present` 等で意図状態を宣言
-  - `community.docker.docker_compose_v2` は `state: present` で compose の望ましい状態を適用
-  - `cron` は同一エントリ名で重複作成せず更新
-- 実行結果は `changed`/`ok` で可視化され、不要変更は発生しません。
-
 ## ConoHa VPS の初期設定
 
 ### 1. VPS インスタンスの作成
@@ -258,84 +247,6 @@ ansible-playbook \
 
 不要になったプレビュー環境は、Ansible で `state: absent` を指定するプレイブックを用意して削除するか、既存の `scripts/cleanup-preview.sh` を使用してください。
 
----
-
-## トラブルシューティング
-
-### デプロイが失敗する場合
-
-#### 1. ログを確認
-
-```bash
-# GitHub Actionsのログを確認
-# GitHubの「Actions」タブから該当のワークフローを開く
-
-# サーバー側のログを確認
-ssh deploy@<ConoHa VPSのIPアドレス>
-cd /opt/chat
-docker compose -f docker-compose.production.yml logs -f
-```
-
-#### 2. コンテナの状態を確認
-
-```bash
-docker compose -f docker-compose.production.yml ps
-```
-
-#### 3. 環境変数を確認
-
-```bash
-cat .env.production
-```
-
-### データベース接続エラー
-
-```bash
-# データベースコンテナのログを確認
-docker compose -f docker-compose.production.yml logs db
-
-# データベースコンテナに接続してテスト
-docker compose -f docker-compose.production.yml exec db psql -U postgres -d chat
-```
-
-### SSL 証明書の問題
-
-Caddy は自動的に Let's Encrypt から SSL 証明書を取得しますが、以下の条件が必要です：
-
-1. ドメインの DNS 設定が正しいこと
-2. ポート 80 と 443 が開いていること
-3. ドメインが正しく解決されること
-
-```bash
-# Caddyのログを確認
-docker compose -f docker-compose.production.yml logs caddy
-```
-
-### ディスク容量不足
-
-```bash
-# ディスク使用量を確認
-df -h
-
-# 未使用のDockerイメージを削除
-docker system prune -a
-
-# 古いDockerボリュームを削除
-docker volume prune
-```
-
-### メモリ不足
-
-```bash
-# メモリ使用量を確認
-free -h
-
-# 不要なプレビュー環境を削除
-./scripts/cleanup-preview.sh <branch-name>
-```
-
----
-
 ## セキュリティのベストプラクティス
 
 ### 1. 定期的なアップデート
@@ -354,7 +265,7 @@ docker compose -f docker-compose.production.yml up -d
 
 ```bash
 # SSH設定を編集
-sudo nano /etc/ssh/sshd_config
+sudo vim /etc/ssh/sshd_config
 
 # 以下の設定を変更
 PermitRootLogin no
@@ -448,44 +359,3 @@ docker stats
 # システムリソースを確認
 htop
 ```
-
----
-
-## まとめ
-
-このドキュメントでは、ConoHa VPS へのデプロイと GitHub Actions による自動デプロイの設定方法を説明しました。
-
-### デプロイフロー
-
-```
-開発者がコードをプッシュ
-    ↓
-GitHub Actionsが自動実行
-    ↓
-SSH経由でConoHa VPSに接続
-    ↓
-最新コードを取得
-    ↓
-Dockerイメージをビルド
-    ↓
-コンテナを再起動
-    ↓
-デプロイ完了
-```
-
-### 重要なポイント
-
-- main ブランチへのプッシュで本番環境が自動更新されます
-- 他のブランチへのプッシュでプレビュー環境が作成されます
-- SSL 証明書は Caddy が自動で管理します
-- 環境変数は適切に設定してください
-- 定期的なバックアップとセキュリティアップデートを忘れずに
-
-### サポート
-
-問題が発生した場合は、以下を確認してください：
-
-1. GitHub Actions のログ
-2. Docker コンテナのログ
-3. サーバーのシステムログ
-4. このドキュメントのトラブルシューティングセクション

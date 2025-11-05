@@ -21,6 +21,7 @@
       - docker-compose.production.yml
     build: always
     state: present
+    remove_orphans: true
 
 - name: バックアップcronを設定（毎日3時）
   cron:
