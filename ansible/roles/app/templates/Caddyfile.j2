@@ -18,9 +18,9 @@
         reverse_proxy frontend:80
     }
 
-    # ログ設定
+    # ログ設定（stdoutに出力）
     log {
-        output file /var/log/caddy/access.log
+        output stdout
         format json
     }
 
