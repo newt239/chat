@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 
+	_ "github.com/lib/pq"
 	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
@@ -15,19 +17,26 @@ import (
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		log.Fatalf("設定の読み込みに失敗しました: %v", err)
 	}
 
 	client, err := database.NewConnection(cfg.Database.URL)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		log.Fatalf("データベースへの接続に失敗しました: %v", err)
 	}
 	defer client.Close()
 
 	ctx := context.Background()
 
+	// Delete all existing tables
+	log.Println("既存のテーブルを削除しています...")
+	if err := deleteAllTables(cfg.Database.URL); err != nil {
+		log.Fatalf("テーブルの削除に失敗しました: %v", err)
+	}
+	log.Println("✅ すべてのテーブルを削除しました!")
+
 	// Reset database schema (drop indexes and columns)
-	log.Println("Resetting database schema...")
+	log.Println("データベーススキーマをリセットしています...")
 	if err := client.Schema.Create(
 		ctx,
 		migrate.WithDropIndex(true),
@@ -35,17 +44,68 @@ func main() {
 		migrate.WithGlobalUniqueID(true),
 		migrate.WithForeignKeys(true),
 	); err != nil {
-		log.Fatalf("failed to reset database schema: %v", err)
+		log.Fatalf("データベーススキーマのリセットに失敗しました: %v", err)
 	}
-	log.Println("✅ Database schema reset successfully!")
+	log.Println("✅ データベーススキーマのリセットが完了しました!")
 
 	// Seed database with initial data
-	log.Println("Seeding database with initial data...")
+	log.Println("初期データを投入しています...")
 	passwordService := auth.NewPasswordService()
 	if err := seed.CreateSeedData(client, passwordService); err != nil {
-		log.Fatalf("failed to seed database: %v", err)
+		log.Fatalf("データベースへのシードデータ投入に失敗しました: %v", err)
 	}
-	log.Println("✅ Database seed completed successfully!")
+	log.Println("✅ データベースへのシードデータ投入が完了しました!")
 
-	fmt.Println("✅ Database reset and seed completed successfully!")
+	fmt.Println("✅ データベースのリセットとシードが正常に完了しました!")
+}
+
+func deleteAllTables(dsn string) error {
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return fmt.Errorf("データベース接続を開けませんでした: %w", err)
+	}
+	defer db.Close()
+
+	// Get all table names from the current schema
+	rows, err := db.Query(`
+		SELECT tablename 
+		FROM pg_tables 
+		WHERE schemaname = 'public'
+	`)
+	if err != nil {
+		return fmt.Errorf("テーブル名の取得に失敗しました: %w", err)
+	}
+	defer rows.Close()
+
+	var tables []string
+	for rows.Next() {
+		var tableName string
+		if err := rows.Scan(&tableName); err != nil {
+			return fmt.Errorf("テーブル名のスキャンに失敗しました: %w", err)
+		}
+		tables = append(tables, tableName)
+	}
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("テーブル名の取得中にエラーが発生しました: %w", err)
+	}
+
+	if len(tables) == 0 {
+		return nil
+	}
+
+	// Build DROP TABLE statement for all tables
+	dropSQL := "DROP TABLE IF EXISTS "
+	for i, table := range tables {
+		if i > 0 {
+			dropSQL += ", "
+		}
+		dropSQL += fmt.Sprintf(`"%s"`, table)
+	}
+	dropSQL += " CASCADE"
+
+	if _, err := db.Exec(dropSQL); err != nil {
+		return fmt.Errorf("テーブルの削除に失敗しました: %w", err)
+	}
+
+	return nil
 }

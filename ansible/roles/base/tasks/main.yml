@@ -16,6 +16,14 @@
     groups: sudo
     append: true
 
+- name: deployユーザーがパスワードなしでsudoを使えるように設定
+  lineinfile:
+    path: /etc/sudoers.d/deploy
+    line: "deploy ALL=(ALL) NOPASSWD: ALL"
+    create: true
+    mode: "0440"
+    validate: "visudo -cf %s"
+
 - name: UFWで必要ポートを許可
   ufw:
     rule: allow
