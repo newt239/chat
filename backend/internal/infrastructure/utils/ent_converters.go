@@ -57,10 +57,11 @@ func WorkspaceToEntity(w *ent.Workspace) *entity.Workspace {
 		createdBy = w.Edges.CreatedBy.ID.String()
 	}
 	return &entity.Workspace{
-		ID:          w.ID.String(),
+        ID:          w.ID,
 		Name:        w.Name,
 		Description: StringPtrFromNullable(w.Description),
 		IconURL:     StringPtrFromNullable(w.IconURL),
+        IsPublic:    w.IsPublic,
 		CreatedBy:   createdBy,
 		CreatedAt:   w.CreatedAt,
 		UpdatedAt:   w.UpdatedAt,
@@ -73,9 +74,9 @@ func WorkspaceMemberToEntity(wm *ent.WorkspaceMember) *entity.WorkspaceMember {
 		return nil
 	}
 	var workspaceID, userID string
-	if wm.Edges.Workspace != nil {
-		workspaceID = wm.Edges.Workspace.ID.String()
-	}
+    if wm.Edges.Workspace != nil {
+        workspaceID = wm.Edges.Workspace.ID
+    }
 	if wm.Edges.User != nil {
 		userID = wm.Edges.User.ID.String()
 	}
@@ -93,9 +94,9 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 		return nil
 	}
 	var workspaceID, createdBy string
-	if c.Edges.Workspace != nil {
-		workspaceID = c.Edges.Workspace.ID.String()
-	}
+    if c.Edges.Workspace != nil {
+        workspaceID = c.Edges.Workspace.ID
+    }
 	if c.Edges.CreatedBy != nil {
 		createdBy = c.Edges.CreatedBy.ID.String()
 	}
@@ -289,9 +290,9 @@ func UserGroupToEntity(ug *ent.UserGroup) *entity.UserGroup {
 		return nil
 	}
 	var workspaceID, createdBy string
-	if ug.Edges.Workspace != nil {
-		workspaceID = ug.Edges.Workspace.ID.String()
-	}
+    if ug.Edges.Workspace != nil {
+        workspaceID = ug.Edges.Workspace.ID
+    }
 	if ug.Edges.CreatedBy != nil {
 		createdBy = ug.Edges.CreatedBy.ID.String()
 	}

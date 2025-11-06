@@ -109,7 +109,7 @@ Workspace:
   properties:
     id:
       type: string
-      format: uuid
+      description: slug identifier (3-12 chars, lowercase, digits, hyphen)
     name:
       type: string
     description:
@@ -118,6 +118,11 @@ Workspace:
     iconUrl:
       type: string
       nullable: true
+    isPublic:
+      type: boolean
+    role:
+      type: string
+      enum: [owner, admin, member, guest]
     createdBy:
       type: string
       format: uuid
@@ -125,7 +130,6 @@ Workspace:
       type: string
       format: date-time
   required:
-    - id
     - name
     - createdBy
     - createdAt
@@ -133,12 +137,23 @@ Workspace:
 CreateWorkspaceRequest:
   type: object
   properties:
+    id:
+      type: string
+      minLength: 3
+      maxLength: 12
+      pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
     name:
       type: string
       minLength: 1
     description:
       type: string
+    iconUrl:
+      type: string
+      format: uri
+    isPublic:
+      type: boolean
   required:
+    - id
     - name
 
 Channel:
@@ -149,7 +164,6 @@ Channel:
       format: uuid
     workspaceId:
       type: string
-      format: uuid
     name:
       type: string
     description:
@@ -983,3 +997,36 @@ ParticipatingThreadsOutput:
       nullable: true
   required:
     - items
+
+# Public workspaces
+PublicWorkspaceItem:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    iconUrl:
+      type: string
+      nullable: true
+    memberCount:
+      type: integer
+      minimum: 0
+    isJoined:
+      type: boolean
+    createdAt:
+      type: string
+      format: date-time
+  required: [id, name, memberCount, isJoined, createdAt]
+
+ListPublicWorkspacesResponse:
+  type: object
+  properties:
+    workspaces:
+      type: array
+      items:
+        $ref: "#/components/schemas/PublicWorkspaceItem"
+  required: [workspaces]

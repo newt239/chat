@@ -1,12 +1,13 @@
 package schema
 
 import (
-	"time"
+    "time"
 
-	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
-	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+    "entgo.io/ent"
+    "entgo.io/ent/schema/edge"
+    "entgo.io/ent/schema/field"
+    "entgo.io/ent/schema/index"
+    "github.com/google/uuid"
 )
 
 // WorkspaceMember holds the schema definition for the WorkspaceMember entity.
@@ -42,5 +43,8 @@ func (WorkspaceMember) Edges() []ent.Edge {
 
 // Indexes of the WorkspaceMember.
 func (WorkspaceMember) Indexes() []ent.Index {
-	return []ent.Index{}
+    return []ent.Index{
+        // workspace と user の組み合わせで一意
+        index.Edges("workspace", "user").Unique(),
+    }
 }

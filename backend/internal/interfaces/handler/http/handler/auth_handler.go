@@ -20,7 +20,7 @@ func NewAuthHandler(authUC authuc.AuthUseCase) *AuthHandler {
 type RegisterRequest struct {
 	Email       string `json:"email" validate:"required,email"`
 	Password    string `json:"password" validate:"required,min=8"`
-	DisplayName string `json:"display_name" validate:"required,min=1"`
+	DisplayName string `json:"displayName" validate:"required,min=1"`
 }
 
 // LoginRequest はログインリクエストの構造体です

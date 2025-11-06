@@ -75,13 +75,15 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	authMw := custommw.Auth(cfg.JWTService)
 
 	// Workspace routes
-	api.GET("/workspaces", cfg.WorkspaceHandler.GetWorkspaces, authMw)
+    api.GET("/workspaces", cfg.WorkspaceHandler.GetWorkspaces, authMw)
+    api.GET("/workspaces/public", cfg.WorkspaceHandler.ListPublicWorkspaces, authMw)
 	api.POST("/workspaces", cfg.WorkspaceHandler.CreateWorkspace, authMw)
 	api.GET("/workspaces/:id", cfg.WorkspaceHandler.GetWorkspace, authMw)
 	api.PATCH("/workspaces/:id", cfg.WorkspaceHandler.UpdateWorkspace, authMw)
 	api.DELETE("/workspaces/:id", cfg.WorkspaceHandler.DeleteWorkspace, authMw)
 	api.GET("/workspaces/:id/members", cfg.WorkspaceHandler.ListMembers, authMw)
-	api.POST("/workspaces/:id/members", cfg.WorkspaceHandler.AddMember, authMw)
+    api.POST("/workspaces/:id/members", cfg.WorkspaceHandler.AddMemberByEmail, authMw)
+    api.POST("/workspaces/:id/join", cfg.WorkspaceHandler.JoinPublicWorkspace, authMw)
 	api.PATCH("/workspaces/:id/members/:userId", cfg.WorkspaceHandler.UpdateMemberRole, authMw)
 	api.DELETE("/workspaces/:id/members/:userId", cfg.WorkspaceHandler.RemoveMember, authMw)
 	api.GET("/workspaces/:workspaceId/search", cfg.SearchHandler.SearchWorkspace, authMw)

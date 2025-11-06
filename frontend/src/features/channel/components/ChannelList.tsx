@@ -57,11 +57,9 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
 
   if (isError) {
     return (
-      <Card withBorder padding="md">
-        <Text c="red" size="sm">
-          {error?.message ?? "チャンネルの取得に失敗しました"}
-        </Text>
-      </Card>
+      <Text c="red" size="sm">
+        {error?.message ?? "チャンネルの取得に失敗しました"}
+      </Text>
     );
   }
 
@@ -93,7 +91,11 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                       label: "w-full flex items-center justify-between",
                     }}
                   >
-                    <ChannelName name={channel.name} isPrivate={channel.isPrivate} isBold={hasUnread} />
+                    <ChannelName
+                      name={channel.name}
+                      isPrivate={channel.isPrivate}
+                      isBold={hasUnread}
+                    />
                     <div className="flex items-center gap-1">
                       {hasMentionCount ? (
                         <Badge color="blue" size="xs" className="flex items-center justify-center">

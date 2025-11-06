@@ -1,18 +1,19 @@
 package repository
 
 import (
-	"context"
-	"strings"
+    "context"
+    "strings"
 
-	"entgo.io/ent/dialect/sql"
-	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/workspace"
-	"github.com/newt239/chat/ent/workspacemember"
-	"github.com/newt239/chat/internal/domain/entity"
-	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
+    "entgo.io/ent"
+    "entgo.io/ent/dialect/sql"
+    "github.com/newt239/chat/ent"
+    "github.com/newt239/chat/ent/user"
+    "github.com/newt239/chat/ent/workspace"
+    "github.com/newt239/chat/ent/workspacemember"
+    "github.com/newt239/chat/internal/domain/entity"
+    domainrepository "github.com/newt239/chat/internal/domain/repository"
+    "github.com/newt239/chat/internal/infrastructure/transaction"
+    "github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type workspaceRepository struct {
@@ -24,35 +25,25 @@ func NewWorkspaceRepository(client *ent.Client) domainrepository.WorkspaceReposi
 }
 
 func (r *workspaceRepository) FindByID(ctx context.Context, id string) (*entity.Workspace, error) {
-	workspaceID, err := utils.ParseUUID(id, "workspace ID")
-	if err != nil {
-		return nil, err
-	}
+    client := transaction.ResolveClient(ctx, r.client)
+    w, err := client.Workspace.Query().
+        Where(workspace.ID(id)).
+        WithCreatedBy().
+        Only(ctx)
+    if err != nil {
+        if ent.IsNotFound(err) {
+            return nil, nil
+        }
+        return nil, err
+    }
 
-	client := transaction.ResolveClient(ctx, r.client)
-	w, err := client.Workspace.Query().
-		Where(workspace.ID(workspaceID)).
-		WithCreatedBy().
-		Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return utils.WorkspaceToEntity(w), nil
+    return utils.WorkspaceToEntity(w), nil
 }
 
 func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) ([]*entity.Workspace, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return nil, err
-	}
-
 	client := transaction.ResolveClient(ctx, r.client)
 	workspaces, err := client.Workspace.Query().
-		Where(workspace.HasMembersWith(workspacemember.HasUserWith(user.ID(uid)))).
+        Where(workspace.HasMembersWith(workspacemember.HasUserWith(user.ID(utils.MustParseUUID(userID))))).
 		WithCreatedBy().
 		All(ctx)
 	if err != nil {
@@ -68,207 +59,173 @@ func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) (
 }
 
 func (r *workspaceRepository) Create(ctx context.Context, w *entity.Workspace) error {
-	cid, err := utils.ParseUUID(w.CreatedBy, "created by user ID")
-	if err != nil {
-		return err
-	}
+    cid, err := utils.ParseUUID(w.CreatedBy, "created by user ID")
+    if err != nil {
+        return err
+    }
 
-	client := transaction.ResolveClient(ctx, r.client)
+    client := transaction.ResolveClient(ctx, r.client)
 
-	builder := client.Workspace.Create().
-		SetCreatedByID(cid).
-		SetName(w.Name)
+    builder := client.Workspace.Create().
+        SetID(w.ID).
+        SetCreatedByID(cid).
+        SetName(w.Name).
+        SetIsPublic(w.IsPublic)
 
-	if w.ID != "" {
-		wid, err := utils.ParseUUID(w.ID, "workspace ID")
-		if err != nil {
-			return err
-		}
-		builder = builder.SetID(wid)
-	}
+    if w.Description != nil {
+        builder = builder.SetDescription(*w.Description)
+    }
 
-	if w.Description != nil {
-		builder = builder.SetDescription(*w.Description)
-	}
+    if w.IconURL != nil {
+        builder = builder.SetIconURL(*w.IconURL)
+    }
 
-	if w.IconURL != nil {
-		builder = builder.SetIconURL(*w.IconURL)
-	}
+    ws, err := builder.Save(ctx)
+    if err != nil {
+        return err
+    }
 
-	ws, err := builder.Save(ctx)
-	if err != nil {
-		return err
-	}
+    // Load edges
+    ws, err = client.Workspace.Query().
+        Where(workspace.ID(ws.ID)).
+        WithCreatedBy().
+        Only(ctx)
+    if err != nil {
+        return err
+    }
 
-	// Load edges
-	ws, err = client.Workspace.Query().
-		Where(workspace.ID(ws.ID)).
-		WithCreatedBy().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*w = *utils.WorkspaceToEntity(ws)
-	return nil
+    *w = *utils.WorkspaceToEntity(ws)
+    return nil
 }
 
 func (r *workspaceRepository) Update(ctx context.Context, w *entity.Workspace) error {
-	wid, err := utils.ParseUUID(w.ID, "workspace ID")
-	if err != nil {
-		return err
-	}
+    client := transaction.ResolveClient(ctx, r.client)
 
-	client := transaction.ResolveClient(ctx, r.client)
+    builder := client.Workspace.UpdateOneID(w.ID).
+        SetName(w.Name)
 
-	builder := client.Workspace.UpdateOneID(wid).
-		SetName(w.Name)
+    if w.Description != nil {
+        builder = builder.SetDescription(*w.Description)
+    } else {
+        builder = builder.ClearDescription()
+    }
 
-	if w.Description != nil {
-		builder = builder.SetDescription(*w.Description)
-	} else {
-		builder = builder.ClearDescription()
-	}
+    if w.IconURL != nil {
+        builder = builder.SetIconURL(*w.IconURL)
+    } else {
+        builder = builder.ClearIconURL()
+    }
 
-	if w.IconURL != nil {
-		builder = builder.SetIconURL(*w.IconURL)
-	} else {
-		builder = builder.ClearIconURL()
-	}
+    builder = builder.SetIsPublic(w.IsPublic)
 
-	ws, err := builder.Save(ctx)
-	if err != nil {
-		return err
-	}
+    ws, err := builder.Save(ctx)
+    if err != nil {
+        return err
+    }
 
-	// Load edges
-	ws, err = client.Workspace.Query().
-		Where(workspace.ID(ws.ID)).
-		WithCreatedBy().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
+    // Load edges
+    ws, err = client.Workspace.Query().
+        Where(workspace.ID(ws.ID)).
+        WithCreatedBy().
+        Only(ctx)
+    if err != nil {
+        return err
+    }
 
-	*w = *utils.WorkspaceToEntity(ws)
-	return nil
+    *w = *utils.WorkspaceToEntity(ws)
+    return nil
 }
 
 func (r *workspaceRepository) Delete(ctx context.Context, id string) error {
-	wid, err := utils.ParseUUID(id, "workspace ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	return client.Workspace.DeleteOneID(wid).Exec(ctx)
+    client := transaction.ResolveClient(ctx, r.client)
+    return client.Workspace.DeleteOneID(id).Exec(ctx)
 }
 
 func (r *workspaceRepository) AddMember(ctx context.Context, member *entity.WorkspaceMember) error {
-	wid, err := utils.ParseUUID(member.WorkspaceID, "workspace ID")
-	if err != nil {
-		return err
-	}
+    uid, err := utils.ParseUUID(member.UserID, "user ID")
+    if err != nil {
+        return err
+    }
 
-	uid, err := utils.ParseUUID(member.UserID, "user ID")
-	if err != nil {
-		return err
-	}
+    client := transaction.ResolveClient(ctx, r.client)
 
-	client := transaction.ResolveClient(ctx, r.client)
+    _, err = client.WorkspaceMember.Create().
+        SetWorkspaceID(member.WorkspaceID).
+        SetUserID(uid).
+        SetRole(string(member.Role)).
+        Save(ctx)
+    if err != nil {
+        return err
+    }
 
-	_, err = client.WorkspaceMember.Create().
-		SetWorkspaceID(wid).
-		SetUserID(uid).
-		SetRole(string(member.Role)).
-		Save(ctx)
-	if err != nil {
-		return err
-	}
+    // Load edges
+    wm, err := client.WorkspaceMember.Query().
+        Where(
+            workspacemember.HasWorkspaceWith(workspace.ID(member.WorkspaceID)),
+            workspacemember.HasUserWith(user.ID(uid)),
+        ).
+        WithWorkspace().
+        WithUser().
+        Only(ctx)
+    if err != nil {
+        return err
+    }
 
-	// Load edges
-	wm, err := client.WorkspaceMember.Query().
-		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(wid)),
-			workspacemember.HasUserWith(user.ID(uid)),
-		).
-		WithWorkspace().
-		WithUser().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*member = *utils.WorkspaceMemberToEntity(wm)
-	return nil
+    *member = *utils.WorkspaceMemberToEntity(wm)
+    return nil
 }
 
 func (r *workspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID string, userID string, role entity.WorkspaceRole) error {
-	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
-	if err != nil {
-		return err
-	}
+    uid, err := utils.ParseUUID(userID, "user ID")
+    if err != nil {
+        return err
+    }
 
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return err
-	}
+    client := transaction.ResolveClient(ctx, r.client)
 
-	client := transaction.ResolveClient(ctx, r.client)
+    // Find the member first
+    wm, err := client.WorkspaceMember.Query().
+        Where(
+            workspacemember.HasWorkspaceWith(workspace.ID(workspaceID)),
+            workspacemember.HasUserWith(user.ID(uid)),
+        ).
+        Only(ctx)
+    if err != nil {
+        return err
+    }
 
-	// Find the member first
-	wm, err := client.WorkspaceMember.Query().
-		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(wid)),
-			workspacemember.HasUserWith(user.ID(uid)),
-		).
-		Only(ctx)
-	if err != nil {
-		return err
-	}
+    // Update the role
+    _, err = client.WorkspaceMember.UpdateOne(wm).
+        SetRole(string(role)).
+        Save(ctx)
 
-	// Update the role
-	_, err = client.WorkspaceMember.UpdateOne(wm).
-		SetRole(string(role)).
-		Save(ctx)
-
-	return err
+    return err
 }
 
 func (r *workspaceRepository) RemoveMember(ctx context.Context, workspaceID, userID string) error {
-	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
-	if err != nil {
-		return err
-	}
+    uid, err := utils.ParseUUID(userID, "user ID")
+    if err != nil {
+        return err
+    }
 
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return err
-	}
+    client := transaction.ResolveClient(ctx, r.client)
+    _, err = client.WorkspaceMember.Delete().
+        Where(
+            workspacemember.HasWorkspaceWith(workspace.ID(workspaceID)),
+            workspacemember.HasUserWith(user.ID(uid)),
+        ).
+        Exec(ctx)
 
-	client := transaction.ResolveClient(ctx, r.client)
-	_, err = client.WorkspaceMember.Delete().
-		Where(
-			workspacemember.HasWorkspaceWith(workspace.ID(wid)),
-			workspacemember.HasUserWith(user.ID(uid)),
-		).
-		Exec(ctx)
-
-	return err
+    return err
 }
 
 func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.WorkspaceMember, error) {
-	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	members, err := client.WorkspaceMember.Query().
-		Where(workspacemember.HasWorkspaceWith(workspace.ID(wid))).
-		WithWorkspace().
-		WithUser().
-		All(ctx)
+    client := transaction.ResolveClient(ctx, r.client)
+    members, err := client.WorkspaceMember.Query().
+        Where(workspacemember.HasWorkspaceWith(workspace.ID(workspaceID))).
+        WithWorkspace().
+        WithUser().
+        All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -282,25 +239,20 @@ func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, work
 }
 
 func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string, userID string) (*entity.WorkspaceMember, error) {
-	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
-	if err != nil {
-		return nil, err
-	}
+    uid, err := utils.ParseUUID(userID, "user ID")
+    if err != nil {
+        return nil, err
+    }
 
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	wm, err := client.WorkspaceMember.Query().
-		Where(func(s *sql.Selector) {
-			s.Where(sql.EQ(workspacemember.WorkspaceColumn, wid))
-			s.Where(sql.EQ(workspacemember.UserColumn, uid))
-		}).
-		WithWorkspace().
-		WithUser().
-		Only(ctx)
+    client := transaction.ResolveClient(ctx, r.client)
+    wm, err := client.WorkspaceMember.Query().
+        Where(func(s *sql.Selector) {
+            s.Where(sql.EQ(workspacemember.WorkspaceColumn, workspaceID))
+            s.Where(sql.EQ(workspacemember.UserColumn, uid))
+        }).
+        WithWorkspace().
+        WithUser().
+        Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil
@@ -312,16 +264,11 @@ func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string
 }
 
 func (r *workspaceRepository) SearchMembers(ctx context.Context, workspaceID string, query string, limit int, offset int) ([]*entity.WorkspaceMember, int, error) {
-	wid, err := utils.ParseUUID(workspaceID, "workspace ID")
-	if err != nil {
-		return nil, 0, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
+    client := transaction.ResolveClient(ctx, r.client)
 	trimmedQuery := strings.TrimSpace(query)
 
-	memberQuery := client.WorkspaceMember.Query().
-		Where(workspacemember.HasWorkspaceWith(workspace.ID(wid))).
+    memberQuery := client.WorkspaceMember.Query().
+        Where(workspacemember.HasWorkspaceWith(workspace.ID(workspaceID))).
 		WithWorkspace().
 		WithUser()
 
@@ -362,4 +309,45 @@ func (r *workspaceRepository) SearchMembers(ctx context.Context, workspaceID str
 	}
 
 	return result, total, nil
+}
+
+// New methods for slug-based workspace
+func (r *workspaceRepository) FindAllPublic(ctx context.Context) ([]*entity.Workspace, error) {
+    client := transaction.ResolveClient(ctx, r.client)
+    list, err := client.Workspace.Query().
+        Where(workspace.IsPublic(true)).
+        WithCreatedBy().
+        Order(ent.Desc(workspace.FieldCreatedAt)).
+        All(ctx)
+    if err != nil {
+        return nil, err
+    }
+
+    result := make([]*entity.Workspace, 0, len(list))
+    for _, w := range list {
+        result = append(result, utils.WorkspaceToEntity(w))
+    }
+    return result, nil
+}
+
+func (r *workspaceRepository) CountMembers(ctx context.Context, workspaceID string) (int, error) {
+    client := transaction.ResolveClient(ctx, r.client)
+    count, err := client.WorkspaceMember.Query().
+        Where(workspacemember.HasWorkspaceWith(workspace.ID(workspaceID))).
+        Count(ctx)
+    if err != nil {
+        return 0, err
+    }
+    return count, nil
+}
+
+func (r *workspaceRepository) ExistsByID(ctx context.Context, id string) (bool, error) {
+    client := transaction.ResolveClient(ctx, r.client)
+    count, err := client.Workspace.Query().
+        Where(workspace.ID(id)).
+        Count(ctx)
+    if err != nil {
+        return false, err
+    }
+    return count > 0, nil
 }

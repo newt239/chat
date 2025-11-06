@@ -18,14 +18,19 @@ func NewWorkspaceHandler(workspaceUC workspaceuc.WorkspaceUseCase) *WorkspaceHan
 
 // CreateWorkspaceRequest はワークスペース作成リクエストの構造体です
 type CreateWorkspaceRequest struct {
-	Name        string `json:"name" validate:"required,min=1"`
-	Description string `json:"description"`
+    ID          string  `json:"id" validate:"required,min=3,max=12"`
+    Name        string  `json:"name" validate:"required,min=1,max=100"`
+    Description string  `json:"description" validate:"max=500"`
+    IconURL     *string `json:"iconUrl" validate:"omitempty,url,max=2048"`
+    IsPublic    bool    `json:"isPublic"`
 }
 
 // UpdateWorkspaceRequest はワークスペース更新リクエストの構造体です
 type UpdateWorkspaceRequest struct {
-	Name        *string `json:"name,omitempty" validate:"omitempty,min=1"`
-	Description *string `json:"description,omitempty"`
+    Name        *string `json:"name,omitempty" validate:"omitempty,min=1,max=100"`
+    Description *string `json:"description,omitempty" validate:"omitempty,max=500"`
+    IconURL     *string `json:"iconUrl,omitempty" validate:"omitempty,url,max=2048"`
+    IsPublic    *bool   `json:"isPublic,omitempty"`
 }
 
 // AddMemberRequest はメンバー追加リクエストの構造体です
@@ -66,15 +71,13 @@ func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
 		return err
 	}
 
-	var description *string
-	if req.Description != "" {
-		description = &req.Description
-	}
-
 	input := workspaceuc.CreateWorkspaceInput{
-		Name:        req.Name,
-		Description: description,
-		CreatedBy:   userID,
+        ID:          req.ID,
+        Name:        req.Name,
+        Description: func() *string { if req.Description == "" { return nil }; s := req.Description; return &s }(),
+        IconURL:     req.IconURL,
+        IsPublic:    req.IsPublic,
+        CreatedBy:   userID,
 	}
 
 	workspace, err := h.workspaceUC.CreateWorkspace(c.Request().Context(), input)
@@ -130,6 +133,9 @@ func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context) error {
 		ID:          workspaceID,
 		Name:        req.Name,
 		Description: req.Description,
+        IconURL:     req.IconURL,
+        IsPublic:    req.IsPublic,
+        UserID:      func() string { uid, _ := utils.GetUserIDFromContext(c); return uid }(),
 	}
 
 	workspace, err := h.workspaceUC.UpdateWorkspace(c.Request().Context(), input)
@@ -138,6 +144,75 @@ func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, workspace)
+}
+
+// ListPublicWorkspaces は公開ワークスペース一覧を返します
+func (h *WorkspaceHandler) ListPublicWorkspaces(c echo.Context) error {
+    userID, err := utils.GetUserIDFromContext(c)
+    if err != nil {
+        return err
+    }
+
+    out, err := h.workspaceUC.ListPublicWorkspaces(c.Request().Context(), userID)
+    if err != nil {
+        return handleUseCaseError(err)
+    }
+    return c.JSON(http.StatusOK, out)
+}
+
+// JoinPublicWorkspace は公開ワークスペースに参加します
+func (h *WorkspaceHandler) JoinPublicWorkspace(c echo.Context) error {
+    workspaceID := c.Param("id")
+    if workspaceID == "" {
+        return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
+    }
+    userID, err := utils.GetUserIDFromContext(c)
+    if err != nil {
+        return err
+    }
+    _, err = h.workspaceUC.JoinPublicWorkspace(c.Request().Context(), workspaceuc.JoinPublicWorkspaceInput{
+        WorkspaceID: workspaceID,
+        UserID:      userID,
+    })
+    if err != nil {
+        return handleUseCaseError(err)
+    }
+    return c.JSON(http.StatusOK, map[string]string{"message": "ワークスペースに参加しました"})
+}
+
+type AddMemberByEmailRequest struct {
+    Email string `json:"email" validate:"required,email"`
+    Role  string `json:"role" validate:"required,oneof=owner admin member guest"`
+}
+
+// AddMemberByEmail はメールアドレスでメンバーを追加します
+func (h *WorkspaceHandler) AddMemberByEmail(c echo.Context) error {
+    workspaceID := c.Param("id")
+    if workspaceID == "" {
+        return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
+    }
+    userID, err := utils.GetUserIDFromContext(c)
+    if err != nil {
+        return err
+    }
+    var req AddMemberByEmailRequest
+    if err := c.Bind(&req); err != nil {
+        return utils.HandleBindError(err)
+    }
+    if err := c.Validate(&req); err != nil {
+        return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+    }
+
+    _, err = h.workspaceUC.AddMemberByEmail(c.Request().Context(), workspaceuc.AddMemberByEmailInput{
+        WorkspaceID: workspaceID,
+        Email:       req.Email,
+        Role:        req.Role,
+        RequestedBy: userID,
+    })
+    if err != nil {
+        return handleUseCaseError(err)
+    }
+    return c.JSON(http.StatusCreated, map[string]string{"message": "メンバーを追加しました"})
 }
 
 // DeleteWorkspace はワークスペースを削除します
