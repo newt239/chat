@@ -1,0 +1,38 @@
+ThreadMetadata:
+  type: object
+  properties:
+    messageId:
+      type: string
+      format: uuid
+    replyCount:
+      type: integer
+      minimum: 0
+    lastReplyAt:
+      type: string
+      format: date-time
+      nullable: true
+    lastReplyUser:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - displayName
+    participantUserIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+  required:
+    - messageId
+    - replyCount
+    - participantUserIds
+

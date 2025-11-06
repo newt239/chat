@@ -1,0 +1,24 @@
+/api/auth/register:
+  post:
+    operationId: register
+    summary: Register a new user
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RegisterRequest"
+    responses:
+      "201":
+        description: User created
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthResponse"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

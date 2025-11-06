@@ -1,0 +1,63 @@
+/api/channels/{channelId}/members/{userId}/role:
+  patch:
+    operationId: updateChannelMemberRole
+    summary: Update channel member role
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateChannelMemberRoleRequest"
+    responses:
+      "200":
+        description: Member role updated
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessResponse"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Channel or member not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "409":
+        description: Cannot update - last admin
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

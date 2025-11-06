@@ -1,0 +1,88 @@
+/api/channels/{channelId}/messages:
+  get:
+    operationId: listMessages
+    summary: List messages in channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 100
+      - name: since
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: until
+        in: query
+        schema:
+          type: string
+          format: date-time
+    responses:
+      "200":
+        description: List of messages
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessagesResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  post:
+    operationId: createMessage
+    summary: Create a new message
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateMessageRequest"
+    responses:
+      "201":
+        description: Message created
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Message"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

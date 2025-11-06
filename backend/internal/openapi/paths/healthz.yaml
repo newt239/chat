@@ -1,0 +1,13 @@
+/healthz:
+  get:
+    operationId: healthz
+    summary: Health check
+    responses:
+      "200":
+        description: OK
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: ok
+

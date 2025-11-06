@@ -1,0 +1,17 @@
+CreateMessageRequest:
+  type: object
+  properties:
+    body:
+      type: string
+      minLength: 1
+    parentId:
+      type: string
+      format: uuid
+    attachmentIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+  required:
+    - body
+

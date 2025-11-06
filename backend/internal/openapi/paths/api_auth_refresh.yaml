@@ -1,0 +1,29 @@
+/api/auth/refresh:
+  post:
+    operationId: refresh
+    summary: Refresh access token
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RefreshRequest"
+    responses:
+      "200":
+        description: Token refreshed
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accessToken:
+                  type: string
+              required:
+                - accessToken
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

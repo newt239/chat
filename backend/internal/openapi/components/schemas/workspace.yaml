@@ -1,0 +1,30 @@
+Workspace:
+  type: object
+  properties:
+    id:
+      type: string
+      description: slug identifier (3-12 chars, lowercase, digits, hyphen)
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    iconUrl:
+      type: string
+      nullable: true
+    isPublic:
+      type: boolean
+    role:
+      type: string
+      enum: [owner, admin, member, guest]
+    createdBy:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - name
+    - createdBy
+    - createdAt
+

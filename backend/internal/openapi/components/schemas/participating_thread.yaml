@@ -1,0 +1,28 @@
+ParticipatingThread:
+  type: object
+  properties:
+    thread_id:
+      type: string
+      format: uuid
+    channel_id:
+      type: string
+      format: uuid
+      nullable: true
+    first_message:
+      $ref: "#/components/schemas/Message"
+    reply_count:
+      type: integer
+      minimum: 0
+    last_activity_at:
+      type: string
+      format: date-time
+    unread_count:
+      type: integer
+      minimum: 0
+  required:
+    - thread_id
+    - first_message
+    - reply_count
+    - last_activity_at
+    - unread_count
+

@@ -1,0 +1,13 @@
+InviteChannelMemberRequest:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    role:
+      type: string
+      enum: [member, admin]
+      default: member
+  required:
+    - userId
+

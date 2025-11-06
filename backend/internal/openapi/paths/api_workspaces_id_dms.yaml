@@ -1,0 +1,67 @@
+/api/workspaces/{id}/dms:
+  get:
+    operationId: listDMs
+    summary: List DMs in workspace
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: List of DMs
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/DMOutput"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  post:
+    operationId: createDM
+    summary: Create a 1:1 DM
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateDMRequest"
+    responses:
+      "200":
+        description: DM created or retrieved
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DMOutput"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

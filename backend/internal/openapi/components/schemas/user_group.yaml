@@ -1,0 +1,31 @@
+UserGroup:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    workspaceId:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    createdBy:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - workspaceId
+    - name
+    - createdBy
+    - createdAt
+    - updatedAt
+

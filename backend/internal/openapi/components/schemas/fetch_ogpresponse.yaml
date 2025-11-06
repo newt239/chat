@@ -1,0 +1,24 @@
+FetchOGPResponse:
+  type: object
+  properties:
+    ogpData:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        siteName:
+          type: string
+          nullable: true
+        cardType:
+          type: string
+          nullable: true
+  required:
+    - ogpData
+

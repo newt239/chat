@@ -1,0 +1,14 @@
+WorkspaceSearchResponse:
+  type: object
+  properties:
+    messages:
+      $ref: "#/components/schemas/PaginatedMessages"
+    channels:
+      $ref: "#/components/schemas/PaginatedChannels"
+    users:
+      $ref: "#/components/schemas/PaginatedUsers"
+  required:
+    - messages
+    - channels
+    - users
+

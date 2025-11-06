@@ -1,0 +1,77 @@
+/api/channels/{channelId}/members/self:
+  post:
+    operationId: joinPublicChannel
+    summary: Join public channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Joined channel
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Channel is private
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  delete:
+    operationId: leaveChannel
+    summary: Leave channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Left channel
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "409":
+        description: Cannot leave - last admin
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

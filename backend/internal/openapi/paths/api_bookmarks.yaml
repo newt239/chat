@@ -1,0 +1,20 @@
+/api/bookmarks:
+  get:
+    operationId: listBookmarks
+    summary: List user bookmarks
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: List of bookmarks
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListBookmarksResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

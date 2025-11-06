@@ -1,0 +1,23 @@
+User:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    email:
+      type: string
+      format: email
+    displayName:
+      type: string
+    avatarUrl:
+      type: string
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - email
+    - displayName
+    - createdAt
+

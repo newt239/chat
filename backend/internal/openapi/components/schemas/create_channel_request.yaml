@@ -1,0 +1,14 @@
+CreateChannelRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+    description:
+      type: string
+    isPrivate:
+      type: boolean
+      default: false
+  required:
+    - name
+

@@ -1,0 +1,103 @@
+/api/user-groups/{id}:
+  get:
+    operationId: getUserGroup
+    summary: Get a user group
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: User group retrieved
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserGroup"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: User group not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+  patch:
+    operationId: updateUserGroup
+    summary: Update a user group
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateUserGroupRequest"
+    responses:
+      "200":
+        description: User group updated
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserGroup"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: User group not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+  delete:
+    operationId: deleteUserGroup
+    summary: Delete a user group
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "204":
+        description: User group deleted
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: User group not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

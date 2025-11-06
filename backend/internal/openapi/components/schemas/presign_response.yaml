@@ -1,0 +1,13 @@
+PresignResponse:
+  type: object
+  properties:
+    uploadUrl:
+      type: string
+      format: uri
+    attachmentId:
+      type: string
+      format: uuid
+  required:
+    - uploadUrl
+    - attachmentId
+

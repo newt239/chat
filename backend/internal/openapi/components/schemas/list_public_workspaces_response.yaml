@@ -1,0 +1,9 @@
+ListPublicWorkspacesResponse:
+  type: object
+  properties:
+    workspaces:
+      type: array
+      items:
+        $ref: "#/components/schemas/PublicWorkspaceItem"
+  required: [workspaces]
+

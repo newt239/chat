@@ -1,0 +1,10 @@
+ListChannelMembersResponse:
+  type: object
+  properties:
+    members:
+      type: array
+      items:
+        $ref: "#/components/schemas/ChannelMemberInfo"
+  required:
+    - members
+

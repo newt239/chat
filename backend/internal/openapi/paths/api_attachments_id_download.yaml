@@ -1,0 +1,39 @@
+/api/attachments/{id}/download:
+  get:
+    operationId: downloadAttachment
+    summary: Get presigned download URL
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Presigned download URL
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                downloadUrl:
+                  type: string
+                  format: uri
+              required:
+                - downloadUrl
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Attachment not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

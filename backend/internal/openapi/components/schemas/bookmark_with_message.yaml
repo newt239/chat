@@ -1,0 +1,16 @@
+BookmarkWithMessage:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    message:
+      $ref: "#/components/schemas/Message"
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - userId
+    - message
+    - createdAt
+

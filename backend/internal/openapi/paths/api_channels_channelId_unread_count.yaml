@@ -1,0 +1,27 @@
+/api/channels/{channelId}/unread_count:
+  get:
+    operationId: getUnreadCount
+    summary: Get unread message count
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Unread count
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnreadCountResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

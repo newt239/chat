@@ -1,0 +1,9 @@
+UpdateReadStateRequest:
+  type: object
+  properties:
+    lastReadAt:
+      type: string
+      format: date-time
+  required:
+    - lastReadAt
+

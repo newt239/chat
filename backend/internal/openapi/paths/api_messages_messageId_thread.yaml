@@ -1,0 +1,40 @@
+/api/messages/{messageId}/thread:
+  get:
+    operationId: getThreadReplies
+    summary: Get thread replies for a message
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 100
+    responses:
+      "200":
+        description: Thread replies retrieved
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThreadRepliesResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

@@ -1,0 +1,17 @@
+UserGroupMember:
+  type: object
+  properties:
+    groupId:
+      type: string
+      format: uuid
+    userId:
+      type: string
+      format: uuid
+    joinedAt:
+      type: string
+      format: date-time
+  required:
+    - groupId
+    - userId
+    - joinedAt
+

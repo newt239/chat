@@ -1,0 +1,95 @@
+/api/channels/{channelId}/members:
+  get:
+    operationId: listChannelMembers
+    summary: List channel members
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: List of channel members
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListChannelMembersResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  post:
+    operationId: inviteChannelMember
+    summary: Invite member to channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InviteChannelMemberRequest"
+    responses:
+      "200":
+        description: Member invited
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuccessResponse"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Channel or user not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "409":
+        description: Already a member
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

@@ -1,0 +1,25 @@
+PaginatedUsers:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "#/components/schemas/MemberInfo"
+    total:
+      type: integer
+      minimum: 0
+    page:
+      type: integer
+      minimum: 1
+    perPage:
+      type: integer
+      minimum: 1
+    hasMore:
+      type: boolean
+  required:
+    - items
+    - total
+    - page
+    - perPage
+    - hasMore
+

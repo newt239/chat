@@ -1,0 +1,105 @@
+/api/messages/{messageId}:
+  patch:
+    operationId: updateMessage
+    summary: Update a message
+    description: Updates a message body (author or admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateMessageRequest"
+    responses:
+      "200":
+        description: Message updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Message"
+      "400":
+        description: Bad request or message already deleted
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden - not message author or admin
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "500":
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  delete:
+    operationId: deleteMessage
+    summary: Delete a message
+    description: Deletes a message (author or admin only)
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "204":
+        description: Message deleted successfully
+      "400":
+        description: Bad request or message already deleted
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden - not message author or admin
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "500":
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

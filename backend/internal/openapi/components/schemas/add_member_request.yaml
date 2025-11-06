@@ -1,0 +1,13 @@
+AddMemberRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+    role:
+      type: string
+      enum: [admin, member]
+      default: member
+  required:
+    - email
+

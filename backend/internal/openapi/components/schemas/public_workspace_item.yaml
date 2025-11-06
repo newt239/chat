@@ -1,0 +1,23 @@
+PublicWorkspaceItem:
+  type: object
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    iconUrl:
+      type: string
+      nullable: true
+    memberCount:
+      type: integer
+      minimum: 0
+    isJoined:
+      type: boolean
+    createdAt:
+      type: string
+      format: date-time
+  required: [id, name, memberCount, isJoined, createdAt]
+

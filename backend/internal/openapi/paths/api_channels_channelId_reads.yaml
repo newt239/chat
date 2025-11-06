@@ -1,0 +1,29 @@
+/api/channels/{channelId}/reads:
+  post:
+    operationId: updateReadState
+    summary: Update channel read state
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateReadStateRequest"
+    responses:
+      "200":
+        description: Read state updated
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

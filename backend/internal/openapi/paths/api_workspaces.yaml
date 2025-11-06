@@ -1,0 +1,45 @@
+/api/workspaces:
+  get:
+    operationId: listWorkspaces
+    summary: List user workspaces
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: List of workspaces
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workspaces:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Workspace"
+              required:
+                - workspaces
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  post:
+    operationId: createWorkspace
+    summary: Create a new workspace
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateWorkspaceRequest"
+    responses:
+      "201":
+        description: Workspace created
+        content:
+          application/json:
+            schema:
+            $ref: "#/components/schemas/Workspace"

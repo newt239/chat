@@ -1,0 +1,26 @@
+Attachment:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    messageId:
+      type: string
+      format: uuid
+    fileName:
+      type: string
+    mimeType:
+      type: string
+    sizeBytes:
+      type: integer
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - messageId
+    - fileName
+    - mimeType
+    - sizeBytes
+    - createdAt
+

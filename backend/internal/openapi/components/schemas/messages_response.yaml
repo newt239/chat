@@ -1,0 +1,13 @@
+MessagesResponse:
+  type: object
+  properties:
+    messages:
+      type: array
+      items:
+        $ref: "#/components/schemas/Message"
+    hasMore:
+      type: boolean
+  required:
+    - messages
+    - hasMore
+

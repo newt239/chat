@@ -1,0 +1,29 @@
+/api/threads/{threadId}/read:
+  post:
+    operationId: markThreadRead
+    summary: Mark thread as read
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: threadId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "204":
+        description: Thread marked as read
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

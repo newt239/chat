@@ -1,0 +1,40 @@
+/api/channels/{channelId}/pins/{messageId}:
+  delete:
+    operationId: deletePin
+    summary: Unpin a message in a channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Unpinned
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"

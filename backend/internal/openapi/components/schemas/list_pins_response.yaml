@@ -1,0 +1,11 @@
+ListPinsResponse:
+  type: object
+  properties:
+    pins:
+      type: array
+      items:
+        $ref: "#/components/schemas/PinnedMessage"
+    nextCursor:
+      type: string
+      nullable: true
+  required: [pins]

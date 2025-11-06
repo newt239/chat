@@ -1,0 +1,61 @@
+/api/user-groups:
+  post:
+    operationId: createUserGroup
+    summary: Create a new user group
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CreateUserGroupRequest"
+    responses:
+      "201":
+        description: User group created
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserGroup"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+  get:
+    operationId: listUserGroups
+    summary: List user groups
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: workspace_id
+        in: query
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: User groups retrieved
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userGroups:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/UserGroup"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

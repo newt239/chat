@@ -1,0 +1,15 @@
+CreateGroupDMRequest:
+  type: object
+  properties:
+    userIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+      minItems: 2
+      maxItems: 9
+    name:
+      type: string
+  required:
+    - userIds
+

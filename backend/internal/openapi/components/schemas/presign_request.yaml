@@ -1,0 +1,18 @@
+PresignRequest:
+  type: object
+  properties:
+    fileName:
+      type: string
+    contentType:
+      type: string
+    sizeBytes:
+      type: integer
+    channelId:
+      type: string
+      format: uuid
+  required:
+    - fileName
+    - contentType
+    - sizeBytes
+    - channelId
+

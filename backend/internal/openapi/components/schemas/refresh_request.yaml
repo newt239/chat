@@ -1,0 +1,8 @@
+RefreshRequest:
+  type: object
+  properties:
+    refreshToken:
+      type: string
+  required:
+    - refreshToken
+

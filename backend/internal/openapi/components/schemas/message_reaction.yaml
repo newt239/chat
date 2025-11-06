@@ -1,0 +1,21 @@
+MessageReaction:
+  type: object
+  properties:
+    messageId:
+      type: string
+      format: uuid
+    userId:
+      type: string
+      format: uuid
+    emoji:
+      type: string
+      description: "Unicode絵文字または将来的にカスタム絵文字ID"
+    createdAt:
+      type: string
+      format: date-time
+  required:
+    - messageId
+    - userId
+    - emoji
+    - createdAt
+

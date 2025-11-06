@@ -1,0 +1,16 @@
+/api/auth/logout:
+  post:
+    operationId: logout
+    summary: Logout user
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: Logout successful
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

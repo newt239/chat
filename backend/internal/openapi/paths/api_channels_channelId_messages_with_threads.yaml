@@ -1,0 +1,66 @@
+/api/channels/{channelId}/messages/with-threads:
+  get:
+    operationId: listMessagesWithThread
+    summary: List messages in channel with thread metadata
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 100
+      - name: since
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: until
+        in: query
+        schema:
+          type: string
+          format: date-time
+    responses:
+      "200":
+        description: List of messages with thread metadata
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messages:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: "#/components/schemas/Message"
+                      - type: object
+                        properties:
+                          threadMetadata:
+                            $ref: "#/components/schemas/ThreadMetadata"
+                            nullable: true
+                hasMore:
+                  type: boolean
+              required:
+                - messages
+                - hasMore
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

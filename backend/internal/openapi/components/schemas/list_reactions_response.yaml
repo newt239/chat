@@ -1,0 +1,10 @@
+ListReactionsResponse:
+  type: object
+  properties:
+    reactions:
+      type: array
+      items:
+        $ref: "#/components/schemas/ReactionWithUser"
+  required:
+    - reactions
+

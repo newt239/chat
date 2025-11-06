@@ -1,0 +1,60 @@
+/api/workspaces/{id}/members:
+  get:
+    operationId: listMembers
+    summary: List workspace members
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: List of members
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListMembersResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Workspace not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  post:
+    operationId: addMemberByEmail
+    summary: Add member to workspace by email
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AddMemberRequest"
+    responses:
+      "201":
+        description: Member added
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+              required: [message]

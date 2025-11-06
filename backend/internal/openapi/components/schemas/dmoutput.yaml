@@ -1,0 +1,36 @@
+DMOutput:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    workspaceId:
+      type: string
+      format: uuid
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    type:
+      type: string
+      enum: [dm, group_dm]
+    members:
+      type: array
+      items:
+        $ref: "#/components/schemas/DMMember"
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  required:
+    - id
+    - workspaceId
+    - name
+    - type
+    - members
+    - createdAt
+    - updatedAt
+

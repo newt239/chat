@@ -1,0 +1,10 @@
+UpdateMessageRequest:
+  type: object
+  properties:
+    body:
+      type: string
+      minLength: 1
+      maxLength: 10000
+  required:
+    - body
+

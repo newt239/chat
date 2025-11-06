@@ -1,0 +1,55 @@
+Message:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    channelId:
+      type: string
+      format: uuid
+    userId:
+      type: string
+      format: uuid
+    parentId:
+      type: string
+      format: uuid
+      nullable: true
+    body:
+      type: string
+    createdAt:
+      type: string
+      format: date-time
+    editedAt:
+      type: string
+      format: date-time
+      nullable: true
+    deletedAt:
+      type: string
+      format: date-time
+      nullable: true
+    isDeleted:
+      type: boolean
+    deletedBy:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+    attachments:
+      type: array
+      items:
+        $ref: "#/components/schemas/Attachment"
+  required:
+    - id
+    - channelId
+    - userId
+    - body
+    - createdAt
+    - isDeleted
+

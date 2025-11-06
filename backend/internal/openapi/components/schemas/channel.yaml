@@ -1,0 +1,39 @@
+Channel:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    workspaceId:
+      type: string
+    name:
+      type: string
+    description:
+      type: string
+      nullable: true
+    isPrivate:
+      type: boolean
+    channelType:
+      type: string
+      enum: [public, private, dm, group_dm]
+    createdBy:
+      type: string
+      format: uuid
+    createdAt:
+      type: string
+      format: date-time
+    unreadCount:
+      type: integer
+      description: 未読メッセージ数
+      minimum: 0
+    hasMention:
+      type: boolean
+      description: 未読メンションの有無
+  required:
+    - id
+    - workspaceId
+    - name
+    - isPrivate
+    - createdBy
+    - createdAt
+

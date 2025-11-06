@@ -1,0 +1,15 @@
+CreateUserGroupRequest:
+  type: object
+  properties:
+    workspaceId:
+      type: string
+      format: uuid
+    name:
+      type: string
+      minLength: 1
+    description:
+      type: string
+  required:
+    - workspaceId
+    - name
+

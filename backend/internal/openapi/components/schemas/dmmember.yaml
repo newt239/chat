@@ -1,0 +1,15 @@
+DMMember:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    displayName:
+      type: string
+    avatarUrl:
+      type: string
+      nullable: true
+  required:
+    - userId
+    - displayName
+

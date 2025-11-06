@@ -1,0 +1,16 @@
+ThreadRepliesResponse:
+  type: object
+  properties:
+    parentMessage:
+      $ref: "#/components/schemas/Message"
+    replies:
+      type: array
+      items:
+        $ref: "#/components/schemas/Message"
+    hasMore:
+      type: boolean
+  required:
+    - parentMessage
+    - replies
+    - hasMore
+

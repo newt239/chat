@@ -1,0 +1,52 @@
+/api/workspaces/{workspaceId}/threads/participating:
+  get:
+    operationId: getParticipatingThreads
+    summary: Get participating threads
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: workspaceId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: cursorLastActivityAt
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: cursorThreadId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    responses:
+      "200":
+        description: List of participating threads
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParticipatingThreadsOutput"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

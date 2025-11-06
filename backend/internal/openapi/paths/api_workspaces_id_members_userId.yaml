@@ -1,0 +1,79 @@
+/api/workspaces/{id}/members/{userId}:
+  patch:
+    operationId: updateMemberRole
+    summary: Update member role
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdateMemberRoleRequest"
+    responses:
+      "200":
+        description: Member role updated
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Member not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  delete:
+    operationId: removeMember
+    summary: Remove member from workspace
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Member removed
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Member not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

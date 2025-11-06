@@ -1,0 +1,10 @@
+ListBookmarksResponse:
+  type: object
+  properties:
+    bookmarks:
+      type: array
+      items:
+        $ref: "#/components/schemas/BookmarkWithMessage"
+  required:
+    - bookmarks
+

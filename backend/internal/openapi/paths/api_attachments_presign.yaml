@@ -1,0 +1,26 @@
+/api/attachments/presign:
+  post:
+    operationId: presignUpload
+    summary: Get presigned upload URL
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PresignRequest"
+    responses:
+      "200":
+        description: Presigned URL
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PresignResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

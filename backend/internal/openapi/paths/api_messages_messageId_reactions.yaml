@@ -1,0 +1,67 @@
+/api/messages/{messageId}/reactions:
+  get:
+    operationId: listReactions
+    summary: List reactions for a message
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: List of reactions
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListReactionsResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  post:
+    operationId: addReaction
+    summary: Add a reaction to a message
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AddReactionRequest"
+    responses:
+      "201":
+        description: Reaction added
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

@@ -1,0 +1,13 @@
+PinnedMessage:
+  type: object
+  properties:
+    message:
+      $ref: "#/components/schemas/Message"
+    pinnedAt:
+      type: string
+      format: date-time
+    pinnedBy:
+      type: string
+      format: uuid
+  required: [message, pinnedAt, pinnedBy]
+

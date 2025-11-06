@@ -1,0 +1,33 @@
+/api/messages/{messageId}/thread/metadata:
+  get:
+    operationId: getThreadMetadata
+    summary: Get thread metadata for a message
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Thread metadata retrieved
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThreadMetadata"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Message or metadata not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

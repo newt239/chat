@@ -1,0 +1,17 @@
+RegisterRequest:
+  type: object
+  properties:
+    email:
+      type: string
+      format: email
+    password:
+      type: string
+      minLength: 8
+    displayName:
+      type: string
+      minLength: 1
+  required:
+    - email
+    - password
+    - displayName
+

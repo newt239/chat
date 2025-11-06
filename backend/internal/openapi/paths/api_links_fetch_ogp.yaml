@@ -1,0 +1,32 @@
+/api/links/fetch-ogp:
+  post:
+    operationId: fetchOGP
+    summary: Fetch OGP data for a URL
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/FetchOGPRequest"
+    responses:
+      "200":
+        description: OGP data retrieved
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FetchOGPResponse"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

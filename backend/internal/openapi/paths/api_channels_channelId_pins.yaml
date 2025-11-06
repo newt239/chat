@@ -1,0 +1,90 @@
+/api/channels/{channelId}/pins:
+  get:
+    operationId: listPins
+    summary: List pinned messages in a channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Pinned messages
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListPinsResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+  post:
+    operationId: createPin
+    summary: Pin a message in a channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              messageId:
+                type: string
+                format: uuid
+            required: [messageId]
+    responses:
+      "200":
+        description: Pinned
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+

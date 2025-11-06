@@ -1,0 +1,14 @@
+ParticipatingThreadsOutput:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "#/components/schemas/ParticipatingThread"
+    next_cursor:
+      $ref: "#/components/schemas/ThreadCursor"
+      nullable: true
+  required:
+    - items
+
+# Public workspaces

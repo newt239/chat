@@ -1,0 +1,34 @@
+/api/messages/{messageId}/reactions/{emoji}:
+  delete:
+    operationId: removeReaction
+    summary: Remove a reaction from a message
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: emoji
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Reaction removed
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Reaction not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
