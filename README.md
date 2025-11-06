@@ -1,7 +1,5 @@
 # Chat Application
 
-Slack ライクなリアルタイムチャットアプリケーション。ワークスペース、チャンネル、ファイル添付機能を備えています。
-
 ## クイックスタート
 
 ```bash
@@ -46,24 +44,21 @@ docker-compose ps
 ### バックエンド
 
 - Go 1.23+
-- Echo (HTTP ルーター)
+- Echo
 - WebSocket (gorilla/websocket)
 - ent (ORM)
 - PostgreSQL
-- JWT 認証
-- Wasabi S3 互換ストレージ
-- クリーンアーキテクチャ実装
+- Wasabi
 
 ### フロントエンド
 
 - React 19
 - TypeScript
 - Vite
-- Mantine 8 (UI コンポーネント)
+- Mantine 8
 - Tailwind CSS
 - TanStack Router
 - TanStack Query
-- PWA 対応 (vite-plugin-pwa)
 - Vitest + Storybook
 
 ### インフラ
@@ -155,15 +150,6 @@ docker-compose down -v
 cp backend/.env.example backend/.env
 ```
 
-### 主要な環境変数
-
-- `POSTGRES_USER`: PostgreSQL のユーザー名（デフォルト: postgres）
-- `POSTGRES_PASSWORD`: PostgreSQL のパスワード（デフォルト: postgres）
-- `POSTGRES_DB`: PostgreSQL のデータベース名（デフォルト: chat）
-- `POSTGRES_HOST`: PostgreSQL のホスト名（デフォルト: db）
-- `POSTGRES_PORT`: PostgreSQL のポート番号（デフォルト: 5432）
-- `POSTGRES_URL`: PostgreSQL の接続 URL（上記の変数から自動生成）
-
 ## データベース管理
 
 ### スキーマ管理
@@ -223,16 +209,16 @@ xdg-open backend/ent/schema-viz.html
 
 ### 本番環境へのデプロイ
 
-このプロジェクトは、ConoHa VPSへのデプロイに対応しています。GitHub Actionsによる自動デプロイが設定されており、mainブランチへのプッシュで本番環境が自動的に更新されます。
+このプロジェクトは、ConoHa VPS へのデプロイに対応しています。GitHub Actions による自動デプロイが設定されており、main ブランチへのプッシュで本番環境が自動的に更新されます。
 
 詳細な手順は以下のドキュメントを参照してください：
 
-- **[デプロイ手順書](docs/deployment.md)** - ConoHa VPSへのデプロイ手順
+- **[デプロイ手順書](docs/deployment.md)** - ConoHa VPS へのデプロイ手順
 - **[デプロイチェックリスト](docs/deployment-checklist.md)** - デプロイ作業のチェックリスト
 
 ### プレビュー環境
 
-mainブランチ以外へのプッシュで、自動的にプレビュー環境が作成されます。これにより、本番環境に影響を与えることなく、新機能や修正をテストできます。
+main ブランチ以外へのプッシュで、自動的にプレビュー環境が作成されます。これにより、本番環境に影響を与えることなく、新機能や修正をテストできます。
 
 ```bash
 # 新しいブランチを作成してプッシュ
