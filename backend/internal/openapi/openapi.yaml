@@ -14,7 +14,201 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    $ref: "./components/schemas.yaml#/schemas"
+    AddMemberRequest:
+      $ref: "./components/schemas/add_member_request.yaml#/AddMemberRequest"
+    AddReactionRequest:
+      $ref: "./components/schemas/add_reaction_request.yaml#/AddReactionRequest"
+    Attachment:
+      $ref: "./components/schemas/attachment.yaml#/Attachment"
+    AuthResponse:
+      $ref: "./components/schemas/auth_response.yaml#/AuthResponse"
+    BookmarkWithMessage:
+      $ref: "./components/schemas/bookmark_with_message.yaml#/BookmarkWithMessage"
+    Channel:
+      $ref: "./components/schemas/channel.yaml#/Channel"
+    ChannelMemberInfo:
+      $ref: "./components/schemas/channel_member_info.yaml#/ChannelMemberInfo"
+    CreateChannelRequest:
+      $ref: "./components/schemas/create_channel_request.yaml#/CreateChannelRequest"
+    CreateDMRequest:
+      $ref: "./components/schemas/create_dmrequest.yaml#/CreateDMRequest"
+    CreateGroupDMRequest:
+      $ref: "./components/schemas/create_group_dmrequest.yaml#/CreateGroupDMRequest"
+    CreateMessageRequest:
+      $ref: "./components/schemas/create_message_request.yaml#/CreateMessageRequest"
+    CreateUserGroupRequest:
+      $ref: "./components/schemas/create_user_group_request.yaml#/CreateUserGroupRequest"
+    CreateWorkspaceRequest:
+      $ref: "./components/schemas/create_workspace_request.yaml#/CreateWorkspaceRequest"
+    DMMember:
+      $ref: "./components/schemas/dmmember.yaml#/DMMember"
+    DMOutput:
+      $ref: "./components/schemas/dmoutput.yaml#/DMOutput"
+    Error:
+      $ref: "./components/schemas/error.yaml#/Error"
+    FetchOGPRequest:
+      $ref: "./components/schemas/fetch_ogprequest.yaml#/FetchOGPRequest"
+    FetchOGPResponse:
+      $ref: "./components/schemas/fetch_ogpresponse.yaml#/FetchOGPResponse"
+    InviteChannelMemberRequest:
+      $ref: "./components/schemas/invite_channel_member_request.yaml#/InviteChannelMemberRequest"
+    ListBookmarksResponse:
+      $ref: "./components/schemas/list_bookmarks_response.yaml#/ListBookmarksResponse"
+    ListChannelMembersResponse:
+      $ref: "./components/schemas/list_channel_members_response.yaml#/ListChannelMembersResponse"
+    ListMembersResponse:
+      $ref: "./components/schemas/list_members_response.yaml#/ListMembersResponse"
+    ListPinsResponse:
+      $ref: "./components/schemas/list_pins_response.yaml#/ListPinsResponse"
+    ListPublicWorkspacesResponse:
+      $ref: "./components/schemas/list_public_workspaces_response.yaml#/ListPublicWorkspacesResponse"
+    ListReactionsResponse:
+      $ref: "./components/schemas/list_reactions_response.yaml#/ListReactionsResponse"
+    LoginRequest:
+      $ref: "./components/schemas/login_request.yaml#/LoginRequest"
+    MemberInfo:
+      $ref: "./components/schemas/member_info.yaml#/MemberInfo"
+    Message:
+      $ref: "./components/schemas/message.yaml#/Message"
+    MessageBookmark:
+      $ref: "./components/schemas/message_bookmark.yaml#/MessageBookmark"
+    MessageReaction:
+      $ref: "./components/schemas/message_reaction.yaml#/MessageReaction"
+    MessagesResponse:
+      $ref: "./components/schemas/messages_response.yaml#/MessagesResponse"
+    PaginatedChannels:
+      $ref: "./components/schemas/paginated_channels.yaml#/PaginatedChannels"
+    PaginatedMessages:
+      $ref: "./components/schemas/paginated_messages.yaml#/PaginatedMessages"
+    PaginatedUsers:
+      $ref: "./components/schemas/paginated_users.yaml#/PaginatedUsers"
+    ParticipatingThread:
+      $ref: "./components/schemas/participating_thread.yaml#/ParticipatingThread"
+    ParticipatingThreadsOutput:
+      $ref: "./components/schemas/participating_threads_output.yaml#/ParticipatingThreadsOutput"
+    PinnedMessage:
+      $ref: "./components/schemas/pinned_message.yaml#/PinnedMessage"
+    PresignRequest:
+      $ref: "./components/schemas/presign_request.yaml#/PresignRequest"
+    PresignResponse:
+      $ref: "./components/schemas/presign_response.yaml#/PresignResponse"
+    PublicWorkspaceItem:
+      $ref: "./components/schemas/public_workspace_item.yaml#/PublicWorkspaceItem"
+    ReactionWithUser:
+      $ref: "./components/schemas/reaction_with_user.yaml#/ReactionWithUser"
+    RefreshRequest:
+      $ref: "./components/schemas/refresh_request.yaml#/RefreshRequest"
+    RegisterRequest:
+      $ref: "./components/schemas/register_request.yaml#/RegisterRequest"
+    SuccessResponse:
+      $ref: "./components/schemas/success_response.yaml#/SuccessResponse"
+    ThreadCursor:
+      $ref: "./components/schemas/thread_cursor.yaml#/ThreadCursor"
+    ThreadMetadata:
+      $ref: "./components/schemas/thread_metadata.yaml#/ThreadMetadata"
+    ThreadRepliesResponse:
+      $ref: "./components/schemas/thread_replies_response.yaml#/ThreadRepliesResponse"
+    UnreadCountResponse:
+      $ref: "./components/schemas/unread_count_response.yaml#/UnreadCountResponse"
+    UpdateChannelMemberRoleRequest:
+      $ref: "./components/schemas/update_channel_member_role_request.yaml#/UpdateChannelMemberRoleRequest"
+    UpdateMemberRoleRequest:
+      $ref: "./components/schemas/update_member_role_request.yaml#/UpdateMemberRoleRequest"
+    UpdateMessageRequest:
+      $ref: "./components/schemas/update_message_request.yaml#/UpdateMessageRequest"
+    UpdateReadStateRequest:
+      $ref: "./components/schemas/update_read_state_request.yaml#/UpdateReadStateRequest"
+    UpdateUserGroupRequest:
+      $ref: "./components/schemas/update_user_group_request.yaml#/UpdateUserGroupRequest"
+    User:
+      $ref: "./components/schemas/user.yaml#/User"
+    UserGroup:
+      $ref: "./components/schemas/user_group.yaml#/UserGroup"
+    UserGroupMember:
+      $ref: "./components/schemas/user_group_member.yaml#/UserGroupMember"
+    Workspace:
+      $ref: "./components/schemas/workspace.yaml#/Workspace"
+    WorkspaceSearchResponse:
+      $ref: "./components/schemas/workspace_search_response.yaml#/WorkspaceSearchResponse"
 
 paths:
-  $ref: "./paths.yaml#/paths"
+  /api/attachments/presign:
+    $ref: "./paths/api_attachments_presign.yaml#/~1api~1attachments~1presign"
+  /api/attachments/{id}:
+    $ref: "./paths/api_attachments_id.yaml#/~1api~1attachments~1{id}"
+  /api/attachments/{id}/download:
+    $ref: "./paths/api_attachments_id_download.yaml#/~1api~1attachments~1{id}~1download"
+  /api/auth/login:
+    $ref: "./paths/api_auth_login.yaml#/~1api~1auth~1login"
+  /api/auth/logout:
+    $ref: "./paths/api_auth_logout.yaml#/~1api~1auth~1logout"
+  /api/auth/refresh:
+    $ref: "./paths/api_auth_refresh.yaml#/~1api~1auth~1refresh"
+  /api/auth/register:
+    $ref: "./paths/api_auth_register.yaml#/~1api~1auth~1register"
+  /api/bookmarks:
+    $ref: "./paths/api_bookmarks.yaml#/~1api~1bookmarks"
+  /api/channels/{channelId}/members:
+    $ref: "./paths/api_channels_channelId_members.yaml#/~1api~1channels~1{channelId}~1members"
+  /api/channels/{channelId}/members/self:
+    $ref: "./paths/api_channels_channelId_members_self.yaml#/~1api~1channels~1{channelId}~1members~1self"
+  /api/channels/{channelId}/members/{userId}:
+    $ref: "./paths/api_channels_channelId_members_userId.yaml#/~1api~1channels~1{channelId}~1members~1{userId}"
+  /api/channels/{channelId}/members/{userId}/role:
+    $ref: "./paths/api_channels_channelId_members_userId_role.yaml#/~1api~1channels~1{channelId}~1members~1{userId}~1role"
+  /api/channels/{channelId}/messages:
+    $ref: "./paths/api_channels_channelId_messages.yaml#/~1api~1channels~1{channelId}~1messages"
+  /api/channels/{channelId}/messages/with-threads:
+    $ref: "./paths/api_channels_channelId_messages_with_threads.yaml#/~1api~1channels~1{channelId}~1messages~1with-threads"
+  /api/channels/{channelId}/pins:
+    $ref: "./paths/api_channels_channelId_pins.yaml#/~1api~1channels~1{channelId}~1pins"
+  /api/channels/{channelId}/pins/{messageId}:
+    $ref: "./paths/api_channels_channelId_pins_messageId.yaml#/~1api~1channels~1{channelId}~1pins~1{messageId}"
+  /api/channels/{channelId}/reads:
+    $ref: "./paths/api_channels_channelId_reads.yaml#/~1api~1channels~1{channelId}~1reads"
+  /api/channels/{channelId}/unread_count:
+    $ref: "./paths/api_channels_channelId_unread_count.yaml#/~1api~1channels~1{channelId}~1unread_count"
+  /api/links/fetch-ogp:
+    $ref: "./paths/api_links_fetch_ogp.yaml#/~1api~1links~1fetch-ogp"
+  /api/messages/{messageId}:
+    $ref: "./paths/api_messages_messageId.yaml#/~1api~1messages~1{messageId}"
+  /api/messages/{messageId}/bookmarks:
+    $ref: "./paths/api_messages_messageId_bookmarks.yaml#/~1api~1messages~1{messageId}~1bookmarks"
+  /api/messages/{messageId}/reactions:
+    $ref: "./paths/api_messages_messageId_reactions.yaml#/~1api~1messages~1{messageId}~1reactions"
+  /api/messages/{messageId}/reactions/{emoji}:
+    $ref: "./paths/api_messages_messageId_reactions_emoji.yaml#/~1api~1messages~1{messageId}~1reactions~1{emoji}"
+  /api/messages/{messageId}/thread:
+    $ref: "./paths/api_messages_messageId_thread.yaml#/~1api~1messages~1{messageId}~1thread"
+  /api/messages/{messageId}/thread/metadata:
+    $ref: "./paths/api_messages_messageId_thread_metadata.yaml#/~1api~1messages~1{messageId}~1thread~1metadata"
+  /api/threads/{threadId}/read:
+    $ref: "./paths/api_threads_threadId_read.yaml#/~1api~1threads~1{threadId}~1read"
+  /api/user-groups:
+    $ref: "./paths/api_user_groups.yaml#/~1api~1user-groups"
+  /api/user-groups/{id}:
+    $ref: "./paths/api_user_groups_id.yaml#/~1api~1user-groups~1{id}"
+  /api/user-groups/{id}/members:
+    $ref: "./paths/api_user_groups_id_members.yaml#/~1api~1user-groups~1{id}~1members"
+  /api/workspaces:
+    $ref: "./paths/api_workspaces.yaml#/~1api~1workspaces"
+  /api/workspaces/public:
+    $ref: "./paths/api_workspaces_public.yaml#/~1api~1workspaces~1public"
+  /api/workspaces/{id}/channels:
+    $ref: "./paths/api_workspaces_id_channels.yaml#/~1api~1workspaces~1{id}~1channels"
+  /api/workspaces/{id}/dms:
+    $ref: "./paths/api_workspaces_id_dms.yaml#/~1api~1workspaces~1{id}~1dms"
+  /api/workspaces/{id}/group-dms:
+    $ref: "./paths/api_workspaces_id_group_dms.yaml#/~1api~1workspaces~1{id}~1group-dms"
+  /api/workspaces/{id}/join:
+    $ref: "./paths/api_workspaces_id_join.yaml#/~1api~1workspaces~1{id}~1join"
+  /api/workspaces/{id}/members:
+    $ref: "./paths/api_workspaces_id_members.yaml#/~1api~1workspaces~1{id}~1members"
+  /api/workspaces/{id}/members/{userId}:
+    $ref: "./paths/api_workspaces_id_members_userId.yaml#/~1api~1workspaces~1{id}~1members~1{userId}"
+  /api/workspaces/{workspaceId}/search:
+    $ref: "./paths/api_workspaces_workspaceId_search.yaml#/~1api~1workspaces~1{workspaceId}~1search"
+  /api/workspaces/{workspaceId}/threads/participating:
+    $ref: "./paths/api_workspaces_workspaceId_threads_participating.yaml#/~1api~1workspaces~1{workspaceId}~1threads~1participating"
+  /healthz:
+    $ref: "./paths/healthz.yaml#/~1healthz"
