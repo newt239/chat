@@ -23,29 +23,28 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SuccessResponse"
+              $ref: "../openapi.yaml#/components/schemas/SuccessResponse"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "403":
         description: Forbidden
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Channel or member not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "409":
         description: Cannot remove - last admin
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

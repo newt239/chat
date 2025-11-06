@@ -18,19 +18,19 @@
             schema:
               type: array
               items:
-                $ref: "#/components/schemas/Channel"
+                $ref: "../openapi.yaml#/components/schemas/Channel"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Workspace not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
 
   post:
     operationId: createChannel
@@ -48,24 +48,23 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateChannelRequest"
+            $ref: "../openapi.yaml#/components/schemas/CreateChannelRequest"
     responses:
       "201":
         description: Channel created
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Channel"
+              $ref: "../openapi.yaml#/components/schemas/Channel"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

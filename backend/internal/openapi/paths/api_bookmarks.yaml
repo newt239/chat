@@ -10,11 +10,10 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ListBookmarksResponse"
+              $ref: "../openapi.yaml#/components/schemas/ListBookmarksResponse"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

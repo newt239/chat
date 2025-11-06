@@ -9,24 +9,23 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/FetchOGPRequest"
+            $ref: "../openapi.yaml#/components/schemas/FetchOGPRequest"
     responses:
       "200":
         description: OGP data retrieved
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FetchOGPResponse"
+              $ref: "../openapi.yaml#/components/schemas/FetchOGPResponse"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

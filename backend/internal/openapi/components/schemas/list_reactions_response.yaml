@@ -4,7 +4,6 @@ ListReactionsResponse:
     reactions:
       type: array
       items:
-        $ref: "#/components/schemas/ReactionWithUser"
+        $ref: "../../openapi.yaml#/components/schemas/ReactionWithUser"
   required:
     - reactions
-

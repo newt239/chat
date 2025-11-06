@@ -40,11 +40,11 @@
                   type: array
                   items:
                     allOf:
-                      - $ref: "#/components/schemas/Message"
+                      - $ref: "../openapi.yaml#/components/schemas/Message"
                       - type: object
                         properties:
                           threadMetadata:
-                            $ref: "#/components/schemas/ThreadMetadata"
+                            $ref: "../openapi.yaml#/components/schemas/ThreadMetadata"
                             nullable: true
                 hasMore:
                   type: boolean
@@ -56,11 +56,10 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Channel not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

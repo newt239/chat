@@ -34,19 +34,19 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MessagesResponse"
+              $ref: "../openapi.yaml#/components/schemas/MessagesResponse"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Channel not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
 
   post:
     operationId: createMessage
@@ -65,24 +65,23 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateMessageRequest"
+            $ref: "../openapi.yaml#/components/schemas/CreateMessageRequest"
     responses:
       "201":
         description: Message created
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Message"
+              $ref: "../openapi.yaml#/components/schemas/Message"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

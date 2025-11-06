@@ -4,7 +4,7 @@ PaginatedChannels:
     items:
       type: array
       items:
-        $ref: "#/components/schemas/Channel"
+        $ref: "../../openapi.yaml#/components/schemas/Channel"
     total:
       type: integer
       minimum: 0
@@ -22,4 +22,3 @@ PaginatedChannels:
     - page
     - perPage
     - hasMore
-

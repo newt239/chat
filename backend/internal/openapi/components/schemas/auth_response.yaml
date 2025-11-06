@@ -6,9 +6,8 @@ AuthResponse:
     refreshToken:
       type: string
     user:
-      $ref: "#/components/schemas/User"
+      $ref: "../../openapi.yaml#/components/schemas/User"
   required:
     - accessToken
     - refreshToken
     - user
-

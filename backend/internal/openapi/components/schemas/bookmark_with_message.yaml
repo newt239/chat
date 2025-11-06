@@ -5,7 +5,7 @@ BookmarkWithMessage:
       type: string
       format: uuid
     message:
-      $ref: "#/components/schemas/Message"
+      $ref: "../../openapi.yaml#/components/schemas/Message"
     createdAt:
       type: string
       format: date-time
@@ -13,4 +13,3 @@ BookmarkWithMessage:
     - userId
     - message
     - createdAt
-

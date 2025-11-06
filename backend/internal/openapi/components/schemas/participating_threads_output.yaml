@@ -4,11 +4,10 @@ ParticipatingThreadsOutput:
     items:
       type: array
       items:
-        $ref: "#/components/schemas/ParticipatingThread"
+        $ref: "../../openapi.yaml#/components/schemas/ParticipatingThread"
     next_cursor:
-      $ref: "#/components/schemas/ThreadCursor"
+      $ref: "../../openapi.yaml#/components/schemas/ThreadCursor"
       nullable: true
   required:
     - items
-
 # Public workspaces

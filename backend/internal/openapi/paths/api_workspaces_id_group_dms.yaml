@@ -16,24 +16,23 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateGroupDMRequest"
+            $ref: "../openapi.yaml#/components/schemas/CreateGroupDMRequest"
     responses:
       "200":
         description: Group DM created or retrieved
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DMOutput"
+              $ref: "../openapi.yaml#/components/schemas/DMOutput"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

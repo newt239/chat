@@ -9,26 +9,26 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateUserGroupRequest"
+            $ref: "../openapi.yaml#/components/schemas/CreateUserGroupRequest"
     responses:
       "201":
         description: User group created
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserGroup"
+              $ref: "../openapi.yaml#/components/schemas/UserGroup"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
   get:
     operationId: listUserGroups
     summary: List user groups
@@ -51,11 +51,10 @@
                 userGroups:
                   type: array
                   items:
-                    $ref: "#/components/schemas/UserGroup"
+                    $ref: "../openapi.yaml#/components/schemas/UserGroup"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

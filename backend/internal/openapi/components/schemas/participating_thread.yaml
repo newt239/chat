@@ -9,7 +9,7 @@ ParticipatingThread:
       format: uuid
       nullable: true
     first_message:
-      $ref: "#/components/schemas/Message"
+      $ref: "../../openapi.yaml#/components/schemas/Message"
     reply_count:
       type: integer
       minimum: 0
@@ -25,4 +25,3 @@ ParticipatingThread:
     - reply_count
     - last_activity_at
     - unread_count
-

@@ -7,18 +7,17 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/LoginRequest"
+            $ref: "../openapi.yaml#/components/schemas/LoginRequest"
     responses:
       "200":
         description: Login successful
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AuthResponse"
+              $ref: "../openapi.yaml#/components/schemas/AuthResponse"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

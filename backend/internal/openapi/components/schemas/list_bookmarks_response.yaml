@@ -4,7 +4,6 @@ ListBookmarksResponse:
     bookmarks:
       type: array
       items:
-        $ref: "#/components/schemas/BookmarkWithMessage"
+        $ref: "../../openapi.yaml#/components/schemas/BookmarkWithMessage"
   required:
     - bookmarks
-

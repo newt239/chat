@@ -15,7 +15,7 @@
                 workspaces:
                   type: array
                   items:
-                    $ref: "#/components/schemas/Workspace"
+                    $ref: "../openapi.yaml#/components/schemas/Workspace"
               required:
                 - workspaces
       "401":
@@ -23,7 +23,7 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
 
   post:
     operationId: createWorkspace
@@ -35,11 +35,11 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateWorkspaceRequest"
+            $ref: "../openapi.yaml#/components/schemas/CreateWorkspaceRequest"
     responses:
       "201":
         description: Workspace created
         content:
           application/json:
             schema:
-            $ref: "#/components/schemas/Workspace"
+            $ref: "../openapi.yaml#/components/schemas/Workspace"

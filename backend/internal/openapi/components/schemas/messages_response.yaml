@@ -4,10 +4,9 @@ MessagesResponse:
     messages:
       type: array
       items:
-        $ref: "#/components/schemas/Message"
+        $ref: "../../openapi.yaml#/components/schemas/Message"
     hasMore:
       type: boolean
   required:
     - messages
     - hasMore
-

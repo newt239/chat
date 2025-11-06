@@ -7,7 +7,7 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/RefreshRequest"
+            $ref: "../openapi.yaml#/components/schemas/RefreshRequest"
     responses:
       "200":
         description: Token refreshed
@@ -25,5 +25,4 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

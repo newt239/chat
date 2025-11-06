@@ -22,42 +22,41 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/UpdateChannelMemberRoleRequest"
+            $ref: "../openapi.yaml#/components/schemas/UpdateChannelMemberRoleRequest"
     responses:
       "200":
         description: Member role updated
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SuccessResponse"
+              $ref: "../openapi.yaml#/components/schemas/SuccessResponse"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "403":
         description: Forbidden
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Channel or member not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "409":
         description: Cannot update - last admin
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

@@ -24,17 +24,16 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ThreadRepliesResponse"
+              $ref: "../openapi.yaml#/components/schemas/ThreadRepliesResponse"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Message not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

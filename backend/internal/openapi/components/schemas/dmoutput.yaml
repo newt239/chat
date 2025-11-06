@@ -18,7 +18,7 @@ DMOutput:
     members:
       type: array
       items:
-        $ref: "#/components/schemas/DMMember"
+        $ref: "../../openapi.yaml#/components/schemas/DMMember"
     createdAt:
       type: string
       format: date-time
@@ -33,4 +33,3 @@ DMOutput:
     - members
     - createdAt
     - updatedAt
-

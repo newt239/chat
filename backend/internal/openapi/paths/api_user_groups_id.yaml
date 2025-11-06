@@ -17,19 +17,19 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserGroup"
+              $ref: "../openapi.yaml#/components/schemas/UserGroup"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: User group not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
   patch:
     operationId: updateUserGroup
     summary: Update a user group
@@ -47,32 +47,32 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/UpdateUserGroupRequest"
+            $ref: "../openapi.yaml#/components/schemas/UpdateUserGroupRequest"
     responses:
       "200":
         description: User group updated
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserGroup"
+              $ref: "../openapi.yaml#/components/schemas/UserGroup"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: User group not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
   delete:
     operationId: deleteUserGroup
     summary: Delete a user group
@@ -93,11 +93,10 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: User group not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

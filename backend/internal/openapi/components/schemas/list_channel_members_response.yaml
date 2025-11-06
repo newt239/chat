@@ -4,7 +4,6 @@ ListChannelMembersResponse:
     members:
       type: array
       items:
-        $ref: "#/components/schemas/ChannelMemberInfo"
+        $ref: "../../openapi.yaml#/components/schemas/ChannelMemberInfo"
   required:
     - members
-

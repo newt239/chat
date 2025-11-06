@@ -4,7 +4,7 @@ ListPinsResponse:
     pins:
       type: array
       items:
-        $ref: "#/components/schemas/PinnedMessage"
+        $ref: "../../openapi.yaml#/components/schemas/PinnedMessage"
     nextCursor:
       type: string
       nullable: true

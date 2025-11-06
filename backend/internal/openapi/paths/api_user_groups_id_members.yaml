@@ -16,7 +16,7 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/AddMemberRequest"
+            $ref: "../openapi.yaml#/components/schemas/AddMemberRequest"
     responses:
       "201":
         description: Member added
@@ -25,19 +25,19 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: User group not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
   get:
     operationId: listUserGroupMembers
     summary: List members of a user group
@@ -61,13 +61,13 @@
                 members:
                   type: array
                   items:
-                    $ref: "#/components/schemas/UserGroupMember"
+                    $ref: "../openapi.yaml#/components/schemas/UserGroupMember"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
   delete:
     operationId: removeUserGroupMember
     summary: Remove a member from a user group
@@ -94,11 +94,10 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: User group or member not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

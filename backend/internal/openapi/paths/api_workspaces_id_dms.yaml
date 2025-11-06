@@ -19,13 +19,13 @@
             schema:
               type: array
               items:
-                $ref: "#/components/schemas/DMOutput"
+                $ref: "../openapi.yaml#/components/schemas/DMOutput"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
 
   post:
     operationId: createDM
@@ -44,24 +44,23 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateDMRequest"
+            $ref: "../openapi.yaml#/components/schemas/CreateDMRequest"
     responses:
       "200":
         description: DM created or retrieved
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DMOutput"
+              $ref: "../openapi.yaml#/components/schemas/DMOutput"
       "400":
         description: Bad request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

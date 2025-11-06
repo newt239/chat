@@ -4,7 +4,6 @@ ListMembersResponse:
     members:
       type: array
       items:
-        $ref: "#/components/schemas/MemberInfo"
+        $ref: "../../openapi.yaml#/components/schemas/MemberInfo"
   required:
     - members
-

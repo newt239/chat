@@ -2,7 +2,7 @@ PinnedMessage:
   type: object
   properties:
     message:
-      $ref: "#/components/schemas/Message"
+      $ref: "../../openapi.yaml#/components/schemas/Message"
     pinnedAt:
       type: string
       format: date-time
@@ -10,4 +10,3 @@ PinnedMessage:
       type: string
       format: uuid
   required: [message, pinnedAt, pinnedBy]
-

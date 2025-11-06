@@ -21,7 +21,7 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/UpdateMemberRoleRequest"
+            $ref: "../openapi.yaml#/components/schemas/UpdateMemberRoleRequest"
     responses:
       "200":
         description: Member role updated
@@ -30,19 +30,19 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Member not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
 
   delete:
     operationId: removeMember
@@ -69,11 +69,10 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Member not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

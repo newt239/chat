@@ -9,18 +9,17 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/PresignRequest"
+            $ref: "../openapi.yaml#/components/schemas/PresignRequest"
     responses:
       "200":
         description: Presigned URL
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PresignResponse"
+              $ref: "../openapi.yaml#/components/schemas/PresignResponse"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"

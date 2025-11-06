@@ -17,19 +17,19 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ListReactionsResponse"
+              $ref: "../openapi.yaml#/components/schemas/ListReactionsResponse"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "404":
         description: Message not found
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
 
   post:
     operationId: addReaction
@@ -48,7 +48,7 @@
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/AddReactionRequest"
+            $ref: "../openapi.yaml#/components/schemas/AddReactionRequest"
     responses:
       "201":
         description: Reaction added
@@ -57,11 +57,10 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
+              $ref: "../openapi.yaml#/components/schemas/Error"
       "401":
         description: Unauthorized
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Error"
-
+              $ref: "../openapi.yaml#/components/schemas/Error"
