@@ -319,20 +319,40 @@ func init() {
 	workspaceDescName := workspaceFields[1].Descriptor()
 	// workspace.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	workspace.NameValidator = workspaceDescName.Validators[0].(func(string) error)
+	// workspaceDescIsPublic is the schema descriptor for is_public field.
+	workspaceDescIsPublic := workspaceFields[4].Descriptor()
+	// workspace.DefaultIsPublic holds the default value on creation for the is_public field.
+	workspace.DefaultIsPublic = workspaceDescIsPublic.Default.(bool)
 	// workspaceDescCreatedAt is the schema descriptor for created_at field.
-	workspaceDescCreatedAt := workspaceFields[4].Descriptor()
+	workspaceDescCreatedAt := workspaceFields[5].Descriptor()
 	// workspace.DefaultCreatedAt holds the default value on creation for the created_at field.
 	workspace.DefaultCreatedAt = workspaceDescCreatedAt.Default.(func() time.Time)
 	// workspaceDescUpdatedAt is the schema descriptor for updated_at field.
-	workspaceDescUpdatedAt := workspaceFields[5].Descriptor()
+	workspaceDescUpdatedAt := workspaceFields[6].Descriptor()
 	// workspace.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	workspace.DefaultUpdatedAt = workspaceDescUpdatedAt.Default.(func() time.Time)
 	// workspace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	workspace.UpdateDefaultUpdatedAt = workspaceDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// workspaceDescID is the schema descriptor for id field.
 	workspaceDescID := workspaceFields[0].Descriptor()
-	// workspace.DefaultID holds the default value on creation for the id field.
-	workspace.DefaultID = workspaceDescID.Default.(func() uuid.UUID)
+	// workspace.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	workspace.IDValidator = func() func(string) error {
+		validators := workspaceDescID.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+			validators[3].(func(string) error),
+		}
+		return func(id string) error {
+			for _, fn := range fns {
+				if err := fn(id); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	workspacememberFields := schema.WorkspaceMember{}.Fields()
 	_ = workspacememberFields
 	// workspacememberDescRole is the schema descriptor for role field.

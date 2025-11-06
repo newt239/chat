@@ -4,7 +4,6 @@ import (
     "context"
     "strings"
 
-    "entgo.io/ent"
     "entgo.io/ent/dialect/sql"
     "github.com/newt239/chat/ent"
     "github.com/newt239/chat/ent/user"
@@ -17,7 +16,7 @@ import (
 )
 
 type workspaceRepository struct {
-	client *ent.Client
+    client *ent.Client
 }
 
 func NewWorkspaceRepository(client *ent.Client) domainrepository.WorkspaceRepository {
@@ -42,8 +41,12 @@ func (r *workspaceRepository) FindByID(ctx context.Context, id string) (*entity.
 
 func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) ([]*entity.Workspace, error) {
 	client := transaction.ResolveClient(ctx, r.client)
+    uid, err := utils.ParseUUID(userID, "user ID")
+    if err != nil {
+        return nil, err
+    }
 	workspaces, err := client.Workspace.Query().
-        Where(workspace.HasMembersWith(workspacemember.HasUserWith(user.ID(utils.MustParseUUID(userID))))).
+        Where(workspace.HasMembersWith(workspacemember.HasUserWith(user.ID(uid)))).
 		WithCreatedBy().
 		All(ctx)
 	if err != nil {
@@ -254,7 +257,7 @@ func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string
         WithUser().
         Only(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
+        if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
@@ -283,7 +286,7 @@ func (r *workspaceRepository) SearchMembers(ctx context.Context, workspaceID str
 		)
 	}
 
-	total, err := memberQuery.Clone().Count(ctx)
+    total, err := memberQuery.Clone().Count(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -296,8 +299,8 @@ func (r *workspaceRepository) SearchMembers(ctx context.Context, workspaceID str
 		memberQuery = memberQuery.Limit(limit)
 	}
 
-	members, err := memberQuery.
-		Order(ent.Asc(workspacemember.FieldJoinedAt)).
+    members, err := memberQuery.
+        Order(ent.Asc(workspacemember.FieldJoinedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, 0, err

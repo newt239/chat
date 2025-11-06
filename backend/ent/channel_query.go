@@ -631,8 +631,8 @@ func (_q *ChannelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chan
 }
 
 func (_q *ChannelQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery, nodes []*Channel, init func(*Channel), assign func(*Channel, *Workspace)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Channel)
+	ids := make([]string, 0, len(nodes))
+	nodeids := make(map[string][]*Channel)
 	for i := range nodes {
 		if nodes[i].channel_workspace == nil {
 			continue

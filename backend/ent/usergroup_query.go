@@ -543,8 +543,8 @@ func (_q *UserGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Us
 }
 
 func (_q *UserGroupQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery, nodes []*UserGroup, init func(*UserGroup), assign func(*UserGroup, *Workspace)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*UserGroup)
+	ids := make([]string, 0, len(nodes))
+	nodeids := make(map[string][]*UserGroup)
 	for i := range nodes {
 		if nodes[i].user_group_workspace == nil {
 			continue

@@ -27,7 +27,7 @@ type WorkspaceMember struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkspaceMemberQuery when eager-loading is set.
 	Edges                      WorkspaceMemberEdges `json:"edges"`
-	workspace_member_workspace *uuid.UUID
+	workspace_member_workspace *string
 	workspace_member_user      *uuid.UUID
 	selectValues               sql.SelectValues
 }
@@ -77,7 +77,7 @@ func (*WorkspaceMember) scanValues(columns []string) ([]any, error) {
 		case workspacemember.FieldID:
 			values[i] = new(uuid.UUID)
 		case workspacemember.ForeignKeys[0]: // workspace_member_workspace
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+			values[i] = new(sql.NullString)
 		case workspacemember.ForeignKeys[1]: // workspace_member_user
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
@@ -114,11 +114,11 @@ func (_m *WorkspaceMember) assignValues(columns []string, values []any) error {
 				_m.JoinedAt = value.Time
 			}
 		case workspacemember.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field workspace_member_workspace", values[i])
 			} else if value.Valid {
-				_m.workspace_member_workspace = new(uuid.UUID)
-				*_m.workspace_member_workspace = *value.S.(*uuid.UUID)
+				_m.workspace_member_workspace = new(string)
+				*_m.workspace_member_workspace = value.String
 			}
 		case workspacemember.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {

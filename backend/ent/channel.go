@@ -35,7 +35,7 @@ type Channel struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelQuery when eager-loading is set.
 	Edges              ChannelEdges `json:"edges"`
-	channel_workspace  *uuid.UUID
+	channel_workspace  *string
 	channel_created_by *uuid.UUID
 	selectValues       sql.SelectValues
 }
@@ -131,7 +131,7 @@ func (*Channel) scanValues(columns []string) ([]any, error) {
 		case channel.FieldID:
 			values[i] = new(uuid.UUID)
 		case channel.ForeignKeys[0]: // channel_workspace
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+			values[i] = new(sql.NullString)
 		case channel.ForeignKeys[1]: // channel_created_by
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
@@ -192,11 +192,11 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 				_m.UpdatedAt = value.Time
 			}
 		case channel.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field channel_workspace", values[i])
 			} else if value.Valid {
-				_m.channel_workspace = new(uuid.UUID)
-				*_m.channel_workspace = *value.S.(*uuid.UUID)
+				_m.channel_workspace = new(string)
+				*_m.channel_workspace = value.String
 			}
 		case channel.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {

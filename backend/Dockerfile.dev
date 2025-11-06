@@ -1,7 +1,7 @@
 FROM golang:1.25-alpine
 
 # Install Atlas CLI
-RUN apk add --no-cache curl && \
+RUN apk add --no-cache curl git && \
     curl -sSf https://atlasgo.sh | sh
 
 WORKDIR /app

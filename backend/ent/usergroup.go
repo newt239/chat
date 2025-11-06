@@ -31,7 +31,7 @@ type UserGroup struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserGroupQuery when eager-loading is set.
 	Edges                 UserGroupEdges `json:"edges"`
-	user_group_workspace  *uuid.UUID
+	user_group_workspace  *string
 	user_group_created_by *uuid.UUID
 	selectValues          sql.SelectValues
 }
@@ -103,7 +103,7 @@ func (*UserGroup) scanValues(columns []string) ([]any, error) {
 		case usergroup.FieldID:
 			values[i] = new(uuid.UUID)
 		case usergroup.ForeignKeys[0]: // user_group_workspace
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+			values[i] = new(sql.NullString)
 		case usergroup.ForeignKeys[1]: // user_group_created_by
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
@@ -152,11 +152,11 @@ func (_m *UserGroup) assignValues(columns []string, values []any) error {
 				_m.UpdatedAt = value.Time
 			}
 		case usergroup.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field user_group_workspace", values[i])
 			} else if value.Valid {
-				_m.user_group_workspace = new(uuid.UUID)
-				*_m.user_group_workspace = *value.S.(*uuid.UUID)
+				_m.user_group_workspace = new(string)
+				*_m.user_group_workspace = value.String
 			}
 		case usergroup.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {

@@ -45,7 +45,7 @@ func (_u *WorkspaceMemberUpdate) SetNillableRole(v *string) *WorkspaceMemberUpda
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *WorkspaceMemberUpdate) SetWorkspaceID(id uuid.UUID) *WorkspaceMemberUpdate {
+func (_u *WorkspaceMemberUpdate) SetWorkspaceID(id string) *WorkspaceMemberUpdate {
 	_u.mutation.SetWorkspaceID(id)
 	return _u
 }
@@ -149,7 +149,7 @@ func (_u *WorkspaceMemberUpdate) sqlSave(ctx context.Context) (_node int, err er
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -162,7 +162,7 @@ func (_u *WorkspaceMemberUpdate) sqlSave(ctx context.Context) (_node int, err er
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -234,7 +234,7 @@ func (_u *WorkspaceMemberUpdateOne) SetNillableRole(v *string) *WorkspaceMemberU
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *WorkspaceMemberUpdateOne) SetWorkspaceID(id uuid.UUID) *WorkspaceMemberUpdateOne {
+func (_u *WorkspaceMemberUpdateOne) SetWorkspaceID(id string) *WorkspaceMemberUpdateOne {
 	_u.mutation.SetWorkspaceID(id)
 	return _u
 }
@@ -368,7 +368,7 @@ func (_u *WorkspaceMemberUpdateOne) sqlSave(ctx context.Context) (_node *Workspa
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -381,7 +381,7 @@ func (_u *WorkspaceMemberUpdateOne) sqlSave(ctx context.Context) (_node *Workspa
 			Columns: []string{workspacemember.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

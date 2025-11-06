@@ -74,7 +74,7 @@ func (_u *UserGroupUpdate) SetUpdatedAt(v time.Time) *UserGroupUpdate {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *UserGroupUpdate) SetWorkspaceID(id uuid.UUID) *UserGroupUpdate {
+func (_u *UserGroupUpdate) SetWorkspaceID(id string) *UserGroupUpdate {
 	_u.mutation.SetWorkspaceID(id)
 	return _u
 }
@@ -268,7 +268,7 @@ func (_u *UserGroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{usergroup.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -281,7 +281,7 @@ func (_u *UserGroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{usergroup.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -469,7 +469,7 @@ func (_u *UserGroupUpdateOne) SetUpdatedAt(v time.Time) *UserGroupUpdateOne {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *UserGroupUpdateOne) SetWorkspaceID(id uuid.UUID) *UserGroupUpdateOne {
+func (_u *UserGroupUpdateOne) SetWorkspaceID(id string) *UserGroupUpdateOne {
 	_u.mutation.SetWorkspaceID(id)
 	return _u
 }
@@ -693,7 +693,7 @@ func (_u *UserGroupUpdateOne) sqlSave(ctx context.Context) (_node *UserGroup, er
 			Columns: []string{usergroup.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -706,7 +706,7 @@ func (_u *UserGroupUpdateOne) sqlSave(ctx context.Context) (_node *UserGroup, er
 			Columns: []string{usergroup.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

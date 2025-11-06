@@ -454,8 +454,8 @@ func (_q *WorkspaceMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 }
 
 func (_q *WorkspaceMemberQuery) loadWorkspace(ctx context.Context, query *WorkspaceQuery, nodes []*WorkspaceMember, init func(*WorkspaceMember), assign func(*WorkspaceMember, *Workspace)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*WorkspaceMember)
+	ids := make([]string, 0, len(nodes))
+	nodeids := make(map[string][]*WorkspaceMember)
 	for i := range nodes {
 		if nodes[i].workspace_member_workspace == nil {
 			continue

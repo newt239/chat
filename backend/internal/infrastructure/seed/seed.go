@@ -373,27 +373,27 @@ func createSeedData(
 	// Create user groups
 	userGroupRepo := repository.NewUserGroupRepository(client)
 	groups := []*entity.UserGroup{
-		{
-			ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-			WorkspaceID: workspace.ID,
-			Name:        "developers",
-			Description: stringPtr("Development team members"),
-			CreatedBy:   users[0].ID,
-		},
-		{
-			ID:          "0bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-			WorkspaceID: workspace.ID,
-			Name:        "marketing",
-			Description: stringPtr("Marketing team members"),
-			CreatedBy:   users[0].ID,
-		},
-		{
-			ID:          "0ccccccc-cccc-4ccc-8ccc-cccccccccccc",
-			WorkspaceID: workspace.ID,
-			Name:        "designers",
-			Description: stringPtr("Design team members"),
-			CreatedBy:   users[1].ID,
-		},
+        {
+            ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            WorkspaceID: "general",
+            Name:        "developers",
+            Description: stringPtr("Development team members"),
+            CreatedBy:   users[0].ID,
+        },
+        {
+            ID:          "0bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+            WorkspaceID: "general",
+            Name:        "marketing",
+            Description: stringPtr("Marketing team members"),
+            CreatedBy:   users[0].ID,
+        },
+        {
+            ID:          "0ccccccc-cccc-4ccc-8ccc-cccccccccccc",
+            WorkspaceID: "general",
+            Name:        "designers",
+            Description: stringPtr("Design team members"),
+            CreatedBy:   users[1].ID,
+        },
 	}
 
 	for _, group := range groups {

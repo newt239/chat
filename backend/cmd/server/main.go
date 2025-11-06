@@ -9,6 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/labstack/echo/v4"
+	oapimw "github.com/oapi-codegen/echo-middleware"
+
 	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
@@ -86,6 +90,11 @@ func main() {
 	// Setup Echo router
 	e := reg.NewRouter()
 
+	// OpenAPI 実行時バリデーション（リクエストのみ）
+	if err := setupOpenAPIMiddleware(e); err != nil {
+		log.Fatalf("failed to setup OpenAPI middleware: %v", err)
+	}
+
 	// Start server
 	addr := ":" + cfg.Server.Port
 	log.Printf("Starting server on %s", addr)
@@ -113,4 +122,21 @@ func main() {
 	}
 
 	log.Println("Server exited")
+}
+
+func setupOpenAPIMiddleware(e *echo.Echo) error {
+	specPath := os.Getenv("OPENAPI_SPEC_PATH")
+	if specPath == "" {
+		specPath = "backend/internal/openapi/openapi.yaml"
+	}
+	loader := &openapi3.Loader{IsExternalRefsAllowed: true}
+	doc, err := loader.LoadFromFile(specPath)
+	if err != nil {
+		return err
+	}
+	if err := doc.Validate(loader.Context); err != nil {
+		return err
+	}
+	e.Use(oapimw.OapiRequestValidatorWithOptions(doc, &oapimw.Options{}))
+	return nil
 }

@@ -18,13 +18,15 @@ import (
 type Workspace struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// IconURL holds the value of the "icon_url" field.
 	IconURL string `json:"icon_url,omitempty"`
+	// IsPublic holds the value of the "is_public" field.
+	IsPublic bool `json:"is_public,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -94,12 +96,12 @@ func (*Workspace) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case workspace.FieldName, workspace.FieldDescription, workspace.FieldIconURL:
+		case workspace.FieldIsPublic:
+			values[i] = new(sql.NullBool)
+		case workspace.FieldID, workspace.FieldName, workspace.FieldDescription, workspace.FieldIconURL:
 			values[i] = new(sql.NullString)
 		case workspace.FieldCreatedAt, workspace.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case workspace.FieldID:
-			values[i] = new(uuid.UUID)
 		case workspace.ForeignKeys[0]: // workspace_created_by
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
@@ -118,10 +120,10 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case workspace.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				_m.ID = *value
+			} else if value.Valid {
+				_m.ID = value.String
 			}
 		case workspace.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -140,6 +142,12 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field icon_url", values[i])
 			} else if value.Valid {
 				_m.IconURL = value.String
+			}
+		case workspace.FieldIsPublic:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_public", values[i])
+			} else if value.Valid {
+				_m.IsPublic = value.Bool
 			}
 		case workspace.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -224,6 +232,9 @@ func (_m *Workspace) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("icon_url=")
 	builder.WriteString(_m.IconURL)
+	builder.WriteString(", ")
+	builder.WriteString("is_public=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsPublic))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

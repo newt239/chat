@@ -65,7 +65,7 @@ var (
 		{Name: "channel_type", Type: field.TypeString, Nullable: true, Default: "public"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "channel_workspace", Type: field.TypeUUID},
+		{Name: "channel_workspace", Type: field.TypeString, Size: 12},
 		{Name: "channel_created_by", Type: field.TypeUUID},
 	}
 	// ChannelsTable holds the schema information for the "channels" table.
@@ -540,7 +540,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "user_group_workspace", Type: field.TypeUUID},
+		{Name: "user_group_workspace", Type: field.TypeString, Size: 12},
 		{Name: "user_group_created_by", Type: field.TypeUUID},
 	}
 	// UserGroupsTable holds the schema information for the "user_groups" table.
@@ -638,10 +638,11 @@ var (
 	}
 	// WorkspacesColumns holds the columns for the "workspaces" table.
 	WorkspacesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 12},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "icon_url", Type: field.TypeString, Nullable: true},
+		{Name: "is_public", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "workspace_created_by", Type: field.TypeUUID},
@@ -654,9 +655,21 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workspaces_users_created_by",
-				Columns:    []*schema.Column{WorkspacesColumns[6]},
+				Columns:    []*schema.Column{WorkspacesColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workspace_id",
+				Unique:  true,
+				Columns: []*schema.Column{WorkspacesColumns[0]},
+			},
+			{
+				Name:    "workspace_is_public",
+				Unique:  false,
+				Columns: []*schema.Column{WorkspacesColumns[4]},
 			},
 		},
 	}
@@ -665,7 +678,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeString},
 		{Name: "joined_at", Type: field.TypeTime},
-		{Name: "workspace_member_workspace", Type: field.TypeUUID},
+		{Name: "workspace_member_workspace", Type: field.TypeString, Size: 12},
 		{Name: "workspace_member_user", Type: field.TypeUUID},
 	}
 	// WorkspaceMembersTable holds the schema information for the "workspace_members" table.
@@ -685,6 +698,13 @@ var (
 				Columns:    []*schema.Column{WorkspaceMembersColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workspacemember_workspace_member_workspace_workspace_member_user",
+				Unique:  true,
+				Columns: []*schema.Column{WorkspaceMembersColumns[3], WorkspaceMembersColumns[4]},
 			},
 		},
 	}

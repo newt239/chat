@@ -89,6 +89,27 @@ func (m *MockWorkspaceRepository) SearchMembers(ctx context.Context, workspaceID
 	return members, total, args.Error(2)
 }
 
+// 新規メソッド
+func (m *MockWorkspaceRepository) FindAllPublic(ctx context.Context) ([]*entity.Workspace, error) {
+    args := m.Called(ctx)
+    if args.Get(0) == nil {
+        return nil, args.Error(1)
+    }
+    return args.Get(0).([]*entity.Workspace), args.Error(1)
+}
+
+func (m *MockWorkspaceRepository) CountMembers(ctx context.Context, workspaceID string) (int, error) {
+    args := m.Called(ctx, workspaceID)
+    total, _ := args.Get(0).(int)
+    return total, args.Error(1)
+}
+
+func (m *MockWorkspaceRepository) ExistsByID(ctx context.Context, id string) (bool, error) {
+    args := m.Called(ctx, id)
+    exists, _ := args.Get(0).(bool)
+    return exists, args.Error(1)
+}
+
 // TestWorkspace はテスト用のワークスペースエンティティを作成するヘルパー関数です
 func TestWorkspace(id, name, description string) *entity.Workspace {
 	now := time.Now()

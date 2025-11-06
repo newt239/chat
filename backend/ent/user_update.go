@@ -146,14 +146,14 @@ func (_u *UserUpdate) AddSessions(v ...*Session) *UserUpdate {
 }
 
 // AddCreatedWorkspaceIDs adds the "created_workspaces" edge to the Workspace entity by IDs.
-func (_u *UserUpdate) AddCreatedWorkspaceIDs(ids ...uuid.UUID) *UserUpdate {
+func (_u *UserUpdate) AddCreatedWorkspaceIDs(ids ...string) *UserUpdate {
 	_u.mutation.AddCreatedWorkspaceIDs(ids...)
 	return _u
 }
 
 // AddCreatedWorkspaces adds the "created_workspaces" edges to the Workspace entity.
 func (_u *UserUpdate) AddCreatedWorkspaces(v ...*Workspace) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
+	ids := make([]string, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -358,14 +358,14 @@ func (_u *UserUpdate) ClearCreatedWorkspaces() *UserUpdate {
 }
 
 // RemoveCreatedWorkspaceIDs removes the "created_workspaces" edge to Workspace entities by IDs.
-func (_u *UserUpdate) RemoveCreatedWorkspaceIDs(ids ...uuid.UUID) *UserUpdate {
+func (_u *UserUpdate) RemoveCreatedWorkspaceIDs(ids ...string) *UserUpdate {
 	_u.mutation.RemoveCreatedWorkspaceIDs(ids...)
 	return _u
 }
 
 // RemoveCreatedWorkspaces removes "created_workspaces" edges to Workspace entities.
 func (_u *UserUpdate) RemoveCreatedWorkspaces(v ...*Workspace) *UserUpdate {
-	ids := make([]uuid.UUID, len(v))
+	ids := make([]string, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -748,7 +748,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{user.CreatedWorkspacesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -761,7 +761,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{user.CreatedWorkspacesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -777,7 +777,7 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{user.CreatedWorkspacesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -1404,14 +1404,14 @@ func (_u *UserUpdateOne) AddSessions(v ...*Session) *UserUpdateOne {
 }
 
 // AddCreatedWorkspaceIDs adds the "created_workspaces" edge to the Workspace entity by IDs.
-func (_u *UserUpdateOne) AddCreatedWorkspaceIDs(ids ...uuid.UUID) *UserUpdateOne {
+func (_u *UserUpdateOne) AddCreatedWorkspaceIDs(ids ...string) *UserUpdateOne {
 	_u.mutation.AddCreatedWorkspaceIDs(ids...)
 	return _u
 }
 
 // AddCreatedWorkspaces adds the "created_workspaces" edges to the Workspace entity.
 func (_u *UserUpdateOne) AddCreatedWorkspaces(v ...*Workspace) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
+	ids := make([]string, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -1616,14 +1616,14 @@ func (_u *UserUpdateOne) ClearCreatedWorkspaces() *UserUpdateOne {
 }
 
 // RemoveCreatedWorkspaceIDs removes the "created_workspaces" edge to Workspace entities by IDs.
-func (_u *UserUpdateOne) RemoveCreatedWorkspaceIDs(ids ...uuid.UUID) *UserUpdateOne {
+func (_u *UserUpdateOne) RemoveCreatedWorkspaceIDs(ids ...string) *UserUpdateOne {
 	_u.mutation.RemoveCreatedWorkspaceIDs(ids...)
 	return _u
 }
 
 // RemoveCreatedWorkspaces removes "created_workspaces" edges to Workspace entities.
 func (_u *UserUpdateOne) RemoveCreatedWorkspaces(v ...*Workspace) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(v))
+	ids := make([]string, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -2036,7 +2036,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Columns: []string{user.CreatedWorkspacesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -2049,7 +2049,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Columns: []string{user.CreatedWorkspacesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -2065,7 +2065,7 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Columns: []string{user.CreatedWorkspacesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

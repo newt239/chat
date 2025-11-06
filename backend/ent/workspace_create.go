@@ -59,6 +59,20 @@ func (_c *WorkspaceCreate) SetNillableIconURL(v *string) *WorkspaceCreate {
 	return _c
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_c *WorkspaceCreate) SetIsPublic(v bool) *WorkspaceCreate {
+	_c.mutation.SetIsPublic(v)
+	return _c
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableIsPublic(v *bool) *WorkspaceCreate {
+	if v != nil {
+		_c.SetIsPublic(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *WorkspaceCreate) SetCreatedAt(v time.Time) *WorkspaceCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -88,16 +102,8 @@ func (_c *WorkspaceCreate) SetNillableUpdatedAt(v *time.Time) *WorkspaceCreate {
 }
 
 // SetID sets the "id" field.
-func (_c *WorkspaceCreate) SetID(v uuid.UUID) *WorkspaceCreate {
+func (_c *WorkspaceCreate) SetID(v string) *WorkspaceCreate {
 	_c.mutation.SetID(v)
-	return _c
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (_c *WorkspaceCreate) SetNillableID(v *uuid.UUID) *WorkspaceCreate {
-	if v != nil {
-		_c.SetID(*v)
-	}
 	return _c
 }
 
@@ -192,6 +198,10 @@ func (_c *WorkspaceCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *WorkspaceCreate) defaults() {
+	if _, ok := _c.mutation.IsPublic(); !ok {
+		v := workspace.DefaultIsPublic
+		_c.mutation.SetIsPublic(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := workspace.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -199,10 +209,6 @@ func (_c *WorkspaceCreate) defaults() {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		v := workspace.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
-	}
-	if _, ok := _c.mutation.ID(); !ok {
-		v := workspace.DefaultID()
-		_c.mutation.SetID(v)
 	}
 }
 
@@ -216,11 +222,19 @@ func (_c *WorkspaceCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Workspace.name": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.IsPublic(); !ok {
+		return &ValidationError{Name: "is_public", err: errors.New(`ent: missing required field "Workspace.is_public"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Workspace.created_at"`)}
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Workspace.updated_at"`)}
+	}
+	if v, ok := _c.mutation.ID(); ok {
+		if err := workspace.IDValidator(v); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Workspace.id": %w`, err)}
+		}
 	}
 	if len(_c.mutation.CreatedByIDs()) == 0 {
 		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required edge "Workspace.created_by"`)}
@@ -240,10 +254,10 @@ func (_c *WorkspaceCreate) sqlSave(ctx context.Context) (*Workspace, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
+		if id, ok := _spec.ID.Value.(string); ok {
+			_node.ID = id
+		} else {
+			return nil, fmt.Errorf("unexpected Workspace.ID type: %T", _spec.ID.Value)
 		}
 	}
 	_c.mutation.id = &_node.ID
@@ -254,11 +268,11 @@ func (_c *WorkspaceCreate) sqlSave(ctx context.Context) (*Workspace, error) {
 func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Workspace{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(workspace.Table, sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID))
+		_spec = sqlgraph.NewCreateSpec(workspace.Table, sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString))
 	)
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
+		_spec.ID.Value = id
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(workspace.FieldName, field.TypeString, value)
@@ -271,6 +285,10 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IconURL(); ok {
 		_spec.SetField(workspace.FieldIconURL, field.TypeString, value)
 		_node.IconURL = value
+	}
+	if value, ok := _c.mutation.IsPublic(); ok {
+		_spec.SetField(workspace.FieldIsPublic, field.TypeBool, value)
+		_node.IsPublic = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(workspace.FieldCreatedAt, field.TypeTime, value)

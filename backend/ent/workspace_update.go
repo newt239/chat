@@ -87,6 +87,20 @@ func (_u *WorkspaceUpdate) ClearIconURL() *WorkspaceUpdate {
 	return _u
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_u *WorkspaceUpdate) SetIsPublic(v bool) *WorkspaceUpdate {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *WorkspaceUpdate) SetNillableIsPublic(v *bool) *WorkspaceUpdate {
+	if v != nil {
+		_u.SetIsPublic(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WorkspaceUpdate) SetUpdatedAt(v time.Time) *WorkspaceUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -276,7 +290,7 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(workspace.Table, workspace.Columns, sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(workspace.Table, workspace.Columns, sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -298,6 +312,9 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.IconURLCleared() {
 		_spec.ClearField(workspace.FieldIconURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(workspace.FieldIsPublic, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(workspace.FieldUpdatedAt, field.TypeTime, value)
@@ -540,6 +557,20 @@ func (_u *WorkspaceUpdateOne) ClearIconURL() *WorkspaceUpdateOne {
 	return _u
 }
 
+// SetIsPublic sets the "is_public" field.
+func (_u *WorkspaceUpdateOne) SetIsPublic(v bool) *WorkspaceUpdateOne {
+	_u.mutation.SetIsPublic(v)
+	return _u
+}
+
+// SetNillableIsPublic sets the "is_public" field if the given value is not nil.
+func (_u *WorkspaceUpdateOne) SetNillableIsPublic(v *bool) *WorkspaceUpdateOne {
+	if v != nil {
+		_u.SetIsPublic(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WorkspaceUpdateOne) SetUpdatedAt(v time.Time) *WorkspaceUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -742,7 +773,7 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(workspace.Table, workspace.Columns, sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(workspace.Table, workspace.Columns, sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Workspace.id" for update`)}
@@ -781,6 +812,9 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 	}
 	if _u.mutation.IconURLCleared() {
 		_spec.ClearField(workspace.FieldIconURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.IsPublic(); ok {
+		_spec.SetField(workspace.FieldIsPublic, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(workspace.FieldUpdatedAt, field.TypeTime, value)

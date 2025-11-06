@@ -7,11 +7,10 @@ import (
 
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
-	"github.com/hedwigz/entviz"
 )
 
 func main() {
-	err := entc.Generate("./schema", &gen.Config{}, entc.Extensions(entviz.Extension{}))
+    err := entc.Generate("./schema", &gen.Config{})
 	if err != nil {
 		log.Fatalf("running ent codegen: %v", err)
 	}

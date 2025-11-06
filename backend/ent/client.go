@@ -3829,7 +3829,7 @@ func (c *WorkspaceClient) UpdateOne(_m *Workspace) *WorkspaceUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *WorkspaceClient) UpdateOneID(id uuid.UUID) *WorkspaceUpdateOne {
+func (c *WorkspaceClient) UpdateOneID(id string) *WorkspaceUpdateOne {
 	mutation := newWorkspaceMutation(c.config, OpUpdateOne, withWorkspaceID(id))
 	return &WorkspaceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -3846,7 +3846,7 @@ func (c *WorkspaceClient) DeleteOne(_m *Workspace) *WorkspaceDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *WorkspaceClient) DeleteOneID(id uuid.UUID) *WorkspaceDeleteOne {
+func (c *WorkspaceClient) DeleteOneID(id string) *WorkspaceDeleteOne {
 	builder := c.Delete().Where(workspace.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -3863,12 +3863,12 @@ func (c *WorkspaceClient) Query() *WorkspaceQuery {
 }
 
 // Get returns a Workspace entity by its id.
-func (c *WorkspaceClient) Get(ctx context.Context, id uuid.UUID) (*Workspace, error) {
+func (c *WorkspaceClient) Get(ctx context.Context, id string) (*Workspace, error) {
 	return c.Query().Where(workspace.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *WorkspaceClient) GetX(ctx context.Context, id uuid.UUID) *Workspace {
+func (c *WorkspaceClient) GetX(ctx context.Context, id string) *Workspace {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

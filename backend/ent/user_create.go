@@ -138,14 +138,14 @@ func (_c *UserCreate) AddSessions(v ...*Session) *UserCreate {
 }
 
 // AddCreatedWorkspaceIDs adds the "created_workspaces" edge to the Workspace entity by IDs.
-func (_c *UserCreate) AddCreatedWorkspaceIDs(ids ...uuid.UUID) *UserCreate {
+func (_c *UserCreate) AddCreatedWorkspaceIDs(ids ...string) *UserCreate {
 	_c.mutation.AddCreatedWorkspaceIDs(ids...)
 	return _c
 }
 
 // AddCreatedWorkspaces adds the "created_workspaces" edges to the Workspace entity.
 func (_c *UserCreate) AddCreatedWorkspaces(v ...*Workspace) *UserCreate {
-	ids := make([]uuid.UUID, len(v))
+	ids := make([]string, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -485,7 +485,7 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Columns: []string{user.CreatedWorkspacesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

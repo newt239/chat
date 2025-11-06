@@ -118,7 +118,7 @@ func (_c *ChannelCreate) SetNillableID(v *uuid.UUID) *ChannelCreate {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_c *ChannelCreate) SetWorkspaceID(id uuid.UUID) *ChannelCreate {
+func (_c *ChannelCreate) SetWorkspaceID(id string) *ChannelCreate {
 	_c.mutation.SetWorkspaceID(id)
 	return _c
 }
@@ -348,7 +348,7 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 			Columns: []string{channel.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

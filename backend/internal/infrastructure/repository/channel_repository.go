@@ -337,11 +337,6 @@ func (r *channelRepository) FindOrCreateDM(ctx context.Context, workspaceID stri
 }
 
 func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error) {
-	wID, err := utils.ParseUUID(workspaceID, "workspace ID")
-	if err != nil {
-		return nil, err
-	}
-
 	cID, err := utils.ParseUUID(creatorID, "creator ID")
 	if err != nil {
 		return nil, err
@@ -353,9 +348,9 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	existingChannels, err := client.Channel.Query().
-		Where(
-			channel.HasWorkspaceWith(workspace.ID(wID)),
+    existingChannels, err := client.Channel.Query().
+        Where(
+            channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.ChannelTypeEQ("group_dm"),
 			channel.HasCreatedByWith(user.ID(cID)),
 		).
@@ -413,20 +408,15 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 }
 
 func (r *channelRepository) FindUserDMs(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error) {
-	wID, err := utils.ParseUUID(workspaceID, "workspace ID")
-	if err != nil {
-		return nil, err
-	}
-
 	uID, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	channels, err := client.Channel.Query().
-		Where(
-			channel.HasWorkspaceWith(workspace.ID(wID)),
+    channels, err := client.Channel.Query().
+        Where(
+            channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.ChannelTypeIn("dm", "group_dm"),
 			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uID))),
 		).

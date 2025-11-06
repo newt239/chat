@@ -1051,7 +1051,7 @@ type ChannelMutation struct {
 	created_at         *time.Time
 	updated_at         *time.Time
 	clearedFields      map[string]struct{}
-	workspace          *uuid.UUID
+	workspace          *string
 	clearedworkspace   bool
 	created_by         *uuid.UUID
 	clearedcreated_by  bool
@@ -1419,7 +1419,7 @@ func (m *ChannelMutation) ResetUpdatedAt() {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by id.
-func (m *ChannelMutation) SetWorkspaceID(id uuid.UUID) {
+func (m *ChannelMutation) SetWorkspaceID(id string) {
 	m.workspace = &id
 }
 
@@ -1434,7 +1434,7 @@ func (m *ChannelMutation) WorkspaceCleared() bool {
 }
 
 // WorkspaceID returns the "workspace" edge ID in the mutation.
-func (m *ChannelMutation) WorkspaceID() (id uuid.UUID, exists bool) {
+func (m *ChannelMutation) WorkspaceID() (id string, exists bool) {
 	if m.workspace != nil {
 		return *m.workspace, true
 	}
@@ -1444,7 +1444,7 @@ func (m *ChannelMutation) WorkspaceID() (id uuid.UUID, exists bool) {
 // WorkspaceIDs returns the "workspace" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *ChannelMutation) WorkspaceIDs() (ids []uuid.UUID) {
+func (m *ChannelMutation) WorkspaceIDs() (ids []string) {
 	if id := m.workspace; id != nil {
 		ids = append(ids, *id)
 	}
@@ -9609,8 +9609,8 @@ type UserMutation struct {
 	sessions                   map[uuid.UUID]struct{}
 	removedsessions            map[uuid.UUID]struct{}
 	clearedsessions            bool
-	created_workspaces         map[uuid.UUID]struct{}
-	removedcreated_workspaces  map[uuid.UUID]struct{}
+	created_workspaces         map[string]struct{}
+	removedcreated_workspaces  map[string]struct{}
 	clearedcreated_workspaces  bool
 	workspace_members          map[uuid.UUID]struct{}
 	removedworkspace_members   map[uuid.UUID]struct{}
@@ -10087,9 +10087,9 @@ func (m *UserMutation) ResetSessions() {
 }
 
 // AddCreatedWorkspaceIDs adds the "created_workspaces" edge to the Workspace entity by ids.
-func (m *UserMutation) AddCreatedWorkspaceIDs(ids ...uuid.UUID) {
+func (m *UserMutation) AddCreatedWorkspaceIDs(ids ...string) {
 	if m.created_workspaces == nil {
-		m.created_workspaces = make(map[uuid.UUID]struct{})
+		m.created_workspaces = make(map[string]struct{})
 	}
 	for i := range ids {
 		m.created_workspaces[ids[i]] = struct{}{}
@@ -10107,9 +10107,9 @@ func (m *UserMutation) CreatedWorkspacesCleared() bool {
 }
 
 // RemoveCreatedWorkspaceIDs removes the "created_workspaces" edge to the Workspace entity by IDs.
-func (m *UserMutation) RemoveCreatedWorkspaceIDs(ids ...uuid.UUID) {
+func (m *UserMutation) RemoveCreatedWorkspaceIDs(ids ...string) {
 	if m.removedcreated_workspaces == nil {
-		m.removedcreated_workspaces = make(map[uuid.UUID]struct{})
+		m.removedcreated_workspaces = make(map[string]struct{})
 	}
 	for i := range ids {
 		delete(m.created_workspaces, ids[i])
@@ -10118,7 +10118,7 @@ func (m *UserMutation) RemoveCreatedWorkspaceIDs(ids ...uuid.UUID) {
 }
 
 // RemovedCreatedWorkspaces returns the removed IDs of the "created_workspaces" edge to the Workspace entity.
-func (m *UserMutation) RemovedCreatedWorkspacesIDs() (ids []uuid.UUID) {
+func (m *UserMutation) RemovedCreatedWorkspacesIDs() (ids []string) {
 	for id := range m.removedcreated_workspaces {
 		ids = append(ids, id)
 	}
@@ -10126,7 +10126,7 @@ func (m *UserMutation) RemovedCreatedWorkspacesIDs() (ids []uuid.UUID) {
 }
 
 // CreatedWorkspacesIDs returns the "created_workspaces" edge IDs in the mutation.
-func (m *UserMutation) CreatedWorkspacesIDs() (ids []uuid.UUID) {
+func (m *UserMutation) CreatedWorkspacesIDs() (ids []string) {
 	for id := range m.created_workspaces {
 		ids = append(ids, id)
 	}
@@ -11389,7 +11389,7 @@ type UserGroupMutation struct {
 	created_at            *time.Time
 	updated_at            *time.Time
 	clearedFields         map[string]struct{}
-	workspace             *uuid.UUID
+	workspace             *string
 	clearedworkspace      bool
 	created_by            *uuid.UUID
 	clearedcreated_by     bool
@@ -11666,7 +11666,7 @@ func (m *UserGroupMutation) ResetUpdatedAt() {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by id.
-func (m *UserGroupMutation) SetWorkspaceID(id uuid.UUID) {
+func (m *UserGroupMutation) SetWorkspaceID(id string) {
 	m.workspace = &id
 }
 
@@ -11681,7 +11681,7 @@ func (m *UserGroupMutation) WorkspaceCleared() bool {
 }
 
 // WorkspaceID returns the "workspace" edge ID in the mutation.
-func (m *UserGroupMutation) WorkspaceID() (id uuid.UUID, exists bool) {
+func (m *UserGroupMutation) WorkspaceID() (id string, exists bool) {
 	if m.workspace != nil {
 		return *m.workspace, true
 	}
@@ -11691,7 +11691,7 @@ func (m *UserGroupMutation) WorkspaceID() (id uuid.UUID, exists bool) {
 // WorkspaceIDs returns the "workspace" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *UserGroupMutation) WorkspaceIDs() (ids []uuid.UUID) {
+func (m *UserGroupMutation) WorkspaceIDs() (ids []string) {
 	if id := m.workspace; id != nil {
 		ids = append(ids, *id)
 	}
@@ -13109,10 +13109,11 @@ type WorkspaceMutation struct {
 	config
 	op                 Op
 	typ                string
-	id                 *uuid.UUID
+	id                 *string
 	name               *string
 	description        *string
 	icon_url           *string
+	is_public          *bool
 	created_at         *time.Time
 	updated_at         *time.Time
 	clearedFields      map[string]struct{}
@@ -13152,7 +13153,7 @@ func newWorkspaceMutation(c config, op Op, opts ...workspaceOption) *WorkspaceMu
 }
 
 // withWorkspaceID sets the ID field of the mutation.
-func withWorkspaceID(id uuid.UUID) workspaceOption {
+func withWorkspaceID(id string) workspaceOption {
 	return func(m *WorkspaceMutation) {
 		var (
 			err   error
@@ -13204,13 +13205,13 @@ func (m WorkspaceMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Workspace entities.
-func (m *WorkspaceMutation) SetID(id uuid.UUID) {
+func (m *WorkspaceMutation) SetID(id string) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *WorkspaceMutation) ID() (id uuid.UUID, exists bool) {
+func (m *WorkspaceMutation) ID() (id string, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -13221,12 +13222,12 @@ func (m *WorkspaceMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *WorkspaceMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *WorkspaceMutation) IDs(ctx context.Context) ([]string, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uuid.UUID{id}, nil
+			return []string{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -13368,6 +13369,42 @@ func (m *WorkspaceMutation) IconURLCleared() bool {
 func (m *WorkspaceMutation) ResetIconURL() {
 	m.icon_url = nil
 	delete(m.clearedFields, workspace.FieldIconURL)
+}
+
+// SetIsPublic sets the "is_public" field.
+func (m *WorkspaceMutation) SetIsPublic(b bool) {
+	m.is_public = &b
+}
+
+// IsPublic returns the value of the "is_public" field in the mutation.
+func (m *WorkspaceMutation) IsPublic() (r bool, exists bool) {
+	v := m.is_public
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsPublic returns the old "is_public" field's value of the Workspace entity.
+// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceMutation) OldIsPublic(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsPublic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsPublic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsPublic: %w", err)
+	}
+	return oldValue.IsPublic, nil
+}
+
+// ResetIsPublic resets all changes to the "is_public" field.
+func (m *WorkspaceMutation) ResetIsPublic() {
+	m.is_public = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -13677,7 +13714,7 @@ func (m *WorkspaceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkspaceMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, workspace.FieldName)
 	}
@@ -13686,6 +13723,9 @@ func (m *WorkspaceMutation) Fields() []string {
 	}
 	if m.icon_url != nil {
 		fields = append(fields, workspace.FieldIconURL)
+	}
+	if m.is_public != nil {
+		fields = append(fields, workspace.FieldIsPublic)
 	}
 	if m.created_at != nil {
 		fields = append(fields, workspace.FieldCreatedAt)
@@ -13707,6 +13747,8 @@ func (m *WorkspaceMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case workspace.FieldIconURL:
 		return m.IconURL()
+	case workspace.FieldIsPublic:
+		return m.IsPublic()
 	case workspace.FieldCreatedAt:
 		return m.CreatedAt()
 	case workspace.FieldUpdatedAt:
@@ -13726,6 +13768,8 @@ func (m *WorkspaceMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldDescription(ctx)
 	case workspace.FieldIconURL:
 		return m.OldIconURL(ctx)
+	case workspace.FieldIsPublic:
+		return m.OldIsPublic(ctx)
 	case workspace.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case workspace.FieldUpdatedAt:
@@ -13759,6 +13803,13 @@ func (m *WorkspaceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIconURL(v)
+		return nil
+	case workspace.FieldIsPublic:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsPublic(v)
 		return nil
 	case workspace.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -13846,6 +13897,9 @@ func (m *WorkspaceMutation) ResetField(name string) error {
 		return nil
 	case workspace.FieldIconURL:
 		m.ResetIconURL()
+		return nil
+	case workspace.FieldIsPublic:
+		m.ResetIsPublic()
 		return nil
 	case workspace.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -14020,7 +14074,7 @@ type WorkspaceMemberMutation struct {
 	role             *string
 	joined_at        *time.Time
 	clearedFields    map[string]struct{}
-	workspace        *uuid.UUID
+	workspace        *string
 	clearedworkspace bool
 	user             *uuid.UUID
 	cleareduser      bool
@@ -14206,7 +14260,7 @@ func (m *WorkspaceMemberMutation) ResetJoinedAt() {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by id.
-func (m *WorkspaceMemberMutation) SetWorkspaceID(id uuid.UUID) {
+func (m *WorkspaceMemberMutation) SetWorkspaceID(id string) {
 	m.workspace = &id
 }
 
@@ -14221,7 +14275,7 @@ func (m *WorkspaceMemberMutation) WorkspaceCleared() bool {
 }
 
 // WorkspaceID returns the "workspace" edge ID in the mutation.
-func (m *WorkspaceMemberMutation) WorkspaceID() (id uuid.UUID, exists bool) {
+func (m *WorkspaceMemberMutation) WorkspaceID() (id string, exists bool) {
 	if m.workspace != nil {
 		return *m.workspace, true
 	}
@@ -14231,7 +14285,7 @@ func (m *WorkspaceMemberMutation) WorkspaceID() (id uuid.UUID, exists bool) {
 // WorkspaceIDs returns the "workspace" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // WorkspaceID instead. It exists only for internal usage by the builders.
-func (m *WorkspaceMemberMutation) WorkspaceIDs() (ids []uuid.UUID) {
+func (m *WorkspaceMemberMutation) WorkspaceIDs() (ids []string) {
 	if id := m.workspace; id != nil {
 		ids = append(ids, *id)
 	}

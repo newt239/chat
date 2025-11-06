@@ -110,7 +110,7 @@ func (_u *ChannelUpdate) SetUpdatedAt(v time.Time) *ChannelUpdate {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *ChannelUpdate) SetWorkspaceID(id uuid.UUID) *ChannelUpdate {
+func (_u *ChannelUpdate) SetWorkspaceID(id string) *ChannelUpdate {
 	_u.mutation.SetWorkspaceID(id)
 	return _u
 }
@@ -385,7 +385,7 @@ func (_u *ChannelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{channel.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -398,7 +398,7 @@ func (_u *ChannelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{channel.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -710,7 +710,7 @@ func (_u *ChannelUpdateOne) SetUpdatedAt(v time.Time) *ChannelUpdateOne {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *ChannelUpdateOne) SetWorkspaceID(id uuid.UUID) *ChannelUpdateOne {
+func (_u *ChannelUpdateOne) SetWorkspaceID(id string) *ChannelUpdateOne {
 	_u.mutation.SetWorkspaceID(id)
 	return _u
 }
@@ -1015,7 +1015,7 @@ func (_u *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err er
 			Columns: []string{channel.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1028,7 +1028,7 @@ func (_u *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err er
 			Columns: []string{channel.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

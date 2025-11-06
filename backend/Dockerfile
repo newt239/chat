@@ -4,6 +4,7 @@ FROM golang:1.25-alpine AS builder
 WORKDIR /app
 
 # 依存関係をインストール
+RUN apk add --no-cache git
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -32,6 +33,11 @@ COPY --from=builder /seed .
 
 # entスキーマをコピー（必要な場合）
 COPY --from=builder /app/ent ./ent
+
+# OpenAPI スキーマをコピー（本番用にイメージへ同梱）
+RUN mkdir -p /root/backend/internal/openapi
+COPY --from=builder /app/internal/openapi /root/backend/internal/openapi
+ENV OPENAPI_SPEC_PATH=backend/internal/openapi/openapi.yaml
 
 # ポートを公開
 EXPOSE 8080

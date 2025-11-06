@@ -88,7 +88,7 @@ func (_c *UserGroupCreate) SetNillableID(v *uuid.UUID) *UserGroupCreate {
 }
 
 // SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_c *UserGroupCreate) SetWorkspaceID(id uuid.UUID) *UserGroupCreate {
+func (_c *UserGroupCreate) SetWorkspaceID(id string) *UserGroupCreate {
 	_c.mutation.SetWorkspaceID(id)
 	return _c
 }
@@ -269,7 +269,7 @@ func (_c *UserGroupCreate) createSpec() (*UserGroup, *sqlgraph.CreateSpec) {
 			Columns: []string{usergroup.WorkspaceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(workspace.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

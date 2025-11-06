@@ -7,53 +7,62 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uuid.UUID) predicate.Workspace {
+func ID(id string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uuid.UUID) predicate.Workspace {
+func IDEQ(id string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uuid.UUID) predicate.Workspace {
+func IDNEQ(id string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uuid.UUID) predicate.Workspace {
+func IDIn(ids ...string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uuid.UUID) predicate.Workspace {
+func IDNotIn(ids ...string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uuid.UUID) predicate.Workspace {
+func IDGT(id string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uuid.UUID) predicate.Workspace {
+func IDGTE(id string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uuid.UUID) predicate.Workspace {
+func IDLT(id string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uuid.UUID) predicate.Workspace {
+func IDLTE(id string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldLTE(FieldID, id))
+}
+
+// IDEqualFold applies the EqualFold predicate on the ID field.
+func IDEqualFold(id string) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEqualFold(FieldID, id))
+}
+
+// IDContainsFold applies the ContainsFold predicate on the ID field.
+func IDContainsFold(id string) predicate.Workspace {
+	return predicate.Workspace(sql.FieldContainsFold(FieldID, id))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
@@ -69,6 +78,11 @@ func Description(v string) predicate.Workspace {
 // IconURL applies equality check predicate on the "icon_url" field. It's identical to IconURLEQ.
 func IconURL(v string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldEQ(FieldIconURL, v))
+}
+
+// IsPublic applies equality check predicate on the "is_public" field. It's identical to IsPublicEQ.
+func IsPublic(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldIsPublic, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -294,6 +308,16 @@ func IconURLEqualFold(v string) predicate.Workspace {
 // IconURLContainsFold applies the ContainsFold predicate on the "icon_url" field.
 func IconURLContainsFold(v string) predicate.Workspace {
 	return predicate.Workspace(sql.FieldContainsFold(FieldIconURL, v))
+}
+
+// IsPublicEQ applies the EQ predicate on the "is_public" field.
+func IsPublicEQ(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldIsPublic, v))
+}
+
+// IsPublicNEQ applies the NEQ predicate on the "is_public" field.
+func IsPublicNEQ(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldNEQ(FieldIsPublic, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
