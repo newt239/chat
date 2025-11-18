@@ -8,7 +8,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -27,7 +26,7 @@ type readStateInteractor struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 	notificationSvc   service.NotificationService
-	channelAccessSvc  domainservice.ChannelAccessService
+	channelAccessSvc  service.ChannelAccessService
 }
 
 func NewReadStateInteractor(
@@ -36,7 +35,7 @@ func NewReadStateInteractor(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	notificationSvc service.NotificationService,
-	channelAccessSvc domainservice.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 ) ReadStateUseCase {
 	return &readStateInteractor{
 		readStateRepo:     readStateRepo,

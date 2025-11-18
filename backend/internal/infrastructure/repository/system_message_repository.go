@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/systemmessage"
@@ -24,7 +23,7 @@ func NewSystemMessageRepository(client *ent.Client) domainrepository.SystemMessa
 
 func (r *systemMessageRepository) Create(ctx context.Context, msg *entity.SystemMessage) error {
 	chID := utils.ParseUUIDOrNil(msg.ChannelID)
-	var actorIDPtr *uuid.UUID = utils.ParseUUIDPtrOrNil(msg.ActorID)
+	actorIDPtr := utils.ParseUUIDPtrOrNil(msg.ActorID)
 
 	client := transaction.ResolveClient(ctx, r.client)
 

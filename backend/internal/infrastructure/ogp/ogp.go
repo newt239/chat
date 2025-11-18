@@ -59,7 +59,11 @@ func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*service.OGPD
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch URL: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			_ = err // エラーログは出力しない（既にレスポンスを読み取った後なので）
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP error: %d", resp.StatusCode)

@@ -25,7 +25,9 @@ func (m *transactionManager) Do(ctx context.Context, fn func(context.Context) er
 
 	defer func() {
 		if v := recover(); v != nil {
-			tx.Rollback()
+			if err := tx.Rollback(); err != nil {
+				_ = err // ロールバックエラーは無視（panic中なので）
+			}
 			panic(v)
 		}
 	}()

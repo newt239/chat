@@ -117,7 +117,6 @@ func createSeedData(
         {ID: "marketing", Name: "Marketing", Description: "マーケティングチーム用のワークスペース", IsPublic: true, CreatedBy: users[2].ID},   // charlie
     }
 
-    createdWorkspaceIDs := make([]string, 0, len(workspaces))
     for _, ws := range workspaces {
         w := &entity.Workspace{
             ID:          ws.ID, // slug
@@ -133,8 +132,6 @@ func createSeedData(
         if err := workspaceRepo.Create(ctx, w); err != nil {
             return fmt.Errorf("failed to create workspace %s: %w", ws.Name, err)
         }
-
-        createdWorkspaceIDs = append(createdWorkspaceIDs, w.ID)
 
         // Add creator as owner
         if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{

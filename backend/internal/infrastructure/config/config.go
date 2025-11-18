@@ -95,7 +95,7 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("JWT_SECRET must be set in production")
 	}
 	if c.Server.Env == "production" && (c.Wasabi.AccessKeyID == "" || c.Wasabi.SecretAccessKey == "") {
-		return fmt.Errorf("Wasabi credentials must be set in production")
+		return fmt.Errorf("wasabi credentials must be set in production")
 	}
 	return nil
 }

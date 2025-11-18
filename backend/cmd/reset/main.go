@@ -24,7 +24,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("データベースへの接続に失敗しました: %v", err)
 	}
-	defer client.Close()
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Printf("データベース接続のクローズに失敗しました: %v", err)
+		}
+	}()
 
 	ctx := context.Background()
 
@@ -64,7 +68,11 @@ func deleteAllTables(dsn string) error {
 	if err != nil {
 		return fmt.Errorf("データベース接続を開けませんでした: %w", err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("データベース接続のクローズに失敗しました: %v", err)
+		}
+	}()
 
 	// Get all table names from the current schema
 	rows, err := db.Query(`
@@ -75,7 +83,11 @@ func deleteAllTables(dsn string) error {
 	if err != nil {
 		return fmt.Errorf("テーブル名の取得に失敗しました: %w", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Printf("rowsのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	var tables []string
 	for rows.Next() {

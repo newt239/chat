@@ -7,7 +7,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 // MessageDeleter はメッセージ削除を担当するユースケースです
@@ -18,7 +17,7 @@ type MessageDeleter struct {
 	workspaceRepo     domainrepository.WorkspaceRepository
 	threadRepo        domainrepository.ThreadRepository
 	notificationSvc   service.NotificationService
-	channelAccessSvc  domainservice.ChannelAccessService
+	channelAccessSvc  service.ChannelAccessService
 	logger            service.Logger
 }
 
@@ -30,7 +29,7 @@ func NewMessageDeleter(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	threadRepo domainrepository.ThreadRepository,
 	notificationSvc service.NotificationService,
-	channelAccessSvc domainservice.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 	logger service.Logger,
 ) *MessageDeleter {
 	return &MessageDeleter{
@@ -57,7 +56,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	}
 
 	// チャンネルアクセス確認
-    channel, err := d.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.ExecutorID)
+	channel, err := d.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.ExecutorID)
 	if err != nil {
 		return err
 	}

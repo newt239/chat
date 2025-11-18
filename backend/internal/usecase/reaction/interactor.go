@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -31,7 +30,7 @@ type reactionInteractor struct {
 	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
 	notificationSvc   service.NotificationService
-	channelAccessSvc  domainservice.ChannelAccessService
+	channelAccessSvc  service.ChannelAccessService
 }
 
 func NewReactionInteractor(
@@ -41,7 +40,7 @@ func NewReactionInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc service.NotificationService,
-	channelAccessSvc domainservice.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 ) ReactionUseCase {
 	return &reactionInteractor{
 		messageRepo:       messageRepo,

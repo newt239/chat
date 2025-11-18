@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
 	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
@@ -35,7 +34,7 @@ type interactor struct {
 	userRepo          domainrepository.UserRepository
 	notificationSvc   service.NotificationService
 	messageAssembler  *message.MessageOutputAssembler
-	channelAccessSvc  domainservice.ChannelAccessService
+	channelAccessSvc  service.ChannelAccessService
 	systemMessageUC   systemmessage.UseCase
 }
 
@@ -47,7 +46,7 @@ func NewPinInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc service.NotificationService,
-	channelAccessSvc domainservice.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 	systemMessageUC systemmessage.UseCase,
 ) PinUseCase {
 	return &interactor{

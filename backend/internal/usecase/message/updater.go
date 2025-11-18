@@ -7,8 +7,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-    "github.com/newt239/chat/internal/domain/service"
-    domainservice "github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/domain/transaction"
 )
 
@@ -29,7 +28,7 @@ type MessageUpdater struct {
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
 	assembler             *MessageOutputAssembler
-    channelAccessSvc      domainservice.ChannelAccessService
+    channelAccessSvc      service.ChannelAccessService
 }
 
 // NewMessageUpdater は新しいMessageUpdaterを作成します
@@ -48,7 +47,7 @@ func NewMessageUpdater(
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
-    channelAccessSvc domainservice.ChannelAccessService,
+    channelAccessSvc service.ChannelAccessService,
 ) *MessageUpdater {
 	return &MessageUpdater{
 		messageRepo:           messageRepo,

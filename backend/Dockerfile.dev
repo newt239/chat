@@ -1,8 +1,9 @@
 FROM golang:1.25-alpine
 
-# Install Atlas CLI
+# Install Atlas CLI and golangci-lint
 RUN apk add --no-cache curl git && \
-    curl -sSf https://atlasgo.sh | sh
+    curl -sSf https://atlasgo.sh | sh && \
+    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
 
 WORKDIR /app
 

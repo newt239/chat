@@ -8,7 +8,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	domainservice "github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
 )
 
@@ -38,7 +38,7 @@ type bookmarkInteractor struct {
 	attachmentRepo    domainrepository.AttachmentRepository
 	userGroupRepo     domainrepository.UserGroupRepository
 	messageAssembler  *message.MessageOutputAssembler
-	channelAccessSvc  domainservice.ChannelAccessService
+	channelAccessSvc  service.ChannelAccessService
 }
 
 func NewBookmarkInteractor(
@@ -53,7 +53,7 @@ func NewBookmarkInteractor(
 	linkRepo domainrepository.MessageLinkRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
-	channelAccessSvc domainservice.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 ) BookmarkUseCase {
 	return &bookmarkInteractor{
 		bookmarkRepo:      bookmarkRepo,

@@ -25,6 +25,9 @@ docker-compose exec backend go run cmd/reset/main.go
 # シードデータを投入（通常は自動実行されます）
 docker-compose exec backend go run cmd/seed/main.go
 
+# バックエンドコードのリント
+docker-compose exec backend golangci-lint run
+
 # ログを表示
 docker-compose logs -f
 

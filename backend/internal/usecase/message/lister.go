@@ -7,7 +7,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-    domainservice "github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 // MessageLister はメッセージ一覧取得を担当するユースケースです
@@ -26,7 +26,7 @@ type MessageLister struct {
 	attachmentRepo    domainrepository.AttachmentRepository
 	assembler         *MessageOutputAssembler
 	outputBuilder     *MessageOutputBuilder
-    channelAccessSvc  domainservice.ChannelAccessService
+    channelAccessSvc  service.ChannelAccessService
 }
 
 // NewMessageLister は新しいMessageListerを作成します
@@ -43,7 +43,7 @@ func NewMessageLister(
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
-    channelAccessSvc domainservice.ChannelAccessService,
+    channelAccessSvc service.ChannelAccessService,
 ) *MessageLister {
     assembler := NewMessageOutputAssembler()
 	return &MessageLister{

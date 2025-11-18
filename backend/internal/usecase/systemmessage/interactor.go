@@ -7,7 +7,7 @@ import (
 
     "github.com/newt239/chat/internal/domain/entity"
     domainrepository "github.com/newt239/chat/internal/domain/repository"
-    domainservice "github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type CreateInput struct {
@@ -24,10 +24,10 @@ type UseCase interface {
 type interactor struct {
     systemMsgRepo domainrepository.SystemMessageRepository
     channelRepo   domainrepository.ChannelRepository
-    notification  domainservice.NotificationService
+    notification  service.NotificationService
 }
 
-func New(systemMsgRepo domainrepository.SystemMessageRepository, channelRepo domainrepository.ChannelRepository, notification domainservice.NotificationService) UseCase {
+func New(systemMsgRepo domainrepository.SystemMessageRepository, channelRepo domainrepository.ChannelRepository, notification service.NotificationService) UseCase {
     return &interactor{
         systemMsgRepo: systemMsgRepo,
         channelRepo:   channelRepo,

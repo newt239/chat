@@ -37,7 +37,6 @@ COPY --from=builder /app/ent ./ent
 # OpenAPI スキーマをコピー（本番用にイメージへ同梱）
 RUN mkdir -p /root/openapi
 COPY --from=builder /app/openapi /root/openapi
-ENV OPENAPI_SPEC_PATH=openapi/openapi.yaml
 
 # ポートを公開
 EXPOSE 8080
