@@ -127,7 +127,7 @@ func main() {
 func setupOpenAPIMiddleware(e *echo.Echo) error {
 	specPath := os.Getenv("OPENAPI_SPEC_PATH")
 	if specPath == "" {
-		specPath = "backend/internal/openapi/openapi.yaml"
+		specPath = "openapi/openapi.yaml"
 	}
 	loader := &openapi3.Loader{IsExternalRefsAllowed: true}
 	doc, err := loader.LoadFromFile(specPath)

@@ -31,7 +31,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
       - JWT_SECRET=development-secret-key
       - CORS_ALLOWED_ORIGINS=http://localhost:5173
-      - OPENAPI_SPEC_PATH=/app/internal/openapi/openapi.yaml
+      - OPENAPI_SPEC_PATH=/app/openapi/openapi.yaml
     ports:
       - "8080:8080"
     volumes:
