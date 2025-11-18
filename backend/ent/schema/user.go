@@ -10,12 +10,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// User holds the schema definition for the User entity.
 type User struct {
 	ent.Schema
 }
 
-// Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -28,7 +26,6 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("display_name").
 			NotEmpty(),
-		// 自己紹介文（任意）
 		field.String("bio").
 			Optional(),
 		field.String("avatar_url").
@@ -42,52 +39,37 @@ func (User) Fields() []ent.Field {
 	}
 }
 
-// Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		// Sessions
 		edge.From("sessions", Session.Type).
 			Ref("user"),
-		// Workspaces created by user
 		edge.From("created_workspaces", Workspace.Type).
 			Ref("created_by"),
-		// Workspace memberships
 		edge.From("workspace_members", WorkspaceMember.Type).
 			Ref("user"),
-		// Channels created by user
 		edge.From("created_channels", Channel.Type).
 			Ref("created_by"),
-		// Channel memberships
 		edge.From("channel_members", ChannelMember.Type).
 			Ref("user"),
-		// Messages sent by user
 		edge.From("messages", Message.Type).
 			Ref("user"),
-		// Message reactions by user
 		edge.From("message_reactions", MessageReaction.Type).
 			Ref("user"),
-		// Message bookmarks by user
 		edge.From("message_bookmarks", MessageBookmark.Type).
 			Ref("user"),
-		// User mentions in messages
 		edge.From("user_mentions", MessageUserMention.Type).
 			Ref("user"),
-		// User group memberships
 		edge.From("user_group_members", UserGroupMember.Type).
 			Ref("user"),
-		// User groups created by user
 		edge.From("created_user_groups", UserGroup.Type).
 			Ref("created_by"),
-		// Attachments uploaded by user
 		edge.From("attachments", Attachment.Type).
 			Ref("uploader"),
-		// Channel read states
 		edge.From("channel_read_states", ChannelReadState.Type).
 			Ref("user"),
 	}
 }
 
-// Indexes of the User.
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("email"),

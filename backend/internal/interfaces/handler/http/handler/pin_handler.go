@@ -18,7 +18,6 @@ type PinRequest struct {
 	MessageID string `json:"messageId" validate:"required,uuid4"`
 }
 
-// ListPins implements ServerInterface.ListPins
 func (h *PinHandler) ListPins(ctx echo.Context, channelId openapi_types.UUID, params openapi.ListPinsParams) error {
 	userID, _ := ctx.Get("userID").(string)
 	if userID == "" {
@@ -44,7 +43,6 @@ func (h *PinHandler) ListPins(ctx echo.Context, channelId openapi_types.UUID, pa
 	return ctx.JSON(http.StatusOK, map[string]interface{}{"pins": out.Pins, "nextCursor": out.NextCursor})
 }
 
-// CreatePin implements ServerInterface.CreatePin
 func (h *PinHandler) CreatePin(ctx echo.Context, channelId openapi_types.UUID) error {
 	userID, _ := ctx.Get("userID").(string)
 	if userID == "" {
@@ -71,7 +69,6 @@ func (h *PinHandler) CreatePin(ctx echo.Context, channelId openapi_types.UUID) e
 	return ctx.NoContent(http.StatusOK)
 }
 
-// DeletePin implements ServerInterface.DeletePin
 func (h *PinHandler) DeletePin(ctx echo.Context, channelId openapi_types.UUID, messageId openapi_types.UUID) error {
 	userID, _ := ctx.Get("userID").(string)
 	if userID == "" {

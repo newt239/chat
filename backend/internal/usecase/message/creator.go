@@ -12,7 +12,6 @@ import (
 	"github.com/newt239/chat/internal/domain/transaction"
 )
 
-// MessageCreator はメッセージ作成を担当するユースケースです
 type MessageCreator struct {
 	messageRepo           domainrepository.MessageRepository
 	channelRepo           domainrepository.ChannelRepository
@@ -34,7 +33,6 @@ type MessageCreator struct {
     channelAccessSvc      domainservice.ChannelAccessService
 }
 
-// NewMessageCreator は新しいMessageCreatorを作成します
 func NewMessageCreator(
 	messageRepo domainrepository.MessageRepository,
 	channelRepo domainrepository.ChannelRepository,
@@ -76,7 +74,6 @@ func NewMessageCreator(
 	}
 }
 
-// CreateMessage はメッセージを作成します
 func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageInput) (*MessageOutput, error) {
     channel, err := c.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
@@ -107,25 +104,21 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 			return fmt.Errorf("failed to create message: %w", err)
 		}
 
-		// 添付ファイルをメッセージに紐付け
 		if len(input.AttachmentIDs) > 0 {
 			if err := c.attachmentRepo.AttachToMessage(txCtx, input.AttachmentIDs, message.ID); err != nil {
 				return fmt.Errorf("failed to attach files: %w", err)
 			}
 		}
 
-		// メンションとリンクを抽出・保存
 		if err := c.extractAndSaveMentionsAndLinks(txCtx, message.ID, input.Body, channel.WorkspaceID); err != nil {
 			return fmt.Errorf("failed to extract mentions and links: %w", err)
 		}
 
-		// ユーザー情報を取得
 		user, err := c.userRepo.FindByID(txCtx, input.UserID)
 		if err != nil {
 			return fmt.Errorf("failed to fetch user: %w", err)
 		}
 
-		// メンションとリンクの情報を取得してレスポンスに含める
 		userMentions, err := c.userMentionRepo.FindByMessageID(txCtx, message.ID)
 		if err != nil {
 			return fmt.Errorf("failed to fetch user mentions: %w", err)
@@ -143,7 +136,6 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 			return fmt.Errorf("failed to fetch attachments: %w", err)
 		}
 
-		// グループ情報を取得
 		groupIDs := make([]string, 0)
 		groupIDSet := make(map[string]bool)
 		for _, mention := range groupMentions {
@@ -164,10 +156,8 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 			}
 		}
 
-		// リアクションは新規作成メッセージには存在しないため空配列
 		reactions := []*entity.MessageReaction{}
 
-		// ユーザーマップを作成
 		userMap := map[string]*entity.User{user.ID: user}
 
 		output := c.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
@@ -180,7 +170,6 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 		return nil, err
 	}
 
-	// WebSocket通知を送信（nilチェックを追加）
 	if c.notificationSvc != nil {
 		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, *result)
 	}
@@ -188,11 +177,7 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 	return result, nil
 }
 
-// ensureChannelAccess は ChannelAccessService に委譲済み
-
-// extractAndSaveMentionsAndLinks はメンションとリンクの抽出・保存を行います
 func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, messageID, body, workspaceID string) error {
-	// ユーザーメンションの抽出
 	userMentions, err := c.mentionService.ExtractUserMentions(ctx, body, workspaceID)
 	if err != nil {
 		return fmt.Errorf("failed to extract user mentions: %w", err)
@@ -205,7 +190,6 @@ func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, mes
 		}
 	}
 
-	// グループメンションの抽出
 	groupMentions, err := c.mentionService.ExtractGroupMentions(ctx, body, workspaceID)
 	if err != nil {
 		return fmt.Errorf("failed to extract group mentions: %w", err)
@@ -218,21 +202,18 @@ func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, mes
 		}
 	}
 
-	// リンクの抽出とOGP取得
 	links, err := c.linkProcessingService.ProcessLinks(ctx, body)
 	if err != nil {
 		return fmt.Errorf("failed to process links: %w", err)
 	}
 
 	for _, link := range links {
-		// 既存のリンクをチェック
 		existingLink, err := c.linkRepo.FindByURL(ctx, link.URL)
 		if err != nil {
 			continue // エラーは無視
 		}
 
 		if existingLink != nil {
-			// 既存のリンクを再利用
 			link.MessageID = messageID
 			link.Title = existingLink.Title
 			link.Description = existingLink.Description
@@ -241,12 +222,10 @@ func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, mes
 			link.CardType = existingLink.CardType
 			link.CreatedAt = time.Now()
 		} else {
-			// 新しいリンクを保存
 			link.MessageID = messageID
 			link.CreatedAt = time.Now()
 		}
 
-		// リンクを保存
 		if err := c.linkRepo.Create(ctx, link); err != nil {
 			return fmt.Errorf("failed to create link: %w", err)
 		}

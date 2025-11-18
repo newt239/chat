@@ -10,12 +10,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// Message holds the schema definition for the Message entity.
 type Message struct {
 	ent.Schema
 }
 
-// Fields of the Message.
 func (Message) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -35,7 +33,6 @@ func (Message) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Message.
 func (Message) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("channel", Channel.Type).
@@ -67,7 +64,6 @@ func (Message) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the Message.
 func (Message) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("created_at"),

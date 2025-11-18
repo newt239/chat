@@ -15,7 +15,6 @@ type MessageHandler struct {
 	MessageUC messageuc.MessageUseCase
 }
 
-// ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します (ServerInterface用)
 func (h *MessageHandler) ListMessagesWithThread(c echo.Context, channelId openapi_types.UUID, params openapi.ListMessagesWithThreadParams) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -45,13 +44,11 @@ func (h *MessageHandler) ListMessagesWithThread(c echo.Context, channelId openap
 		Until:     untilTime,
 	}
 
-	// hasMore を取得するため通常の一覧も取得
 	listRes, err := h.MessageUC.ListMessages(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	// スレッド情報付きの一覧を取得
 	outputs, err := h.MessageUC.ListMessagesWithThread(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
@@ -63,11 +60,10 @@ func (h *MessageHandler) ListMessagesWithThread(c echo.Context, channelId openap
 	})
 }
 
-// GetThreadReplies は特定のメッセージのスレッド返信一覧と親メッセージを取得します (ServerInterface用)
 func (h *MessageHandler) GetThreadReplies(c echo.Context, messageId openapi_types.UUID, params openapi.GetThreadRepliesParams) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	input := messageuc.GetThreadRepliesInput{
@@ -90,11 +86,10 @@ func (h *MessageHandler) GetThreadReplies(c echo.Context, messageId openapi_type
 	return c.JSON(http.StatusOK, output)
 }
 
-// GetThreadMetadata は特定のメッセージのスレッドメタデータを取得します (ServerInterface用)
 func (h *MessageHandler) GetThreadMetadata(c echo.Context, messageId openapi_types.UUID) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	input := messageuc.GetThreadMetadataInput{
@@ -117,7 +112,6 @@ func (h *MessageHandler) GetThreadMetadata(c echo.Context, messageId openapi_typ
 	return c.JSON(http.StatusOK, output)
 }
 
-// ListMessages はメッセージ一覧を取得します (ServerInterface用)
 func (h *MessageHandler) ListMessages(c echo.Context, channelId openapi_types.UUID, params openapi.ListMessagesParams) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -155,16 +149,19 @@ func (h *MessageHandler) ListMessages(c echo.Context, channelId openapi_types.UU
 	return c.JSON(http.StatusOK, messages)
 }
 
-// CreateMessage はメッセージを作成します (ServerInterface用)
 func (h *MessageHandler) CreateMessage(c echo.Context, channelId openapi_types.UUID) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	var req openapi.CreateMessageRequest
-	if err := utils.ValidateRequest(c, &req); err != nil {
-		return err
+	if err := c.Bind(&req); err != nil {
+		return utils.HandleBindError(err)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	var parentID *string
@@ -197,16 +194,19 @@ func (h *MessageHandler) CreateMessage(c echo.Context, channelId openapi_types.U
 	return c.JSON(http.StatusCreated, message)
 }
 
-// UpdateMessage はメッセージを更新します (ServerInterface用)
 func (h *MessageHandler) UpdateMessage(c echo.Context, messageId openapi_types.UUID) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	var req openapi.UpdateMessageRequest
-	if err := utils.ValidateRequest(c, &req); err != nil {
-		return err
+	if err := c.Bind(&req); err != nil {
+		return utils.HandleBindError(err)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	input := messageuc.UpdateMessageInput{
@@ -223,11 +223,10 @@ func (h *MessageHandler) UpdateMessage(c echo.Context, messageId openapi_types.U
 	return c.JSON(http.StatusOK, message)
 }
 
-// DeleteMessage はメッセージを削除します (ServerInterface用)
 func (h *MessageHandler) DeleteMessage(c echo.Context, messageId openapi_types.UUID) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	input := messageuc.DeleteMessageInput{

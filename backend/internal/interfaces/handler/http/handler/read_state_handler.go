@@ -15,7 +15,6 @@ type ReadStateHandler struct {
 	ReadStateUC readstateuc.ReadStateUseCase
 }
 
-// UpdateReadState implements ServerInterface.UpdateReadState
 func (h *ReadStateHandler) UpdateReadState(ctx echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -45,7 +44,6 @@ func (h *ReadStateHandler) UpdateReadState(ctx echo.Context, channelId openapi_t
 	return ctx.NoContent(http.StatusOK)
 }
 
-// GetUnreadCount implements ServerInterface.GetUnreadCount
 func (h *ReadStateHandler) GetUnreadCount(ctx echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {

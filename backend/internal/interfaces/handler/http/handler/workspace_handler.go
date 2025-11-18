@@ -15,14 +15,12 @@ type WorkspaceHandler struct {
 	WorkspaceUC workspaceuc.WorkspaceUseCase
 }
 
-// AddMemberRequest はメンバー追加リクエストの構造体です
 // 注意: これはUserIDベースの追加用で、OpenAPIスキーマには定義がないため独自型を使用
 type AddMemberRequest struct {
 	UserID string `json:"user_id" validate:"required"`
 	Role   string `json:"role" validate:"required,oneof=owner admin member"`
 }
 
-// ListWorkspaces implements ServerInterface.ListWorkspaces
 func (h *WorkspaceHandler) ListWorkspaces(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -37,16 +35,19 @@ func (h *WorkspaceHandler) ListWorkspaces(c echo.Context) error {
 	return c.JSON(http.StatusOK, workspaces)
 }
 
-// CreateWorkspace はワークスペースを作成します
 func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	var req openapi.CreateWorkspaceRequest
-	if err := utils.ValidateRequest(c, &req); err != nil {
-		return err
+	if err := c.Bind(&req); err != nil {
+		return utils.HandleBindError(err)
+	}
+
+	if err := c.Validate(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	var isPublic bool
@@ -71,11 +72,10 @@ func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
 	return c.JSON(http.StatusCreated, workspace)
 }
 
-// GetWorkspace implements ServerInterface.GetWorkspace
 func (h *WorkspaceHandler) GetWorkspace(c echo.Context, id string) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	input := workspaceuc.GetWorkspaceInput{
@@ -91,7 +91,6 @@ func (h *WorkspaceHandler) GetWorkspace(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, workspace)
 }
 
-// UpdateWorkspace implements ServerInterface.UpdateWorkspace
 func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context, id string) error {
 	var req openapi.UpdateWorkspaceRequest
 	if err := c.Bind(&req); err != nil {
@@ -102,9 +101,9 @@ func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context, id string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	input := workspaceuc.UpdateWorkspaceInput{
@@ -124,12 +123,11 @@ func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, workspace)
 }
 
-// ListPublicWorkspaces は公開ワークスペース一覧を返します
 func (h *WorkspaceHandler) ListPublicWorkspaces(c echo.Context) error {
-    userID, err := utils.GetUserIDFromContext(c)
-    if err != nil {
-        return err
-    }
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
+	}
 
     out, err := h.WorkspaceUC.ListPublicWorkspaces(c.Request().Context(), userID)
     if err != nil {
@@ -138,13 +136,12 @@ func (h *WorkspaceHandler) ListPublicWorkspaces(c echo.Context) error {
     return c.JSON(http.StatusOK, out)
 }
 
-// JoinPublicWorkspace implements ServerInterface.JoinPublicWorkspace
 func (h *WorkspaceHandler) JoinPublicWorkspace(c echo.Context, id string) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
-	_, err = h.WorkspaceUC.JoinPublicWorkspace(c.Request().Context(), workspaceuc.JoinPublicWorkspaceInput{
+	_, err := h.WorkspaceUC.JoinPublicWorkspace(c.Request().Context(), workspaceuc.JoinPublicWorkspaceInput{
 		WorkspaceID: id,
 		UserID:      userID,
 	})
@@ -154,11 +151,10 @@ func (h *WorkspaceHandler) JoinPublicWorkspace(c echo.Context, id string) error 
 	return c.JSON(http.StatusOK, map[string]string{"message": "ワークスペースに参加しました"})
 }
 
-// AddMemberByEmail implements ServerInterface.AddMemberByEmail
 func (h *WorkspaceHandler) AddMemberByEmail(c echo.Context, id string) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 	var req openapi.AddMemberRequest
 	if err := c.Bind(&req); err != nil {
@@ -173,7 +169,7 @@ func (h *WorkspaceHandler) AddMemberByEmail(c echo.Context, id string) error {
 		role = string(*req.Role)
 	}
 
-	_, err = h.WorkspaceUC.AddMemberByEmail(c.Request().Context(), workspaceuc.AddMemberByEmailInput{
+	_, err := h.WorkspaceUC.AddMemberByEmail(c.Request().Context(), workspaceuc.AddMemberByEmailInput{
 		WorkspaceID: id,
 		Email:       string(req.Email),
 		Role:        role,
@@ -185,7 +181,6 @@ func (h *WorkspaceHandler) AddMemberByEmail(c echo.Context, id string) error {
 	return c.JSON(http.StatusCreated, map[string]string{"message": "メンバーを追加しました"})
 }
 
-// DeleteWorkspace implements ServerInterface.DeleteWorkspace
 func (h *WorkspaceHandler) DeleteWorkspace(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -205,7 +200,6 @@ func (h *WorkspaceHandler) DeleteWorkspace(c echo.Context, id string) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// ListMembers implements ServerInterface.ListMembers
 func (h *WorkspaceHandler) ListMembers(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -225,7 +219,6 @@ func (h *WorkspaceHandler) ListMembers(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, members)
 }
 
-// AddMember はワークスペースにメンバーを追加します
 func (h *WorkspaceHandler) AddMember(c echo.Context) error {
 	workspaceID := c.Param("id")
 	if workspaceID == "" {
@@ -255,7 +248,6 @@ func (h *WorkspaceHandler) AddMember(c echo.Context) error {
 	return c.JSON(http.StatusCreated, member)
 }
 
-// UpdateMemberRole implements ServerInterface.UpdateMemberRole
 func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context, id string, userId openapi_types.UUID) error {
 	var req openapi.UpdateMemberRoleRequest
 	if err := c.Bind(&req); err != nil {
@@ -280,7 +272,6 @@ func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context, id string, userId op
 	return c.JSON(http.StatusOK, member)
 }
 
-// RemoveMember implements ServerInterface.RemoveMember
 func (h *WorkspaceHandler) RemoveMember(c echo.Context, id string, userId openapi_types.UUID) error {
 	removerID, ok := c.Get("userID").(string)
 	if !ok {

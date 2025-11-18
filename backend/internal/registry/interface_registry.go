@@ -7,14 +7,12 @@ import (
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
-// InterfaceRegistry はインターフェース層の依存関係を管理します
 type InterfaceRegistry struct {
 	usecaseRegistry        *UseCaseRegistry
 	infrastructureRegistry *InfrastructureRegistry
 	domainRegistry         *DomainRegistry
 }
 
-// NewInterfaceRegistry は新しいInterfaceRegistryを作成します
 func NewInterfaceRegistry(usecaseRegistry *UseCaseRegistry, infrastructureRegistry *InfrastructureRegistry, domainRegistry *DomainRegistry) *InterfaceRegistry {
 	return &InterfaceRegistry{
 		usecaseRegistry:        usecaseRegistry,
@@ -23,7 +21,6 @@ func NewInterfaceRegistry(usecaseRegistry *UseCaseRegistry, infrastructureRegist
 	}
 }
 
-// Handlers
 func (r *InterfaceRegistry) NewAuthHandler() *handler.AuthHandler {
 	return &handler.AuthHandler{
 		AuthUC: r.usecaseRegistry.NewAuthUseCase(),
@@ -122,7 +119,6 @@ func (r *InterfaceRegistry) NewUserHandler() *handler.UserHandler {
 	}
 }
 
-// Router
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
 		JWTService:           r.infrastructureRegistry.NewJWTService(),
@@ -152,7 +148,6 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	return http.NewRouter(routerConfig)
 }
 
-// WebSocket Hub
 func (r *InterfaceRegistry) NewWebSocketHub() *websocket.Hub {
 	return r.infrastructureRegistry.hub
 }

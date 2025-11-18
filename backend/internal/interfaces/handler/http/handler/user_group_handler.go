@@ -14,12 +14,10 @@ type UserGroupHandler struct {
 	UserGroupUC usergroupuc.UserGroupUseCase
 }
 
-// AddUserGroupMemberRequest はユーザーグループメンバー追加リクエストの構造体です
 type AddUserGroupMemberRequest struct {
 	UserID string `json:"user_id" validate:"required"`
 }
 
-// CreateUserGroup はユーザーグループを作成します
 func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -50,7 +48,6 @@ func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 	return c.JSON(http.StatusCreated, userGroup)
 }
 
-// ListUserGroups implements ServerInterface.ListUserGroups
 func (h *UserGroupHandler) ListUserGroups(ctx echo.Context, params openapi.ListUserGroupsParams) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -70,7 +67,6 @@ func (h *UserGroupHandler) ListUserGroups(ctx echo.Context, params openapi.ListU
 	return ctx.JSON(http.StatusOK, userGroups)
 }
 
-// DeleteUserGroup implements ServerInterface.DeleteUserGroup
 func (h *UserGroupHandler) DeleteUserGroup(ctx echo.Context, id openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -90,7 +86,6 @@ func (h *UserGroupHandler) DeleteUserGroup(ctx echo.Context, id openapi_types.UU
 	return ctx.NoContent(http.StatusNoContent)
 }
 
-// GetUserGroup implements ServerInterface.GetUserGroup
 func (h *UserGroupHandler) GetUserGroup(ctx echo.Context, id openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -110,7 +105,6 @@ func (h *UserGroupHandler) GetUserGroup(ctx echo.Context, id openapi_types.UUID)
 	return ctx.JSON(http.StatusOK, userGroup)
 }
 
-// UpdateUserGroup implements ServerInterface.UpdateUserGroup
 func (h *UserGroupHandler) UpdateUserGroup(ctx echo.Context, id openapi_types.UUID) error {
 	var req openapi.UpdateUserGroupRequest
 	if err := ctx.Bind(&req); err != nil {
@@ -146,7 +140,6 @@ func (h *UserGroupHandler) UpdateUserGroup(ctx echo.Context, id openapi_types.UU
 	return ctx.JSON(http.StatusOK, userGroup)
 }
 
-// RemoveUserGroupMember implements ServerInterface.RemoveUserGroupMember
 func (h *UserGroupHandler) RemoveUserGroupMember(ctx echo.Context, id openapi_types.UUID, params openapi.RemoveUserGroupMemberParams) error {
 	removedBy, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -167,7 +160,6 @@ func (h *UserGroupHandler) RemoveUserGroupMember(ctx echo.Context, id openapi_ty
 	return ctx.NoContent(http.StatusNoContent)
 }
 
-// ListUserGroupMembers implements ServerInterface.ListUserGroupMembers
 func (h *UserGroupHandler) ListUserGroupMembers(ctx echo.Context, id openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -187,7 +179,6 @@ func (h *UserGroupHandler) ListUserGroupMembers(ctx echo.Context, id openapi_typ
 	return ctx.JSON(http.StatusOK, members)
 }
 
-// AddUserGroupMember implements ServerInterface.AddUserGroupMember
 func (h *UserGroupHandler) AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error {
 	var req AddUserGroupMemberRequest
 	if err := ctx.Bind(&req); err != nil {

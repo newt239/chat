@@ -48,7 +48,6 @@ type SuccessResponse struct {
 	Success bool `json:"success"`
 }
 
-// ListChannelMembers はチャンネルメンバー一覧を取得します (ServerInterface用)
 func (h *ChannelMemberHandler) ListChannelMembers(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
@@ -73,7 +72,6 @@ func (h *ChannelMemberHandler) ListChannelMembers(c echo.Context, channelId open
 	return c.JSON(http.StatusOK, output)
 }
 
-// InviteChannelMember はチャンネルにメンバーを招待します (ServerInterface用)
 func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
@@ -117,7 +115,6 @@ func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId ope
 		}
 	}
 
-    // システムメッセージ: member_added
     if h.SystemMessageUC != nil {
         actorID := userID
         payload := map[string]any{"userId": req.UserID, "addedBy": userID}
@@ -132,7 +129,6 @@ func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId ope
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// JoinPublicChannel はパブリックチャンネルに参加します (ServerInterface用)
 func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
@@ -156,7 +152,6 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId opena
 		}
 	}
 
-    // システムメッセージ: member_joined
     if h.SystemMessageUC != nil {
         actorID := userID
         payload := map[string]any{"userId": userID}
@@ -171,7 +166,6 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId opena
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// UpdateChannelMemberRole はチャンネルメンバーの権限を更新します (ServerInterface用)
 func (h *ChannelMemberHandler) UpdateChannelMemberRole(c echo.Context, channelId openapi_types.UUID, userId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
@@ -213,7 +207,6 @@ func (h *ChannelMemberHandler) UpdateChannelMemberRole(c echo.Context, channelId
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// RemoveChannelMember はチャンネルからメンバーを削除します (ServerInterface用)
 func (h *ChannelMemberHandler) RemoveChannelMember(c echo.Context, channelId openapi_types.UUID, userId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
@@ -243,7 +236,6 @@ func (h *ChannelMemberHandler) RemoveChannelMember(c echo.Context, channelId ope
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// LeaveChannel はチャンネルから退出します (ServerInterface用)
 func (h *ChannelMemberHandler) LeaveChannel(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {

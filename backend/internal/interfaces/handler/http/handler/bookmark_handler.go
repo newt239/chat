@@ -26,7 +26,6 @@ func (h *BookmarkHandler) ListBookmarks(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{"bookmarks": bookmarks.Bookmarks})
 }
 
-// AddBookmark はメッセージにブックマークを追加します (ServerInterface用)
 func (h *BookmarkHandler) AddBookmark(c echo.Context, messageId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
@@ -55,7 +54,6 @@ func (h *BookmarkHandler) AddBookmark(c echo.Context, messageId openapi_types.UU
 	return c.NoContent(http.StatusCreated)
 }
 
-// RemoveBookmark はメッセージからブックマークを削除します (ServerInterface用)
 func (h *BookmarkHandler) RemoveBookmark(c echo.Context, messageId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {

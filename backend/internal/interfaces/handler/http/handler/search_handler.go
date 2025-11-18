@@ -14,11 +14,10 @@ type SearchHandler struct {
 	SearchUC searchuc.SearchUseCase
 }
 
-// SearchWorkspace implements ServerInterface.SearchWorkspace
 func (h *SearchHandler) SearchWorkspace(c echo.Context, workspaceId string, params openapi.SearchWorkspaceParams) error {
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	filter := searchuc.SearchFilter("")

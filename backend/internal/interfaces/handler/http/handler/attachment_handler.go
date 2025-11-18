@@ -75,35 +75,6 @@ func (h *AttachmentHandler) PresignUpload(c echo.Context) error {
 	})
 }
 
-func (h *AttachmentHandler) GetMetadata(c echo.Context) error {
-	userID, ok := c.Get("userID").(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
-	}
-
-	attachmentID := c.Param("attachmentId")
-	if attachmentID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "添付ファイルIDが必要です")
-	}
-
-	output, err := h.AttachmentUseCase.GetMetadata(c.Request().Context(), userID, attachmentID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, AttachmentMetadataResponse{
-		ID:         output.ID,
-		MessageID:  output.MessageID,
-		UploaderID: output.UploaderID,
-		ChannelID:  output.ChannelID,
-		FileName:   output.FileName,
-		MimeType:   output.MimeType,
-		SizeBytes:  output.SizeBytes,
-		Status:     output.Status,
-		CreatedAt:  output.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	})
-}
-
 // GetAttachment はServerInterfaceのGetAttachmentメソッドを実装します
 func (h *AttachmentHandler) GetAttachment(ctx echo.Context, id openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
@@ -126,28 +97,6 @@ func (h *AttachmentHandler) GetAttachment(ctx echo.Context, id openapi_types.UUI
 		SizeBytes:  output.SizeBytes,
 		Status:     output.Status,
 		CreatedAt:  output.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	})
-}
-
-func (h *AttachmentHandler) GetDownloadURL(c echo.Context) error {
-	userID, ok := c.Get("userID").(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
-	}
-
-	attachmentID := c.Param("attachmentId")
-	if attachmentID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "添付ファイルIDが必要です")
-	}
-
-	output, err := h.AttachmentUseCase.GetDownloadURL(c.Request().Context(), userID, attachmentID)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, DownloadURLResponse{
-		URL:       output.URL,
-		ExpiresIn: output.ExpiresIn,
 	})
 }
 

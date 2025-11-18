@@ -15,7 +15,6 @@ type ReactionHandler struct {
 	ReactionUC reactionuc.ReactionUseCase
 }
 
-// ListReactions implements ServerInterface.ListReactions
 func (h *ReactionHandler) ListReactions(ctx echo.Context, messageId openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -30,7 +29,6 @@ func (h *ReactionHandler) ListReactions(ctx echo.Context, messageId openapi_type
 	return ctx.JSON(http.StatusOK, reactions)
 }
 
-// AddReaction implements ServerInterface.AddReaction
 func (h *ReactionHandler) AddReaction(ctx echo.Context, messageId openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {
@@ -60,7 +58,6 @@ func (h *ReactionHandler) AddReaction(ctx echo.Context, messageId openapi_types.
 	return ctx.NoContent(http.StatusCreated)
 }
 
-// RemoveReaction implements ServerInterface.RemoveReaction
 func (h *ReactionHandler) RemoveReaction(ctx echo.Context, messageId openapi_types.UUID, emoji string) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {

@@ -15,7 +15,6 @@ type DMHandler struct {
 	DMInteractor *dmuc.Interactor
 }
 
-// CreateDM implements ServerInterface.CreateDM
 func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -45,7 +44,6 @@ func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 	return c.JSON(http.StatusOK, dm)
 }
 
-// CreateGroupDM implements ServerInterface.CreateGroupDM
 func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -86,7 +84,6 @@ func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 	return c.JSON(http.StatusOK, dm)
 }
 
-// ListDMs implements ServerInterface.ListDMs
 func (h *DMHandler) ListDMs(c echo.Context, id openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {

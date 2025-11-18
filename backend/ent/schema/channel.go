@@ -10,12 +10,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// Channel holds the schema definition for the Channel entity.
 type Channel struct {
 	ent.Schema
 }
 
-// Fields of the Channel.
 func (Channel) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -39,7 +37,6 @@ func (Channel) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Channel.
 func (Channel) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("workspace", Workspace.Type).
@@ -59,7 +56,6 @@ func (Channel) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the Channel.
 func (Channel) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("is_private"),

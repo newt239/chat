@@ -13,7 +13,6 @@ type LinkHandler struct {
 	LinkUC linkuc.LinkUseCase
 }
 
-// FetchOGP はOGP情報を取得します
 func (h *LinkHandler) FetchOGP(c echo.Context) error {
 	var req openapi.FetchOGPRequest
 	if err := c.Bind(&req); err != nil {

@@ -13,20 +13,17 @@ type AuthHandler struct {
 	AuthUC authuc.AuthUseCase
 }
 
-// LogoutRequest はログアウトリクエストの構造体です
 // 注意: OpenAPIスキーマに定義がないため、一時的に独自型を使用
 type LogoutRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
-// Register はユーザー登録を処理します
 func (h *AuthHandler) Register(c echo.Context) error {
 	var req openapi.RegisterRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
 
-	// Validation
 	if err := c.Validate(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -45,7 +42,6 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	return c.JSON(http.StatusCreated, output)
 }
 
-// Login はユーザー認証を処理します
 func (h *AuthHandler) Login(c echo.Context) error {
 	var req openapi.LoginRequest
 	if err := c.Bind(&req); err != nil {
@@ -69,7 +65,6 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, output)
 }
 
-// Refresh はトークンのリフレッシュを処理します
 func (h *AuthHandler) Refresh(c echo.Context) error {
 	var req openapi.RefreshRequest
 	if err := c.Bind(&req); err != nil {
@@ -92,7 +87,6 @@ func (h *AuthHandler) Refresh(c echo.Context) error {
 	return c.JSON(http.StatusOK, output)
 }
 
-// Logout はログアウトを処理します
 func (h *AuthHandler) Logout(c echo.Context) error {
 	var req LogoutRequest
 	if err := c.Bind(&req); err != nil {
@@ -103,10 +97,9 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	// コンテキストからユーザーIDを取得（統一ヘルパー）
-	userID, err := utils.GetUserIDFromContext(c)
-	if err != nil {
-		return err
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	input := authuc.LogoutInput{

@@ -14,7 +14,6 @@ type ChannelHandler struct {
 	ChannelUC channeluc.ChannelUseCase
 }
 
-// ListChannels implements ServerInterface.ListChannels
 func (h *ChannelHandler) ListChannels(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -34,7 +33,6 @@ func (h *ChannelHandler) ListChannels(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, channels)
 }
 
-// CreateChannel implements ServerInterface.CreateChannel
 func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -71,7 +69,6 @@ func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 	return c.JSON(http.StatusCreated, channel)
 }
 
-// UpdateChannel はチャンネル情報を更新します (ServerInterface用)
 func (h *ChannelHandler) UpdateChannel(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {

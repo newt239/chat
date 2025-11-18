@@ -17,11 +17,10 @@ type ThreadHandler struct {
 	ThreadReader *threaduc.ThreadReader
 }
 
-// MarkThreadRead implements ServerInterface.MarkThreadRead
 func (h *ThreadHandler) MarkThreadRead(ctx echo.Context, threadId openapi_types.UUID) error {
-	userID, err := utils.GetUserIDFromContext(ctx)
-	if err != nil {
-		return err
+	userID, ok := ctx.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
 	input := threaduc.MarkThreadReadInput{
@@ -29,7 +28,7 @@ func (h *ThreadHandler) MarkThreadRead(ctx echo.Context, threadId openapi_types.
 		ThreadID: threadId.String(),
 	}
 
-	err = h.ThreadReader.MarkThreadRead(ctx.Request().Context(), input)
+	err := h.ThreadReader.MarkThreadRead(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -37,14 +36,12 @@ func (h *ThreadHandler) MarkThreadRead(ctx echo.Context, threadId openapi_types.
 	return ctx.NoContent(http.StatusNoContent)
 }
 
-// GetParticipatingThreads implements ServerInterface.GetParticipatingThreads
 func (h *ThreadHandler) GetParticipatingThreads(ctx echo.Context, workspaceId string, params openapi.GetParticipatingThreadsParams) error {
-	userID, err := utils.GetUserIDFromContext(ctx)
-	if err != nil {
-		return err
+	userID, ok := ctx.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
 	}
 
-	// クエリパラメータの取得
 	var cursorLastActivityAt *time.Time
 	var cursorThreadID *string
 

@@ -44,7 +44,6 @@ type CORSConfig struct {
 }
 
 func Load() (*Config, error) {
-	// Load .env file if exists (optional in production)
 	_ = godotenv.Load()
 
 	cfg := &Config{
@@ -95,7 +94,6 @@ func (c *Config) Validate() error {
 	if c.JWT.Secret == "change-me-in-production" && c.Server.Env == "production" {
 		return fmt.Errorf("JWT_SECRET must be set in production")
 	}
-	// 本番環境でのみWasabi認証情報を必須とする
 	if c.Server.Env == "production" && (c.Wasabi.AccessKeyID == "" || c.Wasabi.SecretAccessKey == "") {
 		return fmt.Errorf("Wasabi credentials must be set in production")
 	}
