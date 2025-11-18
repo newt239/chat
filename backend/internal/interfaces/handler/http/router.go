@@ -126,15 +126,15 @@ func (s *serverImpl) UpdateChannelMemberRole(ctx echo.Context, channelId openapi
 	return s.cfg.ChannelMemberHandler.UpdateChannelMemberRole(ctx, channelId, userId)
 }
 
-func (s *serverImpl) ListDMs(ctx echo.Context, id openapi_types.UUID) error {
+func (s *serverImpl) ListDMs(ctx echo.Context, id string) error {
 	return s.cfg.DMHandler.ListDMs(ctx, id)
 }
 
-func (s *serverImpl) CreateDM(ctx echo.Context, id openapi_types.UUID) error {
+func (s *serverImpl) CreateDM(ctx echo.Context, id string) error {
 	return s.cfg.DMHandler.CreateDM(ctx, id)
 }
 
-func (s *serverImpl) CreateGroupDM(ctx echo.Context, id openapi_types.UUID) error {
+func (s *serverImpl) CreateGroupDM(ctx echo.Context, id string) error {
 	return s.cfg.DMHandler.CreateGroupDM(ctx, id)
 }
 
@@ -294,6 +294,100 @@ func (s *serverImpl) UpdateMemberRole(ctx echo.Context, id string, userId openap
 	return s.cfg.WorkspaceHandler.UpdateMemberRole(ctx, id, userId)
 }
 
+// registerPublicRoutes は認証不要のエンドポイントを登録します
+func registerPublicRoutes(e *echo.Echo, wrapper *openapi.ServerInterfaceWrapper) {
+	e.POST("/api/auth/login", wrapper.Login)
+	e.POST("/api/auth/register", wrapper.Register)
+	e.POST("/api/auth/refresh", wrapper.Refresh)
+	e.GET("/healthz", wrapper.Healthz)
+}
+
+// registerProtectedRoutes は認証が必要なエンドポイントを登録します
+func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerInterfaceWrapper) {
+	// アタッチメント
+	protectedAPI.POST("/attachments/presign", wrapper.PresignUpload)
+	protectedAPI.GET("/attachments/:id", wrapper.GetAttachment)
+	protectedAPI.GET("/attachments/:id/download", wrapper.DownloadAttachment)
+
+	// ブックマーク
+	protectedAPI.GET("/bookmarks", wrapper.ListBookmarks)
+	protectedAPI.POST("/bookmarks/:messageId", wrapper.AddBookmark)
+	protectedAPI.DELETE("/bookmarks/:messageId", wrapper.RemoveBookmark)
+
+	// チャンネル
+	protectedAPI.PATCH("/channels/:channelId", wrapper.UpdateChannel)
+	protectedAPI.GET("/channels/:channelId/members", wrapper.ListChannelMembers)
+	protectedAPI.POST("/channels/:channelId/members", wrapper.InviteChannelMember)
+	protectedAPI.DELETE("/channels/:channelId/members/self", wrapper.LeaveChannel)
+	protectedAPI.POST("/channels/:channelId/members/self", wrapper.JoinPublicChannel)
+	protectedAPI.DELETE("/channels/:channelId/members/:userId", wrapper.RemoveChannelMember)
+	protectedAPI.PATCH("/channels/:channelId/members/:userId/role", wrapper.UpdateChannelMemberRole)
+
+	// メッセージ
+	protectedAPI.GET("/channels/:channelId/messages", wrapper.ListMessages)
+	protectedAPI.POST("/channels/:channelId/messages", wrapper.CreateMessage)
+	protectedAPI.GET("/channels/:channelId/messages/with-threads", wrapper.ListMessagesWithThread)
+	protectedAPI.PATCH("/messages/:messageId", wrapper.UpdateMessage)
+	protectedAPI.DELETE("/messages/:messageId", wrapper.DeleteMessage)
+	protectedAPI.GET("/messages/:messageId/thread", wrapper.GetThreadReplies)
+	protectedAPI.GET("/messages/:messageId/thread/metadata", wrapper.GetThreadMetadata)
+
+	// リアクション
+	protectedAPI.GET("/messages/:messageId/reactions", wrapper.ListReactions)
+	protectedAPI.POST("/messages/:messageId/reactions", wrapper.AddReaction)
+	protectedAPI.DELETE("/messages/:messageId/reactions/:emoji", wrapper.RemoveReaction)
+
+	// ピン
+	protectedAPI.GET("/channels/:channelId/pins", wrapper.ListPins)
+	protectedAPI.POST("/channels/:channelId/pins", wrapper.CreatePin)
+	protectedAPI.DELETE("/channels/:channelId/pins/:messageId", wrapper.DeletePin)
+
+	// 読み取り状態
+	protectedAPI.POST("/channels/:channelId/reads", wrapper.UpdateReadState)
+	protectedAPI.GET("/channels/:channelId/unread-count", wrapper.GetUnreadCount)
+
+	// DM
+	protectedAPI.GET("/workspaces/:id/dms", wrapper.ListDMs)
+	protectedAPI.POST("/workspaces/:id/dms", wrapper.CreateDM)
+	protectedAPI.POST("/workspaces/:id/group-dms", wrapper.CreateGroupDM)
+
+	// スレッド
+	protectedAPI.PATCH("/threads/:threadId/read", wrapper.MarkThreadRead)
+	protectedAPI.GET("/workspaces/:workspaceId/threads/participating", wrapper.GetParticipatingThreads)
+
+	// ユーザーグループ
+	protectedAPI.GET("/user-groups", wrapper.ListUserGroups)
+	protectedAPI.POST("/user-groups", wrapper.CreateUserGroup)
+	protectedAPI.GET("/user-groups/:id", wrapper.GetUserGroup)
+	protectedAPI.PATCH("/user-groups/:id", wrapper.UpdateUserGroup)
+	protectedAPI.DELETE("/user-groups/:id", wrapper.DeleteUserGroup)
+	protectedAPI.GET("/user-groups/:id/members", wrapper.ListUserGroupMembers)
+	protectedAPI.POST("/user-groups/:id/members", wrapper.AddUserGroupMember)
+	protectedAPI.DELETE("/user-groups/:id/members", wrapper.RemoveUserGroupMember)
+
+	// ワークスペース
+	protectedAPI.GET("/workspaces", wrapper.ListWorkspaces)
+	protectedAPI.POST("/workspaces", wrapper.CreateWorkspace)
+	protectedAPI.GET("/workspaces/public", wrapper.ListPublicWorkspaces)
+	protectedAPI.GET("/workspaces/:id", wrapper.GetWorkspace)
+	protectedAPI.PATCH("/workspaces/:id", wrapper.UpdateWorkspace)
+	protectedAPI.DELETE("/workspaces/:id", wrapper.DeleteWorkspace)
+	protectedAPI.POST("/workspaces/:id/join", wrapper.JoinPublicWorkspace)
+	protectedAPI.GET("/workspaces/:id/channels", wrapper.ListChannels)
+	protectedAPI.POST("/workspaces/:id/channels", wrapper.CreateChannel)
+	protectedAPI.GET("/workspaces/:id/members", wrapper.ListMembers)
+	protectedAPI.POST("/workspaces/:id/members", wrapper.AddMemberByEmail)
+	protectedAPI.DELETE("/workspaces/:id/members/:userId", wrapper.RemoveMember)
+	protectedAPI.PATCH("/workspaces/:id/members/:userId/role", wrapper.UpdateMemberRole)
+	protectedAPI.GET("/workspaces/:workspaceId/search", wrapper.SearchWorkspace)
+
+	// ユーザー
+	protectedAPI.PATCH("/users/me", wrapper.UpdateMe)
+
+	// リンク
+	protectedAPI.POST("/links/fetch-ogp", wrapper.FetchOGP)
+}
+
 func NewRouter(cfg RouterConfig) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
@@ -309,19 +403,25 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.GET("/ws/:workspaceId", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase))
+	// WebSocket
+	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase))
 
+	// ServerInterfaceを実装する構造体を作成
 	server := &serverImpl{cfg: cfg}
 
-	e.POST("/api/auth/login", server.Login)
-	e.POST("/api/auth/register", server.Register)
-	e.POST("/api/auth/refresh", server.Refresh)
-	e.GET("/healthz", server.Healthz)
+	// oapi-codegenのラッパーを作成
+	// ServerInterfaceWrapperはすべてのパラメータバリデーションを自動的に行う
+	wrapper := &openapi.ServerInterfaceWrapper{
+		Handler: server,
+	}
 
+	// 認証不要のエンドポイント
+	registerPublicRoutes(e, wrapper)
+
+	// 認証が必要なエンドポイント
 	protectedAPI := e.Group("/api")
 	protectedAPI.Use(custommw.Auth(cfg.JWTService))
-
-	openapi.RegisterHandlersWithBaseURL(e, server, "/api")
+	registerProtectedRoutes(protectedAPI, wrapper)
 
 	return e
 }

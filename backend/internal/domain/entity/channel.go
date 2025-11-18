@@ -15,7 +15,7 @@ const (
 
 var (
 	ErrChannelNameRequired       = errors.New("チャンネル名は必須です")
-	ErrChannelWorkspaceIDInvalid = errors.New("ワークスペースIDはUUID形式で指定してください")
+	ErrChannelWorkspaceIDInvalid = errors.New("ワークスペースIDの形式が無効です")
 	ErrChannelCreatorInvalid     = errors.New("作成者IDはUUID形式で指定してください")
 	ErrInvalidChannelType        = errors.New("無効なチャンネル種別です")
 	ErrGroupDMMaxMembers         = errors.New("グループDMには9人までしか追加できません")
@@ -63,8 +63,12 @@ type ChannelParams struct {
 
 func NewChannel(params ChannelParams) (*Channel, error) {
 	workspaceID := strings.TrimSpace(params.WorkspaceID)
-	if _, err := uuid.Parse(workspaceID); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrChannelWorkspaceIDInvalid, err)
+	// ワークスペースIDはslug形式（3-12文字の英小文字、数字、ハイフン）またはUUID形式を許可
+	if err := ValidateWorkspaceSlug(workspaceID); err != nil {
+		// slug形式でない場合、UUID形式かチェック
+		if _, err := uuid.Parse(workspaceID); err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrChannelWorkspaceIDInvalid, err)
+		}
 	}
 
 	creatorID := strings.TrimSpace(params.CreatedBy)

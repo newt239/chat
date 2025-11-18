@@ -53,7 +53,7 @@ func NewChannelInteractor(
 }
 
 func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error) {
-	if err := validateUUID(input.WorkspaceID, "workspace ID"); err != nil {
+	if err := validateWorkspaceID(input.WorkspaceID); err != nil {
 		return nil, err
 	}
 	if err := validateUUID(input.UserID, "user ID"); err != nil {
@@ -305,6 +305,17 @@ func toChannelOutputWithUnread(channel *entity.Channel, hasMention bool, mention
 func validateUUID(id string, label string) error {
 	if _, err := uuid.Parse(id); err != nil {
 		return fmt.Errorf("%w: invalid %s format", domerr.ErrValidation, label)
+	}
+	return nil
+}
+
+func validateWorkspaceID(id string) error {
+	// ワークスペースIDはslug形式（3-12文字の英小文字、数字、ハイフン）またはUUID形式を許可
+	if err := entity.ValidateWorkspaceSlug(id); err != nil {
+		// slug形式でない場合、UUID形式かチェック
+		if _, err := uuid.Parse(id); err != nil {
+			return fmt.Errorf("%w: invalid workspace ID format", domerr.ErrValidation)
+		}
 	}
 	return nil
 }

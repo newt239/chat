@@ -42,4 +42,4 @@
         content:
           application/json:
             schema:
-            $ref: "../openapi.yaml#/components/schemas/Workspace"
+              $ref: "../openapi.yaml#/components/schemas/Workspace"

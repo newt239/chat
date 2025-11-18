@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
 	openapi "github.com/newt239/chat/internal/openapi_gen"
@@ -15,7 +14,7 @@ type DMHandler struct {
 	DMInteractor *dmuc.Interactor
 }
 
-func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
+func (h *DMHandler) CreateDM(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
@@ -31,7 +30,7 @@ func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 	}
 
 	input := dmuc.CreateDMInput{
-		WorkspaceID:  id.String(),
+		WorkspaceID:  id,
 		UserID:       userID,
 		TargetUserID: req.UserId.String(),
 	}
@@ -44,7 +43,7 @@ func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 	return c.JSON(http.StatusOK, dm)
 }
 
-func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
+func (h *DMHandler) CreateGroupDM(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
@@ -70,7 +69,7 @@ func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 	}
 
 	input := dmuc.CreateGroupDMInput{
-		WorkspaceID: id.String(),
+		WorkspaceID: id,
 		CreatorID:   userID,
 		MemberIDs:   userIDs,
 		Name:        name,
@@ -84,14 +83,14 @@ func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 	return c.JSON(http.StatusOK, dm)
 }
 
-func (h *DMHandler) ListDMs(c echo.Context, id openapi_types.UUID) error {
+func (h *DMHandler) ListDMs(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
 	input := dmuc.ListDMsInput{
-		WorkspaceID: id.String(),
+		WorkspaceID: id,
 		UserID:      userID,
 	}
 

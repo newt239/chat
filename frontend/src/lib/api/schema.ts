@@ -140,6 +140,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/channels/{channelId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update channel */
+        patch: operations["updateChannel"];
+        trace?: never;
+    };
     "/api/channels/{channelId}/members": {
         parameters: {
             query?: never;
@@ -533,6 +550,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get workspace details */
+        get: operations["getWorkspace"];
+        put?: never;
+        post?: never;
+        /** Delete workspace */
+        delete: operations["deleteWorkspace"];
+        options?: never;
+        head?: never;
+        /** Update workspace */
+        patch: operations["updateWorkspace"];
+        trace?: never;
+    };
     "/api/workspaces/public": {
         parameters: {
             query?: never;
@@ -690,6 +726,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update current user profile */
+        patch: operations["updateMe"];
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -711,21 +764,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        PresignRequest: {
-            fileName: string;
-            contentType: string;
-            sizeBytes: number;
-            /** Format: uuid */
-            channelId: string;
+        AddMemberRequest: {
+            /** Format: email */
+            email: string;
+            /**
+             * @default member
+             * @enum {string}
+             */
+            role: "admin" | "member";
         };
-        PresignResponse: {
-            /** Format: uri */
-            uploadUrl: string;
-            /** Format: uuid */
-            attachmentId: string;
-        };
-        Error: {
-            error: string;
+        AddReactionRequest: {
+            emoji: string;
         };
         Attachment: {
             /** Format: uuid */
@@ -738,34 +787,163 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
-        LoginRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-        };
-        User: {
-            /** Format: uuid */
-            id: string;
-            /** Format: email */
-            email: string;
-            displayName: string;
-            avatarUrl?: string | null;
-            /** Format: date-time */
-            createdAt: string;
-        };
         AuthResponse: {
             accessToken: string;
             refreshToken: string;
             user: components["schemas"]["User"];
         };
-        RefreshRequest: {
-            refreshToken: string;
+        BookmarkWithMessage: {
+            /** Format: uuid */
+            userId: string;
+            message: components["schemas"]["Message"];
+            /** Format: date-time */
+            createdAt: string;
         };
-        RegisterRequest: {
+        Channel: {
+            /** Format: uuid */
+            id: string;
+            workspaceId: string;
+            name: string;
+            description?: string | null;
+            isPrivate: boolean;
+            /** @enum {string} */
+            channelType?: "public" | "private" | "dm" | "group_dm";
+            /** Format: uuid */
+            createdBy: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description 未読メッセージ数 */
+            unreadCount?: number;
+            /** @description 未読メンションの有無 */
+            hasMention?: boolean;
+        };
+        ChannelMemberInfo: {
+            /** Format: uuid */
+            userId: string;
+            /** Format: email */
+            email: string;
+            displayName: string;
+            avatarUrl?: string | null;
+            /** @enum {string} */
+            role: "member" | "admin";
+            /** Format: date-time */
+            joinedAt: string;
+        };
+        CreateChannelRequest: {
+            name: string;
+            description?: string;
+            /** @default false */
+            isPrivate: boolean;
+        };
+        CreateDMRequest: {
+            /** Format: uuid */
+            userId: string;
+        };
+        CreateGroupDMRequest: {
+            userIds: string[];
+            name?: string;
+        };
+        CreateMessageRequest: {
+            body: string;
+            /** Format: uuid */
+            parentId?: string;
+            attachmentIds?: string[];
+        };
+        CreateUserGroupRequest: {
+            /** Format: uuid */
+            workspaceId: string;
+            name: string;
+            description?: string;
+        };
+        CreateWorkspaceRequest: {
+            id: string;
+            name: string;
+            description?: string;
+            /** Format: uri */
+            iconUrl?: string;
+            isPublic?: boolean;
+        };
+        DMMember: {
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            avatarUrl?: string | null;
+        };
+        DMOutput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            workspaceId: string;
+            name: string;
+            description?: string | null;
+            /** @enum {string} */
+            type: "dm" | "group_dm";
+            members: components["schemas"]["DMMember"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        Error: {
+            error: string;
+        };
+        FetchOGPRequest: {
+            /** Format: uri */
+            url: string;
+        };
+        FetchOGPResponse: {
+            ogpData: {
+                title?: string | null;
+                description?: string | null;
+                imageUrl?: string | null;
+                siteName?: string | null;
+                cardType?: string | null;
+            };
+        };
+        InviteChannelMemberRequest: {
+            /** Format: uuid */
+            userId: string;
+            /**
+             * @default member
+             * @enum {string}
+             */
+            role: "member" | "admin";
+        };
+        ListBookmarksResponse: {
+            bookmarks: components["schemas"]["BookmarkWithMessage"][];
+        };
+        ListChannelMembersResponse: {
+            members: components["schemas"]["ChannelMemberInfo"][];
+        };
+        ListMembersResponse: {
+            members: components["schemas"]["MemberInfo"][];
+        };
+        ListPinsResponse: {
+            pins: components["schemas"]["PinnedMessage"][];
+            nextCursor?: string | null;
+        };
+        ListPublicWorkspacesResponse: {
+            workspaces: components["schemas"]["PublicWorkspaceItem"][];
+        };
+        ListReactionsResponse: {
+            reactions: components["schemas"]["ReactionWithUser"][];
+        };
+        LoginRequest: {
             /** Format: email */
             email: string;
             password: string;
+        };
+        MemberInfo: {
+            /** Format: uuid */
+            userId: string;
+            /** Format: email */
+            email: string;
             displayName: string;
+            avatarUrl?: string | null;
+            /** @enum {string} */
+            role: "owner" | "admin" | "member";
+            /** Format: date-time */
+            joinedAt: string;
         };
         Message: {
             /** Format: uuid */
@@ -792,324 +970,6 @@ export interface components {
             } | null;
             attachments?: components["schemas"]["Attachment"][];
         };
-        BookmarkWithMessage: {
-            /** Format: uuid */
-            userId: string;
-            message: components["schemas"]["Message"];
-            /** Format: date-time */
-            createdAt: string;
-        };
-        ListBookmarksResponse: {
-            bookmarks: components["schemas"]["BookmarkWithMessage"][];
-        };
-        ChannelMemberInfo: {
-            /** Format: uuid */
-            userId: string;
-            /** Format: email */
-            email: string;
-            displayName: string;
-            avatarUrl?: string | null;
-            /** @enum {string} */
-            role: "member" | "admin";
-            /** Format: date-time */
-            joinedAt: string;
-        };
-        ListChannelMembersResponse: {
-            members: components["schemas"]["ChannelMemberInfo"][];
-        };
-        InviteChannelMemberRequest: {
-            /** Format: uuid */
-            userId: string;
-            /**
-             * @default member
-             * @enum {string}
-             */
-            role: "member" | "admin";
-        };
-        SuccessResponse: {
-            success: boolean;
-        };
-        UpdateChannelMemberRoleRequest: {
-            /** @enum {string} */
-            role: "member" | "admin";
-        };
-        MessagesResponse: {
-            messages: components["schemas"]["Message"][];
-            hasMore: boolean;
-        };
-        CreateMessageRequest: {
-            body: string;
-            /** Format: uuid */
-            parentId?: string;
-            attachmentIds?: string[];
-        };
-        ThreadMetadata: {
-            /** Format: uuid */
-            messageId: string;
-            replyCount: number;
-            /** Format: date-time */
-            lastReplyAt?: string | null;
-            lastReplyUser?: {
-                /** Format: uuid */
-                id: string;
-                displayName: string;
-                avatarUrl?: string | null;
-            } | null;
-            participantUserIds: string[];
-        };
-        PinnedMessage: {
-            message: components["schemas"]["Message"];
-            /** Format: date-time */
-            pinnedAt: string;
-            /** Format: uuid */
-            pinnedBy: string;
-        };
-        ListPinsResponse: {
-            pins: components["schemas"]["PinnedMessage"][];
-            nextCursor?: string | null;
-        };
-        UpdateReadStateRequest: {
-            /** Format: date-time */
-            lastReadAt: string;
-        };
-        UnreadCountResponse: {
-            count: number;
-        };
-        FetchOGPRequest: {
-            /** Format: uri */
-            url: string;
-        };
-        FetchOGPResponse: {
-            ogpData: {
-                title?: string | null;
-                description?: string | null;
-                imageUrl?: string | null;
-                siteName?: string | null;
-                cardType?: string | null;
-            };
-        };
-        UpdateMessageRequest: {
-            body: string;
-        };
-        ReactionWithUser: {
-            /** Format: uuid */
-            messageId: string;
-            user: {
-                /** Format: uuid */
-                id: string;
-                displayName: string;
-                avatarUrl?: string | null;
-            };
-            emoji: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        ListReactionsResponse: {
-            reactions: components["schemas"]["ReactionWithUser"][];
-        };
-        AddReactionRequest: {
-            emoji: string;
-        };
-        ThreadRepliesResponse: {
-            parentMessage: components["schemas"]["Message"];
-            replies: components["schemas"]["Message"][];
-            hasMore: boolean;
-        };
-        UserGroup: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            workspaceId: string;
-            name: string;
-            description?: string | null;
-            /** Format: uuid */
-            createdBy: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        CreateUserGroupRequest: {
-            /** Format: uuid */
-            workspaceId: string;
-            name: string;
-            description?: string;
-        };
-        UpdateUserGroupRequest: {
-            name: string;
-            description?: string;
-        };
-        UserGroupMember: {
-            /** Format: uuid */
-            groupId: string;
-            /** Format: uuid */
-            userId: string;
-            /** Format: date-time */
-            joinedAt: string;
-        };
-        AddMemberRequest: {
-            /** Format: email */
-            email: string;
-            /**
-             * @default member
-             * @enum {string}
-             */
-            role: "admin" | "member";
-        };
-        Workspace: {
-            /** @description slug identifier (3-12 chars, lowercase, digits, hyphen) */
-            id?: string;
-            name: string;
-            description?: string | null;
-            iconUrl?: string | null;
-            isPublic?: boolean;
-            /** @enum {string} */
-            role?: "owner" | "admin" | "member" | "guest";
-            /** Format: uuid */
-            createdBy: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        CreateWorkspaceRequest: {
-            id: string;
-            name: string;
-            description?: string;
-            /** Format: uri */
-            iconUrl?: string;
-            isPublic?: boolean;
-        };
-        PublicWorkspaceItem: {
-            id: string;
-            name: string;
-            description?: string | null;
-            iconUrl?: string | null;
-            memberCount: number;
-            isJoined: boolean;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        ListPublicWorkspacesResponse: {
-            workspaces: components["schemas"]["PublicWorkspaceItem"][];
-        };
-        Channel: {
-            /** Format: uuid */
-            id: string;
-            workspaceId: string;
-            name: string;
-            description?: string | null;
-            isPrivate: boolean;
-            /** @enum {string} */
-            channelType?: "public" | "private" | "dm" | "group_dm";
-            /** Format: uuid */
-            createdBy: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** @description 未読メッセージ数 */
-            unreadCount?: number;
-            /** @description 未読メンションの有無 */
-            hasMention?: boolean;
-        };
-        CreateChannelRequest: {
-            name: string;
-            description?: string;
-            /** @default false */
-            isPrivate: boolean;
-        };
-        DMMember: {
-            /** Format: uuid */
-            userId: string;
-            displayName: string;
-            avatarUrl?: string | null;
-        };
-        DMOutput: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            workspaceId: string;
-            name: string;
-            description?: string | null;
-            /** @enum {string} */
-            type: "dm" | "group_dm";
-            members: components["schemas"]["DMMember"][];
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        CreateDMRequest: {
-            /** Format: uuid */
-            userId: string;
-        };
-        CreateGroupDMRequest: {
-            userIds: string[];
-            name?: string;
-        };
-        MemberInfo: {
-            /** Format: uuid */
-            userId: string;
-            /** Format: email */
-            email: string;
-            displayName: string;
-            avatarUrl?: string | null;
-            /** @enum {string} */
-            role: "owner" | "admin" | "member";
-            /** Format: date-time */
-            joinedAt: string;
-        };
-        ListMembersResponse: {
-            members: components["schemas"]["MemberInfo"][];
-        };
-        UpdateMemberRoleRequest: {
-            /** @enum {string} */
-            role: "admin" | "member";
-        };
-        PaginatedMessages: {
-            items: components["schemas"]["Message"][];
-            total: number;
-            page: number;
-            perPage: number;
-            hasMore: boolean;
-        };
-        PaginatedChannels: {
-            items: components["schemas"]["Channel"][];
-            total: number;
-            page: number;
-            perPage: number;
-            hasMore: boolean;
-        };
-        PaginatedUsers: {
-            items: components["schemas"]["MemberInfo"][];
-            total: number;
-            page: number;
-            perPage: number;
-            hasMore: boolean;
-        };
-        WorkspaceSearchResponse: {
-            messages: components["schemas"]["PaginatedMessages"];
-            channels: components["schemas"]["PaginatedChannels"];
-            users: components["schemas"]["PaginatedUsers"];
-        };
-        ParticipatingThread: {
-            /** Format: uuid */
-            thread_id: string;
-            /** Format: uuid */
-            channel_id?: string | null;
-            first_message: components["schemas"]["Message"];
-            reply_count: number;
-            /** Format: date-time */
-            last_activity_at: string;
-            unread_count: number;
-        };
-        ThreadCursor: {
-            /** Format: date-time */
-            last_activity_at: string;
-            /** Format: uuid */
-            thread_id: string;
-        };
-        ParticipatingThreadsOutput: {
-            items: components["schemas"]["ParticipatingThread"][];
-            next_cursor?: components["schemas"]["ThreadCursor"];
-        };
         MessageBookmark: {
             /** Format: uuid */
             userId: string;
@@ -1127,6 +987,217 @@ export interface components {
             emoji: string;
             /** Format: date-time */
             createdAt: string;
+        };
+        MessagesResponse: {
+            messages: components["schemas"]["Message"][];
+            hasMore: boolean;
+        };
+        PaginatedChannels: {
+            items: components["schemas"]["Channel"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
+        PaginatedMessages: {
+            items: components["schemas"]["Message"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
+        PaginatedUsers: {
+            items: components["schemas"]["MemberInfo"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
+        ParticipatingThread: {
+            /** Format: uuid */
+            thread_id: string;
+            /** Format: uuid */
+            channel_id?: string | null;
+            first_message: components["schemas"]["Message"];
+            reply_count: number;
+            /** Format: date-time */
+            last_activity_at: string;
+            unread_count: number;
+        };
+        ParticipatingThreadsOutput: {
+            items: components["schemas"]["ParticipatingThread"][];
+            next_cursor?: components["schemas"]["ThreadCursor"];
+        };
+        PinnedMessage: {
+            message: components["schemas"]["Message"];
+            /** Format: date-time */
+            pinnedAt: string;
+            /** Format: uuid */
+            pinnedBy: string;
+        };
+        PresignRequest: {
+            fileName: string;
+            contentType: string;
+            sizeBytes: number;
+            /** Format: uuid */
+            channelId: string;
+        };
+        PresignResponse: {
+            /** Format: uri */
+            uploadUrl: string;
+            /** Format: uuid */
+            attachmentId: string;
+        };
+        PublicWorkspaceItem: {
+            id: string;
+            name: string;
+            description?: string | null;
+            iconUrl?: string | null;
+            memberCount: number;
+            isJoined: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ReactionWithUser: {
+            /** Format: uuid */
+            messageId: string;
+            user: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                avatarUrl?: string | null;
+            };
+            emoji: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        RefreshRequest: {
+            refreshToken: string;
+        };
+        RegisterRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
+            displayName: string;
+        };
+        SuccessResponse: {
+            success: boolean;
+        };
+        ThreadCursor: {
+            /** Format: date-time */
+            last_activity_at: string;
+            /** Format: uuid */
+            thread_id: string;
+        };
+        ThreadMetadata: {
+            /** Format: uuid */
+            messageId: string;
+            replyCount: number;
+            /** Format: date-time */
+            lastReplyAt?: string | null;
+            lastReplyUser?: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                avatarUrl?: string | null;
+            } | null;
+            participantUserIds: string[];
+        };
+        ThreadRepliesResponse: {
+            parentMessage: components["schemas"]["Message"];
+            replies: components["schemas"]["Message"][];
+            hasMore: boolean;
+        };
+        UnreadCountResponse: {
+            count: number;
+        };
+        UpdateChannelMemberRoleRequest: {
+            /** @enum {string} */
+            role: "member" | "admin";
+        };
+        UpdateMemberRoleRequest: {
+            /** @enum {string} */
+            role: "admin" | "member";
+        };
+        UpdateMessageRequest: {
+            body: string;
+        };
+        UpdateReadStateRequest: {
+            /** Format: date-time */
+            lastReadAt: string;
+        };
+        UpdateUserGroupRequest: {
+            name: string;
+            description?: string;
+        };
+        UpdateWorkspaceRequest: {
+            name?: string;
+            description?: string;
+            /** Format: uri */
+            iconUrl?: string;
+            isPublic?: boolean;
+        };
+        UpdateChannelRequest: {
+            name?: string;
+            description?: string;
+            isPrivate?: boolean;
+        };
+        UpdateMeRequest: {
+            display_name?: string;
+            bio?: string;
+            /** Format: uri */
+            avatar_url?: string;
+        };
+        User: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            displayName: string;
+            avatarUrl?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        UserGroup: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            workspaceId: string;
+            name: string;
+            description?: string | null;
+            /** Format: uuid */
+            createdBy: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        UserGroupMember: {
+            /** Format: uuid */
+            groupId: string;
+            /** Format: uuid */
+            userId: string;
+            /** Format: date-time */
+            joinedAt: string;
+        };
+        Workspace: {
+            /** @description slug identifier (3-12 chars, lowercase, digits, hyphen) */
+            id?: string;
+            name: string;
+            description?: string | null;
+            iconUrl?: string | null;
+            isPublic?: boolean;
+            /** @enum {string} */
+            role?: "owner" | "admin" | "member" | "guest";
+            /** Format: uuid */
+            createdBy: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        WorkspaceSearchResponse: {
+            messages: components["schemas"]["PaginatedMessages"];
+            channels: components["schemas"]["PaginatedChannels"];
+            users: components["schemas"]["PaginatedUsers"];
         };
     };
     responses: never;
@@ -1401,6 +1472,59 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    updateChannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateChannelRequest"];
+            };
+        };
+        responses: {
+            /** @description Channel updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Channel"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Channel not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2989,7 +3113,142 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["Workspace"];
+                };
+            };
+        };
+    };
+    getWorkspace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Workspace details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        workspace: components["schemas"]["Workspace"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Workspace not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteWorkspace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Workspace deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Workspace not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    updateWorkspace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWorkspaceRequest"];
+            };
+        };
+        responses: {
+            /** @description Workspace updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        workspace: components["schemas"]["Workspace"];
+                    };
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Workspace not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3521,6 +3780,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ParticipatingThreadsOutput"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMeRequest"];
+            };
+        };
+        responses: {
+            /** @description User profile updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        displayName: string;
+                        bio?: string | null;
+                        avatarUrl?: string | null;
+                    };
                 };
             };
             /** @description Bad request */

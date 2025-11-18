@@ -851,13 +851,13 @@ type ServerInterface interface {
 	CreateChannel(ctx echo.Context, id string) error
 	// List DMs in workspace
 	// (GET /api/workspaces/{id}/dms)
-	ListDMs(ctx echo.Context, id openapi_types.UUID) error
+	ListDMs(ctx echo.Context, id string) error
 	// Create a 1:1 DM
 	// (POST /api/workspaces/{id}/dms)
-	CreateDM(ctx echo.Context, id openapi_types.UUID) error
+	CreateDM(ctx echo.Context, id string) error
 	// Create a group DM
 	// (POST /api/workspaces/{id}/group-dms)
-	CreateGroupDM(ctx echo.Context, id openapi_types.UUID) error
+	CreateGroupDM(ctx echo.Context, id string) error
 	// Join a public workspace
 	// (POST /api/workspaces/{id}/join)
 	JoinPublicWorkspace(ctx echo.Context, id string) error
@@ -1835,7 +1835,7 @@ func (w *ServerInterfaceWrapper) CreateChannel(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) ListDMs(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
+	var id string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -1853,7 +1853,7 @@ func (w *ServerInterfaceWrapper) ListDMs(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) CreateDM(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
+	var id string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -1871,7 +1871,7 @@ func (w *ServerInterfaceWrapper) CreateDM(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) CreateGroupDM(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
+	var id string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {

@@ -1567,39 +1567,8 @@ paths:
           description: Workspace created
           content:
             application/json:
-              schema: null
-              type: object
-              properties:
-                id:
-                  type: string
-                  description: slug identifier (3-12 chars, lowercase, digits, hyphen)
-                name:
-                  type: string
-                description:
-                  type: string
-                  nullable: true
-                iconUrl:
-                  type: string
-                  nullable: true
-                isPublic:
-                  type: boolean
-                role:
-                  type: string
-                  enum:
-                    - owner
-                    - admin
-                    - member
-                    - guest
-                createdBy:
-                  type: string
-                  format: uuid
-                createdAt:
-                  type: string
-                  format: date-time
-              required:
-                - name
-                - createdBy
-                - createdAt
+              schema:
+                $ref: '#/components/schemas/Workspace'
   /api/workspaces/{id}:
     get:
       operationId: getWorkspace
@@ -1815,7 +1784,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: List of DMs
@@ -1842,7 +1810,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         required: true
         content:
@@ -1880,7 +1847,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       requestBody:
         required: true
         content:

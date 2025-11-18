@@ -36,6 +36,7 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
+      - ./openapi:/app/openapi
       - backend_cache:/go/pkg/mod
     depends_on:
       db:

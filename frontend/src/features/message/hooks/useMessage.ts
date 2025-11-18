@@ -133,7 +133,7 @@ export function useUpdateReadState(channelId: string | null, workspaceId: string
       const lastReadAt = new Date().toISOString();
       const { error } = await api.POST("/api/channels/{channelId}/reads", {
         params: { path: { channelId } },
-        body: { last_read_at: lastReadAt } as unknown as { lastReadAt: string },
+        body: { lastReadAt },
       });
 
       if (error) {

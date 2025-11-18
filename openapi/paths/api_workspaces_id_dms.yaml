@@ -10,7 +10,6 @@
         required: true
         schema:
           type: string
-          format: uuid
     responses:
       "200":
         description: List of DMs
@@ -38,7 +37,6 @@
         required: true
         schema:
           type: string
-          format: uuid
     requestBody:
       required: true
       content:
