@@ -6,6 +6,7 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	"github.com/newt239/chat/internal/openapi_gen"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 )
 
@@ -15,20 +16,6 @@ type ChannelHandler struct {
 
 func NewChannelHandler(channelUC channeluc.ChannelUseCase) *ChannelHandler {
 	return &ChannelHandler{channelUC: channelUC}
-}
-
-// CreateChannelRequest はチャンネル作成リクエストの構造体です
-type CreateChannelRequest struct {
-	Name        string `json:"name" validate:"required,min=1"`
-	Description string `json:"description"`
-	IsPrivate   bool   `json:"is_private"`
-}
-
-// UpdateChannelRequest はチャンネル更新リクエストの構造体です
-type UpdateChannelRequest struct {
-	Name        *string `json:"name,omitempty" validate:"omitempty,min=1"`
-	Description *string `json:"description,omitempty"`
-	IsPrivate   *bool   `json:"is_private,omitempty"`
 }
 
 // ListChannels implements ServerInterface.ListChannels
@@ -58,7 +45,7 @@ func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 		return utils.HandleAuthError()
 	}
 
-	var req CreateChannelRequest
+	var req openapi.CreateChannelRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -67,17 +54,17 @@ func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	var description *string
-	if req.Description != "" {
-		description = &req.Description
+	var isPrivate bool
+	if req.IsPrivate != nil {
+		isPrivate = *req.IsPrivate
 	}
 
 	input := channeluc.CreateChannelInput{
 		WorkspaceID: id,
 		UserID:      userID,
 		Name:        req.Name,
-		Description: description,
-		IsPrivate:   req.IsPrivate,
+		Description: req.Description,
+		IsPrivate:   isPrivate,
 	}
 
 	channel, err := h.channelUC.CreateChannel(c.Request().Context(), input)
@@ -90,27 +77,27 @@ func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 
 // UpdateChannel はチャンネル情報を更新します (ServerInterface用)
 func (h *ChannelHandler) UpdateChannel(c echo.Context, channelId openapi_types.UUID) error {
-    userID, ok := c.Get("userID").(string)
-    if !ok {
-        return utils.HandleAuthError()
-    }
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
+	}
 
-    var req UpdateChannelRequest
-    if err := c.Bind(&req); err != nil {
-        return utils.HandleBindError(err)
-    }
+	var req openapi.UpdateChannelRequest
+	if err := c.Bind(&req); err != nil {
+		return utils.HandleBindError(err)
+	}
 
-    input := channeluc.UpdateChannelInput{
-        ChannelID:   channelId.String(),
-        UserID:      userID,
-        Name:        req.Name,
-        Description: req.Description,
-        IsPrivate:   req.IsPrivate,
-    }
+	input := channeluc.UpdateChannelInput{
+		ChannelID:   channelId.String(),
+		UserID:      userID,
+		Name:        req.Name,
+		Description: req.Description,
+		IsPrivate:   req.IsPrivate,
+	}
 
-    ch, err := h.channelUC.UpdateChannel(c.Request().Context(), input)
-    if err != nil {
-        return handleUseCaseError(err)
-    }
-    return c.JSON(http.StatusOK, ch)
+	ch, err := h.channelUC.UpdateChannel(c.Request().Context(), input)
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+	return c.JSON(http.StatusOK, ch)
 }

@@ -7,6 +7,7 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	"github.com/newt239/chat/internal/openapi_gen"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 )
 
@@ -16,11 +17,6 @@ type ReactionHandler struct {
 
 func NewReactionHandler(reactionUC reactionuc.ReactionUseCase) *ReactionHandler {
 	return &ReactionHandler{reactionUC: reactionUC}
-}
-
-// AddReactionRequest はリアクション追加リクエストの構造体です
-type AddReactionRequest struct {
-	Emoji string `json:"emoji" validate:"required,min=1"`
 }
 
 
@@ -46,7 +42,7 @@ func (h *ReactionHandler) AddReaction(ctx echo.Context, messageId openapi_types.
 		return utils.HandleAuthError()
 	}
 
-	var req AddReactionRequest
+	var req openapi.AddReactionRequest
 	if err := ctx.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}

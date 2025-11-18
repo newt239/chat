@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
+	"github.com/newt239/chat/internal/openapi_gen"
 	"github.com/newt239/chat/internal/usecase/attachment"
 )
 
@@ -17,14 +18,6 @@ func NewAttachmentHandler(attachmentUseCase *attachment.Interactor) *AttachmentH
 	return &AttachmentHandler{
 		attachmentUseCase: attachmentUseCase,
 	}
-}
-
-type PresignUploadRequest struct {
-	ChannelID  string `json:"channelId" validate:"required"`
-	FileName   string `json:"fileName" validate:"required"`
-	MimeType   string `json:"mimeType" validate:"required"`
-	SizeBytes  int64  `json:"sizeBytes" validate:"required,min=1"`
-	ExpiresMin int    `json:"expiresMin,omitempty"`
 }
 
 type PresignUploadResponse struct {
@@ -57,7 +50,7 @@ func (h *AttachmentHandler) PresignUpload(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
 	}
 
-	var req PresignUploadRequest
+	var req openapi.PresignRequest
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "リクエストが不正です")
 	}
@@ -68,11 +61,11 @@ func (h *AttachmentHandler) PresignUpload(c echo.Context) error {
 
 	input := &attachment.PresignInput{
 		UserID:     userID,
-		ChannelID:  req.ChannelID,
+		ChannelID:  req.ChannelId.String(),
 		FileName:   req.FileName,
-		MimeType:   req.MimeType,
-		SizeBytes:  req.SizeBytes,
-		ExpiresMin: req.ExpiresMin,
+		MimeType:   req.ContentType,
+		SizeBytes:  int64(req.SizeBytes),
+		ExpiresMin: 0, // 生成型にExpiresMinフィールドがないためデフォルト値を使用
 	}
 
 	output, err := h.attachmentUseCase.Presign(c.Request().Context(), input)

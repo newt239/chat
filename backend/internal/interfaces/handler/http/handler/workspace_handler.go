@@ -7,6 +7,7 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	"github.com/newt239/chat/internal/openapi_gen"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -18,32 +19,11 @@ func NewWorkspaceHandler(workspaceUC workspaceuc.WorkspaceUseCase) *WorkspaceHan
 	return &WorkspaceHandler{workspaceUC: workspaceUC}
 }
 
-// CreateWorkspaceRequest はワークスペース作成リクエストの構造体です
-type CreateWorkspaceRequest struct {
-    ID          string  `json:"id" validate:"required,min=3,max=12"`
-    Name        string  `json:"name" validate:"required,min=1,max=100"`
-    Description string  `json:"description" validate:"max=500"`
-    IconURL     *string `json:"iconUrl" validate:"omitempty,url,max=2048"`
-    IsPublic    bool    `json:"isPublic"`
-}
-
-// UpdateWorkspaceRequest はワークスペース更新リクエストの構造体です
-type UpdateWorkspaceRequest struct {
-    Name        *string `json:"name,omitempty" validate:"omitempty,min=1,max=100"`
-    Description *string `json:"description,omitempty" validate:"omitempty,max=500"`
-    IconURL     *string `json:"iconUrl,omitempty" validate:"omitempty,url,max=2048"`
-    IsPublic    *bool   `json:"isPublic,omitempty"`
-}
-
 // AddMemberRequest はメンバー追加リクエストの構造体です
+// 注意: これはUserIDベースの追加用で、OpenAPIスキーマには定義がないため独自型を使用
 type AddMemberRequest struct {
 	UserID string `json:"user_id" validate:"required"`
 	Role   string `json:"role" validate:"required,oneof=owner admin member"`
-}
-
-// UpdateMemberRoleRequest はメンバーロール更新リクエストの構造体です
-type UpdateMemberRoleRequest struct {
-	Role string `json:"role" validate:"required,oneof=owner admin member"`
 }
 
 // ListWorkspaces implements ServerInterface.ListWorkspaces
@@ -68,18 +48,23 @@ func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
 		return err
 	}
 
-	var req CreateWorkspaceRequest
+	var req openapi.CreateWorkspaceRequest
 	if err := utils.ValidateRequest(c, &req); err != nil {
 		return err
 	}
 
+	var isPublic bool
+	if req.IsPublic != nil {
+		isPublic = *req.IsPublic
+	}
+
 	input := workspaceuc.CreateWorkspaceInput{
-        ID:          req.ID,
-        Name:        req.Name,
-        Description: func() *string { if req.Description == "" { return nil }; s := req.Description; return &s }(),
-        IconURL:     req.IconURL,
-        IsPublic:    req.IsPublic,
-        CreatedBy:   userID,
+		ID:          req.Id,
+		Name:        req.Name,
+		Description: req.Description,
+		IconURL:     req.IconUrl,
+		IsPublic:    isPublic,
+		CreatedBy:   userID,
 	}
 
 	workspace, err := h.workspaceUC.CreateWorkspace(c.Request().Context(), input)
@@ -112,7 +97,7 @@ func (h *WorkspaceHandler) GetWorkspace(c echo.Context, id string) error {
 
 // UpdateWorkspace implements ServerInterface.UpdateWorkspace
 func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context, id string) error {
-	var req UpdateWorkspaceRequest
+	var req openapi.UpdateWorkspaceRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -130,7 +115,7 @@ func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context, id string) error {
 		ID:          id,
 		Name:        req.Name,
 		Description: req.Description,
-		IconURL:     req.IconURL,
+		IconURL:     req.IconUrl,
 		IsPublic:    req.IsPublic,
 		UserID:      userID,
 	}
@@ -173,18 +158,13 @@ func (h *WorkspaceHandler) JoinPublicWorkspace(c echo.Context, id string) error 
 	return c.JSON(http.StatusOK, map[string]string{"message": "ワークスペースに参加しました"})
 }
 
-type AddMemberByEmailRequest struct {
-    Email string `json:"email" validate:"required,email"`
-    Role  string `json:"role" validate:"required,oneof=owner admin member guest"`
-}
-
 // AddMemberByEmail implements ServerInterface.AddMemberByEmail
 func (h *WorkspaceHandler) AddMemberByEmail(c echo.Context, id string) error {
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return err
 	}
-	var req AddMemberByEmailRequest
+	var req openapi.AddMemberRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -192,10 +172,15 @@ func (h *WorkspaceHandler) AddMemberByEmail(c echo.Context, id string) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	var role string
+	if req.Role != nil {
+		role = string(*req.Role)
+	}
+
 	_, err = h.workspaceUC.AddMemberByEmail(c.Request().Context(), workspaceuc.AddMemberByEmailInput{
 		WorkspaceID: id,
-		Email:       req.Email,
-		Role:        req.Role,
+		Email:       string(req.Email),
+		Role:        role,
 		RequestedBy: userID,
 	})
 	if err != nil {
@@ -276,7 +261,7 @@ func (h *WorkspaceHandler) AddMember(c echo.Context) error {
 
 // UpdateMemberRole implements ServerInterface.UpdateMemberRole
 func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context, id string, userId openapi_types.UUID) error {
-	var req UpdateMemberRoleRequest
+	var req openapi.UpdateMemberRoleRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -288,7 +273,7 @@ func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context, id string, userId op
 	input := workspaceuc.UpdateMemberRoleInput{
 		WorkspaceID: id,
 		UserID:      userId.String(),
-		Role:        req.Role,
+		Role:        string(req.Role),
 	}
 
 	member, err := h.workspaceUC.UpdateMemberRole(c.Request().Context(), input)

@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
 	"github.com/newt239/chat/internal/infrastructure/utils"
 	openapi "github.com/newt239/chat/internal/openapi_gen"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type MessageHandler struct {
@@ -121,17 +121,6 @@ func (h *MessageHandler) GetThreadMetadata(c echo.Context, messageId openapi_typ
 	return c.JSON(http.StatusOK, output)
 }
 
-// CreateMessageRequest はメッセージ作成リクエストの構造体です
-type CreateMessageRequest struct {
-	Body     string  `json:"body" validate:"required,min=1"`
-	ParentID *string `json:"parentId,omitempty"`
-}
-
-// UpdateMessageRequest はメッセージ更新リクエストの構造体です
-type UpdateMessageRequest struct {
-	Body string `json:"body" validate:"required,min=1"`
-}
-
 // ListMessages はメッセージ一覧を取得します (ServerInterface用)
 func (h *MessageHandler) ListMessages(c echo.Context, channelId openapi_types.UUID, params openapi.ListMessagesParams) error {
 	userID, ok := c.Get("userID").(string)
@@ -177,16 +166,31 @@ func (h *MessageHandler) CreateMessage(c echo.Context, channelId openapi_types.U
 		return err
 	}
 
-	var req CreateMessageRequest
+	var req openapi.CreateMessageRequest
 	if err := utils.ValidateRequest(c, &req); err != nil {
 		return err
 	}
 
+	var parentID *string
+	if req.ParentId != nil {
+		parentIDStr := req.ParentId.String()
+		parentID = &parentIDStr
+	}
+
+	var attachmentIDs []string
+	if req.AttachmentIds != nil {
+		attachmentIDs = make([]string, len(*req.AttachmentIds))
+		for i, id := range *req.AttachmentIds {
+			attachmentIDs[i] = id.String()
+		}
+	}
+
 	input := messageuc.CreateMessageInput{
-		ChannelID: channelId.String(),
-		UserID:    userID,
-		Body:      req.Body,
-		ParentID:  req.ParentID,
+		ChannelID:     channelId.String(),
+		UserID:        userID,
+		Body:          req.Body,
+		ParentID:      parentID,
+		AttachmentIDs: attachmentIDs,
 	}
 
 	message, err := h.messageUC.CreateMessage(c.Request().Context(), input)
@@ -204,7 +208,7 @@ func (h *MessageHandler) UpdateMessage(c echo.Context, messageId openapi_types.U
 		return err
 	}
 
-	var req UpdateMessageRequest
+	var req openapi.UpdateMessageRequest
 	if err := utils.ValidateRequest(c, &req); err != nil {
 		return err
 	}

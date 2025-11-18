@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	"github.com/newt239/chat/internal/openapi_gen"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 )
 
@@ -16,14 +17,9 @@ func NewLinkHandler(linkUC linkuc.LinkUseCase) *LinkHandler {
 	return &LinkHandler{linkUC: linkUC}
 }
 
-// FetchOGPRequest はOGP取得リクエストの構造体です
-type FetchOGPRequest struct {
-	URL string `json:"url" validate:"required,url"`
-}
-
 // FetchOGP はOGP情報を取得します
 func (h *LinkHandler) FetchOGP(c echo.Context) error {
-	var req FetchOGPRequest
+	var req openapi.FetchOGPRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -33,7 +29,7 @@ func (h *LinkHandler) FetchOGP(c echo.Context) error {
 	}
 
 	input := linkuc.FetchOGPInput{
-		URL: req.URL,
+		URL: req.Url,
 	}
 
 	ogp, err := h.linkUC.FetchOGP(c.Request().Context(), input)

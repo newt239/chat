@@ -7,6 +7,7 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 )
 
@@ -18,15 +19,6 @@ func NewDMHandler(dmInteractor *dmuc.Interactor) *DMHandler {
 	return &DMHandler{dmInteractor: dmInteractor}
 }
 
-type CreateDMRequest struct {
-	UserID string `json:"userId" validate:"required"`
-}
-
-type CreateGroupDMRequest struct {
-	UserIDs []string `json:"userIds" validate:"required,min=2,max=9"`
-	Name    string   `json:"name"`
-}
-
 // CreateDM implements ServerInterface.CreateDM
 func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
@@ -34,7 +26,7 @@ func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 		return utils.HandleAuthError()
 	}
 
-	var req CreateDMRequest
+	var req openapi.CreateDMRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -46,7 +38,7 @@ func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 	input := dmuc.CreateDMInput{
 		WorkspaceID:  id.String(),
 		UserID:       userID,
-		TargetUserID: req.UserID,
+		TargetUserID: req.UserId.String(),
 	}
 
 	dm, err := h.dmInteractor.CreateDM(c.Request().Context(), input)
@@ -64,7 +56,7 @@ func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 		return utils.HandleAuthError()
 	}
 
-	var req CreateGroupDMRequest
+	var req openapi.CreateGroupDMRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -73,11 +65,21 @@ func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	userIDs := make([]string, len(req.UserIds))
+	for i, id := range req.UserIds {
+		userIDs[i] = id.String()
+	}
+
+	var name string
+	if req.Name != nil {
+		name = *req.Name
+	}
+
 	input := dmuc.CreateGroupDMInput{
 		WorkspaceID: id.String(),
 		CreatorID:   userID,
-		MemberIDs:   req.UserIDs,
-		Name:        req.Name,
+		MemberIDs:   userIDs,
+		Name:        name,
 	}
 
 	dm, err := h.dmInteractor.CreateGroupDM(c.Request().Context(), input)

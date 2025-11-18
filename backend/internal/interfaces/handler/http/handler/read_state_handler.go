@@ -2,12 +2,12 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	"github.com/newt239/chat/internal/openapi_gen"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 )
 
@@ -19,11 +19,6 @@ func NewReadStateHandler(readStateUC readstateuc.ReadStateUseCase) *ReadStateHan
 	return &ReadStateHandler{readStateUC: readStateUC}
 }
 
-// UpdateReadStateRequest は既読状態更新リクエストの構造体です
-type UpdateReadStateRequest struct {
-	LastReadAt string `json:"last_read_at" validate:"required"`
-}
-
 // UpdateReadState implements ServerInterface.UpdateReadState
 func (h *ReadStateHandler) UpdateReadState(ctx echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := ctx.Get("userID").(string)
@@ -31,7 +26,7 @@ func (h *ReadStateHandler) UpdateReadState(ctx echo.Context, channelId openapi_t
 		return utils.HandleAuthError()
 	}
 
-	var req UpdateReadStateRequest
+	var req openapi.UpdateReadStateRequest
 	if err := ctx.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -40,15 +35,10 @@ func (h *ReadStateHandler) UpdateReadState(ctx echo.Context, channelId openapi_t
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	lastReadAt, parseErr := time.Parse(time.RFC3339, req.LastReadAt)
-	if parseErr != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "last_read_atの形式が不正です")
-	}
-
 	input := readstateuc.UpdateReadStateInput{
 		ChannelID:  channelId.String(),
 		UserID:     userID,
-		LastReadAt: lastReadAt,
+		LastReadAt: req.LastReadAt,
 	}
 
 	err := h.readStateUC.UpdateReadState(ctx.Request().Context(), input)

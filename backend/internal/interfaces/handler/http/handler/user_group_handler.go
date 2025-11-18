@@ -18,18 +18,6 @@ func NewUserGroupHandler(userGroupUC usergroupuc.UserGroupUseCase) *UserGroupHan
 	return &UserGroupHandler{userGroupUC: userGroupUC}
 }
 
-// CreateUserGroupRequest はユーザーグループ作成リクエストの構造体です
-type CreateUserGroupRequest struct {
-	Name        string `json:"name" validate:"required,min=1"`
-	Description string `json:"description"`
-	WorkspaceID string `json:"workspace_id" validate:"required"`
-}
-
-// UpdateUserGroupRequest はユーザーグループ更新リクエストの構造体です
-type UpdateUserGroupRequest struct {
-	Name        *string `json:"name,omitempty" validate:"omitempty,min=1"`
-	Description *string `json:"description,omitempty"`
-}
 
 // AddUserGroupMemberRequest はユーザーグループメンバー追加リクエストの構造体です
 type AddUserGroupMemberRequest struct {
@@ -43,7 +31,7 @@ func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
-	var req CreateUserGroupRequest
+	var req openapi.CreateUserGroupRequest
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
@@ -52,15 +40,10 @@ func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	var description *string
-	if req.Description != "" {
-		description = &req.Description
-	}
-
 	input := usergroupuc.CreateUserGroupInput{
 		Name:        req.Name,
-		Description: description,
-		WorkspaceID: req.WorkspaceID,
+		Description: req.Description,
+		WorkspaceID: req.WorkspaceId.String(),
 		CreatedBy:   userID,
 	}
 
@@ -134,7 +117,7 @@ func (h *UserGroupHandler) GetUserGroup(ctx echo.Context, id openapi_types.UUID)
 
 // UpdateUserGroup implements ServerInterface.UpdateUserGroup
 func (h *UserGroupHandler) UpdateUserGroup(ctx echo.Context, id openapi_types.UUID) error {
-	var req UpdateUserGroupRequest
+	var req openapi.UpdateUserGroupRequest
 	if err := ctx.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
@@ -143,10 +126,21 @@ func (h *UserGroupHandler) UpdateUserGroup(ctx echo.Context, id openapi_types.UU
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	userID, ok := ctx.Get("userID").(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
+	}
+
+	var name *string
+	if req.Name != "" {
+		name = &req.Name
+	}
+
 	input := usergroupuc.UpdateUserGroupInput{
 		ID:          id.String(),
-		Name:        req.Name,
+		Name:        name,
 		Description: req.Description,
+		UpdatedBy:   userID,
 	}
 
 	userGroup, err := h.userGroupUC.UpdateUserGroup(ctx.Request().Context(), input)

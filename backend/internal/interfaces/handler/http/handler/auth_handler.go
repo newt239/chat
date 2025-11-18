@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
@@ -16,32 +17,15 @@ func NewAuthHandler(authUC authuc.AuthUseCase) *AuthHandler {
 	return &AuthHandler{authUC: authUC}
 }
 
-// RegisterRequest はユーザー登録リクエストの構造体です
-type RegisterRequest struct {
-	Email       string `json:"email" validate:"required,email"`
-	Password    string `json:"password" validate:"required,min=8"`
-	DisplayName string `json:"displayName" validate:"required,min=1"`
-}
-
-// LoginRequest はログインリクエストの構造体です
-type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-}
-
-// RefreshTokenRequest はトークンリフレッシュリクエストの構造体です
-type RefreshTokenRequest struct {
-	RefreshToken string `json:"refresh_token" validate:"required"`
-}
-
 // LogoutRequest はログアウトリクエストの構造体です
+// 注意: OpenAPIスキーマに定義がないため、一時的に独自型を使用
 type LogoutRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
 // Register はユーザー登録を処理します
 func (h *AuthHandler) Register(c echo.Context) error {
-	var req RegisterRequest
+	var req openapi.RegisterRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -52,7 +36,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	}
 
 	input := authuc.RegisterInput{
-		Email:       req.Email,
+		Email:       string(req.Email),
 		Password:    req.Password,
 		DisplayName: req.DisplayName,
 	}
@@ -67,7 +51,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 
 // Login はユーザー認証を処理します
 func (h *AuthHandler) Login(c echo.Context) error {
-	var req LoginRequest
+	var req openapi.LoginRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
@@ -77,7 +61,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	}
 
 	input := authuc.LoginInput{
-		Email:    req.Email,
+		Email:    string(req.Email),
 		Password: req.Password,
 	}
 
@@ -91,7 +75,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 
 // Refresh はトークンのリフレッシュを処理します
 func (h *AuthHandler) Refresh(c echo.Context) error {
-	var req RefreshTokenRequest
+	var req openapi.RefreshRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
