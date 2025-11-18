@@ -9,9 +9,11 @@
     "typecheck": "turbo run typecheck",
     "storybook": "turbo run storybook",
     "clean": "./scripts/clean.sh",
-    "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go"
+    "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",
+    "openapi:bundle": "redocly bundle openapi/openapi.yaml -o openapi/bundled.yaml"
   },
   "devDependencies": {
+    "@redocly/cli": "^1.29.3",
     "turbo": "2.5.8"
   },
   "packageManager": "pnpm@10.19.0"
