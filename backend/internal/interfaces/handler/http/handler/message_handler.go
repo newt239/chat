@@ -12,7 +12,7 @@ import (
 )
 
 type MessageHandler struct {
-	messageUC messageuc.MessageUseCase
+	MessageUC messageuc.MessageUseCase
 }
 
 // ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します (ServerInterface用)
@@ -46,13 +46,13 @@ func (h *MessageHandler) ListMessagesWithThread(c echo.Context, channelId openap
 	}
 
 	// hasMore を取得するため通常の一覧も取得
-	listRes, err := h.messageUC.ListMessages(c.Request().Context(), input)
+	listRes, err := h.MessageUC.ListMessages(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
 	// スレッド情報付きの一覧を取得
-	outputs, err := h.messageUC.ListMessagesWithThread(c.Request().Context(), input)
+	outputs, err := h.MessageUC.ListMessagesWithThread(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -61,10 +61,6 @@ func (h *MessageHandler) ListMessagesWithThread(c echo.Context, channelId openap
 		"messages": outputs,
 		"hasMore":  listRes.HasMore,
 	})
-}
-
-func NewMessageHandler(messageUC messageuc.MessageUseCase) *MessageHandler {
-	return &MessageHandler{messageUC: messageUC}
 }
 
 // GetThreadReplies は特定のメッセージのスレッド返信一覧と親メッセージを取得します (ServerInterface用)
@@ -79,7 +75,7 @@ func (h *MessageHandler) GetThreadReplies(c echo.Context, messageId openapi_type
 		UserID:    userID,
 	}
 
-	output, err := h.messageUC.GetThreadReplies(c.Request().Context(), input)
+	output, err := h.MessageUC.GetThreadReplies(c.Request().Context(), input)
 	if err != nil {
 		switch err {
 		case messageuc.ErrParentMessageNotFound:
@@ -106,7 +102,7 @@ func (h *MessageHandler) GetThreadMetadata(c echo.Context, messageId openapi_typ
 		UserID:    userID,
 	}
 
-	output, err := h.messageUC.GetThreadMetadata(c.Request().Context(), input)
+	output, err := h.MessageUC.GetThreadMetadata(c.Request().Context(), input)
 	if err != nil {
 		switch err {
 		case messageuc.ErrParentMessageNotFound:
@@ -151,7 +147,7 @@ func (h *MessageHandler) ListMessages(c echo.Context, channelId openapi_types.UU
 		Until:     untilTime,
 	}
 
-	messages, err := h.messageUC.ListMessages(c.Request().Context(), input)
+	messages, err := h.MessageUC.ListMessages(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -193,7 +189,7 @@ func (h *MessageHandler) CreateMessage(c echo.Context, channelId openapi_types.U
 		AttachmentIDs: attachmentIDs,
 	}
 
-	message, err := h.messageUC.CreateMessage(c.Request().Context(), input)
+	message, err := h.MessageUC.CreateMessage(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -219,7 +215,7 @@ func (h *MessageHandler) UpdateMessage(c echo.Context, messageId openapi_types.U
 		Body:      req.Body,
 	}
 
-	message, err := h.messageUC.UpdateMessage(c.Request().Context(), input)
+	message, err := h.MessageUC.UpdateMessage(c.Request().Context(), input)
 	if err != nil {
 		return mapMessageError(err)
 	}
@@ -239,7 +235,7 @@ func (h *MessageHandler) DeleteMessage(c echo.Context, messageId openapi_types.U
 		ExecutorID: userID,
 	}
 
-	if err := h.messageUC.DeleteMessage(c.Request().Context(), input); err != nil {
+	if err := h.MessageUC.DeleteMessage(c.Request().Context(), input); err != nil {
 		return mapMessageError(err)
 	}
 

@@ -11,10 +11,8 @@ import (
 )
 
 type PinHandler struct {
-	uc pin.PinUseCase
+	UC pin.PinUseCase
 }
-
-func NewPinHandler(uc pin.PinUseCase) *PinHandler { return &PinHandler{uc: uc} }
 
 type PinRequest struct {
 	MessageID string `json:"messageId" validate:"required,uuid4"`
@@ -36,7 +34,7 @@ func (h *PinHandler) ListPins(ctx echo.Context, channelId openapi_types.UUID, pa
 	}
 
 	input := pin.ListPinsInput{ChannelID: channelId.String(), UserID: userID, Limit: limit, Cursor: curPtr}
-	out, err := h.uc.ListPins(ctx.Request().Context(), input)
+	out, err := h.UC.ListPins(ctx.Request().Context(), input)
 	if err != nil {
 		if err == pin.ErrUnauthorized {
 			return ctx.JSON(http.StatusForbidden, map[string]string{"error": "forbidden"})
@@ -60,7 +58,7 @@ func (h *PinHandler) CreatePin(ctx echo.Context, channelId openapi_types.UUID) e
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 	input := pin.PinMessageInput{ChannelID: channelId.String(), MessageID: req.MessageID, UserID: userID}
-	if err := h.uc.PinMessage(ctx.Request().Context(), input); err != nil {
+	if err := h.UC.PinMessage(ctx.Request().Context(), input); err != nil {
 		switch err {
 		case pin.ErrUnauthorized:
 			return ctx.JSON(http.StatusForbidden, map[string]string{"error": "forbidden"})
@@ -80,7 +78,7 @@ func (h *PinHandler) DeletePin(ctx echo.Context, channelId openapi_types.UUID, m
 		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
 	}
 	input := pin.UnpinMessageInput{ChannelID: channelId.String(), MessageID: messageId.String(), UserID: userID}
-	if err := h.uc.UnpinMessage(ctx.Request().Context(), input); err != nil {
+	if err := h.UC.UnpinMessage(ctx.Request().Context(), input); err != nil {
 		switch err {
 		case pin.ErrUnauthorized:
 			return ctx.JSON(http.StatusForbidden, map[string]string{"error": "forbidden"})

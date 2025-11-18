@@ -12,11 +12,7 @@ import (
 )
 
 type ReadStateHandler struct {
-	readStateUC readstateuc.ReadStateUseCase
-}
-
-func NewReadStateHandler(readStateUC readstateuc.ReadStateUseCase) *ReadStateHandler {
-	return &ReadStateHandler{readStateUC: readStateUC}
+	ReadStateUC readstateuc.ReadStateUseCase
 }
 
 // UpdateReadState implements ServerInterface.UpdateReadState
@@ -41,7 +37,7 @@ func (h *ReadStateHandler) UpdateReadState(ctx echo.Context, channelId openapi_t
 		LastReadAt: req.LastReadAt,
 	}
 
-	err := h.readStateUC.UpdateReadState(ctx.Request().Context(), input)
+	err := h.ReadStateUC.UpdateReadState(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -61,7 +57,7 @@ func (h *ReadStateHandler) GetUnreadCount(ctx echo.Context, channelId openapi_ty
 		UserID:    userID,
 	}
 
-	count, err := h.readStateUC.GetUnreadCount(ctx.Request().Context(), input)
+	count, err := h.ReadStateUC.GetUnreadCount(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

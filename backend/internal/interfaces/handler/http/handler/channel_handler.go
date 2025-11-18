@@ -11,11 +11,7 @@ import (
 )
 
 type ChannelHandler struct {
-	channelUC channeluc.ChannelUseCase
-}
-
-func NewChannelHandler(channelUC channeluc.ChannelUseCase) *ChannelHandler {
-	return &ChannelHandler{channelUC: channelUC}
+	ChannelUC channeluc.ChannelUseCase
 }
 
 // ListChannels implements ServerInterface.ListChannels
@@ -30,7 +26,7 @@ func (h *ChannelHandler) ListChannels(c echo.Context, id string) error {
 		UserID:      userID,
 	}
 
-	channels, err := h.channelUC.ListChannels(c.Request().Context(), input)
+	channels, err := h.ChannelUC.ListChannels(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -67,7 +63,7 @@ func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 		IsPrivate:   isPrivate,
 	}
 
-	channel, err := h.channelUC.CreateChannel(c.Request().Context(), input)
+	channel, err := h.ChannelUC.CreateChannel(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -95,7 +91,7 @@ func (h *ChannelHandler) UpdateChannel(c echo.Context, channelId openapi_types.U
 		IsPrivate:   req.IsPrivate,
 	}
 
-	ch, err := h.channelUC.UpdateChannel(c.Request().Context(), input)
+	ch, err := h.ChannelUC.UpdateChannel(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

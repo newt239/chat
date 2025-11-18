@@ -13,20 +13,9 @@ import (
 )
 
 type ThreadHandler struct {
-	threadLister *threaduc.ThreadLister
-	threadReader *threaduc.ThreadReader
+	ThreadLister *threaduc.ThreadLister
+	ThreadReader *threaduc.ThreadReader
 }
-
-func NewThreadHandler(
-	threadLister *threaduc.ThreadLister,
-	threadReader *threaduc.ThreadReader,
-) *ThreadHandler {
-	return &ThreadHandler{
-		threadLister: threadLister,
-		threadReader: threadReader,
-	}
-}
-
 
 // MarkThreadRead implements ServerInterface.MarkThreadRead
 func (h *ThreadHandler) MarkThreadRead(ctx echo.Context, threadId openapi_types.UUID) error {
@@ -40,7 +29,7 @@ func (h *ThreadHandler) MarkThreadRead(ctx echo.Context, threadId openapi_types.
 		ThreadID: threadId.String(),
 	}
 
-	err = h.threadReader.MarkThreadRead(ctx.Request().Context(), input)
+	err = h.ThreadReader.MarkThreadRead(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -81,7 +70,7 @@ func (h *ThreadHandler) GetParticipatingThreads(ctx echo.Context, workspaceId st
 		Limit:                limit,
 	}
 
-	output, err := h.threadLister.ListParticipatingThreads(ctx.Request().Context(), input)
+	output, err := h.ThreadLister.ListParticipatingThreads(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

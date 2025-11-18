@@ -25,70 +25,101 @@ func NewInterfaceRegistry(usecaseRegistry *UseCaseRegistry, infrastructureRegist
 
 // Handlers
 func (r *InterfaceRegistry) NewAuthHandler() *handler.AuthHandler {
-	return handler.NewAuthHandler(r.usecaseRegistry.NewAuthUseCase())
+	return &handler.AuthHandler{
+		AuthUC: r.usecaseRegistry.NewAuthUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewWorkspaceHandler() *handler.WorkspaceHandler {
-	return handler.NewWorkspaceHandler(r.usecaseRegistry.NewWorkspaceUseCase())
+	return &handler.WorkspaceHandler{
+		WorkspaceUC: r.usecaseRegistry.NewWorkspaceUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewChannelHandler() *handler.ChannelHandler {
-	return handler.NewChannelHandler(r.usecaseRegistry.NewChannelUseCase())
+	return &handler.ChannelHandler{
+		ChannelUC: r.usecaseRegistry.NewChannelUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewChannelMemberHandler() *handler.ChannelMemberHandler {
-    return handler.NewChannelMemberHandler(r.usecaseRegistry.NewChannelMemberUseCase(), r.usecaseRegistry.NewSystemMessageUseCase())
+	return &handler.ChannelMemberHandler{
+		ChannelMemberUseCase: r.usecaseRegistry.NewChannelMemberUseCase(),
+		SystemMessageUC:      r.usecaseRegistry.NewSystemMessageUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewMessageHandler() *handler.MessageHandler {
-	return handler.NewMessageHandler(r.usecaseRegistry.NewMessageUseCase())
+	return &handler.MessageHandler{
+		MessageUC: r.usecaseRegistry.NewMessageUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewReadStateHandler() *handler.ReadStateHandler {
-	return handler.NewReadStateHandler(r.usecaseRegistry.NewReadStateUseCase())
+	return &handler.ReadStateHandler{
+		ReadStateUC: r.usecaseRegistry.NewReadStateUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewReactionHandler() *handler.ReactionHandler {
-	return handler.NewReactionHandler(r.usecaseRegistry.NewReactionUseCase())
+	return &handler.ReactionHandler{
+		ReactionUC: r.usecaseRegistry.NewReactionUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewUserGroupHandler() *handler.UserGroupHandler {
-	return handler.NewUserGroupHandler(r.usecaseRegistry.NewUserGroupUseCase())
+	return &handler.UserGroupHandler{
+		UserGroupUC: r.usecaseRegistry.NewUserGroupUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewLinkHandler() *handler.LinkHandler {
-	return handler.NewLinkHandler(r.usecaseRegistry.NewLinkUseCase())
+	return &handler.LinkHandler{
+		LinkUC: r.usecaseRegistry.NewLinkUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewBookmarkHandler() *handler.BookmarkHandler {
-	return handler.NewBookmarkHandler(r.usecaseRegistry.NewBookmarkUseCase())
+	return &handler.BookmarkHandler{
+		BookmarkUC: r.usecaseRegistry.NewBookmarkUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewPinHandler() *handler.PinHandler {
-	return handler.NewPinHandler(r.usecaseRegistry.NewPinUseCase())
+	return &handler.PinHandler{
+		UC: r.usecaseRegistry.NewPinUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewAttachmentHandler() *handler.AttachmentHandler {
-	return handler.NewAttachmentHandler(r.usecaseRegistry.NewAttachmentUseCase())
+	return &handler.AttachmentHandler{
+		AttachmentUseCase: r.usecaseRegistry.NewAttachmentUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewSearchHandler() *handler.SearchHandler {
-	return handler.NewSearchHandler(r.usecaseRegistry.NewSearchUseCase())
+	return &handler.SearchHandler{
+		SearchUC: r.usecaseRegistry.NewSearchUseCase(),
+	}
 }
 
 func (r *InterfaceRegistry) NewDMHandler() *handler.DMHandler {
-	return handler.NewDMHandler(r.usecaseRegistry.NewDMInteractor())
+	return &handler.DMHandler{
+		DMInteractor: r.usecaseRegistry.NewDMInteractor(),
+	}
 }
 
 func (r *InterfaceRegistry) NewThreadHandler() *handler.ThreadHandler {
-	return handler.NewThreadHandler(
-		r.usecaseRegistry.NewThreadLister(),
-		r.usecaseRegistry.NewThreadReader(),
-	)
+	return &handler.ThreadHandler{
+		ThreadLister: r.usecaseRegistry.NewThreadLister(),
+		ThreadReader: r.usecaseRegistry.NewThreadReader(),
+	}
 }
 
 func (r *InterfaceRegistry) NewUserHandler() *handler.UserHandler {
-    return handler.NewUserHandler(r.usecaseRegistry.NewUserUseCase())
+	return &handler.UserHandler{
+		UC: r.usecaseRegistry.NewUserUseCase(),
+	}
 }
 
 // Router

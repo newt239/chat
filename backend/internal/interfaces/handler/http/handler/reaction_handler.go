@@ -12,13 +12,8 @@ import (
 )
 
 type ReactionHandler struct {
-	reactionUC reactionuc.ReactionUseCase
+	ReactionUC reactionuc.ReactionUseCase
 }
-
-func NewReactionHandler(reactionUC reactionuc.ReactionUseCase) *ReactionHandler {
-	return &ReactionHandler{reactionUC: reactionUC}
-}
-
 
 // ListReactions implements ServerInterface.ListReactions
 func (h *ReactionHandler) ListReactions(ctx echo.Context, messageId openapi_types.UUID) error {
@@ -27,7 +22,7 @@ func (h *ReactionHandler) ListReactions(ctx echo.Context, messageId openapi_type
 		return utils.HandleAuthError()
 	}
 
-	reactions, err := h.reactionUC.ListReactions(ctx.Request().Context(), messageId.String(), userID)
+	reactions, err := h.ReactionUC.ListReactions(ctx.Request().Context(), messageId.String(), userID)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -57,7 +52,7 @@ func (h *ReactionHandler) AddReaction(ctx echo.Context, messageId openapi_types.
 		Emoji:     req.Emoji,
 	}
 
-	err := h.reactionUC.AddReaction(ctx.Request().Context(), input)
+	err := h.ReactionUC.AddReaction(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -78,7 +73,7 @@ func (h *ReactionHandler) RemoveReaction(ctx echo.Context, messageId openapi_typ
 		Emoji:     emoji,
 	}
 
-	err := h.reactionUC.RemoveReaction(ctx.Request().Context(), input)
+	err := h.ReactionUC.RemoveReaction(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

@@ -11,11 +11,7 @@ import (
 )
 
 type SearchHandler struct {
-	searchUC searchuc.SearchUseCase
-}
-
-func NewSearchHandler(searchUC searchuc.SearchUseCase) *SearchHandler {
-	return &SearchHandler{searchUC: searchUC}
+	SearchUC searchuc.SearchUseCase
 }
 
 // SearchWorkspace implements ServerInterface.SearchWorkspace
@@ -49,7 +45,7 @@ func (h *SearchHandler) SearchWorkspace(c echo.Context, workspaceId string, para
 		PerPage:     perPage,
 	}
 
-	result, err := h.searchUC.SearchWorkspace(c.Request().Context(), input)
+	result, err := h.SearchUC.SearchWorkspace(c.Request().Context(), input)
 	if err != nil {
 		switch err {
 		case searchuc.ErrInvalidQuery:

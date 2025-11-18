@@ -12,11 +12,7 @@ import (
 )
 
 type WorkspaceHandler struct {
-	workspaceUC workspaceuc.WorkspaceUseCase
-}
-
-func NewWorkspaceHandler(workspaceUC workspaceuc.WorkspaceUseCase) *WorkspaceHandler {
-	return &WorkspaceHandler{workspaceUC: workspaceUC}
+	WorkspaceUC workspaceuc.WorkspaceUseCase
 }
 
 // AddMemberRequest はメンバー追加リクエストの構造体です
@@ -33,7 +29,7 @@ func (h *WorkspaceHandler) ListWorkspaces(c echo.Context) error {
 		return utils.HandleAuthError()
 	}
 
-	workspaces, err := h.workspaceUC.GetWorkspacesByUserID(c.Request().Context(), userID)
+	workspaces, err := h.WorkspaceUC.GetWorkspacesByUserID(c.Request().Context(), userID)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -67,7 +63,7 @@ func (h *WorkspaceHandler) CreateWorkspace(c echo.Context) error {
 		CreatedBy:   userID,
 	}
 
-	workspace, err := h.workspaceUC.CreateWorkspace(c.Request().Context(), input)
+	workspace, err := h.WorkspaceUC.CreateWorkspace(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -87,7 +83,7 @@ func (h *WorkspaceHandler) GetWorkspace(c echo.Context, id string) error {
 		UserID: userID,
 	}
 
-	workspace, err := h.workspaceUC.GetWorkspace(c.Request().Context(), input)
+	workspace, err := h.WorkspaceUC.GetWorkspace(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -120,7 +116,7 @@ func (h *WorkspaceHandler) UpdateWorkspace(c echo.Context, id string) error {
 		UserID:      userID,
 	}
 
-	workspace, err := h.workspaceUC.UpdateWorkspace(c.Request().Context(), input)
+	workspace, err := h.WorkspaceUC.UpdateWorkspace(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -135,7 +131,7 @@ func (h *WorkspaceHandler) ListPublicWorkspaces(c echo.Context) error {
         return err
     }
 
-    out, err := h.workspaceUC.ListPublicWorkspaces(c.Request().Context(), userID)
+    out, err := h.WorkspaceUC.ListPublicWorkspaces(c.Request().Context(), userID)
     if err != nil {
         return handleUseCaseError(err)
     }
@@ -148,7 +144,7 @@ func (h *WorkspaceHandler) JoinPublicWorkspace(c echo.Context, id string) error 
 	if err != nil {
 		return err
 	}
-	_, err = h.workspaceUC.JoinPublicWorkspace(c.Request().Context(), workspaceuc.JoinPublicWorkspaceInput{
+	_, err = h.WorkspaceUC.JoinPublicWorkspace(c.Request().Context(), workspaceuc.JoinPublicWorkspaceInput{
 		WorkspaceID: id,
 		UserID:      userID,
 	})
@@ -177,7 +173,7 @@ func (h *WorkspaceHandler) AddMemberByEmail(c echo.Context, id string) error {
 		role = string(*req.Role)
 	}
 
-	_, err = h.workspaceUC.AddMemberByEmail(c.Request().Context(), workspaceuc.AddMemberByEmailInput{
+	_, err = h.WorkspaceUC.AddMemberByEmail(c.Request().Context(), workspaceuc.AddMemberByEmailInput{
 		WorkspaceID: id,
 		Email:       string(req.Email),
 		Role:        role,
@@ -201,7 +197,7 @@ func (h *WorkspaceHandler) DeleteWorkspace(c echo.Context, id string) error {
 		UserID: userID,
 	}
 
-	_, err := h.workspaceUC.DeleteWorkspace(c.Request().Context(), input)
+	_, err := h.WorkspaceUC.DeleteWorkspace(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -221,7 +217,7 @@ func (h *WorkspaceHandler) ListMembers(c echo.Context, id string) error {
 		RequesterID: userID,
 	}
 
-	members, err := h.workspaceUC.ListMembers(c.Request().Context(), input)
+	members, err := h.WorkspaceUC.ListMembers(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -251,7 +247,7 @@ func (h *WorkspaceHandler) AddMember(c echo.Context) error {
 		Role:        req.Role,
 	}
 
-	member, err := h.workspaceUC.AddMember(c.Request().Context(), input)
+	member, err := h.WorkspaceUC.AddMember(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -276,7 +272,7 @@ func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context, id string, userId op
 		Role:        string(req.Role),
 	}
 
-	member, err := h.workspaceUC.UpdateMemberRole(c.Request().Context(), input)
+	member, err := h.WorkspaceUC.UpdateMemberRole(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -297,7 +293,7 @@ func (h *WorkspaceHandler) RemoveMember(c echo.Context, id string, userId openap
 		RemoverID:   removerID,
 	}
 
-	_, err := h.workspaceUC.RemoveMember(c.Request().Context(), input)
+	_, err := h.WorkspaceUC.RemoveMember(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

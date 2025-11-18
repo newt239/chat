@@ -10,11 +10,7 @@ import (
 )
 
 type UserHandler struct {
-	uc useruc.UseCase
-}
-
-func NewUserHandler(uc useruc.UseCase) *UserHandler {
-	return &UserHandler{uc: uc}
+	UC useruc.UseCase
 }
 
 func (h *UserHandler) UpdateMe(c echo.Context) error {
@@ -28,7 +24,7 @@ func (h *UserHandler) UpdateMe(c echo.Context) error {
 		return utils.HandleBindError(err)
 	}
 
-	out, err := h.uc.UpdateMe(c.Request().Context(), useruc.UpdateMeInput{
+	out, err := h.UC.UpdateMe(c.Request().Context(), useruc.UpdateMeInput{
 		UserID:      userID,
 		DisplayName: req.DisplayName,
 		Bio:         req.Bio,

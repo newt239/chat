@@ -10,11 +10,7 @@ import (
 )
 
 type AuthHandler struct {
-	authUC authuc.AuthUseCase
-}
-
-func NewAuthHandler(authUC authuc.AuthUseCase) *AuthHandler {
-	return &AuthHandler{authUC: authUC}
+	AuthUC authuc.AuthUseCase
 }
 
 // LogoutRequest はログアウトリクエストの構造体です
@@ -41,7 +37,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		DisplayName: req.DisplayName,
 	}
 
-	output, err := h.authUC.Register(c.Request().Context(), input)
+	output, err := h.AuthUC.Register(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -65,7 +61,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		Password: req.Password,
 	}
 
-	output, err := h.authUC.Login(c.Request().Context(), input)
+	output, err := h.AuthUC.Login(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -88,7 +84,7 @@ func (h *AuthHandler) Refresh(c echo.Context) error {
 		RefreshToken: req.RefreshToken,
 	}
 
-	output, err := h.authUC.RefreshToken(c.Request().Context(), input)
+	output, err := h.AuthUC.RefreshToken(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -118,7 +114,7 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 		RefreshToken: req.RefreshToken,
 	}
 
-	output, err := h.authUC.Logout(c.Request().Context(), input)
+	output, err := h.AuthUC.Logout(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

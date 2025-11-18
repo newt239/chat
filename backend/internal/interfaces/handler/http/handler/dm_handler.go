@@ -12,11 +12,7 @@ import (
 )
 
 type DMHandler struct {
-	dmInteractor *dmuc.Interactor
-}
-
-func NewDMHandler(dmInteractor *dmuc.Interactor) *DMHandler {
-	return &DMHandler{dmInteractor: dmInteractor}
+	DMInteractor *dmuc.Interactor
 }
 
 // CreateDM implements ServerInterface.CreateDM
@@ -41,7 +37,7 @@ func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 		TargetUserID: req.UserId.String(),
 	}
 
-	dm, err := h.dmInteractor.CreateDM(c.Request().Context(), input)
+	dm, err := h.DMInteractor.CreateDM(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -82,7 +78,7 @@ func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 		Name:        name,
 	}
 
-	dm, err := h.dmInteractor.CreateGroupDM(c.Request().Context(), input)
+	dm, err := h.DMInteractor.CreateGroupDM(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -102,7 +98,7 @@ func (h *DMHandler) ListDMs(c echo.Context, id openapi_types.UUID) error {
 		UserID:      userID,
 	}
 
-	dms, err := h.dmInteractor.ListDMs(c.Request().Context(), input)
+	dms, err := h.DMInteractor.ListDMs(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

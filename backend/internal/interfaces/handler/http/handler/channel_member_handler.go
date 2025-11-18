@@ -14,12 +14,8 @@ import (
 )
 
 type ChannelMemberHandler struct {
-	channelMemberUseCase channelmember.ChannelMemberUseCase
-    systemMessageUC      systemmessage.UseCase
-}
-
-func NewChannelMemberHandler(channelMemberUseCase channelmember.ChannelMemberUseCase, systemMessageUC systemmessage.UseCase) *ChannelMemberHandler {
-    return &ChannelMemberHandler{channelMemberUseCase: channelMemberUseCase, systemMessageUC: systemMessageUC}
+	ChannelMemberUseCase channelmember.ChannelMemberUseCase
+    SystemMessageUC      systemmessage.UseCase
 }
 
 type InviteMemberRequest struct {
@@ -59,7 +55,7 @@ func (h *ChannelMemberHandler) ListChannelMembers(c echo.Context, channelId open
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	output, err := h.channelMemberUseCase.ListMembers(c.Request().Context(), channelmember.ListMembersInput{
+	output, err := h.ChannelMemberUseCase.ListMembers(c.Request().Context(), channelmember.ListMembersInput{
 		ChannelID: channelId.String(),
 		UserID:    userID,
 	})
@@ -98,7 +94,7 @@ func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId ope
 		role = *req.Role
 	}
 
-    err := h.channelMemberUseCase.InviteMember(c.Request().Context(), channelmember.InviteMemberInput{
+    err := h.ChannelMemberUseCase.InviteMember(c.Request().Context(), channelmember.InviteMemberInput{
 		ChannelID:    channelId.String(),
 		OperatorID:   userID,
 		TargetUserID: req.UserID,
@@ -122,10 +118,10 @@ func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId ope
 	}
 
     // システムメッセージ: member_added
-    if h.systemMessageUC != nil {
+    if h.SystemMessageUC != nil {
         actorID := userID
         payload := map[string]any{"userId": req.UserID, "addedBy": userID}
-        _, _ = h.systemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
+        _, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
             ChannelID: channelId.String(),
             Kind:      entity.SystemMessageKindMemberAdded,
             Payload:   payload,
@@ -143,7 +139,7 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId opena
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-    err := h.channelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
+    err := h.ChannelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
 		ChannelID: channelId.String(),
 		UserID:    userID,
 	})
@@ -161,10 +157,10 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId opena
 	}
 
     // システムメッセージ: member_joined
-    if h.systemMessageUC != nil {
+    if h.SystemMessageUC != nil {
         actorID := userID
         payload := map[string]any{"userId": userID}
-        _, _ = h.systemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
+        _, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
             ChannelID: channelId.String(),
             Kind:      entity.SystemMessageKindMemberJoined,
             Payload:   payload,
@@ -191,7 +187,7 @@ func (h *ChannelMemberHandler) UpdateChannelMemberRole(c echo.Context, channelId
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
-	err := h.channelMemberUseCase.UpdateMemberRole(c.Request().Context(), channelmember.UpdateMemberRoleInput{
+	err := h.ChannelMemberUseCase.UpdateMemberRole(c.Request().Context(), channelmember.UpdateMemberRoleInput{
 		ChannelID:    channelId.String(),
 		OperatorID:   userID,
 		TargetUserID: userId.String(),
@@ -224,7 +220,7 @@ func (h *ChannelMemberHandler) RemoveChannelMember(c echo.Context, channelId ope
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	err := h.channelMemberUseCase.RemoveMember(c.Request().Context(), channelmember.RemoveMemberInput{
+	err := h.ChannelMemberUseCase.RemoveMember(c.Request().Context(), channelmember.RemoveMemberInput{
 		ChannelID:    channelId.String(),
 		OperatorID:   userID,
 		TargetUserID: userId.String(),
@@ -254,7 +250,7 @@ func (h *ChannelMemberHandler) LeaveChannel(c echo.Context, channelId openapi_ty
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	err := h.channelMemberUseCase.LeaveChannel(c.Request().Context(), channelmember.LeaveChannelInput{
+	err := h.ChannelMemberUseCase.LeaveChannel(c.Request().Context(), channelmember.LeaveChannelInput{
 		ChannelID: channelId.String(),
 		UserID:    userID,
 	})

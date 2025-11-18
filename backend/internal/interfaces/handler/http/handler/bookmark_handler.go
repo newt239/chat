@@ -9,13 +9,7 @@ import (
 )
 
 type BookmarkHandler struct {
-	bookmarkUC bookmark.BookmarkUseCase
-}
-
-func NewBookmarkHandler(bookmarkUC bookmark.BookmarkUseCase) *BookmarkHandler {
-	return &BookmarkHandler{
-		bookmarkUC: bookmarkUC,
-	}
+	BookmarkUC bookmark.BookmarkUseCase
 }
 
 func (h *BookmarkHandler) ListBookmarks(c echo.Context) error {
@@ -24,7 +18,7 @@ func (h *BookmarkHandler) ListBookmarks(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	bookmarks, err := h.bookmarkUC.ListBookmarks(c.Request().Context(), userID)
+	bookmarks, err := h.BookmarkUC.ListBookmarks(c.Request().Context(), userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "ブックマーク一覧の取得に失敗しました: " + err.Error()})
 	}
@@ -44,7 +38,7 @@ func (h *BookmarkHandler) AddBookmark(c echo.Context, messageId openapi_types.UU
 		MessageID: messageId.String(),
 	}
 
-	err := h.bookmarkUC.AddBookmark(c.Request().Context(), input)
+	err := h.BookmarkUC.AddBookmark(c.Request().Context(), input)
 	if err != nil {
 		switch err {
 		case bookmark.ErrMessageNotFound:
@@ -73,7 +67,7 @@ func (h *BookmarkHandler) RemoveBookmark(c echo.Context, messageId openapi_types
 		MessageID: messageId.String(),
 	}
 
-	err := h.bookmarkUC.RemoveBookmark(c.Request().Context(), input)
+	err := h.BookmarkUC.RemoveBookmark(c.Request().Context(), input)
 	if err != nil {
 		switch err {
 		case bookmark.ErrMessageNotFound:

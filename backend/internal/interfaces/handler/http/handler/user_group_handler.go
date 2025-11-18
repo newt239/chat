@@ -11,13 +11,8 @@ import (
 )
 
 type UserGroupHandler struct {
-	userGroupUC usergroupuc.UserGroupUseCase
+	UserGroupUC usergroupuc.UserGroupUseCase
 }
-
-func NewUserGroupHandler(userGroupUC usergroupuc.UserGroupUseCase) *UserGroupHandler {
-	return &UserGroupHandler{userGroupUC: userGroupUC}
-}
-
 
 // AddUserGroupMemberRequest はユーザーグループメンバー追加リクエストの構造体です
 type AddUserGroupMemberRequest struct {
@@ -47,7 +42,7 @@ func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 		CreatedBy:   userID,
 	}
 
-	userGroup, err := h.userGroupUC.CreateUserGroup(c.Request().Context(), input)
+	userGroup, err := h.UserGroupUC.CreateUserGroup(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -67,7 +62,7 @@ func (h *UserGroupHandler) ListUserGroups(ctx echo.Context, params openapi.ListU
 		UserID:      userID,
 	}
 
-	userGroups, err := h.userGroupUC.ListUserGroups(ctx.Request().Context(), input)
+	userGroups, err := h.UserGroupUC.ListUserGroups(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -87,7 +82,7 @@ func (h *UserGroupHandler) DeleteUserGroup(ctx echo.Context, id openapi_types.UU
 		DeletedBy: userID,
 	}
 
-	_, err := h.userGroupUC.DeleteUserGroup(ctx.Request().Context(), input)
+	_, err := h.UserGroupUC.DeleteUserGroup(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -107,7 +102,7 @@ func (h *UserGroupHandler) GetUserGroup(ctx echo.Context, id openapi_types.UUID)
 		UserID: userID,
 	}
 
-	userGroup, err := h.userGroupUC.GetUserGroup(ctx.Request().Context(), input)
+	userGroup, err := h.UserGroupUC.GetUserGroup(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -143,7 +138,7 @@ func (h *UserGroupHandler) UpdateUserGroup(ctx echo.Context, id openapi_types.UU
 		UpdatedBy:   userID,
 	}
 
-	userGroup, err := h.userGroupUC.UpdateUserGroup(ctx.Request().Context(), input)
+	userGroup, err := h.UserGroupUC.UpdateUserGroup(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -164,7 +159,7 @@ func (h *UserGroupHandler) RemoveUserGroupMember(ctx echo.Context, id openapi_ty
 		RemovedBy: removedBy,
 	}
 
-	_, err := h.userGroupUC.RemoveMember(ctx.Request().Context(), input)
+	_, err := h.UserGroupUC.RemoveMember(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -184,7 +179,7 @@ func (h *UserGroupHandler) ListUserGroupMembers(ctx echo.Context, id openapi_typ
 		UserID:  userID,
 	}
 
-	members, err := h.userGroupUC.ListMembers(ctx.Request().Context(), input)
+	members, err := h.UserGroupUC.ListMembers(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
@@ -214,7 +209,7 @@ func (h *UserGroupHandler) AddUserGroupMember(ctx echo.Context, id openapi_types
 		AddedBy: addedBy,
 	}
 
-	member, err := h.userGroupUC.AddMember(ctx.Request().Context(), input)
+	member, err := h.UserGroupUC.AddMember(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}

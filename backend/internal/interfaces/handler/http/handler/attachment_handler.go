@@ -11,13 +11,7 @@ import (
 )
 
 type AttachmentHandler struct {
-	attachmentUseCase *attachment.Interactor
-}
-
-func NewAttachmentHandler(attachmentUseCase *attachment.Interactor) *AttachmentHandler {
-	return &AttachmentHandler{
-		attachmentUseCase: attachmentUseCase,
-	}
+	AttachmentUseCase *attachment.Interactor
 }
 
 type PresignUploadResponse struct {
@@ -68,7 +62,7 @@ func (h *AttachmentHandler) PresignUpload(c echo.Context) error {
 		ExpiresMin: 0, // 生成型にExpiresMinフィールドがないためデフォルト値を使用
 	}
 
-	output, err := h.attachmentUseCase.Presign(c.Request().Context(), input)
+	output, err := h.AttachmentUseCase.Presign(c.Request().Context(), input)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -92,7 +86,7 @@ func (h *AttachmentHandler) GetMetadata(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "添付ファイルIDが必要です")
 	}
 
-	output, err := h.attachmentUseCase.GetMetadata(c.Request().Context(), userID, attachmentID)
+	output, err := h.AttachmentUseCase.GetMetadata(c.Request().Context(), userID, attachmentID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
@@ -117,7 +111,7 @@ func (h *AttachmentHandler) GetAttachment(ctx echo.Context, id openapi_types.UUI
 		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
 	}
 
-	output, err := h.attachmentUseCase.GetMetadata(ctx.Request().Context(), userID, id.String())
+	output, err := h.AttachmentUseCase.GetMetadata(ctx.Request().Context(), userID, id.String())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
@@ -146,7 +140,7 @@ func (h *AttachmentHandler) GetDownloadURL(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "添付ファイルIDが必要です")
 	}
 
-	output, err := h.attachmentUseCase.GetDownloadURL(c.Request().Context(), userID, attachmentID)
+	output, err := h.AttachmentUseCase.GetDownloadURL(c.Request().Context(), userID, attachmentID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}
@@ -164,7 +158,7 @@ func (h *AttachmentHandler) DownloadAttachment(ctx echo.Context, id openapi_type
 		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
 	}
 
-	output, err := h.attachmentUseCase.GetDownloadURL(ctx.Request().Context(), userID, id.String())
+	output, err := h.AttachmentUseCase.GetDownloadURL(ctx.Request().Context(), userID, id.String())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	}

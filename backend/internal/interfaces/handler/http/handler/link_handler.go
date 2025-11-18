@@ -10,11 +10,7 @@ import (
 )
 
 type LinkHandler struct {
-	linkUC linkuc.LinkUseCase
-}
-
-func NewLinkHandler(linkUC linkuc.LinkUseCase) *LinkHandler {
-	return &LinkHandler{linkUC: linkUC}
+	LinkUC linkuc.LinkUseCase
 }
 
 // FetchOGP はOGP情報を取得します
@@ -32,7 +28,7 @@ func (h *LinkHandler) FetchOGP(c echo.Context) error {
 		URL: req.Url,
 	}
 
-	ogp, err := h.linkUC.FetchOGP(c.Request().Context(), input)
+	ogp, err := h.LinkUC.FetchOGP(c.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
