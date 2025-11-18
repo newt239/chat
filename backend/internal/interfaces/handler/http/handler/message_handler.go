@@ -2,11 +2,12 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
@@ -14,41 +15,30 @@ type MessageHandler struct {
 	messageUC messageuc.MessageUseCase
 }
 
-// ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
-func (h *MessageHandler) ListMessagesWithThread(c echo.Context) error {
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return utils.HandleParamError("channelId")
-	}
-
+// ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します (ServerInterface用)
+func (h *MessageHandler) ListMessagesWithThread(c echo.Context, channelId openapi_types.UUID, params openapi.ListMessagesWithThreadParams) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
 	limit := 20
-	if limitStr := c.QueryParam("limit"); limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
-			limit = l
-		}
+	if params.Limit != nil {
+		limit = *params.Limit
 	}
 
 	var sinceTime *time.Time
-	if sinceStr := c.QueryParam("since"); sinceStr != "" {
-		if t, err := time.Parse(time.RFC3339, sinceStr); err == nil {
-			sinceTime = &t
-		}
+	if params.Since != nil {
+		sinceTime = params.Since
 	}
 
 	var untilTime *time.Time
-	if untilStr := c.QueryParam("until"); untilStr != "" {
-		if t, err := time.Parse(time.RFC3339, untilStr); err == nil {
-			untilTime = &t
-		}
+	if params.Until != nil {
+		untilTime = params.Until
 	}
 
 	input := messageuc.ListMessagesInput{
-		ChannelID: channelID,
+		ChannelID: channelId.String(),
 		UserID:    userID,
 		Limit:     limit,
 		Since:     sinceTime,
@@ -77,20 +67,15 @@ func NewMessageHandler(messageUC messageuc.MessageUseCase) *MessageHandler {
 	return &MessageHandler{messageUC: messageUC}
 }
 
-// GetThreadReplies は特定のメッセージのスレッド返信一覧と親メッセージを取得します
-func (h *MessageHandler) GetThreadReplies(c echo.Context) error {
-	messageID, err := utils.GetParamFromContext(c, "messageId")
-	if err != nil {
-		return err
-	}
-
+// GetThreadReplies は特定のメッセージのスレッド返信一覧と親メッセージを取得します (ServerInterface用)
+func (h *MessageHandler) GetThreadReplies(c echo.Context, messageId openapi_types.UUID, params openapi.GetThreadRepliesParams) error {
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return err
 	}
 
 	input := messageuc.GetThreadRepliesInput{
-		MessageID: messageID,
+		MessageID: messageId.String(),
 		UserID:    userID,
 	}
 
@@ -109,20 +94,15 @@ func (h *MessageHandler) GetThreadReplies(c echo.Context) error {
 	return c.JSON(http.StatusOK, output)
 }
 
-// GetThreadMetadata は特定のメッセージのスレッドメタデータを取得します
-func (h *MessageHandler) GetThreadMetadata(c echo.Context) error {
-	messageID, err := utils.GetParamFromContext(c, "messageId")
-	if err != nil {
-		return err
-	}
-
+// GetThreadMetadata は特定のメッセージのスレッドメタデータを取得します (ServerInterface用)
+func (h *MessageHandler) GetThreadMetadata(c echo.Context, messageId openapi_types.UUID) error {
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return err
 	}
 
 	input := messageuc.GetThreadMetadataInput{
-		MessageID: messageID,
+		MessageID: messageId.String(),
 		UserID:    userID,
 	}
 
@@ -152,55 +132,30 @@ type UpdateMessageRequest struct {
 	Body string `json:"body" validate:"required,min=1"`
 }
 
-// ListMessages はメッセージ一覧を取得します
-func (h *MessageHandler) ListMessages(c echo.Context) error {
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return utils.HandleParamError("channelId")
-	}
-
+// ListMessages はメッセージ一覧を取得します (ServerInterface用)
+func (h *MessageHandler) ListMessages(c echo.Context, channelId openapi_types.UUID, params openapi.ListMessagesParams) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
-	limitStr := c.QueryParam("limit")
 	limit := 20
-	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
-			limit = l
-		}
-	}
-
-	// 日付フィルター
-	sinceStr := c.QueryParam("since")
-	since := ""
-	if sinceStr != "" {
-		since = sinceStr
-	}
-
-	untilStr := c.QueryParam("until")
-	until := ""
-	if untilStr != "" {
-		until = untilStr
+	if params.Limit != nil {
+		limit = *params.Limit
 	}
 
 	var sinceTime *time.Time
-	if since != "" {
-		if t, err := time.Parse(time.RFC3339, since); err == nil {
-			sinceTime = &t
-		}
+	if params.Since != nil {
+		sinceTime = params.Since
 	}
 
 	var untilTime *time.Time
-	if until != "" {
-		if t, err := time.Parse(time.RFC3339, until); err == nil {
-			untilTime = &t
-		}
+	if params.Until != nil {
+		untilTime = params.Until
 	}
 
 	input := messageuc.ListMessagesInput{
-		ChannelID: channelID,
+		ChannelID: channelId.String(),
 		UserID:    userID,
 		Limit:     limit,
 		Since:     sinceTime,
@@ -215,13 +170,8 @@ func (h *MessageHandler) ListMessages(c echo.Context) error {
 	return c.JSON(http.StatusOK, messages)
 }
 
-// CreateMessage はメッセージを作成します
-func (h *MessageHandler) CreateMessage(c echo.Context) error {
-	channelID, err := utils.GetParamFromContext(c, "channelId")
-	if err != nil {
-		return err
-	}
-
+// CreateMessage はメッセージを作成します (ServerInterface用)
+func (h *MessageHandler) CreateMessage(c echo.Context, channelId openapi_types.UUID) error {
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return err
@@ -233,7 +183,7 @@ func (h *MessageHandler) CreateMessage(c echo.Context) error {
 	}
 
 	input := messageuc.CreateMessageInput{
-		ChannelID: channelID,
+		ChannelID: channelId.String(),
 		UserID:    userID,
 		Body:      req.Body,
 		ParentID:  req.ParentID,
@@ -247,13 +197,8 @@ func (h *MessageHandler) CreateMessage(c echo.Context) error {
 	return c.JSON(http.StatusCreated, message)
 }
 
-// UpdateMessage はメッセージを更新します
-func (h *MessageHandler) UpdateMessage(c echo.Context) error {
-	messageID, err := utils.GetParamFromContext(c, "messageId")
-	if err != nil {
-		return err
-	}
-
+// UpdateMessage はメッセージを更新します (ServerInterface用)
+func (h *MessageHandler) UpdateMessage(c echo.Context, messageId openapi_types.UUID) error {
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return err
@@ -265,7 +210,7 @@ func (h *MessageHandler) UpdateMessage(c echo.Context) error {
 	}
 
 	input := messageuc.UpdateMessageInput{
-		MessageID: messageID,
+		MessageID: messageId.String(),
 		EditorID:  userID,
 		Body:      req.Body,
 	}
@@ -278,20 +223,15 @@ func (h *MessageHandler) UpdateMessage(c echo.Context) error {
 	return c.JSON(http.StatusOK, message)
 }
 
-// DeleteMessage はメッセージを削除します
-func (h *MessageHandler) DeleteMessage(c echo.Context) error {
-	messageID, err := utils.GetParamFromContext(c, "messageId")
-	if err != nil {
-		return err
-	}
-
+// DeleteMessage はメッセージを削除します (ServerInterface用)
+func (h *MessageHandler) DeleteMessage(c echo.Context, messageId openapi_types.UUID) error {
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return err
 	}
 
 	input := messageuc.DeleteMessageInput{
-		MessageID:  messageID,
+		MessageID:  messageId.String(),
 		ExecutorID: userID,
 	}
 

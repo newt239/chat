@@ -1,0 +1,17 @@
+UpdateWorkspaceRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+    description:
+      type: string
+      maxLength: 500
+    iconUrl:
+      type: string
+      format: uri
+      maxLength: 2048
+    isPublic:
+      type: boolean
+

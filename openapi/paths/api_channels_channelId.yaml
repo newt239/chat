@@ -1,0 +1,45 @@
+/api/channels/{channelId}:
+  patch:
+    operationId: updateChannel
+    summary: Update channel
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: channelId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../openapi.yaml#/components/schemas/UpdateChannelRequest"
+    responses:
+      "200":
+        description: Channel updated
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Channel"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "404":
+        description: Channel not found
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+

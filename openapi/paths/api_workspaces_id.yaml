@@ -1,0 +1,112 @@
+/api/workspaces/{id}:
+  get:
+    operationId: getWorkspace
+    summary: Get workspace details
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Workspace details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workspace:
+                  $ref: "../openapi.yaml#/components/schemas/Workspace"
+              required:
+                - workspace
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "404":
+        description: Workspace not found
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+
+  patch:
+    operationId: updateWorkspace
+    summary: Update workspace
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../openapi.yaml#/components/schemas/UpdateWorkspaceRequest"
+    responses:
+      "200":
+        description: Workspace updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workspace:
+                  $ref: "../openapi.yaml#/components/schemas/Workspace"
+              required:
+                - workspace
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "404":
+        description: Workspace not found
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+
+  delete:
+    operationId: deleteWorkspace
+    summary: Delete workspace
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "204":
+        description: Workspace deleted
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "404":
+        description: Workspace not found
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+

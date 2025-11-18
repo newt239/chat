@@ -120,6 +120,12 @@ components:
       $ref: "./components/schemas/update_read_state_request.yaml#/UpdateReadStateRequest"
     UpdateUserGroupRequest:
       $ref: "./components/schemas/update_user_group_request.yaml#/UpdateUserGroupRequest"
+    UpdateWorkspaceRequest:
+      $ref: "./components/schemas/update_workspace_request.yaml#/UpdateWorkspaceRequest"
+    UpdateChannelRequest:
+      $ref: "./components/schemas/update_channel_request.yaml#/UpdateChannelRequest"
+    UpdateMeRequest:
+      $ref: "./components/schemas/update_me_request.yaml#/UpdateMeRequest"
     User:
       $ref: "./components/schemas/user.yaml#/User"
     UserGroup:
@@ -148,6 +154,8 @@ paths:
     $ref: "./paths/api_auth_register.yaml#/~1api~1auth~1register"
   /api/bookmarks:
     $ref: "./paths/api_bookmarks.yaml#/~1api~1bookmarks"
+  /api/channels/{channelId}:
+    $ref: "./paths/api_channels_channelId.yaml#/~1api~1channels~1{channelId}"
   /api/channels/{channelId}/members:
     $ref: "./paths/api_channels_channelId_members.yaml#/~1api~1channels~1{channelId}~1members"
   /api/channels/{channelId}/members/self:
@@ -192,6 +200,8 @@ paths:
     $ref: "./paths/api_user_groups_id_members.yaml#/~1api~1user-groups~1{id}~1members"
   /api/workspaces:
     $ref: "./paths/api_workspaces.yaml#/~1api~1workspaces"
+  /api/workspaces/{id}:
+    $ref: "./paths/api_workspaces_id.yaml#/~1api~1workspaces~1{id}"
   /api/workspaces/public:
     $ref: "./paths/api_workspaces_public.yaml#/~1api~1workspaces~1public"
   /api/workspaces/{id}/channels:
@@ -210,5 +220,7 @@ paths:
     $ref: "./paths/api_workspaces_workspaceId_search.yaml#/~1api~1workspaces~1{workspaceId}~1search"
   /api/workspaces/{workspaceId}/threads/participating:
     $ref: "./paths/api_workspaces_workspaceId_threads_participating.yaml#/~1api~1workspaces~1{workspaceId}~1threads~1participating"
+  /api/users/me:
+    $ref: "./paths/api_users_me.yaml#/~1api~1users~1me"
   /healthz:
     $ref: "./paths/healthz.yaml#/~1healthz"

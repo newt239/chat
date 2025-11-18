@@ -105,6 +105,12 @@ schemas:
     $ref: "./schemas/update_read_state_request.yaml#/UpdateReadStateRequest"
   UpdateUserGroupRequest:
     $ref: "./schemas/update_user_group_request.yaml#/UpdateUserGroupRequest"
+  UpdateWorkspaceRequest:
+    $ref: "./schemas/update_workspace_request.yaml#/UpdateWorkspaceRequest"
+  UpdateChannelRequest:
+    $ref: "./schemas/update_channel_request.yaml#/UpdateChannelRequest"
+  UpdateMeRequest:
+    $ref: "./schemas/update_me_request.yaml#/UpdateMeRequest"
   User:
     $ref: "./schemas/user.yaml#/User"
   UserGroup:

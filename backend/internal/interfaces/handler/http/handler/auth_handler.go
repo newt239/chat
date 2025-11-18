@@ -89,8 +89,8 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, output)
 }
 
-// RefreshToken はトークンのリフレッシュを処理します
-func (h *AuthHandler) RefreshToken(c echo.Context) error {
+// Refresh はトークンのリフレッシュを処理します
+func (h *AuthHandler) Refresh(c echo.Context) error {
 	var req RefreshTokenRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)

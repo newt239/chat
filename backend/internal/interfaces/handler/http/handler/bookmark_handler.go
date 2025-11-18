@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
 	"github.com/newt239/chat/internal/usecase/bookmark"
 )
@@ -31,20 +32,16 @@ func (h *BookmarkHandler) ListBookmarks(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{"bookmarks": bookmarks.Bookmarks})
 }
 
-func (h *BookmarkHandler) AddBookmark(c echo.Context) error {
+// AddBookmark はメッセージにブックマークを追加します (ServerInterface用)
+func (h *BookmarkHandler) AddBookmark(c echo.Context, messageId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	messageID := c.Param("messageId")
-	if messageID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "メッセージIDは必須です"})
-	}
-
 	input := bookmark.AddBookmarkInput{
 		UserID:    userID,
-		MessageID: messageID,
+		MessageID: messageId.String(),
 	}
 
 	err := h.bookmarkUC.AddBookmark(c.Request().Context(), input)
@@ -64,20 +61,16 @@ func (h *BookmarkHandler) AddBookmark(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func (h *BookmarkHandler) RemoveBookmark(c echo.Context) error {
+// RemoveBookmark はメッセージからブックマークを削除します (ServerInterface用)
+func (h *BookmarkHandler) RemoveBookmark(c echo.Context, messageId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	messageID := c.Param("messageId")
-	if messageID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "メッセージIDは必須です"})
-	}
-
 	input := bookmark.RemoveBookmarkInput{
 		UserID:    userID,
-		MessageID: messageID,
+		MessageID: messageId.String(),
 	}
 
 	err := h.bookmarkUC.RemoveBookmark(c.Request().Context(), input)

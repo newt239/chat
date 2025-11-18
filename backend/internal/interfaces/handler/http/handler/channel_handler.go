@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
 	"github.com/newt239/chat/internal/infrastructure/utils"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
@@ -30,20 +31,15 @@ type UpdateChannelRequest struct {
 	IsPrivate   *bool   `json:"is_private,omitempty"`
 }
 
-// ListChannels はチャンネル一覧を取得します
-func (h *ChannelHandler) ListChannels(c echo.Context) error {
-	workspaceID := c.Param("id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
+// ListChannels implements ServerInterface.ListChannels
+func (h *ChannelHandler) ListChannels(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
 	input := channeluc.ListChannelsInput{
-		WorkspaceID: workspaceID,
+		WorkspaceID: id,
 		UserID:      userID,
 	}
 
@@ -55,13 +51,8 @@ func (h *ChannelHandler) ListChannels(c echo.Context) error {
 	return c.JSON(http.StatusOK, channels)
 }
 
-// CreateChannel はチャンネルを作成します
-func (h *ChannelHandler) CreateChannel(c echo.Context) error {
-	workspaceID := c.Param("id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
+// CreateChannel implements ServerInterface.CreateChannel
+func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
@@ -82,7 +73,7 @@ func (h *ChannelHandler) CreateChannel(c echo.Context) error {
 	}
 
 	input := channeluc.CreateChannelInput{
-		WorkspaceID: workspaceID,
+		WorkspaceID: id,
 		UserID:      userID,
 		Name:        req.Name,
 		Description: description,
@@ -97,13 +88,8 @@ func (h *ChannelHandler) CreateChannel(c echo.Context) error {
 	return c.JSON(http.StatusCreated, channel)
 }
 
-// UpdateChannel はチャンネル情報を更新します
-func (h *ChannelHandler) UpdateChannel(c echo.Context) error {
-    channelID := c.Param("channelId")
-    if channelID == "" {
-        return echo.NewHTTPError(http.StatusBadRequest, "チャンネルIDは必須です")
-    }
-
+// UpdateChannel はチャンネル情報を更新します (ServerInterface用)
+func (h *ChannelHandler) UpdateChannel(c echo.Context, channelId openapi_types.UUID) error {
     userID, ok := c.Get("userID").(string)
     if !ok {
         return utils.HandleAuthError()
@@ -115,7 +101,7 @@ func (h *ChannelHandler) UpdateChannel(c echo.Context) error {
     }
 
     input := channeluc.UpdateChannelInput{
-        ChannelID:   channelID,
+        ChannelID:   channelId.String(),
         UserID:      userID,
         Name:        req.Name,
         Description: req.Description,

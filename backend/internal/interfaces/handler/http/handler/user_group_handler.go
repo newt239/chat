@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+
+	"github.com/newt239/chat/internal/openapi_gen"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 )
 
@@ -69,194 +72,158 @@ func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 	return c.JSON(http.StatusCreated, userGroup)
 }
 
-// ListUserGroups はユーザーグループ一覧を取得します
-func (h *UserGroupHandler) ListUserGroups(c echo.Context) error {
-	workspaceID := c.QueryParam("workspace_id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
-	userID, ok := c.Get("userID").(string)
+// ListUserGroups implements ServerInterface.ListUserGroups
+func (h *UserGroupHandler) ListUserGroups(ctx echo.Context, params openapi.ListUserGroupsParams) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.ListUserGroupsInput{
-		WorkspaceID: workspaceID,
+		WorkspaceID: params.WorkspaceId,
 		UserID:      userID,
 	}
 
-	userGroups, err := h.userGroupUC.ListUserGroups(c.Request().Context(), input)
+	userGroups, err := h.userGroupUC.ListUserGroups(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.JSON(http.StatusOK, userGroups)
+	return ctx.JSON(http.StatusOK, userGroups)
 }
 
-// GetUserGroup はユーザーグループ詳細を取得します
-func (h *UserGroupHandler) GetUserGroup(c echo.Context) error {
-	userGroupID := c.Param("id")
-	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
-	}
-
-	userID, ok := c.Get("userID").(string)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
-	}
-
-	input := usergroupuc.GetUserGroupInput{
-		ID:     userGroupID,
-		UserID: userID,
-	}
-
-	userGroup, err := h.userGroupUC.GetUserGroup(c.Request().Context(), input)
-	if err != nil {
-		return handleUseCaseError(err)
-	}
-
-	return c.JSON(http.StatusOK, userGroup)
-}
-
-// UpdateUserGroup はユーザーグループを更新します
-func (h *UserGroupHandler) UpdateUserGroup(c echo.Context) error {
-	userGroupID := c.Param("id")
-	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
-	}
-
-	var req UpdateUserGroupRequest
-	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	input := usergroupuc.UpdateUserGroupInput{
-		ID:          userGroupID,
-		Name:        req.Name,
-		Description: req.Description,
-	}
-
-	userGroup, err := h.userGroupUC.UpdateUserGroup(c.Request().Context(), input)
-	if err != nil {
-		return handleUseCaseError(err)
-	}
-
-	return c.JSON(http.StatusOK, userGroup)
-}
-
-// DeleteUserGroup はユーザーグループを削除します
-func (h *UserGroupHandler) DeleteUserGroup(c echo.Context) error {
-	userGroupID := c.Param("id")
-	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
-	}
-
-	userID, ok := c.Get("userID").(string)
+// DeleteUserGroup implements ServerInterface.DeleteUserGroup
+func (h *UserGroupHandler) DeleteUserGroup(ctx echo.Context, id openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.DeleteUserGroupInput{
-		ID:        userGroupID,
+		ID:        id.String(),
 		DeletedBy: userID,
 	}
 
-	_, err := h.userGroupUC.DeleteUserGroup(c.Request().Context(), input)
+	_, err := h.userGroupUC.DeleteUserGroup(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return ctx.NoContent(http.StatusNoContent)
 }
 
-// AddMember はユーザーグループにメンバーを追加します
-func (h *UserGroupHandler) AddMember(c echo.Context) error {
-	userGroupID := c.Param("id")
-	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
-	}
-
-	var req AddUserGroupMemberRequest
-	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	addedBy, ok := c.Get("userID").(string)
+// GetUserGroup implements ServerInterface.GetUserGroup
+func (h *UserGroupHandler) GetUserGroup(ctx echo.Context, id openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
-	input := usergroupuc.AddMemberInput{
-		GroupID: userGroupID,
-		UserID:  req.UserID,
-		AddedBy: addedBy,
+	input := usergroupuc.GetUserGroupInput{
+		ID:     id.String(),
+		UserID: userID,
 	}
 
-	member, err := h.userGroupUC.AddMember(c.Request().Context(), input)
+	userGroup, err := h.userGroupUC.GetUserGroup(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.JSON(http.StatusCreated, member)
+	return ctx.JSON(http.StatusOK, userGroup)
 }
 
-// RemoveMember はユーザーグループからメンバーを削除します
-func (h *UserGroupHandler) RemoveMember(c echo.Context) error {
-	userGroupID := c.Param("id")
-	userID := c.Param("userId")
-	if userGroupID == "" || userID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDとユーザーIDは必須です")
+// UpdateUserGroup implements ServerInterface.UpdateUserGroup
+func (h *UserGroupHandler) UpdateUserGroup(ctx echo.Context, id openapi_types.UUID) error {
+	var req UpdateUserGroupRequest
+	if err := ctx.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
 
-	removedBy, ok := c.Get("userID").(string)
+	if err := ctx.Validate(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	input := usergroupuc.UpdateUserGroupInput{
+		ID:          id.String(),
+		Name:        req.Name,
+		Description: req.Description,
+	}
+
+	userGroup, err := h.userGroupUC.UpdateUserGroup(ctx.Request().Context(), input)
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return ctx.JSON(http.StatusOK, userGroup)
+}
+
+// RemoveUserGroupMember implements ServerInterface.RemoveUserGroupMember
+func (h *UserGroupHandler) RemoveUserGroupMember(ctx echo.Context, id openapi_types.UUID, params openapi.RemoveUserGroupMemberParams) error {
+	removedBy, ok := ctx.Get("userID").(string)
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.RemoveMemberInput{
-		GroupID:   userGroupID,
-		UserID:    userID,
+		GroupID:   id.String(),
+		UserID:    params.UserId.String(),
 		RemovedBy: removedBy,
 	}
 
-	_, err := h.userGroupUC.RemoveMember(c.Request().Context(), input)
+	_, err := h.userGroupUC.RemoveMember(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return ctx.NoContent(http.StatusNoContent)
 }
 
-// ListMembers はユーザーグループメンバー一覧を取得します
-func (h *UserGroupHandler) ListMembers(c echo.Context) error {
-	userGroupID := c.Param("id")
-	if userGroupID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ユーザーグループIDは必須です")
-	}
-
-	userID, ok := c.Get("userID").(string)
+// ListUserGroupMembers implements ServerInterface.ListUserGroupMembers
+func (h *UserGroupHandler) ListUserGroupMembers(ctx echo.Context, id openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
 	}
 
 	input := usergroupuc.ListMembersInput{
-		GroupID: userGroupID,
+		GroupID: id.String(),
 		UserID:  userID,
 	}
 
-	members, err := h.userGroupUC.ListMembers(c.Request().Context(), input)
+	members, err := h.userGroupUC.ListMembers(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.JSON(http.StatusOK, members)
+	return ctx.JSON(http.StatusOK, members)
+}
+
+// AddUserGroupMember implements ServerInterface.AddUserGroupMember
+func (h *UserGroupHandler) AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error {
+	var req AddUserGroupMemberRequest
+	if err := ctx.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
+	}
+
+	if err := ctx.Validate(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	addedBy, ok := ctx.Get("userID").(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "コンテキストにユーザーIDが含まれていません")
+	}
+
+	input := usergroupuc.AddMemberInput{
+		GroupID: id.String(),
+		UserID:  req.UserID,
+		AddedBy: addedBy,
+	}
+
+	member, err := h.userGroupUC.AddMember(ctx.Request().Context(), input)
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return ctx.JSON(http.StatusCreated, member)
 }

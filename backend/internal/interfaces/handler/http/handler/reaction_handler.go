@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+
 	"github.com/newt239/chat/internal/infrastructure/utils"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 )
@@ -21,84 +23,69 @@ type AddReactionRequest struct {
 	Emoji string `json:"emoji" validate:"required,min=1"`
 }
 
-// ListReactions はリアクション一覧を取得します
-func (h *ReactionHandler) ListReactions(c echo.Context) error {
-	messageID := c.Param("messageId")
-	if messageID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "メッセージIDは必須です")
-	}
 
-	userID, ok := c.Get("userID").(string)
+// ListReactions implements ServerInterface.ListReactions
+func (h *ReactionHandler) ListReactions(ctx echo.Context, messageId openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
-	reactions, err := h.reactionUC.ListReactions(c.Request().Context(), messageID, userID)
+	reactions, err := h.reactionUC.ListReactions(ctx.Request().Context(), messageId.String(), userID)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.JSON(http.StatusOK, reactions)
+	return ctx.JSON(http.StatusOK, reactions)
 }
 
-// AddReaction はリアクションを追加します
-func (h *ReactionHandler) AddReaction(c echo.Context) error {
-	messageID := c.Param("messageId")
-	if messageID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "メッセージIDは必須です")
-	}
-
-	userID, ok := c.Get("userID").(string)
+// AddReaction implements ServerInterface.AddReaction
+func (h *ReactionHandler) AddReaction(ctx echo.Context, messageId openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
 	var req AddReactionRequest
-	if err := c.Bind(&req); err != nil {
+	if err := ctx.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
 	}
 
-	if err := c.Validate(&req); err != nil {
+	if err := ctx.Validate(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	input := reactionuc.AddReactionInput{
-		MessageID: messageID,
+		MessageID: messageId.String(),
 		UserID:    userID,
 		Emoji:     req.Emoji,
 	}
 
-	err := h.reactionUC.AddReaction(c.Request().Context(), input)
+	err := h.reactionUC.AddReaction(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.NoContent(http.StatusCreated)
+	return ctx.NoContent(http.StatusCreated)
 }
 
-// RemoveReaction はリアクションを削除します
-func (h *ReactionHandler) RemoveReaction(c echo.Context) error {
-	messageID := c.Param("messageId")
-	emoji := c.Param("emoji")
-	if messageID == "" || emoji == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "メッセージIDと絵文字は必須です")
-	}
-
-	userID, ok := c.Get("userID").(string)
+// RemoveReaction implements ServerInterface.RemoveReaction
+func (h *ReactionHandler) RemoveReaction(ctx echo.Context, messageId openapi_types.UUID, emoji string) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
 	input := reactionuc.RemoveReactionInput{
-		MessageID: messageID,
+		MessageID: messageId.String(),
 		UserID:    userID,
 		Emoji:     emoji,
 	}
 
-	err := h.reactionUC.RemoveReaction(c.Request().Context(), input)
+	err := h.reactionUC.RemoveReaction(ctx.Request().Context(), input)
 	if err != nil {
 		return handleUseCaseError(err)
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return ctx.NoContent(http.StatusNoContent)
 }

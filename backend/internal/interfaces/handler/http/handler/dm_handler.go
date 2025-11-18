@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+
 	"github.com/newt239/chat/internal/infrastructure/utils"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 )
@@ -25,12 +27,8 @@ type CreateGroupDMRequest struct {
 	Name    string   `json:"name"`
 }
 
-func (h *DMHandler) CreateDM(c echo.Context) error {
-	workspaceID := c.Param("id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
+// CreateDM implements ServerInterface.CreateDM
+func (h *DMHandler) CreateDM(c echo.Context, id openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
@@ -46,7 +44,7 @@ func (h *DMHandler) CreateDM(c echo.Context) error {
 	}
 
 	input := dmuc.CreateDMInput{
-		WorkspaceID:  workspaceID,
+		WorkspaceID:  id.String(),
 		UserID:       userID,
 		TargetUserID: req.UserID,
 	}
@@ -59,12 +57,8 @@ func (h *DMHandler) CreateDM(c echo.Context) error {
 	return c.JSON(http.StatusOK, dm)
 }
 
-func (h *DMHandler) CreateGroupDM(c echo.Context) error {
-	workspaceID := c.Param("id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
+// CreateGroupDM implements ServerInterface.CreateGroupDM
+func (h *DMHandler) CreateGroupDM(c echo.Context, id openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
@@ -80,7 +74,7 @@ func (h *DMHandler) CreateGroupDM(c echo.Context) error {
 	}
 
 	input := dmuc.CreateGroupDMInput{
-		WorkspaceID: workspaceID,
+		WorkspaceID: id.String(),
 		CreatorID:   userID,
 		MemberIDs:   req.UserIDs,
 		Name:        req.Name,
@@ -94,19 +88,15 @@ func (h *DMHandler) CreateGroupDM(c echo.Context) error {
 	return c.JSON(http.StatusOK, dm)
 }
 
-func (h *DMHandler) ListDMs(c echo.Context) error {
-	workspaceID := c.Param("id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
+// ListDMs implements ServerInterface.ListDMs
+func (h *DMHandler) ListDMs(c echo.Context, id openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
 	input := dmuc.ListDMsInput{
-		WorkspaceID: workspaceID,
+		WorkspaceID: id.String(),
 		UserID:      userID,
 	}
 

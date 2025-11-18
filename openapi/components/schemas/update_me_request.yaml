@@ -1,0 +1,11 @@
+UpdateMeRequest:
+  type: object
+  properties:
+    display_name:
+      type: string
+    bio:
+      type: string
+    avatar_url:
+      type: string
+      format: uri
+

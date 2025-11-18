@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/usecase/attachment"
 )
@@ -116,6 +117,31 @@ func (h *AttachmentHandler) GetMetadata(c echo.Context) error {
 	})
 }
 
+// GetAttachment はServerInterfaceのGetAttachmentメソッドを実装します
+func (h *AttachmentHandler) GetAttachment(ctx echo.Context, id openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
+	}
+
+	output, err := h.attachmentUseCase.GetMetadata(ctx.Request().Context(), userID, id.String())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+
+	return ctx.JSON(http.StatusOK, AttachmentMetadataResponse{
+		ID:         output.ID,
+		MessageID:  output.MessageID,
+		UploaderID: output.UploaderID,
+		ChannelID:  output.ChannelID,
+		FileName:   output.FileName,
+		MimeType:   output.MimeType,
+		SizeBytes:  output.SizeBytes,
+		Status:     output.Status,
+		CreatedAt:  output.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	})
+}
+
 func (h *AttachmentHandler) GetDownloadURL(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -133,6 +159,24 @@ func (h *AttachmentHandler) GetDownloadURL(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, DownloadURLResponse{
+		URL:       output.URL,
+		ExpiresIn: output.ExpiresIn,
+	})
+}
+
+// DownloadAttachment はServerInterfaceのDownloadAttachmentメソッドを実装します
+func (h *AttachmentHandler) DownloadAttachment(ctx echo.Context, id openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
+	}
+
+	output, err := h.attachmentUseCase.GetDownloadURL(ctx.Request().Context(), userID, id.String())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+
+	return ctx.JSON(http.StatusOK, DownloadURLResponse{
 		URL:       output.URL,
 		ExpiresIn: output.ExpiresIn,
 	})

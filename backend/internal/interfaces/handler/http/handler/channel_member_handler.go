@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
 
 	"github.com/newt239/chat/internal/usecase/channelmember"
@@ -51,33 +52,15 @@ type SuccessResponse struct {
 	Success bool `json:"success"`
 }
 
-// ListMembers godoc
-// @Summary List channel members
-// @Description Returns members in the specified channel
-// @Tags channel-member
-// @Produce json
-// @Param channelId path string true "Channel ID"
-// @Success 200 {object} channelmember.MemberListOutput
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/channels/{channelId}/members [get]
-// @Security BearerAuth
-func (h *ChannelMemberHandler) ListMembers(c echo.Context) error {
+// ListChannelMembers はチャンネルメンバー一覧を取得します (ServerInterface用)
+func (h *ChannelMemberHandler) ListChannelMembers(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
-	}
-
 	output, err := h.channelMemberUseCase.ListMembers(c.Request().Context(), channelmember.ListMembersInput{
-		ChannelID: channelID,
+		ChannelID: channelId.String(),
 		UserID:    userID,
 	})
 	if err != nil {
@@ -94,32 +77,11 @@ func (h *ChannelMemberHandler) ListMembers(c echo.Context) error {
 	return c.JSON(http.StatusOK, output)
 }
 
-// InviteMember godoc
-// @Summary Invite a member to a channel
-// @Description Invites a user to a channel with a specified role
-// @Tags channel-member
-// @Accept json
-// @Produce json
-// @Param channelId path string true "Channel ID"
-// @Param request body InviteMemberRequest true "Invite member request"
-// @Success 200 {object} SuccessResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/channels/{channelId}/members [post]
-// @Security BearerAuth
-func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
+// InviteChannelMember はチャンネルにメンバーを招待します (ServerInterface用)
+func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
-	}
-
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
 	}
 
 	var req InviteMemberRequest
@@ -137,7 +99,7 @@ func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
 	}
 
     err := h.channelMemberUseCase.InviteMember(c.Request().Context(), channelmember.InviteMemberInput{
-		ChannelID:    channelID,
+		ChannelID:    channelId.String(),
 		OperatorID:   userID,
 		TargetUserID: req.UserID,
 		Role:         role,
@@ -164,7 +126,7 @@ func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
         actorID := userID
         payload := map[string]any{"userId": req.UserID, "addedBy": userID}
         _, _ = h.systemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
-            ChannelID: channelID,
+            ChannelID: channelId.String(),
             Kind:      entity.SystemMessageKindMemberAdded,
             Payload:   payload,
             ActorID:   &actorID,
@@ -174,33 +136,15 @@ func (h *ChannelMemberHandler) InviteMember(c echo.Context) error {
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// JoinPublicChannel godoc
-// @Summary Join a public channel
-// @Description Allows a user to self-join a public channel
-// @Tags channel-member
-// @Produce json
-// @Param channelId path string true "Channel ID"
-// @Success 200 {object} SuccessResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/channels/{channelId}/members/self [post]
-// @Security BearerAuth
-func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
+// JoinPublicChannel はパブリックチャンネルに参加します (ServerInterface用)
+func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
-	}
-
     err := h.channelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
-		ChannelID: channelID,
+		ChannelID: channelId.String(),
 		UserID:    userID,
 	})
 	if err != nil {
@@ -221,7 +165,7 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
         actorID := userID
         payload := map[string]any{"userId": userID}
         _, _ = h.systemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
-            ChannelID: channelID,
+            ChannelID: channelId.String(),
             Kind:      entity.SystemMessageKindMemberJoined,
             Payload:   payload,
             ActorID:   &actorID,
@@ -231,38 +175,11 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context) error {
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// UpdateMemberRole godoc
-// @Summary Update member role
-// @Description Updates the role of a channel member
-// @Tags channel-member
-// @Accept json
-// @Produce json
-// @Param channelId path string true "Channel ID"
-// @Param userId path string true "User ID"
-// @Param request body ChannelMemberUpdateRoleRequest true "Update member role request"
-// @Success 200 {object} SuccessResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/channels/{channelId}/members/{userId}/role [patch]
-// @Security BearerAuth
-func (h *ChannelMemberHandler) UpdateMemberRole(c echo.Context) error {
+// UpdateChannelMemberRole はチャンネルメンバーの権限を更新します (ServerInterface用)
+func (h *ChannelMemberHandler) UpdateChannelMemberRole(c echo.Context, channelId openapi_types.UUID, userId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
-	}
-
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
-	}
-
-	targetUserID := c.Param("userId")
-	if targetUserID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "ユーザーIDは必須です"})
 	}
 
 	var req ChannelMemberUpdateRoleRequest
@@ -275,9 +192,9 @@ func (h *ChannelMemberHandler) UpdateMemberRole(c echo.Context) error {
 	}
 
 	err := h.channelMemberUseCase.UpdateMemberRole(c.Request().Context(), channelmember.UpdateMemberRoleInput{
-		ChannelID:    channelID,
+		ChannelID:    channelId.String(),
 		OperatorID:   userID,
-		TargetUserID: targetUserID,
+		TargetUserID: userId.String(),
 		Role:         req.Role,
 	})
 	if err != nil {
@@ -300,42 +217,17 @@ func (h *ChannelMemberHandler) UpdateMemberRole(c echo.Context) error {
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// RemoveMember godoc
-// @Summary Remove a member from a channel
-// @Description Removes a user from a channel
-// @Tags channel-member
-// @Produce json
-// @Param channelId path string true "Channel ID"
-// @Param userId path string true "User ID"
-// @Success 200 {object} SuccessResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 403 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/channels/{channelId}/members/{userId} [delete]
-// @Security BearerAuth
-func (h *ChannelMemberHandler) RemoveMember(c echo.Context) error {
+// RemoveChannelMember はチャンネルからメンバーを削除します (ServerInterface用)
+func (h *ChannelMemberHandler) RemoveChannelMember(c echo.Context, channelId openapi_types.UUID, userId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
-	}
-
-	targetUserID := c.Param("userId")
-	if targetUserID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "ユーザーIDは必須です"})
-	}
-
 	err := h.channelMemberUseCase.RemoveMember(c.Request().Context(), channelmember.RemoveMemberInput{
-		ChannelID:    channelID,
+		ChannelID:    channelId.String(),
 		OperatorID:   userID,
-		TargetUserID: targetUserID,
+		TargetUserID: userId.String(),
 	})
 	if err != nil {
 		switch err {
@@ -355,33 +247,15 @@ func (h *ChannelMemberHandler) RemoveMember(c echo.Context) error {
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
-// LeaveChannel godoc
-// @Summary Leave a channel
-// @Description Allows a user to leave a channel
-// @Tags channel-member
-// @Produce json
-// @Param channelId path string true "Channel ID"
-// @Success 200 {object} SuccessResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /api/channels/{channelId}/members/self [delete]
-// @Security BearerAuth
-func (h *ChannelMemberHandler) LeaveChannel(c echo.Context) error {
+// LeaveChannel はチャンネルから退出します (ServerInterface用)
+func (h *ChannelMemberHandler) LeaveChannel(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-	channelID := c.Param("channelId")
-	if channelID == "" {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "チャンネルIDは必須です"})
-	}
-
 	err := h.channelMemberUseCase.LeaveChannel(c.Request().Context(), channelmember.LeaveChannelInput{
-		ChannelID: channelID,
+		ChannelID: channelId.String(),
 		UserID:    userID,
 	})
 	if err != nil {

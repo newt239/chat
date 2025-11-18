@@ -1,13 +1,17 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/interfaces/handler/http/handler"
 	custommw "github.com/newt239/chat/internal/interfaces/handler/http/middleware"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
@@ -37,136 +41,358 @@ type RouterConfig struct {
 	SearchHandler        *handler.SearchHandler
 	DMHandler            *handler.DMHandler
 	ThreadHandler        *handler.ThreadHandler
-    UserHandler          *handler.UserHandler
+	UserHandler          *handler.UserHandler
+}
+
+// serverImpl はServerInterfaceを実装する構造体です
+type serverImpl struct {
+	cfg RouterConfig
+}
+
+// Healthz implements openapi.ServerInterface.
+func (s *serverImpl) Healthz(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}
+
+// PresignUpload implements openapi.ServerInterface.
+func (s *serverImpl) PresignUpload(ctx echo.Context) error {
+	return s.cfg.AttachmentHandler.PresignUpload(ctx)
+}
+
+// GetAttachment implements openapi.ServerInterface.
+func (s *serverImpl) GetAttachment(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.AttachmentHandler.GetAttachment(ctx, id)
+}
+
+// DownloadAttachment implements openapi.ServerInterface.
+func (s *serverImpl) DownloadAttachment(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.AttachmentHandler.DownloadAttachment(ctx, id)
+}
+
+// Login implements openapi.ServerInterface.
+func (s *serverImpl) Login(ctx echo.Context) error {
+	return s.cfg.AuthHandler.Login(ctx)
+}
+
+// Logout implements openapi.ServerInterface.
+func (s *serverImpl) Logout(ctx echo.Context) error {
+	return s.cfg.AuthHandler.Logout(ctx)
+}
+
+// Refresh implements openapi.ServerInterface.
+func (s *serverImpl) Refresh(ctx echo.Context) error {
+	return s.cfg.AuthHandler.Refresh(ctx)
+}
+
+// Register implements openapi.ServerInterface.
+func (s *serverImpl) Register(ctx echo.Context) error {
+	return s.cfg.AuthHandler.Register(ctx)
+}
+
+// ListBookmarks implements openapi.ServerInterface.
+func (s *serverImpl) ListBookmarks(ctx echo.Context) error {
+	return s.cfg.BookmarkHandler.ListBookmarks(ctx)
+}
+
+// AddBookmark implements openapi.ServerInterface.
+func (s *serverImpl) AddBookmark(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.BookmarkHandler.AddBookmark(ctx, messageId)
+}
+
+// RemoveBookmark implements openapi.ServerInterface.
+func (s *serverImpl) RemoveBookmark(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.BookmarkHandler.RemoveBookmark(ctx, messageId)
+}
+
+// UpdateChannel implements openapi.ServerInterface.
+func (s *serverImpl) UpdateChannel(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelHandler.UpdateChannel(ctx, channelId)
+}
+
+// ListChannels implements openapi.ServerInterface.
+func (s *serverImpl) ListChannels(ctx echo.Context, id string) error {
+	return s.cfg.ChannelHandler.ListChannels(ctx, id)
+}
+
+// CreateChannel implements openapi.ServerInterface.
+func (s *serverImpl) CreateChannel(ctx echo.Context, id string) error {
+	return s.cfg.ChannelHandler.CreateChannel(ctx, id)
+}
+
+// ListChannelMembers implements openapi.ServerInterface.
+func (s *serverImpl) ListChannelMembers(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelMemberHandler.ListChannelMembers(ctx, channelId)
+}
+
+// InviteChannelMember implements openapi.ServerInterface.
+func (s *serverImpl) InviteChannelMember(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelMemberHandler.InviteChannelMember(ctx, channelId)
+}
+
+// LeaveChannel implements openapi.ServerInterface.
+func (s *serverImpl) LeaveChannel(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelMemberHandler.LeaveChannel(ctx, channelId)
+}
+
+// JoinPublicChannel implements openapi.ServerInterface.
+func (s *serverImpl) JoinPublicChannel(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelMemberHandler.JoinPublicChannel(ctx, channelId)
+}
+
+// RemoveChannelMember implements openapi.ServerInterface.
+func (s *serverImpl) RemoveChannelMember(ctx echo.Context, channelId openapi_types.UUID, userId openapi_types.UUID) error {
+	return s.cfg.ChannelMemberHandler.RemoveChannelMember(ctx, channelId, userId)
+}
+
+// UpdateChannelMemberRole implements openapi.ServerInterface.
+func (s *serverImpl) UpdateChannelMemberRole(ctx echo.Context, channelId openapi_types.UUID, userId openapi_types.UUID) error {
+	return s.cfg.ChannelMemberHandler.UpdateChannelMemberRole(ctx, channelId, userId)
+}
+
+// ListDMs implements openapi.ServerInterface.
+func (s *serverImpl) ListDMs(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.DMHandler.ListDMs(ctx, id)
+}
+
+// CreateDM implements openapi.ServerInterface.
+func (s *serverImpl) CreateDM(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.DMHandler.CreateDM(ctx, id)
+}
+
+// CreateGroupDM implements openapi.ServerInterface.
+func (s *serverImpl) CreateGroupDM(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.DMHandler.CreateGroupDM(ctx, id)
+}
+
+// FetchOGP implements openapi.ServerInterface.
+func (s *serverImpl) FetchOGP(ctx echo.Context) error {
+	return s.cfg.LinkHandler.FetchOGP(ctx)
+}
+
+// ListMessages implements openapi.ServerInterface.
+func (s *serverImpl) ListMessages(ctx echo.Context, channelId openapi_types.UUID, params openapi.ListMessagesParams) error {
+	return s.cfg.MessageHandler.ListMessages(ctx, channelId, params)
+}
+
+// CreateMessage implements openapi.ServerInterface.
+func (s *serverImpl) CreateMessage(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.MessageHandler.CreateMessage(ctx, channelId)
+}
+
+// ListMessagesWithThread implements openapi.ServerInterface.
+func (s *serverImpl) ListMessagesWithThread(ctx echo.Context, channelId openapi_types.UUID, params openapi.ListMessagesWithThreadParams) error {
+	return s.cfg.MessageHandler.ListMessagesWithThread(ctx, channelId, params)
+}
+
+// DeleteMessage implements openapi.ServerInterface.
+func (s *serverImpl) DeleteMessage(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.MessageHandler.DeleteMessage(ctx, messageId)
+}
+
+// UpdateMessage implements openapi.ServerInterface.
+func (s *serverImpl) UpdateMessage(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.MessageHandler.UpdateMessage(ctx, messageId)
+}
+
+// GetThreadReplies implements openapi.ServerInterface.
+func (s *serverImpl) GetThreadReplies(ctx echo.Context, messageId openapi_types.UUID, params openapi.GetThreadRepliesParams) error {
+	return s.cfg.MessageHandler.GetThreadReplies(ctx, messageId, params)
+}
+
+// GetThreadMetadata implements openapi.ServerInterface.
+func (s *serverImpl) GetThreadMetadata(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.MessageHandler.GetThreadMetadata(ctx, messageId)
+}
+
+// ListPins implements openapi.ServerInterface.
+func (s *serverImpl) ListPins(ctx echo.Context, channelId openapi_types.UUID, params openapi.ListPinsParams) error {
+	return s.cfg.PinHandler.ListPins(ctx, channelId, params)
+}
+
+// CreatePin implements openapi.ServerInterface.
+func (s *serverImpl) CreatePin(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.PinHandler.CreatePin(ctx, channelId)
+}
+
+// DeletePin implements openapi.ServerInterface.
+func (s *serverImpl) DeletePin(ctx echo.Context, channelId openapi_types.UUID, messageId openapi_types.UUID) error {
+	return s.cfg.PinHandler.DeletePin(ctx, channelId, messageId)
+}
+
+// UpdateReadState implements openapi.ServerInterface.
+func (s *serverImpl) UpdateReadState(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ReadStateHandler.UpdateReadState(ctx, channelId)
+}
+
+// GetUnreadCount implements openapi.ServerInterface.
+func (s *serverImpl) GetUnreadCount(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ReadStateHandler.GetUnreadCount(ctx, channelId)
+}
+
+// ListReactions implements openapi.ServerInterface.
+func (s *serverImpl) ListReactions(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.ReactionHandler.ListReactions(ctx, messageId)
+}
+
+// AddReaction implements openapi.ServerInterface.
+func (s *serverImpl) AddReaction(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.ReactionHandler.AddReaction(ctx, messageId)
+}
+
+// RemoveReaction implements openapi.ServerInterface.
+func (s *serverImpl) RemoveReaction(ctx echo.Context, messageId openapi_types.UUID, emoji string) error {
+	return s.cfg.ReactionHandler.RemoveReaction(ctx, messageId, emoji)
+}
+
+// SearchWorkspace implements openapi.ServerInterface.
+func (s *serverImpl) SearchWorkspace(ctx echo.Context, workspaceId string, params openapi.SearchWorkspaceParams) error {
+	return s.cfg.SearchHandler.SearchWorkspace(ctx, workspaceId, params)
+}
+
+// MarkThreadRead implements openapi.ServerInterface.
+func (s *serverImpl) MarkThreadRead(ctx echo.Context, threadId openapi_types.UUID) error {
+	return s.cfg.ThreadHandler.MarkThreadRead(ctx, threadId)
+}
+
+// GetParticipatingThreads implements openapi.ServerInterface.
+func (s *serverImpl) GetParticipatingThreads(ctx echo.Context, workspaceId string, params openapi.GetParticipatingThreadsParams) error {
+	return s.cfg.ThreadHandler.GetParticipatingThreads(ctx, workspaceId, params)
+}
+
+// ListUserGroups implements openapi.ServerInterface.
+func (s *serverImpl) ListUserGroups(ctx echo.Context, params openapi.ListUserGroupsParams) error {
+	return s.cfg.UserGroupHandler.ListUserGroups(ctx, params)
+}
+
+// CreateUserGroup implements openapi.ServerInterface.
+func (s *serverImpl) CreateUserGroup(ctx echo.Context) error {
+	return s.cfg.UserGroupHandler.CreateUserGroup(ctx)
+}
+
+// DeleteUserGroup implements openapi.ServerInterface.
+func (s *serverImpl) DeleteUserGroup(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.UserGroupHandler.DeleteUserGroup(ctx, id)
+}
+
+// GetUserGroup implements openapi.ServerInterface.
+func (s *serverImpl) GetUserGroup(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.UserGroupHandler.GetUserGroup(ctx, id)
+}
+
+// UpdateUserGroup implements openapi.ServerInterface.
+func (s *serverImpl) UpdateUserGroup(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.UserGroupHandler.UpdateUserGroup(ctx, id)
+}
+
+// RemoveUserGroupMember implements openapi.ServerInterface.
+func (s *serverImpl) RemoveUserGroupMember(ctx echo.Context, id openapi_types.UUID, params openapi.RemoveUserGroupMemberParams) error {
+	return s.cfg.UserGroupHandler.RemoveUserGroupMember(ctx, id, params)
+}
+
+// ListUserGroupMembers implements openapi.ServerInterface.
+func (s *serverImpl) ListUserGroupMembers(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.UserGroupHandler.ListUserGroupMembers(ctx, id)
+}
+
+// AddUserGroupMember implements openapi.ServerInterface.
+func (s *serverImpl) AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.UserGroupHandler.AddUserGroupMember(ctx, id)
+}
+
+// UpdateMe implements openapi.ServerInterface.
+func (s *serverImpl) UpdateMe(ctx echo.Context) error {
+	return s.cfg.UserHandler.UpdateMe(ctx)
+}
+
+// ListWorkspaces implements openapi.ServerInterface.
+func (s *serverImpl) ListWorkspaces(ctx echo.Context) error {
+	return s.cfg.WorkspaceHandler.ListWorkspaces(ctx)
+}
+
+// CreateWorkspace implements openapi.ServerInterface.
+func (s *serverImpl) CreateWorkspace(ctx echo.Context) error {
+	return s.cfg.WorkspaceHandler.CreateWorkspace(ctx)
+}
+
+// ListPublicWorkspaces implements openapi.ServerInterface.
+func (s *serverImpl) ListPublicWorkspaces(ctx echo.Context) error {
+	return s.cfg.WorkspaceHandler.ListPublicWorkspaces(ctx)
+}
+
+// DeleteWorkspace implements openapi.ServerInterface.
+func (s *serverImpl) DeleteWorkspace(ctx echo.Context, id string) error {
+	return s.cfg.WorkspaceHandler.DeleteWorkspace(ctx, id)
+}
+
+// GetWorkspace implements openapi.ServerInterface.
+func (s *serverImpl) GetWorkspace(ctx echo.Context, id string) error {
+	return s.cfg.WorkspaceHandler.GetWorkspace(ctx, id)
+}
+
+// UpdateWorkspace implements openapi.ServerInterface.
+func (s *serverImpl) UpdateWorkspace(ctx echo.Context, id string) error {
+	return s.cfg.WorkspaceHandler.UpdateWorkspace(ctx, id)
+}
+
+// JoinPublicWorkspace implements openapi.ServerInterface.
+func (s *serverImpl) JoinPublicWorkspace(ctx echo.Context, id string) error {
+	return s.cfg.WorkspaceHandler.JoinPublicWorkspace(ctx, id)
+}
+
+// ListMembers implements openapi.ServerInterface.
+func (s *serverImpl) ListMembers(ctx echo.Context, id string) error {
+	return s.cfg.WorkspaceHandler.ListMembers(ctx, id)
+}
+
+// AddMemberByEmail implements openapi.ServerInterface.
+func (s *serverImpl) AddMemberByEmail(ctx echo.Context, id string) error {
+	return s.cfg.WorkspaceHandler.AddMemberByEmail(ctx, id)
+}
+
+// RemoveMember implements openapi.ServerInterface.
+func (s *serverImpl) RemoveMember(ctx echo.Context, id string, userId openapi_types.UUID) error {
+	return s.cfg.WorkspaceHandler.RemoveMember(ctx, id, userId)
+}
+
+// UpdateMemberRole implements openapi.ServerInterface.
+func (s *serverImpl) UpdateMemberRole(ctx echo.Context, id string, userId openapi_types.UUID) error {
+	return s.cfg.WorkspaceHandler.UpdateMemberRole(ctx, id, userId)
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
 	e := echo.New()
-
-	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Use(custommw.CORS(cfg.AllowedOrigins))
-
-	// Validator
+	e.HideBanner = true
 	e.Validator = NewValidator()
 
-	// Health check
-	e.GET("/healthz", func(c echo.Context) error {
-		return c.String(200, "ok")
-	})
+	// CORS設定
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     cfg.AllowedOrigins,
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowCredentials: true,
+	}))
 
-	// WebSocket endpoint
-	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase))
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
-	// API routes
-	api := e.Group("/api")
+	// WebSocketハンドラー
+	e.GET("/ws/:workspaceId", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase))
 
-	// Auth routes (public)
-	auth := api.Group("/auth")
-	{
-		auth.POST("/register", cfg.AuthHandler.Register)
-		auth.POST("/login", cfg.AuthHandler.Login)
-		auth.POST("/refresh", cfg.AuthHandler.RefreshToken)
-		auth.POST("/logout", cfg.AuthHandler.Logout)
-	}
+	// ServerInterfaceを実装する構造体を作成
+	server := &serverImpl{cfg: cfg}
 
-	// Protected routes
-	authMw := custommw.Auth(cfg.JWTService)
+	// 認証不要のエンドポイント
+	e.POST("/api/auth/login", server.Login)
+	e.POST("/api/auth/register", server.Register)
+	e.POST("/api/auth/refresh", server.Refresh)
+	e.GET("/healthz", server.Healthz)
 
-	// Workspace routes
-    api.GET("/workspaces", cfg.WorkspaceHandler.GetWorkspaces, authMw)
-    api.GET("/workspaces/public", cfg.WorkspaceHandler.ListPublicWorkspaces, authMw)
-	api.POST("/workspaces", cfg.WorkspaceHandler.CreateWorkspace, authMw)
-	api.GET("/workspaces/:id", cfg.WorkspaceHandler.GetWorkspace, authMw)
-	api.PATCH("/workspaces/:id", cfg.WorkspaceHandler.UpdateWorkspace, authMw)
-	api.DELETE("/workspaces/:id", cfg.WorkspaceHandler.DeleteWorkspace, authMw)
-	api.GET("/workspaces/:id/members", cfg.WorkspaceHandler.ListMembers, authMw)
-    api.POST("/workspaces/:id/members", cfg.WorkspaceHandler.AddMemberByEmail, authMw)
-    api.POST("/workspaces/:id/join", cfg.WorkspaceHandler.JoinPublicWorkspace, authMw)
-	api.PATCH("/workspaces/:id/members/:userId", cfg.WorkspaceHandler.UpdateMemberRole, authMw)
-	api.DELETE("/workspaces/:id/members/:userId", cfg.WorkspaceHandler.RemoveMember, authMw)
-	api.GET("/workspaces/:workspaceId/search", cfg.SearchHandler.SearchWorkspace, authMw)
+	// JWT認証が必要なエンドポイント
+	protectedAPI := e.Group("/api")
+	protectedAPI.Use(custommw.Auth(cfg.JWTService))
 
-	// Channel routes
-	api.GET("/workspaces/:id/channels", cfg.ChannelHandler.ListChannels, authMw)
-	api.POST("/workspaces/:id/channels", cfg.ChannelHandler.CreateChannel, authMw)
-	api.PATCH("/channels/:channelId", cfg.ChannelHandler.UpdateChannel, authMw)
-
-	// Channel member routes
-	api.GET("/channels/:channelId/members", cfg.ChannelMemberHandler.ListMembers, authMw)
-	api.POST("/channels/:channelId/members", cfg.ChannelMemberHandler.InviteMember, authMw)
-	api.POST("/channels/:channelId/members/self", cfg.ChannelMemberHandler.JoinPublicChannel, authMw)
-	api.PATCH("/channels/:channelId/members/:userId/role", cfg.ChannelMemberHandler.UpdateMemberRole, authMw)
-	api.DELETE("/channels/:channelId/members/:userId", cfg.ChannelMemberHandler.RemoveMember, authMw)
-	api.DELETE("/channels/:channelId/members/self", cfg.ChannelMemberHandler.LeaveChannel, authMw)
-
-	// Message routes
-	api.GET("/channels/:channelId/messages", cfg.MessageHandler.ListMessages, authMw)
-	api.GET("/channels/:channelId/messages/with-threads", cfg.MessageHandler.ListMessagesWithThread, authMw)
-	api.POST("/channels/:channelId/messages", cfg.MessageHandler.CreateMessage, authMw)
-	api.PATCH("/messages/:messageId", cfg.MessageHandler.UpdateMessage, authMw)
-	api.DELETE("/messages/:messageId", cfg.MessageHandler.DeleteMessage, authMw)
-	api.GET("/messages/:messageId/thread", cfg.MessageHandler.GetThreadReplies, authMw)
-	api.GET("/messages/:messageId/thread/metadata", cfg.MessageHandler.GetThreadMetadata, authMw)
-
-	// Read state routes
-	api.GET("/channels/:channelId/unread_count", cfg.ReadStateHandler.GetUnreadCount, authMw)
-	api.POST("/channels/:channelId/reads", cfg.ReadStateHandler.UpdateReadState, authMw)
-
-	// Reaction routes
-	api.GET("/messages/:messageId/reactions", cfg.ReactionHandler.ListReactions, authMw)
-	api.POST("/messages/:messageId/reactions", cfg.ReactionHandler.AddReaction, authMw)
-	api.DELETE("/messages/:messageId/reactions/:emoji", cfg.ReactionHandler.RemoveReaction, authMw)
-
-	// User group routes
-	groups := api.Group("/user-groups", authMw)
-	{
-		groups.POST("", cfg.UserGroupHandler.CreateUserGroup)
-		groups.GET("", cfg.UserGroupHandler.ListUserGroups)
-		groups.GET("/:id", cfg.UserGroupHandler.GetUserGroup)
-		groups.PATCH("/:id", cfg.UserGroupHandler.UpdateUserGroup)
-		groups.DELETE("/:id", cfg.UserGroupHandler.DeleteUserGroup)
-		groups.POST("/:id/members", cfg.UserGroupHandler.AddMember)
-		groups.DELETE("/:id/members/:userId", cfg.UserGroupHandler.RemoveMember)
-		groups.GET("/:id/members", cfg.UserGroupHandler.ListMembers)
-	}
-
-	// Link routes
-	links := api.Group("/links", authMw)
-	{
-		links.POST("/fetch-ogp", cfg.LinkHandler.FetchOGP)
-	}
-
-	// Bookmark routes
-	api.GET("/bookmarks", cfg.BookmarkHandler.ListBookmarks, authMw)
-	api.POST("/messages/:messageId/bookmarks", cfg.BookmarkHandler.AddBookmark, authMw)
-	api.DELETE("/messages/:messageId/bookmarks", cfg.BookmarkHandler.RemoveBookmark, authMw)
-
-	// Pin routes
-	api.POST("/channels/:channelId/pins", cfg.PinHandler.CreatePin, authMw)
-	api.DELETE("/channels/:channelId/pins/:messageId", cfg.PinHandler.DeletePin, authMw)
-	api.GET("/channels/:channelId/pins", cfg.PinHandler.ListPins, authMw)
-
-	// Attachment routes
-	att := api.Group("/attachments", authMw)
-	{
-		att.POST("/presign", cfg.AttachmentHandler.PresignUpload)
-		att.GET("/:attachmentId", cfg.AttachmentHandler.GetMetadata)
-		att.GET("/:attachmentId/download", cfg.AttachmentHandler.GetDownloadURL)
-	}
-
-	// DM routes
-	api.GET("/workspaces/:id/dms", cfg.DMHandler.ListDMs, authMw)
-	api.POST("/workspaces/:id/dms", cfg.DMHandler.CreateDM, authMw)
-	api.POST("/workspaces/:id/group-dms", cfg.DMHandler.CreateGroupDM, authMw)
-
-	// Thread routes
-	api.GET("/workspaces/:workspaceId/threads/participating", cfg.ThreadHandler.GetParticipatingThreads, authMw)
-	api.POST("/threads/:threadId/read", cfg.ThreadHandler.MarkThreadRead, authMw)
-
-    // User routes (self)
-    api.PATCH("/users/me", cfg.UserHandler.UpdateMe, authMw)
+	// OpenAPI生成のServerInterfaceWrapperを使用してルートを登録
+	openapi.RegisterHandlersWithBaseURL(e, server, "/api")
 
 	return e
 }

@@ -2,10 +2,11 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
+
 	"github.com/newt239/chat/internal/infrastructure/utils"
+	"github.com/newt239/chat/internal/openapi_gen"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 )
 
@@ -17,41 +18,33 @@ func NewSearchHandler(searchUC searchuc.SearchUseCase) *SearchHandler {
 	return &SearchHandler{searchUC: searchUC}
 }
 
-func (h *SearchHandler) SearchWorkspace(c echo.Context) error {
-	workspaceID := c.Param("workspaceId")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
+// SearchWorkspace implements ServerInterface.SearchWorkspace
+func (h *SearchHandler) SearchWorkspace(c echo.Context, workspaceId string, params openapi.SearchWorkspaceParams) error {
 	userID, err := utils.GetUserIDFromContext(c)
 	if err != nil {
 		return err
 	}
 
-	query := c.QueryParam("q")
-	filterParam := c.QueryParam("filter")
-	pageParam := c.QueryParam("page")
-	perPageParam := c.QueryParam("perPage")
+	filter := searchuc.SearchFilter("")
+	if params.Filter != nil {
+		filter = searchuc.SearchFilter(*params.Filter)
+	}
 
 	page := 1
-	if pageParam != "" {
-		if parsed, err := strconv.Atoi(pageParam); err == nil && parsed > 0 {
-			page = parsed
-		}
+	if params.Page != nil && *params.Page > 0 {
+		page = *params.Page
 	}
 
 	perPage := 0
-	if perPageParam != "" {
-		if parsed, err := strconv.Atoi(perPageParam); err == nil {
-			perPage = parsed
-		}
+	if params.PerPage != nil {
+		perPage = *params.PerPage
 	}
 
 	input := searchuc.WorkspaceSearchInput{
-		WorkspaceID: workspaceID,
+		WorkspaceID: workspaceId,
 		RequesterID: userID,
-		Query:       query,
-		Filter:      searchuc.SearchFilter(filterParam).Normalize(),
+		Query:       params.Q,
+		Filter:      filter.Normalize(),
 		Page:        page,
 		PerPage:     perPage,
 	}
