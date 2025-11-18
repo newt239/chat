@@ -34,10 +34,6 @@ COPY --from=builder /seed .
 # entスキーマをコピー（必要な場合）
 COPY --from=builder /app/ent ./ent
 
-# OpenAPI スキーマをコピー（本番用にイメージへ同梱）
-RUN mkdir -p /root/openapi
-COPY --from=builder /app/openapi /root/openapi
-
 # ポートを公開
 EXPOSE 8080
 
