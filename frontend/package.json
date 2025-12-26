@@ -8,8 +8,6 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
@@ -21,16 +19,12 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "16.3.1",
-    "@testing-library/user-event": "14.6.1",
     "@types/hast": "^3.0.4",
     "@types/mdast": "^4.0.4",
     "@types/node": "^25.0.3",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.2",
-    "@vitest/ui": "4.0.16",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
@@ -38,7 +32,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "0.4.26",
-    "jsdom": "27.3.0",
     "knip": "^5.77.1",
     "openapi-typescript": "7.10.1",
     "prettier": "3.7.4",
@@ -46,8 +39,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "^8.50.1",
     "vite": "7.3.0",
-    "vite-plugin-pwa": "1.2.0",
-    "vitest": "4.0.16"
+    "vite-plugin-pwa": "1.2.0"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
