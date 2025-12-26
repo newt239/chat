@@ -5,3 +5,5 @@ packages:
 onlyBuiltDependencies:
   - esbuild
   - unrs-resolver
+
+minimumReleaseAge: 1440
