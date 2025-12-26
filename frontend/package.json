@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json}\"",
-    "type-check": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "generate:api": "openapi-typescript ../openapi/openapi.yaml -o ./src/lib/api/schema.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

@@ -12,7 +12,6 @@ Slack風コミュニケーションアプリのフロントエンドアプリケ
 - **TanStack Query** - サーバー状態管理
 - **Jotai** - クライアント状態管理
 - **openapi-fetch** - 型安全なAPIクライアント
-- **Vitest** - テストフレームワーク
 - **PWA** - プログレッシブウェブアプリ対応
 
 ## 開発開始
@@ -63,7 +62,7 @@ pnpm lint
 pnpm format
 
 # 型チェック
-pnpm type-check
+pnpm typecheck
 ```
 
 ## API型定義の生成
