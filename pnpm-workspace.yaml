@@ -2,8 +2,10 @@ packages:
   - frontend
   - backend
 
-onlyBuiltDependencies:
-  - esbuild
-  - unrs-resolver
-
 minimumReleaseAge: 1440
+
+onlyBuiltDependencies:
+  - core-js
+  - esbuild
+  - protobufjs
+  - unrs-resolver
