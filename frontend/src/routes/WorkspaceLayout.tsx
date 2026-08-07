@@ -10,8 +10,7 @@ export const WorkspaceLayout = () => {
   const workspaceId = useWorkspaceId();
   const syncCurrentWorkspace = useSetAtom(syncCurrentWorkspaceAtom);
 
-  // URL を単一の情報源としてストアを追従させる。
-  // これがないと /app/:workspaceId/:channelId へ直接アクセスした際にワークスペース未選択扱いになる。
+  // これがないと /app/:workspaceId/:channelId への直接アクセスがワークスペース未選択扱いになる
   useEffect(() => {
     syncCurrentWorkspace(workspaceId);
   }, [workspaceId, syncCurrentWorkspace]);

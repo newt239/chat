@@ -29,8 +29,7 @@ export const setCurrentWorkspaceAtom = atom(null, (_get, set, workspaceId: strin
   set(currentChannelIdAtom, null);
 });
 
-// URL を情報源としてワークスペースを同期する。
-// 表示中のチャンネルも URL から決まるため、こちらはチャンネル選択を解除しない。
+// URL から同期する用。チャンネルも URL で決まるため選択を解除しない
 export const syncCurrentWorkspaceAtom = atom(null, (get, set, workspaceId: string) => {
   if (get(workspaceStorageAtom).currentWorkspaceId !== workspaceId) {
     set(workspaceStorageAtom, { currentWorkspaceId: workspaceId });

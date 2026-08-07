@@ -1,6 +1,5 @@
 import { useParams } from "react-router";
 
-/** `/app/:workspaceId` 配下でのみ使用する。 ルート定義上 workspaceId は必ず存在するため、欠落は実装バグとして throw する。 */
 export const useWorkspaceId = () => {
   const { workspaceId } = useParams<"workspaceId">();
   if (workspaceId === undefined) {
@@ -9,7 +8,6 @@ export const useWorkspaceId = () => {
   return workspaceId;
 };
 
-/** `/app/:workspaceId/:channelId` でのみ使用する。 */
 export const useChannelId = () => {
   const { channelId } = useParams<"channelId">();
   if (channelId === undefined) {
@@ -18,5 +16,4 @@ export const useChannelId = () => {
   return channelId;
 };
 
-/** ルート階層をまたぐ共通 UI 向け。パラメータが無い階層でも呼べる。 */
 export const useOptionalRouteParams = () => useParams<"workspaceId" | "channelId">();

@@ -17,7 +17,6 @@ const withQuery = (pathname: string, query: Record<string, string | undefined>) 
   return queryString === "" ? pathname : `${pathname}?${queryString}`;
 };
 
-/** アプリ内の遷移先を組み立てる。 React Router の `to` は単なる文字列で型検査が効かないため、 遷移先の組み立てをここに集約して存在しないパスへのリンクを防ぐ。 */
 export const paths = {
   login: () => "/login",
   register: () => "/register",

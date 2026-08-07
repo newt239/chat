@@ -3,7 +3,7 @@ FROM node:26-alpine AS builder
 
 WORKDIR /app
 
-# Node 25 以降 corepack は同梱されないため pnpm を直接インストールする
+# Node 25 以降 corepack は同梱されない
 RUN npm install -g pnpm@11.20.0
 
 # ワークスペース設定をコピー

@@ -28,8 +28,6 @@ describe("routeTree", () => {
     expect(leaf?.params.channelId).toBe("ch1");
   });
 
-  // 静的セグメントが動的セグメント（:channelId）より優先されることを保証する。
-  // 優先順位が崩れると /app/:ws/search が「search という名前のチャンネル」として扱われる。
   test("search は :channelId より優先してマッチする", () => {
     const leaf = matchLeaf("/app/ws1/search");
     expect(leaf?.route.Component).toBe(SearchPage);

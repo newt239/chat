@@ -1,5 +1,5 @@
 pre-commit:
-  # lint の自動修正結果を format が整形する必要があるため、番号順に逐次実行する
+  # lint の修正結果を format が整形するため逐次実行する
   parallel: false
   commands:
     1_lint:
@@ -16,4 +16,4 @@ pre-commit:
       glob: "frontend/**/*"
       run: pnpm --filter chat-frontend run ls-lint
       fail_text: ファイル名が命名規約に違反しています
-# Go のリントはコンテナの起動が前提になるため pre-commit では実行せず、CI の backend ジョブで担保する
+# Go のリントはコンテナ起動が前提のため CI の backend ジョブで担保する

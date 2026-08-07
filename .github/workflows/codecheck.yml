@@ -67,8 +67,7 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      # bundled.yaml と schema.ts はコミット済みの生成物のため、
-      # 元の openapi.yaml から再生成して差分が出ないことを検証する
+      # コミット済みの生成物が最新か検証する
       - name: Regenerate OpenAPI artifacts
         run: |
           pnpm run openapi:bundle

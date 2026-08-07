@@ -34,8 +34,7 @@ export const routeTree: RouteObject[] = [
       {
         Component: ResponsiveLayout,
         path: "app",
-        // /app 配下すべての認証ガード。親の loader が redirect を throw した時点で
-        // 子の loader は実行されないため、ガードはこの 1 箇所で足りる。
+        // 親が redirect を throw すると子の loader は実行されないため、ガードはここだけで足りる
         loader: () => {
           if (!store.get(isAuthenticatedAtom)) {
             throw redirect(paths.login());

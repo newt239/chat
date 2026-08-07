@@ -9,8 +9,7 @@ ls:
   .md: kebab-case | SCREAMING_SNAKE_CASE
 
   src:
-    # ディレクトリと非コンポーネントは camelCase、コンポーネントは PascalCase。
-    # PascalCase は ls-lint の組み込み判定だと DMList のような頭字語を弾くため regex で表現する。
+    # 組み込みの PascalCase 判定は DMList のような頭字語を弾くため regex で表現する
     .dir: camelCase
     .ts: camelCase | regex:^[A-Z][A-Za-z0-9]*$
     .tsx: camelCase | regex:^[A-Z][A-Za-z0-9]*$

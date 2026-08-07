@@ -4,7 +4,6 @@ import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite-plus";
 
-// 自動生成ファイルは lint / format の対象外にする
 const generatedFiles = ["src/lib/api/schema.ts"];
 
 export default defineConfig({
@@ -81,7 +80,7 @@ export default defineConfig({
       "jsx-a11y",
     ],
     rules: {
-      // コメントの先頭を大文字化するとファイルパスなどの意味が変わってしまうため無効化する
+      // 先頭が大文字化されるとファイルパスの意味が変わるため
       "capitalized-comments": "off",
       complexity: "off",
       "func-style": ["error", "expression"],
@@ -121,7 +120,7 @@ export default defineConfig({
       "react/jsx-props-no-spreading": "off",
       "react/react-in-jsx-scope": "off",
       "sort-imports": "off",
-      // 既存コード 8,600 行に対して数百件の警告が出て出力が読めなくなるため無効化する
+      // 既存コードで数百件の警告が出て lint の出力が読めなくなるため
       "sort-keys": "off",
       "typescript/consistent-type-definitions": ["error", "type"],
       "typescript/explicit-function-return-type": "off",
@@ -143,7 +142,6 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      // public/logo.svg から各サイズのアイコンを生成し manifest の icons に注入する
       pwaAssets: {
         image: "public/logo.svg",
       },
@@ -179,7 +177,6 @@ export default defineConfig({
     },
   },
   server: {
-    // Docker コンテナ外からアクセスできるようにする
     host: true,
     proxy: {
       "/api": {

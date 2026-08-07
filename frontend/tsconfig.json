@@ -8,7 +8,6 @@
     "moduleResolution": "bundler",
     "paths": {
       "#/*": ["./src/*"],
-      // @vitejs/plugin-react が参照する Plugin 型を vite-plus と同一宣言に解決する
       "vite": ["./node_modules/vite-plus/dist/index.d.ts"]
     },
     "resolveJsonModule": true,

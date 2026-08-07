@@ -14,8 +14,7 @@ if [ ! -f "openapi/bundled.yaml" ]; then
     pnpm run openapi:bundle
 fi
 
-# go.mod の oapi-codegen/runtime と互換のバージョンに固定する。
-# @latest だと runtime が未対応のフィールドを含むコードが生成され、ビルドが壊れる。
+# go.mod の oapi-codegen/runtime と互換のバージョンに固定する
 OAPI_CODEGEN_VERSION="v2.5.1"
 
 echo "oapi-codegen ${OAPI_CODEGEN_VERSION} をインストールします..."

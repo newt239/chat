@@ -10,8 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # PostgreSQL 18 以降のイメージはメジャーバージョン別のサブディレクトリを使うため
-      # /var/lib/postgresql/data ではなく /var/lib/postgresql をマウントする
+      # PostgreSQL 18 以降は /data ではなくこの階層をマウントする
       - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d chat"]

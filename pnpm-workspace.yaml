@@ -2,18 +2,15 @@ packages:
   - frontend
   - backend
 
-# 依存バージョンを完全固定する(旧 .npmrc の save-exact=true から移設)
 saveExact: true
 
-# 公開から24時間未満のバージョンを解決対象から外す(サプライチェーン攻撃対策)
+# 公開から24時間未満のバージョンを弾く（サプライチェーン攻撃対策）
 minimumReleaseAge: 1440
 
-# pnpm 11 で onlyBuiltDependencies は廃止され allowBuilds に統合された
 allowBuilds:
   core-js: true
   esbuild: true
   protobufjs: true
   unrs-resolver: true
   lefthook: true
-  # @vite-pwa/assets-generator が PWA アイコン生成に使用する
   sharp: true
