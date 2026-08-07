@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+
 	"github.com/newt239/chat/internal/infrastructure/utils"
-	"github.com/newt239/chat/internal/openapi_gen"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	useruc "github.com/newt239/chat/internal/usecase/user"
 )
 
@@ -36,5 +37,3 @@ func (h *UserHandler) UpdateMe(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, out)
 }
-
-

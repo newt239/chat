@@ -17,15 +17,15 @@ const (
 	EventTypeUpdateReadState EventType = "update_read_state"
 
 	// サーバー→クライアント
-	EventTypeNewMessage     EventType = "new_message"
-	EventTypeMessageUpdated EventType = "message_updated"
-	EventTypeMessageDeleted EventType = "message_deleted"
-	EventTypeUnreadCount    EventType = "unread_count"
-	EventTypePinCreated     EventType = "pin_created"
-	EventTypePinDeleted     EventType = "pin_deleted"
-		EventTypeSystemMessageCreated EventType = "system_message_created"
-	EventTypeAck            EventType = "ack"
-	EventTypeError          EventType = "error"
+	EventTypeNewMessage           EventType = "new_message"
+	EventTypeMessageUpdated       EventType = "message_updated"
+	EventTypeMessageDeleted       EventType = "message_deleted"
+	EventTypeUnreadCount          EventType = "unread_count"
+	EventTypePinCreated           EventType = "pin_created"
+	EventTypePinDeleted           EventType = "pin_deleted"
+	EventTypeSystemMessageCreated EventType = "system_message_created"
+	EventTypeAck                  EventType = "ack"
+	EventTypeError                EventType = "error"
 )
 
 // ClientMessage はクライアントから受信するメッセージを表します

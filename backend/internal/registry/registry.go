@@ -2,6 +2,7 @@ package registry
 
 import (
 	"github.com/labstack/echo/v4"
+
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"

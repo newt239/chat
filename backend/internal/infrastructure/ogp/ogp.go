@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/newt239/chat/internal/domain/service"
 	"golang.org/x/net/html"
+
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type OGPData struct {

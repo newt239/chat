@@ -21,6 +21,6 @@ type NotificationService interface {
 	NotifyPinCreated(workspaceID string, channelID string, pin interface{})
 	NotifyPinDeleted(workspaceID string, channelID string, pin interface{})
 
-    // システムメッセージ関連
-    NotifySystemMessageCreated(workspaceID string, channelID string, message interface{})
+	// システムメッセージ関連
+	NotifySystemMessageCreated(workspaceID string, channelID string, message interface{})
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+
 	"github.com/newt239/chat/internal/domain/repository"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )

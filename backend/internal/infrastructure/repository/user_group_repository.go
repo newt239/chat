@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
@@ -81,9 +82,9 @@ func (r *userGroupRepository) FindByIDs(ctx context.Context, ids []string) ([]*e
 }
 
 func (r *userGroupRepository) FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.UserGroup, error) {
-    client := transaction.ResolveClient(ctx, r.client)
-    groups, err := client.UserGroup.Query().
-        Where(usergroup.HasWorkspaceWith(workspace.ID(workspaceID))).
+	client := transaction.ResolveClient(ctx, r.client)
+	groups, err := client.UserGroup.Query().
+		Where(usergroup.HasWorkspaceWith(workspace.ID(workspaceID))).
 		WithWorkspace(func(q *ent.WorkspaceQuery) {
 			q.WithCreatedBy()
 		}).
@@ -102,12 +103,12 @@ func (r *userGroupRepository) FindByWorkspaceID(ctx context.Context, workspaceID
 }
 
 func (r *userGroupRepository) FindByName(ctx context.Context, workspaceID string, name string) (*entity.UserGroup, error) {
-    client := transaction.ResolveClient(ctx, r.client)
-    ug, err := client.UserGroup.Query().
-        Where(
-            usergroup.HasWorkspaceWith(workspace.ID(workspaceID)),
-            usergroup.Name(name),
-        ).
+	client := transaction.ResolveClient(ctx, r.client)
+	ug, err := client.UserGroup.Query().
+		Where(
+			usergroup.HasWorkspaceWith(workspace.ID(workspaceID)),
+			usergroup.Name(name),
+		).
 		WithWorkspace(func(q *ent.WorkspaceQuery) {
 			q.WithCreatedBy()
 		}).
@@ -124,7 +125,7 @@ func (r *userGroupRepository) FindByName(ctx context.Context, workspaceID string
 }
 
 func (r *userGroupRepository) Create(ctx context.Context, group *entity.UserGroup) error {
-    // workspaceID is slug (string)
+	// workspaceID is slug (string)
 	cid, err := utils.ParseUUID(group.CreatedBy, "created by user ID")
 	if err != nil {
 		return err
@@ -132,8 +133,8 @@ func (r *userGroupRepository) Create(ctx context.Context, group *entity.UserGrou
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-    builder := client.UserGroup.Create().
-        SetWorkspaceID(group.WorkspaceID).
+	builder := client.UserGroup.Create().
+		SetWorkspaceID(group.WorkspaceID).
 		SetCreatedByID(cid).
 		SetName(group.Name)
 

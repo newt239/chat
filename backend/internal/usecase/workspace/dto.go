@@ -5,11 +5,11 @@ import "time"
 // Input DTOs
 
 type CreateWorkspaceInput struct {
-    ID          string
+	ID          string
 	Name        string
 	Description *string
-    IconURL     *string
-    IsPublic    bool
+	IconURL     *string
+	IsPublic    bool
 	CreatedBy   string
 }
 
@@ -18,7 +18,7 @@ type UpdateWorkspaceInput struct {
 	Name        *string
 	Description *string
 	IconURL     *string
-    IsPublic    *bool
+	IsPublic    *bool
 	UserID      string // For authorization check
 }
 
@@ -65,7 +65,7 @@ type WorkspaceOutput struct {
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	IconURL     *string   `json:"iconUrl"`
-    IsPublic    bool      `json:"isPublic"`
+	IsPublic    bool      `json:"isPublic"`
 	Role        string    `json:"role"`
 	CreatedBy   string    `json:"createdBy"`
 	CreatedAt   time.Time `json:"createdAt"`
@@ -112,27 +112,27 @@ type MemberActionOutput struct {
 
 // Public workspaces
 type PublicWorkspaceItem struct {
-    ID          string    `json:"id"`
-    Name        string    `json:"name"`
-    Description *string   `json:"description"`
-    IconURL     *string   `json:"iconUrl"`
-    MemberCount int       `json:"memberCount"`
-    IsJoined    bool      `json:"isJoined"`
-    CreatedAt   time.Time `json:"createdAt"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	IconURL     *string   `json:"iconUrl"`
+	MemberCount int       `json:"memberCount"`
+	IsJoined    bool      `json:"isJoined"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 type ListPublicWorkspacesOutput struct {
-    Workspaces []PublicWorkspaceItem `json:"workspaces"`
+	Workspaces []PublicWorkspaceItem `json:"workspaces"`
 }
 
 type JoinPublicWorkspaceInput struct {
-    WorkspaceID string
-    UserID      string
+	WorkspaceID string
+	UserID      string
 }
 
 type AddMemberByEmailInput struct {
-    WorkspaceID string
-    Email       string
-    Role        string
-    RequestedBy string
+	WorkspaceID string
+	Email       string
+	Role        string
+	RequestedBy string
 }

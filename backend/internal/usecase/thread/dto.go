@@ -15,12 +15,12 @@ type ListParticipatingThreadsInput struct {
 }
 
 type ParticipatingThreadOutput struct {
-	ThreadID        string                  `json:"thread_id"`
-	ChannelID       *string                 `json:"channel_id"`
-	FirstMessage    *message.MessageOutput  `json:"first_message"`
-	ReplyCount      int                     `json:"reply_count"`
-	LastActivityAt  time.Time               `json:"last_activity_at"`
-	UnreadCount     int                     `json:"unread_count"`
+	ThreadID       string                 `json:"thread_id"`
+	ChannelID      *string                `json:"channel_id"`
+	FirstMessage   *message.MessageOutput `json:"first_message"`
+	ReplyCount     int                    `json:"reply_count"`
+	LastActivityAt time.Time              `json:"last_activity_at"`
+	UnreadCount    int                    `json:"unread_count"`
 }
 
 type ThreadCursorOutput struct {

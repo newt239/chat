@@ -5,17 +5,17 @@ import (
 	"net/http"
 	"strings"
 
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/usecase/channelmember"
 	"github.com/newt239/chat/internal/usecase/systemmessage"
-	"github.com/newt239/chat/internal/domain/entity"
 )
 
 type ChannelMemberHandler struct {
 	ChannelMemberUseCase channelmember.ChannelMemberUseCase
-    SystemMessageUC      systemmessage.UseCase
+	SystemMessageUC      systemmessage.UseCase
 }
 
 type InviteMemberRequest struct {
@@ -92,7 +92,7 @@ func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId ope
 		role = *req.Role
 	}
 
-    err := h.ChannelMemberUseCase.InviteMember(c.Request().Context(), channelmember.InviteMemberInput{
+	err := h.ChannelMemberUseCase.InviteMember(c.Request().Context(), channelmember.InviteMemberInput{
 		ChannelID:    channelId.String(),
 		OperatorID:   userID,
 		TargetUserID: req.UserID,
@@ -115,16 +115,16 @@ func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId ope
 		}
 	}
 
-    if h.SystemMessageUC != nil {
-        actorID := userID
-        payload := map[string]any{"userId": req.UserID, "addedBy": userID}
-        _, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
-            ChannelID: channelId.String(),
-            Kind:      entity.SystemMessageKindMemberAdded,
-            Payload:   payload,
-            ActorID:   &actorID,
-        })
-    }
+	if h.SystemMessageUC != nil {
+		actorID := userID
+		payload := map[string]any{"userId": req.UserID, "addedBy": userID}
+		_, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
+			ChannelID: channelId.String(),
+			Kind:      entity.SystemMessageKindMemberAdded,
+			Payload:   payload,
+			ActorID:   &actorID,
+		})
+	}
 
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
@@ -135,7 +135,7 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId opena
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "ユーザーが認証されていません"})
 	}
 
-    err := h.ChannelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
+	err := h.ChannelMemberUseCase.JoinPublicChannel(c.Request().Context(), channelmember.JoinChannelInput{
 		ChannelID: channelId.String(),
 		UserID:    userID,
 	})
@@ -152,16 +152,16 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId opena
 		}
 	}
 
-    if h.SystemMessageUC != nil {
-        actorID := userID
-        payload := map[string]any{"userId": userID}
-        _, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
-            ChannelID: channelId.String(),
-            Kind:      entity.SystemMessageKindMemberJoined,
-            Payload:   payload,
-            ActorID:   &actorID,
-        })
-    }
+	if h.SystemMessageUC != nil {
+		actorID := userID
+		payload := map[string]any{"userId": userID}
+		_, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
+			ChannelID: channelId.String(),
+			Kind:      entity.SystemMessageKindMemberJoined,
+			Payload:   payload,
+			ActorID:   &actorID,
+		})
+	}
 
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }

@@ -1,8 +1,8 @@
 package dm
 
 type CreateDMInput struct {
-	WorkspaceID string
-	UserID      string
+	WorkspaceID  string
+	UserID       string
 	TargetUserID string
 }
 
@@ -14,8 +14,8 @@ type CreateGroupDMInput struct {
 }
 
 type ListDMsInput struct {
-	WorkspaceID string
-	UserID      string
+	WorkspaceID   string
+	UserID        string
 	RequestUserID string
 }
 

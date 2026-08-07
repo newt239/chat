@@ -104,81 +104,81 @@ func createSeedData(
 		}
 	}
 
-    // Create test workspaces (slug IDs)
-    workspaces := []struct {
-        ID          string
-        Name        string
-        Description string
-        IsPublic    bool
-        CreatedBy   string
-    }{
-        {ID: "general", Name: "General", Description: "一般的なディスカッション用のワークスペース", IsPublic: true, CreatedBy: users[0].ID},   // alice
-        {ID: "engineering", Name: "Engineering", Description: "エンジニアリングチーム用のワークスペース", IsPublic: false, CreatedBy: users[1].ID}, // bob
-        {ID: "marketing", Name: "Marketing", Description: "マーケティングチーム用のワークスペース", IsPublic: true, CreatedBy: users[2].ID},   // charlie
-    }
+	// Create test workspaces (slug IDs)
+	workspaces := []struct {
+		ID          string
+		Name        string
+		Description string
+		IsPublic    bool
+		CreatedBy   string
+	}{
+		{ID: "general", Name: "General", Description: "一般的なディスカッション用のワークスペース", IsPublic: true, CreatedBy: users[0].ID},         // alice
+		{ID: "engineering", Name: "Engineering", Description: "エンジニアリングチーム用のワークスペース", IsPublic: false, CreatedBy: users[1].ID}, // bob
+		{ID: "marketing", Name: "Marketing", Description: "マーケティングチーム用のワークスペース", IsPublic: true, CreatedBy: users[2].ID},       // charlie
+	}
 
-    for _, ws := range workspaces {
-        w := &entity.Workspace{
-            ID:          ws.ID, // slug
-            Name:        ws.Name,
-            Description: stringPtr(ws.Description),
-            IconURL:     nil,
-            IsPublic:    ws.IsPublic,
-            CreatedBy:   ws.CreatedBy,
-            CreatedAt:   time.Now(),
-            UpdatedAt:   time.Now(),
-        }
+	for _, ws := range workspaces {
+		w := &entity.Workspace{
+			ID:          ws.ID, // slug
+			Name:        ws.Name,
+			Description: stringPtr(ws.Description),
+			IconURL:     nil,
+			IsPublic:    ws.IsPublic,
+			CreatedBy:   ws.CreatedBy,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		}
 
-        if err := workspaceRepo.Create(ctx, w); err != nil {
-            return fmt.Errorf("failed to create workspace %s: %w", ws.Name, err)
-        }
+		if err := workspaceRepo.Create(ctx, w); err != nil {
+			return fmt.Errorf("failed to create workspace %s: %w", ws.Name, err)
+		}
 
-        // Add creator as owner
-        if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
-            WorkspaceID: w.ID,
-            UserID:      ws.CreatedBy,
-            Role:        entity.WorkspaceRoleOwner,
-            JoinedAt:    time.Now(),
-        }); err != nil {
-            return fmt.Errorf("failed to add owner to workspace %s: %w", ws.Name, err)
-        }
-    }
+		// Add creator as owner
+		if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
+			WorkspaceID: w.ID,
+			UserID:      ws.CreatedBy,
+			Role:        entity.WorkspaceRoleOwner,
+			JoinedAt:    time.Now(),
+		}); err != nil {
+			return fmt.Errorf("failed to add owner to workspace %s: %w", ws.Name, err)
+		}
+	}
 
-    // Add additional members
-    // General (public): add all users
-    for i, user := range users {
-        if i == 0 { // alice already owner
-            continue
-        }
-        if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
-            WorkspaceID: "general",
-            UserID:      user.ID,
-            Role:        entity.WorkspaceRoleMember,
-            JoinedAt:    time.Now(),
-        }); err != nil {
-            return fmt.Errorf("failed to add member to general workspace: %w", err)
-        }
-    }
+	// Add additional members
+	// General (public): add all users
+	for i, user := range users {
+		if i == 0 { // alice already owner
+			continue
+		}
+		if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
+			WorkspaceID: "general",
+			UserID:      user.ID,
+			Role:        entity.WorkspaceRoleMember,
+			JoinedAt:    time.Now(),
+		}); err != nil {
+			return fmt.Errorf("failed to add member to general workspace: %w", err)
+		}
+	}
 
-    // Engineering (private): alice as admin in addition to bob(owner)
-    if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
-        WorkspaceID: "engineering",
-        UserID:      users[0].ID, // alice
-        Role:        entity.WorkspaceRoleAdmin,
-        JoinedAt:    time.Now(),
-    }); err != nil {
-        return fmt.Errorf("failed to add alice to engineering workspace: %w", err)
-    }
+	// Engineering (private): alice as admin in addition to bob(owner)
+	if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
+		WorkspaceID: "engineering",
+		UserID:      users[0].ID, // alice
+		Role:        entity.WorkspaceRoleAdmin,
+		JoinedAt:    time.Now(),
+	}); err != nil {
+		return fmt.Errorf("failed to add alice to engineering workspace: %w", err)
+	}
 
-    // Marketing (public): add alice as member in addition to charlie(owner)
-    if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
-        WorkspaceID: "marketing",
-        UserID:      users[0].ID, // alice
-        Role:        entity.WorkspaceRoleMember,
-        JoinedAt:    time.Now(),
-    }); err != nil {
-        return fmt.Errorf("failed to add alice to marketing workspace: %w", err)
-    }
+	// Marketing (public): add alice as member in addition to charlie(owner)
+	if err := workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{
+		WorkspaceID: "marketing",
+		UserID:      users[0].ID, // alice
+		Role:        entity.WorkspaceRoleMember,
+		JoinedAt:    time.Now(),
+	}); err != nil {
+		return fmt.Errorf("failed to add alice to marketing workspace: %w", err)
+	}
 
 	channelDefinitions := []struct {
 		id          string
@@ -217,12 +217,12 @@ func createSeedData(
 		},
 	}
 
-    // Use the "general" workspace for default channels
-    var channels []*entity.Channel
+	// Use the "general" workspace for default channels
+	var channels []*entity.Channel
 	for _, def := range channelDefinitions {
 		channel, err := entity.NewChannel(entity.ChannelParams{
 			ID:          def.id,
-            WorkspaceID: "general",
+			WorkspaceID: "general",
 			Name:        def.name,
 			Description: def.description,
 			IsPrivate:   def.isPrivate,
@@ -370,27 +370,27 @@ func createSeedData(
 	// Create user groups
 	userGroupRepo := repository.NewUserGroupRepository(client)
 	groups := []*entity.UserGroup{
-        {
-            ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-            WorkspaceID: "general",
-            Name:        "developers",
-            Description: stringPtr("Development team members"),
-            CreatedBy:   users[0].ID,
-        },
-        {
-            ID:          "0bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-            WorkspaceID: "general",
-            Name:        "marketing",
-            Description: stringPtr("Marketing team members"),
-            CreatedBy:   users[0].ID,
-        },
-        {
-            ID:          "0ccccccc-cccc-4ccc-8ccc-cccccccccccc",
-            WorkspaceID: "general",
-            Name:        "designers",
-            Description: stringPtr("Design team members"),
-            CreatedBy:   users[1].ID,
-        },
+		{
+			ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+			WorkspaceID: "general",
+			Name:        "developers",
+			Description: stringPtr("Development team members"),
+			CreatedBy:   users[0].ID,
+		},
+		{
+			ID:          "0bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+			WorkspaceID: "general",
+			Name:        "marketing",
+			Description: stringPtr("Marketing team members"),
+			CreatedBy:   users[0].ID,
+		},
+		{
+			ID:          "0ccccccc-cccc-4ccc-8ccc-cccccccccccc",
+			WorkspaceID: "general",
+			Name:        "designers",
+			Description: stringPtr("Design team members"),
+			CreatedBy:   users[1].ID,
+		},
 	}
 
 	for _, group := range groups {

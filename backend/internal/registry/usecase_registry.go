@@ -15,8 +15,8 @@ import (
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	systemmsguc "github.com/newt239/chat/internal/usecase/systemmessage"
 	threaduc "github.com/newt239/chat/internal/usecase/thread"
+	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
-    useruc "github.com/newt239/chat/internal/usecase/user"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -57,8 +57,8 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewReadStateRepository(),
-        r.infrastructureRegistry.NewTransactionManager(),
-        r.NewSystemMessageUseCase(),
+		r.infrastructureRegistry.NewTransactionManager(),
+		r.NewSystemMessageUseCase(),
 	)
 }
 
@@ -74,7 +74,7 @@ func (r *UseCaseRegistry) NewChannelMemberUseCase() channelmemberuc.ChannelMembe
 func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 	return messageuc.NewMessageUseCase(
 		r.domainRegistry.NewMessageRepository(),
-        r.domainRegistry.NewSystemMessageRepository(),
+		r.domainRegistry.NewSystemMessageRepository(),
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
@@ -96,11 +96,11 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 }
 
 func (r *UseCaseRegistry) NewSystemMessageUseCase() systemmsguc.UseCase {
-    return systemmsguc.New(
-        r.domainRegistry.NewSystemMessageRepository(),
-        r.domainRegistry.NewChannelRepository(),
-        r.infrastructureRegistry.NewNotificationService(),
-    )
+	return systemmsguc.New(
+		r.domainRegistry.NewSystemMessageRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.infrastructureRegistry.NewNotificationService(),
+	)
 }
 
 func (r *UseCaseRegistry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
@@ -109,8 +109,8 @@ func (r *UseCaseRegistry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
-        r.infrastructureRegistry.NewNotificationService(),
-        r.domainRegistry.NewChannelAccessService(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -121,8 +121,8 @@ func (r *UseCaseRegistry) NewReactionUseCase() reactionuc.ReactionUseCase {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
-        r.infrastructureRegistry.NewNotificationService(),
-        r.domainRegistry.NewChannelAccessService(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -151,7 +151,7 @@ func (r *UseCaseRegistry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewUserGroupRepository(),
-        r.domainRegistry.NewChannelAccessService(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -163,9 +163,9 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
-        r.infrastructureRegistry.NewNotificationService(),
-        r.domainRegistry.NewChannelAccessService(),
-        r.NewSystemMessageUseCase(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewSystemMessageUseCase(),
 	)
 }
 
@@ -215,7 +215,7 @@ func (r *UseCaseRegistry) NewThreadReader() *threaduc.ThreadReader {
 }
 
 func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
-    return useruc.NewInteractor(
-        r.domainRegistry.NewUserRepository(),
-    )
+	return useruc.NewInteractor(
+		r.domainRegistry.NewUserRepository(),
+	)
 }
