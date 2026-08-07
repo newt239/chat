@@ -10,7 +10,7 @@ type Props = {
 
 export const SystemMessageItem = ({ message }: Props) => {
   const time = dateTimeFormatter().format(new Date(message.createdAt));
-  const {payload} = message;
+  const { payload } = message;
 
   const renderText = () => {
     switch (message.kind) {

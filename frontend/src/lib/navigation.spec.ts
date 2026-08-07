@@ -9,7 +9,7 @@ test("router 登録前の navigateTo は何もしない", () => {
 });
 
 test("登録した router の navigate に遷移先を渡す", () => {
-  const navigate = vi.fn( async () => Promise.resolve());
+  const navigate = vi.fn(async () => {});
   registerRouter({ navigate });
 
   navigateTo("/login");

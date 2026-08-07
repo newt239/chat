@@ -9,7 +9,7 @@ type CreateThreadReplyInput = {
 };
 
 /** スレッドの返信一覧を取得するフック */
-export const useThreadReplies = (messageId: string | null) => 
+export const useThreadReplies = (messageId: string | null) =>
   useQuery({
     queryKey: ["messages", messageId, "thread", "replies"],
     queryFn: async () => {
@@ -36,8 +36,7 @@ export const useThreadReplies = (messageId: string | null) =>
       return parsed.data;
     },
     enabled: messageId !== null,
-  })
-;
+  });
 
 /** スレッドに返信を送信するフック */
 export const useSendThreadReply = (messageId: string | null, channelId: string | null) => {

@@ -16,7 +16,7 @@ type UpdateMeResponse = {
   avatarURL?: string | null;
 };
 
-export const useUpdateProfile = () => 
+export const useUpdateProfile = () =>
   useMutation({
     mutationFn: async (input: UpdateProfileInput) => {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
@@ -62,5 +62,4 @@ export const useUpdateProfile = () =>
 
       return data;
     },
-  })
-;
+  });

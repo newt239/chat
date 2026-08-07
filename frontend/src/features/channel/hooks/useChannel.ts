@@ -10,7 +10,7 @@ type CreateChannelInput = {
   isPrivate?: boolean;
 };
 
-export const useChannels = (workspaceId: string | null) => 
+export const useChannels = (workspaceId: string | null) =>
   useQuery({
     queryKey: ["workspaces", workspaceId, "channels"],
     queryFn: async (): Promise<components["schemas"]["Channel"][]> => {
@@ -29,8 +29,7 @@ export const useChannels = (workspaceId: string | null) =>
       return data;
     },
     enabled: workspaceId !== null,
-  })
-;
+  });
 
 export const useCreateChannel = (workspaceId: string | null) => {
   const queryClient = useQueryClient();

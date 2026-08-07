@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "#/lib/api/client";
 
-export const useWorkspaces = () => 
+export const useWorkspaces = () =>
   useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
@@ -14,8 +14,7 @@ export const useWorkspaces = () =>
 
       return data.workspaces;
     },
-  })
-;
+  });
 
 export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();

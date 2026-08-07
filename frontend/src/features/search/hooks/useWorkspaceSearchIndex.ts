@@ -20,9 +20,8 @@ type WorkspaceSearchParams = {
   perPage: number;
 };
 
-const normalizeFilter = (filter: SearchFilter): SearchFilter => 
-  searchFilterSet.has(filter) ? filter : "all"
-;
+const normalizeFilter = (filter: SearchFilter): SearchFilter =>
+  searchFilterSet.has(filter) ? filter : "all";
 
 export const useWorkspaceSearch = (params: WorkspaceSearchParams) => {
   const { workspaceId, query, filter, page, perPage } = params;

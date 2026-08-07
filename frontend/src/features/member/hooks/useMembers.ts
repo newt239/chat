@@ -4,7 +4,7 @@ import { api } from "#/lib/api/client";
 
 import type { components } from "#/lib/api/schema";
 
-export const useMembers = (workspaceId: string | null) => 
+export const useMembers = (workspaceId: string | null) =>
   useQuery({
     queryKey: ["workspaces", workspaceId, "members"],
     queryFn: async (): Promise<components["schemas"]["MemberInfo"][]> => {
@@ -23,5 +23,4 @@ export const useMembers = (workspaceId: string | null) =>
       return data.members;
     },
     enabled: workspaceId !== null,
-  })
-;
+  });

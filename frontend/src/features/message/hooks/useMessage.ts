@@ -18,7 +18,7 @@ type DeleteMessageInput = {
   messageId: string;
 };
 
-export const useMessages = (channelId: string | null) => 
+export const useMessages = (channelId: string | null) =>
   useQuery({
     queryKey: ["channels", channelId, "messages"],
     queryFn: async () => {
@@ -45,8 +45,7 @@ export const useMessages = (channelId: string | null) =>
       return parsed.data;
     },
     enabled: channelId !== null,
-  })
-;
+  });
 
 export const useSendMessage = (channelId: string | null) => {
   const queryClient = useQueryClient();

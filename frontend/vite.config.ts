@@ -81,6 +81,8 @@ export default defineConfig({
       "jsx-a11y",
     ],
     rules: {
+      // コメントの先頭を大文字化するとファイルパスなどの意味が変わってしまうため無効化する
+      "capitalized-comments": "off",
       complexity: "off",
       "func-style": ["error", "expression"],
       "id-length": "off",
