@@ -1,13 +1,13 @@
 package schema
 
 import (
-    "regexp"
-    "time"
+	"regexp"
+	"time"
 
-    "entgo.io/ent"
-    "entgo.io/ent/schema/edge"
-    "entgo.io/ent/schema/field"
-    "entgo.io/ent/schema/index"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Workspace holds the schema definition for the Workspace entity.
@@ -18,21 +18,21 @@ type Workspace struct {
 // Fields of the Workspace.
 func (Workspace) Fields() []ent.Field {
 	return []ent.Field{
-        field.String("id").
-            MaxLen(12).
-            MinLen(3).
-            NotEmpty().
-            Unique().
-            Immutable().
-            Match(regexp.MustCompile(`^[a-z0-9][a-z0-9-]*[a-z0-9]$`)),
-        field.String("name").
-            NotEmpty(),
-        field.String("description").
-            Optional(),
-        field.String("icon_url").
-            Optional(),
-        field.Bool("is_public").
-            Default(false),
+		field.String("id").
+			MaxLen(12).
+			MinLen(3).
+			NotEmpty().
+			Unique().
+			Immutable().
+			Match(regexp.MustCompile(`^[a-z0-9][a-z0-9-]*[a-z0-9]$`)),
+		field.String("name").
+			NotEmpty(),
+		field.String("description").
+			Optional(),
+		field.String("icon_url").
+			Optional(),
+		field.Bool("is_public").
+			Default(false),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -59,8 +59,8 @@ func (Workspace) Edges() []ent.Edge {
 
 // Indexes of the Workspace.
 func (Workspace) Indexes() []ent.Index {
-    return []ent.Index{
-        index.Fields("id").Unique(),
-        index.Fields("is_public"),
-    }
+	return []ent.Index{
+		index.Fields("id").Unique(),
+		index.Fields("is_public"),
+	}
 }

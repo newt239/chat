@@ -1,16 +1,18 @@
 import { useMutation } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
 
-import type { components } from "@/lib/api/schema";
+import { api } from "#/lib/api/client";
+import { paths } from "#/lib/paths";
+import { setAuthAtom } from "#/providers/store/auth";
 
-import { api } from "@/lib/api/client";
-import { router } from "@/lib/router";
-import { setAuthAtom } from "@/providers/store/auth";
+import type { components } from "#/lib/api/schema";
 
 type AuthResponse = components["schemas"]["AuthResponse"];
 
-export function useRegister() {
+export const useRegister = () => {
   const setAuth = useSetAtom(setAuthAtom);
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: async (data: { email: string; password: string; displayName: string }) => {
@@ -24,7 +26,7 @@ export function useRegister() {
     },
     onSuccess: (data: AuthResponse) => {
       setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
-      router.navigate({ to: "/app" });
+      void navigate(paths.app());
     },
   });
-}
+};

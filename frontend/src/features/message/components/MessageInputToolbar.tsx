@@ -86,7 +86,9 @@ export const MessageInputToolbar = ({
   // カーソル位置の変更を監視してアクティブなフォーマットを更新
   useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      return;
+    }
 
     const updateActiveFormats = () => {
       const start = textarea.selectionStart;
@@ -133,10 +135,14 @@ export const MessageInputToolbar = ({
 
   const insertFormat = (formatKey: string) => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    if (!textarea) {
+      return;
+    }
 
     const pattern = FORMAT_PATTERNS[formatKey];
-    if (!pattern) return;
+    if (!pattern) {
+      return;
+    }
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -165,7 +171,7 @@ export const MessageInputToolbar = ({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = [...(e.target.files || [])];
     if (files.length > 0) {
       onFileSelect(files);
     }
@@ -199,7 +205,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.bold ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.bold ? "blue" : "gray"}
-          onClick={() => insertFormat("bold")}
+          onClick={() => {
+            insertFormat("bold");
+          }}
           disabled={mode === "preview"}
         >
           <IconBold size={16} />
@@ -209,7 +217,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.italic ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.italic ? "blue" : "gray"}
-          onClick={() => insertFormat("italic")}
+          onClick={() => {
+            insertFormat("italic");
+          }}
           disabled={mode === "preview"}
         >
           <IconItalic size={16} />
@@ -219,7 +229,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.strikethrough ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.strikethrough ? "blue" : "gray"}
-          onClick={() => insertFormat("strikethrough")}
+          onClick={() => {
+            insertFormat("strikethrough");
+          }}
           disabled={mode === "preview"}
         >
           <IconStrikethrough size={16} />
@@ -229,7 +241,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.heading ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.heading ? "blue" : "gray"}
-          onClick={() => insertFormat("heading")}
+          onClick={() => {
+            insertFormat("heading");
+          }}
           disabled={mode === "preview"}
         >
           <IconH1 size={16} />
@@ -239,7 +253,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.link ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.link ? "blue" : "gray"}
-          onClick={() => insertFormat("link")}
+          onClick={() => {
+            insertFormat("link");
+          }}
           disabled={mode === "preview"}
         >
           <IconLink size={16} title="リンクを挿入" />
@@ -249,7 +265,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.code ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.code ? "blue" : "gray"}
-          onClick={() => insertFormat("code")}
+          onClick={() => {
+            insertFormat("code");
+          }}
           disabled={mode === "preview"}
         >
           <IconCode size={16} title="コードを挿入" />
@@ -259,7 +277,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.quote ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.quote ? "blue" : "gray"}
-          onClick={() => insertFormat("quote")}
+          onClick={() => {
+            insertFormat("quote");
+          }}
           disabled={mode === "preview"}
         >
           <IconQuote size={16} title="引用を挿入" />
@@ -269,7 +289,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.list ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.list ? "blue" : "gray"}
-          onClick={() => insertFormat("list")}
+          onClick={() => {
+            insertFormat("list");
+          }}
           disabled={mode === "preview"}
         >
           <IconList size={16} title="箇条書きを挿入" />
@@ -279,7 +301,9 @@ export const MessageInputToolbar = ({
           variant={activeFormats.orderedList ? "filled" : "subtle"}
           size="lg"
           color={activeFormats.orderedList ? "blue" : "gray"}
-          onClick={() => insertFormat("orderedList")}
+          onClick={() => {
+            insertFormat("orderedList");
+          }}
           disabled={mode === "preview"}
         >
           <IconListNumbers size={16} title="番号付きリストを挿入" />

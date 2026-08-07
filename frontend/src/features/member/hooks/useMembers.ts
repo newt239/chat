@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 
-import type { components } from "@/lib/api/schema";
+import { api } from "#/lib/api/client";
 
-import { api } from "@/lib/api/client";
+import type { components } from "#/lib/api/schema";
 
-export function useMembers(workspaceId: string | null) {
-  return useQuery({
+export const useMembers = (workspaceId: string | null) =>
+  useQuery({
     queryKey: ["workspaces", workspaceId, "members"],
     queryFn: async (): Promise<components["schemas"]["MemberInfo"][]> => {
       if (workspaceId === null) {
@@ -24,4 +24,3 @@ export function useMembers(workspaceId: string | null) {
     },
     enabled: workspaceId !== null,
   });
-}

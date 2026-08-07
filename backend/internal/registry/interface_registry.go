@@ -2,6 +2,7 @@ package registry
 
 import (
 	"github.com/labstack/echo/v4"
+
 	"github.com/newt239/chat/internal/interfaces/handler/http"
 	"github.com/newt239/chat/internal/interfaces/handler/http/handler"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
@@ -142,7 +143,7 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		SearchHandler:        r.NewSearchHandler(),
 		DMHandler:            r.NewDMHandler(),
 		ThreadHandler:        r.NewThreadHandler(),
-        UserHandler:          r.NewUserHandler(),
+		UserHandler:          r.NewUserHandler(),
 	}
 
 	return http.NewRouter(routerConfig)

@@ -4,15 +4,14 @@ import type { FormEvent } from "react";
 import { Text, Textarea } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
-import { useMessageInputMode } from "../hooks/useMessageInputMode";
+import { AttachmentList } from "#/features/attachment/components/AttachmentList";
+import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
+import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
+import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
 
+import { useMessageInputMode } from "../hooks/useMessageInputMode";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
-
-import { AttachmentList } from "@/features/attachment/components/AttachmentList";
-import { useFileUpload } from "@/features/attachment/hooks/useFileUpload";
-import { LinkPreviewCard } from "@/features/link/components/LinkPreviewCard";
-import { useLinkPreview } from "@/features/link/hooks/useLinkPreview";
 
 type BaseMessageInputProps = {
   onSubmit: (body: string, attachmentIds: string[]) => void;
@@ -51,7 +50,7 @@ export const BaseMessageInput = ({
       setBody(newValue);
 
       // URLを検出してプレビューを追加・削除
-      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/g;
+      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
       const urls: string[] = newValue.match(urlRegex) || [];
 
       // プレビュー操作はセッター関数の形式で実行
@@ -66,18 +65,20 @@ export const BaseMessageInput = ({
         }
       });
     },
-    [addPreview, removePreview]
+    [addPreview, removePreview],
   );
 
   const handleFileSelect = useCallback(
     async (files: File[]) => {
-      if (!channelId) return;
+      if (!channelId) {
+        return;
+      }
 
       for (const file of files) {
         await uploadFile(file, { channelId });
       }
     },
-    [channelId, uploadFile]
+    [channelId, uploadFile],
   );
 
   const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
@@ -126,7 +127,9 @@ export const BaseMessageInput = ({
           minRows={3}
           autosize
           value={body}
-          onChange={(event) => handleBodyChange(event.currentTarget.value)}
+          onChange={(event) => {
+            handleBodyChange(event.currentTarget.value);
+          }}
           disabled={isPending}
         />
       ) : (
@@ -145,7 +148,9 @@ export const BaseMessageInput = ({
             <LinkPreviewCard
               key={preview.url}
               preview={preview}
-              onRemove={() => removePreview(preview.url)}
+              onRemove={() => {
+                removePreview(preview.url);
+              }}
             />
           ))}
         </div>
@@ -154,7 +159,9 @@ export const BaseMessageInput = ({
       <MessageInputToolbar
         mode={mode}
         onToggleMode={toggleMode}
-        onSubmit={() => handleSubmit()}
+        onSubmit={() => {
+          handleSubmit();
+        }}
         disabled={isDisabled}
         loading={isPending}
         textareaRef={textareaRef}

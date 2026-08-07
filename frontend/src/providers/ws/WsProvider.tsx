@@ -2,9 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { useAtomValue } from "jotai";
 
-import { WsClient } from "@/lib/ws";
-import { accessTokenAtom } from "@/providers/store/auth";
-import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
+import { WsClient } from "#/lib/ws";
+import { accessTokenAtom } from "#/providers/store/auth";
+import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 type WsClientContextValue = {
   wsClient: WsClient | null;

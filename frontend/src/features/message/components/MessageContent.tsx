@@ -1,10 +1,10 @@
 import { Box } from "@mantine/core";
 
+import { LinkPreviewEmbed } from "#/features/link/components/LinkPreviewEmbed";
+
 import { renderMarkdown } from "../utils/markdown/renderer";
 
 import type { MessageWithUser } from "../types";
-
-import { LinkPreviewEmbed } from "@/features/link/components/LinkPreviewEmbed";
 
 type MessageContentProps = {
   message: MessageWithUser;
@@ -22,7 +22,7 @@ export const MessageContent = ({ message }: MessageContentProps) => {
       const mentionPattern = new RegExp(`@${mention.displayName}`, "gi");
       processedText = processedText.replace(
         mentionPattern,
-        `<span class="mention-user bg-blue-100 text-blue-800 px-1 rounded">@${mention.displayName}</span>`
+        `<span class="mention-user bg-blue-100 text-blue-800 px-1 rounded">@${mention.displayName}</span>`,
       );
     });
 
@@ -31,7 +31,7 @@ export const MessageContent = ({ message }: MessageContentProps) => {
       const mentionPattern = new RegExp(`@${group.name}`, "gi");
       processedText = processedText.replace(
         mentionPattern,
-        `<span class="mention-group bg-green-100 text-green-800 px-1 rounded">@${group.name}</span>`
+        `<span class="mention-group bg-green-100 text-green-800 px-1 rounded">@${group.name}</span>`,
       );
     });
 

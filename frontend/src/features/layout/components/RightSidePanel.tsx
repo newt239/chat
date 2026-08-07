@@ -2,22 +2,22 @@ import { ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import type { PanelView } from "@/providers/store/ui";
-
-import { BookmarkList } from "@/features/bookmark/components/BookmarkList";
-import { ChannelInfoPanel } from "@/features/channel/components/ChannelInfoPanel";
-import { ChannelMemberPanel } from "@/features/channel/components/ChannelMemberPanel";
-import { UserProfilePanel } from "@/features/member/components/UserProfilePanel";
-import { NotificationPanel } from "@/features/notification/components/NotificationPanel";
-import { PinnedPanel } from "@/features/pin/components/PinnedPanel";
-import { SearchResultsPanel } from "@/features/search/components/SearchResultsPanel";
-import { ThreadPanel } from "@/features/thread/components/ThreadPanel";
+import { BookmarkList } from "#/features/bookmark/components/BookmarkList";
+import { ChannelInfoPanel } from "#/features/channel/components/ChannelInfoPanel";
+import { ChannelMemberPanel } from "#/features/channel/components/ChannelMemberPanel";
+import { UserProfilePanel } from "#/features/member/components/UserProfilePanel";
+import { NotificationPanel } from "#/features/notification/components/NotificationPanel";
+import { PinnedPanel } from "#/features/pin/components/PinnedPanel";
+import { SearchResultsPanel } from "#/features/search/components/SearchResultsPanel";
+import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
 import {
   rightSidePanelViewAtom,
   hideMobilePanelsAtom,
   closeRightSidePanelAtom,
-} from "@/providers/store/ui";
-import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
+} from "#/providers/store/ui";
+import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
+
+import type { PanelView } from "#/providers/store/ui";
 
 type RightSidePanelProps = {
   className?: string;
@@ -46,49 +46,67 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
 
   const renderPanelContent = (view: PanelView) => {
     switch (view.type) {
-      case "channel-members":
+      case "channel-members": {
         return <ChannelMemberPanel channelId={view.channelId} />;
-      case "channel-info":
+      }
+      case "channel-info": {
         return <ChannelInfoPanel workspaceId={workspaceId} channelId={view.channelId} />;
-      case "thread":
+      }
+      case "thread": {
         return <ThreadPanel threadId={view.threadId} />;
-      case "pins":
+      }
+      case "pins": {
         return <PinnedPanel channelId={view.channelId} />;
-      case "user-profile":
+      }
+      case "user-profile": {
         return <UserProfilePanel workspaceId={workspaceId} userId={view.userId} />;
-      case "search":
+      }
+      case "search": {
         return (
           <SearchResultsPanel workspaceId={workspaceId} query={view.query} filter={view.filter} />
         );
-      case "bookmarks":
+      }
+      case "bookmarks": {
         return <BookmarkList />;
-      case "notifications":
+      }
+      case "notifications": {
         return <NotificationPanel />;
-      case "hidden":
+      }
+      case "hidden": {
         return null;
+      }
     }
   };
 
   const getPanelTitle = (view: PanelView) => {
     switch (view.type) {
-      case "channel-members":
+      case "channel-members": {
         return "メンバー";
-      case "channel-info":
+      }
+      case "channel-info": {
         return "チャンネル情報";
-      case "thread":
+      }
+      case "thread": {
         return "スレッド";
-      case "pins":
+      }
+      case "pins": {
         return "ピン留め";
-      case "user-profile":
+      }
+      case "user-profile": {
         return "ユーザープロフィール";
-      case "search":
+      }
+      case "search": {
         return "検索結果";
-      case "bookmarks":
+      }
+      case "bookmarks": {
         return "ブックマーク";
-      case "notifications":
+      }
+      case "notifications": {
         return "通知";
-      case "hidden":
+      }
+      case "hidden": {
         return "";
+      }
     }
   };
 

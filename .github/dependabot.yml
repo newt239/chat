@@ -1,0 +1,45 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Tokyo"
+      time: "08:00"
+    cooldown:
+      default-days: 7
+    target-branch: "main"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Tokyo"
+      time: "08:00"
+    cooldown:
+      default-days: 7
+    target-branch: "main"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Tokyo"
+      time: "08:00"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/frontend"
+      - "/backend"
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Tokyo"
+      time: "08:00"

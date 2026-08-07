@@ -3,14 +3,13 @@ import { useMemo } from "react";
 import { Group } from "@mantine/core";
 import { useAtomValue } from "jotai";
 
-import { useAddReaction, useRemoveReaction } from "../hooks/useReactions";
+import { userAtom } from "#/providers/store/auth";
 
+import { useAddReaction, useRemoveReaction } from "../hooks/useReactions";
 import AddAnotherEmojiButton from "./AddAnotherEmojiButton";
 import { ReactionButton } from "./ReactionButton";
 
 import type { Reaction, ReactionGroup } from "../types";
-
-import { userAtom } from "@/providers/store/auth";
 
 type ReactionListProps = {
   messageId: string;
@@ -24,7 +23,9 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
 
   // リアクションをグループ化
   const reactionGroups = useMemo((): ReactionGroup[] => {
-    if (!reactions) return [];
+    if (!reactions) {
+      return [];
+    }
 
     const groups = new Map<string, ReactionGroup>();
 
@@ -46,7 +47,7 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
       }
     }
 
-    return Array.from(groups.values());
+    return [...groups.values()];
   }, [reactions, user]);
 
   const handleReactionClick = async (emoji: string, hasUserReacted: boolean) => {
@@ -73,7 +74,7 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
           emoji={group.emoji}
           users={group.users}
           isActive={group.hasUserReacted}
-          onClick={() => handleReactionClick(group.emoji, group.hasUserReacted)}
+          onClick={async () => handleReactionClick(group.emoji, group.hasUserReacted)}
         />
       ))}
       <AddAnotherEmojiButton onClick={handleAddReaction} />

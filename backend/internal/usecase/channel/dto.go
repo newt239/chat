@@ -16,11 +16,11 @@ type CreateChannelInput struct {
 }
 
 type UpdateChannelInput struct {
-    ChannelID   string
-    UserID      string
-    Name        *string
-    Description *string
-    IsPrivate   *bool
+	ChannelID   string
+	UserID      string
+	Name        *string
+	Description *string
+	IsPrivate   *bool
 }
 
 type ChannelOutput struct {

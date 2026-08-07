@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+
 	"github.com/newt239/chat/internal/infrastructure/utils"
-	"github.com/newt239/chat/internal/openapi_gen"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 )
 

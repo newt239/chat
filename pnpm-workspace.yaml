@@ -2,8 +2,15 @@ packages:
   - frontend
   - backend
 
-onlyBuiltDependencies:
-  - esbuild
-  - unrs-resolver
+saveExact: true
 
+# 公開から24時間未満のバージョンを弾く（サプライチェーン攻撃対策）
 minimumReleaseAge: 1440
+
+allowBuilds:
+  core-js: true
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true
+  lefthook: true
+  sharp: true

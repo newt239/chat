@@ -29,7 +29,7 @@ type MessageCreator struct {
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
 	assembler             *MessageOutputAssembler
-    channelAccessSvc      service.ChannelAccessService
+	channelAccessSvc      service.ChannelAccessService
 }
 
 func NewMessageCreator(
@@ -49,7 +49,7 @@ func NewMessageCreator(
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
-    channelAccessSvc service.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 ) *MessageCreator {
 	return &MessageCreator{
 		messageRepo:           messageRepo,
@@ -69,12 +69,12 @@ func NewMessageCreator(
 		linkProcessingService: linkProcessingService,
 		transactionManager:    transactionManager,
 		assembler:             NewMessageOutputAssembler(),
-        channelAccessSvc:      channelAccessSvc,
+		channelAccessSvc:      channelAccessSvc,
 	}
 }
 
 func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageInput) (*MessageOutput, error) {
-    channel, err := c.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+	channel, err := c.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}

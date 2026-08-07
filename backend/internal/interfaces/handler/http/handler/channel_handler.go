@@ -3,10 +3,11 @@ package handler
 import (
 	"net/http"
 
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+
 	"github.com/newt239/chat/internal/infrastructure/utils"
-	"github.com/newt239/chat/internal/openapi_gen"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 )
 

@@ -548,7 +548,7 @@ type Workspace struct {
 	IconUrl     *string            `json:"iconUrl"`
 
 	// Id slug identifier (3-12 chars, lowercase, digits, hyphen)
-	Id       *string        `json:"id,omitempty"`
+	Id       string         `json:"id"`
 	IsPublic *bool          `json:"isPublic,omitempty"`
 	Name     string         `json:"name"`
 	Role     *WorkspaceRole `json:"role,omitempty"`

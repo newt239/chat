@@ -3,9 +3,9 @@ import { useMemo } from "react";
 import { Badge, Loader, Stack, Text, Divider } from "@mantine/core";
 import { useAtomValue } from "jotai";
 
-import { ChannelSettingsPanel } from "@/features/channel/components/ChannelSettingsPanel";
-import { useChannels } from "@/features/channel/hooks/useChannel";
-import { currentChannelIdAtom } from "@/providers/store/workspace";
+import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
+import { useChannels } from "#/features/channel/hooks/useChannel";
+import { currentChannelIdAtom } from "#/providers/store/workspace";
 
 type ChannelInfoPanelProps = {
   workspaceId: string;

@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+
 	"github.com/newt239/chat/internal/infrastructure/utils"
 	openapi "github.com/newt239/chat/internal/openapi_gen"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type MessageHandler struct {

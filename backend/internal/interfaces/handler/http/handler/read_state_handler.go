@@ -7,7 +7,7 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
-	"github.com/newt239/chat/internal/openapi_gen"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 )
 

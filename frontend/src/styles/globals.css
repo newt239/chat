@@ -1,4 +1,8 @@
-@import "tailwindcss";
+/* Mantine のスタイルと競合させないため preflight(base レイヤー)は読み込まない。
+   Tailwind v4 は CSS-first 設定のため、JS 側の corePlugins.preflight では無効化できない。 */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
 :root {
   color-scheme: light dark;

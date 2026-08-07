@@ -39,19 +39,19 @@ func (s *WebSocketNotificationService) NotifyNewMessage(workspaceID string, chan
 
 // NotifySystemMessageCreated はシステムメッセージ作成をチャンネル購読者に通知します
 func (s *WebSocketNotificationService) NotifySystemMessageCreated(workspaceID string, channelID string, message interface{}) {
-    payload := map[string]interface{}{
-        "channelId": channelID,
-        "message":   convertToMap(message),
-    }
+	payload := map[string]interface{}{
+		"channelId": channelID,
+		"message":   convertToMap(message),
+	}
 
-    data, err := websocket.SendServerMessage(websocket.EventTypeSystemMessageCreated, payload)
-    if err != nil {
-        log.Printf("system_message_createdイベントのエンコードに失敗しました: %v", err)
-        return
-    }
+	data, err := websocket.SendServerMessage(websocket.EventTypeSystemMessageCreated, payload)
+	if err != nil {
+		log.Printf("system_message_createdイベントのエンコードに失敗しました: %v", err)
+		return
+	}
 
-    s.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
-    log.Printf("Notified system message to workspace=%s channel=%s", workspaceID, channelID)
+	s.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
+	log.Printf("Notified system message to workspace=%s channel=%s", workspaceID, channelID)
 }
 
 // NotifyReaction はリアクション追加をチャンネル購読者に通知します
@@ -189,7 +189,7 @@ func convertStructToMap(data interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	v := reflect.ValueOf(data)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 

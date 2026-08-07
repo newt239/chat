@@ -4,13 +4,13 @@ import { Divider, Loader, Stack, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
-import { MessageItem } from "@/features/message/components/MessageItem";
-import { ThreadReplyInput } from "@/features/message/components/ThreadReplyInput";
-import { ThreadReplyList } from "@/features/message/components/ThreadReplyList";
-import { useThreadReplies, useSendThreadReply } from "@/features/message/hooks/useThread";
-import { userAtom } from "@/providers/store/auth";
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
-import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
+import { MessageItem } from "#/features/message/components/MessageItem";
+import { ThreadReplyInput } from "#/features/message/components/ThreadReplyInput";
+import { ThreadReplyList } from "#/features/message/components/ThreadReplyList";
+import { useThreadReplies, useSendThreadReply } from "#/features/message/hooks/useThread";
+import { userAtom } from "#/providers/store/auth";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
+import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 type ThreadPanelProps = {
   threadId: string;
@@ -50,21 +50,21 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
         message: "メッセージリンクをクリップボードにコピーしました",
       });
     },
-    [currentWorkspaceId, currentChannelId]
+    [currentWorkspaceId, currentChannelId],
   );
 
   const handleCreateThread = useCallback(
     (msgId: string) => {
       setRightSidePanelView({ type: "thread", threadId: msgId });
     },
-    [setRightSidePanelView]
+    [setRightSidePanelView],
   );
 
   const handleSendReply = useCallback(
     (body: string) => {
       sendReply.mutate({ body });
     },
-    [sendReply]
+    [sendReply],
   );
 
   if (!currentWorkspaceId || !currentChannelId) {

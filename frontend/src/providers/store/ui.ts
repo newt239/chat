@@ -35,7 +35,7 @@ const defaultLayoutState: LayoutState = {
 // レイアウト状態のAtom（ストレージ保持用と実際に利用する値を分離して、欠損プロパティを補完）
 const layoutStateStorageAtom = atomWithStorage<LayoutState>(
   "ui-storage:layoutState",
-  defaultLayoutState
+  defaultLayoutState,
 );
 
 const layoutStateAtom = atom(
@@ -54,7 +54,7 @@ const layoutStateAtom = atom(
       pinsCountByChannel: update.pinsCountByChannel ?? defaultLayoutState.pinsCountByChannel,
     };
     set(layoutStateStorageAtom, next);
-  }
+  },
 );
 
 // 個別の状態を取得するAtom
@@ -79,7 +79,7 @@ export const setChannelPinsCountAtom = atom(
         [payload.channelId]: payload.count,
       },
     });
-  }
+  },
 );
 
 // チャンネルのピン件数をインクリメント/デクリメント
@@ -96,7 +96,7 @@ export const addChannelPinsDeltaAtom = atom(
         [payload.channelId]: next,
       },
     });
-  }
+  },
 );
 
 // 左サイドパネルを表示する

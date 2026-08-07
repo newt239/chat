@@ -19,8 +19,8 @@ type WorkspaceRepository interface {
 	FindMember(ctx context.Context, workspaceID string, userID string) (*entity.WorkspaceMember, error)
 	SearchMembers(ctx context.Context, workspaceID string, query string, limit int, offset int) ([]*entity.WorkspaceMember, int, error)
 
-    // 新規メソッド
-    FindAllPublic(ctx context.Context) ([]*entity.Workspace, error)
-    CountMembers(ctx context.Context, workspaceID string) (int, error)
-    ExistsByID(ctx context.Context, id string) (bool, error)
+	// 新規メソッド
+	FindAllPublic(ctx context.Context) ([]*entity.Workspace, error)
+	CountMembers(ctx context.Context, workspaceID string) (int, error)
+	ExistsByID(ctx context.Context, id string) (bool, error)
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 

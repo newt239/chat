@@ -1,10 +1,10 @@
 # ビルドステージ
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
-# pnpmをインストール
-RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
+# Node 25 以降 corepack は同梱されない
+RUN npm install -g pnpm@11.20.0
 
 # ワークスペース設定をコピー
 COPY pnpm-workspace.yaml package.json ./

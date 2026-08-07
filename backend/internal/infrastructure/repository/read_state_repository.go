@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
@@ -12,9 +13,9 @@ import (
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"

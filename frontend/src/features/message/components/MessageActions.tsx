@@ -19,12 +19,12 @@ import {
   useAddBookmark,
   useRemoveBookmark,
   useIsBookmarked,
-} from "@/features/bookmark/hooks/useBookmarks";
-import { usePinActions } from "@/features/pin/hooks/usePinActions";
-import { useIsPinned } from "@/features/pin/hooks/usePinnedMessages";
-import { EmojiPicker } from "@/features/reaction/components/EmojiPicker";
-import { useAddReaction } from "@/features/reaction/hooks/useReactions";
-import { currentChannelIdAtom } from "@/providers/store/workspace";
+} from "#/features/bookmark/hooks/useBookmarks";
+import { usePinActions } from "#/features/pin/hooks/usePinActions";
+import { useIsPinned } from "#/features/pin/hooks/usePinnedMessages";
+import { EmojiPicker } from "#/features/reaction/components/EmojiPicker";
+import { useAddReaction } from "#/features/reaction/hooks/useReactions";
+import { currentChannelIdAtom } from "#/providers/store/workspace";
 
 type MessageActionsProps = {
   messageId: string;
@@ -87,7 +87,9 @@ export const MessageActions = ({
           <ActionIcon
             variant="subtle"
             size="sm"
-            onClick={() => setEmojiPickerOpened((o) => !o)}
+            onClick={() => {
+              setEmojiPickerOpened((o) => !o);
+            }}
             title="リアクションを追加"
           >
             <IconMoodSmile size={16} />
@@ -101,7 +103,9 @@ export const MessageActions = ({
       <ActionIcon
         variant="subtle"
         size="sm"
-        onClick={() => onCreateThread(messageId)}
+        onClick={() => {
+          onCreateThread(messageId);
+        }}
         title="スレッドで返信"
       >
         <IconMessage size={16} />
@@ -126,11 +130,18 @@ export const MessageActions = ({
         <Menu.Dropdown>
           <Menu.Item
             leftSection={<IconMessage size={14} />}
-            onClick={() => onCreateThread(messageId)}
+            onClick={() => {
+              onCreateThread(messageId);
+            }}
           >
             スレッドで返信
           </Menu.Item>
-          <Menu.Item leftSection={<IconLink size={14} />} onClick={() => onCopyLink(messageId)}>
+          <Menu.Item
+            leftSection={<IconLink size={14} />}
+            onClick={() => {
+              onCopyLink(messageId);
+            }}
+          >
             リンクをコピー
           </Menu.Item>
           <Menu.Item leftSection={<IconBookmark size={14} />} onClick={handleBookmarkToggle}>
@@ -138,12 +149,19 @@ export const MessageActions = ({
           </Menu.Item>
           <Menu.Item
             leftSection={<IconPin size={14} />}
-            onClick={() => (isPinned ? unpin.mutate({ messageId }) : pin.mutate({ messageId }))}
+            onClick={() => {
+              isPinned ? unpin.mutate({ messageId }) : pin.mutate({ messageId });
+            }}
           >
             {isPinned ? "ピン留めを解除" : "ピン留めする"}
           </Menu.Item>
           {isAuthor && !isDeleted && onEditRequest && (
-            <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => onEditRequest()}>
+            <Menu.Item
+              leftSection={<IconEdit size={14} />}
+              onClick={() => {
+                onEditRequest();
+              }}
+            >
               メッセージを編集
             </Menu.Item>
           )}

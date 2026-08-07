@@ -46,9 +46,9 @@ func (r *channelRepository) FindByID(ctx context.Context, id string) (*entity.Ch
 }
 
 func (r *channelRepository) FindByWorkspaceID(ctx context.Context, workspaceID string) ([]*entity.Channel, error) {
-    client := transaction.ResolveClient(ctx, r.client)
-    channels, err := client.Channel.Query().
-        Where(channel.HasWorkspaceWith(workspace.ID(workspaceID))).
+	client := transaction.ResolveClient(ctx, r.client)
+	channels, err := client.Channel.Query().
+		Where(channel.HasWorkspaceWith(workspace.ID(workspaceID))).
 		WithWorkspace().
 		WithCreatedBy().
 		Order(ent.Asc(channel.FieldCreatedAt)).
@@ -73,7 +73,7 @@ func (r *channelRepository) FindByWorkspaceIDAndUserID(ctx context.Context, work
 
 	client := transaction.ResolveClient(ctx, r.client)
 	query := client.Channel.Query().
-        Where(channel.HasWorkspaceWith(workspace.ID(workspaceID)))
+		Where(channel.HasWorkspaceWith(workspace.ID(workspaceID)))
 
 	if includePrivate {
 		query = query.Where(
@@ -104,7 +104,7 @@ func (r *channelRepository) FindByWorkspaceIDAndUserID(ctx context.Context, work
 }
 
 func (r *channelRepository) Create(ctx context.Context, ch *entity.Channel) error {
-    // workspaceID is slug (string)
+	// workspaceID is slug (string)
 	createdBy, err := utils.ParseUUID(ch.CreatedBy, "created_by user ID")
 	if err != nil {
 		return err
@@ -112,8 +112,8 @@ func (r *channelRepository) Create(ctx context.Context, ch *entity.Channel) erro
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-    builder := client.Channel.Create().
-        SetWorkspaceID(ch.WorkspaceID).
+	builder := client.Channel.Create().
+		SetWorkspaceID(ch.WorkspaceID).
 		SetCreatedByID(createdBy).
 		SetName(ch.Name).
 		SetIsPrivate(ch.IsPrivate).
@@ -208,9 +208,9 @@ func (r *channelRepository) SearchAccessibleChannels(ctx context.Context, worksp
 	client := transaction.ResolveClient(ctx, r.client)
 	trimmedQuery := strings.TrimSpace(query)
 
-    channelQuery := client.Channel.Query().
-        Where(
-            channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+	channelQuery := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uID))),
 		)
 
@@ -262,9 +262,9 @@ func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspac
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-    channels, err := client.Channel.Query().
-        Where(
-            channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+	channels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uID))),
 		).
 		WithWorkspace(func(q *ent.WorkspaceQuery) {
@@ -298,9 +298,9 @@ func (r *channelRepository) FindOrCreateDM(ctx context.Context, workspaceID stri
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-    existingChannels, err := client.Channel.Query().
-        Where(
-            channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+	existingChannels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.ChannelTypeEQ("dm"),
 			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid1))),
 			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid2))),
@@ -348,9 +348,9 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-    existingChannels, err := client.Channel.Query().
-        Where(
-            channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+	existingChannels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.ChannelTypeEQ("group_dm"),
 			channel.HasCreatedByWith(user.ID(cID)),
 		).
@@ -392,7 +392,7 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 		channelName = "group_dm_" + cID.String()
 	}
 
-    groupDMChannel := &entity.Channel{
+	groupDMChannel := &entity.Channel{
 		WorkspaceID: workspaceID,
 		Name:        channelName,
 		IsPrivate:   true,
@@ -414,9 +414,9 @@ func (r *channelRepository) FindUserDMs(ctx context.Context, workspaceID string,
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-    channels, err := client.Channel.Query().
-        Where(
-            channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+	channels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.ChannelTypeIn("dm", "group_dm"),
 			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uID))),
 		).

@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
-	"github.com/newt239/chat/internal/openapi_gen"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 )
 

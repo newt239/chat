@@ -35,25 +35,25 @@ type ThreadRepository interface {
 }
 
 type FindParticipatingThreadsInput struct {
-	WorkspaceID         string
-	UserID              string
+	WorkspaceID          string
+	UserID               string
 	CursorLastActivityAt *time.Time
-	CursorThreadID      *string
-	Limit               int
+	CursorThreadID       *string
+	Limit                int
 }
 
 type ParticipatingThread struct {
-	ThreadID        string
-	ChannelID       *string
-	FirstMessage    *entity.Message
-	ReplyCount      int
-	LastActivityAt  time.Time
-	UnreadCount     int
+	ThreadID       string
+	ChannelID      *string
+	FirstMessage   *entity.Message
+	ReplyCount     int
+	LastActivityAt time.Time
+	UnreadCount    int
 }
 
 type FindParticipatingThreadsOutput struct {
-	Items              []ParticipatingThread
-	NextCursor         *ThreadCursor
+	Items      []ParticipatingThread
+	NextCursor *ThreadCursor
 }
 
 type ThreadCursor struct {

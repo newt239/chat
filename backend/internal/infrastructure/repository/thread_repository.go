@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
@@ -189,19 +190,19 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 }
 
 func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input domainrepository.FindParticipatingThreadsInput) (*domainrepository.FindParticipatingThreadsOutput, error) {
-    userID, err := utils.ParseUUID(input.UserID, "user ID")
+	userID, err := utils.ParseUUID(input.UserID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-    // workspace ID is slug (string)
+	// workspace ID is slug (string)
 
 	client := transaction.ResolveClient(ctx, r.client)
 
 	// 参加しているワークスペースとチャンネルのIDを取得
-    workspaceMember, err := client.WorkspaceMember.Query().
+	workspaceMember, err := client.WorkspaceMember.Query().
 		Where(
 			workspacemember.HasUserWith(user.ID(userID)),
-            workspacemember.HasWorkspaceWith(workspace.ID(input.WorkspaceID)),
+			workspacemember.HasWorkspaceWith(workspace.ID(input.WorkspaceID)),
 		).
 		Only(ctx)
 	if err != nil {

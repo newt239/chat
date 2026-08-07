@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
+
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/logger"
-	"go.uber.org/zap"
 )
 
 // HandleUseCaseError はユースケースのエラーをHTTPステータスコードに変換します

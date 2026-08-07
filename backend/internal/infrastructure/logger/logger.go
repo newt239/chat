@@ -1,8 +1,9 @@
 package logger
 
 import (
-	"github.com/newt239/chat/internal/domain/service"
 	"go.uber.org/zap"
+
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 var globalLogger *zap.Logger

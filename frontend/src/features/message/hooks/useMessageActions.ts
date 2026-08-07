@@ -2,7 +2,7 @@ import { useCallback } from "react";
 
 import { notifications } from "@mantine/notifications";
 
-import { useDeleteMessage, useUpdateMessage } from "@/features/message/hooks/useMessage";
+import { useDeleteMessage, useUpdateMessage } from "#/features/message/hooks/useMessage";
 
 const resolveErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error && error.message) {
@@ -32,7 +32,7 @@ export const useMessageActions = (currentChannelId: string | null) => {
         throw error;
       }
     },
-    [updateMessage]
+    [updateMessage],
   );
 
   const handleDelete = useCallback(
@@ -51,10 +51,8 @@ export const useMessageActions = (currentChannelId: string | null) => {
         });
       }
     },
-    [deleteMessage]
+    [deleteMessage],
   );
 
   return { handleEdit, handleDelete };
 };
-
-

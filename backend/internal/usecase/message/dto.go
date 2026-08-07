@@ -109,8 +109,8 @@ type MessageOutput struct {
 }
 
 type ListMessagesOutput struct {
-    Messages []TimelineItem `json:"messages"`
-	HasMore  bool            `json:"hasMore"`
+	Messages []TimelineItem `json:"messages"`
+	HasMore  bool           `json:"hasMore"`
 }
 
 type ThreadMetadataOutput struct {
@@ -145,20 +145,20 @@ type MessageWithThreadOutput struct {
 
 // SystemMessageOutput はシステムメッセージの出力です
 type SystemMessageOutput struct {
-    ID        string                 `json:"id"`
-    ChannelID string                 `json:"channelId"`
-    Kind      string                 `json:"kind"`
-    Payload   map[string]any         `json:"payload"`
-    ActorID   *string                `json:"actorId,omitempty"`
-    CreatedAt time.Time              `json:"createdAt"`
+	ID        string         `json:"id"`
+	ChannelID string         `json:"channelId"`
+	Kind      string         `json:"kind"`
+	Payload   map[string]any `json:"payload"`
+	ActorID   *string        `json:"actorId,omitempty"`
+	CreatedAt time.Time      `json:"createdAt"`
 }
 
 // TimelineItem はユーザー/システム両メッセージの統合タイムライン項目です
 type TimelineItem struct {
-    Type          string               `json:"type"` // "user" | "system"
-    UserMessage   *MessageOutput       `json:"userMessage,omitempty"`
-    SystemMessage *SystemMessageOutput `json:"systemMessage,omitempty"`
-    CreatedAt     time.Time            `json:"createdAt"`
+	Type          string               `json:"type"` // "user" | "system"
+	UserMessage   *MessageOutput       `json:"userMessage,omitempty"`
+	SystemMessage *SystemMessageOutput `json:"systemMessage,omitempty"`
+	CreatedAt     time.Time            `json:"createdAt"`
 }
 
 // RelatedData はメッセージに関連するデータをまとめた構造体です

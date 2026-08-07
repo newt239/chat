@@ -1,8 +1,8 @@
 import { Avatar, Badge, Card, Loader, Stack, Text } from "@mantine/core";
 import { useSetAtom } from "jotai";
 
-import { useWorkspaceSearch } from "@/features/search/hooks/useWorkspaceSearchIndex";
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
+import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearchIndex";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
 
@@ -126,7 +126,9 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
                 padding="md"
                 radius="md"
                 className="cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleUserClick(member.userId)}
+                onClick={() => {
+                  handleUserClick(member.userId);
+                }}
               >
                 <div className="flex items-center gap-3">
                   <Avatar src={member.avatarUrl ?? undefined} radius="xl" size="md" />

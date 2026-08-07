@@ -1,10 +1,11 @@
 import createClient from "openapi-fetch";
 
-import type { paths } from "./schema";
+import { navigateTo } from "#/lib/navigation";
+import { paths as routePaths } from "#/lib/paths";
+import { store } from "#/providers/store";
+import { accessTokenAtom, authAtom, clearAuthAtom, refreshTokenAtom } from "#/providers/store/auth";
 
-import { router } from "@/lib/router";
-import { store } from "@/providers/store";
-import { accessTokenAtom, authAtom, clearAuthAtom, refreshTokenAtom } from "@/providers/store/auth";
+import type { paths } from "./schema";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -33,12 +34,16 @@ export const api = createClient<paths>({
 });
 
 // リフレッシュトークンを使用してアクセストークンを更新する関数
-async function refreshAccessToken(): Promise<string | null> {
-  if (refreshPromise) return refreshPromise;
+const refreshAccessToken = async (): Promise<string | null> => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
 
   refreshPromise = (async () => {
     const refreshToken = getRefreshToken();
-    if (!refreshToken) return null;
+    if (!refreshToken) {
+      return null;
+    }
     try {
       const { data, error } = await api.POST("/api/auth/refresh", {
         body: { refreshToken },
@@ -56,7 +61,7 @@ async function refreshAccessToken(): Promise<string | null> {
   })();
 
   return refreshPromise;
-}
+};
 
 // 401時の再試行用リクエスト生成
 const buildRetriedRequest = (source: Request, token: string) => {
@@ -101,7 +106,7 @@ api.use({
 
     // リフレッシュ失敗時は認証情報をクリアしてログイン画面へ
     resetAuthState();
-    router.navigate({ to: "/login" });
+    navigateTo(routePaths.login());
     return response;
   },
 });

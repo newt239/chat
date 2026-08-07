@@ -1,4 +1,4 @@
-import type { MessageWithThread, SystemMessage } from "@/features/message/schemas";
+import type { MessageWithThread, SystemMessage } from "#/features/message/schemas";
 
 type ClientEventType =
   | "join_channel"

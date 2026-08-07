@@ -7,7 +7,7 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"github.com/newt239/chat/internal/infrastructure/utils"
-	"github.com/newt239/chat/internal/openapi_gen"
+	openapi "github.com/newt239/chat/internal/openapi_gen"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -129,11 +129,11 @@ func (h *WorkspaceHandler) ListPublicWorkspaces(c echo.Context) error {
 		return utils.HandleAuthError()
 	}
 
-    out, err := h.WorkspaceUC.ListPublicWorkspaces(c.Request().Context(), userID)
-    if err != nil {
-        return handleUseCaseError(err)
-    }
-    return c.JSON(http.StatusOK, out)
+	out, err := h.WorkspaceUC.ListPublicWorkspaces(c.Request().Context(), userID)
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+	return c.JSON(http.StatusOK, out)
 }
 
 func (h *WorkspaceHandler) JoinPublicWorkspace(c echo.Context, id string) error {

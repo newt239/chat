@@ -9,7 +9,7 @@ type CreateChannelModalProps = {
   workspaceId: string | null;
   opened: boolean;
   onClose: () => void;
-}
+};
 
 export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChannelModalProps) => {
   const [name, setName] = useState("");
@@ -28,7 +28,7 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
           setIsPrivate(false);
           onClose();
         },
-      }
+      },
     );
   };
 
@@ -41,7 +41,9 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
           label="チャンネル名"
           placeholder="例: general"
           value={name}
-          onChange={(event) => setName(event.currentTarget.value)}
+          onChange={(event) => {
+            setName(event.currentTarget.value);
+          }}
           required
           className="mb-4"
           disabled={workspaceId === null}
@@ -51,7 +53,9 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
           label="説明（任意）"
           placeholder="チャンネルの目的を記載"
           value={description}
-          onChange={(event) => setDescription(event.currentTarget.value)}
+          onChange={(event) => {
+            setDescription(event.currentTarget.value);
+          }}
           className="mb-4"
           disabled={workspaceId === null}
         />
@@ -59,7 +63,9 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
         <Switch
           label="プライベートチャンネルにする"
           checked={isPrivate}
-          onChange={(event) => setIsPrivate(event.currentTarget.checked)}
+          onChange={(event) => {
+            setIsPrivate(event.currentTarget.checked);
+          }}
           className="mb-4"
           disabled={workspaceId === null}
         />

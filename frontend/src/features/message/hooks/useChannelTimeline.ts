@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { messageWithThreadSchema, timelineItemSchema } from "#/features/message/schemas";
 
-import type { TimelineItem } from "@/features/message/schemas";
-import type { NewMessagePayload, SystemMessageCreatedPayload } from "@/types/wsEvents";
+import type { TimelineItem } from "#/features/message/schemas";
+import type { NewMessagePayload, SystemMessageCreatedPayload } from "#/types/wsEvents";
 
-import { messageWithThreadSchema, timelineItemSchema } from "@/features/message/schemas";
 type WsClientMinimal = {
   joinChannel: (channelId: string) => void;
   leaveChannel: (channelId: string) => void;
@@ -29,20 +29,26 @@ export const useChannelTimeline = ({
 
   // 初期ロード・チャンネル変更時に初期化
   useEffect(() => {
-    setTimeline((initialMessages ?? []) as TimelineItem[]);
+    setTimeline(initialMessages ?? []);
   }, [initialMessages, currentChannelId]);
 
   // WS 購読と join/leave 管理
   useEffect(() => {
-    if (!wsClient || !currentChannelId) return;
+    if (!wsClient || !currentChannelId) {
+      return;
+    }
     wsClient.joinChannel(currentChannelId);
 
     const handleNewMessage = (payload: NewMessagePayload) => {
       const result = messageWithThreadSchema.safeParse(payload.message);
-      if (!result.success) return;
+      if (!result.success) {
+        return;
+      }
       setTimeline((prev: TimelineItem[]): TimelineItem[] => {
         const exists = prev.some((m) => m.type === "user" && m.userMessage?.id === result.data.id);
-        if (exists) return prev;
+        if (exists) {
+          return prev;
+        }
         return [
           ...prev,
           { type: "user", userMessage: result.data, createdAt: result.data.createdAt },
@@ -52,11 +58,15 @@ export const useChannelTimeline = ({
 
     const handleSystem = (payload: SystemMessageCreatedPayload) => {
       const parsed = timelineItemSchema.shape.systemMessage.unwrap().safeParse(payload.message);
-      if (!parsed.success) return;
+      if (!parsed.success) {
+        return;
+      }
       const sys = parsed.data;
       setTimeline((prev) => {
         const exists = prev.some((i) => i.type === "system" && i.systemMessage?.id === sys.id);
-        if (exists) return prev;
+        if (exists) {
+          return prev;
+        }
         return [...prev, { type: "system", systemMessage: sys, createdAt: sys.createdAt }];
       });
     };
@@ -85,13 +95,13 @@ export const useChannelTimeline = ({
         return (
           index ===
           self.findIndex(
-            (i) => i.type === "system" && i.systemMessage?.id === item.systemMessage?.id
+            (i) => i.type === "system" && i.systemMessage?.id === item.systemMessage?.id,
           )
         );
       }
       return true;
     });
-    return unique.sort((a: TimelineItem, b: TimelineItem) => {
+    return unique.toSorted((a: TimelineItem, b: TimelineItem) => {
       const at = new Date(a.createdAt).getTime();
       const bt = new Date(b.createdAt).getTime();
       return at - bt;
@@ -100,5 +110,3 @@ export const useChannelTimeline = ({
 
   return { orderedItems };
 };
-
-

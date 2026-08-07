@@ -1,9 +1,9 @@
-FROM node:20-alpine
+FROM node:26-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
+# Node 25 以降 corepack は同梱されない
+RUN npm install -g pnpm@11.20.0
 
 # Copy workspace configuration
 COPY pnpm-workspace.yaml package.json ./
@@ -25,4 +25,4 @@ WORKDIR /app/frontend
 EXPOSE 5173
 
 # Run dev server (install dependencies first in case volumes are empty)
-CMD ["sh", "-c", "pnpm install --frozen-lockfile && pnpm dev --host 0.0.0.0"]
+CMD ["sh", "-c", "pnpm install --frozen-lockfile && pnpm run dev"]

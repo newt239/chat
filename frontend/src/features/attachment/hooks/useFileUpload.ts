@@ -87,8 +87,7 @@ export const useFileUpload = () => {
 
         return presignData.attachmentId;
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "アップロードに失敗しました";
+        const errorMessage = error instanceof Error ? error.message : "アップロードに失敗しました";
 
         setPendingAttachments((prev) => {
           const next = [...prev];
@@ -104,7 +103,7 @@ export const useFileUpload = () => {
         return null;
       }
     },
-    [pendingAttachments.length, presignMutation]
+    [pendingAttachments.length, presignMutation],
   );
 
   const removeAttachment = useCallback((index: number) => {
@@ -115,13 +114,16 @@ export const useFileUpload = () => {
     setPendingAttachments([]);
   }, []);
 
-  const getCompletedAttachmentIds = useCallback((): string[] => {
-    return pendingAttachments
-      .filter((a): a is PendingAttachment & { state: { status: "completed"; attachmentId: string } } =>
-        a.state.status === "completed"
-      )
-      .map((a) => a.state.attachmentId);
-  }, [pendingAttachments]);
+  const getCompletedAttachmentIds = useCallback(
+    (): string[] =>
+      pendingAttachments
+        .filter(
+          (a): a is PendingAttachment & { state: { status: "completed"; attachmentId: string } } =>
+            a.state.status === "completed",
+        )
+        .map((a) => a.state.attachmentId),
+    [pendingAttachments],
+  );
 
   return {
     pendingAttachments,
@@ -130,7 +132,7 @@ export const useFileUpload = () => {
     clearAttachments,
     getCompletedAttachmentIds,
     isUploading: pendingAttachments.some(
-      (a) => a.state.status === "uploading" || a.state.status === "presigning"
+      (a) => a.state.status === "uploading" || a.state.status === "presigning",
     ),
   };
 };
@@ -138,9 +140,9 @@ export const useFileUpload = () => {
 const uploadToWasabi = async (
   file: File,
   uploadUrl: string,
-  onProgress: (progress: number) => void
-): Promise<void> => {
-  return new Promise((resolve, reject) => {
+  onProgress: (progress: number) => void,
+): Promise<void> =>
+  new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
     xhr.upload.addEventListener("progress", (e) => {
@@ -170,4 +172,3 @@ const uploadToWasabi = async (
     xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
     xhr.send(file);
   });
-};

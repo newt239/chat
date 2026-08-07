@@ -21,7 +21,9 @@ const AddAnotherEmojiButton = ({ onClick }: AddAnotherEmojiButtonProps) => {
     <Popover opened={emojiPickerOpened} onChange={setEmojiPickerOpened}>
       <Popover.Target>
         <ActionIcon
-          onClick={() => setEmojiPickerOpened((o) => !o)}
+          onClick={() => {
+            setEmojiPickerOpened((o) => !o);
+          }}
           variant="outline"
           color="cyan"
           radius="full"

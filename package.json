@@ -4,17 +4,27 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
+    "preview": "turbo run preview",
     "test": "turbo run test",
     "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "format:fix": "turbo run format:fix",
     "typecheck": "turbo run typecheck",
-    "storybook": "turbo run storybook",
+    "knip": "turbo run knip",
+    "ls-lint": "turbo run ls-lint",
+    "codecheck": "turbo run codecheck",
     "clean": "./scripts/clean.sh",
     "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",
-    "openapi:bundle": "redocly bundle openapi/openapi.yaml -o openapi/bundled.yaml"
+    "openapi:bundle": "redocly bundle openapi/openapi.yaml -o openapi/bundled.yaml",
+    "generate:api": "openapi-typescript openapi/openapi.yaml -o frontend/src/lib/api/schema.ts"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.14.1",
-    "turbo": "2.7.2"
+    "@redocly/cli": "2.19.1",
+    "lefthook": "2.1.10",
+    "openapi-typescript": "7.13.0",
+    "turbo": "2.8.10",
+    "typescript": "5.9.3"
   },
-  "packageManager": "pnpm@10.19.0"
+  "packageManager": "pnpm@11.20.0"
 }

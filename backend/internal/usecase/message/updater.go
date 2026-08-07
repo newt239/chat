@@ -28,7 +28,7 @@ type MessageUpdater struct {
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
 	assembler             *MessageOutputAssembler
-    channelAccessSvc      service.ChannelAccessService
+	channelAccessSvc      service.ChannelAccessService
 }
 
 // NewMessageUpdater は新しいMessageUpdaterを作成します
@@ -47,7 +47,7 @@ func NewMessageUpdater(
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
-    channelAccessSvc service.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 ) *MessageUpdater {
 	return &MessageUpdater{
 		messageRepo:           messageRepo,
@@ -65,7 +65,7 @@ func NewMessageUpdater(
 		linkProcessingService: linkProcessingService,
 		transactionManager:    transactionManager,
 		assembler:             NewMessageOutputAssembler(),
-        channelAccessSvc:      channelAccessSvc,
+		channelAccessSvc:      channelAccessSvc,
 	}
 }
 
@@ -81,7 +81,7 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 	}
 
 	// チャンネルアクセス確認
-    channel, err := u.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.EditorID)
+	channel, err := u.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.EditorID)
 	if err != nil {
 		return nil, err
 	}

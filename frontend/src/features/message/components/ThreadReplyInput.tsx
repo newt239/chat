@@ -21,7 +21,7 @@ export const ThreadReplyInput = ({
     (body: string) => {
       onSubmit(body);
     },
-    [onSubmit]
+    [onSubmit],
   );
 
   return (

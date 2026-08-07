@@ -1,16 +1,10 @@
-import { RouterProvider } from "@tanstack/react-router";
+import { RouterProvider } from "react-router";
 
-import { router } from "@/lib/router";
-import { AuthInitializer } from "@/providers/auth/AuthInitializer";
-import { WsProvider } from "@/providers/ws/WsProvider";
+import { router } from "#/lib/router";
+import { WsProvider } from "#/providers/ws/WsProvider";
 
-export const App = () => {
-  return (
-    <>
-      <AuthInitializer />
-      <WsProvider>
-        <RouterProvider router={router} />
-      </WsProvider>
-    </>
-  );
-};
+export const App = () => (
+  <WsProvider>
+    <RouterProvider router={router} />
+  </WsProvider>
+);

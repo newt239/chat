@@ -2,15 +2,16 @@ import { useCallback } from "react";
 
 import { ActionIcon, Badge, Card, ScrollArea, Stack, Text } from "@mantine/core";
 import { IconBell, IconX } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
 
+import { paths } from "#/lib/paths";
 import {
   markNotificationAsReadAtom,
   removeNotificationAtom,
   type NotificationItem,
   notificationItemsAtom,
-} from "@/providers/store/notification";
+} from "#/providers/store/notification";
 
 export const NotificationPanel = () => {
   const notifications = useAtomValue(notificationItemsAtom);
@@ -26,16 +27,11 @@ export const NotificationPanel = () => {
       }
 
       // チャンネルに遷移
-      navigate({
-        to: "/app/$workspaceId/$channelId",
-        params: {
-          workspaceId: notification.workspaceId,
-          channelId: notification.channelId,
-        },
-        search: notification.messageId ? { message: notification.messageId } : {},
-      });
+      void navigate(
+        paths.channel(notification.workspaceId, notification.channelId, notification.messageId),
+      );
     },
-    [markAsRead, navigate]
+    [markAsRead, navigate],
   );
 
   const handleRemoveNotification = useCallback(
@@ -43,7 +39,7 @@ export const NotificationPanel = () => {
       event.stopPropagation();
       removeNotification(notificationId);
     },
-    [removeNotification]
+    [removeNotification],
   );
 
   const formatTimestamp = (timestamp: Date) => {
@@ -61,35 +57,44 @@ export const NotificationPanel = () => {
       return `${hours}時間前`;
     } else if (days < 7) {
       return `${days}日前`;
-    } else {
-      return timestamp.toLocaleDateString("ja-JP");
     }
+    return timestamp.toLocaleDateString("ja-JP");
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "mention":
+      case "mention": {
         return <IconBell size={16} />;
-      case "message":
+      }
+      case "message": {
         return <IconBell size={16} />;
-      case "reaction":
+      }
+      case "reaction": {
         return <IconBell size={16} />;
-      default:
+      }
+      default: {
         return <IconBell size={16} />;
+      }
     }
   };
 
   const getNotificationColor = (type: string, isRead: boolean) => {
-    if (isRead) return "gray";
+    if (isRead) {
+      return "gray";
+    }
     switch (type) {
-      case "mention":
+      case "mention": {
         return "red";
-      case "message":
+      }
+      case "message": {
         return "blue";
-      case "reaction":
+      }
+      case "reaction": {
         return "green";
-      default:
+      }
+      default: {
         return "gray";
+      }
     }
   };
 
@@ -113,7 +118,9 @@ export const NotificationPanel = () => {
                   notification.isRead ? "bg-gray-50" : "bg-white"
                 } hover:bg-gray-100`}
                 padding="sm"
-                onClick={() => handleNotificationClick(notification)}
+                onClick={() => {
+                  handleNotificationClick(notification);
+                }}
               >
                 <div className="flex items-start gap-3">
                   <div
@@ -154,7 +161,9 @@ export const NotificationPanel = () => {
                     size="sm"
                     variant="subtle"
                     color="gray"
-                    onClick={(e) => handleRemoveNotification(notification.id, e)}
+                    onClick={(e) => {
+                      handleRemoveNotification(notification.id, e);
+                    }}
                   >
                     <IconX size={14} />
                   </ActionIcon>

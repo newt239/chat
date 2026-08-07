@@ -1,10 +1,11 @@
 import { Modal, Button, Text, Group, Stack, Divider } from "@mantine/core";
 import { IconLogout } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
 
-import { ProfileSettingsPanel } from "@/features/settings/components/ProfileSettingsPanel";
-import { router } from "@/lib/router";
-import { clearAuthAtom } from "@/providers/store/auth";
+import { ProfileSettingsPanel } from "#/features/settings/components/ProfileSettingsPanel";
+import { paths } from "#/lib/paths";
+import { clearAuthAtom } from "#/providers/store/auth";
 
 type SettingsModalProps = {
   opened: boolean;
@@ -13,11 +14,12 @@ type SettingsModalProps = {
 
 export const SettingsModal = ({ opened, onClose }: SettingsModalProps) => {
   const clearAuth = useSetAtom(clearAuthAtom);
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     clearAuth();
     onClose();
-    router.navigate({ to: "/login" });
+    void navigate(paths.login());
   };
 
   return (

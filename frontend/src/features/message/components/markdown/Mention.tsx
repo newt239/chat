@@ -1,22 +1,20 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { Badge } from '@mantine/core';
+import { Badge } from "@mantine/core";
 
 type MentionProps = {
-  'data-mention': string;
+  "data-mention": string;
   children?: ReactNode;
-}
+};
 
-export const Mention = ({ 'data-mention': username }: MentionProps) => {
-  return (
-    <Badge
-      variant="light"
-      color="blue"
-      size="sm"
-      className="cursor-pointer hover:bg-blue-100"
-      component="span"
-    >
-      @{username}
-    </Badge>
-  );
-}
+export const Mention = ({ "data-mention": username }: MentionProps) => (
+  <Badge
+    variant="light"
+    color="blue"
+    size="sm"
+    className="cursor-pointer hover:bg-blue-100"
+    component="span"
+  >
+    @{username}
+  </Badge>
+);

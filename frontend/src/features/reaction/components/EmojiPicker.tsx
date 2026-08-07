@@ -3,11 +3,11 @@ import Picker from "@emoji-mart/react";
 
 type EmojiPickerProps = {
   onEmojiSelect: (emoji: string) => void;
-}
+};
 
 type EmojiSelectEvent = {
   native: string;
-}
+};
 
 export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => {
   const handleEmojiSelect = (emoji: EmojiSelectEvent) => {

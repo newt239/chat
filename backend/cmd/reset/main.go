@@ -7,6 +7,7 @@ import (
 	"log"
 
 	_ "github.com/lib/pq"
+
 	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"

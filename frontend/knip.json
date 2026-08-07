@@ -1,25 +1,7 @@
 {
-  "entry": [
-    "src/main.tsx",
-    "src/App.tsx"
-  ],
-  "project": [
-    "src/**/*.{ts,tsx}"
-  ],
-  "ignore": [
-    "src/test/**/*",
-    "src/**/*.test.{ts,tsx}",
-    "src/**/*.spec.{ts,tsx}",
-    "dist/**/*",
-    "node_modules/**/*",
-    "src/lib/api/schema.ts",
-    "src/routes/routeTree.gen.ts"
-  ],
-  "ignoreDependencies": [
-    "@types/*"
-  ],
-  "ignoreBinaries": [
-    "only-allow",
-    "storybook"
-  ]
+  "$schema": "./node_modules/knip/schema.json",
+  "entry": ["src/main.tsx"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/lib/api/schema.ts"],
+  "ignoreDependencies": ["@types/*", "tailwindcss"]
 }

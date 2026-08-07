@@ -1,5 +1,5 @@
 class Logger {
-  private isDevelopment = import.meta.env.DEV;
+  private readonly isDevelopment = import.meta.env.DEV;
 
   debug(message: string, ...args: unknown[]) {
     if (this.isDevelopment) {

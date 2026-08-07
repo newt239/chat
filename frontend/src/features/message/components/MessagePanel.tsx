@@ -2,27 +2,25 @@ import { useEffect, useRef, useCallback } from "react";
 
 import { Card, Loader, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useRouter } from "@tanstack/react-router";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
-import { useMessages } from "../hooks/useMessage";
+import { useAutoScrollToBottom } from "#/features/message/hooks/useAutoScrollToBottom";
+import { useChannelTimeline } from "#/features/message/hooks/useChannelTimeline";
+import { useMessageActions } from "#/features/message/hooks/useMessageActions";
+import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
+import { paths } from "#/lib/paths";
+import { userAtom } from "#/providers/store/auth";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
+import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
+import { useWsClient } from "#/providers/ws/WsProvider";
 
+import { useMessages } from "../hooks/useMessage";
 import { MessageItem } from "./MessageItem";
 import { SystemMessageItem } from "./SystemMessageItem";
 
 import type { TimelineItem } from "../schemas";
 
-import { useAutoScrollToBottom } from "@/features/message/hooks/useAutoScrollToBottom";
-import { useChannelTimeline } from "@/features/message/hooks/useChannelTimeline";
-import { useMessageActions } from "@/features/message/hooks/useMessageActions";
-import { useMessageViewportDetection } from "@/features/message/hooks/useMessageViewportDetection";
-import { userAtom } from "@/providers/store/auth";
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
-import { currentChannelIdAtom, currentWorkspaceIdAtom } from "@/providers/store/workspace";
-import { useWsClient } from "@/providers/ws/WsProvider";
-
 export const MessagePanel = () => {
-  const router = useRouter();
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
   const [currentChannelId] = useAtom(currentChannelIdAtom);
   const currentUser = useAtomValue(userAtom);
@@ -44,7 +42,7 @@ export const MessagePanel = () => {
       ? (() => {
           for (let i = orderedItems.length - 1; i >= 0; i--) {
             const item = orderedItems[i];
-            if (item && item.type === "user" && item.userMessage) {
+            if (item?.type === "user" && item.userMessage) {
               return item.userMessage.id;
             }
           }
@@ -67,33 +65,32 @@ export const MessagePanel = () => {
 
   const handleCopyLink = useCallback(
     (messageId: string) => {
-      if (!currentWorkspaceId || !currentChannelId) return;
-      const { href } = router.buildLocation({
-        to: "/app/$workspaceId/$channelId",
-        params: { workspaceId: String(currentWorkspaceId), channelId: String(currentChannelId) },
-        search: { message: messageId },
-      });
-      navigator.clipboard.writeText(href);
+      if (!currentWorkspaceId || !currentChannelId) {
+        return;
+      }
+      void navigator.clipboard.writeText(
+        paths.channel(currentWorkspaceId, currentChannelId, messageId),
+      );
       notifications.show({
         title: "コピーしました",
         message: "メッセージリンクをクリップボードにコピーしました",
       });
     },
-    [router, currentWorkspaceId, currentChannelId]
+    [currentWorkspaceId, currentChannelId],
   );
 
   const handleCreateThread = useCallback(
     (messageId: string) => {
       setRightSidebarView({ type: "thread", threadId: messageId });
     },
-    [setRightSidebarView]
+    [setRightSidebarView],
   );
 
   const handleOpenThread = useCallback(
     (messageId: string) => {
       setRightSidebarView({ type: "thread", threadId: messageId });
     },
-    [setRightSidebarView]
+    [setRightSidebarView],
   );
 
   const { handleEdit, handleDelete } = useMessageActions(currentChannelId);
@@ -138,10 +135,7 @@ export const MessagePanel = () => {
                   const msg = item.userMessage;
                   const isLatestMessage = msg.id === latestUserMessageId;
                   return (
-                    <div
-                      key={`u-${msg.id}`}
-                      ref={isLatestMessage ? latestMessageRef : undefined}
-                    >
+                    <div key={`u-${msg.id}`} ref={isLatestMessage ? latestMessageRef : undefined}>
                       <MessageItem
                         message={msg}
                         currentUserId={currentUser?.id ?? null}

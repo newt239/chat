@@ -13,7 +13,7 @@ import (
 // MessageLister はメッセージ一覧取得を担当するユースケースです
 type MessageLister struct {
 	messageRepo       domainrepository.MessageRepository
-    systemMsgRepo     domainrepository.SystemMessageRepository
+	systemMsgRepo     domainrepository.SystemMessageRepository
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
@@ -26,13 +26,13 @@ type MessageLister struct {
 	attachmentRepo    domainrepository.AttachmentRepository
 	assembler         *MessageOutputAssembler
 	outputBuilder     *MessageOutputBuilder
-    channelAccessSvc  service.ChannelAccessService
+	channelAccessSvc  service.ChannelAccessService
 }
 
 // NewMessageLister は新しいMessageListerを作成します
 func NewMessageLister(
 	messageRepo domainrepository.MessageRepository,
-    systemMsgRepo domainrepository.SystemMessageRepository,
+	systemMsgRepo domainrepository.SystemMessageRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -43,12 +43,12 @@ func NewMessageLister(
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
-    channelAccessSvc service.ChannelAccessService,
+	channelAccessSvc service.ChannelAccessService,
 ) *MessageLister {
-    assembler := NewMessageOutputAssembler()
+	assembler := NewMessageOutputAssembler()
 	return &MessageLister{
 		messageRepo:       messageRepo,
-        systemMsgRepo:     systemMsgRepo,
+		systemMsgRepo:     systemMsgRepo,
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		workspaceRepo:     workspaceRepo,
@@ -70,13 +70,13 @@ func NewMessageLister(
 			attachmentRepo,
 			assembler,
 		),
-        channelAccessSvc: channelAccessSvc,
+		channelAccessSvc: channelAccessSvc,
 	}
 }
 
 // ListMessages はメッセージ一覧を取得します
 func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInput) (*ListMessagesOutput, error) {
-    channel, err := l.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+	channel, err := l.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,66 +89,66 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 		limit = maxMessageLimit
 	}
 
-    messages, err := l.messageRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
+	messages, err := l.messageRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch messages: %w", err)
 	}
 
-    // システムメッセージ取得
-    systemMessages, err := l.systemMsgRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
+	// システムメッセージ取得
+	systemMessages, err := l.systemMsgRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
 	if err != nil {
-        return nil, fmt.Errorf("failed to fetch system messages: %w", err)
+		return nil, fmt.Errorf("failed to fetch system messages: %w", err)
 	}
 
-    // ユーザーメッセージの出力へ変換
-    messages, hasMoreUser := l.prepareMessageList(messages, limit)
-    userOutputs, err := l.outputBuilder.Build(ctx, messages)
-    if err != nil {
-        return nil, err
-    }
-
-    // タイムラインへマージ
-    timeline := make([]TimelineItem, 0, len(userOutputs)+len(systemMessages))
-    for _, m := range userOutputs {
-        timeline = append(timeline, TimelineItem{Type: "user", UserMessage: &m, CreatedAt: m.CreatedAt})
-    }
-    for _, sm := range systemMessages {
-        timeline = append(timeline, TimelineItem{Type: "system", SystemMessage: &SystemMessageOutput{
-            ID:        sm.ID,
-            ChannelID: sm.ChannelID,
-            Kind:      string(sm.Kind),
-            Payload:   sm.Payload,
-            ActorID:   sm.ActorID,
-            CreatedAt: sm.CreatedAt,
-        }, CreatedAt: sm.CreatedAt})
-    }
-    sort.Slice(timeline, func(i, j int) bool { return timeline[i].CreatedAt.After(timeline[j].CreatedAt) })
-    hasMore := false
-    if len(timeline) > limit {
-        hasMore = true
-        timeline = timeline[:limit]
-    }
-
-    return &ListMessagesOutput{Messages: timeline, HasMore: hasMore || hasMoreUser}, nil
-}
-
-// ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
-func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) ([]MessageWithThreadOutput, error) {
-    // 通常のメッセージ一覧を取得（統合タイムライン）
-    listOutput, err := l.ListMessages(ctx, input)
+	// ユーザーメッセージの出力へ変換
+	messages, hasMoreUser := l.prepareMessageList(messages, limit)
+	userOutputs, err := l.outputBuilder.Build(ctx, messages)
 	if err != nil {
 		return nil, err
 	}
 
-    // ユーザーメッセージのみ抽出しID収集
-    userMessages := make([]MessageOutput, 0)
-    messageIDs := make([]string, 0)
-    for _, item := range listOutput.Messages {
-        if item.Type == "user" && item.UserMessage != nil {
-            userMessages = append(userMessages, *item.UserMessage)
-            messageIDs = append(messageIDs, item.UserMessage.ID)
-        }
-    }
+	// タイムラインへマージ
+	timeline := make([]TimelineItem, 0, len(userOutputs)+len(systemMessages))
+	for _, m := range userOutputs {
+		timeline = append(timeline, TimelineItem{Type: "user", UserMessage: &m, CreatedAt: m.CreatedAt})
+	}
+	for _, sm := range systemMessages {
+		timeline = append(timeline, TimelineItem{Type: "system", SystemMessage: &SystemMessageOutput{
+			ID:        sm.ID,
+			ChannelID: sm.ChannelID,
+			Kind:      string(sm.Kind),
+			Payload:   sm.Payload,
+			ActorID:   sm.ActorID,
+			CreatedAt: sm.CreatedAt,
+		}, CreatedAt: sm.CreatedAt})
+	}
+	sort.Slice(timeline, func(i, j int) bool { return timeline[i].CreatedAt.After(timeline[j].CreatedAt) })
+	hasMore := false
+	if len(timeline) > limit {
+		hasMore = true
+		timeline = timeline[:limit]
+	}
+
+	return &ListMessagesOutput{Messages: timeline, HasMore: hasMore || hasMoreUser}, nil
+}
+
+// ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
+func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) ([]MessageWithThreadOutput, error) {
+	// 通常のメッセージ一覧を取得（統合タイムライン）
+	listOutput, err := l.ListMessages(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	// ユーザーメッセージのみ抽出しID収集
+	userMessages := make([]MessageOutput, 0)
+	messageIDs := make([]string, 0)
+	for _, item := range listOutput.Messages {
+		if item.Type == "user" && item.UserMessage != nil {
+			userMessages = append(userMessages, *item.UserMessage)
+			messageIDs = append(messageIDs, item.UserMessage.ID)
+		}
+	}
 
 	// スレッドメタデータを一括計算
 	metadataMap, err := l.threadRepo.CalculateMetadataByMessageIDs(ctx, messageIDs)
@@ -173,10 +173,10 @@ func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMe
 		userMap[user.ID] = user
 	}
 
-    // メッセージとスレッドメタデータを結合
-    outputs := make([]MessageWithThreadOutput, 0, len(userMessages))
-    for _, msg := range userMessages {
-        output := MessageWithThreadOutput{ MessageOutput: msg }
+	// メッセージとスレッドメタデータを結合
+	outputs := make([]MessageWithThreadOutput, 0, len(userMessages))
+	for _, msg := range userMessages {
+		output := MessageWithThreadOutput{MessageOutput: msg}
 
 		if metadata, exists := metadataMap[msg.ID]; exists {
 			var lastReplyUser *UserInfo
@@ -218,7 +218,7 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 	}
 
 	// チャンネルアクセス権限を確認
-    _, err = l.channelAccessSvc.EnsureChannelAccess(ctx, parentMessage.ChannelID, input.UserID)
+	_, err = l.channelAccessSvc.EnsureChannelAccess(ctx, parentMessage.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +356,7 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 	}
 
 	// チャンネルアクセス権限を確認
-    _, err = l.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID)
+	_, err = l.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}

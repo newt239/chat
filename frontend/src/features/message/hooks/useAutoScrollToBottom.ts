@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 export const useAutoScrollToBottom = (
   ref: React.RefObject<HTMLDivElement | null>,
-  triggers: unknown[]
+  triggers: unknown[],
 ) => {
   const scrollToBottom = () => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
@@ -10,10 +10,7 @@ export const useAutoScrollToBottom = (
 
   useEffect(() => {
     scrollToBottom();
-     
   }, triggers);
 
   return { scrollToBottom };
 };
-
-

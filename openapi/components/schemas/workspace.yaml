@@ -24,6 +24,7 @@ Workspace:
       type: string
       format: date-time
   required:
+    - id
     - name
     - createdBy
     - createdAt

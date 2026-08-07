@@ -36,7 +36,7 @@ export const unreadNotificationCountAtom = atom((get) => {
 export const markNotificationAsReadAtom = atom(null, (get, set, notificationId: string) => {
   const notifications = get(notificationsAtom);
   const updated = notifications.map((notification) =>
-    notification.id === notificationId ? { ...notification, isRead: true } : notification
+    notification.id === notificationId ? { ...notification, isRead: true } : notification,
   );
   set(notificationsAtom, updated);
 });

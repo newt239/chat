@@ -8,13 +8,13 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 
+import { ChannelLink } from "#/features/message/components/markdown/ChannelLink";
+import { CodeBlock } from "#/features/message/components/markdown/CodeBlock";
+import { LinkComponent } from "#/features/message/components/markdown/LinkComponent";
+import { Mention } from "#/features/message/components/markdown/Mention";
+
 import { remarkChannel } from "./plugins/channel";
 import { remarkMention } from "./plugins/mention";
-
-import { ChannelLink } from "@/features/message/components/markdown/ChannelLink";
-import { CodeBlock } from "@/features/message/components/markdown/CodeBlock";
-import { LinkComponent } from "@/features/message/components/markdown/LinkComponent";
-import { Mention } from "@/features/message/components/markdown/Mention";
 
 const customSchema = {
   ...defaultSchema,
@@ -30,7 +30,7 @@ const customSchema = {
   },
 };
 
-export function renderMarkdown(content: string): ReactNode {
+export const renderMarkdown = (content: string): ReactNode => {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -62,4 +62,4 @@ export function renderMarkdown(content: string): ReactNode {
     });
 
   return processor.processSync(content).result;
-}
+};

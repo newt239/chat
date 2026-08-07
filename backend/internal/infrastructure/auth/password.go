@@ -1,8 +1,9 @@
 package auth
 
 import (
-	authuc "github.com/newt239/chat/internal/usecase/auth"
 	"golang.org/x/crypto/bcrypt"
+
+	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
 const bcryptCost = 12

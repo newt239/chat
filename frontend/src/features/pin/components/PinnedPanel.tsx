@@ -1,10 +1,11 @@
 import { Card, ScrollArea, Stack, Text } from "@mantine/core";
 import { IconPin } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
+import { Link } from "react-router";
 
-import { usePinnedMessages } from "@/features/pin/hooks/usePinnedMessages";
-import { currentWorkspaceIdAtom, currentChannelIdAtom } from "@/providers/store/workspace";
+import { usePinnedMessages } from "#/features/pin/hooks/usePinnedMessages";
+import { paths } from "#/lib/paths";
+import { currentWorkspaceIdAtom, currentChannelIdAtom } from "#/providers/store/workspace";
 
 type PinnedPanelProps = {
   channelId?: string | null;
@@ -62,7 +63,7 @@ export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
               padding="md"
               radius="md"
               component={Link}
-              to={`/app/${workspaceId}/${effectiveChannelId}?message=${pin.message.id}`}
+              to={paths.channel(workspaceId, effectiveChannelId, pin.message.id)}
               className="h-auto text-left justify-start"
             >
               <div className="flex-1 min-w-0">
@@ -80,7 +81,7 @@ export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
                 </Text>
               </div>
             </Card>
-          ) : null
+          ) : null,
         )}
       </Stack>
     </ScrollArea>

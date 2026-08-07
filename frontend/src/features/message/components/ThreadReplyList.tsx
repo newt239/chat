@@ -4,11 +4,11 @@ import { Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useSetAtom } from "jotai";
 
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
+
 import { MessageItem } from "./MessageItem";
 
 import type { MessageWithUser } from "../types";
-
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
 type ThreadReplyListProps = {
   replies: MessageWithUser[];
@@ -34,14 +34,14 @@ export const ThreadReplyList = ({
         message: "メッセージリンクをクリップボードにコピーしました",
       });
     },
-    [workspaceId, channelId]
+    [workspaceId, channelId],
   );
 
   const handleCreateThread = useCallback(
     (messageId: string) => {
       setRightSidePanelView({ type: "thread", threadId: messageId });
     },
-    [setRightSidePanelView]
+    [setRightSidePanelView],
   );
 
   if (replies.length === 0) {

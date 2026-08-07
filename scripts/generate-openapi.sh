@@ -14,17 +14,17 @@ if [ ! -f "openapi/bundled.yaml" ]; then
     pnpm run openapi:bundle
 fi
 
-# oapi-codegenがインストールされているか確認
-if ! command -v oapi-codegen &> /dev/null; then
-    echo "oapi-codegenがインストールされていません。インストールします..."
-    go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-    
-    # GOPATH/binをPATHに追加
-    if [ -n "$GOPATH" ]; then
-        export PATH="$GOPATH/bin:$PATH"
-    elif [ -d "$HOME/go/bin" ]; then
-        export PATH="$HOME/go/bin:$PATH"
-    fi
+# go.mod の oapi-codegen/runtime と互換のバージョンに固定する
+OAPI_CODEGEN_VERSION="v2.5.1"
+
+echo "oapi-codegen ${OAPI_CODEGEN_VERSION} をインストールします..."
+go install "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@${OAPI_CODEGEN_VERSION}"
+
+# GOPATH/binをPATHに追加
+if [ -n "$GOPATH" ]; then
+    export PATH="$GOPATH/bin:$PATH"
+elif [ -d "$HOME/go/bin" ]; then
+    export PATH="$HOME/go/bin:$PATH"
 fi
 
 # 出力ディレクトリを作成
