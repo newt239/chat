@@ -2,15 +2,16 @@ import { useState } from "react";
 
 import { Text, ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX, IconPlus } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
+import { Link } from "react-router";
 
-import { ChannelList } from "@/features/channel/components/ChannelList";
-import { CreateChannelModal } from "@/features/channel/components/CreateChannelModal";
-import { CreateDMModal } from "@/features/dm/components/CreateDMModal";
-import { DMList } from "@/features/dm/components/DMList";
-import { leftSidePanelVisibleAtom, hideMobilePanelsAtom } from "@/providers/store/ui";
-import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
+import { ChannelList } from "#/features/channel/components/ChannelList";
+import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
+import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
+import { DMList } from "#/features/dm/components/DMList";
+import { paths } from "#/lib/paths";
+import { leftSidePanelVisibleAtom, hideMobilePanelsAtom } from "#/providers/store/ui";
+import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 type LeftSidePanelProps = {
   className?: string;
@@ -51,8 +52,7 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
             <div className="px-2">
               {currentWorkspaceId && (
                 <Link
-                  to="/app/$workspaceId/threads"
-                  params={{ workspaceId: currentWorkspaceId }}
+                  to={paths.threads(currentWorkspaceId)}
                   className="block rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   スレッド
@@ -114,7 +114,9 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
       <CreateChannelModal
         workspaceId={currentWorkspaceId}
         opened={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+        }}
       />
 
       {/* DM作成モーダル */}
@@ -122,7 +124,9 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
         <CreateDMModal
           workspaceId={currentWorkspaceId}
           opened={isCreateDMModalOpen}
-          onClose={() => setIsCreateDMModalOpen(false)}
+          onClose={() => {
+            setIsCreateDMModalOpen(false);
+          }}
         />
       )}
     </div>

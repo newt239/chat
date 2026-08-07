@@ -2,16 +2,18 @@ import { useState } from "react";
 
 import { Menu, Button, Text, Avatar, TextInput, ActionIcon, Badge } from "@mantine/core";
 import { IconSearch, IconBookmark, IconSettings, IconBell } from "@tabler/icons-react";
-import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
 
-import type { WorkspaceSummary } from "@/features/workspace/types";
+import { SettingsModal } from "#/features/settings/components/SettingsModal";
+import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
+import { paths } from "#/lib/paths";
+import { useOptionalRouteParams } from "#/lib/routeParams";
+import { unreadNotificationCountAtom } from "#/providers/store/notification";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
+import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "#/providers/store/workspace";
 
-import { SettingsModal } from "@/features/settings/components/SettingsModal";
-import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
-import { unreadNotificationCountAtom } from "@/providers/store/notification";
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
-import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
+import type { WorkspaceSummary } from "#/features/workspace/types";
 
 export const GlobalHeaderPanel = () => {
   const { data: workspaces, isLoading } = useWorkspaces();
@@ -23,7 +25,7 @@ export const GlobalHeaderPanel = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-  const params = useParams({ strict: false });
+  const params = useOptionalRouteParams();
 
   const currentWorkspace = workspaces?.find((w) => w.id === currentWorkspaceId);
   const isInWorkspace = params.workspaceId !== undefined;
@@ -48,21 +50,15 @@ export const GlobalHeaderPanel = () => {
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (searchQuery.trim() && currentWorkspaceId) {
-      navigate({
-        to: "/app/$workspaceId/search",
-        params: { workspaceId: currentWorkspaceId },
-        search: { q: searchQuery.trim(), filter: "all" },
-      });
+      void navigate(paths.search(currentWorkspaceId, { q: searchQuery.trim(), filter: "all" }));
     }
   };
 
   const handleSearchFocus = () => {
     if (currentWorkspaceId && params.workspaceId !== currentWorkspaceId) {
-      navigate({
-        to: "/app/$workspaceId/search",
-        params: { workspaceId: currentWorkspaceId },
-        search: { q: searchQuery.trim() || undefined, filter: "all" },
-      });
+      void navigate(
+        paths.search(currentWorkspaceId, { q: searchQuery.trim() || undefined, filter: "all" }),
+      );
     }
   };
 
@@ -73,13 +69,17 @@ export const GlobalHeaderPanel = () => {
           {/* ワークスペース選択メニュー */}
           <Menu
             opened={isWorkspaceMenuOpen}
-            onClose={() => setIsWorkspaceMenuOpen(false)}
+            onClose={() => {
+              setIsWorkspaceMenuOpen(false);
+            }}
             position="bottom-end"
           >
             <Menu.Target>
               <Button
                 variant="subtle"
-                onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
+                onClick={() => {
+                  setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen);
+                }}
                 className="text-gray-700 hover:bg-gray-100"
               >
                 {isLoading ? (
@@ -106,8 +106,10 @@ export const GlobalHeaderPanel = () => {
               {workspaces?.map((workspace: WorkspaceSummary) => (
                 <Menu.Item
                   key={workspace.id}
-                  onClick={() => handleWorkspaceChange(workspace.id)}
-                  className={`${workspace.id === currentWorkspaceId ? "bg-blue-50" : ""}`}
+                  onClick={() => {
+                    handleWorkspaceChange(workspace.id);
+                  }}
+                  className={workspace.id === currentWorkspaceId ? "bg-blue-50" : ""}
                 >
                   <div className="flex items-center space-x-2">
                     <Avatar size="sm" color="blue">
@@ -138,7 +140,9 @@ export const GlobalHeaderPanel = () => {
                 placeholder="メッセージ、チャンネル、ユーザーを検索"
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                onChange={(event) => {
+                  setSearchQuery(event.currentTarget.value);
+                }}
                 onFocus={handleSearchFocus}
                 className="w-full"
               />
@@ -198,7 +202,12 @@ export const GlobalHeaderPanel = () => {
       </div>
 
       {/* 設定モーダル */}
-      <SettingsModal opened={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+      <SettingsModal
+        opened={isSettingsModalOpen}
+        onClose={() => {
+          setIsSettingsModalOpen(false);
+        }}
+      />
     </header>
   );
 };

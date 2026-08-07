@@ -3,18 +3,17 @@ import { useEffect, useState } from "react";
 import { Avatar, Button, Group, Text, Textarea } from "@mantine/core";
 import { useSetAtom } from "jotai";
 
-import { dateTimeFormatter } from "../utils/time";
+import { MessageAttachment } from "#/features/attachment/components/MessageAttachment";
+import { useIsBookmarked } from "#/features/bookmark/hooks/useBookmarks";
+import { ReactionList } from "#/features/reaction/components/ReactionList";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
+import { dateTimeFormatter } from "../utils/time";
 import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 
 import type { MessageWithUser, ThreadMetadata } from "../types";
-
-import { MessageAttachment } from "@/features/attachment/components/MessageAttachment";
-import { useIsBookmarked } from "@/features/bookmark/hooks/useBookmarks";
-import { ReactionList } from "@/features/reaction/components/ReactionList";
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
 
 type MessageItemProps = {
   message: MessageWithUser;
@@ -106,8 +105,12 @@ export const MessageItem = ({
 
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => {
+        setIsHovered(true);
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+      }}
       className={`relative group px-4 py-2 transition-colors ${
         isBookmarked ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-gray-50"
       }`}
@@ -154,7 +157,9 @@ export const MessageItem = ({
               <div className="space-y-2">
                 <Textarea
                   value={draft}
-                  onChange={(event) => setDraft(event.currentTarget.value)}
+                  onChange={(event) => {
+                    setDraft(event.currentTarget.value);
+                  }}
                   minRows={3}
                   autosize
                   disabled={isSaving}
@@ -195,7 +200,9 @@ export const MessageItem = ({
           {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (
             <ThreadMetadataPreview
               metadata={threadMetadata}
-              onClick={() => onOpenThread(message.id)}
+              onClick={() => {
+                onOpenThread(message.id);
+              }}
             />
           )}
         </div>

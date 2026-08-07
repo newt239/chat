@@ -43,3 +43,21 @@
           application/json:
             schema:
               $ref: "../openapi.yaml#/components/schemas/Workspace"
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "409":
+        description: Workspace id already exists
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"

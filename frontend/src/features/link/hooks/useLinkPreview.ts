@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 
-import type { LinkPreview, OGPData } from "../types";
+import { api } from "#/lib/api/client";
 
-import { api } from "@/lib/api/client";
+import type { LinkPreview, OGPData } from "../types";
 
 type UseLinkPreviewReturn = {
   previews: LinkPreview[];
@@ -64,7 +64,7 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
             ogpData: ogpData || {},
             isLoading: false,
             error: ogpData ? undefined : "プレビューの取得に失敗しました",
-          })
+          }),
         );
       } catch (error) {
         console.error("プレビューの取得に失敗しました:", error);
@@ -74,11 +74,11 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
             ogpData: {},
             isLoading: false,
             error: "プレビューの取得に失敗しました",
-          })
+          }),
         );
       }
     },
-    [fetchOGP]
+    [fetchOGP],
   );
 
   const removePreview = useCallback((url: string) => {
@@ -90,17 +90,15 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
   }, []);
 
   const getPreview = useCallback(
-    (url: string): LinkPreview | undefined => {
-      return previews.get(url);
-    },
-    [previews]
+    (url: string): LinkPreview | undefined => previews.get(url),
+    [previews],
   );
 
   const clearPreviews = useCallback(() => {
     setPreviews(new Map());
   }, []);
 
-  const previewsArray: LinkPreview[] = Array.from(previews.values());
+  const previewsArray: LinkPreview[] = [...previews.values()];
 
   return {
     previews: previewsArray,

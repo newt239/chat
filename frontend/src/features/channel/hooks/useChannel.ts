@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { components } from "@/lib/api/schema";
+import { api } from "#/lib/api/client";
 
-import { api } from "@/lib/api/client";
+import type { components } from "#/lib/api/schema";
 
 type CreateChannelInput = {
   name: string;
@@ -10,8 +10,8 @@ type CreateChannelInput = {
   isPrivate?: boolean;
 };
 
-export function useChannels(workspaceId: string | null) {
-  return useQuery({
+export const useChannels = (workspaceId: string | null) => 
+  useQuery({
     queryKey: ["workspaces", workspaceId, "channels"],
     queryFn: async (): Promise<components["schemas"]["Channel"][]> => {
       if (workspaceId === null) {
@@ -29,10 +29,10 @@ export function useChannels(workspaceId: string | null) {
       return data;
     },
     enabled: workspaceId !== null,
-  });
-}
+  })
+;
 
-export function useCreateChannel(workspaceId: string | null) {
+export const useCreateChannel = (workspaceId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -63,4 +63,4 @@ export function useCreateChannel(workspaceId: string | null) {
       queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
     },
   });
-}
+};

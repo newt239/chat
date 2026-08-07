@@ -1,8 +1,9 @@
 import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { Link } from "@tanstack/react-router";
+import { Link } from "react-router";
 
-import { useRegister } from "@/features/auth/hooks/useRegister";
+import { useRegister } from "#/features/auth/hooks/useRegister";
+import { paths } from "#/lib/paths";
 
 type RegisterFormValues = {
   displayName: string;
@@ -20,7 +21,7 @@ export const RegisterForm = () => {
       password: "",
     },
     validate: {
-      displayName: (value) => (value.length >= 1 ? null : "1文字以上の表示名を入力してください"),
+      displayName: (value) => (value.length > 0 ? null : "1文字以上の表示名を入力してください"),
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "有効なメールアドレスを入力してください"),
       password: (value) => (value.length >= 8 ? null : "8文字以上のパスワードを入力してください"),
     },
@@ -74,7 +75,7 @@ export const RegisterForm = () => {
 
         <Text size="sm" className="text-center">
           すでにアカウントをお持ちの方は{" "}
-          <Anchor component={Link} to="/login" size="sm">
+          <Anchor component={Link} to={paths.login()} size="sm">
             ログイン
           </Anchor>
         </Text>

@@ -23,7 +23,7 @@ const participatingThreadSchema = z.object({
           mimeType: z.string(),
           sizeBytes: z.number(),
           createdAt: z.string(),
-        })
+        }),
       )
       .optional(),
     deletedBy: z

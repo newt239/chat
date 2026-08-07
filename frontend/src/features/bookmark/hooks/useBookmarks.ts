@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/lib/api/client";
+import { api } from "#/lib/api/client";
 
-export const useBookmarks = () => {
-  return useQuery({
+export const useBookmarks = () =>
+  useQuery({
     queryKey: ["bookmarks"],
     queryFn: async () => {
       const response = await api.GET("/api/bookmarks");
@@ -13,7 +13,6 @@ export const useBookmarks = () => {
       return response.data;
     },
   });
-};
 
 export const useAddBookmark = () => {
   const queryClient = useQueryClient();

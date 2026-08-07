@@ -8,10 +8,7 @@ type ThreadMetadataPreviewProps = {
   onClick: () => void;
 };
 
-export const ThreadMetadataPreview = ({
-  metadata,
-  onClick,
-}: ThreadMetadataPreviewProps) => {
+export const ThreadMetadataPreview = ({ metadata, onClick }: ThreadMetadataPreviewProps) => {
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();

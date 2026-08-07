@@ -10,7 +10,7 @@ type Props = {
 
 export const SystemMessageItem = ({ message }: Props) => {
   const time = dateTimeFormatter().format(new Date(message.createdAt));
-  const payload = message.payload as Record<string, unknown>;
+  const {payload} = message;
 
   const renderText = () => {
     switch (message.kind) {
@@ -40,8 +40,9 @@ export const SystemMessageItem = ({ message }: Props) => {
         const pinnedBy = typeof payload.pinnedBy === "string" ? payload.pinnedBy : "";
         return `メッセージがピン留めされました（by ${pinnedBy}）`;
       }
-      default:
+      default: {
         return "システムイベントが記録されました";
+      }
     }
   };
 

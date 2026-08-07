@@ -3,8 +3,8 @@ import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 
-import { api } from "@/lib/api/client";
-import { setChannelPinsCountAtom } from "@/providers/store/ui";
+import { api } from "#/lib/api/client";
+import { setChannelPinsCountAtom } from "#/providers/store/ui";
 
 type PinnedMessage = {
   id: string;
@@ -30,14 +30,16 @@ type PinnedListResponse = {
   nextCursor?: string | null;
 };
 
-export function usePinnedMessages(channelId: string | null, limit = 100) {
+export const usePinnedMessages = (channelId: string | null, limit = 100) => {
   const setPinsCount = useSetAtom(setChannelPinsCountAtom);
 
   const query = useQuery({
     queryKey: ["channels", channelId, "pins"],
     enabled: channelId !== null,
     queryFn: async () => {
-      if (channelId === null) return { pins: [], nextCursor: null };
+      if (channelId === null) {
+        return { pins: [], nextCursor: null };
+      }
 
       const { data, error } = await api.GET("/api/channels/{channelId}/pins", {
         params: { path: { channelId }, query: { limit } },
@@ -59,17 +61,19 @@ export function usePinnedMessages(channelId: string | null, limit = 100) {
 
   const pinsSorted = useMemo(() => {
     const pins = query.data?.pins ?? [];
-    return [...pins].sort(
-      (a, b) => new Date(b.pinnedAt).getTime() - new Date(a.pinnedAt).getTime()
+    return [...pins].toSorted(
+      (a, b) => new Date(b.pinnedAt).getTime() - new Date(a.pinnedAt).getTime(),
     );
   }, [query.data]);
 
   return { ...query, pins: pinsSorted };
-}
+};
 
-export function useIsPinned(messageId: string | null, channelId: string | null) {
+export const useIsPinned = (messageId: string | null, channelId: string | null) => {
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData<PinnedListResponse>(["channels", channelId, "pins"]);
-  if (!messageId || !channelId || !data) return false;
+  if (!messageId || !channelId || !data) {
+    return false;
+  }
   return data.pins.some((p) => p.message?.id === messageId);
-}
+};

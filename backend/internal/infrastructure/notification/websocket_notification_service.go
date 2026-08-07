@@ -189,7 +189,7 @@ func convertStructToMap(data interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	v := reflect.ValueOf(data)
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 

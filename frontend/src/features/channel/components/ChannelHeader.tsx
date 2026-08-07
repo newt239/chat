@@ -2,17 +2,17 @@ import { ActionIcon, Badge, Group, Tooltip } from "@mantine/core";
 import { IconInfoCircle, IconMenu2, IconUsers, IconPin } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import { ChannelName } from "./ChannelName";
-
-import { useChannels } from "@/features/channel/hooks/useChannel";
+import { useChannels } from "#/features/channel/hooks/useChannel";
 import {
   showLeftSidePanelAtom,
   showMobileLeftPanelAtom,
   showMobileRightPanelAtom,
   pinsCountByChannelAtom,
   setRightSidePanelViewAtom,
-} from "@/providers/store/ui";
-import { currentWorkspaceIdAtom } from "@/providers/store/workspace";
+} from "#/providers/store/ui";
+import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
+
+import { ChannelName } from "./ChannelName";
 
 type ChannelHeaderProps = {
   channelId: string | null;
@@ -48,12 +48,14 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
 
   const handleRightPanelToggle = () => {
     // デスクトップでは右パネルを表示、モバイルではモバイル右パネルを表示
-    setRightSidePanelView({ type: "channel-info", channelId: channelId });
+    setRightSidePanelView({ type: "channel-info", channelId });
     showMobileRightPanel();
   };
 
   const handlePinsPanelOpen = () => {
-    if (!channelId) return;
+    if (!channelId) {
+      return;
+    }
     setRightSidePanelView({ type: "pins", channelId });
     showMobileRightPanel();
   };

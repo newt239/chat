@@ -1,8 +1,10 @@
 FROM golang:1.25-alpine
 
-# Install golangci-lint
-RUN apk add --no-cache curl git && \
-    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
+# golangci-lint は公式イメージからバイナリをコピーする
+# (install.sh 経由だと配布物のチェックサム検証に失敗することがあるため)
+COPY --from=golangci/golangci-lint:v2.12.2-alpine /usr/bin/golangci-lint /usr/local/bin/golangci-lint
+
+RUN apk add --no-cache git
 
 WORKDIR /app
 
@@ -17,7 +19,8 @@ COPY . .
 EXPOSE 8080
 
 # Install air for hot reload
-RUN go install github.com/air-verse/air@latest
+# バージョンを固定する (@latest は上流が Go の要求バージョンを上げた際にビルドが壊れるため)
+RUN go install github.com/air-verse/air@v1.66.0
 
 # Run with air for hot reload
 CMD ["air", "-c", "air.toml"]

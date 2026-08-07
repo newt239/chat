@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 
 import { Badge, Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
+
+import { paths } from "#/lib/paths";
+import { currentChannelIdAtom, setCurrentChannelAtom } from "#/providers/store/workspace";
 
 import { useChannels } from "../hooks/useChannel";
-
 import { ChannelName } from "./ChannelName";
 import { CreateChannelModal } from "./CreateChannelModal";
-
-import { router } from "@/lib/router";
-import { currentChannelIdAtom, setCurrentChannelAtom } from "@/providers/store/workspace";
 
 type ChannelListProps = {
   workspaceId: string | null;
@@ -20,11 +20,12 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   const setCurrentChannel = useSetAtom(setCurrentChannelAtom);
   const { data: channels, isLoading, isError, error } = useChannels(workspaceId);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {
       setCurrentChannel(channelId);
-      router.navigate({ to: "/app/$workspaceId/$channelId", params: { workspaceId, channelId } });
+      void navigate(paths.channel(workspaceId, channelId));
     }
   };
 
@@ -85,7 +86,9 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                     key={channel.id}
                     variant={isSelected ? "filled" : "light"}
                     justify="flex-start"
-                    onClick={() => handleChannelClick(channel.id)}
+                    onClick={() => {
+                      handleChannelClick(channel.id);
+                    }}
                     className="relative"
                     classNames={{
                       label: "w-full flex items-center justify-between",
@@ -113,7 +116,13 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
             <Text c="dimmed" size="sm">
               チャンネルがありません
             </Text>
-            <Button mt="md" size="xs" onClick={() => setIsModalOpen(true)}>
+            <Button
+              mt="md"
+              size="xs"
+              onClick={() => {
+                setIsModalOpen(true);
+              }}
+            >
               最初のチャンネルを作成
             </Button>
           </Card>
@@ -123,7 +132,9 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
       <CreateChannelModal
         workspaceId={workspaceId}
         opened={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+        }}
       />
     </>
   );

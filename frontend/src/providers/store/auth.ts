@@ -1,9 +1,9 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import type { components } from "@/lib/api/schema";
+import { storage } from "#/lib/storage";
 
-import { storage } from "@/lib/storage";
+import type { components } from "#/lib/api/schema";
 
 type User = components["schemas"]["User"];
 
@@ -35,7 +35,7 @@ export const authAtom = atom(
   (get) => sanitizeAuthState(get(authStorageAtom)),
   (_get, set, update: AuthState) => {
     set(authStorageAtom, sanitizeAuthState(update));
-  }
+  },
 );
 
 export const userAtom = atom<User | null>((get) => get(authAtom).user);
@@ -73,7 +73,7 @@ export const initializeAuthAtom = atom(null, (get, set) => {
         user: current.user,
         accessToken: legacyAccessToken,
         refreshToken: legacyRefreshToken,
-      })
+      }),
     );
   }
 

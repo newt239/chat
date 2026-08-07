@@ -1,0 +1,31 @@
+ls:
+  .dir: kebab-case | regex:^\..+$
+  .ts: kebab-case
+  .tsx: kebab-case
+  .json: kebab-case
+  .yml: kebab-case
+  .config.ts: kebab-case
+  .d.ts: kebab-case
+  .md: kebab-case | SCREAMING_SNAKE_CASE
+
+  src:
+    # ディレクトリと非コンポーネントは camelCase、コンポーネントは PascalCase。
+    # PascalCase は ls-lint の組み込み判定だと DMList のような頭字語を弾くため regex で表現する。
+    .dir: camelCase
+    .ts: camelCase | regex:^[A-Z][A-Za-z0-9]*$
+    .tsx: camelCase | regex:^[A-Z][A-Za-z0-9]*$
+    .css: camelCase
+    .d.ts: kebab-case
+    .spec.ts: camelCase | regex:^[A-Z][A-Za-z0-9]*$
+    .spec.tsx: camelCase | regex:^[A-Z][A-Za-z0-9]*$
+
+  tests:
+    .dir: kebab-case
+    .ts: camelCase
+
+ignore:
+  - node_modules
+  - dist
+  - dev-dist
+  - .vite
+  - src/lib/api/schema.ts

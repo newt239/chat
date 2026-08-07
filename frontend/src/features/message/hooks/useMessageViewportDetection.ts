@@ -34,13 +34,13 @@ export const useMessageViewportDetection = ({
         const entry = entries[0];
         if (entry?.isIntersecting && !hasMarkedAsRead.current) {
           hasMarkedAsRead.current = true;
-          updateReadStateRef.current.mutate(undefined);
+          updateReadStateRef.current.mutate();
         }
       },
       {
         threshold: 0.1,
         rootMargin: "0px",
-      }
+      },
     );
 
     observer.observe(latestMessageRef.current);

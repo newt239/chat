@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 
 import { Button, Loader, Stack, Text } from "@mantine/core";
-import { useParams } from "@tanstack/react-router";
 
-import { ThreadCard } from "@/features/thread/components/ThreadCard";
-import { useParticipatingThreads } from "@/features/thread/hooks/useParticipatingThreads";
+import { ThreadCard } from "#/features/thread/components/ThreadCard";
+import { useParticipatingThreads } from "#/features/thread/hooks/useParticipatingThreads";
+import { useWorkspaceId } from "#/lib/routeParams";
 
 export const ThreadListPage = () => {
-  const { workspaceId } = useParams({ from: "/app/$workspaceId/threads" });
+  const workspaceId = useWorkspaceId();
 
-  const [cursorLastActivityAt, setCursorLastActivityAt] = useState<string | undefined>(undefined);
-  const [cursorThreadId, setCursorThreadId] = useState<string | undefined>(undefined);
+  const [cursorLastActivityAt, setCursorLastActivityAt] = useState<string | undefined>();
+  const [cursorThreadId, setCursorThreadId] = useState<string | undefined>();
 
   const { data, isLoading, isFetching, refetch } = useParticipatingThreads({
     workspaceId,
@@ -25,7 +25,9 @@ export const ThreadListPage = () => {
   const isBusy = isLoading || isFetching;
 
   const handleLoadMore = () => {
-    if (!next) return;
+    if (!next) {
+      return;
+    }
     setCursorLastActivityAt(next.last_activity_at);
     setCursorThreadId(next.thread_id);
     // 直後のuseQueryはキーが変わるため自動再取得される
@@ -53,7 +55,7 @@ export const ThreadListPage = () => {
         ) : (
           <Stack gap={8}>
             {items.map((t) => (
-              <ThreadCard key={`${t.thread_id}`} thread={t} onMarkedRead={handleMarkedRead} />
+              <ThreadCard key={t.thread_id} thread={t} onMarkedRead={handleMarkedRead} />
             ))}
           </Stack>
         )}

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { Avatar, Badge, Loader, Stack, Text } from "@mantine/core";
 
-import { useMembers } from "@/features/member/hooks/useMembers";
+import { useMembers } from "#/features/member/hooks/useMembers";
 
 type UserProfilePanelProps = {
   workspaceId: string;
@@ -55,7 +55,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
       <Stack gap="md">
         <div className="flex items-center gap-3">
           <Avatar src={member.avatarUrl ?? undefined} radius="xl" size="lg">
-            {member.displayName.substring(0, 2).toUpperCase()}
+            {member.displayName.slice(0, 2).toUpperCase()}
           </Avatar>
           <div>
             <Text size="sm" fw={600}>

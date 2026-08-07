@@ -1,8 +1,8 @@
 import { Text, Stack, Loader, Avatar, Box } from "@mantine/core";
 import { useSetAtom } from "jotai";
 
-import { useChannelMembers } from "@/features/channel/hooks/useChannelMembers";
-import { setRightSidePanelViewAtom } from "@/providers/store/ui";
+import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 type ChannelMemberPanelProps = {
   channelId: string;
@@ -51,7 +51,9 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
           <Box
             key={member.userId}
             className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 p-2 transition-colors"
-            onClick={() => handleUserClick(member.userId)}
+            onClick={() => {
+              handleUserClick(member.userId);
+            }}
           >
             <Avatar
               src={member.avatarUrl ?? undefined}
@@ -59,7 +61,7 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
               radius="xl"
               size="md"
             >
-              {member.displayName.substring(0, 2).toUpperCase()}
+              {member.displayName.slice(0, 2).toUpperCase()}
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">

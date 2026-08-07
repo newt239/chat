@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { messagesTimelineResponseSchema } from "../schemas";
+import { api } from "#/lib/api/client";
 
-import { api } from "@/lib/api/client";
+import { messagesTimelineResponseSchema } from "../schemas";
 
 type CreateMessageInput = {
   body: string;
@@ -18,8 +18,8 @@ type DeleteMessageInput = {
   messageId: string;
 };
 
-export function useMessages(channelId: string | null) {
-  return useQuery({
+export const useMessages = (channelId: string | null) => 
+  useQuery({
     queryKey: ["channels", channelId, "messages"],
     queryFn: async () => {
       if (channelId === null) {
@@ -45,10 +45,10 @@ export function useMessages(channelId: string | null) {
       return parsed.data;
     },
     enabled: channelId !== null,
-  });
-}
+  })
+;
 
-export function useSendMessage(channelId: string | null) {
+export const useSendMessage = (channelId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -74,9 +74,9 @@ export function useSendMessage(channelId: string | null) {
       }
     },
   });
-}
+};
 
-export function useUpdateMessage(channelId: string | null) {
+export const useUpdateMessage = (channelId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -98,9 +98,9 @@ export function useUpdateMessage(channelId: string | null) {
       }
     },
   });
-}
+};
 
-export function useDeleteMessage(channelId: string | null) {
+export const useDeleteMessage = (channelId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -119,9 +119,9 @@ export function useDeleteMessage(channelId: string | null) {
       }
     },
   });
-}
+};
 
-export function useUpdateReadState(channelId: string | null, workspaceId: string | null) {
+export const useUpdateReadState = (channelId: string | null, workspaceId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -147,4 +147,4 @@ export function useUpdateReadState(channelId: string | null, workspaceId: string
       }
     },
   });
-}
+};

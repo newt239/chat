@@ -11,7 +11,12 @@ type Props = {
   initialIsPrivate: boolean;
 };
 
-export const ChannelSettingsPanel = ({ channelId, initialName, initialDescription, initialIsPrivate }: Props) => {
+export const ChannelSettingsPanel = ({
+  channelId,
+  initialName,
+  initialDescription,
+  initialIsPrivate,
+}: Props) => {
   const update = useUpdateChannel();
   const [name, setName] = useState<string>(initialName);
   const [description, setDescription] = useState<string>(initialDescription ?? "");
@@ -24,20 +29,45 @@ export const ChannelSettingsPanel = ({ channelId, initialName, initialDescriptio
   return (
     <Stack gap="sm">
       <Text fw={600}>チャンネル設定</Text>
-      <TextInput label="名前" value={name} onChange={(e) => setName(e.currentTarget.value)} required />
-      <Textarea label="説明" value={description} onChange={(e) => setDescription(e.currentTarget.value)} autosize minRows={3} />
-      <Checkbox label="プライベートチャンネル" checked={isPrivate} onChange={(e) => setIsPrivate(e.currentTarget.checked)} />
+      <TextInput
+        label="名前"
+        value={name}
+        onChange={(e) => {
+          setName(e.currentTarget.value);
+        }}
+        required
+      />
+      <Textarea
+        label="説明"
+        value={description}
+        onChange={(e) => {
+          setDescription(e.currentTarget.value);
+        }}
+        autosize
+        minRows={3}
+      />
+      <Checkbox
+        label="プライベートチャンネル"
+        checked={isPrivate}
+        onChange={(e) => {
+          setIsPrivate(e.currentTarget.checked);
+        }}
+      />
       <Group justify="flex-end">
         <Button onClick={onSubmit} loading={update.isPending}>
           保存
         </Button>
       </Group>
       {update.isError && (
-        <Text c="red" size="sm">{(update.error as Error)?.message ?? "更新に失敗しました"}</Text>
+        <Text c="red" size="sm">
+          {update.error?.message ?? "更新に失敗しました"}
+        </Text>
       )}
-      {update.isSuccess && <Text c="green" size="sm">保存しました</Text>}
+      {update.isSuccess && (
+        <Text c="green" size="sm">
+          保存しました
+        </Text>
+      )}
     </Stack>
   );
 };
-
-

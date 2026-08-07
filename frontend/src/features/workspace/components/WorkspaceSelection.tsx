@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 
 import { useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
 
-import { WorkspaceList } from "@/features/workspace/components/WorkspaceList";
-import { useWorkspaces } from "@/features/workspace/hooks/useWorkspace";
-import { router } from "@/lib/router";
-import { setCurrentWorkspaceAtom } from "@/providers/store/workspace";
+import { WorkspaceList } from "#/features/workspace/components/WorkspaceList";
+import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
+import { paths } from "#/lib/paths";
+import { setCurrentWorkspaceAtom } from "#/providers/store/workspace";
 
 type WorkspaceStorageState = {
   state?: {
@@ -43,6 +44,7 @@ const getStoredWorkspaceId = () => {
 export const WorkspaceSelection = () => {
   const { data: workspaces } = useWorkspaces();
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
+  const navigate = useNavigate();
   const hasRedirected = useRef(false);
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export const WorkspaceSelection = () => {
       if (storedExists) {
         hasRedirected.current = true;
         setCurrentWorkspace(storedWorkspaceId);
-        router.navigate({ to: "/app/$workspaceId", params: { workspaceId: storedWorkspaceId } });
+        void navigate(paths.workspace(storedWorkspaceId));
         return;
       }
     }
@@ -72,9 +74,9 @@ export const WorkspaceSelection = () => {
     if (firstWorkspace) {
       hasRedirected.current = true;
       setCurrentWorkspace(firstWorkspace.id);
-      router.navigate({ to: "/app/$workspaceId", params: { workspaceId: firstWorkspace.id } });
+      void navigate(paths.workspace(firstWorkspace.id));
     }
-  }, [setCurrentWorkspace, workspaces]);
+  }, [setCurrentWorkspace, workspaces, navigate]);
 
   return (
     <div className="flex h-full items-center justify-center">

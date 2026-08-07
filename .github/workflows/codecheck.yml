@@ -1,0 +1,81 @@
+name: Codecheck
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: ".node-version"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --filter chat-frontend run typecheck
+      - name: Oxlint
+        run: pnpm --filter chat-frontend run lint
+      - name: Oxfmt
+        run: pnpm --filter chat-frontend run format
+      - name: ls-lint
+        run: pnpm --filter chat-frontend run ls-lint
+      - name: Knip
+        run: pnpm --filter chat-frontend run knip
+      - name: Test
+        run: pnpm --filter chat-frontend run test
+      - name: Build
+        run: pnpm --filter chat-frontend run build
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build
+        run: go build ./...
+        working-directory: ./backend
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: latest
+          working-directory: ./backend
+
+  openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: ".node-version"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      # bundled.yaml と schema.ts はコミット済みの生成物のため、
+      # 元の openapi.yaml から再生成して差分が出ないことを検証する
+      - name: Regenerate OpenAPI artifacts
+        run: |
+          pnpm run openapi:bundle
+          pnpm run generate:api
+      - name: Verify no diff
+        run: |
+          if ! git diff --exit-code --stat; then
+            echo "::error::OpenAPI の生成物が最新ではありません。'pnpm run openapi:bundle' と 'pnpm run generate:api' を実行してコミットしてください。"
+            exit 1
+          fi

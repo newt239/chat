@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { api } from "#/lib/api/client";
+
 import type { CreateDMRequest } from "../schemas";
 
-import { api } from "@/lib/api/client";
-
-export const useDMs = (workspaceId: string) => {
-  return useQuery({
+export const useDMs = (workspaceId: string) =>
+  useQuery({
     queryKey: ["dms", workspaceId],
     queryFn: async () => {
       const response = await api.GET("/api/workspaces/{id}/dms", {
@@ -20,9 +20,8 @@ export const useDMs = (workspaceId: string) => {
 
       return response.data;
     },
-    enabled: !!workspaceId,
+    enabled: Boolean(workspaceId),
   });
-};
 
 export const useCreateDM = (workspaceId: string) => {
   const queryClient = useQueryClient();

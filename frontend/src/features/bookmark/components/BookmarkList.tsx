@@ -1,11 +1,20 @@
 import { Text, Stack, ScrollArea, Card } from "@mantine/core";
 import { IconBookmark } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
+import { Link } from "react-router";
+
+import { paths } from "#/lib/paths";
+import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 import { useBookmarks } from "../hooks/useBookmarks";
 
 export const BookmarkList = () => {
+  const workspaceId = useAtomValue(currentWorkspaceIdAtom);
   const { data: bookmarks, isLoading, error } = useBookmarks();
+
+  if (!workspaceId) {
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -50,7 +59,7 @@ export const BookmarkList = () => {
               padding="md"
               radius="md"
               component={Link}
-              to={`/app/$workspaceId/channels/$channelId?messageId=${bookmark.message.id}`}
+              to={paths.channel(workspaceId, bookmark.message.channelId, bookmark.message.id)}
               className="h-auto text-left justify-start"
             >
               <div className="flex-1 min-w-0">

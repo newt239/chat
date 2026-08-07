@@ -1,29 +1,29 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
+    "incremental": true,
+    "target": "esnext",
     "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "#/*": ["./src/*"],
+      // @vitejs/plugin-react が参照する Plugin 型を vite-plus と同一宣言に解決する
+      "vite": ["./node_modules/vite-plus/dist/index.d.ts"]
+    },
+    "resolveJsonModule": true,
+    "allowJs": false,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "types": ["vitest/globals"],
-    "strictNullChecks": true, // null や undefined のチェックを強制
     "forceConsistentCasingInFileNames": true, // ファイル名の大文字・小文字の不一致によるバグを防ぐ
-    "noUncheckedIndexedAccess": true // インデックスアクセスの型安全を強制
+    "noUncheckedIndexedAccess": true, // インデックスアクセスの型安全を強制
+    "noEmit": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "tests", "vite.config.ts"],
+  "exclude": ["node_modules"]
 }

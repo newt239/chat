@@ -2,19 +2,20 @@ import { useEffect, useState } from "react";
 
 import { Card, Text, Button, Group, Stack, Loader } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
+
+import { paths } from "#/lib/paths";
+import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "#/providers/store/workspace";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
-
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
-
-import { router } from "@/lib/router";
-import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "@/providers/store/workspace";
 
 export const WorkspaceList = () => {
   const { data, isLoading, error } = useWorkspaces();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (data && data.length > 0 && currentWorkspaceId === null) {
@@ -48,7 +49,13 @@ export const WorkspaceList = () => {
           <Text size="lg" fw={500}>
             あなたのワークスペース
           </Text>
-          <Button onClick={() => setIsModalOpen(true)}>新規作成</Button>
+          <Button
+            onClick={() => {
+              setIsModalOpen(true);
+            }}
+          >
+            新規作成
+          </Button>
         </Group>
 
         {data && Array.isArray(data) && data.length > 0 && (
@@ -77,10 +84,7 @@ export const WorkspaceList = () => {
                     fullWidth
                     onClick={() => {
                       setCurrentWorkspace(workspace.id);
-                      router.navigate({
-                        to: "/app/$workspaceId",
-                        params: { workspaceId: workspace.id },
-                      });
+                      void navigate(paths.workspace(workspace.id));
                     }}
                   >
                     {isSelected ? "選択中" : "開く"}
@@ -92,7 +96,12 @@ export const WorkspaceList = () => {
         )}
       </Stack>
 
-      <CreateWorkspaceModal opened={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <CreateWorkspaceModal
+        opened={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+        }}
+      />
     </>
   );
 };

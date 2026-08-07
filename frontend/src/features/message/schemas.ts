@@ -69,7 +69,7 @@ const baseMessageSchema = z.object({
 });
 
 export const messageWithUserSchema = baseMessageSchema.extend({
-	user: messageUserSchema,
+  user: messageUserSchema,
 });
 
 export const messageWithThreadSchema = messageWithUserSchema.extend({

@@ -1,8 +1,10 @@
 import { Card, Stack, Text, Avatar, Badge } from "@mantine/core";
 import { IconHash, IconUser } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router";
 
-import type { components } from "@/lib/api/schema";
+import { paths } from "#/lib/paths";
+
+import type { components } from "#/lib/api/schema";
 
 type Message = components["schemas"]["Message"];
 type Channel = components["schemas"]["Channel"];
@@ -14,7 +16,7 @@ type SearchResultListProps = {
   users: MemberInfo[];
   filter: "all" | "messages" | "channels" | "users";
   workspaceId: string;
-}
+};
 
 export const SearchResultList = ({
   messages,
@@ -26,18 +28,11 @@ export const SearchResultList = ({
   const navigate = useNavigate();
 
   const handleChannelClick = (channelId: string) => {
-    navigate({
-      to: "/app/$workspaceId/$channelId",
-      params: { workspaceId, channelId },
-    });
+    void navigate(paths.channel(workspaceId, channelId));
   };
 
   const handleMessageClick = (channelId: string, messageId: string) => {
-    navigate({
-      to: "/app/$workspaceId/$channelId",
-      params: { workspaceId, channelId },
-      search: { message: messageId },
-    });
+    void navigate(paths.channel(workspaceId, channelId, messageId));
   };
 
   const dateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
@@ -60,7 +55,9 @@ export const SearchResultList = ({
                 padding="md"
                 radius="md"
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleChannelClick(channel.id)}
+                onClick={() => {
+                  handleChannelClick(channel.id);
+                }}
               >
                 <div className="flex items-start gap-3">
                   <div className="mt-1">
@@ -139,7 +136,9 @@ export const SearchResultList = ({
                 padding="md"
                 radius="md"
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleMessageClick(message.channelId, message.id)}
+                onClick={() => {
+                  handleMessageClick(message.channelId, message.id);
+                }}
               >
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">

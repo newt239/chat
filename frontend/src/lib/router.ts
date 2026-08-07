@@ -1,6 +1,14 @@
-import { createRouter } from "@tanstack/react-router";
+import { createBrowserRouter } from "react-router";
 
-// Import the generated route tree
-import { routeTree } from "@/routes/routeTree.gen";
+import { registerRouter } from "#/lib/navigation";
+import { store } from "#/providers/store";
+import { initializeAuthAtom } from "#/providers/store/auth";
+import { routeTree } from "#/routes/routeTree";
 
-export const router = createRouter({ routeTree });
+// CreateBrowserRouter は生成直後に初期ローダー（＝認証ガード）を走らせる。
+// 旧形式トークンの移行はそれより前に完了している必要があるため、モジュールスコープで実行する。
+store.set(initializeAuthAtom);
+
+export const router = createBrowserRouter(routeTree);
+
+registerRouter(router);

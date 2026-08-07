@@ -1,21 +1,19 @@
-import type { ClientToServerMessage, WsEventPayloadMap } from "@/types/wsEvents";
+import { logger } from "#/lib/logger";
+import { navigateTo } from "#/lib/navigation";
+import { paths } from "#/lib/paths";
 
-import { logger } from "@/lib/logger";
-import { router } from "@/lib/router";
+import type { ClientToServerMessage, WsEventPayloadMap } from "#/types/wsEvents";
 
 const WS_BC_NAME = "ws-control";
 const WS_RECONNECT_DELAY = 2_000; // 初期遅延: 2秒
 const WS_MAX_RECONNECT_DELAY = 30_000; // 最大遅延: 30秒
 const WS_MAX_RECONNECT_ATTEMPTS = 5; // 最大再接続試行回数
 
-/**
- * サーバWebSocketエンドポイント取得
- * 例: ws://localhost:8080/ws?token=xxxx&workspaceId=xxxx
- */
-function getWsUrl(token: string, workspaceId: string): string {
+/** サーバWebSocketエンドポイント取得 例: ws://localhost:8080/ws?token=xxxx&workspaceId=xxxx */
+const getWsUrl = (token: string, workspaceId: string): string => {
   const base = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
   return `${base}/ws?token=${encodeURIComponent(token)}&workspaceId=${encodeURIComponent(workspaceId)}`;
-}
+};
 
 export class WsClient {
   private ws: WebSocket | null = null;
@@ -24,12 +22,12 @@ export class WsClient {
   private reconnectAttempts = 0;
   private shouldStopReconnecting = false;
 
-  private token: string;
-  private workspaceId: string;
-  private bc: BroadcastChannel;
+  private readonly token: string;
+  private readonly workspaceId: string;
+  private readonly bc: BroadcastChannel;
   private isActiveLeader: boolean = false;
 
-  private handlers = {
+  private readonly handlers = {
     new_message: [] as ((payload: WsEventPayloadMap["new_message"]) => void)[],
     message_updated: [] as ((payload: WsEventPayloadMap["message_updated"]) => void)[],
     message_deleted: [] as ((payload: WsEventPayloadMap["message_deleted"]) => void)[],
@@ -37,7 +35,7 @@ export class WsClient {
     pin_created: [] as ((payload: WsEventPayloadMap["pin_created"]) => void)[],
     pin_deleted: [] as ((payload: WsEventPayloadMap["pin_deleted"]) => void)[],
     system_message_created: [] as ((
-      payload: WsEventPayloadMap["system_message_created"]
+      payload: WsEventPayloadMap["system_message_created"],
     ) => void)[],
     ack: [] as ((payload: WsEventPayloadMap["ack"]) => void)[],
     error: [] as ((payload: WsEventPayloadMap["error"]) => void)[],
@@ -51,45 +49,74 @@ export class WsClient {
     this.initTabActivityControl();
   }
 
-  private eventDispatcher = (event: MessageEvent<string>) => {
+  private readonly eventDispatcher = (event: MessageEvent<string>) => {
     try {
       type EventUnion = {
         [K in keyof WsEventPayloadMap]: { type: K; payload: WsEventPayloadMap[K] };
       }[keyof WsEventPayloadMap];
       const parsed = JSON.parse(event.data) as EventUnion;
-      if (!parsed || typeof parsed.type !== "string") return;
+      if (!parsed || typeof parsed.type !== "string") {
+        return;
+      }
       const { type, payload } = parsed;
       switch (type) {
-        case "new_message":
-          this.handlers.new_message.forEach((cb) => cb(payload));
+        case "new_message": {
+          this.handlers.new_message.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "message_updated":
-          this.handlers.message_updated.forEach((cb) => cb(payload));
+        }
+        case "message_updated": {
+          this.handlers.message_updated.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "message_deleted":
-          this.handlers.message_deleted.forEach((cb) => cb(payload));
+        }
+        case "message_deleted": {
+          this.handlers.message_deleted.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "unread_count":
-          this.handlers.unread_count.forEach((cb) => cb(payload));
+        }
+        case "unread_count": {
+          this.handlers.unread_count.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "pin_created":
-          this.handlers.pin_created.forEach((cb) => cb(payload));
+        }
+        case "pin_created": {
+          this.handlers.pin_created.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "pin_deleted":
-          this.handlers.pin_deleted.forEach((cb) => cb(payload));
+        }
+        case "pin_deleted": {
+          this.handlers.pin_deleted.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "system_message_created":
-          this.handlers.system_message_created.forEach((cb) => cb(payload));
+        }
+        case "system_message_created": {
+          this.handlers.system_message_created.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "ack":
-          this.handlers.ack.forEach((cb) => cb(payload));
+        }
+        case "ack": {
+          this.handlers.ack.forEach((cb) => {
+            cb(payload);
+          });
           break;
-        case "error":
+        }
+        case "error": {
           if (typeof payload === "object" && "code" in payload && payload.code === "401") {
-            router.navigate({ to: "/login" });
+            navigateTo(paths.login());
           }
-          this.handlers.error.forEach((cb) => cb(payload));
+          this.handlers.error.forEach((cb) => {
+            cb(payload);
+          });
           break;
+        }
       }
     } catch (error) {
       logger.error("WebSocketイベント処理エラー:", error);
@@ -101,7 +128,7 @@ export class WsClient {
   }
   public offNewMessage(cb: (payload: WsEventPayloadMap["new_message"]) => void) {
     const index = this.handlers.new_message.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.new_message.splice(index, 1);
     }
   }
@@ -110,7 +137,7 @@ export class WsClient {
   }
   public offMessageUpdated(cb: (payload: WsEventPayloadMap["message_updated"]) => void) {
     const index = this.handlers.message_updated.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.message_updated.splice(index, 1);
     }
   }
@@ -119,7 +146,7 @@ export class WsClient {
   }
   public offMessageDeleted(cb: (payload: WsEventPayloadMap["message_deleted"]) => void) {
     const index = this.handlers.message_deleted.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.message_deleted.splice(index, 1);
     }
   }
@@ -128,7 +155,7 @@ export class WsClient {
   }
   public offUnreadCount(cb: (payload: WsEventPayloadMap["unread_count"]) => void) {
     const index = this.handlers.unread_count.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.unread_count.splice(index, 1);
     }
   }
@@ -137,7 +164,7 @@ export class WsClient {
   }
   public offPinCreated(cb: (payload: WsEventPayloadMap["pin_created"]) => void) {
     const index = this.handlers.pin_created.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.pin_created.splice(index, 1);
     }
   }
@@ -146,20 +173,20 @@ export class WsClient {
   }
   public offPinDeleted(cb: (payload: WsEventPayloadMap["pin_deleted"]) => void) {
     const index = this.handlers.pin_deleted.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.pin_deleted.splice(index, 1);
     }
   }
   public onSystemMessageCreated(
-    cb: (payload: WsEventPayloadMap["system_message_created"]) => void
+    cb: (payload: WsEventPayloadMap["system_message_created"]) => void,
   ) {
     this.handlers.system_message_created.push(cb);
   }
   public offSystemMessageCreated(
-    cb: (payload: WsEventPayloadMap["system_message_created"]) => void
+    cb: (payload: WsEventPayloadMap["system_message_created"]) => void,
   ) {
     const index = this.handlers.system_message_created.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.system_message_created.splice(index, 1);
     }
   }
@@ -168,7 +195,7 @@ export class WsClient {
   }
   public offAck(cb: (payload: WsEventPayloadMap["ack"]) => void) {
     const index = this.handlers.ack.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.ack.splice(index, 1);
     }
   }
@@ -177,7 +204,7 @@ export class WsClient {
   }
   public offWsError(cb: (payload: WsEventPayloadMap["error"]) => void) {
     const index = this.handlers.error.indexOf(cb);
-    if (index > -1) {
+    if (index !== -1) {
       this.handlers.error.splice(index, 1);
     }
   }
@@ -202,7 +229,7 @@ export class WsClient {
     }
   }
 
-  private onOpen = () => {
+  private readonly onOpen = () => {
     logger.info("WebSocket接続が開きました", this.workspaceId);
     // 接続成功時は再接続試行回数をリセット
     this.reconnectAttempts = 0;
@@ -210,7 +237,7 @@ export class WsClient {
     this.shouldStopReconnecting = false;
   };
 
-  private onClose = (event: CloseEvent) => {
+  private readonly onClose = (event: CloseEvent) => {
     logger.info("WebSocket接続が閉じました", {
       workspaceId: this.workspaceId,
       code: event.code,
@@ -234,7 +261,7 @@ export class WsClient {
     }
   };
 
-  private onError = (event: Event) => {
+  private readonly onError = (event: Event) => {
     const errorInfo = this.getErrorInfo(event);
     logger.error("WebSocketエラーが発生しました", {
       workspaceId: this.workspaceId,
@@ -278,17 +305,23 @@ export class WsClient {
   }
 
   private tryReconnect() {
-    if (this.reconnectTimeoutId) return;
-    if (!this.isActiveLeader) return;
-    if (this.shouldStopReconnecting) return;
+    if (this.reconnectTimeoutId) {
+      return;
+    }
+    if (!this.isActiveLeader) {
+      return;
+    }
+    if (this.shouldStopReconnecting) {
+      return;
+    }
 
     this.reconnectTimeoutId = setTimeout(() => {
       this.reconnectTimeoutId = null;
       if (this.isActiveLeader && !this.shouldStopReconnecting) {
         // 指数バックオフ: 2秒, 4秒, 8秒, 16秒, 最大30秒
         this.reconnectDelay = Math.min(
-          WS_RECONNECT_DELAY * Math.pow(2, this.reconnectAttempts - 1),
-          WS_MAX_RECONNECT_DELAY
+          WS_RECONNECT_DELAY * 2 ** (this.reconnectAttempts - 1),
+          WS_MAX_RECONNECT_DELAY,
         );
         this.connect();
       }
@@ -353,7 +386,9 @@ export class WsClient {
 
   private listenBroadcast() {
     this.bc.onmessage = (ev) => {
-      if (!ev.data) return;
+      if (!ev.data) {
+        return;
+      }
       // 他タブが接続を開始したら自分はリーダー権を放棄
       if (ev.data.type === "ws_active") {
         this.isActiveLeader = false;
@@ -372,7 +407,7 @@ export class WsClient {
     }
   }
 
-  private handleVisibility = () => {
+  private readonly handleVisibility = () => {
     if (document.visibilityState === "visible") {
       this.becomeLeaderAndConnect();
     } else {
@@ -381,13 +416,13 @@ export class WsClient {
     }
   };
 
-  private handleFocus = () => {
+  private readonly handleFocus = () => {
     if (!this.isActiveLeader) {
       this.becomeLeaderAndConnect();
     }
   };
 
-  private handleUnload = () => {
+  private readonly handleUnload = () => {
     this.isActiveLeader = false;
     this.close();
     this.bc.close();

@@ -5,7 +5,7 @@ import type { LinkPreview } from "../types";
 type LinkPreviewCardProps = {
   preview: LinkPreview;
   onRemove?: () => void;
-}
+};
 
 export const LinkPreviewCard = ({ preview, onRemove }: LinkPreviewCardProps) => {
   const { url, ogpData, isLoading, error } = preview;

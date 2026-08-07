@@ -1,9 +1,11 @@
 import { Card, Group, Stack, Text, Badge } from "@mantine/core";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "react-router";
 
-import type { ParticipatingThread } from "@/features/thread/schemas";
+import { api } from "#/lib/api/client";
+import { paths } from "#/lib/paths";
+import { useWorkspaceId } from "#/lib/routeParams";
 
-import { api } from "@/lib/api/client";
+import type { ParticipatingThread } from "#/features/thread/schemas";
 
 type ThreadCardProps = {
   thread: ParticipatingThread;
@@ -12,7 +14,7 @@ type ThreadCardProps = {
 
 export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
   const navigate = useNavigate();
-  const { workspaceId } = useParams({ from: "/app/$workspaceId/threads" });
+  const workspaceId = useWorkspaceId();
 
   const handleOpenThread = async () => {
     // 既読更新
@@ -23,10 +25,7 @@ export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
 
     // チャンネルへ遷移（スレッド起点メッセージへは既存の右パネルThreadを使う想定ならここで開いてもよいが、まずはチャンネルへ）
     if (thread.channel_id) {
-      navigate({
-        to: "/app/$workspaceId/$channelId",
-        params: { workspaceId, channelId: thread.channel_id },
-      });
+      void navigate(paths.channel(workspaceId, thread.channel_id));
     }
   };
 

@@ -1,28 +1,28 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
-export type MessageInputMode = 'edit' | 'preview';
+export type MessageInputMode = "edit" | "preview";
 
-export function useMessageInputMode(initialMode: MessageInputMode = 'edit') {
+export const useMessageInputMode = (initialMode: MessageInputMode = "edit") => {
   const [mode, setMode] = useState<MessageInputMode>(initialMode);
 
   const toggleMode = useCallback(() => {
-    setMode((prev) => (prev === 'edit' ? 'preview' : 'edit'));
+    setMode((prev) => (prev === "edit" ? "preview" : "edit"));
   }, []);
 
   const setEditMode = useCallback(() => {
-    setMode('edit');
+    setMode("edit");
   }, []);
 
   const setPreviewMode = useCallback(() => {
-    setMode('preview');
+    setMode("preview");
   }, []);
 
   return {
     mode,
-    isEditMode: mode === 'edit',
-    isPreviewMode: mode === 'preview',
+    isEditMode: mode === "edit",
+    isPreviewMode: mode === "preview",
     toggleMode,
     setEditMode,
     setPreviewMode,
   };
-}
+};

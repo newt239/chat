@@ -4,7 +4,7 @@ import type { LinkInfo } from "../types";
 
 type LinkPreviewEmbedProps = {
   link: LinkInfo;
-}
+};
 
 export const LinkPreviewEmbed = ({ link }: LinkPreviewEmbedProps) => {
   const { url, title, description, imageUrl, siteName, cardType } = link;

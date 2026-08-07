@@ -25,7 +25,7 @@ export const CodeBlock = ({ children, className }: CodeBlockProps) => {
   );
 };
 
-function extractTextContent(node: ReactNode): string {
+const extractTextContent = (node: ReactNode): string => {
   if (typeof node === "string") {
     return node;
   }
@@ -38,4 +38,4 @@ function extractTextContent(node: ReactNode): string {
     return extractTextContent(props.children);
   }
   return "";
-}
+};

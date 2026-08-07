@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/lib/api/client";
+import { api } from "#/lib/api/client";
 
-export function useWorkspaces() {
-  return useQuery({
+export const useWorkspaces = () => 
+  useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
       const { data, error } = await api.GET("/api/workspaces", {});
@@ -14,14 +14,14 @@ export function useWorkspaces() {
 
       return data.workspaces;
     },
-  });
-}
+  })
+;
 
-export function useCreateWorkspace() {
+export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { name: string; description?: string }) => {
+    mutationFn: async (data: { id: string; name: string; description?: string }) => {
       const { data: response, error } = await api.POST("/api/workspaces", {
         body: data,
       });
@@ -34,4 +34,4 @@ export function useCreateWorkspace() {
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
-}
+};

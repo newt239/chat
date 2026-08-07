@@ -1,16 +1,16 @@
 import { useAtomValue } from "jotai";
 
-import { CenterPanel } from "./CenterPanel";
-import { LeftSidePanel } from "./LeftSidePanel";
-import { MobileBottomBar } from "./MobileBottomBar";
-import { RightSidePanel } from "./RightSidePanel";
-
-import { GlobalHeaderPanel } from "@/features/workspace/components/Header";
+import { GlobalHeaderPanel } from "#/features/workspace/components/Header";
 import {
   leftSidePanelVisibleAtom,
   rightSidePanelViewAtom,
   mobileActivePanelAtom,
-} from "@/providers/store/ui";
+} from "#/providers/store/ui";
+
+import { CenterPanel } from "./CenterPanel";
+import { LeftSidePanel } from "./LeftSidePanel";
+import { MobileBottomBar } from "./MobileBottomBar";
+import { RightSidePanel } from "./RightSidePanel";
 
 export const ResponsiveLayout = () => {
   const leftSidePanelVisible = useAtomValue(leftSidePanelVisibleAtom);

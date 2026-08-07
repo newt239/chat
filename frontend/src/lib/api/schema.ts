@@ -1182,7 +1182,7 @@ export interface components {
         };
         Workspace: {
             /** @description slug identifier (3-12 chars, lowercase, digits, hyphen) */
-            id?: string;
+            id: string;
             name: string;
             description?: string | null;
             iconUrl?: string | null;
@@ -3114,6 +3114,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Workspace"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Workspace id already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

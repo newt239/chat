@@ -17,6 +17,7 @@
 - 依存関係に変更が生まれた場合は `docker-compose down -v` でコンテナを停止・削除し、`docker-compose up -d --build` で再起動してください。
 - ローカルで動作させるための実装は不要です。
 - テスト用アカウントとしてユーザー名`alice@example.com`、パスワード`password123`を使用できます。
+- コミット時に lefthook の pre-commit フックが lint・format・ファイル名チェックを実行します。ホスト側に`pnpm install`済みであることが前提のため、Docker のみで開発している場合は`LEFTHOOK=0 git commit`で回避できます。
 
 ## リファクタリング
 
@@ -24,18 +25,28 @@
 
 ## フロントエンド
 
-- フロントエンドの実装をした際は、必ず最後に`npx tsc --noEmit && pnpm run lint:fix`を実行してください。
+ツールチェーンは **Vite+ (`vite-plus`)** に統合されています。lint (Oxlint) / format (Oxfmt) / test (Vitest) の設定はすべて `frontend/vite.config.ts` に集約されており、`.eslintrc` や `.prettierrc` は存在しません。
+
+- フロントエンドの実装をした際は、必ず最後に`pnpm --filter chat-frontend run codecheck`を実行してください（typecheck / lint / format / ls-lint / knip / test を一括で実行します）。
+  - 個別に実行する場合は `pnpm run typecheck`、`pnpm run lint:fix`、`pnpm run format:fix` を使ってください。
   - 修正にあたり、any/unknown などの型を使用することや、型アサーション・型ガードを使用することを禁止します。その実装にふさわしい型を書くか、ライブラリから提供されているものをインポートして使用してください。どうしても型アサーションを使用する必要がある場合は最後にまとめて確認を取ってください。
 - 新しいコンポーネントを実装した際は必ず Vitest でテストを書いてください。
-  - ユニットテストは対象のファイルと同階層に`filename.test.{ts,tsx}`という名前で実装してください。
+  - ユニットテストは対象のファイルと同階層に`filename.spec.{ts,tsx}`という名前で実装してください。
+  - テストユーティリティは`vitest`ではなく`vite-plus/test`からインポートしてください（lint ルールで強制されます）。
 - 型定義に`interface`を使用せず、必ず`type`を使用してください。
+- 関数は関数宣言ではなくアロー関数式で定義してください（lint ルール `func-style` で強制されます）。
 - 安易に`window`オブジェクトを使用しないでください。
-  - 例えばページ遷移であれば Tanstack Router の Link コンポーネントや useNavigate を使用してください。
+  - 例えばページ遷移であれば React Router の Link コンポーネントや useNavigate を使用してください。
+  - 遷移先のパスは直接文字列で書かず、`src/lib/paths.ts`のパスビルダーを経由してください。React Router の`to`は型検査が効かないため、存在しないパスへのリンクを防ぐ目的です。
+  - React のツリー外（fetch インターセプタや WebSocket クライアント）から遷移する場合は`src/lib/navigation.ts`の`navigateTo`を使ってください。
+  - ルートパラメータは`useParams`を直接呼ばず、`src/lib/routeParams.ts`の`useWorkspaceId` / `useChannelId` / `useOptionalRouteParams`を使ってください。
 - 使用しない引数は削除してください。また、極力引数は Optional にしないようにしてください。
-- インポート文は原則として絶対パスで書いてください。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
+- インポート文は原則として絶対パスで書いてください。パスエイリアスは`#/`です（`#/lib/paths`のように書きます）。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
 - 1 つのファイルにつき 1 つのコンポーネントを定義してください。コンポーネント名とファイル名は一致させ、Named Export でコンポーネントをエクスポートしてください。
+  - ファイル名の規約は ls-lint で検証されます。コンポーネントは PascalCase、それ以外（hooks・ユーティリティ）は camelCase です。
 - 関数の返り値の型は明示しないでください。
-- バックエンドのレスポンススキーマを変更した場合はフロントエンドのスクリプトにある`pnpm run generate:api`を実行して API クライアントのスキーマを更新してください。
+- バックエンドのレスポンススキーマを変更した場合はリポジトリルートで`pnpm run openapi:bundle && pnpm run generate:api`を実行して、バンドル済みスキーマと API クライアントの型を更新してください。
+  - `openapi-typescript`は TypeScript 5 系にしか対応していないため、フロントエンド（TypeScript 7）ではなくルートワークスペースに配置しています。
 
 ## バックエンド
 

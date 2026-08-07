@@ -7,7 +7,7 @@ import {
   showMobileLeftPanelAtom,
   showMobileRightPanelAtom,
   setRightSidePanelViewAtom,
-} from "@/providers/store/ui";
+} from "#/providers/store/ui";
 
 export const MobileBottomBar = () => {
   const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
@@ -51,11 +51,11 @@ export const MobileBottomBar = () => {
           variant={mobileActivePanel === "left" ? "filled" : "subtle"}
           size="lg"
           onClick={handleLeftPanelClick}
-          className={`${
+          className={
             mobileActivePanel === "left"
               ? "bg-blue-600 text-white"
               : "text-gray-700 hover:bg-gray-100"
-          }`}
+          }
           title="チャンネル一覧"
         >
           <IconMenu2 size={20} />
@@ -88,11 +88,11 @@ export const MobileBottomBar = () => {
           variant={mobileActivePanel === "right" ? "filled" : "subtle"}
           size="lg"
           onClick={handleRightPanelClick}
-          className={`${
+          className={
             mobileActivePanel === "right"
               ? "bg-blue-600 text-white"
               : "text-gray-700 hover:bg-gray-100"
-          }`}
+          }
           title="チャンネル情報"
         >
           <IconInfoCircle size={20} />

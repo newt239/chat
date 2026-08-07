@@ -1,0 +1,18 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: "frontend/**/*.{ts,tsx}"
+      run: pnpm --filter chat-frontend run lint:fix
+      stage_fixed: true
+      fail_text: リントエラーがあります
+    format:
+      glob: "frontend/**/*.{ts,tsx,json}"
+      run: pnpm --filter chat-frontend run format:fix
+      stage_fixed: true
+      fail_text: フォーマットエラーがあります
+    ls-lint:
+      glob: "frontend/**/*"
+      run: pnpm --filter chat-frontend run ls-lint
+      fail_text: ファイル名が命名規約に違反しています
+# Go のリントはコンテナの起動が前提になるため pre-commit では実行せず、CI の backend ジョブで担保する

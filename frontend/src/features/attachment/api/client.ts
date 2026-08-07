@@ -1,11 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 
+import { api } from "#/lib/api/client";
+
 import type { PresignRequest } from "./types";
 
-import { api } from "@/lib/api/client";
-
-export const usePresignUpload = () => {
-  return useMutation({
+export const usePresignUpload = () =>
+  useMutation({
     mutationFn: async (params: PresignRequest & { channelId: string }) => {
       const { data, error } = await api.POST("/api/attachments/presign", {
         body: params,
@@ -18,10 +18,9 @@ export const usePresignUpload = () => {
       return data;
     },
   });
-};
 
-export const useDownloadUrl = () => {
-  return useMutation({
+export const useDownloadUrl = () =>
+  useMutation({
     mutationFn: async (attachmentId: string) => {
       const { data, error } = await api.GET("/api/attachments/{id}/download", {
         params: {
@@ -36,4 +35,3 @@ export const useDownloadUrl = () => {
       return data;
     },
   });
-};

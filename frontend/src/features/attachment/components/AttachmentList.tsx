@@ -18,7 +18,9 @@ export const AttachmentList = ({ attachments, onRemove }: AttachmentListProps) =
         <AttachmentListItem
           key={`${attachment.file.name}-${index}`}
           attachment={attachment}
-          onRemove={() => onRemove(index)}
+          onRemove={() => {
+            onRemove(index);
+          }}
         />
       ))}
     </div>
@@ -60,12 +62,7 @@ const AttachmentListItem = ({ attachment, onRemove }: AttachmentListItemProps) =
         className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
         aria-label="削除"
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

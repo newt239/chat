@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 
 import { useSendMessage } from "../hooks/useMessage";
-
 import { BaseMessageInput } from "./BaseMessageInput";
 
 type MessageInputProps = {
@@ -15,7 +14,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
     (body: string, attachmentIds: string[]) => {
       sendMessage.mutate({ body, attachmentIds });
     },
-    [sendMessage]
+    [sendMessage],
   );
 
   if (!channelId) {

@@ -35,6 +35,26 @@ docker-compose logs -f
 docker-compose ps
 ```
 
+### フロントエンドの開発コマンド
+
+lint / format / test の設定は `frontend/vite.config.ts` に集約されています（Vite+ による統合）。
+
+```bash
+# 型チェック・lint・format・ファイル名チェック・未使用コード検出・テストを一括実行
+pnpm --filter chat-frontend run codecheck
+
+# 個別に実行
+pnpm --filter chat-frontend run typecheck
+pnpm --filter chat-frontend run lint:fix
+pnpm --filter chat-frontend run format:fix
+pnpm --filter chat-frontend run test
+
+# OpenAPI スキーマを変更したとき（リポジトリルートで実行）
+pnpm run openapi:bundle && pnpm run generate:api
+```
+
+コミット時は lefthook の pre-commit フックが lint・format・ファイル名チェックを実行します。ホスト側に `pnpm install` 済みであることが前提のため、Docker のみで開発している場合は `LEFTHOOK=0 git commit` で回避できます。
+
 ### テストアカウント
 
 - **メールアドレス**: alice@example.com
@@ -46,29 +66,35 @@ docker-compose ps
 
 ### バックエンド
 
-- Go 1.23+
+- Go 1.24
 - Echo
 - WebSocket (gorilla/websocket)
 - ent (ORM)
-- PostgreSQL
+- PostgreSQL 18
 - Wasabi
 
 ### フロントエンド
 
 - React 19
-- TypeScript
-- Vite
+- TypeScript 7
+- Vite+ (`vite-plus`) — Vite 8 / Vitest / Oxlint / Oxfmt を統合したツールチェーン
 - Mantine 8
-- Tailwind CSS
-- TanStack Router
+- Tailwind CSS 4
+- React Router 8 (Data モード)
 - TanStack Query
-- Vitest + Storybook
+- PWA (vite-plugin-pwa)
+
+### 開発ツール
+
+- pnpm 11 (workspace) + Turborepo
+- lefthook (pre-commit フック)
+- ls-lint (ファイル名規約) / knip (未使用コード検出)
+- OpenAPI (Redocly でバンドル、oapi-codegen と openapi-typescript でコード生成)
 
 ### インフラ
 
 - Docker Compose
-- Caddy (リバースプロキシ)
-- VPS デプロイ対応
+- nginx (本番の静的配信)
 
 ## プロジェクト構造
 
@@ -96,12 +122,14 @@ chat/
 │   └── ent/              # ent schema definitions & generated code
 ├── frontend/         # React frontend
 │   ├── src/
-│   │   ├── routes/   # TanStack Router routes
+│   │   ├── routes/   # React Router のルート定義（routeTree.ts）とページコンポーネント
 │   │   ├── features/ # Feature-based modules
-│   │   ├── components/ # Reusable UI components
-│   │   └── lib/      # API client, WS client, etc.
-│   └── public/       # Static assets & PWA manifest
-└── docker/           # Docker configurations
+│   │   ├── providers/ # Jotai ストア・TanStack Query・WebSocket の Provider
+│   │   └── lib/      # API client, WS client, paths, routeParams など
+│   ├── tests/        # Vitest のセットアップ
+│   └── public/       # Static assets（PWA アイコンの元になる logo.svg）
+├── openapi/          # OpenAPI スキーマ（分割定義と bundled.yaml）
+└── scripts/          # 開発用スクリプト
 
 ```
 
@@ -208,35 +236,28 @@ start backend/ent/schema-viz.html
 xdg-open backend/ent/schema-viz.html
 ```
 
+## CI
+
+プルリクエストに対して `.github/workflows/codecheck.yml` が以下を実行します。
+
+| ジョブ | 内容 |
+| --- | --- |
+| frontend | typecheck / Oxlint / Oxfmt / ls-lint / knip / Vitest / ビルド |
+| backend | `go build` と golangci-lint |
+| openapi | `openapi/bundled.yaml` と `frontend/src/lib/api/schema.ts` が最新かを再生成して差分検証 |
+
+依存関係の更新は Dependabot が週次でまとめて PR を作成し、`dependabot-auto-merge.yml` が自動マージします。
+
 ## デプロイ
 
-### 本番環境へのデプロイ
-
-このプロジェクトは、ConoHa VPS へのデプロイに対応しています。GitHub Actions による自動デプロイが設定されており、main ブランチへのプッシュで本番環境が自動的に更新されます。
-
-詳細な手順は以下のドキュメントを参照してください：
-
-- **[デプロイ手順書](docs/deployment.md)** - ConoHa VPS へのデプロイ手順
-- **[デプロイチェックリスト](docs/deployment-checklist.md)** - デプロイ作業のチェックリスト
-
-### プレビュー環境
-
-main ブランチ以外へのプッシュで、自動的にプレビュー環境が作成されます。これにより、本番環境に影響を与えることなく、新機能や修正をテストできます。
+現在、自動デプロイの基盤（GitHub Actions のデプロイワークフローと Ansible の構成）はリポジトリから削除されています。本番環境向けの成果物は次の方法で用意できます。
 
 ```bash
-# 新しいブランチを作成してプッシュ
-git checkout -b feature/new-feature
-git push origin feature/new-feature
-# → GitHub Actionsが自動的にプレビュー環境を作成します
+# フロントエンド: nginx で静的配信するイメージをビルド
+docker build -f frontend/Dockerfile -t chat-frontend .
+
+# バックエンド: server / migrate / reset / seed のバイナリを含むイメージをビルド
+docker build -f backend/Dockerfile -t chat-backend ./backend
 ```
 
-### デプロイの仕組み
-
-```
-開発者がコードをプッシュ
-    ↓
-GitHub Actionsが自動実行
-    ↓
-mainブランチ → 本番環境へデプロイ
-その他のブランチ → プレビュー環境へデプロイ
-```
+バックエンドはリクエストバリデーションのために実行時に `/app/openapi/openapi.yaml` を読み込みます。本番イメージには `openapi/` が含まれていないため、コンテナ実行時にマウントするか Dockerfile を調整してください。

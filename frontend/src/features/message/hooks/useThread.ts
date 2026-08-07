@@ -1,18 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { threadRepliesResponseSchema } from "../schemas";
+import { api } from "#/lib/api/client";
 
-import { api } from "@/lib/api/client";
+import { threadRepliesResponseSchema } from "../schemas";
 
 type CreateThreadReplyInput = {
   body: string;
 };
 
-/**
- * スレッドの返信一覧を取得するフック
- */
-export function useThreadReplies(messageId: string | null) {
-  return useQuery({
+/** スレッドの返信一覧を取得するフック */
+export const useThreadReplies = (messageId: string | null) => 
+  useQuery({
     queryKey: ["messages", messageId, "thread", "replies"],
     queryFn: async () => {
       if (messageId === null) {
@@ -38,13 +36,11 @@ export function useThreadReplies(messageId: string | null) {
       return parsed.data;
     },
     enabled: messageId !== null,
-  });
-}
+  })
+;
 
-/**
- * スレッドに返信を送信するフック
- */
-export function useSendThreadReply(messageId: string | null, channelId: string | null) {
+/** スレッドに返信を送信するフック */
+export const useSendThreadReply = (messageId: string | null, channelId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -88,4 +84,4 @@ export function useSendThreadReply(messageId: string | null, channelId: string |
       }
     },
   });
-}
+};

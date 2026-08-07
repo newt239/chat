@@ -23,7 +23,7 @@ TARGETS=(
     "build"
     "coverage"
     "frontend/.vite"
-    "frontend/.tanstack"
+    "frontend/dev-dist"
     ".cache"
     "*.log"
     ".DS_Store"

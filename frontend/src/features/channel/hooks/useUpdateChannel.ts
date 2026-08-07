@@ -8,7 +8,7 @@ type UpdateChannelInput = {
   isPrivate?: boolean;
 };
 
-export function useUpdateChannel() {
+export const useUpdateChannel = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: UpdateChannelInput) => {
@@ -21,5 +21,4 @@ export function useUpdateChannel() {
       await queryClient.invalidateQueries({ queryKey: ["channels", variables.channelId] });
     },
   });
-}
-
+};
