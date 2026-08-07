@@ -20,11 +20,11 @@
     "generate:api": "openapi-typescript openapi/openapi.yaml -o frontend/src/lib/api/schema.ts"
   },
   "devDependencies": {
-    "@redocly/cli": "2.19.1",
+    "@redocly/cli": "2.43.1",
     "lefthook": "2.1.10",
     "openapi-typescript": "7.13.0",
-    "turbo": "2.8.10",
-    "typescript": "5.9.3"
+    "turbo": "2.10.7",
+    "typescript": "7.0.2"
   },
   "packageManager": "pnpm@11.20.0"
 }
