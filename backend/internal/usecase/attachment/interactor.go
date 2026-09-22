@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -154,4 +155,24 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 		URL:       downloadURL,
 		ExpiresIn: int(i.config.GetDownloadExpires().(time.Duration).Seconds()),
 	}, nil
+}
+
+// Delete は添付ファイルを削除します。削除できるのはアップロードした本人のみです
+func (i *Interactor) Delete(ctx context.Context, userID, attachmentID string) error {
+	attachment, err := i.attachmentRepo.FindByID(ctx, attachmentID)
+	if err != nil {
+		return err
+	}
+	if attachment == nil {
+		return domainerrors.ErrNotFound
+	}
+	if attachment.UploaderID != userID {
+		return domainerrors.ErrUnauthorized
+	}
+
+	if err := i.attachmentRepo.Delete(ctx, attachmentID); err != nil {
+		return err
+	}
+
+	return i.storageService.DeleteObject(attachment.StorageKey)
 }

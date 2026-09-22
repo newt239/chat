@@ -30,3 +30,34 @@
           application/json:
             schema:
               $ref: "../openapi.yaml#/components/schemas/Error"
+  delete:
+    operationId: deleteAttachment
+    summary: Delete an attachment
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Attachment deleted
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/SuccessResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+      "404":
+        description: Attachment not found
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"

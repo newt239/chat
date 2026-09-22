@@ -117,3 +117,16 @@ func (h *AttachmentHandler) DownloadAttachment(ctx echo.Context, id openapi_type
 		ExpiresIn: output.ExpiresIn,
 	})
 }
+
+func (h *AttachmentHandler) DeleteAttachment(c echo.Context, id openapi_types.UUID) error {
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "認証が必要です")
+	}
+
+	if err := h.AttachmentUseCase.Delete(c.Request().Context(), userID, id.String()); err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]bool{"success": true})
+}

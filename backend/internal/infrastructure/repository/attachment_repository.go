@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -207,6 +208,8 @@ func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentID
 
 		err = client.Attachment.UpdateOneID(aid).
 			SetMessageID(mid).
+			SetStatus(string(entity.AttachmentStatusAttached)).
+			SetUploadedAt(time.Now()).
 			Exec(ctx)
 		if err != nil {
 			return err
