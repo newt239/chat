@@ -155,7 +155,7 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	_, err = client.Attachment.Create().
+	create := client.Attachment.Create().
 		SetID(aid).
 		SetUploaderID(uid).
 		SetChannelID(cid).
@@ -163,11 +163,15 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 		SetMimeType(att.MimeType).
 		SetSizeBytes(att.SizeBytes).
 		SetStorageKey(att.StorageKey).
-		SetStatus(string(att.Status)).
-		SetUploadedAt(*att.UploadedAt).
-		SetExpiresAt(*att.ExpiresAt).
-		Save(ctx)
-	if err != nil {
+		SetStatus(string(att.Status))
+	if att.UploadedAt != nil {
+		create.SetUploadedAt(*att.UploadedAt)
+	}
+	if att.ExpiresAt != nil {
+		create.SetExpiresAt(*att.ExpiresAt)
+	}
+
+	if _, err := create.Save(ctx); err != nil {
 		return err
 	}
 
