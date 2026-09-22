@@ -552,19 +552,9 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
+			// クライアントは1フレーム1イベントとして解釈するため結合しない
 			if _, err := w.Write(message); err != nil {
 				return
-			}
-
-			// キューされたメッセージを追加
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				if _, err := w.Write([]byte{'\n'}); err != nil {
-					return
-				}
-				if _, err := w.Write(<-c.send); err != nil {
-					return
-				}
 			}
 
 			if err := w.Close(); err != nil {
