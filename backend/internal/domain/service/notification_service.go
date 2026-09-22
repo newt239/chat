@@ -11,11 +11,14 @@ type NotificationService interface {
 	// NotifyDeletedMessage はメッセージ削除をチャンネル参加者に通知します
 	NotifyDeletedMessage(workspaceID string, channelID string, deleteData interface{})
 
-	// NotifyReaction はリアクション追加をチャンネル参加者に通知します
-	NotifyReaction(workspaceID string, channelID string, reaction interface{})
+	// NotifyReactionAdded はリアクション追加をチャンネル参加者に通知します
+	NotifyReactionAdded(workspaceID string, channelID string, reaction ReactionNotification)
+
+	// NotifyReactionRemoved はリアクション削除をチャンネル参加者に通知します
+	NotifyReactionRemoved(workspaceID string, channelID string, reaction ReactionNotification)
 
 	// NotifyUnreadCount は未読数の更新を特定ユーザーに通知します
-	NotifyUnreadCount(workspaceID string, userID string, channelID string, unreadCount int)
+	NotifyUnreadCount(workspaceID string, userID string, channelID string, unreadCount int, hasMention bool)
 
 	// ピン関連
 	NotifyPinCreated(workspaceID string, channelID string, pin interface{})
@@ -23,4 +26,11 @@ type NotificationService interface {
 
 	// システムメッセージ関連
 	NotifySystemMessageCreated(workspaceID string, channelID string, message interface{})
+}
+
+// ReactionNotification はリアクション通知の内容です
+type ReactionNotification struct {
+	MessageID string
+	UserID    string
+	Emoji     string
 }

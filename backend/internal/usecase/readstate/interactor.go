@@ -77,14 +77,20 @@ func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateR
 		return fmt.Errorf("failed to update read state: %w", err)
 	}
 
-	// 未読数を取得してWebSocket通知を送信（nilチェックを追加）
+	// 未読数とメンション有無を取得してWebSocket通知を送信
 	if i.notificationSvc != nil {
 		count, err := i.readStateRepo.GetUnreadCount(ctx, channel.ID, input.UserID)
-		if err == nil {
-			i.notificationSvc.NotifyUnreadCount(channel.WorkspaceID, input.UserID, channel.ID, count)
-		} else {
+		if err != nil {
 			fmt.Printf("Warning: failed to get unread count for notification: %v\n", err)
+			return nil
 		}
+
+		mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, []string{channel.ID}, input.UserID)
+		if err != nil {
+			fmt.Printf("Warning: failed to get unread mention count for notification: %v\n", err)
+		}
+
+		i.notificationSvc.NotifyUnreadCount(channel.WorkspaceID, input.UserID, channel.ID, count, mentionCounts[channel.ID] > 0)
 	}
 
 	return nil

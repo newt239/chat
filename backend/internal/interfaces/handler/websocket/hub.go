@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -11,6 +12,9 @@ import (
 
 // Hub はWebSocket接続を管理します
 type Hub struct {
+	// workspaces と channelSubscribers を保護する
+	mu sync.RWMutex
+
 	// Workspace単位でクライアントを管理
 	// workspaceID -> userID -> []*Client (同一ユーザーの複数接続をサポート)
 	workspaces map[string]map[string][]*Client
@@ -86,7 +90,7 @@ func NewHub() *Hub {
 		workspaces:         make(map[string]map[string][]*Client),
 		channelSubscribers: make(map[string]map[string]map[string]bool),
 		register:           make(chan *Client),
-		unregister:         make(chan *Client),
+		unregister:         make(chan *Client, 256),
 		broadcast:          make(chan *BroadcastMessage, 256),
 		subscribe:          make(chan *SubscribeRequest),
 		unsubscribe:        make(chan *UnsubscribeRequest),
@@ -98,6 +102,7 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
+			h.mu.Lock()
 			// Workspaceが存在しない場合は作成
 			if h.workspaces[client.workspaceID] == nil {
 				h.workspaces[client.workspaceID] = make(map[string][]*Client)
@@ -109,8 +114,10 @@ func (h *Hub) Run() {
 			)
 			log.Printf("[WebSocket] クライアント登録: user=%s workspace=%s 接続数=%d",
 				client.userID, client.workspaceID, len(h.workspaces[client.workspaceID][client.userID]))
+			h.mu.Unlock()
 
 		case client := <-h.unregister:
+			h.mu.Lock()
 			if workspace, ok := h.workspaces[client.workspaceID]; ok {
 				if clients, ok := workspace[client.userID]; ok {
 					// クライアントリストから削除
@@ -135,8 +142,10 @@ func (h *Hub) Run() {
 						client.userID, client.workspaceID, len(workspace[client.userID]))
 				}
 			}
+			h.mu.Unlock()
 
 		case req := <-h.subscribe:
+			h.mu.Lock()
 			// チャンネル購読者リストに追加
 			if h.channelSubscribers[req.WorkspaceID] == nil {
 				h.channelSubscribers[req.WorkspaceID] = make(map[string]map[string]bool)
@@ -147,8 +156,10 @@ func (h *Hub) Run() {
 			h.channelSubscribers[req.WorkspaceID][req.ChannelID][req.UserID] = true
 			log.Printf("[WebSocket] チャンネル購読者登録: user=%s workspace=%s channel=%s",
 				req.UserID, req.WorkspaceID, req.ChannelID)
+			h.mu.Unlock()
 
 		case req := <-h.unsubscribe:
+			h.mu.Lock()
 			// チャンネル購読者リストから削除
 			if wsChannels, ok := h.channelSubscribers[req.WorkspaceID]; ok {
 				if subscribers, ok := wsChannels[req.ChannelID]; ok {
@@ -160,8 +171,10 @@ func (h *Hub) Run() {
 						req.UserID, req.WorkspaceID, req.ChannelID)
 				}
 			}
+			h.mu.Unlock()
 
 		case msg := <-h.broadcast:
+			h.mu.RLock()
 			if workspace, ok := h.workspaces[msg.WorkspaceID]; ok {
 				for userID, clients := range workspace {
 					// ExcludeUserが設定されている場合はスキップ
@@ -178,14 +191,24 @@ func (h *Hub) Run() {
 					}
 
 					for _, client := range clients {
-						select {
-						case client.send <- msg.Data:
-						default:
-							close(client.send)
-						}
+						h.trySend(client, msg.Data)
 					}
 				}
 			}
+			h.mu.RUnlock()
+		}
+	}
+}
+
+// trySend は送信バッファが詰まっている接続を切断対象にします
+// close は unregister 経路に一本化し、二重 close による panic を防ぎます
+func (h *Hub) trySend(client *Client, data []byte) {
+	select {
+	case client.send <- data:
+	default:
+		select {
+		case h.unregister <- client:
+		default:
 		}
 	}
 }
@@ -222,10 +245,17 @@ func (h *Hub) BroadcastToWorkspace(workspaceID string, message []byte) {
 }
 
 // BroadcastToChannel はChannel内の全クライアントにメッセージを送信します
-func (h *Hub) BroadcastToChannel(workspaceID string, channelID string, message []byte) {
+// excludeUserID が空でない場合はそのユーザーを配信対象から除外します
+func (h *Hub) BroadcastToChannel(workspaceID string, channelID string, message []byte, excludeUserID string) {
+	var exclude *string
+	if excludeUserID != "" {
+		exclude = &excludeUserID
+	}
+
 	h.broadcast <- &BroadcastMessage{
 		WorkspaceID: workspaceID,
 		ChannelID:   &channelID,
+		ExcludeUser: exclude,
 		Data:        message,
 	}
 	log.Printf("[WebSocket] Channelブロードキャスト: workspace=%s channel=%s サイズ=%d bytes",
@@ -234,14 +264,13 @@ func (h *Hub) BroadcastToChannel(workspaceID string, channelID string, message [
 
 // BroadcastToUser は特定のユーザーにメッセージを送信します
 func (h *Hub) BroadcastToUser(workspaceID string, userID string, message []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
 	if workspace, ok := h.workspaces[workspaceID]; ok {
 		if clients, ok := workspace[userID]; ok {
 			for _, client := range clients {
-				select {
-				case client.send <- message:
-				default:
-					close(client.send)
-				}
+				h.trySend(client, message)
 			}
 			log.Printf("[WebSocket] ユーザー宛送信: workspace=%s user=%s 接続数=%d サイズ=%d bytes",
 				workspaceID, userID, len(clients), len(message))
@@ -252,6 +281,9 @@ func (h *Hub) BroadcastToUser(workspaceID string, userID string, message []byte)
 // BroadcastToChannelSubscribers はチャンネルを購読している全ユーザーにメッセージを送信します
 // メッセージイベント(新着/編集/削除)の配信に使用します
 func (h *Hub) BroadcastToChannelSubscribers(workspaceID string, channelID string, message []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
 	// チャンネルの購読者を取得
 	var subscribers []string
 	if wsChannels, ok := h.channelSubscribers[workspaceID]; ok {
@@ -274,12 +306,8 @@ func (h *Hub) BroadcastToChannelSubscribers(workspaceID string, channelID string
 		for _, userID := range subscribers {
 			if clients, ok := workspace[userID]; ok {
 				for _, client := range clients {
-					select {
-					case client.send <- message:
-						sentCount++
-					default:
-						close(client.send)
-					}
+					h.trySend(client, message)
+					sentCount++
 				}
 			}
 		}
@@ -290,6 +318,9 @@ func (h *Hub) BroadcastToChannelSubscribers(workspaceID string, channelID string
 
 // GetConnectedUsers は指定されたWorkspace内の接続中のユーザーIDリストを返します
 func (h *Hub) GetConnectedUsers(workspaceID string) []string {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
 	if workspace, ok := h.workspaces[workspaceID]; ok {
 		users := make([]string, 0, len(workspace))
 		for userID := range workspace {
@@ -311,7 +342,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// メッセージの最大サイズ
-	maxMessageSize = 512
+	maxMessageSize = 64 * 1024
 )
 
 // readPump はWebSocketからのメッセージを読み取ります
@@ -450,8 +481,7 @@ func (c *Client) handlePostMessage(payload json.RawMessage) {
 	// 実際のメッセージ投稿はHTTP APIで行い、ここではWebSocket通知のみ処理
 	// メッセージ投稿後の通知は、HTTP API側でWebSocket通知を送信する
 
-	// 入力中状態を停止
-	c.stopTyping(postPayload.ChannelID)
+	c.notifyTyping(postPayload.ChannelID, EventTypeStopTyping)
 
 	c.sendAck(EventTypePostMessage, true, "")
 }
@@ -467,8 +497,7 @@ func (c *Client) handleTyping(payload json.RawMessage) {
 
 	log.Printf("ユーザー%sがチャンネル%sで入力中です", c.userID, typingPayload.ChannelID)
 
-	// 入力中状態の通知処理
-	c.startTyping(typingPayload.ChannelID)
+	c.notifyTyping(typingPayload.ChannelID, EventTypeTyping)
 }
 
 // handleUpdateReadState はupdate_read_stateイベントを処理します
@@ -572,40 +601,16 @@ func (c *Client) writePump() {
 	}
 }
 
-// startTyping は入力中状態を開始します
-func (c *Client) startTyping(channelID string) {
-	// 入力中状態の通知を他のクライアントに送信
-	typingData := map[string]interface{}{
-		"user_id":    c.userID,
-		"channel_id": channelID,
-		"typing":     true,
-	}
-
-	message, err := SendServerMessage(EventTypeTyping, typingData)
+// notifyTyping は入力中状態の開始・停止をチャンネルの他ユーザーに通知します
+func (c *Client) notifyTyping(channelID string, eventType EventType) {
+	message, err := SendServerMessage(eventType, TypingNotificationPayload{
+		ChannelID: channelID,
+		UserID:    c.userID,
+	})
 	if err != nil {
-		log.Printf("typingメッセージの生成に失敗しました: %v", err)
+		log.Printf("%sメッセージの生成に失敗しました: %v", eventType, err)
 		return
 	}
 
-	// チャンネル内の他のユーザーに通知（自分は除外）
-	c.hub.BroadcastToChannel(c.workspaceID, channelID, message)
-}
-
-// stopTyping は入力中状態を停止します
-func (c *Client) stopTyping(channelID string) {
-	// 入力中状態停止の通知を他のクライアントに送信
-	typingData := map[string]interface{}{
-		"user_id":    c.userID,
-		"channel_id": channelID,
-		"typing":     false,
-	}
-
-	message, err := SendServerMessage(EventTypeTyping, typingData)
-	if err != nil {
-		log.Printf("typing停止メッセージの生成に失敗しました: %v", err)
-		return
-	}
-
-	// チャンネル内の他のユーザーに通知（自分は除外）
-	c.hub.BroadcastToChannel(c.workspaceID, channelID, message)
+	c.hub.BroadcastToChannel(c.workspaceID, channelID, message, c.userID)
 }

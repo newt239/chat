@@ -14,6 +14,7 @@ const (
 	EventTypeLeaveChannel    EventType = "leave_channel"
 	EventTypePostMessage     EventType = "post_message"
 	EventTypeTyping          EventType = "typing"
+	EventTypeStopTyping      EventType = "stop_typing"
 	EventTypeUpdateReadState EventType = "update_read_state"
 
 	// サーバー→クライアント
@@ -24,6 +25,8 @@ const (
 	EventTypePinCreated           EventType = "pin_created"
 	EventTypePinDeleted           EventType = "pin_deleted"
 	EventTypeSystemMessageCreated EventType = "system_message_created"
+	EventTypeReactionAdded        EventType = "reaction_added"
+	EventTypeReactionRemoved      EventType = "reaction_removed"
 	EventTypeAck                  EventType = "ack"
 	EventTypeError                EventType = "error"
 )
@@ -56,9 +59,23 @@ type PostMessagePayload struct {
 	Body      string `json:"body"`
 }
 
-// TypingPayload はtypingイベントのペイロードを表します
+// TypingPayload はtyping/stop_typingイベントのペイロードを表します
 type TypingPayload struct {
 	ChannelID string `json:"channel_id"`
+}
+
+// TypingNotificationPayload はtyping/stop_typingの配信ペイロードを表します
+type TypingNotificationPayload struct {
+	ChannelID string `json:"channel_id"`
+	UserID    string `json:"user_id"`
+}
+
+// ReactionPayload はreaction_added/reaction_removedイベントのペイロードを表します
+type ReactionPayload struct {
+	ChannelID string `json:"channel_id"`
+	MessageID string `json:"message_id"`
+	UserID    string `json:"user_id"`
+	Emoji     string `json:"emoji"`
 }
 
 // UpdateReadStatePayload はupdate_read_stateイベントのペイロードを表します

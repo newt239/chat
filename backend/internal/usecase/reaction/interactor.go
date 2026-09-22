@@ -80,20 +80,31 @@ func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionI
 		return fmt.Errorf("failed to add reaction: %w", err)
 	}
 
-	// WebSocket通知を送信（nilチェックを追加）
-	if i.notificationSvc != nil {
-		// チャンネル情報を取得
-		channel, err := i.channelRepo.FindByID(ctx, message.ChannelID)
-		if err == nil && channel != nil {
-			// ユーザー情報を取得
-			user, err := i.userRepo.FindByID(ctx, input.UserID)
-			if err == nil && user != nil {
-				i.notificationSvc.NotifyReaction(channel.WorkspaceID, channel.ID, toReactionOutput(reaction, user))
-			}
-		}
-	}
+	i.notifyReaction(ctx, message.ChannelID, service.ReactionNotification{
+		MessageID: input.MessageID,
+		UserID:    input.UserID,
+		Emoji:     input.Emoji,
+	}, true)
 
 	return nil
+}
+
+// notifyReaction はリアクションの追加・削除をチャンネル購読者に通知します
+func (i *reactionInteractor) notifyReaction(ctx context.Context, channelID string, reaction service.ReactionNotification, added bool) {
+	if i.notificationSvc == nil {
+		return
+	}
+
+	channel, err := i.channelRepo.FindByID(ctx, channelID)
+	if err != nil || channel == nil {
+		return
+	}
+
+	if added {
+		i.notificationSvc.NotifyReactionAdded(channel.WorkspaceID, channel.ID, reaction)
+		return
+	}
+	i.notificationSvc.NotifyReactionRemoved(channel.WorkspaceID, channel.ID, reaction)
 }
 
 func (i *reactionInteractor) RemoveReaction(ctx context.Context, input RemoveReactionInput) error {
@@ -115,6 +126,12 @@ func (i *reactionInteractor) RemoveReaction(ctx context.Context, input RemoveRea
 	if err := i.messageRepo.RemoveReaction(ctx, input.MessageID, input.UserID, input.Emoji); err != nil {
 		return fmt.Errorf("failed to remove reaction: %w", err)
 	}
+
+	i.notifyReaction(ctx, message.ChannelID, service.ReactionNotification{
+		MessageID: input.MessageID,
+		UserID:    input.UserID,
+		Emoji:     input.Emoji,
+	}, false)
 
 	return nil
 }
