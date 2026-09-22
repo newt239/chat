@@ -25,7 +25,6 @@ type WorkspaceUseCase interface {
 	UpdateWorkspace(ctx context.Context, input UpdateWorkspaceInput) (*UpdateWorkspaceOutput, error)
 	DeleteWorkspace(ctx context.Context, input DeleteWorkspaceInput) (*DeleteWorkspaceOutput, error)
 	ListMembers(ctx context.Context, input ListMembersInput) (*ListMembersOutput, error)
-	AddMember(ctx context.Context, input AddMemberInput) (*MemberActionOutput, error)
 	UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) (*MemberActionOutput, error)
 	RemoveMember(ctx context.Context, input RemoveMemberInput) (*MemberActionOutput, error)
 
@@ -283,46 +282,12 @@ func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembers
 			memberInfo.Email = user.Email
 			memberInfo.DisplayName = user.DisplayName
 			memberInfo.AvatarURL = user.AvatarURL
+			memberInfo.Bio = user.Bio
 		}
 		output.Members = append(output.Members, memberInfo)
 	}
 
 	return output, nil
-}
-
-func (i *workspaceInteractor) AddMember(ctx context.Context, input AddMemberInput) (*MemberActionOutput, error) {
-	requester, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.InviterID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check requester membership: %w", err)
-	}
-	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
-		return nil, ErrUnauthorized
-	}
-
-	user, err := i.userRepo.FindByID(ctx, input.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-	if user == nil {
-		return nil, fmt.Errorf("user not found: %s", input.UserID)
-	}
-
-	if err := validateWorkspaceRole(input.Role); err != nil {
-		return nil, err
-	}
-
-	member := &entity.WorkspaceMember{
-		WorkspaceID: input.WorkspaceID,
-		UserID:      input.UserID,
-		Role:        entity.WorkspaceRole(input.Role),
-		JoinedAt:    time.Now(),
-	}
-
-	if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
-		return nil, fmt.Errorf("failed to add member: %w", err)
-	}
-
-	return &MemberActionOutput{Success: true}, nil
 }
 
 func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input UpdateMemberRoleInput) (*MemberActionOutput, error) {

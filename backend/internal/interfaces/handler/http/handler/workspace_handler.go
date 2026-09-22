@@ -15,12 +15,6 @@ type WorkspaceHandler struct {
 	WorkspaceUC workspaceuc.WorkspaceUseCase
 }
 
-// 注意: これはUserIDベースの追加用で、OpenAPIスキーマには定義がないため独自型を使用
-type AddMemberRequest struct {
-	UserID string `json:"user_id" validate:"required"`
-	Role   string `json:"role" validate:"required,oneof=owner admin member"`
-}
-
 func (h *WorkspaceHandler) ListWorkspaces(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -219,36 +213,12 @@ func (h *WorkspaceHandler) ListMembers(c echo.Context, id string) error {
 	return c.JSON(http.StatusOK, members)
 }
 
-func (h *WorkspaceHandler) AddMember(c echo.Context) error {
-	workspaceID := c.Param("id")
-	if workspaceID == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "ワークスペースIDは必須です")
-	}
-
-	var req AddMemberRequest
-	if err := c.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	input := workspaceuc.AddMemberInput{
-		WorkspaceID: workspaceID,
-		UserID:      req.UserID,
-		Role:        req.Role,
-	}
-
-	member, err := h.WorkspaceUC.AddMember(c.Request().Context(), input)
-	if err != nil {
-		return handleUseCaseError(err)
-	}
-
-	return c.JSON(http.StatusCreated, member)
-}
-
 func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context, id string, userId openapi_types.UUID) error {
+	updaterID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
+	}
+
 	var req openapi.UpdateMemberRoleRequest
 	if err := c.Bind(&req); err != nil {
 		return utils.HandleBindError(err)
@@ -261,6 +231,7 @@ func (h *WorkspaceHandler) UpdateMemberRole(c echo.Context, id string, userId op
 	input := workspaceuc.UpdateMemberRoleInput{
 		WorkspaceID: id,
 		UserID:      userId.String(),
+		UpdaterID:   updaterID,
 		Role:        string(req.Role),
 	}
 
