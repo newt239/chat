@@ -661,13 +661,7 @@ paths:
                   messages:
                     type: array
                     items:
-                      allOf:
-                        - $ref: '#/components/schemas/Message'
-                        - type: object
-                          properties:
-                            threadMetadata:
-                              $ref: '#/components/schemas/ThreadMetadata'
-                              nullable: true
+                      $ref: '#/components/schemas/MessageWithThread'
                   hasMore:
                     type: boolean
                 required:
@@ -2678,6 +2672,17 @@ components:
         - displayName
         - role
         - joinedAt
+    GroupMention:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+        - groupId
+        - name
     Message:
       type: object
       properties:
@@ -2710,28 +2715,175 @@ components:
         isDeleted:
           type: boolean
         deletedBy:
-          type: object
+          allOf:
+            - $ref: '#/components/schemas/MessageUser'
           nullable: true
-          properties:
-            id:
-              type: string
-              format: uuid
-            displayName:
-              type: string
-            avatarUrl:
-              type: string
-              nullable: true
+        user:
+          $ref: '#/components/schemas/MessageUser'
+        mentions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserMention'
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMention'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageLink'
+        reactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReactionInfo'
         attachments:
           type: array
           items:
-            $ref: '#/components/schemas/Attachment'
+            $ref: '#/components/schemas/MessageAttachment'
       required:
         - id
         - channelId
         - userId
+        - user
         - body
         - createdAt
         - isDeleted
+    MessageAttachment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+      required:
+        - id
+        - fileName
+        - mimeType
+        - sizeBytes
+    MessageLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        siteName:
+          type: string
+          nullable: true
+        cardType:
+          type: string
+          nullable: true
+      required:
+        - id
+        - url
+    MessageUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - displayName
+    MessageWithThread:
+      allOf:
+        - $ref: '#/components/schemas/Message'
+        - type: object
+          properties:
+            threadMetadata:
+              $ref: '#/components/schemas/ThreadMetadata'
+    ReactionInfo:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/MessageUser'
+        emoji:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - user
+        - emoji
+        - createdAt
+    SystemMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        channelId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          description: member_joined / member_added / member_removed / member_left / channel_name_changed / channel_description_changed / channel_privacy_changed / message_pinned
+        payload:
+          type: object
+          additionalProperties: true
+        actorId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - channelId
+        - kind
+        - payload
+        - createdAt
+    TimelineItem:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - user
+            - system
+        userMessage:
+          $ref: '#/components/schemas/Message'
+        systemMessage:
+          $ref: '#/components/schemas/SystemMessage'
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - type
+        - createdAt
+    UserMention:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+      required:
+        - userId
+        - displayName
     MessageBookmark:
       type: object
       properties:
@@ -2774,7 +2926,7 @@ components:
         messages:
           type: array
           items:
-            $ref: '#/components/schemas/Message'
+            $ref: '#/components/schemas/TimelineItem'
         hasMore:
           type: boolean
       required:
@@ -2969,19 +3121,7 @@ components:
           type: string
           format: uuid
         user:
-          type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-            displayName:
-              type: string
-            avatarUrl:
-              type: string
-              nullable: true
-          required:
-            - id
-            - displayName
+          $ref: '#/components/schemas/MessageUser'
         emoji:
           type: string
         createdAt:
@@ -3048,20 +3188,9 @@ components:
           format: date-time
           nullable: true
         lastReplyUser:
-          type: object
+          allOf:
+            - $ref: '#/components/schemas/MessageUser'
           nullable: true
-          properties:
-            id:
-              type: string
-              format: uuid
-            displayName:
-              type: string
-            avatarUrl:
-              type: string
-              nullable: true
-          required:
-            - id
-            - displayName
         participantUserIds:
           type: array
           items:

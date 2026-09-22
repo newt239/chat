@@ -1,9 +1,6 @@
-ReactionWithUser:
+ReactionInfo:
   type: object
   properties:
-    messageId:
-      type: string
-      format: uuid
     user:
       $ref: "../../openapi.yaml#/components/schemas/MessageUser"
     emoji:
@@ -12,8 +9,6 @@ ReactionWithUser:
       type: string
       format: date-time
   required:
-    - messageId
     - user
     - emoji
     - createdAt
-

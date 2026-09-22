@@ -1,0 +1,7 @@
+MessageWithThread:
+  allOf:
+    - $ref: "../../openapi.yaml#/components/schemas/Message"
+    - type: object
+      properties:
+        threadMetadata:
+          $ref: "../../openapi.yaml#/components/schemas/ThreadMetadata"

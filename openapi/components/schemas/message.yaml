@@ -30,25 +30,36 @@ Message:
     isDeleted:
       type: boolean
     deletedBy:
-      type: object
+      allOf:
+        - $ref: "../../openapi.yaml#/components/schemas/MessageUser"
       nullable: true
-      properties:
-        id:
-          type: string
-          format: uuid
-        displayName:
-          type: string
-        avatarUrl:
-          type: string
-          nullable: true
+    user:
+      $ref: "../../openapi.yaml#/components/schemas/MessageUser"
+    mentions:
+      type: array
+      items:
+        $ref: "../../openapi.yaml#/components/schemas/UserMention"
+    groups:
+      type: array
+      items:
+        $ref: "../../openapi.yaml#/components/schemas/GroupMention"
+    links:
+      type: array
+      items:
+        $ref: "../../openapi.yaml#/components/schemas/MessageLink"
+    reactions:
+      type: array
+      items:
+        $ref: "../../openapi.yaml#/components/schemas/ReactionInfo"
     attachments:
       type: array
       items:
-        $ref: "../../openapi.yaml#/components/schemas/Attachment"
+        $ref: "../../openapi.yaml#/components/schemas/MessageAttachment"
   required:
     - id
     - channelId
     - userId
+    - user
     - body
     - createdAt
     - isDeleted

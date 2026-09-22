@@ -68,8 +68,26 @@ components:
       $ref: "./components/schemas/login_request.yaml#/LoginRequest"
     MemberInfo:
       $ref: "./components/schemas/member_info.yaml#/MemberInfo"
+    GroupMention:
+      $ref: "./components/schemas/group_mention.yaml#/GroupMention"
     Message:
       $ref: "./components/schemas/message.yaml#/Message"
+    MessageAttachment:
+      $ref: "./components/schemas/message_attachment.yaml#/MessageAttachment"
+    MessageLink:
+      $ref: "./components/schemas/message_link.yaml#/MessageLink"
+    MessageUser:
+      $ref: "./components/schemas/message_user.yaml#/MessageUser"
+    MessageWithThread:
+      $ref: "./components/schemas/message_with_thread.yaml#/MessageWithThread"
+    ReactionInfo:
+      $ref: "./components/schemas/reaction_info.yaml#/ReactionInfo"
+    SystemMessage:
+      $ref: "./components/schemas/system_message.yaml#/SystemMessage"
+    TimelineItem:
+      $ref: "./components/schemas/timeline_item.yaml#/TimelineItem"
+    UserMention:
+      $ref: "./components/schemas/user_mention.yaml#/UserMention"
     MessageBookmark:
       $ref: "./components/schemas/message_bookmark.yaml#/MessageBookmark"
     MessageReaction:

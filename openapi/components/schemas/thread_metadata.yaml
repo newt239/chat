@@ -12,20 +12,9 @@ ThreadMetadata:
       format: date-time
       nullable: true
     lastReplyUser:
-      type: object
+      allOf:
+        - $ref: "../../openapi.yaml#/components/schemas/MessageUser"
       nullable: true
-      properties:
-        id:
-          type: string
-          format: uuid
-        displayName:
-          type: string
-        avatarUrl:
-          type: string
-          nullable: true
-      required:
-        - id
-        - displayName
     participantUserIds:
       type: array
       items:

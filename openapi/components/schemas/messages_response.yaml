@@ -4,7 +4,7 @@ MessagesResponse:
     messages:
       type: array
       items:
-        $ref: "../../openapi.yaml#/components/schemas/Message"
+        $ref: "../../openapi.yaml#/components/schemas/TimelineItem"
     hasMore:
       type: boolean
   required:

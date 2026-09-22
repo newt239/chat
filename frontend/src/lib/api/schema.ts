@@ -945,6 +945,11 @@ export interface components {
             /** Format: date-time */
             joinedAt: string;
         };
+        GroupMention: {
+            /** Format: uuid */
+            groupId: string;
+            name: string;
+        };
         Message: {
             /** Format: uuid */
             id: string;
@@ -962,13 +967,74 @@ export interface components {
             /** Format: date-time */
             deletedAt?: string | null;
             isDeleted: boolean;
-            deletedBy?: {
-                /** Format: uuid */
-                id?: string;
-                displayName?: string;
-                avatarUrl?: string | null;
-            } | null;
-            attachments?: components["schemas"]["Attachment"][];
+            deletedBy?: components["schemas"]["MessageUser"] | null;
+            user: components["schemas"]["MessageUser"];
+            mentions?: components["schemas"]["UserMention"][];
+            groups?: components["schemas"]["GroupMention"][];
+            links?: components["schemas"]["MessageLink"][];
+            reactions?: components["schemas"]["ReactionInfo"][];
+            attachments?: components["schemas"]["MessageAttachment"][];
+        };
+        MessageAttachment: {
+            /** Format: uuid */
+            id: string;
+            fileName: string;
+            mimeType: string;
+            /** Format: int64 */
+            sizeBytes: number;
+        };
+        MessageLink: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            title?: string | null;
+            description?: string | null;
+            imageUrl?: string | null;
+            siteName?: string | null;
+            cardType?: string | null;
+        };
+        MessageUser: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            avatarUrl?: string | null;
+        };
+        MessageWithThread: components["schemas"]["Message"] & {
+            threadMetadata?: components["schemas"]["ThreadMetadata"];
+        };
+        ReactionInfo: {
+            user: components["schemas"]["MessageUser"];
+            emoji: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SystemMessage: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            channelId: string;
+            /** @description member_joined / member_added / member_removed / member_left / channel_name_changed / channel_description_changed / channel_privacy_changed / message_pinned */
+            kind: string;
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            actorId?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TimelineItem: {
+            /** @enum {string} */
+            type: "user" | "system";
+            userMessage?: components["schemas"]["Message"];
+            systemMessage?: components["schemas"]["SystemMessage"];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        UserMention: {
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
         };
         MessageBookmark: {
             /** Format: uuid */
@@ -989,7 +1055,7 @@ export interface components {
             createdAt: string;
         };
         MessagesResponse: {
-            messages: components["schemas"]["Message"][];
+            messages: components["schemas"]["TimelineItem"][];
             hasMore: boolean;
         };
         PaginatedChannels: {
@@ -1061,12 +1127,7 @@ export interface components {
         ReactionWithUser: {
             /** Format: uuid */
             messageId: string;
-            user: {
-                /** Format: uuid */
-                id: string;
-                displayName: string;
-                avatarUrl?: string | null;
-            };
+            user: components["schemas"]["MessageUser"];
             emoji: string;
             /** Format: date-time */
             createdAt: string;
@@ -1095,12 +1156,7 @@ export interface components {
             replyCount: number;
             /** Format: date-time */
             lastReplyAt?: string | null;
-            lastReplyUser?: {
-                /** Format: uuid */
-                id: string;
-                displayName: string;
-                avatarUrl?: string | null;
-            } | null;
+            lastReplyUser?: components["schemas"]["MessageUser"] | null;
             participantUserIds: string[];
         };
         ThreadRepliesResponse: {
@@ -1993,9 +2049,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        messages: (components["schemas"]["Message"] & {
-                            threadMetadata?: components["schemas"]["ThreadMetadata"];
-                        })[];
+                        messages: components["schemas"]["MessageWithThread"][];
                         hasMore: boolean;
                     };
                 };

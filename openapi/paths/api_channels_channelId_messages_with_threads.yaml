@@ -39,13 +39,7 @@
                 messages:
                   type: array
                   items:
-                    allOf:
-                      - $ref: "../openapi.yaml#/components/schemas/Message"
-                      - type: object
-                        properties:
-                          threadMetadata:
-                            $ref: "../openapi.yaml#/components/schemas/ThreadMetadata"
-                            nullable: true
+                    $ref: "../openapi.yaml#/components/schemas/MessageWithThread"
                 hasMore:
                   type: boolean
               required:

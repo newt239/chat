@@ -1,0 +1,11 @@
+UserMention:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+    displayName:
+      type: string
+  required:
+    - userId
+    - displayName

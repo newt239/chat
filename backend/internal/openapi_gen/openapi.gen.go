@@ -56,6 +56,12 @@ const (
 	MemberInfoRoleOwner  MemberInfoRole = "owner"
 )
 
+// Defines values for TimelineItemType.
+const (
+	TimelineItemTypeSystem TimelineItemType = "system"
+	TimelineItemTypeUser   TimelineItemType = "user"
+)
+
 // Defines values for UpdateChannelMemberRoleRequestRole.
 const (
 	UpdateChannelMemberRoleRequestRoleAdmin  UpdateChannelMemberRoleRequestRole = "admin"
@@ -240,6 +246,12 @@ type FetchOGPResponse struct {
 	} `json:"ogpData"`
 }
 
+// GroupMention defines model for GroupMention.
+type GroupMention struct {
+	GroupId openapi_types.UUID `json:"groupId"`
+	Name    string             `json:"name"`
+}
+
 // InviteChannelMemberRequest defines model for InviteChannelMemberRequest.
 type InviteChannelMemberRequest struct {
 	Role   *InviteChannelMemberRequestRole `json:"role,omitempty"`
@@ -301,27 +313,75 @@ type MemberInfoRole string
 
 // Message defines model for Message.
 type Message struct {
-	Attachments *[]Attachment      `json:"attachments,omitempty"`
-	Body        string             `json:"body"`
-	ChannelId   openapi_types.UUID `json:"channelId"`
-	CreatedAt   time.Time          `json:"createdAt"`
-	DeletedAt   *time.Time         `json:"deletedAt"`
-	DeletedBy   *struct {
-		AvatarUrl   *string             `json:"avatarUrl"`
-		DisplayName *string             `json:"displayName,omitempty"`
-		Id          *openapi_types.UUID `json:"id,omitempty"`
-	} `json:"deletedBy"`
-	EditedAt  *time.Time          `json:"editedAt"`
-	Id        openapi_types.UUID  `json:"id"`
-	IsDeleted bool                `json:"isDeleted"`
-	ParentId  *openapi_types.UUID `json:"parentId"`
-	UserId    openapi_types.UUID  `json:"userId"`
+	Attachments *[]MessageAttachment `json:"attachments,omitempty"`
+	Body        string               `json:"body"`
+	ChannelId   openapi_types.UUID   `json:"channelId"`
+	CreatedAt   time.Time            `json:"createdAt"`
+	DeletedAt   *time.Time           `json:"deletedAt"`
+	DeletedBy   *MessageUser         `json:"deletedBy"`
+	EditedAt    *time.Time           `json:"editedAt"`
+	Groups      *[]GroupMention      `json:"groups,omitempty"`
+	Id          openapi_types.UUID   `json:"id"`
+	IsDeleted   bool                 `json:"isDeleted"`
+	Links       *[]MessageLink       `json:"links,omitempty"`
+	Mentions    *[]UserMention       `json:"mentions,omitempty"`
+	ParentId    *openapi_types.UUID  `json:"parentId"`
+	Reactions   *[]ReactionInfo      `json:"reactions,omitempty"`
+	User        MessageUser          `json:"user"`
+	UserId      openapi_types.UUID   `json:"userId"`
+}
+
+// MessageAttachment defines model for MessageAttachment.
+type MessageAttachment struct {
+	FileName  string             `json:"fileName"`
+	Id        openapi_types.UUID `json:"id"`
+	MimeType  string             `json:"mimeType"`
+	SizeBytes int64              `json:"sizeBytes"`
+}
+
+// MessageLink defines model for MessageLink.
+type MessageLink struct {
+	CardType    *string            `json:"cardType"`
+	Description *string            `json:"description"`
+	Id          openapi_types.UUID `json:"id"`
+	ImageUrl    *string            `json:"imageUrl"`
+	SiteName    *string            `json:"siteName"`
+	Title       *string            `json:"title"`
+	Url         string             `json:"url"`
+}
+
+// MessageUser defines model for MessageUser.
+type MessageUser struct {
+	AvatarUrl   *string            `json:"avatarUrl"`
+	DisplayName string             `json:"displayName"`
+	Id          openapi_types.UUID `json:"id"`
+}
+
+// MessageWithThread defines model for MessageWithThread.
+type MessageWithThread struct {
+	Attachments    *[]MessageAttachment `json:"attachments,omitempty"`
+	Body           string               `json:"body"`
+	ChannelId      openapi_types.UUID   `json:"channelId"`
+	CreatedAt      time.Time            `json:"createdAt"`
+	DeletedAt      *time.Time           `json:"deletedAt"`
+	DeletedBy      *MessageUser         `json:"deletedBy"`
+	EditedAt       *time.Time           `json:"editedAt"`
+	Groups         *[]GroupMention      `json:"groups,omitempty"`
+	Id             openapi_types.UUID   `json:"id"`
+	IsDeleted      bool                 `json:"isDeleted"`
+	Links          *[]MessageLink       `json:"links,omitempty"`
+	Mentions       *[]UserMention       `json:"mentions,omitempty"`
+	ParentId       *openapi_types.UUID  `json:"parentId"`
+	Reactions      *[]ReactionInfo      `json:"reactions,omitempty"`
+	ThreadMetadata *ThreadMetadata      `json:"threadMetadata,omitempty"`
+	User           MessageUser          `json:"user"`
+	UserId         openapi_types.UUID   `json:"userId"`
 }
 
 // MessagesResponse defines model for MessagesResponse.
 type MessagesResponse struct {
-	HasMore  bool      `json:"hasMore"`
-	Messages []Message `json:"messages"`
+	HasMore  bool           `json:"hasMore"`
+	Messages []TimelineItem `json:"messages"`
 }
 
 // PaginatedChannels defines model for PaginatedChannels.
@@ -399,16 +459,19 @@ type PublicWorkspaceItem struct {
 	Name        string    `json:"name"`
 }
 
+// ReactionInfo defines model for ReactionInfo.
+type ReactionInfo struct {
+	CreatedAt time.Time   `json:"createdAt"`
+	Emoji     string      `json:"emoji"`
+	User      MessageUser `json:"user"`
+}
+
 // ReactionWithUser defines model for ReactionWithUser.
 type ReactionWithUser struct {
 	CreatedAt time.Time          `json:"createdAt"`
 	Emoji     string             `json:"emoji"`
 	MessageId openapi_types.UUID `json:"messageId"`
-	User      struct {
-		AvatarUrl   *string            `json:"avatarUrl"`
-		DisplayName string             `json:"displayName"`
-		Id          openapi_types.UUID `json:"id"`
-	} `json:"user"`
+	User      MessageUser        `json:"user"`
 }
 
 // RefreshRequest defines model for RefreshRequest.
@@ -428,6 +491,18 @@ type SuccessResponse struct {
 	Success bool `json:"success"`
 }
 
+// SystemMessage defines model for SystemMessage.
+type SystemMessage struct {
+	ActorId   *openapi_types.UUID `json:"actorId"`
+	ChannelId openapi_types.UUID  `json:"channelId"`
+	CreatedAt time.Time           `json:"createdAt"`
+	Id        openapi_types.UUID  `json:"id"`
+
+	// Kind member_joined / member_added / member_removed / member_left / channel_name_changed / channel_description_changed / channel_privacy_changed / message_pinned
+	Kind    string                 `json:"kind"`
+	Payload map[string]interface{} `json:"payload"`
+}
+
 // ThreadCursor defines model for ThreadCursor.
 type ThreadCursor struct {
 	LastActivityAt time.Time          `json:"last_activity_at"`
@@ -436,12 +511,8 @@ type ThreadCursor struct {
 
 // ThreadMetadata defines model for ThreadMetadata.
 type ThreadMetadata struct {
-	LastReplyAt   *time.Time `json:"lastReplyAt"`
-	LastReplyUser *struct {
-		AvatarUrl   *string            `json:"avatarUrl"`
-		DisplayName string             `json:"displayName"`
-		Id          openapi_types.UUID `json:"id"`
-	} `json:"lastReplyUser"`
+	LastReplyAt        *time.Time           `json:"lastReplyAt"`
+	LastReplyUser      *MessageUser         `json:"lastReplyUser"`
 	MessageId          openapi_types.UUID   `json:"messageId"`
 	ParticipantUserIds []openapi_types.UUID `json:"participantUserIds"`
 	ReplyCount         int                  `json:"replyCount"`
@@ -453,6 +524,17 @@ type ThreadRepliesResponse struct {
 	ParentMessage Message   `json:"parentMessage"`
 	Replies       []Message `json:"replies"`
 }
+
+// TimelineItem defines model for TimelineItem.
+type TimelineItem struct {
+	CreatedAt     time.Time        `json:"createdAt"`
+	SystemMessage *SystemMessage   `json:"systemMessage,omitempty"`
+	Type          TimelineItemType `json:"type"`
+	UserMessage   *Message         `json:"userMessage,omitempty"`
+}
+
+// TimelineItemType defines model for TimelineItem.Type.
+type TimelineItemType string
 
 // UnreadCountResponse defines model for UnreadCountResponse.
 type UnreadCountResponse struct {
@@ -476,8 +558,8 @@ type UpdateChannelRequest struct {
 
 // UpdateMeRequest defines model for UpdateMeRequest.
 type UpdateMeRequest struct {
-	AvatarUrl   *string `json:"avatar_url,omitempty"`
-	Bio         *string `json:"bio,omitempty"`
+	AvatarUrl   *string `json:"avatar_url"`
+	Bio         *string `json:"bio"`
 	DisplayName *string `json:"display_name,omitempty"`
 }
 
@@ -538,6 +620,12 @@ type UserGroupMember struct {
 	GroupId  openapi_types.UUID `json:"groupId"`
 	JoinedAt time.Time          `json:"joinedAt"`
 	UserId   openapi_types.UUID `json:"userId"`
+}
+
+// UserMention defines model for UserMention.
+type UserMention struct {
+	DisplayName string             `json:"displayName"`
+	UserId      openapi_types.UUID `json:"userId"`
 }
 
 // Workspace defines model for Workspace.
