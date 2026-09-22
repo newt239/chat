@@ -58,6 +58,10 @@ func (s *serverImpl) GetAttachment(ctx echo.Context, id openapi_types.UUID) erro
 	return s.cfg.AttachmentHandler.GetAttachment(ctx, id)
 }
 
+func (s *serverImpl) DeleteAttachment(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.AttachmentHandler.DeleteAttachment(ctx, id)
+}
+
 func (s *serverImpl) DownloadAttachment(ctx echo.Context, id openapi_types.UUID) error {
 	return s.cfg.AttachmentHandler.DownloadAttachment(ctx, id)
 }
@@ -88,6 +92,14 @@ func (s *serverImpl) AddBookmark(ctx echo.Context, messageId openapi_types.UUID)
 
 func (s *serverImpl) RemoveBookmark(ctx echo.Context, messageId openapi_types.UUID) error {
 	return s.cfg.BookmarkHandler.RemoveBookmark(ctx, messageId)
+}
+
+func (s *serverImpl) GetChannel(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelHandler.GetChannel(ctx, channelId)
+}
+
+func (s *serverImpl) DeleteChannel(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelHandler.DeleteChannel(ctx, channelId)
 }
 
 func (s *serverImpl) UpdateChannel(ctx echo.Context, channelId openapi_types.UUID) error {
@@ -206,6 +218,14 @@ func (s *serverImpl) SearchWorkspace(ctx echo.Context, workspaceId string, param
 	return s.cfg.SearchHandler.SearchWorkspace(ctx, workspaceId, params)
 }
 
+func (s *serverImpl) FollowThread(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.ThreadHandler.FollowThread(ctx, messageId)
+}
+
+func (s *serverImpl) UnfollowThread(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.ThreadHandler.UnfollowThread(ctx, messageId)
+}
+
 func (s *serverImpl) MarkThreadRead(ctx echo.Context, threadId openapi_types.UUID) error {
 	return s.cfg.ThreadHandler.MarkThreadRead(ctx, threadId)
 }
@@ -311,6 +331,7 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	// アタッチメント
 	protectedAPI.POST("/attachments/presign", wrapper.PresignUpload)
 	protectedAPI.GET("/attachments/:id", wrapper.GetAttachment)
+	protectedAPI.DELETE("/attachments/:id", wrapper.DeleteAttachment)
 	protectedAPI.GET("/attachments/:id/download", wrapper.DownloadAttachment)
 
 	// 認証
@@ -322,7 +343,9 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.DELETE("/messages/:messageId/bookmarks", wrapper.RemoveBookmark)
 
 	// チャンネル
+	protectedAPI.GET("/channels/:channelId", wrapper.GetChannel)
 	protectedAPI.PATCH("/channels/:channelId", wrapper.UpdateChannel)
+	protectedAPI.DELETE("/channels/:channelId", wrapper.DeleteChannel)
 	protectedAPI.GET("/channels/:channelId/members", wrapper.ListChannelMembers)
 	protectedAPI.POST("/channels/:channelId/members", wrapper.InviteChannelMember)
 	protectedAPI.DELETE("/channels/:channelId/members/self", wrapper.LeaveChannel)
@@ -359,6 +382,8 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.POST("/workspaces/:id/group-dms", wrapper.CreateGroupDM)
 
 	// スレッド
+	protectedAPI.POST("/messages/:messageId/follow", wrapper.FollowThread)
+	protectedAPI.DELETE("/messages/:messageId/follow", wrapper.UnfollowThread)
 	protectedAPI.POST("/threads/:threadId/read", wrapper.MarkThreadRead)
 	protectedAPI.GET("/workspaces/:workspaceId/threads/participating", wrapper.GetParticipatingThreads)
 

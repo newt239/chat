@@ -86,6 +86,7 @@ const (
 const (
 	All      SearchWorkspaceParamsFilter = "all"
 	Channels SearchWorkspaceParamsFilter = "channels"
+	Groups   SearchWorkspaceParamsFilter = "groups"
 	Messages SearchWorkspaceParamsFilter = "messages"
 	Users    SearchWorkspaceParamsFilter = "users"
 )
@@ -411,6 +412,15 @@ type PaginatedMessages struct {
 	Total   int       `json:"total"`
 }
 
+// PaginatedUserGroups defines model for PaginatedUserGroups.
+type PaginatedUserGroups struct {
+	HasMore bool        `json:"hasMore"`
+	Items   []UserGroup `json:"items"`
+	Page    int         `json:"page"`
+	PerPage int         `json:"perPage"`
+	Total   int         `json:"total"`
+}
+
 // PaginatedUsers defines model for PaginatedUsers.
 type PaginatedUsers struct {
 	HasMore bool         `json:"hasMore"`
@@ -656,9 +666,10 @@ type WorkspaceRole string
 
 // WorkspaceSearchResponse defines model for WorkspaceSearchResponse.
 type WorkspaceSearchResponse struct {
-	Channels PaginatedChannels `json:"channels"`
-	Messages PaginatedMessages `json:"messages"`
-	Users    PaginatedUsers    `json:"users"`
+	Channels PaginatedChannels   `json:"channels"`
+	Groups   PaginatedUserGroups `json:"groups"`
+	Messages PaginatedMessages   `json:"messages"`
+	Users    PaginatedUsers      `json:"users"`
 }
 
 // ListMessagesParams defines parameters for ListMessages.
@@ -796,6 +807,9 @@ type ServerInterface interface {
 	// Get presigned upload URL
 	// (POST /api/attachments/presign)
 	PresignUpload(ctx echo.Context) error
+	// Delete an attachment
+	// (DELETE /api/attachments/{id})
+	DeleteAttachment(ctx echo.Context, id openapi_types.UUID) error
 	// Get attachment metadata
 	// (GET /api/attachments/{id})
 	GetAttachment(ctx echo.Context, id openapi_types.UUID) error
@@ -817,6 +831,12 @@ type ServerInterface interface {
 	// List user bookmarks
 	// (GET /api/bookmarks)
 	ListBookmarks(ctx echo.Context) error
+	// Delete channel
+	// (DELETE /api/channels/{channelId})
+	DeleteChannel(ctx echo.Context, channelId openapi_types.UUID) error
+	// Get channel details
+	// (GET /api/channels/{channelId})
+	GetChannel(ctx echo.Context, channelId openapi_types.UUID) error
 	// Update channel
 	// (PATCH /api/channels/{channelId})
 	UpdateChannel(ctx echo.Context, channelId openapi_types.UUID) error
@@ -877,6 +897,12 @@ type ServerInterface interface {
 	// Add bookmark to message
 	// (POST /api/messages/{messageId}/bookmarks)
 	AddBookmark(ctx echo.Context, messageId openapi_types.UUID) error
+	// Unfollow a thread
+	// (DELETE /api/messages/{messageId}/follow)
+	UnfollowThread(ctx echo.Context, messageId openapi_types.UUID) error
+	// Follow a thread
+	// (POST /api/messages/{messageId}/follow)
+	FollowThread(ctx echo.Context, messageId openapi_types.UUID) error
 	// List reactions for a message
 	// (GET /api/messages/{messageId}/reactions)
 	ListReactions(ctx echo.Context, messageId openapi_types.UUID) error
@@ -1000,6 +1026,24 @@ func (w *ServerInterfaceWrapper) PresignUpload(ctx echo.Context) error {
 	return err
 }
 
+// DeleteAttachment converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteAttachment(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteAttachment(ctx, id)
+	return err
+}
+
 // GetAttachment converts echo context to params.
 func (w *ServerInterfaceWrapper) GetAttachment(ctx echo.Context) error {
 	var err error
@@ -1082,6 +1126,42 @@ func (w *ServerInterfaceWrapper) ListBookmarks(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.ListBookmarks(ctx)
+	return err
+}
+
+// DeleteChannel converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteChannel(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "channelId" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channelId", ctx.Param("channelId"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter channelId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteChannel(ctx, channelId)
+	return err
+}
+
+// GetChannel converts echo context to params.
+func (w *ServerInterfaceWrapper) GetChannel(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "channelId" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channelId", ctx.Param("channelId"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter channelId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetChannel(ctx, channelId)
 	return err
 }
 
@@ -1521,6 +1601,42 @@ func (w *ServerInterfaceWrapper) AddBookmark(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AddBookmark(ctx, messageId)
+	return err
+}
+
+// UnfollowThread converts echo context to params.
+func (w *ServerInterfaceWrapper) UnfollowThread(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "messageId" -------------
+	var messageId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "messageId", ctx.Param("messageId"), &messageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter messageId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UnfollowThread(ctx, messageId)
+	return err
+}
+
+// FollowThread converts echo context to params.
+func (w *ServerInterfaceWrapper) FollowThread(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "messageId" -------------
+	var messageId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "messageId", ctx.Param("messageId"), &messageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter messageId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.FollowThread(ctx, messageId)
 	return err
 }
 
@@ -2229,6 +2345,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.POST(baseURL+"/api/attachments/presign", wrapper.PresignUpload)
+	router.DELETE(baseURL+"/api/attachments/:id", wrapper.DeleteAttachment)
 	router.GET(baseURL+"/api/attachments/:id", wrapper.GetAttachment)
 	router.GET(baseURL+"/api/attachments/:id/download", wrapper.DownloadAttachment)
 	router.POST(baseURL+"/api/auth/login", wrapper.Login)
@@ -2236,6 +2353,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/auth/refresh", wrapper.Refresh)
 	router.POST(baseURL+"/api/auth/register", wrapper.Register)
 	router.GET(baseURL+"/api/bookmarks", wrapper.ListBookmarks)
+	router.DELETE(baseURL+"/api/channels/:channelId", wrapper.DeleteChannel)
+	router.GET(baseURL+"/api/channels/:channelId", wrapper.GetChannel)
 	router.PATCH(baseURL+"/api/channels/:channelId", wrapper.UpdateChannel)
 	router.GET(baseURL+"/api/channels/:channelId/members", wrapper.ListChannelMembers)
 	router.POST(baseURL+"/api/channels/:channelId/members", wrapper.InviteChannelMember)
@@ -2256,6 +2375,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PATCH(baseURL+"/api/messages/:messageId", wrapper.UpdateMessage)
 	router.DELETE(baseURL+"/api/messages/:messageId/bookmarks", wrapper.RemoveBookmark)
 	router.POST(baseURL+"/api/messages/:messageId/bookmarks", wrapper.AddBookmark)
+	router.DELETE(baseURL+"/api/messages/:messageId/follow", wrapper.UnfollowThread)
+	router.POST(baseURL+"/api/messages/:messageId/follow", wrapper.FollowThread)
 	router.GET(baseURL+"/api/messages/:messageId/reactions", wrapper.ListReactions)
 	router.POST(baseURL+"/api/messages/:messageId/reactions", wrapper.AddReaction)
 	router.DELETE(baseURL+"/api/messages/:messageId/reactions/:emoji", wrapper.RemoveReaction)
