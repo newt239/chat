@@ -334,12 +334,25 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 		return nil, ErrUnauthorized
 	}
 
-	if input.UserID == input.UpdaterID && requester.Role == entity.WorkspaceRoleOwner {
-		return nil, ErrCannotChangeOwnerRole
-	}
-
 	if err := validateWorkspaceRole(input.Role); err != nil {
 		return nil, err
+	}
+
+	target, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get target member: %w", err)
+	}
+	if target == nil {
+		return nil, ErrWorkspaceNotFound
+	}
+
+	// owner の降格と owner への昇格は owner 本人にのみ許可する
+	isOwnerChange := target.Role == entity.WorkspaceRoleOwner || entity.WorkspaceRole(input.Role) == entity.WorkspaceRoleOwner
+	if isOwnerChange && requester.Role != entity.WorkspaceRoleOwner {
+		return nil, ErrCannotChangeOwnerRole
+	}
+	if input.UserID == input.UpdaterID {
+		return nil, ErrCannotChangeOwnerRole
 	}
 
 	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.UserID, entity.WorkspaceRole(input.Role)); err != nil {
