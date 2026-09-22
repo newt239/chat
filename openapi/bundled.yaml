@@ -3174,9 +3174,11 @@ components:
           type: string
         bio:
           type: string
+          nullable: true
         avatar_url:
           type: string
           format: uri
+          nullable: true
     User:
       type: object
       properties:

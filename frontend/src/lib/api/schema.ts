@@ -1144,9 +1144,9 @@ export interface components {
         };
         UpdateMeRequest: {
             display_name?: string;
-            bio?: string;
+            bio?: string | null;
             /** Format: uri */
-            avatar_url?: string;
+            avatar_url?: string | null;
         };
         User: {
             /** Format: uuid */
