@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { Badge, Loader, Stack, Text, Divider } from "@mantine/core";
 import { useAtomValue } from "jotai";
 
+import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { currentChannelIdAtom } from "#/providers/store/workspace";
@@ -81,6 +82,8 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
             {activeChannel.id}
           </Text>
         </Stack>
+        <Divider />
+        <ChannelMemberManager channelId={activeChannel.id} workspaceId={workspaceId} />
         <Divider />
         <ChannelSettingsPanel
           channelId={activeChannel.id}

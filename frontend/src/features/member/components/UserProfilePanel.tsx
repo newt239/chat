@@ -1,8 +1,14 @@
 import { useMemo } from "react";
 
-import { Avatar, Badge, Loader, Stack, Text } from "@mantine/core";
+import { Avatar, Badge, Button, Loader, Stack, Text } from "@mantine/core";
+import { IconMessage } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
+import { useNavigate } from "react-router";
 
+import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { paths } from "#/lib/paths";
+import { userAtom } from "#/providers/store/auth";
 
 type UserProfilePanelProps = {
   workspaceId: string;
@@ -11,6 +17,14 @@ type UserProfilePanelProps = {
 
 export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps) => {
   const { data: members, isLoading, isError, error } = useMembers(workspaceId);
+  const currentUser = useAtomValue(userAtom);
+  const createDM = useCreateDM(workspaceId);
+  const navigate = useNavigate();
+
+  const handleStartDM = async () => {
+    const dm = await createDM.mutateAsync({ userId });
+    void navigate(paths.channel(workspaceId, dm.id));
+  };
   const member = useMemo(() => {
     if (members === undefined) {
       return null;
@@ -66,6 +80,26 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
             </Text>
           </div>
         </div>
+        {currentUser?.id !== member.userId && (
+          <Button
+            leftSection={<IconMessage size={16} />}
+            variant="light"
+            loading={createDM.isPending}
+            onClick={() => {
+              void handleStartDM();
+            }}
+          >
+            DM を開始
+          </Button>
+        )}
+        {typeof member.bio === "string" && member.bio.length > 0 && (
+          <Stack gap="xs">
+            <Text size="sm" fw={600}>
+              自己紹介
+            </Text>
+            <Text size="sm">{member.bio}</Text>
+          </Stack>
+        )}
         <Stack gap="xs">
           <Text size="sm" fw={600}>
             ロール

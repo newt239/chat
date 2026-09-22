@@ -1,13 +1,12 @@
 import { useState } from "react";
 
-import { Modal, Button, Select, Text, Group } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
+import { Modal, Button, MultiSelect, Text, Group, TextInput } from "@mantine/core";
 import { useNavigate } from "react-router";
 
-import { api } from "#/lib/api/client";
+import { useMembers } from "#/features/member/hooks/useMembers";
 import { paths } from "#/lib/paths";
 
-import { useCreateDM } from "../hooks/useDM";
+import { useCreateDM, useCreateGroupDM } from "../hooks/useDM";
 
 type CreateDMModalProps = {
   workspaceId: string;
@@ -17,50 +16,43 @@ type CreateDMModalProps = {
 
 export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalProps) => {
   const navigate = useNavigate();
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [groupName, setGroupName] = useState("");
 
-  const { data: members } = useQuery({
-    enabled: Boolean(workspaceId) && opened,
-    queryFn: async () => {
-      const response = await api.GET("/api/workspaces/{id}/members", {
-        params: { path: { id: workspaceId } },
-      });
-      if (response.error) {
-        throw new Error("ワークスペースメンバーの取得に失敗しました");
-      }
-      return response.data;
-    },
-    queryKey: ["workspace-members", workspaceId],
-  });
+  const { data: members } = useMembers(opened ? workspaceId : null);
+  const createDM = useCreateDM(workspaceId);
+  const createGroupDM = useCreateGroupDM(workspaceId);
 
-  const createDMMutation = useCreateDM(workspaceId);
-
-  const handleSubmit = async () => {
-    if (!selectedUserId) {
-      return;
-    }
-
-    try {
-      const dm = await createDMMutation.mutateAsync({ userId: selectedUserId });
-      onClose();
-      setSelectedUserId(null);
-
-      void navigate(paths.channel(workspaceId, dm.id));
-    } catch (error) {
-      console.error("DMの作成に失敗しました:", error);
-    }
-  };
+  const isGroup = selectedUserIds.length > 1;
+  const isPending = createDM.isPending || createGroupDM.isPending;
 
   const handleClose = () => {
-    setSelectedUserId(null);
+    setSelectedUserIds([]);
+    setGroupName("");
     onClose();
   };
 
-  const memberOptions =
-    members?.members.map((member: { userId: string; displayName: string }) => ({
-      label: member.displayName,
-      value: member.userId,
-    })) ?? [];
+  const handleSubmit = async () => {
+    const [firstUserId] = selectedUserIds;
+    if (firstUserId === undefined) {
+      return;
+    }
+
+    const dm = isGroup
+      ? await createGroupDM.mutateAsync({
+          name: groupName.trim() === "" ? undefined : groupName.trim(),
+          userIds: selectedUserIds,
+        })
+      : await createDM.mutateAsync({ userId: firstUserId });
+
+    handleClose();
+    void navigate(paths.channel(workspaceId, dm.id));
+  };
+
+  const memberOptions = (members ?? []).map((member) => ({
+    label: member.displayName,
+    value: member.userId,
+  }));
 
   return (
     <Modal opened={opened} onClose={handleClose} title="DM を作成">
@@ -69,15 +61,32 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
           <Text size="sm" fw={500} mb={4}>
             ユーザーを選択
           </Text>
-          <Select
-            placeholder="ユーザーを選択してください"
+          <MultiSelect
+            placeholder="ユーザーを選択してください（複数選択でグループ DM）"
             data={memberOptions}
-            value={selectedUserId}
-            onChange={setSelectedUserId}
+            value={selectedUserIds}
+            onChange={setSelectedUserIds}
             searchable
-            required
+            maxValues={8}
           />
         </div>
+
+        {isGroup && (
+          <TextInput
+            label="グループ名（任意）"
+            placeholder="未入力の場合はメンバー名から自動生成されます"
+            value={groupName}
+            onChange={(event) => {
+              setGroupName(event.currentTarget.value);
+            }}
+          />
+        )}
+
+        {(createDM.isError || createGroupDM.isError) && (
+          <Text c="red" size="sm">
+            {(createDM.error ?? createGroupDM.error)?.message}
+          </Text>
+        )}
 
         <Group justify="flex-end">
           <Button variant="subtle" onClick={handleClose}>
@@ -87,8 +96,8 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
             onClick={() => {
               void handleSubmit();
             }}
-            disabled={!selectedUserId}
-            loading={createDMMutation.isPending}
+            disabled={selectedUserIds.length === 0}
+            loading={isPending}
           >
             作成
           </Button>

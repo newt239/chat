@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 
 import { useSearchQueryParams } from "#/features/search/hooks/useSearchQueryParams";
 import { SettingsModal } from "#/features/settings/components/SettingsModal";
+import { WorkspaceSettingsModal } from "#/features/workspace/components/WorkspaceSettingsModal";
 import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
 import { paths } from "#/lib/paths";
 import { useOptionalRouteParams } from "#/lib/routeParams";
@@ -24,6 +25,7 @@ export const GlobalHeaderPanel = () => {
   const unreadNotificationCount = useAtomValue(unreadNotificationCountAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isWorkspaceSettingsOpen, setIsWorkspaceSettingsOpen] = useState(false);
   const { query } = useSearchQueryParams();
   const [searchQuery, setSearchQuery] = useState(query.q);
   const navigate = useNavigate();
@@ -135,6 +137,20 @@ export const GlobalHeaderPanel = () => {
                   </div>
                 </Menu.Item>
               ))}
+              {currentWorkspace && (
+                <>
+                  <Menu.Divider />
+                  <Menu.Item
+                    leftSection={<IconSettings size={16} />}
+                    onClick={() => {
+                      setIsWorkspaceMenuOpen(false);
+                      setIsWorkspaceSettingsOpen(true);
+                    }}
+                  >
+                    ワークスペース設定
+                  </Menu.Item>
+                </>
+              )}
             </Menu.Dropdown>
           </Menu>
         </div>
@@ -215,6 +231,16 @@ export const GlobalHeaderPanel = () => {
           setIsSettingsModalOpen(false);
         }}
       />
+
+      {currentWorkspace && (
+        <WorkspaceSettingsModal
+          opened={isWorkspaceSettingsOpen}
+          onClose={() => {
+            setIsWorkspaceSettingsOpen(false);
+          }}
+          workspace={currentWorkspace}
+        />
+      )}
     </header>
   );
 };

@@ -809,6 +809,10 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        AddUserGroupMemberRequest: {
+            /** Format: uuid */
+            userId: string;
+        };
         AuthResponse: {
             accessToken: string;
             refreshToken: string;
@@ -971,6 +975,7 @@ export interface components {
             email: string;
             displayName: string;
             avatarUrl?: string | null;
+            bio?: string | null;
             /** @enum {string} */
             role: "owner" | "admin" | "member";
             /** Format: date-time */
@@ -3011,7 +3016,7 @@ export interface operations {
     listUserGroups: {
         parameters: {
             query: {
-                workspace_id: string;
+                workspaceId: string;
             };
             header?: never;
             path?: never;
@@ -3258,7 +3263,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AddMemberRequest"];
+                "application/json": components["schemas"]["AddUserGroupMemberRequest"];
             };
         };
         responses: {
@@ -3301,7 +3306,7 @@ export interface operations {
     removeUserGroupMember: {
         parameters: {
             query: {
-                user_id: string;
+                userId: string;
             };
             header?: never;
             path: {
@@ -3902,6 +3907,33 @@ export interface operations {
                     "application/json": {
                         message: string;
                     };
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Workspace or user not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
