@@ -160,23 +160,11 @@ func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInp
 }
 
 func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error) {
-	// Find active sessions
-	sessions, err := i.sessionRepo.FindActiveByUserID(ctx, input.UserID)
-	if err != nil {
+	if err := i.sessionRepo.RevokeAllByUserID(ctx, input.UserID); err != nil {
 		return nil, err
 	}
 
-	// Find the session matching this refresh token and revoke it
-	for _, session := range sessions {
-		if err := i.passwordSvc.VerifyPassword(input.RefreshToken, session.RefreshTokenHash); err == nil {
-			if err := i.sessionRepo.Revoke(ctx, session.ID); err != nil {
-				return nil, err
-			}
-			return &LogoutOutput{Success: true}, nil
-		}
-	}
-
-	return nil, ErrSessionNotFound
+	return &LogoutOutput{Success: true}, nil
 }
 
 // Helper function to generate auth output with tokens
