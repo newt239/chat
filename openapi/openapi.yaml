@@ -66,6 +66,8 @@ components:
       $ref: "./components/schemas/list_reactions_response.yaml#/ListReactionsResponse"
     LoginRequest:
       $ref: "./components/schemas/login_request.yaml#/LoginRequest"
+    MeProfile:
+      $ref: "./components/schemas/me_profile.yaml#/MeProfile"
     MemberInfo:
       $ref: "./components/schemas/member_info.yaml#/MemberInfo"
     GroupMention:

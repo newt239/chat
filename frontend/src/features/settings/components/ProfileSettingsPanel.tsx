@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
 
 import { Button, Group, Stack, Text, TextInput, Textarea } from "@mantine/core";
-import { useAtom } from "jotai";
 
+import { useMe } from "#/features/settings/hooks/useMe";
 import { useUpdateProfile } from "#/features/settings/hooks/useUpdateProfile";
-import { userAtom } from "#/providers/store/auth";
 
 type Props = {
   onUpdated?: () => void;
 };
 
 export const ProfileSettingsPanel = ({ onUpdated }: Props) => {
-  const [user] = useAtom(userAtom);
+  const { data: me } = useMe();
   const mutation = useUpdateProfile();
 
-  const [displayName, setDisplayName] = useState<string>(user?.displayName ?? "");
-  const [bio, setBio] = useState<string>("");
-  const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatarUrl ?? "");
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
-    setDisplayName(user?.displayName ?? "");
-    setAvatarUrl(user?.avatarUrl ?? "");
-  }, [user]);
+    setDisplayName(me?.displayName ?? "");
+    setBio(me?.bio ?? "");
+    setAvatarUrl(me?.avatarUrl ?? "");
+  }, [me]);
 
   const onSubmit = async () => {
     await mutation.mutateAsync({

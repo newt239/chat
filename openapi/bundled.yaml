@@ -2177,6 +2177,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   /api/users/me:
+    get:
+      operationId: getMe
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     patch:
       operationId: updateMe
       summary: Update current user profile
@@ -2194,22 +2212,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  displayName:
-                    type: string
-                  bio:
-                    type: string
-                    nullable: true
-                  avatarUrl:
-                    type: string
-                    nullable: true
-                required:
-                  - id
-                  - displayName
+                $ref: '#/components/schemas/MeProfile'
         '400':
           description: Bad request
           content:
@@ -2643,6 +2646,27 @@ components:
       required:
         - email
         - password
+    MeProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - email
+        - displayName
     MemberInfo:
       type: object
       properties:

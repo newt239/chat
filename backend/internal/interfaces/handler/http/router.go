@@ -246,6 +246,10 @@ func (s *serverImpl) AddUserGroupMember(ctx echo.Context, id openapi_types.UUID)
 	return s.cfg.UserGroupHandler.AddUserGroupMember(ctx, id)
 }
 
+func (s *serverImpl) GetMe(ctx echo.Context) error {
+	return s.cfg.UserHandler.GetMe(ctx)
+}
+
 func (s *serverImpl) UpdateMe(ctx echo.Context) error {
 	return s.cfg.UserHandler.UpdateMe(ctx)
 }
@@ -385,6 +389,7 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.GET("/workspaces/:workspaceId/search", wrapper.SearchWorkspace)
 
 	// ユーザー
+	protectedAPI.GET("/users/me", wrapper.GetMe)
 	protectedAPI.PATCH("/users/me", wrapper.UpdateMe)
 
 	// リンク

@@ -1,13 +1,16 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 
-import { Card, Loader, Text } from "@mantine/core";
+import { Button, Card, Loader, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
 import { useAutoScrollToBottom } from "#/features/message/hooks/useAutoScrollToBottom";
+import { useChannelThreadMetadata } from "#/features/message/hooks/useChannelThreadMetadata";
 import { useChannelTimeline } from "#/features/message/hooks/useChannelTimeline";
+import { useHighlightedMessage } from "#/features/message/hooks/useHighlightedMessage";
 import { useMessageActions } from "#/features/message/hooks/useMessageActions";
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
+import { useOlderMessages } from "#/features/message/hooks/useOlderMessages";
 import { paths } from "#/lib/paths";
 import { userAtom } from "#/providers/store/auth";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
@@ -25,12 +28,32 @@ export const MessagePanel = () => {
   const currentUser = useAtomValue(userAtom);
   const { data: messageResponse, isLoading, isError, error } = useMessages(currentChannelId);
   const { wsClient } = useWsClient();
+  const threadMetadataById = useChannelThreadMetadata(currentChannelId);
+
+  const {
+    olderItems,
+    hasMore: hasOlderMessages,
+    isLoading: isLoadingOlder,
+    loadOlder,
+  } = useOlderMessages(currentChannelId, messageResponse?.hasMore ?? false);
+
+  const initialMessages = useMemo(
+    () => (messageResponse ? [...olderItems, ...messageResponse.messages] : undefined),
+    [olderItems, messageResponse],
+  );
 
   const { orderedItems, typingUserIds } = useChannelTimeline({
     currentChannelId,
-    initialMessages: messageResponse?.messages,
+    initialMessages,
     wsClient: wsClient ?? null,
   });
+
+  const handleLoadOlder = () => {
+    const oldest = orderedItems.at(0);
+    if (oldest) {
+      void loadOlder(oldest.createdAt);
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
@@ -56,10 +79,15 @@ export const MessagePanel = () => {
   });
 
   const scrollToBottom = useAutoScrollToBottom(messagesEndRef);
+  const { highlightedId, highlightedMessageRef, targetMessageId } =
+    useHighlightedMessage(!isLoading);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messageResponse, isLoading, currentChannelId, scrollToBottom]);
+    // 特定メッセージへのリンクで開いたときは最下部へ飛ばさない
+    if (targetMessageId === null) {
+      scrollToBottom();
+    }
+  }, [messageResponse, isLoading, currentChannelId, scrollToBottom, targetMessageId]);
 
   useEffect(() => {
     setRightSidebarView({ type: "hidden" });
@@ -126,18 +154,36 @@ export const MessagePanel = () => {
           </Text>
         ) : messageResponse && messageResponse.messages.length > 0 && currentChannelId ? (
           <div className="flex h-full flex-col">
-            {messageResponse.hasMore && (
-              <Text size="xs" c="dimmed" className="px-4 py-2 text-center">
-                さらに過去のメッセージがあります
-              </Text>
+            {hasOlderMessages && (
+              <div className="flex justify-center py-2">
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  loading={isLoadingOlder}
+                  onClick={handleLoadOlder}
+                >
+                  さらに過去のメッセージを読み込む
+                </Button>
+              </div>
             )}
             <div className="flex flex-1 flex-col justify-end">
               {orderedItems.map((item) => {
                 if (item.type === "user" && item.userMessage) {
                   const msg = item.userMessage;
                   const isLatestMessage = msg.id === latestUserMessageId;
+                  const isHighlighted = msg.id === highlightedId;
                   return (
-                    <div key={`u-${msg.id}`} ref={isLatestMessage ? latestMessageRef : undefined}>
+                    <div
+                      key={`u-${msg.id}`}
+                      ref={
+                        msg.id === targetMessageId
+                          ? highlightedMessageRef
+                          : isLatestMessage
+                            ? latestMessageRef
+                            : undefined
+                      }
+                      className={isHighlighted ? "bg-yellow-50 transition-colors" : undefined}
+                    >
                       <MessageItem
                         message={msg}
                         currentUserId={currentUser?.id ?? null}
@@ -146,6 +192,7 @@ export const MessagePanel = () => {
                         onOpenThread={handleOpenThread}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        threadMetadata={threadMetadataById.get(msg.id)}
                       />
                     </div>
                   );

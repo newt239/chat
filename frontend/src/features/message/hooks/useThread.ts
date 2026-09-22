@@ -4,6 +4,7 @@ import { api } from "#/lib/api/client";
 
 type CreateThreadReplyInput = {
   body: string;
+  attachmentIds: string[];
 };
 
 /** スレッドの返信一覧を取得するフック */
@@ -44,6 +45,7 @@ export const useSendThreadReply = (messageId: string | null, channelId: string |
 
       const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
         body: {
+          attachmentIds: input.attachmentIds,
           body: input.body,
           parentId: messageId,
         },

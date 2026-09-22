@@ -1,8 +1,10 @@
 import { Card, Stack, Text, Avatar, Badge } from "@mantine/core";
 import { IconHash, IconUser } from "@tabler/icons-react";
+import { useSetAtom } from "jotai";
 import { useNavigate } from "react-router";
 
 import { paths } from "#/lib/paths";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import type { components } from "#/lib/api/schema";
 
@@ -26,6 +28,11 @@ export const SearchResultList = ({
   workspaceId,
 }: SearchResultListProps) => {
   const navigate = useNavigate();
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+
+  const handleUserClick = (userId: string) => {
+    setRightSidePanelView({ type: "user-profile", userId });
+  };
 
   const handleChannelClick = (channelId: string) => {
     void navigate(paths.channel(workspaceId, channelId));
@@ -94,7 +101,16 @@ export const SearchResultList = ({
           </Text>
           <Stack gap="xs">
             {users.map((user) => (
-              <Card key={user.userId} withBorder padding="md" radius="md">
+              <Card
+                key={user.userId}
+                withBorder
+                padding="md"
+                radius="md"
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => {
+                  handleUserClick(user.userId);
+                }}
+              >
                 <div className="flex items-center gap-3">
                   {user.avatarUrl ? (
                     <Avatar src={user.avatarUrl} size="md" radius="xl" />

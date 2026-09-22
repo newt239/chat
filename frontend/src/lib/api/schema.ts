@@ -733,7 +733,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get current user profile */
+        get: operations["getMe"];
         put?: never;
         post?: never;
         delete?: never;
@@ -932,6 +933,15 @@ export interface components {
             /** Format: email */
             email: string;
             password: string;
+        };
+        MeProfile: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            displayName: string;
+            bio?: string | null;
+            avatarUrl?: string | null;
         };
         MemberInfo: {
             /** Format: uuid */
@@ -3865,6 +3875,35 @@ export interface operations {
             };
         };
     };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current user profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeProfile"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     updateMe: {
         parameters: {
             query?: never;
@@ -3884,13 +3923,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        displayName: string;
-                        bio?: string | null;
-                        avatarUrl?: string | null;
-                    };
+                    "application/json": components["schemas"]["MeProfile"];
                 };
             };
             /** @description Bad request */

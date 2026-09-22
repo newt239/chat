@@ -1,20 +1,39 @@
 import type { ReactNode } from "react";
 
 import { Badge } from "@mantine/core";
+import { useSetAtom } from "jotai";
+
+import { useMembers } from "#/features/member/hooks/useMembers";
+import { useOptionalRouteParams } from "#/lib/routeParams";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 type MentionProps = {
   "data-mention": string;
   children?: ReactNode;
 };
 
-export const Mention = ({ "data-mention": username }: MentionProps) => (
-  <Badge
-    variant="light"
-    color="blue"
-    size="sm"
-    className="cursor-pointer hover:bg-blue-100"
-    component="span"
-  >
-    @{username}
-  </Badge>
-);
+export const Mention = ({ "data-mention": username }: MentionProps) => {
+  const { workspaceId } = useOptionalRouteParams();
+  const { data: members } = useMembers(workspaceId ?? null);
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+
+  // メンションは表示名の前方一致で解決される
+  const member = members?.find((item) => item.displayName.startsWith(username));
+
+  return (
+    <Badge
+      variant="light"
+      color="blue"
+      size="sm"
+      className={member === undefined ? "" : "cursor-pointer hover:bg-blue-100"}
+      component="span"
+      onClick={() => {
+        if (member !== undefined) {
+          setRightSidePanelView({ type: "user-profile", userId: member.userId });
+        }
+      }}
+    >
+      @{username}
+    </Badge>
+  );
+};

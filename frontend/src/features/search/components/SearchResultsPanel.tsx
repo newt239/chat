@@ -1,7 +1,9 @@
 import { Avatar, Badge, Card, Loader, Stack, Text } from "@mantine/core";
 import { useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
 
 import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearchIndex";
+import { paths } from "#/lib/paths";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
@@ -24,9 +26,18 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
     workspaceId,
   });
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
 
   const handleUserClick = (userId: string) => {
     setRightSidePanelView({ type: "user-profile", userId });
+  };
+
+  const handleChannelClick = (channelId: string) => {
+    void navigate(paths.channel(workspaceId, channelId));
+  };
+
+  const handleMessageClick = (channelId: string, messageId: string) => {
+    void navigate(paths.channel(workspaceId, channelId, messageId));
   };
 
   if (trimmedQuery.length === 0) {
@@ -96,7 +107,16 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
               チャンネル
             </Text>
             {data.channels.items.map((channel) => (
-              <Card key={channel.id} withBorder padding="md" radius="md">
+              <Card
+                key={channel.id}
+                withBorder
+                padding="md"
+                radius="md"
+                className="cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  handleChannelClick(channel.id);
+                }}
+              >
                 <Stack gap="4">
                   <Text size="sm" fw={600}>
                     #{channel.name}
@@ -151,7 +171,16 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
               メッセージ
             </Text>
             {data.messages.items.map((message) => (
-              <Card key={message.id} withBorder padding="md" radius="md">
+              <Card
+                key={message.id}
+                withBorder
+                padding="md"
+                radius="md"
+                className="cursor-pointer hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  handleMessageClick(message.channelId, message.id);
+                }}
+              >
                 <Stack gap="4">
                   <Text size="xs" c="dimmed">
                     {dateTimeFormatter.format(new Date(message.createdAt))}

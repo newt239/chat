@@ -1,9 +1,11 @@
 import { Card, Group, Stack, Text, Badge } from "@mantine/core";
+import { useSetAtom } from "jotai";
 import { useNavigate } from "react-router";
 
 import { api } from "#/lib/api/client";
 import { paths } from "#/lib/paths";
 import { useWorkspaceId } from "#/lib/routeParams";
+import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import type { ParticipatingThread } from "#/features/thread/schemas";
 
@@ -15,18 +17,18 @@ type ThreadCardProps = {
 export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
   const navigate = useNavigate();
   const workspaceId = useWorkspaceId();
+  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
   const handleOpenThread = async () => {
-    // 既読更新
     await api.POST("/api/threads/{threadId}/read", {
       params: { path: { threadId: thread.thread_id } },
     });
     onMarkedRead?.(thread.thread_id);
 
-    // チャンネルへ遷移（スレッド起点メッセージへは既存の右パネルThreadを使う想定ならここで開いてもよいが、まずはチャンネルへ）
     if (thread.channel_id) {
-      void navigate(paths.channel(workspaceId, thread.channel_id));
+      await navigate(paths.channel(workspaceId, thread.channel_id, thread.first_message.id));
     }
+    setRightSidePanelView({ threadId: thread.thread_id, type: "thread" });
   };
 
   const first = thread.first_message;

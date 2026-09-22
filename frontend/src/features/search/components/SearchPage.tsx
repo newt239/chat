@@ -1,4 +1,7 @@
-import { Card, Stack, Text, Loader, SegmentedControl, Pagination } from "@mantine/core";
+import { useState } from "react";
+
+import { Card, Stack, Text, Loader, SegmentedControl, Pagination, TextInput } from "@mantine/core";
+import { IconSearch } from "@tabler/icons-react";
 
 import { useSearchQueryParams } from "#/features/search/hooks/useSearchQueryParams";
 import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearchIndex";
@@ -18,6 +21,20 @@ export const SearchPage = () => {
 
   const { q: query, filter, page } = searchQuery;
   const trimmedQuery = query.trim();
+
+  const [inputValue, setInputValue] = useState(query);
+  const [syncedQuery, setSyncedQuery] = useState(query);
+
+  // URL のクエリが変わったら入力欄に反映する
+  if (syncedQuery !== query) {
+    setSyncedQuery(query);
+    setInputValue(query);
+  }
+
+  const handleSearchSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    updateQuery({ page: 1, q: inputValue.trim() });
+  };
 
   const {
     data,
@@ -111,6 +128,18 @@ export const SearchPage = () => {
     <div className="flex h-full flex-col p-6">
       <Card withBorder padding="lg" radius="md" className="mb-4">
         <Stack gap="md">
+          <form onSubmit={handleSearchSubmit}>
+            <TextInput
+              value={inputValue}
+              onChange={(event) => {
+                setInputValue(event.currentTarget.value);
+              }}
+              placeholder="メッセージ、チャンネル、ユーザーを検索"
+              leftSection={<IconSearch size={16} />}
+              aria-label="検索キーワード"
+            />
+          </form>
+
           <div>
             <Text size="xl" fw={600}>
               検索結果

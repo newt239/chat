@@ -18,6 +18,8 @@ type DeleteMessageInput = {
   messageId: string;
 };
 
+export const MESSAGES_PAGE_SIZE = 50;
+
 export const useMessages = (channelId: string | null) =>
   useQuery({
     enabled: channelId !== null,
@@ -27,7 +29,7 @@ export const useMessages = (channelId: string | null) =>
       }
 
       const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
-        params: { path: { channelId } },
+        params: { path: { channelId }, query: { limit: MESSAGES_PAGE_SIZE } },
       });
 
       if (error) {

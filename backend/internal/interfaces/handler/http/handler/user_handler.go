@@ -14,6 +14,20 @@ type UserHandler struct {
 	UC useruc.UseCase
 }
 
+func (h *UserHandler) GetMe(c echo.Context) error {
+	userID, ok := c.Get("userID").(string)
+	if !ok || userID == "" {
+		return utils.HandleAuthError()
+	}
+
+	out, err := h.UC.GetMe(c.Request().Context(), userID)
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return c.JSON(http.StatusOK, out)
+}
+
 func (h *UserHandler) UpdateMe(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok || userID == "" {

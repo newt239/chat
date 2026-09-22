@@ -1,24 +1,34 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-//
+import { api } from "#/lib/api/client";
+
 type UpdateChannelInput = {
   channelId: string;
   name?: string;
-  description?: string | null;
+  description?: string;
   isPrivate?: boolean;
 };
 
-export const useUpdateChannel = () => {
+export const useUpdateChannel = (workspaceId: string | null) => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (input: UpdateChannelInput) => {
-      void input; // 型上の引数を使用済みとして扱う
-      // 現在のOpenAPIスキーマにチャンネル更新エンドポイントが存在しないため未実装
-      // 実装時にはスキーマ追加後にAPI呼び出しへ置換する
-      throw new Error("チャンネル更新APIは未実装です");
+    mutationFn: async ({ channelId, ...body }: UpdateChannelInput) => {
+      const { data, error } = await api.PATCH("/api/channels/{channelId}", {
+        body,
+        params: { path: { channelId } },
+      });
+
+      if (error) {
+        throw new Error(error.error);
+      }
+
+      return data;
     },
-    onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({ queryKey: ["channels", variables.channelId] });
+    onSuccess: async () => {
+      if (workspaceId !== null) {
+        await queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
+      }
     },
   });
 };

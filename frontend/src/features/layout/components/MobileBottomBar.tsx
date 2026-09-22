@@ -1,40 +1,49 @@
 import { ActionIcon, Group } from "@mantine/core";
 import { IconMenu2, IconInfoCircle, IconBookmark, IconSearch } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "react-router";
 
+import { paths } from "#/lib/paths";
+import { useOptionalRouteParams } from "#/lib/routeParams";
 import {
+  hideMobilePanelsAtom,
   mobileActivePanelAtom,
   showMobileLeftPanelAtom,
   showMobileRightPanelAtom,
   setRightSidePanelViewAtom,
 } from "#/providers/store/ui";
 
-const handleSearchClick = () => {
-  // TODO: 検索機能の実装
-};
-
 export const MobileBottomBar = () => {
   const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
   const showMobileLeftPanel = useSetAtom(showMobileLeftPanelAtom);
   const showMobileRightPanel = useSetAtom(showMobileRightPanelAtom);
+  const hideMobilePanels = useSetAtom(hideMobilePanelsAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
+  const { workspaceId } = useOptionalRouteParams();
 
   const handleLeftPanelClick = () => {
     if (mobileActivePanel === "left") {
-      // 既に左パネルが表示されている場合は閉じる
-      showMobileLeftPanel();
-    } else {
-      showMobileLeftPanel();
+      hideMobilePanels();
+      return;
     }
+    showMobileLeftPanel();
   };
 
   const handleRightPanelClick = () => {
     if (mobileActivePanel === "right") {
-      // 既に右パネルが表示されている場合は閉じる
-      showMobileRightPanel();
-    } else {
-      showMobileRightPanel();
+      hideMobilePanels();
+      return;
     }
+    showMobileRightPanel();
+  };
+
+  const handleSearchClick = () => {
+    if (workspaceId === undefined) {
+      return;
+    }
+    hideMobilePanels();
+    void navigate(paths.search(workspaceId));
   };
 
   const handleBookmarkClick = () => {

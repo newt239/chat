@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "#/lib/api/client";
 import { store } from "#/providers/store";
@@ -10,8 +10,10 @@ type UpdateProfileInput = {
   avatarUrl?: string | null;
 };
 
-export const useUpdateProfile = () =>
-  useMutation({
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: async (input: UpdateProfileInput) => {
       const { data, error } = await api.PATCH("/api/users/me", {
         body: {
@@ -36,4 +38,8 @@ export const useUpdateProfile = () =>
 
       return data;
     },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users", "me"] });
+    },
   });
+};

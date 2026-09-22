@@ -4,6 +4,7 @@ import { Badge, Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/c
 import { useAtomValue, useSetAtom } from "jotai";
 import { useNavigate } from "react-router";
 
+import { useNotificationSync } from "#/features/notification/hooks/useNotificationSync";
 import { paths } from "#/lib/paths";
 import { currentChannelIdAtom, setCurrentChannelAtom } from "#/providers/store/workspace";
 
@@ -24,6 +25,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   const navigate = useNavigate();
 
   useChannelRealtimeSync(workspaceId, currentChannelId);
+  useNotificationSync(workspaceId, currentChannelId);
 
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {

@@ -13,7 +13,8 @@ var (
 )
 
 type UseCase interface {
-	UpdateMe(ctx context.Context, input UpdateMeInput) (*UpdateMeOutput, error)
+	GetMe(ctx context.Context, userID string) (*MeOutput, error)
+	UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutput, error)
 }
 
 type interactor struct {
@@ -24,17 +25,19 @@ func NewInteractor(userRepo domainrepository.UserRepository) UseCase {
 	return &interactor{userRepo: userRepo}
 }
 
-func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*UpdateMeOutput, error) {
-	if input.UserID == "" {
-		return nil, ErrUnauthorized
-	}
-
-	u, err := i.userRepo.FindByID(ctx, input.UserID)
+func (i *interactor) GetMe(ctx context.Context, userID string) (*MeOutput, error) {
+	u, err := i.findMe(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	if u == nil {
-		return nil, entity.ErrUserNotFound
+
+	return toMeOutput(u), nil
+}
+
+func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutput, error) {
+	u, err := i.findMe(ctx, input.UserID)
+	if err != nil {
+		return nil, err
 	}
 
 	if input.DisplayName != nil {
@@ -51,10 +54,30 @@ func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*Update
 		return nil, err
 	}
 
-	return &UpdateMeOutput{
+	return toMeOutput(u), nil
+}
+
+func (i *interactor) findMe(ctx context.Context, userID string) (*entity.User, error) {
+	if userID == "" {
+		return nil, ErrUnauthorized
+	}
+
+	u, err := i.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if u == nil {
+		return nil, entity.ErrUserNotFound
+	}
+	return u, nil
+}
+
+func toMeOutput(u *entity.User) *MeOutput {
+	return &MeOutput{
 		ID:          u.ID,
+		Email:       u.Email,
 		DisplayName: u.DisplayName,
 		Bio:         u.Bio,
 		AvatarURL:   u.AvatarURL,
-	}, nil
+	}
 }

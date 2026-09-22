@@ -61,8 +61,8 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   );
 
   const handleSendReply = useCallback(
-    (body: string) => {
-      sendReply.mutate({ body });
+    (body: string, attachmentIds: string[]) => {
+      sendReply.mutate({ attachmentIds, body });
     },
     [sendReply],
   );

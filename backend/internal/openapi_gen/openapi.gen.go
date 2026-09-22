@@ -298,6 +298,15 @@ type LoginRequest struct {
 	Password string              `json:"password"`
 }
 
+// MeProfile defines model for MeProfile.
+type MeProfile struct {
+	AvatarUrl   *string             `json:"avatarUrl"`
+	Bio         *string             `json:"bio"`
+	DisplayName string              `json:"displayName"`
+	Email       openapi_types.Email `json:"email"`
+	Id          openapi_types.UUID  `json:"id"`
+}
+
 // MemberInfo defines model for MemberInfo.
 type MemberInfo struct {
 	AvatarUrl   *string             `json:"avatarUrl"`
@@ -910,6 +919,9 @@ type ServerInterface interface {
 	// Add a member to a user group
 	// (POST /api/user-groups/{id}/members)
 	AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error
+	// Get current user profile
+	// (GET /api/users/me)
+	GetMe(ctx echo.Context) error
 	// Update current user profile
 	// (PATCH /api/users/me)
 	UpdateMe(ctx echo.Context) error
@@ -1785,6 +1797,17 @@ func (w *ServerInterfaceWrapper) AddUserGroupMember(ctx echo.Context) error {
 	return err
 }
 
+// GetMe converts echo context to params.
+func (w *ServerInterfaceWrapper) GetMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetMe(ctx)
+	return err
+}
+
 // UpdateMe converts echo context to params.
 func (w *ServerInterfaceWrapper) UpdateMe(ctx echo.Context) error {
 	var err error
@@ -2247,6 +2270,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/user-groups/:id/members", wrapper.RemoveUserGroupMember)
 	router.GET(baseURL+"/api/user-groups/:id/members", wrapper.ListUserGroupMembers)
 	router.POST(baseURL+"/api/user-groups/:id/members", wrapper.AddUserGroupMember)
+	router.GET(baseURL+"/api/users/me", wrapper.GetMe)
 	router.PATCH(baseURL+"/api/users/me", wrapper.UpdateMe)
 	router.GET(baseURL+"/api/workspaces", wrapper.ListWorkspaces)
 	router.POST(baseURL+"/api/workspaces", wrapper.CreateWorkspace)
