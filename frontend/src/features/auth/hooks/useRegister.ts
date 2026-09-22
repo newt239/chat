@@ -19,13 +19,13 @@ export const useRegister = () => {
       const { data: response, error } = await api.POST("/api/auth/register", {
         body: data,
       });
-      if (error || !response) {
-        throw new Error(error?.error || "登録に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
       return response;
     },
     onSuccess: (data: AuthResponse) => {
-      setAuth({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken });
+      setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken, user: data.user });
       void navigate(paths.app());
     },
   });

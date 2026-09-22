@@ -2,41 +2,41 @@ import { z } from "zod";
 
 // APIのParticipatingThreadsOutputに対応する最小限のzodスキーマ
 const participatingThreadSchema = z.object({
-  thread_id: z.string(),
   channel_id: z.string().nullable().optional(),
   first_message: z.object({
-    id: z.string(),
-    channelId: z.string(),
-    userId: z.string(),
-    parentId: z.string().nullable().optional(),
-    body: z.string(),
-    createdAt: z.string(),
-    editedAt: z.string().nullable().optional(),
-    deletedAt: z.string().nullable().optional(),
-    isDeleted: z.boolean(),
     attachments: z
       .array(
         z.object({
+          createdAt: z.string(),
+          fileName: z.string(),
           id: z.string(),
           messageId: z.string(),
-          fileName: z.string(),
           mimeType: z.string(),
           sizeBytes: z.number(),
-          createdAt: z.string(),
         }),
       )
       .optional(),
+    body: z.string(),
+    channelId: z.string(),
+    createdAt: z.string(),
+    deletedAt: z.string().nullable().optional(),
     deletedBy: z
       .object({
-        id: z.string().optional(),
-        displayName: z.string().optional(),
         avatarUrl: z.string().nullable().optional(),
+        displayName: z.string().optional(),
+        id: z.string().optional(),
       })
       .nullable()
       .optional(),
+    editedAt: z.string().nullable().optional(),
+    id: z.string(),
+    isDeleted: z.boolean(),
+    parentId: z.string().nullable().optional(),
+    userId: z.string(),
   }),
-  reply_count: z.number(),
   last_activity_at: z.string(),
+  reply_count: z.number(),
+  thread_id: z.string(),
   unread_count: z.number(),
 });
 

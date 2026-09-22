@@ -8,6 +8,8 @@ type Props = {
   message: SystemMessage;
 };
 
+const asText = (value: unknown, fallback = "") => (typeof value === "string" ? value : fallback);
+
 export const SystemMessageItem = ({ message }: Props) => {
   const time = dateTimeFormatter().format(new Date(message.createdAt));
   const { payload } = message;
@@ -15,30 +17,22 @@ export const SystemMessageItem = ({ message }: Props) => {
   const renderText = () => {
     switch (message.kind) {
       case "member_joined": {
-        const userId = String(payload.userId ?? "");
-        return `ユーザー ${userId} が参加しました`;
+        return `ユーザー ${asText(payload.userId)} が参加しました`;
       }
       case "member_added": {
-        const userId = String(payload.userId ?? "");
-        const addedBy = String(payload.addedBy ?? "");
-        return `ユーザー ${userId} が ${addedBy} により追加されました`;
+        return `ユーザー ${asText(payload.userId)} が ${asText(payload.addedBy)} により追加されました`;
       }
       case "channel_privacy_changed": {
-        const from = String(payload.from ?? "public");
-        const to = String(payload.to ?? "public");
-        return `チャンネルの公開設定が ${from} から ${to} に変更されました`;
+        return `チャンネルの公開設定が ${asText(payload.from, "public")} から ${asText(payload.to, "public")} に変更されました`;
       }
       case "channel_name_changed": {
-        const from = String(payload.from ?? "");
-        const to = String(payload.to ?? "");
-        return `チャンネル名が "${from}" から "${to}" に変更されました`;
+        return `チャンネル名が "${asText(payload.from)}" から "${asText(payload.to)}" に変更されました`;
       }
       case "channel_description_changed": {
-        return `チャンネルの説明が更新されました`;
+        return "チャンネルの説明が更新されました";
       }
       case "message_pinned": {
-        const pinnedBy = typeof payload.pinnedBy === "string" ? payload.pinnedBy : "";
-        return `メッセージがピン留めされました（by ${pinnedBy}）`;
+        return `メッセージがピン留めされました（by ${asText(payload.pinnedBy)}）`;
       }
       default: {
         return "システムイベントが記録されました";

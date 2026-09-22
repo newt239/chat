@@ -1,10 +1,11 @@
 /// <reference types="vite-plus/client" />
 
-type ImportMetaEnv = {
+// グローバル宣言のマージには interface が必要
+interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string;
   readonly VITE_WS_URL?: string;
-};
+}
 
-type ImportMeta = {
+interface ImportMeta {
   readonly env: ImportMetaEnv;
-};
+}

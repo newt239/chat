@@ -4,7 +4,6 @@ import { api } from "#/lib/api/client";
 
 export const useBookmarks = () =>
   useQuery({
-    queryKey: ["bookmarks"],
     queryFn: async () => {
       const response = await api.GET("/api/bookmarks");
       if (response.error) {
@@ -12,6 +11,7 @@ export const useBookmarks = () =>
       }
       return response.data;
     },
+    queryKey: ["bookmarks"],
   });
 
 export const useAddBookmark = () => {
@@ -28,7 +28,7 @@ export const useAddBookmark = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
+      void queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
     },
   });
 };
@@ -47,7 +47,7 @@ export const useRemoveBookmark = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
+      void queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
     },
   });
 };
@@ -55,5 +55,5 @@ export const useRemoveBookmark = () => {
 export const useIsBookmarked = (messageId: string) => {
   const { data: bookmarks } = useBookmarks();
 
-  return bookmarks?.bookmarks.some((bookmark) => bookmark.message?.id === messageId) ?? false;
+  return bookmarks?.bookmarks.some((bookmark) => bookmark.message.id === messageId) ?? false;
 };

@@ -21,7 +21,6 @@ export const routeTree: RouteObject[] = [
   {
     Component: RootLayout,
     ErrorBoundary: RouteErrorBoundary,
-    path: "/",
     children: [
       {
         index: true,
@@ -33,7 +32,19 @@ export const routeTree: RouteObject[] = [
       { Component: RegisterPage, path: "register" },
       {
         Component: ResponsiveLayout,
-        path: "app",
+        children: [
+          { Component: WorkspaceSelection, index: true },
+          {
+            Component: WorkspaceLayout,
+            children: [
+              { Component: WorkspaceIndexPage, index: true },
+              { Component: SearchPage, path: "search" },
+              { Component: ThreadListPage, path: "threads" },
+              { Component: ChannelPage, path: ":channelId" },
+            ],
+            path: ":workspaceId",
+          },
+        ],
         // 親が redirect を throw すると子の loader は実行されないため、ガードはここだけで足りる
         loader: () => {
           if (!store.get(isAuthenticatedAtom)) {
@@ -41,20 +52,9 @@ export const routeTree: RouteObject[] = [
           }
           return null;
         },
-        children: [
-          { Component: WorkspaceSelection, index: true },
-          {
-            Component: WorkspaceLayout,
-            path: ":workspaceId",
-            children: [
-              { Component: WorkspaceIndexPage, index: true },
-              { Component: SearchPage, path: "search" },
-              { Component: ThreadListPage, path: "threads" },
-              { Component: ChannelPage, path: ":channelId" },
-            ],
-          },
-        ],
+        path: "app",
       },
     ],
+    path: "/",
   },
 ];

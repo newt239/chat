@@ -6,32 +6,32 @@ export const searchFilterValues = ["all", "messages", "channels", "users"] as co
 export type SearchFilter = (typeof searchFilterValues)[number];
 
 const paginationBaseSchema = z.object({
-  total: z.number().int().min(0),
+  hasMore: z.boolean(),
   page: z.number().int().min(1),
   perPage: z.number().int().min(1),
-  hasMore: z.boolean(),
+  total: z.number().int().min(0),
 });
 
 const channelSearchItemSchema = z.object({
-  id: z.string(),
-  workspaceId: z.string(),
-  name: z.string(),
-  description: z.string().nullable().optional(),
-  isPrivate: z.boolean(),
-  createdBy: z.string(),
   createdAt: z.string(),
-  updatedAt: z.string(),
-  unreadCount: z.number().int().min(0),
+  createdBy: z.string(),
+  description: z.string().nullable().optional(),
   hasMention: z.boolean(),
+  id: z.string(),
+  isPrivate: z.boolean(),
+  name: z.string(),
+  unreadCount: z.number().int().min(0),
+  updatedAt: z.string(),
+  workspaceId: z.string(),
 });
 
 const memberInfoSchema = z.object({
-  userId: z.string(),
-  email: z.string().email(),
-  displayName: z.string(),
   avatarUrl: z.string().nullable().optional(),
-  role: z.enum(["owner", "admin", "member"]),
+  displayName: z.string(),
+  email: z.email(),
   joinedAt: z.string(),
+  role: z.enum(["owner", "admin", "member"]),
+  userId: z.string(),
 });
 
 const paginatedMessagesSchema = paginationBaseSchema.extend({
@@ -47,8 +47,8 @@ const paginatedUsersSchema = paginationBaseSchema.extend({
 });
 
 export const workspaceSearchResponseSchema = z.object({
-  messages: paginatedMessagesSchema,
   channels: paginatedChannelsSchema,
+  messages: paginatedMessagesSchema,
   users: paginatedUsersSchema,
 });
 

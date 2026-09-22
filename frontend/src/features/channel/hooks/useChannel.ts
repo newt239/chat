@@ -12,7 +12,7 @@ type CreateChannelInput = {
 
 export const useChannels = (workspaceId: string | null) =>
   useQuery({
-    queryKey: ["workspaces", workspaceId, "channels"],
+    enabled: workspaceId !== null,
     queryFn: async (): Promise<components["schemas"]["Channel"][]> => {
       if (workspaceId === null) {
         return [];
@@ -22,13 +22,13 @@ export const useChannels = (workspaceId: string | null) =>
         params: { path: { id: workspaceId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "チャンネル一覧の取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data;
     },
-    enabled: workspaceId !== null,
+    queryKey: ["workspaces", workspaceId, "channels"],
   });
 
 export const useCreateChannel = (workspaceId: string | null) => {
@@ -41,16 +41,16 @@ export const useCreateChannel = (workspaceId: string | null) => {
       }
 
       const { data, error } = await api.POST("/api/workspaces/{id}/channels", {
-        params: { path: { id: workspaceId } },
         body: {
-          name: input.name,
           description: input.description,
           isPrivate: input.isPrivate ?? false,
+          name: input.name,
         },
+        params: { path: { id: workspaceId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "チャンネルの作成に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data;
@@ -59,7 +59,7 @@ export const useCreateChannel = (workspaceId: string | null) => {
       if (workspaceId === null) {
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
+      void queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
     },
   });
 };

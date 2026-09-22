@@ -38,7 +38,7 @@ export const CreateWorkspaceModal = ({ opened, onClose }: CreateWorkspaceModalPr
     setIdError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const validationError = validateWorkspaceId(id);
@@ -49,7 +49,7 @@ export const CreateWorkspaceModal = ({ opened, onClose }: CreateWorkspaceModalPr
     setIdError(null);
 
     createWorkspace.mutate(
-      { id, name, description: description || undefined },
+      { description: description || undefined, id, name },
       {
         onSuccess: () => {
           resetForm();
@@ -98,7 +98,7 @@ export const CreateWorkspaceModal = ({ opened, onClose }: CreateWorkspaceModalPr
 
         {createWorkspace.isError && (
           <Text c="red" size="sm" className="mb-4">
-            {createWorkspace.error?.message || "作成に失敗しました"}
+            {createWorkspace.error.message}
           </Text>
         )}
 

@@ -23,7 +23,7 @@ export const ChannelSettingsPanel = ({
   const [isPrivate, setIsPrivate] = useState<boolean>(initialIsPrivate);
 
   const onSubmit = async () => {
-    await update.mutateAsync({ channelId, name, description, isPrivate });
+    await update.mutateAsync({ channelId, description, isPrivate, name });
   };
 
   return (
@@ -54,13 +54,18 @@ export const ChannelSettingsPanel = ({
         }}
       />
       <Group justify="flex-end">
-        <Button onClick={onSubmit} loading={update.isPending}>
+        <Button
+          onClick={() => {
+            void onSubmit();
+          }}
+          loading={update.isPending}
+        >
           保存
         </Button>
       </Group>
       {update.isError && (
         <Text c="red" size="sm">
-          {update.error?.message ?? "更新に失敗しました"}
+          {update.error.message}
         </Text>
       )}
       {update.isSuccess && (

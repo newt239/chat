@@ -27,13 +27,13 @@ type LayoutState = {
 
 const defaultLayoutState: LayoutState = {
   leftSidePanelVisible: true,
-  rightSidePanelView: { type: "hidden" },
   mobileActivePanel: "none",
   pinsCountByChannel: {},
+  rightSidePanelView: { type: "hidden" },
 };
 
 // レイアウト状態のAtom（ストレージ保持用と実際に利用する値を分離して、欠損プロパティを補完）
-const layoutStateStorageAtom = atomWithStorage<LayoutState>(
+const layoutStateStorageAtom = atomWithStorage<Partial<LayoutState>>(
   "ui-storage:layoutState",
   defaultLayoutState,
 );
@@ -51,7 +51,6 @@ const layoutStateAtom = atom(
     const next = {
       ...defaultLayoutState,
       ...update,
-      pinsCountByChannel: update.pinsCountByChannel ?? defaultLayoutState.pinsCountByChannel,
     };
     set(layoutStateStorageAtom, next);
   },

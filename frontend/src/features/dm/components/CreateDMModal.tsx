@@ -20,17 +20,17 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data: members } = useQuery({
-    queryKey: ["workspace-members", workspaceId],
+    enabled: Boolean(workspaceId) && opened,
     queryFn: async () => {
       const response = await api.GET("/api/workspaces/{id}/members", {
         params: { path: { id: workspaceId } },
       });
-      if (response.error || !response.data) {
+      if (response.error) {
         throw new Error("ワークスペースメンバーの取得に失敗しました");
       }
       return response.data;
     },
-    enabled: Boolean(workspaceId) && opened,
+    queryKey: ["workspace-members", workspaceId],
   });
 
   const createDMMutation = useCreateDM(workspaceId);
@@ -57,12 +57,10 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   };
 
   const memberOptions =
-    (members && "members" in members
-      ? members.members.map((member: { userId: string; displayName: string }) => ({
-          value: member.userId,
-          label: member.displayName,
-        }))
-      : []) || [];
+    members?.members.map((member: { userId: string; displayName: string }) => ({
+      label: member.displayName,
+      value: member.userId,
+    })) ?? [];
 
   return (
     <Modal opened={opened} onClose={handleClose} title="DM を作成">
@@ -86,7 +84,9 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
             キャンセル
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={() => {
+              void handleSubmit();
+            }}
             disabled={!selectedUserId}
             loading={createDMMutation.isPending}
           >

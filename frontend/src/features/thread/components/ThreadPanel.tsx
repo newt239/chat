@@ -30,7 +30,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   };
 
   useEffect(() => {
-    if (threadData && !isLoading) {
+    if (!isLoading) {
       scrollToBottom();
     }
   }, [threadData, isLoading]);
@@ -44,10 +44,10 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   const handleCopyLink = useCallback(
     (msgId: string) => {
       const url = `${window.location.origin}/app/${currentWorkspaceId}/${currentChannelId}?message=${msgId}`;
-      navigator.clipboard.writeText(url);
+      void navigator.clipboard.writeText(url);
       notifications.show({
-        title: "コピーしました",
         message: "メッセージリンクをクリップボードにコピーしました",
+        title: "コピーしました",
       });
     },
     [currentWorkspaceId, currentChannelId],
@@ -55,7 +55,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
 
   const handleCreateThread = useCallback(
     (msgId: string) => {
-      setRightSidePanelView({ type: "thread", threadId: msgId });
+      setRightSidePanelView({ threadId: msgId, type: "thread" });
     },
     [setRightSidePanelView],
   );
@@ -86,7 +86,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
           </div>
         ) : isError ? (
           <Text c="red" size="sm">
-            {error?.message ?? "スレッドの取得に失敗しました"}
+            {error.message}
           </Text>
         ) : threadData ? (
           <>
@@ -117,7 +117,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
             {/* 返信入力 */}
             <div className="shrink-0">
               <ThreadReplyInput
-                channelId={currentChannelId ?? ""}
+                channelId={currentChannelId}
                 onSubmit={handleSendReply}
                 isPending={sendReply.isPending}
                 isError={sendReply.isError}

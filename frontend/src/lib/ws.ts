@@ -1,6 +1,7 @@
 import { logger } from "#/lib/logger";
 import { navigateTo } from "#/lib/navigation";
 import { paths } from "#/lib/paths";
+import { parseServerEvent } from "#/types/wsEvents";
 
 import type { ClientToServerMessage, WsEventPayloadMap } from "#/types/wsEvents";
 
@@ -11,7 +12,7 @@ const WS_MAX_RECONNECT_ATTEMPTS = 5; // 最大再接続試行回数
 
 /** サーバWebSocketエンドポイント取得 例: ws://localhost:8080/ws?token=xxxx&workspaceId=xxxx */
 const getWsUrl = (token: string, workspaceId: string): string => {
-  const base = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+  const base = import.meta.env.VITE_WS_URL ?? "ws://localhost:8080";
   return `${base}/ws?token=${encodeURIComponent(token)}&workspaceId=${encodeURIComponent(workspaceId)}`;
 };
 
@@ -25,23 +26,23 @@ export class WsClient {
   private readonly token: string;
   private readonly workspaceId: string;
   private readonly bc: BroadcastChannel;
-  private isActiveLeader: boolean = false;
+  private isActiveLeader = false;
 
   private readonly handlers = {
-    new_message: [] as ((payload: WsEventPayloadMap["new_message"]) => void)[],
-    message_updated: [] as ((payload: WsEventPayloadMap["message_updated"]) => void)[],
+    ack: [] as ((payload: WsEventPayloadMap["ack"]) => void)[],
+    error: [] as ((payload: WsEventPayloadMap["error"]) => void)[],
     message_deleted: [] as ((payload: WsEventPayloadMap["message_deleted"]) => void)[],
-    unread_count: [] as ((payload: WsEventPayloadMap["unread_count"]) => void)[],
+    message_updated: [] as ((payload: WsEventPayloadMap["message_updated"]) => void)[],
+    new_message: [] as ((payload: WsEventPayloadMap["new_message"]) => void)[],
     pin_created: [] as ((payload: WsEventPayloadMap["pin_created"]) => void)[],
     pin_deleted: [] as ((payload: WsEventPayloadMap["pin_deleted"]) => void)[],
     system_message_created: [] as ((
       payload: WsEventPayloadMap["system_message_created"],
     ) => void)[],
-    ack: [] as ((payload: WsEventPayloadMap["ack"]) => void)[],
-    error: [] as ((payload: WsEventPayloadMap["error"]) => void)[],
+    unread_count: [] as ((payload: WsEventPayloadMap["unread_count"]) => void)[],
   };
 
-  constructor(token: string, workspaceId: string) {
+  public constructor(token: string, workspaceId: string) {
     this.token = token;
     this.workspaceId = workspaceId;
     this.bc = new BroadcastChannel(WS_BC_NAME);
@@ -51,70 +52,71 @@ export class WsClient {
 
   private readonly eventDispatcher = (event: MessageEvent<string>) => {
     try {
-      type EventUnion = {
-        [K in keyof WsEventPayloadMap]: { type: K; payload: WsEventPayloadMap[K] };
-      }[keyof WsEventPayloadMap];
-      const parsed = JSON.parse(event.data) as EventUnion;
-      if (!parsed || typeof parsed.type !== "string") {
+      const parsed = parseServerEvent(event.data);
+      if (!parsed.success) {
+        logger.warn("WebSocketイベントの形式が想定と異なります:", parsed.error);
         return;
       }
-      const { type, payload } = parsed;
+      const { type, payload } = parsed.data;
       switch (type) {
         case "new_message": {
-          this.handlers.new_message.forEach((cb) => {
+          for (const cb of this.handlers.new_message) {
             cb(payload);
-          });
+          }
           break;
         }
         case "message_updated": {
-          this.handlers.message_updated.forEach((cb) => {
+          for (const cb of this.handlers.message_updated) {
             cb(payload);
-          });
+          }
           break;
         }
         case "message_deleted": {
-          this.handlers.message_deleted.forEach((cb) => {
+          for (const cb of this.handlers.message_deleted) {
             cb(payload);
-          });
+          }
           break;
         }
         case "unread_count": {
-          this.handlers.unread_count.forEach((cb) => {
+          for (const cb of this.handlers.unread_count) {
             cb(payload);
-          });
+          }
           break;
         }
         case "pin_created": {
-          this.handlers.pin_created.forEach((cb) => {
+          for (const cb of this.handlers.pin_created) {
             cb(payload);
-          });
+          }
           break;
         }
         case "pin_deleted": {
-          this.handlers.pin_deleted.forEach((cb) => {
+          for (const cb of this.handlers.pin_deleted) {
             cb(payload);
-          });
+          }
           break;
         }
         case "system_message_created": {
-          this.handlers.system_message_created.forEach((cb) => {
+          for (const cb of this.handlers.system_message_created) {
             cb(payload);
-          });
+          }
           break;
         }
         case "ack": {
-          this.handlers.ack.forEach((cb) => {
+          for (const cb of this.handlers.ack) {
             cb(payload);
-          });
+          }
           break;
         }
         case "error": {
           if (typeof payload === "object" && "code" in payload && payload.code === "401") {
             navigateTo(paths.login());
           }
-          this.handlers.error.forEach((cb) => {
+          for (const cb of this.handlers.error) {
             cb(payload);
-          });
+          }
+          break;
+        }
+        default: {
           break;
         }
       }
@@ -239,10 +241,10 @@ export class WsClient {
 
   private readonly onClose = (event: CloseEvent) => {
     logger.info("WebSocket接続が閉じました", {
-      workspaceId: this.workspaceId,
       code: event.code,
       reason: event.reason,
       wasClean: event.wasClean,
+      workspaceId: this.workspaceId,
     });
     // リーダーの場合のみ再接続を試みる
     if (this.isActiveLeader && !this.shouldStopReconnecting) {
@@ -264,9 +266,9 @@ export class WsClient {
   private readonly onError = (event: Event) => {
     const errorInfo = this.getErrorInfo(event);
     logger.error("WebSocketエラーが発生しました", {
-      workspaceId: this.workspaceId,
       error: errorInfo,
       readyState: this.ws?.readyState,
+      workspaceId: this.workspaceId,
     });
     // リーダーの場合のみ再接続を試みる
     if (this.isActiveLeader && !this.shouldStopReconnecting) {
@@ -283,22 +285,22 @@ export class WsClient {
 
     if (this.reconnectAttempts >= WS_MAX_RECONNECT_ATTEMPTS) {
       logger.error("WebSocket最大再接続試行回数に達しました", {
-        workspaceId: this.workspaceId,
         attempts: this.reconnectAttempts,
         context,
-        error: this.getErrorInfo(error as Event),
+        error: this.getErrorInfo(error),
+        workspaceId: this.workspaceId,
       });
       this.shouldStopReconnecting = true;
       return;
     }
 
     logger.info("WebSocket再接続を試みます", {
-      workspaceId: this.workspaceId,
       attempt: this.reconnectAttempts,
-      maxAttempts: WS_MAX_RECONNECT_ATTEMPTS,
-      delay: this.reconnectDelay,
       context,
-      error: this.getErrorInfo(error as Event),
+      delay: this.reconnectDelay,
+      error: this.getErrorInfo(error),
+      maxAttempts: WS_MAX_RECONNECT_ATTEMPTS,
+      workspaceId: this.workspaceId,
     });
 
     this.tryReconnect();
@@ -328,30 +330,33 @@ export class WsClient {
     }, this.reconnectDelay);
   }
 
-  private getErrorInfo(event: Event): string {
+  private getErrorInfo(event: unknown): string {
     if (event instanceof ErrorEvent) {
-      return event.message || String(event.error);
+      return event.message;
     }
     if (event instanceof CloseEvent) {
       return `CloseEvent: code=${event.code}, reason=${event.reason}`;
     }
-    return String(event);
+    if (event instanceof Error) {
+      return event.message;
+    }
+    return JSON.stringify(event);
   }
 
   public joinChannel(channel_id: string) {
-    this.send({ type: "join_channel", payload: { channel_id } });
+    this.send({ payload: { channel_id }, type: "join_channel" });
   }
   public leaveChannel(channel_id: string) {
-    this.send({ type: "leave_channel", payload: { channel_id } });
+    this.send({ payload: { channel_id }, type: "leave_channel" });
   }
   public postMessage(channel_id: string, body: string) {
-    this.send({ type: "post_message", payload: { channel_id, body } });
+    this.send({ payload: { body, channel_id }, type: "post_message" });
   }
   public typing(channel_id: string) {
-    this.send({ type: "typing", payload: { channel_id } });
+    this.send({ payload: { channel_id }, type: "typing" });
   }
   public updateReadState(channel_id: string, message_id: string) {
-    this.send({ type: "update_read_state", payload: { channel_id, message_id } });
+    this.send({ payload: { channel_id, message_id }, type: "update_read_state" });
   }
 
   private send(data: ClientToServerMessage) {
@@ -385,16 +390,11 @@ export class WsClient {
   }
 
   private listenBroadcast() {
-    this.bc.onmessage = (ev) => {
-      if (!ev.data) {
-        return;
-      }
-      // 他タブが接続を開始したら自分はリーダー権を放棄
-      if (ev.data.type === "ws_active") {
-        this.isActiveLeader = false;
-        this.close();
-      }
-    };
+    // 他タブが接続を開始したら自分はリーダー権を放棄
+    this.bc.addEventListener("message", () => {
+      this.isActiveLeader = false;
+      this.close();
+    });
   }
 
   private initTabActivityControl() {

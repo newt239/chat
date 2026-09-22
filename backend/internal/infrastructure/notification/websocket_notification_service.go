@@ -40,8 +40,8 @@ func (s *WebSocketNotificationService) NotifyNewMessage(workspaceID string, chan
 // NotifySystemMessageCreated はシステムメッセージ作成をチャンネル購読者に通知します
 func (s *WebSocketNotificationService) NotifySystemMessageCreated(workspaceID string, channelID string, message interface{}) {
 	payload := map[string]interface{}{
-		"channelId": channelID,
-		"message":   convertToMap(message),
+		"channel_id": channelID,
+		"message":    convertToMap(message),
 	}
 
 	data, err := websocket.SendServerMessage(websocket.EventTypeSystemMessageCreated, payload)

@@ -42,13 +42,13 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
   };
 
   const handleMembersPanelToggle = () => {
-    setRightSidePanelView({ type: "channel-members", channelId });
+    setRightSidePanelView({ channelId, type: "channel-members" });
     showMobileRightPanel();
   };
 
   const handleRightPanelToggle = () => {
     // デスクトップでは右パネルを表示、モバイルではモバイル右パネルを表示
-    setRightSidePanelView({ type: "channel-info", channelId });
+    setRightSidePanelView({ channelId, type: "channel-info" });
     showMobileRightPanel();
   };
 
@@ -56,7 +56,7 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
     if (!channelId) {
       return;
     }
-    setRightSidePanelView({ type: "pins", channelId });
+    setRightSidePanelView({ channelId, type: "pins" });
     showMobileRightPanel();
   };
 

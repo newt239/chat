@@ -171,7 +171,14 @@ export const MessageItem = ({
                   </Text>
                 )}
                 <Group gap="xs">
-                  <Button size="xs" onClick={handleSaveEdit} loading={isSaving} disabled={isSaving}>
+                  <Button
+                    size="xs"
+                    onClick={() => {
+                      void handleSaveEdit();
+                    }}
+                    loading={isSaving}
+                    disabled={isSaving}
+                  >
                     保存
                   </Button>
                   <Button size="xs" variant="subtle" onClick={handleCancelEdit} disabled={isSaving}>

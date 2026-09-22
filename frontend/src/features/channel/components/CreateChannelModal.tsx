@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 
 import { Button, Modal, Switch, Text, TextInput, Textarea } from "@mantine/core";
 
@@ -17,10 +17,10 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
   const [isPrivate, setIsPrivate] = useState(false);
   const createChannel = useCreateChannel(workspaceId);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     createChannel.mutate(
-      { name, description: description || undefined, isPrivate },
+      { description: description || undefined, isPrivate, name },
       {
         onSuccess: () => {
           setName("");
@@ -78,7 +78,7 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
 
         {createChannel.isError && (
           <Text c="red" size="sm" className="mb-2">
-            {createChannel.error?.message ?? "チャンネルの作成に失敗しました"}
+            {createChannel.error.message}
           </Text>
         )}
 

@@ -17,8 +17,8 @@ export const usePinActions = (channelIdParam?: string | null) => {
         throw new Error("チャンネルが選択されていません");
       }
       const { data, error } = await api.POST("/api/channels/{channelId}/pins", {
-        params: { path: { channelId: currentChannelId } },
         body: { messageId },
+        params: { path: { channelId: currentChannelId } },
       });
       if (error) {
         throw new Error(error.error);
@@ -29,7 +29,7 @@ export const usePinActions = (channelIdParam?: string | null) => {
       if (!currentChannelId) {
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["channels", currentChannelId, "pins"] });
+      void queryClient.invalidateQueries({ queryKey: ["channels", currentChannelId, "pins"] });
       addPinsDelta({ channelId: currentChannelId, delta: 1 });
     },
   });
@@ -51,7 +51,7 @@ export const usePinActions = (channelIdParam?: string | null) => {
       if (!currentChannelId) {
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["channels", currentChannelId, "pins"] });
+      void queryClient.invalidateQueries({ queryKey: ["channels", currentChannelId, "pins"] });
       addPinsDelta({ channelId: currentChannelId, delta: -1 });
     },
   });

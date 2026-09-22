@@ -23,6 +23,41 @@ type RightSidePanelProps = {
   className?: string;
 };
 
+const getPanelTitle = (view: PanelView) => {
+  switch (view.type) {
+    case "channel-members": {
+      return "メンバー";
+    }
+    case "channel-info": {
+      return "チャンネル情報";
+    }
+    case "thread": {
+      return "スレッド";
+    }
+    case "pins": {
+      return "ピン留め";
+    }
+    case "user-profile": {
+      return "ユーザープロフィール";
+    }
+    case "search": {
+      return "検索結果";
+    }
+    case "bookmarks": {
+      return "ブックマーク";
+    }
+    case "notifications": {
+      return "通知";
+    }
+    case "hidden": {
+      return "";
+    }
+    default: {
+      return "";
+    }
+  }
+};
+
 export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
   const workspaceId = useAtomValue(currentWorkspaceIdAtom);
   const rightSidePanelView = useAtomValue(rightSidePanelViewAtom);
@@ -75,37 +110,8 @@ export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
       case "hidden": {
         return null;
       }
-    }
-  };
-
-  const getPanelTitle = (view: PanelView) => {
-    switch (view.type) {
-      case "channel-members": {
-        return "メンバー";
-      }
-      case "channel-info": {
-        return "チャンネル情報";
-      }
-      case "thread": {
-        return "スレッド";
-      }
-      case "pins": {
-        return "ピン留め";
-      }
-      case "user-profile": {
-        return "ユーザープロフィール";
-      }
-      case "search": {
-        return "検索結果";
-      }
-      case "bookmarks": {
-        return "ブックマーク";
-      }
-      case "notifications": {
-        return "通知";
-      }
-      case "hidden": {
-        return "";
+      default: {
+        return null;
       }
     }
   };

@@ -8,8 +8,8 @@ type UpdateMeInput struct {
 }
 
 type UpdateMeOutput struct {
-	ID          string
-	DisplayName string
-	Bio         *string
-	AvatarURL   *string
+	ID          string  `json:"id"`
+	DisplayName string  `json:"displayName"`
+	Bio         *string `json:"bio"`
+	AvatarURL   *string `json:"avatarUrl"`
 }

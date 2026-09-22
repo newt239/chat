@@ -17,11 +17,11 @@ type SearchResultsPanelProps = {
 export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResultsPanelProps) => {
   const trimmedQuery = query.trim();
   const { data, isLoading, isFetching, error } = useWorkspaceSearch({
-    workspaceId,
-    query,
     filter,
     page: 1,
     perPage: 10,
+    query,
+    workspaceId,
   });
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 

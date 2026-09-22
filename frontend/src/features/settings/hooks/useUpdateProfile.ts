@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 
+import { api } from "#/lib/api/client";
 import { store } from "#/providers/store";
 import { authAtom } from "#/providers/store/auth";
 
@@ -9,55 +10,28 @@ type UpdateProfileInput = {
   avatarUrl?: string | null;
 };
 
-type UpdateMeResponse = {
-  id: string;
-  displayName: string;
-  bio?: string | null;
-  avatarURL?: string | null;
-};
-
 export const useUpdateProfile = () =>
   useMutation({
     mutationFn: async (input: UpdateProfileInput) => {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
-
-      const { accessToken } = store.get(authAtom);
-      const headers = new Headers({ "Content-Type": "application/json" });
-      if (accessToken) {
-        headers.set("Authorization", `Bearer ${accessToken}`);
-      }
-
-      const body: Record<string, unknown> = {};
-      if (input.displayName !== undefined) {
-        body.display_name = input.displayName;
-      }
-      if (input.bio !== undefined) {
-        body.bio = input.bio;
-      }
-      if (input.avatarUrl !== undefined) {
-        body.avatar_url = input.avatarUrl;
-      }
-
-      const res = await fetch(`${baseUrl}/api/users/me`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify(body),
+      const { data, error } = await api.PATCH("/api/users/me", {
+        body: {
+          avatar_url: input.avatarUrl,
+          bio: input.bio,
+          display_name: input.displayName,
+        },
       });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "プロフィール更新に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
-      const data = (await res.json()) as UpdateMeResponse;
 
       // Auth の user を部分更新（型上存在するフィールドのみ反映）
       const current = store.get(authAtom);
-      const nextUser = current.user
-        ? { ...current.user, displayName: data.displayName, avatarUrl: data.avatarURL ?? null }
-        : current.user;
       store.set(authAtom, {
-        user: nextUser,
         accessToken: current.accessToken,
         refreshToken: current.refreshToken,
+        user: current.user
+          ? { ...current.user, avatarUrl: data.avatarUrl ?? null, displayName: data.displayName }
+          : current.user,
       });
 
       return data;

@@ -50,34 +50,32 @@ export const BookmarkList = () => {
   return (
     <ScrollArea h={400}>
       <Stack gap="xs" p="xs">
-        {bookmarks?.bookmarks
-          ?.filter((bookmark) => bookmark.message)
-          .map((bookmark) => (
-            <Card
-              key={`${bookmark.userId}-${bookmark.message.id}`}
-              withBorder
-              padding="md"
-              radius="md"
-              component={Link}
-              to={paths.channel(workspaceId, bookmark.message.channelId, bookmark.message.id)}
-              className="h-auto text-left justify-start"
-            >
-              <div className="flex-1 min-w-0">
-                <Text size="sm" fw={500} className="whitespace-pre-wrap">
-                  {bookmark.message.body}
-                </Text>
-                <Text size="xs" c="dimmed" mt={4}>
-                  {new Date(bookmark.createdAt).toLocaleDateString("ja-JP", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Text>
-              </div>
-            </Card>
-          ))}
+        {bookmarks.bookmarks.map((bookmark) => (
+          <Card
+            key={`${bookmark.userId}-${bookmark.message.id}`}
+            withBorder
+            padding="md"
+            radius="md"
+            component={Link}
+            to={paths.channel(workspaceId, bookmark.message.channelId, bookmark.message.id)}
+            className="h-auto text-left justify-start"
+          >
+            <div className="flex-1 min-w-0">
+              <Text size="sm" fw={500} className="whitespace-pre-wrap">
+                {bookmark.message.body}
+              </Text>
+              <Text size="xs" c="dimmed" mt={4}>
+                {new Date(bookmark.createdAt).toLocaleDateString("ja-JP", {
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </Text>
+            </div>
+          </Card>
+        ))}
       </Stack>
     </ScrollArea>
   );

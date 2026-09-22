@@ -36,10 +36,7 @@ export const useWorkspaceSearch = (params: WorkspaceSearchParams) => {
     perPage > 0;
 
   return useQuery<WorkspaceSearchResponse>({
-    queryKey: ["workspace-search", workspaceId, trimmedQuery, normalizedFilter, page, perPage],
     enabled: isEnabled,
-    staleTime: 30_000,
-    retry: 1,
     queryFn: async () => {
       if (!workspaceId) {
         throw new Error("検索を実行するにはワークスペースIDが必要です");
@@ -49,16 +46,16 @@ export const useWorkspaceSearch = (params: WorkspaceSearchParams) => {
         params: {
           path: { workspaceId },
           query: {
-            q: trimmedQuery,
             filter: normalizedFilter,
             page,
             perPage,
+            q: trimmedQuery,
           },
         },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "ワークスペース検索に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       const parsed = workspaceSearchResponseSchema.safeParse(data);
@@ -68,5 +65,8 @@ export const useWorkspaceSearch = (params: WorkspaceSearchParams) => {
 
       return parsed.data;
     },
+    queryKey: ["workspace-search", workspaceId, trimmedQuery, normalizedFilter, page, perPage],
+    retry: 1,
+    staleTime: 30_000,
   });
 };

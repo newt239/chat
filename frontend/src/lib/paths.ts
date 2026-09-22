@@ -18,17 +18,17 @@ const withQuery = (pathname: string, query: Record<string, string | undefined>) 
 };
 
 export const paths = {
-  login: () => "/login",
-  register: () => "/register",
   app: () => "/app",
-  workspace: (workspaceId: string) => `/app/${workspaceId}`,
   channel: (workspaceId: string, channelId: string, messageId?: string) =>
     withQuery(`/app/${workspaceId}/${channelId}`, { message: messageId }),
-  threads: (workspaceId: string) => `/app/${workspaceId}/threads`,
+  login: () => "/login",
+  register: () => "/register",
   search: (workspaceId: string, query: SearchQuery = {}) =>
     withQuery(`/app/${workspaceId}/search`, {
-      q: query.q,
       filter: query.filter,
       page: query.page === undefined ? undefined : String(query.page),
+      q: query.q,
     }),
+  threads: (workspaceId: string) => `/app/${workspaceId}/threads`,
+  workspace: (workspaceId: string) => `/app/${workspaceId}`,
 };

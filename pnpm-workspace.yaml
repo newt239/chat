@@ -4,8 +4,16 @@ packages:
 
 saveExact: true
 
-# 公開から24時間未満のバージョンを弾く（サプライチェーン攻撃対策）
-minimumReleaseAge: 1440
+# 公開から7日未満のバージョンを弾く（サプライチェーン攻撃対策）
+minimumReleaseAge: 10080
+minimumReleaseAgeExcludePrune: true
+minimumReleaseAgeExclude:
+  - "@pnpm/exe.*"
+
+# vite-plus 0.3 は vite 本体を専用コアに差し替える必要がある
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@0.3.1
+  vitest: 4.1.11
 
 allowBuilds:
   core-js: true

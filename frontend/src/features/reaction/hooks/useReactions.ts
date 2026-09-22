@@ -7,17 +7,17 @@ export const useAddReaction = () => {
   return useMutation({
     mutationFn: async ({ messageId, emoji }: { messageId: string; emoji: string }) => {
       const { error } = await api.POST("/api/messages/{messageId}/reactions", {
-        params: { path: { messageId } },
         body: { emoji },
+        params: { path: { messageId } },
       });
       if (error) {
-        throw error;
+        throw new Error(error.error);
       }
     },
     onSuccess: (_, { messageId }) => {
       // リアクションとメッセージのクエリを無効化
-      queryClient.invalidateQueries({ queryKey: ["reactions", messageId] });
-      queryClient.invalidateQueries({ queryKey: ["channels"] });
+      void queryClient.invalidateQueries({ queryKey: ["reactions", messageId] });
+      void queryClient.invalidateQueries({ queryKey: ["channels"] });
     },
   });
 };
@@ -27,16 +27,16 @@ export const useRemoveReaction = () => {
   return useMutation({
     mutationFn: async ({ messageId, emoji }: { messageId: string; emoji: string }) => {
       const { error } = await api.DELETE("/api/messages/{messageId}/reactions/{emoji}", {
-        params: { path: { messageId, emoji } },
+        params: { path: { emoji, messageId } },
       });
       if (error) {
-        throw error;
+        throw new Error(error.error);
       }
     },
     onSuccess: (_, { messageId }) => {
       // リアクションとメッセージのクエリを無効化
-      queryClient.invalidateQueries({ queryKey: ["reactions", messageId] });
-      queryClient.invalidateQueries({ queryKey: ["channels"] });
+      void queryClient.invalidateQueries({ queryKey: ["reactions", messageId] });
+      void queryClient.invalidateQueries({ queryKey: ["channels"] });
     },
   });
 };

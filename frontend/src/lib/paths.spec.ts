@@ -25,12 +25,12 @@ describe("paths", () => {
   test("検索のパスは指定した条件だけをクエリに含める", () => {
     expect(paths.search("ws1")).toBe("/app/ws1/search");
     expect(paths.search("ws1", { q: "hello" })).toBe("/app/ws1/search?q=hello");
-    expect(paths.search("ws1", { q: "hello", filter: "messages", page: 2 })).toBe(
-      "/app/ws1/search?q=hello&filter=messages&page=2",
+    expect(paths.search("ws1", { filter: "messages", page: 2, q: "hello" })).toBe(
+      "/app/ws1/search?filter=messages&page=2&q=hello",
     );
   });
 
   test("検索のパスは空文字のキーワードをクエリに含めない", () => {
-    expect(paths.search("ws1", { q: "", filter: "all" })).toBe("/app/ws1/search?filter=all");
+    expect(paths.search("ws1", { filter: "all", q: "" })).toBe("/app/ws1/search?filter=all");
   });
 });

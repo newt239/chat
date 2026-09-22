@@ -19,9 +19,9 @@ const getRefreshToken = () => store.get(refreshTokenAtom);
 const updateAuthTokens = (accessToken: string, refreshToken?: string) => {
   const current = store.get(authAtom);
   store.set(authAtom, {
-    user: current.user,
     accessToken,
     refreshToken: refreshToken ?? current.refreshToken,
+    user: current.user,
   });
 };
 
@@ -34,7 +34,7 @@ export const api = createClient<paths>({
 });
 
 // リフレッシュトークンを使用してアクセストークンを更新する関数
-const refreshAccessToken = async (): Promise<string | null> => {
+const refreshAccessToken = (): Promise<string | null> => {
   if (refreshPromise) {
     return refreshPromise;
   }
@@ -48,7 +48,7 @@ const refreshAccessToken = async (): Promise<string | null> => {
       const { data, error } = await api.POST("/api/auth/refresh", {
         body: { refreshToken },
       });
-      if (data && !error) {
+      if (!error) {
         updateAuthTokens(data.accessToken);
         return data.accessToken;
       }
@@ -73,7 +73,7 @@ const buildRetriedRequest = (source: Request, token: string) => {
 
 // リクエストインターセプター: アクセストークンを自動付与
 api.use({
-  async onRequest({ request }) {
+  onRequest({ request }) {
     const token = getAccessToken();
     if (token) {
       request.headers.set("Authorization", `Bearer ${token}`);

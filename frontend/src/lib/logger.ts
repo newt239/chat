@@ -1,23 +1,23 @@
 class Logger {
   private readonly isDevelopment = import.meta.env.DEV;
 
-  debug(message: string, ...args: unknown[]) {
+  public debug(message: string, ...args: unknown[]) {
     if (this.isDevelopment) {
       console.log(`[DEBUG] ${message}`, ...args);
     }
   }
 
-  info(message: string, ...args: unknown[]) {
+  public info(message: string, ...args: unknown[]) {
     if (this.isDevelopment) {
       console.info(`[INFO] ${message}`, ...args);
     }
   }
 
-  warn(message: string, ...args: unknown[]) {
+  public warn(message: string, ...args: unknown[]) {
     console.warn(`[WARN] ${message}`, ...args);
   }
 
-  error(message: string, ...args: unknown[]) {
+  public error(message: string, ...args: unknown[]) {
     console.error(`[ERROR] ${message}`, ...args);
   }
 }
