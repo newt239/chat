@@ -116,7 +116,7 @@ func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutp
 
 	result := make([]*DMOutput, 0, len(channels))
 	for _, ch := range channels {
-		output, err := i.buildDMOutput(ctx, ch, input.RequestUserID)
+		output, err := i.buildDMOutput(ctx, ch, input.UserID)
 		if err != nil {
 			return nil, err
 		}

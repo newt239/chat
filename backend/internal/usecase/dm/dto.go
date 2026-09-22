@@ -14,9 +14,8 @@ type CreateGroupDMInput struct {
 }
 
 type ListDMsInput struct {
-	WorkspaceID   string
-	UserID        string
-	RequestUserID string
+	WorkspaceID string
+	UserID      string
 }
 
 type DMOutput struct {
