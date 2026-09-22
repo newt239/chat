@@ -14,10 +14,6 @@ type UserGroupHandler struct {
 	UserGroupUC usergroupuc.UserGroupUseCase
 }
 
-type AddUserGroupMemberRequest struct {
-	UserID string `json:"user_id" validate:"required"`
-}
-
 func (h *UserGroupHandler) CreateUserGroup(c echo.Context) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {
@@ -180,7 +176,7 @@ func (h *UserGroupHandler) ListUserGroupMembers(ctx echo.Context, id openapi_typ
 }
 
 func (h *UserGroupHandler) AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error {
-	var req AddUserGroupMemberRequest
+	var req openapi.AddUserGroupMemberRequest
 	if err := ctx.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "リクエストボディが不正です")
 	}
@@ -196,7 +192,7 @@ func (h *UserGroupHandler) AddUserGroupMember(ctx echo.Context, id openapi_types
 
 	input := usergroupuc.AddMemberInput{
 		GroupID: id.String(),
-		UserID:  req.UserID,
+		UserID:  req.UserId.String(),
 		AddedBy: addedBy,
 	}
 

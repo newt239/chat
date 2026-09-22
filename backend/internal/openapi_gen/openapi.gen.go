@@ -105,6 +105,11 @@ type AddReactionRequest struct {
 	Emoji string `json:"emoji"`
 }
 
+// AddUserGroupMemberRequest defines model for AddUserGroupMemberRequest.
+type AddUserGroupMemberRequest struct {
+	UserId openapi_types.UUID `json:"userId"`
+}
+
 // Attachment defines model for Attachment.
 type Attachment struct {
 	CreatedAt time.Time          `json:"createdAt"`
@@ -311,6 +316,7 @@ type MeProfile struct {
 // MemberInfo defines model for MemberInfo.
 type MemberInfo struct {
 	AvatarUrl   *string             `json:"avatarUrl"`
+	Bio         *string             `json:"bio"`
 	DisplayName string              `json:"displayName"`
 	Email       openapi_types.Email `json:"email"`
 	JoinedAt    time.Time           `json:"joinedAt"`
@@ -704,12 +710,12 @@ type GetThreadRepliesParams struct {
 
 // ListUserGroupsParams defines parameters for ListUserGroups.
 type ListUserGroupsParams struct {
-	WorkspaceId string `form:"workspace_id" json:"workspace_id"`
+	WorkspaceId string `form:"workspaceId" json:"workspaceId"`
 }
 
 // RemoveUserGroupMemberParams defines parameters for RemoveUserGroupMember.
 type RemoveUserGroupMemberParams struct {
-	UserId openapi_types.UUID `form:"user_id" json:"user_id"`
+	UserId openapi_types.UUID `form:"userId" json:"userId"`
 }
 
 // SearchWorkspaceParams defines parameters for SearchWorkspace.
@@ -776,7 +782,7 @@ type CreateUserGroupJSONRequestBody = CreateUserGroupRequest
 type UpdateUserGroupJSONRequestBody = UpdateUserGroupRequest
 
 // AddUserGroupMemberJSONRequestBody defines body for AddUserGroupMember for application/json ContentType.
-type AddUserGroupMemberJSONRequestBody = AddMemberRequest
+type AddUserGroupMemberJSONRequestBody = AddUserGroupMemberRequest
 
 // UpdateMeJSONRequestBody defines body for UpdateMe for application/json ContentType.
 type UpdateMeJSONRequestBody = UpdateMeRequest
@@ -1773,11 +1779,11 @@ func (w *ServerInterfaceWrapper) ListUserGroups(ctx echo.Context) error {
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ListUserGroupsParams
-	// ------------- Required query parameter "workspace_id" -------------
+	// ------------- Required query parameter "workspaceId" -------------
 
-	err = runtime.BindQueryParameter("form", true, true, "workspace_id", ctx.QueryParams(), &params.WorkspaceId)
+	err = runtime.BindQueryParameter("form", true, true, "workspaceId", ctx.QueryParams(), &params.WorkspaceId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter workspace_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter workspaceId: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
@@ -1865,11 +1871,11 @@ func (w *ServerInterfaceWrapper) RemoveUserGroupMember(ctx echo.Context) error {
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params RemoveUserGroupMemberParams
-	// ------------- Required query parameter "user_id" -------------
+	// ------------- Required query parameter "userId" -------------
 
-	err = runtime.BindQueryParameter("form", true, true, "user_id", ctx.QueryParams(), &params.UserId)
+	err = runtime.BindQueryParameter("form", true, true, "userId", ctx.QueryParams(), &params.UserId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter user_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments

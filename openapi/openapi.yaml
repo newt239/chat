@@ -20,6 +20,8 @@ components:
       $ref: "./components/schemas/add_reaction_request.yaml#/AddReactionRequest"
     Attachment:
       $ref: "./components/schemas/attachment.yaml#/Attachment"
+    AddUserGroupMemberRequest:
+      $ref: "./components/schemas/add_user_group_member_request.yaml#/AddUserGroupMemberRequest"
     AuthResponse:
       $ref: "./components/schemas/auth_response.yaml#/AuthResponse"
     BookmarkWithMessage:

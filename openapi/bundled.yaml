@@ -1447,7 +1447,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: workspace_id
+        - name: workspaceId
           in: query
           required: true
           schema:
@@ -1590,7 +1590,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddMemberRequest'
+              $ref: '#/components/schemas/AddUserGroupMemberRequest'
       responses:
         '201':
           description: Member added
@@ -1654,7 +1654,7 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: user_id
+        - name: userId
           in: query
           required: true
           schema:
@@ -2136,6 +2136,24 @@ paths:
                     type: string
                 required:
                   - message
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Workspace or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/workspaces/{id}/members/{userId}:
     patch:
       operationId: updateMemberRole
@@ -2448,6 +2466,14 @@ components:
         - mimeType
         - sizeBytes
         - createdAt
+    AddUserGroupMemberRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+      required:
+        - userId
     AuthResponse:
       type: object
       properties:
@@ -2836,6 +2862,9 @@ components:
         displayName:
           type: string
         avatarUrl:
+          type: string
+          nullable: true
+        bio:
           type: string
           nullable: true
         role:

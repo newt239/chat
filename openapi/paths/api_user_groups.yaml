@@ -35,7 +35,7 @@
     security:
       - bearerAuth: []
     parameters:
-      - name: workspace_id
+      - name: workspaceId
         in: query
         required: true
         schema:
