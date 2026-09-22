@@ -309,10 +309,13 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.GET("/attachments/:id", wrapper.GetAttachment)
 	protectedAPI.GET("/attachments/:id/download", wrapper.DownloadAttachment)
 
+	// 認証
+	protectedAPI.POST("/auth/logout", wrapper.Logout)
+
 	// ブックマーク
 	protectedAPI.GET("/bookmarks", wrapper.ListBookmarks)
-	protectedAPI.POST("/bookmarks/:messageId", wrapper.AddBookmark)
-	protectedAPI.DELETE("/bookmarks/:messageId", wrapper.RemoveBookmark)
+	protectedAPI.POST("/messages/:messageId/bookmarks", wrapper.AddBookmark)
+	protectedAPI.DELETE("/messages/:messageId/bookmarks", wrapper.RemoveBookmark)
 
 	// チャンネル
 	protectedAPI.PATCH("/channels/:channelId", wrapper.UpdateChannel)
@@ -344,7 +347,7 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 
 	// 読み取り状態
 	protectedAPI.POST("/channels/:channelId/reads", wrapper.UpdateReadState)
-	protectedAPI.GET("/channels/:channelId/unread-count", wrapper.GetUnreadCount)
+	protectedAPI.GET("/channels/:channelId/unread_count", wrapper.GetUnreadCount)
 
 	// DM
 	protectedAPI.GET("/workspaces/:id/dms", wrapper.ListDMs)
@@ -352,7 +355,7 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.POST("/workspaces/:id/group-dms", wrapper.CreateGroupDM)
 
 	// スレッド
-	protectedAPI.PATCH("/threads/:threadId/read", wrapper.MarkThreadRead)
+	protectedAPI.POST("/threads/:threadId/read", wrapper.MarkThreadRead)
 	protectedAPI.GET("/workspaces/:workspaceId/threads/participating", wrapper.GetParticipatingThreads)
 
 	// ユーザーグループ
@@ -378,7 +381,7 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.GET("/workspaces/:id/members", wrapper.ListMembers)
 	protectedAPI.POST("/workspaces/:id/members", wrapper.AddMemberByEmail)
 	protectedAPI.DELETE("/workspaces/:id/members/:userId", wrapper.RemoveMember)
-	protectedAPI.PATCH("/workspaces/:id/members/:userId/role", wrapper.UpdateMemberRole)
+	protectedAPI.PATCH("/workspaces/:id/members/:userId", wrapper.UpdateMemberRole)
 	protectedAPI.GET("/workspaces/:workspaceId/search", wrapper.SearchWorkspace)
 
 	// ユーザー
