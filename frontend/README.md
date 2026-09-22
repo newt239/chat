@@ -79,18 +79,19 @@ pnpm run generate:api
 src/
 ├── main.tsx                 # エントリーポイント
 ├── App.tsx                  # ルートコンポーネント
-├── vite-env.d.ts            # Vite環境変数型定義
+├── routes/                  # ルート定義（React Router Data モード）
 ├── styles/                  # グローバルスタイル
 ├── lib/                     # 共通ライブラリ
-│   ├── api/                 # APIクライアント
-│   ├── query.ts             # TanStack Query設定
-│   ├── store/               # Jotai状態管理
-│   └── ws/                  # WebSocketクライアント
+│   ├── api/                 # APIクライアント（OpenAPI 生成型）
+│   ├── paths.ts             # パスビルダー
+│   ├── routeParams.ts       # ルートパラメータ取得
+│   └── ws.ts                # WebSocketクライアント
+├── providers/               # Jotai ストア / TanStack Query / WebSocket
 ├── features/                # 機能別モジュール
-│   ├── auth/                # 認証機能
-│   └── workspace/           # ワークスペース機能
-├── components/              # 共有コンポーネント
-└── test/                    # テスト設定
+│   ├── attachment/ auth/ bookmark/ channel/ dm/ layout/ link/
+│   ├── member/ message/ notification/ pin/ reaction/ search/
+│   └── settings/ thread/ userGroup/ workspace/
+└── types/                   # WebSocket イベントなどの型定義
 ```
 
 ## 環境変数
@@ -104,19 +105,17 @@ VITE_WS_URL=ws://localhost:8080
 
 ## 実装済み機能
 
-- ✅ 認証（ログイン/登録/ログアウト）
-- ✅ ワークスペース一覧/作成
-- ✅ WebSocketクライアント（基本実装）
-- ✅ PWA対応
-- ✅ 自動認証リフレッシュ
-
-## 未実装機能
-
-- チャネル機能
-- メッセージ機能
-- 添付ファイル
-- 未読管理
-- リアルタイム通知
+- 認証（ログイン / 登録 / ログアウト / パスワード変更 / アカウント削除 / 自動リフレッシュ）
+- ワークスペース（一覧 / 作成 / 設定 / メンバー管理 / 公開ワークスペースへの参加）
+- チャンネル（一覧 / 作成 / 設定 / メンバー管理 / 参加 / 退出）
+- DM・グループ DM の作成
+- メッセージ（投稿 / 編集 / 削除 / Markdown / メンション / リンクプレビュー / 添付ファイル / 過去の読み込み）
+- スレッド（返信 / 参加中スレッド一覧 / 既読）
+- リアクション・ピン留め・ブックマーク
+- 未読バッジと通知、入力中インジケータ（WebSocket 経由でリアルタイム更新）
+- 検索（メッセージ / チャンネル / ユーザー / ユーザーグループ）
+- ユーザーグループの作成とメンバー管理
+- PWA 対応
 
 ## ライセンス
 

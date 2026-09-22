@@ -37,6 +37,35 @@
 - サーバはその購読状態を活用して、イベント毎に適切な配信先を選出。
 - 受信したイベントごとにフロントでは「今開いているチャンネルか」を判定し、即時描画 or 通知バッジ更新等を柔軟に決定。
 
+## イベント一覧（実装）
+
+定義は `backend/internal/interfaces/handler/websocket/event.go` にあります。
+
+### クライアント → サーバー
+
+| イベント | ペイロード | 説明 |
+| --- | --- | --- |
+| `join_channel` | `channel_id` | チャンネルの購読を開始する |
+| `leave_channel` | `channel_id` | チャンネルの購読を解除する |
+| `post_message` | `channel_id`, `body` | 入力中状態を解除する（保存は HTTP API） |
+| `typing` | `channel_id` | 入力中を通知する |
+| `stop_typing` | `channel_id` | 入力中の解除を通知する |
+| `update_read_state` | `channel_id`, `message_id` | 既読を通知する（保存は HTTP API） |
+
+### サーバー → クライアント
+
+| イベント | 配信範囲 | 説明 |
+| --- | --- | --- |
+| `new_message` | チャンネル購読者 | 新着メッセージ |
+| `message_updated` | チャンネル購読者 | メッセージ編集 |
+| `message_deleted` | チャンネル購読者 | メッセージ削除 |
+| `reaction_added` / `reaction_removed` | チャンネル購読者 | リアクションの増減 |
+| `pin_created` / `pin_deleted` | チャンネル参加者 | ピン留めの増減 |
+| `system_message_created` | チャンネル購読者 | システムメッセージ |
+| `unread_count` | 対象ユーザー | 未読数とメンション有無 |
+| `typing` / `stop_typing` | チャンネル参加者（送信者を除く） | 入力中状態 |
+| `ack` / `error` | 送信元 | 受信確認・エラー |
+
 ## まとめ
 
 - **タイピング通知**→ そのチャンネルを購読しているユーザー**だけ**
