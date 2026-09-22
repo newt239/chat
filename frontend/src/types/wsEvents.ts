@@ -18,6 +18,10 @@ const serverEventTypes = [
   "pin_created",
   "pin_deleted",
   "system_message_created",
+  "reaction_added",
+  "reaction_removed",
+  "typing",
+  "stop_typing",
   "ack",
   "error",
 ] as const;
@@ -48,6 +52,18 @@ const pinPayloadSchema = z.object({
   pinned_by: z.string().optional(),
 });
 
+const reactionPayloadSchema = z.object({
+  channel_id: z.string(),
+  emoji: z.string(),
+  message_id: z.string(),
+  user_id: z.string(),
+});
+
+const typingPayloadSchema = z.object({
+  channel_id: z.string(),
+  user_id: z.string(),
+});
+
 const serverEventSchema = z.discriminatedUnion("type", [
   z.object({ payload: channelMessagePayloadSchema, type: z.literal("new_message") }),
   z.object({ payload: channelMessagePayloadSchema, type: z.literal("message_updated") }),
@@ -72,6 +88,10 @@ const serverEventSchema = z.discriminatedUnion("type", [
     payload: z.object({ channel_id: z.string(), message: systemMessageSchema }),
     type: z.literal("system_message_created"),
   }),
+  z.object({ payload: reactionPayloadSchema, type: z.literal("reaction_added") }),
+  z.object({ payload: reactionPayloadSchema, type: z.literal("reaction_removed") }),
+  z.object({ payload: typingPayloadSchema, type: z.literal("typing") }),
+  z.object({ payload: typingPayloadSchema, type: z.literal("stop_typing") }),
   z.object({
     payload: z.object({
       message: z.string().optional(),
@@ -94,8 +114,7 @@ export type WsEventPayloadMap = {
   [K in ServerEvent["type"]]: Extract<ServerEvent, { type: K }>["payload"];
 };
 
-export type NewMessagePayload = WsEventPayloadMap["new_message"];
-export type SystemMessageCreatedPayload = WsEventPayloadMap["system_message_created"];
+export type WsEventType = ServerEvent["type"];
 
 // クライアント→サーバーメッセージ
 export type ClientToServerMessage =
@@ -103,4 +122,5 @@ export type ClientToServerMessage =
   | { type: "leave_channel"; payload: { channel_id: string } }
   | { type: "post_message"; payload: { channel_id: string; body: string } }
   | { type: "typing"; payload: { channel_id: string } }
+  | { type: "stop_typing"; payload: { channel_id: string } }
   | { type: "update_read_state"; payload: { channel_id: string; message_id: string } };

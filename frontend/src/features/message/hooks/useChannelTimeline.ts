@@ -1,22 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
 
-import type { TimelineItem } from "#/features/message/types";
-import type { NewMessagePayload, SystemMessageCreatedPayload } from "#/types/wsEvents";
-
-type WsClientMinimal = {
-  joinChannel: (channelId: string) => void;
-  leaveChannel: (channelId: string) => void;
-  onNewMessage: (cb: (payload: NewMessagePayload) => void) => void;
-  offNewMessage: (cb: (payload: NewMessagePayload) => void) => void;
-  onSystemMessageCreated: (cb: (payload: SystemMessageCreatedPayload) => void) => void;
-  offSystemMessageCreated: (cb: (payload: SystemMessageCreatedPayload) => void) => void;
-};
+import type { MessageWithUser, TimelineItem } from "#/features/message/types";
+import type { WsClient } from "#/lib/ws";
 
 type UseChannelTimelineArgs = {
   currentChannelId: string | null;
-  wsClient: WsClientMinimal | null;
+  wsClient: WsClient | null;
   initialMessages: TimelineItem[] | undefined;
 };
+
+const replaceMessage = (items: TimelineItem[], message: MessageWithUser) =>
+  items.map((item) =>
+    item.type === "user" && item.userMessage?.id === message.id
+      ? { ...item, userMessage: message }
+      : item,
+  );
+
+/** リアクションの追加・削除をタイムライン上のメッセージへ反映する */
+const applyReaction = (
+  items: TimelineItem[],
+  messageId: string,
+  update: (reactions: NonNullable<MessageWithUser["reactions"]>) => MessageWithUser["reactions"],
+) =>
+  items.map((item) => {
+    if (item.type !== "user" || item.userMessage?.id !== messageId) {
+      return item;
+    }
+    return {
+      ...item,
+      userMessage: { ...item.userMessage, reactions: update(item.userMessage.reactions ?? []) },
+    };
+  });
 
 export const useChannelTimeline = ({
   currentChannelId,
@@ -24,11 +38,16 @@ export const useChannelTimeline = ({
   initialMessages,
 }: UseChannelTimelineArgs) => {
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
+  const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
 
   // 初期ロード・チャンネル変更時に初期化
   useEffect(() => {
     setTimeline(initialMessages ?? []);
   }, [initialMessages, currentChannelId]);
+
+  useEffect(() => {
+    setTypingUserIds([]);
+  }, [currentChannelId]);
 
   // WS 購読と join/leave 管理
   useEffect(() => {
@@ -37,29 +56,105 @@ export const useChannelTimeline = ({
     }
     wsClient.joinChannel(currentChannelId);
 
-    const handleNewMessage = ({ message }: NewMessagePayload) => {
-      setTimeline((prev) => {
-        if (prev.some((item) => item.type === "user" && item.userMessage?.id === message.id)) {
-          return prev;
-        }
-        return [...prev, { createdAt: message.createdAt, type: "user", userMessage: message }];
-      });
-    };
+    const isCurrentChannel = (channelId: string) => channelId === currentChannelId;
 
-    const handleSystem = ({ message }: SystemMessageCreatedPayload) => {
-      setTimeline((prev) => {
-        if (prev.some((item) => item.type === "system" && item.systemMessage?.id === message.id)) {
-          return prev;
+    const unsubscribes = [
+      wsClient.on("new_message", ({ channel_id, message }) => {
+        if (!isCurrentChannel(channel_id)) {
+          return;
         }
-        return [...prev, { createdAt: message.createdAt, systemMessage: message, type: "system" }];
-      });
-    };
+        setTimeline((prev) =>
+          prev.some((item) => item.type === "user" && item.userMessage?.id === message.id)
+            ? prev
+            : [...prev, { createdAt: message.createdAt, type: "user", userMessage: message }],
+        );
+      }),
 
-    wsClient.onNewMessage(handleNewMessage);
-    wsClient.onSystemMessageCreated(handleSystem);
+      wsClient.on("message_updated", ({ channel_id, message }) => {
+        if (isCurrentChannel(channel_id)) {
+          setTimeline((prev) => replaceMessage(prev, message));
+        }
+      }),
+
+      wsClient.on("message_deleted", ({ channel_id, deleteData }) => {
+        if (!isCurrentChannel(channel_id)) {
+          return;
+        }
+        setTimeline((prev) =>
+          prev.map((item) =>
+            item.type === "user" && item.userMessage?.id === deleteData.id
+              ? {
+                  ...item,
+                  userMessage: {
+                    ...item.userMessage,
+                    deletedAt: deleteData.deleted_at,
+                    isDeleted: true,
+                  },
+                }
+              : item,
+          ),
+        );
+      }),
+
+      wsClient.on("system_message_created", ({ channel_id, message }) => {
+        if (!isCurrentChannel(channel_id)) {
+          return;
+        }
+        setTimeline((prev) =>
+          prev.some((item) => item.type === "system" && item.systemMessage?.id === message.id)
+            ? prev
+            : [...prev, { createdAt: message.createdAt, systemMessage: message, type: "system" }],
+        );
+      }),
+
+      wsClient.on("reaction_added", ({ channel_id, emoji, message_id, user_id }) => {
+        if (!isCurrentChannel(channel_id)) {
+          return;
+        }
+        setTimeline((prev) =>
+          applyReaction(prev, message_id, (reactions) =>
+            reactions.some((r) => r.emoji === emoji && r.user.id === user_id)
+              ? reactions
+              : [
+                  ...reactions,
+                  {
+                    createdAt: new Date().toISOString(),
+                    emoji,
+                    user: { displayName: "", id: user_id },
+                  },
+                ],
+          ),
+        );
+      }),
+
+      wsClient.on("reaction_removed", ({ channel_id, emoji, message_id, user_id }) => {
+        if (!isCurrentChannel(channel_id)) {
+          return;
+        }
+        setTimeline((prev) =>
+          applyReaction(prev, message_id, (reactions) =>
+            reactions.filter((r) => !(r.emoji === emoji && r.user.id === user_id)),
+          ),
+        );
+      }),
+
+      wsClient.on("typing", ({ channel_id, user_id }) => {
+        if (isCurrentChannel(channel_id)) {
+          setTypingUserIds((prev) => (prev.includes(user_id) ? prev : [...prev, user_id]));
+        }
+      }),
+
+      wsClient.on("stop_typing", ({ channel_id, user_id }) => {
+        if (isCurrentChannel(channel_id)) {
+          setTypingUserIds((prev) => prev.filter((id) => id !== user_id));
+        }
+      }),
+    ];
+
     return () => {
-      wsClient.offNewMessage(handleNewMessage);
-      wsClient.offSystemMessageCreated(handleSystem);
+      for (const unsubscribe of unsubscribes) {
+        unsubscribe();
+      }
       wsClient.leaveChannel(currentChannelId);
     };
   }, [wsClient, currentChannelId]);
@@ -68,29 +163,21 @@ export const useChannelTimeline = ({
     if (!currentChannelId) {
       return [] as TimelineItem[];
     }
-    const unique = timeline.filter((item: TimelineItem, index: number, self: TimelineItem[]) => {
-      if (item.type === "user" && item.userMessage) {
-        return (
-          index ===
-          self.findIndex((i) => i.type === "user" && i.userMessage?.id === item.userMessage?.id)
-        );
+
+    const seen = new Set<string>();
+    const unique = timeline.filter((item) => {
+      const id = item.userMessage?.id ?? item.systemMessage?.id;
+      if (id === undefined || seen.has(id)) {
+        return id === undefined;
       }
-      if (item.type === "system" && item.systemMessage) {
-        return (
-          index ===
-          self.findIndex(
-            (i) => i.type === "system" && i.systemMessage?.id === item.systemMessage?.id,
-          )
-        );
-      }
+      seen.add(id);
       return true;
     });
-    return unique.toSorted((a: TimelineItem, b: TimelineItem) => {
-      const at = new Date(a.createdAt).getTime();
-      const bt = new Date(b.createdAt).getTime();
-      return at - bt;
-    });
+
+    return unique.toSorted(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
   }, [timeline, currentChannelId]);
 
-  return { orderedItems };
+  return { orderedItems, typingUserIds };
 };

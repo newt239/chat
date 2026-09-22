@@ -8,6 +8,7 @@ import { paths } from "#/lib/paths";
 import { currentChannelIdAtom, setCurrentChannelAtom } from "#/providers/store/workspace";
 
 import { useChannels } from "../hooks/useChannel";
+import { useChannelRealtimeSync } from "../hooks/useChannelRealtimeSync";
 import { ChannelName } from "./ChannelName";
 import { CreateChannelModal } from "./CreateChannelModal";
 
@@ -21,6 +22,8 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   const { data: channels, isLoading, isError, error } = useChannels(workspaceId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  useChannelRealtimeSync(workspaceId, currentChannelId);
 
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {
@@ -72,14 +75,8 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
             <Stack gap={4}>
               {channels.map((channel) => {
                 const isSelected = channel.id === currentChannelId;
-                const channelData = channel as typeof channel & {
-                  hasMention?: boolean;
-                  mentionCount?: number;
-                };
-                const mentionCount = channelData.mentionCount ?? 0;
-                const hasMentionCount = mentionCount > 0;
-                // 未読のメッセージがある場合はメンション数が0より大きい場合とする
-                const hasUnread = hasMentionCount;
+                const unreadCount = channel.unreadCount ?? 0;
+                const hasUnread = unreadCount > 0;
 
                 return (
                   <Button
@@ -100,9 +97,13 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                       isBold={hasUnread}
                     />
                     <div className="flex items-center gap-1">
-                      {hasMentionCount ? (
-                        <Badge color="blue" size="xs" className="flex items-center justify-center">
-                          {mentionCount > 99 ? "99+" : mentionCount}
+                      {hasUnread ? (
+                        <Badge
+                          color={channel.hasMention === true ? "red" : "blue"}
+                          size="xs"
+                          className="flex items-center justify-center"
+                        >
+                          {unreadCount > 99 ? "99+" : unreadCount}
                         </Badge>
                       ) : null}
                     </div>

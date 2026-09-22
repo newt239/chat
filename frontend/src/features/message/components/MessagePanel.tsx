@@ -17,6 +17,7 @@ import { useWsClient } from "#/providers/ws/useWsClient";
 import { useMessages } from "../hooks/useMessage";
 import { MessageItem } from "./MessageItem";
 import { SystemMessageItem } from "./SystemMessageItem";
+import { TypingIndicator } from "./TypingIndicator";
 
 export const MessagePanel = () => {
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
@@ -25,7 +26,7 @@ export const MessagePanel = () => {
   const { data: messageResponse, isLoading, isError, error } = useMessages(currentChannelId);
   const { wsClient } = useWsClient();
 
-  const { orderedItems } = useChannelTimeline({
+  const { orderedItems, typingUserIds } = useChannelTimeline({
     currentChannelId,
     initialMessages: messageResponse?.messages,
     wsClient: wsClient ?? null,
@@ -170,6 +171,7 @@ export const MessagePanel = () => {
           </div>
         )}
       </div>
+      <TypingIndicator userIds={typingUserIds} />
     </div>
   );
 };

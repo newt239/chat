@@ -10,6 +10,7 @@ import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
 
 import { useMessageInputMode } from "../hooks/useMessageInputMode";
+import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 
@@ -45,9 +46,12 @@ export const BaseMessageInput = ({
     isUploading,
   } = fileUpload;
 
+  const { notifyTyping, notifyStopTyping } = useTypingNotifier(channelId);
+
   const handleBodyChange = useCallback(
     (newValue: string) => {
       setBody(newValue);
+      notifyTyping();
 
       // URLを検出してプレビューを追加・削除
       const urlRegex = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
@@ -65,7 +69,7 @@ export const BaseMessageInput = ({
         }
       }
     },
-    [addPreview, previews, removePreview],
+    [addPreview, previews, removePreview, notifyTyping],
   );
 
   const handleFileSelect = useCallback(
@@ -97,6 +101,7 @@ export const BaseMessageInput = ({
 
     const attachmentIds = getCompletedAttachmentIds();
     onSubmit(body.trim(), attachmentIds);
+    notifyStopTyping();
     setBody("");
     clearPreviews();
     clearAttachments();
@@ -129,6 +134,12 @@ export const BaseMessageInput = ({
           value={body}
           onChange={(event) => {
             handleBodyChange(event.currentTarget.value);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              handleSubmit();
+            }
           }}
           disabled={isPending}
         />
