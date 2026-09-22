@@ -2,8 +2,10 @@ package ogp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -12,6 +14,7 @@ import (
 
 	"golang.org/x/net/html"
 
+	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/service"
 )
 
@@ -27,10 +30,54 @@ type OGPService struct {
 	httpClient *http.Client
 }
 
+// ErrBlockedAddress は内部ネットワーク宛のリクエストを拒否したことを表します
+var ErrBlockedAddress = errors.New("内部ネットワーク宛の URL は取得できません")
+
+const (
+	maxOGPRedirects = 3
+	maxOGPBodyBytes = 1024 * 1024
+)
+
+// isBlockedIP はループバック・プライベート・リンクローカル（クラウドのメタデータ含む）を弾きます
+func isBlockedIP(ip net.IP) bool {
+	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() ||
+		ip.IsLinkLocalMulticast() || ip.IsUnspecified() || ip.IsMulticast()
+}
+
 func NewOGPService() *OGPService {
+	dialer := &net.Dialer{Timeout: 5 * time.Second}
+
 	return &OGPService{
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				if len(via) >= maxOGPRedirects {
+					return fmt.Errorf("リダイレクトが多すぎます")
+				}
+				if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
+					return fmt.Errorf("unsupported URL scheme: %s", req.URL.Scheme)
+				}
+				return nil
+			},
+			// 名前解決後のアドレスを検証し、DNS リバインディングによる迂回も防ぐ
+			Transport: &http.Transport{
+				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+					host, _, err := net.SplitHostPort(addr)
+					if err != nil {
+						return nil, err
+					}
+					ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
+					if err != nil {
+						return nil, err
+					}
+					for _, ip := range ips {
+						if isBlockedIP(ip) {
+							return nil, ErrBlockedAddress
+						}
+					}
+					return dialer.DialContext(ctx, network, addr)
+				},
+			},
 		},
 	}
 }
@@ -58,6 +105,9 @@ func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*service.OGPD
 	// リクエスト実行
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
+		if errors.Is(err, ErrBlockedAddress) {
+			return nil, fmt.Errorf("%w: %s", domainerrors.ErrValidation, ErrBlockedAddress.Error())
+		}
 		return nil, fmt.Errorf("failed to fetch URL: %w", err)
 	}
 	defer func() {
@@ -77,7 +127,7 @@ func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*service.OGPD
 	}
 
 	// HTMLの読み込み（最初の1MBまで）
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxOGPBodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
