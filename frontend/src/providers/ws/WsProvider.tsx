@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAtomValue } from "jotai";
 
@@ -6,13 +6,7 @@ import { WsClient } from "#/lib/ws";
 import { accessTokenAtom } from "#/providers/store/auth";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
-type WsClientContextValue = {
-  wsClient: WsClient | null;
-};
-
-const WsClientContext = createContext<WsClientContextValue>({ wsClient: null });
-
-export const useWsClient = () => useContext(WsClientContext);
+import { WsClientContext } from "./wsClientContext";
 
 export const WsProvider = ({ children }: { children: React.ReactNode }) => {
   const accessToken = useAtomValue(accessTokenAtom);
@@ -25,7 +19,7 @@ export const WsProvider = ({ children }: { children: React.ReactNode }) => {
         prev?.close();
         return null;
       });
-      return;
+      return undefined;
     }
 
     const instance = new WsClient(accessToken, workspaceId);

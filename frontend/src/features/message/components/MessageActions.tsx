@@ -55,7 +55,7 @@ export const MessageActions = ({
   const isPinned = useIsPinned(messageId, channelId);
 
   const handleEmojiSelect = async (emoji: string) => {
-    await addReaction.mutateAsync({ messageId, emoji });
+    await addReaction.mutateAsync({ emoji, messageId });
     setEmojiPickerOpened(false);
   };
 
@@ -63,14 +63,14 @@ export const MessageActions = ({
     if (isBookmarked) {
       removeBookmark.mutate({ messageId });
       notifications.show({
-        title: "ブックマーク",
         message: "ブックマークから削除しました",
+        title: "ブックマーク",
       });
     } else {
       addBookmark.mutate({ messageId });
       notifications.show({
-        title: "ブックマーク",
         message: "ブックマークに追加しました",
+        title: "ブックマーク",
       });
     }
   };
@@ -96,7 +96,11 @@ export const MessageActions = ({
           </ActionIcon>
         </Popover.Target>
         <Popover.Dropdown>
-          <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+          <EmojiPicker
+            onEmojiSelect={(emoji) => {
+              void handleEmojiSelect(emoji);
+            }}
+          />
         </Popover.Dropdown>
       </Popover>
 
@@ -150,7 +154,11 @@ export const MessageActions = ({
           <Menu.Item
             leftSection={<IconPin size={14} />}
             onClick={() => {
-              isPinned ? unpin.mutate({ messageId }) : pin.mutate({ messageId });
+              if (isPinned) {
+                unpin.mutate({ messageId });
+              } else {
+                pin.mutate({ messageId });
+              }
             }}
           >
             {isPinned ? "ピン留めを解除" : "ピン留めする"}
@@ -169,7 +177,9 @@ export const MessageActions = ({
             <Menu.Item
               leftSection={<IconTrash size={14} />}
               c="red"
-              onClick={() => onDelete(messageId)}
+              onClick={() => {
+                void onDelete(messageId);
+              }}
             >
               メッセージを削除
             </Menu.Item>

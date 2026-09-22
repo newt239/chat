@@ -25,15 +25,13 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
         throw new Error(response.error.error || "OGPの取得に失敗しました");
       }
 
-      return response.data?.ogpData
-        ? {
-            title: response.data.ogpData.title || undefined,
-            description: response.data.ogpData.description || undefined,
-            imageUrl: response.data.ogpData.imageUrl || undefined,
-            siteName: response.data.ogpData.siteName || undefined,
-            cardType: response.data.ogpData.cardType || undefined,
-          }
-        : null;
+      return {
+        cardType: response.data.ogpData.cardType || undefined,
+        description: response.data.ogpData.description || undefined,
+        imageUrl: response.data.ogpData.imageUrl || undefined,
+        siteName: response.data.ogpData.siteName || undefined,
+        title: response.data.ogpData.title || undefined,
+      };
     } catch (_error) {
       console.error("OGPの取得に失敗しました:", _error);
       return null;
@@ -49,9 +47,9 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
           return prev;
         }
         return new Map(prev).set(url, {
-          url,
-          ogpData: {},
           isLoading: true,
+          ogpData: {},
+          url,
         });
       });
 
@@ -60,20 +58,20 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
 
         setPreviews((prev) =>
           new Map(prev).set(url, {
-            url,
-            ogpData: ogpData || {},
-            isLoading: false,
             error: ogpData ? undefined : "プレビューの取得に失敗しました",
+            isLoading: false,
+            ogpData: ogpData ?? {},
+            url,
           }),
         );
       } catch (error) {
         console.error("プレビューの取得に失敗しました:", error);
         setPreviews((prev) =>
           new Map(prev).set(url, {
-            url,
-            ogpData: {},
-            isLoading: false,
             error: "プレビューの取得に失敗しました",
+            isLoading: false,
+            ogpData: {},
+            url,
           }),
         );
       }
@@ -101,10 +99,10 @@ export const useLinkPreview = (): UseLinkPreviewReturn => {
   const previewsArray: LinkPreview[] = [...previews.values()];
 
   return {
-    previews: previewsArray,
     addPreview,
-    removePreview,
-    getPreview,
     clearPreviews,
+    getPreview,
+    previews: previewsArray,
+    removePreview,
   };
 };

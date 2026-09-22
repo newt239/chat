@@ -25,9 +25,9 @@ export const ProfileSettingsPanel = ({ onUpdated }: Props) => {
 
   const onSubmit = async () => {
     await mutation.mutateAsync({
-      displayName: displayName || undefined,
-      bio,
       avatarUrl: avatarUrl || null,
+      bio,
+      displayName: displayName || undefined,
     });
     onUpdated?.();
   };
@@ -60,13 +60,18 @@ export const ProfileSettingsPanel = ({ onUpdated }: Props) => {
         }}
       />
       <Group justify="flex-end">
-        <Button onClick={onSubmit} loading={mutation.isPending}>
+        <Button
+          onClick={() => {
+            void onSubmit();
+          }}
+          loading={mutation.isPending}
+        >
           保存
         </Button>
       </Group>
       {mutation.isError && (
         <Text c="red" size="sm">
-          {mutation.error?.message ?? "更新に失敗しました"}
+          {mutation.error.message}
         </Text>
       )}
       {mutation.isSuccess && (

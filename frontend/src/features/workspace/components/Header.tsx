@@ -47,17 +47,17 @@ export const GlobalHeaderPanel = () => {
     setIsSettingsModalOpen(true);
   };
 
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSearchSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (searchQuery.trim() && currentWorkspaceId) {
-      void navigate(paths.search(currentWorkspaceId, { q: searchQuery.trim(), filter: "all" }));
+      void navigate(paths.search(currentWorkspaceId, { filter: "all", q: searchQuery.trim() }));
     }
   };
 
   const handleSearchFocus = () => {
     if (currentWorkspaceId && params.workspaceId !== currentWorkspaceId) {
       void navigate(
-        paths.search(currentWorkspaceId, { q: searchQuery.trim() || undefined, filter: "all" }),
+        paths.search(currentWorkspaceId, { filter: "all", q: searchQuery.trim() || undefined }),
       );
     }
   };

@@ -19,7 +19,7 @@ export const WorkspaceList = () => {
 
   useEffect(() => {
     if (data && data.length > 0 && currentWorkspaceId === null) {
-      const firstWorkspace = data[0];
+      const [firstWorkspace] = data;
       if (firstWorkspace) {
         setCurrentWorkspace(firstWorkspace.id);
       }

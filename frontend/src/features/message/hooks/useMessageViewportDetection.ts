@@ -26,20 +26,20 @@ export const useMessageViewportDetection = ({
     hasMarkedAsRead.current = false;
 
     if (latestMessageRef.current === null || channelId === null || latestMessageId === null) {
-      return;
+      return undefined;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const entry = entries[0];
+        const [entry] = entries;
         if (entry?.isIntersecting && !hasMarkedAsRead.current) {
           hasMarkedAsRead.current = true;
           updateReadStateRef.current.mutate();
         }
       },
       {
-        threshold: 0.1,
         rootMargin: "0px",
+        threshold: 0.1,
       },
     );
 

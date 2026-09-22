@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { FormEvent } from "react";
+import type { SubmitEvent } from "react";
 
 import { Text, Textarea } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -51,21 +51,21 @@ export const BaseMessageInput = ({
 
       // URLを検出してプレビューを追加・削除
       const urlRegex = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
-      const urls: string[] = newValue.match(urlRegex) || [];
+      const urls: string[] = newValue.match(urlRegex) ?? [];
 
       // プレビュー操作はセッター関数の形式で実行
-      urls.forEach((url: string) => {
-        addPreview(url);
-      });
+      for (const url of urls) {
+        void addPreview(url);
+      }
 
       // 最新のpreviewsを使って削除
-      previews.forEach((preview) => {
+      for (const preview of previews) {
         if (!urls.includes(preview.url)) {
           removePreview(preview.url);
         }
-      });
+      }
     },
-    [addPreview, removePreview],
+    [addPreview, previews, removePreview],
   );
 
   const handleFileSelect = useCallback(
@@ -81,16 +81,16 @@ export const BaseMessageInput = ({
     [channelId, uploadFile],
   );
 
-  const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event?: SubmitEvent<HTMLFormElement>) => {
     event?.preventDefault();
     if (body.trim().length === 0 && pendingAttachments.length === 0) {
       return;
     }
     if (isUploading) {
       notifications.show({
-        title: "アップロード中",
-        message: "ファイルのアップロードが完了するまでお待ちください",
         color: "yellow",
+        message: "ファイルのアップロードが完了するまでお待ちください",
+        title: "アップロード中",
       });
       return;
     }
@@ -165,7 +165,9 @@ export const BaseMessageInput = ({
         disabled={isDisabled}
         loading={isPending}
         textareaRef={textareaRef}
-        onFileSelect={handleFileSelect}
+        onFileSelect={(files) => {
+          void handleFileSelect(files);
+        }}
       />
 
       {error && (

@@ -9,6 +9,9 @@ import { SearchResultList } from "./SearchResultList";
 
 const RESULTS_PER_PAGE = 20;
 
+const calculatePages = (total: number, per: number) =>
+  Math.max(1, Math.ceil(total / Math.max(1, per)));
+
 export const SearchPage = () => {
   const workspaceId = useWorkspaceId();
   const { query: searchQuery, updateQuery } = useSearchQueryParams();
@@ -22,11 +25,11 @@ export const SearchPage = () => {
     isFetching,
     error,
   } = useWorkspaceSearch({
-    workspaceId,
-    query,
     filter,
     page,
     perPage: RESULTS_PER_PAGE,
+    query,
+    workspaceId,
   });
 
   const isLoading = isInitialLoading || isFetching;
@@ -52,9 +55,6 @@ export const SearchPage = () => {
     if (!data) {
       return 0;
     }
-
-    const calculatePages = (total: number, per: number) =>
-      Math.max(1, Math.ceil(total / Math.max(1, per)));
 
     if (filter === "messages") {
       return calculatePages(messageCount, data.messages.perPage);

@@ -1,8 +1,8 @@
 import { visit } from "unist-util-visit";
 
-import type { Root, Text, Parent } from "mdast";
+import type { Root, RootContent, Text } from "mdast";
 
-const MENTION_REGEX = /@(\w+)/g;
+const MENTION_REGEX = /@(?<username>\w+)/g;
 
 export const remarkMention = () => (tree: Root) => {
   visit(tree, "text", (node: Text, index, parent) => {
@@ -17,12 +17,15 @@ export const remarkMention = () => (tree: Root) => {
       return;
     }
 
-    const newNodes: unknown[] = [];
+    const newNodes: RootContent[] = [];
     let lastIndex = 0;
 
-    matches.forEach((match) => {
+    for (const match of matches) {
       const matchIndex = match.index;
-      const username = match[1];
+      const username = match.groups?.username;
+      if (username === undefined) {
+        continue;
+      }
 
       // メンション前のテキスト
       if (matchIndex > lastIndex) {
@@ -34,8 +37,6 @@ export const remarkMention = () => (tree: Root) => {
 
       // メンションノード
       newNodes.push({
-        type: "mention",
-        value: username,
         data: {
           hName: "span",
           hProperties: {
@@ -43,10 +44,12 @@ export const remarkMention = () => (tree: Root) => {
             "data-mention": username,
           },
         },
+        type: "mention",
+        value: username,
       });
 
       lastIndex = matchIndex + match[0].length;
-    });
+    }
 
     // 残りのテキスト
     if (lastIndex < value.length) {
@@ -57,7 +60,6 @@ export const remarkMention = () => (tree: Root) => {
     }
 
     // ノードを置き換え
-    const parentNode = parent as Parent;
-    parentNode.children.splice(index, 1, ...(newNodes as Text[]));
+    parent.children.splice(index, 1, ...newNodes);
   });
 };

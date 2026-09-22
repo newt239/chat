@@ -11,7 +11,7 @@ type CreateThreadReplyInput = {
 /** スレッドの返信一覧を取得するフック */
 export const useThreadReplies = (messageId: string | null) =>
   useQuery({
-    queryKey: ["messages", messageId, "thread", "replies"],
+    enabled: messageId !== null,
     queryFn: async () => {
       if (messageId === null) {
         return null;
@@ -21,8 +21,8 @@ export const useThreadReplies = (messageId: string | null) =>
         params: { path: { messageId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "スレッド返信の取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       const parsed = threadRepliesResponseSchema.safeParse(data);
@@ -35,7 +35,7 @@ export const useThreadReplies = (messageId: string | null) =>
 
       return parsed.data;
     },
-    enabled: messageId !== null,
+    queryKey: ["messages", messageId, "thread", "replies"],
   });
 
 /** スレッドに返信を送信するフック */
@@ -53,15 +53,15 @@ export const useSendThreadReply = (messageId: string | null, channelId: string |
       }
 
       const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
-        params: { path: { channelId } },
         body: {
           body: input.body,
           parentId: messageId,
         },
+        params: { path: { channelId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "スレッドへの返信送信に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data;

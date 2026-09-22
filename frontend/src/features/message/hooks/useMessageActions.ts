@@ -18,16 +18,16 @@ export const useMessageActions = (currentChannelId: string | null) => {
   const handleEdit = useCallback(
     async (messageId: string, nextBody: string) => {
       try {
-        await updateMessage.mutateAsync({ messageId, body: nextBody });
+        await updateMessage.mutateAsync({ body: nextBody, messageId });
         notifications.show({
-          title: "更新しました",
           message: "メッセージを更新しました",
+          title: "更新しました",
         });
       } catch (error) {
         notifications.show({
-          title: "エラー",
-          message: resolveErrorMessage(error, "メッセージの更新に失敗しました"),
           color: "red",
+          message: resolveErrorMessage(error, "メッセージの更新に失敗しました"),
+          title: "エラー",
         });
         throw error;
       }
@@ -40,19 +40,19 @@ export const useMessageActions = (currentChannelId: string | null) => {
       try {
         await deleteMessage.mutateAsync({ messageId });
         notifications.show({
-          title: "削除しました",
           message: "メッセージを削除しました",
+          title: "削除しました",
         });
       } catch (error) {
         notifications.show({
-          title: "エラー",
-          message: resolveErrorMessage(error, "メッセージの削除に失敗しました"),
           color: "red",
+          message: resolveErrorMessage(error, "メッセージの削除に失敗しました"),
+          title: "エラー",
         });
       }
     },
     [deleteMessage],
   );
 
-  return { handleEdit, handleDelete };
+  return { handleDelete, handleEdit };
 };

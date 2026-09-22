@@ -1,8 +1,8 @@
 import { visit } from "unist-util-visit";
 
-import type { Root, Text, Parent } from "mdast";
+import type { Root, RootContent, Text } from "mdast";
 
-const CHANNEL_REGEX = /#([\w-]+)/g;
+const CHANNEL_REGEX = /#(?<channelName>[\w-]+)/g;
 
 export const remarkChannel = () => (tree: Root) => {
   visit(tree, "text", (node: Text, index, parent) => {
@@ -17,12 +17,15 @@ export const remarkChannel = () => (tree: Root) => {
       return;
     }
 
-    const newNodes: unknown[] = [];
+    const newNodes: RootContent[] = [];
     let lastIndex = 0;
 
-    matches.forEach((match) => {
+    for (const match of matches) {
       const matchIndex = match.index;
-      const channelName = match[1];
+      const channelName = match.groups?.channelName;
+      if (channelName === undefined) {
+        continue;
+      }
 
       // チャンネルリンク前のテキスト
       if (matchIndex > lastIndex) {
@@ -34,8 +37,6 @@ export const remarkChannel = () => (tree: Root) => {
 
       // チャンネルリンクノード
       newNodes.push({
-        type: "channelLink",
-        value: channelName,
         data: {
           hName: "span",
           hProperties: {
@@ -43,10 +44,12 @@ export const remarkChannel = () => (tree: Root) => {
             "data-channel": channelName,
           },
         },
+        type: "channelLink",
+        value: channelName,
       });
 
       lastIndex = matchIndex + match[0].length;
-    });
+    }
 
     // 残りのテキスト
     if (lastIndex < value.length) {
@@ -57,7 +60,6 @@ export const remarkChannel = () => (tree: Root) => {
     }
 
     // ノードを置き換え
-    const parentNode = parent as Parent;
-    parentNode.children.splice(index, 1, ...(newNodes as Text[]));
+    parent.children.splice(index, 1, ...newNodes);
   });
 };

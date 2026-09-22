@@ -9,6 +9,10 @@ import {
   setRightSidePanelViewAtom,
 } from "#/providers/store/ui";
 
+const handleSearchClick = () => {
+  // TODO: 検索機能の実装
+};
+
 export const MobileBottomBar = () => {
   const mobileActivePanel = useAtomValue(mobileActivePanelAtom);
   const showMobileLeftPanel = useSetAtom(showMobileLeftPanelAtom);
@@ -36,11 +40,6 @@ export const MobileBottomBar = () => {
   const handleBookmarkClick = () => {
     setRightSidePanelView({ type: "bookmarks" });
     showMobileRightPanel();
-  };
-
-  const handleSearchClick = () => {
-    // TODO: 検索機能の実装
-    console.log("Search clicked");
   };
 
   return (

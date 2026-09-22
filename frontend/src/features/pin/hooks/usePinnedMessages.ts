@@ -34,23 +34,23 @@ export const usePinnedMessages = (channelId: string | null, limit = 100) => {
   const setPinsCount = useSetAtom(setChannelPinsCountAtom);
 
   const query = useQuery({
-    queryKey: ["channels", channelId, "pins"],
     enabled: channelId !== null,
     queryFn: async () => {
       if (channelId === null) {
-        return { pins: [], nextCursor: null };
+        return { nextCursor: null, pins: [] };
       }
 
       const { data, error } = await api.GET("/api/channels/{channelId}/pins", {
         params: { path: { channelId }, query: { limit } },
       });
 
-      if (error || !data) {
-        throw new Error(error?.error ?? "ピン一覧の取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data;
     },
+    queryKey: ["channels", channelId, "pins"],
   });
 
   useEffect(() => {

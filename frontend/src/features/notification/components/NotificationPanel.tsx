@@ -13,6 +13,62 @@ import {
   notificationItemsAtom,
 } from "#/providers/store/notification";
 
+const formatTimestamp = (timestamp: Date) => {
+  const now = new Date();
+  const diff = now.getTime() - timestamp.getTime();
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (minutes < 1) {
+    return "たった今";
+  } else if (minutes < 60) {
+    return `${minutes}分前`;
+  } else if (hours < 24) {
+    return `${hours}時間前`;
+  } else if (days < 7) {
+    return `${days}日前`;
+  }
+  return timestamp.toLocaleDateString("ja-JP");
+};
+
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case "mention": {
+      return <IconBell size={16} />;
+    }
+    case "message": {
+      return <IconBell size={16} />;
+    }
+    case "reaction": {
+      return <IconBell size={16} />;
+    }
+    default: {
+      return <IconBell size={16} />;
+    }
+  }
+};
+
+const getNotificationColor = (type: string, isRead: boolean) => {
+  if (isRead) {
+    return "gray";
+  }
+  switch (type) {
+    case "mention": {
+      return "red";
+    }
+    case "message": {
+      return "blue";
+    }
+    case "reaction": {
+      return "green";
+    }
+    default: {
+      return "gray";
+    }
+  }
+};
+
 export const NotificationPanel = () => {
   const notifications = useAtomValue(notificationItemsAtom);
   const markAsRead = useSetAtom(markNotificationAsReadAtom);
@@ -41,62 +97,6 @@ export const NotificationPanel = () => {
     },
     [removeNotification],
   );
-
-  const formatTimestamp = (timestamp: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - timestamp.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (minutes < 1) {
-      return "たった今";
-    } else if (minutes < 60) {
-      return `${minutes}分前`;
-    } else if (hours < 24) {
-      return `${hours}時間前`;
-    } else if (days < 7) {
-      return `${days}日前`;
-    }
-    return timestamp.toLocaleDateString("ja-JP");
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "mention": {
-        return <IconBell size={16} />;
-      }
-      case "message": {
-        return <IconBell size={16} />;
-      }
-      case "reaction": {
-        return <IconBell size={16} />;
-      }
-      default: {
-        return <IconBell size={16} />;
-      }
-    }
-  };
-
-  const getNotificationColor = (type: string, isRead: boolean) => {
-    if (isRead) {
-      return "gray";
-    }
-    switch (type) {
-      case "mention": {
-        return "red";
-      }
-      case "message": {
-        return "blue";
-      }
-      case "reaction": {
-        return "green";
-      }
-      default: {
-        return "gray";
-      }
-    }
-  };
 
   return (
     <div className="h-full flex flex-col">

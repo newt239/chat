@@ -7,6 +7,18 @@ import { useOptionalRouteParams } from "#/lib/routeParams";
 
 import { useDMs } from "../hooks/useDM";
 
+import type { components } from "#/lib/api/schema";
+
+type DM = components["schemas"]["DMOutput"];
+
+const getDMDisplayName = (dm: DM) => {
+  if (dm.type === "dm") {
+    const [otherMember] = dm.members;
+    return otherMember?.displayName || "不明なユーザー";
+  }
+  return dm.name || `グループDM (${dm.members.length}人)`;
+};
+
 type DMListProps = {
   workspaceId: string;
 };
@@ -34,15 +46,6 @@ export const DMList = ({ workspaceId }: DMListProps) => {
       </div>
     );
   }
-
-  const getDMDisplayName = (dm: (typeof dms)[0]) => {
-    if (dm.type === "dm") {
-      const otherMember = dm.members?.[0];
-      return otherMember?.displayName || "不明なユーザー";
-    }
-    const memberCount = dm.members?.length ?? 0;
-    return dm.name || `グループDM (${memberCount}人)`;
-  };
 
   return (
     <div className="space-y-0.5">

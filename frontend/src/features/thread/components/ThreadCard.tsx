@@ -36,7 +36,9 @@ export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
       withBorder
       padding="sm"
       className="cursor-pointer hover:bg-gray-50"
-      onClick={handleOpenThread}
+      onClick={() => {
+        void handleOpenThread();
+      }}
     >
       <Stack gap={6}>
         <Group justify="space-between" align="center">

@@ -31,7 +31,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
 
   useEffect(() => {
     if (channels && channels.length > 0 && currentChannelId === null) {
-      const firstChannel = channels[0];
+      const [firstChannel] = channels;
       if (firstChannel) {
         setCurrentChannel(firstChannel.id);
       }
@@ -59,7 +59,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   if (isError) {
     return (
       <Text c="red" size="sm">
-        {error?.message ?? "チャンネルの取得に失敗しました"}
+        {error.message}
       </Text>
     );
   }
@@ -76,7 +76,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                   hasMention?: boolean;
                   mentionCount?: number;
                 };
-                const mentionCount = channelData.mentionCount || 0;
+                const mentionCount = channelData.mentionCount ?? 0;
                 const hasMentionCount = mentionCount > 0;
                 // 未読のメッセージがある場合はメンション数が0より大きい場合とする
                 const hasUnread = hasMentionCount;

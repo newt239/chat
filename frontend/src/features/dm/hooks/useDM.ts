@@ -6,7 +6,7 @@ import type { CreateDMRequest } from "../schemas";
 
 export const useDMs = (workspaceId: string) =>
   useQuery({
-    queryKey: ["dms", workspaceId],
+    enabled: Boolean(workspaceId),
     queryFn: async () => {
       const response = await api.GET("/api/workspaces/{id}/dms", {
         params: {
@@ -20,7 +20,7 @@ export const useDMs = (workspaceId: string) =>
 
       return response.data;
     },
-    enabled: Boolean(workspaceId),
+    queryKey: ["dms", workspaceId],
   });
 
 export const useCreateDM = (workspaceId: string) => {
@@ -29,10 +29,10 @@ export const useCreateDM = (workspaceId: string) => {
   return useMutation({
     mutationFn: async (data: CreateDMRequest) => {
       const response = await api.POST("/api/workspaces/{id}/dms", {
+        body: data,
         params: {
           path: { id: workspaceId },
         },
-        body: data,
       });
 
       if (response.error) {
@@ -42,7 +42,7 @@ export const useCreateDM = (workspaceId: string) => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dms", workspaceId] });
+      void queryClient.invalidateQueries({ queryKey: ["dms", workspaceId] });
     },
   });
 };

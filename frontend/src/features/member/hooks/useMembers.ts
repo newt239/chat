@@ -6,7 +6,7 @@ import type { components } from "#/lib/api/schema";
 
 export const useMembers = (workspaceId: string | null) =>
   useQuery({
-    queryKey: ["workspaces", workspaceId, "members"],
+    enabled: workspaceId !== null,
     queryFn: async (): Promise<components["schemas"]["MemberInfo"][]> => {
       if (workspaceId === null) {
         return [];
@@ -16,11 +16,11 @@ export const useMembers = (workspaceId: string | null) =>
         params: { path: { id: workspaceId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "メンバー一覧の取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data.members;
     },
-    enabled: workspaceId !== null,
+    queryKey: ["workspaces", workspaceId, "members"],
   });

@@ -18,11 +18,11 @@ export const useMessageInputMode = (initialMode: MessageInputMode = "edit") => {
   }, []);
 
   return {
-    mode,
     isEditMode: mode === "edit",
     isPreviewMode: mode === "preview",
-    toggleMode,
+    mode,
     setEditMode,
     setPreviewMode,
+    toggleMode,
   };
 };

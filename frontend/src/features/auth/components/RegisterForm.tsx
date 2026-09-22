@@ -65,7 +65,7 @@ export const RegisterForm = () => {
 
         {register.isError && (
           <Text c="red" size="sm" className="mb-4">
-            {register.error?.message || "登録に失敗しました"}
+            {register.error.message}
           </Text>
         )}
 

@@ -6,7 +6,7 @@ import type { components } from "#/lib/api/schema";
 
 export const useChannelMembers = (channelId: string | null) =>
   useQuery({
-    queryKey: ["channels", channelId, "members"],
+    enabled: channelId !== null,
     queryFn: async (): Promise<components["schemas"]["ChannelMemberInfo"][]> => {
       if (channelId === null) {
         return [];
@@ -16,11 +16,11 @@ export const useChannelMembers = (channelId: string | null) =>
         params: { path: { channelId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "チャンネルメンバーの取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data.members;
     },
-    enabled: channelId !== null,
+    queryKey: ["channels", channelId, "members"],
   });

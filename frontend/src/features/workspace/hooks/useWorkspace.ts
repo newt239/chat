@@ -4,16 +4,16 @@ import { api } from "#/lib/api/client";
 
 export const useWorkspaces = () =>
   useQuery({
-    queryKey: ["workspaces"],
     queryFn: async () => {
       const { data, error } = await api.GET("/api/workspaces", {});
 
-      if (error || !data) {
-        throw new Error(error?.error ?? "ワークスペースの取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data.workspaces;
     },
+    queryKey: ["workspaces"],
   });
 
 export const useCreateWorkspace = () => {
@@ -24,13 +24,13 @@ export const useCreateWorkspace = () => {
       const { data: response, error } = await api.POST("/api/workspaces", {
         body: data,
       });
-      if (error || !response) {
-        throw new Error(error?.error ?? "ワークスペースの作成に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      void queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
 };

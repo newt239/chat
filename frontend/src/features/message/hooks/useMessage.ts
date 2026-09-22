@@ -4,6 +4,8 @@ import { api } from "#/lib/api/client";
 
 import { messagesTimelineResponseSchema } from "../schemas";
 
+import type { MessagesTimelineResponse } from "../schemas";
+
 type CreateMessageInput = {
   body: string;
   attachmentIds?: string[];
@@ -20,18 +22,18 @@ type DeleteMessageInput = {
 
 export const useMessages = (channelId: string | null) =>
   useQuery({
-    queryKey: ["channels", channelId, "messages"],
-    queryFn: async () => {
+    enabled: channelId !== null,
+    queryFn: async (): Promise<MessagesTimelineResponse> => {
       if (channelId === null) {
-        return { messages: [], hasMore: false } as const;
+        return { hasMore: false, messages: [] };
       }
 
       const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
         params: { path: { channelId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "メッセージ一覧の取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       const parsed = messagesTimelineResponseSchema.safeParse(data);
@@ -44,7 +46,7 @@ export const useMessages = (channelId: string | null) =>
 
       return parsed.data;
     },
-    enabled: channelId !== null,
+    queryKey: ["channels", channelId, "messages"],
   });
 
 export const useSendMessage = (channelId: string | null) => {
@@ -57,12 +59,12 @@ export const useSendMessage = (channelId: string | null) => {
       }
 
       const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
+        body: { attachmentIds: input.attachmentIds, body: input.body },
         params: { path: { channelId } },
-        body: { body: input.body, attachmentIds: input.attachmentIds },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "メッセージの送信に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data;
@@ -81,12 +83,12 @@ export const useUpdateMessage = (channelId: string | null) => {
   return useMutation({
     mutationFn: async (input: UpdateMessageInput) => {
       const { data, error } = await api.PATCH("/api/messages/{messageId}", {
-        params: { path: { messageId: input.messageId } },
         body: { body: input.body },
+        params: { path: { messageId: input.messageId } },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "メッセージの更新に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       return data;
@@ -109,7 +111,7 @@ export const useDeleteMessage = (channelId: string | null) => {
       });
 
       if (error) {
-        throw new Error(error?.error ?? "メッセージの削除に失敗しました");
+        throw new Error(error.error);
       }
     },
     onSuccess: async () => {
@@ -131,12 +133,12 @@ export const useUpdateReadState = (channelId: string | null, workspaceId: string
 
       const lastReadAt = new Date().toISOString();
       const { error } = await api.POST("/api/channels/{channelId}/reads", {
-        params: { path: { channelId } },
         body: { lastReadAt },
+        params: { path: { channelId } },
       });
 
       if (error) {
-        throw new Error(error?.error ?? "既読状態の更新に失敗しました");
+        throw new Error(error.error);
       }
     },
     onSuccess: async () => {

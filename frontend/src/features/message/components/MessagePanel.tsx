@@ -12,13 +12,11 @@ import { paths } from "#/lib/paths";
 import { userAtom } from "#/providers/store/auth";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
-import { useWsClient } from "#/providers/ws/WsProvider";
+import { useWsClient } from "#/providers/ws/useWsClient";
 
 import { useMessages } from "../hooks/useMessage";
 import { MessageItem } from "./MessageItem";
 import { SystemMessageItem } from "./SystemMessageItem";
-
-import type { TimelineItem } from "../schemas";
 
 export const MessagePanel = () => {
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
@@ -29,8 +27,8 @@ export const MessagePanel = () => {
 
   const { orderedItems } = useChannelTimeline({
     currentChannelId,
+    initialMessages: messageResponse?.messages,
     wsClient: wsClient ?? null,
-    initialMessages: (messageResponse?.messages as TimelineItem[]) ?? undefined,
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -38,7 +36,7 @@ export const MessagePanel = () => {
 
   // 最新メッセージのIDを取得（ユーザーメッセージのみ）
   const latestUserMessageId =
-    orderedItems && orderedItems.length > 0
+    orderedItems.length > 0
       ? (() => {
           for (let i = orderedItems.length - 1; i >= 0; i--) {
             const item = orderedItems[i];
@@ -52,12 +50,15 @@ export const MessagePanel = () => {
 
   const { latestMessageRef } = useMessageViewportDetection({
     channelId: currentChannelId,
-    workspaceId: currentWorkspaceId,
     latestMessageId: latestUserMessageId,
+    workspaceId: currentWorkspaceId,
   });
 
-  useAutoScrollToBottom(messagesEndRef, [messageResponse, isLoading]);
-  useAutoScrollToBottom(messagesEndRef, [currentChannelId]);
+  const scrollToBottom = useAutoScrollToBottom(messagesEndRef);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messageResponse, isLoading, currentChannelId, scrollToBottom]);
 
   useEffect(() => {
     setRightSidebarView({ type: "hidden" });
@@ -72,8 +73,8 @@ export const MessagePanel = () => {
         paths.channel(currentWorkspaceId, currentChannelId, messageId),
       );
       notifications.show({
-        title: "コピーしました",
         message: "メッセージリンクをクリップボードにコピーしました",
+        title: "コピーしました",
       });
     },
     [currentWorkspaceId, currentChannelId],
@@ -81,14 +82,14 @@ export const MessagePanel = () => {
 
   const handleCreateThread = useCallback(
     (messageId: string) => {
-      setRightSidebarView({ type: "thread", threadId: messageId });
+      setRightSidebarView({ threadId: messageId, type: "thread" });
     },
     [setRightSidebarView],
   );
 
   const handleOpenThread = useCallback(
     (messageId: string) => {
-      setRightSidebarView({ type: "thread", threadId: messageId });
+      setRightSidebarView({ threadId: messageId, type: "thread" });
     },
     [setRightSidebarView],
   );
@@ -120,7 +121,7 @@ export const MessagePanel = () => {
           </div>
         ) : isError ? (
           <Text c="red" size="sm">
-            {error?.message ?? "メッセージの取得に失敗しました"}
+            {error.message}
           </Text>
         ) : messageResponse && messageResponse.messages.length > 0 && currentChannelId ? (
           <div className="flex h-full flex-col">
@@ -130,7 +131,7 @@ export const MessagePanel = () => {
               </Text>
             )}
             <div className="flex flex-1 flex-col justify-end">
-              {orderedItems.map((item, idx) => {
+              {orderedItems.map((item) => {
                 if (item.type === "user" && item.userMessage) {
                   const msg = item.userMessage;
                   const isLatestMessage = msg.id === latestUserMessageId;
@@ -156,7 +157,7 @@ export const MessagePanel = () => {
                     />
                   );
                 }
-                return <div key={`x-${idx}`} />;
+                return null;
               })}
               <div ref={messagesEndRef} />
             </div>

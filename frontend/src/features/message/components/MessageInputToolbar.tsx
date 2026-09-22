@@ -38,15 +38,15 @@ type FormatPattern = {
 };
 
 const FORMAT_PATTERNS: Record<string, FormatPattern> = {
-  bold: { prefix: "**", suffix: "**", cursorOffset: 2 },
-  italic: { prefix: "_", suffix: "_", cursorOffset: 1 },
-  strikethrough: { prefix: "~~", suffix: "~~", cursorOffset: 2 },
-  heading: { prefix: "# ", suffix: "", cursorOffset: 2 },
-  link: { prefix: "[", suffix: "](url)", cursorOffset: 1 },
-  code: { prefix: "`", suffix: "`", cursorOffset: 1 },
-  quote: { prefix: "> ", suffix: "", cursorOffset: 2 },
-  list: { prefix: "- ", suffix: "", cursorOffset: 2 },
-  orderedList: { prefix: "1. ", suffix: "", cursorOffset: 3 },
+  bold: { cursorOffset: 2, prefix: "**", suffix: "**" },
+  code: { cursorOffset: 1, prefix: "`", suffix: "`" },
+  heading: { cursorOffset: 2, prefix: "# ", suffix: "" },
+  italic: { cursorOffset: 1, prefix: "_", suffix: "_" },
+  link: { cursorOffset: 1, prefix: "[", suffix: "](url)" },
+  list: { cursorOffset: 2, prefix: "- ", suffix: "" },
+  orderedList: { cursorOffset: 3, prefix: "1. ", suffix: "" },
+  quote: { cursorOffset: 2, prefix: "> ", suffix: "" },
+  strikethrough: { cursorOffset: 2, prefix: "~~", suffix: "~~" },
 };
 
 type ActiveFormats = {
@@ -73,21 +73,21 @@ export const MessageInputToolbar = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
     bold: false,
-    italic: false,
-    strikethrough: false,
-    heading: false,
-    link: false,
     code: false,
-    quote: false,
+    heading: false,
+    italic: false,
+    link: false,
     list: false,
     orderedList: false,
+    quote: false,
+    strikethrough: false,
   });
 
   // カーソル位置の変更を監視してアクティブなフォーマットを更新
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) {
-      return;
+      return undefined;
     }
 
     const updateActiveFormats = () => {
@@ -96,25 +96,25 @@ export const MessageInputToolbar = ({
       const text = textarea.value;
 
       // カーソル位置の前後のテキストを取得
-      const beforeCursor = text.substring(0, start);
-      const afterCursor = text.substring(end);
+      const beforeCursor = text.slice(0, start);
+      const afterCursor = text.slice(end);
 
       // 現在の行を取得
       const lineStart = beforeCursor.lastIndexOf("\n") + 1;
       const lineEnd = text.indexOf("\n", end);
-      const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
+      const currentLine = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
 
       // 各フォーマットがアクティブかチェック
       const newActiveFormats: ActiveFormats = {
         bold: /\*\*[^*]*$/.test(beforeCursor) && /^[^*]*\*\*/.test(afterCursor),
-        italic: /_[^_]*$/.test(beforeCursor) && /^[^_]*_/.test(afterCursor),
-        strikethrough: /~~[^~]*$/.test(beforeCursor) && /^[^~]*~~/.test(afterCursor),
-        heading: currentLine.trimStart().startsWith("#"),
-        link: /\[[^\]]*$/.test(beforeCursor) && /^[^\]]*\]/.test(afterCursor),
         code: /`[^`]*$/.test(beforeCursor) && /^[^`]*`/.test(afterCursor),
-        quote: currentLine.trimStart().startsWith(">"),
+        heading: currentLine.trimStart().startsWith("#"),
+        italic: /_[^_]*$/.test(beforeCursor) && /^[^_]*_/.test(afterCursor),
+        link: /\[[^\]]*$/.test(beforeCursor) && /^[^\]]*\]/.test(afterCursor),
         list: /^-\s/.test(currentLine.trimStart()),
         orderedList: /^\d+\.\s/.test(currentLine.trimStart()),
+        quote: currentLine.trimStart().startsWith(">"),
+        strikethrough: /~~[^~]*$/.test(beforeCursor) && /^[^~]*~~/.test(afterCursor),
       };
 
       setActiveFormats(newActiveFormats);
@@ -146,9 +146,9 @@ export const MessageInputToolbar = ({
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-    const beforeText = textarea.value.substring(0, start);
-    const afterText = textarea.value.substring(end);
+    const selectedText = textarea.value.slice(start, end);
+    const beforeText = textarea.value.slice(0, start);
+    const afterText = textarea.value.slice(end);
 
     const newText = beforeText + pattern.prefix + selectedText + pattern.suffix + afterText;
     const newCursorPos =
@@ -171,7 +171,7 @@ export const MessageInputToolbar = ({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = [...(e.target.files || [])];
+    const files = [...(e.target.files ?? [])];
     if (files.length > 0) {
       onFileSelect(files);
     }

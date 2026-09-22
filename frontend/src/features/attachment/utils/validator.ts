@@ -2,24 +2,6 @@ const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 
 type ValidationResult = { valid: true } | { valid: false; error: string };
 
-export const validateFile = (file: File): ValidationResult => {
-  if (file.size > MAX_FILE_SIZE) {
-    return {
-      valid: false,
-      error: `ファイルサイズが上限 (1GB) を超えています: ${formatFileSize(file.size)}`,
-    };
-  }
-
-  if (file.size === 0) {
-    return {
-      valid: false,
-      error: "ファイルが空です",
-    };
-  }
-
-  return { valid: true };
-};
-
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) {
     return "0 B";
@@ -30,4 +12,22 @@ export const formatFileSize = (bytes: number): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${(bytes / k ** i).toFixed(2)} ${units[i]}`;
+};
+
+export const validateFile = (file: File): ValidationResult => {
+  if (file.size > MAX_FILE_SIZE) {
+    return {
+      error: `ファイルサイズが上限 (1GB) を超えています: ${formatFileSize(file.size)}`,
+      valid: false,
+    };
+  }
+
+  if (file.size === 0) {
+    return {
+      error: "ファイルが空です",
+      valid: false,
+    };
+  }
+
+  return { valid: true };
 };

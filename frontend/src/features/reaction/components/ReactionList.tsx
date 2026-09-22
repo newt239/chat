@@ -23,10 +23,6 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
 
   // リアクションをグループ化
   const reactionGroups = useMemo((): ReactionGroup[] => {
-    if (!reactions) {
-      return [];
-    }
-
     const groups = new Map<string, ReactionGroup>();
 
     for (const reaction of reactions) {
@@ -39,10 +35,10 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
         }
       } else {
         groups.set(reaction.emoji, {
-          emoji: reaction.emoji,
           count: 1,
-          users: [reaction.user],
+          emoji: reaction.emoji,
           hasUserReacted: user ? reaction.user.id === user.id : false,
+          users: [reaction.user],
         });
       }
     }
@@ -51,15 +47,11 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
   }, [reactions, user]);
 
   const handleReactionClick = async (emoji: string, hasUserReacted: boolean) => {
-    if (hasUserReacted) {
-      await removeReaction.mutateAsync({ messageId, emoji });
-    } else {
-      await addReaction.mutateAsync({ messageId, emoji });
-    }
+    await (hasUserReacted ? removeReaction : addReaction).mutateAsync({ emoji, messageId });
   };
 
   const handleAddReaction = async (emoji: string) => {
-    await addReaction.mutateAsync({ messageId, emoji });
+    await addReaction.mutateAsync({ emoji, messageId });
   };
 
   if (reactionGroups.length === 0) {
@@ -74,10 +66,16 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
           emoji={group.emoji}
           users={group.users}
           isActive={group.hasUserReacted}
-          onClick={async () => handleReactionClick(group.emoji, group.hasUserReacted)}
+          onClick={() => {
+            void handleReactionClick(group.emoji, group.hasUserReacted);
+          }}
         />
       ))}
-      <AddAnotherEmojiButton onClick={handleAddReaction} />
+      <AddAnotherEmojiButton
+        onClick={(emoji) => {
+          void handleAddReaction(emoji);
+        }}
+      />
     </Group>
   );
 };

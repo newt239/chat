@@ -35,7 +35,7 @@ export const useChannelTimeline = ({
   // WS 購読と join/leave 管理
   useEffect(() => {
     if (!wsClient || !currentChannelId) {
-      return;
+      return undefined;
     }
     wsClient.joinChannel(currentChannelId);
 
@@ -51,7 +51,7 @@ export const useChannelTimeline = ({
         }
         return [
           ...prev,
-          { type: "user", userMessage: result.data, createdAt: result.data.createdAt },
+          { createdAt: result.data.createdAt, type: "user", userMessage: result.data },
         ];
       });
     };
@@ -67,7 +67,7 @@ export const useChannelTimeline = ({
         if (exists) {
           return prev;
         }
-        return [...prev, { type: "system", systemMessage: sys, createdAt: sys.createdAt }];
+        return [...prev, { createdAt: sys.createdAt, systemMessage: sys, type: "system" }];
       });
     };
 
@@ -81,7 +81,7 @@ export const useChannelTimeline = ({
   }, [wsClient, currentChannelId]);
 
   const orderedItems = useMemo(() => {
-    if (!timeline || !currentChannelId) {
+    if (!currentChannelId) {
       return [] as TimelineItem[];
     }
     const unique = timeline.filter((item: TimelineItem, index: number, self: TimelineItem[]) => {

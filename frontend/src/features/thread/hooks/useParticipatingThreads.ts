@@ -18,13 +18,6 @@ export const useParticipatingThreads = (params: UseParticipatingThreadsParams) =
   const { workspaceId, cursorLastActivityAt, cursorThreadId, limit = 20 } = params;
 
   return useQuery({
-    queryKey: [
-      "participating-threads",
-      workspaceId,
-      cursorLastActivityAt ?? null,
-      cursorThreadId ?? null,
-      limit,
-    ],
     enabled: typeof workspaceId === "string" && workspaceId.length > 0,
     queryFn: async (): Promise<ParticipatingThreadsOutput> => {
       if (!workspaceId) {
@@ -42,8 +35,8 @@ export const useParticipatingThreads = (params: UseParticipatingThreadsParams) =
         },
       });
 
-      if (error || data === undefined) {
-        throw new Error(error?.error ?? "参加中スレッドの取得に失敗しました");
+      if (error) {
+        throw new Error(error.error);
       }
 
       const parsed = participatingThreadsResponseSchema.safeParse(data);
@@ -53,6 +46,13 @@ export const useParticipatingThreads = (params: UseParticipatingThreadsParams) =
 
       return parsed.data;
     },
+    queryKey: [
+      "participating-threads",
+      workspaceId,
+      cursorLastActivityAt ?? null,
+      cursorThreadId ?? null,
+      limit,
+    ],
     staleTime: 15_000,
   });
 };

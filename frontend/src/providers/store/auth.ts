@@ -16,15 +16,15 @@ type AuthState = {
 const storageKey = "auth-storage";
 
 const createEmptyAuthState = (): AuthState => ({
-  user: null,
   accessToken: null,
   refreshToken: null,
+  user: null,
 });
 
 const sanitizeAuthState = (state: Partial<AuthState>): AuthState => ({
-  user: state.user ?? null,
   accessToken: state.accessToken ?? null,
   refreshToken: state.refreshToken ?? null,
+  user: state.user ?? null,
 });
 
 const authStorageAtom = atomWithStorage<AuthState>(storageKey, createEmptyAuthState(), undefined, {
@@ -70,9 +70,9 @@ export const initializeAuthAtom = atom(null, (get, set) => {
     set(
       authAtom,
       sanitizeAuthState({
-        user: current.user,
         accessToken: legacyAccessToken,
         refreshToken: legacyRefreshToken,
+        user: current.user,
       }),
     );
   }

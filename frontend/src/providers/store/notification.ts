@@ -35,10 +35,12 @@ export const unreadNotificationCountAtom = atom((get) => {
 // 通知を既読にするAtom
 export const markNotificationAsReadAtom = atom(null, (get, set, notificationId: string) => {
   const notifications = get(notificationsAtom);
-  const updated = notifications.map((notification) =>
-    notification.id === notificationId ? { ...notification, isRead: true } : notification,
-  );
-  set(notificationsAtom, updated);
+  const index = notifications.findIndex((notification) => notification.id === notificationId);
+  const target = notifications[index];
+  if (!target) {
+    return;
+  }
+  set(notificationsAtom, notifications.with(index, { ...target, isRead: true }));
 });
 
 // 通知を削除するAtom

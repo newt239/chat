@@ -18,14 +18,14 @@ describe("useSearchQueryParams", () => {
     const { result } = renderHook(() => useSearchQueryParams(), {
       wrapper: createWrapper("/app/ws1/search"),
     });
-    expect(result.current.query).toEqual({ q: "", filter: "all", page: 1 });
+    expect(result.current.query).toEqual({ filter: "all", page: 1, q: "" });
   });
 
   test("URL のクエリを検証して返す", () => {
     const { result } = renderHook(() => useSearchQueryParams(), {
       wrapper: createWrapper("/app/ws1/search?q=hello&filter=messages&page=3"),
     });
-    expect(result.current.query).toEqual({ q: "hello", filter: "messages", page: 3 });
+    expect(result.current.query).toEqual({ filter: "messages", page: 3, q: "hello" });
   });
 
   test("不正な filter は all にフォールバックする", () => {
@@ -51,6 +51,6 @@ describe("useSearchQueryParams", () => {
       result.current.updateQuery({ page: 2 });
     });
 
-    expect(result.current.query).toEqual({ q: "hello", filter: "messages", page: 2 });
+    expect(result.current.query).toEqual({ filter: "messages", page: 2, q: "hello" });
   });
 });

@@ -13,10 +13,10 @@ export const ThreadListPage = () => {
   const [cursorThreadId, setCursorThreadId] = useState<string | undefined>();
 
   const { data, isLoading, isFetching, refetch } = useParticipatingThreads({
-    workspaceId,
     cursorLastActivityAt,
     cursorThreadId,
     limit: 20,
+    workspaceId,
   });
 
   const items = data?.items ?? [];

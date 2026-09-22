@@ -12,7 +12,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
 
   const handleSubmit = useCallback(
     (body: string, attachmentIds: string[]) => {
-      sendMessage.mutate({ body, attachmentIds });
+      sendMessage.mutate({ attachmentIds, body });
     },
     [sendMessage],
   );
@@ -27,11 +27,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
       onSubmit={handleSubmit}
       placeholder="メッセージを入力..."
       isPending={sendMessage.isPending}
-      error={
-        sendMessage.isError
-          ? (sendMessage.error?.message ?? "メッセージの送信に失敗しました")
-          : undefined
-      }
+      error={sendMessage.isError ? sendMessage.error.message : undefined}
       channelId={channelId}
     />
   );

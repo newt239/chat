@@ -54,7 +54,7 @@ export const LoginForm = () => {
 
         {login.isError && (
           <Text c="red" size="sm" className="mb-4">
-            {login.error?.message || "ログインに失敗しました"}
+            {login.error.message}
           </Text>
         )}
 

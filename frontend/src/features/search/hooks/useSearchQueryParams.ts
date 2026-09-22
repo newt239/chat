@@ -6,9 +6,9 @@ import { z } from "zod";
 import { searchFilterValues } from "#/features/search/schemas";
 
 const searchQuerySchema = z.object({
-  q: z.string().catch(""),
   filter: z.enum(searchFilterValues).catch("all"),
   page: z.coerce.number().int().min(1).catch(1),
+  q: z.string().catch(""),
 });
 
 type SearchQuery = z.infer<typeof searchQuerySchema>;
@@ -19,9 +19,9 @@ export const useSearchQueryParams = () => {
   const query = useMemo(
     () =>
       searchQuerySchema.parse({
-        q: searchParams.get("q") ?? undefined,
         filter: searchParams.get("filter") ?? undefined,
         page: searchParams.get("page") ?? undefined,
+        q: searchParams.get("q") ?? undefined,
       }),
     [searchParams],
   );
@@ -29,7 +29,7 @@ export const useSearchQueryParams = () => {
   const updateQuery = useCallback(
     (patch: Partial<SearchQuery>) => {
       const next = { ...query, ...patch };
-      setSearchParams({ q: next.q, filter: next.filter, page: String(next.page) });
+      setSearchParams({ filter: next.filter, page: String(next.page), q: next.q });
     },
     [query, setSearchParams],
   );

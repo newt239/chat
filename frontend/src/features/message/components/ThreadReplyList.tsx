@@ -28,10 +28,10 @@ export const ThreadReplyList = ({
   const handleCopyLink = useCallback(
     (messageId: string) => {
       const url = `${window.location.origin}/app/${workspaceId}/${channelId}?message=${messageId}`;
-      navigator.clipboard.writeText(url);
+      void navigator.clipboard.writeText(url);
       notifications.show({
-        title: "コピーしました",
         message: "メッセージリンクをクリップボードにコピーしました",
+        title: "コピーしました",
       });
     },
     [workspaceId, channelId],
@@ -39,7 +39,7 @@ export const ThreadReplyList = ({
 
   const handleCreateThread = useCallback(
     (messageId: string) => {
-      setRightSidePanelView({ type: "thread", threadId: messageId });
+      setRightSidePanelView({ threadId: messageId, type: "thread" });
     },
     [setRightSidePanelView],
   );

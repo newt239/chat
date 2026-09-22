@@ -20,9 +20,9 @@ const customSchema = {
   ...defaultSchema,
   attributes: {
     ...defaultSchema.attributes,
-    code: [...(defaultSchema.attributes?.code || []), "className"],
+    code: [...(defaultSchema.attributes?.code ?? []), "className"],
     span: [
-      ...(defaultSchema.attributes?.span || []),
+      ...(defaultSchema.attributes?.span ?? []),
       ["className", "mention", "channel-link"],
       "dataMention",
       "dataChannel",
@@ -41,15 +41,15 @@ export const renderMarkdown = (content: string): ReactNode => {
     .use(rehypeReact, {
       ...prod,
       components: {
-        pre: CodeBlock,
         a: LinkComponent,
+        pre: CodeBlock,
         span: (props: {
           className?: string;
           "data-mention"?: string;
           "data-channel"?: string;
           children?: ReactNode;
         }) => {
-          const classNames = props.className?.split(" ") || [];
+          const classNames = props.className?.split(" ") ?? [];
           if (classNames.includes("mention")) {
             return <Mention {...props} data-mention={props["data-mention"] || ""} />;
           }
