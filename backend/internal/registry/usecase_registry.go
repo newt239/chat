@@ -172,9 +172,8 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 func (r *UseCaseRegistry) NewAttachmentUseCase() *attachmentuc.Interactor {
 	return attachmentuc.NewInteractor(
 		r.domainRegistry.NewAttachmentRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelAccessService(),
 		r.infrastructureRegistry.NewStorageService(),
 		r.infrastructureRegistry.NewStorageConfig(),
 	)
