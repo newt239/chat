@@ -3,6 +3,7 @@ package websocket
 import (
 	"log"
 	"net/http"
+	"slices"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
@@ -21,15 +22,24 @@ type ReadStateUseCase interface {
 	// 既読状態関連の操作（必要に応じて定義）
 }
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		// TODO: 本番環境では適切なオリジンチェックを実装
-		return true
-	},
+// newUpgrader は許可オリジンのみ受け付ける Upgrader を作ります
+func newUpgrader(allowedOrigins []string) websocket.Upgrader {
+	return websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			origin := r.Header.Get("Origin")
+			// 同一オリジンやブラウザ以外からの接続は Origin を持たない
+			if origin == "" {
+				return true
+			}
+			return slices.Contains(allowedOrigins, "*") || slices.Contains(allowedOrigins, origin)
+		},
+	}
 }
 
 // Handler はWebSocketハンドラーを返します
-func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, messageUseCase MessageUseCase, readStateUseCase ReadStateUseCase) echo.HandlerFunc {
+func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, messageUseCase MessageUseCase, readStateUseCase ReadStateUseCase, allowedOrigins []string) echo.HandlerFunc {
+	upgrader := newUpgrader(allowedOrigins)
+
 	return func(c echo.Context) error {
 		log.Printf("[WebSocket] 接続リクエスト受信: RemoteAddr=%s", c.Request().RemoteAddr)
 

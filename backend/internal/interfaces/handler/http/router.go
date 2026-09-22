@@ -407,7 +407,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.Use(middleware.Recover())
 
 	// WebSocket
-	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase))
+	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase, cfg.AllowedOrigins))
 
 	// ServerInterfaceを実装する構造体を作成
 	server := &serverImpl{cfg: cfg}
