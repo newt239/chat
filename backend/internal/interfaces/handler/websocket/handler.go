@@ -12,16 +12,6 @@ import (
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
-// MessageUseCase はメッセージユースケースのインターフェースです
-type MessageUseCase interface {
-	// メッセージ関連の操作（必要に応じて定義）
-}
-
-// ReadStateUseCase は既読状態ユースケースのインターフェースです
-type ReadStateUseCase interface {
-	// 既読状態関連の操作（必要に応じて定義）
-}
-
 // newUpgrader は許可オリジンのみ受け付ける Upgrader を作ります
 func newUpgrader(allowedOrigins []string) websocket.Upgrader {
 	return websocket.Upgrader{
@@ -37,7 +27,7 @@ func newUpgrader(allowedOrigins []string) websocket.Upgrader {
 }
 
 // Handler はWebSocketハンドラーを返します
-func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, messageUseCase MessageUseCase, readStateUseCase ReadStateUseCase, allowedOrigins []string) echo.HandlerFunc {
+func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, allowedOrigins []string) echo.HandlerFunc {
 	upgrader := newUpgrader(allowedOrigins)
 
 	return func(c echo.Context) error {
@@ -106,8 +96,6 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 			userID:             claims.UserID,
 			workspaceID:        workspaceID,
 			subscribedChannels: make(map[string]bool),
-			messageUseCase:     messageUseCase,
-			readStateUseCase:   readStateUseCase,
 		}
 
 		client.hub.register <- client

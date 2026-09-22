@@ -21,8 +21,6 @@ type RouterConfig struct {
 
 	WebSocketHub        *websocket.Hub
 	WorkspaceRepository repository.WorkspaceRepository
-	MessageUseCase      websocket.MessageUseCase
-	ReadStateUseCase    websocket.ReadStateUseCase
 
 	AuthHandler          *handler.AuthHandler
 	WorkspaceHandler     *handler.WorkspaceHandler
@@ -447,7 +445,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.Use(middleware.Recover())
 
 	// WebSocket
-	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase, cfg.AllowedOrigins))
+	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.AllowedOrigins))
 
 	// ServerInterfaceを実装する構造体を作成
 	server := &serverImpl{cfg: cfg}

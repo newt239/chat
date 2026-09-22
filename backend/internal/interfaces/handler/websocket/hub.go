@@ -78,10 +78,6 @@ type Client struct {
 
 	// 購読中のチャンネルID一覧
 	subscribedChannels map[string]bool
-
-	// ユースケース
-	messageUseCase   MessageUseCase
-	readStateUseCase ReadStateUseCase
 }
 
 // NewHub は新しいHubを作成します
@@ -467,6 +463,7 @@ func (c *Client) handleLeaveChannel(payload json.RawMessage) {
 }
 
 // handlePostMessage はpost_messageイベントを処理します
+// メッセージの保存は HTTP API が担うため、ここでは入力中状態の解除のみ行います
 func (c *Client) handlePostMessage(payload json.RawMessage) {
 	var postPayload PostMessagePayload
 	if err := json.Unmarshal(payload, &postPayload); err != nil {
@@ -475,15 +472,8 @@ func (c *Client) handlePostMessage(payload json.RawMessage) {
 		return
 	}
 
-	log.Printf("ユーザー%sがチャンネル%sへメッセージを投稿しました", c.userID, postPayload.ChannelID)
-
-	// メッセージ投稿処理（UseCase層との連携）
-	// 実際のメッセージ投稿はHTTP APIで行い、ここではWebSocket通知のみ処理
-	// メッセージ投稿後の通知は、HTTP API側でWebSocket通知を送信する
-
 	c.notifyTyping(postPayload.ChannelID, EventTypeStopTyping)
-
-	c.sendAck(EventTypePostMessage, true, "")
+	c.sendError("NOT_SUPPORTED", "メッセージの投稿は HTTP API を使用してください")
 }
 
 // handleTyping はtypingイベントを処理します
@@ -501,6 +491,7 @@ func (c *Client) handleTyping(payload json.RawMessage) {
 }
 
 // handleUpdateReadState はupdate_read_stateイベントを処理します
+// 既読の保存は HTTP API が担うため、ここでは受理せずクライアントに通知します
 func (c *Client) handleUpdateReadState(payload json.RawMessage) {
 	var readStatePayload UpdateReadStatePayload
 	if err := json.Unmarshal(payload, &readStatePayload); err != nil {
@@ -509,14 +500,7 @@ func (c *Client) handleUpdateReadState(payload json.RawMessage) {
 		return
 	}
 
-	log.Printf("ユーザー%sがチャンネル%sのメッセージ%sを既読更新しました",
-		c.userID, readStatePayload.ChannelID, readStatePayload.MessageID)
-
-	// 既読状態更新処理（UseCase層との連携）
-	// 実際の既読状態更新はHTTP APIで行い、ここではWebSocket通知のみ処理
-	// 既読状態更新後の通知は、HTTP API側でWebSocket通知を送信する
-
-	c.sendAck(EventTypeUpdateReadState, true, "")
+	c.sendError("NOT_SUPPORTED", "既読の更新は HTTP API を使用してください")
 }
 
 // sendAck はACK応答を送信します
