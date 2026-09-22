@@ -50,6 +50,7 @@ func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, mes
 	// 返信を取得
 	replies, err := client.Message.Query().
 		Where(message.HasParentWith(message.ID(mid))).
+		WithUser().
 		Order(ent.Desc(message.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -64,8 +65,10 @@ func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, mes
 	if replyCount > 0 {
 		lastReply := replies[0]
 		lastReplyAt = &lastReply.CreatedAt
-		userID := lastReply.Edges.User.ID.String()
-		lastReplyUserID = &userID
+		if lastReply.Edges.User != nil {
+			userID := lastReply.Edges.User.ID.String()
+			lastReplyUserID = &userID
+		}
 	}
 
 	// 参加者を取得（UserThreadFollowから）
