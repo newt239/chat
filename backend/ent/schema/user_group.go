@@ -54,6 +54,7 @@ func (UserGroup) Edges() []ent.Edge {
 func (UserGroup) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("name").
+			Edges("workspace").
 			Unique(),
 	}
 }

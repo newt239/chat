@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -37,5 +38,14 @@ func (MessageReaction) Edges() []ent.Edge {
 		edge.To("user", User.Type).
 			Unique().
 			Required(),
+	}
+}
+
+// Indexes of the MessageReaction.
+func (MessageReaction) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("emoji").
+			Edges("message", "user").
+			Unique(),
 	}
 }

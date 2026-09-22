@@ -43,5 +43,7 @@ func (MessageBookmark) Edges() []ent.Edge {
 func (MessageBookmark) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("created_at"),
+		index.Edges("user", "message").
+			Unique(),
 	}
 }

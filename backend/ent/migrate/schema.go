@@ -94,9 +94,9 @@ var (
 				Columns: []*schema.Column{ChannelsColumns[3]},
 			},
 			{
-				Name:    "channel_name",
+				Name:    "channel_name_channel_workspace",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelsColumns[1]},
+				Columns: []*schema.Column{ChannelsColumns[1], ChannelsColumns[7]},
 			},
 		},
 	}
@@ -166,6 +166,11 @@ var (
 				Name:    "channelreadstate_last_read_at",
 				Unique:  false,
 				Columns: []*schema.Column{ChannelReadStatesColumns[1]},
+			},
+			{
+				Name:    "channelreadstate_channel_read_state_channel_channel_read_state_user",
+				Unique:  true,
+				Columns: []*schema.Column{ChannelReadStatesColumns[2], ChannelReadStatesColumns[3]},
 			},
 		},
 	}
@@ -246,6 +251,11 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{MessageBookmarksColumns[1]},
 			},
+			{
+				Name:    "messagebookmark_message_bookmark_user_message_bookmark_message",
+				Unique:  true,
+				Columns: []*schema.Column{MessageBookmarksColumns[2], MessageBookmarksColumns[3]},
+			},
 		},
 	}
 	// MessageGroupMentionsColumns holds the columns for the "message_group_mentions" table.
@@ -278,7 +288,7 @@ var (
 	// MessageLinksColumns holds the columns for the "message_links" table.
 	MessageLinksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "url", Type: field.TypeString, Unique: true},
+		{Name: "url", Type: field.TypeString},
 		{Name: "title", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "image_url", Type: field.TypeString, Nullable: true},
@@ -298,6 +308,13 @@ var (
 				Columns:    []*schema.Column{MessageLinksColumns[8]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "messagelink_url_message_link_message",
+				Unique:  true,
+				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[8]},
 			},
 		},
 	}
@@ -372,6 +389,13 @@ var (
 				Columns:    []*schema.Column{MessageReactionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "messagereaction_emoji_message_reaction_message_message_reaction_user",
+				Unique:  true,
+				Columns: []*schema.Column{MessageReactionsColumns[1], MessageReactionsColumns[3], MessageReactionsColumns[4]},
 			},
 		},
 	}
@@ -564,9 +588,9 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "usergroup_name",
+				Name:    "usergroup_name_user_group_workspace",
 				Unique:  true,
-				Columns: []*schema.Column{UserGroupsColumns[1]},
+				Columns: []*schema.Column{UserGroupsColumns[1], UserGroupsColumns[5]},
 			},
 		},
 	}
