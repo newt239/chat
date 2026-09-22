@@ -224,25 +224,21 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		}, nil
 	}
 
-	// ユーザーが参加しているチャンネルIDを取得
-	channelMembers, err := client.ChannelMember.Query().
-		Where(channelmember.HasUserWith(user.ID(userID))).
-		WithChannel().
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	accessibleChannelIDs := make([]uuid.UUID, 0, len(channelMembers))
-	for _, cm := range channelMembers {
-		accessibleChannelIDs = append(accessibleChannelIDs, cm.Edges.Channel.ID)
-	}
+	// パブリックチャンネルはメンバー行を持たないため、
+	// 「ワークスペース内のパブリックチャンネル」と「参加中のプライベートチャンネル」を対象にする
+	accessibleChannels := channel.Or(
+		channel.And(
+			channel.HasWorkspaceWith(workspace.ID(input.WorkspaceID)),
+			channel.IsPrivate(false),
+		),
+		channel.HasMembersWith(channelmember.HasUserWith(user.ID(userID))),
+	)
 
 	// スレッド起点メッセージ（parent_id == null）で、参加中のものを検索
 	query := client.Message.Query().
 		Where(
 			message.Not(message.HasParent()),
-			message.HasChannelWith(channel.IDIn(accessibleChannelIDs...)),
+			message.HasChannelWith(accessibleChannels),
 		)
 
 	// 参加条件でフィルタ

@@ -36,6 +36,34 @@ func (h *ThreadHandler) MarkThreadRead(ctx echo.Context, threadId openapi_types.
 	return ctx.NoContent(http.StatusNoContent)
 }
 
+func (h *ThreadHandler) FollowThread(ctx echo.Context, messageId openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
+	}
+
+	input := threaduc.FollowThreadInput{UserID: userID, ThreadID: messageId.String()}
+	if err := h.ThreadReader.FollowThread(ctx.Request().Context(), input); err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return ctx.JSON(http.StatusOK, map[string]bool{"success": true})
+}
+
+func (h *ThreadHandler) UnfollowThread(ctx echo.Context, messageId openapi_types.UUID) error {
+	userID, ok := ctx.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
+	}
+
+	input := threaduc.FollowThreadInput{UserID: userID, ThreadID: messageId.String()}
+	if err := h.ThreadReader.UnfollowThread(ctx.Request().Context(), input); err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return ctx.JSON(http.StatusOK, map[string]bool{"success": true})
+}
+
 func (h *ThreadHandler) GetParticipatingThreads(ctx echo.Context, workspaceId string, params openapi.GetParticipatingThreadsParams) error {
 	userID, ok := ctx.Get("userID").(string)
 	if !ok {

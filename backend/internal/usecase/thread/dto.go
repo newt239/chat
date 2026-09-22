@@ -37,3 +37,8 @@ type MarkThreadReadInput struct {
 	UserID   string
 	ThreadID string
 }
+
+type FollowThreadInput struct {
+	UserID   string
+	ThreadID string
+}
