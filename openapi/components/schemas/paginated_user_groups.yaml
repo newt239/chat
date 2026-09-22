@@ -1,0 +1,24 @@
+PaginatedUserGroups:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        $ref: "../../openapi.yaml#/components/schemas/UserGroup"
+    total:
+      type: integer
+      minimum: 0
+    page:
+      type: integer
+      minimum: 1
+    perPage:
+      type: integer
+      minimum: 1
+    hasMore:
+      type: boolean
+  required:
+    - items
+    - total
+    - page
+    - perPage
+    - hasMore

@@ -64,6 +64,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteAttachment
+      summary: Delete an attachment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attachment deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Attachment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/attachments/{id}/download:
     get:
       operationId: downloadAttachment
@@ -211,6 +242,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   /api/channels/{channelId}:
+    get:
+      operationId: getChannel
+      summary: Get channel details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Channel details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     patch:
       operationId: updateChannel
       summary: Update channel
@@ -242,6 +304,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteChannel
+      summary: Delete channel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Channel deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Unauthorized
           content:
@@ -1045,6 +1138,69 @@ paths:
       responses:
         '200':
           description: Bookmark removed
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/messages/{messageId}/follow:
+    post:
+      operationId: followThread
+      summary: Follow a thread
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thread followed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: unfollowThread
+      summary: Unfollow a thread
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thread unfollowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Unauthorized
           content:
@@ -2083,6 +2239,7 @@ paths:
               - messages
               - channels
               - users
+              - groups
         - name: page
           in: query
           schema:
@@ -2968,6 +3125,30 @@ components:
         - page
         - perPage
         - hasMore
+    PaginatedUserGroups:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroup'
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - total
+        - page
+        - perPage
+        - hasMore
     PaginatedUsers:
       type: object
       properties:
@@ -3407,7 +3588,10 @@ components:
           $ref: '#/components/schemas/PaginatedChannels'
         users:
           $ref: '#/components/schemas/PaginatedUsers'
+        groups:
+          $ref: '#/components/schemas/PaginatedUserGroups'
       required:
         - messages
         - channels
         - users
+        - groups

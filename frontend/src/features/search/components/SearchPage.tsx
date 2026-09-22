@@ -54,19 +54,22 @@ export const SearchPage = () => {
   const messages = data?.messages.items ?? [];
   const channels = data?.channels.items ?? [];
   const users = data?.users.items ?? [];
+  const groups = data?.groups.items ?? [];
 
   const messageCount = data?.messages.total ?? 0;
   const channelCount = data?.channels.total ?? 0;
   const userCount = data?.users.total ?? 0;
+  const groupCount = data?.groups.total ?? 0;
 
-  const totalResults =
-    filter === "all"
-      ? messageCount + channelCount + userCount
-      : filter === "messages"
-        ? messageCount
-        : filter === "channels"
-          ? channelCount
-          : userCount;
+  const countByFilter: Record<typeof filter, number> = {
+    all: messageCount + channelCount + userCount + groupCount,
+    channels: channelCount,
+    groups: groupCount,
+    messages: messageCount,
+    users: userCount,
+  };
+
+  const totalResults = countByFilter[filter];
 
   const totalPages = (() => {
     if (!data) {
@@ -82,11 +85,15 @@ export const SearchPage = () => {
     if (filter === "users") {
       return calculatePages(userCount, data.users.perPage);
     }
+    if (filter === "groups") {
+      return calculatePages(groupCount, data.groups.perPage);
+    }
 
     return Math.max(
       calculatePages(messageCount, data.messages.perPage),
       calculatePages(channelCount, data.channels.perPage),
       calculatePages(userCount, data.users.perPage),
+      calculatePages(groupCount, data.groups.perPage),
     );
   })();
 
@@ -101,25 +108,18 @@ export const SearchPage = () => {
     }
   };
 
-  const filterOptions = searchFilterValues.map((value) => {
-    const count =
-      value === "messages"
-        ? messageCount
-        : value === "channels"
-          ? channelCount
-          : value === "users"
-            ? userCount
-            : messageCount + channelCount + userCount;
-    const label =
-      value === "messages"
-        ? `メッセージ (${count})`
-        : value === "channels"
-          ? `チャンネル (${count})`
-          : value === "users"
-            ? `ユーザー (${count})`
-            : `すべて (${count})`;
-    return { label, value };
-  });
+  const filterLabels: Record<typeof filter, string> = {
+    all: "すべて",
+    channels: "チャンネル",
+    groups: "グループ",
+    messages: "メッセージ",
+    users: "ユーザー",
+  };
+
+  const filterOptions = searchFilterValues.map((value) => ({
+    label: `${filterLabels[value]} (${countByFilter[value]})`,
+    value,
+  }));
 
   const showPagination =
     trimmedQuery.length > 0 && !isLoading && !error && totalPages > 1 && page <= totalPages;
@@ -179,6 +179,7 @@ export const SearchPage = () => {
                 messages={messages}
                 channels={channels}
                 users={users}
+                groups={groups}
                 filter={filter}
                 workspaceId={workspaceId}
               />

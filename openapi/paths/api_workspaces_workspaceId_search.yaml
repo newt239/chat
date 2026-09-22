@@ -19,7 +19,7 @@
         in: query
         schema:
           type: string
-          enum: [all, messages, channels, users]
+          enum: [all, messages, channels, users, groups]
       - name: page
         in: query
         schema:

@@ -1,22 +1,25 @@
 import { Card, Stack, Text, Avatar, Badge } from "@mantine/core";
-import { IconHash, IconUser } from "@tabler/icons-react";
+import { IconHash, IconUser, IconUsers } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import { useNavigate } from "react-router";
 
 import { paths } from "#/lib/paths";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
+import type { SearchFilter } from "#/features/search/schemas";
 import type { components } from "#/lib/api/schema";
 
 type Message = components["schemas"]["Message"];
 type Channel = components["schemas"]["Channel"];
 type MemberInfo = components["schemas"]["MemberInfo"];
+type UserGroup = components["schemas"]["UserGroup"];
 
 type SearchResultListProps = {
   messages: Message[];
   channels: Channel[];
   users: MemberInfo[];
-  filter: "all" | "messages" | "channels" | "users";
+  groups: UserGroup[];
+  filter: SearchFilter;
   workspaceId: string;
 };
 
@@ -24,6 +27,7 @@ export const SearchResultList = ({
   messages,
   channels,
   users,
+  groups,
   filter,
   workspaceId,
 }: SearchResultListProps) => {
@@ -170,6 +174,35 @@ export const SearchResultList = ({
                   <Text size="sm" lineClamp={3}>
                     {message.body}
                   </Text>
+                </div>
+              </Card>
+            ))}
+          </Stack>
+        </div>
+      )}
+
+      {(filter === "all" || filter === "groups") && groups.length > 0 && (
+        <div>
+          <Text size="sm" fw={600} c="dimmed" className="mb-2">
+            ユーザーグループ
+          </Text>
+          <Stack gap="xs">
+            {groups.map((group) => (
+              <Card key={group.id} withBorder padding="md" radius="md">
+                <div className="flex items-center gap-3">
+                  <Avatar size="md" radius="xl" color="grape">
+                    <IconUsers size={20} />
+                  </Avatar>
+                  <div className="flex-1">
+                    <Text size="sm" fw={600}>
+                      @{group.name}
+                    </Text>
+                    {typeof group.description === "string" && group.description.length > 0 && (
+                      <Text size="xs" c="dimmed">
+                        {group.description}
+                      </Text>
+                    )}
+                  </div>
                 </div>
               </Card>
             ))}

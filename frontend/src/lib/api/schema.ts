@@ -32,7 +32,8 @@ export interface paths {
         get: operations["getAttachment"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete an attachment */
+        delete: operations["deleteAttachment"];
         options?: never;
         head?: never;
         patch?: never;
@@ -147,10 +148,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get channel details */
+        get: operations["getChannel"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete channel */
+        delete: operations["deleteChannel"];
         options?: never;
         head?: never;
         /** Update channel */
@@ -385,6 +388,24 @@ export interface paths {
         post: operations["addBookmark"];
         /** Remove bookmark from message */
         delete: operations["removeBookmark"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/messages/{messageId}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Follow a thread */
+        post: operations["followThread"];
+        /** Unfollow a thread */
+        delete: operations["unfollowThread"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1064,6 +1085,13 @@ export interface components {
             perPage: number;
             hasMore: boolean;
         };
+        PaginatedUserGroups: {
+            items: components["schemas"]["UserGroup"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
         PaginatedUsers: {
             items: components["schemas"]["MemberInfo"][];
             total: number;
@@ -1246,6 +1274,7 @@ export interface components {
             messages: components["schemas"]["PaginatedMessages"];
             channels: components["schemas"]["PaginatedChannels"];
             users: components["schemas"]["PaginatedUsers"];
+            groups: components["schemas"]["PaginatedUserGroups"];
         };
     };
     responses: never;
@@ -1307,6 +1336,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Attachment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attachment deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
                 };
             };
             /** @description Unauthorized */
@@ -1520,6 +1589,86 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getChannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Channel details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Channel"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Channel not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteChannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Channel deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Channel not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2517,6 +2666,86 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Message not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    followThread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Thread followed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Message not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    unfollowThread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Thread unfollowed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
             };
             /** @description Unauthorized */
             401: {
@@ -3772,7 +4001,7 @@ export interface operations {
         parameters: {
             query: {
                 q: string;
-                filter?: "all" | "messages" | "channels" | "users";
+                filter?: "all" | "messages" | "channels" | "users" | "groups";
                 page?: number;
                 perPage?: number;
             };

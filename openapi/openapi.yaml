@@ -96,6 +96,8 @@ components:
       $ref: "./components/schemas/paginated_channels.yaml#/PaginatedChannels"
     PaginatedMessages:
       $ref: "./components/schemas/paginated_messages.yaml#/PaginatedMessages"
+    PaginatedUserGroups:
+      $ref: "./components/schemas/paginated_user_groups.yaml#/PaginatedUserGroups"
     PaginatedUsers:
       $ref: "./components/schemas/paginated_users.yaml#/PaginatedUsers"
     ParticipatingThread:
@@ -198,6 +200,8 @@ paths:
     $ref: "./paths/api_messages_messageId.yaml#/~1api~1messages~1{messageId}"
   /api/messages/{messageId}/bookmarks:
     $ref: "./paths/api_messages_messageId_bookmarks.yaml#/~1api~1messages~1{messageId}~1bookmarks"
+  /api/messages/{messageId}/follow:
+    $ref: "./paths/api_messages_messageId_follow.yaml#/~1api~1messages~1{messageId}~1follow"
   /api/messages/{messageId}/reactions:
     $ref: "./paths/api_messages_messageId_reactions.yaml#/~1api~1messages~1{messageId}~1reactions"
   /api/messages/{messageId}/reactions/{emoji}:
