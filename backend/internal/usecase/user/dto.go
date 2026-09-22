@@ -15,3 +15,9 @@ type MeOutput struct {
 	Bio         *string `json:"bio"`
 	AvatarURL   *string `json:"avatarUrl"`
 }
+
+type UpdatePasswordInput struct {
+	UserID          string
+	CurrentPassword string
+	NewPassword     string
+}

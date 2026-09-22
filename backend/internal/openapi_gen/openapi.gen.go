@@ -601,6 +601,12 @@ type UpdateMessageRequest struct {
 	Body string `json:"body"`
 }
 
+// UpdatePasswordRequest defines model for UpdatePasswordRequest.
+type UpdatePasswordRequest struct {
+	CurrentPassword string `json:"currentPassword"`
+	NewPassword     string `json:"newPassword"`
+}
+
 // UpdateReadStateRequest defines model for UpdateReadStateRequest.
 type UpdateReadStateRequest struct {
 	LastReadAt time.Time `json:"lastReadAt"`
@@ -787,6 +793,9 @@ type AddUserGroupMemberJSONRequestBody = AddUserGroupMemberRequest
 // UpdateMeJSONRequestBody defines body for UpdateMe for application/json ContentType.
 type UpdateMeJSONRequestBody = UpdateMeRequest
 
+// UpdatePasswordJSONRequestBody defines body for UpdatePassword for application/json ContentType.
+type UpdatePasswordJSONRequestBody = UpdatePasswordRequest
+
 // CreateWorkspaceJSONRequestBody defines body for CreateWorkspace for application/json ContentType.
 type CreateWorkspaceJSONRequestBody = CreateWorkspaceRequest
 
@@ -951,12 +960,18 @@ type ServerInterface interface {
 	// Add a member to a user group
 	// (POST /api/user-groups/{id}/members)
 	AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error
+	// Delete current user account
+	// (DELETE /api/users/me)
+	DeleteMe(ctx echo.Context) error
 	// Get current user profile
 	// (GET /api/users/me)
 	GetMe(ctx echo.Context) error
 	// Update current user profile
 	// (PATCH /api/users/me)
 	UpdateMe(ctx echo.Context) error
+	// Update current user password
+	// (PATCH /api/users/me/password)
+	UpdatePassword(ctx echo.Context) error
 	// List user workspaces
 	// (GET /api/workspaces)
 	ListWorkspaces(ctx echo.Context) error
@@ -1919,6 +1934,17 @@ func (w *ServerInterfaceWrapper) AddUserGroupMember(ctx echo.Context) error {
 	return err
 }
 
+// DeleteMe converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteMe(ctx)
+	return err
+}
+
 // GetMe converts echo context to params.
 func (w *ServerInterfaceWrapper) GetMe(ctx echo.Context) error {
 	var err error
@@ -1938,6 +1964,17 @@ func (w *ServerInterfaceWrapper) UpdateMe(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.UpdateMe(ctx)
+	return err
+}
+
+// UpdatePassword converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdatePassword(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdatePassword(ctx)
 	return err
 }
 
@@ -2397,8 +2434,10 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/user-groups/:id/members", wrapper.RemoveUserGroupMember)
 	router.GET(baseURL+"/api/user-groups/:id/members", wrapper.ListUserGroupMembers)
 	router.POST(baseURL+"/api/user-groups/:id/members", wrapper.AddUserGroupMember)
+	router.DELETE(baseURL+"/api/users/me", wrapper.DeleteMe)
 	router.GET(baseURL+"/api/users/me", wrapper.GetMe)
 	router.PATCH(baseURL+"/api/users/me", wrapper.UpdateMe)
+	router.PATCH(baseURL+"/api/users/me/password", wrapper.UpdatePassword)
 	router.GET(baseURL+"/api/workspaces", wrapper.ListWorkspaces)
 	router.POST(baseURL+"/api/workspaces", wrapper.CreateWorkspace)
 	router.GET(baseURL+"/api/workspaces/public", wrapper.ListPublicWorkspaces)

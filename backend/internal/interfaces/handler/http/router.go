@@ -270,6 +270,14 @@ func (s *serverImpl) GetMe(ctx echo.Context) error {
 	return s.cfg.UserHandler.GetMe(ctx)
 }
 
+func (s *serverImpl) UpdatePassword(ctx echo.Context) error {
+	return s.cfg.UserHandler.UpdatePassword(ctx)
+}
+
+func (s *serverImpl) DeleteMe(ctx echo.Context) error {
+	return s.cfg.UserHandler.DeleteMe(ctx)
+}
+
 func (s *serverImpl) UpdateMe(ctx echo.Context) error {
 	return s.cfg.UserHandler.UpdateMe(ctx)
 }
@@ -416,6 +424,8 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	// ユーザー
 	protectedAPI.GET("/users/me", wrapper.GetMe)
 	protectedAPI.PATCH("/users/me", wrapper.UpdateMe)
+	protectedAPI.DELETE("/users/me", wrapper.DeleteMe)
+	protectedAPI.PATCH("/users/me/password", wrapper.UpdatePassword)
 
 	// リンク
 	protectedAPI.POST("/links/fetch-ogp", wrapper.FetchOGP)

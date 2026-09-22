@@ -140,6 +140,8 @@ components:
       $ref: "./components/schemas/update_read_state_request.yaml#/UpdateReadStateRequest"
     UpdateUserGroupRequest:
       $ref: "./components/schemas/update_user_group_request.yaml#/UpdateUserGroupRequest"
+    UpdatePasswordRequest:
+      $ref: "./components/schemas/update_password_request.yaml#/UpdatePasswordRequest"
     UpdateWorkspaceRequest:
       $ref: "./components/schemas/update_workspace_request.yaml#/UpdateWorkspaceRequest"
     UpdateChannelRequest:
@@ -244,5 +246,7 @@ paths:
     $ref: "./paths/api_workspaces_workspaceId_threads_participating.yaml#/~1api~1workspaces~1{workspaceId}~1threads~1participating"
   /api/users/me:
     $ref: "./paths/api_users_me.yaml#/~1api~1users~1me"
+  /api/users/me/password:
+    $ref: "./paths/api_users_me_password.yaml#/~1api~1users~1me~1password"
   /healthz:
     $ref: "./paths/healthz.yaml#/~1healthz"

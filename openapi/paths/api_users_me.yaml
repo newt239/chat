@@ -47,4 +47,21 @@
           application/json:
             schema:
               $ref: "../openapi.yaml#/components/schemas/Error"
-
+  delete:
+    operationId: deleteMe
+    summary: Delete current user account
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: Account deleted
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/SuccessResponse"
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
