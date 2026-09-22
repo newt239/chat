@@ -21,9 +21,22 @@ func HandleUseCaseError(err error) error {
 
 	// ドメインエラーの場合
 	switch {
-	case errors.Is(err, domerr.ErrNotFound):
+	case errors.Is(err, domerr.ErrNotFound),
+		errors.Is(err, domerr.ErrMessageNotFound),
+		errors.Is(err, domerr.ErrChannelNotFound):
 		log.Debug("リソースが見つかりません", zap.Error(err))
-		return echo.NewHTTPError(http.StatusNotFound, "指定されたリソースが見つかりません")
+		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	case errors.Is(err, domerr.ErrInvalidCredentials),
+		errors.Is(err, domerr.ErrInvalidToken),
+		errors.Is(err, domerr.ErrSessionNotFound):
+		log.Debug("認証エラー", zap.Error(err))
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+	case errors.Is(err, domerr.ErrUserAlreadyExists):
+		log.Debug("重複エラー", zap.Error(err))
+		return echo.NewHTTPError(http.StatusConflict, err.Error())
+	case errors.Is(err, domerr.ErrInvalidInput):
+		log.Debug("入力エラー", zap.Error(err))
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	case errors.Is(err, domerr.ErrUnauthorized):
 		log.Warn("認証エラー", zap.Error(err))
 		return echo.NewHTTPError(http.StatusUnauthorized, "操作を実行する権限がありません")
