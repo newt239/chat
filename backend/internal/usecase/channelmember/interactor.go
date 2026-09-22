@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
 
 var (
@@ -38,6 +39,7 @@ type channelMemberInteractor struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
+	systemMessageUC   systemmessage.UseCase
 }
 
 func NewChannelMemberInteractor(
@@ -45,12 +47,36 @@ func NewChannelMemberInteractor(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
+	systemMessageUC systemmessage.UseCase,
 ) ChannelMemberUseCase {
 	return &channelMemberInteractor{
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		workspaceRepo:     workspaceRepo,
 		userRepo:          userRepo,
+		systemMessageUC:   systemMessageUC,
+	}
+}
+
+// recordSystemMessage はメンバーの増減をチャンネルのタイムラインに残します
+func (i *channelMemberInteractor) recordSystemMessage(
+	ctx context.Context,
+	channelID string,
+	kind entity.SystemMessageKind,
+	actorID string,
+	targetUserID string,
+) {
+	if i.systemMessageUC == nil {
+		return
+	}
+
+	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+		ChannelID: channelID,
+		Kind:      kind,
+		Payload:   map[string]any{"actorId": actorID, "userId": targetUserID},
+		ActorID:   &actorID,
+	}); err != nil {
+		fmt.Printf("[WARN] Failed to create system message: channelID=%s kind=%s err=%v\n", channelID, kind, err)
 	}
 }
 
@@ -210,6 +236,8 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 		return fmt.Errorf("failed to add member: %w", err)
 	}
 
+	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberAdded, input.OperatorID, input.TargetUserID)
+
 	return nil
 }
 
@@ -262,6 +290,8 @@ func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input J
 	if err := i.channelMemberRepo.AddMember(ctx, channelMember); err != nil {
 		return fmt.Errorf("failed to add member: %w", err)
 	}
+
+	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberJoined, input.UserID, input.UserID)
 
 	return nil
 }
@@ -438,6 +468,8 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 		return fmt.Errorf("failed to remove member: %w", err)
 	}
 
+	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberRemoved, input.OperatorID, input.TargetUserID)
+
 	return nil
 }
 
@@ -488,6 +520,8 @@ func (i *channelMemberInteractor) LeaveChannel(ctx context.Context, input LeaveC
 	if err := i.channelMemberRepo.RemoveMember(ctx, input.ChannelID, input.UserID); err != nil {
 		return fmt.Errorf("failed to remove member: %w", err)
 	}
+
+	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberLeft, input.UserID, input.UserID)
 
 	return nil
 }

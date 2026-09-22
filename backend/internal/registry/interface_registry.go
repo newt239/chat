@@ -43,7 +43,6 @@ func (r *InterfaceRegistry) NewChannelHandler() *handler.ChannelHandler {
 func (r *InterfaceRegistry) NewChannelMemberHandler() *handler.ChannelMemberHandler {
 	return &handler.ChannelMemberHandler{
 		ChannelMemberUseCase: r.usecaseRegistry.NewChannelMemberUseCase(),
-		SystemMessageUC:      r.usecaseRegistry.NewSystemMessageUseCase(),
 	}
 }
 

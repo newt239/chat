@@ -8,14 +8,11 @@ import (
 	"github.com/labstack/echo/v4"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
-	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/usecase/channelmember"
-	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
 
 type ChannelMemberHandler struct {
 	ChannelMemberUseCase channelmember.ChannelMemberUseCase
-	SystemMessageUC      systemmessage.UseCase
 }
 
 type InviteMemberRequest struct {
@@ -115,17 +112,6 @@ func (h *ChannelMemberHandler) InviteChannelMember(c echo.Context, channelId ope
 		}
 	}
 
-	if h.SystemMessageUC != nil {
-		actorID := userID
-		payload := map[string]any{"userId": req.UserID, "addedBy": userID}
-		_, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
-			ChannelID: channelId.String(),
-			Kind:      entity.SystemMessageKindMemberAdded,
-			Payload:   payload,
-			ActorID:   &actorID,
-		})
-	}
-
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})
 }
 
@@ -150,17 +136,6 @@ func (h *ChannelMemberHandler) JoinPublicChannel(c echo.Context, channelId opena
 		default:
 			return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "チャンネルへの参加に失敗しました"})
 		}
-	}
-
-	if h.SystemMessageUC != nil {
-		actorID := userID
-		payload := map[string]any{"userId": userID}
-		_, _ = h.SystemMessageUC.Create(c.Request().Context(), systemmessage.CreateInput{
-			ChannelID: channelId.String(),
-			Kind:      entity.SystemMessageKindMemberJoined,
-			Payload:   payload,
-			ActorID:   &actorID,
-		})
 	}
 
 	return c.JSON(http.StatusOK, SuccessResponse{Success: true})

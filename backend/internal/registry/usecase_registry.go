@@ -69,6 +69,7 @@ func (r *UseCaseRegistry) NewChannelMemberUseCase() channelmemberuc.ChannelMembe
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.NewSystemMessageUseCase(),
 	)
 }
 
@@ -220,5 +221,7 @@ func (r *UseCaseRegistry) NewThreadReader() *threaduc.ThreadReader {
 func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
 	return useruc.NewInteractor(
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewSessionRepository(),
+		r.infrastructureRegistry.NewPasswordService(),
 	)
 }

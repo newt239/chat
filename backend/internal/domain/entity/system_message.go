@@ -7,6 +7,8 @@ type SystemMessageKind string
 const (
 	SystemMessageKindMemberJoined              SystemMessageKind = "member_joined"
 	SystemMessageKindMemberAdded               SystemMessageKind = "member_added"
+	SystemMessageKindMemberRemoved             SystemMessageKind = "member_removed"
+	SystemMessageKindMemberLeft                SystemMessageKind = "member_left"
 	SystemMessageKindChannelPrivacyChanged     SystemMessageKind = "channel_privacy_changed"
 	SystemMessageKindChannelNameChanged        SystemMessageKind = "channel_name_changed"
 	SystemMessageKindChannelDescriptionChanged SystemMessageKind = "channel_description_changed"
