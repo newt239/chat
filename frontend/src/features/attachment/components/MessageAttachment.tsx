@@ -2,10 +2,10 @@ import { useDownloadUrl } from "../api/client";
 import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
 
-import type { Attachment } from "../api/types";
+import type { MessageAttachmentInfo } from "../api/types";
 
 type MessageAttachmentProps = {
-  attachment: Attachment;
+  attachment: MessageAttachmentInfo;
 };
 
 export const MessageAttachment = ({ attachment }: MessageAttachmentProps) => {

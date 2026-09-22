@@ -2,8 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "#/lib/api/client";
 
-import { threadRepliesResponseSchema } from "../schemas";
-
 type CreateThreadReplyInput = {
   body: string;
 };
@@ -25,15 +23,7 @@ export const useThreadReplies = (messageId: string | null) =>
         throw new Error(error.error);
       }
 
-      const parsed = threadRepliesResponseSchema.safeParse(data);
-
-      if (!parsed.success) {
-        console.error("スレッド返信取得のスキーマ検証エラー:", parsed.error);
-        console.error("受信したデータ:", JSON.stringify(data, null, 2));
-        throw new Error("スレッド返信取得のレスポンス形式が想定と異なります");
-      }
-
-      return parsed.data;
+      return data;
     },
     queryKey: ["messages", messageId, "thread", "replies"],
   });

@@ -2,9 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "#/lib/api/client";
 
-import { messagesTimelineResponseSchema } from "../schemas";
-
-import type { MessagesTimelineResponse } from "../schemas";
+import type { MessagesTimelineResponse } from "../types";
 
 type CreateMessageInput = {
   body: string;
@@ -36,15 +34,7 @@ export const useMessages = (channelId: string | null) =>
         throw new Error(error.error);
       }
 
-      const parsed = messagesTimelineResponseSchema.safeParse(data);
-
-      if (!parsed.success) {
-        console.error("メッセージ取得のスキーマ検証エラー:", parsed.error);
-        console.error("受信したデータ:", JSON.stringify(data, null, 2));
-        throw new Error("メッセージ取得のレスポンス形式が想定と異なります");
-      }
-
-      return parsed.data;
+      return data;
     },
     queryKey: ["channels", channelId, "messages"],
   });

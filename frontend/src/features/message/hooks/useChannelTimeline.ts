@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { messageWithThreadSchema, timelineItemSchema } from "#/features/message/schemas";
-
-import type { TimelineItem } from "#/features/message/schemas";
+import type { TimelineItem } from "#/features/message/types";
 import type { NewMessagePayload, SystemMessageCreatedPayload } from "#/types/wsEvents";
 
 type WsClientMinimal = {
@@ -39,35 +37,21 @@ export const useChannelTimeline = ({
     }
     wsClient.joinChannel(currentChannelId);
 
-    const handleNewMessage = (payload: NewMessagePayload) => {
-      const result = messageWithThreadSchema.safeParse(payload.message);
-      if (!result.success) {
-        return;
-      }
-      setTimeline((prev: TimelineItem[]): TimelineItem[] => {
-        const exists = prev.some((m) => m.type === "user" && m.userMessage?.id === result.data.id);
-        if (exists) {
+    const handleNewMessage = ({ message }: NewMessagePayload) => {
+      setTimeline((prev) => {
+        if (prev.some((item) => item.type === "user" && item.userMessage?.id === message.id)) {
           return prev;
         }
-        return [
-          ...prev,
-          { createdAt: result.data.createdAt, type: "user", userMessage: result.data },
-        ];
+        return [...prev, { createdAt: message.createdAt, type: "user", userMessage: message }];
       });
     };
 
-    const handleSystem = (payload: SystemMessageCreatedPayload) => {
-      const parsed = timelineItemSchema.shape.systemMessage.unwrap().safeParse(payload.message);
-      if (!parsed.success) {
-        return;
-      }
-      const sys = parsed.data;
+    const handleSystem = ({ message }: SystemMessageCreatedPayload) => {
       setTimeline((prev) => {
-        const exists = prev.some((i) => i.type === "system" && i.systemMessage?.id === sys.id);
-        if (exists) {
+        if (prev.some((item) => item.type === "system" && item.systemMessage?.id === message.id)) {
           return prev;
         }
-        return [...prev, { createdAt: sys.createdAt, systemMessage: sys, type: "system" }];
+        return [...prev, { createdAt: message.createdAt, systemMessage: message, type: "system" }];
       });
     };
 

@@ -1036,24 +1036,6 @@ export interface components {
             userId: string;
             displayName: string;
         };
-        MessageBookmark: {
-            /** Format: uuid */
-            userId: string;
-            /** Format: uuid */
-            messageId: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        MessageReaction: {
-            /** Format: uuid */
-            messageId: string;
-            /** Format: uuid */
-            userId: string;
-            /** @description Unicode絵文字または将来的にカスタム絵文字ID */
-            emoji: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
         MessagesResponse: {
             messages: components["schemas"]["TimelineItem"][];
             hasMore: boolean;

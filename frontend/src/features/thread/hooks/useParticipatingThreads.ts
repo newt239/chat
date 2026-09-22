@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { participatingThreadsResponseSchema } from "#/features/thread/schemas";
 import { api } from "#/lib/api/client";
 
 import type { components } from "#/lib/api/schema";
@@ -39,12 +38,7 @@ export const useParticipatingThreads = (params: UseParticipatingThreadsParams) =
         throw new Error(error.error);
       }
 
-      const parsed = participatingThreadsResponseSchema.safeParse(data);
-      if (!parsed.success) {
-        throw new Error("スレッド一覧レスポンスの形式が想定と異なります");
-      }
-
-      return parsed.data;
+      return data;
     },
     queryKey: [
       "participating-threads",

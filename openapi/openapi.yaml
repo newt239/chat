@@ -88,10 +88,6 @@ components:
       $ref: "./components/schemas/timeline_item.yaml#/TimelineItem"
     UserMention:
       $ref: "./components/schemas/user_mention.yaml#/UserMention"
-    MessageBookmark:
-      $ref: "./components/schemas/message_bookmark.yaml#/MessageBookmark"
-    MessageReaction:
-      $ref: "./components/schemas/message_reaction.yaml#/MessageReaction"
     MessagesResponse:
       $ref: "./components/schemas/messages_response.yaml#/MessagesResponse"
     PaginatedChannels:

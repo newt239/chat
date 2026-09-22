@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { messageWithThreadSchema, systemMessageSchema } from "#/features/message/schemas";
+import type { MessageWithThread, SystemMessage } from "#/features/message/types";
 
 const clientEventTypes = [
   "join_channel",
@@ -24,9 +24,16 @@ const serverEventTypes = [
 
 const wsEventTypeSchema = z.enum([...clientEventTypes, ...serverEventTypes]);
 
+const messageSchema = z.custom<MessageWithThread>(
+  (value) => typeof value === "object" && value !== null,
+);
+const systemMessageSchema = z.custom<SystemMessage>(
+  (value) => typeof value === "object" && value !== null,
+);
+
 const channelMessagePayloadSchema = z.object({
   channel_id: z.string(),
-  message: messageWithThreadSchema,
+  message: messageSchema,
 });
 
 // ピン通知はメッセージ本体ではなくピン情報を送る
