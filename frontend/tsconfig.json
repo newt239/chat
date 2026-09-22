@@ -7,8 +7,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
-      "#/*": ["./src/*"],
-      "vite": ["./node_modules/vite-plus/dist/index.d.ts"]
+      "#/*": ["./src/*"]
     },
     "resolveJsonModule": true,
     "allowJs": false,
