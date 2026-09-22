@@ -107,7 +107,7 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 }
 
 func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error) {
-	if err := validateUUID(input.WorkspaceID, "workspace ID"); err != nil {
+	if err := validateWorkspaceID(input.WorkspaceID); err != nil {
 		return nil, err
 	}
 	if err := validateUUID(input.UserID, "user ID"); err != nil {
