@@ -14,6 +14,7 @@ var (
 	ErrMessageNotFound       = errors.New("メッセージが見つかりません")
 	ErrMessageAlreadyDeleted = errors.New("メッセージは既に削除されています")
 	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
+	ErrAttachmentNotFound    = errors.New("添付ファイルが見つかりません")
 )
 
 const (

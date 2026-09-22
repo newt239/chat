@@ -104,6 +104,9 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 		}
 
 		if len(input.AttachmentIDs) > 0 {
+			if err := c.verifyAttachments(txCtx, input, channel.ID); err != nil {
+				return err
+			}
 			if err := c.attachmentRepo.AttachToMessage(txCtx, input.AttachmentIDs, message.ID); err != nil {
 				return fmt.Errorf("failed to attach files: %w", err)
 			}
@@ -230,5 +233,22 @@ func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, mes
 		}
 	}
 
+	return nil
+}
+
+// verifyAttachments は添付が投稿者本人のもので、かつ同じチャンネル宛かを検証します
+func (c *MessageCreator) verifyAttachments(ctx context.Context, input CreateMessageInput, channelID string) error {
+	attachments, err := c.attachmentRepo.FindPendingByIDsForUser(ctx, input.UserID, input.AttachmentIDs)
+	if err != nil {
+		return fmt.Errorf("failed to verify attachments: %w", err)
+	}
+	if len(attachments) != len(input.AttachmentIDs) {
+		return ErrAttachmentNotFound
+	}
+	for _, attachment := range attachments {
+		if attachment.ChannelID != channelID {
+			return ErrAttachmentNotFound
+		}
+	}
 	return nil
 }
