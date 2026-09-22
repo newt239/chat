@@ -88,19 +88,21 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 		channelIDs[idx] = ch.ID
 	}
 
-	// バッチでメンション数を取得
+	unreadCounts, err := i.readStateRepo.GetUnreadCountBatch(ctx, channelIDs, input.UserID)
+	if err != nil {
+		fmt.Printf("[WARN] Failed to get unread counts: userID=%s err=%v\n", input.UserID, err)
+		unreadCounts = make(map[string]int)
+	}
+
 	mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, channelIDs, input.UserID)
 	if err != nil {
-		// エラーの場合はログに記録し、空のマップとして扱う
 		fmt.Printf("[WARN] Failed to get unread mention counts: userID=%s err=%v\n", input.UserID, err)
 		mentionCounts = make(map[string]int)
 	}
 
 	output := make([]ChannelOutput, 0, len(channels))
 	for _, ch := range channels {
-		mentionCount := mentionCounts[ch.ID]
-		hasMention := mentionCount > 0
-		output = append(output, toChannelOutputWithUnread(ch, hasMention, mentionCount))
+		output = append(output, toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID] > 0))
 	}
 
 	return output, nil
@@ -163,7 +165,7 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, err
 	}
 
-	output := toChannelOutputWithUnread(channel, false, 0) // 新規作成時はメンション数0
+	output := toChannelOutputWithUnread(channel, 0, false)
 	return &output, nil
 }
 
@@ -278,28 +280,25 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 	}
 
 	out := toChannelOutput(ch)
-	// 補足: メンションはfalse/0で返す（一覧APIの責務と分離）
-	out.HasMention = false
-	out.MentionCount = 0
 	return &out, nil
 }
 
 func toChannelOutput(channel *entity.Channel) ChannelOutput {
-	return toChannelOutputWithUnread(channel, false, 0)
+	return toChannelOutputWithUnread(channel, 0, false)
 }
 
-func toChannelOutputWithUnread(channel *entity.Channel, hasMention bool, mentionCount int) ChannelOutput {
+func toChannelOutputWithUnread(channel *entity.Channel, unreadCount int, hasMention bool) ChannelOutput {
 	return ChannelOutput{
-		ID:           channel.ID,
-		WorkspaceID:  channel.WorkspaceID,
-		Name:         channel.Name,
-		Description:  channel.Description,
-		IsPrivate:    channel.IsPrivate,
-		CreatedBy:    channel.CreatedBy,
-		CreatedAt:    channel.CreatedAt,
-		UpdatedAt:    channel.UpdatedAt,
-		HasMention:   hasMention,
-		MentionCount: mentionCount,
+		ID:          channel.ID,
+		WorkspaceID: channel.WorkspaceID,
+		Name:        channel.Name,
+		Description: channel.Description,
+		IsPrivate:   channel.IsPrivate,
+		CreatedBy:   channel.CreatedBy,
+		CreatedAt:   channel.CreatedAt,
+		UpdatedAt:   channel.UpdatedAt,
+		UnreadCount: unreadCount,
+		HasMention:  hasMention,
 	}
 }
 

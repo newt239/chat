@@ -8,7 +8,6 @@ import (
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
-	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -201,7 +200,12 @@ func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID, use
 	return count, err
 }
 
-func (r *readStateRepository) GetUnreadChannels(ctx context.Context, userID string) (map[string]int, error) {
+func (r *readStateRepository) GetUnreadCountBatch(ctx context.Context, channelIDs []string, userID string) (map[string]int, error) {
+	result := make(map[string]int, len(channelIDs))
+	if len(channelIDs) == 0 {
+		return result, nil
+	}
+
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
@@ -209,105 +213,33 @@ func (r *readStateRepository) GetUnreadChannels(ctx context.Context, userID stri
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	// Get all channels the user is a member of
-	channels, err := client.Channel.Query().
-		Where(channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid)))).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
+	for _, channelID := range channelIDs {
+		cid, err := utils.ParseUUID(channelID, "channel ID")
+		if err != nil {
+			return nil, err
+		}
 
-	result := make(map[string]int)
-	for _, ch := range channels {
-		count, err := r.GetUnreadCount(ctx, ch.ID.String(), userID)
+		lastReadAt, err := r.getLastReadAt(ctx, client, cid, uid)
+		if err != nil {
+			return nil, err
+		}
+
+		count, err := client.Message.Query().
+			Where(
+				message.HasChannelWith(channel.ID(cid)),
+				message.CreatedAtGT(lastReadAt),
+				message.DeletedAtIsNil(),
+			).
+			Count(ctx)
 		if err != nil {
 			return nil, err
 		}
 		if count > 0 {
-			result[ch.ID.String()] = count
+			result[channelID] = count
 		}
 	}
 
 	return result, nil
-}
-
-func (r *readStateRepository) GetUnreadMentionCount(ctx context.Context, channelID, userID string) (int, error) {
-	cid, err := utils.ParseUUID(channelID, "channel ID")
-	if err != nil {
-		return 0, err
-	}
-
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return 0, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	lastReadAt, err := r.getLastReadAt(ctx, client, cid, uid)
-	if err != nil {
-		return 0, err
-	}
-
-	// Get user's group IDs
-	userGroups, err := client.UserGroup.Query().
-		Where(usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(uid)))).
-		All(ctx)
-	if err != nil {
-		return 0, err
-	}
-
-	groupIDs := make([]uuid.UUID, len(userGroups))
-	for i, g := range userGroups {
-		groupIDs[i] = g.ID
-	}
-
-	// Count unique messages with mentions after lastReadAt
-	// 1. User mentions: messages where the user is mentioned
-	userMentionMessages, err := client.MessageUserMention.Query().
-		Where(
-			messageusermention.HasUserWith(user.ID(uid)),
-			messageusermention.HasMessageWith(
-				message.HasChannelWith(channel.ID(cid)),
-				message.CreatedAtGT(lastReadAt),
-				message.DeletedAtIsNil(),
-			),
-		).
-		QueryMessage().
-		IDs(ctx)
-	if err != nil {
-		return 0, err
-	}
-
-	// 2. Group mentions: messages where user's groups are mentioned
-	var groupMentionMessages []uuid.UUID
-	if len(groupIDs) > 0 {
-		groupMentionMessages, err = client.MessageGroupMention.Query().
-			Where(
-				messagegroupmention.HasGroupWith(usergroup.IDIn(groupIDs...)),
-				messagegroupmention.HasMessageWith(
-					message.HasChannelWith(channel.ID(cid)),
-					message.CreatedAtGT(lastReadAt),
-					message.DeletedAtIsNil(),
-				),
-			).
-			QueryMessage().
-			IDs(ctx)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	// Combine and deduplicate message IDs
-	messageIDSet := make(map[uuid.UUID]bool)
-	for _, id := range userMentionMessages {
-		messageIDSet[id] = true
-	}
-	for _, id := range groupMentionMessages {
-		messageIDSet[id] = true
-	}
-
-	return len(messageIDSet), nil
 }
 
 func (r *readStateRepository) GetUnreadMentionCountBatch(ctx context.Context, channelIDs []string, userID string) (map[string]int, error) {
