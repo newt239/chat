@@ -25,6 +25,10 @@ func (h *UserHandler) UpdateMe(c echo.Context) error {
 		return utils.HandleBindError(err)
 	}
 
+	if err := c.Validate(&req); err != nil {
+		return utils.HandleValidationError(err)
+	}
+
 	out, err := h.UC.UpdateMe(c.Request().Context(), useruc.UpdateMeInput{
 		UserID:      userID,
 		DisplayName: req.DisplayName,

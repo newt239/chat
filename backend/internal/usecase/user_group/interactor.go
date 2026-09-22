@@ -47,6 +47,22 @@ func NewUserGroupInteractor(
 	}
 }
 
+// ensureCanManage は作成者またはワークスペースの owner/admin であることを確認します
+func (i *userGroupInteractor) ensureCanManage(ctx context.Context, group *entity.UserGroup, userID string) error {
+	if group.CreatedBy == userID {
+		return nil
+	}
+
+	member, err := i.workspaceRepo.FindMember(ctx, group.WorkspaceID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to verify workspace membership: %w", err)
+	}
+	if member == nil || (member.Role != entity.WorkspaceRoleOwner && member.Role != entity.WorkspaceRoleAdmin) {
+		return ErrUnauthorized
+	}
+	return nil
+}
+
 func (i *userGroupInteractor) CreateUserGroup(ctx context.Context, input CreateUserGroupInput) (*CreateUserGroupOutput, error) {
 	// ワークスペースの存在確認と権限チェック
 	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
@@ -103,9 +119,8 @@ func (i *userGroupInteractor) UpdateUserGroup(ctx context.Context, input UpdateU
 		return nil, ErrUserGroupNotFound
 	}
 
-	// 権限チェック（作成者のみ更新可能）
-	if group.CreatedBy != input.UpdatedBy {
-		return nil, ErrUnauthorized
+	if err := i.ensureCanManage(ctx, group, input.UpdatedBy); err != nil {
+		return nil, err
 	}
 
 	// 名前の更新がある場合は重複チェック
@@ -144,9 +159,8 @@ func (i *userGroupInteractor) DeleteUserGroup(ctx context.Context, input DeleteU
 		return nil, ErrUserGroupNotFound
 	}
 
-	// 権限チェック（作成者のみ削除可能）
-	if group.CreatedBy != input.DeletedBy {
-		return nil, ErrUnauthorized
+	if err := i.ensureCanManage(ctx, group, input.DeletedBy); err != nil {
+		return nil, err
 	}
 
 	if err := i.userGroupRepo.Delete(ctx, input.ID); err != nil {

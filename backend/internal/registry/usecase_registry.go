@@ -198,6 +198,7 @@ func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
 	)
 }
 
@@ -210,6 +211,8 @@ func (r *UseCaseRegistry) NewThreadLister() *threaduc.ThreadLister {
 func (r *UseCaseRegistry) NewThreadReader() *threaduc.ThreadReader {
 	return threaduc.NewThreadReader(
 		r.domainRegistry.NewThreadRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
