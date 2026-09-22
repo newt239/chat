@@ -23,6 +23,16 @@ type UpdateChannelInput struct {
 	IsPrivate   *bool
 }
 
+type GetChannelInput struct {
+	ChannelID string
+	UserID    string
+}
+
+type DeleteChannelInput struct {
+	ChannelID string
+	UserID    string
+}
+
 type ChannelOutput struct {
 	ID          string    `json:"id"`
 	WorkspaceID string    `json:"workspaceId"`

@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	domainservice "github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
@@ -18,9 +19,12 @@ import (
 var (
 	ErrUnauthorized      = errors.New("この操作を行う権限がありません")
 	ErrWorkspaceNotFound = errors.New("ワークスペースが見つかりません")
+	ErrChannelNotFound   = errors.New("チャンネルが見つかりません")
 )
 
 type ChannelUseCase interface {
+	GetChannel(ctx context.Context, input GetChannelInput) (*ChannelOutput, error)
+	DeleteChannel(ctx context.Context, input DeleteChannelInput) error
 	ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error)
 	CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error)
 	UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error)
@@ -33,6 +37,7 @@ type channelInteractor struct {
 	readStateRepo     domainrepository.ReadStateRepository
 	txManager         domaintransaction.Manager
 	systemMessageUC   systemmessage.UseCase
+	channelAccessSvc  domainservice.ChannelAccessService
 }
 
 func NewChannelInteractor(
@@ -42,6 +47,7 @@ func NewChannelInteractor(
 	readStateRepo domainrepository.ReadStateRepository,
 	txManager domaintransaction.Manager,
 	systemMessageUC systemmessage.UseCase,
+	channelAccessSvc domainservice.ChannelAccessService,
 ) ChannelUseCase {
 	return &channelInteractor{
 		channelRepo:       channelRepo,
@@ -50,6 +56,7 @@ func NewChannelInteractor(
 		readStateRepo:     readStateRepo,
 		txManager:         txManager,
 		systemMessageUC:   systemMessageUC,
+		channelAccessSvc:  channelAccessSvc,
 	}
 }
 
@@ -169,6 +176,42 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 	return &output, nil
 }
 
+func (i *channelInteractor) GetChannel(ctx context.Context, input GetChannelInput) (*ChannelOutput, error) {
+	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	output := toChannelOutput(ch)
+	return &output, nil
+}
+
+func (i *channelInteractor) DeleteChannel(ctx context.Context, input DeleteChannelInput) error {
+	ch, err := i.channelRepo.FindByID(ctx, input.ChannelID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch channel: %w", err)
+	}
+	if ch == nil {
+		return ErrChannelNotFound
+	}
+
+	// 作成者かワークスペースの管理者のみ削除できる
+	if ch.CreatedBy != input.UserID {
+		member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
+		if err != nil {
+			return fmt.Errorf("failed to verify membership: %w", err)
+		}
+		if member == nil || !member.CanCreateChannel() {
+			return ErrUnauthorized
+		}
+	}
+
+	if err := i.channelRepo.Delete(ctx, input.ChannelID); err != nil {
+		return fmt.Errorf("failed to delete channel: %w", err)
+	}
+	return nil
+}
+
 func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error) {
 	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
 		return nil, err
@@ -182,7 +225,7 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 		return nil, fmt.Errorf("failed to fetch channel: %w", err)
 	}
 	if ch == nil {
-		return nil, errors.New("チャンネルが見つかりません")
+		return nil, ErrChannelNotFound
 	}
 
 	// 権限: ワークスペースの管理権限（チャンネル編集権限として流用）
