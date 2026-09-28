@@ -11,6 +11,9 @@ service ChannelService {
   rpc GetChannel(GetChannelRequest) returns (GetChannelResponse);
   rpc UpdateChannel(UpdateChannelRequest) returns (UpdateChannelResponse);
   rpc DeleteChannel(DeleteChannelRequest) returns (DeleteChannelResponse);
+  // チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
+  rpc ArchiveChannel(ArchiveChannelRequest) returns (ArchiveChannelResponse);
+  rpc UnarchiveChannel(UnarchiveChannelRequest) returns (UnarchiveChannelResponse);
 }
 
 message Channel {
@@ -24,6 +27,8 @@ message Channel {
   google.protobuf.Timestamp updated_at = 8;
   int32 unread_count = 9;
   bool has_mention = 10;
+  // アーカイブ中の場合だけ設定される
+  optional google.protobuf.Timestamp archived_at = 11;
 }
 
 message ListChannelsRequest {
@@ -69,3 +74,19 @@ message DeleteChannelRequest {
 }
 
 message DeleteChannelResponse {}
+
+message ArchiveChannelRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ArchiveChannelResponse {
+  Channel channel = 1;
+}
+
+message UnarchiveChannelRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message UnarchiveChannelResponse {
+  Channel channel = 1;
+}

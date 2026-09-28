@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/workspace_service.proto";
+
+// ロールごとの操作権限。オーナーは常にすべての操作ができる
+service PermissionService {
+  // メンバー全員が参照できる（ボタンの出し分けなどに使う）
+  rpc GetPermissions(GetPermissionsRequest) returns (GetPermissionsResponse);
+  // owner / admin だけが変更できる。管理者の列はオーナーだけが変更できる。変更は監査ログに残る
+  rpc UpdatePermission(UpdatePermissionRequest) returns (UpdatePermissionResponse);
+}
+
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CREATE_PUBLIC_CHANNEL = 1;
+  PERMISSION_CREATE_PRIVATE_CHANNEL = 2;
+  PERMISSION_INVITE_MEMBERS = 3;
+  PERMISSION_EDIT_USER_GROUPS = 4;
+  PERMISSION_EDIT_CHANNEL_LINKS = 5;
+  PERMISSION_PIN_MESSAGES = 6;
+  PERMISSION_DELETE_OTHERS_MESSAGES = 7;
+  PERMISSION_EXPORT_DATA = 8;
+  PERMISSION_ADD_EXTERNAL_APPS = 9;
+}
+
+message PermissionGrant {
+  WorkspaceRole role = 1;
+  Permission permission = 2;
+  bool allowed = 3;
+}
+
+message GetPermissionsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetPermissionsResponse {
+  // admin / member / guest × 全操作の組み合わせ（オーナーは含まない）
+  repeated PermissionGrant grants = 1;
+  // リクエストしたユーザーに許可されている操作
+  repeated Permission my_permissions = 2;
+}
+
+message UpdatePermissionRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  WorkspaceRole role = 2 [(buf.validate.field).enum = {
+    in: [
+      2,
+      3,
+      4
+    ]
+  }];
+  Permission permission = 3 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  bool allowed = 4;
+}
+
+message UpdatePermissionResponse {}
