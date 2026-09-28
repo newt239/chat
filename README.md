@@ -40,7 +40,7 @@ docker-compose ps
 lint / format / test の設定は `frontend/vite.config.ts` に集約されています（Vite+ による統合）。
 
 ```bash
-# 型チェック・lint・format・ファイル名チェック・未使用コード検出・テストを一括実行
+# 型チェック・lint・format・未使用コード検出・テストを一括実行
 pnpm --filter chat-frontend run codecheck
 
 # 個別に実行
@@ -49,11 +49,11 @@ pnpm --filter chat-frontend run lint:fix
 pnpm --filter chat-frontend run format:fix
 pnpm --filter chat-frontend run test
 
-# OpenAPI スキーマを変更したとき（リポジトリルートで実行）
-pnpm run openapi:bundle && pnpm run generate:api
+# proto を変更したとき（リポジトリルートで実行）
+pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 ```
 
-コミット時は lefthook の pre-commit フックが lint・format・ファイル名チェックを実行します。ホスト側に `pnpm install` 済みであることが前提のため、Docker のみで開発している場合は `LEFTHOOK=0 git commit` で回避できます。
+コミット時は lefthook の pre-commit フックが lint・format を実行します。ホスト側に `pnpm install` 済みであることが前提のため、Docker のみで開発している場合は `LEFTHOOK=0 git commit` で回避できます。
 
 ### テストアカウント
 
@@ -66,8 +66,9 @@ pnpm run openapi:bundle && pnpm run generate:api
 
 ### バックエンド
 
-- Go 1.24
+- Go 1.27
 - Echo
+- Connect RPC (connect-go) + Protocol Buffers
 - WebSocket (gorilla/websocket)
 - ent (ORM)
 - PostgreSQL 18
@@ -81,7 +82,7 @@ pnpm run openapi:bundle && pnpm run generate:api
 - Mantine 8
 - Tailwind CSS 4
 - TanStack Router (ファイルベースルーティング / SPA)
-- TanStack Query
+- TanStack Query + connect-query
 - PWA (vite-plugin-pwa)
 
 ### 開発ツール
@@ -89,7 +90,7 @@ pnpm run openapi:bundle && pnpm run generate:api
 - pnpm 11 (workspace) + Turborepo
 - lefthook (pre-commit フック)
 - knip (未使用コード検出)
-- OpenAPI (Redocly でバンドル、oapi-codegen と openapi-typescript でコード生成)
+- buf (`proto/` から Go と TypeScript のコードを生成)
 
 ### インフラ
 
@@ -129,7 +130,7 @@ chat/
 │   │   └── lib/      # API client, WS client, router など
 │   ├── tests/        # Vitest のセットアップ
 │   └── public/       # Static assets（PWA アイコンの元になる logo.svg）
-├── openapi/          # OpenAPI スキーマ（分割定義と bundled.yaml）
+├── proto/            # Protocol Buffers の API 定義（buf で Go / TypeScript を生成）
 └── scripts/          # 開発用スクリプト
 
 ```
@@ -245,7 +246,7 @@ xdg-open backend/ent/schema-viz.html
 | --- | --- |
 | frontend | typecheck / Oxlint / Oxfmt / knip / Vitest / ビルド |
 | backend | `go build` と golangci-lint |
-| openapi | `openapi/bundled.yaml` と `frontend/src/lib/api/schema.ts` が最新かを再生成して差分検証 |
+| proto | buf lint と format の検査、生成物が最新かを再生成して差分検証 |
 
 依存関係の更新は Dependabot が週次でまとめて PR を作成し、`dependabot-auto-merge.yml` が自動マージします。
 
@@ -260,5 +261,3 @@ docker build -f frontend/Dockerfile -t chat-frontend .
 # バックエンド: server / migrate / reset / seed のバイナリを含むイメージをビルド
 docker build -f backend/Dockerfile -t chat-backend ./backend
 ```
-
-バックエンドはリクエストバリデーションのために実行時に `/app/openapi/openapi.yaml` を読み込みます。本番イメージには `openapi/` が含まれていないため、コンテナ実行時にマウントするか Dockerfile を調整してください。

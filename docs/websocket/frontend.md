@@ -5,7 +5,7 @@
 | ファイル | 役割 |
 | --- | --- |
 | `frontend/src/lib/ws.ts` | `WsClient`。接続・再接続・タブ間調停・イベント配信 |
-| `frontend/src/types/wsEvents.ts` | サーバーイベントのスキーマと型（`event.go` に対応） |
+| `frontend/src/gen/chat/v1/event_pb.ts` | `proto/chat/v1/event.proto` から生成したイベントの型 |
 | `frontend/src/providers/ws/` | `WsClient` を React ツリーへ供給する Provider |
 
 ### 2. 接続管理
@@ -20,31 +20,31 @@
 `WsClient` は型付きの `on(type, handler)` / `off(type, handler)` を提供する。`on` の戻り値を呼ぶと購読を解除できる。
 
 ```ts
-const unsubscribe = wsClient.on("new_message", ({ channel_id, message }) => {
-  // payload は type から推論される
+const unsubscribe = wsClient.on("newMessage", ({ channelId, message }) => {
+  // payload の型はイベント名 (ServerEvent の oneof の case) から推論される
 });
 ```
 
-受信したイベントは `parseServerEvent` で検証してから配信するため、想定外の形式のイベントは無視される。
+受信したイベントは `fromJsonString(ServerEventSchema, ...)` で解析してから配信するため、想定外の形式のイベントは無視される。
 
 ### 4. 購読しているフック
 
 | フック | 購読イベント | 反映先 |
 | --- | --- | --- |
-| `features/message/hooks/useChannelTimeline` | `new_message` / `message_updated` / `message_deleted` / `system_message_created` / `reaction_added` / `reaction_removed` / `typing` / `stop_typing` | 表示中チャンネルのタイムラインと入力中インジケータ |
-| `features/channel/hooks/useChannelRealtimeSync` | `new_message` / `unread_count` / `pin_created` / `pin_deleted` | チャンネル一覧の未読バッジとピン件数 |
-| `features/notification/hooks/useNotificationSync` | `new_message` | 通知パネルとベルバッジ |
+| `features/message/hooks/useChannelTimeline` | `newMessage` / `messageUpdated` / `messageDeleted` / `systemMessageCreated` / `reactionAdded` / `reactionRemoved` / `typing` / `stopTyping` | 表示中チャンネルのタイムラインと入力中インジケータ |
+| `features/channel/hooks/useChannelRealtimeSync` | `newMessage` / `unreadCount` / `pinCreated` / `pinDeleted` | チャンネル一覧の未読バッジとピン件数 |
+| `features/notification/hooks/useNotificationSync` | `newMessage` | 通知パネルとベルバッジ |
 
-チャンネルの購読は `useChannelTimeline` が `join_channel` / `leave_channel` を送信して管理する。
+チャンネルの購読は `useChannelTimeline` が `joinChannel` / `leaveChannel` を送信して管理する。
 
 ### 5. 送信 API
 
-`joinChannel` / `leaveChannel` / `postMessage` / `typing` / `stopTyping` / `updateReadState` を型付きで提供する。
-入力中の通知は `features/message/hooks/useTypingNotifier` が 2 秒間隔に間引き、5 秒操作がなければ `stop_typing` を送る。
+`joinChannel` / `leaveChannel` / `typing` / `stopTyping` を提供する。
+入力中の通知は `features/message/hooks/useTypingNotifier` が 2 秒間隔に間引き、5 秒操作がなければ `stopTyping` を送る。
 
 ### 6. イベントを追加するとき
 
-1. `backend/internal/interfaces/handler/websocket/event.go` にイベント種別とペイロードを追加する
-2. `frontend/src/types/wsEvents.ts` の `serverEventTypes` と `serverEventSchema` に追加する
-3. `frontend/src/lib/ws.ts` の `eventDispatcher` に `case` を追加する（型検査で漏れが分かる）
+1. `proto/chat/v1/event.proto` の `ServerEvent` の oneof にイベントを追加し、`pnpm run generate:proto` を実行する
+2. バックエンドの `notifier.go`（または `hub.go`）でイベントを組み立てて配信する
+3. `frontend/src/lib/ws.ts` の `handlers` と `eventDispatcher` に追加する（型検査で漏れが分かる）
 4. 反映したいフックで `wsClient.on(...)` を購読する

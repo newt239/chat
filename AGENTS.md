@@ -17,7 +17,7 @@
 - 依存関係に変更が生まれた場合は `docker-compose down -v` でコンテナを停止・削除し、`docker-compose up -d --build` で再起動してください。
 - ローカルで動作させるための実装は不要です。
 - テスト用アカウントとしてユーザー名`alice@example.com`、パスワード`password123`を使用できます。
-- コミット時に lefthook の pre-commit フックが lint・format・ファイル名チェックを実行します。ホスト側に`pnpm install`済みであることが前提のため、Docker のみで開発している場合は`LEFTHOOK=0 git commit`で回避できます。
+- コミット時に lefthook の pre-commit フックが lint・format を実行します。ホスト側に`pnpm install`済みであることが前提のため、Docker のみで開発している場合は`LEFTHOOK=0 git commit`で回避できます。
 
 ## リファクタリング
 
@@ -49,8 +49,9 @@
 - 1 つのファイルにつき 1 つのコンポーネントを定義してください。コンポーネント名とファイル名は一致させ、Named Export でコンポーネントをエクスポートしてください。
   - ファイル名はコンポーネントを PascalCase、それ以外（hooks・ユーティリティ）を camelCase にしてください。
 - 関数の返り値の型は明示しないでください。
-- バックエンドのレスポンススキーマを変更した場合はリポジトリルートで`pnpm run openapi:bundle && pnpm run generate:api`を実行して、バンドル済みスキーマと API クライアントの型を更新してください。
-  - `openapi-typescript`は TypeScript 5 系にしか対応していないため、フロントエンド（TypeScript 7）ではなくルートワークスペースに配置しています。
+- API は Connect RPC です。`proto/chat/v1/`の定義を変更したらリポジトリルートで`pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto`を実行し、生成物（`backend/internal/gen/`・`frontend/src/gen/`）もコミットしてください。生成物は手で編集しないでください。
+  - API の呼び出しは`@connectrpc/connect-query`の`useQuery(Service.method.xxx, input)` / `useMutation(Service.method.xxx)`を使ってください。キャッシュの無効化には`createConnectQueryKey`で作ったキーを使います（`useQuery`のキーには transport も含まれるため、`setQueryData`ではなく部分一致の`setQueriesData`を使ってください）。
+  - 日時は`google.protobuf.Timestamp`で届くため、`#/lib/timestamp`の`toDate`で`Date`に変換してください。
 
 ## バックエンド
 
@@ -59,3 +60,6 @@
 - 冗長なコードは避けてください。
 - 過度に共通化しないでください。同様の処理が 2, 3 個しかないのに共通化してしまうと保守性が低下します。
 - データベースのテーブル名は単数形で命名してください。
+- API は`internal/interfaces/handler/rpc/`のサービスに実装し、ユースケースの出力から proto のメッセージへの変換は`internal/interfaces/presenter/`に置いてください。
+  - ユースケースのエラーは`rpc/error.go`の対応表で Connect のエラーコードに変換されるため、サービスではそのまま返してください。新しいエラーを追加したら対応表にも追加してください。
+  - 入力の制約は proto に protovalidate のルールとして書いてください。

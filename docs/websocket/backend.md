@@ -2,17 +2,17 @@
 
 ### 1. 接続時のチャンネル情報
 
-- クライアント（ユーザー）は**現在“参加中”のチャンネル ID 一覧**の情報をサーバへ渡す（例：接続時または`join_channel`/`leave_channel`イベントで購読チャンネルをサーバに通知）。
+- クライアント（ユーザー）は**現在“参加中”のチャンネル ID 一覧**の情報をサーバへ渡す（例：接続時または`joinChannel`/`leaveChannel`イベントで購読チャンネルをサーバに通知）。
 - サーバー側はこのチャンネル購読情報を**各ユーザーごとに記録・管理**する。
 
 ### 2. イベント配信方針
 
-#### (A) タイピング通知（`typing`/`stop_typing`等）
+#### (A) タイピング通知（`typing`/`stopTyping`等）
 
 - **「現在参加中（購読中）」のチャンネルのみ**で、**そのチャンネルに参加しているユーザーにだけ**タイピング中情報を配信する。
 - 例：A さんが #general で typing → #general を購読している B, C, ...だけに typing イベント。
 
-#### (B) 新着メッセージ・編集・削除（`new_message`/`message_updated`/`message_deleted`等）
+#### (B) 新着メッセージ・編集・削除（`newMessage`/`messageUpdated`/`messageDeleted`等）
 
 - ユーザーが「セッション中に参加しているすべてのチャンネル」が配信対象
 - どのチャンネルで発生したものであっても、そのユーザーが現在購読しているチャンネルについては**全て**受信する。
@@ -39,31 +39,32 @@
 
 ## イベント一覧（実装）
 
-定義は `backend/internal/interfaces/handler/websocket/event.go` にあります。
+定義は `proto/chat/v1/event.proto` にあります。1 フレームに 1 イベントを、`ClientEvent` / `ServerEvent` を protojson で JSON にした形式で送ります（例: `{"typing":{"channelId":"..."}}`）。
+サーバー側の送受信は `backend/internal/interfaces/handler/websocket/hub.go`、ユースケースからの通知の配信は同ディレクトリの `notifier.go` が担います。
 
 ### クライアント → サーバー
 
 | イベント | ペイロード | 説明 |
 | --- | --- | --- |
-| `join_channel` | `channel_id` | チャンネルの購読を開始する |
-| `leave_channel` | `channel_id` | チャンネルの購読を解除する |
-| `post_message` | `channel_id`, `body` | 入力中状態を解除する（保存は HTTP API） |
-| `typing` | `channel_id` | 入力中を通知する |
-| `stop_typing` | `channel_id` | 入力中の解除を通知する |
-| `update_read_state` | `channel_id`, `message_id` | 既読を通知する（保存は HTTP API） |
+| `joinChannel` | `channelId` | チャンネルの購読を開始する |
+| `leaveChannel` | `channelId` | チャンネルの購読を解除する |
+| `typing` | `channelId` | 入力中を通知する |
+| `stopTyping` | `channelId` | 入力中の解除を通知する |
+
+メッセージの投稿や既読の更新は Connect RPC で行います。
 
 ### サーバー → クライアント
 
 | イベント | 配信範囲 | 説明 |
 | --- | --- | --- |
-| `new_message` | チャンネル購読者 | 新着メッセージ |
-| `message_updated` | チャンネル購読者 | メッセージ編集 |
-| `message_deleted` | チャンネル購読者 | メッセージ削除 |
-| `reaction_added` / `reaction_removed` | チャンネル購読者 | リアクションの増減 |
-| `pin_created` / `pin_deleted` | チャンネル参加者 | ピン留めの増減 |
-| `system_message_created` | チャンネル購読者 | システムメッセージ |
-| `unread_count` | 対象ユーザー | 未読数とメンション有無 |
-| `typing` / `stop_typing` | チャンネル参加者（送信者を除く） | 入力中状態 |
+| `newMessage` | チャンネル購読者 | 新着メッセージ |
+| `messageUpdated` | チャンネル購読者 | メッセージ編集 |
+| `messageDeleted` | チャンネル購読者 | メッセージ削除（一緒に削除されたスレッド返信の ID も含む） |
+| `reactionAdded` / `reactionRemoved` | チャンネル購読者 | リアクションの増減 |
+| `pinCreated` / `pinDeleted` | チャンネル参加者 | ピン留めの増減 |
+| `systemMessageCreated` | チャンネル購読者 | システムメッセージ |
+| `unreadCount` | 対象ユーザー | 未読数とメンション有無 |
+| `typing` / `stopTyping` | チャンネル参加者（送信者を除く） | 入力中状態 |
 | `ack` / `error` | 送信元 | 受信確認・エラー |
 
 ## まとめ
