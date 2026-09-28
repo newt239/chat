@@ -7,6 +7,7 @@ import { useAtomValue } from "jotai";
 
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { workspaceRoleLabels } from "#/features/workspace/utils/workspaceRole";
 import { userAtom } from "#/providers/store/auth";
 
 type UserProfilePanelProps = {
@@ -107,7 +108,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
             ロール
           </Text>
           <Badge size="sm" variant="light" color="gray">
-            {member.role}
+            {workspaceRoleLabels[member.role]}
           </Badge>
         </Stack>
         <Stack gap="xs">

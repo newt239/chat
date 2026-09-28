@@ -1,26 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 
-import { api } from "#/lib/api/client";
-
-import type { components } from "#/lib/api/schema";
+import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 
 export const useMembers = (workspaceId: string | null) =>
-  useQuery({
-    enabled: workspaceId !== null,
-    queryFn: async (): Promise<components["schemas"]["MemberInfo"][]> => {
-      if (workspaceId === null) {
-        return [];
-      }
-
-      const { data, error } = await api.GET("/api/workspaces/{id}/members", {
-        params: { path: { id: workspaceId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data.members;
-    },
-    queryKey: ["workspaces", workspaceId, "members"],
-  });
+  useQuery(
+    WorkspaceService.method.listMembers,
+    workspaceId === null ? skipToken : { workspaceId },
+    { select: (res) => res.members },
+  );

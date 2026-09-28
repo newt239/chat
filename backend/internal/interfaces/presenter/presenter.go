@@ -14,8 +14,8 @@ func optionalTimestamp(t *time.Time) *timestamppb.Timestamp {
 	return timestamppb.New(*t)
 }
 
-// convertAll はスライスの各要素を変換します
-func convertAll[T, U any](items []T, convert func(T) U) []U {
+// ConvertAll はスライスの各要素を変換します
+func ConvertAll[T, U any](items []T, convert func(T) U) []U {
 	converted := make([]U, 0, len(items))
 	for _, item := range items {
 		converted = append(converted, convert(item))

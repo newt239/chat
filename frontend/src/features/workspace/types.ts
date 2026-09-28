@@ -1,3 +1,1 @@
-import type { components } from "#/lib/api/schema";
-
-export type WorkspaceSummary = components["schemas"]["Workspace"];
+export type { Workspace as WorkspaceSummary } from "#/gen/chat/v1/workspace_service_pb";

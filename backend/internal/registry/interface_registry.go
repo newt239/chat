@@ -128,6 +128,7 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService(),
 		rpc.Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&rpc.AuthServer{UC: uc.NewAuthUseCase()})),
 		rpc.Register(chatv1connect.NewUserServiceHandler, chatv1connect.UserServiceHandler(&rpc.UserServer{UC: uc.NewUserUseCase()})),
+		rpc.Register(chatv1connect.NewWorkspaceServiceHandler, chatv1connect.WorkspaceServiceHandler(&rpc.WorkspaceServer{UC: uc.NewWorkspaceUseCase()})),
 	)
 }
 
