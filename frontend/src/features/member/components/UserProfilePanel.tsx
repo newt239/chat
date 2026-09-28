@@ -1,13 +1,14 @@
-import { useMemo } from "react";
-
-import { Avatar, Badge, Button, Loader, Stack, Text } from "@mantine/core";
 import { IconMessage } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
+import { useTranslation } from "react-i18next";
 
+import { Avatar } from "#/components/ui/Avatar";
+import { Button } from "#/components/ui/Button";
+import { Skeleton } from "#/components/ui/Skeleton";
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { workspaceRoleLabels } from "#/features/workspace/utils/workspaceRole";
+import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { userAtom } from "#/providers/store/auth";
 
 type UserProfilePanelProps = {
@@ -16,12 +17,14 @@ type UserProfilePanelProps = {
 };
 
 export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps) => {
-  const { data: members, isLoading, isError, error } = useMembers(workspaceId);
+  const { t } = useTranslation();
+  const { data: members, isLoading, isError } = useMembers(workspaceId);
   const currentUser = useAtomValue(userAtom);
   const createDM = useCreateDM();
   const navigate = useNavigate();
+  const member = members?.find((candidate) => candidate.userId === userId);
 
-  const handleStartDM = async () => {
+  const startDM = async () => {
     const { directMessage } = await createDM.mutateAsync({ userId, workspaceId });
     if (directMessage !== undefined) {
       void navigate({
@@ -30,98 +33,55 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
       });
     }
   };
-  const member = useMemo(() => {
-    if (members === undefined) {
-      return null;
-    }
-    return members.find((candidate) => candidate.userId === userId) ?? null;
-  }, [members, userId]);
 
   if (isLoading) {
     return (
-      <div>
-        <div className="flex h-full items-center justify-center">
-          <Loader size="sm" />
-        </div>
+      <div className="flex flex-col gap-3 p-4">
+        <Skeleton className="size-[72px] rounded-xl" />
+        <Skeleton className="h-5 w-40" />
       </div>
     );
   }
 
-  if (isError) {
-    const message =
-      error instanceof Error ? error.message : "ユーザープロフィールの取得に失敗しました";
+  if (isError || member === undefined) {
     return (
-      <div>
-        <Text c="red" size="sm">
-          {message}
-        </Text>
-      </div>
-    );
-  }
-
-  if (member === null) {
-    return (
-      <div>
-        <Text size="sm" c="dimmed">
-          指定されたユーザーが見つかりませんでした
-        </Text>
-      </div>
+      <p className="m-0 p-4 text-caption text-muted">
+        {isError ? t("member.profile.loadFailed") : t("member.profile.notFound")}
+      </p>
     );
   }
 
   return (
-    <div className="p-4">
-      <Stack gap="md">
-        <div className="flex items-center gap-3">
-          <Avatar src={member.avatarUrl ?? undefined} radius="xl" size="lg">
-            {member.displayName.slice(0, 2).toUpperCase()}
-          </Avatar>
-          <div>
-            <Text size="sm" fw={600}>
-              {member.displayName}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {member.email}
-            </Text>
-          </div>
-        </div>
+    <div className="flex min-h-full flex-col bg-surface font-sans text-text">
+      <section className="flex flex-col gap-2.5 border-b border-border px-4 pt-4 pb-3.5">
+        <Avatar name={member.displayName} src={member.avatarUrl} size={72} />
+        <h3 className="m-0 text-[19px] font-bold">{member.displayName}</h3>
+        <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1 text-[12.5px]">
+          <dt className="text-muted">{t("member.profile.role")}</dt>
+          <dd className="m-0">{t(workspaceRoleKeys[member.role])}</dd>
+          <dt className="text-muted">{t("member.profile.email")}</dt>
+          <dd className="m-0 truncate">{member.email}</dd>
+        </dl>
         {currentUser?.id !== member.userId && (
-          <Button
-            leftSection={<IconMessage size={16} />}
-            variant="light"
-            loading={createDM.isPending}
-            onClick={() => {
-              void handleStartDM();
-            }}
-          >
-            DM を開始
-          </Button>
+          <div className="flex gap-1.5">
+            <Button
+              isPending={createDM.isPending}
+              onPress={() => {
+                void startDM();
+              }}
+            >
+              <IconMessage aria-hidden />
+              {t("member.profile.message")}
+            </Button>
+          </div>
         )}
-        {typeof member.bio === "string" && member.bio.length > 0 && (
-          <Stack gap="xs">
-            <Text size="sm" fw={600}>
-              自己紹介
-            </Text>
-            <Text size="sm">{member.bio}</Text>
-          </Stack>
-        )}
-        <Stack gap="xs">
-          <Text size="sm" fw={600}>
-            ロール
-          </Text>
-          <Badge size="sm" variant="light" color="gray">
-            {workspaceRoleLabels[member.role]}
-          </Badge>
-        </Stack>
-        <Stack gap="xs">
-          <Text size="sm" fw={600}>
-            ユーザーID
-          </Text>
-          <Text size="xs" c="dimmed">
-            {member.userId}
-          </Text>
-        </Stack>
-      </Stack>
+      </section>
+      {member.bio !== undefined && member.bio.length > 0 && (
+        <section className="flex flex-col gap-2 px-4 py-3">
+          <h4 className="m-0 text-xs font-semibold text-muted">{t("member.profile.bio")}</h4>
+          <p className="m-0 text-[13.5px] whitespace-pre-wrap">{member.bio}</p>
+        </section>
+      )}
     </div>
   );
 };
