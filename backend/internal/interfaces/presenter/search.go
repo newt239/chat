@@ -8,7 +8,7 @@ import (
 func SearchResult(out *searchuc.WorkspaceSearchOutput) *chatv1.SearchWorkspaceResponse {
 	return &chatv1.SearchWorkspaceResponse{
 		Messages: &chatv1.MessageSearchResult{
-			Items:   ConvertAll(out.Messages.Items, Message),
+			Items:   ConvertAll(out.Messages.Items, messageSearchHit),
 			Total:   int32(out.Messages.Total),
 			Page:    int32(out.Messages.Page),
 			PerPage: int32(out.Messages.PerPage),
@@ -35,5 +35,14 @@ func SearchResult(out *searchuc.WorkspaceSearchOutput) *chatv1.SearchWorkspaceRe
 			PerPage: int32(out.Groups.PerPage),
 			HasMore: out.Groups.HasMore,
 		},
+	}
+}
+
+func messageSearchHit(hit searchuc.MessageHit) *chatv1.MessageSearchHit {
+	return &chatv1.MessageSearchHit{
+		Message: Message(hit.Message),
+		Highlights: ConvertAll(hit.Highlights, func(r searchuc.TextRange) *chatv1.TextRange {
+			return &chatv1.TextRange{Start: int32(r.Start), End: int32(r.End)}
+		}),
 	}
 }

@@ -57,7 +57,9 @@ export const SearchPage = () => {
 
   const isLoading = isInitialLoading || isFetching;
 
-  const messages = data?.messages.items ?? [];
+  const messages = (data?.messages.items ?? []).flatMap((hit) =>
+    hit.message ? [hit.message] : [],
+  );
   const channels = data?.channels.items ?? [];
   const users = data?.users.items ?? [];
   const groups = data?.groups.items ?? [];

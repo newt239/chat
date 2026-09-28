@@ -14,6 +14,7 @@ import (
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
@@ -53,6 +54,7 @@ var errorCodes = []struct {
 		channellinkuc.ErrUnauthorized,
 		channelmemberuc.ErrUnauthorized, channelmemberuc.ErrChannelNotPublic,
 		dmuc.ErrNotWorkspaceMember,
+		mentionuc.ErrUnauthorized,
 		messageuc.ErrUnauthorized,
 		pinuc.ErrUnauthorized,
 		reactionuc.ErrUnauthorized,
@@ -76,7 +78,7 @@ var errorCodes = []struct {
 		entity.ErrGroupDMMaxMembers,
 		channeluc.ErrMemberNotInWorkspace,
 		channelmemberuc.ErrInvalidRole,
-		searchuc.ErrInvalidQuery,
+		searchuc.ErrInvalidQuery, searchuc.ErrInvalidDateRange,
 		workspaceuc.ErrInvalidRole,
 	}},
 	{connect.CodeFailedPrecondition, []error{

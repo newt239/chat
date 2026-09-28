@@ -1,16 +1,16 @@
 import { z } from "zod";
 
-import { SearchFilter as SearchFilterMessage } from "#/gen/chat/v1/search_service_pb";
+import { SearchTarget } from "#/gen/chat/v1/search_service_pb";
 
 export const searchFilterValues = ["all", "messages", "channels", "users", "groups"] as const;
 export type SearchFilter = (typeof searchFilterValues)[number];
 
-export const searchFilterMessages: Record<SearchFilter, SearchFilterMessage> = {
-  all: SearchFilterMessage.ALL,
-  channels: SearchFilterMessage.CHANNELS,
-  groups: SearchFilterMessage.GROUPS,
-  messages: SearchFilterMessage.MESSAGES,
-  users: SearchFilterMessage.USERS,
+export const searchFilterMessages: Record<SearchFilter, SearchTarget> = {
+  all: SearchTarget.ALL,
+  channels: SearchTarget.CHANNELS,
+  groups: SearchTarget.GROUPS,
+  messages: SearchTarget.MESSAGES,
+  users: SearchTarget.USERS,
 };
 
 // TanStack Router は search params を JSON としてパースするため page は数値で届く

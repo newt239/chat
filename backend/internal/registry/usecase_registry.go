@@ -9,6 +9,7 @@ import (
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
+	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
@@ -185,10 +186,8 @@ func (r *UseCaseRegistry) NewAttachmentUseCase() *attachmentuc.Interactor {
 	)
 }
 
-func (r *UseCaseRegistry) NewSearchUseCase() searchuc.SearchUseCase {
-	return searchuc.NewSearchUseCase(
-		r.domainRegistry.NewWorkspaceRepository(),
-		r.domainRegistry.NewChannelRepository(),
+func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuilder {
+	return messageuc.NewMessageOutputBuilder(
 		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewUserGroupRepository(),
@@ -196,6 +195,26 @@ func (r *UseCaseRegistry) NewSearchUseCase() searchuc.SearchUseCase {
 		r.domainRegistry.NewMessageGroupMentionRepository(),
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
+		messageuc.NewMessageOutputAssembler(),
+	)
+}
+
+func (r *UseCaseRegistry) NewSearchUseCase() searchuc.SearchUseCase {
+	return searchuc.NewSearchUseCase(
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewUserGroupRepository(),
+		r.NewMessageOutputBuilder(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMentionLister() *mentionuc.Lister {
+	return mentionuc.NewLister(
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.NewMessageOutputBuilder(),
 	)
 }
 
@@ -212,6 +231,7 @@ func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
 func (r *UseCaseRegistry) NewThreadLister() *threaduc.ThreadLister {
 	return threaduc.NewThreadLister(
 		r.domainRegistry.NewThreadRepository(),
+		r.NewMessageOutputBuilder(),
 	)
 }
 
