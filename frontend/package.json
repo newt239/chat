@@ -29,7 +29,6 @@
     "@emoji-mart/data": "1.2.1",
     "@emoji-mart/react": "1.1.1",
     "@mantine/core": "9.6.1",
-    "@mantine/form": "9.6.1",
     "@mantine/hooks": "9.6.1",
     "@mantine/notifications": "9.6.1",
     "@tabler/icons-react": "3.46.0",

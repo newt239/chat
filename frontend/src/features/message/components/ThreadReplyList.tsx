@@ -46,13 +46,14 @@ export const ThreadReplyList = ({
   return (
     <div className="flex flex-col pt-7">
       {replies.map((reply) => (
-        <MessageItem
-          key={reply.id}
-          message={reply}
-          currentUserId={currentUserId}
-          onCopyLink={handleCopyLink}
-          onCreateThread={handleCreateThread}
-        />
+        <div key={reply.id} data-message-id={reply.id}>
+          <MessageItem
+            message={reply}
+            currentUserId={currentUserId}
+            onCopyLink={handleCopyLink}
+            onCreateThread={handleCreateThread}
+          />
+        </div>
       ))}
     </div>
   );

@@ -1,8 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Button, Loader, Stack, Text } from "@mantine/core";
+import { IconMessages } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
+import { Button } from "#/components/ui/Button";
+import { EmptyState } from "#/components/ui/EmptyState";
+import { Skeleton } from "#/components/ui/Skeleton";
+import { PageHeader } from "#/features/layout/components/PageHeader";
 import { ThreadCard } from "#/features/thread/components/ThreadCard";
 import { useParticipatingThreads } from "#/features/thread/hooks/useParticipatingThreads";
 
@@ -12,10 +17,9 @@ import type { ParticipatingThread, ThreadCursor } from "#/gen/chat/v1/thread_ser
 type ThreadItem = ParticipatingThread & { firstMessage: Message };
 
 export const ThreadListPage = () => {
+  const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-
   const [cursor, setCursor] = useState<ThreadCursor>();
-
   const { data, isLoading, isFetching, refetch } = useParticipatingThreads(workspaceId, cursor);
 
   // ページを跨いで結果を積み上げる
@@ -37,15 +41,6 @@ export const ThreadListPage = () => {
 
   const next = data?.nextCursor;
 
-  const isBusy = isLoading || isFetching;
-
-  const handleLoadMore = () => {
-    if (!next) {
-      return;
-    }
-    setCursor(next);
-  };
-
   const handleMarkedRead = (threadId: string) => {
     setItems((prev) =>
       prev.map((item) => (item.threadId === threadId ? { ...item, unreadCount: 0 } : item)),
@@ -53,34 +48,41 @@ export const ThreadListPage = () => {
     void refetch();
   };
 
-  const empty = useMemo(() => !isBusy && items.length === 0, [isBusy, items.length]);
-
   return (
-    <div className="p-3">
-      <Stack gap={12}>
-        <Text fw={700} size="lg">
-          参加中のスレッド
-        </Text>
-        {isBusy && items.length === 0 ? (
-          <div className="flex justify-center py-8">
-            <Loader />
-          </div>
-        ) : empty ? (
-          <div className="text-center text-gray-600 py-10">参加中のスレッドはありません</div>
+    <>
+      <PageHeader icon={<IconMessages />} title={t("shell.nav.threads")} />
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4">
+        {isLoading && items.length === 0 ? (
+          <Skeleton className="h-20 w-full" />
+        ) : items.length === 0 ? (
+          <EmptyState
+            icon={<IconMessages />}
+            title={t("shell.thread.emptyTitle")}
+            description={t("shell.thread.emptyDescription")}
+          />
         ) : (
-          <Stack gap={8}>
-            {items.map((t) => (
-              <ThreadCard key={t.threadId} thread={t} onMarkedRead={handleMarkedRead} />
-            ))}
-          </Stack>
+          items.map((item) => (
+            <ThreadCard
+              key={item.threadId}
+              workspaceId={workspaceId}
+              thread={item}
+              onMarkedRead={handleMarkedRead}
+            />
+          ))
         )}
-
-        <div className="flex justify-center py-2">
-          <Button onClick={handleLoadMore} disabled={!next || isBusy} variant="light">
-            さらに読み込む
+        {next && (
+          <Button
+            variant="secondary"
+            className="self-center"
+            isPending={isFetching}
+            onPress={() => {
+              setCursor(next);
+            }}
+          >
+            {t("shell.thread.loadMore")}
           </Button>
-        </div>
-      </Stack>
-    </div>
+        )}
+      </div>
+    </>
   );
 };

@@ -1,24 +1,21 @@
-import { Button, Stack, Text } from "@mantine/core";
-import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
+import { LinkButton } from "#/components/ui/LinkButton";
 import { logger } from "#/lib/logger";
 
 import type { ErrorComponentProps } from "@tanstack/react-router";
 
 export const RouteErrorBoundary = ({ error }: ErrorComponentProps) => {
+  const { t } = useTranslation();
   logger.error("ルーティングエラー:", error);
 
   return (
-    <Stack align="center" justify="center" className="h-full" gap="md">
-      <Text size="lg" fw={600}>
-        問題が発生しました
-      </Text>
-      <Text size="sm" c="dimmed">
-        ページの読み込み中にエラーが発生しました。
-      </Text>
-      <Button renderRoot={(props) => <Link {...props} to="/app" reloadDocument />}>
-        トップへ戻る
-      </Button>
-    </Stack>
+    <main className="flex h-full flex-col items-center justify-center gap-3 bg-bg font-sans text-text">
+      <h1 className="m-0 text-title">{t("shell.error.title")}</h1>
+      <p className="m-0 text-muted">{t("shell.error.description")}</p>
+      <LinkButton to="/app" reloadDocument>
+        {t("shell.error.backToTop")}
+      </LinkButton>
+    </main>
   );
 };

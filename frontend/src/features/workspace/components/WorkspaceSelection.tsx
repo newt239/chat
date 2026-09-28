@@ -1,51 +1,24 @@
-import { useEffect, useRef } from "react";
-
-import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue, useSetAtom } from "jotai";
+import { Navigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 
 import { WorkspaceList } from "#/features/workspace/components/WorkspaceList";
 import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
-import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "#/providers/store/workspace";
+import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
+// 前回開いていた（なければ最初の）ワークスペースへ移動する。参加していなければ一覧を出す
 export const WorkspaceSelection = () => {
   const { data: workspaces } = useWorkspaces();
-  const setCurrentWorkspace = useSetAtom(setCurrentWorkspaceAtom);
   const storedWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
-  const navigate = useNavigate();
-  const hasRedirected = useRef(false);
+  const target =
+    workspaces?.find((workspace) => workspace.id === storedWorkspaceId) ?? workspaces?.[0];
 
-  useEffect(() => {
-    if (hasRedirected.current) {
-      return;
-    }
-
-    if (!Array.isArray(workspaces) || workspaces.length === 0) {
-      return;
-    }
-
-    if (storedWorkspaceId) {
-      const storedExists = workspaces.some((workspace) => workspace.id === storedWorkspaceId);
-
-      if (storedExists) {
-        hasRedirected.current = true;
-        setCurrentWorkspace(storedWorkspaceId);
-        void navigate({ params: { workspaceId: storedWorkspaceId }, to: "/app/$workspaceId" });
-        return;
-      }
-    }
-
-    const [firstWorkspace] = workspaces;
-
-    if (firstWorkspace) {
-      hasRedirected.current = true;
-      setCurrentWorkspace(firstWorkspace.id);
-      void navigate({ params: { workspaceId: firstWorkspace.id }, to: "/app/$workspaceId" });
-    }
-  }, [setCurrentWorkspace, storedWorkspaceId, workspaces, navigate]);
+  if (target) {
+    return <Navigate to="/app/$workspaceId" params={{ workspaceId: target.id }} replace />;
+  }
 
   return (
-    <div className="flex h-full items-center justify-center">
-      <WorkspaceList />
-    </div>
+    <main className="flex min-h-full justify-center bg-bg px-4 py-10 font-sans text-text">
+      {workspaces && <WorkspaceList />}
+    </main>
   );
 };

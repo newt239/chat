@@ -55,11 +55,19 @@ export const MiniPlayer = ({ variant }: MiniPlayerProps) => {
     if (track === null || mediaPlayer.scrollToSource()) {
       return;
     }
-    void navigate({
-      params: { channelId: track.channelId, workspaceId: track.workspaceId },
-      search: { message: track.parentId ?? track.messageId },
-      to: "/app/$workspaceId/$channelId",
-    });
+    const params = { channelId: track.channelId, workspaceId: track.workspaceId };
+    // スレッドの返信はスレッドを開いてから返信へ移動する
+    void (track.parentId === undefined
+      ? navigate({
+          params,
+          search: { message: track.messageId },
+          to: "/app/$workspaceId/$channelId",
+        })
+      : navigate({
+          params: { ...params, messageId: track.parentId },
+          search: { message: track.messageId },
+          to: "/app/$workspaceId/$channelId/thread/$messageId",
+        }));
   };
 
   const handleTogglePlay = () => {

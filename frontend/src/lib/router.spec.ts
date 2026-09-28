@@ -31,8 +31,17 @@ describe("routeTree", () => {
     expect(matchLeaf("/app/ws1/search")?.routeId).toBe("/app/$workspaceId/search");
   });
 
-  test("threads は $channelId より優先してマッチする", () => {
-    expect(matchLeaf("/app/ws1/threads")?.routeId).toBe("/app/$workspaceId/threads");
+  test.each(["threads", "mentions", "bookmarks", "dms", "activity", "me", "insights", "admin"])(
+    "%s は $channelId より優先してマッチする",
+    (name) => {
+      expect(matchLeaf(`/app/ws1/${name}`)?.routeId).toBe(`/app/$workspaceId/${name}`);
+    },
+  );
+
+  test("スレッドにマッチし、チャンネルとスレッドのパラメータを取り出せる", () => {
+    const leaf = matchLeaf("/app/ws1/ch1/thread/m1");
+    expect(leaf?.routeId).toBe("/app/$workspaceId/$channelId/thread/$messageId");
+    expect(leaf?.params).toEqual({ channelId: "ch1", messageId: "m1", workspaceId: "ws1" });
   });
 });
 

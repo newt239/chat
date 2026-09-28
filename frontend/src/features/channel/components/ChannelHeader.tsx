@@ -1,135 +1,196 @@
-import { ActionIcon, Badge, Group, Tooltip } from "@mantine/core";
-import { IconInfoCircle, IconMenu2, IconUsers, IconPin } from "@tabler/icons-react";
-import { useAtomValue, useSetAtom } from "jotai";
-
-import { useChannels } from "#/features/channel/hooks/useChannel";
 import {
-  showLeftSidePanelAtom,
-  showMobileLeftPanelAtom,
-  showMobileRightPanelAtom,
-  pinsCountByChannelAtom,
-  setRightSidePanelViewAtom,
-} from "#/providers/store/ui";
-import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
+  IconBellOff,
+  IconChevronDown,
+  IconDots,
+  IconInfoCircle,
+  IconPin,
+  IconStar,
+  IconStarFilled,
+  IconUser,
+  IconUsers,
+} from "@tabler/icons-react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { Button } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { Avatar } from "#/components/ui/Avatar";
+import { IconButton } from "#/components/ui/IconButton";
+import { Menu } from "#/components/ui/Menu";
+import { MenuItem } from "#/components/ui/MenuItem";
+import { MenuSeparator } from "#/components/ui/MenuSeparator";
+import { focusRing } from "#/components/ui/styles";
+import { Tooltip } from "#/components/ui/Tooltip";
+import { DMAvatar } from "#/features/dm/components/DMAvatar";
+import { useDMs } from "#/features/dm/hooks/useDM";
+import { dmName } from "#/features/dm/utils/dmName";
+import { BackButton } from "#/features/layout/components/BackButton";
+import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
+import { useIsMobile } from "#/lib/useMediaQuery";
+import { pinsCountByChannelAtom, setRightSidePanelViewAtom } from "#/providers/store/ui";
+
+import { useChannels } from "../hooks/useChannel";
+import { useChannelListActions } from "../hooks/useChannelListActions";
+import { useChannelMembers } from "../hooks/useChannelMembers";
+import { ChannelLinkBar } from "./ChannelLinkBar";
+import { ChannelMenuItems } from "./ChannelMenuItems";
 import { ChannelName } from "./ChannelName";
 
+import type { PanelView } from "#/providers/store/ui";
+
 type ChannelHeaderProps = {
-  channelId: string | null;
+  workspaceId: string;
+  channelId: string;
 };
 
-export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
-  const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
+export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) => {
+  const { t } = useTranslation();
+  const isMobile = useIsMobile();
+  const setRightPanel = useSetAtom(setRightSidePanelViewAtom);
+  const pinsCount = useAtomValue(pinsCountByChannelAtom)[channelId] ?? 0;
+  const { data: channels } = useChannels(workspaceId);
+  const { data: dms } = useDMs(workspaceId);
+  const { data: members = [] } = useChannelMembers(channelId);
+  const { setStarred } = useChannelListActions(workspaceId);
 
-  const showLeftSidePanel = useSetAtom(showLeftSidePanelAtom);
-  const showMobileLeftPanel = useSetAtom(showMobileLeftPanelAtom);
-  const showMobileRightPanel = useSetAtom(showMobileRightPanelAtom);
-  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
-  const pinsCountByChannel = useAtomValue(pinsCountByChannelAtom);
+  const channel = channels?.find((candidate) => candidate.id === channelId);
+  const dm = dms?.find((candidate) => candidate.id === channelId);
+  const isStarred = channel?.isStarred ?? dm?.isStarred ?? false;
+  const isMuted = channel?.isMuted ?? dm?.isMuted ?? false;
+  const [partner] = dm?.type === DirectMessageType.DM ? dm.members : [];
+  const infoView: PanelView = partner
+    ? { type: "user-profile", userId: partner.userId }
+    : dm
+      ? { channelId, type: "channel-members" }
+      : { channelId, type: "channel-info" };
 
-  const { data: channels } = useChannels(currentWorkspaceId);
-
-  if (!channelId) {
-    return null;
+  if (!channel && !dm) {
+    return <header className="h-12 shrink-0 border-b border-border" />;
   }
 
-  const channel = channels?.find((c) => c.id === channelId);
-
-  const handleLeftPanelToggle = () => {
-    // デスクトップでは左パネルを表示、モバイルではモバイル左パネルを表示
-    showLeftSidePanel();
-    showMobileLeftPanel();
-  };
-
-  const handleMembersPanelToggle = () => {
-    setRightSidePanelView({ channelId, type: "channel-members" });
-    showMobileRightPanel();
-  };
-
-  const handleRightPanelToggle = () => {
-    // デスクトップでは右パネルを表示、モバイルではモバイル右パネルを表示
-    setRightSidePanelView({ channelId, type: "channel-info" });
-    showMobileRightPanel();
-  };
-
-  const handlePinsPanelOpen = () => {
-    if (!channelId) {
-      return;
-    }
-    setRightSidePanelView({ channelId, type: "pins" });
-    showMobileRightPanel();
-  };
-
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-      <div className="flex items-center space-x-3">
-        {/* モバイル用の左パネル切り替えボタン（CSSで表示制御） */}
-        <div className="md:hidden">
-          <ActionIcon
-            variant="subtle"
-            size="lg"
-            onClick={handleLeftPanelToggle}
-            className="text-gray-700 hover:bg-gray-100 md:hidden"
-            title="チャンネル一覧"
-          >
-            <IconMenu2 size={20} />
-          </ActionIcon>
-        </div>
-
-        {/* チャンネル情報 */}
-        <div className="flex-1 min-w-0">
-          {channel && (
-            <div>
-              <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
-              {channel.description && (
-                <p className="text-sm text-gray-500 truncate">{channel.description}</p>
-              )}
-            </div>
+    <>
+      <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-[18px] max-md:pl-3">
+        <BackButton />
+        <Button
+          onPress={() => {
+            setRightPanel(infoView);
+          }}
+          className={`-ml-1 flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
+        >
+          {channel ? (
+            <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
+          ) : (
+            dm && (
+              <>
+                <DMAvatar dm={dm} size={22} />
+                <span className="min-w-0 truncate">{dmName(dm)}</span>
+              </>
+            )
           )}
-        </div>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Tooltip label="ピン留め一覧" withArrow>
-          <ActionIcon
-            variant="subtle"
-            size="lg"
-            onClick={handlePinsPanelOpen}
-            className="text-gray-700 hover:bg-gray-100 relative"
-            title="ピン留め一覧"
+          <IconChevronDown aria-hidden className="size-3!" />
+        </Button>
+        <IconButton
+          label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
+          aria-pressed={isStarred}
+          className={isStarred ? "text-mention-bar data-hovered:text-mention-bar" : undefined}
+          onPress={() => {
+            setStarred(channelId, !isStarred);
+          }}
+        >
+          {isStarred ? <IconStarFilled /> : <IconStar />}
+        </IconButton>
+        {isMuted && (
+          <Tooltip content={t("shell.channel.muted")}>
+            <Button
+              aria-label={t("shell.channel.muted")}
+              className="grid cursor-default place-items-center text-subtle [&_svg]:size-4"
+            >
+              <IconBellOff />
+            </Button>
+          </Tooltip>
+        )}
+        <p className="m-0 min-w-0 flex-1 truncate pl-1.5 text-[12.5px] text-muted max-md:invisible">
+          {channel?.description}
+        </p>
+        {channel && members.length > 0 && (
+          <Button
+            aria-label={t("shell.rightPanel.members")}
+            onPress={() => {
+              setRightPanel({ channelId, type: "channel-members" });
+            }}
+            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border max-md:hidden border-border py-0.5 pr-2 pl-[3px] text-xs text-muted tabular-nums data-hovered:bg-hover ${focusRing}`}
           >
-            <Group gap={4} align="center">
-              <IconPin size={20} />
-              {channelId && (pinsCountByChannel[channelId] ?? 0) > 0 && (
-                <Badge size="xs" color="grape" variant="filled">
-                  {(pinsCountByChannel[channelId] ?? 0) > 99
-                    ? "99+"
-                    : pinsCountByChannel[channelId]}
-                </Badge>
-              )}
-            </Group>
-          </ActionIcon>
-        </Tooltip>
-        <ActionIcon
-          variant="subtle"
-          size="lg"
-          onClick={handleMembersPanelToggle}
-          className="text-gray-700 hover:bg-gray-100"
-          title="メンバー"
+            <span className="flex [&>*+*]:-ml-1.5 [&>*]:ring-2 [&>*]:ring-surface">
+              {members.slice(0, 3).map((member) => (
+                <Avatar
+                  key={member.userId}
+                  name={member.displayName}
+                  src={member.avatarUrl}
+                  size={20}
+                />
+              ))}
+            </span>
+            {members.length}
+          </Button>
+        )}
+        <IconButton
+          label={t("shell.rightPanel.pins")}
+          onPress={() => {
+            setRightPanel({ channelId, type: "pins" });
+          }}
         >
-          <IconUsers size={20} />
-        </ActionIcon>
-        {/* チャンネル情報ボタン */}
-        <ActionIcon
-          variant="subtle"
-          size="lg"
-          onClick={handleRightPanelToggle}
-          className="text-gray-700 hover:bg-gray-100"
-          title="チャンネル情報"
+          <IconPin />
+          {pinsCount > 0 && (
+            <span className="absolute top-px right-0 font-mono text-[9.5px] leading-none font-semibold text-muted">
+              {pinsCount > 99 ? "99+" : pinsCount}
+            </span>
+          )}
+        </IconButton>
+        {partner && (
+          <IconButton
+            label={t("shell.rightPanel.profile")}
+            onPress={() => {
+              setRightPanel({ type: "user-profile", userId: partner.userId });
+            }}
+          >
+            <IconUser />
+          </IconButton>
+        )}
+        <Menu
+          trigger={
+            <IconButton label={t("shell.channelMenu.more")}>
+              <IconDots />
+            </IconButton>
+          }
         >
-          <IconInfoCircle size={20} />
-        </ActionIcon>
-      </div>
-    </div>
+          <ChannelMenuItems
+            workspaceId={workspaceId}
+            channelId={channelId}
+            isStarred={isStarred}
+            isMuted={isMuted}
+          />
+          <MenuSeparator />
+          {channel && (
+            <MenuItem
+              icon={<IconInfoCircle />}
+              onAction={() => {
+                setRightPanel({ channelId, type: "channel-info" });
+              }}
+            >
+              {t("shell.rightPanel.channelInfo")}
+            </MenuItem>
+          )}
+          <MenuItem
+            icon={<IconUsers />}
+            onAction={() => {
+              setRightPanel({ channelId, type: "channel-members" });
+            }}
+          >
+            {t("shell.rightPanel.members")}
+          </MenuItem>
+        </Menu>
+      </header>
+      {channel && !isMobile && <ChannelLinkBar channelId={channelId} />}
+    </>
   );
 };

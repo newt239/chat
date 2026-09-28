@@ -16,13 +16,16 @@ export const preferences: Messages["preferences"] = {
   theme: {
     chroma: "Saturation",
     custom: "Custom",
+    customActive: "In use",
     hue: "Hue",
+    presetsTitle: "Presets",
     presets: {
       cobalt: "Cobalt",
       graphite: "Graphite",
       jade: "Jade",
       plum: "Plum",
     },
+    preview: "Preview",
     sidebar: {
       light: "Light",
       tinted: "Tinted",

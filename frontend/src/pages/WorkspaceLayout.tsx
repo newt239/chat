@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 
-import { Outlet, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 
+import { AppShell } from "#/features/layout/components/AppShell";
 import { syncCurrentWorkspaceAtom } from "#/providers/store/workspace";
 
 export const WorkspaceLayout = () => {
@@ -14,5 +15,5 @@ export const WorkspaceLayout = () => {
     syncCurrentWorkspace(workspaceId);
   }, [workspaceId, syncCurrentWorkspace]);
 
-  return <Outlet />;
+  return <AppShell workspaceId={workspaceId} />;
 };

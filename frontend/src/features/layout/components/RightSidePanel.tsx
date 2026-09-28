@@ -1,140 +1,55 @@
-import { ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { AnimatePresence, motion } from "motion/react";
+import { useTranslation } from "react-i18next";
 
-import { BookmarkList } from "#/features/bookmark/components/BookmarkList";
-import { ChannelInfoPanel } from "#/features/channel/components/ChannelInfoPanel";
-import { ChannelMemberPanel } from "#/features/channel/components/ChannelMemberPanel";
-import { UserProfilePanel } from "#/features/member/components/UserProfilePanel";
-import { NotificationPanel } from "#/features/notification/components/NotificationPanel";
-import { PinnedPanel } from "#/features/pin/components/PinnedPanel";
-import { SearchResultsPanel } from "#/features/search/components/SearchResultsPanel";
-import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
-import {
-  rightSidePanelViewAtom,
-  hideMobilePanelsAtom,
-  closeRightSidePanelAtom,
-} from "#/providers/store/ui";
-import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
+import { IconButton } from "#/components/ui/IconButton";
+import { transitions } from "#/lib/motion";
 
-import type { PanelView } from "#/providers/store/ui";
+import { useRightPanel } from "../hooks/useRightPanel";
 
 type RightSidePanelProps = {
-  className?: string;
+  workspaceId: string;
 };
 
-const getPanelTitle = (view: PanelView) => {
-  switch (view.type) {
-    case "channel-members": {
-      return "メンバー";
-    }
-    case "channel-info": {
-      return "チャンネル情報";
-    }
-    case "thread": {
-      return "スレッド";
-    }
-    case "pins": {
-      return "ピン留め";
-    }
-    case "user-profile": {
-      return "ユーザープロフィール";
-    }
-    case "search": {
-      return "検索結果";
-    }
-    case "bookmarks": {
-      return "ブックマーク";
-    }
-    case "notifications": {
-      return "通知";
-    }
-    case "hidden": {
-      return "";
-    }
-    default: {
-      return "";
-    }
-  }
-};
-
-export const RightSidePanel = ({ className = "" }: RightSidePanelProps) => {
-  const workspaceId = useAtomValue(currentWorkspaceIdAtom);
-  const rightSidePanelView = useAtomValue(rightSidePanelViewAtom);
-  const hideMobilePanels = useSetAtom(hideMobilePanelsAtom);
-  const closeRightSidePanel = useSetAtom(closeRightSidePanelAtom);
-
-  // 右パネルが非表示の場合は何も表示しない
-  if (rightSidePanelView.type === "hidden") {
-    return null;
-  }
-
-  if (!workspaceId) {
-    return null;
-  }
-
-  const handleClose = () => {
-    // デスクトップでは右パネルを閉じる、モバイルではモバイルパネルを閉じる
-    closeRightSidePanel();
-    hideMobilePanels();
-  };
-
-  const renderPanelContent = (view: PanelView) => {
-    switch (view.type) {
-      case "channel-members": {
-        return <ChannelMemberPanel channelId={view.channelId} />;
-      }
-      case "channel-info": {
-        return <ChannelInfoPanel workspaceId={workspaceId} channelId={view.channelId} />;
-      }
-      case "thread": {
-        return <ThreadPanel threadId={view.threadId} />;
-      }
-      case "pins": {
-        return <PinnedPanel channelId={view.channelId} />;
-      }
-      case "user-profile": {
-        return <UserProfilePanel workspaceId={workspaceId} userId={view.userId} />;
-      }
-      case "search": {
-        return (
-          <SearchResultsPanel workspaceId={workspaceId} query={view.query} filter={view.filter} />
-        );
-      }
-      case "bookmarks": {
-        return <BookmarkList />;
-      }
-      case "notifications": {
-        return <NotificationPanel />;
-      }
-      case "hidden": {
-        return null;
-      }
-      default: {
-        return null;
-      }
-    }
-  };
+// スレッド・プロフィール・メンバー・チャンネル情報・ピン留めを切り替えて表示する枠
+export const RightSidePanel = ({ workspaceId }: RightSidePanelProps) => {
+  const { t } = useTranslation();
+  const { close, content } = useRightPanel(workspaceId);
 
   return (
-    <div className={`bg-white border-l border-gray-200 flex flex-col h-full ${className}`}>
-      {/* ヘッダー */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <h3 className="text-lg font-semibold text-gray-900">{getPanelTitle(rightSidePanelView)}</h3>
-        <ActionIcon
-          variant="subtle"
-          size="lg"
-          onClick={handleClose}
-          className="text-gray-500 hover:bg-gray-100"
+    <AnimatePresence initial={false}>
+      {content && (
+        <motion.aside
+          key="right-panel"
+          aria-label={content.title}
+          initial={{ width: 0 }}
+          animate={{ width: 340 }}
+          exit={{ width: 0 }}
+          transition={transitions.base}
+          className="flex shrink-0 overflow-hidden border-l border-border bg-surface"
         >
-          <IconX size={16} />
-        </ActionIcon>
-      </div>
-
-      {/* パネル内容 */}
-      <div className="flex-1 min-h-0">
-        <ScrollArea className="h-full">{renderPanelContent(rightSidePanelView)}</ScrollArea>
-      </div>
-    </div>
+          <div className="flex w-[340px] shrink-0 flex-col">
+            <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border pr-2 pl-4">
+              <h2 className="m-0 min-w-0 flex-1 truncate text-[14.5px] font-bold">
+                {content.title}
+              </h2>
+              {content.extra}
+              <IconButton label={t("common.close")} onPress={close}>
+                <IconX />
+              </IconButton>
+            </header>
+            <motion.div
+              key={content.key}
+              initial={{ opacity: 0, x: 14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={transitions.spring}
+              className="flex min-h-0 flex-1 flex-col overflow-y-auto"
+            >
+              {content.body}
+            </motion.div>
+          </div>
+        </motion.aside>
+      )}
+    </AnimatePresence>
   );
 };

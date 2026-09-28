@@ -14,6 +14,9 @@ import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { MessageLink } from "#/gen/chat/v1/message_pb";
 
+const showLinkClassName =
+  "rounded-md px-1.5 py-0.5 text-xs font-semibold no-underline data-hovered:bg-hover";
+
 type MessageQuoteCardProps = {
   link: MessageLink;
 };
@@ -52,14 +55,25 @@ export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
         {excerpt || <span className="text-muted">{t("link.quote.attachmentOnly")}</span>}
       </p>
       <div className="flex justify-end">
-        <Link
-          to="/app/$workspaceId/$channelId"
-          params={{ channelId: preview.channelId, workspaceId }}
-          search={{ message: preview.parentId ?? preview.messageId }}
-          className="rounded-md px-1.5 py-0.5 text-xs font-semibold no-underline data-hovered:bg-hover"
-        >
-          {t("link.quote.show")}
-        </Link>
+        {preview.parentId === undefined ? (
+          <Link
+            to="/app/$workspaceId/$channelId"
+            params={{ channelId: preview.channelId, workspaceId }}
+            search={{ message: preview.messageId }}
+            className={showLinkClassName}
+          >
+            {t("link.quote.show")}
+          </Link>
+        ) : (
+          <Link
+            to="/app/$workspaceId/$channelId/thread/$messageId"
+            params={{ channelId: preview.channelId, messageId: preview.parentId, workspaceId }}
+            search={{ message: preview.messageId }}
+            className={showLinkClassName}
+          >
+            {t("link.quote.show")}
+          </Link>
+        )}
       </div>
     </div>
   );
