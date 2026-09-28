@@ -33,15 +33,19 @@
 - 新しいコンポーネントを実装した際は必ず Vitest でテストを書いてください。
   - ユニットテストは対象のファイルと同階層に`filename.spec.{ts,tsx}`という名前で実装してください。
   - テストユーティリティは`vitest`ではなく`vite-plus/test`からインポートしてください（lint ルールで強制されます）。
-- 型定義に`interface`を使用せず、必ず`type`を使用してください。
+- 型定義に`interface`を使用せず、必ず`type`を使用してください（ライブラリの型拡張で`interface`が必須な`src/tanstack-router.d.ts`のような`.d.ts`は例外です）。
 - 関数は関数宣言ではなくアロー関数式で定義してください（lint ルール `func-style` で強制されます）。
 - 安易に`window`オブジェクトを使用しないでください。
-  - 例えばページ遷移であれば React Router の Link コンポーネントや useNavigate を使用してください。
-  - 遷移先のパスは直接文字列で書かず、`src/lib/paths.ts`のパスビルダーを経由してください。React Router の`to`は型検査が効かないため、存在しないパスへのリンクを防ぐ目的です。
+  - ページ遷移には TanStack Router の`Link`や`useNavigate`を使い、`to`にはルート ID（`"/app/$workspaceId/$channelId"`など）、パラメータは`params` / `search`で渡してください。URL 文字列を手で組み立てないでください。
+  - Mantine のコンポーネントをリンクにする場合は`component={Link}`ではなく`renderRoot={(props) => <Link {...props} to="..." />}`を使ってください（`to`の型検査を効かせるため）。
   - React のツリー外（fetch インターセプタや WebSocket クライアント）から遷移する場合は`src/lib/navigation.ts`の`navigateTo`を使ってください。
-  - ルートパラメータは`useParams`を直接呼ばず、`src/lib/routeParams.ts`の`useWorkspaceId` / `useChannelId` / `useOptionalRouteParams`を使ってください。
+  - ルートパラメータは`useParams({ from: "/app/$workspaceId" })`のように`from`を指定して取得してください。ルートの外からも使うコンポーネントでは`useParams({ strict: false })`を使います。
+- ルーティングは TanStack Router のファイルベースルーティングです。
+  - `src/routes/`はルート定義専用です。`createFileRoute`で`Route`をエクスポートするだけにし、コンポーネントは`src/pages/`や`src/features/`に定義してください（ルートファイルは 1 ファイル 1 コンポーネント規約の対象外です）。
+  - search params は各ルートの`validateSearch`に zod スキーマを渡して検証し、`getRouteApi(...).useSearch()`などで読んでください。
+  - `src/routeTree.gen.ts`は Vite プラグインが自動生成します。手で編集しないでください。
 - 使用しない引数は削除してください。また、極力引数は Optional にしないようにしてください。
-- インポート文は原則として絶対パスで書いてください。パスエイリアスは`#/`です（`#/lib/paths`のように書きます）。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
+- インポート文は原則として絶対パスで書いてください。パスエイリアスは`#/`です（`#/lib/router`のように書きます）。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
 - 1 つのファイルにつき 1 つのコンポーネントを定義してください。コンポーネント名とファイル名は一致させ、Named Export でコンポーネントをエクスポートしてください。
   - ファイル名はコンポーネントを PascalCase、それ以外（hooks・ユーティリティ）を camelCase にしてください。
 - 関数の返り値の型は明示しないでください。

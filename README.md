@@ -80,7 +80,7 @@ pnpm run openapi:bundle && pnpm run generate:api
 - Vite+ (`vite-plus`) — Vite 8 / Vitest / Oxlint / Oxfmt を統合したツールチェーン
 - Mantine 8
 - Tailwind CSS 4
-- React Router 8 (Data モード)
+- TanStack Router (ファイルベースルーティング / SPA)
 - TanStack Query
 - PWA (vite-plugin-pwa)
 
@@ -122,10 +122,11 @@ chat/
 │   └── ent/              # ent schema definitions & generated code
 ├── frontend/         # React frontend
 │   ├── src/
-│   │   ├── routes/   # React Router のルート定義（routeTree.ts）とページコンポーネント
+│   │   ├── routes/   # TanStack Router のファイルベースルート定義
+│   │   ├── pages/    # ルートから参照するページコンポーネント
 │   │   ├── features/ # Feature-based modules
 │   │   ├── providers/ # Jotai ストア・TanStack Query・WebSocket の Provider
-│   │   └── lib/      # API client, WS client, paths, routeParams など
+│   │   └── lib/      # API client, WS client, router など
 │   ├── tests/        # Vitest のセットアップ
 │   └── public/       # Static assets（PWA アイコンの元になる logo.svg）
 ├── openapi/          # OpenAPI スキーマ（分割定義と bundled.yaml）

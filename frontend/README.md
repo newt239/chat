@@ -79,12 +79,14 @@ pnpm run generate:api
 src/
 ├── main.tsx                 # エントリーポイント
 ├── App.tsx                  # ルートコンポーネント
-├── routes/                  # ルート定義（React Router Data モード）
+├── routes/                  # ルート定義（TanStack Router ファイルベース）
+├── routeTree.gen.ts         # routes/ から自動生成されるルートツリー
+├── pages/                   # ルートから参照するページコンポーネント
 ├── styles/                  # グローバルスタイル
 ├── lib/                     # 共通ライブラリ
 │   ├── api/                 # APIクライアント（OpenAPI 生成型）
-│   ├── paths.ts             # パスビルダー
-│   ├── routeParams.ts       # ルートパラメータ取得
+│   ├── router.ts            # ルーターの生成
+│   ├── navigation.ts        # React ツリー外からの遷移
 │   └── ws.ts                # WebSocketクライアント
 ├── providers/               # Jotai ストア / TanStack Query / WebSocket
 ├── features/                # 機能別モジュール
