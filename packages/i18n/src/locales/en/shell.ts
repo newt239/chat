@@ -56,6 +56,7 @@ export const shell: Messages["shell"] = {
     profile: "Profile",
     search: "Search results",
     thread: "Thread",
+    userGroup: "User group",
   },
   sidebar: {
     channels: "Channels",

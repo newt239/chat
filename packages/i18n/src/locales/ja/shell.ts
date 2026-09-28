@@ -54,6 +54,7 @@ export const shell = {
     profile: "プロフィール",
     search: "検索結果",
     thread: "スレッド",
+    userGroup: "ユーザーグループ",
   },
   sidebar: {
     channels: "チャンネル",

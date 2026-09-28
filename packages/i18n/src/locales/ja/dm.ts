@@ -13,4 +13,7 @@ export const dm = {
     submitGroup: "グループ DM を開始",
     title: "ダイレクトメッセージを開始",
   },
+  header: {
+    groupCount: "{{count}}人のグループ DM",
+  },
 } as const;
