@@ -5,19 +5,7 @@ ReactionWithUser:
       type: string
       format: uuid
     user:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        displayName:
-          type: string
-        avatarUrl:
-          type: string
-          nullable: true
-      required:
-        - id
-        - displayName
+      $ref: "../../openapi.yaml#/components/schemas/MessageUser"
     emoji:
       type: string
     createdAt:

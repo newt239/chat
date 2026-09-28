@@ -42,5 +42,7 @@ func (ChannelReadState) Edges() []ent.Edge {
 func (ChannelReadState) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("last_read_at"),
+		index.Edges("channel", "user").
+			Unique(),
 	}
 }

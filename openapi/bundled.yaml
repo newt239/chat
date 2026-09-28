@@ -64,6 +64,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteAttachment
+      summary: Delete an attachment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attachment deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Attachment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/attachments/{id}/download:
     get:
       operationId: downloadAttachment
@@ -211,6 +242,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   /api/channels/{channelId}:
+    get:
+      operationId: getChannel
+      summary: Get channel details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Channel details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     patch:
       operationId: updateChannel
       summary: Update channel
@@ -242,6 +304,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteChannel
+      summary: Delete channel
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Channel deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: Unauthorized
           content:
@@ -661,13 +754,7 @@ paths:
                   messages:
                     type: array
                     items:
-                      allOf:
-                        - $ref: '#/components/schemas/Message'
-                        - type: object
-                          properties:
-                            threadMetadata:
-                              $ref: '#/components/schemas/ThreadMetadata'
-                              nullable: true
+                      $ref: '#/components/schemas/MessageWithThread'
                   hasMore:
                     type: boolean
                 required:
@@ -1063,6 +1150,69 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/messages/{messageId}/follow:
+    post:
+      operationId: followThread
+      summary: Follow a thread
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thread followed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: unfollowThread
+      summary: Unfollow a thread
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Thread unfollowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Message not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/messages/{messageId}/reactions:
     get:
       operationId: listReactions
@@ -1297,7 +1447,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: workspace_id
+        - name: workspaceId
           in: query
           required: true
           schema:
@@ -1440,7 +1590,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddMemberRequest'
+              $ref: '#/components/schemas/AddUserGroupMemberRequest'
       responses:
         '201':
           description: Member added
@@ -1504,7 +1654,7 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: user_id
+        - name: userId
           in: query
           required: true
           schema:
@@ -1986,6 +2136,24 @@ paths:
                     type: string
                 required:
                   - message
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Workspace or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/workspaces/{id}/members/{userId}:
     patch:
       operationId: updateMemberRole
@@ -2089,6 +2257,7 @@ paths:
               - messages
               - channels
               - users
+              - groups
         - name: page
           in: query
           schema:
@@ -2183,6 +2352,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   /api/users/me:
+    get:
+      operationId: getMe
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     patch:
       operationId: updateMe
       summary: Update current user profile
@@ -2200,22 +2387,56 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  displayName:
-                    type: string
-                  bio:
-                    type: string
-                    nullable: true
-                  avatarUrl:
-                    type: string
-                    nullable: true
-                required:
-                  - id
-                  - displayName
+                $ref: '#/components/schemas/MeProfile'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteMe
+      summary: Delete current user account
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Account deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/users/me/password:
+    patch:
+      operationId: updatePassword
+      summary: Update current user password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '200':
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
         '400':
           description: Bad request
           content:
@@ -2294,6 +2515,14 @@ components:
         - mimeType
         - sizeBytes
         - createdAt
+    AddUserGroupMemberRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+      required:
+        - userId
     AuthResponse:
       type: object
       properties:
@@ -2649,6 +2878,27 @@ components:
       required:
         - email
         - password
+    MeProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - email
+        - displayName
     MemberInfo:
       type: object
       properties:
@@ -2661,6 +2911,9 @@ components:
         displayName:
           type: string
         avatarUrl:
+          type: string
+          nullable: true
+        bio:
           type: string
           nullable: true
         role:
@@ -2678,6 +2931,17 @@ components:
         - displayName
         - role
         - joinedAt
+    GroupMention:
+      type: object
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+        - groupId
+        - name
     Message:
       type: object
       properties:
@@ -2710,71 +2974,182 @@ components:
         isDeleted:
           type: boolean
         deletedBy:
-          type: object
+          allOf:
+            - $ref: '#/components/schemas/MessageUser'
           nullable: true
-          properties:
-            id:
-              type: string
-              format: uuid
-            displayName:
-              type: string
-            avatarUrl:
-              type: string
-              nullable: true
+        user:
+          $ref: '#/components/schemas/MessageUser'
+        mentions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserMention'
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMention'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageLink'
+        reactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReactionInfo'
         attachments:
           type: array
           items:
-            $ref: '#/components/schemas/Attachment'
+            $ref: '#/components/schemas/MessageAttachment'
       required:
         - id
         - channelId
         - userId
+        - user
         - body
         - createdAt
         - isDeleted
-    MessageBookmark:
+    MessageAttachment:
       type: object
       properties:
-        userId:
+        id:
           type: string
           format: uuid
-        messageId:
+        fileName:
           type: string
-          format: uuid
-        createdAt:
+        mimeType:
           type: string
-          format: date-time
+        sizeBytes:
+          type: integer
+          format: int64
       required:
-        - userId
-        - messageId
-        - createdAt
-    MessageReaction:
+        - id
+        - fileName
+        - mimeType
+        - sizeBytes
+    MessageLink:
       type: object
       properties:
-        messageId:
+        id:
           type: string
           format: uuid
-        userId:
+        url:
+          type: string
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        siteName:
+          type: string
+          nullable: true
+        cardType:
+          type: string
+          nullable: true
+      required:
+        - id
+        - url
+    MessageUser:
+      type: object
+      properties:
+        id:
           type: string
           format: uuid
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - id
+        - displayName
+    MessageWithThread:
+      allOf:
+        - $ref: '#/components/schemas/Message'
+        - type: object
+          properties:
+            threadMetadata:
+              $ref: '#/components/schemas/ThreadMetadata'
+    ReactionInfo:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/MessageUser'
         emoji:
           type: string
-          description: Unicode絵文字または将来的にカスタム絵文字ID
         createdAt:
           type: string
           format: date-time
       required:
-        - messageId
-        - userId
+        - user
         - emoji
         - createdAt
+    SystemMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        channelId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          description: member_joined / member_added / member_removed / member_left / channel_name_changed / channel_description_changed / channel_privacy_changed / message_pinned
+        payload:
+          type: object
+          additionalProperties: true
+        actorId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - channelId
+        - kind
+        - payload
+        - createdAt
+    TimelineItem:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - user
+            - system
+        userMessage:
+          $ref: '#/components/schemas/Message'
+        systemMessage:
+          $ref: '#/components/schemas/SystemMessage'
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - type
+        - createdAt
+    UserMention:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+      required:
+        - userId
+        - displayName
     MessagesResponse:
       type: object
       properties:
         messages:
           type: array
           items:
-            $ref: '#/components/schemas/Message'
+            $ref: '#/components/schemas/TimelineItem'
         hasMore:
           type: boolean
       required:
@@ -2811,6 +3186,30 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Message'
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+        hasMore:
+          type: boolean
+      required:
+        - items
+        - total
+        - page
+        - perPage
+        - hasMore
+    PaginatedUserGroups:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroup'
         total:
           type: integer
           minimum: 0
@@ -2969,19 +3368,7 @@ components:
           type: string
           format: uuid
         user:
-          type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-            displayName:
-              type: string
-            avatarUrl:
-              type: string
-              nullable: true
-          required:
-            - id
-            - displayName
+          $ref: '#/components/schemas/MessageUser'
         emoji:
           type: string
         createdAt:
@@ -3048,20 +3435,9 @@ components:
           format: date-time
           nullable: true
         lastReplyUser:
-          type: object
+          allOf:
+            - $ref: '#/components/schemas/MessageUser'
           nullable: true
-          properties:
-            id:
-              type: string
-              format: uuid
-            displayName:
-              type: string
-            avatarUrl:
-              type: string
-              nullable: true
-          required:
-            - id
-            - displayName
         participantUserIds:
           type: array
           items:
@@ -3141,6 +3517,17 @@ components:
           type: string
       required:
         - name
+    UpdatePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+      required:
+        - currentPassword
+        - newPassword
     UpdateWorkspaceRequest:
       type: object
       properties:
@@ -3290,7 +3677,10 @@ components:
           $ref: '#/components/schemas/PaginatedChannels'
         users:
           $ref: '#/components/schemas/PaginatedUsers'
+        groups:
+          $ref: '#/components/schemas/PaginatedUserGroups'
       required:
         - messages
         - channels
         - users
+        - groups

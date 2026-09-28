@@ -32,7 +32,8 @@ export interface paths {
         get: operations["getAttachment"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete an attachment */
+        delete: operations["deleteAttachment"];
         options?: never;
         head?: never;
         patch?: never;
@@ -147,10 +148,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get channel details */
+        get: operations["getChannel"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete channel */
+        delete: operations["deleteChannel"];
         options?: never;
         head?: never;
         /** Update channel */
@@ -385,6 +388,24 @@ export interface paths {
         post: operations["addBookmark"];
         /** Remove bookmark from message */
         delete: operations["removeBookmark"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/messages/{messageId}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Follow a thread */
+        post: operations["followThread"];
+        /** Unfollow a thread */
+        delete: operations["unfollowThread"];
         options?: never;
         head?: never;
         patch?: never;
@@ -733,14 +754,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Get current user profile */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        /** Delete current user account */
+        delete: operations["deleteMe"];
+        options?: never;
+        head?: never;
+        /** Update current user profile */
+        patch: operations["updateMe"];
+        trace?: never;
+    };
+    "/api/users/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         get?: never;
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /** Update current user profile */
-        patch: operations["updateMe"];
+        /** Update current user password */
+        patch: operations["updatePassword"];
         trace?: never;
     };
     "/healthz": {
@@ -786,6 +826,10 @@ export interface components {
             sizeBytes: number;
             /** Format: date-time */
             createdAt: string;
+        };
+        AddUserGroupMemberRequest: {
+            /** Format: uuid */
+            userId: string;
         };
         AuthResponse: {
             accessToken: string;
@@ -933,6 +977,15 @@ export interface components {
             email: string;
             password: string;
         };
+        MeProfile: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            displayName: string;
+            bio?: string | null;
+            avatarUrl?: string | null;
+        };
         MemberInfo: {
             /** Format: uuid */
             userId: string;
@@ -940,10 +993,16 @@ export interface components {
             email: string;
             displayName: string;
             avatarUrl?: string | null;
+            bio?: string | null;
             /** @enum {string} */
             role: "owner" | "admin" | "member";
             /** Format: date-time */
             joinedAt: string;
+        };
+        GroupMention: {
+            /** Format: uuid */
+            groupId: string;
+            name: string;
         };
         Message: {
             /** Format: uuid */
@@ -962,34 +1021,77 @@ export interface components {
             /** Format: date-time */
             deletedAt?: string | null;
             isDeleted: boolean;
-            deletedBy?: {
-                /** Format: uuid */
-                id?: string;
-                displayName?: string;
-                avatarUrl?: string | null;
-            } | null;
-            attachments?: components["schemas"]["Attachment"][];
+            deletedBy?: components["schemas"]["MessageUser"] | null;
+            user: components["schemas"]["MessageUser"];
+            mentions?: components["schemas"]["UserMention"][];
+            groups?: components["schemas"]["GroupMention"][];
+            links?: components["schemas"]["MessageLink"][];
+            reactions?: components["schemas"]["ReactionInfo"][];
+            attachments?: components["schemas"]["MessageAttachment"][];
         };
-        MessageBookmark: {
+        MessageAttachment: {
             /** Format: uuid */
-            userId: string;
-            /** Format: uuid */
-            messageId: string;
-            /** Format: date-time */
-            createdAt: string;
+            id: string;
+            fileName: string;
+            mimeType: string;
+            /** Format: int64 */
+            sizeBytes: number;
         };
-        MessageReaction: {
+        MessageLink: {
             /** Format: uuid */
-            messageId: string;
+            id: string;
+            url: string;
+            title?: string | null;
+            description?: string | null;
+            imageUrl?: string | null;
+            siteName?: string | null;
+            cardType?: string | null;
+        };
+        MessageUser: {
             /** Format: uuid */
-            userId: string;
-            /** @description Unicode絵文字または将来的にカスタム絵文字ID */
+            id: string;
+            displayName: string;
+            avatarUrl?: string | null;
+        };
+        MessageWithThread: components["schemas"]["Message"] & {
+            threadMetadata?: components["schemas"]["ThreadMetadata"];
+        };
+        ReactionInfo: {
+            user: components["schemas"]["MessageUser"];
             emoji: string;
             /** Format: date-time */
             createdAt: string;
         };
+        SystemMessage: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            channelId: string;
+            /** @description member_joined / member_added / member_removed / member_left / channel_name_changed / channel_description_changed / channel_privacy_changed / message_pinned */
+            kind: string;
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Format: uuid */
+            actorId?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        TimelineItem: {
+            /** @enum {string} */
+            type: "user" | "system";
+            userMessage?: components["schemas"]["Message"];
+            systemMessage?: components["schemas"]["SystemMessage"];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        UserMention: {
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+        };
         MessagesResponse: {
-            messages: components["schemas"]["Message"][];
+            messages: components["schemas"]["TimelineItem"][];
             hasMore: boolean;
         };
         PaginatedChannels: {
@@ -1001,6 +1103,13 @@ export interface components {
         };
         PaginatedMessages: {
             items: components["schemas"]["Message"][];
+            total: number;
+            page: number;
+            perPage: number;
+            hasMore: boolean;
+        };
+        PaginatedUserGroups: {
+            items: components["schemas"]["UserGroup"][];
             total: number;
             page: number;
             perPage: number;
@@ -1061,12 +1170,7 @@ export interface components {
         ReactionWithUser: {
             /** Format: uuid */
             messageId: string;
-            user: {
-                /** Format: uuid */
-                id: string;
-                displayName: string;
-                avatarUrl?: string | null;
-            };
+            user: components["schemas"]["MessageUser"];
             emoji: string;
             /** Format: date-time */
             createdAt: string;
@@ -1095,12 +1199,7 @@ export interface components {
             replyCount: number;
             /** Format: date-time */
             lastReplyAt?: string | null;
-            lastReplyUser?: {
-                /** Format: uuid */
-                id: string;
-                displayName: string;
-                avatarUrl?: string | null;
-            } | null;
+            lastReplyUser?: components["schemas"]["MessageUser"] | null;
             participantUserIds: string[];
         };
         ThreadRepliesResponse: {
@@ -1129,6 +1228,10 @@ export interface components {
         UpdateUserGroupRequest: {
             name: string;
             description?: string;
+        };
+        UpdatePasswordRequest: {
+            currentPassword: string;
+            newPassword: string;
         };
         UpdateWorkspaceRequest: {
             name?: string;
@@ -1198,6 +1301,7 @@ export interface components {
             messages: components["schemas"]["PaginatedMessages"];
             channels: components["schemas"]["PaginatedChannels"];
             users: components["schemas"]["PaginatedUsers"];
+            groups: components["schemas"]["PaginatedUserGroups"];
         };
     };
     responses: never;
@@ -1259,6 +1363,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Attachment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attachment deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
                 };
             };
             /** @description Unauthorized */
@@ -1472,6 +1616,86 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getChannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Channel details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Channel"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Channel not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteChannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Channel deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Channel not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1993,9 +2217,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        messages: (components["schemas"]["Message"] & {
-                            threadMetadata?: components["schemas"]["ThreadMetadata"];
-                        })[];
+                        messages: components["schemas"]["MessageWithThread"][];
                         hasMore: boolean;
                     };
                 };
@@ -2492,6 +2714,86 @@ export interface operations {
             };
         };
     };
+    followThread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Thread followed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Message not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    unfollowThread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Thread unfollowed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Message not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     listReactions: {
         parameters: {
             query?: never;
@@ -2736,7 +3038,7 @@ export interface operations {
     listUserGroups: {
         parameters: {
             query: {
-                workspace_id: string;
+                workspaceId: string;
             };
             header?: never;
             path?: never;
@@ -2983,7 +3285,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AddMemberRequest"];
+                "application/json": components["schemas"]["AddUserGroupMemberRequest"];
             };
         };
         responses: {
@@ -3026,7 +3328,7 @@ export interface operations {
     removeUserGroupMember: {
         parameters: {
             query: {
-                user_id: string;
+                userId: string;
             };
             header?: never;
             path: {
@@ -3629,6 +3931,33 @@ export interface operations {
                     };
                 };
             };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Workspace or user not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     removeMember: {
@@ -3726,7 +4055,7 @@ export interface operations {
         parameters: {
             query: {
                 q: string;
-                filter?: "all" | "messages" | "channels" | "users";
+                filter?: "all" | "messages" | "channels" | "users" | "groups";
                 page?: number;
                 perPage?: number;
             };
@@ -3829,6 +4158,64 @@ export interface operations {
             };
         };
     };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current user profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeProfile"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Account deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     updateMe: {
         parameters: {
             query?: never;
@@ -3848,13 +4235,49 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        displayName: string;
-                        bio?: string | null;
-                        avatarUrl?: string | null;
-                    };
+                    "application/json": components["schemas"]["MeProfile"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    updatePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Password updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
                 };
             };
             /** @description Bad request */

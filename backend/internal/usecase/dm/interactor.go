@@ -2,31 +2,56 @@ package dm
 
 import (
 	"context"
+	"errors"
+	"slices"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/domain/repository"
 )
 
+var ErrNotWorkspaceMember = errors.New("ワークスペースのメンバーではありません")
+
 type Interactor struct {
 	channelRepo       repository.ChannelRepository
 	channelMemberRepo repository.ChannelMemberRepository
 	userRepo          repository.UserRepository
+	workspaceRepo     repository.WorkspaceRepository
 }
 
 func NewInteractor(
 	channelRepo repository.ChannelRepository,
 	channelMemberRepo repository.ChannelMemberRepository,
 	userRepo repository.UserRepository,
+	workspaceRepo repository.WorkspaceRepository,
 ) *Interactor {
 	return &Interactor{
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		userRepo:          userRepo,
+		workspaceRepo:     workspaceRepo,
 	}
 }
 
+// ensureWorkspaceMembers は指定ユーザーが全員ワークスペースのメンバーであることを確認します
+func (i *Interactor) ensureWorkspaceMembers(ctx context.Context, workspaceID string, userIDs ...string) error {
+	for _, userID := range userIDs {
+		member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
+		if err != nil {
+			return err
+		}
+		if member == nil {
+			return ErrNotWorkspaceMember
+		}
+	}
+	return nil
+}
+
 func (i *Interactor) CreateDM(ctx context.Context, input CreateDMInput) (*DMOutput, error) {
+	if err := i.ensureWorkspaceMembers(ctx, input.WorkspaceID, input.UserID, input.TargetUserID); err != nil {
+		return nil, err
+	}
+
 	targetUser, err := i.userRepo.FindByID(ctx, input.TargetUserID)
 	if err != nil {
 		return nil, err
@@ -69,8 +94,17 @@ func (i *Interactor) CreateDM(ctx context.Context, input CreateDMInput) (*DMOutp
 }
 
 func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput) (*DMOutput, error) {
+	// 作成者を必ずメンバーに含める
+	if !slices.Contains(input.MemberIDs, input.CreatorID) {
+		input.MemberIDs = append([]string{input.CreatorID}, input.MemberIDs...)
+	}
+
 	if len(input.MemberIDs) > 9 {
 		return nil, entity.ErrGroupDMMaxMembers
+	}
+
+	if err := i.ensureWorkspaceMembers(ctx, input.WorkspaceID, input.MemberIDs...); err != nil {
+		return nil, err
 	}
 
 	users, err := i.userRepo.FindByIDs(ctx, input.MemberIDs)
@@ -116,7 +150,7 @@ func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutp
 
 	result := make([]*DMOutput, 0, len(channels))
 	for _, ch := range channels {
-		output, err := i.buildDMOutput(ctx, ch, input.RequestUserID)
+		output, err := i.buildDMOutput(ctx, ch, input.UserID)
 		if err != nil {
 			return nil, err
 		}

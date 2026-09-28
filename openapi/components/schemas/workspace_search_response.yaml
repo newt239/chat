@@ -7,7 +7,10 @@ WorkspaceSearchResponse:
       $ref: "../../openapi.yaml#/components/schemas/PaginatedChannels"
     users:
       $ref: "../../openapi.yaml#/components/schemas/PaginatedUsers"
+    groups:
+      $ref: "../../openapi.yaml#/components/schemas/PaginatedUserGroups"
   required:
     - messages
     - channels
     - users
+    - groups

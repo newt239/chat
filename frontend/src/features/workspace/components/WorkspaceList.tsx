@@ -9,6 +9,7 @@ import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "#/providers/sto
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
+import { PublicWorkspaceList } from "./PublicWorkspaceList";
 
 export const WorkspaceList = () => {
   const { data, isLoading, error } = useWorkspaces();
@@ -94,6 +95,8 @@ export const WorkspaceList = () => {
             })}
           </div>
         )}
+
+        <PublicWorkspaceList />
       </Stack>
 
       <CreateWorkspaceModal

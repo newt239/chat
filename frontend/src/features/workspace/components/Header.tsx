@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Menu, Button, Text, Avatar, TextInput, ActionIcon, Badge } from "@mantine/core";
 import { IconSearch, IconBookmark, IconSettings, IconBell } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useNavigate } from "react-router";
 
+import { useSearchQueryParams } from "#/features/search/hooks/useSearchQueryParams";
 import { SettingsModal } from "#/features/settings/components/SettingsModal";
+import { WorkspaceSettingsModal } from "#/features/workspace/components/WorkspaceSettingsModal";
 import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
 import { paths } from "#/lib/paths";
 import { useOptionalRouteParams } from "#/lib/routeParams";
@@ -23,9 +25,16 @@ export const GlobalHeaderPanel = () => {
   const unreadNotificationCount = useAtomValue(unreadNotificationCountAtom);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isWorkspaceSettingsOpen, setIsWorkspaceSettingsOpen] = useState(false);
+  const { query } = useSearchQueryParams();
+  const [searchQuery, setSearchQuery] = useState(query.q);
   const navigate = useNavigate();
   const params = useOptionalRouteParams();
+
+  // URL のクエリと入力欄を同期する（リロードや戻る操作で空にならないように）
+  useEffect(() => {
+    setSearchQuery(query.q);
+  }, [query.q]);
 
   const currentWorkspace = workspaces?.find((w) => w.id === currentWorkspaceId);
   const isInWorkspace = params.workspaceId !== undefined;
@@ -128,6 +137,20 @@ export const GlobalHeaderPanel = () => {
                   </div>
                 </Menu.Item>
               ))}
+              {currentWorkspace && (
+                <>
+                  <Menu.Divider />
+                  <Menu.Item
+                    leftSection={<IconSettings size={16} />}
+                    onClick={() => {
+                      setIsWorkspaceMenuOpen(false);
+                      setIsWorkspaceSettingsOpen(true);
+                    }}
+                  >
+                    ワークスペース設定
+                  </Menu.Item>
+                </>
+              )}
             </Menu.Dropdown>
           </Menu>
         </div>
@@ -208,6 +231,16 @@ export const GlobalHeaderPanel = () => {
           setIsSettingsModalOpen(false);
         }}
       />
+
+      {currentWorkspace && (
+        <WorkspaceSettingsModal
+          opened={isWorkspaceSettingsOpen}
+          onClose={() => {
+            setIsWorkspaceSettingsOpen(false);
+          }}
+          workspace={currentWorkspace}
+        />
+      )}
     </header>
   );
 };

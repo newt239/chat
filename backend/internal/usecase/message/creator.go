@@ -103,7 +103,17 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 			return fmt.Errorf("failed to create message: %w", err)
 		}
 
+		// スレッド返信は親メッセージの投稿者と返信者を自動フォローする
+		if input.ParentID != nil {
+			if err := c.followThread(txCtx, *input.ParentID, input.UserID); err != nil {
+				return err
+			}
+		}
+
 		if len(input.AttachmentIDs) > 0 {
+			if err := c.verifyAttachments(txCtx, input, channel.ID); err != nil {
+				return err
+			}
 			if err := c.attachmentRepo.AttachToMessage(txCtx, input.AttachmentIDs, message.ID); err != nil {
 				return fmt.Errorf("failed to attach files: %w", err)
 			}
@@ -230,5 +240,40 @@ func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, mes
 		}
 	}
 
+	return nil
+}
+
+// verifyAttachments は添付が投稿者本人のもので、かつ同じチャンネル宛かを検証します
+func (c *MessageCreator) verifyAttachments(ctx context.Context, input CreateMessageInput, channelID string) error {
+	attachments, err := c.attachmentRepo.FindPendingByIDsForUser(ctx, input.UserID, input.AttachmentIDs)
+	if err != nil {
+		return fmt.Errorf("failed to verify attachments: %w", err)
+	}
+	if len(attachments) != len(input.AttachmentIDs) {
+		return ErrAttachmentNotFound
+	}
+	for _, attachment := range attachments {
+		if attachment.ChannelID != channelID {
+			return ErrAttachmentNotFound
+		}
+	}
+	return nil
+}
+
+// followThread は返信者と親メッセージの投稿者をスレッドのフォロワーに登録します
+func (c *MessageCreator) followThread(ctx context.Context, threadID, replierID string) error {
+	parent, err := c.messageRepo.FindByID(ctx, threadID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch parent message: %w", err)
+	}
+	if parent == nil {
+		return ErrParentMessageNotFound
+	}
+
+	for _, userID := range []string{parent.UserID, replierID} {
+		if err := c.threadRepo.FollowThread(ctx, userID, threadID); err != nil {
+			return fmt.Errorf("failed to follow thread: %w", err)
+		}
+	}
 	return nil
 }

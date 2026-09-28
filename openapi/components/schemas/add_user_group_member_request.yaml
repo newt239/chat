@@ -1,0 +1,8 @@
+AddUserGroupMemberRequest:
+  type: object
+  properties:
+    userId:
+      type: string
+      format: uuid
+  required:
+    - userId

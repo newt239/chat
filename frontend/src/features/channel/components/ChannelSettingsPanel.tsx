@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { Button, Checkbox, Group, Stack, Text, TextInput, Textarea } from "@mantine/core";
 
+import { useWorkspaceId } from "#/lib/routeParams";
+
 import { useUpdateChannel } from "../hooks/useUpdateChannel";
 
 type Props = {
@@ -17,7 +19,8 @@ export const ChannelSettingsPanel = ({
   initialDescription,
   initialIsPrivate,
 }: Props) => {
-  const update = useUpdateChannel();
+  const workspaceId = useWorkspaceId();
+  const update = useUpdateChannel(workspaceId);
   const [name, setName] = useState<string>(initialName);
   const [description, setDescription] = useState<string>(initialDescription ?? "");
   const [isPrivate, setIsPrivate] = useState<boolean>(initialIsPrivate);

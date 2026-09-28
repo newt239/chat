@@ -50,6 +50,7 @@ func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, mes
 	// 返信を取得
 	replies, err := client.Message.Query().
 		Where(message.HasParentWith(message.ID(mid))).
+		WithUser().
 		Order(ent.Desc(message.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -64,8 +65,10 @@ func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, mes
 	if replyCount > 0 {
 		lastReply := replies[0]
 		lastReplyAt = &lastReply.CreatedAt
-		userID := lastReply.Edges.User.ID.String()
-		lastReplyUserID = &userID
+		if lastReply.Edges.User != nil {
+			userID := lastReply.Edges.User.ID.String()
+			lastReplyUserID = &userID
+		}
 	}
 
 	// 参加者を取得（UserThreadFollowから）
@@ -221,25 +224,21 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		}, nil
 	}
 
-	// ユーザーが参加しているチャンネルIDを取得
-	channelMembers, err := client.ChannelMember.Query().
-		Where(channelmember.HasUserWith(user.ID(userID))).
-		WithChannel().
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	accessibleChannelIDs := make([]uuid.UUID, 0, len(channelMembers))
-	for _, cm := range channelMembers {
-		accessibleChannelIDs = append(accessibleChannelIDs, cm.Edges.Channel.ID)
-	}
+	// パブリックチャンネルはメンバー行を持たないため、
+	// 「ワークスペース内のパブリックチャンネル」と「参加中のプライベートチャンネル」を対象にする
+	accessibleChannels := channel.Or(
+		channel.And(
+			channel.HasWorkspaceWith(workspace.ID(input.WorkspaceID)),
+			channel.IsPrivate(false),
+		),
+		channel.HasMembersWith(channelmember.HasUserWith(user.ID(userID))),
+	)
 
 	// スレッド起点メッセージ（parent_id == null）で、参加中のものを検索
 	query := client.Message.Query().
 		Where(
 			message.Not(message.HasParent()),
-			message.HasChannelWith(channel.IDIn(accessibleChannelIDs...)),
+			message.HasChannelWith(accessibleChannels),
 		)
 
 	// 参加条件でフィルタ

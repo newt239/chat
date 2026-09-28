@@ -9,34 +9,32 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
 
 type Interactor struct {
-	attachmentRepo    repository.AttachmentRepository
-	channelRepo       repository.ChannelRepository
-	channelMemberRepo repository.ChannelMemberRepository
-	messageRepo       repository.MessageRepository
-	storageService    service.StorageService
-	config            service.StorageConfig
+	attachmentRepo   repository.AttachmentRepository
+	messageRepo      repository.MessageRepository
+	channelAccessSvc service.ChannelAccessService
+	storageService   service.StorageService
+	config           service.StorageConfig
 }
 
 func NewInteractor(
 	attachmentRepo repository.AttachmentRepository,
-	channelRepo repository.ChannelRepository,
-	channelMemberRepo repository.ChannelMemberRepository,
 	messageRepo repository.MessageRepository,
+	channelAccessSvc service.ChannelAccessService,
 	storageService service.StorageService,
 	config service.StorageConfig,
 ) *Interactor {
 	return &Interactor{
-		attachmentRepo:    attachmentRepo,
-		channelRepo:       channelRepo,
-		channelMemberRepo: channelMemberRepo,
-		messageRepo:       messageRepo,
-		storageService:    storageService,
-		config:            config,
+		attachmentRepo:   attachmentRepo,
+		messageRepo:      messageRepo,
+		channelAccessSvc: channelAccessSvc,
+		storageService:   storageService,
+		config:           config,
 	}
 }
 
@@ -45,12 +43,8 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 		return nil, fmt.Errorf("ファイルサイズが上限(1GB)を超えています")
 	}
 
-	isMember, err := i.channelMemberRepo.IsMember(ctx, input.ChannelID, input.UserID)
-	if err != nil {
+	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
 		return nil, err
-	}
-	if !isMember {
-		return nil, errors.New("チャネルメンバーではありません")
 	}
 
 	attachmentID := uuid.New().String()
@@ -100,6 +94,7 @@ func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID strin
 		return nil, errors.New("添付ファイルが見つかりません")
 	}
 
+	channelID := attachment.ChannelID
 	if attachment.MessageID != nil {
 		message, err := i.messageRepo.FindByID(ctx, *attachment.MessageID)
 		if err != nil {
@@ -108,22 +103,10 @@ func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID strin
 		if message == nil {
 			return nil, errors.New("メッセージが見つかりません")
 		}
-
-		isMember, err := i.channelMemberRepo.IsMember(ctx, message.ChannelID, userID)
-		if err != nil {
-			return nil, err
-		}
-		if !isMember {
-			return nil, errors.New("アクセス権限がありません")
-		}
-	} else {
-		isMember, err := i.channelMemberRepo.IsMember(ctx, attachment.ChannelID, userID)
-		if err != nil {
-			return nil, err
-		}
-		if !isMember {
-			return nil, errors.New("アクセス権限がありません")
-		}
+		channelID = message.ChannelID
+	}
+	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
+		return nil, err
 	}
 
 	return &AttachmentOutput{
@@ -148,6 +131,7 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 		return nil, errors.New("添付ファイルが見つかりません")
 	}
 
+	channelID := attachment.ChannelID
 	if attachment.MessageID != nil {
 		message, err := i.messageRepo.FindByID(ctx, *attachment.MessageID)
 		if err != nil {
@@ -156,22 +140,10 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 		if message == nil {
 			return nil, errors.New("メッセージが見つかりません")
 		}
-
-		isMember, err := i.channelMemberRepo.IsMember(ctx, message.ChannelID, userID)
-		if err != nil {
-			return nil, err
-		}
-		if !isMember {
-			return nil, errors.New("アクセス権限がありません")
-		}
-	} else {
-		isMember, err := i.channelMemberRepo.IsMember(ctx, attachment.ChannelID, userID)
-		if err != nil {
-			return nil, err
-		}
-		if !isMember {
-			return nil, errors.New("アクセス権限がありません")
-		}
+		channelID = message.ChannelID
+	}
+	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
+		return nil, err
 	}
 
 	downloadURL, err := i.storageService.GenerateDownloadURL(attachment.StorageKey, 0)
@@ -183,4 +155,24 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 		URL:       downloadURL,
 		ExpiresIn: int(i.config.GetDownloadExpires().(time.Duration).Seconds()),
 	}, nil
+}
+
+// Delete は添付ファイルを削除します。削除できるのはアップロードした本人のみです
+func (i *Interactor) Delete(ctx context.Context, userID, attachmentID string) error {
+	attachment, err := i.attachmentRepo.FindByID(ctx, attachmentID)
+	if err != nil {
+		return err
+	}
+	if attachment == nil {
+		return domainerrors.ErrNotFound
+	}
+	if attachment.UploaderID != userID {
+		return domainerrors.ErrUnauthorized
+	}
+
+	if err := i.attachmentRepo.Delete(ctx, attachmentID); err != nil {
+		return err
+	}
+
+	return i.storageService.DeleteObject(attachment.StorageKey)
 }

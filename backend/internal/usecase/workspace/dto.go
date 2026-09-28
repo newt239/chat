@@ -32,13 +32,6 @@ type GetWorkspaceInput struct {
 	UserID string // For authorization check
 }
 
-type AddMemberInput struct {
-	WorkspaceID string
-	UserID      string
-	InviterID   string // User performing the action
-	Role        string
-}
-
 type UpdateMemberRoleInput struct {
 	WorkspaceID string
 	UserID      string
@@ -98,6 +91,7 @@ type MemberInfo struct {
 	Email       string    `json:"email"`
 	DisplayName string    `json:"displayName"`
 	AvatarURL   *string   `json:"avatarUrl,omitempty"`
+	Bio         *string   `json:"bio,omitempty"`
 	Role        string    `json:"role"`
 	JoinedAt    time.Time `json:"joinedAt"`
 }

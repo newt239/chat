@@ -20,8 +20,7 @@ type RefreshTokenInput struct {
 }
 
 type LogoutInput struct {
-	UserID       string
-	RefreshToken string
+	UserID string
 }
 
 // Output DTOs

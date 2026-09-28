@@ -16,7 +16,7 @@
       content:
         application/json:
           schema:
-            $ref: "../openapi.yaml#/components/schemas/AddMemberRequest"
+            $ref: "../openapi.yaml#/components/schemas/AddUserGroupMemberRequest"
     responses:
       "201":
         description: Member added
@@ -80,7 +80,7 @@
         schema:
           type: string
           format: uuid
-      - name: user_id
+      - name: userId
         in: query
         required: true
         schema:

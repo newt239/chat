@@ -70,6 +70,40 @@ func (h *ChannelHandler) CreateChannel(c echo.Context, id string) error {
 	return c.JSON(http.StatusCreated, channel)
 }
 
+func (h *ChannelHandler) GetChannel(c echo.Context, channelId openapi_types.UUID) error {
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
+	}
+
+	channel, err := h.ChannelUC.GetChannel(c.Request().Context(), channeluc.GetChannelInput{
+		ChannelID: channelId.String(),
+		UserID:    userID,
+	})
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return c.JSON(http.StatusOK, channel)
+}
+
+func (h *ChannelHandler) DeleteChannel(c echo.Context, channelId openapi_types.UUID) error {
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return utils.HandleAuthError()
+	}
+
+	err := h.ChannelUC.DeleteChannel(c.Request().Context(), channeluc.DeleteChannelInput{
+		ChannelID: channelId.String(),
+		UserID:    userID,
+	})
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]bool{"success": true})
+}
+
 func (h *ChannelHandler) UpdateChannel(c echo.Context, channelId openapi_types.UUID) error {
 	userID, ok := c.Get("userID").(string)
 	if !ok {

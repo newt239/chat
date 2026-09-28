@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button, Loader, Stack, Text } from "@mantine/core";
 
 import { ThreadCard } from "#/features/thread/components/ThreadCard";
 import { useParticipatingThreads } from "#/features/thread/hooks/useParticipatingThreads";
 import { useWorkspaceId } from "#/lib/routeParams";
+
+import type { ParticipatingThread } from "#/features/thread/schemas";
 
 export const ThreadListPage = () => {
   const workspaceId = useWorkspaceId();
@@ -19,7 +21,23 @@ export const ThreadListPage = () => {
     workspaceId,
   });
 
-  const items = data?.items ?? [];
+  // ページを跨いで結果を積み上げる
+  const [items, setItems] = useState<ParticipatingThread[]>([]);
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+    setItems((prev) => {
+      const known = new Set(prev.map((item) => item.thread_id));
+      return [...prev, ...data.items.filter((item) => !known.has(item.thread_id))];
+    });
+  }, [data]);
+
+  useEffect(() => {
+    setItems([]);
+  }, [workspaceId]);
+
   const next = data?.next_cursor;
 
   const isBusy = isLoading || isFetching;
@@ -30,11 +48,12 @@ export const ThreadListPage = () => {
     }
     setCursorLastActivityAt(next.last_activity_at);
     setCursorThreadId(next.thread_id);
-    // 直後のuseQueryはキーが変わるため自動再取得される
   };
 
-  const handleMarkedRead = () => {
-    // 楽観的に未読数を0にしたUIにするにはローカル状態で持ち替えるが、まずはrefetchで簡易更新
+  const handleMarkedRead = (threadId: string) => {
+    setItems((prev) =>
+      prev.map((item) => (item.thread_id === threadId ? { ...item, unread_count: 0 } : item)),
+    );
     void refetch();
   };
 

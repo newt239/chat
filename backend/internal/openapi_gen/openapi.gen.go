@@ -56,6 +56,12 @@ const (
 	MemberInfoRoleOwner  MemberInfoRole = "owner"
 )
 
+// Defines values for TimelineItemType.
+const (
+	TimelineItemTypeSystem TimelineItemType = "system"
+	TimelineItemTypeUser   TimelineItemType = "user"
+)
+
 // Defines values for UpdateChannelMemberRoleRequestRole.
 const (
 	UpdateChannelMemberRoleRequestRoleAdmin  UpdateChannelMemberRoleRequestRole = "admin"
@@ -80,6 +86,7 @@ const (
 const (
 	All      SearchWorkspaceParamsFilter = "all"
 	Channels SearchWorkspaceParamsFilter = "channels"
+	Groups   SearchWorkspaceParamsFilter = "groups"
 	Messages SearchWorkspaceParamsFilter = "messages"
 	Users    SearchWorkspaceParamsFilter = "users"
 )
@@ -96,6 +103,11 @@ type AddMemberRequestRole string
 // AddReactionRequest defines model for AddReactionRequest.
 type AddReactionRequest struct {
 	Emoji string `json:"emoji"`
+}
+
+// AddUserGroupMemberRequest defines model for AddUserGroupMemberRequest.
+type AddUserGroupMemberRequest struct {
+	UserId openapi_types.UUID `json:"userId"`
 }
 
 // Attachment defines model for Attachment.
@@ -240,6 +252,12 @@ type FetchOGPResponse struct {
 	} `json:"ogpData"`
 }
 
+// GroupMention defines model for GroupMention.
+type GroupMention struct {
+	GroupId openapi_types.UUID `json:"groupId"`
+	Name    string             `json:"name"`
+}
+
 // InviteChannelMemberRequest defines model for InviteChannelMemberRequest.
 type InviteChannelMemberRequest struct {
 	Role   *InviteChannelMemberRequestRole `json:"role,omitempty"`
@@ -286,9 +304,19 @@ type LoginRequest struct {
 	Password string              `json:"password"`
 }
 
+// MeProfile defines model for MeProfile.
+type MeProfile struct {
+	AvatarUrl   *string             `json:"avatarUrl"`
+	Bio         *string             `json:"bio"`
+	DisplayName string              `json:"displayName"`
+	Email       openapi_types.Email `json:"email"`
+	Id          openapi_types.UUID  `json:"id"`
+}
+
 // MemberInfo defines model for MemberInfo.
 type MemberInfo struct {
 	AvatarUrl   *string             `json:"avatarUrl"`
+	Bio         *string             `json:"bio"`
 	DisplayName string              `json:"displayName"`
 	Email       openapi_types.Email `json:"email"`
 	JoinedAt    time.Time           `json:"joinedAt"`
@@ -301,27 +329,75 @@ type MemberInfoRole string
 
 // Message defines model for Message.
 type Message struct {
-	Attachments *[]Attachment      `json:"attachments,omitempty"`
-	Body        string             `json:"body"`
-	ChannelId   openapi_types.UUID `json:"channelId"`
-	CreatedAt   time.Time          `json:"createdAt"`
-	DeletedAt   *time.Time         `json:"deletedAt"`
-	DeletedBy   *struct {
-		AvatarUrl   *string             `json:"avatarUrl"`
-		DisplayName *string             `json:"displayName,omitempty"`
-		Id          *openapi_types.UUID `json:"id,omitempty"`
-	} `json:"deletedBy"`
-	EditedAt  *time.Time          `json:"editedAt"`
-	Id        openapi_types.UUID  `json:"id"`
-	IsDeleted bool                `json:"isDeleted"`
-	ParentId  *openapi_types.UUID `json:"parentId"`
-	UserId    openapi_types.UUID  `json:"userId"`
+	Attachments *[]MessageAttachment `json:"attachments,omitempty"`
+	Body        string               `json:"body"`
+	ChannelId   openapi_types.UUID   `json:"channelId"`
+	CreatedAt   time.Time            `json:"createdAt"`
+	DeletedAt   *time.Time           `json:"deletedAt"`
+	DeletedBy   *MessageUser         `json:"deletedBy"`
+	EditedAt    *time.Time           `json:"editedAt"`
+	Groups      *[]GroupMention      `json:"groups,omitempty"`
+	Id          openapi_types.UUID   `json:"id"`
+	IsDeleted   bool                 `json:"isDeleted"`
+	Links       *[]MessageLink       `json:"links,omitempty"`
+	Mentions    *[]UserMention       `json:"mentions,omitempty"`
+	ParentId    *openapi_types.UUID  `json:"parentId"`
+	Reactions   *[]ReactionInfo      `json:"reactions,omitempty"`
+	User        MessageUser          `json:"user"`
+	UserId      openapi_types.UUID   `json:"userId"`
+}
+
+// MessageAttachment defines model for MessageAttachment.
+type MessageAttachment struct {
+	FileName  string             `json:"fileName"`
+	Id        openapi_types.UUID `json:"id"`
+	MimeType  string             `json:"mimeType"`
+	SizeBytes int64              `json:"sizeBytes"`
+}
+
+// MessageLink defines model for MessageLink.
+type MessageLink struct {
+	CardType    *string            `json:"cardType"`
+	Description *string            `json:"description"`
+	Id          openapi_types.UUID `json:"id"`
+	ImageUrl    *string            `json:"imageUrl"`
+	SiteName    *string            `json:"siteName"`
+	Title       *string            `json:"title"`
+	Url         string             `json:"url"`
+}
+
+// MessageUser defines model for MessageUser.
+type MessageUser struct {
+	AvatarUrl   *string            `json:"avatarUrl"`
+	DisplayName string             `json:"displayName"`
+	Id          openapi_types.UUID `json:"id"`
+}
+
+// MessageWithThread defines model for MessageWithThread.
+type MessageWithThread struct {
+	Attachments    *[]MessageAttachment `json:"attachments,omitempty"`
+	Body           string               `json:"body"`
+	ChannelId      openapi_types.UUID   `json:"channelId"`
+	CreatedAt      time.Time            `json:"createdAt"`
+	DeletedAt      *time.Time           `json:"deletedAt"`
+	DeletedBy      *MessageUser         `json:"deletedBy"`
+	EditedAt       *time.Time           `json:"editedAt"`
+	Groups         *[]GroupMention      `json:"groups,omitempty"`
+	Id             openapi_types.UUID   `json:"id"`
+	IsDeleted      bool                 `json:"isDeleted"`
+	Links          *[]MessageLink       `json:"links,omitempty"`
+	Mentions       *[]UserMention       `json:"mentions,omitempty"`
+	ParentId       *openapi_types.UUID  `json:"parentId"`
+	Reactions      *[]ReactionInfo      `json:"reactions,omitempty"`
+	ThreadMetadata *ThreadMetadata      `json:"threadMetadata,omitempty"`
+	User           MessageUser          `json:"user"`
+	UserId         openapi_types.UUID   `json:"userId"`
 }
 
 // MessagesResponse defines model for MessagesResponse.
 type MessagesResponse struct {
-	HasMore  bool      `json:"hasMore"`
-	Messages []Message `json:"messages"`
+	HasMore  bool           `json:"hasMore"`
+	Messages []TimelineItem `json:"messages"`
 }
 
 // PaginatedChannels defines model for PaginatedChannels.
@@ -340,6 +416,15 @@ type PaginatedMessages struct {
 	Page    int       `json:"page"`
 	PerPage int       `json:"perPage"`
 	Total   int       `json:"total"`
+}
+
+// PaginatedUserGroups defines model for PaginatedUserGroups.
+type PaginatedUserGroups struct {
+	HasMore bool        `json:"hasMore"`
+	Items   []UserGroup `json:"items"`
+	Page    int         `json:"page"`
+	PerPage int         `json:"perPage"`
+	Total   int         `json:"total"`
 }
 
 // PaginatedUsers defines model for PaginatedUsers.
@@ -399,16 +484,19 @@ type PublicWorkspaceItem struct {
 	Name        string    `json:"name"`
 }
 
+// ReactionInfo defines model for ReactionInfo.
+type ReactionInfo struct {
+	CreatedAt time.Time   `json:"createdAt"`
+	Emoji     string      `json:"emoji"`
+	User      MessageUser `json:"user"`
+}
+
 // ReactionWithUser defines model for ReactionWithUser.
 type ReactionWithUser struct {
 	CreatedAt time.Time          `json:"createdAt"`
 	Emoji     string             `json:"emoji"`
 	MessageId openapi_types.UUID `json:"messageId"`
-	User      struct {
-		AvatarUrl   *string            `json:"avatarUrl"`
-		DisplayName string             `json:"displayName"`
-		Id          openapi_types.UUID `json:"id"`
-	} `json:"user"`
+	User      MessageUser        `json:"user"`
 }
 
 // RefreshRequest defines model for RefreshRequest.
@@ -428,6 +516,18 @@ type SuccessResponse struct {
 	Success bool `json:"success"`
 }
 
+// SystemMessage defines model for SystemMessage.
+type SystemMessage struct {
+	ActorId   *openapi_types.UUID `json:"actorId"`
+	ChannelId openapi_types.UUID  `json:"channelId"`
+	CreatedAt time.Time           `json:"createdAt"`
+	Id        openapi_types.UUID  `json:"id"`
+
+	// Kind member_joined / member_added / member_removed / member_left / channel_name_changed / channel_description_changed / channel_privacy_changed / message_pinned
+	Kind    string                 `json:"kind"`
+	Payload map[string]interface{} `json:"payload"`
+}
+
 // ThreadCursor defines model for ThreadCursor.
 type ThreadCursor struct {
 	LastActivityAt time.Time          `json:"last_activity_at"`
@@ -436,12 +536,8 @@ type ThreadCursor struct {
 
 // ThreadMetadata defines model for ThreadMetadata.
 type ThreadMetadata struct {
-	LastReplyAt   *time.Time `json:"lastReplyAt"`
-	LastReplyUser *struct {
-		AvatarUrl   *string            `json:"avatarUrl"`
-		DisplayName string             `json:"displayName"`
-		Id          openapi_types.UUID `json:"id"`
-	} `json:"lastReplyUser"`
+	LastReplyAt        *time.Time           `json:"lastReplyAt"`
+	LastReplyUser      *MessageUser         `json:"lastReplyUser"`
 	MessageId          openapi_types.UUID   `json:"messageId"`
 	ParticipantUserIds []openapi_types.UUID `json:"participantUserIds"`
 	ReplyCount         int                  `json:"replyCount"`
@@ -453,6 +549,17 @@ type ThreadRepliesResponse struct {
 	ParentMessage Message   `json:"parentMessage"`
 	Replies       []Message `json:"replies"`
 }
+
+// TimelineItem defines model for TimelineItem.
+type TimelineItem struct {
+	CreatedAt     time.Time        `json:"createdAt"`
+	SystemMessage *SystemMessage   `json:"systemMessage,omitempty"`
+	Type          TimelineItemType `json:"type"`
+	UserMessage   *Message         `json:"userMessage,omitempty"`
+}
+
+// TimelineItemType defines model for TimelineItem.Type.
+type TimelineItemType string
 
 // UnreadCountResponse defines model for UnreadCountResponse.
 type UnreadCountResponse struct {
@@ -476,8 +583,8 @@ type UpdateChannelRequest struct {
 
 // UpdateMeRequest defines model for UpdateMeRequest.
 type UpdateMeRequest struct {
-	AvatarUrl   *string `json:"avatar_url,omitempty"`
-	Bio         *string `json:"bio,omitempty"`
+	AvatarUrl   *string `json:"avatar_url"`
+	Bio         *string `json:"bio"`
 	DisplayName *string `json:"display_name,omitempty"`
 }
 
@@ -492,6 +599,12 @@ type UpdateMemberRoleRequestRole string
 // UpdateMessageRequest defines model for UpdateMessageRequest.
 type UpdateMessageRequest struct {
 	Body string `json:"body"`
+}
+
+// UpdatePasswordRequest defines model for UpdatePasswordRequest.
+type UpdatePasswordRequest struct {
+	CurrentPassword string `json:"currentPassword"`
+	NewPassword     string `json:"newPassword"`
 }
 
 // UpdateReadStateRequest defines model for UpdateReadStateRequest.
@@ -540,6 +653,12 @@ type UserGroupMember struct {
 	UserId   openapi_types.UUID `json:"userId"`
 }
 
+// UserMention defines model for UserMention.
+type UserMention struct {
+	DisplayName string             `json:"displayName"`
+	UserId      openapi_types.UUID `json:"userId"`
+}
+
 // Workspace defines model for Workspace.
 type Workspace struct {
 	CreatedAt   time.Time          `json:"createdAt"`
@@ -559,9 +678,10 @@ type WorkspaceRole string
 
 // WorkspaceSearchResponse defines model for WorkspaceSearchResponse.
 type WorkspaceSearchResponse struct {
-	Channels PaginatedChannels `json:"channels"`
-	Messages PaginatedMessages `json:"messages"`
-	Users    PaginatedUsers    `json:"users"`
+	Channels PaginatedChannels   `json:"channels"`
+	Groups   PaginatedUserGroups `json:"groups"`
+	Messages PaginatedMessages   `json:"messages"`
+	Users    PaginatedUsers      `json:"users"`
 }
 
 // ListMessagesParams defines parameters for ListMessages.
@@ -596,12 +716,12 @@ type GetThreadRepliesParams struct {
 
 // ListUserGroupsParams defines parameters for ListUserGroups.
 type ListUserGroupsParams struct {
-	WorkspaceId string `form:"workspace_id" json:"workspace_id"`
+	WorkspaceId string `form:"workspaceId" json:"workspaceId"`
 }
 
 // RemoveUserGroupMemberParams defines parameters for RemoveUserGroupMember.
 type RemoveUserGroupMemberParams struct {
-	UserId openapi_types.UUID `form:"user_id" json:"user_id"`
+	UserId openapi_types.UUID `form:"userId" json:"userId"`
 }
 
 // SearchWorkspaceParams defines parameters for SearchWorkspace.
@@ -668,10 +788,13 @@ type CreateUserGroupJSONRequestBody = CreateUserGroupRequest
 type UpdateUserGroupJSONRequestBody = UpdateUserGroupRequest
 
 // AddUserGroupMemberJSONRequestBody defines body for AddUserGroupMember for application/json ContentType.
-type AddUserGroupMemberJSONRequestBody = AddMemberRequest
+type AddUserGroupMemberJSONRequestBody = AddUserGroupMemberRequest
 
 // UpdateMeJSONRequestBody defines body for UpdateMe for application/json ContentType.
 type UpdateMeJSONRequestBody = UpdateMeRequest
+
+// UpdatePasswordJSONRequestBody defines body for UpdatePassword for application/json ContentType.
+type UpdatePasswordJSONRequestBody = UpdatePasswordRequest
 
 // CreateWorkspaceJSONRequestBody defines body for CreateWorkspace for application/json ContentType.
 type CreateWorkspaceJSONRequestBody = CreateWorkspaceRequest
@@ -699,6 +822,9 @@ type ServerInterface interface {
 	// Get presigned upload URL
 	// (POST /api/attachments/presign)
 	PresignUpload(ctx echo.Context) error
+	// Delete an attachment
+	// (DELETE /api/attachments/{id})
+	DeleteAttachment(ctx echo.Context, id openapi_types.UUID) error
 	// Get attachment metadata
 	// (GET /api/attachments/{id})
 	GetAttachment(ctx echo.Context, id openapi_types.UUID) error
@@ -720,6 +846,12 @@ type ServerInterface interface {
 	// List user bookmarks
 	// (GET /api/bookmarks)
 	ListBookmarks(ctx echo.Context) error
+	// Delete channel
+	// (DELETE /api/channels/{channelId})
+	DeleteChannel(ctx echo.Context, channelId openapi_types.UUID) error
+	// Get channel details
+	// (GET /api/channels/{channelId})
+	GetChannel(ctx echo.Context, channelId openapi_types.UUID) error
 	// Update channel
 	// (PATCH /api/channels/{channelId})
 	UpdateChannel(ctx echo.Context, channelId openapi_types.UUID) error
@@ -780,6 +912,12 @@ type ServerInterface interface {
 	// Add bookmark to message
 	// (POST /api/messages/{messageId}/bookmarks)
 	AddBookmark(ctx echo.Context, messageId openapi_types.UUID) error
+	// Unfollow a thread
+	// (DELETE /api/messages/{messageId}/follow)
+	UnfollowThread(ctx echo.Context, messageId openapi_types.UUID) error
+	// Follow a thread
+	// (POST /api/messages/{messageId}/follow)
+	FollowThread(ctx echo.Context, messageId openapi_types.UUID) error
 	// List reactions for a message
 	// (GET /api/messages/{messageId}/reactions)
 	ListReactions(ctx echo.Context, messageId openapi_types.UUID) error
@@ -822,9 +960,18 @@ type ServerInterface interface {
 	// Add a member to a user group
 	// (POST /api/user-groups/{id}/members)
 	AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error
+	// Delete current user account
+	// (DELETE /api/users/me)
+	DeleteMe(ctx echo.Context) error
+	// Get current user profile
+	// (GET /api/users/me)
+	GetMe(ctx echo.Context) error
 	// Update current user profile
 	// (PATCH /api/users/me)
 	UpdateMe(ctx echo.Context) error
+	// Update current user password
+	// (PATCH /api/users/me/password)
+	UpdatePassword(ctx echo.Context) error
 	// List user workspaces
 	// (GET /api/workspaces)
 	ListWorkspaces(ctx echo.Context) error
@@ -897,6 +1044,24 @@ func (w *ServerInterfaceWrapper) PresignUpload(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PresignUpload(ctx)
+	return err
+}
+
+// DeleteAttachment converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteAttachment(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteAttachment(ctx, id)
 	return err
 }
 
@@ -982,6 +1147,42 @@ func (w *ServerInterfaceWrapper) ListBookmarks(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.ListBookmarks(ctx)
+	return err
+}
+
+// DeleteChannel converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteChannel(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "channelId" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channelId", ctx.Param("channelId"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter channelId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteChannel(ctx, channelId)
+	return err
+}
+
+// GetChannel converts echo context to params.
+func (w *ServerInterfaceWrapper) GetChannel(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "channelId" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channelId", ctx.Param("channelId"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter channelId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetChannel(ctx, channelId)
 	return err
 }
 
@@ -1424,6 +1625,42 @@ func (w *ServerInterfaceWrapper) AddBookmark(ctx echo.Context) error {
 	return err
 }
 
+// UnfollowThread converts echo context to params.
+func (w *ServerInterfaceWrapper) UnfollowThread(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "messageId" -------------
+	var messageId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "messageId", ctx.Param("messageId"), &messageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter messageId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UnfollowThread(ctx, messageId)
+	return err
+}
+
+// FollowThread converts echo context to params.
+func (w *ServerInterfaceWrapper) FollowThread(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "messageId" -------------
+	var messageId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "messageId", ctx.Param("messageId"), &messageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter messageId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.FollowThread(ctx, messageId)
+	return err
+}
+
 // ListReactions converts echo context to params.
 func (w *ServerInterfaceWrapper) ListReactions(ctx echo.Context) error {
 	var err error
@@ -1557,11 +1794,11 @@ func (w *ServerInterfaceWrapper) ListUserGroups(ctx echo.Context) error {
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ListUserGroupsParams
-	// ------------- Required query parameter "workspace_id" -------------
+	// ------------- Required query parameter "workspaceId" -------------
 
-	err = runtime.BindQueryParameter("form", true, true, "workspace_id", ctx.QueryParams(), &params.WorkspaceId)
+	err = runtime.BindQueryParameter("form", true, true, "workspaceId", ctx.QueryParams(), &params.WorkspaceId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter workspace_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter workspaceId: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
@@ -1649,11 +1886,11 @@ func (w *ServerInterfaceWrapper) RemoveUserGroupMember(ctx echo.Context) error {
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params RemoveUserGroupMemberParams
-	// ------------- Required query parameter "user_id" -------------
+	// ------------- Required query parameter "userId" -------------
 
-	err = runtime.BindQueryParameter("form", true, true, "user_id", ctx.QueryParams(), &params.UserId)
+	err = runtime.BindQueryParameter("form", true, true, "userId", ctx.QueryParams(), &params.UserId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter user_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
@@ -1697,6 +1934,28 @@ func (w *ServerInterfaceWrapper) AddUserGroupMember(ctx echo.Context) error {
 	return err
 }
 
+// DeleteMe converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteMe(ctx)
+	return err
+}
+
+// GetMe converts echo context to params.
+func (w *ServerInterfaceWrapper) GetMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetMe(ctx)
+	return err
+}
+
 // UpdateMe converts echo context to params.
 func (w *ServerInterfaceWrapper) UpdateMe(ctx echo.Context) error {
 	var err error
@@ -1705,6 +1964,17 @@ func (w *ServerInterfaceWrapper) UpdateMe(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.UpdateMe(ctx)
+	return err
+}
+
+// UpdatePassword converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdatePassword(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdatePassword(ctx)
 	return err
 }
 
@@ -2118,6 +2388,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.POST(baseURL+"/api/attachments/presign", wrapper.PresignUpload)
+	router.DELETE(baseURL+"/api/attachments/:id", wrapper.DeleteAttachment)
 	router.GET(baseURL+"/api/attachments/:id", wrapper.GetAttachment)
 	router.GET(baseURL+"/api/attachments/:id/download", wrapper.DownloadAttachment)
 	router.POST(baseURL+"/api/auth/login", wrapper.Login)
@@ -2125,6 +2396,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/auth/refresh", wrapper.Refresh)
 	router.POST(baseURL+"/api/auth/register", wrapper.Register)
 	router.GET(baseURL+"/api/bookmarks", wrapper.ListBookmarks)
+	router.DELETE(baseURL+"/api/channels/:channelId", wrapper.DeleteChannel)
+	router.GET(baseURL+"/api/channels/:channelId", wrapper.GetChannel)
 	router.PATCH(baseURL+"/api/channels/:channelId", wrapper.UpdateChannel)
 	router.GET(baseURL+"/api/channels/:channelId/members", wrapper.ListChannelMembers)
 	router.POST(baseURL+"/api/channels/:channelId/members", wrapper.InviteChannelMember)
@@ -2145,6 +2418,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PATCH(baseURL+"/api/messages/:messageId", wrapper.UpdateMessage)
 	router.DELETE(baseURL+"/api/messages/:messageId/bookmarks", wrapper.RemoveBookmark)
 	router.POST(baseURL+"/api/messages/:messageId/bookmarks", wrapper.AddBookmark)
+	router.DELETE(baseURL+"/api/messages/:messageId/follow", wrapper.UnfollowThread)
+	router.POST(baseURL+"/api/messages/:messageId/follow", wrapper.FollowThread)
 	router.GET(baseURL+"/api/messages/:messageId/reactions", wrapper.ListReactions)
 	router.POST(baseURL+"/api/messages/:messageId/reactions", wrapper.AddReaction)
 	router.DELETE(baseURL+"/api/messages/:messageId/reactions/:emoji", wrapper.RemoveReaction)
@@ -2159,7 +2434,10 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/user-groups/:id/members", wrapper.RemoveUserGroupMember)
 	router.GET(baseURL+"/api/user-groups/:id/members", wrapper.ListUserGroupMembers)
 	router.POST(baseURL+"/api/user-groups/:id/members", wrapper.AddUserGroupMember)
+	router.DELETE(baseURL+"/api/users/me", wrapper.DeleteMe)
+	router.GET(baseURL+"/api/users/me", wrapper.GetMe)
 	router.PATCH(baseURL+"/api/users/me", wrapper.UpdateMe)
+	router.PATCH(baseURL+"/api/users/me/password", wrapper.UpdatePassword)
 	router.GET(baseURL+"/api/workspaces", wrapper.ListWorkspaces)
 	router.POST(baseURL+"/api/workspaces", wrapper.CreateWorkspace)
 	router.GET(baseURL+"/api/workspaces/public", wrapper.ListPublicWorkspaces)

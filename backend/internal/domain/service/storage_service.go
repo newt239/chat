@@ -4,6 +4,7 @@ package service
 type StorageService interface {
 	GenerateUploadURL(storageKey, mimeType string, sizeBytes int64, expiresIn interface{}) (string, error)
 	GenerateDownloadURL(storageKey string, expiresIn interface{}) (string, error)
+	DeleteObject(storageKey string) error
 }
 
 // StorageConfig defines the configuration for storage operations

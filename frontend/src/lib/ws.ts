@@ -3,7 +3,7 @@ import { navigateTo } from "#/lib/navigation";
 import { paths } from "#/lib/paths";
 import { parseServerEvent } from "#/types/wsEvents";
 
-import type { ClientToServerMessage, WsEventPayloadMap } from "#/types/wsEvents";
+import type { ClientToServerMessage, WsEventPayloadMap, WsEventType } from "#/types/wsEvents";
 
 const WS_BC_NAME = "ws-control";
 const WS_RECONNECT_DELAY = 2_000; // 初期遅延: 2秒
@@ -28,18 +28,22 @@ export class WsClient {
   private readonly bc: BroadcastChannel;
   private isActiveLeader = false;
 
-  private readonly handlers = {
-    ack: [] as ((payload: WsEventPayloadMap["ack"]) => void)[],
-    error: [] as ((payload: WsEventPayloadMap["error"]) => void)[],
-    message_deleted: [] as ((payload: WsEventPayloadMap["message_deleted"]) => void)[],
-    message_updated: [] as ((payload: WsEventPayloadMap["message_updated"]) => void)[],
-    new_message: [] as ((payload: WsEventPayloadMap["new_message"]) => void)[],
-    pin_created: [] as ((payload: WsEventPayloadMap["pin_created"]) => void)[],
-    pin_deleted: [] as ((payload: WsEventPayloadMap["pin_deleted"]) => void)[],
-    system_message_created: [] as ((
-      payload: WsEventPayloadMap["system_message_created"],
-    ) => void)[],
-    unread_count: [] as ((payload: WsEventPayloadMap["unread_count"]) => void)[],
+  private readonly handlers: {
+    [K in WsEventType]: Set<(payload: WsEventPayloadMap[K]) => void>;
+  } = {
+    ack: new Set(),
+    error: new Set(),
+    message_deleted: new Set(),
+    message_updated: new Set(),
+    new_message: new Set(),
+    pin_created: new Set(),
+    pin_deleted: new Set(),
+    reaction_added: new Set(),
+    reaction_removed: new Set(),
+    stop_typing: new Set(),
+    system_message_created: new Set(),
+    typing: new Set(),
+    unread_count: new Set(),
   };
 
   public constructor(token: string, workspaceId: string) {
@@ -50,70 +54,70 @@ export class WsClient {
     this.initTabActivityControl();
   }
 
-  private readonly eventDispatcher = (event: MessageEvent<string>) => {
+  /** サーバーイベントを購読中のハンドラへ配る（WebSocket の message ハンドラ） */
+  public readonly eventDispatcher = (event: MessageEvent<string>) => {
     try {
       const parsed = parseServerEvent(event.data);
       if (!parsed.success) {
         logger.warn("WebSocketイベントの形式が想定と異なります:", parsed.error);
         return;
       }
-      const { type, payload } = parsed.data;
-      switch (type) {
+
+      const serverEvent = parsed.data;
+      switch (serverEvent.type) {
         case "new_message": {
-          for (const cb of this.handlers.new_message) {
-            cb(payload);
-          }
+          this.emit("new_message", serverEvent.payload);
           break;
         }
         case "message_updated": {
-          for (const cb of this.handlers.message_updated) {
-            cb(payload);
-          }
+          this.emit("message_updated", serverEvent.payload);
           break;
         }
         case "message_deleted": {
-          for (const cb of this.handlers.message_deleted) {
-            cb(payload);
-          }
+          this.emit("message_deleted", serverEvent.payload);
           break;
         }
         case "unread_count": {
-          for (const cb of this.handlers.unread_count) {
-            cb(payload);
-          }
+          this.emit("unread_count", serverEvent.payload);
           break;
         }
         case "pin_created": {
-          for (const cb of this.handlers.pin_created) {
-            cb(payload);
-          }
+          this.emit("pin_created", serverEvent.payload);
           break;
         }
         case "pin_deleted": {
-          for (const cb of this.handlers.pin_deleted) {
-            cb(payload);
-          }
+          this.emit("pin_deleted", serverEvent.payload);
           break;
         }
         case "system_message_created": {
-          for (const cb of this.handlers.system_message_created) {
-            cb(payload);
-          }
+          this.emit("system_message_created", serverEvent.payload);
+          break;
+        }
+        case "reaction_added": {
+          this.emit("reaction_added", serverEvent.payload);
+          break;
+        }
+        case "reaction_removed": {
+          this.emit("reaction_removed", serverEvent.payload);
+          break;
+        }
+        case "typing": {
+          this.emit("typing", serverEvent.payload);
+          break;
+        }
+        case "stop_typing": {
+          this.emit("stop_typing", serverEvent.payload);
           break;
         }
         case "ack": {
-          for (const cb of this.handlers.ack) {
-            cb(payload);
-          }
+          this.emit("ack", serverEvent.payload);
           break;
         }
         case "error": {
-          if (typeof payload === "object" && "code" in payload && payload.code === "401") {
+          if (serverEvent.payload.code === "401") {
             navigateTo(paths.login());
           }
-          for (const cb of this.handlers.error) {
-            cb(payload);
-          }
+          this.emit("error", serverEvent.payload);
           break;
         }
         default: {
@@ -125,90 +129,24 @@ export class WsClient {
     }
   };
 
-  public onNewMessage(cb: (payload: WsEventPayloadMap["new_message"]) => void) {
-    this.handlers.new_message.push(cb);
-  }
-  public offNewMessage(cb: (payload: WsEventPayloadMap["new_message"]) => void) {
-    const index = this.handlers.new_message.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.new_message.splice(index, 1);
+  private emit<T extends WsEventType>(type: T, payload: WsEventPayloadMap[T]) {
+    for (const handler of this.handlers[type]) {
+      handler(payload);
     }
   }
-  public onMessageUpdated(cb: (payload: WsEventPayloadMap["message_updated"]) => void) {
-    this.handlers.message_updated.push(cb);
+
+  /** サーバーイベントの購読を開始する。戻り値を呼ぶと購読を解除する */
+  public on<T extends WsEventType>(type: T, cb: (payload: WsEventPayloadMap[T]) => void) {
+    this.handlers[type].add(cb);
+
+    return () => {
+      this.off(type, cb);
+    };
   }
-  public offMessageUpdated(cb: (payload: WsEventPayloadMap["message_updated"]) => void) {
-    const index = this.handlers.message_updated.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.message_updated.splice(index, 1);
-    }
-  }
-  public onMessageDeleted(cb: (payload: WsEventPayloadMap["message_deleted"]) => void) {
-    this.handlers.message_deleted.push(cb);
-  }
-  public offMessageDeleted(cb: (payload: WsEventPayloadMap["message_deleted"]) => void) {
-    const index = this.handlers.message_deleted.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.message_deleted.splice(index, 1);
-    }
-  }
-  public onUnreadCount(cb: (payload: WsEventPayloadMap["unread_count"]) => void) {
-    this.handlers.unread_count.push(cb);
-  }
-  public offUnreadCount(cb: (payload: WsEventPayloadMap["unread_count"]) => void) {
-    const index = this.handlers.unread_count.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.unread_count.splice(index, 1);
-    }
-  }
-  public onPinCreated(cb: (payload: WsEventPayloadMap["pin_created"]) => void) {
-    this.handlers.pin_created.push(cb);
-  }
-  public offPinCreated(cb: (payload: WsEventPayloadMap["pin_created"]) => void) {
-    const index = this.handlers.pin_created.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.pin_created.splice(index, 1);
-    }
-  }
-  public onPinDeleted(cb: (payload: WsEventPayloadMap["pin_deleted"]) => void) {
-    this.handlers.pin_deleted.push(cb);
-  }
-  public offPinDeleted(cb: (payload: WsEventPayloadMap["pin_deleted"]) => void) {
-    const index = this.handlers.pin_deleted.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.pin_deleted.splice(index, 1);
-    }
-  }
-  public onSystemMessageCreated(
-    cb: (payload: WsEventPayloadMap["system_message_created"]) => void,
-  ) {
-    this.handlers.system_message_created.push(cb);
-  }
-  public offSystemMessageCreated(
-    cb: (payload: WsEventPayloadMap["system_message_created"]) => void,
-  ) {
-    const index = this.handlers.system_message_created.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.system_message_created.splice(index, 1);
-    }
-  }
-  public onAck(cb: (payload: WsEventPayloadMap["ack"]) => void) {
-    this.handlers.ack.push(cb);
-  }
-  public offAck(cb: (payload: WsEventPayloadMap["ack"]) => void) {
-    const index = this.handlers.ack.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.ack.splice(index, 1);
-    }
-  }
-  public onWsError(cb: (payload: WsEventPayloadMap["error"]) => void) {
-    this.handlers.error.push(cb);
-  }
-  public offWsError(cb: (payload: WsEventPayloadMap["error"]) => void) {
-    const index = this.handlers.error.indexOf(cb);
-    if (index !== -1) {
-      this.handlers.error.splice(index, 1);
-    }
+
+  /** サーバーイベントの購読を解除する */
+  public off<T extends WsEventType>(type: T, cb: (payload: WsEventPayloadMap[T]) => void) {
+    this.handlers[type].delete(cb);
   }
 
   private connect() {
@@ -354,6 +292,9 @@ export class WsClient {
   }
   public typing(channel_id: string) {
     this.send({ payload: { channel_id }, type: "typing" });
+  }
+  public stopTyping(channel_id: string) {
+    this.send({ payload: { channel_id }, type: "stop_typing" });
   }
   public updateReadState(channel_id: string, message_id: string) {
     this.send({ payload: { channel_id, message_id }, type: "update_read_state" });

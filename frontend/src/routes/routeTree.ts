@@ -9,6 +9,7 @@ import { store } from "#/providers/store";
 import { isAuthenticatedAtom } from "#/providers/store/auth";
 import { ChannelPage } from "#/routes/ChannelPage";
 import { LoginPage } from "#/routes/LoginPage";
+import { NotFoundPage } from "#/routes/NotFoundPage";
 import { RegisterPage } from "#/routes/RegisterPage";
 import { RootLayout } from "#/routes/RootLayout";
 import { RouteErrorBoundary } from "#/routes/RouteErrorBoundary";
@@ -54,6 +55,7 @@ export const routeTree: RouteObject[] = [
         },
         path: "app",
       },
+      { Component: NotFoundPage, path: "*" },
     ],
     path: "/",
   },

@@ -43,14 +43,25 @@ func NewClient(ctx context.Context, cfg *Config) (*Client, error) {
 
 type PresignService struct {
 	presignClient *s3.PresignClient
+	s3Client      *s3.Client
 	config        *Config
 }
 
 func NewPresignService(client *Client) *PresignService {
 	return &PresignService{
 		presignClient: s3.NewPresignClient(client.s3Client),
+		s3Client:      client.s3Client,
 		config:        client.config,
 	}
+}
+
+// DeleteObject はストレージ上のオブジェクトを削除します
+func (p *PresignService) DeleteObject(key string) error {
+	_, err := p.s3Client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
+		Bucket: aws.String(p.config.BucketName),
+		Key:    aws.String(key),
+	})
+	return err
 }
 
 func (p *PresignService) GenerateUploadURL(key, contentType string, sizeBytes int64, expires interface{}) (string, error) {

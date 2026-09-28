@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Badge } from "@mantine/core";
 import { useNavigate } from "react-router";
 
+import { useChannels } from "#/features/channel/hooks/useChannel";
 import { paths } from "#/lib/paths";
 import { useOptionalRouteParams } from "#/lib/routeParams";
 
@@ -14,14 +15,15 @@ type ChannelLinkProps = {
 export const ChannelLink = ({ "data-channel": channelName }: ChannelLinkProps) => {
   const navigate = useNavigate();
   const { workspaceId } = useOptionalRouteParams();
+  const { data: channels } = useChannels(workspaceId ?? null);
+
+  const channel = channels?.find((item) => item.name === channelName);
 
   const handleClick = () => {
-    if (workspaceId === undefined) {
+    if (workspaceId === undefined || channel === undefined) {
       return;
     }
-    // チャンネル名からチャンネル ID を解決する必要がある
-    // ここでは簡略化のため、チャンネル名をそのまま使用
-    void navigate(paths.channel(workspaceId, channelName));
+    void navigate(paths.channel(workspaceId, channel.id));
   };
 
   return (
@@ -29,7 +31,7 @@ export const ChannelLink = ({ "data-channel": channelName }: ChannelLinkProps) =
       variant="light"
       color="green"
       size="sm"
-      className="cursor-pointer hover:bg-green-100"
+      className={channel === undefined ? "" : "cursor-pointer hover:bg-green-100"}
       component="span"
       onClick={handleClick}
     >

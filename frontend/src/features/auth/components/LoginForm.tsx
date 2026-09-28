@@ -20,7 +20,7 @@ export const LoginForm = () => {
     },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "有効なメールアドレスを入力してください"),
-      password: (value) => (value.length >= 6 ? null : "6文字以上のパスワードを入力してください"),
+      password: (value) => (value.length >= 8 ? null : "8文字以上のパスワードを入力してください"),
     },
   });
 

@@ -1,6 +1,6 @@
 import type { components } from "#/lib/api/schema";
 
-export type Attachment = components["schemas"]["Attachment"];
+export type MessageAttachmentInfo = components["schemas"]["MessageAttachment"];
 export type PresignRequest = components["schemas"]["PresignRequest"];
 
 type AttachmentUploadState =

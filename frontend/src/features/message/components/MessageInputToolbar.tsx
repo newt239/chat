@@ -19,6 +19,8 @@ import {
   IconEye,
 } from "@tabler/icons-react";
 
+import { MarkdownHelpModal } from "./MarkdownHelpModal";
+
 import type { MessageInputMode } from "../hooks/useMessageInputMode";
 
 type MessageInputToolbarProps = {
@@ -71,6 +73,7 @@ export const MessageInputToolbar = ({
   onFileSelect,
 }: MessageInputToolbarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({
     bold: false,
     code: false,
@@ -317,9 +320,22 @@ export const MessageInputToolbar = ({
 
           <Menu.Dropdown>
             <Menu.Label>その他</Menu.Label>
-            <Menu.Item leftSection={<IconInfoCircle size={16} />}>ヘルプ</Menu.Item>
+            <Menu.Item
+              leftSection={<IconInfoCircle size={16} />}
+              onClick={() => {
+                setIsHelpOpen(true);
+              }}
+            >
+              ヘルプ
+            </Menu.Item>
           </Menu.Dropdown>
         </Menu>
+        <MarkdownHelpModal
+          opened={isHelpOpen}
+          onClose={() => {
+            setIsHelpOpen(false);
+          }}
+        />
       </Group>
       <Group gap="xs">
         <ActionIcon

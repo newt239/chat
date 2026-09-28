@@ -59,7 +59,10 @@ func main() {
 		log.Printf("Warning: could not verify migration (non-fatal): %v", err)
 	}
 
-	if err := seed.AutoSeed(client); err != nil {
+	// 既知のテストアカウントを作るため本番ではシードしない
+	if cfg.Server.Env == "production" {
+		log.Println("Production environment: skipping auto-seed")
+	} else if err := seed.AutoSeed(client); err != nil {
 		if strings.Contains(err.Error(), "does not exist") {
 			log.Fatalf("database tables do not exist after migration. This indicates a migration failure: %v", err)
 		}

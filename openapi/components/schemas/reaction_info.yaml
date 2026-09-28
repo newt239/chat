@@ -1,17 +1,14 @@
-MessageBookmark:
+ReactionInfo:
   type: object
   properties:
-    userId:
+    user:
+      $ref: "../../openapi.yaml#/components/schemas/MessageUser"
+    emoji:
       type: string
-      format: uuid
-    messageId:
-      type: string
-      format: uuid
     createdAt:
       type: string
       format: date-time
   required:
-    - userId
-    - messageId
+    - user
+    - emoji
     - createdAt
-

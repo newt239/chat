@@ -54,23 +54,29 @@ func (s *WebSocketNotificationService) NotifySystemMessageCreated(workspaceID st
 	log.Printf("Notified system message to workspace=%s channel=%s", workspaceID, channelID)
 }
 
-// NotifyReaction はリアクション追加をチャンネル購読者に通知します
-func (s *WebSocketNotificationService) NotifyReaction(workspaceID string, channelID string, reaction interface{}) {
-	// リアクションは new_message イベントの一種として扱う
-	// 将来的に専用のイベントタイプを追加することも検討
-	payload := websocket.NewMessagePayload{
-		ChannelID: channelID,
-		Message:   convertToMap(reaction),
-	}
+// NotifyReactionAdded はリアクション追加をチャンネル購読者に通知します
+func (s *WebSocketNotificationService) NotifyReactionAdded(workspaceID string, channelID string, reaction service.ReactionNotification) {
+	s.notifyReaction(websocket.EventTypeReactionAdded, workspaceID, channelID, reaction)
+}
 
-	data, err := websocket.SendServerMessage(websocket.EventTypeNewMessage, payload)
+// NotifyReactionRemoved はリアクション削除をチャンネル購読者に通知します
+func (s *WebSocketNotificationService) NotifyReactionRemoved(workspaceID string, channelID string, reaction service.ReactionNotification) {
+	s.notifyReaction(websocket.EventTypeReactionRemoved, workspaceID, channelID, reaction)
+}
+
+func (s *WebSocketNotificationService) notifyReaction(eventType websocket.EventType, workspaceID string, channelID string, reaction service.ReactionNotification) {
+	data, err := websocket.SendServerMessage(eventType, websocket.ReactionPayload{
+		ChannelID: channelID,
+		MessageID: reaction.MessageID,
+		UserID:    reaction.UserID,
+		Emoji:     reaction.Emoji,
+	})
 	if err != nil {
-		log.Printf("reactionイベントのエンコードに失敗しました: %v", err)
+		log.Printf("%sイベントのエンコードに失敗しました: %v", eventType, err)
 		return
 	}
 
 	s.hub.BroadcastToChannelSubscribers(workspaceID, channelID, data)
-	log.Printf("Notified reaction to workspace=%s channel=%s", workspaceID, channelID)
 }
 
 // NotifyUpdatedMessage はメッセージ更新をチャンネル購読者に通知します
@@ -127,7 +133,7 @@ func (s *WebSocketNotificationService) NotifyPinCreated(workspaceID string, chan
 		log.Printf("pin_createdイベントのエンコードに失敗しました: %v", err)
 		return
 	}
-	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+	s.hub.BroadcastToChannel(workspaceID, channelID, data, "")
 }
 
 // NotifyPinDeleted はピン削除をチャンネル参加者に通知します
@@ -149,14 +155,11 @@ func (s *WebSocketNotificationService) NotifyPinDeleted(workspaceID string, chan
 		log.Printf("pin_deletedイベントのエンコードに失敗しました: %v", err)
 		return
 	}
-	s.hub.BroadcastToChannel(workspaceID, channelID, data)
+	s.hub.BroadcastToChannel(workspaceID, channelID, data, "")
 }
 
 // NotifyUnreadCount は未読数の更新を特定ユーザーに通知します
-func (s *WebSocketNotificationService) NotifyUnreadCount(workspaceID string, userID string, channelID string, unreadCount int) {
-	// TODO: メンション検知の実装（現在は未読数が0より大きい場合にtrueとする）
-	hasMention := unreadCount > 0
-
+func (s *WebSocketNotificationService) NotifyUnreadCount(workspaceID string, userID string, channelID string, unreadCount int, hasMention bool) {
 	payload := websocket.UnreadCountPayload{
 		ChannelID:   channelID,
 		UnreadCount: unreadCount,

@@ -41,7 +41,8 @@ export const remarkMention = () => (tree: Root) => {
           hName: "span",
           hProperties: {
             className: ["mention"],
-            "data-mention": username,
+            // sanitize は hast のプロパティ名（キャメルケース）で判定する
+            dataMention: username,
           },
         },
         type: "mention",

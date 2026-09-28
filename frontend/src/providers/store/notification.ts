@@ -20,6 +20,9 @@ export type NotificationItem = {
   isRead: boolean;
 };
 
+// 保持する通知の上限
+const MAX_NOTIFICATIONS = 100;
+
 // 通知履歴の状態管理
 const notificationsAtom = atomWithStorage<NotificationItem[]>("notifications", []);
 
@@ -30,6 +33,15 @@ export const notificationItemsAtom = atom((get) => get(notificationsAtom));
 export const unreadNotificationCountAtom = atom((get) => {
   const notifications = get(notificationsAtom);
   return notifications.filter((notification) => !notification.isRead).length;
+});
+
+// 通知を追加するAtom（同じ通知の重複登録は無視する）
+export const addNotificationAtom = atom(null, (get, set, notification: NotificationItem) => {
+  const notifications = get(notificationsAtom);
+  if (notifications.some((item) => item.id === notification.id)) {
+    return;
+  }
+  set(notificationsAtom, [notification, ...notifications].slice(0, MAX_NOTIFICATIONS));
 });
 
 // 通知を既読にするAtom

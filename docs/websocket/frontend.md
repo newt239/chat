@@ -1,80 +1,50 @@
-## クライアントサイド WebSocket 導入計画（詳細）
+## クライアントサイド WebSocket 実装
 
-### 1. 基本設計方針
+### 1. 構成
 
-- **WebSocket エンドポイント:**  
-  `ws(s)://{サーバー}/ws?token={JWT}`  
-  JWT は必ずクエリパラメータで付与
+| ファイル | 役割 |
+| --- | --- |
+| `frontend/src/lib/ws.ts` | `WsClient`。接続・再接続・タブ間調停・イベント配信 |
+| `frontend/src/types/wsEvents.ts` | サーバーイベントのスキーマと型（`event.go` に対応） |
+| `frontend/src/providers/ws/` | `WsClient` を React ツリーへ供給する Provider |
 
-- **接続管理:**
+### 2. 接続管理
 
-  - アクティブなタブ/ウインドウ 1 つだけが WebSocket に接続
-  - タブ切り替え・非アクティブ時は接続を切り、再アクティブ化時に再接続
-  - 複数デバイス・ブラウザでの同時ログイン・接続もサーバ側は許容（サイドエフェクト設計済み）
+- エンドポイントは `ws(s)://{サーバー}/ws?token={JWT}&workspaceId={id}`。JWT はクエリパラメータで付与する
+- `BroadcastChannel` でタブ間を調停し、アクティブなタブ 1 つだけが接続を保持する
+- 切断時は指数バックオフで再接続する（最大 5 回）。正常終了（1000）と認証エラー（1008）では再接続しない
+- サーバーから `error`（code=401）を受けた場合はログイン画面へ遷移する
 
-- **将来的なイベント追加:**
-  - 「チャンネルへの追加」など、サーバからクライアントへの新規イベントは今後も増える前提で、拡張しやすいテーブル駆動/dispatcher 設計とする
+### 3. イベントの購読
 
----
+`WsClient` は型付きの `on(type, handler)` / `off(type, handler)` を提供する。`on` の戻り値を呼ぶと購読を解除できる。
 
-### 2. 実装タスク・ステップ
+```ts
+const unsubscribe = wsClient.on("new_message", ({ channel_id, message }) => {
+  // payload は type から推論される
+});
+```
 
-1. **WebSocket コアユーティリティ実装**
+受信したイベントは `parseServerEvent` で検証してから配信するため、想定外の形式のイベントは無視される。
 
-   - JWT・クエリパラメータで動的に接続構築
-   - ハートビートや自動リトライ（失敗・切断時の再接続）
-   - クローズ時の clean-up
+### 4. 購読しているフック
 
-2. **アクティブタブ判定ロジック**
+| フック | 購読イベント | 反映先 |
+| --- | --- | --- |
+| `features/message/hooks/useChannelTimeline` | `new_message` / `message_updated` / `message_deleted` / `system_message_created` / `reaction_added` / `reaction_removed` / `typing` / `stop_typing` | 表示中チャンネルのタイムラインと入力中インジケータ |
+| `features/channel/hooks/useChannelRealtimeSync` | `new_message` / `unread_count` / `pin_created` / `pin_deleted` | チャンネル一覧の未読バッジとピン件数 |
+| `features/notification/hooks/useNotificationSync` | `new_message` | 通知パネルとベルバッジ |
 
-   - `visibilitychange`イベント等で管理し、アクティブ復帰時は即再接続
-   - 必要に応じてタブ間通信（BroadcastChannel 等）で「どのタブが保持役か」同期することで多重接続を抑制  
-     → 切替もシームレス&リアルタイムで受信を継続
+チャンネルの購読は `useChannelTimeline` が `join_channel` / `leave_channel` を送信して管理する。
 
-3. **購読チャンネル管理**
+### 5. 送信 API
 
-   - 有効なルームだけ`join_channel`/`leave_channel`を明示送信する
-   - UI 状態変更時（タブ遷移・チャンネル切替）で購読を即変更
+`joinChannel` / `leaveChannel` / `postMessage` / `typing` / `stopTyping` / `updateReadState` を型付きで提供する。
+入力中の通知は `features/message/hooks/useTypingNotifier` が 2 秒間隔に間引き、5 秒操作がなければ `stop_typing` を送る。
 
-4. **イベント受信・type 分岐ロジック**
+### 6. イベントを追加するとき
 
-   - `type`ごとにハンドラ関数定義（例: new_message, unread_count, pin_created, typing, 追加イベント等拡張も容易に）
-   - payload は型安全な形で各 store/UI に dispatch
-
-5. **メッセージ送信 API**
-
-   - post_message、typing 等は型付きでラップし送信
-
-6. **エラー・ack ハンドリング**
-
-   - type=error, type=ack を全 API でハンドリング
-   - サーバ側未知イベント時なども考慮する共通 UI 通知(リトライ UI, トースト等)
-
-7. **TypeScript 型定義整備**
-   - event.go の構造体定義を TS へマッピング（type 安全性担保）
-
----
-
-### 3. 今後のタスク追加想定（イベント増加等）
-
-- サーバ実装拡張に合わせ、event type ディスパッチャー（テーブル定義等）に新イベントハンドラを追加できる設計
-- 例：チャンネル追加通知イベント
-  ```
-  { type: "channel_added", payload: {...} }
-  ```
-  フック先の store/UI を柔軟に追加できる形を維持
-
----
-
-### 4. 注意事項・依頼事項
-
-- WebSocket 接続の統一的管理（アクティブタブのみ・切断と復帰の適切な連携）は UI フレームワーク頼りにならない一元管理を意識
-- 将来的な追加イベント時、サーバ側 schema 設計変更があれば都度教えてください（TS 型/受信ハンドラ拡張を即対応可にします）
-
----
-
-### 次アクション（推奨）
-
-1. WebSocket 管理ファイル（例: `frontend/src/lib/ws.ts`）の新規設計・実装開始
-2. 型定義ファイルの準備（サーバの event 定義に追従）
-3. 最小限の検証（接続～ join_channel にて新着受信確認）
+1. `backend/internal/interfaces/handler/websocket/event.go` にイベント種別とペイロードを追加する
+2. `frontend/src/types/wsEvents.ts` の `serverEventTypes` と `serverEventSchema` に追加する
+3. `frontend/src/lib/ws.ts` の `eventDispatcher` に `case` を追加する（型検査で漏れが分かる）
+4. 反映したいフックで `wsClient.on(...)` を購読する

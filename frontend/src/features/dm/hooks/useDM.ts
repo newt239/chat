@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "#/lib/api/client";
 
-import type { CreateDMRequest } from "../schemas";
+import type { CreateDMRequest, CreateGroupDMRequest } from "../schemas";
 
 export const useDMs = (workspaceId: string) =>
   useQuery({
@@ -37,6 +37,30 @@ export const useCreateDM = (workspaceId: string) => {
 
       if (response.error) {
         throw new Error(response.error.error || "DMの作成に失敗しました");
+      }
+
+      return response.data;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["dms", workspaceId] });
+    },
+  });
+};
+
+export const useCreateGroupDM = (workspaceId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreateGroupDMRequest) => {
+      const response = await api.POST("/api/workspaces/{id}/group-dms", {
+        body: data,
+        params: {
+          path: { id: workspaceId },
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.error || "グループDMの作成に失敗しました");
       }
 
       return response.data;

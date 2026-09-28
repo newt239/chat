@@ -1,0 +1,11 @@
+GroupMention:
+  type: object
+  properties:
+    groupId:
+      type: string
+      format: uuid
+    name:
+      type: string
+  required:
+    - groupId
+    - name

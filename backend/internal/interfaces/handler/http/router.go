@@ -21,8 +21,6 @@ type RouterConfig struct {
 
 	WebSocketHub        *websocket.Hub
 	WorkspaceRepository repository.WorkspaceRepository
-	MessageUseCase      websocket.MessageUseCase
-	ReadStateUseCase    websocket.ReadStateUseCase
 
 	AuthHandler          *handler.AuthHandler
 	WorkspaceHandler     *handler.WorkspaceHandler
@@ -58,6 +56,10 @@ func (s *serverImpl) GetAttachment(ctx echo.Context, id openapi_types.UUID) erro
 	return s.cfg.AttachmentHandler.GetAttachment(ctx, id)
 }
 
+func (s *serverImpl) DeleteAttachment(ctx echo.Context, id openapi_types.UUID) error {
+	return s.cfg.AttachmentHandler.DeleteAttachment(ctx, id)
+}
+
 func (s *serverImpl) DownloadAttachment(ctx echo.Context, id openapi_types.UUID) error {
 	return s.cfg.AttachmentHandler.DownloadAttachment(ctx, id)
 }
@@ -88,6 +90,14 @@ func (s *serverImpl) AddBookmark(ctx echo.Context, messageId openapi_types.UUID)
 
 func (s *serverImpl) RemoveBookmark(ctx echo.Context, messageId openapi_types.UUID) error {
 	return s.cfg.BookmarkHandler.RemoveBookmark(ctx, messageId)
+}
+
+func (s *serverImpl) GetChannel(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelHandler.GetChannel(ctx, channelId)
+}
+
+func (s *serverImpl) DeleteChannel(ctx echo.Context, channelId openapi_types.UUID) error {
+	return s.cfg.ChannelHandler.DeleteChannel(ctx, channelId)
 }
 
 func (s *serverImpl) UpdateChannel(ctx echo.Context, channelId openapi_types.UUID) error {
@@ -206,6 +216,14 @@ func (s *serverImpl) SearchWorkspace(ctx echo.Context, workspaceId string, param
 	return s.cfg.SearchHandler.SearchWorkspace(ctx, workspaceId, params)
 }
 
+func (s *serverImpl) FollowThread(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.ThreadHandler.FollowThread(ctx, messageId)
+}
+
+func (s *serverImpl) UnfollowThread(ctx echo.Context, messageId openapi_types.UUID) error {
+	return s.cfg.ThreadHandler.UnfollowThread(ctx, messageId)
+}
+
 func (s *serverImpl) MarkThreadRead(ctx echo.Context, threadId openapi_types.UUID) error {
 	return s.cfg.ThreadHandler.MarkThreadRead(ctx, threadId)
 }
@@ -244,6 +262,18 @@ func (s *serverImpl) ListUserGroupMembers(ctx echo.Context, id openapi_types.UUI
 
 func (s *serverImpl) AddUserGroupMember(ctx echo.Context, id openapi_types.UUID) error {
 	return s.cfg.UserGroupHandler.AddUserGroupMember(ctx, id)
+}
+
+func (s *serverImpl) GetMe(ctx echo.Context) error {
+	return s.cfg.UserHandler.GetMe(ctx)
+}
+
+func (s *serverImpl) UpdatePassword(ctx echo.Context) error {
+	return s.cfg.UserHandler.UpdatePassword(ctx)
+}
+
+func (s *serverImpl) DeleteMe(ctx echo.Context) error {
+	return s.cfg.UserHandler.DeleteMe(ctx)
 }
 
 func (s *serverImpl) UpdateMe(ctx echo.Context) error {
@@ -307,15 +337,21 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	// アタッチメント
 	protectedAPI.POST("/attachments/presign", wrapper.PresignUpload)
 	protectedAPI.GET("/attachments/:id", wrapper.GetAttachment)
+	protectedAPI.DELETE("/attachments/:id", wrapper.DeleteAttachment)
 	protectedAPI.GET("/attachments/:id/download", wrapper.DownloadAttachment)
+
+	// 認証
+	protectedAPI.POST("/auth/logout", wrapper.Logout)
 
 	// ブックマーク
 	protectedAPI.GET("/bookmarks", wrapper.ListBookmarks)
-	protectedAPI.POST("/bookmarks/:messageId", wrapper.AddBookmark)
-	protectedAPI.DELETE("/bookmarks/:messageId", wrapper.RemoveBookmark)
+	protectedAPI.POST("/messages/:messageId/bookmarks", wrapper.AddBookmark)
+	protectedAPI.DELETE("/messages/:messageId/bookmarks", wrapper.RemoveBookmark)
 
 	// チャンネル
+	protectedAPI.GET("/channels/:channelId", wrapper.GetChannel)
 	protectedAPI.PATCH("/channels/:channelId", wrapper.UpdateChannel)
+	protectedAPI.DELETE("/channels/:channelId", wrapper.DeleteChannel)
 	protectedAPI.GET("/channels/:channelId/members", wrapper.ListChannelMembers)
 	protectedAPI.POST("/channels/:channelId/members", wrapper.InviteChannelMember)
 	protectedAPI.DELETE("/channels/:channelId/members/self", wrapper.LeaveChannel)
@@ -344,7 +380,7 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 
 	// 読み取り状態
 	protectedAPI.POST("/channels/:channelId/reads", wrapper.UpdateReadState)
-	protectedAPI.GET("/channels/:channelId/unread-count", wrapper.GetUnreadCount)
+	protectedAPI.GET("/channels/:channelId/unread_count", wrapper.GetUnreadCount)
 
 	// DM
 	protectedAPI.GET("/workspaces/:id/dms", wrapper.ListDMs)
@@ -352,7 +388,9 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.POST("/workspaces/:id/group-dms", wrapper.CreateGroupDM)
 
 	// スレッド
-	protectedAPI.PATCH("/threads/:threadId/read", wrapper.MarkThreadRead)
+	protectedAPI.POST("/messages/:messageId/follow", wrapper.FollowThread)
+	protectedAPI.DELETE("/messages/:messageId/follow", wrapper.UnfollowThread)
+	protectedAPI.POST("/threads/:threadId/read", wrapper.MarkThreadRead)
 	protectedAPI.GET("/workspaces/:workspaceId/threads/participating", wrapper.GetParticipatingThreads)
 
 	// ユーザーグループ
@@ -378,11 +416,14 @@ func registerProtectedRoutes(protectedAPI *echo.Group, wrapper *openapi.ServerIn
 	protectedAPI.GET("/workspaces/:id/members", wrapper.ListMembers)
 	protectedAPI.POST("/workspaces/:id/members", wrapper.AddMemberByEmail)
 	protectedAPI.DELETE("/workspaces/:id/members/:userId", wrapper.RemoveMember)
-	protectedAPI.PATCH("/workspaces/:id/members/:userId/role", wrapper.UpdateMemberRole)
+	protectedAPI.PATCH("/workspaces/:id/members/:userId", wrapper.UpdateMemberRole)
 	protectedAPI.GET("/workspaces/:workspaceId/search", wrapper.SearchWorkspace)
 
 	// ユーザー
+	protectedAPI.GET("/users/me", wrapper.GetMe)
 	protectedAPI.PATCH("/users/me", wrapper.UpdateMe)
+	protectedAPI.DELETE("/users/me", wrapper.DeleteMe)
+	protectedAPI.PATCH("/users/me/password", wrapper.UpdatePassword)
 
 	// リンク
 	protectedAPI.POST("/links/fetch-ogp", wrapper.FetchOGP)
@@ -404,7 +445,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.Use(middleware.Recover())
 
 	// WebSocket
-	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.MessageUseCase, cfg.ReadStateUseCase))
+	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.AllowedOrigins))
 
 	// ServerInterfaceを実装する構造体を作成
 	server := &serverImpl{cfg: cfg}

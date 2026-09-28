@@ -14,11 +14,6 @@ type AuthHandler struct {
 	AuthUC authuc.AuthUseCase
 }
 
-// 注意: OpenAPIスキーマに定義がないため、一時的に独自型を使用
-type LogoutRequest struct {
-	RefreshToken string `json:"refresh_token" validate:"required"`
-}
-
 func (h *AuthHandler) Register(c echo.Context) error {
 	var req openapi.RegisterRequest
 	if err := c.Bind(&req); err != nil {
@@ -89,26 +84,12 @@ func (h *AuthHandler) Refresh(c echo.Context) error {
 }
 
 func (h *AuthHandler) Logout(c echo.Context) error {
-	var req LogoutRequest
-	if err := c.Bind(&req); err != nil {
-		return utils.HandleBindError(err)
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return utils.HandleAuthError()
 	}
 
-	input := authuc.LogoutInput{
-		UserID:       userID,
-		RefreshToken: req.RefreshToken,
-	}
-
-	output, err := h.AuthUC.Logout(c.Request().Context(), input)
+	output, err := h.AuthUC.Logout(c.Request().Context(), authuc.LogoutInput{UserID: userID})
 	if err != nil {
 		return handleUseCaseError(err)
 	}

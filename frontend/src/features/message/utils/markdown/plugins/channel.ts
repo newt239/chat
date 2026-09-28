@@ -41,7 +41,7 @@ export const remarkChannel = () => (tree: Root) => {
           hName: "span",
           hProperties: {
             className: ["channel-link"],
-            "data-channel": channelName,
+            dataChannel: channelName,
           },
         },
         type: "channelLink",

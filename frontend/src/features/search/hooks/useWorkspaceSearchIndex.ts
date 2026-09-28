@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   searchFilterValues,
   type SearchFilter,
-  workspaceSearchResponseSchema,
   type WorkspaceSearchResponse,
 } from "#/features/search/schemas";
 import { api } from "#/lib/api/client";
@@ -58,12 +57,7 @@ export const useWorkspaceSearch = (params: WorkspaceSearchParams) => {
         throw new Error(error.error);
       }
 
-      const parsed = workspaceSearchResponseSchema.safeParse(data);
-      if (!parsed.success) {
-        throw new Error("検索レスポンスの形式が想定と異なります");
-      }
-
-      return parsed.data;
+      return data;
     },
     queryKey: ["workspace-search", workspaceId, trimmedQuery, normalizedFilter, page, perPage],
     retry: 1,

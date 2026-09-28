@@ -9,6 +9,7 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
+	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -129,6 +130,14 @@ func (s *WorkspaceSearcher) SearchWorkspace(ctx context.Context, input Workspace
 		HasMore: false,
 	}
 
+	groupsResult := PaginatedUserGroups{
+		Items:   []usergroupuc.UserGroupOutput{},
+		Total:   0,
+		Page:    page,
+		PerPage: perPage,
+		HasMore: false,
+	}
+
 	// メッセージ検索
 	if filter.includesMessages() {
 		messagesResult, err = s.searchMessages(ctx, trimmedQuery, input.WorkspaceID, input.RequesterID, page, perPage, offset)
@@ -153,10 +162,19 @@ func (s *WorkspaceSearcher) SearchWorkspace(ctx context.Context, input Workspace
 		}
 	}
 
+	// ユーザーグループ検索
+	if filter.includesGroups() {
+		groupsResult, err = s.searchUserGroups(ctx, trimmedQuery, input.WorkspaceID, page, perPage, offset)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &WorkspaceSearchOutput{
 		Messages: messagesResult,
 		Channels: channelsResult,
 		Users:    usersResult,
+		Groups:   groupsResult,
 	}, nil
 }
 
@@ -225,16 +243,14 @@ func (s *WorkspaceSearcher) searchChannels(
 	items := make([]channeluc.ChannelOutput, 0, len(channels))
 	for _, ch := range channels {
 		items = append(items, channeluc.ChannelOutput{
-			ID:           ch.ID,
-			WorkspaceID:  ch.WorkspaceID,
-			Name:         ch.Name,
-			Description:  ch.Description,
-			IsPrivate:    ch.IsPrivate,
-			CreatedBy:    ch.CreatedBy,
-			CreatedAt:    ch.CreatedAt,
-			UpdatedAt:    ch.UpdatedAt,
-			HasMention:   false,
-			MentionCount: 0,
+			ID:          ch.ID,
+			WorkspaceID: ch.WorkspaceID,
+			Name:        ch.Name,
+			Description: ch.Description,
+			IsPrivate:   ch.IsPrivate,
+			CreatedBy:   ch.CreatedBy,
+			CreatedAt:   ch.CreatedAt,
+			UpdatedAt:   ch.UpdatedAt,
 		})
 	}
 
@@ -244,6 +260,52 @@ func (s *WorkspaceSearcher) searchChannels(
 		Page:    page,
 		PerPage: limit,
 		HasMore: offset+len(items) < total,
+	}, nil
+}
+
+// searchUserGroups はワークスペース内のユーザーグループを名前で部分一致検索します
+func (s *WorkspaceSearcher) searchUserGroups(
+	ctx context.Context,
+	query string,
+	workspaceID string,
+	page int,
+	limit int,
+	offset int,
+) (PaginatedUserGroups, error) {
+	groups, err := s.userGroupRepo.FindByWorkspaceID(ctx, workspaceID)
+	if err != nil {
+		return PaginatedUserGroups{}, fmt.Errorf("failed to load user groups: %w", err)
+	}
+
+	lowered := strings.ToLower(query)
+	matched := make([]usergroupuc.UserGroupOutput, 0, len(groups))
+	for _, group := range groups {
+		if !strings.Contains(strings.ToLower(group.Name), lowered) {
+			continue
+		}
+		matched = append(matched, usergroupuc.UserGroupOutput{
+			ID:          group.ID,
+			WorkspaceID: group.WorkspaceID,
+			Name:        group.Name,
+			Description: group.Description,
+			CreatedBy:   group.CreatedBy,
+			CreatedAt:   group.CreatedAt,
+			UpdatedAt:   group.UpdatedAt,
+		})
+	}
+
+	total := len(matched)
+	if offset > total {
+		offset = total
+	}
+	end := min(offset+limit, total)
+
+	return PaginatedUserGroups{
+		Items:   matched[offset:end],
+		Total:   total,
+		Page:    page,
+		PerPage: limit,
+		HasMore: end < total,
 	}, nil
 }
 

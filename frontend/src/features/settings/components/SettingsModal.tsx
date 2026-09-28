@@ -1,11 +1,9 @@
 import { Modal, Button, Text, Group, Stack, Divider } from "@mantine/core";
 import { IconLogout } from "@tabler/icons-react";
-import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
+import { useLogout } from "#/features/auth/hooks/useLogout";
+import { AccountSettingsPanel } from "#/features/settings/components/AccountSettingsPanel";
 import { ProfileSettingsPanel } from "#/features/settings/components/ProfileSettingsPanel";
-import { paths } from "#/lib/paths";
-import { clearAuthAtom } from "#/providers/store/auth";
 
 type SettingsModalProps = {
   opened: boolean;
@@ -13,23 +11,25 @@ type SettingsModalProps = {
 };
 
 export const SettingsModal = ({ opened, onClose }: SettingsModalProps) => {
-  const clearAuth = useSetAtom(clearAuthAtom);
-  const navigate = useNavigate();
+  const logout = useLogout();
 
   const handleLogout = () => {
-    clearAuth();
     onClose();
-    void navigate(paths.login());
+    logout.mutate();
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="設定" centered size="sm">
+    <Modal opened={opened} onClose={onClose} title="設定" centered size="md">
       <Stack gap="md">
         <Text size="sm" c="dimmed">
           アプリケーションの設定とアカウント管理を行えます。
         </Text>
 
         <ProfileSettingsPanel />
+
+        <Divider />
+
+        <AccountSettingsPanel />
 
         <Divider />
 
@@ -41,6 +41,7 @@ export const SettingsModal = ({ opened, onClose }: SettingsModalProps) => {
             variant="filled"
             color="red"
             leftSection={<IconLogout size={16} />}
+            loading={logout.isPending}
             onClick={handleLogout}
           >
             ログアウト

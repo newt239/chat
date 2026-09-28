@@ -1,0 +1,21 @@
+MeProfile:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    email:
+      type: string
+      format: email
+    displayName:
+      type: string
+    bio:
+      type: string
+      nullable: true
+    avatarUrl:
+      type: string
+      nullable: true
+  required:
+    - id
+    - email
+    - displayName

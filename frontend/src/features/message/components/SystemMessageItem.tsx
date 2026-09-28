@@ -2,7 +2,7 @@ import { Text } from "@mantine/core";
 
 import { dateTimeFormatter } from "../utils/time";
 
-import type { SystemMessage } from "../schemas";
+import type { SystemMessage } from "../types";
 
 type Props = {
   message: SystemMessage;

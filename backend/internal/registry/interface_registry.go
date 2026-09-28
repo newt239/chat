@@ -43,7 +43,6 @@ func (r *InterfaceRegistry) NewChannelHandler() *handler.ChannelHandler {
 func (r *InterfaceRegistry) NewChannelMemberHandler() *handler.ChannelMemberHandler {
 	return &handler.ChannelMemberHandler{
 		ChannelMemberUseCase: r.usecaseRegistry.NewChannelMemberUseCase(),
-		SystemMessageUC:      r.usecaseRegistry.NewSystemMessageUseCase(),
 	}
 }
 
@@ -126,8 +125,6 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		AllowedOrigins:       r.infrastructureRegistry.config.CORS.AllowedOrigins,
 		WebSocketHub:         r.infrastructureRegistry.hub,
 		WorkspaceRepository:  r.domainRegistry.NewWorkspaceRepository(),
-		MessageUseCase:       r.usecaseRegistry.NewMessageUseCase(),
-		ReadStateUseCase:     r.usecaseRegistry.NewReadStateUseCase(),
 		AuthHandler:          r.NewAuthHandler(),
 		WorkspaceHandler:     r.NewWorkspaceHandler(),
 		ChannelHandler:       r.NewChannelHandler(),

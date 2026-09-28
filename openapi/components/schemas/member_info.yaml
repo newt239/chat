@@ -12,6 +12,9 @@ MemberInfo:
     avatarUrl:
       type: string
       nullable: true
+    bio:
+      type: string
+      nullable: true
     role:
       type: string
       enum: [owner, admin, member]

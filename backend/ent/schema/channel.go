@@ -60,6 +60,7 @@ func (Channel) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("is_private"),
 		index.Fields("name").
+			Edges("workspace").
 			Unique(),
 	}
 }

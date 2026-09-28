@@ -59,6 +59,7 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 		r.domainRegistry.NewReadStateRepository(),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewSystemMessageUseCase(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -68,6 +69,7 @@ func (r *UseCaseRegistry) NewChannelMemberUseCase() channelmemberuc.ChannelMembe
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.NewSystemMessageUseCase(),
 	)
 }
 
@@ -172,9 +174,8 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 func (r *UseCaseRegistry) NewAttachmentUseCase() *attachmentuc.Interactor {
 	return attachmentuc.NewInteractor(
 		r.domainRegistry.NewAttachmentRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelAccessService(),
 		r.infrastructureRegistry.NewStorageService(),
 		r.infrastructureRegistry.NewStorageConfig(),
 	)
@@ -199,6 +200,7 @@ func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
 	)
 }
 
@@ -211,11 +213,15 @@ func (r *UseCaseRegistry) NewThreadLister() *threaduc.ThreadLister {
 func (r *UseCaseRegistry) NewThreadReader() *threaduc.ThreadReader {
 	return threaduc.NewThreadReader(
 		r.domainRegistry.NewThreadRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
 func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
 	return useruc.NewInteractor(
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewSessionRepository(),
+		r.infrastructureRegistry.NewPasswordService(),
 	)
 }

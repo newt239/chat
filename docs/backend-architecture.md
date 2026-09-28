@@ -336,96 +336,110 @@ func (r *InterfaceRegistry) NewAuthHandler() *handler.AuthHandler {
 
 ```
 # 認証
-POST   /api/auth/register                 # ユーザー登録
-POST   /api/auth/login                    # ログイン
-POST   /api/auth/refresh                  # トークンリフレッシュ
-POST   /api/auth/logout                   # ログアウト
+POST   /api/auth/register                        # ユーザー登録
+POST   /api/auth/login                           # ログイン
+POST   /api/auth/refresh                         # トークンリフレッシュ
+POST   /api/auth/logout                          # ログアウト（全セッション失効）
 
 # ユーザー
-GET    /api/users/me                      # 現在のユーザー情報
-PATCH  /api/users/me                      # ユーザー情報更新
-GET    /api/users/:id                     # ユーザー詳細
+GET    /api/users/me                             # 現在のユーザー情報
+PATCH  /api/users/me                             # プロフィール更新
+DELETE /api/users/me                             # アカウント削除
+PATCH  /api/users/me/password                    # パスワード変更
 
 # ワークスペース
-GET    /api/workspaces                    # ワークスペース一覧
-POST   /api/workspaces                    # ワークスペース作成
-GET    /api/workspaces/:id                # ワークスペース詳細
-PATCH  /api/workspaces/:id                # ワークスペース更新
-DELETE /api/workspaces/:id                # ワークスペース削除
-GET    /api/workspaces/:id/members        # メンバー一覧
-POST   /api/workspaces/:id/members        # メンバー追加
-DELETE /api/workspaces/:id/members/:userId # メンバー削除
+GET    /api/workspaces                           # 参加中のワークスペース一覧
+POST   /api/workspaces                           # ワークスペース作成
+GET    /api/workspaces/public                    # 公開ワークスペース一覧
+GET    /api/workspaces/:id                       # ワークスペース詳細
+PATCH  /api/workspaces/:id                       # ワークスペース更新
+DELETE /api/workspaces/:id                       # ワークスペース削除
+POST   /api/workspaces/:id/join                  # 公開ワークスペースに参加
+GET    /api/workspaces/:id/members               # メンバー一覧
+POST   /api/workspaces/:id/members               # メールアドレスでメンバー追加
+PATCH  /api/workspaces/:id/members/:userId       # メンバーのロール変更
+DELETE /api/workspaces/:id/members/:userId       # メンバー削除
 
 # チャンネル
-GET    /api/workspaces/:id/channels       # チャンネル一覧
-POST   /api/workspaces/:id/channels       # チャンネル作成
-GET    /api/channels/:id                  # チャンネル詳細
-PATCH  /api/channels/:id                  # チャンネル更新
-DELETE /api/channels/:id                  # チャンネル削除
-GET    /api/channels/:id/members          # チャンネルメンバー一覧
-POST   /api/channels/:id/members          # チャンネルメンバー追加
-DELETE /api/channels/:id/members/:userId  # チャンネルメンバー削除
+GET    /api/workspaces/:id/channels              # チャンネル一覧（未読数付き）
+POST   /api/workspaces/:id/channels              # チャンネル作成
+GET    /api/channels/:channelId                  # チャンネル詳細
+PATCH  /api/channels/:channelId                  # チャンネル更新
+DELETE /api/channels/:channelId                  # チャンネル削除
+GET    /api/channels/:channelId/members          # チャンネルメンバー一覧
+POST   /api/channels/:channelId/members          # チャンネルメンバー招待
+POST   /api/channels/:channelId/members/self     # 公開チャンネルに参加
+DELETE /api/channels/:channelId/members/self     # チャンネルから退出
+DELETE /api/channels/:channelId/members/:userId  # チャンネルメンバー削除
+PATCH  /api/channels/:channelId/members/:userId/role # チャンネルメンバーのロール変更
 
 # DM
-POST   /api/workspaces/:id/dms            # DM作成
-POST   /api/workspaces/:id/group-dms      # グループDM作成
+GET    /api/workspaces/:id/dms                   # DM 一覧
+POST   /api/workspaces/:id/dms                   # DM 作成
+POST   /api/workspaces/:id/group-dms             # グループ DM 作成（最大 9 人）
 
 # メッセージ
-GET    /api/channels/:id/messages         # メッセージ一覧
-POST   /api/channels/:id/messages         # メッセージ送信
-GET    /api/messages/:id                  # メッセージ詳細
-PATCH  /api/messages/:id                  # メッセージ更新
-DELETE /api/messages/:id                  # メッセージ削除
+GET    /api/channels/:channelId/messages         # メッセージ一覧（システムメッセージ含む）
+POST   /api/channels/:channelId/messages         # メッセージ送信
+GET    /api/channels/:channelId/messages/with-threads # スレッドメタデータ付き一覧
+PATCH  /api/messages/:messageId                  # メッセージ更新
+DELETE /api/messages/:messageId                  # メッセージ削除（論理削除）
 
 # スレッド
-GET    /api/messages/:id/thread           # スレッド返信一覧
-POST   /api/messages/:id/follow           # スレッドフォロー
-DELETE /api/messages/:id/follow           # スレッドフォロー解除
+GET    /api/messages/:messageId/thread           # スレッド返信一覧
+GET    /api/messages/:messageId/thread/metadata  # スレッドメタデータ
+POST   /api/messages/:messageId/follow           # スレッドフォロー
+DELETE /api/messages/:messageId/follow           # スレッドフォロー解除
+POST   /api/threads/:threadId/read               # スレッド既読
+GET    /api/workspaces/:workspaceId/threads/participating # 参加中スレッド一覧
 
 # 添付ファイル
-POST   /api/attachments                   # ファイルアップロード
-GET    /api/attachments/:id               # ファイル情報取得
-DELETE /api/attachments/:id               # ファイル削除
+POST   /api/attachments/presign                  # アップロード用プリサイン URL 発行
+GET    /api/attachments/:id                      # ファイル情報取得
+GET    /api/attachments/:id/download             # ダウンロード用プリサイン URL 発行
+DELETE /api/attachments/:id                      # ファイル削除
 
 # ブックマーク
-GET    /api/channels/:id/bookmarks        # ブックマーク一覧
-POST   /api/messages/:id/bookmark         # ブックマーク作成
-DELETE /api/messages/:id/bookmark         # ブックマーク削除
+GET    /api/bookmarks                            # ブックマーク一覧
+POST   /api/messages/:messageId/bookmarks        # ブックマーク作成
+DELETE /api/messages/:messageId/bookmarks        # ブックマーク削除
 
 # ピン留め
-GET    /api/channels/:id/pins             # ピン留め一覧
-POST   /api/messages/:id/pin              # ピン留め作成
-DELETE /api/messages/:id/pin              # ピン留め削除
+GET    /api/channels/:channelId/pins             # ピン留め一覧
+POST   /api/channels/:channelId/pins             # ピン留め作成
+DELETE /api/channels/:channelId/pins/:messageId  # ピン留め解除
 
 # リアクション
-POST   /api/messages/:id/reactions        # リアクション作成
-DELETE /api/messages/:id/reactions/:emoji # リアクション削除
+GET    /api/messages/:messageId/reactions        # リアクション一覧
+POST   /api/messages/:messageId/reactions        # リアクション作成
+DELETE /api/messages/:messageId/reactions/:emoji # リアクション削除
 
 # 既読状態
-GET    /api/channels/:id/read-state       # チャンネル既読状態取得
-PUT    /api/channels/:id/read-state       # チャンネル既読状態更新
-GET    /api/messages/:id/thread-read-state # スレッド既読状態取得
-PUT    /api/messages/:id/thread-read-state # スレッド既読状態更新
+POST   /api/channels/:channelId/reads            # チャンネル既読状態更新
+GET    /api/channels/:channelId/unread_count     # 未読数取得
 
 # ユーザーグループ
-GET    /api/workspaces/:id/user-groups    # ユーザーグループ一覧
-POST   /api/workspaces/:id/user-groups    # ユーザーグループ作成
-GET    /api/user-groups/:id               # ユーザーグループ詳細
-PATCH  /api/user-groups/:id               # ユーザーグループ更新
-DELETE /api/user-groups/:id               # ユーザーグループ削除
-POST   /api/user-groups/:id/members       # メンバー追加
-DELETE /api/user-groups/:id/members/:userId # メンバー削除
+GET    /api/user-groups?workspaceId=             # ユーザーグループ一覧
+POST   /api/user-groups                          # ユーザーグループ作成
+GET    /api/user-groups/:id                      # ユーザーグループ詳細
+PATCH  /api/user-groups/:id                      # ユーザーグループ更新
+DELETE /api/user-groups/:id                      # ユーザーグループ削除
+GET    /api/user-groups/:id/members              # メンバー一覧
+POST   /api/user-groups/:id/members              # メンバー追加
+DELETE /api/user-groups/:id/members?userId=      # メンバー削除
 
-# 検索
-GET    /api/search                        # 横断検索
+# 検索・リンク・ヘルスチェック
+GET    /api/workspaces/:workspaceId/search       # 横断検索（メッセージ/チャンネル/ユーザー/グループ）
+POST   /api/links/fetch-ogp                      # OGP 取得
+GET    /healthz                                  # ヘルスチェック
 ```
 
 ### WebSocket
 
-- エンドポイント: `/ws`
-- JWT 認証による接続
-- リアルタイムメッセージング
-- 通知配信
+- エンドポイント: `GET /ws?token=<JWT>&workspaceId=<id>`
+- JWT 認証による接続、`CORS_ALLOWED_ORIGINS` による Origin 検証
+- クライアント → サーバー: `join_channel` / `leave_channel` / `post_message` / `typing` / `stop_typing` / `update_read_state`
+- サーバー → クライアント: `new_message` / `message_updated` / `message_deleted` / `unread_count` / `pin_created` / `pin_deleted` / `system_message_created` / `reaction_added` / `reaction_removed` / `typing` / `stop_typing` / `ack` / `error`
 
 ## データベース設計
 
@@ -489,23 +503,23 @@ type Config struct {
 
 ## テスト戦略
 
-> 現在バックエンドのテストコードはリポジトリに存在しません。以下は今後テストを追加する際の方針です。
+`go test ./...` で実行します。CI（`.github/workflows/codecheck.yml`）でもビルド・lint と併せて実行されます。
 
-### テストの種類
+### 現在あるテスト
 
-1. **ユニットテスト**
+| 対象 | 内容 |
+| --- | --- |
+| `internal/interfaces/handler/http/router_test.go` | 登録済みルートと OpenAPI 定義の過不足を検証 |
+| `internal/usecase/workspace/interactor_test.go` | ワークスペースのロール変更の権限 |
+| `internal/usecase/dm/interactor_test.go` | DM 作成時のワークスペースメンバー検証 |
+| `internal/usecase/thread/reader_test.go` | スレッド既読・フォローの認可 |
+| `internal/usecase/message/creator_test.go` | 添付ファイルの所有者・チャンネル検証 |
+| `internal/infrastructure/ogp/ogp_test.go` | OGP 取得の内部ネットワーク遮断 |
 
-   - 各ユースケースのテスト
-   - モックを使用した依存関係の分離
+### 方針
 
-2. **統合テスト**
-
-   - データベースとの統合テスト
-   - WebSocket 通信のテスト
-
-3. **モック**
-   - リポジトリのモック実装
-   - 外部サービスのモック
+1. **ユニットテスト** — ドメインリポジトリをスタブに差し替え、ユースケースの分岐（特に権限チェック）を検証する
+2. **統合テスト** — データベースや WebSocket を含む結合の検証は今後追加する
 
 ## デプロイメント
 
@@ -739,25 +753,28 @@ func ToMessageEntity(m *ent.Message) *entity.Message
 
 ## システムメッセージによる監査ログ
 
-チャンネルの変更履歴を自動記録：
+チャンネルの変更履歴を自動記録します。メッセージ一覧 API はユーザーの投稿とシステムメッセージを
+`TimelineItem` として時系列に混ぜて返します。
 
 ```go
 // チャンネル名変更時
 systemMessage := &entity.SystemMessage{
     ChannelID: channelID,
-    Type:      "channel_name_changed",
-    Metadata: map[string]interface{}{
-        "old_name": oldName,
-        "new_name": newName,
-        "changed_by": userID,
+    Kind:      entity.SystemMessageKindChannelNameChanged,
+    Payload: map[string]any{
+        "from": oldName,
+        "to":   newName,
     },
+    ActorID:   &userID,
     CreatedAt: time.Now(),
 }
 ```
 
-記録される変更:
+記録される変更（`entity.SystemMessageKind`）:
 
-- チャンネル名変更
-- チャンネル説明変更
-- メンバーの追加・削除
-- 権限変更
+- `channel_name_changed` — チャンネル名変更
+- `channel_description_changed` — チャンネル説明変更
+- `channel_privacy_changed` — 公開設定の変更
+- `member_added` / `member_joined` — メンバーの追加・参加
+- `member_removed` / `member_left` — メンバーの追放・退出
+- `message_pinned` — メッセージのピン留め

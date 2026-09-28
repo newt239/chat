@@ -11,35 +11,9 @@ type MessageContentProps = {
 };
 
 export const MessageContent = ({ message }: MessageContentProps) => {
-  const { body, mentions = [], groups = [], links = [] } = message;
+  const { body, links = [] } = message;
 
-  // メンションをハイライトするための処理
-  const processMentions = (text: string) => {
-    let processedText = text;
-
-    // ユーザーメンションをハイライト
-    for (const mention of mentions) {
-      const mentionPattern = new RegExp(`@${mention.displayName}`, "gi");
-      processedText = processedText.replace(
-        mentionPattern,
-        `<span class="mention-user bg-blue-100 text-blue-800 px-1 rounded">@${mention.displayName}</span>`,
-      );
-    }
-
-    // グループメンションをハイライト
-    for (const group of groups) {
-      const mentionPattern = new RegExp(`@${group.name}`, "gi");
-      processedText = processedText.replace(
-        mentionPattern,
-        `<span class="mention-group bg-green-100 text-green-800 px-1 rounded">@${group.name}</span>`,
-      );
-    }
-
-    return processedText;
-  };
-
-  const processedContent = processMentions(body);
-  const rendered = renderMarkdown(processedContent);
+  const rendered = renderMarkdown(body);
 
   return (
     <div className="space-y-2">

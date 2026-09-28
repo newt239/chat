@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	domainservice "github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
@@ -18,9 +19,12 @@ import (
 var (
 	ErrUnauthorized      = errors.New("この操作を行う権限がありません")
 	ErrWorkspaceNotFound = errors.New("ワークスペースが見つかりません")
+	ErrChannelNotFound   = errors.New("チャンネルが見つかりません")
 )
 
 type ChannelUseCase interface {
+	GetChannel(ctx context.Context, input GetChannelInput) (*ChannelOutput, error)
+	DeleteChannel(ctx context.Context, input DeleteChannelInput) error
 	ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error)
 	CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error)
 	UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error)
@@ -33,6 +37,7 @@ type channelInteractor struct {
 	readStateRepo     domainrepository.ReadStateRepository
 	txManager         domaintransaction.Manager
 	systemMessageUC   systemmessage.UseCase
+	channelAccessSvc  domainservice.ChannelAccessService
 }
 
 func NewChannelInteractor(
@@ -42,6 +47,7 @@ func NewChannelInteractor(
 	readStateRepo domainrepository.ReadStateRepository,
 	txManager domaintransaction.Manager,
 	systemMessageUC systemmessage.UseCase,
+	channelAccessSvc domainservice.ChannelAccessService,
 ) ChannelUseCase {
 	return &channelInteractor{
 		channelRepo:       channelRepo,
@@ -50,6 +56,7 @@ func NewChannelInteractor(
 		readStateRepo:     readStateRepo,
 		txManager:         txManager,
 		systemMessageUC:   systemMessageUC,
+		channelAccessSvc:  channelAccessSvc,
 	}
 }
 
@@ -88,26 +95,28 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 		channelIDs[idx] = ch.ID
 	}
 
-	// バッチでメンション数を取得
+	unreadCounts, err := i.readStateRepo.GetUnreadCountBatch(ctx, channelIDs, input.UserID)
+	if err != nil {
+		fmt.Printf("[WARN] Failed to get unread counts: userID=%s err=%v\n", input.UserID, err)
+		unreadCounts = make(map[string]int)
+	}
+
 	mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, channelIDs, input.UserID)
 	if err != nil {
-		// エラーの場合はログに記録し、空のマップとして扱う
 		fmt.Printf("[WARN] Failed to get unread mention counts: userID=%s err=%v\n", input.UserID, err)
 		mentionCounts = make(map[string]int)
 	}
 
 	output := make([]ChannelOutput, 0, len(channels))
 	for _, ch := range channels {
-		mentionCount := mentionCounts[ch.ID]
-		hasMention := mentionCount > 0
-		output = append(output, toChannelOutputWithUnread(ch, hasMention, mentionCount))
+		output = append(output, toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID] > 0))
 	}
 
 	return output, nil
 }
 
 func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error) {
-	if err := validateUUID(input.WorkspaceID, "workspace ID"); err != nil {
+	if err := validateWorkspaceID(input.WorkspaceID); err != nil {
 		return nil, err
 	}
 	if err := validateUUID(input.UserID, "user ID"); err != nil {
@@ -163,8 +172,44 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, err
 	}
 
-	output := toChannelOutputWithUnread(channel, false, 0) // 新規作成時はメンション数0
+	output := toChannelOutputWithUnread(channel, 0, false)
 	return &output, nil
+}
+
+func (i *channelInteractor) GetChannel(ctx context.Context, input GetChannelInput) (*ChannelOutput, error) {
+	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	output := toChannelOutput(ch)
+	return &output, nil
+}
+
+func (i *channelInteractor) DeleteChannel(ctx context.Context, input DeleteChannelInput) error {
+	ch, err := i.channelRepo.FindByID(ctx, input.ChannelID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch channel: %w", err)
+	}
+	if ch == nil {
+		return ErrChannelNotFound
+	}
+
+	// 作成者かワークスペースの管理者のみ削除できる
+	if ch.CreatedBy != input.UserID {
+		member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
+		if err != nil {
+			return fmt.Errorf("failed to verify membership: %w", err)
+		}
+		if member == nil || !member.CanCreateChannel() {
+			return ErrUnauthorized
+		}
+	}
+
+	if err := i.channelRepo.Delete(ctx, input.ChannelID); err != nil {
+		return fmt.Errorf("failed to delete channel: %w", err)
+	}
+	return nil
 }
 
 func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error) {
@@ -180,7 +225,7 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 		return nil, fmt.Errorf("failed to fetch channel: %w", err)
 	}
 	if ch == nil {
-		return nil, errors.New("チャンネルが見つかりません")
+		return nil, ErrChannelNotFound
 	}
 
 	// 権限: ワークスペースの管理権限（チャンネル編集権限として流用）
@@ -278,28 +323,25 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 	}
 
 	out := toChannelOutput(ch)
-	// 補足: メンションはfalse/0で返す（一覧APIの責務と分離）
-	out.HasMention = false
-	out.MentionCount = 0
 	return &out, nil
 }
 
 func toChannelOutput(channel *entity.Channel) ChannelOutput {
-	return toChannelOutputWithUnread(channel, false, 0)
+	return toChannelOutputWithUnread(channel, 0, false)
 }
 
-func toChannelOutputWithUnread(channel *entity.Channel, hasMention bool, mentionCount int) ChannelOutput {
+func toChannelOutputWithUnread(channel *entity.Channel, unreadCount int, hasMention bool) ChannelOutput {
 	return ChannelOutput{
-		ID:           channel.ID,
-		WorkspaceID:  channel.WorkspaceID,
-		Name:         channel.Name,
-		Description:  channel.Description,
-		IsPrivate:    channel.IsPrivate,
-		CreatedBy:    channel.CreatedBy,
-		CreatedAt:    channel.CreatedAt,
-		UpdatedAt:    channel.UpdatedAt,
-		HasMention:   hasMention,
-		MentionCount: mentionCount,
+		ID:          channel.ID,
+		WorkspaceID: channel.WorkspaceID,
+		Name:        channel.Name,
+		Description: channel.Description,
+		IsPrivate:   channel.IsPrivate,
+		CreatedBy:   channel.CreatedBy,
+		CreatedAt:   channel.CreatedAt,
+		UpdatedAt:   channel.UpdatedAt,
+		UnreadCount: unreadCount,
+		HasMention:  hasMention,
 	}
 }
 

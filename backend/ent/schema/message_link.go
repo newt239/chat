@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -21,8 +22,7 @@ func (MessageLink) Fields() []ent.Field {
 			Default(uuid.New).
 			Immutable(),
 		field.String("url").
-			NotEmpty().
-			Unique(),
+			NotEmpty(),
 		field.String("title").
 			Optional(),
 		field.String("description").
@@ -50,5 +50,9 @@ func (MessageLink) Edges() []ent.Edge {
 
 // Indexes of the MessageLink.
 func (MessageLink) Indexes() []ent.Index {
-	return []ent.Index{}
+	return []ent.Index{
+		index.Fields("url").
+			Edges("message").
+			Unique(),
+	}
 }
