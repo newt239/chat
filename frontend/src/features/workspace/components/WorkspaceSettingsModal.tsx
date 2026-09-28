@@ -9,7 +9,6 @@ import { Checkbox } from "#/components/ui/Checkbox";
 import { Dialog } from "#/components/ui/Dialog";
 import { TextArea } from "#/components/ui/TextArea";
 import { TextField } from "#/components/ui/TextField";
-import { UserGroupManager } from "#/features/userGroup/components/UserGroupManager";
 import { WorkspaceMemberManager } from "#/features/workspace/components/WorkspaceMemberManager";
 import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActions";
 
@@ -75,8 +74,6 @@ export const WorkspaceSettingsModal = ({
 
       <hr className="my-1 h-px border-0 bg-border" />
       <WorkspaceMemberManager workspaceId={workspace.id} />
-      <hr className="my-1 h-px border-0 bg-border" />
-      <UserGroupManager workspaceId={workspace.id} />
       <hr className="my-1 h-px border-0 bg-border" />
 
       <section className="flex flex-wrap items-center gap-3 rounded-lg border border-danger p-3">

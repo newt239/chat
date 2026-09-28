@@ -29,7 +29,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
   const memberIds = new Set(members?.map((member) => member.userId));
   const options = (workspaceMembers ?? [])
     .filter((member) => !memberIds.has(member.userId))
-    .map((member) => ({ label: member.displayName, value: member.userId }));
+    .map((member) => ({ label: member.nickname ?? member.displayName, value: member.userId }));
 
   return (
     <div className="flex flex-col gap-2">
@@ -39,7 +39,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
       <ul className="m-0 flex list-none flex-col p-0">
         {members?.map(({ userId }) => {
           const member = workspaceMembers?.find((candidate) => candidate.userId === userId);
-          const name = member?.displayName ?? userId;
+          const name = member?.nickname ?? member?.displayName ?? userId;
           return (
             <li key={userId} className="flex items-center gap-2.5 py-0.5 text-[13.5px]">
               <Avatar name={name} src={member?.avatarUrl} size={24} />

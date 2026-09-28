@@ -11,89 +11,100 @@ import {
 import { WorkspaceMemberSchema, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
-import { UserGroupManager } from "./UserGroupManager";
+import { UserGroupPanel } from "./UserGroupPanel";
 
 import type {
   AddUserGroupMemberRequest,
-  CreateUserGroupRequest,
   DeleteUserGroupRequest,
   RemoveUserGroupMemberRequest,
+  UpdateUserGroupRequest,
 } from "#/gen/chat/v1/user_group_service_pb";
 
 const setup = async () => {
-  const createGroup = vi.fn<(req: CreateUserGroupRequest) => void>();
+  const updateGroup = vi.fn<(req: UpdateUserGroupRequest) => void>();
   const deleteGroup = vi.fn<(req: DeleteUserGroupRequest) => void>();
   const addMember = vi.fn<(req: AddUserGroupMemberRequest) => void>();
   const removeMember = vi.fn<(req: RemoveUserGroupMemberRequest) => void>();
-  await renderWithProviders(<UserGroupManager workspaceId="ws1" />, "/app/ws1", (routes) => {
-    routes.rpc(UserGroupService.method.listUserGroups, () => ({
-      userGroups: [
-        create(UserGroupSchema, { description: "フロント班", id: "g1", name: "frontend" }),
-      ],
-    }));
-    routes.rpc(UserGroupService.method.listUserGroupMembers, () => ({
-      members: [create(UserGroupMemberSchema, { userId: "u-bob" })],
-    }));
-    routes.rpc(UserGroupService.method.createUserGroup, (req) => {
-      createGroup(req);
-      return {};
-    });
-    routes.rpc(UserGroupService.method.deleteUserGroup, (req) => {
-      deleteGroup(req);
-      return {};
-    });
-    routes.rpc(UserGroupService.method.addUserGroupMember, (req) => {
-      addMember(req);
-      return {};
-    });
-    routes.rpc(UserGroupService.method.removeUserGroupMember, (req) => {
-      removeMember(req);
-      return {};
-    });
-    routes.rpc(WorkspaceService.method.listMembers, () => ({
-      members: [
-        create(WorkspaceMemberSchema, { displayName: "Bob", userId: "u-bob" }),
-        create(WorkspaceMemberSchema, { displayName: "Carol", userId: "u-carol" }),
-      ],
-    }));
-  });
-  await screen.findByText("@frontend");
-  return { addMember, createGroup, deleteGroup, removeMember };
+  await renderWithProviders(
+    <UserGroupPanel workspaceId="ws1" groupId="g1" />,
+    "/app/ws1",
+    (routes) => {
+      routes.rpc(UserGroupService.method.listUserGroups, () => ({
+        userGroups: [
+          create(UserGroupSchema, { description: "フロント班", id: "g1", name: "frontend" }),
+        ],
+      }));
+      routes.rpc(UserGroupService.method.listUserGroupMembers, () => ({
+        members: [create(UserGroupMemberSchema, { userId: "u-bob" })],
+      }));
+      routes.rpc(UserGroupService.method.updateUserGroup, (req) => {
+        updateGroup(req);
+        return {};
+      });
+      routes.rpc(UserGroupService.method.deleteUserGroup, (req) => {
+        deleteGroup(req);
+        return {};
+      });
+      routes.rpc(UserGroupService.method.addUserGroupMember, (req) => {
+        addMember(req);
+        return {};
+      });
+      routes.rpc(UserGroupService.method.removeUserGroupMember, (req) => {
+        removeMember(req);
+        return {};
+      });
+      routes.rpc(WorkspaceService.method.listMembers, () => ({
+        members: [
+          create(WorkspaceMemberSchema, { displayName: "Bob", nickname: "ボブ", userId: "u-bob" }),
+          create(WorkspaceMemberSchema, { displayName: "Carol", userId: "u-carol" }),
+        ],
+      }));
+    },
+  );
+  await screen.findByRole("heading", { name: "@frontend" });
+  return { addMember, deleteGroup, removeMember, updateGroup };
 };
 
-describe("UserGroupManager", () => {
-  test("グループとメンバーを表示し、削除・メンバーの追加と削除ができる", async () => {
-    const { addMember, deleteGroup, removeMember } = await setup();
+describe("UserGroupPanel", () => {
+  test("メンバーをニックネームで表示し、追加と削除ができる", async () => {
+    const { addMember, removeMember } = await setup();
     expect(screen.getByText("フロント班")).toBeInTheDocument();
 
-    await userEvent.click(await screen.findByRole("button", { name: "Bob をグループから外す" }));
+    await userEvent.click(await screen.findByRole("button", { name: "ボブ をグループから外す" }));
     await userEvent.click(screen.getByRole("combobox", { name: "メンバーを追加" }));
     await userEvent.click(await screen.findByRole("option", { name: "Carol" }));
     await userEvent.click(screen.getByRole("button", { name: "追加" }));
-    await userEvent.click(screen.getByRole("button", { name: "@frontend を削除" }));
 
     await waitFor(() => {
-      expect(deleteGroup).toHaveBeenCalledWith(expect.objectContaining({ groupId: "g1" }));
+      expect(addMember).toHaveBeenCalledWith(
+        expect.objectContaining({ groupId: "g1", userId: "u-carol" }),
+      );
     });
     expect(removeMember).toHaveBeenCalledWith(
       expect.objectContaining({ groupId: "g1", userId: "u-bob" }),
     );
-    expect(addMember).toHaveBeenCalledWith(
-      expect.objectContaining({ groupId: "g1", userId: "u-carol" }),
-    );
   });
 
-  test("名前を入力してグループを作成する", async () => {
-    const { createGroup } = await setup();
-    const createButton = screen.getByRole("button", { name: "作成" });
-    expect(createButton).toBeDisabled();
-
-    await userEvent.type(screen.getByRole("textbox", { name: "グループを作成" }), " design ");
-    await userEvent.click(createButton);
+  test("名前と説明を編集する", async () => {
+    const { updateGroup } = await setup();
+    await userEvent.click(screen.getByRole("button", { name: "編集" }));
+    const name = await screen.findByRole("textbox", { name: "グループ名" });
+    await userEvent.clear(name);
+    await userEvent.type(name, "web");
+    await userEvent.click(screen.getByRole("button", { name: "保存" }));
     await waitFor(() => {
-      expect(createGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "design", workspaceId: "ws1" }),
+      expect(updateGroup).toHaveBeenCalledWith(
+        expect.objectContaining({ description: "フロント班", groupId: "g1", name: "web" }),
       );
+    });
+  });
+
+  test("確認してから削除する", async () => {
+    const { deleteGroup } = await setup();
+    await userEvent.click(screen.getByRole("button", { name: "削除" }));
+    await userEvent.click(await screen.findByRole("button", { name: "削除" }));
+    await waitFor(() => {
+      expect(deleteGroup).toHaveBeenCalledWith(expect.objectContaining({ groupId: "g1" }));
     });
   });
 });

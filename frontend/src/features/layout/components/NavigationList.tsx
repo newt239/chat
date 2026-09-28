@@ -13,6 +13,7 @@ import { ChannelList } from "#/features/channel/components/ChannelList";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
 import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
 import { DMList } from "#/features/dm/components/DMList";
+import { UserGroupNavList } from "#/features/userGroup/components/UserGroupNavList";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
 
 import { NavLink } from "./NavLink";
@@ -71,6 +72,9 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
           }}
         >
           <DMList workspaceId={workspaceId} />
+        </SidebarSection>
+        <SidebarSection id="groups" title={t("userGroup.pageTitle")} onAdd={null}>
+          <UserGroupNavList workspaceId={workspaceId} />
         </SidebarSection>
         <SidebarSection id="workspace" title={t("shell.sidebar.workspace")} onAdd={null}>
           <NavLink to="/app/$workspaceId/insights" params={params}>
