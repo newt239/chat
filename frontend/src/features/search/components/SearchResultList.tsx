@@ -3,20 +3,20 @@ import { IconHash, IconUser, IconUsers } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 
+import { workspaceRoleLabels } from "#/features/workspace/utils/workspaceRole";
+import { toDate } from "#/lib/timestamp";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import type { SearchFilter } from "#/features/search/schemas";
-import type { components } from "#/lib/api/schema";
-
-type Message = components["schemas"]["Message"];
-type Channel = components["schemas"]["Channel"];
-type MemberInfo = components["schemas"]["MemberInfo"];
-type UserGroup = components["schemas"]["UserGroup"];
+import type { Channel } from "#/gen/chat/v1/channel_service_pb";
+import type { Message } from "#/gen/chat/v1/message_pb";
+import type { UserGroup } from "#/gen/chat/v1/user_group_service_pb";
+import type { WorkspaceMember } from "#/gen/chat/v1/workspace_service_pb";
 
 type SearchResultListProps = {
   messages: Message[];
   channels: Channel[];
-  users: MemberInfo[];
+  users: WorkspaceMember[];
   groups: UserGroup[];
   filter: SearchFilter;
   workspaceId: string;
@@ -132,7 +132,7 @@ export const SearchResultList = ({
                         {user.displayName}
                       </Text>
                       <Badge size="xs" variant="light" color="blue">
-                        {user.role}
+                        {workspaceRoleLabels[user.role]}
                       </Badge>
                     </div>
                     <Text size="xs" c="dimmed">
@@ -166,7 +166,7 @@ export const SearchResultList = ({
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <Text size="xs" c="dimmed">
-                      投稿日時: {dateTimeFormatter.format(new Date(message.createdAt))}
+                      投稿日時: {dateTimeFormatter.format(toDate(message.createdAt))}
                     </Text>
                     {message.editedAt && (
                       <Text size="xs" c="dimmed">

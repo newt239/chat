@@ -68,7 +68,6 @@ export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
                 search={{ message: pin.message.id }}
               />
             )}
-
             className="h-auto text-left justify-start"
           >
             <div className="flex-1 min-w-0">

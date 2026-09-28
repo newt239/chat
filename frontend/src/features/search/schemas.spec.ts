@@ -1,10 +1,17 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { searchFilterValues, searchQuerySchema } from "#/features/search/schemas";
+import {
+  searchFilterMessages,
+  searchFilterValues,
+  searchQuerySchema,
+} from "#/features/search/schemas";
+import { SearchFilter } from "#/gen/chat/v1/search_service_pb";
 
-describe("searchFilterValues", () => {
-  test("検索フィルタの選択肢が OpenAPI の enum と一致する", () => {
-    expect([...searchFilterValues]).toEqual(["all", "messages", "channels", "users", "groups"]);
+describe("searchFilterMessages", () => {
+  test("すべての検索フィルタが proto の enum の異なる値に対応する", () => {
+    const values = searchFilterValues.map((filter) => searchFilterMessages[filter]);
+    expect(values).not.toContain(SearchFilter.UNSPECIFIED);
+    expect(new Set(values).size).toBe(searchFilterValues.length);
   });
 });
 

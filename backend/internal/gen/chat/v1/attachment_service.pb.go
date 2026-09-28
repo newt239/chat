@@ -527,7 +527,7 @@ var File_chat_v1_attachment_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"\n" +
-	" chat/v1/attachment_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbf\x02\n" +
+	" chat/v1/attachment_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbb\x02\n" +
 	"\n" +
 	"Attachment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\"\n" +
@@ -538,20 +538,20 @@ const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"\n" +
 	"channel_id\x18\x04 \x01(\tR\tchannelId\x12\x1b\n" +
 	"\tfile_name\x18\x05 \x01(\tR\bfileName\x12\x1b\n" +
-	"\tmime_type\x18\x06 \x01(\tR\bmimeType\x12!\n" +
+	"\tmime_type\x18\x06 \x01(\tR\bmimeType\x12\x1d\n" +
 	"\n" +
-	"size_bytes\x18\a \x01(\x03B\x020\x02R\tsizeBytes\x12\x16\n" +
+	"size_bytes\x18\a \x01(\x03R\tsizeBytes\x12\x16\n" +
 	"\x06status\x18\b \x01(\tR\x06status\x129\n" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\r\n" +
-	"\v_message_id\"\xbb\x01\n" +
+	"\v_message_id\"\xb9\x01\n" +
 	"\x14PresignUploadRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12$\n" +
 	"\tfile_name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bfileName\x12*\n" +
-	"\fcontent_type\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vcontentType\x12(\n" +
+	"\fcontent_type\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vcontentType\x12&\n" +
 	"\n" +
-	"size_bytes\x18\x04 \x01(\x03B\t\xbaH\x04\"\x02 \x000\x02R\tsizeBytes\"\x96\x01\n" +
+	"size_bytes\x18\x04 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tsizeBytes\"\x96\x01\n" +
 	"\x15PresignUploadResponse\x12#\n" +
 	"\rattachment_id\x18\x01 \x01(\tR\fattachmentId\x12\x1d\n" +
 	"\n" +

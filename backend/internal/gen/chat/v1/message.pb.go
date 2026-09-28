@@ -906,13 +906,13 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\x04user\x18\x02 \x01(\v2\x14.chat.v1.UserSummaryR\x04user\x12\x14\n" +
 	"\x05emoji\x18\x03 \x01(\tR\x05emoji\x129\n" +
 	"\n" +
-	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x80\x01\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"|\n" +
 	"\x11MessageAttachment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tfile_name\x18\x02 \x01(\tR\bfileName\x12\x1b\n" +
-	"\tmime_type\x18\x03 \x01(\tR\bmimeType\x12!\n" +
+	"\tmime_type\x18\x03 \x01(\tR\bmimeType\x12\x1d\n" +
 	"\n" +
-	"size_bytes\x18\x04 \x01(\x03B\x020\x02R\tsizeBytes\"\x80\x02\n" +
+	"size_bytes\x18\x04 \x01(\x03R\tsizeBytes\"\x80\x02\n" +
 	"\x0eThreadMetadata\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1f\n" +

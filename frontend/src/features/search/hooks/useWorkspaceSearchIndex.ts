@@ -1,15 +1,14 @@
-import { useMemo } from "react";
+import { create } from "@bufbuild/protobuf";
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 
-import { useQuery } from "@tanstack/react-query";
-
+import { searchFilterMessages, type SearchFilter } from "#/features/search/schemas";
 import {
-  searchFilterValues,
-  type SearchFilter,
-  type WorkspaceSearchResponse,
-} from "#/features/search/schemas";
-import { api } from "#/lib/api/client";
-
-const searchFilterSet = new Set<SearchFilter>(searchFilterValues);
+  ChannelSearchResultSchema,
+  MessageSearchResultSchema,
+  SearchService,
+  UserGroupSearchResultSchema,
+  UserSearchResultSchema,
+} from "#/gen/chat/v1/search_service_pb";
 
 type WorkspaceSearchParams = {
   workspaceId: string | undefined;
@@ -19,48 +18,36 @@ type WorkspaceSearchParams = {
   perPage: number;
 };
 
-const normalizeFilter = (filter: SearchFilter): SearchFilter =>
-  searchFilterSet.has(filter) ? filter : "all";
-
-export const useWorkspaceSearch = (params: WorkspaceSearchParams) => {
-  const { workspaceId, query, filter, page, perPage } = params;
-  const trimmedQuery = useMemo(() => query.trim(), [query]);
-  const normalizedFilter = normalizeFilter(filter);
-
+export const useWorkspaceSearch = ({
+  workspaceId,
+  query,
+  filter,
+  page,
+  perPage,
+}: WorkspaceSearchParams) => {
+  const trimmedQuery = query.trim();
   const isEnabled =
-    typeof workspaceId === "string" &&
+    workspaceId !== undefined &&
     workspaceId.length > 0 &&
     trimmedQuery.length > 0 &&
     page > 0 &&
     perPage > 0;
 
-  return useQuery<WorkspaceSearchResponse>({
-    enabled: isEnabled,
-    queryFn: async () => {
-      if (!workspaceId) {
-        throw new Error("検索を実行するにはワークスペースIDが必要です");
-      }
-
-      const { data, error } = await api.GET("/api/workspaces/{workspaceId}/search", {
-        params: {
-          path: { workspaceId },
-          query: {
-            filter: normalizedFilter,
-            page,
-            perPage,
-            q: trimmedQuery,
-          },
-        },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
+  return useQuery(
+    SearchService.method.searchWorkspace,
+    isEnabled
+      ? { filter: searchFilterMessages[filter], page, perPage, query: trimmedQuery, workspaceId }
+      : skipToken,
+    {
+      retry: 1,
+      // 未設定の結果を空として扱い、呼び出し側で存在チェックをしなくて済むようにする
+      select: (res) => ({
+        channels: res.channels ?? create(ChannelSearchResultSchema),
+        groups: res.groups ?? create(UserGroupSearchResultSchema),
+        messages: res.messages ?? create(MessageSearchResultSchema),
+        users: res.users ?? create(UserSearchResultSchema),
+      }),
+      staleTime: 30_000,
     },
-    queryKey: ["workspace-search", workspaceId, trimmedQuery, normalizedFilter, page, perPage],
-    retry: 1,
-    staleTime: 30_000,
-  });
+  );
 };

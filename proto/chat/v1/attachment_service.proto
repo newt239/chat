@@ -19,7 +19,7 @@ message Attachment {
   string channel_id = 4;
   string file_name = 5;
   string mime_type = 6;
-  int64 size_bytes = 7 [jstype = JS_NUMBER];
+  int64 size_bytes = 7;
   string status = 8;
   google.protobuf.Timestamp created_at = 9;
 }
@@ -28,10 +28,7 @@ message PresignUploadRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
   string file_name = 2 [(buf.validate.field).string.min_len = 1];
   string content_type = 3 [(buf.validate.field).string.min_len = 1];
-  int64 size_bytes = 4 [
-    jstype = JS_NUMBER,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 size_bytes = 4 [(buf.validate.field).int64.gt = 0];
 }
 
 message PresignUploadResponse {

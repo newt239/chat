@@ -13,8 +13,8 @@ export const MessageAttachment = ({ attachment }: MessageAttachmentProps) => {
 
   const handleDownload = async () => {
     try {
-      const data = await downloadMutation.mutateAsync(attachment.id);
-      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+      const { url } = await downloadMutation.mutateAsync({ attachmentId: attachment.id });
+      window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("ダウンロードに失敗しました:", error);
     }

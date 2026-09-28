@@ -134,6 +134,10 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewReadStateServiceHandler, chatv1connect.ReadStateServiceHandler(&rpc.ReadStateServer{UC: uc.NewReadStateUseCase()})),
 		rpc.Register(chatv1connect.NewDirectMessageServiceHandler, chatv1connect.DirectMessageServiceHandler(&rpc.DirectMessageServer{UC: uc.NewDMInteractor()})),
 		rpc.Register(chatv1connect.NewUserGroupServiceHandler, chatv1connect.UserGroupServiceHandler(&rpc.UserGroupServer{UC: uc.NewUserGroupUseCase()})),
+		rpc.Register(chatv1connect.NewBookmarkServiceHandler, chatv1connect.BookmarkServiceHandler(&rpc.BookmarkServer{UC: uc.NewBookmarkUseCase()})),
+		rpc.Register(chatv1connect.NewLinkServiceHandler, chatv1connect.LinkServiceHandler(&rpc.LinkServer{UC: uc.NewLinkUseCase()})),
+		rpc.Register(chatv1connect.NewAttachmentServiceHandler, chatv1connect.AttachmentServiceHandler(&rpc.AttachmentServer{UC: uc.NewAttachmentUseCase()})),
+		rpc.Register(chatv1connect.NewSearchServiceHandler, chatv1connect.SearchServiceHandler(&rpc.SearchServer{UC: uc.NewSearchUseCase()})),
 	)
 }
 

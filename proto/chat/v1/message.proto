@@ -58,7 +58,7 @@ message MessageAttachment {
   string id = 1;
   string file_name = 2;
   string mime_type = 3;
-  int64 size_bytes = 4 [jstype = JS_NUMBER];
+  int64 size_bytes = 4;
 }
 
 message ThreadMetadata {
