@@ -1,21 +1,19 @@
-import { useState } from "react";
-
 import { IconEdit, IconMessageCircle } from "@tabler/icons-react";
-import { useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton";
 import { cn } from "#/components/ui/styles";
-import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
 import { DMList } from "#/features/dm/components/DMList";
 import { PageHeader } from "#/features/layout/components/PageHeader";
 import { mobileNavTone } from "#/features/layout/utils/navTone";
+import { openDialog } from "#/features/layout/utils/overlaySearch";
 
 // モバイルの「DM」タブ
 export const DMsPage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const [isCreating, setIsCreating] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -23,7 +21,7 @@ export const DMsPage = () => {
         <IconButton
           label={t("shell.sidebar.createDM")}
           onPress={() => {
-            setIsCreating(true);
+            void navigate({ search: openDialog({ dialog: "create-dm" }), to: "." });
           }}
         >
           <IconEdit />
@@ -37,13 +35,6 @@ export const DMsPage = () => {
       >
         <DMList workspaceId={workspaceId} />
       </div>
-      <CreateDMModal
-        workspaceId={workspaceId}
-        opened={isCreating}
-        onClose={() => {
-          setIsCreating(false);
-        }}
-      />
     </>
   );
 };

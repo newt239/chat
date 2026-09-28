@@ -1,17 +1,17 @@
 import { useState } from "react";
 
 import { IconAt, IconEdit, IconTrash } from "@tabler/icons-react";
-import { useSetAtom } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { AlertDialog } from "#/components/ui/AlertDialog";
 import { Button } from "#/components/ui/Button";
+import { LinkButton } from "#/components/ui/LinkButton";
 import { toast } from "#/components/ui/toast";
-import { closeRightSidePanelAtom } from "#/providers/store/ui";
+import { closePanel, openDialog } from "#/features/layout/utils/overlaySearch";
 
 import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroupActions, useUserGroups } from "../hooks/useUserGroups";
-import { UserGroupDialog } from "./UserGroupDialog";
 import { UserGroupMembers } from "./UserGroupMembers";
 
 type UserGroupPanelProps = {
@@ -24,8 +24,8 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   const { t } = useTranslation();
   const { data: groups, isLoading } = useUserGroups(workspaceId);
   const { remove } = useUserGroupActions();
-  const closePanel = useSetAtom(closeRightSidePanelAtom);
-  const [dialog, setDialog] = useState<"edit" | "delete" | null>(null);
+  const navigate = useNavigate();
+  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
   const canManage = useCanManageUserGroups(workspaceId);
   const group = groups?.find((candidate) => candidate.id === groupId);
 
@@ -44,16 +44,15 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
         )}
         <div className="flex flex-wrap gap-1.5">
           {canManage && (
-            <Button
+            <LinkButton
               variant="secondary"
               size="sm"
-              onPress={() => {
-                setDialog("edit");
-              }}
+              to="."
+              search={openDialog({ dialog: "edit-group" })}
             >
               <IconEdit aria-hidden />
               {t("userGroup.edit")}
-            </Button>
+            </LinkButton>
           )}
           <Button
             variant="secondary"
@@ -72,7 +71,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
               size="sm"
               className="text-danger"
               onPress={() => {
-                setDialog("delete");
+                setIsDeleteConfirming(true);
               }}
             >
               <IconTrash aria-hidden />
@@ -85,20 +84,9 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
         <h4 className="m-0 text-xs font-semibold text-muted">{t("userGroup.members")}</h4>
         <UserGroupMembers groupId={group.id} workspaceId={workspaceId} />
       </section>
-      {dialog === "edit" && (
-        <UserGroupDialog
-          workspaceId={workspaceId}
-          group={group}
-          onClose={() => {
-            setDialog(null);
-          }}
-        />
-      )}
       <AlertDialog
-        isOpen={dialog === "delete"}
-        onOpenChange={(isOpen) => {
-          setDialog(isOpen ? "delete" : null);
-        }}
+        isOpen={isDeleteConfirming}
+        onOpenChange={setIsDeleteConfirming}
         title={t("userGroup.delete", { name: group.name })}
         confirmLabel={t("common.delete")}
         tone="danger"
@@ -108,8 +96,8 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
             { groupId: group.id },
             {
               onSuccess: () => {
-                setDialog(null);
-                closePanel();
+                setIsDeleteConfirming(false);
+                void navigate({ search: closePanel, to: "." });
               },
             },
           );

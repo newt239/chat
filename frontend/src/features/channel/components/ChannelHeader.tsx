@@ -11,14 +11,15 @@ import {
   IconUser,
   IconUsers,
 } from "@tabler/icons-react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar";
 import { IconButton } from "#/components/ui/IconButton";
 import { Menu } from "#/components/ui/Menu";
-import { MenuItem } from "#/components/ui/MenuItem";
+import { MenuItemLink } from "#/components/ui/MenuItemLink";
 import { MenuSeparator } from "#/components/ui/MenuSeparator";
 import { focusRing } from "#/components/ui/styles";
 import { Tooltip } from "#/components/ui/Tooltip";
@@ -26,11 +27,12 @@ import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { dmName } from "#/features/dm/utils/dmName";
 import { BackButton } from "#/features/layout/components/BackButton";
+import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useIsMobile } from "#/lib/useMediaQuery";
-import { pinsCountByChannelAtom, setRightSidePanelViewAtom } from "#/providers/store/ui";
+import { pinsCountByChannelAtom } from "#/providers/store/ui";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelListActions } from "../hooks/useChannelListActions";
@@ -40,7 +42,7 @@ import { ChannelMenuItems } from "./ChannelMenuItems";
 import { ChannelName } from "./ChannelName";
 import { DescendantsToggle } from "./DescendantsToggle";
 
-import type { PanelView } from "#/providers/store/ui";
+import type { PanelSearch } from "#/features/layout/utils/overlaySearch";
 
 type ChannelHeaderProps = {
   workspaceId: string;
@@ -50,7 +52,7 @@ type ChannelHeaderProps = {
 export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const setRightPanel = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
   const pinsCount = useAtomValue(pinsCountByChannelAtom)[channelId] ?? 0;
   const { channel, descendants, includesDescendants, setIncludesDescendants } =
     useChannelAggregation(workspaceId, channelId);
@@ -77,11 +79,13 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
       onChange={setIncludesDescendants}
     />
   );
-  const infoView: PanelView = partner
-    ? { type: "user-profile", userId: partner.userId }
-    : dm
-      ? { channelId, type: "channel-members" }
-      : { channelId, type: "channel-info" };
+  const openRightPanel = (panel: PanelSearch) => {
+    void navigate({ search: openPanel(panel), to: "." });
+  };
+  // タイトルを押すと、1 対 1 の DM は相手のプロフィール、グループ DM はメンバー、チャンネルは情報を開く
+  const infoPanel: PanelSearch = partner
+    ? { profile: partner.userId }
+    : { panel: dm ? "members" : "info" };
 
   if (!channel && !dm) {
     return <header className="h-12 shrink-0 border-b border-border" />;
@@ -93,7 +97,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
         <BackButton />
         <Button
           onPress={() => {
-            setRightPanel(infoView);
+            openRightPanel(infoPanel);
           }}
           className={`-ml-1 flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
         >
@@ -146,7 +150,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           <Button
             aria-label={t("shell.rightPanel.members")}
             onPress={() => {
-              setRightPanel({ channelId, type: "channel-members" });
+              openRightPanel({ panel: "members" });
             }}
             className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border max-md:hidden border-border py-0.5 pr-2 pl-[3px] text-xs text-muted tabular-nums data-hovered:bg-hover ${focusRing}`}
           >
@@ -166,7 +170,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
         <IconButton
           label={t("shell.rightPanel.pins")}
           onPress={() => {
-            setRightPanel({ channelId, type: "pins" });
+            openRightPanel({ panel: "pins" });
           }}
         >
           <IconPin />
@@ -180,7 +184,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           <IconButton
             label={t("shell.rightPanel.profile")}
             onPress={() => {
-              setRightPanel({ type: "user-profile", userId: partner.userId });
+              openRightPanel({ profile: partner.userId });
             }}
           >
             <IconUser />
@@ -201,23 +205,13 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           />
           <MenuSeparator />
           {channel && (
-            <MenuItem
-              icon={<IconInfoCircle />}
-              onAction={() => {
-                setRightPanel({ channelId, type: "channel-info" });
-              }}
-            >
+            <MenuItemLink icon={<IconInfoCircle />} to="." search={openPanel({ panel: "info" })}>
               {t("shell.rightPanel.channelInfo")}
-            </MenuItem>
+            </MenuItemLink>
           )}
-          <MenuItem
-            icon={<IconUsers />}
-            onAction={() => {
-              setRightPanel({ channelId, type: "channel-members" });
-            }}
-          >
+          <MenuItemLink icon={<IconUsers />} to="." search={openPanel({ panel: "members" })}>
             {t("shell.rightPanel.members")}
-          </MenuItem>
+          </MenuItemLink>
         </Menu>
       </header>
       {isMobile && descendantsToggle && (

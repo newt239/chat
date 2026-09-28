@@ -1,5 +1,6 @@
 import { IconLogout, IconSettings, IconUser } from "@tabler/icons-react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -7,20 +8,21 @@ import { Avatar } from "#/components/ui/Avatar";
 import { IconButton } from "#/components/ui/IconButton";
 import { Menu } from "#/components/ui/Menu";
 import { MenuItem } from "#/components/ui/MenuItem";
+import { MenuItemLink } from "#/components/ui/MenuItemLink";
 import { MenuSection } from "#/components/ui/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator";
 import { focusRing } from "#/components/ui/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { userAtom } from "#/providers/store/auth";
-import { setRightSidePanelViewAtom, settingsSectionAtom } from "#/providers/store/ui";
+
+import { openDialog, openPanel } from "../utils/overlaySearch";
 
 // サイドバー下部の自分の名前。プロフィール・設定・ログアウトを出す
 export const SidebarFooter = () => {
   const { t } = useTranslation();
   const user = useAtomValue(userAtom);
-  const setRightPanel = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
   const logout = useLogout();
-  const setSettingsSection = useSetAtom(settingsSectionAtom);
 
   if (user === null) {
     return null;
@@ -42,22 +44,12 @@ export const SidebarFooter = () => {
         }
       >
         <MenuSection title={user.email}>
-          <MenuItem
-            icon={<IconUser />}
-            onAction={() => {
-              setRightPanel({ type: "user-profile", userId: user.id });
-            }}
-          >
+          <MenuItemLink icon={<IconUser />} to="." search={openPanel({ profile: user.id })}>
             {t("shell.me.profile")}
-          </MenuItem>
-          <MenuItem
-            icon={<IconSettings />}
-            onAction={() => {
-              setSettingsSection("theme");
-            }}
-          >
+          </MenuItemLink>
+          <MenuItemLink icon={<IconSettings />} to="." search={openDialog({ settings: "theme" })}>
             {t("shell.me.settings")}
-          </MenuItem>
+          </MenuItemLink>
         </MenuSection>
         <MenuSeparator />
         <MenuItem
@@ -73,7 +65,7 @@ export const SidebarFooter = () => {
         label={t("shell.me.settings")}
         className="text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong)"
         onPress={() => {
-          setSettingsSection("theme");
+          void navigate({ search: openDialog({ settings: "theme" }), to: "." });
         }}
       >
         <IconSettings />

@@ -8,9 +8,10 @@
 | --- | --- |
 | `features/layout/components/AppShell.tsx` | `/app/$workspaceId` の枠。幅 768px 未満は `MobileShell`、それ以上はサイドバー＋中央＋右パネル。リアルタイム同期・デスクトップ通知・ショートカット・設定ダイアログもここで一度だけ有効にする |
 | `features/layout/components/NavigationList.tsx` | 移動先の一覧（スレッド・メンション・ブックマーク・スター付き・チャンネル・DM・ワークスペース）。サイドバーとモバイルのホームで共有する |
-| `features/layout/hooks/useRightPanel.tsx` | 右パネルに出す内容と閉じる操作。デスクトップの `RightSidePanel` とモバイルの重ねた画面で共有する |
+| `features/layout/hooks/useRightPanel.tsx` | 右パネルに出す内容と閉じる操作。URL から決まる。デスクトップの `RightSidePanel` とモバイルの重ねた画面で共有する |
+| `features/layout/components/WorkspaceDialogs.tsx` | `?dialog=` / `?settings=` で開くダイアログをまとめて一度だけ描く |
 | `features/channel/components/ChannelMenuItems.tsx` | スター・ミュート・既読・リンクのコピー・新しいタブで開く。サイドバーの右クリックとチャンネルヘッダーの「その他」で共有する |
-| `features/settings/components/SettingsDialog.tsx` | 設定（アカウント / 通知 / テーマ / 表示 / ショートカット） |
+| `features/settings/components/SettingsDialog.tsx` | 設定（アカウント / 通知 / テーマ / 表示 / ショートカット）。`WorkspaceDialogs` から描く |
 
 ## ルーティング
 
@@ -23,10 +24,44 @@
 
 - スレッドは `/app/$workspaceId/$channelId/thread/$messageId` で表す（`docs/message-display.md` のメッセージリンクと同じ形式）。`?message=` は返信を指し、スレッドのパネルでその返信までスクロールする。スレッドを開いている間、チャンネルのタイムラインは `?message=` を無視する。
 - スレッドのルートはチャンネルのルートの子にした。チャンネルの画面はそのまま残り、右パネル（モバイルでは重ねた画面）が URL を見てスレッドを描く。ルート自体はコンポーネントを持たない。
-- 右パネルの他の内容（プロフィール・メンバー・チャンネル情報・ピン留め）はディープリンクの必要が薄いため、URL ではなく jotai の atom（メモリのみ）で持つ。
-  - 既存の `setRightSidePanelViewAtom({ type: "thread" })` は表示中のチャンネルのスレッド URL へ遷移する。呼び出し側は変更不要。
-  - スレッド以外を開くとスレッドの URL を閉じる。表示の優先度は「スレッドの URL ＞ atom」。開いているスレッドはルートの `onEnter` / `onStay` / `onLeave` が `openThreadRouteAtom` に書き込み、atom の側から参照する（React のツリー外から現在地を調べるため）。
+- 右パネルの他の内容も URL の search で表す（次節）。スレッドを開いたまま `?profile=` などを付けるとそちらを上に出し、閉じるとスレッドに戻る。
 - 「新しいタブで開く」はすべて TanStack Router の `createLink` で作ったリンク（`Link` / `LinkButton` / `MenuItemLink`）で、`href` が付くため ⌘ / Ctrl クリックと中クリックはブラウザ標準の動作になる。
+
+## 表示状態の URL
+
+画面に「何が開いているか」はすべて URL で表し、再読み込み・共有・ブラウザの戻る / 進むで同じ表示になるようにする。メモリの atom で開閉する状態は持たない。
+
+- 一覧や管理画面などの画面はパス（`/threads`・`/bookmarks`・`/groups`・`/admin?tab=` など）、スレッドはパス、それ以外の重ねて出すもの（右パネル・ダイアログ・ライトボックス・ボトムシート）は search で表す。
+- 重ねて出すものの search は `/app/$workspaceId` の `validateSearch`（`features/layout/schemas.ts` の `workspaceSearchSchema`）にまとめ、子のルートに継承させる。どの画面の上にも重ねられ、読むときは `features/layout/utils/workspaceRoute.ts` の `getRouteApi` から `useSearch` する。不正な値は `.catch(undefined)` で無視する。
+
+| キー | 値 | 表すもの |
+| --- | --- | --- |
+| `panel` | `members` / `info` / `pins` | 表示中のチャンネルの右パネル。チャンネルの外では無視する |
+| `profile` | ユーザー ID | プロフィールの右パネル（自分なら編集） |
+| `group` | グループ ID | ユーザーグループの右パネル |
+| `dialog` | `create-channel` / `create-dm` / `create-group` / `edit-group` / `create-workspace` / `workspace-settings` / `markdown-help` / `add-link` / `edit-link` / `add-webhook` / `edit-webhook` | ダイアログ。`edit-group` は `group`、`edit-link` は `link`（関連リンク ID）、`edit-webhook` は `webhook`（Webhook ID）と組み合わせる |
+| `settings` | `account` / `notifications` / `theme` / `display` / `shortcuts` | 設定とその項目 |
+| `reactions`・`emoji` | メッセージ ID・絵文字（なければすべて） | リアクション一覧とそのタブ |
+| `image` | 添付 ID | ライトボックスで開いている画像 |
+| `sheet` | メッセージ ID | モバイルで長押ししたメッセージの操作シート |
+
+- 命名: キーは短い英小文字の名詞、値は ID か kebab-case の列挙。開いていないときはキーを出さない（既定値を URL に書かない）。
+- 開く・閉じるは `features/layout/utils/overlaySearch.ts` の `openPanel` / `openDialog` / `closePanel` / `closeDialog` を `Link` / `navigate` の `search`（`to="."`）に渡す。そのルートの search（`?message=`・検索条件など）は残す。
+  - 右パネルは同時にひとつ。パネルを開くとダイアログも閉じる（ダイアログの中のリンクからパネルを開くため）。ダイアログは同時にひとつで、右パネルはその下に残す（グループのパネルから編集を開くなど）。
+  - 別の画面へのリンクは search を引き継がないので、画面を移ると重ねたものは閉じる。
+  - 開く操作は、できるところは `Link` / `MenuItemLink` / `LinkButton` / `NavLink` にして ⌘ / Ctrl クリックで同じ表示を新しいタブに開けるようにした。
+  - 開く・閉じるは履歴に積む（戻る / 進むでそのまま再現する）。ライトボックスの前後の移動、リアクション一覧のタブ、デスクトップの設定の項目の切り替えは `replace` にする。モバイルの重ねた画面の「戻る」は、履歴があれば履歴を戻る。
+- ダイアログは開くボタンが複数の画面にあっても `WorkspaceDialogs` で一度だけ描く（開くボタンの側に置くと、同じ `?dialog=` で二重に開くため）。編集対象は URL の ID から引き、読み込めてから描く（入力欄の初期値にするため）。
+- メッセージに紐づくもの（リアクション一覧・ライトボックス・操作シート）はメッセージの API で単体取得できないため `MessageItem` の側で描く。スレッドの親メッセージはチャンネルとスレッドのパネルの両方に出るので、スレッドを開いている間はパネルの側で描く（`useOwnsMessageOverlay`）。
+- `/app/`（ワークスペースの一覧）は `?dialog=create-workspace` だけを持つ。
+
+URL に載せないもの:
+
+- 入力途中の内容（メッセージの下書き・フォーム・入力欄のプレビューの切り替え・メッセージの編集中）
+- 確認の `AlertDialog`（削除の確認など）。操作の途中なので再読み込みで復元しない
+- ホバーやフォーカス、メニュー・ポップオーバー（絵文字ピッカーなど）、ツールチップ、トースト
+- 端末ごとの表示設定（サイドバーやチャンネルツリーの折りたたみ、「下階層を含む」）。localStorage に持つ
+- モバイルで重ねた画面の下に残すボトムタブ（`mobileTabAtom`）。直前の履歴を表すだけなので、再読み込みではホームに戻す
 
 ## デスクトップ
 
@@ -49,7 +84,7 @@
 
 ## 設定
 
-- 設定は atom（`settingsSectionAtom`）で開く項目を持つ。デスクトップは左に項目を並べたモーダル、モバイルは「自分」タブの行から項目ごとの全画面で開く。⌘ / Ctrl + , でも開く。
+- 設定は `?settings=<項目>` で開く。デスクトップは左に項目を並べたモーダル、モバイルは「自分」タブの行から項目ごとの全画面で開く。⌘ / Ctrl + , でも開く。
 - 自分のプロフィールの編集は設定から外し、自分のプロフィールのパネルに出す（`ProfileEditor`）。
 - テーマはプリセット、色相、彩度、サイドバーの配色、モード、プレビュー。スライダーは動かしている間は端末にだけ反映し、離したときにアカウントへ保存する（保存の API を連打しないため）。
 - 通知（デスクトップ通知の有無と、すべて / メンションと DM / なし）は端末ごとの設定として localStorage に持つ。通知の許可がブラウザごとに違うため。ミュートした会話は通知しない。

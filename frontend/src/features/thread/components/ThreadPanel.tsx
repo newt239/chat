@@ -9,6 +9,7 @@ import { MessageItem } from "#/features/message/components/MessageItem";
 import { ThreadReplyInput } from "#/features/message/components/ThreadReplyInput";
 import { ThreadReplyList } from "#/features/message/components/ThreadReplyList";
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
+import { ThreadPanelContext } from "#/features/message/hooks/useOwnsMessageOverlay";
 import { useSendThreadReply, useThreadReplies } from "#/features/message/hooks/useThread";
 import { userAtom } from "#/providers/store/auth";
 
@@ -58,54 +59,56 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="flex flex-col gap-2 p-4">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-4 w-60" />
-          </div>
-        ) : isError ? (
-          <p className="m-0 p-4 text-caption text-danger">{error.message}</p>
-        ) : data?.parentMessage ? (
-          <>
-            <MessageItem
-              message={data.parentMessage}
-              currentUserId={currentUserId}
-              onCopyLink={handleCopyLink}
-              onCreateThread={handleCreateThread}
-            />
-            <div className="mx-4 my-2 flex items-center gap-2 text-caption text-muted">
-              {t("shell.thread.replyCount", { count: data.replies.length })}
-              <span className="h-px flex-1 bg-border" />
+    <ThreadPanelContext value>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex flex-col gap-2 p-4">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-60" />
             </div>
-            <ThreadReplyList
-              replies={data.replies}
-              currentUserId={currentUserId}
-              workspaceId={workspaceId}
-              channelId={threadChannelId}
-            />
-          </>
-        ) : (
-          <p className="m-0 p-4 text-caption text-muted">{t("shell.thread.notFound")}</p>
+          ) : isError ? (
+            <p className="m-0 p-4 text-caption text-danger">{error.message}</p>
+          ) : data?.parentMessage ? (
+            <>
+              <MessageItem
+                message={data.parentMessage}
+                currentUserId={currentUserId}
+                onCopyLink={handleCopyLink}
+                onCreateThread={handleCreateThread}
+              />
+              <div className="mx-4 my-2 flex items-center gap-2 text-caption text-muted">
+                {t("shell.thread.replyCount", { count: data.replies.length })}
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <ThreadReplyList
+                replies={data.replies}
+                currentUserId={currentUserId}
+                workspaceId={workspaceId}
+                channelId={threadChannelId}
+              />
+            </>
+          ) : (
+            <p className="m-0 p-4 text-caption text-muted">{t("shell.thread.notFound")}</p>
+          )}
+        </div>
+        {data?.parentMessage && (
+          <ThreadReplyInput
+            channelId={threadChannelId}
+            onSubmit={(body, attachmentIds) => {
+              sendReply.mutate({
+                attachmentIds,
+                body,
+                channelId: threadChannelId,
+                parentId: threadId,
+              });
+            }}
+            isPending={sendReply.isPending}
+            isError={sendReply.isError}
+            errorMessage={sendReply.error?.message}
+          />
         )}
       </div>
-      {data?.parentMessage && (
-        <ThreadReplyInput
-          channelId={threadChannelId}
-          onSubmit={(body, attachmentIds) => {
-            sendReply.mutate({
-              attachmentIds,
-              body,
-              channelId: threadChannelId,
-              parentId: threadId,
-            });
-          }}
-          isPending={sendReply.isPending}
-          isError={sendReply.isError}
-          errorMessage={sendReply.error?.message}
-        />
-      )}
-    </div>
+    </ThreadPanelContext>
   );
 };

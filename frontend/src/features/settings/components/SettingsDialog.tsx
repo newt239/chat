@@ -1,12 +1,13 @@
 import { IconBell, IconKeyboard, IconKey, IconLanguage, IconPalette } from "@tabler/icons-react";
-import { useAtom } from "jotai";
-import { Button } from "react-aria-components";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Dialog } from "#/components/ui/Dialog";
-import { focusRing } from "#/components/ui/styles";
+import { Link } from "#/components/ui/Link";
+import { settingsSections } from "#/features/layout/schemas";
+import { closeDialog, openDialog } from "#/features/layout/utils/overlaySearch";
+import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { useIsMobile } from "#/lib/useMediaQuery";
-import { settingsSectionAtom, settingsSections } from "#/providers/store/ui";
 
 import { AccountSettings } from "./AccountSettings";
 import { DisplaySettings } from "./DisplaySettings";
@@ -14,7 +15,7 @@ import { NotificationSettings } from "./NotificationSettings";
 import { ShortcutSettings } from "./ShortcutSettings";
 import { ThemeSettings } from "./ThemeSettings";
 
-import type { SettingsSection } from "#/providers/store/ui";
+import type { SettingsSection } from "#/features/layout/schemas";
 
 const sectionIcons: Record<SettingsSection, typeof IconKey> = {
   account: IconKey,
@@ -32,20 +33,21 @@ const sectionBodies: Record<SettingsSection, () => React.JSX.Element> = {
   theme: ThemeSettings,
 };
 
-// デスクトップでは左に項目を並べたモーダル、モバイルでは項目ごとの全画面ページ
+// ?settings= で開く。デスクトップでは左に項目を並べたモーダル、モバイルでは項目ごとの全画面ページ
 export const SettingsDialog = () => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const [section, setSection] = useAtom(settingsSectionAtom);
+  const navigate = useNavigate();
+  const section = workspaceRoute.useSearch({ select: (search) => search.settings });
   const current = section ?? "account";
   const Body = sectionBodies[current];
 
   return (
     <Dialog
-      isOpen={section !== null}
+      isOpen={section !== undefined}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          setSection(null);
+          void navigate({ search: closeDialog, to: "." });
         }
       }}
       title={isMobile ? t(`settings.sections.${current}`) : t("settings.title")}
@@ -57,17 +59,17 @@ export const SettingsDialog = () => {
             {settingsSections.map((name) => {
               const Icon = sectionIcons[name];
               return (
-                <Button
+                <Link
                   key={name}
                   aria-current={name === current ? "page" : undefined}
-                  onPress={() => {
-                    setSection(name);
-                  }}
-                  className={`flex h-8 cursor-pointer items-center gap-2 rounded-md px-2.5 text-left text-[13.5px] text-muted data-hovered:bg-hover data-hovered:text-text aria-[current=page]:bg-accent-soft aria-[current=page]:font-semibold aria-[current=page]:text-accent-text [&_svg]:size-4 ${focusRing}`}
+                  to="."
+                  search={openDialog({ settings: name })}
+                  replace
+                  className="flex h-8 items-center gap-2 rounded-md px-2.5 text-[13.5px] text-muted no-underline data-hovered:bg-hover data-hovered:text-text aria-[current=page]:bg-accent-soft aria-[current=page]:font-semibold aria-[current=page]:text-accent-text [&_svg]:size-4"
                 >
                   <Icon aria-hidden />
                   {t(`settings.sections.${name}`)}
-                </Button>
+                </Link>
               );
             })}
           </nav>

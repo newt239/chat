@@ -1,34 +1,29 @@
-import { useState } from "react";
-
 import { formatRelativeTime } from "@chat/i18n";
 import { IconEdit } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar";
 import { Button } from "#/components/ui/Button";
 import { IconButton } from "#/components/ui/IconButton";
+import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useWebhooks } from "../hooks/useWebhooks";
-import { WebhookDialog } from "./WebhookDialog";
 
 type WebhooksSectionProps = {
   channelId: string;
 };
-
-const NEW_WEBHOOK = "new";
 
 // チャンネル情報の Webhook 一覧。誰でも追加でき、作成者と管理者は編集・削除できる
 export const WebhooksSection = ({ channelId }: WebhooksSectionProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
   const { data } = useWebhooks(channelId);
-  // 開いているダイアログ。NEW_WEBHOOK は新規発行、それ以外は編集する Webhook の ID
-  const [dialog, setDialog] = useState<string | null>(null);
+  const navigate = useNavigate();
   const webhooks = data?.webhooks ?? [];
-  const editing = webhooks.find((webhook) => webhook.id === dialog);
 
   return (
     <section className="flex flex-col gap-1.5 border-b border-border px-4 py-3">
@@ -38,7 +33,7 @@ export const WebhooksSection = ({ channelId }: WebhooksSectionProps) => {
           size="sm"
           variant="ghost"
           onPress={() => {
-            setDialog(NEW_WEBHOOK);
+            void navigate({ search: openDialog({ dialog: "add-webhook" }), to: "." });
           }}
         >
           {t("webhook.add")}
@@ -68,7 +63,10 @@ export const WebhooksSection = ({ channelId }: WebhooksSectionProps) => {
                 <IconButton
                   label={t("webhook.editOf", { name: webhook.name })}
                   onPress={() => {
-                    setDialog(webhook.id);
+                    void navigate({
+                      search: openDialog({ dialog: "edit-webhook", webhook: webhook.id }),
+                      to: ".",
+                    });
                   }}
                 >
                   <IconEdit />
@@ -78,16 +76,6 @@ export const WebhooksSection = ({ channelId }: WebhooksSectionProps) => {
           </li>
         ))}
       </ul>
-      {(dialog === NEW_WEBHOOK || editing) && (
-        <WebhookDialog
-          key={dialog}
-          channelId={channelId}
-          webhook={editing ?? null}
-          onClose={() => {
-            setDialog(null);
-          }}
-        />
-      )}
     </section>
   );
 };

@@ -1,10 +1,12 @@
-import { useState } from "react";
-
 import { IconArrowsDiagonal } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles";
+import { closeDialog, openDialog } from "#/features/layout/utils/overlaySearch";
+import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
+import { useOwnsMessageOverlay } from "#/features/message/hooks/useOwnsMessageOverlay";
 
 import { imageBox } from "../utils/imageBox";
 import { AttachmentImage } from "./AttachmentImage";
@@ -32,7 +34,21 @@ const imageClassName = "block size-full object-cover";
 
 export const ImageGallery = ({ images, message }: ImageGalleryProps) => {
   const { t } = useTranslation();
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const ownsOverlay = useOwnsMessageOverlay(message.id);
+  // 開いている画像は ?image= の添付 ID で表す
+  const imageId = workspaceRoute.useSearch({ select: (search) => search.image });
+  const found = ownsOverlay ? images.findIndex((image) => image.id === imageId) : -1;
+  const openIndex = found === -1 ? null : found;
+  const setOpenIndex = (index: number | null) => {
+    const image = index === null ? undefined : images[index];
+    void navigate({
+      // 前後の画像への移動は履歴に積まない
+      replace: openIndex !== null && image !== undefined,
+      search: image === undefined ? closeDialog : openDialog({ image: image.id }),
+      to: ".",
+    });
+  };
 
   const renderTiles = () => {
     const [first] = images;

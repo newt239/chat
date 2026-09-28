@@ -1,5 +1,4 @@
 import { IconHash, IconLock } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton";
@@ -8,7 +7,6 @@ import { ChannelMemberManager } from "#/features/channel/components/ChannelMembe
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { WebhooksSection } from "#/features/webhook/components/WebhooksSection";
-import { currentChannelIdAtom } from "#/providers/store/workspace";
 
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { isDescendantPath, relativePath } from "../utils/channelTree";
@@ -17,15 +15,13 @@ import { ChannelNavItem } from "./ChannelNavItem";
 
 type ChannelInfoPanelProps = {
   workspaceId: string;
-  channelId?: string | null;
+  channelId: string;
 };
 
 export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelProps) => {
   const { t } = useTranslation();
   const { data: channels, isLoading, isError } = useChannels(workspaceId);
-  const currentChannelId = useAtomValue(currentChannelIdAtom);
-  const effectiveChannelId = channelId ?? currentChannelId;
-  const activeChannel = channels?.find((candidate) => candidate.id === effectiveChannelId);
+  const activeChannel = channels?.find((candidate) => candidate.id === channelId);
   const { setMuted, setStarred } = useChannelListActions(workspaceId);
 
   if (isLoading) {

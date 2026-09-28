@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 
 import { formatDateTime, formatTime } from "@chat/i18n";
 import { IconBookmarkFilled, IconPin } from "@tabler/icons-react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -12,6 +13,8 @@ import { Avatar } from "#/components/ui/Avatar";
 import { Badge } from "#/components/ui/Badge";
 import { cn, focusRing } from "#/components/ui/styles";
 import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
+import { closeDialog, openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
+import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
@@ -21,11 +24,11 @@ import { toDate } from "#/lib/timestamp";
 import { useIsMobile } from "#/lib/useMediaQuery";
 import { userAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
-import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import { useLongPress } from "../hooks/useLongPress";
 import { useMessageActions } from "../hooks/useMessageActions";
 import { useMessageMenuActions } from "../hooks/useMessageMenuActions";
+import { useOwnsMessageOverlay } from "../hooks/useOwnsMessageOverlay";
 import { MessageActionSheet } from "./MessageActionSheet";
 import { MessageContent } from "./MessageContent";
 import { MessageEditor } from "./MessageEditor";
@@ -59,17 +62,38 @@ export const MessageItem = ({
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
   const currentUser = useAtomValue(userAtom);
-  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const ownsOverlay = useOwnsMessageOverlay(message.id);
+  // リアクション一覧（?reactions=&emoji=）と操作シート（?sheet=）は URL で開く
+  const reactionTab = workspaceRoute.useSearch({
+    select: (search) =>
+      ownsOverlay && search.reactions === message.id ? (search.emoji ?? ALL_REACTIONS_TAB) : null,
+  });
+  const isSheetOpen = workspaceRoute.useSearch({
+    select: (search) => ownsOverlay && search.sheet === message.id,
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [reactionTab, setReactionTab] = useState<string | null>(null);
+  const setReactionTab = (tab: string | null) => {
+    void navigate({
+      // タブの切り替えは履歴に積まない
+      replace: reactionTab !== null && tab !== null,
+      search:
+        tab === null
+          ? closeDialog
+          : openDialog({
+              emoji: tab === ALL_REACTIONS_TAB ? undefined : tab,
+              reactions: message.id,
+            }),
+      to: ".",
+    });
+  };
   const { isPressed, longPressProps } = useLongPress(() => {
-    setIsSheetOpen(true);
+    void navigate({ search: openDialog({ sheet: message.id }), to: "." });
   }, isMobile && !isEditing);
   const { handleEdit, handleDelete, isDeleting } = useMessageActions();
   const toggleReaction = useToggleReaction(message.id);
@@ -104,7 +128,7 @@ export const MessageItem = ({
   };
 
   const openProfile = () => {
-    setRightSidePanelView({ type: "user-profile", userId: message.userId });
+    void navigate({ search: openPanel({ profile: message.userId }), to: "." });
   };
 
   const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
@@ -256,7 +280,11 @@ export const MessageItem = ({
       {isMobile && (
         <MessageActionSheet
           isOpen={isSheetOpen}
-          onOpenChange={setIsSheetOpen}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              void navigate({ search: closeDialog, to: "." });
+            }
+          }}
           message={message}
           actions={actions}
           onReact={react}

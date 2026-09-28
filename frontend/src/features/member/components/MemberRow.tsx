@@ -1,9 +1,9 @@
-import { useSetAtom } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 
 import { Avatar } from "#/components/ui/Avatar";
 import { focusRing } from "#/components/ui/styles";
-import { setRightSidePanelViewAtom } from "#/providers/store/ui";
+import { openPanel } from "#/features/layout/utils/overlaySearch";
 
 type MemberRowProps = {
   userId: string;
@@ -15,11 +15,11 @@ type MemberRowProps = {
 
 // 押すと右パネルにプロフィールを開くメンバーの行
 export const MemberRow = ({ userId, name, avatarUrl, detail }: MemberRowProps) => {
-  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
   return (
     <Button
       onPress={() => {
-        setRightSidePanelView({ type: "user-profile", userId });
+        void navigate({ search: openPanel({ profile: userId }), to: "." });
       }}
       className={`flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-left font-sans text-[13.5px] text-text data-hovered:bg-hover ${focusRing}`}
     >

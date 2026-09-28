@@ -3,6 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
+import { WorkspaceDialogs } from "#/features/layout/components/WorkspaceDialogs";
 import {
   UserGroupMemberSchema,
   UserGroupSchema,
@@ -30,8 +31,11 @@ const setup = async (role = WorkspaceRole.ADMIN) => {
   const addMember = vi.fn<(req: AddUserGroupMemberRequest) => void>();
   const removeMember = vi.fn<(req: RemoveUserGroupMemberRequest) => void>();
   await renderWithProviders(
-    <UserGroupPanel workspaceId="ws1" groupId="g1" />,
-    "/app/ws1",
+    <>
+      <UserGroupPanel workspaceId="ws1" groupId="g1" />
+      <WorkspaceDialogs workspaceId="ws1" />
+    </>,
+    "/app/ws1?group=g1",
     (routes) => {
       routes.rpc(UserGroupService.method.listUserGroups, () => ({
         userGroups: [
@@ -103,14 +107,14 @@ describe("UserGroupPanel", () => {
       );
     });
     expect(screen.queryByRole("button", { name: "ボブ をグループから外す" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "編集" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "編集" })).toBeNull();
     expect(screen.queryByRole("button", { name: "削除" })).toBeNull();
     expect(screen.queryByRole("combobox", { name: "メンバーを追加" })).toBeNull();
   });
 
   test("名前と説明を編集する", async () => {
     const { updateGroup } = await setup();
-    await userEvent.click(await screen.findByRole("button", { name: "編集" }));
+    await userEvent.click(await screen.findByRole("link", { name: "編集" }));
     const name = await screen.findByRole("textbox", { name: "グループ名" });
     await userEvent.clear(name);
     await userEvent.type(name, "web");
