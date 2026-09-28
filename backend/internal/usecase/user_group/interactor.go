@@ -8,7 +8,6 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -34,27 +33,30 @@ type userGroupInteractor struct {
 	userGroupRepo domainrepository.UserGroupRepository
 	workspaceRepo domainrepository.WorkspaceRepository
 	userRepo      domainrepository.UserRepository
-	permissionSvc domainservice.PermissionService
 }
 
 func NewUserGroupInteractor(
 	userGroupRepo domainrepository.UserGroupRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
-	permissionSvc domainservice.PermissionService,
 ) UserGroupUseCase {
 	return &userGroupInteractor{
 		userGroupRepo: userGroupRepo,
 		workspaceRepo: workspaceRepo,
 		userRepo:      userRepo,
-		permissionSvc: permissionSvc,
 	}
 }
 
-// ensureCanManage はユーザーグループの編集が許可されたロールであることを確認します
+// ensureCanManage はユーザーグループを編集できる owner / admin であることを確認します。停止中のメンバーは FindMember が返さない
 func (i *userGroupInteractor) ensureCanManage(ctx context.Context, workspaceID, userID string) error {
-	_, err := i.permissionSvc.Ensure(ctx, workspaceID, userID, entity.PermissionEditUserGroups)
-	return err
+	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to verify workspace membership: %w", err)
+	}
+	if !member.IsAdmin() {
+		return ErrUnauthorized
+	}
+	return nil
 }
 
 func (i *userGroupInteractor) CreateUserGroup(ctx context.Context, input CreateUserGroupInput) (*CreateUserGroupOutput, error) {

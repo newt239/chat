@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { IconUserMinus } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -9,10 +10,12 @@ import { Button } from "#/components/ui/Button";
 import { ComboBox } from "#/components/ui/ComboBox";
 import { IconButton } from "#/components/ui/IconButton";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import {
   useUserGroupMemberActions,
   useUserGroupMembers,
 } from "#/features/userGroup/hooks/useUserGroupMembers";
+import { userAtom } from "#/providers/store/auth";
 
 type UserGroupMembersProps = {
   groupId: string;
@@ -25,6 +28,8 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
   const { data: workspaceMembers } = useMembers(workspaceId);
   const { add, remove } = useUserGroupMemberActions();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const canManage = useCanManageUserGroups(workspaceId);
+  const myId = useAtomValue(userAtom)?.id;
 
   const memberIds = new Set(members?.map((member) => member.userId));
   const options = (workspaceMembers ?? [])
@@ -44,45 +49,50 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
             <li key={userId} className="flex items-center gap-2.5 py-0.5 text-[13.5px]">
               <Avatar name={name} src={member?.avatarUrl} size={24} />
               <span className="min-w-0 flex-1 truncate">{name}</span>
-              <IconButton
-                label={t("userGroup.removeMember", { name })}
-                onPress={() => {
-                  remove.mutate({ groupId, userId });
-                }}
-              >
-                <IconUserMinus />
-              </IconButton>
+              {/* 管理者でなくても自分はグループから抜けられる */}
+              {(canManage || userId === myId) && (
+                <IconButton
+                  label={t("userGroup.removeMember", { name })}
+                  onPress={() => {
+                    remove.mutate({ groupId, userId });
+                  }}
+                >
+                  <IconUserMinus />
+                </IconButton>
+              )}
             </li>
           );
         })}
       </ul>
-      <Form
-        className="flex items-end gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (selectedUserId !== null) {
-            add.mutate({ groupId, userId: selectedUserId });
-            setSelectedUserId(null);
-          }
-        }}
-      >
-        <ComboBox
-          label={t("userGroup.addMember")}
-          placeholder={t("userGroup.addMemberPlaceholder")}
-          options={options}
-          value={selectedUserId}
-          onChange={setSelectedUserId}
-          className="flex-1"
-        />
-        <Button
-          type="submit"
-          variant="secondary"
-          isDisabled={selectedUserId === null}
-          isPending={add.isPending}
+      {canManage && (
+        <Form
+          className="flex items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (selectedUserId !== null) {
+              add.mutate({ groupId, userId: selectedUserId });
+              setSelectedUserId(null);
+            }
+          }}
         >
-          {t("userGroup.add")}
-        </Button>
-      </Form>
+          <ComboBox
+            label={t("userGroup.addMember")}
+            placeholder={t("userGroup.addMemberPlaceholder")}
+            options={options}
+            value={selectedUserId}
+            onChange={setSelectedUserId}
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            variant="secondary"
+            isDisabled={selectedUserId === null}
+            isPending={add.isPending}
+          >
+            {t("userGroup.add")}
+          </Button>
+        </Form>
+      )}
     </div>
   );
 };

@@ -48,11 +48,11 @@ func (s *AdminServer) ListAuditLogs(ctx context.Context, req *chatv1.ListAuditLo
 	if limit == 0 {
 		limit = 50
 	}
-	out, err := s.UC.ListAuditLogs(ctx, adminuc.ListAuditLogsInput{AuditLogQuery: auditLogQuery(ctx, req), Limit: limit, Offset: int(req.Offset)})
+	out, err := s.UC.ListAuditLogs(ctx, adminuc.ListAuditLogsInput{AuditLogQuery: auditLogQuery(ctx, req), Limit: limit, PageToken: req.PageToken})
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListAuditLogsResponse{Logs: presenter.ConvertAll(out.Logs, presenter.AuditLog), TotalCount: int32(out.TotalCount)}, nil
+	return &chatv1.ListAuditLogsResponse{Logs: presenter.ConvertAll(out.Logs, presenter.AuditLog), NextPageToken: out.NextPageToken}, nil
 }
 
 func (s *AdminServer) ExportAuditLogs(ctx context.Context, req *chatv1.ExportAuditLogsRequest) (*chatv1.ExportAuditLogsResponse, error) {

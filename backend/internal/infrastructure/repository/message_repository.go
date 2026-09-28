@@ -50,33 +50,6 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 	return utils.MessageToEntity(m), nil
 }
 
-func (r *messageRepository) FindAllByChannelIDs(ctx context.Context, channelIDs []string) ([]*entity.Message, error) {
-	ids, err := utils.ParseUUIDs(channelIDs, "channel ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	messages, err := client.Message.Query().
-		Where(message.HasChannelWith(channel.IDIn(ids...)), message.DeletedAtIsNil()).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
-		Order(ent.Asc(message.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-	return result, nil
-}
-
 func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
 	chIDs, err := parseChannelIDs(channelIDs)
 	if err != nil {

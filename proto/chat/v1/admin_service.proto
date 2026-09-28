@@ -10,7 +10,7 @@ import "google/protobuf/timestamp.proto";
 // ワークスペースの管理画面の API。すべて owner / admin だけが呼び出せる
 service AdminService {
   rpc ListAuditLogs(ListAuditLogsRequest) returns (ListAuditLogsResponse);
-  // 絞り込んだ監査ログを CSV で返す。データのエクスポート権限も必要で、書き出したこと自体も監査ログに残る
+  // 絞り込んだ監査ログを CSV で返す。書き出したこと自体も監査ログに残る
   rpc ExportAuditLogs(ExportAuditLogsRequest) returns (ExportAuditLogsResponse);
   rpc ListAdminMembers(ListAdminMembersRequest) returns (ListAdminMembersResponse);
   // 停止するとリフレッシュトークンを失効させ、以降そのワークスペースの API を拒否する。投稿は残る
@@ -30,7 +30,7 @@ enum AuditAction {
   AUDIT_ACTION_CHANNEL_ARCHIVED = 8;
   AUDIT_ACTION_CHANNEL_UNARCHIVED = 9;
   AUDIT_ACTION_PERMISSION_CHANGED = 10;
-  AUDIT_ACTION_DATA_EXPORTED = 11;
+  AUDIT_ACTION_AUDIT_LOG_EXPORTED = 11;
   AUDIT_ACTION_WEBHOOK_CREATED = 12;
   AUDIT_ACTION_WEBHOOK_DELETED = 13;
 }
@@ -40,12 +40,12 @@ message AuditLog {
   // ログインの失敗など実行者を特定できない場合は空
   optional UserSummary actor = 2;
   AuditAction action = 3;
-  // user / channel / role / data / webhook
+  // user / channel / role / webhook。対象がない操作（監査ログの書き出し）は空
   string target_type = 4;
   string target_id = 5;
   // 記録時点の対象の名前（ユーザーの表示名、チャンネル名、ロール名など）
   string target_label = 6;
-  // 操作ごとの詳細。ロール変更は from / to、権限変更は permission / allowed、エクスポートは kind / format / count
+  // 操作ごとの詳細。ロール変更は from / to、権限変更は permission / allowed、監査ログの書き出しは count
   map<string, string> metadata = 7;
   string ip_address = 8;
   string user_agent = 9;
@@ -60,6 +60,7 @@ message ListAuditLogsRequest {
     defined_only: true
     not_in: [0]
   }];
+  // since 以上 until 未満
   optional google.protobuf.Timestamp since = 4;
   optional google.protobuf.Timestamp until = 5;
   // 未指定 (0) の場合は 50 件
@@ -67,14 +68,15 @@ message ListAuditLogsRequest {
     gte: 0
     lte: 200
   }];
-  int32 offset = 7 [(buf.validate.field).int32.gte = 0];
+  // 前ページの next_page_token。最初のページは空。保存先ごとに形式が違うため中身を解釈しない
+  string page_token = 7;
 }
 
 message ListAuditLogsResponse {
   // 新しい順
   repeated AuditLog logs = 1;
-  // ページングを無視した件数
-  int32 total_count = 2;
+  // 続きがない場合は空
+  string next_page_token = 2;
 }
 
 message ExportAuditLogsRequest {
@@ -106,8 +108,8 @@ message AdminMember {
   optional google.protobuf.Timestamp last_login_at = 8;
   string last_login_ip = 9;
   string last_login_user_agent = 10;
-  // 2 段階認証は未実装のため常に false
-  bool two_factor_enabled = 11;
+  reserved 11;
+  reserved "two_factor_enabled";
   // 直近 30 日の投稿数
   int32 recent_message_count = 12;
   // アップロードした添付ファイルの合計サイズ

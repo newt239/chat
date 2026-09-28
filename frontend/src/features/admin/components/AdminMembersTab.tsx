@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { formatBytes, formatDateTime, formatNumber, formatRelativeTime } from "@chat/i18n";
-import { IconCheck, IconSearch } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { Input, SearchField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -39,7 +39,6 @@ const memberColumns = [
   { isNumeric: false, key: "role" },
   { isNumeric: false, key: "status" },
   { isNumeric: false, key: "lastLogin" },
-  { isNumeric: false, key: "twoFactor" },
   { isNumeric: false, key: "device" },
   { isNumeric: true, key: "messages" },
   { isNumeric: true, key: "storage" },
@@ -183,16 +182,6 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                       >
                         {formatRelativeTime(lastLogin, now, locale)}
                       </time>
-                    )}
-                  </td>
-                  <td className={tableClassNames.cell}>
-                    {member.twoFactorEnabled ? (
-                      <span className="inline-flex items-center gap-1">
-                        <IconCheck aria-hidden className="size-3.5" />
-                        {t("admin.members.twoFactor.enabled")}
-                      </span>
-                    ) : (
-                      <span className="text-subtle">{t("admin.members.twoFactor.disabled")}</span>
                     )}
                   </td>
                   <td className={cn(tableClassNames.cell, tableClassNames.numeric, "text-muted")}>

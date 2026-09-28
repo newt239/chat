@@ -5,7 +5,7 @@ package chat.v1;
 import "buf/validate/validate.proto";
 import "chat/v1/workspace_service.proto";
 
-// ロールごとの操作権限。オーナーは常にすべての操作ができる
+// ロールごとの操作権限。オーナーは常にすべての操作ができる。ユーザーグループの編集は設定の対象外で、常に owner / admin だけができる
 service PermissionService {
   // メンバー全員が参照できる（ボタンの出し分けなどに使う）
   rpc GetPermissions(GetPermissionsRequest) returns (GetPermissionsResponse);
@@ -18,12 +18,11 @@ enum Permission {
   PERMISSION_CREATE_PUBLIC_CHANNEL = 1;
   PERMISSION_CREATE_PRIVATE_CHANNEL = 2;
   PERMISSION_INVITE_MEMBERS = 3;
-  PERMISSION_EDIT_USER_GROUPS = 4;
   PERMISSION_EDIT_CHANNEL_LINKS = 5;
   PERMISSION_PIN_MESSAGES = 6;
   PERMISSION_DELETE_OTHERS_MESSAGES = 7;
-  PERMISSION_EXPORT_DATA = 8;
-  PERMISSION_ADD_EXTERNAL_APPS = 9;
+  reserved 4, 8, 9;
+  reserved "PERMISSION_EDIT_USER_GROUPS", "PERMISSION_EXPORT_DATA", "PERMISSION_ADD_EXTERNAL_APPS";
 }
 
 message PermissionGrant {

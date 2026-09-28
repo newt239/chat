@@ -68,8 +68,8 @@ type stubAuditLogRepo struct {
 	logs []*entity.AuditLog
 }
 
-func (r *stubAuditLogRepo) List(_ context.Context, _ entity.AuditLogFilter) ([]*entity.AuditLog, int, error) {
-	return r.logs, len(r.logs), nil
+func (r *stubAuditLogRepo) List(_ context.Context, _ entity.AuditLogFilter) (*entity.AuditLogPage, error) {
+	return &entity.AuditLogPage{Logs: r.logs}, nil
 }
 
 type stubPermissionRepo struct {
@@ -223,13 +223,12 @@ func TestExportAuditLogs(t *testing.T) {
 	if !strings.Contains(lines[1], `"'=HYPERLINK(""x"")"`) {
 		t.Errorf("数式がエスケープされていません: %s", lines[1])
 	}
-	if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionDataExported}) {
+	if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionAuditLogExported}) {
 		t.Errorf("エクスポートが監査ログに残っていません: %v", f.recorder.Actions())
 	}
 
-	f.permissions.overrides = []entity.PermissionOverride{{Role: entity.WorkspaceRoleAdmin, Permission: entity.PermissionExportData, Allowed: false}}
-	if _, err := f.uc.ExportAuditLogs(context.Background(), AuditLogQuery{WorkspaceID: "ws", RequesterID: "admin"}); !errors.Is(err, domerr.ErrUnauthorized) {
-		t.Errorf("エクスポート権限のない管理者が書き出せてしまいます: %v", err)
+	if _, err := f.uc.ExportAuditLogs(context.Background(), AuditLogQuery{WorkspaceID: "ws", RequesterID: "member"}); !errors.Is(err, domerr.ErrUnauthorized) {
+		t.Errorf("メンバーが監査ログを書き出せてしまいます: %v", err)
 	}
 }
 
@@ -274,7 +273,7 @@ func TestGetPermissionsForMember(t *testing.T) {
 	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
-	if out.RequesterRole != entity.WorkspaceRoleMember || out.Matrix.Allows(out.RequesterRole, entity.PermissionExportData) {
+	if out.RequesterRole != entity.WorkspaceRoleMember || out.Matrix.Allows(out.RequesterRole, entity.PermissionDeleteOthersMessages) {
 		t.Errorf("既定の権限が期待と異なります: %+v", out)
 	}
 }

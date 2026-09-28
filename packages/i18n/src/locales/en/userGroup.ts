@@ -1,6 +1,7 @@
 import type { Messages } from "../../messages";
 
 export const userGroup: Messages["userGroup"] = {
+  adminOnly: "Only admins can create and edit groups",
   add: "Add",
   addMember: "Add a member",
   addMemberPlaceholder: "Choose a user",

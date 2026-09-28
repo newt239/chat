@@ -37,7 +37,7 @@ const (
 	AuditAction_AUDIT_ACTION_CHANNEL_ARCHIVED    AuditAction = 8
 	AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED  AuditAction = 9
 	AuditAction_AUDIT_ACTION_PERMISSION_CHANGED  AuditAction = 10
-	AuditAction_AUDIT_ACTION_DATA_EXPORTED       AuditAction = 11
+	AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED  AuditAction = 11
 	AuditAction_AUDIT_ACTION_WEBHOOK_CREATED     AuditAction = 12
 	AuditAction_AUDIT_ACTION_WEBHOOK_DELETED     AuditAction = 13
 )
@@ -56,7 +56,7 @@ var (
 		8:  "AUDIT_ACTION_CHANNEL_ARCHIVED",
 		9:  "AUDIT_ACTION_CHANNEL_UNARCHIVED",
 		10: "AUDIT_ACTION_PERMISSION_CHANGED",
-		11: "AUDIT_ACTION_DATA_EXPORTED",
+		11: "AUDIT_ACTION_AUDIT_LOG_EXPORTED",
 		12: "AUDIT_ACTION_WEBHOOK_CREATED",
 		13: "AUDIT_ACTION_WEBHOOK_DELETED",
 	}
@@ -72,7 +72,7 @@ var (
 		"AUDIT_ACTION_CHANNEL_ARCHIVED":    8,
 		"AUDIT_ACTION_CHANNEL_UNARCHIVED":  9,
 		"AUDIT_ACTION_PERMISSION_CHANGED":  10,
-		"AUDIT_ACTION_DATA_EXPORTED":       11,
+		"AUDIT_ACTION_AUDIT_LOG_EXPORTED":  11,
 		"AUDIT_ACTION_WEBHOOK_CREATED":     12,
 		"AUDIT_ACTION_WEBHOOK_DELETED":     13,
 	}
@@ -111,12 +111,12 @@ type AuditLog struct {
 	// ログインの失敗など実行者を特定できない場合は空
 	Actor  *UserSummary `protobuf:"bytes,2,opt,name=actor,proto3,oneof" json:"actor,omitempty"`
 	Action AuditAction  `protobuf:"varint,3,opt,name=action,proto3,enum=chat.v1.AuditAction" json:"action,omitempty"`
-	// user / channel / role / data / webhook
+	// user / channel / role / webhook。対象がない操作（監査ログの書き出し）は空
 	TargetType string `protobuf:"bytes,4,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty"`
 	TargetId   string `protobuf:"bytes,5,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	// 記録時点の対象の名前（ユーザーの表示名、チャンネル名、ロール名など）
 	TargetLabel string `protobuf:"bytes,6,opt,name=target_label,json=targetLabel,proto3" json:"target_label,omitempty"`
-	// 操作ごとの詳細。ロール変更は from / to、権限変更は permission / allowed、エクスポートは kind / format / count
+	// 操作ごとの詳細。ロール変更は from / to、権限変更は permission / allowed、監査ログの書き出しは count
 	Metadata      map[string]string      `protobuf:"bytes,7,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	IpAddress     string                 `protobuf:"bytes,8,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
 	UserAgent     string                 `protobuf:"bytes,9,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
@@ -230,12 +230,14 @@ type ListAuditLogsRequest struct {
 	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	ActorId     *string                `protobuf:"bytes,2,opt,name=actor_id,json=actorId,proto3,oneof" json:"actor_id,omitempty"`
 	// 空の場合はすべての種類
-	Actions []AuditAction          `protobuf:"varint,3,rep,packed,name=actions,proto3,enum=chat.v1.AuditAction" json:"actions,omitempty"`
-	Since   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=since,proto3,oneof" json:"since,omitempty"`
-	Until   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=until,proto3,oneof" json:"until,omitempty"`
+	Actions []AuditAction `protobuf:"varint,3,rep,packed,name=actions,proto3,enum=chat.v1.AuditAction" json:"actions,omitempty"`
+	// since 以上 until 未満
+	Since *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=since,proto3,oneof" json:"since,omitempty"`
+	Until *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=until,proto3,oneof" json:"until,omitempty"`
 	// 未指定 (0) の場合は 50 件
-	Limit         int32 `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
-	Offset        int32 `protobuf:"varint,7,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit int32 `protobuf:"varint,6,opt,name=limit,proto3" json:"limit,omitempty"`
+	// 前ページの next_page_token。最初のページは空。保存先ごとに形式が違うため中身を解釈しない
+	PageToken     string `protobuf:"bytes,7,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -312,19 +314,19 @@ func (x *ListAuditLogsRequest) GetLimit() int32 {
 	return 0
 }
 
-func (x *ListAuditLogsRequest) GetOffset() int32 {
+func (x *ListAuditLogsRequest) GetPageToken() string {
 	if x != nil {
-		return x.Offset
+		return x.PageToken
 	}
-	return 0
+	return ""
 }
 
 type ListAuditLogsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 新しい順
 	Logs []*AuditLog `protobuf:"bytes,1,rep,name=logs,proto3" json:"logs,omitempty"`
-	// ページングを無視した件数
-	TotalCount    int32 `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	// 続きがない場合は空
+	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -366,11 +368,11 @@ func (x *ListAuditLogsResponse) GetLogs() []*AuditLog {
 	return nil
 }
 
-func (x *ListAuditLogsResponse) GetTotalCount() int32 {
+func (x *ListAuditLogsResponse) GetNextPageToken() string {
 	if x != nil {
-		return x.TotalCount
+		return x.NextPageToken
 	}
-	return 0
+	return ""
 }
 
 type ExportAuditLogsRequest struct {
@@ -515,8 +517,6 @@ type AdminMember struct {
 	LastLoginAt        *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_login_at,json=lastLoginAt,proto3,oneof" json:"last_login_at,omitempty"`
 	LastLoginIp        string                 `protobuf:"bytes,9,opt,name=last_login_ip,json=lastLoginIp,proto3" json:"last_login_ip,omitempty"`
 	LastLoginUserAgent string                 `protobuf:"bytes,10,opt,name=last_login_user_agent,json=lastLoginUserAgent,proto3" json:"last_login_user_agent,omitempty"`
-	// 2 段階認証は未実装のため常に false
-	TwoFactorEnabled bool `protobuf:"varint,11,opt,name=two_factor_enabled,json=twoFactorEnabled,proto3" json:"two_factor_enabled,omitempty"`
 	// 直近 30 日の投稿数
 	RecentMessageCount int32 `protobuf:"varint,12,opt,name=recent_message_count,json=recentMessageCount,proto3" json:"recent_message_count,omitempty"`
 	// アップロードした添付ファイルの合計サイズ
@@ -624,13 +624,6 @@ func (x *AdminMember) GetLastLoginUserAgent() string {
 		return x.LastLoginUserAgent
 	}
 	return ""
-}
-
-func (x *AdminMember) GetTwoFactorEnabled() bool {
-	if x != nil {
-		return x.TwoFactorEnabled
-	}
-	return false
 }
 
 func (x *AdminMember) GetRecentMessageCount() int32 {
@@ -942,7 +935,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\b\n" +
-	"\x06_actor\"\xff\x02\n" +
+	"\x06_actor\"\xfd\x02\n" +
 	"\x14ListAuditLogsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12(\n" +
 	"\bactor_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\aactorId\x88\x01\x01\x12?\n" +
@@ -950,15 +943,15 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x05since\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampH\x01R\x05since\x88\x01\x01\x125\n" +
 	"\x05until\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampH\x02R\x05until\x88\x01\x01\x12 \n" +
 	"\x05limit\x18\x06 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xc8\x01(\x00R\x05limit\x12\x1f\n" +
-	"\x06offset\x18\a \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x06offsetB\v\n" +
+	"\xbaH\a\x1a\x05\x18\xc8\x01(\x00R\x05limit\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\a \x01(\tR\tpageTokenB\v\n" +
 	"\t_actor_idB\b\n" +
 	"\x06_sinceB\b\n" +
-	"\x06_until\"_\n" +
+	"\x06_until\"f\n" +
 	"\x15ListAuditLogsResponse\x12%\n" +
-	"\x04logs\x18\x01 \x03(\v2\x11.chat.v1.AuditLogR\x04logs\x12\x1f\n" +
-	"\vtotal_count\x18\x02 \x01(\x05R\n" +
-	"totalCount\"\xbe\x02\n" +
+	"\x04logs\x18\x01 \x03(\v2\x11.chat.v1.AuditLogR\x04logs\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xbe\x02\n" +
 	"\x16ExportAuditLogsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12(\n" +
 	"\bactor_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\aactorId\x88\x01\x01\x12?\n" +
@@ -970,7 +963,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x06_until\"P\n" +
 	"\x17ExportAuditLogsResponse\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\x12\x1b\n" +
-	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\xdc\x05\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName\"\xc8\x05\n" +
 	"\vAdminMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -983,15 +976,14 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\rlast_login_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x02R\vlastLoginAt\x88\x01\x01\x12\"\n" +
 	"\rlast_login_ip\x18\t \x01(\tR\vlastLoginIp\x121\n" +
 	"\x15last_login_user_agent\x18\n" +
-	" \x01(\tR\x12lastLoginUserAgent\x12,\n" +
-	"\x12two_factor_enabled\x18\v \x01(\bR\x10twoFactorEnabled\x120\n" +
+	" \x01(\tR\x12lastLoginUserAgent\x120\n" +
 	"\x14recent_message_count\x18\f \x01(\x05R\x12recentMessageCount\x12#\n" +
 	"\rstorage_bytes\x18\r \x01(\x03R\fstorageBytes\x12G\n" +
 	"\x0flast_message_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampH\x03R\rlastMessageAt\x88\x01\x01B\r\n" +
 	"\v_avatar_urlB\x0f\n" +
 	"\r_suspended_atB\x10\n" +
 	"\x0e_last_login_atB\x12\n" +
-	"\x10_last_message_at\"E\n" +
+	"\x10_last_message_atJ\x04\b\v\x10\fR\x12two_factor_enabled\"E\n" +
 	"\x17ListAdminMembersRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"J\n" +
 	"\x18ListAdminMembersResponse\x12.\n" +
@@ -1003,7 +995,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x13ResumeMemberRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\x16\n" +
-	"\x14ResumeMemberResponse*\xe1\x03\n" +
+	"\x14ResumeMemberResponse*\xe6\x03\n" +
 	"\vAuditAction\x12\x1c\n" +
 	"\x18AUDIT_ACTION_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12AUDIT_ACTION_LOGIN\x10\x01\x12\x1d\n" +
@@ -1016,8 +1008,8 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x1dAUDIT_ACTION_CHANNEL_ARCHIVED\x10\b\x12#\n" +
 	"\x1fAUDIT_ACTION_CHANNEL_UNARCHIVED\x10\t\x12#\n" +
 	"\x1fAUDIT_ACTION_PERMISSION_CHANGED\x10\n" +
-	"\x12\x1e\n" +
-	"\x1aAUDIT_ACTION_DATA_EXPORTED\x10\v\x12 \n" +
+	"\x12#\n" +
+	"\x1fAUDIT_ACTION_AUDIT_LOG_EXPORTED\x10\v\x12 \n" +
 	"\x1cAUDIT_ACTION_WEBHOOK_CREATED\x10\f\x12 \n" +
 	"\x1cAUDIT_ACTION_WEBHOOK_DELETED\x10\r2\xaa\x03\n" +
 	"\fAdminService\x12N\n" +
