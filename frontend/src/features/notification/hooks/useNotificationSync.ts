@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { useAtomValue, useSetAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { toDate } from "#/lib/timestamp";
@@ -13,6 +14,7 @@ export const useNotificationSync = (
   workspaceId: string | null,
   currentChannelId: string | null,
 ) => {
+  const { t } = useTranslation();
   const { wsClient } = useWsClient();
   const currentUser = useAtomValue(userAtom);
   const addNotification = useSetAtom(addNotificationAtom);
@@ -44,12 +46,12 @@ export const useNotificationSync = (
         message: message.body,
         messageId: message.id,
         timestamp: toDate(message.createdAt),
-        title: isMention ? `${userName} さんからのメンション` : channelName,
+        title: isMention ? t("notification.mentionTitle", { name: userName }) : channelName,
         type: isMention ? "mention" : "message",
         userId: message.userId,
         userName,
         workspaceId,
       });
     });
-  }, [wsClient, workspaceId, currentChannelId, currentUser?.id, channels, addNotification]);
+  }, [wsClient, workspaceId, currentChannelId, currentUser?.id, channels, addNotification, t]);
 };
