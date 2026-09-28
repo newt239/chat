@@ -1,0 +1,129 @@
+name: Deploy dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_ref:
+        description: "backend のブランチ・タグ・SHA（空なら現状維持）"
+        type: string
+        default: ""
+      frontend_ref:
+        description: "frontend のブランチ・タグ・SHA（空なら現状維持）"
+        type: string
+        default: ""
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+env:
+  KUSTOMIZE_VERSION: "5.8.1"
+  OVERLAY_DIR: infra/k8s/overlays/dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # マニフェストはワークフローを起動したブランチのものを使う
+      - name: Checkout manifests
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Checkout backend
+        if: inputs.backend_ref != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.backend_ref }}
+          path: src-backend
+
+      - name: Checkout frontend
+        if: inputs.frontend_ref != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.frontend_ref }}
+          path: src-frontend
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@3da1e46a907576cefaa90c484278bb5b259dd395 # v3.0.0
+        with:
+          cluster_name: ${{ vars.GKE_CLUSTER }}
+          location: ${{ vars.GCP_REGION }}
+
+      - name: Setup kustomize
+        run: |
+          curl -sSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" | tar xz -C "$RUNNER_TEMP" kustomize
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+
+      - name: Build and push backend
+        if: inputs.backend_ref != ''
+        run: |
+          image="${{ vars.ARTIFACT_REGISTRY }}/backend:$(git -C src-backend rev-parse --short=12 HEAD)"
+          docker build -t "$image" src-backend/backend
+          docker push "$image"
+          echo "BACKEND_IMAGE=$image" >> "$GITHUB_ENV"
+
+      - name: Build and push frontend
+        if: inputs.frontend_ref != ''
+        run: |
+          image="${{ vars.ARTIFACT_REGISTRY }}/frontend:$(git -C src-frontend rev-parse --short=12 HEAD)"
+          docker build -t "$image" -f src-frontend/frontend/Dockerfile \
+            --build-arg VITE_API_BASE_URL="https://${{ vars.API_DOMAIN }}" \
+            --build-arg VITE_WS_URL="wss://${{ vars.API_DOMAIN }}" \
+            --build-arg VITE_GOOGLE_OAUTH_CLIENT_ID="${{ vars.VITE_GOOGLE_OAUTH_CLIENT_ID }}" \
+            --build-arg VITE_FIREBASE_API_KEY="${{ vars.VITE_FIREBASE_API_KEY }}" \
+            --build-arg VITE_FIREBASE_PROJECT_ID="${{ vars.VITE_FIREBASE_PROJECT_ID }}" \
+            --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID="${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}" \
+            --build-arg VITE_FIREBASE_APP_ID="${{ vars.VITE_FIREBASE_APP_ID }}" \
+            --build-arg VITE_FIREBASE_VAPID_KEY="${{ vars.VITE_FIREBASE_VAPID_KEY }}" \
+            src-frontend
+          docker push "$image"
+          echo "FRONTEND_IMAGE=$image" >> "$GITHUB_ENV"
+
+      # 指定のないほうはクラスタで動いているイメージをそのまま使う
+      - name: Resolve current images
+        run: |
+          current() {
+            kubectl -n chat get deployment "$1" -o jsonpath="{.spec.template.spec.containers[?(@.name==\"$1\")].image}" 2>/dev/null || true
+          }
+          for app in backend frontend; do
+            var="${app^^}_IMAGE"
+            if [ -z "${!var}" ]; then
+              image="$(current "$app")"
+              if [ -z "$image" ]; then
+                echo "::error::$app はまだデプロイされていません。初回は ${app}_ref を指定してください。"
+                exit 1
+              fi
+              echo "$var=$image" >> "$GITHUB_ENV"
+            fi
+          done
+
+      - name: Apply manifests
+        run: |
+          (cd "$OVERLAY_DIR" && kustomize edit set image "backend=$BACKEND_IMAGE" "frontend=$FRONTEND_IMAGE")
+          kustomize build "$OVERLAY_DIR" | kubectl apply -f -
+          kubectl -n chat rollout status deployment/backend --timeout=10m
+          kubectl -n chat rollout status deployment/frontend --timeout=10m
+
+      - name: Summary
+        run: |
+          {
+            echo "| app | image |"
+            echo "| --- | --- |"
+            echo "| backend | \`$BACKEND_IMAGE\` |"
+            echo "| frontend | \`$FRONTEND_IMAGE\` |"
+          } >> "$GITHUB_STEP_SUMMARY"

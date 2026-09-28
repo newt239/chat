@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chat-backend
+  annotations:
+    iam.gke.io/gcp-service-account: BACKEND_SERVICE_ACCOUNT
+---
+# Secret Manager の値を External Secrets Operator で k8s の Secret に同期する
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: gcp-secret-manager
+spec:
+  provider:
+    gcpsm:
+      projectID: PROJECT_ID
+      auth:
+        workloadIdentity:
+          clusterLocation: CLUSTER_LOCATION
+          clusterName: CLUSTER_NAME
+          clusterProjectID: PROJECT_ID
+          serviceAccountRef:
+            name: chat-backend
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: backend-secrets
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-secret-manager
+  target:
+    name: backend-secrets
+  data:
+    - secretKey: DATABASE_URL
+      remoteRef:
+        key: DATABASE_URL
+    - secretKey: JWT_SECRET
+      remoteRef:
+        key: JWT_SECRET
+    - secretKey: MEILISEARCH_API_KEY
+      remoteRef:
+        key: MEILISEARCH_API_KEY
+    - secretKey: WASABI_ACCESS_KEY_ID
+      remoteRef:
+        key: WASABI_ACCESS_KEY_ID
+    - secretKey: WASABI_SECRET_ACCESS_KEY
+      remoteRef:
+        key: WASABI_SECRET_ACCESS_KEY

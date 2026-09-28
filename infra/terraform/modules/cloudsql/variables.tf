@@ -1,0 +1,41 @@
+variable "project_id" {
+  type = string
+}
+
+variable "region" {
+  type = string
+}
+
+variable "name" {
+  type = string
+}
+
+variable "network_id" {
+  type = string
+}
+
+variable "tier" {
+  type = string
+}
+
+variable "availability_type" {
+  type = string
+}
+
+variable "point_in_time_recovery" {
+  type = bool
+}
+
+variable "deletion_protection" {
+  type = bool
+}
+
+variable "database_name" {
+  type    = string
+  default = "chat"
+}
+
+variable "database_user" {
+  type    = string
+  default = "chat"
+}

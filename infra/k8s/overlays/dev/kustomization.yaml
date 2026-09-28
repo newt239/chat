@@ -1,0 +1,90 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chat
+
+resources:
+  - ../../base
+
+# deploy-dev ワークフローが kustomize edit set image でタグを書き換える
+images:
+  - name: backend
+    newName: asia-northeast1-docker.pkg.dev/your-gcp-project-id/chat/backend
+    newTag: latest
+  - name: frontend
+    newName: asia-northeast1-docker.pkg.dev/your-gcp-project-id/chat/frontend
+    newTag: latest
+
+configMapGenerator:
+  - name: backend-env
+    behavior: merge
+    literals:
+      - CORS_ALLOWED_ORIGINS=https://chat-dev.example.com
+      - WASABI_BUCKET=your-gcp-project-id-attachments
+      - GOOGLE_OAUTH_CLIENT_ID=
+      - FIREBASE_PROJECT_ID=your-gcp-project-id
+      - PASSWORD_AUTH_ENABLED=true
+  # terraform output の値。replacements で各マニフェストに埋め込み、この ConfigMap 自体は出力しない
+  - name: dev-params
+    literals:
+      - PROJECT_ID=your-gcp-project-id
+      - CLUSTER_NAME=chat-dev
+      - CLUSTER_LOCATION=asia-northeast1
+      - BACKEND_SERVICE_ACCOUNT=chat-dev-backend@your-gcp-project-id.iam.gserviceaccount.com
+      - CLOUDSQL_CONNECTION_NAME=your-gcp-project-id:asia-northeast1:chat-dev
+      - INGRESS_IP_NAME=chat-dev-ingress
+      - CERTIFICATE_NAME=chat-dev-00000000
+      - FRONTEND_DOMAIN=chat-dev.example.com
+      - API_DOMAIN=api.chat-dev.example.com
+    options:
+      disableNameSuffixHash: true
+      annotations:
+        config.kubernetes.io/local-config: "true"
+
+replacements:
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.PROJECT_ID }
+    targets:
+      - select: { kind: SecretStore, name: gcp-secret-manager }
+        fieldPaths:
+          - spec.provider.gcpsm.projectID
+          - spec.provider.gcpsm.auth.workloadIdentity.clusterProjectID
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.CLUSTER_NAME }
+    targets:
+      - select: { kind: SecretStore, name: gcp-secret-manager }
+        fieldPaths:
+          - spec.provider.gcpsm.auth.workloadIdentity.clusterName
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.CLUSTER_LOCATION }
+    targets:
+      - select: { kind: SecretStore, name: gcp-secret-manager }
+        fieldPaths:
+          - spec.provider.gcpsm.auth.workloadIdentity.clusterLocation
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.BACKEND_SERVICE_ACCOUNT }
+    targets:
+      - select: { kind: ServiceAccount, name: chat-backend }
+        fieldPaths:
+          - metadata.annotations.[iam.gke.io/gcp-service-account]
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.CLOUDSQL_CONNECTION_NAME }
+    targets:
+      - select: { kind: Deployment, name: backend }
+        fieldPaths:
+          - spec.template.spec.initContainers.[name=cloud-sql-proxy].args.5
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.INGRESS_IP_NAME }
+    targets:
+      - select: { kind: Ingress, name: chat }
+        fieldPaths:
+          - metadata.annotations.[kubernetes.io/ingress.global-static-ip-name]
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.CERTIFICATE_NAME }
+    targets:
+      - select: { kind: Ingress, name: chat }
+        fieldPaths:
+          - metadata.annotations.[ingress.gcp.kubernetes.io/pre-shared-cert]
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.FRONTEND_DOMAIN }
+    targets:
+      - select: { kind: Ingress, name: chat }
+        fieldPaths:
+          - spec.rules.0.host
+  - source: { kind: ConfigMap, name: dev-params, fieldPath: data.API_DOMAIN }
+    targets:
+      - select: { kind: Ingress, name: chat }
+        fieldPaths:
+          - spec.rules.1.host
