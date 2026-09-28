@@ -19,13 +19,17 @@ func (r *stubListThreadRepo) FindParticipatingThreads(_ context.Context, _ domai
 	return r.output, nil
 }
 
-type stubReactionRepo struct{ domainrepository.MessageRepository }
+type stubReactionRepo struct {
+	domainrepository.MessageRepository
+}
 
 func (stubReactionRepo) FindReactionsByMessageIDs(_ context.Context, _ []string) (map[string][]*entity.MessageReaction, error) {
 	return map[string][]*entity.MessageReaction{}, nil
 }
 
-type stubUserRepo struct{ domainrepository.UserRepository }
+type stubUserRepo struct {
+	domainrepository.UserRepository
+}
 
 func (stubUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
 	users := make([]*entity.User, 0, len(ids))
@@ -51,13 +55,17 @@ func (stubGroupMentionRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*
 	return nil, nil
 }
 
-type stubLinkRepo struct{ domainrepository.MessageLinkRepository }
+type stubLinkRepo struct {
+	domainrepository.MessageLinkRepository
+}
 
 func (stubLinkRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.MessageLink, error) {
 	return nil, nil
 }
 
-type stubAttachmentRepo struct{ domainrepository.AttachmentRepository }
+type stubAttachmentRepo struct {
+	domainrepository.AttachmentRepository
+}
 
 func (stubAttachmentRepo) FindByMessageIDs(_ context.Context, _ []string) (map[string][]*entity.Attachment, error) {
 	return map[string][]*entity.Attachment{}, nil
