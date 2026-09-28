@@ -7,8 +7,7 @@ Slack風コミュニケーションアプリのフロントエンドアプリケ
 - **React 19** - UIフレームワーク
 - **TypeScript** - 型安全性
 - **Vite** - ビルドツール
-- **Mantine 8** - UIコンポーネントライブラリ
-- **Tailwind CSS** - ユーティリティファーストCSS
+- **Tailwind CSS v4** + **React Aria Components** - スタイルと UI 部品
 - **TanStack Query** + **connect-query** - サーバー状態管理
 - **Jotai** - クライアント状態管理
 - **Connect RPC** (`@connectrpc/connect-web`) - proto から生成した型安全なAPIクライアント
