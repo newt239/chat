@@ -17,8 +17,8 @@ type AuditLogQuery struct {
 
 type ListAuditLogsInput struct {
 	AuditLogQuery
-	Limit  int
-	Offset int
+	Limit     int
+	PageToken string
 }
 
 type UserSummary struct {
@@ -33,8 +33,8 @@ type AuditLogOutput struct {
 }
 
 type ListAuditLogsOutput struct {
-	Logs       []AuditLogOutput
-	TotalCount int
+	Logs          []AuditLogOutput
+	NextPageToken string
 }
 
 type ExportOutput struct {
@@ -62,9 +62,7 @@ type MemberOutput struct {
 	JoinedAt    time.Time
 	SuspendedAt *time.Time
 	LastLogin   *entity.Session
-	// 2 段階認証は未実装のため常に false
-	TwoFactorEnabled bool
-	Activity         entity.MemberActivity
+	Activity    entity.MemberActivity
 }
 
 type PermissionsOutput struct {

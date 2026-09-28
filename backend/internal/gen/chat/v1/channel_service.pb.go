@@ -1061,10 +1061,10 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\x13ListChannelsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"D\n" +
 	"\x14ListChannelsResponse\x12,\n" +
-	"\bchannels\x18\x01 \x03(\v2\x10.chat.v1.ChannelR\bchannels\"\x98\x02\n" +
+	"\bchannels\x18\x01 \x03(\v2\x10.chat.v1.ChannelR\bchannels\"\x90\x02\n" +
 	"\x14CreateChannelRequest\x12*\n" +
-	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12P\n" +
-	"\x04name\x18\x02 \x01(\tB<\xbaH9r7\x18\xc8\x0122^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$R\x04name\x12%\n" +
+	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12H\n" +
+	"\x04name\x18\x02 \x01(\tB4\xbaH1r/\x18\xc8\x012*^[a-z0-9_-]{1,32}(/[a-z0-9_-]{1,32}){0,3}$R\x04name\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1d\n" +
 	"\n" +
 	"is_private\x18\x04 \x01(\bR\tisPrivate\x12,\n" +
@@ -1078,11 +1078,11 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"@\n" +
 	"\x12GetChannelResponse\x12*\n" +
-	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"\x89\x02\n" +
+	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"\x81\x02\n" +
 	"\x14UpdateChannelRequest\x12'\n" +
 	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12U\n" +
-	"\x04name\x18\x02 \x01(\tB<\xbaH9r7\x18\xc8\x0122^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$H\x00R\x04name\x88\x01\x01\x12%\n" +
+	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12M\n" +
+	"\x04name\x18\x02 \x01(\tB4\xbaH1r/\x18\xc8\x012*^[a-z0-9_-]{1,32}(/[a-z0-9_-]{1,32}){0,3}$H\x00R\x04name\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x01R\vdescription\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"is_private\x18\x04 \x01(\bH\x02R\tisPrivate\x88\x01\x01B\a\n" +

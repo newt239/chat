@@ -1,4 +1,5 @@
 export const userGroup = {
+  adminOnly: "グループの作成と編集は管理者だけができます",
   add: "追加",
   addMember: "メンバーを追加",
   addMemberPlaceholder: "ユーザーを選択",

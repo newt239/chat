@@ -1,6 +1,14 @@
 package entity
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	domerr "github.com/newt239/chat/internal/domain/errors"
+)
+
+// ErrInvalidAuditLogPageToken は保存先が発行していない、または壊れたページトークンです
+var ErrInvalidAuditLogPageToken = fmt.Errorf("%w: ページトークンが不正です", domerr.ErrValidation)
 
 type AuditAction string
 
@@ -15,7 +23,7 @@ const (
 	AuditActionChannelArchived   AuditAction = "channel_archived"
 	AuditActionChannelUnarchived AuditAction = "channel_unarchived"
 	AuditActionPermissionChanged AuditAction = "permission_changed"
-	AuditActionDataExported      AuditAction = "data_exported"
+	AuditActionAuditLogExported  AuditAction = "audit_log_exported"
 )
 
 type AuditTargetType string
@@ -24,7 +32,6 @@ const (
 	AuditTargetUser    AuditTargetType = "user"
 	AuditTargetChannel AuditTargetType = "channel"
 	AuditTargetRole    AuditTargetType = "role"
-	AuditTargetData    AuditTargetType = "data"
 )
 
 type AuditLog struct {
@@ -46,8 +53,17 @@ type AuditLogFilter struct {
 	WorkspaceID string
 	ActorID     *string
 	Actions     []AuditAction
-	Since       *time.Time
-	Until       *time.Time
-	Limit       int
-	Offset      int
+	// Since 以上 Until 未満
+	Since *time.Time
+	Until *time.Time
+	Limit int
+	// 前ページの AuditLogPage.NextPageToken。形式は保存先ごとに異なる
+	PageToken string
+}
+
+type AuditLogPage struct {
+	// 新しい順
+	Logs []*AuditLog
+	// 続きがない場合は空
+	NextPageToken string
 }

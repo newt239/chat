@@ -18,7 +18,8 @@ func TestNormalizeChannelPath(t *testing.T) {
 	}{
 		{name: "単一階層", input: "general", want: "general"},
 		{name: "英字は小文字にそろえる", input: " Dev/Frontend ", want: "dev/frontend"},
-		{name: "日本語とハイフン・アンダースコア", input: "開発/front-end_web", want: "開発/front-end_web"},
+		{name: "ハイフン・アンダースコア・数字", input: "dev2/front-end_web", want: "dev2/front-end_web"},
+		{name: "日本語は不可", input: "開発/web", wantErr: true},
 		{name: "4 階層まで", input: "a/b/c/d", want: "a/b/c/d"},
 		{name: "5 階層は不可", input: "a/b/c/d/e", wantErr: true},
 		{name: "空のセグメントは不可", input: "dev//web", wantErr: true},

@@ -10,6 +10,7 @@ import { LinkButton } from "#/components/ui/LinkButton";
 import { toast } from "#/components/ui/toast";
 import { closePanel, openDialog } from "#/features/layout/utils/overlaySearch";
 
+import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroupActions, useUserGroups } from "../hooks/useUserGroups";
 import { UserGroupMembers } from "./UserGroupMembers";
 
@@ -25,6 +26,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   const { remove } = useUserGroupActions();
   const navigate = useNavigate();
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
+  const canManage = useCanManageUserGroups(workspaceId);
   const group = groups?.find((candidate) => candidate.id === groupId);
 
   if (group === undefined) {
@@ -41,15 +43,17 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
           <p className="m-0 text-[13px]">{group.description}</p>
         )}
         <div className="flex flex-wrap gap-1.5">
-          <LinkButton
-            variant="secondary"
-            size="sm"
-            to="."
-            search={openDialog({ dialog: "edit-group" })}
-          >
-            <IconEdit aria-hidden />
-            {t("userGroup.edit")}
-          </LinkButton>
+          {canManage && (
+            <LinkButton
+              variant="secondary"
+              size="sm"
+              to="."
+              search={openDialog({ dialog: "edit-group" })}
+            >
+              <IconEdit aria-hidden />
+              {t("userGroup.edit")}
+            </LinkButton>
+          )}
           <Button
             variant="secondary"
             size="sm"
@@ -61,17 +65,19 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
             <IconAt aria-hidden />
             {t("userGroup.copyMention")}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-danger"
-            onPress={() => {
-              setIsDeleteConfirming(true);
-            }}
-          >
-            <IconTrash aria-hidden />
-            {t("common.delete")}
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-danger"
+              onPress={() => {
+                setIsDeleteConfirming(true);
+              }}
+            >
+              <IconTrash aria-hidden />
+              {t("common.delete")}
+            </Button>
+          )}
         </div>
       </section>
       <section className="flex flex-col gap-2 px-4 py-3">

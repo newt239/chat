@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 
@@ -21,14 +20,14 @@ const (
 	MaxChannelSegmentLength = 32
 )
 
-var channelSegmentPattern = regexp.MustCompile(`^[\p{L}\p{N}_-]+$`)
+var channelSegmentPattern = regexp.MustCompile(`^[a-z0-9_-]+$`)
 
 var (
 	ErrChannelWorkspaceIDInvalid = errors.New("ワークスペースIDの形式が無効です")
 	ErrChannelCreatorInvalid     = errors.New("作成者IDはUUID形式で指定してください")
 	ErrInvalidChannelType        = errors.New("無効なチャンネル種別です")
 	ErrGroupDMMaxMembers         = errors.New("グループDMは自分を含めて10人までです")
-	ErrChannelNameInvalid        = fmt.Errorf("%w: チャンネル名は英数字・日本語・ハイフン・アンダースコアをスラッシュで区切った4階層までのパスで指定してください", domerr.ErrValidation)
+	ErrChannelNameInvalid        = fmt.Errorf("%w: チャンネル名は小文字の英数字・ハイフン・アンダースコアをスラッシュで区切った4階層までのパスで指定してください", domerr.ErrValidation)
 )
 
 type ChannelType string
@@ -166,7 +165,7 @@ func NormalizeChannelPath(path string) (string, error) {
 		return "", ErrChannelNameInvalid
 	}
 	for _, segment := range segments {
-		if utf8.RuneCountInString(segment) > MaxChannelSegmentLength || !channelSegmentPattern.MatchString(segment) {
+		if len(segment) > MaxChannelSegmentLength || !channelSegmentPattern.MatchString(segment) {
 			return "", ErrChannelNameInvalid
 		}
 	}

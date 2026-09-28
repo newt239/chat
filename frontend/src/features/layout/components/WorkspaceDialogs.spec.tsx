@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
 
 import { UserGroupSchema, UserGroupService } from "#/gen/chat/v1/user_group_service_pb";
+import { WorkspaceRole, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { WorkspaceDialogs } from "./WorkspaceDialogs";
@@ -16,6 +17,9 @@ const groupRoutes = (routes: ConnectRouter) => {
   }));
   routes.rpc(UserGroupService.method.createUserGroup, (req) => ({
     userGroup: create(UserGroupSchema, { id: "g2", name: req.name }),
+  }));
+  routes.rpc(WorkspaceService.method.getWorkspace, () => ({
+    workspace: { id: "ws1", role: WorkspaceRole.ADMIN },
   }));
 };
 

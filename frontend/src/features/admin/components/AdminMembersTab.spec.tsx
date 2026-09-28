@@ -71,7 +71,6 @@ describe("AdminMembersTab", () => {
     expect(bob).toHaveTextContent("192.0.2.1 · Chrome · macOS");
     expect(bob).toHaveTextContent("12");
     expect(bob).toHaveTextContent("2 KB");
-    expect(bob).toHaveTextContent("未設定");
 
     const alice = rowOf("Alice");
     expect(alice).toHaveTextContent("オーナー");

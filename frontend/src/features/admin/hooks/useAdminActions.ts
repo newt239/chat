@@ -21,7 +21,7 @@ export const useAdminActions = () => {
       Promise.all(
         affectedServices.map((schema) =>
           queryClient.invalidateQueries({
-            queryKey: createConnectQueryKey({ cardinality: "finite", schema }),
+            queryKey: createConnectQueryKey({ cardinality: undefined, schema }),
           }),
         ),
       ),

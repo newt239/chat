@@ -23,12 +23,9 @@ const permissions = [
   Permission.CREATE_PUBLIC_CHANNEL,
   Permission.CREATE_PRIVATE_CHANNEL,
   Permission.INVITE_MEMBERS,
-  Permission.EDIT_USER_GROUPS,
   Permission.EDIT_CHANNEL_LINKS,
   Permission.PIN_MESSAGES,
   Permission.DELETE_OTHERS_MESSAGES,
-  Permission.EXPORT_DATA,
-  Permission.ADD_EXTERNAL_APPS,
 ];
 
 type AdminPermissionsTabProps = {

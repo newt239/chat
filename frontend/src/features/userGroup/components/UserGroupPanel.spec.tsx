@@ -9,8 +9,12 @@ import {
   UserGroupSchema,
   UserGroupService,
 } from "#/gen/chat/v1/user_group_service_pb";
-import { WorkspaceMemberSchema, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
-import { renderWithProviders } from "#/test/renderWithProviders";
+import {
+  WorkspaceMemberSchema,
+  WorkspaceRole,
+  WorkspaceService,
+} from "#/gen/chat/v1/workspace_service_pb";
+import { currentUser, renderWithProviders } from "#/test/renderWithProviders";
 
 import { UserGroupPanel } from "./UserGroupPanel";
 
@@ -21,7 +25,7 @@ import type {
   UpdateUserGroupRequest,
 } from "#/gen/chat/v1/user_group_service_pb";
 
-const setup = async () => {
+const setup = async (role = WorkspaceRole.ADMIN) => {
   const updateGroup = vi.fn<(req: UpdateUserGroupRequest) => void>();
   const deleteGroup = vi.fn<(req: DeleteUserGroupRequest) => void>();
   const addMember = vi.fn<(req: AddUserGroupMemberRequest) => void>();
@@ -39,7 +43,10 @@ const setup = async () => {
         ],
       }));
       routes.rpc(UserGroupService.method.listUserGroupMembers, () => ({
-        members: [create(UserGroupMemberSchema, { userId: "u-bob" })],
+        members: [
+          create(UserGroupMemberSchema, { userId: "u-bob" }),
+          create(UserGroupMemberSchema, { userId: currentUser.id }),
+        ],
       }));
       routes.rpc(UserGroupService.method.updateUserGroup, (req) => {
         updateGroup(req);
@@ -61,8 +68,10 @@ const setup = async () => {
         members: [
           create(WorkspaceMemberSchema, { displayName: "Bob", nickname: "ボブ", userId: "u-bob" }),
           create(WorkspaceMemberSchema, { displayName: "Carol", userId: "u-carol" }),
+          create(WorkspaceMemberSchema, { displayName: "Alice", userId: currentUser.id }),
         ],
       }));
+      routes.rpc(WorkspaceService.method.getWorkspace, () => ({ workspace: { id: "ws1", role } }));
     },
   );
   await screen.findByRole("heading", { name: "@frontend" });
@@ -89,9 +98,23 @@ describe("UserGroupPanel", () => {
     );
   });
 
+  test("管理者でなければ編集できず、自分だけグループから抜けられる", async () => {
+    const { removeMember } = await setup(WorkspaceRole.MEMBER);
+    await userEvent.click(await screen.findByRole("button", { name: "Alice をグループから外す" }));
+    await waitFor(() => {
+      expect(removeMember).toHaveBeenCalledWith(
+        expect.objectContaining({ groupId: "g1", userId: currentUser.id }),
+      );
+    });
+    expect(screen.queryByRole("button", { name: "ボブ をグループから外す" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "編集" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "削除" })).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "メンバーを追加" })).toBeNull();
+  });
+
   test("名前と説明を編集する", async () => {
     const { updateGroup } = await setup();
-    await userEvent.click(screen.getByRole("link", { name: "編集" }));
+    await userEvent.click(await screen.findByRole("link", { name: "編集" }));
     const name = await screen.findByRole("textbox", { name: "グループ名" });
     await userEvent.clear(name);
     await userEvent.type(name, "web");
@@ -105,7 +128,7 @@ describe("UserGroupPanel", () => {
 
   test("確認してから削除する", async () => {
     const { deleteGroup } = await setup();
-    await userEvent.click(screen.getByRole("button", { name: "削除" }));
+    await userEvent.click(await screen.findByRole("button", { name: "削除" }));
     await userEvent.click(await screen.findByRole("button", { name: "削除" }));
     await waitFor(() => {
       expect(deleteGroup).toHaveBeenCalledWith(expect.objectContaining({ groupId: "g1" }));
