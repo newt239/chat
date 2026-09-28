@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 
+	connectcors "connectrpc.com/cors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -21,6 +22,7 @@ type RouterConfig struct {
 
 	WebSocketHub        *websocket.Hub
 	WorkspaceRepository repository.WorkspaceRepository
+	RPCHandler          http.Handler
 
 	AuthHandler          *handler.AuthHandler
 	WorkspaceHandler     *handler.WorkspaceHandler
@@ -437,7 +439,8 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete},
-		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowHeaders:     append(connectcors.AllowedHeaders(), echo.HeaderOrigin, echo.HeaderAccept, echo.HeaderAuthorization),
+		ExposeHeaders:    connectcors.ExposedHeaders(),
 		AllowCredentials: true,
 	}))
 
@@ -446,6 +449,10 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 
 	// WebSocket
 	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.AllowedOrigins))
+
+	if cfg.RPCHandler != nil {
+		e.Any("/chat.v1.*", echo.WrapHandler(cfg.RPCHandler))
+	}
 
 	// ServerInterfaceを実装する構造体を作成
 	server := &serverImpl{cfg: cfg}

@@ -46,10 +46,10 @@ const (
 
 // UserServiceClient is a client for the chat.v1.UserService service.
 type UserServiceClient interface {
-	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
-	UpdateMe(context.Context, *connect.Request[v1.UpdateMeRequest]) (*connect.Response[v1.UpdateMeResponse], error)
-	UpdatePassword(context.Context, *connect.Request[v1.UpdatePasswordRequest]) (*connect.Response[v1.UpdatePasswordResponse], error)
-	DeleteMe(context.Context, *connect.Request[v1.DeleteMeRequest]) (*connect.Response[v1.DeleteMeResponse], error)
+	GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error)
+	UpdateMe(context.Context, *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error)
+	UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error)
+	DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error)
 }
 
 // NewUserServiceClient constructs a client for the chat.v1.UserService service. By default, it uses
@@ -99,31 +99,47 @@ type userServiceClient struct {
 }
 
 // GetMe calls chat.v1.UserService.GetMe.
-func (c *userServiceClient) GetMe(ctx context.Context, req *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
-	return c.getMe.CallUnary(ctx, req)
+func (c *userServiceClient) GetMe(ctx context.Context, req *v1.GetMeRequest) (*v1.GetMeResponse, error) {
+	response, err := c.getMe.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateMe calls chat.v1.UserService.UpdateMe.
-func (c *userServiceClient) UpdateMe(ctx context.Context, req *connect.Request[v1.UpdateMeRequest]) (*connect.Response[v1.UpdateMeResponse], error) {
-	return c.updateMe.CallUnary(ctx, req)
+func (c *userServiceClient) UpdateMe(ctx context.Context, req *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error) {
+	response, err := c.updateMe.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdatePassword calls chat.v1.UserService.UpdatePassword.
-func (c *userServiceClient) UpdatePassword(ctx context.Context, req *connect.Request[v1.UpdatePasswordRequest]) (*connect.Response[v1.UpdatePasswordResponse], error) {
-	return c.updatePassword.CallUnary(ctx, req)
+func (c *userServiceClient) UpdatePassword(ctx context.Context, req *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error) {
+	response, err := c.updatePassword.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteMe calls chat.v1.UserService.DeleteMe.
-func (c *userServiceClient) DeleteMe(ctx context.Context, req *connect.Request[v1.DeleteMeRequest]) (*connect.Response[v1.DeleteMeResponse], error) {
-	return c.deleteMe.CallUnary(ctx, req)
+func (c *userServiceClient) DeleteMe(ctx context.Context, req *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error) {
+	response, err := c.deleteMe.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UserServiceHandler is an implementation of the chat.v1.UserService service.
 type UserServiceHandler interface {
-	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
-	UpdateMe(context.Context, *connect.Request[v1.UpdateMeRequest]) (*connect.Response[v1.UpdateMeResponse], error)
-	UpdatePassword(context.Context, *connect.Request[v1.UpdatePasswordRequest]) (*connect.Response[v1.UpdatePasswordResponse], error)
-	DeleteMe(context.Context, *connect.Request[v1.DeleteMeRequest]) (*connect.Response[v1.DeleteMeResponse], error)
+	GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error)
+	UpdateMe(context.Context, *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error)
+	UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error)
+	DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -133,25 +149,25 @@ type UserServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	userServiceMethods := v1.File_chat_v1_user_service_proto.Services().ByName("UserService").Methods()
-	userServiceGetMeHandler := connect.NewUnaryHandler(
+	userServiceGetMeHandler := connect.NewUnaryHandlerSimple(
 		UserServiceGetMeProcedure,
 		svc.GetMe,
 		connect.WithSchema(userServiceMethods.ByName("GetMe")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceUpdateMeHandler := connect.NewUnaryHandler(
+	userServiceUpdateMeHandler := connect.NewUnaryHandlerSimple(
 		UserServiceUpdateMeProcedure,
 		svc.UpdateMe,
 		connect.WithSchema(userServiceMethods.ByName("UpdateMe")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceUpdatePasswordHandler := connect.NewUnaryHandler(
+	userServiceUpdatePasswordHandler := connect.NewUnaryHandlerSimple(
 		UserServiceUpdatePasswordProcedure,
 		svc.UpdatePassword,
 		connect.WithSchema(userServiceMethods.ByName("UpdatePassword")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceDeleteMeHandler := connect.NewUnaryHandler(
+	userServiceDeleteMeHandler := connect.NewUnaryHandlerSimple(
 		UserServiceDeleteMeProcedure,
 		svc.DeleteMe,
 		connect.WithSchema(userServiceMethods.ByName("DeleteMe")),
@@ -176,18 +192,18 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 // UnimplementedUserServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedUserServiceHandler struct{}
 
-func (UnimplementedUserServiceHandler) GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
+func (UnimplementedUserServiceHandler) GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.GetMe is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) UpdateMe(context.Context, *connect.Request[v1.UpdateMeRequest]) (*connect.Response[v1.UpdateMeResponse], error) {
+func (UnimplementedUserServiceHandler) UpdateMe(context.Context, *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.UpdateMe is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) UpdatePassword(context.Context, *connect.Request[v1.UpdatePasswordRequest]) (*connect.Response[v1.UpdatePasswordResponse], error) {
+func (UnimplementedUserServiceHandler) UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.UpdatePassword is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) DeleteMe(context.Context, *connect.Request[v1.DeleteMeRequest]) (*connect.Response[v1.DeleteMeResponse], error) {
+func (UnimplementedUserServiceHandler) DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.DeleteMe is not implemented"))
 }

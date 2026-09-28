@@ -39,7 +39,7 @@ const (
 
 // LinkServiceClient is a client for the chat.v1.LinkService service.
 type LinkServiceClient interface {
-	FetchOgp(context.Context, *connect.Request[v1.FetchOgpRequest]) (*connect.Response[v1.FetchOgpResponse], error)
+	FetchOgp(context.Context, *v1.FetchOgpRequest) (*v1.FetchOgpResponse, error)
 }
 
 // NewLinkServiceClient constructs a client for the chat.v1.LinkService service. By default, it uses
@@ -68,13 +68,17 @@ type linkServiceClient struct {
 }
 
 // FetchOgp calls chat.v1.LinkService.FetchOgp.
-func (c *linkServiceClient) FetchOgp(ctx context.Context, req *connect.Request[v1.FetchOgpRequest]) (*connect.Response[v1.FetchOgpResponse], error) {
-	return c.fetchOgp.CallUnary(ctx, req)
+func (c *linkServiceClient) FetchOgp(ctx context.Context, req *v1.FetchOgpRequest) (*v1.FetchOgpResponse, error) {
+	response, err := c.fetchOgp.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // LinkServiceHandler is an implementation of the chat.v1.LinkService service.
 type LinkServiceHandler interface {
-	FetchOgp(context.Context, *connect.Request[v1.FetchOgpRequest]) (*connect.Response[v1.FetchOgpResponse], error)
+	FetchOgp(context.Context, *v1.FetchOgpRequest) (*v1.FetchOgpResponse, error)
 }
 
 // NewLinkServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -84,7 +88,7 @@ type LinkServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewLinkServiceHandler(svc LinkServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	linkServiceMethods := v1.File_chat_v1_link_service_proto.Services().ByName("LinkService").Methods()
-	linkServiceFetchOgpHandler := connect.NewUnaryHandler(
+	linkServiceFetchOgpHandler := connect.NewUnaryHandlerSimple(
 		LinkServiceFetchOgpProcedure,
 		svc.FetchOgp,
 		connect.WithSchema(linkServiceMethods.ByName("FetchOgp")),
@@ -103,6 +107,6 @@ func NewLinkServiceHandler(svc LinkServiceHandler, opts ...connect.HandlerOption
 // UnimplementedLinkServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedLinkServiceHandler struct{}
 
-func (UnimplementedLinkServiceHandler) FetchOgp(context.Context, *connect.Request[v1.FetchOgpRequest]) (*connect.Response[v1.FetchOgpResponse], error) {
+func (UnimplementedLinkServiceHandler) FetchOgp(context.Context, *v1.FetchOgpRequest) (*v1.FetchOgpResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.LinkService.FetchOgp is not implemented"))
 }

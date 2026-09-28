@@ -46,9 +46,9 @@ const (
 
 // BookmarkServiceClient is a client for the chat.v1.BookmarkService service.
 type BookmarkServiceClient interface {
-	ListBookmarks(context.Context, *connect.Request[v1.ListBookmarksRequest]) (*connect.Response[v1.ListBookmarksResponse], error)
-	AddBookmark(context.Context, *connect.Request[v1.AddBookmarkRequest]) (*connect.Response[v1.AddBookmarkResponse], error)
-	RemoveBookmark(context.Context, *connect.Request[v1.RemoveBookmarkRequest]) (*connect.Response[v1.RemoveBookmarkResponse], error)
+	ListBookmarks(context.Context, *v1.ListBookmarksRequest) (*v1.ListBookmarksResponse, error)
+	AddBookmark(context.Context, *v1.AddBookmarkRequest) (*v1.AddBookmarkResponse, error)
+	RemoveBookmark(context.Context, *v1.RemoveBookmarkRequest) (*v1.RemoveBookmarkResponse, error)
 }
 
 // NewBookmarkServiceClient constructs a client for the chat.v1.BookmarkService service. By default,
@@ -91,25 +91,37 @@ type bookmarkServiceClient struct {
 }
 
 // ListBookmarks calls chat.v1.BookmarkService.ListBookmarks.
-func (c *bookmarkServiceClient) ListBookmarks(ctx context.Context, req *connect.Request[v1.ListBookmarksRequest]) (*connect.Response[v1.ListBookmarksResponse], error) {
-	return c.listBookmarks.CallUnary(ctx, req)
+func (c *bookmarkServiceClient) ListBookmarks(ctx context.Context, req *v1.ListBookmarksRequest) (*v1.ListBookmarksResponse, error) {
+	response, err := c.listBookmarks.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // AddBookmark calls chat.v1.BookmarkService.AddBookmark.
-func (c *bookmarkServiceClient) AddBookmark(ctx context.Context, req *connect.Request[v1.AddBookmarkRequest]) (*connect.Response[v1.AddBookmarkResponse], error) {
-	return c.addBookmark.CallUnary(ctx, req)
+func (c *bookmarkServiceClient) AddBookmark(ctx context.Context, req *v1.AddBookmarkRequest) (*v1.AddBookmarkResponse, error) {
+	response, err := c.addBookmark.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // RemoveBookmark calls chat.v1.BookmarkService.RemoveBookmark.
-func (c *bookmarkServiceClient) RemoveBookmark(ctx context.Context, req *connect.Request[v1.RemoveBookmarkRequest]) (*connect.Response[v1.RemoveBookmarkResponse], error) {
-	return c.removeBookmark.CallUnary(ctx, req)
+func (c *bookmarkServiceClient) RemoveBookmark(ctx context.Context, req *v1.RemoveBookmarkRequest) (*v1.RemoveBookmarkResponse, error) {
+	response, err := c.removeBookmark.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // BookmarkServiceHandler is an implementation of the chat.v1.BookmarkService service.
 type BookmarkServiceHandler interface {
-	ListBookmarks(context.Context, *connect.Request[v1.ListBookmarksRequest]) (*connect.Response[v1.ListBookmarksResponse], error)
-	AddBookmark(context.Context, *connect.Request[v1.AddBookmarkRequest]) (*connect.Response[v1.AddBookmarkResponse], error)
-	RemoveBookmark(context.Context, *connect.Request[v1.RemoveBookmarkRequest]) (*connect.Response[v1.RemoveBookmarkResponse], error)
+	ListBookmarks(context.Context, *v1.ListBookmarksRequest) (*v1.ListBookmarksResponse, error)
+	AddBookmark(context.Context, *v1.AddBookmarkRequest) (*v1.AddBookmarkResponse, error)
+	RemoveBookmark(context.Context, *v1.RemoveBookmarkRequest) (*v1.RemoveBookmarkResponse, error)
 }
 
 // NewBookmarkServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -119,19 +131,19 @@ type BookmarkServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewBookmarkServiceHandler(svc BookmarkServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	bookmarkServiceMethods := v1.File_chat_v1_bookmark_service_proto.Services().ByName("BookmarkService").Methods()
-	bookmarkServiceListBookmarksHandler := connect.NewUnaryHandler(
+	bookmarkServiceListBookmarksHandler := connect.NewUnaryHandlerSimple(
 		BookmarkServiceListBookmarksProcedure,
 		svc.ListBookmarks,
 		connect.WithSchema(bookmarkServiceMethods.ByName("ListBookmarks")),
 		connect.WithHandlerOptions(opts...),
 	)
-	bookmarkServiceAddBookmarkHandler := connect.NewUnaryHandler(
+	bookmarkServiceAddBookmarkHandler := connect.NewUnaryHandlerSimple(
 		BookmarkServiceAddBookmarkProcedure,
 		svc.AddBookmark,
 		connect.WithSchema(bookmarkServiceMethods.ByName("AddBookmark")),
 		connect.WithHandlerOptions(opts...),
 	)
-	bookmarkServiceRemoveBookmarkHandler := connect.NewUnaryHandler(
+	bookmarkServiceRemoveBookmarkHandler := connect.NewUnaryHandlerSimple(
 		BookmarkServiceRemoveBookmarkProcedure,
 		svc.RemoveBookmark,
 		connect.WithSchema(bookmarkServiceMethods.ByName("RemoveBookmark")),
@@ -154,14 +166,14 @@ func NewBookmarkServiceHandler(svc BookmarkServiceHandler, opts ...connect.Handl
 // UnimplementedBookmarkServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedBookmarkServiceHandler struct{}
 
-func (UnimplementedBookmarkServiceHandler) ListBookmarks(context.Context, *connect.Request[v1.ListBookmarksRequest]) (*connect.Response[v1.ListBookmarksResponse], error) {
+func (UnimplementedBookmarkServiceHandler) ListBookmarks(context.Context, *v1.ListBookmarksRequest) (*v1.ListBookmarksResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.BookmarkService.ListBookmarks is not implemented"))
 }
 
-func (UnimplementedBookmarkServiceHandler) AddBookmark(context.Context, *connect.Request[v1.AddBookmarkRequest]) (*connect.Response[v1.AddBookmarkResponse], error) {
+func (UnimplementedBookmarkServiceHandler) AddBookmark(context.Context, *v1.AddBookmarkRequest) (*v1.AddBookmarkResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.BookmarkService.AddBookmark is not implemented"))
 }
 
-func (UnimplementedBookmarkServiceHandler) RemoveBookmark(context.Context, *connect.Request[v1.RemoveBookmarkRequest]) (*connect.Response[v1.RemoveBookmarkResponse], error) {
+func (UnimplementedBookmarkServiceHandler) RemoveBookmark(context.Context, *v1.RemoveBookmarkRequest) (*v1.RemoveBookmarkResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.BookmarkService.RemoveBookmark is not implemented"))
 }

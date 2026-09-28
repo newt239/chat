@@ -61,14 +61,14 @@ const (
 
 // UserGroupServiceClient is a client for the chat.v1.UserGroupService service.
 type UserGroupServiceClient interface {
-	CreateUserGroup(context.Context, *connect.Request[v1.CreateUserGroupRequest]) (*connect.Response[v1.CreateUserGroupResponse], error)
-	ListUserGroups(context.Context, *connect.Request[v1.ListUserGroupsRequest]) (*connect.Response[v1.ListUserGroupsResponse], error)
-	GetUserGroup(context.Context, *connect.Request[v1.GetUserGroupRequest]) (*connect.Response[v1.GetUserGroupResponse], error)
-	UpdateUserGroup(context.Context, *connect.Request[v1.UpdateUserGroupRequest]) (*connect.Response[v1.UpdateUserGroupResponse], error)
-	DeleteUserGroup(context.Context, *connect.Request[v1.DeleteUserGroupRequest]) (*connect.Response[v1.DeleteUserGroupResponse], error)
-	ListUserGroupMembers(context.Context, *connect.Request[v1.ListUserGroupMembersRequest]) (*connect.Response[v1.ListUserGroupMembersResponse], error)
-	AddUserGroupMember(context.Context, *connect.Request[v1.AddUserGroupMemberRequest]) (*connect.Response[v1.AddUserGroupMemberResponse], error)
-	RemoveUserGroupMember(context.Context, *connect.Request[v1.RemoveUserGroupMemberRequest]) (*connect.Response[v1.RemoveUserGroupMemberResponse], error)
+	CreateUserGroup(context.Context, *v1.CreateUserGroupRequest) (*v1.CreateUserGroupResponse, error)
+	ListUserGroups(context.Context, *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error)
+	GetUserGroup(context.Context, *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error)
+	UpdateUserGroup(context.Context, *v1.UpdateUserGroupRequest) (*v1.UpdateUserGroupResponse, error)
+	DeleteUserGroup(context.Context, *v1.DeleteUserGroupRequest) (*v1.DeleteUserGroupResponse, error)
+	ListUserGroupMembers(context.Context, *v1.ListUserGroupMembersRequest) (*v1.ListUserGroupMembersResponse, error)
+	AddUserGroupMember(context.Context, *v1.AddUserGroupMemberRequest) (*v1.AddUserGroupMemberResponse, error)
+	RemoveUserGroupMember(context.Context, *v1.RemoveUserGroupMemberRequest) (*v1.RemoveUserGroupMemberResponse, error)
 }
 
 // NewUserGroupServiceClient constructs a client for the chat.v1.UserGroupService service. By
@@ -146,55 +146,87 @@ type userGroupServiceClient struct {
 }
 
 // CreateUserGroup calls chat.v1.UserGroupService.CreateUserGroup.
-func (c *userGroupServiceClient) CreateUserGroup(ctx context.Context, req *connect.Request[v1.CreateUserGroupRequest]) (*connect.Response[v1.CreateUserGroupResponse], error) {
-	return c.createUserGroup.CallUnary(ctx, req)
+func (c *userGroupServiceClient) CreateUserGroup(ctx context.Context, req *v1.CreateUserGroupRequest) (*v1.CreateUserGroupResponse, error) {
+	response, err := c.createUserGroup.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListUserGroups calls chat.v1.UserGroupService.ListUserGroups.
-func (c *userGroupServiceClient) ListUserGroups(ctx context.Context, req *connect.Request[v1.ListUserGroupsRequest]) (*connect.Response[v1.ListUserGroupsResponse], error) {
-	return c.listUserGroups.CallUnary(ctx, req)
+func (c *userGroupServiceClient) ListUserGroups(ctx context.Context, req *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error) {
+	response, err := c.listUserGroups.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetUserGroup calls chat.v1.UserGroupService.GetUserGroup.
-func (c *userGroupServiceClient) GetUserGroup(ctx context.Context, req *connect.Request[v1.GetUserGroupRequest]) (*connect.Response[v1.GetUserGroupResponse], error) {
-	return c.getUserGroup.CallUnary(ctx, req)
+func (c *userGroupServiceClient) GetUserGroup(ctx context.Context, req *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error) {
+	response, err := c.getUserGroup.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateUserGroup calls chat.v1.UserGroupService.UpdateUserGroup.
-func (c *userGroupServiceClient) UpdateUserGroup(ctx context.Context, req *connect.Request[v1.UpdateUserGroupRequest]) (*connect.Response[v1.UpdateUserGroupResponse], error) {
-	return c.updateUserGroup.CallUnary(ctx, req)
+func (c *userGroupServiceClient) UpdateUserGroup(ctx context.Context, req *v1.UpdateUserGroupRequest) (*v1.UpdateUserGroupResponse, error) {
+	response, err := c.updateUserGroup.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteUserGroup calls chat.v1.UserGroupService.DeleteUserGroup.
-func (c *userGroupServiceClient) DeleteUserGroup(ctx context.Context, req *connect.Request[v1.DeleteUserGroupRequest]) (*connect.Response[v1.DeleteUserGroupResponse], error) {
-	return c.deleteUserGroup.CallUnary(ctx, req)
+func (c *userGroupServiceClient) DeleteUserGroup(ctx context.Context, req *v1.DeleteUserGroupRequest) (*v1.DeleteUserGroupResponse, error) {
+	response, err := c.deleteUserGroup.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListUserGroupMembers calls chat.v1.UserGroupService.ListUserGroupMembers.
-func (c *userGroupServiceClient) ListUserGroupMembers(ctx context.Context, req *connect.Request[v1.ListUserGroupMembersRequest]) (*connect.Response[v1.ListUserGroupMembersResponse], error) {
-	return c.listUserGroupMembers.CallUnary(ctx, req)
+func (c *userGroupServiceClient) ListUserGroupMembers(ctx context.Context, req *v1.ListUserGroupMembersRequest) (*v1.ListUserGroupMembersResponse, error) {
+	response, err := c.listUserGroupMembers.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // AddUserGroupMember calls chat.v1.UserGroupService.AddUserGroupMember.
-func (c *userGroupServiceClient) AddUserGroupMember(ctx context.Context, req *connect.Request[v1.AddUserGroupMemberRequest]) (*connect.Response[v1.AddUserGroupMemberResponse], error) {
-	return c.addUserGroupMember.CallUnary(ctx, req)
+func (c *userGroupServiceClient) AddUserGroupMember(ctx context.Context, req *v1.AddUserGroupMemberRequest) (*v1.AddUserGroupMemberResponse, error) {
+	response, err := c.addUserGroupMember.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // RemoveUserGroupMember calls chat.v1.UserGroupService.RemoveUserGroupMember.
-func (c *userGroupServiceClient) RemoveUserGroupMember(ctx context.Context, req *connect.Request[v1.RemoveUserGroupMemberRequest]) (*connect.Response[v1.RemoveUserGroupMemberResponse], error) {
-	return c.removeUserGroupMember.CallUnary(ctx, req)
+func (c *userGroupServiceClient) RemoveUserGroupMember(ctx context.Context, req *v1.RemoveUserGroupMemberRequest) (*v1.RemoveUserGroupMemberResponse, error) {
+	response, err := c.removeUserGroupMember.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UserGroupServiceHandler is an implementation of the chat.v1.UserGroupService service.
 type UserGroupServiceHandler interface {
-	CreateUserGroup(context.Context, *connect.Request[v1.CreateUserGroupRequest]) (*connect.Response[v1.CreateUserGroupResponse], error)
-	ListUserGroups(context.Context, *connect.Request[v1.ListUserGroupsRequest]) (*connect.Response[v1.ListUserGroupsResponse], error)
-	GetUserGroup(context.Context, *connect.Request[v1.GetUserGroupRequest]) (*connect.Response[v1.GetUserGroupResponse], error)
-	UpdateUserGroup(context.Context, *connect.Request[v1.UpdateUserGroupRequest]) (*connect.Response[v1.UpdateUserGroupResponse], error)
-	DeleteUserGroup(context.Context, *connect.Request[v1.DeleteUserGroupRequest]) (*connect.Response[v1.DeleteUserGroupResponse], error)
-	ListUserGroupMembers(context.Context, *connect.Request[v1.ListUserGroupMembersRequest]) (*connect.Response[v1.ListUserGroupMembersResponse], error)
-	AddUserGroupMember(context.Context, *connect.Request[v1.AddUserGroupMemberRequest]) (*connect.Response[v1.AddUserGroupMemberResponse], error)
-	RemoveUserGroupMember(context.Context, *connect.Request[v1.RemoveUserGroupMemberRequest]) (*connect.Response[v1.RemoveUserGroupMemberResponse], error)
+	CreateUserGroup(context.Context, *v1.CreateUserGroupRequest) (*v1.CreateUserGroupResponse, error)
+	ListUserGroups(context.Context, *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error)
+	GetUserGroup(context.Context, *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error)
+	UpdateUserGroup(context.Context, *v1.UpdateUserGroupRequest) (*v1.UpdateUserGroupResponse, error)
+	DeleteUserGroup(context.Context, *v1.DeleteUserGroupRequest) (*v1.DeleteUserGroupResponse, error)
+	ListUserGroupMembers(context.Context, *v1.ListUserGroupMembersRequest) (*v1.ListUserGroupMembersResponse, error)
+	AddUserGroupMember(context.Context, *v1.AddUserGroupMemberRequest) (*v1.AddUserGroupMemberResponse, error)
+	RemoveUserGroupMember(context.Context, *v1.RemoveUserGroupMemberRequest) (*v1.RemoveUserGroupMemberResponse, error)
 }
 
 // NewUserGroupServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -204,49 +236,49 @@ type UserGroupServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewUserGroupServiceHandler(svc UserGroupServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	userGroupServiceMethods := v1.File_chat_v1_user_group_service_proto.Services().ByName("UserGroupService").Methods()
-	userGroupServiceCreateUserGroupHandler := connect.NewUnaryHandler(
+	userGroupServiceCreateUserGroupHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceCreateUserGroupProcedure,
 		svc.CreateUserGroup,
 		connect.WithSchema(userGroupServiceMethods.ByName("CreateUserGroup")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userGroupServiceListUserGroupsHandler := connect.NewUnaryHandler(
+	userGroupServiceListUserGroupsHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceListUserGroupsProcedure,
 		svc.ListUserGroups,
 		connect.WithSchema(userGroupServiceMethods.ByName("ListUserGroups")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userGroupServiceGetUserGroupHandler := connect.NewUnaryHandler(
+	userGroupServiceGetUserGroupHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceGetUserGroupProcedure,
 		svc.GetUserGroup,
 		connect.WithSchema(userGroupServiceMethods.ByName("GetUserGroup")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userGroupServiceUpdateUserGroupHandler := connect.NewUnaryHandler(
+	userGroupServiceUpdateUserGroupHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceUpdateUserGroupProcedure,
 		svc.UpdateUserGroup,
 		connect.WithSchema(userGroupServiceMethods.ByName("UpdateUserGroup")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userGroupServiceDeleteUserGroupHandler := connect.NewUnaryHandler(
+	userGroupServiceDeleteUserGroupHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceDeleteUserGroupProcedure,
 		svc.DeleteUserGroup,
 		connect.WithSchema(userGroupServiceMethods.ByName("DeleteUserGroup")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userGroupServiceListUserGroupMembersHandler := connect.NewUnaryHandler(
+	userGroupServiceListUserGroupMembersHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceListUserGroupMembersProcedure,
 		svc.ListUserGroupMembers,
 		connect.WithSchema(userGroupServiceMethods.ByName("ListUserGroupMembers")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userGroupServiceAddUserGroupMemberHandler := connect.NewUnaryHandler(
+	userGroupServiceAddUserGroupMemberHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceAddUserGroupMemberProcedure,
 		svc.AddUserGroupMember,
 		connect.WithSchema(userGroupServiceMethods.ByName("AddUserGroupMember")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userGroupServiceRemoveUserGroupMemberHandler := connect.NewUnaryHandler(
+	userGroupServiceRemoveUserGroupMemberHandler := connect.NewUnaryHandlerSimple(
 		UserGroupServiceRemoveUserGroupMemberProcedure,
 		svc.RemoveUserGroupMember,
 		connect.WithSchema(userGroupServiceMethods.ByName("RemoveUserGroupMember")),
@@ -279,34 +311,34 @@ func NewUserGroupServiceHandler(svc UserGroupServiceHandler, opts ...connect.Han
 // UnimplementedUserGroupServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedUserGroupServiceHandler struct{}
 
-func (UnimplementedUserGroupServiceHandler) CreateUserGroup(context.Context, *connect.Request[v1.CreateUserGroupRequest]) (*connect.Response[v1.CreateUserGroupResponse], error) {
+func (UnimplementedUserGroupServiceHandler) CreateUserGroup(context.Context, *v1.CreateUserGroupRequest) (*v1.CreateUserGroupResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.CreateUserGroup is not implemented"))
 }
 
-func (UnimplementedUserGroupServiceHandler) ListUserGroups(context.Context, *connect.Request[v1.ListUserGroupsRequest]) (*connect.Response[v1.ListUserGroupsResponse], error) {
+func (UnimplementedUserGroupServiceHandler) ListUserGroups(context.Context, *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.ListUserGroups is not implemented"))
 }
 
-func (UnimplementedUserGroupServiceHandler) GetUserGroup(context.Context, *connect.Request[v1.GetUserGroupRequest]) (*connect.Response[v1.GetUserGroupResponse], error) {
+func (UnimplementedUserGroupServiceHandler) GetUserGroup(context.Context, *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.GetUserGroup is not implemented"))
 }
 
-func (UnimplementedUserGroupServiceHandler) UpdateUserGroup(context.Context, *connect.Request[v1.UpdateUserGroupRequest]) (*connect.Response[v1.UpdateUserGroupResponse], error) {
+func (UnimplementedUserGroupServiceHandler) UpdateUserGroup(context.Context, *v1.UpdateUserGroupRequest) (*v1.UpdateUserGroupResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.UpdateUserGroup is not implemented"))
 }
 
-func (UnimplementedUserGroupServiceHandler) DeleteUserGroup(context.Context, *connect.Request[v1.DeleteUserGroupRequest]) (*connect.Response[v1.DeleteUserGroupResponse], error) {
+func (UnimplementedUserGroupServiceHandler) DeleteUserGroup(context.Context, *v1.DeleteUserGroupRequest) (*v1.DeleteUserGroupResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.DeleteUserGroup is not implemented"))
 }
 
-func (UnimplementedUserGroupServiceHandler) ListUserGroupMembers(context.Context, *connect.Request[v1.ListUserGroupMembersRequest]) (*connect.Response[v1.ListUserGroupMembersResponse], error) {
+func (UnimplementedUserGroupServiceHandler) ListUserGroupMembers(context.Context, *v1.ListUserGroupMembersRequest) (*v1.ListUserGroupMembersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.ListUserGroupMembers is not implemented"))
 }
 
-func (UnimplementedUserGroupServiceHandler) AddUserGroupMember(context.Context, *connect.Request[v1.AddUserGroupMemberRequest]) (*connect.Response[v1.AddUserGroupMemberResponse], error) {
+func (UnimplementedUserGroupServiceHandler) AddUserGroupMember(context.Context, *v1.AddUserGroupMemberRequest) (*v1.AddUserGroupMemberResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.AddUserGroupMember is not implemented"))
 }
 
-func (UnimplementedUserGroupServiceHandler) RemoveUserGroupMember(context.Context, *connect.Request[v1.RemoveUserGroupMemberRequest]) (*connect.Response[v1.RemoveUserGroupMemberResponse], error) {
+func (UnimplementedUserGroupServiceHandler) RemoveUserGroupMember(context.Context, *v1.RemoveUserGroupMemberRequest) (*v1.RemoveUserGroupMemberResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.RemoveUserGroupMember is not implemented"))
 }

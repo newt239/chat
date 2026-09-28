@@ -14,7 +14,10 @@ plugins:
     opt: paths=source_relative
   - remote: buf.build/connectrpc/go:v1.21.0
     out: backend/internal/gen
-    opt: paths=source_relative
+    opt:
+      - paths=source_relative
+      # ハンドラを (ctx, *Request) (*Response, error) の素直なシグネチャにする
+      - simple
   # ランタイムの @bufbuild/protobuf とバージョンを揃えるためローカルのプラグインを使う
   - local: protoc-gen-es
     out: frontend/src/gen

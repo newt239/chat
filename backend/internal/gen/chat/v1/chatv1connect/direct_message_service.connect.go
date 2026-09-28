@@ -46,9 +46,9 @@ const (
 
 // DirectMessageServiceClient is a client for the chat.v1.DirectMessageService service.
 type DirectMessageServiceClient interface {
-	ListDirectMessages(context.Context, *connect.Request[v1.ListDirectMessagesRequest]) (*connect.Response[v1.ListDirectMessagesResponse], error)
-	CreateDirectMessage(context.Context, *connect.Request[v1.CreateDirectMessageRequest]) (*connect.Response[v1.CreateDirectMessageResponse], error)
-	CreateGroupDirectMessage(context.Context, *connect.Request[v1.CreateGroupDirectMessageRequest]) (*connect.Response[v1.CreateGroupDirectMessageResponse], error)
+	ListDirectMessages(context.Context, *v1.ListDirectMessagesRequest) (*v1.ListDirectMessagesResponse, error)
+	CreateDirectMessage(context.Context, *v1.CreateDirectMessageRequest) (*v1.CreateDirectMessageResponse, error)
+	CreateGroupDirectMessage(context.Context, *v1.CreateGroupDirectMessageRequest) (*v1.CreateGroupDirectMessageResponse, error)
 }
 
 // NewDirectMessageServiceClient constructs a client for the chat.v1.DirectMessageService service.
@@ -91,25 +91,37 @@ type directMessageServiceClient struct {
 }
 
 // ListDirectMessages calls chat.v1.DirectMessageService.ListDirectMessages.
-func (c *directMessageServiceClient) ListDirectMessages(ctx context.Context, req *connect.Request[v1.ListDirectMessagesRequest]) (*connect.Response[v1.ListDirectMessagesResponse], error) {
-	return c.listDirectMessages.CallUnary(ctx, req)
+func (c *directMessageServiceClient) ListDirectMessages(ctx context.Context, req *v1.ListDirectMessagesRequest) (*v1.ListDirectMessagesResponse, error) {
+	response, err := c.listDirectMessages.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateDirectMessage calls chat.v1.DirectMessageService.CreateDirectMessage.
-func (c *directMessageServiceClient) CreateDirectMessage(ctx context.Context, req *connect.Request[v1.CreateDirectMessageRequest]) (*connect.Response[v1.CreateDirectMessageResponse], error) {
-	return c.createDirectMessage.CallUnary(ctx, req)
+func (c *directMessageServiceClient) CreateDirectMessage(ctx context.Context, req *v1.CreateDirectMessageRequest) (*v1.CreateDirectMessageResponse, error) {
+	response, err := c.createDirectMessage.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateGroupDirectMessage calls chat.v1.DirectMessageService.CreateGroupDirectMessage.
-func (c *directMessageServiceClient) CreateGroupDirectMessage(ctx context.Context, req *connect.Request[v1.CreateGroupDirectMessageRequest]) (*connect.Response[v1.CreateGroupDirectMessageResponse], error) {
-	return c.createGroupDirectMessage.CallUnary(ctx, req)
+func (c *directMessageServiceClient) CreateGroupDirectMessage(ctx context.Context, req *v1.CreateGroupDirectMessageRequest) (*v1.CreateGroupDirectMessageResponse, error) {
+	response, err := c.createGroupDirectMessage.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DirectMessageServiceHandler is an implementation of the chat.v1.DirectMessageService service.
 type DirectMessageServiceHandler interface {
-	ListDirectMessages(context.Context, *connect.Request[v1.ListDirectMessagesRequest]) (*connect.Response[v1.ListDirectMessagesResponse], error)
-	CreateDirectMessage(context.Context, *connect.Request[v1.CreateDirectMessageRequest]) (*connect.Response[v1.CreateDirectMessageResponse], error)
-	CreateGroupDirectMessage(context.Context, *connect.Request[v1.CreateGroupDirectMessageRequest]) (*connect.Response[v1.CreateGroupDirectMessageResponse], error)
+	ListDirectMessages(context.Context, *v1.ListDirectMessagesRequest) (*v1.ListDirectMessagesResponse, error)
+	CreateDirectMessage(context.Context, *v1.CreateDirectMessageRequest) (*v1.CreateDirectMessageResponse, error)
+	CreateGroupDirectMessage(context.Context, *v1.CreateGroupDirectMessageRequest) (*v1.CreateGroupDirectMessageResponse, error)
 }
 
 // NewDirectMessageServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -119,19 +131,19 @@ type DirectMessageServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewDirectMessageServiceHandler(svc DirectMessageServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	directMessageServiceMethods := v1.File_chat_v1_direct_message_service_proto.Services().ByName("DirectMessageService").Methods()
-	directMessageServiceListDirectMessagesHandler := connect.NewUnaryHandler(
+	directMessageServiceListDirectMessagesHandler := connect.NewUnaryHandlerSimple(
 		DirectMessageServiceListDirectMessagesProcedure,
 		svc.ListDirectMessages,
 		connect.WithSchema(directMessageServiceMethods.ByName("ListDirectMessages")),
 		connect.WithHandlerOptions(opts...),
 	)
-	directMessageServiceCreateDirectMessageHandler := connect.NewUnaryHandler(
+	directMessageServiceCreateDirectMessageHandler := connect.NewUnaryHandlerSimple(
 		DirectMessageServiceCreateDirectMessageProcedure,
 		svc.CreateDirectMessage,
 		connect.WithSchema(directMessageServiceMethods.ByName("CreateDirectMessage")),
 		connect.WithHandlerOptions(opts...),
 	)
-	directMessageServiceCreateGroupDirectMessageHandler := connect.NewUnaryHandler(
+	directMessageServiceCreateGroupDirectMessageHandler := connect.NewUnaryHandlerSimple(
 		DirectMessageServiceCreateGroupDirectMessageProcedure,
 		svc.CreateGroupDirectMessage,
 		connect.WithSchema(directMessageServiceMethods.ByName("CreateGroupDirectMessage")),
@@ -154,14 +166,14 @@ func NewDirectMessageServiceHandler(svc DirectMessageServiceHandler, opts ...con
 // UnimplementedDirectMessageServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedDirectMessageServiceHandler struct{}
 
-func (UnimplementedDirectMessageServiceHandler) ListDirectMessages(context.Context, *connect.Request[v1.ListDirectMessagesRequest]) (*connect.Response[v1.ListDirectMessagesResponse], error) {
+func (UnimplementedDirectMessageServiceHandler) ListDirectMessages(context.Context, *v1.ListDirectMessagesRequest) (*v1.ListDirectMessagesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.DirectMessageService.ListDirectMessages is not implemented"))
 }
 
-func (UnimplementedDirectMessageServiceHandler) CreateDirectMessage(context.Context, *connect.Request[v1.CreateDirectMessageRequest]) (*connect.Response[v1.CreateDirectMessageResponse], error) {
+func (UnimplementedDirectMessageServiceHandler) CreateDirectMessage(context.Context, *v1.CreateDirectMessageRequest) (*v1.CreateDirectMessageResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.DirectMessageService.CreateDirectMessage is not implemented"))
 }
 
-func (UnimplementedDirectMessageServiceHandler) CreateGroupDirectMessage(context.Context, *connect.Request[v1.CreateGroupDirectMessageRequest]) (*connect.Response[v1.CreateGroupDirectMessageResponse], error) {
+func (UnimplementedDirectMessageServiceHandler) CreateGroupDirectMessage(context.Context, *v1.CreateGroupDirectMessageRequest) (*v1.CreateGroupDirectMessageResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.DirectMessageService.CreateGroupDirectMessage is not implemented"))
 }

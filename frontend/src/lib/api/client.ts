@@ -33,7 +33,7 @@ export const api = createClient<paths>({
 });
 
 // リフレッシュトークンを使用してアクセストークンを更新する関数
-const refreshAccessToken = (): Promise<string | null> => {
+export const refreshAccessToken = (): Promise<string | null> => {
   if (refreshPromise) {
     return refreshPromise;
   }

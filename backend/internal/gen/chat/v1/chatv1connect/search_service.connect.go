@@ -40,7 +40,7 @@ const (
 
 // SearchServiceClient is a client for the chat.v1.SearchService service.
 type SearchServiceClient interface {
-	SearchWorkspace(context.Context, *connect.Request[v1.SearchWorkspaceRequest]) (*connect.Response[v1.SearchWorkspaceResponse], error)
+	SearchWorkspace(context.Context, *v1.SearchWorkspaceRequest) (*v1.SearchWorkspaceResponse, error)
 }
 
 // NewSearchServiceClient constructs a client for the chat.v1.SearchService service. By default, it
@@ -69,13 +69,17 @@ type searchServiceClient struct {
 }
 
 // SearchWorkspace calls chat.v1.SearchService.SearchWorkspace.
-func (c *searchServiceClient) SearchWorkspace(ctx context.Context, req *connect.Request[v1.SearchWorkspaceRequest]) (*connect.Response[v1.SearchWorkspaceResponse], error) {
-	return c.searchWorkspace.CallUnary(ctx, req)
+func (c *searchServiceClient) SearchWorkspace(ctx context.Context, req *v1.SearchWorkspaceRequest) (*v1.SearchWorkspaceResponse, error) {
+	response, err := c.searchWorkspace.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // SearchServiceHandler is an implementation of the chat.v1.SearchService service.
 type SearchServiceHandler interface {
-	SearchWorkspace(context.Context, *connect.Request[v1.SearchWorkspaceRequest]) (*connect.Response[v1.SearchWorkspaceResponse], error)
+	SearchWorkspace(context.Context, *v1.SearchWorkspaceRequest) (*v1.SearchWorkspaceResponse, error)
 }
 
 // NewSearchServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -85,7 +89,7 @@ type SearchServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewSearchServiceHandler(svc SearchServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	searchServiceMethods := v1.File_chat_v1_search_service_proto.Services().ByName("SearchService").Methods()
-	searchServiceSearchWorkspaceHandler := connect.NewUnaryHandler(
+	searchServiceSearchWorkspaceHandler := connect.NewUnaryHandlerSimple(
 		SearchServiceSearchWorkspaceProcedure,
 		svc.SearchWorkspace,
 		connect.WithSchema(searchServiceMethods.ByName("SearchWorkspace")),
@@ -104,6 +108,6 @@ func NewSearchServiceHandler(svc SearchServiceHandler, opts ...connect.HandlerOp
 // UnimplementedSearchServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedSearchServiceHandler struct{}
 
-func (UnimplementedSearchServiceHandler) SearchWorkspace(context.Context, *connect.Request[v1.SearchWorkspaceRequest]) (*connect.Response[v1.SearchWorkspaceResponse], error) {
+func (UnimplementedSearchServiceHandler) SearchWorkspace(context.Context, *v1.SearchWorkspaceRequest) (*v1.SearchWorkspaceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.SearchService.SearchWorkspace is not implemented"))
 }

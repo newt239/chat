@@ -70,17 +70,17 @@ const (
 
 // WorkspaceServiceClient is a client for the chat.v1.WorkspaceService service.
 type WorkspaceServiceClient interface {
-	ListWorkspaces(context.Context, *connect.Request[v1.ListWorkspacesRequest]) (*connect.Response[v1.ListWorkspacesResponse], error)
-	CreateWorkspace(context.Context, *connect.Request[v1.CreateWorkspaceRequest]) (*connect.Response[v1.CreateWorkspaceResponse], error)
-	GetWorkspace(context.Context, *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.GetWorkspaceResponse], error)
-	UpdateWorkspace(context.Context, *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.UpdateWorkspaceResponse], error)
-	DeleteWorkspace(context.Context, *connect.Request[v1.DeleteWorkspaceRequest]) (*connect.Response[v1.DeleteWorkspaceResponse], error)
-	ListPublicWorkspaces(context.Context, *connect.Request[v1.ListPublicWorkspacesRequest]) (*connect.Response[v1.ListPublicWorkspacesResponse], error)
-	JoinPublicWorkspace(context.Context, *connect.Request[v1.JoinPublicWorkspaceRequest]) (*connect.Response[v1.JoinPublicWorkspaceResponse], error)
-	ListMembers(context.Context, *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error)
-	AddMemberByEmail(context.Context, *connect.Request[v1.AddMemberByEmailRequest]) (*connect.Response[v1.AddMemberByEmailResponse], error)
-	UpdateMemberRole(context.Context, *connect.Request[v1.UpdateMemberRoleRequest]) (*connect.Response[v1.UpdateMemberRoleResponse], error)
-	RemoveMember(context.Context, *connect.Request[v1.RemoveMemberRequest]) (*connect.Response[v1.RemoveMemberResponse], error)
+	ListWorkspaces(context.Context, *v1.ListWorkspacesRequest) (*v1.ListWorkspacesResponse, error)
+	CreateWorkspace(context.Context, *v1.CreateWorkspaceRequest) (*v1.CreateWorkspaceResponse, error)
+	GetWorkspace(context.Context, *v1.GetWorkspaceRequest) (*v1.GetWorkspaceResponse, error)
+	UpdateWorkspace(context.Context, *v1.UpdateWorkspaceRequest) (*v1.UpdateWorkspaceResponse, error)
+	DeleteWorkspace(context.Context, *v1.DeleteWorkspaceRequest) (*v1.DeleteWorkspaceResponse, error)
+	ListPublicWorkspaces(context.Context, *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error)
+	JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error)
+	ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error)
+	AddMemberByEmail(context.Context, *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error)
+	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
+	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
 }
 
 // NewWorkspaceServiceClient constructs a client for the chat.v1.WorkspaceService service. By
@@ -179,73 +179,117 @@ type workspaceServiceClient struct {
 }
 
 // ListWorkspaces calls chat.v1.WorkspaceService.ListWorkspaces.
-func (c *workspaceServiceClient) ListWorkspaces(ctx context.Context, req *connect.Request[v1.ListWorkspacesRequest]) (*connect.Response[v1.ListWorkspacesResponse], error) {
-	return c.listWorkspaces.CallUnary(ctx, req)
+func (c *workspaceServiceClient) ListWorkspaces(ctx context.Context, req *v1.ListWorkspacesRequest) (*v1.ListWorkspacesResponse, error) {
+	response, err := c.listWorkspaces.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateWorkspace calls chat.v1.WorkspaceService.CreateWorkspace.
-func (c *workspaceServiceClient) CreateWorkspace(ctx context.Context, req *connect.Request[v1.CreateWorkspaceRequest]) (*connect.Response[v1.CreateWorkspaceResponse], error) {
-	return c.createWorkspace.CallUnary(ctx, req)
+func (c *workspaceServiceClient) CreateWorkspace(ctx context.Context, req *v1.CreateWorkspaceRequest) (*v1.CreateWorkspaceResponse, error) {
+	response, err := c.createWorkspace.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetWorkspace calls chat.v1.WorkspaceService.GetWorkspace.
-func (c *workspaceServiceClient) GetWorkspace(ctx context.Context, req *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.GetWorkspaceResponse], error) {
-	return c.getWorkspace.CallUnary(ctx, req)
+func (c *workspaceServiceClient) GetWorkspace(ctx context.Context, req *v1.GetWorkspaceRequest) (*v1.GetWorkspaceResponse, error) {
+	response, err := c.getWorkspace.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateWorkspace calls chat.v1.WorkspaceService.UpdateWorkspace.
-func (c *workspaceServiceClient) UpdateWorkspace(ctx context.Context, req *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.UpdateWorkspaceResponse], error) {
-	return c.updateWorkspace.CallUnary(ctx, req)
+func (c *workspaceServiceClient) UpdateWorkspace(ctx context.Context, req *v1.UpdateWorkspaceRequest) (*v1.UpdateWorkspaceResponse, error) {
+	response, err := c.updateWorkspace.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteWorkspace calls chat.v1.WorkspaceService.DeleteWorkspace.
-func (c *workspaceServiceClient) DeleteWorkspace(ctx context.Context, req *connect.Request[v1.DeleteWorkspaceRequest]) (*connect.Response[v1.DeleteWorkspaceResponse], error) {
-	return c.deleteWorkspace.CallUnary(ctx, req)
+func (c *workspaceServiceClient) DeleteWorkspace(ctx context.Context, req *v1.DeleteWorkspaceRequest) (*v1.DeleteWorkspaceResponse, error) {
+	response, err := c.deleteWorkspace.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListPublicWorkspaces calls chat.v1.WorkspaceService.ListPublicWorkspaces.
-func (c *workspaceServiceClient) ListPublicWorkspaces(ctx context.Context, req *connect.Request[v1.ListPublicWorkspacesRequest]) (*connect.Response[v1.ListPublicWorkspacesResponse], error) {
-	return c.listPublicWorkspaces.CallUnary(ctx, req)
+func (c *workspaceServiceClient) ListPublicWorkspaces(ctx context.Context, req *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error) {
+	response, err := c.listPublicWorkspaces.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // JoinPublicWorkspace calls chat.v1.WorkspaceService.JoinPublicWorkspace.
-func (c *workspaceServiceClient) JoinPublicWorkspace(ctx context.Context, req *connect.Request[v1.JoinPublicWorkspaceRequest]) (*connect.Response[v1.JoinPublicWorkspaceResponse], error) {
-	return c.joinPublicWorkspace.CallUnary(ctx, req)
+func (c *workspaceServiceClient) JoinPublicWorkspace(ctx context.Context, req *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error) {
+	response, err := c.joinPublicWorkspace.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListMembers calls chat.v1.WorkspaceService.ListMembers.
-func (c *workspaceServiceClient) ListMembers(ctx context.Context, req *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error) {
-	return c.listMembers.CallUnary(ctx, req)
+func (c *workspaceServiceClient) ListMembers(ctx context.Context, req *v1.ListMembersRequest) (*v1.ListMembersResponse, error) {
+	response, err := c.listMembers.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // AddMemberByEmail calls chat.v1.WorkspaceService.AddMemberByEmail.
-func (c *workspaceServiceClient) AddMemberByEmail(ctx context.Context, req *connect.Request[v1.AddMemberByEmailRequest]) (*connect.Response[v1.AddMemberByEmailResponse], error) {
-	return c.addMemberByEmail.CallUnary(ctx, req)
+func (c *workspaceServiceClient) AddMemberByEmail(ctx context.Context, req *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error) {
+	response, err := c.addMemberByEmail.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateMemberRole calls chat.v1.WorkspaceService.UpdateMemberRole.
-func (c *workspaceServiceClient) UpdateMemberRole(ctx context.Context, req *connect.Request[v1.UpdateMemberRoleRequest]) (*connect.Response[v1.UpdateMemberRoleResponse], error) {
-	return c.updateMemberRole.CallUnary(ctx, req)
+func (c *workspaceServiceClient) UpdateMemberRole(ctx context.Context, req *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error) {
+	response, err := c.updateMemberRole.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // RemoveMember calls chat.v1.WorkspaceService.RemoveMember.
-func (c *workspaceServiceClient) RemoveMember(ctx context.Context, req *connect.Request[v1.RemoveMemberRequest]) (*connect.Response[v1.RemoveMemberResponse], error) {
-	return c.removeMember.CallUnary(ctx, req)
+func (c *workspaceServiceClient) RemoveMember(ctx context.Context, req *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error) {
+	response, err := c.removeMember.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // WorkspaceServiceHandler is an implementation of the chat.v1.WorkspaceService service.
 type WorkspaceServiceHandler interface {
-	ListWorkspaces(context.Context, *connect.Request[v1.ListWorkspacesRequest]) (*connect.Response[v1.ListWorkspacesResponse], error)
-	CreateWorkspace(context.Context, *connect.Request[v1.CreateWorkspaceRequest]) (*connect.Response[v1.CreateWorkspaceResponse], error)
-	GetWorkspace(context.Context, *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.GetWorkspaceResponse], error)
-	UpdateWorkspace(context.Context, *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.UpdateWorkspaceResponse], error)
-	DeleteWorkspace(context.Context, *connect.Request[v1.DeleteWorkspaceRequest]) (*connect.Response[v1.DeleteWorkspaceResponse], error)
-	ListPublicWorkspaces(context.Context, *connect.Request[v1.ListPublicWorkspacesRequest]) (*connect.Response[v1.ListPublicWorkspacesResponse], error)
-	JoinPublicWorkspace(context.Context, *connect.Request[v1.JoinPublicWorkspaceRequest]) (*connect.Response[v1.JoinPublicWorkspaceResponse], error)
-	ListMembers(context.Context, *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error)
-	AddMemberByEmail(context.Context, *connect.Request[v1.AddMemberByEmailRequest]) (*connect.Response[v1.AddMemberByEmailResponse], error)
-	UpdateMemberRole(context.Context, *connect.Request[v1.UpdateMemberRoleRequest]) (*connect.Response[v1.UpdateMemberRoleResponse], error)
-	RemoveMember(context.Context, *connect.Request[v1.RemoveMemberRequest]) (*connect.Response[v1.RemoveMemberResponse], error)
+	ListWorkspaces(context.Context, *v1.ListWorkspacesRequest) (*v1.ListWorkspacesResponse, error)
+	CreateWorkspace(context.Context, *v1.CreateWorkspaceRequest) (*v1.CreateWorkspaceResponse, error)
+	GetWorkspace(context.Context, *v1.GetWorkspaceRequest) (*v1.GetWorkspaceResponse, error)
+	UpdateWorkspace(context.Context, *v1.UpdateWorkspaceRequest) (*v1.UpdateWorkspaceResponse, error)
+	DeleteWorkspace(context.Context, *v1.DeleteWorkspaceRequest) (*v1.DeleteWorkspaceResponse, error)
+	ListPublicWorkspaces(context.Context, *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error)
+	JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error)
+	ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error)
+	AddMemberByEmail(context.Context, *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error)
+	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
+	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
 }
 
 // NewWorkspaceServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -255,67 +299,67 @@ type WorkspaceServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	workspaceServiceMethods := v1.File_chat_v1_workspace_service_proto.Services().ByName("WorkspaceService").Methods()
-	workspaceServiceListWorkspacesHandler := connect.NewUnaryHandler(
+	workspaceServiceListWorkspacesHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceListWorkspacesProcedure,
 		svc.ListWorkspaces,
 		connect.WithSchema(workspaceServiceMethods.ByName("ListWorkspaces")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceCreateWorkspaceHandler := connect.NewUnaryHandler(
+	workspaceServiceCreateWorkspaceHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceCreateWorkspaceProcedure,
 		svc.CreateWorkspace,
 		connect.WithSchema(workspaceServiceMethods.ByName("CreateWorkspace")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceGetWorkspaceHandler := connect.NewUnaryHandler(
+	workspaceServiceGetWorkspaceHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceGetWorkspaceProcedure,
 		svc.GetWorkspace,
 		connect.WithSchema(workspaceServiceMethods.ByName("GetWorkspace")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceUpdateWorkspaceHandler := connect.NewUnaryHandler(
+	workspaceServiceUpdateWorkspaceHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceUpdateWorkspaceProcedure,
 		svc.UpdateWorkspace,
 		connect.WithSchema(workspaceServiceMethods.ByName("UpdateWorkspace")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceDeleteWorkspaceHandler := connect.NewUnaryHandler(
+	workspaceServiceDeleteWorkspaceHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceDeleteWorkspaceProcedure,
 		svc.DeleteWorkspace,
 		connect.WithSchema(workspaceServiceMethods.ByName("DeleteWorkspace")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceListPublicWorkspacesHandler := connect.NewUnaryHandler(
+	workspaceServiceListPublicWorkspacesHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceListPublicWorkspacesProcedure,
 		svc.ListPublicWorkspaces,
 		connect.WithSchema(workspaceServiceMethods.ByName("ListPublicWorkspaces")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceJoinPublicWorkspaceHandler := connect.NewUnaryHandler(
+	workspaceServiceJoinPublicWorkspaceHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceJoinPublicWorkspaceProcedure,
 		svc.JoinPublicWorkspace,
 		connect.WithSchema(workspaceServiceMethods.ByName("JoinPublicWorkspace")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceListMembersHandler := connect.NewUnaryHandler(
+	workspaceServiceListMembersHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceListMembersProcedure,
 		svc.ListMembers,
 		connect.WithSchema(workspaceServiceMethods.ByName("ListMembers")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceAddMemberByEmailHandler := connect.NewUnaryHandler(
+	workspaceServiceAddMemberByEmailHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceAddMemberByEmailProcedure,
 		svc.AddMemberByEmail,
 		connect.WithSchema(workspaceServiceMethods.ByName("AddMemberByEmail")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceUpdateMemberRoleHandler := connect.NewUnaryHandler(
+	workspaceServiceUpdateMemberRoleHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceUpdateMemberRoleProcedure,
 		svc.UpdateMemberRole,
 		connect.WithSchema(workspaceServiceMethods.ByName("UpdateMemberRole")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceRemoveMemberHandler := connect.NewUnaryHandler(
+	workspaceServiceRemoveMemberHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceRemoveMemberProcedure,
 		svc.RemoveMember,
 		connect.WithSchema(workspaceServiceMethods.ByName("RemoveMember")),
@@ -354,46 +398,46 @@ func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.Han
 // UnimplementedWorkspaceServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedWorkspaceServiceHandler struct{}
 
-func (UnimplementedWorkspaceServiceHandler) ListWorkspaces(context.Context, *connect.Request[v1.ListWorkspacesRequest]) (*connect.Response[v1.ListWorkspacesResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) ListWorkspaces(context.Context, *v1.ListWorkspacesRequest) (*v1.ListWorkspacesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.ListWorkspaces is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) CreateWorkspace(context.Context, *connect.Request[v1.CreateWorkspaceRequest]) (*connect.Response[v1.CreateWorkspaceResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) CreateWorkspace(context.Context, *v1.CreateWorkspaceRequest) (*v1.CreateWorkspaceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.CreateWorkspace is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) GetWorkspace(context.Context, *connect.Request[v1.GetWorkspaceRequest]) (*connect.Response[v1.GetWorkspaceResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) GetWorkspace(context.Context, *v1.GetWorkspaceRequest) (*v1.GetWorkspaceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.GetWorkspace is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) UpdateWorkspace(context.Context, *connect.Request[v1.UpdateWorkspaceRequest]) (*connect.Response[v1.UpdateWorkspaceResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) UpdateWorkspace(context.Context, *v1.UpdateWorkspaceRequest) (*v1.UpdateWorkspaceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.UpdateWorkspace is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) DeleteWorkspace(context.Context, *connect.Request[v1.DeleteWorkspaceRequest]) (*connect.Response[v1.DeleteWorkspaceResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) DeleteWorkspace(context.Context, *v1.DeleteWorkspaceRequest) (*v1.DeleteWorkspaceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.DeleteWorkspace is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) ListPublicWorkspaces(context.Context, *connect.Request[v1.ListPublicWorkspacesRequest]) (*connect.Response[v1.ListPublicWorkspacesResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) ListPublicWorkspaces(context.Context, *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.ListPublicWorkspaces is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) JoinPublicWorkspace(context.Context, *connect.Request[v1.JoinPublicWorkspaceRequest]) (*connect.Response[v1.JoinPublicWorkspaceResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.JoinPublicWorkspace is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) ListMembers(context.Context, *connect.Request[v1.ListMembersRequest]) (*connect.Response[v1.ListMembersResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.ListMembers is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) AddMemberByEmail(context.Context, *connect.Request[v1.AddMemberByEmailRequest]) (*connect.Response[v1.AddMemberByEmailResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) AddMemberByEmail(context.Context, *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.AddMemberByEmail is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) UpdateMemberRole(context.Context, *connect.Request[v1.UpdateMemberRoleRequest]) (*connect.Response[v1.UpdateMemberRoleResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.UpdateMemberRole is not implemented"))
 }
 
-func (UnimplementedWorkspaceServiceHandler) RemoveMember(context.Context, *connect.Request[v1.RemoveMemberRequest]) (*connect.Response[v1.RemoveMemberResponse], error) {
+func (UnimplementedWorkspaceServiceHandler) RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.RemoveMember is not implemented"))
 }

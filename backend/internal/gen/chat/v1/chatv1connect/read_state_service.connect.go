@@ -43,8 +43,8 @@ const (
 
 // ReadStateServiceClient is a client for the chat.v1.ReadStateService service.
 type ReadStateServiceClient interface {
-	UpdateReadState(context.Context, *connect.Request[v1.UpdateReadStateRequest]) (*connect.Response[v1.UpdateReadStateResponse], error)
-	GetUnreadCount(context.Context, *connect.Request[v1.GetUnreadCountRequest]) (*connect.Response[v1.GetUnreadCountResponse], error)
+	UpdateReadState(context.Context, *v1.UpdateReadStateRequest) (*v1.UpdateReadStateResponse, error)
+	GetUnreadCount(context.Context, *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error)
 }
 
 // NewReadStateServiceClient constructs a client for the chat.v1.ReadStateService service. By
@@ -80,19 +80,27 @@ type readStateServiceClient struct {
 }
 
 // UpdateReadState calls chat.v1.ReadStateService.UpdateReadState.
-func (c *readStateServiceClient) UpdateReadState(ctx context.Context, req *connect.Request[v1.UpdateReadStateRequest]) (*connect.Response[v1.UpdateReadStateResponse], error) {
-	return c.updateReadState.CallUnary(ctx, req)
+func (c *readStateServiceClient) UpdateReadState(ctx context.Context, req *v1.UpdateReadStateRequest) (*v1.UpdateReadStateResponse, error) {
+	response, err := c.updateReadState.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetUnreadCount calls chat.v1.ReadStateService.GetUnreadCount.
-func (c *readStateServiceClient) GetUnreadCount(ctx context.Context, req *connect.Request[v1.GetUnreadCountRequest]) (*connect.Response[v1.GetUnreadCountResponse], error) {
-	return c.getUnreadCount.CallUnary(ctx, req)
+func (c *readStateServiceClient) GetUnreadCount(ctx context.Context, req *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error) {
+	response, err := c.getUnreadCount.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ReadStateServiceHandler is an implementation of the chat.v1.ReadStateService service.
 type ReadStateServiceHandler interface {
-	UpdateReadState(context.Context, *connect.Request[v1.UpdateReadStateRequest]) (*connect.Response[v1.UpdateReadStateResponse], error)
-	GetUnreadCount(context.Context, *connect.Request[v1.GetUnreadCountRequest]) (*connect.Response[v1.GetUnreadCountResponse], error)
+	UpdateReadState(context.Context, *v1.UpdateReadStateRequest) (*v1.UpdateReadStateResponse, error)
+	GetUnreadCount(context.Context, *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error)
 }
 
 // NewReadStateServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -102,13 +110,13 @@ type ReadStateServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewReadStateServiceHandler(svc ReadStateServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	readStateServiceMethods := v1.File_chat_v1_read_state_service_proto.Services().ByName("ReadStateService").Methods()
-	readStateServiceUpdateReadStateHandler := connect.NewUnaryHandler(
+	readStateServiceUpdateReadStateHandler := connect.NewUnaryHandlerSimple(
 		ReadStateServiceUpdateReadStateProcedure,
 		svc.UpdateReadState,
 		connect.WithSchema(readStateServiceMethods.ByName("UpdateReadState")),
 		connect.WithHandlerOptions(opts...),
 	)
-	readStateServiceGetUnreadCountHandler := connect.NewUnaryHandler(
+	readStateServiceGetUnreadCountHandler := connect.NewUnaryHandlerSimple(
 		ReadStateServiceGetUnreadCountProcedure,
 		svc.GetUnreadCount,
 		connect.WithSchema(readStateServiceMethods.ByName("GetUnreadCount")),
@@ -129,10 +137,10 @@ func NewReadStateServiceHandler(svc ReadStateServiceHandler, opts ...connect.Han
 // UnimplementedReadStateServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedReadStateServiceHandler struct{}
 
-func (UnimplementedReadStateServiceHandler) UpdateReadState(context.Context, *connect.Request[v1.UpdateReadStateRequest]) (*connect.Response[v1.UpdateReadStateResponse], error) {
+func (UnimplementedReadStateServiceHandler) UpdateReadState(context.Context, *v1.UpdateReadStateRequest) (*v1.UpdateReadStateResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReadStateService.UpdateReadState is not implemented"))
 }
 
-func (UnimplementedReadStateServiceHandler) GetUnreadCount(context.Context, *connect.Request[v1.GetUnreadCountRequest]) (*connect.Response[v1.GetUnreadCountResponse], error) {
+func (UnimplementedReadStateServiceHandler) GetUnreadCount(context.Context, *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReadStateService.GetUnreadCount is not implemented"))
 }

@@ -126,8 +126,8 @@ func setupOpenAPIMiddleware(e *echo.Echo) error {
 	// WebSocketエンドポイントをスキップするカスタムミドルウェア
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// WebSocketエンドポイントはバリデーションをスキップ
-			if c.Request().URL.Path == "/ws" {
+			// WebSocket と Connect RPC は OpenAPI の対象外
+			if c.Request().URL.Path == "/ws" || strings.HasPrefix(c.Request().URL.Path, "/chat.v1.") {
 				return next(c)
 			}
 			// その他のリクエストはOpenAPIバリデーションを適用

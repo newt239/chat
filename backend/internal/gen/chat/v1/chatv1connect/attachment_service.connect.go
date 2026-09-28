@@ -49,10 +49,10 @@ const (
 
 // AttachmentServiceClient is a client for the chat.v1.AttachmentService service.
 type AttachmentServiceClient interface {
-	PresignUpload(context.Context, *connect.Request[v1.PresignUploadRequest]) (*connect.Response[v1.PresignUploadResponse], error)
-	GetAttachment(context.Context, *connect.Request[v1.GetAttachmentRequest]) (*connect.Response[v1.GetAttachmentResponse], error)
-	GetDownloadUrl(context.Context, *connect.Request[v1.GetDownloadUrlRequest]) (*connect.Response[v1.GetDownloadUrlResponse], error)
-	DeleteAttachment(context.Context, *connect.Request[v1.DeleteAttachmentRequest]) (*connect.Response[v1.DeleteAttachmentResponse], error)
+	PresignUpload(context.Context, *v1.PresignUploadRequest) (*v1.PresignUploadResponse, error)
+	GetAttachment(context.Context, *v1.GetAttachmentRequest) (*v1.GetAttachmentResponse, error)
+	GetDownloadUrl(context.Context, *v1.GetDownloadUrlRequest) (*v1.GetDownloadUrlResponse, error)
+	DeleteAttachment(context.Context, *v1.DeleteAttachmentRequest) (*v1.DeleteAttachmentResponse, error)
 }
 
 // NewAttachmentServiceClient constructs a client for the chat.v1.AttachmentService service. By
@@ -102,31 +102,47 @@ type attachmentServiceClient struct {
 }
 
 // PresignUpload calls chat.v1.AttachmentService.PresignUpload.
-func (c *attachmentServiceClient) PresignUpload(ctx context.Context, req *connect.Request[v1.PresignUploadRequest]) (*connect.Response[v1.PresignUploadResponse], error) {
-	return c.presignUpload.CallUnary(ctx, req)
+func (c *attachmentServiceClient) PresignUpload(ctx context.Context, req *v1.PresignUploadRequest) (*v1.PresignUploadResponse, error) {
+	response, err := c.presignUpload.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetAttachment calls chat.v1.AttachmentService.GetAttachment.
-func (c *attachmentServiceClient) GetAttachment(ctx context.Context, req *connect.Request[v1.GetAttachmentRequest]) (*connect.Response[v1.GetAttachmentResponse], error) {
-	return c.getAttachment.CallUnary(ctx, req)
+func (c *attachmentServiceClient) GetAttachment(ctx context.Context, req *v1.GetAttachmentRequest) (*v1.GetAttachmentResponse, error) {
+	response, err := c.getAttachment.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetDownloadUrl calls chat.v1.AttachmentService.GetDownloadUrl.
-func (c *attachmentServiceClient) GetDownloadUrl(ctx context.Context, req *connect.Request[v1.GetDownloadUrlRequest]) (*connect.Response[v1.GetDownloadUrlResponse], error) {
-	return c.getDownloadUrl.CallUnary(ctx, req)
+func (c *attachmentServiceClient) GetDownloadUrl(ctx context.Context, req *v1.GetDownloadUrlRequest) (*v1.GetDownloadUrlResponse, error) {
+	response, err := c.getDownloadUrl.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteAttachment calls chat.v1.AttachmentService.DeleteAttachment.
-func (c *attachmentServiceClient) DeleteAttachment(ctx context.Context, req *connect.Request[v1.DeleteAttachmentRequest]) (*connect.Response[v1.DeleteAttachmentResponse], error) {
-	return c.deleteAttachment.CallUnary(ctx, req)
+func (c *attachmentServiceClient) DeleteAttachment(ctx context.Context, req *v1.DeleteAttachmentRequest) (*v1.DeleteAttachmentResponse, error) {
+	response, err := c.deleteAttachment.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // AttachmentServiceHandler is an implementation of the chat.v1.AttachmentService service.
 type AttachmentServiceHandler interface {
-	PresignUpload(context.Context, *connect.Request[v1.PresignUploadRequest]) (*connect.Response[v1.PresignUploadResponse], error)
-	GetAttachment(context.Context, *connect.Request[v1.GetAttachmentRequest]) (*connect.Response[v1.GetAttachmentResponse], error)
-	GetDownloadUrl(context.Context, *connect.Request[v1.GetDownloadUrlRequest]) (*connect.Response[v1.GetDownloadUrlResponse], error)
-	DeleteAttachment(context.Context, *connect.Request[v1.DeleteAttachmentRequest]) (*connect.Response[v1.DeleteAttachmentResponse], error)
+	PresignUpload(context.Context, *v1.PresignUploadRequest) (*v1.PresignUploadResponse, error)
+	GetAttachment(context.Context, *v1.GetAttachmentRequest) (*v1.GetAttachmentResponse, error)
+	GetDownloadUrl(context.Context, *v1.GetDownloadUrlRequest) (*v1.GetDownloadUrlResponse, error)
+	DeleteAttachment(context.Context, *v1.DeleteAttachmentRequest) (*v1.DeleteAttachmentResponse, error)
 }
 
 // NewAttachmentServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -136,25 +152,25 @@ type AttachmentServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAttachmentServiceHandler(svc AttachmentServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	attachmentServiceMethods := v1.File_chat_v1_attachment_service_proto.Services().ByName("AttachmentService").Methods()
-	attachmentServicePresignUploadHandler := connect.NewUnaryHandler(
+	attachmentServicePresignUploadHandler := connect.NewUnaryHandlerSimple(
 		AttachmentServicePresignUploadProcedure,
 		svc.PresignUpload,
 		connect.WithSchema(attachmentServiceMethods.ByName("PresignUpload")),
 		connect.WithHandlerOptions(opts...),
 	)
-	attachmentServiceGetAttachmentHandler := connect.NewUnaryHandler(
+	attachmentServiceGetAttachmentHandler := connect.NewUnaryHandlerSimple(
 		AttachmentServiceGetAttachmentProcedure,
 		svc.GetAttachment,
 		connect.WithSchema(attachmentServiceMethods.ByName("GetAttachment")),
 		connect.WithHandlerOptions(opts...),
 	)
-	attachmentServiceGetDownloadUrlHandler := connect.NewUnaryHandler(
+	attachmentServiceGetDownloadUrlHandler := connect.NewUnaryHandlerSimple(
 		AttachmentServiceGetDownloadUrlProcedure,
 		svc.GetDownloadUrl,
 		connect.WithSchema(attachmentServiceMethods.ByName("GetDownloadUrl")),
 		connect.WithHandlerOptions(opts...),
 	)
-	attachmentServiceDeleteAttachmentHandler := connect.NewUnaryHandler(
+	attachmentServiceDeleteAttachmentHandler := connect.NewUnaryHandlerSimple(
 		AttachmentServiceDeleteAttachmentProcedure,
 		svc.DeleteAttachment,
 		connect.WithSchema(attachmentServiceMethods.ByName("DeleteAttachment")),
@@ -179,18 +195,18 @@ func NewAttachmentServiceHandler(svc AttachmentServiceHandler, opts ...connect.H
 // UnimplementedAttachmentServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAttachmentServiceHandler struct{}
 
-func (UnimplementedAttachmentServiceHandler) PresignUpload(context.Context, *connect.Request[v1.PresignUploadRequest]) (*connect.Response[v1.PresignUploadResponse], error) {
+func (UnimplementedAttachmentServiceHandler) PresignUpload(context.Context, *v1.PresignUploadRequest) (*v1.PresignUploadResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AttachmentService.PresignUpload is not implemented"))
 }
 
-func (UnimplementedAttachmentServiceHandler) GetAttachment(context.Context, *connect.Request[v1.GetAttachmentRequest]) (*connect.Response[v1.GetAttachmentResponse], error) {
+func (UnimplementedAttachmentServiceHandler) GetAttachment(context.Context, *v1.GetAttachmentRequest) (*v1.GetAttachmentResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AttachmentService.GetAttachment is not implemented"))
 }
 
-func (UnimplementedAttachmentServiceHandler) GetDownloadUrl(context.Context, *connect.Request[v1.GetDownloadUrlRequest]) (*connect.Response[v1.GetDownloadUrlResponse], error) {
+func (UnimplementedAttachmentServiceHandler) GetDownloadUrl(context.Context, *v1.GetDownloadUrlRequest) (*v1.GetDownloadUrlResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AttachmentService.GetDownloadUrl is not implemented"))
 }
 
-func (UnimplementedAttachmentServiceHandler) DeleteAttachment(context.Context, *connect.Request[v1.DeleteAttachmentRequest]) (*connect.Response[v1.DeleteAttachmentResponse], error) {
+func (UnimplementedAttachmentServiceHandler) DeleteAttachment(context.Context, *v1.DeleteAttachmentRequest) (*v1.DeleteAttachmentResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AttachmentService.DeleteAttachment is not implemented"))
 }

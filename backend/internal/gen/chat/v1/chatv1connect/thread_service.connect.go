@@ -55,12 +55,12 @@ const (
 
 // ThreadServiceClient is a client for the chat.v1.ThreadService service.
 type ThreadServiceClient interface {
-	GetThreadReplies(context.Context, *connect.Request[v1.GetThreadRepliesRequest]) (*connect.Response[v1.GetThreadRepliesResponse], error)
-	GetThreadMetadata(context.Context, *connect.Request[v1.GetThreadMetadataRequest]) (*connect.Response[v1.GetThreadMetadataResponse], error)
-	ListParticipatingThreads(context.Context, *connect.Request[v1.ListParticipatingThreadsRequest]) (*connect.Response[v1.ListParticipatingThreadsResponse], error)
-	MarkThreadRead(context.Context, *connect.Request[v1.MarkThreadReadRequest]) (*connect.Response[v1.MarkThreadReadResponse], error)
-	FollowThread(context.Context, *connect.Request[v1.FollowThreadRequest]) (*connect.Response[v1.FollowThreadResponse], error)
-	UnfollowThread(context.Context, *connect.Request[v1.UnfollowThreadRequest]) (*connect.Response[v1.UnfollowThreadResponse], error)
+	GetThreadReplies(context.Context, *v1.GetThreadRepliesRequest) (*v1.GetThreadRepliesResponse, error)
+	GetThreadMetadata(context.Context, *v1.GetThreadMetadataRequest) (*v1.GetThreadMetadataResponse, error)
+	ListParticipatingThreads(context.Context, *v1.ListParticipatingThreadsRequest) (*v1.ListParticipatingThreadsResponse, error)
+	MarkThreadRead(context.Context, *v1.MarkThreadReadRequest) (*v1.MarkThreadReadResponse, error)
+	FollowThread(context.Context, *v1.FollowThreadRequest) (*v1.FollowThreadResponse, error)
+	UnfollowThread(context.Context, *v1.UnfollowThreadRequest) (*v1.UnfollowThreadResponse, error)
 }
 
 // NewThreadServiceClient constructs a client for the chat.v1.ThreadService service. By default, it
@@ -124,43 +124,67 @@ type threadServiceClient struct {
 }
 
 // GetThreadReplies calls chat.v1.ThreadService.GetThreadReplies.
-func (c *threadServiceClient) GetThreadReplies(ctx context.Context, req *connect.Request[v1.GetThreadRepliesRequest]) (*connect.Response[v1.GetThreadRepliesResponse], error) {
-	return c.getThreadReplies.CallUnary(ctx, req)
+func (c *threadServiceClient) GetThreadReplies(ctx context.Context, req *v1.GetThreadRepliesRequest) (*v1.GetThreadRepliesResponse, error) {
+	response, err := c.getThreadReplies.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetThreadMetadata calls chat.v1.ThreadService.GetThreadMetadata.
-func (c *threadServiceClient) GetThreadMetadata(ctx context.Context, req *connect.Request[v1.GetThreadMetadataRequest]) (*connect.Response[v1.GetThreadMetadataResponse], error) {
-	return c.getThreadMetadata.CallUnary(ctx, req)
+func (c *threadServiceClient) GetThreadMetadata(ctx context.Context, req *v1.GetThreadMetadataRequest) (*v1.GetThreadMetadataResponse, error) {
+	response, err := c.getThreadMetadata.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListParticipatingThreads calls chat.v1.ThreadService.ListParticipatingThreads.
-func (c *threadServiceClient) ListParticipatingThreads(ctx context.Context, req *connect.Request[v1.ListParticipatingThreadsRequest]) (*connect.Response[v1.ListParticipatingThreadsResponse], error) {
-	return c.listParticipatingThreads.CallUnary(ctx, req)
+func (c *threadServiceClient) ListParticipatingThreads(ctx context.Context, req *v1.ListParticipatingThreadsRequest) (*v1.ListParticipatingThreadsResponse, error) {
+	response, err := c.listParticipatingThreads.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // MarkThreadRead calls chat.v1.ThreadService.MarkThreadRead.
-func (c *threadServiceClient) MarkThreadRead(ctx context.Context, req *connect.Request[v1.MarkThreadReadRequest]) (*connect.Response[v1.MarkThreadReadResponse], error) {
-	return c.markThreadRead.CallUnary(ctx, req)
+func (c *threadServiceClient) MarkThreadRead(ctx context.Context, req *v1.MarkThreadReadRequest) (*v1.MarkThreadReadResponse, error) {
+	response, err := c.markThreadRead.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // FollowThread calls chat.v1.ThreadService.FollowThread.
-func (c *threadServiceClient) FollowThread(ctx context.Context, req *connect.Request[v1.FollowThreadRequest]) (*connect.Response[v1.FollowThreadResponse], error) {
-	return c.followThread.CallUnary(ctx, req)
+func (c *threadServiceClient) FollowThread(ctx context.Context, req *v1.FollowThreadRequest) (*v1.FollowThreadResponse, error) {
+	response, err := c.followThread.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UnfollowThread calls chat.v1.ThreadService.UnfollowThread.
-func (c *threadServiceClient) UnfollowThread(ctx context.Context, req *connect.Request[v1.UnfollowThreadRequest]) (*connect.Response[v1.UnfollowThreadResponse], error) {
-	return c.unfollowThread.CallUnary(ctx, req)
+func (c *threadServiceClient) UnfollowThread(ctx context.Context, req *v1.UnfollowThreadRequest) (*v1.UnfollowThreadResponse, error) {
+	response, err := c.unfollowThread.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ThreadServiceHandler is an implementation of the chat.v1.ThreadService service.
 type ThreadServiceHandler interface {
-	GetThreadReplies(context.Context, *connect.Request[v1.GetThreadRepliesRequest]) (*connect.Response[v1.GetThreadRepliesResponse], error)
-	GetThreadMetadata(context.Context, *connect.Request[v1.GetThreadMetadataRequest]) (*connect.Response[v1.GetThreadMetadataResponse], error)
-	ListParticipatingThreads(context.Context, *connect.Request[v1.ListParticipatingThreadsRequest]) (*connect.Response[v1.ListParticipatingThreadsResponse], error)
-	MarkThreadRead(context.Context, *connect.Request[v1.MarkThreadReadRequest]) (*connect.Response[v1.MarkThreadReadResponse], error)
-	FollowThread(context.Context, *connect.Request[v1.FollowThreadRequest]) (*connect.Response[v1.FollowThreadResponse], error)
-	UnfollowThread(context.Context, *connect.Request[v1.UnfollowThreadRequest]) (*connect.Response[v1.UnfollowThreadResponse], error)
+	GetThreadReplies(context.Context, *v1.GetThreadRepliesRequest) (*v1.GetThreadRepliesResponse, error)
+	GetThreadMetadata(context.Context, *v1.GetThreadMetadataRequest) (*v1.GetThreadMetadataResponse, error)
+	ListParticipatingThreads(context.Context, *v1.ListParticipatingThreadsRequest) (*v1.ListParticipatingThreadsResponse, error)
+	MarkThreadRead(context.Context, *v1.MarkThreadReadRequest) (*v1.MarkThreadReadResponse, error)
+	FollowThread(context.Context, *v1.FollowThreadRequest) (*v1.FollowThreadResponse, error)
+	UnfollowThread(context.Context, *v1.UnfollowThreadRequest) (*v1.UnfollowThreadResponse, error)
 }
 
 // NewThreadServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -170,37 +194,37 @@ type ThreadServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewThreadServiceHandler(svc ThreadServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	threadServiceMethods := v1.File_chat_v1_thread_service_proto.Services().ByName("ThreadService").Methods()
-	threadServiceGetThreadRepliesHandler := connect.NewUnaryHandler(
+	threadServiceGetThreadRepliesHandler := connect.NewUnaryHandlerSimple(
 		ThreadServiceGetThreadRepliesProcedure,
 		svc.GetThreadReplies,
 		connect.WithSchema(threadServiceMethods.ByName("GetThreadReplies")),
 		connect.WithHandlerOptions(opts...),
 	)
-	threadServiceGetThreadMetadataHandler := connect.NewUnaryHandler(
+	threadServiceGetThreadMetadataHandler := connect.NewUnaryHandlerSimple(
 		ThreadServiceGetThreadMetadataProcedure,
 		svc.GetThreadMetadata,
 		connect.WithSchema(threadServiceMethods.ByName("GetThreadMetadata")),
 		connect.WithHandlerOptions(opts...),
 	)
-	threadServiceListParticipatingThreadsHandler := connect.NewUnaryHandler(
+	threadServiceListParticipatingThreadsHandler := connect.NewUnaryHandlerSimple(
 		ThreadServiceListParticipatingThreadsProcedure,
 		svc.ListParticipatingThreads,
 		connect.WithSchema(threadServiceMethods.ByName("ListParticipatingThreads")),
 		connect.WithHandlerOptions(opts...),
 	)
-	threadServiceMarkThreadReadHandler := connect.NewUnaryHandler(
+	threadServiceMarkThreadReadHandler := connect.NewUnaryHandlerSimple(
 		ThreadServiceMarkThreadReadProcedure,
 		svc.MarkThreadRead,
 		connect.WithSchema(threadServiceMethods.ByName("MarkThreadRead")),
 		connect.WithHandlerOptions(opts...),
 	)
-	threadServiceFollowThreadHandler := connect.NewUnaryHandler(
+	threadServiceFollowThreadHandler := connect.NewUnaryHandlerSimple(
 		ThreadServiceFollowThreadProcedure,
 		svc.FollowThread,
 		connect.WithSchema(threadServiceMethods.ByName("FollowThread")),
 		connect.WithHandlerOptions(opts...),
 	)
-	threadServiceUnfollowThreadHandler := connect.NewUnaryHandler(
+	threadServiceUnfollowThreadHandler := connect.NewUnaryHandlerSimple(
 		ThreadServiceUnfollowThreadProcedure,
 		svc.UnfollowThread,
 		connect.WithSchema(threadServiceMethods.ByName("UnfollowThread")),
@@ -229,26 +253,26 @@ func NewThreadServiceHandler(svc ThreadServiceHandler, opts ...connect.HandlerOp
 // UnimplementedThreadServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedThreadServiceHandler struct{}
 
-func (UnimplementedThreadServiceHandler) GetThreadReplies(context.Context, *connect.Request[v1.GetThreadRepliesRequest]) (*connect.Response[v1.GetThreadRepliesResponse], error) {
+func (UnimplementedThreadServiceHandler) GetThreadReplies(context.Context, *v1.GetThreadRepliesRequest) (*v1.GetThreadRepliesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ThreadService.GetThreadReplies is not implemented"))
 }
 
-func (UnimplementedThreadServiceHandler) GetThreadMetadata(context.Context, *connect.Request[v1.GetThreadMetadataRequest]) (*connect.Response[v1.GetThreadMetadataResponse], error) {
+func (UnimplementedThreadServiceHandler) GetThreadMetadata(context.Context, *v1.GetThreadMetadataRequest) (*v1.GetThreadMetadataResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ThreadService.GetThreadMetadata is not implemented"))
 }
 
-func (UnimplementedThreadServiceHandler) ListParticipatingThreads(context.Context, *connect.Request[v1.ListParticipatingThreadsRequest]) (*connect.Response[v1.ListParticipatingThreadsResponse], error) {
+func (UnimplementedThreadServiceHandler) ListParticipatingThreads(context.Context, *v1.ListParticipatingThreadsRequest) (*v1.ListParticipatingThreadsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ThreadService.ListParticipatingThreads is not implemented"))
 }
 
-func (UnimplementedThreadServiceHandler) MarkThreadRead(context.Context, *connect.Request[v1.MarkThreadReadRequest]) (*connect.Response[v1.MarkThreadReadResponse], error) {
+func (UnimplementedThreadServiceHandler) MarkThreadRead(context.Context, *v1.MarkThreadReadRequest) (*v1.MarkThreadReadResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ThreadService.MarkThreadRead is not implemented"))
 }
 
-func (UnimplementedThreadServiceHandler) FollowThread(context.Context, *connect.Request[v1.FollowThreadRequest]) (*connect.Response[v1.FollowThreadResponse], error) {
+func (UnimplementedThreadServiceHandler) FollowThread(context.Context, *v1.FollowThreadRequest) (*v1.FollowThreadResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ThreadService.FollowThread is not implemented"))
 }
 
-func (UnimplementedThreadServiceHandler) UnfollowThread(context.Context, *connect.Request[v1.UnfollowThreadRequest]) (*connect.Response[v1.UnfollowThreadResponse], error) {
+func (UnimplementedThreadServiceHandler) UnfollowThread(context.Context, *v1.UnfollowThreadRequest) (*v1.UnfollowThreadResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ThreadService.UnfollowThread is not implemented"))
 }

@@ -43,9 +43,9 @@ const (
 
 // PinServiceClient is a client for the chat.v1.PinService service.
 type PinServiceClient interface {
-	ListPins(context.Context, *connect.Request[v1.ListPinsRequest]) (*connect.Response[v1.ListPinsResponse], error)
-	CreatePin(context.Context, *connect.Request[v1.CreatePinRequest]) (*connect.Response[v1.CreatePinResponse], error)
-	DeletePin(context.Context, *connect.Request[v1.DeletePinRequest]) (*connect.Response[v1.DeletePinResponse], error)
+	ListPins(context.Context, *v1.ListPinsRequest) (*v1.ListPinsResponse, error)
+	CreatePin(context.Context, *v1.CreatePinRequest) (*v1.CreatePinResponse, error)
+	DeletePin(context.Context, *v1.DeletePinRequest) (*v1.DeletePinResponse, error)
 }
 
 // NewPinServiceClient constructs a client for the chat.v1.PinService service. By default, it uses
@@ -88,25 +88,37 @@ type pinServiceClient struct {
 }
 
 // ListPins calls chat.v1.PinService.ListPins.
-func (c *pinServiceClient) ListPins(ctx context.Context, req *connect.Request[v1.ListPinsRequest]) (*connect.Response[v1.ListPinsResponse], error) {
-	return c.listPins.CallUnary(ctx, req)
+func (c *pinServiceClient) ListPins(ctx context.Context, req *v1.ListPinsRequest) (*v1.ListPinsResponse, error) {
+	response, err := c.listPins.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreatePin calls chat.v1.PinService.CreatePin.
-func (c *pinServiceClient) CreatePin(ctx context.Context, req *connect.Request[v1.CreatePinRequest]) (*connect.Response[v1.CreatePinResponse], error) {
-	return c.createPin.CallUnary(ctx, req)
+func (c *pinServiceClient) CreatePin(ctx context.Context, req *v1.CreatePinRequest) (*v1.CreatePinResponse, error) {
+	response, err := c.createPin.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeletePin calls chat.v1.PinService.DeletePin.
-func (c *pinServiceClient) DeletePin(ctx context.Context, req *connect.Request[v1.DeletePinRequest]) (*connect.Response[v1.DeletePinResponse], error) {
-	return c.deletePin.CallUnary(ctx, req)
+func (c *pinServiceClient) DeletePin(ctx context.Context, req *v1.DeletePinRequest) (*v1.DeletePinResponse, error) {
+	response, err := c.deletePin.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // PinServiceHandler is an implementation of the chat.v1.PinService service.
 type PinServiceHandler interface {
-	ListPins(context.Context, *connect.Request[v1.ListPinsRequest]) (*connect.Response[v1.ListPinsResponse], error)
-	CreatePin(context.Context, *connect.Request[v1.CreatePinRequest]) (*connect.Response[v1.CreatePinResponse], error)
-	DeletePin(context.Context, *connect.Request[v1.DeletePinRequest]) (*connect.Response[v1.DeletePinResponse], error)
+	ListPins(context.Context, *v1.ListPinsRequest) (*v1.ListPinsResponse, error)
+	CreatePin(context.Context, *v1.CreatePinRequest) (*v1.CreatePinResponse, error)
+	DeletePin(context.Context, *v1.DeletePinRequest) (*v1.DeletePinResponse, error)
 }
 
 // NewPinServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -116,19 +128,19 @@ type PinServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewPinServiceHandler(svc PinServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	pinServiceMethods := v1.File_chat_v1_pin_service_proto.Services().ByName("PinService").Methods()
-	pinServiceListPinsHandler := connect.NewUnaryHandler(
+	pinServiceListPinsHandler := connect.NewUnaryHandlerSimple(
 		PinServiceListPinsProcedure,
 		svc.ListPins,
 		connect.WithSchema(pinServiceMethods.ByName("ListPins")),
 		connect.WithHandlerOptions(opts...),
 	)
-	pinServiceCreatePinHandler := connect.NewUnaryHandler(
+	pinServiceCreatePinHandler := connect.NewUnaryHandlerSimple(
 		PinServiceCreatePinProcedure,
 		svc.CreatePin,
 		connect.WithSchema(pinServiceMethods.ByName("CreatePin")),
 		connect.WithHandlerOptions(opts...),
 	)
-	pinServiceDeletePinHandler := connect.NewUnaryHandler(
+	pinServiceDeletePinHandler := connect.NewUnaryHandlerSimple(
 		PinServiceDeletePinProcedure,
 		svc.DeletePin,
 		connect.WithSchema(pinServiceMethods.ByName("DeletePin")),
@@ -151,14 +163,14 @@ func NewPinServiceHandler(svc PinServiceHandler, opts ...connect.HandlerOption) 
 // UnimplementedPinServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedPinServiceHandler struct{}
 
-func (UnimplementedPinServiceHandler) ListPins(context.Context, *connect.Request[v1.ListPinsRequest]) (*connect.Response[v1.ListPinsResponse], error) {
+func (UnimplementedPinServiceHandler) ListPins(context.Context, *v1.ListPinsRequest) (*v1.ListPinsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.PinService.ListPins is not implemented"))
 }
 
-func (UnimplementedPinServiceHandler) CreatePin(context.Context, *connect.Request[v1.CreatePinRequest]) (*connect.Response[v1.CreatePinResponse], error) {
+func (UnimplementedPinServiceHandler) CreatePin(context.Context, *v1.CreatePinRequest) (*v1.CreatePinResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.PinService.CreatePin is not implemented"))
 }
 
-func (UnimplementedPinServiceHandler) DeletePin(context.Context, *connect.Request[v1.DeletePinRequest]) (*connect.Response[v1.DeletePinResponse], error) {
+func (UnimplementedPinServiceHandler) DeletePin(context.Context, *v1.DeletePinRequest) (*v1.DeletePinResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.PinService.DeletePin is not implemented"))
 }

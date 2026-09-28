@@ -46,9 +46,9 @@ const (
 
 // ReactionServiceClient is a client for the chat.v1.ReactionService service.
 type ReactionServiceClient interface {
-	ListReactions(context.Context, *connect.Request[v1.ListReactionsRequest]) (*connect.Response[v1.ListReactionsResponse], error)
-	AddReaction(context.Context, *connect.Request[v1.AddReactionRequest]) (*connect.Response[v1.AddReactionResponse], error)
-	RemoveReaction(context.Context, *connect.Request[v1.RemoveReactionRequest]) (*connect.Response[v1.RemoveReactionResponse], error)
+	ListReactions(context.Context, *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error)
+	AddReaction(context.Context, *v1.AddReactionRequest) (*v1.AddReactionResponse, error)
+	RemoveReaction(context.Context, *v1.RemoveReactionRequest) (*v1.RemoveReactionResponse, error)
 }
 
 // NewReactionServiceClient constructs a client for the chat.v1.ReactionService service. By default,
@@ -91,25 +91,37 @@ type reactionServiceClient struct {
 }
 
 // ListReactions calls chat.v1.ReactionService.ListReactions.
-func (c *reactionServiceClient) ListReactions(ctx context.Context, req *connect.Request[v1.ListReactionsRequest]) (*connect.Response[v1.ListReactionsResponse], error) {
-	return c.listReactions.CallUnary(ctx, req)
+func (c *reactionServiceClient) ListReactions(ctx context.Context, req *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error) {
+	response, err := c.listReactions.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // AddReaction calls chat.v1.ReactionService.AddReaction.
-func (c *reactionServiceClient) AddReaction(ctx context.Context, req *connect.Request[v1.AddReactionRequest]) (*connect.Response[v1.AddReactionResponse], error) {
-	return c.addReaction.CallUnary(ctx, req)
+func (c *reactionServiceClient) AddReaction(ctx context.Context, req *v1.AddReactionRequest) (*v1.AddReactionResponse, error) {
+	response, err := c.addReaction.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // RemoveReaction calls chat.v1.ReactionService.RemoveReaction.
-func (c *reactionServiceClient) RemoveReaction(ctx context.Context, req *connect.Request[v1.RemoveReactionRequest]) (*connect.Response[v1.RemoveReactionResponse], error) {
-	return c.removeReaction.CallUnary(ctx, req)
+func (c *reactionServiceClient) RemoveReaction(ctx context.Context, req *v1.RemoveReactionRequest) (*v1.RemoveReactionResponse, error) {
+	response, err := c.removeReaction.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ReactionServiceHandler is an implementation of the chat.v1.ReactionService service.
 type ReactionServiceHandler interface {
-	ListReactions(context.Context, *connect.Request[v1.ListReactionsRequest]) (*connect.Response[v1.ListReactionsResponse], error)
-	AddReaction(context.Context, *connect.Request[v1.AddReactionRequest]) (*connect.Response[v1.AddReactionResponse], error)
-	RemoveReaction(context.Context, *connect.Request[v1.RemoveReactionRequest]) (*connect.Response[v1.RemoveReactionResponse], error)
+	ListReactions(context.Context, *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error)
+	AddReaction(context.Context, *v1.AddReactionRequest) (*v1.AddReactionResponse, error)
+	RemoveReaction(context.Context, *v1.RemoveReactionRequest) (*v1.RemoveReactionResponse, error)
 }
 
 // NewReactionServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -119,19 +131,19 @@ type ReactionServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewReactionServiceHandler(svc ReactionServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	reactionServiceMethods := v1.File_chat_v1_reaction_service_proto.Services().ByName("ReactionService").Methods()
-	reactionServiceListReactionsHandler := connect.NewUnaryHandler(
+	reactionServiceListReactionsHandler := connect.NewUnaryHandlerSimple(
 		ReactionServiceListReactionsProcedure,
 		svc.ListReactions,
 		connect.WithSchema(reactionServiceMethods.ByName("ListReactions")),
 		connect.WithHandlerOptions(opts...),
 	)
-	reactionServiceAddReactionHandler := connect.NewUnaryHandler(
+	reactionServiceAddReactionHandler := connect.NewUnaryHandlerSimple(
 		ReactionServiceAddReactionProcedure,
 		svc.AddReaction,
 		connect.WithSchema(reactionServiceMethods.ByName("AddReaction")),
 		connect.WithHandlerOptions(opts...),
 	)
-	reactionServiceRemoveReactionHandler := connect.NewUnaryHandler(
+	reactionServiceRemoveReactionHandler := connect.NewUnaryHandlerSimple(
 		ReactionServiceRemoveReactionProcedure,
 		svc.RemoveReaction,
 		connect.WithSchema(reactionServiceMethods.ByName("RemoveReaction")),
@@ -154,14 +166,14 @@ func NewReactionServiceHandler(svc ReactionServiceHandler, opts ...connect.Handl
 // UnimplementedReactionServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedReactionServiceHandler struct{}
 
-func (UnimplementedReactionServiceHandler) ListReactions(context.Context, *connect.Request[v1.ListReactionsRequest]) (*connect.Response[v1.ListReactionsResponse], error) {
+func (UnimplementedReactionServiceHandler) ListReactions(context.Context, *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReactionService.ListReactions is not implemented"))
 }
 
-func (UnimplementedReactionServiceHandler) AddReaction(context.Context, *connect.Request[v1.AddReactionRequest]) (*connect.Response[v1.AddReactionResponse], error) {
+func (UnimplementedReactionServiceHandler) AddReaction(context.Context, *v1.AddReactionRequest) (*v1.AddReactionResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReactionService.AddReaction is not implemented"))
 }
 
-func (UnimplementedReactionServiceHandler) RemoveReaction(context.Context, *connect.Request[v1.RemoveReactionRequest]) (*connect.Response[v1.RemoveReactionResponse], error) {
+func (UnimplementedReactionServiceHandler) RemoveReaction(context.Context, *v1.RemoveReactionRequest) (*v1.RemoveReactionResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReactionService.RemoveReaction is not implemented"))
 }

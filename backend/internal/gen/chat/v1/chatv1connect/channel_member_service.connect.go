@@ -55,12 +55,12 @@ const (
 
 // ChannelMemberServiceClient is a client for the chat.v1.ChannelMemberService service.
 type ChannelMemberServiceClient interface {
-	ListChannelMembers(context.Context, *connect.Request[v1.ListChannelMembersRequest]) (*connect.Response[v1.ListChannelMembersResponse], error)
-	InviteChannelMember(context.Context, *connect.Request[v1.InviteChannelMemberRequest]) (*connect.Response[v1.InviteChannelMemberResponse], error)
-	JoinChannel(context.Context, *connect.Request[v1.JoinChannelRequest]) (*connect.Response[v1.JoinChannelResponse], error)
-	LeaveChannel(context.Context, *connect.Request[v1.LeaveChannelRequest]) (*connect.Response[v1.LeaveChannelResponse], error)
-	RemoveChannelMember(context.Context, *connect.Request[v1.RemoveChannelMemberRequest]) (*connect.Response[v1.RemoveChannelMemberResponse], error)
-	UpdateChannelMemberRole(context.Context, *connect.Request[v1.UpdateChannelMemberRoleRequest]) (*connect.Response[v1.UpdateChannelMemberRoleResponse], error)
+	ListChannelMembers(context.Context, *v1.ListChannelMembersRequest) (*v1.ListChannelMembersResponse, error)
+	InviteChannelMember(context.Context, *v1.InviteChannelMemberRequest) (*v1.InviteChannelMemberResponse, error)
+	JoinChannel(context.Context, *v1.JoinChannelRequest) (*v1.JoinChannelResponse, error)
+	LeaveChannel(context.Context, *v1.LeaveChannelRequest) (*v1.LeaveChannelResponse, error)
+	RemoveChannelMember(context.Context, *v1.RemoveChannelMemberRequest) (*v1.RemoveChannelMemberResponse, error)
+	UpdateChannelMemberRole(context.Context, *v1.UpdateChannelMemberRoleRequest) (*v1.UpdateChannelMemberRoleResponse, error)
 }
 
 // NewChannelMemberServiceClient constructs a client for the chat.v1.ChannelMemberService service.
@@ -124,43 +124,67 @@ type channelMemberServiceClient struct {
 }
 
 // ListChannelMembers calls chat.v1.ChannelMemberService.ListChannelMembers.
-func (c *channelMemberServiceClient) ListChannelMembers(ctx context.Context, req *connect.Request[v1.ListChannelMembersRequest]) (*connect.Response[v1.ListChannelMembersResponse], error) {
-	return c.listChannelMembers.CallUnary(ctx, req)
+func (c *channelMemberServiceClient) ListChannelMembers(ctx context.Context, req *v1.ListChannelMembersRequest) (*v1.ListChannelMembersResponse, error) {
+	response, err := c.listChannelMembers.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // InviteChannelMember calls chat.v1.ChannelMemberService.InviteChannelMember.
-func (c *channelMemberServiceClient) InviteChannelMember(ctx context.Context, req *connect.Request[v1.InviteChannelMemberRequest]) (*connect.Response[v1.InviteChannelMemberResponse], error) {
-	return c.inviteChannelMember.CallUnary(ctx, req)
+func (c *channelMemberServiceClient) InviteChannelMember(ctx context.Context, req *v1.InviteChannelMemberRequest) (*v1.InviteChannelMemberResponse, error) {
+	response, err := c.inviteChannelMember.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // JoinChannel calls chat.v1.ChannelMemberService.JoinChannel.
-func (c *channelMemberServiceClient) JoinChannel(ctx context.Context, req *connect.Request[v1.JoinChannelRequest]) (*connect.Response[v1.JoinChannelResponse], error) {
-	return c.joinChannel.CallUnary(ctx, req)
+func (c *channelMemberServiceClient) JoinChannel(ctx context.Context, req *v1.JoinChannelRequest) (*v1.JoinChannelResponse, error) {
+	response, err := c.joinChannel.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // LeaveChannel calls chat.v1.ChannelMemberService.LeaveChannel.
-func (c *channelMemberServiceClient) LeaveChannel(ctx context.Context, req *connect.Request[v1.LeaveChannelRequest]) (*connect.Response[v1.LeaveChannelResponse], error) {
-	return c.leaveChannel.CallUnary(ctx, req)
+func (c *channelMemberServiceClient) LeaveChannel(ctx context.Context, req *v1.LeaveChannelRequest) (*v1.LeaveChannelResponse, error) {
+	response, err := c.leaveChannel.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // RemoveChannelMember calls chat.v1.ChannelMemberService.RemoveChannelMember.
-func (c *channelMemberServiceClient) RemoveChannelMember(ctx context.Context, req *connect.Request[v1.RemoveChannelMemberRequest]) (*connect.Response[v1.RemoveChannelMemberResponse], error) {
-	return c.removeChannelMember.CallUnary(ctx, req)
+func (c *channelMemberServiceClient) RemoveChannelMember(ctx context.Context, req *v1.RemoveChannelMemberRequest) (*v1.RemoveChannelMemberResponse, error) {
+	response, err := c.removeChannelMember.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateChannelMemberRole calls chat.v1.ChannelMemberService.UpdateChannelMemberRole.
-func (c *channelMemberServiceClient) UpdateChannelMemberRole(ctx context.Context, req *connect.Request[v1.UpdateChannelMemberRoleRequest]) (*connect.Response[v1.UpdateChannelMemberRoleResponse], error) {
-	return c.updateChannelMemberRole.CallUnary(ctx, req)
+func (c *channelMemberServiceClient) UpdateChannelMemberRole(ctx context.Context, req *v1.UpdateChannelMemberRoleRequest) (*v1.UpdateChannelMemberRoleResponse, error) {
+	response, err := c.updateChannelMemberRole.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ChannelMemberServiceHandler is an implementation of the chat.v1.ChannelMemberService service.
 type ChannelMemberServiceHandler interface {
-	ListChannelMembers(context.Context, *connect.Request[v1.ListChannelMembersRequest]) (*connect.Response[v1.ListChannelMembersResponse], error)
-	InviteChannelMember(context.Context, *connect.Request[v1.InviteChannelMemberRequest]) (*connect.Response[v1.InviteChannelMemberResponse], error)
-	JoinChannel(context.Context, *connect.Request[v1.JoinChannelRequest]) (*connect.Response[v1.JoinChannelResponse], error)
-	LeaveChannel(context.Context, *connect.Request[v1.LeaveChannelRequest]) (*connect.Response[v1.LeaveChannelResponse], error)
-	RemoveChannelMember(context.Context, *connect.Request[v1.RemoveChannelMemberRequest]) (*connect.Response[v1.RemoveChannelMemberResponse], error)
-	UpdateChannelMemberRole(context.Context, *connect.Request[v1.UpdateChannelMemberRoleRequest]) (*connect.Response[v1.UpdateChannelMemberRoleResponse], error)
+	ListChannelMembers(context.Context, *v1.ListChannelMembersRequest) (*v1.ListChannelMembersResponse, error)
+	InviteChannelMember(context.Context, *v1.InviteChannelMemberRequest) (*v1.InviteChannelMemberResponse, error)
+	JoinChannel(context.Context, *v1.JoinChannelRequest) (*v1.JoinChannelResponse, error)
+	LeaveChannel(context.Context, *v1.LeaveChannelRequest) (*v1.LeaveChannelResponse, error)
+	RemoveChannelMember(context.Context, *v1.RemoveChannelMemberRequest) (*v1.RemoveChannelMemberResponse, error)
+	UpdateChannelMemberRole(context.Context, *v1.UpdateChannelMemberRoleRequest) (*v1.UpdateChannelMemberRoleResponse, error)
 }
 
 // NewChannelMemberServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -170,37 +194,37 @@ type ChannelMemberServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewChannelMemberServiceHandler(svc ChannelMemberServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	channelMemberServiceMethods := v1.File_chat_v1_channel_member_service_proto.Services().ByName("ChannelMemberService").Methods()
-	channelMemberServiceListChannelMembersHandler := connect.NewUnaryHandler(
+	channelMemberServiceListChannelMembersHandler := connect.NewUnaryHandlerSimple(
 		ChannelMemberServiceListChannelMembersProcedure,
 		svc.ListChannelMembers,
 		connect.WithSchema(channelMemberServiceMethods.ByName("ListChannelMembers")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelMemberServiceInviteChannelMemberHandler := connect.NewUnaryHandler(
+	channelMemberServiceInviteChannelMemberHandler := connect.NewUnaryHandlerSimple(
 		ChannelMemberServiceInviteChannelMemberProcedure,
 		svc.InviteChannelMember,
 		connect.WithSchema(channelMemberServiceMethods.ByName("InviteChannelMember")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelMemberServiceJoinChannelHandler := connect.NewUnaryHandler(
+	channelMemberServiceJoinChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelMemberServiceJoinChannelProcedure,
 		svc.JoinChannel,
 		connect.WithSchema(channelMemberServiceMethods.ByName("JoinChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelMemberServiceLeaveChannelHandler := connect.NewUnaryHandler(
+	channelMemberServiceLeaveChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelMemberServiceLeaveChannelProcedure,
 		svc.LeaveChannel,
 		connect.WithSchema(channelMemberServiceMethods.ByName("LeaveChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelMemberServiceRemoveChannelMemberHandler := connect.NewUnaryHandler(
+	channelMemberServiceRemoveChannelMemberHandler := connect.NewUnaryHandlerSimple(
 		ChannelMemberServiceRemoveChannelMemberProcedure,
 		svc.RemoveChannelMember,
 		connect.WithSchema(channelMemberServiceMethods.ByName("RemoveChannelMember")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelMemberServiceUpdateChannelMemberRoleHandler := connect.NewUnaryHandler(
+	channelMemberServiceUpdateChannelMemberRoleHandler := connect.NewUnaryHandlerSimple(
 		ChannelMemberServiceUpdateChannelMemberRoleProcedure,
 		svc.UpdateChannelMemberRole,
 		connect.WithSchema(channelMemberServiceMethods.ByName("UpdateChannelMemberRole")),
@@ -229,26 +253,26 @@ func NewChannelMemberServiceHandler(svc ChannelMemberServiceHandler, opts ...con
 // UnimplementedChannelMemberServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedChannelMemberServiceHandler struct{}
 
-func (UnimplementedChannelMemberServiceHandler) ListChannelMembers(context.Context, *connect.Request[v1.ListChannelMembersRequest]) (*connect.Response[v1.ListChannelMembersResponse], error) {
+func (UnimplementedChannelMemberServiceHandler) ListChannelMembers(context.Context, *v1.ListChannelMembersRequest) (*v1.ListChannelMembersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelMemberService.ListChannelMembers is not implemented"))
 }
 
-func (UnimplementedChannelMemberServiceHandler) InviteChannelMember(context.Context, *connect.Request[v1.InviteChannelMemberRequest]) (*connect.Response[v1.InviteChannelMemberResponse], error) {
+func (UnimplementedChannelMemberServiceHandler) InviteChannelMember(context.Context, *v1.InviteChannelMemberRequest) (*v1.InviteChannelMemberResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelMemberService.InviteChannelMember is not implemented"))
 }
 
-func (UnimplementedChannelMemberServiceHandler) JoinChannel(context.Context, *connect.Request[v1.JoinChannelRequest]) (*connect.Response[v1.JoinChannelResponse], error) {
+func (UnimplementedChannelMemberServiceHandler) JoinChannel(context.Context, *v1.JoinChannelRequest) (*v1.JoinChannelResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelMemberService.JoinChannel is not implemented"))
 }
 
-func (UnimplementedChannelMemberServiceHandler) LeaveChannel(context.Context, *connect.Request[v1.LeaveChannelRequest]) (*connect.Response[v1.LeaveChannelResponse], error) {
+func (UnimplementedChannelMemberServiceHandler) LeaveChannel(context.Context, *v1.LeaveChannelRequest) (*v1.LeaveChannelResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelMemberService.LeaveChannel is not implemented"))
 }
 
-func (UnimplementedChannelMemberServiceHandler) RemoveChannelMember(context.Context, *connect.Request[v1.RemoveChannelMemberRequest]) (*connect.Response[v1.RemoveChannelMemberResponse], error) {
+func (UnimplementedChannelMemberServiceHandler) RemoveChannelMember(context.Context, *v1.RemoveChannelMemberRequest) (*v1.RemoveChannelMemberResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelMemberService.RemoveChannelMember is not implemented"))
 }
 
-func (UnimplementedChannelMemberServiceHandler) UpdateChannelMemberRole(context.Context, *connect.Request[v1.UpdateChannelMemberRoleRequest]) (*connect.Response[v1.UpdateChannelMemberRoleResponse], error) {
+func (UnimplementedChannelMemberServiceHandler) UpdateChannelMemberRole(context.Context, *v1.UpdateChannelMemberRoleRequest) (*v1.UpdateChannelMemberRoleResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelMemberService.UpdateChannelMemberRole is not implemented"))
 }

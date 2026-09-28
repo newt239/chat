@@ -1,10 +1,13 @@
 package registry
 
 import (
+	nethttp "net/http"
+
 	"github.com/labstack/echo/v4"
 
 	"github.com/newt239/chat/internal/interfaces/handler/http"
 	"github.com/newt239/chat/internal/interfaces/handler/http/handler"
+	"github.com/newt239/chat/internal/interfaces/handler/rpc"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
@@ -119,12 +122,17 @@ func (r *InterfaceRegistry) NewUserHandler() *handler.UserHandler {
 	}
 }
 
+func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
+	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService())
+}
+
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
 		JWTService:           r.infrastructureRegistry.NewJWTService(),
 		AllowedOrigins:       r.infrastructureRegistry.config.CORS.AllowedOrigins,
 		WebSocketHub:         r.infrastructureRegistry.hub,
 		WorkspaceRepository:  r.domainRegistry.NewWorkspaceRepository(),
+		RPCHandler:           r.NewRPCHandler(),
 		AuthHandler:          r.NewAuthHandler(),
 		WorkspaceHandler:     r.NewWorkspaceHandler(),
 		ChannelHandler:       r.NewChannelHandler(),

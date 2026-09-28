@@ -52,11 +52,11 @@ const (
 
 // ChannelServiceClient is a client for the chat.v1.ChannelService service.
 type ChannelServiceClient interface {
-	ListChannels(context.Context, *connect.Request[v1.ListChannelsRequest]) (*connect.Response[v1.ListChannelsResponse], error)
-	CreateChannel(context.Context, *connect.Request[v1.CreateChannelRequest]) (*connect.Response[v1.CreateChannelResponse], error)
-	GetChannel(context.Context, *connect.Request[v1.GetChannelRequest]) (*connect.Response[v1.GetChannelResponse], error)
-	UpdateChannel(context.Context, *connect.Request[v1.UpdateChannelRequest]) (*connect.Response[v1.UpdateChannelResponse], error)
-	DeleteChannel(context.Context, *connect.Request[v1.DeleteChannelRequest]) (*connect.Response[v1.DeleteChannelResponse], error)
+	ListChannels(context.Context, *v1.ListChannelsRequest) (*v1.ListChannelsResponse, error)
+	CreateChannel(context.Context, *v1.CreateChannelRequest) (*v1.CreateChannelResponse, error)
+	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
+	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
+	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
 }
 
 // NewChannelServiceClient constructs a client for the chat.v1.ChannelService service. By default,
@@ -113,37 +113,57 @@ type channelServiceClient struct {
 }
 
 // ListChannels calls chat.v1.ChannelService.ListChannels.
-func (c *channelServiceClient) ListChannels(ctx context.Context, req *connect.Request[v1.ListChannelsRequest]) (*connect.Response[v1.ListChannelsResponse], error) {
-	return c.listChannels.CallUnary(ctx, req)
+func (c *channelServiceClient) ListChannels(ctx context.Context, req *v1.ListChannelsRequest) (*v1.ListChannelsResponse, error) {
+	response, err := c.listChannels.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateChannel calls chat.v1.ChannelService.CreateChannel.
-func (c *channelServiceClient) CreateChannel(ctx context.Context, req *connect.Request[v1.CreateChannelRequest]) (*connect.Response[v1.CreateChannelResponse], error) {
-	return c.createChannel.CallUnary(ctx, req)
+func (c *channelServiceClient) CreateChannel(ctx context.Context, req *v1.CreateChannelRequest) (*v1.CreateChannelResponse, error) {
+	response, err := c.createChannel.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetChannel calls chat.v1.ChannelService.GetChannel.
-func (c *channelServiceClient) GetChannel(ctx context.Context, req *connect.Request[v1.GetChannelRequest]) (*connect.Response[v1.GetChannelResponse], error) {
-	return c.getChannel.CallUnary(ctx, req)
+func (c *channelServiceClient) GetChannel(ctx context.Context, req *v1.GetChannelRequest) (*v1.GetChannelResponse, error) {
+	response, err := c.getChannel.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateChannel calls chat.v1.ChannelService.UpdateChannel.
-func (c *channelServiceClient) UpdateChannel(ctx context.Context, req *connect.Request[v1.UpdateChannelRequest]) (*connect.Response[v1.UpdateChannelResponse], error) {
-	return c.updateChannel.CallUnary(ctx, req)
+func (c *channelServiceClient) UpdateChannel(ctx context.Context, req *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error) {
+	response, err := c.updateChannel.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteChannel calls chat.v1.ChannelService.DeleteChannel.
-func (c *channelServiceClient) DeleteChannel(ctx context.Context, req *connect.Request[v1.DeleteChannelRequest]) (*connect.Response[v1.DeleteChannelResponse], error) {
-	return c.deleteChannel.CallUnary(ctx, req)
+func (c *channelServiceClient) DeleteChannel(ctx context.Context, req *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error) {
+	response, err := c.deleteChannel.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ChannelServiceHandler is an implementation of the chat.v1.ChannelService service.
 type ChannelServiceHandler interface {
-	ListChannels(context.Context, *connect.Request[v1.ListChannelsRequest]) (*connect.Response[v1.ListChannelsResponse], error)
-	CreateChannel(context.Context, *connect.Request[v1.CreateChannelRequest]) (*connect.Response[v1.CreateChannelResponse], error)
-	GetChannel(context.Context, *connect.Request[v1.GetChannelRequest]) (*connect.Response[v1.GetChannelResponse], error)
-	UpdateChannel(context.Context, *connect.Request[v1.UpdateChannelRequest]) (*connect.Response[v1.UpdateChannelResponse], error)
-	DeleteChannel(context.Context, *connect.Request[v1.DeleteChannelRequest]) (*connect.Response[v1.DeleteChannelResponse], error)
+	ListChannels(context.Context, *v1.ListChannelsRequest) (*v1.ListChannelsResponse, error)
+	CreateChannel(context.Context, *v1.CreateChannelRequest) (*v1.CreateChannelResponse, error)
+	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
+	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
+	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
 }
 
 // NewChannelServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -153,31 +173,31 @@ type ChannelServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	channelServiceMethods := v1.File_chat_v1_channel_service_proto.Services().ByName("ChannelService").Methods()
-	channelServiceListChannelsHandler := connect.NewUnaryHandler(
+	channelServiceListChannelsHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceListChannelsProcedure,
 		svc.ListChannels,
 		connect.WithSchema(channelServiceMethods.ByName("ListChannels")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelServiceCreateChannelHandler := connect.NewUnaryHandler(
+	channelServiceCreateChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceCreateChannelProcedure,
 		svc.CreateChannel,
 		connect.WithSchema(channelServiceMethods.ByName("CreateChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelServiceGetChannelHandler := connect.NewUnaryHandler(
+	channelServiceGetChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceGetChannelProcedure,
 		svc.GetChannel,
 		connect.WithSchema(channelServiceMethods.ByName("GetChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelServiceUpdateChannelHandler := connect.NewUnaryHandler(
+	channelServiceUpdateChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceUpdateChannelProcedure,
 		svc.UpdateChannel,
 		connect.WithSchema(channelServiceMethods.ByName("UpdateChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelServiceDeleteChannelHandler := connect.NewUnaryHandler(
+	channelServiceDeleteChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceDeleteChannelProcedure,
 		svc.DeleteChannel,
 		connect.WithSchema(channelServiceMethods.ByName("DeleteChannel")),
@@ -204,22 +224,22 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 // UnimplementedChannelServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedChannelServiceHandler struct{}
 
-func (UnimplementedChannelServiceHandler) ListChannels(context.Context, *connect.Request[v1.ListChannelsRequest]) (*connect.Response[v1.ListChannelsResponse], error) {
+func (UnimplementedChannelServiceHandler) ListChannels(context.Context, *v1.ListChannelsRequest) (*v1.ListChannelsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.ListChannels is not implemented"))
 }
 
-func (UnimplementedChannelServiceHandler) CreateChannel(context.Context, *connect.Request[v1.CreateChannelRequest]) (*connect.Response[v1.CreateChannelResponse], error) {
+func (UnimplementedChannelServiceHandler) CreateChannel(context.Context, *v1.CreateChannelRequest) (*v1.CreateChannelResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.CreateChannel is not implemented"))
 }
 
-func (UnimplementedChannelServiceHandler) GetChannel(context.Context, *connect.Request[v1.GetChannelRequest]) (*connect.Response[v1.GetChannelResponse], error) {
+func (UnimplementedChannelServiceHandler) GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.GetChannel is not implemented"))
 }
 
-func (UnimplementedChannelServiceHandler) UpdateChannel(context.Context, *connect.Request[v1.UpdateChannelRequest]) (*connect.Response[v1.UpdateChannelResponse], error) {
+func (UnimplementedChannelServiceHandler) UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.UpdateChannel is not implemented"))
 }
 
-func (UnimplementedChannelServiceHandler) DeleteChannel(context.Context, *connect.Request[v1.DeleteChannelRequest]) (*connect.Response[v1.DeleteChannelResponse], error) {
+func (UnimplementedChannelServiceHandler) DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.DeleteChannel is not implemented"))
 }

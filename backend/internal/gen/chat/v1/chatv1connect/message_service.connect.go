@@ -52,11 +52,11 @@ const (
 
 // MessageServiceClient is a client for the chat.v1.MessageService service.
 type MessageServiceClient interface {
-	ListMessages(context.Context, *connect.Request[v1.ListMessagesRequest]) (*connect.Response[v1.ListMessagesResponse], error)
-	ListMessagesWithThread(context.Context, *connect.Request[v1.ListMessagesWithThreadRequest]) (*connect.Response[v1.ListMessagesWithThreadResponse], error)
-	CreateMessage(context.Context, *connect.Request[v1.CreateMessageRequest]) (*connect.Response[v1.CreateMessageResponse], error)
-	UpdateMessage(context.Context, *connect.Request[v1.UpdateMessageRequest]) (*connect.Response[v1.UpdateMessageResponse], error)
-	DeleteMessage(context.Context, *connect.Request[v1.DeleteMessageRequest]) (*connect.Response[v1.DeleteMessageResponse], error)
+	ListMessages(context.Context, *v1.ListMessagesRequest) (*v1.ListMessagesResponse, error)
+	ListMessagesWithThread(context.Context, *v1.ListMessagesWithThreadRequest) (*v1.ListMessagesWithThreadResponse, error)
+	CreateMessage(context.Context, *v1.CreateMessageRequest) (*v1.CreateMessageResponse, error)
+	UpdateMessage(context.Context, *v1.UpdateMessageRequest) (*v1.UpdateMessageResponse, error)
+	DeleteMessage(context.Context, *v1.DeleteMessageRequest) (*v1.DeleteMessageResponse, error)
 }
 
 // NewMessageServiceClient constructs a client for the chat.v1.MessageService service. By default,
@@ -113,37 +113,57 @@ type messageServiceClient struct {
 }
 
 // ListMessages calls chat.v1.MessageService.ListMessages.
-func (c *messageServiceClient) ListMessages(ctx context.Context, req *connect.Request[v1.ListMessagesRequest]) (*connect.Response[v1.ListMessagesResponse], error) {
-	return c.listMessages.CallUnary(ctx, req)
+func (c *messageServiceClient) ListMessages(ctx context.Context, req *v1.ListMessagesRequest) (*v1.ListMessagesResponse, error) {
+	response, err := c.listMessages.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListMessagesWithThread calls chat.v1.MessageService.ListMessagesWithThread.
-func (c *messageServiceClient) ListMessagesWithThread(ctx context.Context, req *connect.Request[v1.ListMessagesWithThreadRequest]) (*connect.Response[v1.ListMessagesWithThreadResponse], error) {
-	return c.listMessagesWithThread.CallUnary(ctx, req)
+func (c *messageServiceClient) ListMessagesWithThread(ctx context.Context, req *v1.ListMessagesWithThreadRequest) (*v1.ListMessagesWithThreadResponse, error) {
+	response, err := c.listMessagesWithThread.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateMessage calls chat.v1.MessageService.CreateMessage.
-func (c *messageServiceClient) CreateMessage(ctx context.Context, req *connect.Request[v1.CreateMessageRequest]) (*connect.Response[v1.CreateMessageResponse], error) {
-	return c.createMessage.CallUnary(ctx, req)
+func (c *messageServiceClient) CreateMessage(ctx context.Context, req *v1.CreateMessageRequest) (*v1.CreateMessageResponse, error) {
+	response, err := c.createMessage.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateMessage calls chat.v1.MessageService.UpdateMessage.
-func (c *messageServiceClient) UpdateMessage(ctx context.Context, req *connect.Request[v1.UpdateMessageRequest]) (*connect.Response[v1.UpdateMessageResponse], error) {
-	return c.updateMessage.CallUnary(ctx, req)
+func (c *messageServiceClient) UpdateMessage(ctx context.Context, req *v1.UpdateMessageRequest) (*v1.UpdateMessageResponse, error) {
+	response, err := c.updateMessage.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteMessage calls chat.v1.MessageService.DeleteMessage.
-func (c *messageServiceClient) DeleteMessage(ctx context.Context, req *connect.Request[v1.DeleteMessageRequest]) (*connect.Response[v1.DeleteMessageResponse], error) {
-	return c.deleteMessage.CallUnary(ctx, req)
+func (c *messageServiceClient) DeleteMessage(ctx context.Context, req *v1.DeleteMessageRequest) (*v1.DeleteMessageResponse, error) {
+	response, err := c.deleteMessage.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // MessageServiceHandler is an implementation of the chat.v1.MessageService service.
 type MessageServiceHandler interface {
-	ListMessages(context.Context, *connect.Request[v1.ListMessagesRequest]) (*connect.Response[v1.ListMessagesResponse], error)
-	ListMessagesWithThread(context.Context, *connect.Request[v1.ListMessagesWithThreadRequest]) (*connect.Response[v1.ListMessagesWithThreadResponse], error)
-	CreateMessage(context.Context, *connect.Request[v1.CreateMessageRequest]) (*connect.Response[v1.CreateMessageResponse], error)
-	UpdateMessage(context.Context, *connect.Request[v1.UpdateMessageRequest]) (*connect.Response[v1.UpdateMessageResponse], error)
-	DeleteMessage(context.Context, *connect.Request[v1.DeleteMessageRequest]) (*connect.Response[v1.DeleteMessageResponse], error)
+	ListMessages(context.Context, *v1.ListMessagesRequest) (*v1.ListMessagesResponse, error)
+	ListMessagesWithThread(context.Context, *v1.ListMessagesWithThreadRequest) (*v1.ListMessagesWithThreadResponse, error)
+	CreateMessage(context.Context, *v1.CreateMessageRequest) (*v1.CreateMessageResponse, error)
+	UpdateMessage(context.Context, *v1.UpdateMessageRequest) (*v1.UpdateMessageResponse, error)
+	DeleteMessage(context.Context, *v1.DeleteMessageRequest) (*v1.DeleteMessageResponse, error)
 }
 
 // NewMessageServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -153,31 +173,31 @@ type MessageServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewMessageServiceHandler(svc MessageServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	messageServiceMethods := v1.File_chat_v1_message_service_proto.Services().ByName("MessageService").Methods()
-	messageServiceListMessagesHandler := connect.NewUnaryHandler(
+	messageServiceListMessagesHandler := connect.NewUnaryHandlerSimple(
 		MessageServiceListMessagesProcedure,
 		svc.ListMessages,
 		connect.WithSchema(messageServiceMethods.ByName("ListMessages")),
 		connect.WithHandlerOptions(opts...),
 	)
-	messageServiceListMessagesWithThreadHandler := connect.NewUnaryHandler(
+	messageServiceListMessagesWithThreadHandler := connect.NewUnaryHandlerSimple(
 		MessageServiceListMessagesWithThreadProcedure,
 		svc.ListMessagesWithThread,
 		connect.WithSchema(messageServiceMethods.ByName("ListMessagesWithThread")),
 		connect.WithHandlerOptions(opts...),
 	)
-	messageServiceCreateMessageHandler := connect.NewUnaryHandler(
+	messageServiceCreateMessageHandler := connect.NewUnaryHandlerSimple(
 		MessageServiceCreateMessageProcedure,
 		svc.CreateMessage,
 		connect.WithSchema(messageServiceMethods.ByName("CreateMessage")),
 		connect.WithHandlerOptions(opts...),
 	)
-	messageServiceUpdateMessageHandler := connect.NewUnaryHandler(
+	messageServiceUpdateMessageHandler := connect.NewUnaryHandlerSimple(
 		MessageServiceUpdateMessageProcedure,
 		svc.UpdateMessage,
 		connect.WithSchema(messageServiceMethods.ByName("UpdateMessage")),
 		connect.WithHandlerOptions(opts...),
 	)
-	messageServiceDeleteMessageHandler := connect.NewUnaryHandler(
+	messageServiceDeleteMessageHandler := connect.NewUnaryHandlerSimple(
 		MessageServiceDeleteMessageProcedure,
 		svc.DeleteMessage,
 		connect.WithSchema(messageServiceMethods.ByName("DeleteMessage")),
@@ -204,22 +224,22 @@ func NewMessageServiceHandler(svc MessageServiceHandler, opts ...connect.Handler
 // UnimplementedMessageServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedMessageServiceHandler struct{}
 
-func (UnimplementedMessageServiceHandler) ListMessages(context.Context, *connect.Request[v1.ListMessagesRequest]) (*connect.Response[v1.ListMessagesResponse], error) {
+func (UnimplementedMessageServiceHandler) ListMessages(context.Context, *v1.ListMessagesRequest) (*v1.ListMessagesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.MessageService.ListMessages is not implemented"))
 }
 
-func (UnimplementedMessageServiceHandler) ListMessagesWithThread(context.Context, *connect.Request[v1.ListMessagesWithThreadRequest]) (*connect.Response[v1.ListMessagesWithThreadResponse], error) {
+func (UnimplementedMessageServiceHandler) ListMessagesWithThread(context.Context, *v1.ListMessagesWithThreadRequest) (*v1.ListMessagesWithThreadResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.MessageService.ListMessagesWithThread is not implemented"))
 }
 
-func (UnimplementedMessageServiceHandler) CreateMessage(context.Context, *connect.Request[v1.CreateMessageRequest]) (*connect.Response[v1.CreateMessageResponse], error) {
+func (UnimplementedMessageServiceHandler) CreateMessage(context.Context, *v1.CreateMessageRequest) (*v1.CreateMessageResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.MessageService.CreateMessage is not implemented"))
 }
 
-func (UnimplementedMessageServiceHandler) UpdateMessage(context.Context, *connect.Request[v1.UpdateMessageRequest]) (*connect.Response[v1.UpdateMessageResponse], error) {
+func (UnimplementedMessageServiceHandler) UpdateMessage(context.Context, *v1.UpdateMessageRequest) (*v1.UpdateMessageResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.MessageService.UpdateMessage is not implemented"))
 }
 
-func (UnimplementedMessageServiceHandler) DeleteMessage(context.Context, *connect.Request[v1.DeleteMessageRequest]) (*connect.Response[v1.DeleteMessageResponse], error) {
+func (UnimplementedMessageServiceHandler) DeleteMessage(context.Context, *v1.DeleteMessageRequest) (*v1.DeleteMessageResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.MessageService.DeleteMessage is not implemented"))
 }
