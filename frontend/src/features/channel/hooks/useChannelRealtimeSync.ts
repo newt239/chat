@@ -3,12 +3,11 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 
+import { channelListKey } from "#/features/channel/hooks/useChannel";
 import { addChannelPinsDeltaAtom } from "#/providers/store/ui";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
-import type { components } from "#/lib/api/schema";
-
-type Channel = components["schemas"]["Channel"];
+import type { Channel, ListChannelsResponse } from "#/gen/chat/v1/channel_service_pb";
 
 /** WebSocket イベントからチャンネル一覧の未読バッジとピン件数を更新する。 表示中のチャンネルは既読として扱うため未読を加算しない。 */
 export const useChannelRealtimeSync = (
@@ -24,10 +23,17 @@ export const useChannelRealtimeSync = (
       return undefined;
     }
 
-    const queryKey = ["workspaces", workspaceId, "channels"];
     const updateChannel = (channelId: string, update: (channel: Channel) => Channel) => {
-      queryClient.setQueryData<Channel[]>(queryKey, (channels) =>
-        channels?.map((channel) => (channel.id === channelId ? update(channel) : channel)),
+      // useQuery のキーには transport も含まれるため、完全一致ではなく部分一致で更新する
+      queryClient.setQueriesData<ListChannelsResponse>(
+        { queryKey: channelListKey(workspaceId) },
+        (res) =>
+          res && {
+            ...res,
+            channels: res.channels.map((channel) =>
+              channel.id === channelId ? update(channel) : channel,
+            ),
+          },
       );
     };
 
@@ -38,7 +44,7 @@ export const useChannelRealtimeSync = (
         }
         updateChannel(channel_id, (channel) => ({
           ...channel,
-          unreadCount: (channel.unreadCount ?? 0) + 1,
+          unreadCount: channel.unreadCount + 1,
         }));
       }),
 

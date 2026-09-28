@@ -1,83 +1,33 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { api } from "#/lib/api/client";
-
-import type { components } from "#/lib/api/schema";
-
-type ChannelRole = components["schemas"]["ChannelMemberInfo"]["role"];
+import { channelListKey } from "#/features/channel/hooks/useChannel";
+import { ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
 
 /** チャンネルメンバーの招待・追放・退出・ロール変更をまとめて提供する */
-export const useChannelMemberActions = (channelId: string, workspaceId: string | null) => {
+export const useChannelMemberActions = (workspaceId: string) => {
   const queryClient = useQueryClient();
 
-  const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "members"] });
-    if (workspaceId !== null) {
-      await queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
-    }
+  const onSuccess = async (_: unknown, { channelId }: { channelId?: string }) => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: createConnectQueryKey({
+          cardinality: "finite",
+          input: { channelId },
+          schema: ChannelMemberService.method.listChannelMembers,
+        }),
+      }),
+      queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) }),
+    ]);
   };
 
-  const invite = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: ChannelRole }) => {
-      const { error } = await api.POST("/api/channels/{channelId}/members", {
-        body: { role, userId },
-        params: { path: { channelId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-    onSuccess: invalidate,
+  const invite = useMutation(ChannelMemberService.method.inviteChannelMember, { onSuccess });
+  const remove = useMutation(ChannelMemberService.method.removeChannelMember, { onSuccess });
+  const updateRole = useMutation(ChannelMemberService.method.updateChannelMemberRole, {
+    onSuccess,
   });
-
-  const remove = useMutation({
-    mutationFn: async ({ userId }: { userId: string }) => {
-      const { error } = await api.DELETE("/api/channels/{channelId}/members/{userId}", {
-        params: { path: { channelId, userId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-    onSuccess: invalidate,
-  });
-
-  const updateRole = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: ChannelRole }) => {
-      const { error } = await api.PATCH("/api/channels/{channelId}/members/{userId}/role", {
-        body: { role },
-        params: { path: { channelId, userId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-    onSuccess: invalidate,
-  });
-
-  const join = useMutation({
-    mutationFn: async () => {
-      const { error } = await api.POST("/api/channels/{channelId}/members/self", {
-        params: { path: { channelId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-    onSuccess: invalidate,
-  });
-
-  const leave = useMutation({
-    mutationFn: async () => {
-      const { error } = await api.DELETE("/api/channels/{channelId}/members/self", {
-        params: { path: { channelId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-    onSuccess: invalidate,
-  });
+  const join = useMutation(ChannelMemberService.method.joinChannel, { onSuccess });
+  const leave = useMutation(ChannelMemberService.method.leaveChannel, { onSuccess });
 
   return { invite, join, leave, remove, updateRole };
 };

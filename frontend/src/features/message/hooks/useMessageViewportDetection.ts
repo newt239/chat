@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
-import { useUpdateReadState } from "./useMessage";
+import { timestampNow } from "@bufbuild/protobuf/wkt";
+
+import { useUpdateReadState } from "#/features/channel/hooks/useUpdateReadState";
 
 type UseMessageViewportDetectionArgs = {
   channelId: string | null;
@@ -14,7 +16,7 @@ export const useMessageViewportDetection = ({
   latestMessageId,
 }: UseMessageViewportDetectionArgs) => {
   const latestMessageRef = useRef<HTMLDivElement | null>(null);
-  const updateReadState = useUpdateReadState(channelId, workspaceId);
+  const updateReadState = useUpdateReadState(workspaceId);
   const updateReadStateRef = useRef(updateReadState);
   const hasMarkedAsRead = useRef(false);
 
@@ -34,7 +36,7 @@ export const useMessageViewportDetection = ({
         const [entry] = entries;
         if (entry?.isIntersecting && !hasMarkedAsRead.current) {
           hasMarkedAsRead.current = true;
-          updateReadStateRef.current.mutate();
+          updateReadStateRef.current.mutate({ channelId, lastReadAt: timestampNow() });
         }
       },
       {

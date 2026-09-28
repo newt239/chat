@@ -6,17 +6,16 @@ import { useAtomValue } from "jotai";
 
 import { useChannelMemberActions } from "#/features/channel/hooks/useChannelMemberActions";
 import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
+import { channelRoleLabels } from "#/features/channel/utils/channelRole";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { ChannelRole } from "#/gen/chat/v1/channel_member_service_pb";
 import { userAtom } from "#/providers/store/auth";
 
-import type { components } from "#/lib/api/schema";
-
-type ChannelRole = components["schemas"]["ChannelMemberInfo"]["role"];
-
-const ROLE_OPTIONS: { label: string; value: ChannelRole }[] = [
-  { label: "メンバー", value: "member" },
-  { label: "管理者", value: "admin" },
-];
+const ROLE_OPTIONS = [ChannelRole.MEMBER, ChannelRole.ADMIN].map((role) => ({
+  label: channelRoleLabels[role],
+  role,
+  value: String(role),
+}));
 
 type ChannelMemberManagerProps = {
   channelId: string;
@@ -27,10 +26,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
   const currentUser = useAtomValue(userAtom);
   const { data: channelMembers } = useChannelMembers(channelId);
   const { data: workspaceMembers } = useMembers(workspaceId);
-  const { invite, join, leave, remove, updateRole } = useChannelMemberActions(
-    channelId,
-    workspaceId,
-  );
+  const { invite, join, leave, remove, updateRole } = useChannelMemberActions(workspaceId);
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -43,7 +39,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
 
   const handleInvite = () => {
     if (selectedUserId !== null) {
-      invite.mutate({ role: "member", userId: selectedUserId });
+      invite.mutate({ channelId, role: ChannelRole.MEMBER, userId: selectedUserId });
       setSelectedUserId(null);
     }
   };
@@ -59,7 +55,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
             color="red"
             loading={leave.isPending}
             onClick={() => {
-              leave.mutate();
+              leave.mutate({ channelId });
             }}
           >
             退出する
@@ -70,7 +66,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
             variant="light"
             loading={join.isPending}
             onClick={() => {
-              join.mutate();
+              join.mutate({ channelId });
             }}
           >
             参加する
@@ -92,12 +88,12 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
                 size="xs"
                 w={110}
                 data={ROLE_OPTIONS}
-                value={member.role}
+                value={String(member.role)}
                 allowDeselect={false}
                 onChange={(value) => {
                   const role = ROLE_OPTIONS.find((option) => option.value === value);
                   if (role !== undefined) {
-                    updateRole.mutate({ role: role.value, userId: member.userId });
+                    updateRole.mutate({ channelId, role: role.role, userId: member.userId });
                   }
                 }}
               />
@@ -106,7 +102,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
                 color="red"
                 aria-label={`${member.displayName} をチャンネルから外す`}
                 onClick={() => {
-                  remove.mutate({ userId: member.userId });
+                  remove.mutate({ channelId, userId: member.userId });
                 }}
               >
                 <IconUserMinus size={16} />

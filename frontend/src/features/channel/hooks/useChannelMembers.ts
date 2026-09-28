@@ -1,26 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 
-import { api } from "#/lib/api/client";
-
-import type { components } from "#/lib/api/schema";
+import { ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
 
 export const useChannelMembers = (channelId: string | null) =>
-  useQuery({
-    enabled: channelId !== null,
-    queryFn: async (): Promise<components["schemas"]["ChannelMemberInfo"][]> => {
-      if (channelId === null) {
-        return [];
-      }
-
-      const { data, error } = await api.GET("/api/channels/{channelId}/members", {
-        params: { path: { channelId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data.members;
-    },
-    queryKey: ["channels", channelId, "members"],
-  });
+  useQuery(
+    ChannelMemberService.method.listChannelMembers,
+    channelId === null ? skipToken : { channelId },
+    { select: (res) => res.members },
+  );

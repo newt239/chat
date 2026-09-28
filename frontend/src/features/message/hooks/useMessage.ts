@@ -113,31 +113,3 @@ export const useDeleteMessage = (channelId: string | null) => {
     },
   });
 };
-
-export const useUpdateReadState = (channelId: string | null, workspaceId: string | null) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (channelId === null) {
-        throw new Error("チャンネルが選択されていません");
-      }
-
-      const lastReadAt = new Date().toISOString();
-      const { error } = await api.POST("/api/channels/{channelId}/reads", {
-        body: { lastReadAt },
-        params: { path: { channelId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-    onSuccess: async () => {
-      // チャンネル一覧を再取得してバッジを更新
-      if (workspaceId !== null) {
-        await queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
-      }
-    },
-  });
-};

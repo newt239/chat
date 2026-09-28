@@ -15,12 +15,12 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
-  const createChannel = useCreateChannel(workspaceId);
+  const createChannel = useCreateChannel();
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     createChannel.mutate(
-      { description: description || undefined, isPrivate, name },
+      { description: description || undefined, isPrivate, name, workspaceId: workspaceId ?? "" },
       {
         onSuccess: () => {
           setName("");

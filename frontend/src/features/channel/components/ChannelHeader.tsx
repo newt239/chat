@@ -27,7 +27,7 @@ export const ChannelHeader = ({ channelId }: ChannelHeaderProps) => {
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
   const pinsCountByChannel = useAtomValue(pinsCountByChannelAtom);
 
-  const { data: channels } = useChannels(currentWorkspaceId || "");
+  const { data: channels } = useChannels(currentWorkspaceId);
 
   if (!channelId) {
     return null;

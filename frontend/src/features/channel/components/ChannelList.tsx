@@ -76,7 +76,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
             <Stack gap={4}>
               {channels.map((channel) => {
                 const isSelected = channel.id === currentChannelId;
-                const unreadCount = channel.unreadCount ?? 0;
+                const { unreadCount } = channel;
                 const hasUnread = unreadCount > 0;
 
                 return (
@@ -100,7 +100,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                     <div className="flex items-center gap-1">
                       {hasUnread ? (
                         <Badge
-                          color={channel.hasMention === true ? "red" : "blue"}
+                          color={channel.hasMention ? "red" : "blue"}
                           size="xs"
                           className="flex items-center justify-center"
                         >
