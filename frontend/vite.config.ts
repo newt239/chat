@@ -234,6 +234,14 @@ export default defineConfig({
       workbox: {
         runtimeCaching: [
           {
+            handler: "CacheFirst",
+            options: {
+              cacheName: "font-cache",
+              expiration: { maxEntries: 500 },
+            },
+            urlPattern: /\.woff2$/,
+          },
+          {
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",

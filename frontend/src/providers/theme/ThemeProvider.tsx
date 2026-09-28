@@ -1,7 +1,6 @@
 import { useLayoutEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 
-import { MantineProvider } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { MotionConfig } from "motion/react";
 import { I18nProvider } from "react-aria-components";
@@ -40,10 +39,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   return (
     <ColorModeContext value={colorMode}>
       <I18nProvider locale={locale}>
-        <MotionConfig reducedMotion="user">
-          {/* 既存画面は bg-white などを直書きしており、Mantine だけダークにすると崩れるため移行完了までライトに固定する */}
-          <MantineProvider forceColorScheme="light">{children}</MantineProvider>
-        </MotionConfig>
+        <MotionConfig reducedMotion="user">{children}</MotionConfig>
       </I18nProvider>
     </ColorModeContext>
   );

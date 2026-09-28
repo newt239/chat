@@ -38,10 +38,7 @@ export const ChartCard = ({ title, note, table, children, wide }: ChartCardProps
           onChange={setShowTable}
           className={`cursor-pointer rounded-[6px] border border-border bg-transparent px-2 py-0.5 font-sans text-[11.5px] font-semibold text-accent-text data-hovered:bg-hover ${focusRing}`}
         >
-          {/* Mantine のボタンのリセットが文字サイズを上書きするため子要素で指定する */}
-          <span className="text-[11.5px]">
-            {showTable ? t("insights.table.showChart") : t("insights.table.showTable")}
-          </span>
+          {showTable ? t("insights.table.showChart") : t("insights.table.showTable")}
         </ToggleButton>
       </header>
       {showTable ? <DataTable columns={table.columns} rows={table.rows} /> : children}
