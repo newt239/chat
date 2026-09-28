@@ -88,6 +88,9 @@ shiki を JavaScript 正規表現エンジンで使う（WASM を読み込まな
 | `notifications.show` | `toast(title, { description, tone })` |
 | `Avatar` / `Avatar.Group` | `Avatar`（`name` / `src` / `size` / `presence`）/ グループ DM は `GroupAvatar`（`count`） |
 | `Badge` / `Indicator` | `Badge`（`tone`: count / tag / accent） |
+| `Slider` / `SegmentedControl` | `Slider`（`onChange` は動かしている間、`onChangeEnd` は確定時）/ `SegmentedControl`（`options`、`value`、`onChange`） |
+| リンクのメニュー項目 | `MenuItemLink`（`to` / `params`、`target="_blank"` で新しいタブ） |
+| 空の画面の案内 | `EmptyState`（`icon` / `title` / `description`） |
 | `Skeleton` / `Loader` | `Skeleton`（`className` で大きさと形を指定）/ `Button isPending` |
 | `Stack` / `Group` / `Text` / `Paper` | Tailwind（`flex flex-col gap-2`、`text-caption text-muted`、`rounded-lg border border-border bg-surface`） |
 | `@mantine/form` | React Aria のフォーム（`<Form>`、`validationErrors`）+ zod |

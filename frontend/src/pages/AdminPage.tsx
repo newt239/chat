@@ -14,6 +14,7 @@ import { AdminPermissionsTab } from "#/features/admin/components/AdminPermission
 import { useAdminMembers, usePermissions } from "#/features/admin/hooks/useAdminQueries";
 import { useMyWorkspaceRole } from "#/features/admin/hooks/useMyWorkspaceRole";
 import { adminTabValues } from "#/features/admin/schemas";
+import { PageHeader } from "#/features/layout/components/PageHeader";
 
 import type { adminSearchSchema } from "#/features/admin/schemas";
 
@@ -72,13 +73,7 @@ export const AdminPage = () => {
 
   return (
     <section className="flex h-full min-h-0 flex-col bg-surface font-sans text-text">
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-[18px] max-md:px-3">
-        <IconShieldCheck aria-hidden className="size-4 shrink-0 text-muted" />
-        <h1 className="m-0 shrink-0 text-[15px] font-bold">{t("admin.title")}</h1>
-        <span className="min-w-0 truncate text-caption text-muted max-md:hidden">
-          {t("admin.subtitle")}
-        </span>
-      </header>
+      <PageHeader icon={<IconShieldCheck />} title={t("admin.title")} />
       <Tabs
         selectedKey={tab}
         onSelectionChange={(key) => {

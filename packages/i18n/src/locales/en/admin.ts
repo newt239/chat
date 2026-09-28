@@ -123,7 +123,6 @@ export const admin: Messages["admin"] = {
     toggle: "{{role}}: {{permission}}",
     updated: "Permission changed",
   },
-  subtitle: "Only admins and owners can see this",
   tabs: {
     audit: "Audit log",
     label: "Admin tabs",

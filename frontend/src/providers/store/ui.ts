@@ -1,7 +1,11 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-// パネルの表示状態を管理する型定義
+import { navigateTo } from "#/lib/navigation";
+
+import { currentChannelIdAtom, currentWorkspaceIdAtom } from "./workspace";
+
+// 右パネルの内容。スレッドだけは URL（/thread/$messageId）で表す
 export type PanelView =
   | { type: "hidden" }
   | { type: "channel-members"; channelId: string }
@@ -9,145 +13,85 @@ export type PanelView =
   | { type: "thread"; threadId: string }
   | { type: "pins"; channelId: string }
   | { type: "user-profile"; userId: string }
-  | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" }
-  | { type: "bookmarks" }
-  | { type: "notifications" };
+  | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" };
 
-// レイアウトの状態を管理する型定義
-type LayoutState = {
-  // 左サイドパネルの表示状態
-  leftSidePanelVisible: boolean;
-  // 右サイドパネルの表示状態と内容
-  rightSidePanelView: PanelView;
-  // モバイルで表示中のパネル（left, right, none）
-  mobileActivePanel: "left" | "right" | "none";
-  // チャンネル別のピン件数
-  pinsCountByChannel: Record<string, number>;
-};
+export type RightPanelView = Exclude<PanelView, { type: "thread" }>;
 
-const defaultLayoutState: LayoutState = {
-  leftSidePanelVisible: true,
-  mobileActivePanel: "none",
-  pinsCountByChannel: {},
-  rightSidePanelView: { type: "hidden" },
-};
+const rightPanelAtom = atom<RightPanelView>({ type: "hidden" });
 
-// レイアウト状態のAtom（ストレージ保持用と実際に利用する値を分離して、欠損プロパティを補完）
-const layoutStateStorageAtom = atomWithStorage<Partial<LayoutState>>(
-  "ui-storage:layoutState",
-  defaultLayoutState,
-);
+type ThreadRouteParams = { workspaceId: string; channelId: string; messageId: string };
 
-const layoutStateAtom = atom(
-  (get) => {
-    const stored = get(layoutStateStorageAtom);
-    return {
-      ...defaultLayoutState,
-      ...stored,
-      pinsCountByChannel: stored.pinsCountByChannel ?? defaultLayoutState.pinsCountByChannel,
-    };
-  },
-  (_get, set, update: LayoutState) => {
-    const next = {
-      ...defaultLayoutState,
-      ...update,
-    };
-    set(layoutStateStorageAtom, next);
-  },
-);
+// 開いているスレッドのルート。スレッドのルートの onEnter / onLeave が書き込む
+export const openThreadRouteAtom = atom<ThreadRouteParams | null>(null);
 
-// 個別の状態を取得するAtom
-export const leftSidePanelVisibleAtom = atom((get) => get(layoutStateAtom).leftSidePanelVisible);
+export const rightSidePanelViewAtom = atom((get) => get(rightPanelAtom));
 
-export const rightSidePanelViewAtom = atom((get) => get(layoutStateAtom).rightSidePanelView);
+// スレッドはそのチャンネルのスレッド URL へ遷移する。それ以外はスレッドを閉じてから表示する
+export const setRightSidePanelViewAtom = atom(null, (get, set, view: PanelView) => {
+  if (view.type === "thread") {
+    const workspaceId = get(currentWorkspaceIdAtom);
+    const channelId = get(currentChannelIdAtom);
+    set(rightPanelAtom, { type: "hidden" });
+    if (workspaceId !== null && channelId !== null) {
+      navigateTo({
+        params: { channelId, messageId: view.threadId, workspaceId },
+        to: "/app/$workspaceId/$channelId/thread/$messageId",
+      });
+    }
+    return;
+  }
+  set(rightPanelAtom, view);
+  const thread = get(openThreadRouteAtom);
+  if (view.type !== "hidden" && thread !== null) {
+    navigateTo({
+      params: { channelId: thread.channelId, workspaceId: thread.workspaceId },
+      to: "/app/$workspaceId/$channelId",
+    });
+  }
+});
 
-export const mobileActivePanelAtom = atom((get) => get(layoutStateAtom).mobileActivePanel);
+export const closeRightSidePanelAtom = atom(null, (_get, set) => {
+  set(rightPanelAtom, { type: "hidden" });
+});
 
-// チャンネル別ピン件数の取得
-export const pinsCountByChannelAtom = atom((get) => get(layoutStateAtom).pinsCountByChannel);
+const pinsCountAtom = atom<Record<string, number>>({});
 
-// チャンネルのピン件数を設定
+export const pinsCountByChannelAtom = atom((get) => get(pinsCountAtom));
+
 export const setChannelPinsCountAtom = atom(
   null,
-  (_get, set, payload: { channelId: string; count: number }) => {
-    const current = _get(layoutStateAtom);
-    set(layoutStateAtom, {
-      ...current,
-      pinsCountByChannel: {
-        ...current.pinsCountByChannel,
-        [payload.channelId]: payload.count,
-      },
-    });
+  (get, set, payload: { channelId: string; count: number }) => {
+    set(pinsCountAtom, { ...get(pinsCountAtom), [payload.channelId]: payload.count });
   },
 );
 
-// チャンネルのピン件数をインクリメント/デクリメント
 export const addChannelPinsDeltaAtom = atom(
   null,
-  (_get, set, payload: { channelId: string; delta: number }) => {
-    const current = _get(layoutStateAtom);
-    const prev = current.pinsCountByChannel[payload.channelId] ?? 0;
-    const next = Math.max(0, prev + payload.delta);
-    set(layoutStateAtom, {
-      ...current,
-      pinsCountByChannel: {
-        ...current.pinsCountByChannel,
-        [payload.channelId]: next,
-      },
-    });
+  (get, set, payload: { channelId: string; delta: number }) => {
+    const current = get(pinsCountAtom);
+    const next = Math.max(0, (current[payload.channelId] ?? 0) + payload.delta);
+    set(pinsCountAtom, { ...current, [payload.channelId]: next });
   },
 );
 
-// 左サイドパネルを表示する
-export const showLeftSidePanelAtom = atom(null, (_get, set) => {
-  const current = _get(layoutStateAtom);
-  set(layoutStateAtom, {
-    ...current,
-    leftSidePanelVisible: true,
-  });
-});
+export const settingsSections = [
+  "account",
+  "notifications",
+  "theme",
+  "display",
+  "shortcuts",
+] as const;
+export type SettingsSection = (typeof settingsSections)[number];
 
-// 右サイドパネルの表示内容を設定する
-export const setRightSidePanelViewAtom = atom(null, (_get, set, view: PanelView) => {
-  const current = _get(layoutStateAtom);
-  set(layoutStateAtom, {
-    ...current,
-    rightSidePanelView: view,
-  });
-});
+// 開いている設定の項目。null なら閉じている
+export const settingsSectionAtom = atom<SettingsSection | null>(null);
 
-// 右サイドパネルを閉じる
-export const closeRightSidePanelAtom = atom(null, (_get, set) => {
-  const current = _get(layoutStateAtom);
-  set(layoutStateAtom, {
-    ...current,
-    rightSidePanelView: { type: "hidden" },
-  });
-});
+// モバイルで最後に開いたボトムタブ。チャンネルなどを開いている間も下に残す
+export type MobileTab = "home" | "dms" | "activity" | "me";
+export const mobileTabAtom = atom<MobileTab>("home");
 
-// モバイルで左パネルを表示する
-export const showMobileLeftPanelAtom = atom(null, (_get, set) => {
-  const current = _get(layoutStateAtom);
-  set(layoutStateAtom, {
-    ...current,
-    mobileActivePanel: "left",
-  });
-});
-
-// モバイルで右パネルを表示する
-export const showMobileRightPanelAtom = atom(null, (_get, set) => {
-  const current = _get(layoutStateAtom);
-  set(layoutStateAtom, {
-    ...current,
-    mobileActivePanel: "right",
-  });
-});
-
-// モバイルでパネルを閉じる
-export const hideMobilePanelsAtom = atom(null, (_get, set) => {
-  const current = _get(layoutStateAtom);
-  set(layoutStateAtom, {
-    ...current,
-    mobileActivePanel: "none",
-  });
-});
+// サイドバーのセクションの折りたたみ状態。キーはセクション名
+export const collapsedSidebarSectionsAtom = atomWithStorage<Record<string, boolean>>(
+  "sidebar-collapsed",
+  {},
+);

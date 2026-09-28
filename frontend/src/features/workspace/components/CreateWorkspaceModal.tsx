@@ -1,111 +1,96 @@
 import { useState } from "react";
 
-import { Modal, TextInput, Textarea, Button, Text } from "@mantine/core";
+import { useNavigate } from "@tanstack/react-router";
+import { Form } from "react-aria-components";
+import { useTranslation } from "react-i18next";
+
+import { Button } from "#/components/ui/Button";
+import { Dialog } from "#/components/ui/Dialog";
+import { TextArea } from "#/components/ui/TextArea";
+import { TextField } from "#/components/ui/TextField";
 
 import { useCreateWorkspace } from "../hooks/useWorkspace";
 
 type CreateWorkspaceModalProps = {
-  opened: boolean;
-  onClose: () => void;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
 };
 
-// OpenAPI の CreateWorkspaceRequest.id と同じ制約
-const WORKSPACE_ID_PATTERN = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
-const WORKSPACE_ID_MIN_LENGTH = 3;
-const WORKSPACE_ID_MAX_LENGTH = 12;
+// CreateWorkspaceRequest.id と同じ制約
+const WORKSPACE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,10}[a-z0-9]$/;
+const FORM_ID = "create-workspace";
 
-const validateWorkspaceId = (value: string) => {
-  if (value.length < WORKSPACE_ID_MIN_LENGTH || value.length > WORKSPACE_ID_MAX_LENGTH) {
-    return `${WORKSPACE_ID_MIN_LENGTH}文字以上${WORKSPACE_ID_MAX_LENGTH}文字以内で入力してください`;
-  }
-  if (!WORKSPACE_ID_PATTERN.test(value)) {
-    return "小文字英数字とハイフンのみ使用できます（先頭と末尾にハイフンは使えません）";
-  }
-  return null;
-};
-
-export const CreateWorkspaceModal = ({ opened, onClose }: CreateWorkspaceModalProps) => {
+export const CreateWorkspaceModal = ({ isOpen, onOpenChange }: CreateWorkspaceModalProps) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [id, setId] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [idError, setIdError] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const createWorkspace = useCreateWorkspace();
-
-  const resetForm = () => {
-    setId("");
-    setName("");
-    setDescription("");
-    setIdError(null);
-  };
-
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const validationError = validateWorkspaceId(id);
-    if (validationError !== null) {
-      setIdError(validationError);
-      return;
-    }
-    setIdError(null);
-
-    createWorkspace.mutate(
-      { description: description || undefined, id, name },
-      {
-        onSuccess: () => {
-          resetForm();
-          onClose();
-        },
-      },
-    );
-  };
+  const idError =
+    isSubmitted && !WORKSPACE_ID_PATTERN.test(id) ? t("workspace.create.idInvalid") : undefined;
 
   return (
-    <Modal opened={opened} onClose={onClose} title="新規ワークスペース作成">
-      <form onSubmit={handleSubmit}>
-        <TextInput
-          label="ワークスペースID"
-          description="URL に使われます。小文字英数字とハイフンで3〜12文字"
-          placeholder="例: team-dev"
+    <Dialog
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title={t("workspace.create.title")}
+      footer={
+        <>
+          <Button
+            variant="secondary"
+            onPress={() => {
+              onOpenChange(false);
+            }}
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button type="submit" form={FORM_ID} isPending={createWorkspace.isPending}>
+            {t("workspace.create.submit")}
+          </Button>
+        </>
+      }
+    >
+      <Form
+        id={FORM_ID}
+        className="flex flex-col gap-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setIsSubmitted(true);
+          if (!WORKSPACE_ID_PATTERN.test(id)) {
+            return;
+          }
+          createWorkspace.mutate(
+            { description: description || undefined, id, name },
+            {
+              onSuccess: () => {
+                onOpenChange(false);
+                void navigate({ params: { workspaceId: id }, to: "/app/$workspaceId" });
+              },
+            },
+          );
+        }}
+      >
+        <TextField
+          label={t("workspace.create.id")}
+          description={t("workspace.create.idDescription")}
+          placeholder="team-dev"
           value={id}
-          onChange={(e) => {
-            setId(e.currentTarget.value);
-          }}
-          error={idError}
-          required
-          className="mb-4"
+          onChange={setId}
+          errorMessage={idError}
+          isRequired
         />
-
-        <TextInput
-          label="ワークスペース名"
-          placeholder="例: チーム開発"
-          value={name}
-          onChange={(e) => {
-            setName(e.currentTarget.value);
-          }}
-          required
-          className="mb-4"
-        />
-
-        <Textarea
-          label="説明（任意）"
-          placeholder="ワークスペースの説明を入力"
+        <TextField label={t("workspace.create.name")} value={name} onChange={setName} isRequired />
+        <TextArea
+          label={t("workspace.create.description")}
           value={description}
-          onChange={(e) => {
-            setDescription(e.currentTarget.value);
-          }}
-          className="mb-4"
+          onChange={setDescription}
         />
-
         {createWorkspace.isError && (
-          <Text c="red" size="sm" className="mb-4">
-            {createWorkspace.error.message}
-          </Text>
+          <p className="m-0 text-caption text-danger">{createWorkspace.error.message}</p>
         )}
-
-        <Button type="submit" fullWidth loading={createWorkspace.isPending}>
-          作成
-        </Button>
-      </form>
-    </Modal>
+      </Form>
+    </Dialog>
   );
 };

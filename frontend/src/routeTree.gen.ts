@@ -18,10 +18,16 @@ import { Route as AppWorkspaceIdRouteRouteImport } from "./routes/app/$workspace
 import { Route as DevUiRouteImport } from "./routes/dev/ui";
 import { Route as AppWorkspaceIdIndexRouteImport } from "./routes/app/$workspaceId/index";
 import { Route as AppWorkspaceIdChannelIdRouteImport } from "./routes/app/$workspaceId/$channelId";
+import { Route as AppWorkspaceIdActivityRouteImport } from "./routes/app/$workspaceId/activity";
 import { Route as AppWorkspaceIdAdminRouteImport } from "./routes/app/$workspaceId/admin";
+import { Route as AppWorkspaceIdBookmarksRouteImport } from "./routes/app/$workspaceId/bookmarks";
+import { Route as AppWorkspaceIdDmsRouteImport } from "./routes/app/$workspaceId/dms";
 import { Route as AppWorkspaceIdInsightsRouteImport } from "./routes/app/$workspaceId/insights";
+import { Route as AppWorkspaceIdMeRouteImport } from "./routes/app/$workspaceId/me";
+import { Route as AppWorkspaceIdMentionsRouteImport } from "./routes/app/$workspaceId/mentions";
 import { Route as AppWorkspaceIdSearchRouteImport } from "./routes/app/$workspaceId/search";
 import { Route as AppWorkspaceIdThreadsRouteImport } from "./routes/app/$workspaceId/threads";
+import { Route as AppWorkspaceIdChannelIdThreadMessageIdRouteImport } from "./routes/app/$workspaceId/$channelId/thread/$messageId";
 
 const IndexRoute = IndexRouteImport.update({
   id: "/",
@@ -68,14 +74,39 @@ const AppWorkspaceIdChannelIdRoute = AppWorkspaceIdChannelIdRouteImport.update({
   path: "/$channelId",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
+const AppWorkspaceIdActivityRoute = AppWorkspaceIdActivityRouteImport.update({
+  id: "/activity",
+  path: "/activity",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
 const AppWorkspaceIdAdminRoute = AppWorkspaceIdAdminRouteImport.update({
   id: "/admin",
   path: "/admin",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
+const AppWorkspaceIdBookmarksRoute = AppWorkspaceIdBookmarksRouteImport.update({
+  id: "/bookmarks",
+  path: "/bookmarks",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
+const AppWorkspaceIdDmsRoute = AppWorkspaceIdDmsRouteImport.update({
+  id: "/dms",
+  path: "/dms",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
 const AppWorkspaceIdInsightsRoute = AppWorkspaceIdInsightsRouteImport.update({
   id: "/insights",
   path: "/insights",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
+const AppWorkspaceIdMeRoute = AppWorkspaceIdMeRouteImport.update({
+  id: "/me",
+  path: "/me",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
+const AppWorkspaceIdMentionsRoute = AppWorkspaceIdMentionsRouteImport.update({
+  id: "/mentions",
+  path: "/mentions",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
 const AppWorkspaceIdSearchRoute = AppWorkspaceIdSearchRouteImport.update({
@@ -88,6 +119,12 @@ const AppWorkspaceIdThreadsRoute = AppWorkspaceIdThreadsRouteImport.update({
   path: "/threads",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
+const AppWorkspaceIdChannelIdThreadMessageIdRoute =
+  AppWorkspaceIdChannelIdThreadMessageIdRouteImport.update({
+    id: "/thread/$messageId",
+    path: "/thread/$messageId",
+    getParentRoute: () => AppWorkspaceIdChannelIdRoute,
+  } as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
@@ -97,12 +134,18 @@ export interface FileRoutesByFullPath {
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
   "/dev/ui": typeof DevUiRoute;
   "/app/": typeof AppIndexRoute;
-  "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
+  "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
+  "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
+  "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
+  "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
+  "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
+  "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
+  "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
@@ -110,12 +153,18 @@ export interface FileRoutesByTo {
   "/register": typeof RegisterRoute;
   "/dev/ui": typeof DevUiRoute;
   "/app": typeof AppIndexRoute;
-  "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
+  "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
+  "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
+  "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
+  "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
+  "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
+  "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdIndexRoute;
+  "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -126,12 +175,18 @@ export interface FileRoutesById {
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
   "/dev/ui": typeof DevUiRoute;
   "/app/": typeof AppIndexRoute;
-  "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
+  "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
+  "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
+  "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
+  "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
+  "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
+  "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
+  "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -144,11 +199,17 @@ export interface FileRouteTypes {
     | "/dev/ui"
     | "/app/"
     | "/app/$workspaceId/$channelId"
+    | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
+    | "/app/$workspaceId/bookmarks"
+    | "/app/$workspaceId/dms"
     | "/app/$workspaceId/insights"
+    | "/app/$workspaceId/me"
+    | "/app/$workspaceId/mentions"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
-    | "/app/$workspaceId/";
+    | "/app/$workspaceId/"
+    | "/app/$workspaceId/$channelId/thread/$messageId";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
@@ -157,11 +218,17 @@ export interface FileRouteTypes {
     | "/dev/ui"
     | "/app"
     | "/app/$workspaceId/$channelId"
+    | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
+    | "/app/$workspaceId/bookmarks"
+    | "/app/$workspaceId/dms"
     | "/app/$workspaceId/insights"
+    | "/app/$workspaceId/me"
+    | "/app/$workspaceId/mentions"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
-    | "/app/$workspaceId";
+    | "/app/$workspaceId"
+    | "/app/$workspaceId/$channelId/thread/$messageId";
   id:
     | "__root__"
     | "/"
@@ -172,11 +239,17 @@ export interface FileRouteTypes {
     | "/dev/ui"
     | "/app/"
     | "/app/$workspaceId/$channelId"
+    | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
+    | "/app/$workspaceId/bookmarks"
+    | "/app/$workspaceId/dms"
     | "/app/$workspaceId/insights"
+    | "/app/$workspaceId/me"
+    | "/app/$workspaceId/mentions"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
-    | "/app/$workspaceId/";
+    | "/app/$workspaceId/"
+    | "/app/$workspaceId/$channelId/thread/$messageId";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -252,6 +325,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdChannelIdRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
+    "/app/$workspaceId/activity": {
+      id: "/app/$workspaceId/activity";
+      path: "/activity";
+      fullPath: "/app/$workspaceId/activity";
+      preLoaderRoute: typeof AppWorkspaceIdActivityRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
     "/app/$workspaceId/admin": {
       id: "/app/$workspaceId/admin";
       path: "/admin";
@@ -259,11 +339,39 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdAdminRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
+    "/app/$workspaceId/bookmarks": {
+      id: "/app/$workspaceId/bookmarks";
+      path: "/bookmarks";
+      fullPath: "/app/$workspaceId/bookmarks";
+      preLoaderRoute: typeof AppWorkspaceIdBookmarksRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
+    "/app/$workspaceId/dms": {
+      id: "/app/$workspaceId/dms";
+      path: "/dms";
+      fullPath: "/app/$workspaceId/dms";
+      preLoaderRoute: typeof AppWorkspaceIdDmsRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
     "/app/$workspaceId/insights": {
       id: "/app/$workspaceId/insights";
       path: "/insights";
       fullPath: "/app/$workspaceId/insights";
       preLoaderRoute: typeof AppWorkspaceIdInsightsRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
+    "/app/$workspaceId/me": {
+      id: "/app/$workspaceId/me";
+      path: "/me";
+      fullPath: "/app/$workspaceId/me";
+      preLoaderRoute: typeof AppWorkspaceIdMeRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
+    "/app/$workspaceId/mentions": {
+      id: "/app/$workspaceId/mentions";
+      path: "/mentions";
+      fullPath: "/app/$workspaceId/mentions";
+      preLoaderRoute: typeof AppWorkspaceIdMentionsRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
     "/app/$workspaceId/search": {
@@ -280,22 +388,54 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdThreadsRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
+    "/app/$workspaceId/$channelId/thread/$messageId": {
+      id: "/app/$workspaceId/$channelId/thread/$messageId";
+      path: "/thread/$messageId";
+      fullPath: "/app/$workspaceId/$channelId/thread/$messageId";
+      preLoaderRoute: typeof AppWorkspaceIdChannelIdThreadMessageIdRouteImport;
+      parentRoute: typeof AppWorkspaceIdChannelIdRoute;
+    };
   }
 }
 
+interface AppWorkspaceIdChannelIdRouteChildren {
+  AppWorkspaceIdChannelIdThreadMessageIdRoute: typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
+}
+
+const AppWorkspaceIdChannelIdRouteChildren: AppWorkspaceIdChannelIdRouteChildren =
+  {
+    AppWorkspaceIdChannelIdThreadMessageIdRoute:
+      AppWorkspaceIdChannelIdThreadMessageIdRoute,
+  };
+
+const AppWorkspaceIdChannelIdRouteWithChildren =
+  AppWorkspaceIdChannelIdRoute._addFileChildren(
+    AppWorkspaceIdChannelIdRouteChildren,
+  );
+
 interface AppWorkspaceIdRouteRouteChildren {
-  AppWorkspaceIdChannelIdRoute: typeof AppWorkspaceIdChannelIdRoute;
+  AppWorkspaceIdChannelIdRoute: typeof AppWorkspaceIdChannelIdRouteWithChildren;
+  AppWorkspaceIdActivityRoute: typeof AppWorkspaceIdActivityRoute;
   AppWorkspaceIdAdminRoute: typeof AppWorkspaceIdAdminRoute;
+  AppWorkspaceIdBookmarksRoute: typeof AppWorkspaceIdBookmarksRoute;
+  AppWorkspaceIdDmsRoute: typeof AppWorkspaceIdDmsRoute;
   AppWorkspaceIdInsightsRoute: typeof AppWorkspaceIdInsightsRoute;
+  AppWorkspaceIdMeRoute: typeof AppWorkspaceIdMeRoute;
+  AppWorkspaceIdMentionsRoute: typeof AppWorkspaceIdMentionsRoute;
   AppWorkspaceIdSearchRoute: typeof AppWorkspaceIdSearchRoute;
   AppWorkspaceIdThreadsRoute: typeof AppWorkspaceIdThreadsRoute;
   AppWorkspaceIdIndexRoute: typeof AppWorkspaceIdIndexRoute;
 }
 
 const AppWorkspaceIdRouteRouteChildren: AppWorkspaceIdRouteRouteChildren = {
-  AppWorkspaceIdChannelIdRoute: AppWorkspaceIdChannelIdRoute,
+  AppWorkspaceIdChannelIdRoute: AppWorkspaceIdChannelIdRouteWithChildren,
+  AppWorkspaceIdActivityRoute: AppWorkspaceIdActivityRoute,
   AppWorkspaceIdAdminRoute: AppWorkspaceIdAdminRoute,
+  AppWorkspaceIdBookmarksRoute: AppWorkspaceIdBookmarksRoute,
+  AppWorkspaceIdDmsRoute: AppWorkspaceIdDmsRoute,
   AppWorkspaceIdInsightsRoute: AppWorkspaceIdInsightsRoute,
+  AppWorkspaceIdMeRoute: AppWorkspaceIdMeRoute,
+  AppWorkspaceIdMentionsRoute: AppWorkspaceIdMentionsRoute,
   AppWorkspaceIdSearchRoute: AppWorkspaceIdSearchRoute,
   AppWorkspaceIdThreadsRoute: AppWorkspaceIdThreadsRoute,
   AppWorkspaceIdIndexRoute: AppWorkspaceIdIndexRoute,

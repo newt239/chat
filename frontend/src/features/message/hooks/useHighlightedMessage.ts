@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useSearch } from "@tanstack/react-router";
+import { useParams, useSearch } from "@tanstack/react-router";
 
 const HIGHLIGHT_DURATION_MS = 3_000;
 
 /** ?message=<id> で指定されたメッセージへスクロールし、一定時間ハイライトする。 対象が描画された時点で ref が渡るため、ref コールバックでスクロールする。 */
 export const useHighlightedMessage = (isReady: boolean) => {
-  const targetMessageId = useSearch({
+  // スレッドを開いているときの ?message= はスレッドの返信を指すため、チャンネルでは扱わない
+  const isThreadOpen = useParams({
+    select: (params) => params.messageId !== undefined,
+    strict: false,
+  });
+  const message = useSearch({
     from: "/app/$workspaceId/$channelId",
     select: (search) => search.message ?? null,
   });
+  const targetMessageId = isThreadOpen ? null : message;
 
   const [isHighlightExpired, setIsHighlightExpired] = useState(false);
   const scrolledMessageIdRef = useRef<string | null>(null);

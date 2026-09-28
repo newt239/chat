@@ -1,75 +1,27 @@
-import { Text, UnstyledButton } from "@mantine/core";
-import { IconUser, IconUsers } from "@tabler/icons-react";
-import { Link, useParams } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
-import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
+import { Skeleton } from "#/components/ui/Skeleton";
 
 import { useDMs } from "../hooks/useDM";
-
-import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
-
-const getDMDisplayName = (dm: DirectMessage) => {
-  if (dm.type === DirectMessageType.DM) {
-    const [otherMember] = dm.members;
-    return otherMember?.displayName || "不明なユーザー";
-  }
-  return dm.name || `グループDM (${dm.members.length}人)`;
-};
+import { DMRow } from "./DMRow";
 
 type DMListProps = {
   workspaceId: string;
 };
 
 export const DMList = ({ workspaceId }: DMListProps) => {
-  const { channelId } = useParams({ strict: false });
+  const { t } = useTranslation();
   const { data: dms, isLoading } = useDMs(workspaceId);
 
   if (isLoading) {
-    return (
-      <div className="px-3 py-2">
-        <Text size="sm" c="dimmed">
-          読み込み中...
-        </Text>
-      </div>
-    );
+    return <Skeleton className="mx-2 my-1 h-4 w-28 bg-(--nav-hover)" />;
   }
 
   if (!dms || dms.length === 0) {
     return (
-      <div className="px-3 py-2">
-        <Text size="sm" c="dimmed">
-          DMがありません
-        </Text>
-      </div>
+      <p className="m-0 px-2 py-1 text-caption text-(--nav-muted)">{t("shell.sidebar.noDMs")}</p>
     );
   }
 
-  return (
-    <div className="space-y-0.5">
-      {dms.map((dm) => {
-        const isActive = channelId === dm.id;
-        const displayName = getDMDisplayName(dm);
-
-        return (
-          <Link
-            key={dm.id}
-            to="/app/$workspaceId/$channelId"
-            params={{ channelId: dm.id, workspaceId }}
-            className="block no-underline"
-          >
-            <UnstyledButton
-              className={`w-full px-3 py-1.5 rounded-md flex items-center space-x-2 transition-colors ${
-                isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {dm.type === DirectMessageType.DM ? <IconUser size={16} /> : <IconUsers size={16} />}
-              <Text size="sm" truncate className="flex-1">
-                {displayName}
-              </Text>
-            </UnstyledButton>
-          </Link>
-        );
-      })}
-    </div>
-  );
+  return dms.map((dm) => <DMRow key={dm.id} workspaceId={workspaceId} dm={dm} />);
 };

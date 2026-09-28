@@ -53,7 +53,6 @@ export const insights = {
   loadFailed: "インサイトを読み込めませんでした",
   note: "メンバー別の内訳や監査ログは管理者向けの管理画面にあります。",
   openAdmin: "管理画面を開く",
-  subtitle: "ワークスペース全体の主な数字です。メンバー全員が見られます",
   table: {
     active: "アクティブ",
     category: "種類",

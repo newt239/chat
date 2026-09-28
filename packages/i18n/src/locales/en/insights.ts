@@ -55,7 +55,6 @@ export const insights: Messages["insights"] = {
   loadFailed: "Couldn't load insights",
   note: "Per-member breakdowns and the audit log are in the admin console.",
   openAdmin: "Open admin",
-  subtitle: "Key numbers for the whole workspace. Everyone can see them",
   table: {
     active: "Active",
     category: "Type",

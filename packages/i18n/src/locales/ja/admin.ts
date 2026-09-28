@@ -121,7 +121,6 @@ export const admin = {
     toggle: "{{role}}: {{permission}}",
     updated: "権限を変更しました",
   },
-  subtitle: "管理者とオーナーだけが見られます",
   tabs: {
     audit: "監査ログ",
     label: "管理画面のタブ",

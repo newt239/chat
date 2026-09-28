@@ -1,143 +1,36 @@
-import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { Badge, Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/core";
-import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue, useSetAtom } from "jotai";
-
-import { useNotificationSync } from "#/features/notification/hooks/useNotificationSync";
-import { currentChannelIdAtom, setCurrentChannelAtom } from "#/providers/store/workspace";
+import { Skeleton } from "#/components/ui/Skeleton";
 
 import { useChannels } from "../hooks/useChannel";
-import { useChannelRealtimeSync } from "../hooks/useChannelRealtimeSync";
-import { ChannelName } from "./ChannelName";
-import { CreateChannelModal } from "./CreateChannelModal";
+import { ChannelRow } from "./ChannelRow";
 
 type ChannelListProps = {
-  workspaceId: string | null;
+  workspaceId: string;
 };
 
+// 参加中のチャンネルを名前順に並べる。階層のツリー表示は #13 でこの一覧を置き換える
 export const ChannelList = ({ workspaceId }: ChannelListProps) => {
-  const currentChannelId = useAtomValue(currentChannelIdAtom);
-  const setCurrentChannel = useSetAtom(setCurrentChannelAtom);
-  const { data: channels, isLoading, isError, error } = useChannels(workspaceId);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
-
-  useChannelRealtimeSync(workspaceId, currentChannelId);
-  useNotificationSync(workspaceId, currentChannelId);
-
-  const handleChannelClick = (channelId: string) => {
-    if (workspaceId) {
-      setCurrentChannel(channelId);
-      void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
-    }
-  };
-
-  useEffect(() => {
-    if (channels && channels.length > 0 && currentChannelId === null) {
-      const [firstChannel] = channels;
-      if (firstChannel) {
-        setCurrentChannel(firstChannel.id);
-      }
-    }
-  }, [channels, currentChannelId, setCurrentChannel]);
-
-  if (workspaceId === null) {
-    return (
-      <Card withBorder padding="lg">
-        <Text c="dimmed" size="sm">
-          ワークスペースを選択するとチャンネルが表示されます
-        </Text>
-      </Card>
-    );
-  }
+  const { t } = useTranslation();
+  const { data: channels, isLoading } = useChannels(workspaceId);
 
   if (isLoading) {
+    return <Skeleton className="mx-2 my-1 h-4 w-32 bg-(--nav-hover)" />;
+  }
+
+  const joined = (channels ?? [])
+    .filter((channel) => channel.isMember)
+    .toSorted((a, b) => a.name.localeCompare(b.name));
+
+  if (joined.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader size="sm" />
-      </div>
+      <p className="m-0 px-2 py-1 text-caption text-(--nav-muted)">
+        {t("shell.sidebar.noChannels")}
+      </p>
     );
   }
 
-  if (isError) {
-    return (
-      <Text c="red" size="sm">
-        {error.message}
-      </Text>
-    );
-  }
-
-  return (
-    <>
-      <Stack gap="sm" className="p-2">
-        {channels && channels.length > 0 ? (
-          <ScrollArea h={320} type="auto">
-            <Stack gap={4}>
-              {channels.map((channel) => {
-                const isSelected = channel.id === currentChannelId;
-                const { unreadCount } = channel;
-                const hasUnread = unreadCount > 0;
-
-                return (
-                  <Button
-                    key={channel.id}
-                    variant={isSelected ? "filled" : "light"}
-                    justify="flex-start"
-                    onClick={() => {
-                      handleChannelClick(channel.id);
-                    }}
-                    className="relative"
-                    classNames={{
-                      label: "w-full flex items-center justify-between",
-                    }}
-                  >
-                    <ChannelName
-                      name={channel.name}
-                      isPrivate={channel.isPrivate}
-                      isBold={hasUnread}
-                    />
-                    <div className="flex items-center gap-1">
-                      {hasUnread ? (
-                        <Badge
-                          color={channel.hasMention ? "red" : "blue"}
-                          size="xs"
-                          className="flex items-center justify-center"
-                        >
-                          {unreadCount > 99 ? "99+" : unreadCount}
-                        </Badge>
-                      ) : null}
-                    </div>
-                  </Button>
-                );
-              })}
-            </Stack>
-          </ScrollArea>
-        ) : (
-          <Card withBorder padding="md">
-            <Text c="dimmed" size="sm">
-              チャンネルがありません
-            </Text>
-            <Button
-              mt="md"
-              size="xs"
-              onClick={() => {
-                setIsModalOpen(true);
-              }}
-            >
-              最初のチャンネルを作成
-            </Button>
-          </Card>
-        )}
-      </Stack>
-
-      <CreateChannelModal
-        workspaceId={workspaceId}
-        opened={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-        }}
-      />
-    </>
-  );
+  return joined.map((channel) => (
+    <ChannelRow key={channel.id} workspaceId={workspaceId} channel={channel} />
+  ));
 };
