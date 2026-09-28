@@ -43,6 +43,9 @@ export class WsClient {
   private readonly workspaceId: string;
   private readonly bc: BroadcastChannel;
   private isActiveLeader = false;
+  // 同じチャンネルを複数の画面が購読するため参照数で持ち、再接続時に送り直す
+  private readonly joinedChannels = new Map<string, number>();
+  private viewingChannelId = "";
 
   private readonly handlers: {
     [K in WsEventType]: Set<(payload: WsEventPayload<K>) => void>;
@@ -124,6 +127,10 @@ export class WsClient {
         this.emit(oneof.case, oneof.value);
         break;
       }
+      case "channelViewers": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
       case "ack": {
         this.emit(oneof.case, oneof.value);
         break;
@@ -187,6 +194,12 @@ export class WsClient {
     this.reconnectAttempts = 0;
     this.reconnectDelay = WS_RECONNECT_DELAY;
     this.shouldStopReconnecting = false;
+    for (const channelId of this.joinedChannels.keys()) {
+      this.send({ case: "joinChannel", value: { channelId } });
+    }
+    if (this.viewingChannelId !== "") {
+      this.send({ case: "viewChannel", value: { channelId: this.viewingChannelId } });
+    }
   };
 
   private readonly onClose = (event: CloseEvent) => {
@@ -294,10 +307,25 @@ export class WsClient {
   }
 
   public joinChannel(channelId: string) {
-    this.send({ case: "joinChannel", value: { channelId } });
+    const count = this.joinedChannels.get(channelId) ?? 0;
+    this.joinedChannels.set(channelId, count + 1);
+    if (count === 0) {
+      this.send({ case: "joinChannel", value: { channelId } });
+    }
   }
   public leaveChannel(channelId: string) {
+    const count = this.joinedChannels.get(channelId) ?? 0;
+    if (count > 1) {
+      this.joinedChannels.set(channelId, count - 1);
+      return;
+    }
+    this.joinedChannels.delete(channelId);
     this.send({ case: "leaveChannel", value: { channelId } });
+  }
+  /** 閲覧中のチャンネルを通知する。空文字で閲覧をやめる */
+  public viewChannel(channelId: string) {
+    this.viewingChannelId = channelId;
+    this.send({ case: "viewChannel", value: { channelId } });
   }
   public typing(channelId: string) {
     this.send({ case: "typing", value: { channelId } });
