@@ -21,6 +21,10 @@ const (
 	FieldExpiresAt = "expires_at"
 	// FieldRevokedAt holds the string denoting the revoked_at field in the database.
 	FieldRevokedAt = "revoked_at"
+	// FieldIPAddress holds the string denoting the ip_address field in the database.
+	FieldIPAddress = "ip_address"
+	// FieldUserAgent holds the string denoting the user_agent field in the database.
+	FieldUserAgent = "user_agent"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -42,6 +46,8 @@ var Columns = []string{
 	FieldRefreshTokenHash,
 	FieldExpiresAt,
 	FieldRevokedAt,
+	FieldIPAddress,
+	FieldUserAgent,
 	FieldCreatedAt,
 }
 
@@ -69,6 +75,10 @@ func ValidColumn(column string) bool {
 var (
 	// RefreshTokenHashValidator is a validator for the "refresh_token_hash" field. It is called by the builders before save.
 	RefreshTokenHashValidator func(string) error
+	// DefaultIPAddress holds the default value on creation for the "ip_address" field.
+	DefaultIPAddress string
+	// DefaultUserAgent holds the default value on creation for the "user_agent" field.
+	DefaultUserAgent string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -96,6 +106,16 @@ func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
 // ByRevokedAt orders the results by the revoked_at field.
 func ByRevokedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRevokedAt, opts...).ToFunc()
+}
+
+// ByIPAddress orders the results by the ip_address field.
+func ByIPAddress(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIPAddress, opts...).ToFunc()
+}
+
+// ByUserAgent orders the results by the user_agent field.
+func ByUserAgent(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserAgent, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

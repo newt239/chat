@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/newt239/chat/ent/attachment"
+	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelreadstate"
@@ -36,6 +37,9 @@ import (
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
+	"github.com/newt239/chat/ent/workspacepermission"
+
+	stdsql "database/sql"
 )
 
 // Client is the client that holds all ent builders.
@@ -45,6 +49,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
+	// AuditLog is the client for interacting with the AuditLog builders.
+	AuditLog *AuditLogClient
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
@@ -83,6 +89,8 @@ type Client struct {
 	Workspace *WorkspaceClient
 	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
 	WorkspaceMember *WorkspaceMemberClient
+	// WorkspacePermission is the client for interacting with the WorkspacePermission builders.
+	WorkspacePermission *WorkspacePermissionClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -95,6 +103,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Attachment = NewAttachmentClient(c.config)
+	c.AuditLog = NewAuditLogClient(c.config)
 	c.Channel = NewChannelClient(c.config)
 	c.ChannelMember = NewChannelMemberClient(c.config)
 	c.ChannelReadState = NewChannelReadStateClient(c.config)
@@ -114,6 +123,7 @@ func (c *Client) init() {
 	c.UserThreadFollow = NewUserThreadFollowClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
 	c.WorkspaceMember = NewWorkspaceMemberClient(c.config)
+	c.WorkspacePermission = NewWorkspacePermissionClient(c.config)
 }
 
 type (
@@ -207,6 +217,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                 ctx,
 		config:              cfg,
 		Attachment:          NewAttachmentClient(cfg),
+		AuditLog:            NewAuditLogClient(cfg),
 		Channel:             NewChannelClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
@@ -226,6 +237,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
+		WorkspacePermission: NewWorkspacePermissionClient(cfg),
 	}, nil
 }
 
@@ -246,6 +258,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                 ctx,
 		config:              cfg,
 		Attachment:          NewAttachmentClient(cfg),
+		AuditLog:            NewAuditLogClient(cfg),
 		Channel:             NewChannelClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
@@ -265,6 +278,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
+		WorkspacePermission: NewWorkspacePermissionClient(cfg),
 	}, nil
 }
 
@@ -294,11 +308,11 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
-		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserThreadFollow,
-		c.Workspace, c.WorkspaceMember,
+		c.Attachment, c.AuditLog, c.Channel, c.ChannelMember, c.ChannelReadState,
+		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.Session,
+		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
+		c.UserThreadFollow, c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
 	}
@@ -308,11 +322,11 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
-		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserThreadFollow,
-		c.Workspace, c.WorkspaceMember,
+		c.Attachment, c.AuditLog, c.Channel, c.ChannelMember, c.ChannelReadState,
+		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.Session,
+		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
+		c.UserThreadFollow, c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -323,6 +337,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AttachmentMutation:
 		return c.Attachment.mutate(ctx, m)
+	case *AuditLogMutation:
+		return c.AuditLog.mutate(ctx, m)
 	case *ChannelMutation:
 		return c.Channel.mutate(ctx, m)
 	case *ChannelMemberMutation:
@@ -361,6 +377,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Workspace.mutate(ctx, m)
 	case *WorkspaceMemberMutation:
 		return c.WorkspaceMember.mutate(ctx, m)
+	case *WorkspacePermissionMutation:
+		return c.WorkspacePermission.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -544,6 +562,139 @@ func (c *AttachmentClient) mutate(ctx context.Context, m *AttachmentMutation) (V
 		return (&AttachmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Attachment mutation op: %q", m.Op())
+	}
+}
+
+// AuditLogClient is a client for the AuditLog schema.
+type AuditLogClient struct {
+	config
+}
+
+// NewAuditLogClient returns a client for the AuditLog from the given config.
+func NewAuditLogClient(c config) *AuditLogClient {
+	return &AuditLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `auditlog.Hooks(f(g(h())))`.
+func (c *AuditLogClient) Use(hooks ...Hook) {
+	c.hooks.AuditLog = append(c.hooks.AuditLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `auditlog.Intercept(f(g(h())))`.
+func (c *AuditLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AuditLog = append(c.inters.AuditLog, interceptors...)
+}
+
+// Create returns a builder for creating a AuditLog entity.
+func (c *AuditLogClient) Create() *AuditLogCreate {
+	mutation := newAuditLogMutation(c.config, OpCreate)
+	return &AuditLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AuditLog entities.
+func (c *AuditLogClient) CreateBulk(builders ...*AuditLogCreate) *AuditLogCreateBulk {
+	return &AuditLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AuditLogClient) MapCreateBulk(slice any, setFunc func(*AuditLogCreate, int)) *AuditLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AuditLogCreateBulk{err: fmt.Errorf("calling to AuditLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AuditLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AuditLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AuditLog.
+func (c *AuditLogClient) Update() *AuditLogUpdate {
+	mutation := newAuditLogMutation(c.config, OpUpdate)
+	return &AuditLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AuditLogClient) UpdateOne(_m *AuditLog) *AuditLogUpdateOne {
+	mutation := newAuditLogMutation(c.config, OpUpdateOne, withAuditLog(_m))
+	return &AuditLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AuditLogClient) UpdateOneID(id uuid.UUID) *AuditLogUpdateOne {
+	mutation := newAuditLogMutation(c.config, OpUpdateOne, withAuditLogID(id))
+	return &AuditLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AuditLog.
+func (c *AuditLogClient) Delete() *AuditLogDelete {
+	mutation := newAuditLogMutation(c.config, OpDelete)
+	return &AuditLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AuditLogClient) DeleteOne(_m *AuditLog) *AuditLogDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AuditLogClient) DeleteOneID(id uuid.UUID) *AuditLogDeleteOne {
+	builder := c.Delete().Where(auditlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AuditLogDeleteOne{builder}
+}
+
+// Query returns a query builder for AuditLog.
+func (c *AuditLogClient) Query() *AuditLogQuery {
+	return &AuditLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAuditLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AuditLog entity by its id.
+func (c *AuditLogClient) Get(ctx context.Context, id uuid.UUID) (*AuditLog, error) {
+	return c.Query().Where(auditlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AuditLogClient) GetX(ctx context.Context, id uuid.UUID) *AuditLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AuditLogClient) Hooks() []Hook {
+	return c.hooks.AuditLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *AuditLogClient) Interceptors() []Interceptor {
+	return c.inters.AuditLog
+}
+
+func (c *AuditLogClient) mutate(ctx context.Context, m *AuditLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AuditLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AuditLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AuditLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AuditLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AuditLog mutation op: %q", m.Op())
 	}
 }
 
@@ -4130,18 +4281,177 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 	}
 }
 
+// WorkspacePermissionClient is a client for the WorkspacePermission schema.
+type WorkspacePermissionClient struct {
+	config
+}
+
+// NewWorkspacePermissionClient returns a client for the WorkspacePermission from the given config.
+func NewWorkspacePermissionClient(c config) *WorkspacePermissionClient {
+	return &WorkspacePermissionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `workspacepermission.Hooks(f(g(h())))`.
+func (c *WorkspacePermissionClient) Use(hooks ...Hook) {
+	c.hooks.WorkspacePermission = append(c.hooks.WorkspacePermission, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `workspacepermission.Intercept(f(g(h())))`.
+func (c *WorkspacePermissionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WorkspacePermission = append(c.inters.WorkspacePermission, interceptors...)
+}
+
+// Create returns a builder for creating a WorkspacePermission entity.
+func (c *WorkspacePermissionClient) Create() *WorkspacePermissionCreate {
+	mutation := newWorkspacePermissionMutation(c.config, OpCreate)
+	return &WorkspacePermissionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WorkspacePermission entities.
+func (c *WorkspacePermissionClient) CreateBulk(builders ...*WorkspacePermissionCreate) *WorkspacePermissionCreateBulk {
+	return &WorkspacePermissionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *WorkspacePermissionClient) MapCreateBulk(slice any, setFunc func(*WorkspacePermissionCreate, int)) *WorkspacePermissionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &WorkspacePermissionCreateBulk{err: fmt.Errorf("calling to WorkspacePermissionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*WorkspacePermissionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &WorkspacePermissionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WorkspacePermission.
+func (c *WorkspacePermissionClient) Update() *WorkspacePermissionUpdate {
+	mutation := newWorkspacePermissionMutation(c.config, OpUpdate)
+	return &WorkspacePermissionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WorkspacePermissionClient) UpdateOne(_m *WorkspacePermission) *WorkspacePermissionUpdateOne {
+	mutation := newWorkspacePermissionMutation(c.config, OpUpdateOne, withWorkspacePermission(_m))
+	return &WorkspacePermissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WorkspacePermissionClient) UpdateOneID(id uuid.UUID) *WorkspacePermissionUpdateOne {
+	mutation := newWorkspacePermissionMutation(c.config, OpUpdateOne, withWorkspacePermissionID(id))
+	return &WorkspacePermissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WorkspacePermission.
+func (c *WorkspacePermissionClient) Delete() *WorkspacePermissionDelete {
+	mutation := newWorkspacePermissionMutation(c.config, OpDelete)
+	return &WorkspacePermissionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WorkspacePermissionClient) DeleteOne(_m *WorkspacePermission) *WorkspacePermissionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WorkspacePermissionClient) DeleteOneID(id uuid.UUID) *WorkspacePermissionDeleteOne {
+	builder := c.Delete().Where(workspacepermission.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WorkspacePermissionDeleteOne{builder}
+}
+
+// Query returns a query builder for WorkspacePermission.
+func (c *WorkspacePermissionClient) Query() *WorkspacePermissionQuery {
+	return &WorkspacePermissionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWorkspacePermission},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WorkspacePermission entity by its id.
+func (c *WorkspacePermissionClient) Get(ctx context.Context, id uuid.UUID) (*WorkspacePermission, error) {
+	return c.Query().Where(workspacepermission.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WorkspacePermissionClient) GetX(ctx context.Context, id uuid.UUID) *WorkspacePermission {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WorkspacePermissionClient) Hooks() []Hook {
+	return c.hooks.WorkspacePermission
+}
+
+// Interceptors returns the client interceptors.
+func (c *WorkspacePermissionClient) Interceptors() []Interceptor {
+	return c.inters.WorkspacePermission
+}
+
+func (c *WorkspacePermissionClient) mutate(ctx context.Context, m *WorkspacePermissionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WorkspacePermissionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WorkspacePermissionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WorkspacePermissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WorkspacePermissionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WorkspacePermission mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		Attachment, AuditLog, Channel, ChannelMember, ChannelReadState, Message,
+		MessageBookmark, MessageGroupMention, MessageLink, MessagePin, MessageReaction,
 		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember []ent.Hook
+		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember,
+		WorkspacePermission []ent.Hook
 	}
 	inters struct {
-		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		Attachment, AuditLog, Channel, ChannelMember, ChannelReadState, Message,
+		MessageBookmark, MessageGroupMention, MessageLink, MessagePin, MessageReaction,
 		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember []ent.Interceptor
+		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember,
+		WorkspacePermission []ent.Interceptor
 	}
 )
+
+// ExecContext allows calling the underlying ExecContext method of the driver if it is supported by it.
+// See, database/sql#DB.ExecContext for more information.
+func (c *config) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+	ex, ok := c.driver.(interface {
+		ExecContext(context.Context, string, ...any) (stdsql.Result, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.ExecContext is not supported")
+	}
+	return ex.ExecContext(ctx, query, args...)
+}
+
+// QueryContext allows calling the underlying QueryContext method of the driver if it is supported by it.
+// See, database/sql#DB.QueryContext for more information.
+func (c *config) QueryContext(ctx context.Context, query string, args ...any) (*stdsql.Rows, error) {
+	q, ok := c.driver.(interface {
+		QueryContext(context.Context, string, ...any) (*stdsql.Rows, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.QueryContext is not supported")
+	}
+	return q.QueryContext(ctx, query, args...)
+}

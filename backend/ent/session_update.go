@@ -78,6 +78,34 @@ func (_u *SessionUpdate) ClearRevokedAt() *SessionUpdate {
 	return _u
 }
 
+// SetIPAddress sets the "ip_address" field.
+func (_u *SessionUpdate) SetIPAddress(v string) *SessionUpdate {
+	_u.mutation.SetIPAddress(v)
+	return _u
+}
+
+// SetNillableIPAddress sets the "ip_address" field if the given value is not nil.
+func (_u *SessionUpdate) SetNillableIPAddress(v *string) *SessionUpdate {
+	if v != nil {
+		_u.SetIPAddress(*v)
+	}
+	return _u
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (_u *SessionUpdate) SetUserAgent(v string) *SessionUpdate {
+	_u.mutation.SetUserAgent(v)
+	return _u
+}
+
+// SetNillableUserAgent sets the "user_agent" field if the given value is not nil.
+func (_u *SessionUpdate) SetNillableUserAgent(v *string) *SessionUpdate {
+	if v != nil {
+		_u.SetUserAgent(*v)
+	}
+	return _u
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (_u *SessionUpdate) SetUserID(id uuid.UUID) *SessionUpdate {
 	_u.mutation.SetUserID(id)
@@ -163,6 +191,12 @@ func (_u *SessionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.RevokedAtCleared() {
 		_spec.ClearField(session.FieldRevokedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.IPAddress(); ok {
+		_spec.SetField(session.FieldIPAddress, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.UserAgent(); ok {
+		_spec.SetField(session.FieldUserAgent, field.TypeString, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -258,6 +292,34 @@ func (_u *SessionUpdateOne) SetNillableRevokedAt(v *time.Time) *SessionUpdateOne
 // ClearRevokedAt clears the value of the "revoked_at" field.
 func (_u *SessionUpdateOne) ClearRevokedAt() *SessionUpdateOne {
 	_u.mutation.ClearRevokedAt()
+	return _u
+}
+
+// SetIPAddress sets the "ip_address" field.
+func (_u *SessionUpdateOne) SetIPAddress(v string) *SessionUpdateOne {
+	_u.mutation.SetIPAddress(v)
+	return _u
+}
+
+// SetNillableIPAddress sets the "ip_address" field if the given value is not nil.
+func (_u *SessionUpdateOne) SetNillableIPAddress(v *string) *SessionUpdateOne {
+	if v != nil {
+		_u.SetIPAddress(*v)
+	}
+	return _u
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (_u *SessionUpdateOne) SetUserAgent(v string) *SessionUpdateOne {
+	_u.mutation.SetUserAgent(v)
+	return _u
+}
+
+// SetNillableUserAgent sets the "user_agent" field if the given value is not nil.
+func (_u *SessionUpdateOne) SetNillableUserAgent(v *string) *SessionUpdateOne {
+	if v != nil {
+		_u.SetUserAgent(*v)
+	}
 	return _u
 }
 
@@ -376,6 +438,12 @@ func (_u *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err er
 	}
 	if _u.mutation.RevokedAtCleared() {
 		_spec.ClearField(session.FieldRevokedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.IPAddress(); ok {
+		_spec.SetField(session.FieldIPAddress, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.UserAgent(); ok {
+		_spec.SetField(session.FieldUserAgent, field.TypeString, value)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

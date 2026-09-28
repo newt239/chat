@@ -10,7 +10,10 @@ import (
 )
 
 func main() {
-	err := entc.Generate("./schema", &gen.Config{})
+	err := entc.Generate("./schema", &gen.Config{
+		// 集計クエリを生 SQL で書くため ExecQuery を有効にする
+		Features: []gen.Feature{gen.FeatureExecQuery, gen.FeatureUpsert},
+	})
 	if err != nil {
 		log.Fatalf("running ent codegen: %v", err)
 	}

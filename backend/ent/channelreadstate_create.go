@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type ChannelReadStateCreate struct {
 	config
 	mutation *ChannelReadStateMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetLastReadAt sets the "last_read_at" field.
@@ -160,6 +163,7 @@ func (_c *ChannelReadStateCreate) createSpec() (*ChannelReadState, *sqlgraph.Cre
 		_node = &ChannelReadState{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(channelreadstate.Table, sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -205,11 +209,173 @@ func (_c *ChannelReadStateCreate) createSpec() (*ChannelReadState, *sqlgraph.Cre
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ChannelReadState.Create().
+//		SetLastReadAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelReadStateUpsert) {
+//			SetLastReadAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ChannelReadStateCreate) OnConflict(opts ...sql.ConflictOption) *ChannelReadStateUpsertOne {
+	_c.conflict = opts
+	return &ChannelReadStateUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ChannelReadState.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ChannelReadStateCreate) OnConflictColumns(columns ...string) *ChannelReadStateUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ChannelReadStateUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ChannelReadStateUpsertOne is the builder for "upsert"-ing
+	//  one ChannelReadState node.
+	ChannelReadStateUpsertOne struct {
+		create *ChannelReadStateCreate
+	}
+
+	// ChannelReadStateUpsert is the "OnConflict" setter.
+	ChannelReadStateUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetLastReadAt sets the "last_read_at" field.
+func (u *ChannelReadStateUpsert) SetLastReadAt(v time.Time) *ChannelReadStateUpsert {
+	u.Set(channelreadstate.FieldLastReadAt, v)
+	return u
+}
+
+// UpdateLastReadAt sets the "last_read_at" field to the value that was provided on create.
+func (u *ChannelReadStateUpsert) UpdateLastReadAt() *ChannelReadStateUpsert {
+	u.SetExcluded(channelreadstate.FieldLastReadAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ChannelReadState.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(channelreadstate.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ChannelReadStateUpsertOne) UpdateNewValues() *ChannelReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(channelreadstate.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ChannelReadState.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ChannelReadStateUpsertOne) Ignore() *ChannelReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ChannelReadStateUpsertOne) DoNothing() *ChannelReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ChannelReadStateCreate.OnConflict
+// documentation for more info.
+func (u *ChannelReadStateUpsertOne) Update(set func(*ChannelReadStateUpsert)) *ChannelReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ChannelReadStateUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetLastReadAt sets the "last_read_at" field.
+func (u *ChannelReadStateUpsertOne) SetLastReadAt(v time.Time) *ChannelReadStateUpsertOne {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.SetLastReadAt(v)
+	})
+}
+
+// UpdateLastReadAt sets the "last_read_at" field to the value that was provided on create.
+func (u *ChannelReadStateUpsertOne) UpdateLastReadAt() *ChannelReadStateUpsertOne {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.UpdateLastReadAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ChannelReadStateUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ChannelReadStateCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ChannelReadStateUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ChannelReadStateUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ChannelReadStateUpsertOne.ID is not supported by MySQL driver. Use ChannelReadStateUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ChannelReadStateUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ChannelReadStateCreateBulk is the builder for creating many ChannelReadState entities in bulk.
 type ChannelReadStateCreateBulk struct {
 	config
 	err      error
 	builders []*ChannelReadStateCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ChannelReadState entities in the database.
@@ -239,6 +405,7 @@ func (_c *ChannelReadStateCreateBulk) Save(ctx context.Context) ([]*ChannelReadS
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -285,6 +452,134 @@ func (_c *ChannelReadStateCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ChannelReadStateCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ChannelReadState.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelReadStateUpsert) {
+//			SetLastReadAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ChannelReadStateCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelReadStateUpsertBulk {
+	_c.conflict = opts
+	return &ChannelReadStateUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ChannelReadState.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ChannelReadStateCreateBulk) OnConflictColumns(columns ...string) *ChannelReadStateUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ChannelReadStateUpsertBulk{
+		create: _c,
+	}
+}
+
+// ChannelReadStateUpsertBulk is the builder for "upsert"-ing
+// a bulk of ChannelReadState nodes.
+type ChannelReadStateUpsertBulk struct {
+	create *ChannelReadStateCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ChannelReadState.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(channelreadstate.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ChannelReadStateUpsertBulk) UpdateNewValues() *ChannelReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(channelreadstate.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ChannelReadState.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ChannelReadStateUpsertBulk) Ignore() *ChannelReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ChannelReadStateUpsertBulk) DoNothing() *ChannelReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ChannelReadStateCreateBulk.OnConflict
+// documentation for more info.
+func (u *ChannelReadStateUpsertBulk) Update(set func(*ChannelReadStateUpsert)) *ChannelReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ChannelReadStateUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetLastReadAt sets the "last_read_at" field.
+func (u *ChannelReadStateUpsertBulk) SetLastReadAt(v time.Time) *ChannelReadStateUpsertBulk {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.SetLastReadAt(v)
+	})
+}
+
+// UpdateLastReadAt sets the "last_read_at" field to the value that was provided on create.
+func (u *ChannelReadStateUpsertBulk) UpdateLastReadAt() *ChannelReadStateUpsertBulk {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.UpdateLastReadAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ChannelReadStateUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ChannelReadStateCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ChannelReadStateCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ChannelReadStateUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

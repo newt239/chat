@@ -28,6 +28,8 @@ type Channel struct {
 	IsPrivate bool `json:"is_private,omitempty"`
 	// ChannelType holds the value of the "channel_type" field.
 	ChannelType string `json:"channel_type,omitempty"`
+	// ArchivedAt holds the value of the "archived_at" field.
+	ArchivedAt *time.Time `json:"archived_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -126,7 +128,7 @@ func (*Channel) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case channel.FieldName, channel.FieldDescription, channel.FieldChannelType:
 			values[i] = new(sql.NullString)
-		case channel.FieldCreatedAt, channel.FieldUpdatedAt:
+		case channel.FieldArchivedAt, channel.FieldCreatedAt, channel.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case channel.FieldID:
 			values[i] = new(uuid.UUID)
@@ -178,6 +180,13 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field channel_type", values[i])
 			} else if value.Valid {
 				_m.ChannelType = value.String
+			}
+		case channel.FieldArchivedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field archived_at", values[i])
+			} else if value.Valid {
+				_m.ArchivedAt = new(time.Time)
+				*_m.ArchivedAt = value.Time
 			}
 		case channel.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -282,6 +291,11 @@ func (_m *Channel) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("channel_type=")
 	builder.WriteString(_m.ChannelType)
+	builder.WriteString(", ")
+	if v := _m.ArchivedAt; v != nil {
+		builder.WriteString("archived_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

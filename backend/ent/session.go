@@ -25,6 +25,10 @@ type Session struct {
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// RevokedAt holds the value of the "revoked_at" field.
 	RevokedAt time.Time `json:"revoked_at,omitempty"`
+	// IPAddress holds the value of the "ip_address" field.
+	IPAddress string `json:"ip_address,omitempty"`
+	// UserAgent holds the value of the "user_agent" field.
+	UserAgent string `json:"user_agent,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -59,7 +63,7 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case session.FieldRefreshTokenHash:
+		case session.FieldRefreshTokenHash, session.FieldIPAddress, session.FieldUserAgent:
 			values[i] = new(sql.NullString)
 		case session.FieldExpiresAt, session.FieldRevokedAt, session.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -105,6 +109,18 @@ func (_m *Session) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field revoked_at", values[i])
 			} else if value.Valid {
 				_m.RevokedAt = value.Time
+			}
+		case session.FieldIPAddress:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field ip_address", values[i])
+			} else if value.Valid {
+				_m.IPAddress = value.String
+			}
+		case session.FieldUserAgent:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field user_agent", values[i])
+			} else if value.Valid {
+				_m.UserAgent = value.String
 			}
 		case session.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -168,6 +184,12 @@ func (_m *Session) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("revoked_at=")
 	builder.WriteString(_m.RevokedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("ip_address=")
+	builder.WriteString(_m.IPAddress)
+	builder.WriteString(", ")
+	builder.WriteString("user_agent=")
+	builder.WriteString(_m.UserAgent)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

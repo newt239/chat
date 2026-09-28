@@ -4,6 +4,8 @@ package ent
 
 import (
 	"context"
+	stdsql "database/sql"
+	"fmt"
 	"sync"
 
 	"entgo.io/ent/dialect"
@@ -14,6 +16,8 @@ type Tx struct {
 	config
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
+	// AuditLog is the client for interacting with the AuditLog builders.
+	AuditLog *AuditLogClient
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
@@ -52,6 +56,8 @@ type Tx struct {
 	Workspace *WorkspaceClient
 	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
 	WorkspaceMember *WorkspaceMemberClient
+	// WorkspacePermission is the client for interacting with the WorkspacePermission builders.
+	WorkspacePermission *WorkspacePermissionClient
 
 	// lazily loaded.
 	client     *Client
@@ -184,6 +190,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
+	tx.AuditLog = NewAuditLogClient(tx.config)
 	tx.Channel = NewChannelClient(tx.config)
 	tx.ChannelMember = NewChannelMemberClient(tx.config)
 	tx.ChannelReadState = NewChannelReadStateClient(tx.config)
@@ -203,6 +210,7 @@ func (tx *Tx) init() {
 	tx.UserThreadFollow = NewUserThreadFollowClient(tx.config)
 	tx.Workspace = NewWorkspaceClient(tx.config)
 	tx.WorkspaceMember = NewWorkspaceMemberClient(tx.config)
+	tx.WorkspacePermission = NewWorkspacePermissionClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
@@ -265,3 +273,27 @@ func (tx *txDriver) Query(ctx context.Context, query string, args, v any) error 
 }
 
 var _ dialect.Driver = (*txDriver)(nil)
+
+// ExecContext allows calling the underlying ExecContext method of the transaction if it is supported by it.
+// See, database/sql#Tx.ExecContext for more information.
+func (tx *txDriver) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+	ex, ok := tx.tx.(interface {
+		ExecContext(context.Context, string, ...any) (stdsql.Result, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Tx.ExecContext is not supported")
+	}
+	return ex.ExecContext(ctx, query, args...)
+}
+
+// QueryContext allows calling the underlying QueryContext method of the transaction if it is supported by it.
+// See, database/sql#Tx.QueryContext for more information.
+func (tx *txDriver) QueryContext(ctx context.Context, query string, args ...any) (*stdsql.Rows, error) {
+	q, ok := tx.tx.(interface {
+		QueryContext(context.Context, string, ...any) (*stdsql.Rows, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Tx.QueryContext is not supported")
+	}
+	return q.QueryContext(ctx, query, args...)
+}

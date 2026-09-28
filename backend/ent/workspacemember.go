@@ -24,6 +24,8 @@ type WorkspaceMember struct {
 	Role string `json:"role,omitempty"`
 	// JoinedAt holds the value of the "joined_at" field.
 	JoinedAt time.Time `json:"joined_at,omitempty"`
+	// SuspendedAt holds the value of the "suspended_at" field.
+	SuspendedAt *time.Time `json:"suspended_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkspaceMemberQuery when eager-loading is set.
 	Edges                      WorkspaceMemberEdges `json:"edges"`
@@ -72,7 +74,7 @@ func (*WorkspaceMember) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case workspacemember.FieldRole:
 			values[i] = new(sql.NullString)
-		case workspacemember.FieldJoinedAt:
+		case workspacemember.FieldJoinedAt, workspacemember.FieldSuspendedAt:
 			values[i] = new(sql.NullTime)
 		case workspacemember.FieldID:
 			values[i] = new(uuid.UUID)
@@ -112,6 +114,13 @@ func (_m *WorkspaceMember) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field joined_at", values[i])
 			} else if value.Valid {
 				_m.JoinedAt = value.Time
+			}
+		case workspacemember.FieldSuspendedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field suspended_at", values[i])
+			} else if value.Valid {
+				_m.SuspendedAt = new(time.Time)
+				*_m.SuspendedAt = value.Time
 			}
 		case workspacemember.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -178,6 +187,11 @@ func (_m *WorkspaceMember) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("joined_at=")
 	builder.WriteString(_m.JoinedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.SuspendedAt; v != nil {
+		builder.WriteString("suspended_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

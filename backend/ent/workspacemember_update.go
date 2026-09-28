@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -41,6 +42,26 @@ func (_u *WorkspaceMemberUpdate) SetNillableRole(v *string) *WorkspaceMemberUpda
 	if v != nil {
 		_u.SetRole(*v)
 	}
+	return _u
+}
+
+// SetSuspendedAt sets the "suspended_at" field.
+func (_u *WorkspaceMemberUpdate) SetSuspendedAt(v time.Time) *WorkspaceMemberUpdate {
+	_u.mutation.SetSuspendedAt(v)
+	return _u
+}
+
+// SetNillableSuspendedAt sets the "suspended_at" field if the given value is not nil.
+func (_u *WorkspaceMemberUpdate) SetNillableSuspendedAt(v *time.Time) *WorkspaceMemberUpdate {
+	if v != nil {
+		_u.SetSuspendedAt(*v)
+	}
+	return _u
+}
+
+// ClearSuspendedAt clears the value of the "suspended_at" field.
+func (_u *WorkspaceMemberUpdate) ClearSuspendedAt() *WorkspaceMemberUpdate {
+	_u.mutation.ClearSuspendedAt()
 	return _u
 }
 
@@ -141,6 +162,12 @@ func (_u *WorkspaceMemberUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(workspacemember.FieldRole, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.SuspendedAt(); ok {
+		_spec.SetField(workspacemember.FieldSuspendedAt, field.TypeTime, value)
+	}
+	if _u.mutation.SuspendedAtCleared() {
+		_spec.ClearField(workspacemember.FieldSuspendedAt, field.TypeTime)
+	}
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -230,6 +257,26 @@ func (_u *WorkspaceMemberUpdateOne) SetNillableRole(v *string) *WorkspaceMemberU
 	if v != nil {
 		_u.SetRole(*v)
 	}
+	return _u
+}
+
+// SetSuspendedAt sets the "suspended_at" field.
+func (_u *WorkspaceMemberUpdateOne) SetSuspendedAt(v time.Time) *WorkspaceMemberUpdateOne {
+	_u.mutation.SetSuspendedAt(v)
+	return _u
+}
+
+// SetNillableSuspendedAt sets the "suspended_at" field if the given value is not nil.
+func (_u *WorkspaceMemberUpdateOne) SetNillableSuspendedAt(v *time.Time) *WorkspaceMemberUpdateOne {
+	if v != nil {
+		_u.SetSuspendedAt(*v)
+	}
+	return _u
+}
+
+// ClearSuspendedAt clears the value of the "suspended_at" field.
+func (_u *WorkspaceMemberUpdateOne) ClearSuspendedAt() *WorkspaceMemberUpdateOne {
+	_u.mutation.ClearSuspendedAt()
 	return _u
 }
 
@@ -359,6 +406,12 @@ func (_u *WorkspaceMemberUpdateOne) sqlSave(ctx context.Context) (_node *Workspa
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(workspacemember.FieldRole, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.SuspendedAt(); ok {
+		_spec.SetField(workspacemember.FieldSuspendedAt, field.TypeTime, value)
+	}
+	if _u.mutation.SuspendedAtCleared() {
+		_spec.ClearField(workspacemember.FieldSuspendedAt, field.TypeTime)
 	}
 	if _u.mutation.WorkspaceCleared() {
 		edge := &sqlgraph.EdgeSpec{

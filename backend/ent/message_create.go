@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -29,6 +31,7 @@ type MessageCreate struct {
 	config
 	mutation *MessageMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetBody sets the "body" field.
@@ -378,6 +381,7 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 		_node = &Message{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(message.Table, sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -600,11 +604,293 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Message.Create().
+//		SetBody(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MessageUpsert) {
+//			SetBody(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *MessageCreate) OnConflict(opts ...sql.ConflictOption) *MessageUpsertOne {
+	_c.conflict = opts
+	return &MessageUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Message.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *MessageCreate) OnConflictColumns(columns ...string) *MessageUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &MessageUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// MessageUpsertOne is the builder for "upsert"-ing
+	//  one Message node.
+	MessageUpsertOne struct {
+		create *MessageCreate
+	}
+
+	// MessageUpsert is the "OnConflict" setter.
+	MessageUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetBody sets the "body" field.
+func (u *MessageUpsert) SetBody(v string) *MessageUpsert {
+	u.Set(message.FieldBody, v)
+	return u
+}
+
+// UpdateBody sets the "body" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateBody() *MessageUpsert {
+	u.SetExcluded(message.FieldBody)
+	return u
+}
+
+// SetEditedAt sets the "edited_at" field.
+func (u *MessageUpsert) SetEditedAt(v time.Time) *MessageUpsert {
+	u.Set(message.FieldEditedAt, v)
+	return u
+}
+
+// UpdateEditedAt sets the "edited_at" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateEditedAt() *MessageUpsert {
+	u.SetExcluded(message.FieldEditedAt)
+	return u
+}
+
+// ClearEditedAt clears the value of the "edited_at" field.
+func (u *MessageUpsert) ClearEditedAt() *MessageUpsert {
+	u.SetNull(message.FieldEditedAt)
+	return u
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *MessageUpsert) SetDeletedAt(v time.Time) *MessageUpsert {
+	u.Set(message.FieldDeletedAt, v)
+	return u
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateDeletedAt() *MessageUpsert {
+	u.SetExcluded(message.FieldDeletedAt)
+	return u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *MessageUpsert) ClearDeletedAt() *MessageUpsert {
+	u.SetNull(message.FieldDeletedAt)
+	return u
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (u *MessageUpsert) SetDeletedBy(v uuid.UUID) *MessageUpsert {
+	u.Set(message.FieldDeletedBy, v)
+	return u
+}
+
+// UpdateDeletedBy sets the "deleted_by" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateDeletedBy() *MessageUpsert {
+	u.SetExcluded(message.FieldDeletedBy)
+	return u
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (u *MessageUpsert) ClearDeletedBy() *MessageUpsert {
+	u.SetNull(message.FieldDeletedBy)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Message.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(message.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MessageUpsertOne) UpdateNewValues() *MessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(message.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(message.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Message.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *MessageUpsertOne) Ignore() *MessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MessageUpsertOne) DoNothing() *MessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MessageCreate.OnConflict
+// documentation for more info.
+func (u *MessageUpsertOne) Update(set func(*MessageUpsert)) *MessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetBody sets the "body" field.
+func (u *MessageUpsertOne) SetBody(v string) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetBody(v)
+	})
+}
+
+// UpdateBody sets the "body" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateBody() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateBody()
+	})
+}
+
+// SetEditedAt sets the "edited_at" field.
+func (u *MessageUpsertOne) SetEditedAt(v time.Time) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetEditedAt(v)
+	})
+}
+
+// UpdateEditedAt sets the "edited_at" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateEditedAt() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateEditedAt()
+	})
+}
+
+// ClearEditedAt clears the value of the "edited_at" field.
+func (u *MessageUpsertOne) ClearEditedAt() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearEditedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *MessageUpsertOne) SetDeletedAt(v time.Time) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateDeletedAt() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *MessageUpsertOne) ClearDeletedAt() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (u *MessageUpsertOne) SetDeletedBy(v uuid.UUID) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetDeletedBy(v)
+	})
+}
+
+// UpdateDeletedBy sets the "deleted_by" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateDeletedBy() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateDeletedBy()
+	})
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (u *MessageUpsertOne) ClearDeletedBy() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearDeletedBy()
+	})
+}
+
+// Exec executes the query.
+func (u *MessageUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MessageCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MessageUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *MessageUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: MessageUpsertOne.ID is not supported by MySQL driver. Use MessageUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *MessageUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // MessageCreateBulk is the builder for creating many Message entities in bulk.
 type MessageCreateBulk struct {
 	config
 	err      error
 	builders []*MessageCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Message entities in the database.
@@ -634,6 +920,7 @@ func (_c *MessageCreateBulk) Save(ctx context.Context) ([]*Message, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -680,6 +967,200 @@ func (_c *MessageCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *MessageCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Message.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MessageUpsert) {
+//			SetBody(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *MessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageUpsertBulk {
+	_c.conflict = opts
+	return &MessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Message.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *MessageCreateBulk) OnConflictColumns(columns ...string) *MessageUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &MessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// MessageUpsertBulk is the builder for "upsert"-ing
+// a bulk of Message nodes.
+type MessageUpsertBulk struct {
+	create *MessageCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Message.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(message.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MessageUpsertBulk) UpdateNewValues() *MessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(message.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(message.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Message.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *MessageUpsertBulk) Ignore() *MessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MessageUpsertBulk) DoNothing() *MessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MessageCreateBulk.OnConflict
+// documentation for more info.
+func (u *MessageUpsertBulk) Update(set func(*MessageUpsert)) *MessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetBody sets the "body" field.
+func (u *MessageUpsertBulk) SetBody(v string) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetBody(v)
+	})
+}
+
+// UpdateBody sets the "body" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateBody() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateBody()
+	})
+}
+
+// SetEditedAt sets the "edited_at" field.
+func (u *MessageUpsertBulk) SetEditedAt(v time.Time) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetEditedAt(v)
+	})
+}
+
+// UpdateEditedAt sets the "edited_at" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateEditedAt() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateEditedAt()
+	})
+}
+
+// ClearEditedAt clears the value of the "edited_at" field.
+func (u *MessageUpsertBulk) ClearEditedAt() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearEditedAt()
+	})
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (u *MessageUpsertBulk) SetDeletedAt(v time.Time) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetDeletedAt(v)
+	})
+}
+
+// UpdateDeletedAt sets the "deleted_at" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateDeletedAt() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateDeletedAt()
+	})
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (u *MessageUpsertBulk) ClearDeletedAt() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearDeletedAt()
+	})
+}
+
+// SetDeletedBy sets the "deleted_by" field.
+func (u *MessageUpsertBulk) SetDeletedBy(v uuid.UUID) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetDeletedBy(v)
+	})
+}
+
+// UpdateDeletedBy sets the "deleted_by" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateDeletedBy() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateDeletedBy()
+	})
+}
+
+// ClearDeletedBy clears the value of the "deleted_by" field.
+func (u *MessageUpsertBulk) ClearDeletedBy() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearDeletedBy()
+	})
+}
+
+// Exec executes the query.
+func (u *MessageUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the MessageCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MessageCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MessageUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
