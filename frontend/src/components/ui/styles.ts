@@ -34,7 +34,7 @@ export const fieldStyles = {
 
 export const overlayStyles = {
   listItem:
-    "flex min-h-[30px] cursor-default items-center gap-2.5 rounded-[6px] px-2.5 text-[13.5px] text-text outline-none data-disabled:text-subtle data-focused:bg-accent data-focused:text-accent-fg [&_svg]:size-4 [&_svg]:shrink-0",
+    "flex min-h-[30px] cursor-default items-center gap-2.5 rounded-[6px] px-2.5 text-[13.5px] text-text no-underline outline-none data-disabled:text-subtle data-focused:bg-accent data-focused:text-accent-fg [&_svg]:size-4 [&_svg]:shrink-0",
   menu: "flex min-w-[220px] flex-col p-1 outline-none",
   popover:
     "rounded-lg border border-border bg-raised font-sans text-text shadow-lg outline-none data-entering:animate-pop-in data-exiting:animate-pop-out motion-reduce:animate-none",

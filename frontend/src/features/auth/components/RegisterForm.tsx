@@ -1,84 +1,71 @@
-import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
+import { Form } from "react-aria-components";
+import { useTranslation } from "react-i18next";
+
+import { Button } from "#/components/ui/Button";
+import { Link } from "#/components/ui/Link";
+import { TextField } from "#/components/ui/TextField";
 import { useRegister } from "#/features/auth/hooks/useRegister";
 
-type RegisterFormValues = {
-  displayName: string;
-  email: string;
-  password: string;
-};
+import { AuthCard } from "./AuthCard";
 
 export const RegisterForm = () => {
+  const { t } = useTranslation();
   const register = useRegister();
-
-  const form = useForm<RegisterFormValues>({
-    initialValues: {
-      displayName: "",
-      email: "",
-      password: "",
-    },
-    validate: {
-      displayName: (value) => (value.length > 0 ? null : "1文字以上の表示名を入力してください"),
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : "有効なメールアドレスを入力してください"),
-      password: (value) => (value.length >= 8 ? null : "8文字以上のパスワードを入力してください"),
-    },
-  });
-
-  const handleSubmit = form.onSubmit((values) => {
-    register.mutate(values);
-  });
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
-    <Paper className="w-full max-w-md p-8" shadow="md" radius="md">
-      <Title order={2} className="mb-6 text-center">
-        新規登録
-      </Title>
-
-      <form onSubmit={handleSubmit}>
-        <TextInput
-          label="表示名"
-          placeholder="newt"
-          {...form.getInputProps("displayName")}
-          required
-          className="mb-4"
+    <AuthCard
+      title={t("auth.register.title")}
+      footer={
+        <>
+          {t("auth.register.hasAccount")} <Link to="/login">{t("auth.login.title")}</Link>
+        </>
+      }
+    >
+      <Form
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          register.mutate({ displayName, email, password });
+        }}
+      >
+        <TextField
+          label={t("auth.displayName")}
+          autoComplete="nickname"
+          value={displayName}
+          onChange={setDisplayName}
+          isRequired
         />
-
-        <TextInput
-          label="メールアドレス"
-          placeholder="email@example.com"
+        <TextField
+          label={t("auth.email")}
           type="email"
-          {...form.getInputProps("email")}
-          required
-          className="mb-4"
+          autoComplete="email"
+          placeholder="email@example.com"
+          value={email}
+          onChange={setEmail}
+          isRequired
         />
-
-        <PasswordInput
-          label="パスワード"
-          placeholder="パスワード"
-          {...form.getInputProps("password")}
-          required
-          className="mb-6"
+        <TextField
+          label={t("auth.password")}
+          description={t("auth.passwordRule")}
+          type="password"
+          autoComplete="new-password"
+          value={password}
+          onChange={setPassword}
+          minLength={8}
+          isRequired
         />
-
         {register.isError && (
-          <Text c="red" size="sm" className="mb-4">
-            {register.error.message}
-          </Text>
+          <p className="m-0 text-caption text-danger">{register.error.message}</p>
         )}
-
-        <Button type="submit" fullWidth loading={register.isPending} className="mb-4">
-          登録
+        <Button type="submit" isPending={register.isPending}>
+          {t("auth.register.submit")}
         </Button>
-
-        <Text size="sm" className="text-center">
-          すでにアカウントをお持ちの方は{" "}
-          <Anchor renderRoot={(props) => <Link {...props} to="/login" />} size="sm">
-            ログイン
-          </Anchor>
-        </Text>
-      </form>
-    </Paper>
+      </Form>
+    </AuthCard>
   );
 };

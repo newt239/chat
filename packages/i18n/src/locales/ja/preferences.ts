@@ -14,13 +14,16 @@ export const preferences = {
   theme: {
     chroma: "彩度",
     custom: "カスタム",
+    customActive: "使用中",
     hue: "色相",
+    presetsTitle: "プリセット",
     presets: {
       cobalt: "Cobalt",
       graphite: "Graphite",
       jade: "Jade",
       plum: "Plum",
     },
+    preview: "プレビュー",
     sidebar: {
       light: "明るい",
       tinted: "色付き",
