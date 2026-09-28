@@ -70,6 +70,8 @@ export const colorTokenNames = [
   "badge",
   "badge-fg",
   "overlay",
+  "media",
+  "media-fg",
   "side",
   "side-fg",
   "side-muted",
@@ -84,6 +86,8 @@ export type ColorTokens = Record<ColorTokenName, string>;
 type SidebarTokens = Pick<ColorTokens, Extract<ColorTokenName, `side${string}`>>;
 
 const white = "#FFFFFF";
+// 画像ビューアや動画の背景。写真の色を正しく見せるため表示モードによらず暗くする
+const media = "#08090A";
 
 const buildSidebarTokens = (
   { hue, chroma, sidebar }: ThemeInput,
@@ -165,6 +169,8 @@ export const buildTokens = (theme: ThemeInput, mode: ColorMode): ColorTokens => 
       "mention-chip": oklchToHex(0.36, 0.07, 80),
       "mention-text": oklchToHex(0.92, 0.09, 85),
       muted: neutral(0.73, 0.01),
+      media,
+      "media-fg": white,
       overlay: "#0A0C0E99",
       "pin-bar": accent(0.72, 0.95),
       "pin-bg": oklchToHex(0.25, pinChroma, hue),
@@ -198,6 +204,8 @@ export const buildTokens = (theme: ThemeInput, mode: ColorMode): ColorTokens => 
     "mention-chip": oklchToHex(0.92, 0.08, 85),
     "mention-text": oklchToHex(0.42, 0.1, 65),
     muted: neutral(0.47, 0.014),
+    media,
+    "media-fg": white,
     overlay: "#0A0C0E80",
     "pin-bar": accent(0.53),
     "pin-bg": oklchToHex(0.955, pinChroma, hue),

@@ -35,6 +35,8 @@
   --color-badge: var(--c-badge);
   --color-badge-fg: var(--c-badge-fg);
   --color-overlay: var(--c-overlay);
+  --color-media: var(--c-media);
+  --color-media-fg: var(--c-media-fg);
   --color-side: var(--c-side);
   --color-side-fg: var(--c-side-fg);
   --color-side-muted: var(--c-side-muted);

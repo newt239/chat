@@ -5,4 +5,5 @@ export const codeBlock: Messages["codeBlock"] = {
   copy: "Copy",
   copyFailed: "Couldn't copy",
   lines: "{{count}} lines",
+  showAll: "Show all ({{count}} lines)",
 };

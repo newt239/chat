@@ -1,7 +1,32 @@
 export const attachment = {
   completed: "完了",
+  crop: {
+    tall: "縦長 · 全体を表示",
+    wide: "横長 · 全体を表示",
+  },
   download: "ダウンロード",
   downloadFailed: "ダウンロードできませんでした",
+  expand: "{{name}} を拡大",
   failed: "エラー: {{error}}",
+  lightbox: {
+    label: "画像ビューア",
+    next: "次の画像",
+    page: "{{index}} 枚目",
+    position: "{{index}} / {{total}}",
+    previous: "前の画像",
+    tallHint: "縦長の画像はスクロールで全体を確認できます",
+  },
+  loadFailed: "読み込めませんでした",
+  player: {
+    close: "再生を終了",
+    jump: "元のメッセージへ移動",
+    label: "再生中のメディア",
+    pause: "一時停止",
+    play: "再生",
+    playFailed: "再生できませんでした",
+    playFile: "{{name}} を再生",
+    seek: "再生位置",
+    speed: "再生速度",
+  },
   remove: "添付を外す",
 } as const;
