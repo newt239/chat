@@ -41,20 +41,13 @@ func (r *systemMessageRepository) Create(ctx context.Context, msg *entity.System
 		return err
 	}
 
-	// 再読込（必要に応じてエッジを付与）
-	_, _ = client.SystemMessage.Query().
-		Where(systemmessage.IDEQ(sm.ID)).
-		WithChannel(func(q *ent.ChannelQuery) { q.WithWorkspace().WithCreatedBy() }).
-		WithActor().
-		Only(ctx)
-
 	msg.ID = sm.ID.String()
 	msg.CreatedAt = sm.CreatedAt
 	return nil
 }
 
 func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.SystemMessage, error) {
-	chIDs, err := parseChannelIDs(channelIDs)
+	chIDs, err := parseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
 	}

@@ -20,6 +20,12 @@ type Message struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
+	// ParentID holds the value of the "parent_id" field.
+	ParentID *uuid.UUID `json:"parent_id,omitempty"`
 	// Body holds the value of the "body" field.
 	Body string `json:"body,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -36,11 +42,8 @@ type Message struct {
 	SenderAvatarURL *string `json:"sender_avatar_url,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageQuery when eager-loading is set.
-	Edges           MessageEdges `json:"edges"`
-	message_channel *uuid.UUID
-	message_user    *uuid.UUID
-	message_parent  *uuid.UUID
-	selectValues    sql.SelectValues
+	Edges        MessageEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MessageEdges holds the relations/edges for other nodes in the graph.
@@ -204,18 +207,14 @@ func (*Message) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case message.FieldParentID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case message.FieldBody, message.FieldSenderName, message.FieldSenderAvatarURL:
 			values[i] = new(sql.NullString)
 		case message.FieldCreatedAt, message.FieldEditedAt, message.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
-		case message.FieldID, message.FieldDeletedBy:
+		case message.FieldID, message.FieldChannelID, message.FieldUserID, message.FieldDeletedBy:
 			values[i] = new(uuid.UUID)
-		case message.ForeignKeys[0]: // message_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case message.ForeignKeys[1]: // message_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case message.ForeignKeys[2]: // message_parent
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -236,6 +235,25 @@ func (_m *Message) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case message.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
+			}
+		case message.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
+		case message.FieldParentID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
+			} else if value.Valid {
+				_m.ParentID = new(uuid.UUID)
+				*_m.ParentID = *value.S.(*uuid.UUID)
 			}
 		case message.FieldBody:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -280,27 +298,6 @@ func (_m *Message) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.SenderAvatarURL = new(string)
 				*_m.SenderAvatarURL = value.String
-			}
-		case message.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_channel", values[i])
-			} else if value.Valid {
-				_m.message_channel = new(uuid.UUID)
-				*_m.message_channel = *value.S.(*uuid.UUID)
-			}
-		case message.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_user", values[i])
-			} else if value.Valid {
-				_m.message_user = new(uuid.UUID)
-				*_m.message_user = *value.S.(*uuid.UUID)
-			}
-		case message.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_parent", values[i])
-			} else if value.Valid {
-				_m.message_parent = new(uuid.UUID)
-				*_m.message_parent = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -403,6 +400,17 @@ func (_m *Message) String() string {
 	var builder strings.Builder
 	builder.WriteString("Message(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
+	if v := _m.ParentID; v != nil {
+		builder.WriteString("parent_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("body=")
 	builder.WriteString(_m.Body)
 	builder.WriteString(", ")

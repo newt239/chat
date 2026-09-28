@@ -72,14 +72,8 @@ func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, me
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageGroupMention.Query().
 		Where(messagegroupmention.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithGroup(func(q *ent.UserGroupQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
+		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
+		WithGroup(func(q *ent.UserGroupQuery) { q.Select(usergroup.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err

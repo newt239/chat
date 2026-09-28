@@ -820,7 +820,9 @@ func (_q *ChannelQuery) loadMessages(ctx context.Context, query *MessageQuery, n
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(message.FieldChannelID)
+	}
 	query.Where(predicate.Message(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(channel.MessagesColumn), fks...))
 	}))
@@ -829,13 +831,10 @@ func (_q *ChannelQuery) loadMessages(ctx context.Context, query *MessageQuery, n
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_channel
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_channel" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ChannelID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_channel" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "channel_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

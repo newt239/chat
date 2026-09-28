@@ -56,6 +56,21 @@ func IDLTE(id uuid.UUID) predicate.Message {
 	return predicate.Message(sql.FieldLTE(FieldID, id))
 }
 
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldChannelID, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldUserID, v))
+}
+
+// ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
+func ParentID(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldParentID, v))
+}
+
 // Body applies equality check predicate on the "body" field. It's identical to BodyEQ.
 func Body(v string) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldBody, v))
@@ -89,6 +104,76 @@ func SenderName(v string) predicate.Message {
 // SenderAvatarURL applies equality check predicate on the "sender_avatar_url" field. It's identical to SenderAvatarURLEQ.
 func SenderAvatarURL(v string) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldSenderAvatarURL, v))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// ParentIDEQ applies the EQ predicate on the "parent_id" field.
+func ParentIDEQ(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldParentID, v))
+}
+
+// ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
+func ParentIDNEQ(v uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldParentID, v))
+}
+
+// ParentIDIn applies the In predicate on the "parent_id" field.
+func ParentIDIn(vs ...uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldParentID, vs...))
+}
+
+// ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
+func ParentIDNotIn(vs ...uuid.UUID) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldParentID, vs...))
+}
+
+// ParentIDIsNil applies the IsNil predicate on the "parent_id" field.
+func ParentIDIsNil() predicate.Message {
+	return predicate.Message(sql.FieldIsNull(FieldParentID))
+}
+
+// ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
+func ParentIDNotNil() predicate.Message {
+	return predicate.Message(sql.FieldNotNull(FieldParentID))
 }
 
 // BodyEQ applies the EQ predicate on the "body" field.

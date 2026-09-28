@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -40,5 +41,8 @@ func (UserGroupMember) Edges() []ent.Edge {
 
 // Indexes of the UserGroupMember.
 func (UserGroupMember) Indexes() []ent.Index {
-	return []ent.Index{}
+	return []ent.Index{
+		index.Edges("group"),
+		index.Edges("user"),
+	}
 }

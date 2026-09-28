@@ -102,9 +102,6 @@ func (r *messageRepository) SearchMessages(ctx context.Context, c domainreposito
 		Order(ent.Desc(message.FieldCreatedAt), ent.Desc(message.FieldID)).
 		Offset(c.Offset).
 		Limit(c.Limit).
-		WithChannel().
-		WithUser().
-		WithParent().
 		All(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -140,9 +137,6 @@ func (r *messageRepository) FindMentions(ctx context.Context, input domainreposi
 		Where(preds...).
 		Order(ent.Desc(message.FieldCreatedAt), ent.Desc(message.FieldID)).
 		Limit(input.Limit).
-		WithChannel().
-		WithUser().
-		WithParent().
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -218,24 +212,4 @@ func relevanceOrder(terms []string) func(*sql.Selector) {
 		}
 		s.OrderExpr(sql.Expr("(" + strings.Join(counts, " + ") + ") DESC"))
 	}
-}
-
-func parseUUIDs(ids []string, label string) ([]uuid.UUID, error) {
-	parsed := make([]uuid.UUID, 0, len(ids))
-	for _, id := range ids {
-		p, err := utils.ParseUUID(id, label)
-		if err != nil {
-			return nil, err
-		}
-		parsed = append(parsed, p)
-	}
-	return parsed, nil
-}
-
-func toMessageEntities(messages []*ent.Message) []*entity.Message {
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-	return result
 }

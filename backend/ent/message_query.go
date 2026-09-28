@@ -48,7 +48,6 @@ type MessageQuery struct {
 	withPins              *MessagePinQuery
 	withUserThreadFollows *UserThreadFollowQuery
 	withThreadReadStates  *ThreadReadStateQuery
-	withFKs               bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -731,12 +730,12 @@ func (_q *MessageQuery) WithThreadReadStates(opts ...func(*ThreadReadStateQuery)
 // Example:
 //
 //	var v []struct {
-//		Body string `json:"body,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Message.Query().
-//		GroupBy(message.FieldBody).
+//		GroupBy(message.FieldChannelID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessageQuery) GroupBy(field string, fields ...string) *MessageGroupBy {
@@ -754,11 +753,11 @@ func (_q *MessageQuery) GroupBy(field string, fields ...string) *MessageGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Body string `json:"body,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //	}
 //
 //	client.Message.Query().
-//		Select(message.FieldBody).
+//		Select(message.FieldChannelID).
 //		Scan(ctx, &v)
 func (_q *MessageQuery) Select(fields ...string) *MessageSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -802,7 +801,6 @@ func (_q *MessageQuery) prepareQuery(ctx context.Context) error {
 func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Message, error) {
 	var (
 		nodes       = []*Message{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [13]bool{
 			_q.withChannel != nil,
@@ -820,12 +818,6 @@ func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 			_q.withThreadReadStates != nil,
 		}
 	)
-	if _q.withChannel != nil || _q.withUser != nil || _q.withParent != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, message.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Message).scanValues(nil, columns)
 	}
@@ -941,10 +933,7 @@ func (_q *MessageQuery) loadChannel(ctx context.Context, query *ChannelQuery, no
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Message)
 	for i := range nodes {
-		if nodes[i].message_channel == nil {
-			continue
-		}
-		fk := *nodes[i].message_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -961,7 +950,7 @@ func (_q *MessageQuery) loadChannel(ctx context.Context, query *ChannelQuery, no
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -973,10 +962,7 @@ func (_q *MessageQuery) loadUser(ctx context.Context, query *UserQuery, nodes []
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Message)
 	for i := range nodes {
-		if nodes[i].message_user == nil {
-			continue
-		}
-		fk := *nodes[i].message_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -993,7 +979,7 @@ func (_q *MessageQuery) loadUser(ctx context.Context, query *UserQuery, nodes []
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -1005,10 +991,10 @@ func (_q *MessageQuery) loadParent(ctx context.Context, query *MessageQuery, nod
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Message)
 	for i := range nodes {
-		if nodes[i].message_parent == nil {
+		if nodes[i].ParentID == nil {
 			continue
 		}
-		fk := *nodes[i].message_parent
+		fk := *nodes[i].ParentID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -1025,7 +1011,7 @@ func (_q *MessageQuery) loadParent(ctx context.Context, query *MessageQuery, nod
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_parent" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -1043,7 +1029,9 @@ func (_q *MessageQuery) loadReplies(ctx context.Context, query *MessageQuery, no
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(message.FieldParentID)
+	}
 	query.Where(predicate.Message(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.RepliesColumn), fks...))
 	}))
@@ -1052,13 +1040,13 @@ func (_q *MessageQuery) loadReplies(ctx context.Context, query *MessageQuery, no
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_parent
+		fk := n.ParentID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_parent" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "parent_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_parent" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "parent_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1368,6 +1356,15 @@ func (_q *MessageQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != message.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(message.FieldChannelID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(message.FieldUserID)
+		}
+		if _q.withParent != nil {
+			_spec.Node.AddColumnOnce(message.FieldParentID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

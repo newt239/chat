@@ -6633,6 +6633,127 @@ func (m *MessageMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
+// SetChannelID sets the "channel_id" field.
+func (m *MessageMutation) SetChannelID(u uuid.UUID) {
+	m.channel = &u
+}
+
+// ChannelID returns the value of the "channel_id" field in the mutation.
+func (m *MessageMutation) ChannelID() (r uuid.UUID, exists bool) {
+	v := m.channel
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelID returns the old "channel_id" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldChannelID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelID: %w", err)
+	}
+	return oldValue.ChannelID, nil
+}
+
+// ResetChannelID resets all changes to the "channel_id" field.
+func (m *MessageMutation) ResetChannelID() {
+	m.channel = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *MessageMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *MessageMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *MessageMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetParentID sets the "parent_id" field.
+func (m *MessageMutation) SetParentID(u uuid.UUID) {
+	m.parent = &u
+}
+
+// ParentID returns the value of the "parent_id" field in the mutation.
+func (m *MessageMutation) ParentID() (r uuid.UUID, exists bool) {
+	v := m.parent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentID returns the old "parent_id" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldParentID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentID: %w", err)
+	}
+	return oldValue.ParentID, nil
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (m *MessageMutation) ClearParentID() {
+	m.parent = nil
+	m.clearedFields[message.FieldParentID] = struct{}{}
+}
+
+// ParentIDCleared returns if the "parent_id" field was cleared in this mutation.
+func (m *MessageMutation) ParentIDCleared() bool {
+	_, ok := m.clearedFields[message.FieldParentID]
+	return ok
+}
+
+// ResetParentID resets all changes to the "parent_id" field.
+func (m *MessageMutation) ResetParentID() {
+	m.parent = nil
+	delete(m.clearedFields, message.FieldParentID)
+}
+
 // SetBody sets the "body" field.
 func (m *MessageMutation) SetBody(s string) {
 	m.body = &s
@@ -6950,27 +7071,15 @@ func (m *MessageMutation) ResetSenderAvatarURL() {
 	delete(m.clearedFields, message.FieldSenderAvatarURL)
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by id.
-func (m *MessageMutation) SetChannelID(id uuid.UUID) {
-	m.channel = &id
-}
-
 // ClearChannel clears the "channel" edge to the Channel entity.
 func (m *MessageMutation) ClearChannel() {
 	m.clearedchannel = true
+	m.clearedFields[message.FieldChannelID] = struct{}{}
 }
 
 // ChannelCleared reports if the "channel" edge to the Channel entity was cleared.
 func (m *MessageMutation) ChannelCleared() bool {
 	return m.clearedchannel
-}
-
-// ChannelID returns the "channel" edge ID in the mutation.
-func (m *MessageMutation) ChannelID() (id uuid.UUID, exists bool) {
-	if m.channel != nil {
-		return *m.channel, true
-	}
-	return
 }
 
 // ChannelIDs returns the "channel" edge IDs in the mutation.
@@ -6989,27 +7098,15 @@ func (m *MessageMutation) ResetChannel() {
 	m.clearedchannel = false
 }
 
-// SetUserID sets the "user" edge to the User entity by id.
-func (m *MessageMutation) SetUserID(id uuid.UUID) {
-	m.user = &id
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *MessageMutation) ClearUser() {
 	m.cleareduser = true
+	m.clearedFields[message.FieldUserID] = struct{}{}
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
 func (m *MessageMutation) UserCleared() bool {
 	return m.cleareduser
-}
-
-// UserID returns the "user" edge ID in the mutation.
-func (m *MessageMutation) UserID() (id uuid.UUID, exists bool) {
-	if m.user != nil {
-		return *m.user, true
-	}
-	return
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
@@ -7028,27 +7125,15 @@ func (m *MessageMutation) ResetUser() {
 	m.cleareduser = false
 }
 
-// SetParentID sets the "parent" edge to the Message entity by id.
-func (m *MessageMutation) SetParentID(id uuid.UUID) {
-	m.parent = &id
-}
-
 // ClearParent clears the "parent" edge to the Message entity.
 func (m *MessageMutation) ClearParent() {
 	m.clearedparent = true
+	m.clearedFields[message.FieldParentID] = struct{}{}
 }
 
 // ParentCleared reports if the "parent" edge to the Message entity was cleared.
 func (m *MessageMutation) ParentCleared() bool {
-	return m.clearedparent
-}
-
-// ParentID returns the "parent" edge ID in the mutation.
-func (m *MessageMutation) ParentID() (id uuid.UUID, exists bool) {
-	if m.parent != nil {
-		return *m.parent, true
-	}
-	return
+	return m.ParentIDCleared() || m.clearedparent
 }
 
 // ParentIDs returns the "parent" edge IDs in the mutation.
@@ -7641,7 +7726,16 @@ func (m *MessageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 10)
+	if m.channel != nil {
+		fields = append(fields, message.FieldChannelID)
+	}
+	if m.user != nil {
+		fields = append(fields, message.FieldUserID)
+	}
+	if m.parent != nil {
+		fields = append(fields, message.FieldParentID)
+	}
 	if m.body != nil {
 		fields = append(fields, message.FieldBody)
 	}
@@ -7671,6 +7765,12 @@ func (m *MessageMutation) Fields() []string {
 // schema.
 func (m *MessageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case message.FieldChannelID:
+		return m.ChannelID()
+	case message.FieldUserID:
+		return m.UserID()
+	case message.FieldParentID:
+		return m.ParentID()
 	case message.FieldBody:
 		return m.Body()
 	case message.FieldCreatedAt:
@@ -7694,6 +7794,12 @@ func (m *MessageMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *MessageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case message.FieldChannelID:
+		return m.OldChannelID(ctx)
+	case message.FieldUserID:
+		return m.OldUserID(ctx)
+	case message.FieldParentID:
+		return m.OldParentID(ctx)
 	case message.FieldBody:
 		return m.OldBody(ctx)
 	case message.FieldCreatedAt:
@@ -7717,6 +7823,27 @@ func (m *MessageMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *MessageMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case message.FieldChannelID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelID(v)
+		return nil
+	case message.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case message.FieldParentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentID(v)
+		return nil
 	case message.FieldBody:
 		v, ok := value.(string)
 		if !ok {
@@ -7796,6 +7923,9 @@ func (m *MessageMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *MessageMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(message.FieldParentID) {
+		fields = append(fields, message.FieldParentID)
+	}
 	if m.FieldCleared(message.FieldEditedAt) {
 		fields = append(fields, message.FieldEditedAt)
 	}
@@ -7825,6 +7955,9 @@ func (m *MessageMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *MessageMutation) ClearField(name string) error {
 	switch name {
+	case message.FieldParentID:
+		m.ClearParentID()
+		return nil
 	case message.FieldEditedAt:
 		m.ClearEditedAt()
 		return nil
@@ -7848,6 +7981,15 @@ func (m *MessageMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *MessageMutation) ResetField(name string) error {
 	switch name {
+	case message.FieldChannelID:
+		m.ResetChannelID()
+		return nil
+	case message.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case message.FieldParentID:
+		m.ResetParentID()
+		return nil
 	case message.FieldBody:
 		m.ResetBody()
 		return nil

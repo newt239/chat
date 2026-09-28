@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/message"
@@ -36,158 +37,74 @@ func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, mes
 	if err != nil {
 		return nil, err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	// メッセージの存在確認
-	exists, err := client.Message.Query().Where(message.ID(mid)).Exist(ctx)
+	exists, err := transaction.ResolveClient(ctx, r.client).Message.Query().Where(message.ID(mid)).Exist(ctx)
+	if err != nil || !exists {
+		return nil, err
+	}
+	metadata, err := r.CalculateMetadataByMessageIDs(ctx, []string{messageID})
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		return nil, nil
-	}
-
-	// 返信を取得
-	replies, err := client.Message.Query().
-		Where(message.HasParentWith(message.ID(mid))).
-		WithUser().
-		Order(ent.Desc(message.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// メタデータを計算
-	replyCount := len(replies)
-	var lastReplyAt *time.Time
-	var lastReplyUserID *string
-
-	if replyCount > 0 {
-		lastReply := replies[0]
-		lastReplyAt = &lastReply.CreatedAt
-		if lastReply.Edges.User != nil {
-			userID := lastReply.Edges.User.ID.String()
-			lastReplyUserID = &userID
-		}
-	}
-
-	// 参加者を取得（UserThreadFollowから）
-	follows, err := client.UserThreadFollow.Query().
-		Where(userthreadfollow.HasThreadWith(message.ID(mid))).
-		WithUser().
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	participantUserIDs := make([]string, 0, len(follows))
-	for _, follow := range follows {
-		if follow.Edges.User != nil {
-			participantUserIDs = append(participantUserIDs, follow.Edges.User.ID.String())
-		}
-	}
-
-	return &domainrepository.ThreadMetadata{
-		MessageID:          messageID,
-		ReplyCount:         replyCount,
-		LastReplyAt:        lastReplyAt,
-		LastReplyUserID:    lastReplyUserID,
-		ParticipantUserIDs: participantUserIDs,
-	}, nil
+	return metadata[messageID], nil
 }
+
+// 親ごとの返信数（削除済みを含む）と最新の返信を 1 本の SQL で求める
+// $1: 親メッセージ ID の配列
+const threadReplySummarySQL = `
+	SELECT DISTINCT ON (message_parent) message_parent, COUNT(*) OVER (PARTITION BY message_parent), created_at, message_user
+	FROM messages WHERE message_parent = ANY($1::uuid[])
+	ORDER BY message_parent, created_at DESC`
 
 // CalculateMetadataByMessageIDs は複数のメッセージIDのスレッドメタデータを一括計算します
 func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*domainrepository.ThreadMetadata, error) {
+	result := make(map[string]*domainrepository.ThreadMetadata, len(messageIDs))
 	if len(messageIDs) == 0 {
-		return make(map[string]*domainrepository.ThreadMetadata), nil
+		return result, nil
 	}
-
-	// Parse all message IDs
-	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
-	idStrMap := make(map[uuid.UUID]string)
-	for _, id := range messageIDs {
-		parsedID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
-		idStrMap[parsedID] = id
+	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
+	if err != nil {
+		return nil, err
+	}
+	byID := make(map[uuid.UUID]*domainrepository.ThreadMetadata, len(messageIDs))
+	for i, id := range messageIDs {
+		result[id] = &domainrepository.ThreadMetadata{MessageID: id, ParticipantUserIDs: []string{}}
+		byID[parsedIDs[i]] = result[id]
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-
-	// 全ての返信を取得
-	replies, err := client.Message.Query().
-		Where(message.HasParentWith(message.IDIn(parsedIDs...))).
-		WithUser().
-		Order(ent.Desc(message.FieldCreatedAt)).
-		All(ctx)
+	rows, err := client.QueryContext(ctx, threadReplySummarySQL, pq.Array(messageIDs))
 	if err != nil {
 		return nil, err
 	}
-
-	// 親メッセージごとにグループ化
-	repliesByParent := make(map[uuid.UUID][]*ent.Message)
-	for _, reply := range replies {
-		parentEdges := reply.QueryParent().IDsX(ctx)
-		if len(parentEdges) > 0 {
-			parentID := parentEdges[0]
-			repliesByParent[parentID] = append(repliesByParent[parentID], reply)
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var parentID, userID uuid.UUID
+		var count int
+		var lastReplyAt time.Time
+		if err := rows.Scan(&parentID, &count, &lastReplyAt, &userID); err != nil {
+			return nil, err
 		}
+		lastReplyUserID := userID.String()
+		metadata := byID[parentID]
+		metadata.ReplyCount = count
+		metadata.LastReplyAt = &lastReplyAt
+		metadata.LastReplyUserID = &lastReplyUserID
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
-	// 全てのフォローを取得
 	follows, err := client.UserThreadFollow.Query().
 		Where(userthreadfollow.HasThreadWith(message.IDIn(parsedIDs...))).
-		WithUser().
-		WithThread().
+		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
+		WithThread(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	// スレッドごとにフォロワーをグループ化
-	followersByThread := make(map[uuid.UUID][]string)
 	for _, follow := range follows {
-		if follow.Edges.Thread != nil && follow.Edges.User != nil {
-			threadID := follow.Edges.Thread.ID
-			userID := follow.Edges.User.ID.String()
-			followersByThread[threadID] = append(followersByThread[threadID], userID)
-		}
-	}
-
-	// 結果を構築
-	result := make(map[string]*domainrepository.ThreadMetadata)
-	for _, parsedID := range parsedIDs {
-		messageID := idStrMap[parsedID]
-		threadReplies := repliesByParent[parsedID]
-		replyCount := len(threadReplies)
-
-		var lastReplyAt *time.Time
-		var lastReplyUserID *string
-
-		if replyCount > 0 {
-			lastReply := threadReplies[0]
-			lastReplyAt = &lastReply.CreatedAt
-			if lastReply.Edges.User != nil {
-				userID := lastReply.Edges.User.ID.String()
-				lastReplyUserID = &userID
-			}
-		}
-
-		participantUserIDs := followersByThread[parsedID]
-		if participantUserIDs == nil {
-			participantUserIDs = []string{}
-		}
-
-		result[messageID] = &domainrepository.ThreadMetadata{
-			MessageID:          messageID,
-			ReplyCount:         replyCount,
-			LastReplyAt:        lastReplyAt,
-			LastReplyUserID:    lastReplyUserID,
-			ParticipantUserIDs: participantUserIDs,
-		}
+		metadata := byID[follow.Edges.Thread.ID]
+		metadata.ParticipantUserIDs = append(metadata.ParticipantUserIDs, follow.Edges.User.ID.String())
 	}
 
 	return result, nil
@@ -244,8 +161,6 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 	threads, err := query.
 		Order(func(s *sql.Selector) { s.OrderExpr(sql.Expr(lastActivityExpr(s) + " DESC")) }, ent.Desc(message.FieldID)).
 		Limit(input.Limit + 1).
-		WithChannel().
-		WithUser().
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -265,19 +180,15 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 	}
 
 	replies, err := client.Message.Query().
-		Where(message.HasParentWith(message.IDIn(threadIDs...)), message.DeletedAtIsNil()).
+		Where(message.ParentIDIn(threadIDs...), message.DeletedAtIsNil()).
 		Order(ent.Asc(message.FieldCreatedAt), ent.Asc(message.FieldID)).
-		WithParent().
-		WithChannel().
-		WithUser().
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	repliesByThread := make(map[uuid.UUID][]*ent.Message)
 	for _, reply := range replies {
-		parentID := reply.Edges.Parent.ID
-		repliesByThread[parentID] = append(repliesByThread[parentID], reply)
+		repliesByThread[*reply.ParentID] = append(repliesByThread[*reply.ParentID], reply)
 	}
 
 	readStates, err := client.ThreadReadState.Query().
@@ -285,7 +196,7 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 			threadreadstate.HasUserWith(user.ID(userID)),
 			threadreadstate.HasThreadWith(message.IDIn(threadIDs...)),
 		).
-		WithThread().
+		WithThread(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -306,20 +217,16 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 		readAt, hasRead := lastReadAt[thread.ID]
 		unreadCount := 0
 		for _, reply := range threadReplies {
-			if reply.Edges.User.ID != userID && (!hasRead || reply.CreatedAt.After(readAt)) {
+			if reply.UserID != userID && (!hasRead || reply.CreatedAt.After(readAt)) {
 				unreadCount++
 			}
 		}
 
-		var channelID *string
-		if thread.Edges.Channel != nil {
-			cid := thread.Edges.Channel.ID.String()
-			channelID = &cid
-		}
+		channelID := thread.ChannelID.String()
 
 		items = append(items, domainrepository.ParticipatingThread{
 			ThreadID:       thread.ID.String(),
-			ChannelID:      channelID,
+			ChannelID:      &channelID,
 			FirstMessage:   utils.MessageToEntity(thread),
 			LatestReplies:  toMessageEntities(threadReplies[max(len(threadReplies)-latestReplyCount, 0):]),
 			ReplyCount:     len(threadReplies),

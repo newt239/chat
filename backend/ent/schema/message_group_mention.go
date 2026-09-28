@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -40,5 +41,8 @@ func (MessageGroupMention) Edges() []ent.Edge {
 
 // Indexes of the MessageGroupMention.
 func (MessageGroupMention) Indexes() []ent.Index {
-	return []ent.Index{}
+	return []ent.Index{
+		index.Edges("message"),
+		index.Edges("group"),
+	}
 }

@@ -126,11 +126,7 @@ func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []stri
 	client := transaction.ResolveClient(ctx, r.client)
 	links, err := client.MessageLink.Query().
 		Where(messagelink.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
+		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err

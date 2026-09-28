@@ -161,8 +161,8 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 	}
 
 	var parentID *string
-	if m.Edges.Parent != nil {
-		pid := m.Edges.Parent.ID.String()
+	if m.ParentID != nil {
+		pid := m.ParentID.String()
 		parentID = &pid
 	}
 
@@ -170,14 +170,6 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 	if m.DeletedBy != uuid.Nil {
 		db := m.DeletedBy.String()
 		deletedBy = &db
-	}
-
-	var channelID, userID string
-	if m.Edges.Channel != nil {
-		channelID = m.Edges.Channel.ID.String()
-	}
-	if m.Edges.User != nil {
-		userID = m.Edges.User.ID.String()
 	}
 
 	var editedAt *time.Time
@@ -192,8 +184,8 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 
 	return &entity.Message{
 		ID:        m.ID.String(),
-		ChannelID: channelID,
-		UserID:    userID,
+		ChannelID: m.ChannelID.String(),
+		UserID:    m.UserID.String(),
 		ParentID:  parentID,
 		Body:      m.Body,
 		CreatedAt: m.CreatedAt,

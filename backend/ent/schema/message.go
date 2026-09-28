@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -18,6 +19,18 @@ func (Message) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
+			Immutable(),
+		// 外部キーをフィールドとして公開し、ID を得るためだけに関連を読み込まずに済ませる（列名は従来のまま）
+		field.UUID("channel_id", uuid.UUID{}).
+			StorageKey("message_channel").
+			Immutable(),
+		field.UUID("user_id", uuid.UUID{}).
+			StorageKey("message_user").
+			Immutable(),
+		field.UUID("parent_id", uuid.UUID{}).
+			StorageKey("message_parent").
+			Optional().
+			Nillable().
 			Immutable(),
 		field.Text("body").
 			NotEmpty(),
@@ -43,13 +56,19 @@ func (Message) Fields() []ent.Field {
 func (Message) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("channel", Channel.Type).
+			Field("channel_id").
 			Unique().
-			Required(),
+			Required().
+			Immutable(),
 		edge.To("user", User.Type).
+			Field("user_id").
 			Unique().
-			Required(),
+			Required().
+			Immutable(),
 		edge.To("parent", Message.Type).
-			Unique(),
+			Field("parent_id").
+			Unique().
+			Immutable(),
 		edge.From("replies", Message.Type).
 			Ref("parent"),
 		edge.From("reactions", MessageReaction.Type).
@@ -76,5 +95,10 @@ func (Message) Edges() []ent.Edge {
 func (Message) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("created_at"),
+		// タイムラインと未読数は削除済みを読まないため部分インデックスにする
+		index.Fields("channel_id", "created_at").
+			Annotations(entsql.IndexWhere("deleted_at IS NULL")),
+		index.Fields("parent_id", "created_at"),
+		index.Fields("user_id"),
 	}
 }

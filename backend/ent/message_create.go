@@ -35,6 +35,32 @@ type MessageCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_c *MessageCreate) SetChannelID(v uuid.UUID) *MessageCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *MessageCreate) SetUserID(v uuid.UUID) *MessageCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetParentID sets the "parent_id" field.
+func (_c *MessageCreate) SetParentID(v uuid.UUID) *MessageCreate {
+	_c.mutation.SetParentID(v)
+	return _c
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableParentID(v *uuid.UUID) *MessageCreate {
+	if v != nil {
+		_c.SetParentID(*v)
+	}
+	return _c
+}
+
 // SetBody sets the "body" field.
 func (_c *MessageCreate) SetBody(v string) *MessageCreate {
 	_c.mutation.SetBody(v)
@@ -139,40 +165,14 @@ func (_c *MessageCreate) SetNillableID(v *uuid.UUID) *MessageCreate {
 	return _c
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *MessageCreate) SetChannelID(id uuid.UUID) *MessageCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_c *MessageCreate) SetChannel(v *Channel) *MessageCreate {
 	return _c.SetChannelID(v.ID)
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *MessageCreate) SetUserID(id uuid.UUID) *MessageCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *MessageCreate) SetUser(v *User) *MessageCreate {
 	return _c.SetUserID(v.ID)
-}
-
-// SetParentID sets the "parent" edge to the Message entity by ID.
-func (_c *MessageCreate) SetParentID(id uuid.UUID) *MessageCreate {
-	_c.mutation.SetParentID(id)
-	return _c
-}
-
-// SetNillableParentID sets the "parent" edge to the Message entity by ID if the given value is not nil.
-func (_c *MessageCreate) SetNillableParentID(id *uuid.UUID) *MessageCreate {
-	if id != nil {
-		_c = _c.SetParentID(*id)
-	}
-	return _c
 }
 
 // SetParent sets the "parent" edge to the Message entity.
@@ -377,6 +377,12 @@ func (_c *MessageCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *MessageCreate) check() error {
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "Message.channel_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Message.user_id"`)}
+	}
 	if _, ok := _c.mutation.Body(); !ok {
 		return &ValidationError{Name: "body", err: errors.New(`ent: missing required field "Message.body"`)}
 	}
@@ -472,7 +478,7 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -489,7 +495,7 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
@@ -506,7 +512,7 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_parent = &nodes[0]
+		_node.ParentID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.RepliesIDs(); len(nodes) > 0 {
@@ -676,7 +682,7 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Message.Create().
-//		SetBody(v).
+//		SetChannelID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -685,7 +691,7 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageUpsert) {
-//			SetBody(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageCreate) OnConflict(opts ...sql.ConflictOption) *MessageUpsertOne {
@@ -839,6 +845,15 @@ func (u *MessageUpsertOne) UpdateNewValues() *MessageUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(message.FieldID)
+		}
+		if _, exists := u.create.mutation.ChannelID(); exists {
+			s.SetIgnore(message.FieldChannelID)
+		}
+		if _, exists := u.create.mutation.UserID(); exists {
+			s.SetIgnore(message.FieldUserID)
+		}
+		if _, exists := u.create.mutation.ParentID(); exists {
+			s.SetIgnore(message.FieldParentID)
 		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(message.FieldCreatedAt)
@@ -1129,7 +1144,7 @@ func (_c *MessageCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageUpsert) {
-//			SetBody(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageUpsertBulk {
@@ -1175,6 +1190,15 @@ func (u *MessageUpsertBulk) UpdateNewValues() *MessageUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(message.FieldID)
+			}
+			if _, exists := b.mutation.ChannelID(); exists {
+				s.SetIgnore(message.FieldChannelID)
+			}
+			if _, exists := b.mutation.UserID(); exists {
+				s.SetIgnore(message.FieldUserID)
+			}
+			if _, exists := b.mutation.ParentID(); exists {
+				s.SetIgnore(message.FieldParentID)
 			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(message.FieldCreatedAt)
