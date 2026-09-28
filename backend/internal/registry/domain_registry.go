@@ -100,6 +100,10 @@ func (r *DomainRegistry) NewChannelStarRepository() domainrepository.ChannelStar
 	return repository.NewChannelStarRepository(r.client)
 }
 
+func (r *DomainRegistry) NewChannelMuteRepository() domainrepository.ChannelMuteRepository {
+	return repository.NewChannelMuteRepository(r.client)
+}
+
 func (r *DomainRegistry) NewChannelLinkRepository() domainrepository.ChannelLinkRepository {
 	return repository.NewChannelLinkRepository(r.client)
 }

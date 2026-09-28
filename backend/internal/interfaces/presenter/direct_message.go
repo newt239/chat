@@ -33,8 +33,11 @@ func DirectMessage(dm *dmuc.DMOutput) *chatv1.DirectMessage {
 		Members: ConvertAll(dm.Members, func(m dmuc.DMMemberOutput) *chatv1.DirectMessageMember {
 			return &chatv1.DirectMessageMember{UserId: m.UserID, DisplayName: m.DisplayName, AvatarUrl: m.AvatarURL}
 		}),
-		CreatedAt: rfc3339Timestamp(dm.CreatedAt),
-		UpdatedAt: rfc3339Timestamp(dm.UpdatedAt),
-		IsStarred: dm.IsStarred,
+		CreatedAt:   rfc3339Timestamp(dm.CreatedAt),
+		UpdatedAt:   rfc3339Timestamp(dm.UpdatedAt),
+		IsStarred:   dm.IsStarred,
+		IsMuted:     dm.IsMuted,
+		UnreadCount: int32(dm.UnreadCount),
+		HasMention:  dm.HasMention,
 	}
 }

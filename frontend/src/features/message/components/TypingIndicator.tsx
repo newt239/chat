@@ -1,13 +1,17 @@
-import { Text } from "@mantine/core";
 import { useParams } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
+import { useTranslation } from "react-i18next";
 
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { preferencesAtom } from "#/providers/store/preferences";
 
 type TypingIndicatorProps = {
   userIds: string[];
 };
 
 export const TypingIndicator = ({ userIds }: TypingIndicatorProps) => {
+  const { t } = useTranslation();
+  const { locale } = useAtomValue(preferencesAtom);
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: members } = useMembers(workspaceId);
 
@@ -16,13 +20,27 @@ export const TypingIndicator = ({ userIds }: TypingIndicatorProps) => {
   }
 
   const names = userIds.map(
-    (userId) => members?.find((member) => member.userId === userId)?.displayName ?? "誰か",
+    (userId) =>
+      members?.find((member) => member.userId === userId)?.displayName ??
+      t("message.typing.someone"),
   );
-  const label = names.length > 2 ? `${names.slice(0, 2).join("、")}ほか` : names.join("、");
+  const list = new Intl.ListFormat(locale).format(names.slice(0, 2));
 
   return (
-    <Text size="xs" c="dimmed" className="px-4 py-1">
-      {label}が入力中...
-    </Text>
+    <div
+      aria-live="polite"
+      className="flex h-[18px] items-center gap-1.5 px-5 font-sans text-[11.5px] text-muted"
+    >
+      <span aria-hidden className="inline-flex gap-0.5">
+        {[0, 1, 2].map((index) => (
+          <span
+            key={index}
+            className="size-1 animate-pulse rounded-full bg-muted motion-reduce:animate-none"
+            style={{ animationDelay: `${index * 200}ms` }}
+          />
+        ))}
+      </span>
+      {t(names.length > 2 ? "message.typing.many" : "message.typing.one", { names: list })}
+    </div>
   );
 };

@@ -1,5 +1,9 @@
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { useAtomValue } from "jotai";
+
+import { preferencesAtom } from "#/providers/store/preferences";
+import { useColorMode } from "#/providers/theme/colorMode";
 
 type EmojiPickerProps = {
   onEmojiSelect: (emoji: string) => void;
@@ -10,16 +14,17 @@ type EmojiSelectEvent = {
 };
 
 export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => {
-  const handleEmojiSelect = (emoji: EmojiSelectEvent) => {
-    onEmojiSelect(emoji.native);
-  };
+  const { locale } = useAtomValue(preferencesAtom);
+  const colorMode = useColorMode();
 
   return (
     <Picker
       data={data}
-      onEmojiSelect={handleEmojiSelect}
-      theme="light"
-      locale="ja"
+      onEmojiSelect={(emoji: EmojiSelectEvent) => {
+        onEmojiSelect(emoji.native);
+      }}
+      theme={colorMode}
+      locale={locale}
       previewPosition="none"
     />
   );

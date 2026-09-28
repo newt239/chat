@@ -46,6 +46,12 @@ type SetChannelStarredInput struct {
 	Starred   bool
 }
 
+type SetChannelMutedInput struct {
+	ChannelID string
+	UserID    string
+	Muted     bool
+}
+
 type ChannelOutput struct {
 	ID          string     `json:"id"`
 	WorkspaceID string     `json:"workspaceId"`
@@ -59,6 +65,7 @@ type ChannelOutput struct {
 	HasMention  bool       `json:"hasMention"`
 	ParentID    *string    `json:"parentId"`
 	IsStarred   bool       `json:"isStarred"`
+	IsMuted     bool       `json:"isMuted"`
 	IsMember    bool       `json:"isMember"`
 	ArchivedAt  *time.Time `json:"archivedAt,omitempty"`
 }

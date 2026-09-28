@@ -37,12 +37,14 @@ type ChannelUseCase interface {
 	UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error)
 	SetArchived(ctx context.Context, input SetArchivedInput) (*ChannelOutput, error)
 	SetChannelStarred(ctx context.Context, input SetChannelStarredInput) error
+	SetChannelMuted(ctx context.Context, input SetChannelMutedInput) error
 }
 
 type channelInteractor struct {
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	channelStarRepo   domainrepository.ChannelStarRepository
+	channelMuteRepo   domainrepository.ChannelMuteRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 	readStateRepo     domainrepository.ReadStateRepository
 	txManager         domaintransaction.Manager
@@ -56,6 +58,7 @@ func NewChannelInteractor(
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	channelStarRepo domainrepository.ChannelStarRepository,
+	channelMuteRepo domainrepository.ChannelMuteRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	readStateRepo domainrepository.ReadStateRepository,
 	txManager domaintransaction.Manager,
@@ -68,6 +71,7 @@ func NewChannelInteractor(
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		channelStarRepo:   channelStarRepo,
+		channelMuteRepo:   channelMuteRepo,
 		workspaceRepo:     workspaceRepo,
 		readStateRepo:     readStateRepo,
 		txManager:         txManager,
@@ -138,17 +142,23 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch starred channels: %w", err)
 	}
+	muted, err := i.channelMuteRepo.FindMutedChannelIDs(ctx, input.UserID, allIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch muted channels: %w", err)
+	}
 
 	output := make([]ChannelOutput, 0, len(all))
 	for _, ch := range joined {
 		out := toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID] > 0)
 		out.IsMember = true
 		out.IsStarred = starred[ch.ID]
+		out.IsMuted = muted[ch.ID]
 		output = append(output, out)
 	}
 	for _, ch := range ancestors {
 		out := toChannelOutput(ch)
 		out.IsStarred = starred[ch.ID]
+		out.IsMuted = muted[ch.ID]
 		output = append(output, out)
 	}
 	slices.SortFunc(output, func(a, b ChannelOutput) int { return strings.Compare(a.Name, b.Name) })
@@ -342,10 +352,15 @@ func (i *channelInteractor) GetChannel(ctx context.Context, input GetChannelInpu
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch starred channels: %w", err)
 	}
+	muted, err := i.channelMuteRepo.FindMutedChannelIDs(ctx, input.UserID, []string{ch.ID})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch muted channels: %w", err)
+	}
 
 	output := toChannelOutput(ch)
 	output.IsMember = isMember
 	output.IsStarred = starred[ch.ID]
+	output.IsMuted = muted[ch.ID]
 	return &output, nil
 }
 
@@ -355,6 +370,16 @@ func (i *channelInteractor) SetChannelStarred(ctx context.Context, input SetChan
 	}
 	if err := i.channelStarRepo.SetStarred(ctx, input.UserID, input.ChannelID, input.Starred); err != nil {
 		return fmt.Errorf("failed to update star: %w", err)
+	}
+	return nil
+}
+
+func (i *channelInteractor) SetChannelMuted(ctx context.Context, input SetChannelMutedInput) error {
+	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
+		return err
+	}
+	if err := i.channelMuteRepo.SetMuted(ctx, input.UserID, input.ChannelID, input.Muted); err != nil {
+		return fmt.Errorf("failed to update mute: %w", err)
 	}
 	return nil
 }

@@ -73,16 +73,20 @@ func (DirectMessageType) EnumDescriptor() ([]byte, []int) {
 }
 
 type DirectMessage struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	WorkspaceId   string                 `protobuf:"bytes,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Type          DirectMessageType      `protobuf:"varint,5,opt,name=type,proto3,enum=chat.v1.DirectMessageType" json:"type,omitempty"`
-	Members       []*DirectMessageMember `protobuf:"bytes,6,rep,name=members,proto3" json:"members,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	IsStarred     bool                   `protobuf:"varint,9,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	WorkspaceId string                 `protobuf:"bytes,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Description *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Type        DirectMessageType      `protobuf:"varint,5,opt,name=type,proto3,enum=chat.v1.DirectMessageType" json:"type,omitempty"`
+	Members     []*DirectMessageMember `protobuf:"bytes,6,rep,name=members,proto3" json:"members,omitempty"`
+	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	IsStarred   bool                   `protobuf:"varint,9,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
+	IsMuted     bool                   `protobuf:"varint,10,opt,name=is_muted,json=isMuted,proto3" json:"is_muted,omitempty"`
+	// ListDirectMessages でのみ設定される
+	UnreadCount   int32 `protobuf:"varint,11,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
+	HasMention    bool  `protobuf:"varint,12,opt,name=has_mention,json=hasMention,proto3" json:"has_mention,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -176,6 +180,27 @@ func (x *DirectMessage) GetUpdatedAt() *timestamppb.Timestamp {
 func (x *DirectMessage) GetIsStarred() bool {
 	if x != nil {
 		return x.IsStarred
+	}
+	return false
+}
+
+func (x *DirectMessage) GetIsMuted() bool {
+	if x != nil {
+		return x.IsMuted
+	}
+	return false
+}
+
+func (x *DirectMessage) GetUnreadCount() int32 {
+	if x != nil {
+		return x.UnreadCount
+	}
+	return 0
+}
+
+func (x *DirectMessage) GetHasMention() bool {
+	if x != nil {
+		return x.HasMention
 	}
 	return false
 }
@@ -532,7 +557,7 @@ var File_chat_v1_direct_message_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"\n" +
-	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8a\x03\n" +
+	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe9\x03\n" +
 	"\rDirectMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -545,7 +570,12 @@ const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1d\n" +
 	"\n" +
-	"is_starred\x18\t \x01(\bR\tisStarredB\x0e\n" +
+	"is_starred\x18\t \x01(\bR\tisStarred\x12\x19\n" +
+	"\bis_muted\x18\n" +
+	" \x01(\bR\aisMuted\x12!\n" +
+	"\funread_count\x18\v \x01(\x05R\vunreadCount\x12\x1f\n" +
+	"\vhas_mention\x18\f \x01(\bR\n" +
+	"hasMentionB\x0e\n" +
 	"\f_description\"\x84\x01\n" +
 	"\x13DirectMessageMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +

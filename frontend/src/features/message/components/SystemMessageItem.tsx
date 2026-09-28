@@ -1,50 +1,69 @@
-import { Text } from "@mantine/core";
+import { formatDateTime, formatTime } from "@chat/i18n";
+import { IconInfoCircle } from "@tabler/icons-react";
+import { useParams } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
+import { useTranslation } from "react-i18next";
 
+import { useMembers } from "#/features/member/hooks/useMembers";
 import { SystemMessageKind } from "#/gen/chat/v1/message_pb";
 import { toDate } from "#/lib/timestamp";
-
-import { dateTimeFormatter } from "../utils/time";
+import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { SystemMessage } from "#/gen/chat/v1/message_pb";
 
-import type { JsonObject } from "@bufbuild/protobuf";
+import type { JsonValue } from "@bufbuild/protobuf";
 
-type Props = {
+type SystemMessageItemProps = {
   message: SystemMessage;
 };
 
-const asText = (value: unknown, fallback = "") => (typeof value === "string" ? value : fallback);
+const textOf = (value: JsonValue | undefined) => (typeof value === "string" ? value : "");
 
-const systemMessageTexts: Record<SystemMessageKind, (payload: JsonObject) => string> = {
-  [SystemMessageKind.UNSPECIFIED]: () => "システムイベントが記録されました",
-  [SystemMessageKind.MEMBER_JOINED]: (payload) =>
-    `ユーザー ${asText(payload.userId)} が参加しました`,
-  [SystemMessageKind.MEMBER_ADDED]: (payload) =>
-    `ユーザー ${asText(payload.userId)} が ${asText(payload.addedBy)} により追加されました`,
-  [SystemMessageKind.MEMBER_REMOVED]: (payload) =>
-    `ユーザー ${asText(payload.userId)} がチャンネルから外されました`,
-  [SystemMessageKind.MEMBER_LEFT]: (payload) => `ユーザー ${asText(payload.userId)} が退出しました`,
-  [SystemMessageKind.CHANNEL_PRIVACY_CHANGED]: (payload) =>
-    `チャンネルの公開設定が ${asText(payload.from, "public")} から ${asText(payload.to, "public")} に変更されました`,
-  [SystemMessageKind.CHANNEL_NAME_CHANGED]: (payload) =>
-    `チャンネル名が "${asText(payload.from)}" から "${asText(payload.to)}" に変更されました`,
-  [SystemMessageKind.CHANNEL_DESCRIPTION_CHANGED]: () => "チャンネルの説明が更新されました",
-  [SystemMessageKind.MESSAGE_PINNED]: (payload) =>
-    `メッセージがピン留めされました（by ${asText(payload.pinnedBy)}）`,
-};
-
-export const SystemMessageItem = ({ message }: Props) => {
-  const time = dateTimeFormatter().format(toDate(message.createdAt));
+export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
+  const { t } = useTranslation();
+  const { locale } = useAtomValue(preferencesAtom);
+  const { workspaceId } = useParams({ strict: false });
+  const { data: members } = useMembers(workspaceId ?? null);
   const payload = message.payload ?? {};
+  const nameOf = (key: string) => {
+    const userId = textOf(payload[key]);
+    return members?.find((member) => member.userId === userId)?.displayName ?? userId;
+  };
+  const from = textOf(payload.from);
+  const to = textOf(payload.to);
+
+  const texts: Record<SystemMessageKind, () => string> = {
+    [SystemMessageKind.UNSPECIFIED]: () => t("message.system.unspecified"),
+    [SystemMessageKind.MEMBER_JOINED]: () =>
+      t("message.system.memberJoined", { user: nameOf("userId") }),
+    [SystemMessageKind.MEMBER_ADDED]: () =>
+      t("message.system.memberAdded", { by: nameOf("addedBy"), user: nameOf("userId") }),
+    [SystemMessageKind.MEMBER_REMOVED]: () =>
+      t("message.system.memberRemoved", { user: nameOf("userId") }),
+    [SystemMessageKind.MEMBER_LEFT]: () =>
+      t("message.system.memberLeft", { user: nameOf("userId") }),
+    [SystemMessageKind.CHANNEL_PRIVACY_CHANGED]: () =>
+      t("message.system.privacyChanged", { from: from || "public", to: to || "public" }),
+    [SystemMessageKind.CHANNEL_NAME_CHANGED]: () => t("message.system.nameChanged", { from, to }),
+    [SystemMessageKind.CHANNEL_DESCRIPTION_CHANGED]: () => t("message.system.descriptionChanged"),
+    [SystemMessageKind.MESSAGE_PINNED]: () =>
+      t("message.system.messagePinned", { user: nameOf("pinnedBy") }),
+  };
+  const createdAt = toDate(message.createdAt);
 
   return (
-    <div className="px-4 py-2">
-      <Text size="xs" c="dimmed">
-        {time}
-      </Text>
-      <Text size="sm" c="dimmed">
-        {systemMessageTexts[message.kind](payload)}
-      </Text>
+    <div className="flex items-center gap-2.5 px-[18px] py-[3px] font-sans text-[12.5px] text-muted">
+      <span className="grid w-8 shrink-0 place-items-center text-subtle [&_svg]:size-3.5">
+        <IconInfoCircle aria-hidden />
+      </span>
+      <span className="min-w-0">{texts[message.kind]()}</span>
+      <time
+        dateTime={createdAt.toISOString()}
+        title={formatDateTime(createdAt, locale)}
+        className="shrink-0 font-mono text-[11.5px] text-subtle tabular-nums"
+      >
+        {formatTime(createdAt, locale)}
+      </time>
     </div>
   );
 };

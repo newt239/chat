@@ -51,6 +51,9 @@ const (
 	// ChannelServiceSetChannelStarredProcedure is the fully-qualified name of the ChannelService's
 	// SetChannelStarred RPC.
 	ChannelServiceSetChannelStarredProcedure = "/chat.v1.ChannelService/SetChannelStarred"
+	// ChannelServiceSetChannelMutedProcedure is the fully-qualified name of the ChannelService's
+	// SetChannelMuted RPC.
+	ChannelServiceSetChannelMutedProcedure = "/chat.v1.ChannelService/SetChannelMuted"
 	// ChannelServiceArchiveChannelProcedure is the fully-qualified name of the ChannelService's
 	// ArchiveChannel RPC.
 	ChannelServiceArchiveChannelProcedure = "/chat.v1.ChannelService/ArchiveChannel"
@@ -67,6 +70,8 @@ type ChannelServiceClient interface {
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
 	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
 	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
+	// 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
+	SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error)
 	// チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
 	ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error)
 	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
@@ -119,6 +124,12 @@ func NewChannelServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(channelServiceMethods.ByName("SetChannelStarred")),
 			connect.WithClientOptions(opts...),
 		),
+		setChannelMuted: connect.NewClient[v1.SetChannelMutedRequest, v1.SetChannelMutedResponse](
+			httpClient,
+			baseURL+ChannelServiceSetChannelMutedProcedure,
+			connect.WithSchema(channelServiceMethods.ByName("SetChannelMuted")),
+			connect.WithClientOptions(opts...),
+		),
 		archiveChannel: connect.NewClient[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse](
 			httpClient,
 			baseURL+ChannelServiceArchiveChannelProcedure,
@@ -142,6 +153,7 @@ type channelServiceClient struct {
 	updateChannel     *connect.Client[v1.UpdateChannelRequest, v1.UpdateChannelResponse]
 	deleteChannel     *connect.Client[v1.DeleteChannelRequest, v1.DeleteChannelResponse]
 	setChannelStarred *connect.Client[v1.SetChannelStarredRequest, v1.SetChannelStarredResponse]
+	setChannelMuted   *connect.Client[v1.SetChannelMutedRequest, v1.SetChannelMutedResponse]
 	archiveChannel    *connect.Client[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse]
 	unarchiveChannel  *connect.Client[v1.UnarchiveChannelRequest, v1.UnarchiveChannelResponse]
 }
@@ -200,6 +212,15 @@ func (c *channelServiceClient) SetChannelStarred(ctx context.Context, req *v1.Se
 	return nil, err
 }
 
+// SetChannelMuted calls chat.v1.ChannelService.SetChannelMuted.
+func (c *channelServiceClient) SetChannelMuted(ctx context.Context, req *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error) {
+	response, err := c.setChannelMuted.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // ArchiveChannel calls chat.v1.ChannelService.ArchiveChannel.
 func (c *channelServiceClient) ArchiveChannel(ctx context.Context, req *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error) {
 	response, err := c.archiveChannel.CallUnary(ctx, connect.NewRequest(req))
@@ -226,6 +247,8 @@ type ChannelServiceHandler interface {
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
 	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
 	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
+	// 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
+	SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error)
 	// チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
 	ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error)
 	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
@@ -274,6 +297,12 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 		connect.WithSchema(channelServiceMethods.ByName("SetChannelStarred")),
 		connect.WithHandlerOptions(opts...),
 	)
+	channelServiceSetChannelMutedHandler := connect.NewUnaryHandlerSimple(
+		ChannelServiceSetChannelMutedProcedure,
+		svc.SetChannelMuted,
+		connect.WithSchema(channelServiceMethods.ByName("SetChannelMuted")),
+		connect.WithHandlerOptions(opts...),
+	)
 	channelServiceArchiveChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceArchiveChannelProcedure,
 		svc.ArchiveChannel,
@@ -300,6 +329,8 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 			channelServiceDeleteChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceSetChannelStarredProcedure:
 			channelServiceSetChannelStarredHandler.ServeHTTP(w, r)
+		case ChannelServiceSetChannelMutedProcedure:
+			channelServiceSetChannelMutedHandler.ServeHTTP(w, r)
 		case ChannelServiceArchiveChannelProcedure:
 			channelServiceArchiveChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceUnarchiveChannelProcedure:
@@ -335,6 +366,10 @@ func (UnimplementedChannelServiceHandler) DeleteChannel(context.Context, *v1.Del
 
 func (UnimplementedChannelServiceHandler) SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.SetChannelStarred is not implemented"))
+}
+
+func (UnimplementedChannelServiceHandler) SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.SetChannelMuted is not implemented"))
 }
 
 func (UnimplementedChannelServiceHandler) ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error) {
