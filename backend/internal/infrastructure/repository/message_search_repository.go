@@ -2,16 +2,14 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"strings"
-	"unicode/utf8"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/message"
@@ -31,82 +29,153 @@ import (
 // @channel / @here を単語として含む本文に一致する POSIX 正規表現
 const broadcastMentionPattern = `(^|[^[:alnum:]_])@(channel|here)([^[:alnum:]_-]|$)`
 
-func (r *messageRepository) SearchMessages(ctx context.Context, c domainrepository.MessageSearchCriteria) ([]*entity.Message, int, error) {
-	viewerID, err := utils.ParseUUID(c.ViewerID, "viewer ID")
-	if err != nil {
-		return nil, 0, err
-	}
-	channelIDs, err := parseUUIDs(c.ChannelIDs, "channel ID")
-	if err != nil {
-		return nil, 0, err
-	}
-	authorIDs, err := parseUUIDs(c.AuthorIDs, "author ID")
-	if err != nil {
-		return nil, 0, err
-	}
+// 検索用文書は関連テーブルを配列やフラグにまとめて 1 本の SQL で読む
+// $1: @channel / @here の正規表現。WHERE 句は呼び出し側で足す
+const searchDocumentSQL = `
+	SELECT m.id, c.channel_workspace, m.message_channel, m.message_user, m.message_parent, m.body, m.created_at,
+		ARRAY(SELECT a.file_name FROM attachments a WHERE a.attachment_message = m.id ORDER BY a.created_at),
+		ARRAY(SELECT a.mime_type FROM attachments a WHERE a.attachment_message = m.id),
+		ARRAY(SELECT um.message_user_mention_user::text FROM message_user_mentions um WHERE um.message_user_mention_message = m.id),
+		ARRAY(SELECT gm.message_group_mention_group::text FROM message_group_mentions gm WHERE gm.message_group_mention_message = m.id),
+		m.body ~ $1,
+		EXISTS (SELECT 1 FROM message_links l WHERE l.message_link_message = m.id),
+		EXISTS (SELECT 1 FROM message_pins p WHERE p.message_pin_message = m.id),
+		EXISTS (SELECT 1 FROM messages r WHERE r.message_parent = m.id AND r.deleted_at IS NULL)
+	FROM messages m JOIN channels c ON c.id = m.message_channel
+	WHERE m.deleted_at IS NULL AND `
 
-	preds := []predicate.Message{
-		message.DeletedAtIsNil(),
-		message.HasChannelWith(viewableChannel(c.WorkspaceID, viewerID)),
-	}
-	for _, term := range c.Terms {
-		preds = append(preds, message.Or(
-			message.BodyContainsFold(term),
-			message.HasAttachmentsWith(attachment.FileNameContainsFold(term)),
-		))
-	}
-	if len(channelIDs) > 0 {
-		preds = append(preds, message.HasChannelWith(channel.IDIn(channelIDs...)))
-	}
-	if len(authorIDs) > 0 {
-		preds = append(preds, message.HasUserWith(user.IDIn(authorIDs...)))
-	}
-	for _, kind := range c.Has {
-		pred, err := hasContent(kind)
-		if err != nil {
-			return nil, 0, err
-		}
-		preds = append(preds, pred)
-	}
-	if c.PinnedOnly {
-		preds = append(preds, message.HasPins())
-	}
-	if c.ThreadOnly {
-		preds = append(preds, message.Or(message.HasParent(), message.HasReplies()))
-	}
-	if c.ExcludeReplies {
-		preds = append(preds, message.Not(message.HasParent()))
-	}
-	if c.MentionsViewer {
-		preds = append(preds, mentionsUser(viewerID))
-	}
-	if c.After != nil {
-		preds = append(preds, message.CreatedAtGTE(*c.After))
-	}
-	if c.Before != nil {
-		preds = append(preds, message.CreatedAtLT(*c.Before))
+func (r *messageRepository) FindSearchScope(ctx context.Context, workspaceID string, userID string) (*domainrepository.MessageSearchScope, error) {
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	query := client.Message.Query().Where(preds...)
-
-	total, err := query.Clone().Count(ctx)
+	viewable, err := client.Channel.Query().Where(viewableChannel(workspaceID, uid)).IDs(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-
-	if c.Sort == domainrepository.MessageSearchSortRelevance && len(c.Terms) > 0 {
-		query = query.Order(relevanceOrder(c.Terms))
-	}
-	messages, err := query.
-		Order(ent.Desc(message.FieldCreatedAt), ent.Desc(message.FieldID)).
-		Offset(c.Offset).
-		Limit(c.Limit).
-		All(ctx)
+	joined, err := client.Channel.Query().
+		Where(channel.HasWorkspaceWith(workspace.ID(workspaceID)), channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid)))).
+		IDs(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return toMessageEntities(messages), total, nil
+	groups, err := client.UserGroup.Query().
+		Where(usergroup.HasWorkspaceWith(workspace.ID(workspaceID)), usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(uid)))).
+		IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &domainrepository.MessageSearchScope{
+		UserID:             userID,
+		ViewableChannelIDs: uuidStrings(viewable),
+		JoinedChannelIDs:   uuidStrings(joined),
+		GroupIDs:           uuidStrings(groups),
+	}, nil
+}
+
+func (r *messageRepository) FindSearchDocuments(ctx context.Context, messageIDs []string) ([]domainrepository.MessageSearchDocument, error) {
+	if len(messageIDs) == 0 {
+		return []domainrepository.MessageSearchDocument{}, nil
+	}
+	if _, err := parseUUIDs(messageIDs, "message ID"); err != nil {
+		return nil, err
+	}
+	return r.querySearchDocuments(ctx, "m.id = ANY($2::uuid[])", pq.Array(messageIDs))
+}
+
+func (r *messageRepository) FindSearchDocumentsAfter(ctx context.Context, afterID string, limit int) ([]domainrepository.MessageSearchDocument, error) {
+	after := uuid.Nil
+	if afterID != "" {
+		parsed, err := utils.ParseUUID(afterID, "message ID")
+		if err != nil {
+			return nil, err
+		}
+		after = parsed
+	}
+	return r.querySearchDocuments(ctx, "m.id > $2 ORDER BY m.id LIMIT $3", after, limit)
+}
+
+func (r *messageRepository) querySearchDocuments(ctx context.Context, where string, args ...any) ([]domainrepository.MessageSearchDocument, error) {
+	rows, err := transaction.ResolveClient(ctx, r.client).QueryContext(ctx, searchDocumentSQL+where, append([]any{broadcastMentionPattern}, args...)...)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	docs := []domainrepository.MessageSearchDocument{}
+	for rows.Next() {
+		var (
+			id, channelID, senderID                 uuid.UUID
+			workspaceID, body                       string
+			parentID                                uuid.NullUUID
+			createdAt                               time.Time
+			fileNames, mimeTypes, userIDs, groupIDs pq.StringArray
+			mentionsChannel, hasLink, pinned, reply bool
+		)
+		if err := rows.Scan(&id, &workspaceID, &channelID, &senderID, &parentID, &body, &createdAt,
+			&fileNames, &mimeTypes, &userIDs, &groupIDs, &mentionsChannel, &hasLink, &pinned, &reply); err != nil {
+			return nil, err
+		}
+		doc := domainrepository.MessageSearchDocument{
+			ID:                id.String(),
+			WorkspaceID:       workspaceID,
+			ChannelID:         channelID.String(),
+			SenderID:          senderID.String(),
+			Body:              body,
+			AttachmentNames:   fileNames,
+			Has:               contentKinds(body, mimeTypes, hasLink),
+			MentionedUserIDs:  userIDs,
+			MentionedGroupIDs: groupIDs,
+			MentionsChannel:   mentionsChannel,
+			Pinned:            pinned,
+			HasReplies:        reply,
+			CreatedAt:         createdAt,
+		}
+		if parentID.Valid {
+			pid := parentID.UUID.String()
+			doc.ParentID = &pid
+		}
+		docs = append(docs, doc)
+	}
+	return docs, rows.Err()
+}
+
+// contentKinds は添付の種類と、リンクを含むかどうかから絞り込み用の種類を求めます
+func contentKinds(body string, mimeTypes []string, hasLink bool) []domainrepository.MessageContentKind {
+	seen := map[domainrepository.MessageContentKind]bool{}
+	for _, mimeType := range mimeTypes {
+		switch {
+		case strings.HasPrefix(mimeType, "image/"):
+			seen[domainrepository.MessageContentImage] = true
+		case strings.HasPrefix(mimeType, "video/"):
+			seen[domainrepository.MessageContentVideo] = true
+		default:
+			seen[domainrepository.MessageContentFile] = true
+		}
+	}
+	if hasLink || strings.Contains(body, "http://") || strings.Contains(body, "https://") {
+		seen[domainrepository.MessageContentLink] = true
+	}
+	kinds := []domainrepository.MessageContentKind{}
+	for _, kind := range []domainrepository.MessageContentKind{
+		domainrepository.MessageContentImage, domainrepository.MessageContentVideo,
+		domainrepository.MessageContentFile, domainrepository.MessageContentLink,
+	} {
+		if seen[kind] {
+			kinds = append(kinds, kind)
+		}
+	}
+	return kinds
+}
+
+func uuidStrings(ids []uuid.UUID) []string {
+	result := make([]string, len(ids))
+	for i, id := range ids {
+		result[i] = id.String()
+	}
+	return result
 }
 
 func (r *messageRepository) FindMentions(ctx context.Context, input domainrepository.FindMentionsInput) ([]*entity.Message, error) {
@@ -118,7 +187,7 @@ func (r *messageRepository) FindMentions(ctx context.Context, input domainreposi
 	preds := []predicate.Message{
 		message.DeletedAtIsNil(),
 		message.HasChannelWith(viewableChannel(input.WorkspaceID, userID)),
-		message.Not(message.HasUserWith(user.ID(userID))),
+		message.UserIDNEQ(userID),
 		mentionsUser(userID),
 	}
 	if input.Cursor != nil {
@@ -171,45 +240,4 @@ func mentionsUser(userID uuid.UUID) predicate.Message {
 			}),
 		),
 	)
-}
-
-func hasContent(kind domainrepository.MessageContentKind) (predicate.Message, error) {
-	switch kind {
-	case domainrepository.MessageContentImage:
-		return message.HasAttachmentsWith(attachment.MimeTypeHasPrefix("image/")), nil
-	case domainrepository.MessageContentVideo:
-		return message.HasAttachmentsWith(attachment.MimeTypeHasPrefix("video/")), nil
-	case domainrepository.MessageContentFile:
-		return message.HasAttachmentsWith(
-			attachment.Not(attachment.MimeTypeHasPrefix("image/")),
-			attachment.Not(attachment.MimeTypeHasPrefix("video/")),
-		), nil
-	case domainrepository.MessageContentLink:
-		return message.Or(
-			message.HasLinks(),
-			message.BodyContains("http://"),
-			message.BodyContains("https://"),
-		), nil
-	default:
-		return nil, fmt.Errorf("unknown content kind: %s", kind)
-	}
-}
-
-// relevanceOrder は語をそのまま並べた句を含むものを先頭に、次に語の出現回数の合計が多い順に並べます
-// ORDER BY 句ではプレースホルダの番号が振られないため、語はリテラルとしてエスケープして埋め込む
-func relevanceOrder(terms []string) func(*sql.Selector) {
-	return func(s *sql.Selector) {
-		body := "lower(" + s.C(message.FieldBody) + ")"
-		if len(terms) > 1 {
-			phrase := pq.QuoteLiteral(strings.ToLower(strings.Join(terms, " ")))
-			s.OrderExpr(sql.Expr(fmt.Sprintf("strpos(%s, %s) > 0 DESC", body, phrase)))
-		}
-		counts := make([]string, 0, len(terms))
-		for _, term := range terms {
-			lowered := strings.ToLower(term)
-			counts = append(counts, fmt.Sprintf("(char_length(%[1]s) - char_length(replace(%[1]s, %[2]s, ''))) / %[3]d",
-				body, pq.QuoteLiteral(lowered), utf8.RuneCountInString(lowered)))
-		}
-		s.OrderExpr(sql.Expr("(" + strings.Join(counts, " + ") + ") DESC"))
-	}
 }

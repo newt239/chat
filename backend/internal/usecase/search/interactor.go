@@ -17,9 +17,10 @@ func NewSearchUseCase(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelRepo domainrepository.ChannelRepository,
 	messageRepo domainrepository.MessageRepository,
+	searchIndex domainrepository.MessageSearchIndex,
 	userRepo domainrepository.UserRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
 	messageOutputBuilder *messageuc.MessageOutputBuilder,
 ) SearchUseCase {
-	return NewWorkspaceSearcher(workspaceRepo, channelRepo, messageRepo, userRepo, userGroupRepo, messageOutputBuilder)
+	return NewWorkspaceSearcher(workspaceRepo, channelRepo, messageRepo, searchIndex, userRepo, userGroupRepo, messageOutputBuilder)
 }

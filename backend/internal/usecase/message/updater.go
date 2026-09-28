@@ -24,6 +24,7 @@ type MessageUpdater struct {
 	transactionManager    transaction.Manager
 	outputBuilder         *MessageOutputBuilder
 	channelAccessSvc      service.ChannelAccessService
+	searchIndexer         SearchIndexer
 }
 
 // NewMessageUpdater は新しいMessageUpdaterを作成します
@@ -39,6 +40,7 @@ func NewMessageUpdater(
 	transactionManager transaction.Manager,
 	outputBuilder *MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
+	searchIndexer SearchIndexer,
 ) *MessageUpdater {
 	return &MessageUpdater{
 		messageRepo:           messageRepo,
@@ -52,6 +54,7 @@ func NewMessageUpdater(
 		transactionManager:    transactionManager,
 		outputBuilder:         outputBuilder,
 		channelAccessSvc:      channelAccessSvc,
+		searchIndexer:         searchIndexer,
 	}
 }
 
@@ -124,6 +127,8 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 	if err != nil {
 		return nil, err
 	}
+
+	u.searchIndexer.Sync(ctx, message.ID)
 
 	// WebSocket通知を送信
 	if u.notificationSvc != nil {

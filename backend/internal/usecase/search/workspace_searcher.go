@@ -3,6 +3,7 @@ package search
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -23,6 +24,7 @@ type WorkspaceSearcher struct {
 	workspaceRepo        domainrepository.WorkspaceRepository
 	channelRepo          domainrepository.ChannelRepository
 	messageRepo          domainrepository.MessageRepository
+	searchIndex          domainrepository.MessageSearchIndex
 	userRepo             domainrepository.UserRepository
 	userGroupRepo        domainrepository.UserGroupRepository
 	messageOutputBuilder *messageuc.MessageOutputBuilder
@@ -32,6 +34,7 @@ func NewWorkspaceSearcher(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelRepo domainrepository.ChannelRepository,
 	messageRepo domainrepository.MessageRepository,
+	searchIndex domainrepository.MessageSearchIndex,
 	userRepo domainrepository.UserRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
 	messageOutputBuilder *messageuc.MessageOutputBuilder,
@@ -40,6 +43,7 @@ func NewWorkspaceSearcher(
 		workspaceRepo:        workspaceRepo,
 		channelRepo:          channelRepo,
 		messageRepo:          messageRepo,
+		searchIndex:          searchIndex,
 		userRepo:             userRepo,
 		userGroupRepo:        userGroupRepo,
 		messageOutputBuilder: messageOutputBuilder,
@@ -136,9 +140,17 @@ func (s *WorkspaceSearcher) searchMessages(
 		channelIDs = withDescendantChannelIDs(channels, channelIDs)
 	}
 
-	messages, total, err := s.messageRepo.SearchMessages(ctx, domainrepository.MessageSearchCriteria{
+	scope, err := s.messageRepo.FindSearchScope(ctx, input.WorkspaceID, input.RequesterID)
+	if err != nil {
+		return PaginatedMessages{}, fmt.Errorf("failed to load search scope: %w", err)
+	}
+	channelIDs = searchableChannelIDs(scope.ViewableChannelIDs, channelIDs)
+	if len(channelIDs) == 0 {
+		return result, nil
+	}
+
+	criteria := domainrepository.MessageSearchCriteria{
 		WorkspaceID:    input.WorkspaceID,
-		ViewerID:       input.RequesterID,
 		Terms:          terms,
 		ChannelIDs:     channelIDs,
 		AuthorIDs:      f.FromUserIDs,
@@ -146,15 +158,26 @@ func (s *WorkspaceSearcher) searchMessages(
 		PinnedOnly:     f.PinnedOnly,
 		ThreadOnly:     f.ThreadOnly,
 		ExcludeReplies: f.ExcludeReplies,
-		MentionsViewer: f.MentionsMe,
 		After:          f.After,
 		Before:         f.Before,
 		Sort:           input.Sort,
-		Limit:          limit,
-		Offset:         offset,
-	})
+		Page:           page,
+		PerPage:        limit,
+	}
+	if f.MentionsMe {
+		criteria.Mention = scope
+	}
+	// キーワードがなければ関連度は決まらないため新しい順にする
+	if len(terms) == 0 {
+		criteria.Sort = domainrepository.MessageSearchSortNewest
+	}
+	hits, err := s.searchIndex.Search(ctx, criteria)
 	if err != nil {
 		return PaginatedMessages{}, fmt.Errorf("failed to search messages: %w", err)
+	}
+	messages, err := s.findLiveMessages(ctx, hits.MessageIDs)
+	if err != nil {
+		return PaginatedMessages{}, err
 	}
 
 	outputs, err := s.messageOutputBuilder.Build(ctx, input.RequesterID, messages)
@@ -164,9 +187,42 @@ func (s *WorkspaceSearcher) searchMessages(
 	for _, o := range outputs {
 		result.Items = append(result.Items, MessageHit{Message: o, Highlights: highlightRanges(o.Body, terms)})
 	}
-	result.Total = total
-	result.HasMore = offset+len(outputs) < total
+	result.Total = hits.Total
+	result.HasMore = offset+len(hits.MessageIDs) < hits.Total
 	return result, nil
+}
+
+// findLiveMessages はインデックスが返した順に、削除されていないメッセージを読み込みます
+func (s *WorkspaceSearcher) findLiveMessages(ctx context.Context, ids []string) ([]*entity.Message, error) {
+	found, err := s.messageRepo.FindByIDs(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load messages: %w", err)
+	}
+	byID := make(map[string]*entity.Message, len(found))
+	for _, m := range found {
+		byID[m.ID] = m
+	}
+	messages := make([]*entity.Message, 0, len(ids))
+	for _, id := range ids {
+		if m := byID[id]; m != nil && m.DeletedAt == nil {
+			messages = append(messages, m)
+		}
+	}
+	return messages, nil
+}
+
+// searchableChannelIDs は閲覧できるチャンネルのうち、指定があればそれに含まれるものを返します
+func searchableChannelIDs(viewable []string, requested []string) []string {
+	if len(requested) == 0 {
+		return viewable
+	}
+	result := []string{}
+	for _, id := range requested {
+		if slices.Contains(viewable, id) {
+			result = append(result, id)
+		}
+	}
+	return result
 }
 
 // splitTerms は全角を含む空白で区切った語を重複なく最大 maxTerms 個返します

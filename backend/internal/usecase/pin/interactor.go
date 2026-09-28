@@ -37,6 +37,7 @@ type interactor struct {
 	channelAccessSvc  service.ChannelAccessService
 	systemMessageUC   systemmessage.UseCase
 	permissionSvc     service.PermissionService
+	searchIndexer     message.SearchIndexer
 }
 
 func NewPinInteractor(
@@ -51,6 +52,7 @@ func NewPinInteractor(
 	channelAccessSvc service.ChannelAccessService,
 	systemMessageUC systemmessage.UseCase,
 	permissionSvc service.PermissionService,
+	searchIndexer message.SearchIndexer,
 ) PinUseCase {
 	return &interactor{
 		pinRepo:           pinRepo,
@@ -64,6 +66,7 @@ func NewPinInteractor(
 		channelAccessSvc:  channelAccessSvc,
 		systemMessageUC:   systemMessageUC,
 		permissionSvc:     permissionSvc,
+		searchIndexer:     searchIndexer,
 	}
 }
 
@@ -132,6 +135,7 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 	if err := i.pinRepo.Create(ctx, p); err != nil {
 		return err
 	}
+	i.searchIndexer.Sync(ctx, input.MessageID)
 
 	// システムメッセージ作成（ピン留め）
 	if i.systemMessageUC != nil {
@@ -186,6 +190,7 @@ func (i *interactor) UnpinMessage(ctx context.Context, input UnpinMessageInput) 
 	if err := i.pinRepo.Delete(ctx, input.ChannelID, input.MessageID); err != nil {
 		return err
 	}
+	i.searchIndexer.Sync(ctx, input.MessageID)
 	if i.notificationSvc != nil {
 		ch, _ := i.channelRepo.FindByID(ctx, input.ChannelID)
 		if ch != nil {

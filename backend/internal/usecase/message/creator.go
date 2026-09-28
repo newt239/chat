@@ -25,6 +25,7 @@ type MessageCreator struct {
 	transactionManager    transaction.Manager
 	outputBuilder         *MessageOutputBuilder
 	channelAccessSvc      service.ChannelAccessService
+	searchIndexer         SearchIndexer
 }
 
 func NewMessageCreator(
@@ -40,6 +41,7 @@ func NewMessageCreator(
 	transactionManager transaction.Manager,
 	outputBuilder *MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
+	searchIndexer SearchIndexer,
 ) *MessageCreator {
 	return &MessageCreator{
 		messageRepo:           messageRepo,
@@ -54,6 +56,7 @@ func NewMessageCreator(
 		transactionManager:    transactionManager,
 		outputBuilder:         outputBuilder,
 		channelAccessSvc:      channelAccessSvc,
+		searchIndexer:         searchIndexer,
 	}
 }
 
@@ -132,6 +135,13 @@ func (c *MessageCreator) publish(ctx context.Context, channel *entity.Channel, m
 	if err != nil {
 		return nil, err
 	}
+
+	// 返信が付くと親メッセージの「スレッドあり」も変わる
+	indexIDs := []string{message.ID}
+	if message.ParentID != nil {
+		indexIDs = append(indexIDs, *message.ParentID)
+	}
+	c.searchIndexer.Sync(ctx, indexIDs...)
 
 	if c.notificationSvc != nil {
 		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, result.WithoutMessagePreviews())

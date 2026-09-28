@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/link"
 	"github.com/newt239/chat/internal/infrastructure/logger"
+	"github.com/newt239/chat/internal/infrastructure/meilisearch"
 	"github.com/newt239/chat/internal/infrastructure/mention"
 	"github.com/newt239/chat/internal/infrastructure/ogp"
 	"github.com/newt239/chat/internal/infrastructure/storage/local"
@@ -25,6 +26,7 @@ type InfrastructureRegistry struct {
 	config         *config.Config
 	hub            *websocket.Hub
 	domainRegistry *DomainRegistry
+	messageIndex   *meilisearch.MessageIndex
 }
 
 // NewInfrastructureRegistry は新しいInfrastructureRegistryを作成します
@@ -34,6 +36,7 @@ func NewInfrastructureRegistry(client *ent.Client, cfg *config.Config, hub *webs
 		config:         cfg,
 		hub:            hub,
 		domainRegistry: domainRegistry,
+		messageIndex:   meilisearch.NewMessageIndex(cfg.Search.MeilisearchURL, cfg.Search.MeilisearchAPIKey),
 	}
 }
 
@@ -118,6 +121,10 @@ func (r *InfrastructureRegistry) NewLinkProcessingService() service.LinkProcessi
 
 func (r *InfrastructureRegistry) NewTransactionManager() domaintransaction.Manager {
 	return transaction.NewTransactionManager(r.client)
+}
+
+func (r *InfrastructureRegistry) MessageSearchIndex() *meilisearch.MessageIndex {
+	return r.messageIndex
 }
 
 func (r *InfrastructureRegistry) NewLogger() service.Logger {

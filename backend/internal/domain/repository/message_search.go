@@ -1,6 +1,9 @@
 package repository
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type MessageContentKind string
 
@@ -18,23 +21,66 @@ const (
 	MessageSearchSortRelevance MessageSearchSort = "relevance"
 )
 
-// MessageSearchCriteria は閲覧者が見られるチャンネルに限定したメッセージ検索の条件です（条件はすべて AND）
+// MessageSearchIndex はメッセージの全文検索インデックスです
+type MessageSearchIndex interface {
+	Search(ctx context.Context, criteria MessageSearchCriteria) (*MessageSearchResult, error)
+	// Upsert は同じ ID の文書を置き換えます
+	Upsert(ctx context.Context, documents []MessageSearchDocument) error
+	Delete(ctx context.Context, messageIDs []string) error
+	DeleteAll(ctx context.Context) error
+}
+
+// MessageSearchCriteria は全文検索の条件です（条件はすべて AND）
 type MessageSearchCriteria struct {
-	WorkspaceID    string
-	ViewerID       string
-	Terms          []string
+	WorkspaceID string
+	Terms       []string
+	// ChannelIDs は閲覧者が見られるものに絞り込み済みの検索対象で、空にしない
 	ChannelIDs     []string
 	AuthorIDs      []string
 	Has            []MessageContentKind
 	PinnedOnly     bool
 	ThreadOnly     bool
 	ExcludeReplies bool
-	MentionsViewer bool
-	After          *time.Time
-	Before         *time.Time
-	Sort           MessageSearchSort
-	Limit          int
-	Offset         int
+	// Mention を指定すると、その閲覧者宛てのメッセージに絞り込む
+	Mention *MessageSearchScope
+	After   *time.Time
+	Before  *time.Time
+	Sort    MessageSearchSort
+	Page    int
+	PerPage int
+}
+
+type MessageSearchResult struct {
+	MessageIDs []string
+	Total      int
+}
+
+// MessageSearchScope は閲覧者が検索できる範囲と、自分宛てかを判定するための所属です
+type MessageSearchScope struct {
+	UserID             string
+	ViewableChannelIDs []string
+	// JoinedChannelIDs は参加しているチャンネル（@channel / @here が届く範囲）
+	JoinedChannelIDs []string
+	GroupIDs         []string
+}
+
+// MessageSearchDocument は検索インデックスに載せる、削除されていないメッセージの内容です
+type MessageSearchDocument struct {
+	ID                string
+	WorkspaceID       string
+	ChannelID         string
+	SenderID          string
+	ParentID          *string
+	Body              string
+	AttachmentNames   []string
+	Has               []MessageContentKind
+	MentionedUserIDs  []string
+	MentionedGroupIDs []string
+	// MentionsChannel は本文が @channel / @here を含むかどうか
+	MentionsChannel bool
+	Pinned          bool
+	HasReplies      bool
+	CreatedAt       time.Time
 }
 
 type MessageCursor struct {

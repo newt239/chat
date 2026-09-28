@@ -18,6 +18,7 @@ import (
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
+	"github.com/newt239/chat/internal/usecase/searchindex"
 	systemmsguc "github.com/newt239/chat/internal/usecase/systemmessage"
 	threaduc "github.com/newt239/chat/internal/usecase/thread"
 	useruc "github.com/newt239/chat/internal/usecase/user"
@@ -145,6 +146,7 @@ func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
 			r.infrastructureRegistry.NewTransactionManager(),
 			r.NewMessageOutputBuilder(),
 			r.domainRegistry.NewChannelAccessService(),
+			r.NewSearchIndexer(),
 		),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
@@ -171,6 +173,15 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.domainRegistry.NewPermissionService(),
+		r.infrastructureRegistry.NewLogger(),
+		r.NewSearchIndexer(),
+	)
+}
+
+func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {
+	return searchindex.NewIndexer(
+		r.domainRegistry.NewMessageRepository(),
+		r.infrastructureRegistry.MessageSearchIndex(),
 		r.infrastructureRegistry.NewLogger(),
 	)
 }
@@ -240,6 +251,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.domainRegistry.NewChannelAccessService(),
 		r.NewSystemMessageUseCase(),
 		r.domainRegistry.NewPermissionService(),
+		r.NewSearchIndexer(),
 	)
 }
 
@@ -258,6 +270,7 @@ func (r *UseCaseRegistry) NewSearchUseCase() searchuc.SearchUseCase {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewMessageRepository(),
+		r.infrastructureRegistry.MessageSearchIndex(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewUserGroupRepository(),
 		r.NewMessageOutputBuilder(),

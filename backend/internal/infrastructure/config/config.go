@@ -16,6 +16,13 @@ type Config struct {
 	Storage  StorageConfig
 	Wasabi   WasabiConfig
 	CORS     CORSConfig
+	Search   SearchConfig
+}
+
+// SearchConfig はメッセージの全文検索に使う Meilisearch への接続先です
+type SearchConfig struct {
+	MeilisearchURL    string
+	MeilisearchAPIKey string
 }
 
 // StorageConfig は添付ファイルの保存先。Driver は wasabi（S3 互換）か local（開発用）
@@ -83,6 +90,10 @@ func Load() (*Config, error) {
 		},
 		CORS: CORSConfig{
 			AllowedOrigins: getEnvList("CORS_ALLOWED_ORIGINS", "http://localhost:5173"),
+		},
+		Search: SearchConfig{
+			MeilisearchURL:    getEnv("MEILISEARCH_URL", "http://localhost:7700"),
+			MeilisearchAPIKey: getEnv("MEILISEARCH_API_KEY", ""),
 		},
 	}
 

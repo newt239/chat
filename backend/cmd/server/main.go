@@ -65,6 +65,7 @@ func main() {
 	}
 
 	reg := registry.NewRegistry(client, cfg)
+	go prepareSearchIndex(reg)
 
 	hub := reg.NewWebSocketHub()
 	go hub.Run()
@@ -94,4 +95,24 @@ func main() {
 	}
 
 	log.Println("Server exited")
+}
+
+// prepareSearchIndex は検索インデックスの設定を反映し、空なら全件を登録します。検索以外の機能は止めない
+func prepareSearchIndex(reg *registry.Registry) {
+	ctx := context.Background()
+	index := reg.Infrastructure().MessageSearchIndex()
+	if err := index.EnsureSettings(ctx); err != nil {
+		log.Printf("Warning: failed to configure the search index: %v", err)
+		return
+	}
+	empty, err := index.IsEmpty(ctx)
+	if err != nil || !empty {
+		return
+	}
+	count, err := reg.UseCase().NewSearchIndexer().Reindex(ctx)
+	if err != nil {
+		log.Printf("Warning: failed to build the search index: %v", err)
+		return
+	}
+	log.Printf("Indexed %d messages for search", count)
 }
