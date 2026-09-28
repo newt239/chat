@@ -5,16 +5,16 @@ import { SearchPage } from "#/features/search/components/SearchPage";
 import { ThreadListPage } from "#/features/thread/components/ThreadListPage";
 import { WorkspaceSelection } from "#/features/workspace/components/WorkspaceSelection";
 import { paths } from "#/lib/paths";
+import { ChannelPage } from "#/pages/ChannelPage";
+import { LoginPage } from "#/pages/LoginPage";
+import { NotFoundPage } from "#/pages/NotFoundPage";
+import { RegisterPage } from "#/pages/RegisterPage";
+import { RootLayout } from "#/pages/RootLayout";
+import { RouteErrorBoundary } from "#/pages/RouteErrorBoundary";
+import { WorkspaceIndexPage } from "#/pages/WorkspaceIndexPage";
+import { WorkspaceLayout } from "#/pages/WorkspaceLayout";
 import { store } from "#/providers/store";
 import { isAuthenticatedAtom } from "#/providers/store/auth";
-import { ChannelPage } from "#/routes/ChannelPage";
-import { LoginPage } from "#/routes/LoginPage";
-import { NotFoundPage } from "#/routes/NotFoundPage";
-import { RegisterPage } from "#/routes/RegisterPage";
-import { RootLayout } from "#/routes/RootLayout";
-import { RouteErrorBoundary } from "#/routes/RouteErrorBoundary";
-import { WorkspaceIndexPage } from "#/routes/WorkspaceIndexPage";
-import { WorkspaceLayout } from "#/routes/WorkspaceLayout";
 
 import type { RouteObject } from "react-router";
 

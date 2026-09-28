@@ -4,9 +4,9 @@ import { describe, expect, test } from "vite-plus/test";
 import { SearchPage } from "#/features/search/components/SearchPage";
 import { ThreadListPage } from "#/features/thread/components/ThreadListPage";
 import { WorkspaceSelection } from "#/features/workspace/components/WorkspaceSelection";
-import { ChannelPage } from "#/routes/ChannelPage";
+import { ChannelPage } from "#/pages/ChannelPage";
+import { WorkspaceIndexPage } from "#/pages/WorkspaceIndexPage";
 import { routeTree } from "#/routes/routeTree";
-import { WorkspaceIndexPage } from "#/routes/WorkspaceIndexPage";
 
 const matchLeaf = (pathname: string) => matchRoutes(routeTree, pathname)?.at(-1);
 
