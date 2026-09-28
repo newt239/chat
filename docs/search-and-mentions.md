@@ -59,3 +59,30 @@ TF-IDF のような重み付けはしない。ユーザーが結果の順序を�
 - 各スレッドに、ユーザー情報などを含む親メッセージと、最新の返信 2 件（`latest_replies`）を返す。一覧のカードにそのまま表示できるようにするため。
 - 未読数には自分の返信を数えない。
 - 一覧からの返信は既存の `MessageService.CreateMessage`（`parent_id` を指定）を使う。返信した結果はレスポンスの `message` を `latest_replies` に追加するか、一覧を再取得して反映する。
+
+## フロントエンド
+
+### 修飾子のパーサー（`@chat/search-query`）
+
+- `packages/search-query` に DOM に依存しない純粋関数として置く（React Native と共有するため）。`parseSearchQuery` / `formatSearchQuery` / `searchDateRange`。
+- 対応する修飾子は `from:@名前` `in:#チャンネル` `has:image|file|link|video` `is:pinned|thread|mention` `during:today|week|month` `after:YYYY-MM-DD` `before:YYYY-MM-DD`。空白を含む名前は `from:@"Alice Smith"` のようにクォートする。
+  - `is:mention` は North Star に合わせて追加した（「自分宛て」チップを入力欄と同期させるため）。
+- 解釈できない修飾子（値が空・未知の値・存在しない日付）は語として残す。入力途中の `from:@` を黙って消さないため。
+- `during:week` / `month` は今日を含む 7 / 30 日。`after:` / `before:` は Slack と同じく指定した日を含まない。日付は端末のローカル時刻で解釈する。
+- 名前から ID への解決は UI 側（`useResolvedSearchQuery`）。投稿者は表示名・ニックネーム・メールのローカル部の完全一致（大文字小文字は区別しない）、チャンネルはフルパス名の一致。解決できない名前があれば検索せず、チップを警告表示にして知らせる（黙って条件を外すと結果が広がって誤解させるため）。
+
+### 検索画面の状態
+
+- URL の search params は `q`（修飾子を含む入力欄の文字列そのもの）・`filter`（タブ）・`page`・`sort`・`subs`（下階層を含む）・`replies`（返信を含む）。
+- チップは `q` を解析して描き、操作したら `formatSearchQuery` で `q` を書き戻す。状態の正を `q` の 1 つにすることで、チップと入力欄の双方向の同期を単純にした。書き戻すと修飾子の順序は正規化される。
+- 「下階層を含む」と「返信を含む」は修飾子を持たないため URL の別の値にした。前者は `in:` のチャンネルに下階層があるときだけ出す。
+- ヘルプの修飾子を押すと入力欄に挿入するだけで、Enter で確定する（`from:@` のように続きを入力するものがあるため）。
+- 抜粋は最初の一致の 40 文字前から切り出す。
+
+### スレッド一覧・メンション一覧
+
+- どちらも無限スクロール（末尾の要素を IntersectionObserver で監視）。connect-query の `useInfiniteQuery` は最初のカーソルに `undefined` を渡せない型のため、TanStack Query の `useInfiniteQuery` と `callUnaryMethod` を直接使う。
+- カードは検索結果と共通の `MessageListCard`（会話名・日時・元の位置へのリンク）。メッセージはタイムラインと同じ `MessageItem` で描き、リアクションやメニューもそのまま使える。
+- スレッド一覧から返信したら、レスポンスのメッセージを一覧のキャッシュの `latest_replies` に足す（`setQueriesData`）。再取得すると並び順が変わり、別のカードに入力中の欄が動くため。
+- メンション一覧の返信は、メンションされたメッセージが返信ならそのスレッド、そうでなければそのメッセージを親にしたスレッドに送る。送った返信はカードの中に積む。
+- モバイルの「通知」タブの中身はメンション一覧にした。ローカルストレージの通知一覧（`providers/store/notification.ts`）と WebSocket からそれを積む処理は削除した。タブのバッジは未読のメンションがあるチャンネル（ミュートを除く）の数。
