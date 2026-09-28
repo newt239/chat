@@ -13,7 +13,7 @@ export const auditActionKeys = {
   [AuditAction.CHANNEL_ARCHIVED]: "channelArchived",
   [AuditAction.CHANNEL_UNARCHIVED]: "channelUnarchived",
   [AuditAction.PERMISSION_CHANGED]: "permissionChanged",
-  [AuditAction.DATA_EXPORTED]: "dataExported",
+  [AuditAction.AUDIT_LOG_EXPORTED]: "auditLogExported",
 } as const;
 
 // 権限やセキュリティに関わる操作は目立たせる
@@ -22,7 +22,7 @@ export const sensitiveAuditActions: ReadonlySet<AuditAction> = new Set([
   AuditAction.MEMBER_ROLE_CHANGED,
   AuditAction.MEMBER_SUSPENDED,
   AuditAction.PERMISSION_CHANGED,
-  AuditAction.DATA_EXPORTED,
+  AuditAction.AUDIT_LOG_EXPORTED,
 ]);
 
 export const permissionKeys = {
@@ -30,23 +30,17 @@ export const permissionKeys = {
   [Permission.CREATE_PUBLIC_CHANNEL]: "createPublicChannel",
   [Permission.CREATE_PRIVATE_CHANNEL]: "createPrivateChannel",
   [Permission.INVITE_MEMBERS]: "inviteMembers",
-  [Permission.EDIT_USER_GROUPS]: "editUserGroups",
   [Permission.EDIT_CHANNEL_LINKS]: "editChannelLinks",
   [Permission.PIN_MESSAGES]: "pinMessages",
   [Permission.DELETE_OTHERS_MESSAGES]: "deleteOthersMessages",
-  [Permission.EXPORT_DATA]: "exportData",
-  [Permission.ADD_EXTERNAL_APPS]: "addExternalApps",
 } as const;
 
 // 監査ログの詳細（metadata）はサーバーの内部名で届くため、表示名のキーに引き直す
 export const permissionKeyByName: Readonly<Record<string, (typeof permissionKeys)[Permission]>> = {
-  add_external_apps: "addExternalApps",
   create_private_channel: "createPrivateChannel",
   create_public_channel: "createPublicChannel",
   delete_others_messages: "deleteOthersMessages",
   edit_channel_links: "editChannelLinks",
-  edit_user_groups: "editUserGroups",
-  export_data: "exportData",
   invite_members: "inviteMembers",
   pin_messages: "pinMessages",
 };

@@ -53,7 +53,7 @@ const (
 // AdminServiceClient is a client for the chat.v1.AdminService service.
 type AdminServiceClient interface {
 	ListAuditLogs(context.Context, *v1.ListAuditLogsRequest) (*v1.ListAuditLogsResponse, error)
-	// 絞り込んだ監査ログを CSV で返す。データのエクスポート権限も必要で、書き出したこと自体も監査ログに残る
+	// 絞り込んだ監査ログを CSV で返す。書き出したこと自体も監査ログに残る
 	ExportAuditLogs(context.Context, *v1.ExportAuditLogsRequest) (*v1.ExportAuditLogsResponse, error)
 	ListAdminMembers(context.Context, *v1.ListAdminMembersRequest) (*v1.ListAdminMembersResponse, error)
 	// 停止するとリフレッシュトークンを失効させ、以降そのワークスペースの API を拒否する。投稿は残る
@@ -162,7 +162,7 @@ func (c *adminServiceClient) ResumeMember(ctx context.Context, req *v1.ResumeMem
 // AdminServiceHandler is an implementation of the chat.v1.AdminService service.
 type AdminServiceHandler interface {
 	ListAuditLogs(context.Context, *v1.ListAuditLogsRequest) (*v1.ListAuditLogsResponse, error)
-	// 絞り込んだ監査ログを CSV で返す。データのエクスポート権限も必要で、書き出したこと自体も監査ログに残る
+	// 絞り込んだ監査ログを CSV で返す。書き出したこと自体も監査ログに残る
 	ExportAuditLogs(context.Context, *v1.ExportAuditLogsRequest) (*v1.ExportAuditLogsResponse, error)
 	ListAdminMembers(context.Context, *v1.ListAdminMembersRequest) (*v1.ListAdminMembersResponse, error)
 	// 停止するとリフレッシュトークンを失効させ、以降そのワークスペースの API を拒否する。投稿は残る

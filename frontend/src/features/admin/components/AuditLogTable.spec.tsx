@@ -41,13 +41,11 @@ describe("AuditLogTable", () => {
             targetType: "user",
           }),
           create(AuditLogSchema, {
-            action: AuditAction.DATA_EXPORTED,
+            action: AuditAction.AUDIT_LOG_EXPORTED,
             actor: { displayName: "Alice", id: "u1" },
             createdAt,
             id: "l4",
-            metadata: { count: "12", format: "csv", kind: "audit_log" },
-            targetLabel: "監査ログ",
-            targetType: "data",
+            metadata: { count: "12" },
           }),
         ]}
       />,
@@ -61,7 +59,7 @@ describe("AuditLogTable", () => {
     expect(rows[1]).toHaveTextContent("メンバー → 管理者");
     expect(rows[2]).toHaveTextContent("不明");
     expect(rows[2]).toHaveTextContent("ログインに失敗");
-    expect(rows[3]).toHaveTextContent("監査ログ");
+    expect(rows[3]).toHaveTextContent("監査ログを書き出し");
     expect(rows[3]).toHaveTextContent("12 件");
   });
 

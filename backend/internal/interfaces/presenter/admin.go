@@ -19,19 +19,16 @@ var auditActions = map[entity.AuditAction]chatv1.AuditAction{
 	entity.AuditActionChannelArchived:   chatv1.AuditAction_AUDIT_ACTION_CHANNEL_ARCHIVED,
 	entity.AuditActionChannelUnarchived: chatv1.AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED,
 	entity.AuditActionPermissionChanged: chatv1.AuditAction_AUDIT_ACTION_PERMISSION_CHANGED,
-	entity.AuditActionDataExported:      chatv1.AuditAction_AUDIT_ACTION_DATA_EXPORTED,
+	entity.AuditActionAuditLogExported:  chatv1.AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED,
 }
 
 var permissions = map[entity.Permission]chatv1.Permission{
 	entity.PermissionCreatePublicChannel:  chatv1.Permission_PERMISSION_CREATE_PUBLIC_CHANNEL,
 	entity.PermissionCreatePrivateChannel: chatv1.Permission_PERMISSION_CREATE_PRIVATE_CHANNEL,
 	entity.PermissionInviteMembers:        chatv1.Permission_PERMISSION_INVITE_MEMBERS,
-	entity.PermissionEditUserGroups:       chatv1.Permission_PERMISSION_EDIT_USER_GROUPS,
 	entity.PermissionEditChannelLinks:     chatv1.Permission_PERMISSION_EDIT_CHANNEL_LINKS,
 	entity.PermissionPinMessages:          chatv1.Permission_PERMISSION_PIN_MESSAGES,
 	entity.PermissionDeleteOthersMessages: chatv1.Permission_PERMISSION_DELETE_OTHERS_MESSAGES,
-	entity.PermissionExportData:           chatv1.Permission_PERMISSION_EXPORT_DATA,
-	entity.PermissionAddExternalApps:      chatv1.Permission_PERMISSION_ADD_EXTERNAL_APPS,
 }
 
 // AuditActionNames はリクエストの操作の種類をユースケースが扱う値に変換します
@@ -85,7 +82,6 @@ func AdminMember(m adminuc.MemberOutput) *chatv1.AdminMember {
 		Role:               workspaceRoles[string(m.Role)],
 		JoinedAt:           timestamppb.New(m.JoinedAt),
 		SuspendedAt:        optionalTimestamp(m.SuspendedAt),
-		TwoFactorEnabled:   m.TwoFactorEnabled,
 		RecentMessageCount: int32(m.Activity.MessageCount),
 		StorageBytes:       m.Activity.StorageBytes,
 		LastMessageAt:      optionalTimestamp(m.Activity.LastMessageAt),

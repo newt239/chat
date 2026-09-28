@@ -7,11 +7,6 @@ import type { AuditLog } from "#/gen/chat/v1/admin_service_pb";
 
 type Metadata = AuditLog["metadata"];
 
-const exportKindKeys: Readonly<Record<string, "auditLog" | "messages">> = {
-  audit_log: "auditLog",
-  messages: "messages",
-};
-
 // 監査ログの対象と詳細は内部名（ロール名や権限名）で届くので、表示用の文言に置き換える
 export const useAuditLogFormatter = () => {
   const { t } = useTranslation();
@@ -25,10 +20,6 @@ export const useAuditLogFormatter = () => {
     if (log.targetType === "role") {
       return roleName(log.targetLabel);
     }
-    const kind = log.metadata.kind === undefined ? undefined : exportKindKeys[log.metadata.kind];
-    if (log.targetType === "data" && kind !== undefined) {
-      return t(`admin.audit.detail.exportKinds.${kind}`);
-    }
     return log.targetLabel || log.targetId;
   };
 
@@ -41,7 +32,7 @@ export const useAuditLogFormatter = () => {
         allowed === "true" ? t("admin.audit.detail.allowed") : t("admin.audit.detail.denied");
       return `${name}: ${state}`;
     },
-    [AuditAction.DATA_EXPORTED]: ({ count }) =>
+    [AuditAction.AUDIT_LOG_EXPORTED]: ({ count }) =>
       count === undefined ? "" : t("admin.audit.detail.exportCount", { count: Number(count) }),
     [AuditAction.CHANNEL_CREATED]: (metadata) =>
       metadata.private === "true" ? t("admin.audit.detail.private") : "",

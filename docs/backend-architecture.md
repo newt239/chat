@@ -352,7 +352,6 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 | `ChannelMemberService` | ListChannelMembers / InviteChannelMember / JoinChannel / LeaveChannel / RemoveChannelMember / UpdateChannelMemberRole | `channel_member_service.proto` |
 | `ChannelService` | ListChannels / CreateChannel / GetChannel / UpdateChannel / DeleteChannel / ArchiveChannel / UnarchiveChannel | `channel_service.proto` |
 | `DirectMessageService` | ListDirectMessages / CreateDirectMessage / CreateGroupDirectMessage | `direct_message_service.proto` |
-| `ExportService` | ExportMessages | `export_service.proto` |
 | `InsightService` | GetInsights | `insight_service.proto` |
 | `LinkService` | FetchOgp | `link_service.proto` |
 | `MentionService` | ListMentions | `mention_service.proto` |
