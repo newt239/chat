@@ -28,6 +28,9 @@ type DMOutput struct {
 	CreatedAt   string
 	UpdatedAt   string
 	IsStarred   bool
+	IsMuted     bool
+	UnreadCount int
+	HasMention  bool
 }
 
 type DMMemberOutput struct {

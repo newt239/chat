@@ -21,6 +21,7 @@ import (
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
+	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
 	"github.com/newt239/chat/ent/message"
@@ -60,6 +61,8 @@ type Client struct {
 	ChannelLink *ChannelLinkClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
 	ChannelMember *ChannelMemberClient
+	// ChannelMute is the client for interacting with the ChannelMute builders.
+	ChannelMute *ChannelMuteClient
 	// ChannelReadState is the client for interacting with the ChannelReadState builders.
 	ChannelReadState *ChannelReadStateClient
 	// ChannelStar is the client for interacting with the ChannelStar builders.
@@ -116,6 +119,7 @@ func (c *Client) init() {
 	c.Channel = NewChannelClient(c.config)
 	c.ChannelLink = NewChannelLinkClient(c.config)
 	c.ChannelMember = NewChannelMemberClient(c.config)
+	c.ChannelMute = NewChannelMuteClient(c.config)
 	c.ChannelReadState = NewChannelReadStateClient(c.config)
 	c.ChannelStar = NewChannelStarClient(c.config)
 	c.Message = NewMessageClient(c.config)
@@ -233,6 +237,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Channel:             NewChannelClient(cfg),
 		ChannelLink:         NewChannelLinkClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
+		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
 		Message:             NewMessageClient(cfg),
@@ -277,6 +282,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Channel:             NewChannelClient(cfg),
 		ChannelLink:         NewChannelLinkClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
+		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
 		Message:             NewMessageClient(cfg),
@@ -327,7 +333,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelReadState, c.ChannelStar, c.Message, c.MessageBookmark,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Message, c.MessageBookmark,
 		c.MessageGroupMention, c.MessageLink, c.MessagePin, c.MessageReaction,
 		c.MessageUserMention, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
 		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
@@ -342,7 +348,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelReadState, c.ChannelStar, c.Message, c.MessageBookmark,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Message, c.MessageBookmark,
 		c.MessageGroupMention, c.MessageLink, c.MessagePin, c.MessageReaction,
 		c.MessageUserMention, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
 		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
@@ -365,6 +371,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ChannelLink.mutate(ctx, m)
 	case *ChannelMemberMutation:
 		return c.ChannelMember.mutate(ctx, m)
+	case *ChannelMuteMutation:
+		return c.ChannelMute.mutate(ctx, m)
 	case *ChannelReadStateMutation:
 		return c.ChannelReadState.mutate(ctx, m)
 	case *ChannelStarMutation:
@@ -1312,6 +1320,171 @@ func (c *ChannelMemberClient) mutate(ctx context.Context, m *ChannelMemberMutati
 		return (&ChannelMemberDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ChannelMember mutation op: %q", m.Op())
+	}
+}
+
+// ChannelMuteClient is a client for the ChannelMute schema.
+type ChannelMuteClient struct {
+	config
+}
+
+// NewChannelMuteClient returns a client for the ChannelMute from the given config.
+func NewChannelMuteClient(c config) *ChannelMuteClient {
+	return &ChannelMuteClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `channelmute.Hooks(f(g(h())))`.
+func (c *ChannelMuteClient) Use(hooks ...Hook) {
+	c.hooks.ChannelMute = append(c.hooks.ChannelMute, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `channelmute.Intercept(f(g(h())))`.
+func (c *ChannelMuteClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChannelMute = append(c.inters.ChannelMute, interceptors...)
+}
+
+// Create returns a builder for creating a ChannelMute entity.
+func (c *ChannelMuteClient) Create() *ChannelMuteCreate {
+	mutation := newChannelMuteMutation(c.config, OpCreate)
+	return &ChannelMuteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChannelMute entities.
+func (c *ChannelMuteClient) CreateBulk(builders ...*ChannelMuteCreate) *ChannelMuteCreateBulk {
+	return &ChannelMuteCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ChannelMuteClient) MapCreateBulk(slice any, setFunc func(*ChannelMuteCreate, int)) *ChannelMuteCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ChannelMuteCreateBulk{err: fmt.Errorf("calling to ChannelMuteClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ChannelMuteCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ChannelMuteCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChannelMute.
+func (c *ChannelMuteClient) Update() *ChannelMuteUpdate {
+	mutation := newChannelMuteMutation(c.config, OpUpdate)
+	return &ChannelMuteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChannelMuteClient) UpdateOne(_m *ChannelMute) *ChannelMuteUpdateOne {
+	mutation := newChannelMuteMutation(c.config, OpUpdateOne, withChannelMute(_m))
+	return &ChannelMuteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChannelMuteClient) UpdateOneID(id uuid.UUID) *ChannelMuteUpdateOne {
+	mutation := newChannelMuteMutation(c.config, OpUpdateOne, withChannelMuteID(id))
+	return &ChannelMuteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChannelMute.
+func (c *ChannelMuteClient) Delete() *ChannelMuteDelete {
+	mutation := newChannelMuteMutation(c.config, OpDelete)
+	return &ChannelMuteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChannelMuteClient) DeleteOne(_m *ChannelMute) *ChannelMuteDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChannelMuteClient) DeleteOneID(id uuid.UUID) *ChannelMuteDeleteOne {
+	builder := c.Delete().Where(channelmute.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChannelMuteDeleteOne{builder}
+}
+
+// Query returns a query builder for ChannelMute.
+func (c *ChannelMuteClient) Query() *ChannelMuteQuery {
+	return &ChannelMuteQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChannelMute},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChannelMute entity by its id.
+func (c *ChannelMuteClient) Get(ctx context.Context, id uuid.UUID) (*ChannelMute, error) {
+	return c.Query().Where(channelmute.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChannelMuteClient) GetX(ctx context.Context, id uuid.UUID) *ChannelMute {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a ChannelMute.
+func (c *ChannelMuteClient) QueryUser(_m *ChannelMute) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelmute.Table, channelmute.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelmute.UserTable, channelmute.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannel queries the channel edge of a ChannelMute.
+func (c *ChannelMuteClient) QueryChannel(_m *ChannelMute) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelmute.Table, channelmute.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelmute.ChannelTable, channelmute.ChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ChannelMuteClient) Hooks() []Hook {
+	return c.hooks.ChannelMute
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChannelMuteClient) Interceptors() []Interceptor {
+	return c.inters.ChannelMute
+}
+
+func (c *ChannelMuteClient) mutate(ctx context.Context, m *ChannelMuteMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChannelMuteCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChannelMuteUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChannelMuteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChannelMuteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChannelMute mutation op: %q", m.Op())
 	}
 }
 
@@ -4986,18 +5159,19 @@ func (c *WorkspacePermissionClient) mutate(ctx context.Context, m *WorkspacePerm
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelReadState,
-		ChannelStar, Message, MessageBookmark, MessageGroupMention, MessageLink,
-		MessagePin, MessageReaction, MessageUserMention, Session, SystemMessage,
-		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
-		Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
+		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
+		ChannelReadState, ChannelStar, Message, MessageBookmark, MessageGroupMention,
+		MessageLink, MessagePin, MessageReaction, MessageUserMention, Session,
+		SystemMessage, ThreadReadState, User, UserGroup, UserGroupMember, UserNote,
+		UserThreadFollow, Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
-		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelReadState,
-		ChannelStar, Message, MessageBookmark, MessageGroupMention, MessageLink,
-		MessagePin, MessageReaction, MessageUserMention, Session, SystemMessage,
-		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
-		Workspace, WorkspaceMember, WorkspacePermission []ent.Interceptor
+		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
+		ChannelReadState, ChannelStar, Message, MessageBookmark, MessageGroupMention,
+		MessageLink, MessagePin, MessageReaction, MessageUserMention, Session,
+		SystemMessage, ThreadReadState, User, UserGroup, UserGroupMember, UserNote,
+		UserThreadFollow, Workspace, WorkspaceMember,
+		WorkspacePermission []ent.Interceptor
 	}
 )
 

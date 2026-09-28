@@ -42,6 +42,16 @@ issue #13 のバックエンドで決めたことをまとめる。
 - `channel_star`（ユーザー × チャンネル）で持つ。DM・グループ DM もチャンネルなので同じテーブルを使う。
 - `SetChannelStarred` で付け外しし、`ListChannels` / `GetChannel` / `ListDirectMessages` が `is_starred` を返す。閲覧できないチャンネルには付けられない。
 
+## ミュート
+
+- スターと同じ構成で `channel_mute`（ユーザー × チャンネル）に持つ。ユーザーごとの状態で、チャンネル・DM・グループ DM 共通。チャンネル設定の列にしないのは、ミュートが個人の設定でありメンバー以外（未参加の祖先チャンネル）にも付けられるようにするため。
+- `SetChannelMuted` で切り替え、`ListChannels` / `GetChannel` / `ListDirectMessages` が `is_muted` を返す。権限はスターと同じく閲覧できること。
+- サーバーはミュートでも未読数・メンション・WebSocket 配信を変えない。通知や未読バッジの抑制はクライアントが `is_muted` を見て行う（ミュート中でもメンションだけは目立たせる、といった表示の方針をクライアント側で決められるようにするため）。
+
+## DM の未読数
+
+- `ListDirectMessages` がチャンネルと同じ `ReadStateRepository` の一括取得で `unread_count` / `has_mention` を返す。DM も既読管理はチャンネルと同じ `read_state` を使う。
+
 ## 関連リンク
 
 - `channel_link`（タイトル・URL・並び順）で持ち、`ChannelLinkService` で一覧・追加・編集・削除・並び替えを行う。並び替えはチャンネルの全リンクの ID を新しい順番で渡す。

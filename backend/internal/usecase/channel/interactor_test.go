@@ -124,6 +124,26 @@ func (r *fakeStarRepo) FindStarredChannelIDs(_ context.Context, _ string, channe
 	return result, nil
 }
 
+type fakeMuteRepo struct {
+	domainrepository.ChannelMuteRepository
+	muted map[string]bool
+}
+
+func (r *fakeMuteRepo) SetMuted(_ context.Context, _ string, channelID string, muted bool) error {
+	r.muted[channelID] = muted
+	return nil
+}
+
+func (r *fakeMuteRepo) FindMutedChannelIDs(_ context.Context, _ string, channelIDs []string) (map[string]bool, error) {
+	result := map[string]bool{}
+	for _, id := range channelIDs {
+		if r.muted[id] {
+			result[id] = true
+		}
+	}
+	return result, nil
+}
+
 type stubWorkspaceRepo struct {
 	domainrepository.WorkspaceRepository
 }
@@ -173,6 +193,7 @@ type fixture struct {
 	channels    *fakeChannelRepo
 	members     *fakeMemberRepo
 	stars       *fakeStarRepo
+	mutes       *fakeMuteRepo
 	permissions *stubPermissionRepo
 	recorder    *audittest.Recorder
 }
@@ -181,13 +202,14 @@ func newFixture() *fixture {
 	members := &fakeMemberRepo{joined: map[string]map[string]bool{}}
 	channels := &fakeChannelRepo{channels: map[string]*entity.Channel{}, members: members}
 	stars := &fakeStarRepo{starred: map[string]bool{}}
+	mutes := &fakeMuteRepo{muted: map[string]bool{}}
 	workspaces := stubWorkspaceRepo{}
 	access := domainservice.NewChannelAccessService(channels, members, workspaces)
 	permissions := &stubPermissionRepo{}
 	recorder := &audittest.Recorder{}
 	permissionSvc := domainservice.NewPermissionService(workspaces, permissions)
-	uc := NewChannelInteractor(channels, members, stars, workspaces, stubReadStateRepo{}, stubTxManager{}, nil, access, permissionSvc, recorder)
-	return &fixture{uc: uc, channels: channels, members: members, stars: stars, permissions: permissions, recorder: recorder}
+	uc := NewChannelInteractor(channels, members, stars, mutes, workspaces, stubReadStateRepo{}, stubTxManager{}, nil, access, permissionSvc, recorder)
+	return &fixture{uc: uc, channels: channels, members: members, stars: stars, mutes: mutes, permissions: permissions, recorder: recorder}
 }
 
 func (f *fixture) create(t *testing.T, userID, name string, isPrivate bool) *ChannelOutput {
@@ -416,5 +438,45 @@ func TestSetChannelStarredRequiresAccess(t *testing.T) {
 	}
 	if err := f.uc.SetChannelStarred(ctx, SetChannelStarredInput{ChannelID: secret.ID, UserID: adminID, Starred: true}); err != nil || !f.stars.starred[secret.ID] {
 		t.Fatalf("スターを付けられません: %v", err)
+	}
+}
+
+func TestSetChannelMutedRequiresAccess(t *testing.T) {
+	f := newFixture()
+	secret := f.create(t, adminID, "secret", true)
+	ctx := context.Background()
+
+	if err := f.uc.SetChannelMuted(ctx, SetChannelMutedInput{ChannelID: secret.ID, UserID: memberID, Muted: true}); !errors.Is(err, domerr.ErrUnauthorized) {
+		t.Fatalf("閲覧できないチャンネルをミュートできています: %v", err)
+	}
+	if err := f.uc.SetChannelMuted(ctx, SetChannelMutedInput{ChannelID: secret.ID, UserID: adminID, Muted: true}); err != nil || !f.mutes.muted[secret.ID] {
+		t.Fatalf("ミュートできません: %v", err)
+	}
+}
+
+func TestListAndGetChannelIncludeMuted(t *testing.T) {
+	f := newFixture()
+	general := f.create(t, adminID, "general", false)
+	random := f.create(t, adminID, "random", false)
+	ctx := context.Background()
+	if err := f.uc.SetChannelMuted(ctx, SetChannelMutedInput{ChannelID: random.ID, UserID: adminID, Muted: true}); err != nil {
+		t.Fatalf("ミュートできません: %v", err)
+	}
+
+	out, err := f.uc.ListChannels(ctx, ListChannelsInput{WorkspaceID: workspaceID, UserID: adminID})
+	if err != nil {
+		t.Fatalf("一覧を取得できません: %v", err)
+	}
+	muted := map[string]bool{}
+	for _, ch := range out {
+		muted[ch.ID] = ch.IsMuted
+	}
+	if muted[general.ID] || !muted[random.ID] {
+		t.Fatalf("ミュート状態が正しくありません: %+v", out)
+	}
+
+	got, err := f.uc.GetChannel(ctx, GetChannelInput{ChannelID: random.ID, UserID: adminID})
+	if err != nil || !got.IsMuted {
+		t.Fatalf("GetChannel がミュート状態を返していません: %+v %v", got, err)
 	}
 }
