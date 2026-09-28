@@ -1,97 +1,44 @@
-import { Card, Image, Skeleton, Text, Anchor } from "@mantine/core";
+import { IconX } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
+
+import { IconButton } from "#/components/ui/IconButton";
+import { Skeleton } from "#/components/ui/Skeleton";
+
+import { OgpCard } from "./OgpCard";
 
 import type { LinkPreview } from "../types";
 
 type LinkPreviewCardProps = {
   preview: LinkPreview;
-  onRemove?: () => void;
+  onRemove: () => void;
 };
 
 export const LinkPreviewCard = ({ preview, onRemove }: LinkPreviewCardProps) => {
+  const { t } = useTranslation();
   const { url, ogpData, isLoading, error } = preview;
 
   if (isLoading) {
     return (
-      <Card withBorder radius="md" p="md" className="max-w-md">
-        <Skeleton height={120} radius="md" mb="sm" />
-        <Skeleton height={16} width="80%" mb="xs" />
-        <Skeleton height={14} width="60%" />
-      </Card>
+      <div className="flex w-[min(420px,100%)] flex-col gap-1.5 rounded-[10px] border border-border p-3">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-3 w-3/5" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card withBorder radius="md" p="md" className="max-w-md bg-red-50">
-        <Text size="sm" c="red">
-          Failed to load preview
-        </Text>
-        <Anchor href={url} target="_blank" rel="noopener noreferrer" size="sm">
-          {url}
-        </Anchor>
-        {onRemove && (
-          <button onClick={onRemove} className="ml-2 text-red-500 hover:text-red-700" type="button">
-            Remove
-          </button>
-        )}
-      </Card>
+      <div className="flex w-[min(420px,100%)] items-center gap-2 rounded-[10px] border border-border py-1.5 pr-1.5 pl-3 text-caption">
+        <span className="min-w-0 flex-1 truncate text-danger">
+          {t("link.previewFailed")} · <span className="text-muted">{url}</span>
+        </span>
+        <IconButton label={t("link.remove")} onPress={onRemove} className="size-6 [&_svg]:size-3.5">
+          <IconX />
+        </IconButton>
+      </div>
     );
   }
 
-  return (
-    <Card withBorder radius="md" p="md" className="max-w-md hover:shadow-md transition-shadow">
-      {ogpData.imageUrl && (
-        <Image
-          src={ogpData.imageUrl}
-          alt={ogpData.title || "Preview image"}
-          height={120}
-          radius="md"
-          mb="sm"
-          className="object-cover"
-        />
-      )}
-
-      <div className="space-y-1">
-        {ogpData.title && (
-          <Text fw={600} size="sm" lineClamp={2}>
-            {ogpData.title}
-          </Text>
-        )}
-
-        {ogpData.description && (
-          <Text size="xs" c="dimmed" lineClamp={2}>
-            {ogpData.description}
-          </Text>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
-            {ogpData.siteName && (
-              <Text size="xs" c="dimmed">
-                {ogpData.siteName}
-              </Text>
-            )}
-            <Text size="xs" c="dimmed">
-              •
-            </Text>
-            <Anchor
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              size="xs"
-              className="truncate max-w-32"
-            >
-              {new URL(url).hostname}
-            </Anchor>
-          </div>
-
-          {onRemove && (
-            <button onClick={onRemove} className="text-gray-400 hover:text-gray-600" type="button">
-              ×
-            </button>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
+  return <OgpCard url={url} ogp={ogpData} onRemove={onRemove} />;
 };

@@ -1,5 +1,7 @@
 import { useCallback } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { useSendMessage } from "../hooks/useMessage";
 import { BaseMessageInput } from "./BaseMessageInput";
 
@@ -8,6 +10,7 @@ type MessageInputProps = {
 };
 
 export const MessageInput = ({ channelId }: MessageInputProps) => {
+  const { t } = useTranslation();
   const sendMessage = useSendMessage();
 
   const handleSubmit = useCallback(
@@ -27,7 +30,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
     <BaseMessageInput
       key={channelId}
       onSubmit={handleSubmit}
-      placeholder="メッセージを入力..."
+      placeholder={t("message.composer.placeholder")}
       isPending={sendMessage.isPending}
       error={sendMessage.isError ? sendMessage.error.message : undefined}
       channelId={channelId}

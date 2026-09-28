@@ -1,42 +1,46 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import type { SubmitEvent } from "react";
+import { useCallback, useRef, useState } from "react";
 
-import { Text, Textarea } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { Form, TextArea, TextField } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { toast } from "#/components/ui/toast";
 import { AttachmentList } from "#/features/attachment/components/AttachmentList";
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
+import { useIsMobile } from "#/lib/useMediaQuery";
 
-import { useMessageInputMode } from "../hooks/useMessageInputMode";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
+import { applyFormat, detectActiveFormats } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 
+import type { FormatKey } from "../utils/format";
+
 type BaseMessageInputProps = {
   onSubmit: (body: string, attachmentIds: string[]) => void;
-  placeholder?: string;
-  isPending?: boolean;
+  placeholder: string;
+  isPending: boolean;
   error?: string;
   channelId: string;
-  resetTrigger?: number;
 };
+
+const urlPattern = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
 
 export const BaseMessageInput = ({
   onSubmit,
-  placeholder = "メッセージを入力...",
-  isPending = false,
+  placeholder,
+  isPending,
   error,
   channelId,
-  resetTrigger,
 }: BaseMessageInputProps) => {
+  const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [body, setBody] = useState("");
+  const [selection, setSelection] = useState({ end: 0, start: 0 });
+  const [isPreview, setIsPreview] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { mode, toggleMode, isEditMode } = useMessageInputMode();
-  const linkPreview = useLinkPreview();
-  const { previews, addPreview, removePreview, clearPreviews } = linkPreview;
-  const fileUpload = useFileUpload();
+  const { previews, addPreview, removePreview, clearPreviews } = useLinkPreview();
   const {
     pendingAttachments,
     uploadFile,
@@ -44,25 +48,18 @@ export const BaseMessageInput = ({
     clearAttachments,
     getCompletedAttachmentIds,
     isUploading,
-  } = fileUpload;
-
+  } = useFileUpload();
   const { notifyTyping, notifyStopTyping } = useTypingNotifier(channelId);
 
   const handleBodyChange = useCallback(
-    (newValue: string) => {
-      setBody(newValue);
+    (next: string) => {
+      setBody(next);
       notifyTyping();
 
-      // URLを検出してプレビューを追加・削除
-      const urlRegex = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
-      const urls: string[] = newValue.match(urlRegex) ?? [];
-
-      // プレビュー操作はセッター関数の形式で実行
+      const urls: string[] = next.match(urlPattern) ?? [];
       for (const url of urls) {
         void addPreview(url);
       }
-
-      // 最新のpreviewsを使って削除
       for (const preview of previews) {
         if (!urls.includes(preview.url)) {
           removePreview(preview.url);
@@ -72,120 +69,117 @@ export const BaseMessageInput = ({
     [addPreview, previews, removePreview, notifyTyping],
   );
 
-  const handleFileSelect = useCallback(
-    async (files: File[]) => {
-      if (!channelId) {
-        return;
-      }
+  const handleFormat = (key: FormatKey) => {
+    const next = applyFormat(body, selection, key);
+    handleBodyChange(next.text);
+    setSelection({ end: next.cursor, start: next.cursor });
+    // 値が反映されてからカーソルを動かす
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(next.cursor, next.cursor);
+    });
+  };
 
-      for (const file of files) {
-        await uploadFile(file, { channelId });
-      }
-    },
-    [channelId, uploadFile],
-  );
+  const handleFileSelect = async (files: File[]) => {
+    for (const file of files) {
+      await uploadFile(file, { channelId });
+    }
+  };
 
-  const handleSubmit = (event?: SubmitEvent<HTMLFormElement>) => {
-    event?.preventDefault();
-    if (body.trim().length === 0 && pendingAttachments.length === 0) {
+  const hasContent = body.trim().length > 0 || pendingAttachments.length > 0;
+
+  const handleSubmit = () => {
+    if (!hasContent) {
       return;
     }
     if (isUploading) {
-      notifications.show({
-        color: "yellow",
-        message: "ファイルのアップロードが完了するまでお待ちください",
-        title: "アップロード中",
-      });
+      toast(t("message.composer.uploading"));
       return;
     }
-
-    const attachmentIds = getCompletedAttachmentIds();
-    onSubmit(body.trim(), attachmentIds);
+    onSubmit(body.trim(), getCompletedAttachmentIds());
     notifyStopTyping();
     setBody("");
+    setIsPreview(false);
     clearPreviews();
     clearAttachments();
   };
 
-  // 外部からリセットが呼ばれた場合
-  useEffect(() => {
-    if (resetTrigger && resetTrigger > 0) {
-      setBody("");
-      clearPreviews();
-      clearAttachments();
-    }
-  }, [resetTrigger, clearPreviews, clearAttachments]);
-
-  const isDisabled =
-    isPending || (body.trim().length === 0 && pendingAttachments.length === 0) || isUploading;
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="p-2 border-y border-gray-200"
-      style={{ backgroundColor: isEditMode ? "gray.100" : "white" }}
+    <Form
+      onSubmit={(event) => {
+        event.preventDefault();
+        handleSubmit();
+      }}
+      className="shrink-0 px-[18px] pb-3 font-sans max-md:px-2.5 max-md:pb-2"
     >
-      {isEditMode ? (
-        <Textarea
-          ref={textareaRef}
-          placeholder={placeholder}
-          minRows={3}
-          autosize
-          value={body}
-          onChange={(event) => {
-            handleBodyChange(event.currentTarget.value);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-              event.preventDefault();
-              handleSubmit();
-            }
-          }}
-          disabled={isPending}
-        />
-      ) : (
-        <MessagePreview content={body} />
-      )}
-
-      {/* 添付ファイル一覧 */}
-      {pendingAttachments.length > 0 && (
-        <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
-      )}
-
-      {/* リンクプレビューを表示 */}
-      {previews.length > 0 && (
-        <div className="mt-3 space-y-2">
-          {previews.map((preview) => (
-            <LinkPreviewCard
-              key={preview.url}
-              preview={preview}
-              onRemove={() => {
-                removePreview(preview.url);
+      <div className="rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
+        {pendingAttachments.length > 0 && (
+          <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
+        )}
+        {isPreview ? (
+          <MessagePreview content={body} />
+        ) : (
+          <TextField
+            aria-label={placeholder}
+            value={body}
+            onChange={handleBodyChange}
+            isDisabled={isPending}
+            onKeyDown={(event) => {
+              // モバイルの Enter は改行にする
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing &&
+                !isMobile
+              ) {
+                event.preventDefault();
+                handleSubmit();
+              }
+            }}
+          >
+            <TextArea
+              ref={textareaRef}
+              rows={1}
+              placeholder={placeholder}
+              onSelect={(event) => {
+                setSelection({
+                  end: event.currentTarget.selectionEnd,
+                  start: event.currentTarget.selectionStart,
+                });
               }}
+              className="block max-h-[180px] min-h-[38px] w-full resize-none border-0 bg-transparent px-3 pt-[9px] pb-0.5 font-sans text-body leading-[1.6] text-text outline-none [field-sizing:content] placeholder:text-subtle"
             />
-          ))}
-        </div>
-      )}
-
-      <MessageInputToolbar
-        mode={mode}
-        onToggleMode={toggleMode}
-        onSubmit={() => {
-          handleSubmit();
-        }}
-        disabled={isDisabled}
-        loading={isPending}
-        textareaRef={textareaRef}
-        onFileSelect={(files) => {
-          void handleFileSelect(files);
-        }}
-      />
-
-      {error && (
-        <Text c="red" size="sm" className="mt-2">
-          {error}
-        </Text>
-      )}
-    </form>
+          </TextField>
+        )}
+        {previews.length > 0 && (
+          <div className="flex flex-col gap-2 px-3 py-2">
+            {previews.map((preview) => (
+              <LinkPreviewCard
+                key={preview.url}
+                preview={preview}
+                onRemove={() => {
+                  removePreview(preview.url);
+                }}
+              />
+            ))}
+          </div>
+        )}
+        <MessageInputToolbar
+          isPreview={isPreview}
+          onTogglePreview={() => {
+            setIsPreview((current) => !current);
+          }}
+          onSubmit={handleSubmit}
+          isSendDisabled={isPending || !hasContent || isUploading}
+          isSending={isPending}
+          activeFormats={detectActiveFormats(body, selection)}
+          onFormat={handleFormat}
+          onFileSelect={(files) => {
+            void handleFileSelect(files);
+          }}
+        />
+      </div>
+      {error && <p className="m-0 mt-1.5 text-caption text-danger">{error}</p>}
+    </Form>
   );
 };

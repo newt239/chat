@@ -1,17 +1,15 @@
 import { useCallback } from "react";
 
-import { notifications } from "@mantine/notifications";
+import { useTranslation } from "react-i18next";
 
+import { toast } from "#/components/ui/toast";
 import { useDeleteMessage, useUpdateMessage } from "#/features/message/hooks/useMessage";
 
-const resolveErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  return fallback;
-};
+const errorDescription = (error: unknown) =>
+  error instanceof Error && error.message ? error.message : undefined;
 
 export const useMessageActions = () => {
+  const { t } = useTranslation();
   const updateMessage = useUpdateMessage();
   const deleteMessage = useDeleteMessage();
 
@@ -19,40 +17,26 @@ export const useMessageActions = () => {
     async (messageId: string, nextBody: string) => {
       try {
         await updateMessage.mutateAsync({ body: nextBody, messageId });
-        notifications.show({
-          message: "メッセージを更新しました",
-          title: "更新しました",
-        });
+        toast(t("message.edit.done"), { tone: "success" });
       } catch (error) {
-        notifications.show({
-          color: "red",
-          message: resolveErrorMessage(error, "メッセージの更新に失敗しました"),
-          title: "エラー",
-        });
+        toast(t("message.edit.failed"), { description: errorDescription(error), tone: "danger" });
         throw error;
       }
     },
-    [updateMessage],
+    [updateMessage, t],
   );
 
   const handleDelete = useCallback(
     async (messageId: string) => {
       try {
         await deleteMessage.mutateAsync({ messageId });
-        notifications.show({
-          message: "メッセージを削除しました",
-          title: "削除しました",
-        });
+        toast(t("message.delete.done"), { tone: "success" });
       } catch (error) {
-        notifications.show({
-          color: "red",
-          message: resolveErrorMessage(error, "メッセージの削除に失敗しました"),
-          title: "エラー",
-        });
+        toast(t("message.delete.failed"), { description: errorDescription(error), tone: "danger" });
       }
     },
-    [deleteMessage],
+    [deleteMessage, t],
   );
 
-  return { handleDelete, handleEdit };
+  return { handleDelete, handleEdit, isDeleting: deleteMessage.isPending };
 };

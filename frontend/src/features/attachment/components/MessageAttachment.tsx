@@ -1,3 +1,9 @@
+import { IconDownload, IconLoader2 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
+
+import { IconButton } from "#/components/ui/IconButton";
+import { toast } from "#/components/ui/toast";
+
 import { useDownloadUrl } from "../api/client";
 import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
@@ -9,62 +15,41 @@ type MessageAttachmentProps = {
 };
 
 export const MessageAttachment = ({ attachment }: MessageAttachmentProps) => {
+  const { t } = useTranslation();
   const downloadMutation = useDownloadUrl();
 
   const handleDownload = async () => {
     try {
       const { url } = await downloadMutation.mutateAsync({ attachmentId: attachment.id });
+      // 署名付き URL は押すたびに発行するため、リンクではなく新しいタブで開く
       window.open(url, "_blank", "noopener,noreferrer");
-    } catch (error) {
-      console.error("ダウンロードに失敗しました:", error);
+    } catch {
+      toast(t("attachment.downloadFailed"), { tone: "danger" });
     }
   };
 
   return (
-    <div className="inline-flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg max-w-sm">
-      <div className="flex-shrink-0">
-        <FileIcon mimeType={attachment.mimeType} />
+    <div className="flex w-[min(360px,100%)] items-center gap-2.5 rounded-[10px] border border-border bg-surface py-2 pr-1.5 pl-2.5 font-sans">
+      <FileIcon mimeType={attachment.mimeType} />
+      <div className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+        <b className="truncate text-[13px] font-semibold">{attachment.fileName}</b>
+        <small className="text-[11.5px] text-muted">
+          {formatFileSize(Number(attachment.sizeBytes))}
+        </small>
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-gray-900 truncate">{attachment.fileName}</div>
-        <div className="text-xs text-gray-500">{formatFileSize(Number(attachment.sizeBytes))}</div>
-      </div>
-      <button
-        type="button"
-        onClick={() => {
+      <IconButton
+        label={t("attachment.download")}
+        isDisabled={downloadMutation.isPending}
+        onPress={() => {
           void handleDownload();
         }}
-        disabled={downloadMutation.isPending}
-        className="flex-shrink-0 p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded disabled:opacity-50"
-        aria-label="ダウンロード"
       >
         {downloadMutation.isPending ? (
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+          <IconLoader2 className="animate-spin motion-reduce:animate-none" />
         ) : (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
+          <IconDownload />
         )}
-      </button>
+      </IconButton>
     </div>
   );
 };

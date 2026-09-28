@@ -1,42 +1,50 @@
-import { Code, Modal, Stack, Table, Text } from "@mantine/core";
+import { useTranslation } from "react-i18next";
+
+import { Dialog } from "#/components/ui/Dialog";
 
 type MarkdownHelpModalProps = {
-  opened: boolean;
-  onClose: () => void;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
 };
 
-const SYNTAX_ROWS = [
-  { example: "**太字**", label: "太字" },
-  { example: "*斜体*", label: "斜体" },
-  { example: "~~打ち消し~~", label: "打ち消し線" },
-  { example: "# 見出し", label: "見出し" },
-  { example: "[リンク](https://example.com)", label: "リンク" },
-  { example: "`コード`", label: "インラインコード" },
-  { example: "> 引用", label: "引用" },
-  { example: "- 項目", label: "箇条書き" },
-  { example: "1. 項目", label: "番号付きリスト" },
-  { example: "@ユーザー名", label: "メンション" },
-  { example: "#チャンネル名", label: "チャンネルリンク" },
-];
+const rows = [
+  "bold",
+  "italic",
+  "strikethrough",
+  "heading",
+  "link",
+  "code",
+  "quote",
+  "list",
+  "orderedList",
+  "mention",
+  "channel",
+] as const;
 
-export const MarkdownHelpModal = ({ opened, onClose }: MarkdownHelpModalProps) => (
-  <Modal opened={opened} onClose={onClose} title="書式のヘルプ" centered>
-    <Stack gap="sm">
-      <Text size="sm" c="dimmed">
-        メッセージでは Markdown 記法が使えます。Enter で送信、Shift + Enter で改行します。
-      </Text>
-      <Table striped withTableBorder>
-        <Table.Tbody>
-          {SYNTAX_ROWS.map((row) => (
-            <Table.Tr key={row.label}>
-              <Table.Td>{row.label}</Table.Td>
-              <Table.Td>
-                <Code>{row.example}</Code>
-              </Table.Td>
-            </Table.Tr>
+export const MarkdownHelpModal = ({ isOpen, onOpenChange }: MarkdownHelpModalProps) => {
+  const { t } = useTranslation();
+  const labelOf = (row: (typeof rows)[number]) =>
+    row === "mention" || row === "channel"
+      ? t(`message.help.${row}`)
+      : t(`message.composer.${row}`);
+
+  return (
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} title={t("message.composer.help")}>
+      <p className="m-0 text-muted">{t("message.help.description")}</p>
+      <table className="w-full border-collapse text-[13px]">
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row} className="border-b border-border last:border-b-0">
+              <td className="py-1.5 pr-3">{labelOf(row)}</td>
+              <td className="py-1.5">
+                <code className="rounded-sm border border-border bg-sunken px-1 font-mono text-[12.5px]">
+                  {t(`message.help.examples.${row}`)}
+                </code>
+              </td>
+            </tr>
           ))}
-        </Table.Tbody>
-      </Table>
-    </Stack>
-  </Modal>
-);
+        </tbody>
+      </table>
+    </Dialog>
+  );
+};

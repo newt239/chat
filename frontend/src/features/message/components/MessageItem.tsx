@@ -1,17 +1,30 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { Avatar, Button, Group, Text, Textarea } from "@mantine/core";
-import { useSetAtom } from "jotai";
+import { formatDateTime, formatTime } from "@chat/i18n";
+import { IconBookmarkFilled } from "@tabler/icons-react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { Button } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { AlertDialog } from "#/components/ui/AlertDialog";
+import { Avatar } from "#/components/ui/Avatar";
+import { cn, focusRing } from "#/components/ui/styles";
 import { MessageAttachment } from "#/features/attachment/components/MessageAttachment";
-import { useIsBookmarked } from "#/features/bookmark/hooks/useBookmarks";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
+import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
 import { toDate } from "#/lib/timestamp";
+import { useIsMobile } from "#/lib/useMediaQuery";
+import { userAtom } from "#/providers/store/auth";
+import { preferencesAtom } from "#/providers/store/preferences";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
-import { dateTimeFormatter } from "../utils/time";
-import { MessageActions } from "./MessageActions";
+import { useLongPress } from "../hooks/useLongPress";
+import { useMessageActions } from "../hooks/useMessageActions";
+import { useMessageMenuActions } from "../hooks/useMessageMenuActions";
+import { MessageActionSheet } from "./MessageActionSheet";
 import { MessageContent } from "./MessageContent";
+import { MessageEditor } from "./MessageEditor";
+import { MessageToolbar } from "./MessageToolbar";
 import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 
 import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
@@ -21,10 +34,9 @@ type MessageItemProps = {
   currentUserId: string | null;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
-  onEdit?: (messageId: string, nextBody: string) => Promise<void>;
-  onDelete?: (messageId: string) => Promise<void>;
   threadMetadata?: ThreadMetadata;
   onOpenThread?: (messageId: string) => void;
+  isHighlighted?: boolean;
 };
 
 export const MessageItem = ({
@@ -32,203 +44,196 @@ export const MessageItem = ({
   currentUserId,
   onCopyLink,
   onCreateThread,
-  onEdit,
-  onDelete,
   threadMetadata,
   onOpenThread,
+  isHighlighted = false,
 }: MessageItemProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(message.body);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editError, setEditError] = useState<string | null>(null);
-  const isAuthor = message.userId === currentUserId;
-  const displayName = message.user?.displayName ?? "";
-  const isBookmarked = useIsBookmarked(message.id);
+  const { t } = useTranslation();
+  const { locale } = useAtomValue(preferencesAtom);
+  const currentUser = useAtomValue(userAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const isMobile = useIsMobile();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const { isPressed, longPressProps } = useLongPress(() => {
+    setIsSheetOpen(true);
+  }, isMobile && !isEditing);
+  const { handleEdit, handleDelete, isDeleting } = useMessageActions();
+  const toggleReaction = useToggleReaction(message.id);
 
-  const handleUserClick = () => {
+  const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
+    isAuthor: message.userId === currentUserId,
+    message,
+    onCopyLink: () => {
+      onCopyLink(message.id);
+    },
+    onDelete: () => {
+      setIsDeleteOpen(true);
+    },
+    onEdit: () => {
+      setIsEditing(true);
+    },
+    onReplyInThread: () => {
+      onCreateThread(message.id);
+    },
+  });
+
+  const react = (emoji: string) => {
+    toggleReaction(
+      emoji,
+      message.reactions.some(
+        (reaction) => reaction.emoji === emoji && reaction.user?.id === currentUser?.id,
+      ),
+    );
+  };
+
+  const openProfile = () => {
     setRightSidePanelView({ type: "user-profile", userId: message.userId });
   };
 
-  useEffect(() => {
-    if (!isEditing) {
-      setDraft(message.body);
-      setEditError(null);
-    }
-  }, [isEditing, message.body]);
-
-  const handleStartEdit = () => {
-    if (message.isDeleted || !isAuthor) {
-      return;
-    }
-    setDraft(message.body);
-    setIsEditing(true);
-  };
-
-  const handleCancelEdit = () => {
-    setDraft(message.body);
-    setEditError(null);
-    setIsEditing(false);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!onEdit) {
-      return;
-    }
-
-    const trimmed = draft.trim();
-    if (trimmed.length === 0) {
-      setEditError("メッセージ本文を入力してください");
-      return;
-    }
-
-    if (trimmed === message.body) {
-      setIsEditing(false);
-      setEditError(null);
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      await onEdit(message.id, trimmed);
-      setIsEditing(false);
-      setEditError(null);
-    } catch (error) {
-      if (error instanceof Error && error.message) {
-        setEditError(error.message);
-      } else {
-        setEditError("メッセージの更新に失敗しました");
-      }
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const displayName = message.user?.displayName ?? "";
+  const createdAt = toDate(message.createdAt);
+  const showToolbar =
+    !isMobile && !isEditing && !message.isDeleted && (isHovered || isFocusWithin || isOverlayOpen);
 
   return (
     <div
-      onMouseEnter={() => {
-        setIsHovered(true);
+      onPointerEnter={(event) => {
+        // タッチでは疑似的なホバーでツールバーを出さない
+        setIsHovered(event.pointerType === "mouse");
       }}
-      onMouseLeave={() => {
+      onPointerLeave={() => {
         setIsHovered(false);
       }}
-      className={`relative group px-4 py-2 transition-colors ${
-        isBookmarked ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-gray-50"
-      }`}
+      onFocus={() => {
+        setIsFocusWithin(true);
+      }}
+      onBlur={(event) => {
+        setIsFocusWithin(event.currentTarget.contains(event.relatedTarget));
+      }}
+      // モバイルでは長押しの onPointerLeave を優先する
+      {...longPressProps}
+      data-message-id={message.id}
+      className={cn(
+        "relative flex gap-2.5 px-[18px] py-1.5 font-sans text-text",
+        (isHovered || isOverlayOpen) && "bg-hover",
+        isMobile && "select-none [-webkit-touch-callout:none]",
+        isPressed && "bg-hover",
+        isHighlighted && "bg-accent-soft",
+        "transition-colors motion-reduce:transition-none",
+      )}
     >
-      {/* アバターとメッセージコンテンツ */}
-      <div className="flex gap-3">
-        <Avatar
-          src={message.user?.avatarUrl}
-          alt={displayName}
-          size="md"
-          color="blue"
-          radius="xl"
-          onClick={handleUserClick}
-          className="cursor-pointer"
-        >
-          {displayName.charAt(0).toUpperCase()}
-        </Avatar>
+      <Button
+        aria-label={t("message.profileOf", { name: displayName })}
+        onPress={openProfile}
+        className={`mt-0.5 self-start rounded-md ${focusRing}`}
+      >
+        <Avatar name={displayName} src={message.user?.avatarUrl} size={isMobile ? 34 : 32} />
+      </Button>
 
-        {/* メッセージコンテンツ */}
-        <div className="flex-1 min-w-0">
-          {/* ヘッダー: 名前と日時 */}
-          <div className="flex items-baseline gap-2">
-            <Text
-              fw={600}
-              size="sm"
-              onClick={handleUserClick}
-              className="cursor-pointer hover:underline"
-            >
-              {displayName}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {dateTimeFormatter().format(toDate(message.createdAt))}
-            </Text>
-          </div>
-
-          {/* メッセージ本文 */}
-          <div className="mt-1">
-            {message.isDeleted ? (
-              <Text size="sm" c="dimmed" fs="italic">
-                このメッセージは削除されました
-                {message.deletedBy && ` (削除者: ${message.deletedBy.displayName})`}
-              </Text>
-            ) : isEditing ? (
-              <div className="space-y-2">
-                <Textarea
-                  value={draft}
-                  onChange={(event) => {
-                    setDraft(event.currentTarget.value);
-                  }}
-                  minRows={3}
-                  autosize
-                  disabled={isSaving}
-                  data-autofocus
-                />
-                {editError && (
-                  <Text size="xs" c="red">
-                    {editError}
-                  </Text>
-                )}
-                <Group gap="xs">
-                  <Button
-                    size="xs"
-                    onClick={() => {
-                      void handleSaveEdit();
-                    }}
-                    loading={isSaving}
-                    disabled={isSaving}
-                  >
-                    保存
-                  </Button>
-                  <Button size="xs" variant="subtle" onClick={handleCancelEdit} disabled={isSaving}>
-                    キャンセル
-                  </Button>
-                </Group>
-              </div>
-            ) : (
-              <MessageContent message={message} />
-            )}
-          </div>
-
-          {/* 添付ファイル */}
-          {message.attachments.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {message.attachments.map((attachment) => (
-                <MessageAttachment key={attachment.id} attachment={attachment} />
-              ))}
-            </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+        <div className="flex flex-wrap items-baseline gap-[7px] leading-[1.3]">
+          <Button
+            onPress={openProfile}
+            className={`cursor-pointer rounded-sm text-text data-hovered:underline data-hovered:underline-offset-2 ${focusRing}`}
+          >
+            {/* Mantine のリセットが button の font を上書きするため、中の要素で指定する */}
+            <span className="text-sm font-bold">{displayName}</span>
+          </Button>
+          <time
+            dateTime={createdAt.toISOString()}
+            title={formatDateTime(createdAt, locale)}
+            className="font-mono text-[11.5px] text-subtle tabular-nums"
+          >
+            {formatTime(createdAt, locale)}
+          </time>
+          {message.editedAt && !message.isDeleted && (
+            <span className="text-[11px] text-subtle">{t("message.edited")}</span>
           )}
-
-          {/* リアクション */}
-          <ReactionList messageId={message.id} reactions={message.reactions} />
-
-          {/* スレッドメタデータプレビュー */}
-          {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (
-            <ThreadMetadataPreview
-              metadata={threadMetadata}
-              onClick={() => {
-                onOpenThread(message.id);
-              }}
+          {isBookmarked && (
+            <IconBookmarkFilled
+              aria-label={t("message.actions.bookmark")}
+              className="size-3 self-center text-accent-text"
             />
           )}
         </div>
+
+        {message.isDeleted ? (
+          <p className="m-0 text-body text-muted italic">
+            {message.deletedBy
+              ? t("message.deletedBy", { name: message.deletedBy.displayName })
+              : t("message.deleted")}
+          </p>
+        ) : isEditing ? (
+          <MessageEditor
+            initialBody={message.body}
+            onSave={(body) => handleEdit(message.id, body)}
+            onClose={() => {
+              setIsEditing(false);
+            }}
+          />
+        ) : (
+          <MessageContent message={message} />
+        )}
+
+        {message.attachments.map((attachment) => (
+          <MessageAttachment key={attachment.id} attachment={attachment} />
+        ))}
+
+        <ReactionList messageId={message.id} reactions={message.reactions} />
+
+        {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (
+          <ThreadMetadataPreview
+            metadata={threadMetadata}
+            onPress={() => {
+              onOpenThread(message.id);
+            }}
+          />
+        )}
       </div>
 
-      {/* ホバー時のアクションメニュー */}
-      {isHovered && !isEditing && (
-        <MessageActions
-          messageId={message.id}
-          isAuthor={isAuthor}
-          isDeleted={message.isDeleted}
-          onCopyLink={onCopyLink}
-          onCreateThread={onCreateThread}
-          onEditRequest={handleStartEdit}
-          onDelete={onDelete}
+      {showToolbar && (
+        <MessageToolbar
+          actions={actions}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={toggleBookmark}
+          onReplyInThread={() => {
+            onCreateThread(message.id);
+          }}
+          onReact={react}
+          onOverlayOpenChange={setIsOverlayOpen}
         />
       )}
+
+      {isMobile && (
+        <MessageActionSheet
+          isOpen={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          message={message}
+          actions={actions}
+          onReact={react}
+        />
+      )}
+
+      <AlertDialog
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title={t("message.delete.title")}
+        confirmLabel={t("message.delete.confirm")}
+        tone="danger"
+        isPending={isDeleting}
+        onConfirm={() => {
+          void handleDelete(message.id).then(() => {
+            setIsDeleteOpen(false);
+          });
+        }}
+      >
+        {t("message.delete.body")}
+      </AlertDialog>
     </div>
   );
 };

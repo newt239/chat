@@ -12,10 +12,11 @@ type MenuProps = {
   // MenuItem / MenuSeparator / MenuSection
   children: ReactNode;
   placement?: PopoverProps["placement"];
+  onOpenChange?: (isOpen: boolean) => void;
 };
 
-export const Menu = ({ trigger, children, placement = "bottom end" }: MenuProps) => (
-  <MenuTrigger>
+export const Menu = ({ trigger, children, placement = "bottom end", onOpenChange }: MenuProps) => (
+  <MenuTrigger onOpenChange={onOpenChange}>
     {trigger}
     <Popover
       offset={4}

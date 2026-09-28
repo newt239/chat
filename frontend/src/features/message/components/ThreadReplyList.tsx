@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
-import { Text } from "@mantine/core";
 import { useSetAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
@@ -23,6 +23,7 @@ export const ThreadReplyList = ({
   workspaceId,
   channelId,
 }: ThreadReplyListProps) => {
+  const { t } = useTranslation();
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
   const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
@@ -36,16 +37,14 @@ export const ThreadReplyList = ({
 
   if (replies.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Text c="dimmed" size="sm">
-          まだ返信がありません
-        </Text>
-      </div>
+      <p className="m-0 py-8 text-center font-sans text-body text-muted">
+        {t("message.thread.noReplies")}
+      </p>
     );
   }
 
   return (
-    <div className="space-y-1">
+    <div className="flex flex-col pt-7">
       {replies.map((reply) => (
         <MessageItem
           key={reply.id}

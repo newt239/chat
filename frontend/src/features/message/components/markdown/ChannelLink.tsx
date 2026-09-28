@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
 
-import { Badge } from "@mantine/core";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 
+import { Link } from "#/components/ui/Link";
+import { cn } from "#/components/ui/styles";
 import { useChannels } from "#/features/channel/hooks/useChannel";
+
+import { chipClassName } from "./chipClassName";
 
 type ChannelLinkProps = {
   "data-channel": string;
@@ -11,32 +14,21 @@ type ChannelLinkProps = {
 };
 
 export const ChannelLink = ({ "data-channel": channelName }: ChannelLinkProps) => {
-  const navigate = useNavigate();
   const { workspaceId } = useParams({ strict: false });
   const { data: channels } = useChannels(workspaceId ?? null);
-
   const channel = channels?.find((item) => item.name === channelName);
 
-  const handleClick = () => {
-    if (workspaceId === undefined || channel === undefined) {
-      return;
-    }
-    void navigate({
-      params: { channelId: channel.id, workspaceId },
-      to: "/app/$workspaceId/$channelId",
-    });
-  };
+  if (workspaceId === undefined || channel === undefined) {
+    return <span className={cn(chipClassName, "cursor-default")}>#{channelName}</span>;
+  }
 
   return (
-    <Badge
-      variant="light"
-      color="green"
-      size="sm"
-      className={channel === undefined ? "" : "cursor-pointer hover:bg-green-100"}
-      component="span"
-      onClick={handleClick}
+    <Link
+      to="/app/$workspaceId/$channelId"
+      params={{ channelId: channel.id, workspaceId }}
+      className={chipClassName}
     >
       #{channelName}
-    </Badge>
+    </Link>
   );
 };
