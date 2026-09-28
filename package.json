@@ -14,6 +14,7 @@
     "knip": "turbo run knip",
     "codecheck": "turbo run codecheck",
     "clean": "./scripts/clean.sh",
+    "claude": "claude --setting-sources project,local",
     "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",
     "generate:proto": "buf generate",
     "proto:format": "buf format -w",

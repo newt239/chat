@@ -1,0 +1,77 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "enabledMcpjsonServers": [
+    "chrome-devtools",
+    "context7",
+    "deepwiki",
+    "playwright",
+    "serena"
+  ],
+  "model": "opus[1m]",
+  "language": "日本語",
+  "attribution": {
+    "sessionUrl": false
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/protect-sensitive-files.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true,
+    "figma@claude-plugins-official": false,
+    "github@claude-plugins-official": false
+  },
+  "skillOverrides": {
+    "agents-sdk": "off",
+    "durable-objects": "off",
+    "workers-best-practices": "off",
+    "cloudflare-email-service": "off",
+    "cloudflare-one": "off",
+    "cloudflare-one-migrations": "off",
+    "sandbox-sdk": "off",
+    "sandbox-stable": "off",
+    "sandbox-next": "off",
+    "sandbox-migrate-to-next": "off",
+    "turnstile-spin": "off",
+    "data:analyze": "off",
+    "data:build-dashboard": "off",
+    "data:create-viz": "off",
+    "data:data-context-extractor": "off",
+    "data:data-visualization": "off",
+    "data:explore-data": "off",
+    "data:sql-queries": "off",
+    "data:statistical-analysis": "off",
+    "data:validate-data": "off",
+    "data:write-query": "off",
+    "anthropic-skills:docx": "off",
+    "anthropic-skills:pdf": "off",
+    "anthropic-skills:pptx": "off",
+    "anthropic-skills:xlsx": "off",
+    "anthropic-skills:skill-creator": "off",
+    "anthropic-skills:import-memory": "off",
+    "anthropic-skills:morning": "off",
+    "cloudflare": "off",
+    "wrangler": "off",
+    "web-perf": "off",
+    "commit": "off"
+  },
+  "enableAllProjectMcpServers": true,
+  "agentPushNotifEnabled": true,
+  "skipWorkflowUsageWarning": true,
+  "skipDangerousModePermissionPrompt": true
+}
