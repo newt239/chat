@@ -110,7 +110,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   return (
     <div className="flex flex-col gap-3.5 px-[18px] pt-4 pb-6 max-md:px-3.5 max-md:pt-3">
       <InsightsKpis insights={insights} />
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-3.5 max-md:grid-cols-1">
+      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         <ChartCard
           wide
           title={t("insights.charts.daily.title")}

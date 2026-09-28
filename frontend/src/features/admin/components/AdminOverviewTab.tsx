@@ -79,7 +79,7 @@ export const AdminOverviewTab = ({ workspaceId, members }: AdminOverviewTabProps
           />
         ))}
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-3.5 max-md:grid-cols-1">
+      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         <ChartCard
           title={t("admin.overview.topPosters")}
           note={t("admin.overview.topPostersNote")}
