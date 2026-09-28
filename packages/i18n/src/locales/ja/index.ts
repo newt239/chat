@@ -6,10 +6,10 @@ import { channel } from "./channel";
 import { codeBlock } from "./codeBlock";
 import { common } from "./common";
 import { dm } from "./dm";
+import { inbox } from "./inbox";
 import { link } from "./link";
 import { member } from "./member";
 import { message } from "./message";
-import { notification } from "./notification";
 import { pin } from "./pin";
 import { preferences } from "./preferences";
 import { reaction } from "./reaction";
@@ -28,10 +28,10 @@ export const ja = {
   codeBlock,
   common,
   dm,
+  inbox,
   link,
   member,
   message,
-  notification,
   pin,
   preferences,
   reaction,
