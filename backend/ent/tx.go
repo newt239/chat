@@ -24,6 +24,8 @@ type Tx struct {
 	ChannelLink *ChannelLinkClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
 	ChannelMember *ChannelMemberClient
+	// ChannelMute is the client for interacting with the ChannelMute builders.
+	ChannelMute *ChannelMuteClient
 	// ChannelReadState is the client for interacting with the ChannelReadState builders.
 	ChannelReadState *ChannelReadStateClient
 	// ChannelStar is the client for interacting with the ChannelStar builders.
@@ -200,6 +202,7 @@ func (tx *Tx) init() {
 	tx.Channel = NewChannelClient(tx.config)
 	tx.ChannelLink = NewChannelLinkClient(tx.config)
 	tx.ChannelMember = NewChannelMemberClient(tx.config)
+	tx.ChannelMute = NewChannelMuteClient(tx.config)
 	tx.ChannelReadState = NewChannelReadStateClient(tx.config)
 	tx.ChannelStar = NewChannelStarClient(tx.config)
 	tx.Message = NewMessageClient(tx.config)

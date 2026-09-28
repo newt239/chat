@@ -87,3 +87,11 @@ func (s *ChannelServer) SetChannelStarred(ctx context.Context, req *chatv1.SetCh
 	}
 	return &chatv1.SetChannelStarredResponse{}, nil
 }
+
+func (s *ChannelServer) SetChannelMuted(ctx context.Context, req *chatv1.SetChannelMutedRequest) (*chatv1.SetChannelMutedResponse, error) {
+	err := s.UC.SetChannelMuted(ctx, channeluc.SetChannelMutedInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), Muted: req.Muted})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.SetChannelMutedResponse{}, nil
+}

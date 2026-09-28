@@ -69,6 +69,18 @@ func (f ChannelMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelMemberMutation", m)
 }
 
+// The ChannelMuteFunc type is an adapter to allow the use of ordinary
+// function as ChannelMute mutator.
+type ChannelMuteFunc func(context.Context, *ent.ChannelMuteMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChannelMuteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChannelMuteMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelMuteMutation", m)
+}
+
 // The ChannelReadStateFunc type is an adapter to allow the use of ordinary
 // function as ChannelReadState mutator.
 type ChannelReadStateFunc func(context.Context, *ent.ChannelReadStateMutation) (ent.Value, error)

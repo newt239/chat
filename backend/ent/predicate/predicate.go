@@ -21,6 +21,9 @@ type ChannelLink func(*sql.Selector)
 // ChannelMember is the predicate function for channelmember builders.
 type ChannelMember func(*sql.Selector)
 
+// ChannelMute is the predicate function for channelmute builders.
+type ChannelMute func(*sql.Selector)
+
 // ChannelReadState is the predicate function for channelreadstate builders.
 type ChannelReadState func(*sql.Selector)
 

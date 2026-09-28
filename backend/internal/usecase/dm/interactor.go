@@ -16,6 +16,8 @@ type Interactor struct {
 	channelRepo       repository.ChannelRepository
 	channelMemberRepo repository.ChannelMemberRepository
 	channelStarRepo   repository.ChannelStarRepository
+	channelMuteRepo   repository.ChannelMuteRepository
+	readStateRepo     repository.ReadStateRepository
 	userRepo          repository.UserRepository
 	workspaceRepo     repository.WorkspaceRepository
 }
@@ -24,6 +26,8 @@ func NewInteractor(
 	channelRepo repository.ChannelRepository,
 	channelMemberRepo repository.ChannelMemberRepository,
 	channelStarRepo repository.ChannelStarRepository,
+	channelMuteRepo repository.ChannelMuteRepository,
+	readStateRepo repository.ReadStateRepository,
 	userRepo repository.UserRepository,
 	workspaceRepo repository.WorkspaceRepository,
 ) *Interactor {
@@ -31,6 +35,8 @@ func NewInteractor(
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		channelStarRepo:   channelStarRepo,
+		channelMuteRepo:   channelMuteRepo,
+		readStateRepo:     readStateRepo,
 		userRepo:          userRepo,
 		workspaceRepo:     workspaceRepo,
 	}
@@ -159,6 +165,18 @@ func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutp
 	if err != nil {
 		return nil, err
 	}
+	muted, err := i.channelMuteRepo.FindMutedChannelIDs(ctx, input.UserID, channelIDs)
+	if err != nil {
+		return nil, err
+	}
+	unreadCounts, err := i.readStateRepo.GetUnreadCountBatch(ctx, channelIDs, input.UserID)
+	if err != nil {
+		return nil, err
+	}
+	mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, channelIDs, input.UserID)
+	if err != nil {
+		return nil, err
+	}
 
 	result := make([]*DMOutput, 0, len(channels))
 	for _, ch := range channels {
@@ -167,6 +185,9 @@ func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutp
 			return nil, err
 		}
 		output.IsStarred = starred[ch.ID]
+		output.IsMuted = muted[ch.ID]
+		output.UnreadCount = unreadCounts[ch.ID]
+		output.HasMention = mentionCounts[ch.ID] > 0
 		result = append(result, output)
 	}
 

@@ -102,6 +102,7 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewChannelStarRepository(),
+		r.domainRegistry.NewChannelMuteRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewReadStateRepository(),
 		r.infrastructureRegistry.NewTransactionManager(),
@@ -264,6 +265,8 @@ func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewChannelStarRepository(),
+		r.domainRegistry.NewChannelMuteRepository(),
+		r.domainRegistry.NewReadStateRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 	)

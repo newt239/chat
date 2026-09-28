@@ -11,6 +11,7 @@ import (
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
+	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
 	"github.com/newt239/chat/ent/message"
@@ -176,6 +177,16 @@ func init() {
 	channelmemberDescID := channelmemberFields[0].Descriptor()
 	// channelmember.DefaultID holds the default value on creation for the id field.
 	channelmember.DefaultID = channelmemberDescID.Default.(func() uuid.UUID)
+	channelmuteFields := schema.ChannelMute{}.Fields()
+	_ = channelmuteFields
+	// channelmuteDescCreatedAt is the schema descriptor for created_at field.
+	channelmuteDescCreatedAt := channelmuteFields[1].Descriptor()
+	// channelmute.DefaultCreatedAt holds the default value on creation for the created_at field.
+	channelmute.DefaultCreatedAt = channelmuteDescCreatedAt.Default.(func() time.Time)
+	// channelmuteDescID is the schema descriptor for id field.
+	channelmuteDescID := channelmuteFields[0].Descriptor()
+	// channelmute.DefaultID holds the default value on creation for the id field.
+	channelmute.DefaultID = channelmuteDescID.Default.(func() uuid.UUID)
 	channelreadstateFields := schema.ChannelReadState{}.Fields()
 	_ = channelreadstateFields
 	// channelreadstateDescLastReadAt is the schema descriptor for last_read_at field.
