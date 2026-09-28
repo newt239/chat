@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "chat/v1/message.proto";
+import "google/protobuf/timestamp.proto";
+
+// WebSocket でクライアントからサーバーへ送るイベント
+message ClientEvent {
+  oneof event {
+    ChannelEvent join_channel = 1;
+    ChannelEvent leave_channel = 2;
+    ChannelEvent typing = 3;
+    ChannelEvent stop_typing = 4;
+  }
+}
+
+message ChannelEvent {
+  string channel_id = 1;
+}
+
+// WebSocket でサーバーからクライアントへ送るイベント
+message ServerEvent {
+  oneof event {
+    MessageEvent new_message = 1;
+    MessageEvent message_updated = 2;
+    MessageDeletedEvent message_deleted = 3;
+    UnreadCountEvent unread_count = 4;
+    PinEvent pin_created = 5;
+    PinEvent pin_deleted = 6;
+    SystemMessageEvent system_message_created = 7;
+    ReactionEvent reaction_added = 8;
+    ReactionEvent reaction_removed = 9;
+    TypingEvent typing = 10;
+    TypingEvent stop_typing = 11;
+    AckEvent ack = 12;
+    ErrorEvent error = 13;
+  }
+}
+
+message MessageEvent {
+  string channel_id = 1;
+  Message message = 2;
+}
+
+message MessageDeletedEvent {
+  string channel_id = 1;
+  string message_id = 2;
+  // 親メッセージと一緒に削除されたスレッド返信も含む
+  repeated string deleted_message_ids = 3;
+  google.protobuf.Timestamp deleted_at = 4;
+}
+
+message UnreadCountEvent {
+  string channel_id = 1;
+  int32 unread_count = 2;
+  bool has_mention = 3;
+}
+
+message PinEvent {
+  string channel_id = 1;
+  string message_id = 2;
+  string pinned_by = 3;
+  google.protobuf.Timestamp pinned_at = 4;
+}
+
+message SystemMessageEvent {
+  string channel_id = 1;
+  SystemMessage message = 2;
+}
+
+message ReactionEvent {
+  string channel_id = 1;
+  string message_id = 2;
+  string user_id = 3;
+  string emoji = 4;
+}
+
+message TypingEvent {
+  string channel_id = 1;
+  string user_id = 2;
+}
+
+message AckEvent {
+  // 応答対象のクライアントイベント名 (join_channel など)
+  string event = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+message ErrorEvent {
+  string code = 1;
+  string message = 2;
+}

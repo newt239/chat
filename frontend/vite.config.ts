@@ -5,7 +5,7 @@ import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite-plus";
 
-const generatedFiles = ["src/lib/api/schema.ts", "src/routeTree.gen.ts"];
+const generatedFiles = ["src/gen/", "src/lib/api/schema.ts", "src/routeTree.gen.ts"];
 
 export default defineConfig({
   fmt: {

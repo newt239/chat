@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service ChannelMemberService {
+  rpc ListChannelMembers(ListChannelMembersRequest) returns (ListChannelMembersResponse);
+  rpc InviteChannelMember(InviteChannelMemberRequest) returns (InviteChannelMemberResponse);
+  rpc JoinChannel(JoinChannelRequest) returns (JoinChannelResponse);
+  rpc LeaveChannel(LeaveChannelRequest) returns (LeaveChannelResponse);
+  rpc RemoveChannelMember(RemoveChannelMemberRequest) returns (RemoveChannelMemberResponse);
+  rpc UpdateChannelMemberRole(UpdateChannelMemberRoleRequest) returns (UpdateChannelMemberRoleResponse);
+}
+
+enum ChannelRole {
+  CHANNEL_ROLE_UNSPECIFIED = 0;
+  CHANNEL_ROLE_MEMBER = 1;
+  CHANNEL_ROLE_ADMIN = 2;
+}
+
+message ChannelMember {
+  string user_id = 1;
+  string email = 2;
+  string display_name = 3;
+  optional string avatar_url = 4;
+  ChannelRole role = 5;
+  google.protobuf.Timestamp joined_at = 6;
+}
+
+message ListChannelMembersRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ListChannelMembersResponse {
+  repeated ChannelMember members = 1;
+}
+
+message InviteChannelMemberRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+  // 未指定の場合はメンバーとして招待する
+  ChannelRole role = 3;
+}
+
+message InviteChannelMemberResponse {}
+
+message JoinChannelRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message JoinChannelResponse {}
+
+message LeaveChannelRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message LeaveChannelResponse {}
+
+message RemoveChannelMemberRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message RemoveChannelMemberResponse {}
+
+message UpdateChannelMemberRoleRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+  ChannelRole role = 3 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+}
+
+message UpdateChannelMemberRoleResponse {}

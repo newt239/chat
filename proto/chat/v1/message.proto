@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "chat/v1/user.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+message Message {
+  string id = 1;
+  string channel_id = 2;
+  string user_id = 3;
+  UserSummary user = 4;
+  optional string parent_id = 5;
+  string body = 6;
+  repeated UserMention mentions = 7;
+  repeated GroupMention groups = 8;
+  repeated MessageLink links = 9;
+  repeated Reaction reactions = 10;
+  repeated MessageAttachment attachments = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp edited_at = 13;
+  google.protobuf.Timestamp deleted_at = 14;
+  bool is_deleted = 15;
+  UserSummary deleted_by = 16;
+  // スレッド付きの一覧取得でのみ設定される
+  ThreadMetadata thread_metadata = 17;
+}
+
+message UserMention {
+  string user_id = 1;
+  string display_name = 2;
+}
+
+message GroupMention {
+  string group_id = 1;
+  string name = 2;
+}
+
+message MessageLink {
+  string id = 1;
+  string url = 2;
+  optional string title = 3;
+  optional string description = 4;
+  optional string image_url = 5;
+  optional string site_name = 6;
+  optional string card_type = 7;
+}
+
+message Reaction {
+  string message_id = 1;
+  UserSummary user = 2;
+  string emoji = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message MessageAttachment {
+  string id = 1;
+  string file_name = 2;
+  string mime_type = 3;
+  int64 size_bytes = 4 [jstype = JS_NUMBER];
+}
+
+message ThreadMetadata {
+  string message_id = 1;
+  int32 reply_count = 2;
+  google.protobuf.Timestamp last_reply_at = 3;
+  UserSummary last_reply_user = 4;
+  repeated string participant_user_ids = 5;
+}
+
+enum SystemMessageKind {
+  SYSTEM_MESSAGE_KIND_UNSPECIFIED = 0;
+  SYSTEM_MESSAGE_KIND_MEMBER_JOINED = 1;
+  SYSTEM_MESSAGE_KIND_MEMBER_ADDED = 2;
+  SYSTEM_MESSAGE_KIND_MEMBER_REMOVED = 3;
+  SYSTEM_MESSAGE_KIND_MEMBER_LEFT = 4;
+  SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED = 5;
+  SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED = 6;
+  SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED = 7;
+  SYSTEM_MESSAGE_KIND_MESSAGE_PINNED = 8;
+}
+
+message SystemMessage {
+  string id = 1;
+  string channel_id = 2;
+  SystemMessageKind kind = 3;
+  // kind ごとに内容が異なるため構造を固定しない
+  google.protobuf.Struct payload = 4;
+  optional string actor_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+// ユーザーメッセージとシステムメッセージを時系列で並べるための項目
+message TimelineItem {
+  oneof content {
+    Message user_message = 1;
+    SystemMessage system_message = 2;
+  }
+  google.protobuf.Timestamp created_at = 3;
+}

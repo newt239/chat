@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+import "google/protobuf/timestamp.proto";
+
+service MessageService {
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+  rpc ListMessagesWithThread(ListMessagesWithThreadRequest) returns (ListMessagesWithThreadResponse);
+  rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse);
+  rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse);
+  rpc DeleteMessage(DeleteMessageRequest) returns (DeleteMessageResponse);
+}
+
+message ListMessagesRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  // 0 の場合はサーバーの既定値を使う
+  int32 limit = 2 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 100
+  }];
+  google.protobuf.Timestamp since = 3;
+  google.protobuf.Timestamp until = 4;
+}
+
+message ListMessagesResponse {
+  repeated TimelineItem messages = 1;
+  bool has_more = 2;
+}
+
+message ListMessagesWithThreadRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  // 0 の場合はサーバーの既定値を使う
+  int32 limit = 2 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 100
+  }];
+  google.protobuf.Timestamp since = 3;
+  google.protobuf.Timestamp until = 4;
+}
+
+message ListMessagesWithThreadResponse {
+  repeated Message messages = 1;
+  bool has_more = 2;
+}
+
+message CreateMessageRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string body = 2 [(buf.validate.field).string.min_len = 1];
+  optional string parent_id = 3 [(buf.validate.field).string.uuid = true];
+  repeated string attachment_ids = 4 [(buf.validate.field).repeated.items.string.uuid = true];
+}
+
+message CreateMessageResponse {
+  Message message = 1;
+}
+
+message UpdateMessageRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+  string body = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 10000
+  }];
+}
+
+message UpdateMessageResponse {
+  Message message = 1;
+}
+
+message DeleteMessageRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteMessageResponse {}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/user.proto";
+
+service UserService {
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
+  rpc UpdateMe(UpdateMeRequest) returns (UpdateMeResponse);
+  rpc UpdatePassword(UpdatePasswordRequest) returns (UpdatePasswordResponse);
+  rpc DeleteMe(DeleteMeRequest) returns (DeleteMeResponse);
+}
+
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+}
+
+message UpdateMeRequest {
+  optional string display_name = 1 [(buf.validate.field).string.min_len = 1];
+  optional string bio = 2;
+  optional string avatar_url = 3;
+}
+
+message UpdateMeResponse {
+  User user = 1;
+}
+
+message UpdatePasswordRequest {
+  string current_password = 1 [(buf.validate.field).string.min_len = 1];
+  string new_password = 2 [(buf.validate.field).string.min_len = 8];
+}
+
+message UpdatePasswordResponse {}
+
+message DeleteMeRequest {}
+
+message DeleteMeResponse {}

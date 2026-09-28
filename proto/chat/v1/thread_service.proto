@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+import "google/protobuf/timestamp.proto";
+
+service ThreadService {
+  rpc GetThreadReplies(GetThreadRepliesRequest) returns (GetThreadRepliesResponse);
+  rpc GetThreadMetadata(GetThreadMetadataRequest) returns (GetThreadMetadataResponse);
+  rpc ListParticipatingThreads(ListParticipatingThreadsRequest) returns (ListParticipatingThreadsResponse);
+  rpc MarkThreadRead(MarkThreadReadRequest) returns (MarkThreadReadResponse);
+  rpc FollowThread(FollowThreadRequest) returns (FollowThreadResponse);
+  rpc UnfollowThread(UnfollowThreadRequest) returns (UnfollowThreadResponse);
+}
+
+message ParticipatingThread {
+  string thread_id = 1;
+  optional string channel_id = 2;
+  Message first_message = 3;
+  int32 reply_count = 4;
+  google.protobuf.Timestamp last_activity_at = 5;
+  int32 unread_count = 6;
+}
+
+message ThreadCursor {
+  google.protobuf.Timestamp last_activity_at = 1;
+  string thread_id = 2;
+}
+
+message GetThreadRepliesRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetThreadRepliesResponse {
+  Message parent_message = 1;
+  repeated Message replies = 2;
+  bool has_more = 3;
+}
+
+message GetThreadMetadataRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetThreadMetadataResponse {
+  ThreadMetadata metadata = 1;
+}
+
+message ListParticipatingThreadsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  // 前ページの next_cursor をそのまま渡す
+  ThreadCursor cursor = 2;
+  // 0 の場合はサーバーの既定値を使う
+  int32 limit = 3 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 100
+  }];
+}
+
+message ListParticipatingThreadsResponse {
+  repeated ParticipatingThread threads = 1;
+  ThreadCursor next_cursor = 2;
+}
+
+message MarkThreadReadRequest {
+  string thread_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message MarkThreadReadResponse {}
+
+message FollowThreadRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message FollowThreadResponse {}
+
+message UnfollowThreadRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message UnfollowThreadResponse {}

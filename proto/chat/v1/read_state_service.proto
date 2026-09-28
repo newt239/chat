@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service ReadStateService {
+  rpc UpdateReadState(UpdateReadStateRequest) returns (UpdateReadStateResponse);
+  rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
+}
+
+message UpdateReadStateRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  google.protobuf.Timestamp last_read_at = 2 [(buf.validate.field).required = true];
+}
+
+message UpdateReadStateResponse {}
+
+message GetUnreadCountRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetUnreadCountResponse {
+  int32 count = 1;
+}

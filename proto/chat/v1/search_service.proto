@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/channel_service.proto";
+import "chat/v1/message.proto";
+import "chat/v1/user_group_service.proto";
+import "chat/v1/workspace_service.proto";
+
+service SearchService {
+  rpc SearchWorkspace(SearchWorkspaceRequest) returns (SearchWorkspaceResponse);
+}
+
+enum SearchFilter {
+  SEARCH_FILTER_UNSPECIFIED = 0;
+  SEARCH_FILTER_ALL = 1;
+  SEARCH_FILTER_MESSAGES = 2;
+  SEARCH_FILTER_CHANNELS = 3;
+  SEARCH_FILTER_USERS = 4;
+  SEARCH_FILTER_GROUPS = 5;
+}
+
+message SearchWorkspaceRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string query = 2 [(buf.validate.field).string.min_len = 1];
+  // 未指定の場合はすべての種類を検索する
+  SearchFilter filter = 3;
+  // 0 の場合は 1 ページ目として扱う
+  int32 page = 4 [(buf.validate.field).int32.gte = 0];
+  // 0 の場合はサーバーの既定値を使う
+  int32 per_page = 5 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 50
+  }];
+}
+
+message SearchWorkspaceResponse {
+  MessageSearchResult messages = 1;
+  ChannelSearchResult channels = 2;
+  UserSearchResult users = 3;
+  UserGroupSearchResult groups = 4;
+}
+
+message MessageSearchResult {
+  repeated Message items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+  bool has_more = 5;
+}
+
+message ChannelSearchResult {
+  repeated Channel items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+  bool has_more = 5;
+}
+
+message UserSearchResult {
+  repeated WorkspaceMember items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+  bool has_more = 5;
+}
+
+message UserGroupSearchResult {
+  repeated UserGroup items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+  bool has_more = 5;
+}

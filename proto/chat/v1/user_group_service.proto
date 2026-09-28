@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service UserGroupService {
+  rpc CreateUserGroup(CreateUserGroupRequest) returns (CreateUserGroupResponse);
+  rpc ListUserGroups(ListUserGroupsRequest) returns (ListUserGroupsResponse);
+  rpc GetUserGroup(GetUserGroupRequest) returns (GetUserGroupResponse);
+  rpc UpdateUserGroup(UpdateUserGroupRequest) returns (UpdateUserGroupResponse);
+  rpc DeleteUserGroup(DeleteUserGroupRequest) returns (DeleteUserGroupResponse);
+  rpc ListUserGroupMembers(ListUserGroupMembersRequest) returns (ListUserGroupMembersResponse);
+  rpc AddUserGroupMember(AddUserGroupMemberRequest) returns (AddUserGroupMemberResponse);
+  rpc RemoveUserGroupMember(RemoveUserGroupMemberRequest) returns (RemoveUserGroupMemberResponse);
+}
+
+message UserGroup {
+  string id = 1;
+  string workspace_id = 2;
+  string name = 3;
+  optional string description = 4;
+  string created_by = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message UserGroupMember {
+  string user_id = 1;
+  string display_name = 2;
+  optional string avatar_url = 3;
+  google.protobuf.Timestamp joined_at = 4;
+}
+
+message CreateUserGroupRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
+  optional string description = 3;
+}
+
+message CreateUserGroupResponse {
+  UserGroup user_group = 1;
+}
+
+message ListUserGroupsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListUserGroupsResponse {
+  repeated UserGroup user_groups = 1;
+}
+
+message GetUserGroupRequest {
+  string group_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetUserGroupResponse {
+  UserGroup user_group = 1;
+}
+
+message UpdateUserGroupRequest {
+  string group_id = 1 [(buf.validate.field).string.uuid = true];
+  optional string name = 2 [(buf.validate.field).string.min_len = 1];
+  optional string description = 3;
+}
+
+message UpdateUserGroupResponse {
+  UserGroup user_group = 1;
+}
+
+message DeleteUserGroupRequest {
+  string group_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteUserGroupResponse {}
+
+message ListUserGroupMembersRequest {
+  string group_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ListUserGroupMembersResponse {
+  repeated UserGroupMember members = 1;
+}
+
+message AddUserGroupMemberRequest {
+  string group_id = 1 [(buf.validate.field).string.uuid = true];
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message AddUserGroupMemberResponse {}
+
+message RemoveUserGroupMemberRequest {
+  string group_id = 1 [(buf.validate.field).string.uuid = true];
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message RemoveUserGroupMemberResponse {}

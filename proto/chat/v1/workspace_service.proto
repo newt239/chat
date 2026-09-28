@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service WorkspaceService {
+  rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse);
+  rpc CreateWorkspace(CreateWorkspaceRequest) returns (CreateWorkspaceResponse);
+  rpc GetWorkspace(GetWorkspaceRequest) returns (GetWorkspaceResponse);
+  rpc UpdateWorkspace(UpdateWorkspaceRequest) returns (UpdateWorkspaceResponse);
+  rpc DeleteWorkspace(DeleteWorkspaceRequest) returns (DeleteWorkspaceResponse);
+  rpc ListPublicWorkspaces(ListPublicWorkspacesRequest) returns (ListPublicWorkspacesResponse);
+  rpc JoinPublicWorkspace(JoinPublicWorkspaceRequest) returns (JoinPublicWorkspaceResponse);
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
+  rpc AddMemberByEmail(AddMemberByEmailRequest) returns (AddMemberByEmailResponse);
+  rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse);
+  rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse);
+}
+
+enum WorkspaceRole {
+  WORKSPACE_ROLE_UNSPECIFIED = 0;
+  WORKSPACE_ROLE_OWNER = 1;
+  WORKSPACE_ROLE_ADMIN = 2;
+  WORKSPACE_ROLE_MEMBER = 3;
+  WORKSPACE_ROLE_GUEST = 4;
+}
+
+message Workspace {
+  string id = 1;
+  string name = 2;
+  optional string description = 3;
+  optional string icon_url = 4;
+  bool is_public = 5;
+  WorkspaceRole role = 6;
+  string created_by = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message WorkspaceMember {
+  string user_id = 1;
+  string email = 2;
+  string display_name = 3;
+  optional string avatar_url = 4;
+  optional string bio = 5;
+  WorkspaceRole role = 6;
+  google.protobuf.Timestamp joined_at = 7;
+}
+
+message PublicWorkspace {
+  string id = 1;
+  string name = 2;
+  optional string description = 3;
+  optional string icon_url = 4;
+  int32 member_count = 5;
+  bool is_joined = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message ListWorkspacesRequest {}
+
+message ListWorkspacesResponse {
+  repeated Workspace workspaces = 1;
+}
+
+message CreateWorkspaceRequest {
+  string id = 1 [(buf.validate.field).string = {
+    min_len: 3
+    max_len: 12
+    pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+  }];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
+  optional string description = 3;
+  optional string icon_url = 4 [(buf.validate.field).string.uri = true];
+  bool is_public = 5;
+}
+
+message CreateWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message GetWorkspaceRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message UpdateWorkspaceRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  optional string name = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  optional string description = 3 [(buf.validate.field).string.max_len = 500];
+  optional string icon_url = 4 [(buf.validate.field).string = {
+    uri: true
+    max_len: 2048
+  }];
+  optional bool is_public = 5;
+}
+
+message UpdateWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message DeleteWorkspaceRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message DeleteWorkspaceResponse {}
+
+message ListPublicWorkspacesRequest {}
+
+message ListPublicWorkspacesResponse {
+  repeated PublicWorkspace workspaces = 1;
+}
+
+message JoinPublicWorkspaceRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message JoinPublicWorkspaceResponse {}
+
+message ListMembersRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListMembersResponse {
+  repeated WorkspaceMember members = 1;
+}
+
+message AddMemberByEmailRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string email = 2 [(buf.validate.field).string.email = true];
+  // 未指定の場合はメンバーとして追加する
+  WorkspaceRole role = 3 [(buf.validate.field).enum = {
+    in: [
+      0,
+      2,
+      3
+    ]
+  }];
+}
+
+message AddMemberByEmailResponse {}
+
+message UpdateMemberRoleRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+  WorkspaceRole role = 3 [(buf.validate.field).enum = {
+    in: [
+      2,
+      3
+    ]
+  }];
+}
+
+message UpdateMemberRoleResponse {}
+
+message RemoveMemberRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string user_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message RemoveMemberResponse {}

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+import "google/protobuf/timestamp.proto";
+
+service BookmarkService {
+  rpc ListBookmarks(ListBookmarksRequest) returns (ListBookmarksResponse);
+  rpc AddBookmark(AddBookmarkRequest) returns (AddBookmarkResponse);
+  rpc RemoveBookmark(RemoveBookmarkRequest) returns (RemoveBookmarkResponse);
+}
+
+message Bookmark {
+  string user_id = 1;
+  Message message = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message ListBookmarksRequest {}
+
+message ListBookmarksResponse {
+  repeated Bookmark bookmarks = 1;
+}
+
+message AddBookmarkRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message AddBookmarkResponse {}
+
+message RemoveBookmarkRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message RemoveBookmarkResponse {}
