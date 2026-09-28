@@ -17,6 +17,7 @@ import (
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
+	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
 	"github.com/newt239/chat/ent/message"
@@ -102,6 +103,7 @@ func checkColumn(t, c string) error {
 			channel.Table:             channel.ValidColumn,
 			channellink.Table:         channellink.ValidColumn,
 			channelmember.Table:       channelmember.ValidColumn,
+			channelmute.Table:         channelmute.ValidColumn,
 			channelreadstate.Table:    channelreadstate.ValidColumn,
 			channelstar.Table:         channelstar.ValidColumn,
 			message.Table:             message.ValidColumn,

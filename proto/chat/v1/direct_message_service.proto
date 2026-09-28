@@ -27,6 +27,10 @@ message DirectMessage {
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
   bool is_starred = 9;
+  bool is_muted = 10;
+  // ListDirectMessages でのみ設定される
+  int32 unread_count = 11;
+  bool has_mention = 12;
 }
 
 message DirectMessageMember {

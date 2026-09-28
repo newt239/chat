@@ -222,6 +222,40 @@ var (
 			},
 		},
 	}
+	// ChannelMuteColumns holds the columns for the "channel_mute" table.
+	ChannelMuteColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "channel_mute_user", Type: field.TypeUUID},
+		{Name: "channel_mute_channel", Type: field.TypeUUID},
+	}
+	// ChannelMuteTable holds the schema information for the "channel_mute" table.
+	ChannelMuteTable = &schema.Table{
+		Name:       "channel_mute",
+		Columns:    ChannelMuteColumns,
+		PrimaryKey: []*schema.Column{ChannelMuteColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "channel_mute_users_user",
+				Columns:    []*schema.Column{ChannelMuteColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "channel_mute_channels_channel",
+				Columns:    []*schema.Column{ChannelMuteColumns[3]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "channelmute_channel_mute_user_channel_mute_channel",
+				Unique:  true,
+				Columns: []*schema.Column{ChannelMuteColumns[2], ChannelMuteColumns[3]},
+			},
+		},
+	}
 	// ChannelReadStatesColumns holds the columns for the "channel_read_states" table.
 	ChannelReadStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -932,6 +966,7 @@ var (
 		ChannelsTable,
 		ChannelLinkTable,
 		ChannelMembersTable,
+		ChannelMuteTable,
 		ChannelReadStatesTable,
 		ChannelStarTable,
 		MessagesTable,
@@ -972,6 +1007,11 @@ func init() {
 	}
 	ChannelMembersTable.ForeignKeys[0].RefTable = ChannelsTable
 	ChannelMembersTable.ForeignKeys[1].RefTable = UsersTable
+	ChannelMuteTable.ForeignKeys[0].RefTable = UsersTable
+	ChannelMuteTable.ForeignKeys[1].RefTable = ChannelsTable
+	ChannelMuteTable.Annotation = &entsql.Annotation{
+		Table: "channel_mute",
+	}
 	ChannelReadStatesTable.ForeignKeys[0].RefTable = ChannelsTable
 	ChannelReadStatesTable.ForeignKeys[1].RefTable = UsersTable
 	ChannelStarTable.ForeignKeys[0].RefTable = UsersTable
