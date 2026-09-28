@@ -1,4 +1,5 @@
 import type { Messages } from "../../messages";
+import { admin } from "./admin";
 import { attachment } from "./attachment";
 import { auth } from "./auth";
 import { bookmark } from "./bookmark";
@@ -6,6 +7,7 @@ import { channel } from "./channel";
 import { codeBlock } from "./codeBlock";
 import { common } from "./common";
 import { dm } from "./dm";
+import { insights } from "./insights";
 import { link } from "./link";
 import { member } from "./member";
 import { message } from "./message";
@@ -21,6 +23,7 @@ import { userGroup } from "./userGroup";
 import { workspace } from "./workspace";
 
 export const en: Messages = {
+  admin,
   attachment,
   auth,
   bookmark,
@@ -28,6 +31,7 @@ export const en: Messages = {
   codeBlock,
   common,
   dm,
+  insights,
   link,
   member,
   message,

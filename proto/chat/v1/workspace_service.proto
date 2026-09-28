@@ -158,7 +158,8 @@ message UpdateMemberRoleRequest {
   WorkspaceRole role = 3 [(buf.validate.field).enum = {
     in: [
       2,
-      3
+      3,
+      4
     ]
   }];
 }

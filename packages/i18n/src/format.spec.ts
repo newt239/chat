@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  formatBytes,
   formatDate,
   formatDateTime,
+  formatMonthDay,
+  formatNumber,
   formatRelativeTime,
   formatTime,
   formatWeekday,
@@ -52,5 +55,22 @@ describe("formatRelativeTime", () => {
 
   it("未来の日時も表示する", () => {
     expect(formatRelativeTime(ago(-5 * 60), now, "en")).toBe("in 5 minutes");
+  });
+});
+
+describe("数値のフォーマット", () => {
+  it("月日を言語に合わせて表示する", () => {
+    expect(formatMonthDay(date, "ja")).toBe("9/28");
+    expect(formatMonthDay(date, "en")).toBe("9/28");
+  });
+
+  it("桁区切りを付け、小数は 1 桁までにする", () => {
+    expect(formatNumber(12345.67, "ja")).toBe("12,345.7");
+  });
+
+  it("バイト数を単位付きで表示する", () => {
+    expect(formatBytes(0, "ja")).toBe("0 B");
+    expect(formatBytes(1536, "ja")).toBe("1.5 KB");
+    expect(formatBytes(5 * 1024 ** 3, "en")).toBe("5 GB");
   });
 });
