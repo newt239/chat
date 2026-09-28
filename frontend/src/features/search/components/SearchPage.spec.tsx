@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
@@ -119,7 +119,7 @@ describe("SearchPage", () => {
 
   test("修飾子を名前から ID に解決し、構造化した条件で検索する", async () => {
     const { search } = await setup(
-      `/app/ws1/search?q=${encodeURIComponent("release from:@bob in:#dev has:image during:week")}`,
+      `/app/ws1/search?q=${encodeURIComponent("release from:@bob in:#dev has:image after:2026-09-01 before:2026-09-30")}`,
     );
     await waitFor(() => {
       expect(search).toHaveBeenCalled();
@@ -133,12 +133,15 @@ describe("SearchPage", () => {
       has: [SearchHas.IMAGE],
       includeDescendantChannels: true,
     });
-    const after = req?.messageFilter?.after;
-    expect(after && timestampDate(after).getHours()).toBe(0);
+    const { after, before } = req?.messageFilter ?? {};
+    expect(after && timestampDate(after)).toEqual(new Date(2026, 8, 1));
+    expect(before && timestampDate(before)).toEqual(new Date(2026, 9, 1));
 
     expect(screen.getByRole("button", { name: /投稿者: Bob/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /チャンネル: #dev/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /期間: 過去 7 日/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /期間: 2026-09-01〜2026-09-30/ }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /添付: 画像/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "下階層を含む" })).toHaveAttribute(
       "aria-pressed",
@@ -190,6 +193,18 @@ describe("SearchPage", () => {
     const { search } = await setup("/app/ws1/search?q=from:@nobody");
     expect(await screen.findByRole("alert")).toHaveTextContent("@nobody");
     expect(search).not.toHaveBeenCalled();
+  });
+
+  test("日付の形式が不正なら検索せずに知らせ、期間を指定し直すと外す", async () => {
+    const { router, search } = await setup("/app/ws1/search?q=release%20after:2026/09/01");
+    expect(await screen.findByRole("alert")).toHaveTextContent("after:2026/09/01");
+    expect(search).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "期間" }));
+    fireEvent.change(await screen.findByLabelText("開始日"), { target: { value: "2026-09-05" } });
+    await waitFor(() => {
+      expect(router.state.location.search).toMatchObject({ q: "release after:2026-09-05" });
+    });
   });
 
   test("並び順とタブを切り替え、ページを送れる", async () => {
