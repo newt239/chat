@@ -31,8 +31,10 @@ type ParticipatingThread struct {
 	ReplyCount     int32                  `protobuf:"varint,4,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
 	LastActivityAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=last_activity_at,json=lastActivityAt,proto3" json:"last_activity_at,omitempty"`
 	UnreadCount    int32                  `protobuf:"varint,6,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// 最新の返信（古い順、最大 2 件）。すべての返信は GetThreadReplies で取得する
+	LatestReplies []*Message `protobuf:"bytes,7,rep,name=latest_replies,json=latestReplies,proto3" json:"latest_replies,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ParticipatingThread) Reset() {
@@ -105,6 +107,13 @@ func (x *ParticipatingThread) GetUnreadCount() int32 {
 		return x.UnreadCount
 	}
 	return 0
+}
+
+func (x *ParticipatingThread) GetLatestReplies() []*Message {
+	if x != nil {
+		return x.LatestReplies
+	}
+	return nil
 }
 
 type ThreadCursor struct {
@@ -709,7 +718,7 @@ var File_chat_v1_thread_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa6\x02\n" +
+	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdf\x02\n" +
 	"\x13ParticipatingThread\x12\x1b\n" +
 	"\tthread_id\x18\x01 \x01(\tR\bthreadId\x12\"\n" +
 	"\n" +
@@ -718,7 +727,8 @@ const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\vreply_count\x18\x04 \x01(\x05R\n" +
 	"replyCount\x12D\n" +
 	"\x10last_activity_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12!\n" +
-	"\funread_count\x18\x06 \x01(\x05R\vunreadCountB\r\n" +
+	"\funread_count\x18\x06 \x01(\x05R\vunreadCount\x127\n" +
+	"\x0elatest_replies\x18\a \x03(\v2\x10.chat.v1.MessageR\rlatestRepliesB\r\n" +
 	"\v_channel_id\"q\n" +
 	"\fThreadCursor\x12D\n" +
 	"\x10last_activity_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12\x1b\n" +
@@ -798,30 +808,31 @@ var file_chat_v1_thread_service_proto_goTypes = []any{
 var file_chat_v1_thread_service_proto_depIdxs = []int32{
 	14, // 0: chat.v1.ParticipatingThread.first_message:type_name -> chat.v1.Message
 	15, // 1: chat.v1.ParticipatingThread.last_activity_at:type_name -> google.protobuf.Timestamp
-	15, // 2: chat.v1.ThreadCursor.last_activity_at:type_name -> google.protobuf.Timestamp
-	14, // 3: chat.v1.GetThreadRepliesResponse.parent_message:type_name -> chat.v1.Message
-	14, // 4: chat.v1.GetThreadRepliesResponse.replies:type_name -> chat.v1.Message
-	16, // 5: chat.v1.GetThreadMetadataResponse.metadata:type_name -> chat.v1.ThreadMetadata
-	1,  // 6: chat.v1.ListParticipatingThreadsRequest.cursor:type_name -> chat.v1.ThreadCursor
-	0,  // 7: chat.v1.ListParticipatingThreadsResponse.threads:type_name -> chat.v1.ParticipatingThread
-	1,  // 8: chat.v1.ListParticipatingThreadsResponse.next_cursor:type_name -> chat.v1.ThreadCursor
-	2,  // 9: chat.v1.ThreadService.GetThreadReplies:input_type -> chat.v1.GetThreadRepliesRequest
-	4,  // 10: chat.v1.ThreadService.GetThreadMetadata:input_type -> chat.v1.GetThreadMetadataRequest
-	6,  // 11: chat.v1.ThreadService.ListParticipatingThreads:input_type -> chat.v1.ListParticipatingThreadsRequest
-	8,  // 12: chat.v1.ThreadService.MarkThreadRead:input_type -> chat.v1.MarkThreadReadRequest
-	10, // 13: chat.v1.ThreadService.FollowThread:input_type -> chat.v1.FollowThreadRequest
-	12, // 14: chat.v1.ThreadService.UnfollowThread:input_type -> chat.v1.UnfollowThreadRequest
-	3,  // 15: chat.v1.ThreadService.GetThreadReplies:output_type -> chat.v1.GetThreadRepliesResponse
-	5,  // 16: chat.v1.ThreadService.GetThreadMetadata:output_type -> chat.v1.GetThreadMetadataResponse
-	7,  // 17: chat.v1.ThreadService.ListParticipatingThreads:output_type -> chat.v1.ListParticipatingThreadsResponse
-	9,  // 18: chat.v1.ThreadService.MarkThreadRead:output_type -> chat.v1.MarkThreadReadResponse
-	11, // 19: chat.v1.ThreadService.FollowThread:output_type -> chat.v1.FollowThreadResponse
-	13, // 20: chat.v1.ThreadService.UnfollowThread:output_type -> chat.v1.UnfollowThreadResponse
-	15, // [15:21] is the sub-list for method output_type
-	9,  // [9:15] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	14, // 2: chat.v1.ParticipatingThread.latest_replies:type_name -> chat.v1.Message
+	15, // 3: chat.v1.ThreadCursor.last_activity_at:type_name -> google.protobuf.Timestamp
+	14, // 4: chat.v1.GetThreadRepliesResponse.parent_message:type_name -> chat.v1.Message
+	14, // 5: chat.v1.GetThreadRepliesResponse.replies:type_name -> chat.v1.Message
+	16, // 6: chat.v1.GetThreadMetadataResponse.metadata:type_name -> chat.v1.ThreadMetadata
+	1,  // 7: chat.v1.ListParticipatingThreadsRequest.cursor:type_name -> chat.v1.ThreadCursor
+	0,  // 8: chat.v1.ListParticipatingThreadsResponse.threads:type_name -> chat.v1.ParticipatingThread
+	1,  // 9: chat.v1.ListParticipatingThreadsResponse.next_cursor:type_name -> chat.v1.ThreadCursor
+	2,  // 10: chat.v1.ThreadService.GetThreadReplies:input_type -> chat.v1.GetThreadRepliesRequest
+	4,  // 11: chat.v1.ThreadService.GetThreadMetadata:input_type -> chat.v1.GetThreadMetadataRequest
+	6,  // 12: chat.v1.ThreadService.ListParticipatingThreads:input_type -> chat.v1.ListParticipatingThreadsRequest
+	8,  // 13: chat.v1.ThreadService.MarkThreadRead:input_type -> chat.v1.MarkThreadReadRequest
+	10, // 14: chat.v1.ThreadService.FollowThread:input_type -> chat.v1.FollowThreadRequest
+	12, // 15: chat.v1.ThreadService.UnfollowThread:input_type -> chat.v1.UnfollowThreadRequest
+	3,  // 16: chat.v1.ThreadService.GetThreadReplies:output_type -> chat.v1.GetThreadRepliesResponse
+	5,  // 17: chat.v1.ThreadService.GetThreadMetadata:output_type -> chat.v1.GetThreadMetadataResponse
+	7,  // 18: chat.v1.ThreadService.ListParticipatingThreads:output_type -> chat.v1.ListParticipatingThreadsResponse
+	9,  // 19: chat.v1.ThreadService.MarkThreadRead:output_type -> chat.v1.MarkThreadReadResponse
+	11, // 20: chat.v1.ThreadService.FollowThread:output_type -> chat.v1.FollowThreadResponse
+	13, // 21: chat.v1.ThreadService.UnfollowThread:output_type -> chat.v1.UnfollowThreadResponse
+	16, // [16:22] is the sub-list for method output_type
+	10, // [10:16] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_thread_service_proto_init() }

@@ -36,7 +36,7 @@ export const useWorkspaceSearch = ({
   return useQuery(
     SearchService.method.searchWorkspace,
     isEnabled
-      ? { filter: searchFilterMessages[filter], page, perPage, query: trimmedQuery, workspaceId }
+      ? { page, perPage, query: trimmedQuery, target: searchFilterMessages[filter], workspaceId }
       : skipToken,
     {
       retry: 1,

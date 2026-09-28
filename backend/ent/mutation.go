@@ -3150,6 +3150,9 @@ type MessageMutation struct {
 	attachments                map[uuid.UUID]struct{}
 	removedattachments         map[uuid.UUID]struct{}
 	clearedattachments         bool
+	pins                       map[uuid.UUID]struct{}
+	removedpins                map[uuid.UUID]struct{}
+	clearedpins                bool
 	user_thread_follows        map[uuid.UUID]struct{}
 	removeduser_thread_follows map[uuid.UUID]struct{}
 	cleareduser_thread_follows bool
@@ -3979,6 +3982,60 @@ func (m *MessageMutation) ResetAttachments() {
 	m.removedattachments = nil
 }
 
+// AddPinIDs adds the "pins" edge to the MessagePin entity by ids.
+func (m *MessageMutation) AddPinIDs(ids ...uuid.UUID) {
+	if m.pins == nil {
+		m.pins = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.pins[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPins clears the "pins" edge to the MessagePin entity.
+func (m *MessageMutation) ClearPins() {
+	m.clearedpins = true
+}
+
+// PinsCleared reports if the "pins" edge to the MessagePin entity was cleared.
+func (m *MessageMutation) PinsCleared() bool {
+	return m.clearedpins
+}
+
+// RemovePinIDs removes the "pins" edge to the MessagePin entity by IDs.
+func (m *MessageMutation) RemovePinIDs(ids ...uuid.UUID) {
+	if m.removedpins == nil {
+		m.removedpins = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.pins, ids[i])
+		m.removedpins[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPins returns the removed IDs of the "pins" edge to the MessagePin entity.
+func (m *MessageMutation) RemovedPinsIDs() (ids []uuid.UUID) {
+	for id := range m.removedpins {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PinsIDs returns the "pins" edge IDs in the mutation.
+func (m *MessageMutation) PinsIDs() (ids []uuid.UUID) {
+	for id := range m.pins {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPins resets all changes to the "pins" edge.
+func (m *MessageMutation) ResetPins() {
+	m.pins = nil
+	m.clearedpins = false
+	m.removedpins = nil
+}
+
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by ids.
 func (m *MessageMutation) AddUserThreadFollowIDs(ids ...uuid.UUID) {
 	if m.user_thread_follows == nil {
@@ -4309,7 +4366,7 @@ func (m *MessageMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MessageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 12)
+	edges := make([]string, 0, 13)
 	if m.channel != nil {
 		edges = append(edges, message.EdgeChannel)
 	}
@@ -4339,6 +4396,9 @@ func (m *MessageMutation) AddedEdges() []string {
 	}
 	if m.attachments != nil {
 		edges = append(edges, message.EdgeAttachments)
+	}
+	if m.pins != nil {
+		edges = append(edges, message.EdgePins)
 	}
 	if m.user_thread_follows != nil {
 		edges = append(edges, message.EdgeUserThreadFollows)
@@ -4407,6 +4467,12 @@ func (m *MessageMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case message.EdgePins:
+		ids := make([]ent.Value, 0, len(m.pins))
+		for id := range m.pins {
+			ids = append(ids, id)
+		}
+		return ids
 	case message.EdgeUserThreadFollows:
 		ids := make([]ent.Value, 0, len(m.user_thread_follows))
 		for id := range m.user_thread_follows {
@@ -4425,7 +4491,7 @@ func (m *MessageMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MessageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 12)
+	edges := make([]string, 0, 13)
 	if m.removedreplies != nil {
 		edges = append(edges, message.EdgeReplies)
 	}
@@ -4446,6 +4512,9 @@ func (m *MessageMutation) RemovedEdges() []string {
 	}
 	if m.removedattachments != nil {
 		edges = append(edges, message.EdgeAttachments)
+	}
+	if m.removedpins != nil {
+		edges = append(edges, message.EdgePins)
 	}
 	if m.removeduser_thread_follows != nil {
 		edges = append(edges, message.EdgeUserThreadFollows)
@@ -4502,6 +4571,12 @@ func (m *MessageMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case message.EdgePins:
+		ids := make([]ent.Value, 0, len(m.removedpins))
+		for id := range m.removedpins {
+			ids = append(ids, id)
+		}
+		return ids
 	case message.EdgeUserThreadFollows:
 		ids := make([]ent.Value, 0, len(m.removeduser_thread_follows))
 		for id := range m.removeduser_thread_follows {
@@ -4520,7 +4595,7 @@ func (m *MessageMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MessageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 12)
+	edges := make([]string, 0, 13)
 	if m.clearedchannel {
 		edges = append(edges, message.EdgeChannel)
 	}
@@ -4550,6 +4625,9 @@ func (m *MessageMutation) ClearedEdges() []string {
 	}
 	if m.clearedattachments {
 		edges = append(edges, message.EdgeAttachments)
+	}
+	if m.clearedpins {
+		edges = append(edges, message.EdgePins)
 	}
 	if m.cleareduser_thread_follows {
 		edges = append(edges, message.EdgeUserThreadFollows)
@@ -4584,6 +4662,8 @@ func (m *MessageMutation) EdgeCleared(name string) bool {
 		return m.clearedlinks
 	case message.EdgeAttachments:
 		return m.clearedattachments
+	case message.EdgePins:
+		return m.clearedpins
 	case message.EdgeUserThreadFollows:
 		return m.cleareduser_thread_follows
 	case message.EdgeThreadReadStates:
@@ -4642,6 +4722,9 @@ func (m *MessageMutation) ResetEdge(name string) error {
 		return nil
 	case message.EdgeAttachments:
 		m.ResetAttachments()
+		return nil
+	case message.EdgePins:
+		m.ResetPins()
 		return nil
 	case message.EdgeUserThreadFollows:
 		m.ResetUserThreadFollows()
