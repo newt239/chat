@@ -13,14 +13,20 @@ const MotionModal = motion.create(Modal);
 type DialogFrameProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  // sheet: 下から出る全画面（モバイル）、center: 中央のモーダル
-  layout: "sheet" | "center";
+  // sheet: 下から出る全画面（モバイル）、bottom: 下から出る高さ可変のシート、center: 中央のモーダル
+  layout: keyof typeof layouts;
   role: "dialog" | "alertdialog";
   className: string;
   children: ReactNode;
 };
 
 const layouts = {
+  bottom: {
+    animation: { animate: { y: 0 }, exit: { y: "100%" }, initial: { y: "100%" } },
+    className:
+      "fixed inset-x-0 bottom-0 max-h-[88%] overflow-y-auto rounded-t-[18px] pb-[max(24px,env(safe-area-inset-bottom))]",
+    transition: transitions.sheet,
+  },
   center: {
     animation: {
       animate: { opacity: 1, scale: 1 },

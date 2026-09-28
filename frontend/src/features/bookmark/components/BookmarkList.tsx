@@ -1,14 +1,15 @@
-import { Text, Stack, ScrollArea, Card } from "@mantine/core";
 import { IconBookmark } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
+import { useTranslation } from "react-i18next";
 
-import { toDate } from "#/lib/timestamp";
+import { Skeleton } from "#/components/ui/Skeleton";
+import { MessageLinkCard } from "#/features/message/components/MessageLinkCard";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 import { useBookmarks } from "../hooks/useBookmarks";
 
 export const BookmarkList = () => {
+  const { t } = useTranslation();
   const workspaceId = useAtomValue(currentWorkspaceIdAtom);
   const { data: bookmarks, isLoading, error } = useBookmarks();
 
@@ -18,71 +19,36 @@ export const BookmarkList = () => {
 
   if (isLoading) {
     return (
-      <div className="p-4">
-        <Text size="sm" c="dimmed">
-          読み込み中...
-        </Text>
+      <div className="flex flex-col gap-2 p-3">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="p-4">
-        <Text size="sm" c="red">
-          エラーが発生しました
-        </Text>
-      </div>
-    );
+    return <p className="m-0 p-4 font-sans text-body text-danger">{t("bookmark.loadFailed")}</p>;
   }
 
   if (!bookmarks || bookmarks.length === 0) {
     return (
-      <div className="p-4 text-center">
-        <IconBookmark size={48} className="mx-auto mb-4 text-gray-400" />
-        <Text size="sm" c="dimmed">
-          ブックマークされたメッセージはありません
-        </Text>
+      <div className="flex flex-col items-center gap-3 p-8 font-sans text-body text-muted">
+        <IconBookmark aria-hidden className="size-10 text-subtle" />
+        {t("bookmark.empty")}
       </div>
     );
   }
 
   return (
-    <ScrollArea h={400}>
-      <Stack gap="xs" p="xs">
-        {bookmarks.map((bookmark) => (
-          <Card
-            key={`${bookmark.userId}-${bookmark.message.id}`}
-            withBorder
-            padding="md"
-            radius="md"
-            renderRoot={(props) => (
-              <Link
-                {...props}
-                to="/app/$workspaceId/$channelId"
-                params={{ channelId: bookmark.message.channelId, workspaceId }}
-                search={{ message: bookmark.message.id }}
-              />
-            )}
-            className="h-auto text-left justify-start"
-          >
-            <div className="flex-1 min-w-0">
-              <Text size="sm" fw={500} className="whitespace-pre-wrap">
-                {bookmark.message.body}
-              </Text>
-              <Text size="xs" c="dimmed" mt={4}>
-                {toDate(bookmark.createdAt).toLocaleDateString("ja-JP", {
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </Text>
-            </div>
-          </Card>
-        ))}
-      </Stack>
-    </ScrollArea>
+    <div className="flex flex-col gap-0.5 overflow-y-auto p-1.5">
+      {bookmarks.map((bookmark) => (
+        <MessageLinkCard
+          key={`${bookmark.userId}-${bookmark.message.id}`}
+          message={bookmark.message}
+          workspaceId={workspaceId}
+          markedAt={bookmark.createdAt}
+        />
+      ))}
+    </div>
   );
 };

@@ -1,179 +1,119 @@
-import { useCallback } from "react";
-
-import { ActionIcon, Badge, Card, ScrollArea, Stack, Text } from "@mantine/core";
-import { IconBell, IconX } from "@tabler/icons-react";
+import { formatRelativeTime } from "@chat/i18n";
+import { IconAt, IconBell, IconMessage, IconMoodSmile, IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
+import { Button } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { Badge } from "#/components/ui/Badge";
+import { IconButton } from "#/components/ui/IconButton";
+import { cn, focusRing } from "#/components/ui/styles";
 import {
   markNotificationAsReadAtom,
-  removeNotificationAtom,
-  type NotificationItem,
   notificationItemsAtom,
+  removeNotificationAtom,
 } from "#/providers/store/notification";
+import { preferencesAtom } from "#/providers/store/preferences";
 
-const formatTimestamp = (timestamp: Date) => {
-  const now = new Date();
-  const diff = now.getTime() - timestamp.getTime();
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+import type { NotificationItem } from "#/providers/store/notification";
 
-  if (minutes < 1) {
-    return "たった今";
-  } else if (minutes < 60) {
-    return `${minutes}分前`;
-  } else if (hours < 24) {
-    return `${hours}時間前`;
-  } else if (days < 7) {
-    return `${days}日前`;
-  }
-  return timestamp.toLocaleDateString("ja-JP");
-};
-
-const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case "mention": {
-      return <IconBell size={16} />;
-    }
-    case "message": {
-      return <IconBell size={16} />;
-    }
-    case "reaction": {
-      return <IconBell size={16} />;
-    }
-    default: {
-      return <IconBell size={16} />;
-    }
-  }
-};
-
-const getNotificationColor = (type: string, isRead: boolean) => {
-  if (isRead) {
-    return "gray";
-  }
-  switch (type) {
-    case "mention": {
-      return "red";
-    }
-    case "message": {
-      return "blue";
-    }
-    case "reaction": {
-      return "green";
-    }
-    default: {
-      return "gray";
-    }
-  }
+const icons = {
+  mention: IconAt,
+  message: IconMessage,
+  reaction: IconMoodSmile,
 };
 
 export const NotificationPanel = () => {
+  const { t } = useTranslation();
+  const { locale } = useAtomValue(preferencesAtom);
   const notifications = useAtomValue(notificationItemsAtom);
   const markAsRead = useSetAtom(markNotificationAsReadAtom);
   const removeNotification = useSetAtom(removeNotificationAtom);
   const navigate = useNavigate();
 
-  const handleNotificationClick = useCallback(
-    (notification: NotificationItem) => {
-      // 既読にする
-      if (!notification.isRead) {
-        markAsRead(notification.id);
-      }
+  const open = (notification: NotificationItem) => {
+    if (!notification.isRead) {
+      markAsRead(notification.id);
+    }
+    void navigate({
+      params: { channelId: notification.channelId, workspaceId: notification.workspaceId },
+      search: { message: notification.messageId },
+      to: "/app/$workspaceId/$channelId",
+    });
+  };
 
-      // チャンネルに遷移
-      void navigate({
-        params: { channelId: notification.channelId, workspaceId: notification.workspaceId },
-        search: { message: notification.messageId },
-        to: "/app/$workspaceId/$channelId",
-      });
-    },
-    [markAsRead, navigate],
-  );
+  if (notifications.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 font-sans text-body text-muted">
+        <IconBell aria-hidden className="size-10 text-subtle" />
+        {t("notification.empty")}
+      </div>
+    );
+  }
 
-  const handleRemoveNotification = useCallback(
-    (notificationId: string, event: React.MouseEvent) => {
-      event.stopPropagation();
-      removeNotification(notificationId);
-    },
-    [removeNotification],
-  );
+  const now = new Date();
 
   return (
-    <div className="h-full flex flex-col">
-      {/* 通知一覧 */}
-      <ScrollArea className="flex-1">
-        {notifications.length === 0 ? (
-          <div className="p-8 text-center">
-            <IconBell size={48} className="mx-auto text-gray-400 mb-4" />
-            <Text c="dimmed" size="sm">
-              通知はありません
-            </Text>
-          </div>
-        ) : (
-          <Stack gap="xs" className="p-2">
-            {notifications.map((notification) => (
-              <Card
-                key={notification.id}
-                className={`cursor-pointer transition-colors ${
-                  notification.isRead ? "bg-gray-50" : "bg-white"
-                } hover:bg-gray-100`}
-                padding="sm"
-                onClick={() => {
-                  handleNotificationClick(notification);
-                }}
+    <ul className="m-0 flex list-none flex-col gap-0.5 overflow-y-auto p-1.5 font-sans">
+      {notifications.map((notification) => {
+        const TypeIcon = icons[notification.type];
+        return (
+          <li key={notification.id} className="flex items-start gap-1">
+            <Button
+              onPress={() => {
+                open(notification);
+              }}
+              className={cn(
+                "flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 text-left text-text data-hovered:bg-hover",
+                focusRing,
+              )}
+            >
+              <span
+                className={cn(
+                  "mt-0.5 grid size-7 shrink-0 place-items-center rounded-md [&_svg]:size-4",
+                  notification.isRead ? "bg-sunken text-muted" : "bg-accent-soft text-accent-text",
+                )}
               >
-                <div className="flex items-start gap-3">
-                  <div
-                    className={`p-1 rounded ${notification.isRead ? "bg-gray-200" : "bg-blue-100"}`}
+                <TypeIcon aria-hidden />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5 leading-[1.35]">
+                <span className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "truncate text-[13.5px]",
+                      notification.isRead ? "font-normal" : "font-semibold",
+                    )}
                   >
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Text size="sm" fw={notification.isRead ? 400 : 600} className="truncate">
-                        {notification.title}
-                      </Text>
-                      <Badge
-                        size="xs"
-                        color={getNotificationColor(notification.type, notification.isRead)}
-                      >
-                        {notification.type === "mention"
-                          ? "メンション"
-                          : notification.type === "message"
-                            ? "メッセージ"
-                            : "リアクション"}
-                      </Badge>
-                    </div>
-                    <Text size="xs" c="dimmed" className="truncate mb-1">
-                      {notification.message}
-                    </Text>
-                    <div className="flex items-center justify-between">
-                      <Text size="xs" c="dimmed">
-                        #{notification.channelName}
-                        {notification.userName && ` • ${notification.userName}`}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {formatTimestamp(notification.timestamp)}
-                      </Text>
-                    </div>
-                  </div>
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    color="gray"
-                    onClick={(e) => {
-                      handleRemoveNotification(notification.id, e);
-                    }}
-                  >
-                    <IconX size={14} />
-                  </ActionIcon>
-                </div>
-              </Card>
-            ))}
-          </Stack>
-        )}
-      </ScrollArea>
-    </div>
+                    {notification.title}
+                  </span>
+                  <Badge tone={notification.isRead ? "tag" : "accent"}>
+                    {t(`notification.type.${notification.type}`)}
+                  </Badge>
+                </span>
+                <span className="truncate text-[12.5px] text-muted">{notification.message}</span>
+                <span className="flex justify-between gap-2 text-[11.5px] text-subtle">
+                  <span className="truncate">
+                    #{notification.channelName}
+                    {notification.userName && ` · ${notification.userName}`}
+                  </span>
+                  <span className="shrink-0">
+                    {formatRelativeTime(new Date(notification.timestamp), now, locale)}
+                  </span>
+                </span>
+              </span>
+            </Button>
+            <IconButton
+              label={t("notification.remove")}
+              className="mt-1 size-7 [&_svg]:size-3.5"
+              onPress={() => {
+                removeNotification(notification.id);
+              }}
+            >
+              <IconX />
+            </IconButton>
+          </li>
+        );
+      })}
+    </ul>
   );
 };

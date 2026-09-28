@@ -1,10 +1,13 @@
 import { useCallback } from "react";
 
-import { notifications } from "@mantine/notifications";
 import { useRouter } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+
+import { toast } from "#/components/ui/toast";
 
 export const useCopyMessageLink = (workspaceId: string | null, channelId: string | null) => {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return useCallback(
     (messageId: string) => {
@@ -17,12 +20,11 @@ export const useCopyMessageLink = (workspaceId: string | null, channelId: string
         to: "/app/$workspaceId/$channelId",
       });
       // 共有用のリンクなので origin を含む絶対 URL にする
-      void navigator.clipboard.writeText(`${window.location.origin}${href}`);
-      notifications.show({
-        message: "メッセージリンクをクリップボードにコピーしました",
-        title: "コピーしました",
-      });
+      navigator.clipboard.writeText(`${window.location.origin}${href}`).then(
+        () => toast(t("message.link.copied"), { tone: "success" }),
+        () => toast(t("message.link.copyFailed"), { tone: "danger" }),
+      );
     },
-    [router, workspaceId, channelId],
+    [router, workspaceId, channelId, t],
   );
 };

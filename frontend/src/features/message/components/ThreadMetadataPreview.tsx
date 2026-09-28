@@ -1,75 +1,43 @@
-import { Avatar, Group, Text } from "@mantine/core";
-import { IconMessageCircle } from "@tabler/icons-react";
+import { formatRelativeTime } from "@chat/i18n";
+import { useAtomValue } from "jotai";
+import { Button } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { Avatar } from "#/components/ui/Avatar";
+import { focusRing } from "#/components/ui/styles";
 import { toDate } from "#/lib/timestamp";
+import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 type ThreadMetadataPreviewProps = {
   metadata: ThreadMetadata;
-  onClick: () => void;
+  onPress: () => void;
 };
 
-const formatRelativeTime = (date: Date) => {
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+export const ThreadMetadataPreview = ({ metadata, onPress }: ThreadMetadataPreviewProps) => {
+  const { t } = useTranslation();
+  const { locale } = useAtomValue(preferencesAtom);
+  const { lastReplyUser, lastReplyAt, replyCount } = metadata;
 
-  if (diffInSeconds < 60) {
-    return "たった今";
-  }
-
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}分前`;
-  }
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours}時間前`;
-  }
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays}日前`;
-  }
-
-  return date.toLocaleDateString("ja-JP");
+  return (
+    <Button
+      onPress={onPress}
+      className={`-ml-[3px] inline-flex cursor-pointer items-center gap-[7px] self-start rounded-md border border-transparent py-0.5 pr-2 pl-[3px] font-sans data-hovered:border-border data-hovered:bg-surface ${focusRing}`}
+    >
+      {lastReplyUser && (
+        <Avatar name={lastReplyUser.displayName} src={lastReplyUser.avatarUrl} size={20} />
+      )}
+      <b className="text-[12.5px] font-semibold text-accent-text">
+        {t("message.thread.replies", { count: replyCount })}
+      </b>
+      {lastReplyAt && (
+        <span className="text-[11.5px] text-subtle">
+          {t("message.thread.lastReply", {
+            time: formatRelativeTime(toDate(lastReplyAt), new Date(), locale),
+          })}
+        </span>
+      )}
+    </Button>
+  );
 };
-
-export const ThreadMetadataPreview = ({ metadata, onClick }: ThreadMetadataPreviewProps) => (
-  <div
-    className="ml-12 mt-1 cursor-pointer"
-    onClick={onClick}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        onClick();
-      }
-    }}
-  >
-    <Group gap="xs" className="hover:opacity-70 transition-opacity">
-      <IconMessageCircle size={16} className="text-blue-600" />
-      <Text size="sm" c="blue">
-        {metadata.replyCount}件の返信
-      </Text>
-      {metadata.lastReplyAt && (
-        <Text size="sm" c="dimmed">
-          最終返信: {formatRelativeTime(toDate(metadata.lastReplyAt))}
-        </Text>
-      )}
-      {metadata.lastReplyUser && (
-        <Avatar
-          src={metadata.lastReplyUser.avatarUrl}
-          alt={metadata.lastReplyUser.displayName}
-          size="xs"
-          radius="xl"
-          color="blue"
-        >
-          {metadata.lastReplyUser.displayName.charAt(0).toUpperCase()}
-        </Avatar>
-      )}
-    </Group>
-  </div>
-);

@@ -25,7 +25,8 @@ export const MenuItem = ({
     {...props}
     className={cn(
       overlayStyles.listItem,
-      "[&_svg]:text-muted data-focused:[&_svg]:text-accent-fg",
+      // href を渡すと a 要素になる
+      "no-underline [&_svg]:text-muted data-focused:[&_svg]:text-accent-fg",
       tone === "danger" &&
         "text-danger data-focused:bg-danger data-focused:text-danger-fg [&_svg]:text-danger data-focused:[&_svg]:text-danger-fg",
     )}

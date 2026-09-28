@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { BaseMessageInput } from "./BaseMessageInput";
 
 type ThreadReplyInputProps = {
@@ -14,14 +16,16 @@ export const ThreadReplyInput = ({
   isPending,
   isError,
   errorMessage,
-}: ThreadReplyInputProps) => (
-  <div className="border-t pt-4">
+}: ThreadReplyInputProps) => {
+  const { t } = useTranslation();
+
+  return (
     <BaseMessageInput
       channelId={channelId}
       onSubmit={onSubmit}
-      placeholder="スレッドに返信..."
+      placeholder={t("message.thread.replyPlaceholder")}
       isPending={isPending}
-      error={isError ? (errorMessage ?? "返信の送信に失敗しました") : undefined}
+      error={isError ? (errorMessage ?? t("message.thread.sendFailed")) : undefined}
     />
-  </div>
-);
+  );
+};
