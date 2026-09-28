@@ -9,7 +9,6 @@ import { ChannelInfoPanel } from "#/features/channel/components/ChannelInfoPanel
 import { ChannelMemberPanel } from "#/features/channel/components/ChannelMemberPanel";
 import { UserProfilePanel } from "#/features/member/components/UserProfilePanel";
 import { PinnedPanel } from "#/features/pin/components/PinnedPanel";
-import { SearchResultsPanel } from "#/features/search/components/SearchResultsPanel";
 import { ProfileEditor } from "#/features/settings/components/ProfileEditor";
 import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
 import { userAtom } from "#/providers/store/auth";
@@ -95,16 +94,6 @@ export const useRightPanel = (workspaceId: string) => {
               key: `profile-${view.userId}`,
               title: t("shell.rightPanel.profile"),
             };
-      }
-      case "search": {
-        return {
-          body: (
-            <SearchResultsPanel workspaceId={workspaceId} query={view.query} filter={view.filter} />
-          ),
-          extra: null,
-          key: `search-${view.query}`,
-          title: t("shell.rightPanel.search"),
-        };
       }
       case "hidden": {
         return null;

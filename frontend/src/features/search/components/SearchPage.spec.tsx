@@ -1,18 +1,22 @@
 import { create } from "@bufbuild/protobuf";
+import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
 import { ChannelSchema, ChannelService } from "#/gen/chat/v1/channel_service_pb";
+import { DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
 import { MessageSchema } from "#/gen/chat/v1/message_pb";
 import {
   ChannelSearchResultSchema,
   MessageSearchResultSchema,
+  SearchHas,
   SearchService,
+  SearchSort,
   SearchTarget,
   UserSearchResultSchema,
 } from "#/gen/chat/v1/search_service_pb";
-import { WorkspaceMemberSchema } from "#/gen/chat/v1/workspace_service_pb";
+import { WorkspaceMemberSchema, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { SearchPage } from "./SearchPage";
@@ -23,8 +27,26 @@ const setup = async (url: string) => {
   const search = vi.fn<(req: SearchWorkspaceRequest) => void>();
   const { router } = await renderWithProviders(<SearchPage />, url, (routes) => {
     routes.rpc(ChannelService.method.listChannels, () => ({
-      channels: [create(ChannelSchema, { id: "c1", name: "dev/frontend" })],
+      channels: [
+        create(ChannelSchema, { id: "c0", name: "dev" }),
+        create(ChannelSchema, { id: "c1", name: "dev/frontend" }),
+      ],
     }));
+    routes.rpc(WorkspaceService.method.listMembers, () => ({
+      members: [
+        create(WorkspaceMemberSchema, {
+          displayName: "Bob",
+          email: "bob@example.com",
+          userId: "u-bob",
+        }),
+        create(WorkspaceMemberSchema, {
+          displayName: "Carol",
+          email: "carol@example.com",
+          userId: "u-carol",
+        }),
+      ],
+    }));
+    routes.rpc(DirectMessageService.method.listDirectMessages, () => ({ directMessages: [] }));
     routes.rpc(SearchService.method.searchWorkspace, (req) => {
       search(req);
       return {
@@ -60,9 +82,11 @@ const setup = async (url: string) => {
 };
 
 describe("SearchPage", () => {
-  test("キーワードがなければ検索せずに案内を出す", async () => {
+  test("キーワードも条件もなければ検索せずに案内を出す", async () => {
     const { search } = await setup("/app/ws1/search");
-    expect(await screen.findByText("キーワードを入力して検索してください")).toBeInTheDocument();
+    expect(
+      await screen.findByText("キーワードか条件を入力して検索してください"),
+    ).toBeInTheDocument();
     expect(search).not.toHaveBeenCalled();
   });
 
@@ -93,8 +117,91 @@ describe("SearchPage", () => {
     expect(screen.getByText("47 件")).toBeInTheDocument();
   });
 
-  test("タブで検索対象を切り替え、ページを送れる", async () => {
+  test("修飾子を名前から ID に解決し、構造化した条件で検索する", async () => {
+    const { search } = await setup(
+      `/app/ws1/search?q=${encodeURIComponent("release from:@bob in:#dev has:image during:week")}`,
+    );
+    await waitFor(() => {
+      expect(search).toHaveBeenCalled();
+    });
+    const req = search.mock.lastCall?.[0];
+    expect(req?.query).toBe("release");
+    expect(req?.messageFilter).toMatchObject({
+      channelIds: ["c0"],
+      excludeReplies: false,
+      fromUserIds: ["u-bob"],
+      has: [SearchHas.IMAGE],
+      includeDescendantChannels: true,
+    });
+    const after = req?.messageFilter?.after;
+    expect(after && timestampDate(after).getHours()).toBe(0);
+
+    expect(screen.getByRole("button", { name: /投稿者: Bob/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /チャンネル: #dev/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /期間: 過去 7 日/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /添付: 画像/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "下階層を含む" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("チップの操作を入力欄の修飾子に書き戻す", async () => {
+    const { router } = await setup("/app/ws1/search?q=release");
+    await userEvent.click(await screen.findByRole("button", { name: "ピン留め" }));
+    await waitFor(() => {
+      expect(router.state.location.search).toMatchObject({ q: "release is:pinned" });
+    });
+    expect(screen.getByRole("searchbox", { name: "検索キーワード" })).toHaveValue(
+      "release is:pinned",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "返信を含む" }));
+    await waitFor(() => {
+      expect(router.state.location.search).toMatchObject({ replies: false });
+    });
+
+    await userEvent.click(screen.getByRole("button", { name: /^投稿者/ }));
+    await userEvent.click(await screen.findByRole("menuitemcheckbox", { name: "Carol" }));
+    await waitFor(() => {
+      expect(router.state.location.search).toMatchObject({
+        q: "release from:@Carol is:pinned",
+      });
+    });
+  });
+
+  test("条件をすべて解除するとキーワードだけを残す", async () => {
+    const { router } = await setup("/app/ws1/search?q=release%20is:pinned&replies=false");
+    await userEvent.click(await screen.findByRole("button", { name: "条件をすべて解除" }));
+    await waitFor(() => {
+      expect(router.state.location.search).toMatchObject({ q: "release", replies: true });
+    });
+  });
+
+  test("ヘルプの修飾子を押すと入力欄に挿入する", async () => {
+    await setup("/app/ws1/search?q=release");
+    await userEvent.click(screen.getByRole("button", { name: "has:image を挿入" }));
+    expect(screen.getByRole("searchbox", { name: "検索キーワード" })).toHaveValue(
+      "release has:image",
+    );
+  });
+
+  test("見つからない名前があれば検索せずに知らせる", async () => {
+    const { search } = await setup("/app/ws1/search?q=from:@nobody");
+    expect(await screen.findByRole("alert")).toHaveTextContent("@nobody");
+    expect(search).not.toHaveBeenCalled();
+  });
+
+  test("並び順とタブを切り替え、ページを送れる", async () => {
     const { router, search } = await setup("/app/ws1/search?q=release");
+    await userEvent.click(await screen.findByRole("button", { name: /新しい順/ }));
+    await userEvent.click(await screen.findByRole("option", { name: "関連度順" }));
+    await waitFor(() => {
+      expect(search).toHaveBeenLastCalledWith(
+        expect.objectContaining({ sort: SearchSort.RELEVANCE }),
+      );
+    });
+
     await userEvent.click(await screen.findByRole("tab", { name: /メッセージ/ }));
     await waitFor(() => {
       expect(search).toHaveBeenLastCalledWith(

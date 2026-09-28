@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { IconChevronLeft, IconChevronRight, IconSearch } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
@@ -6,14 +6,17 @@ import { Form, Input, SearchField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton";
+import { Select } from "#/components/ui/Select";
 import { Skeleton } from "#/components/ui/Skeleton";
 import { Tab } from "#/components/ui/Tab";
 import { TabList } from "#/components/ui/TabList";
 import { TabPanel } from "#/components/ui/TabPanel";
 import { Tabs } from "#/components/ui/Tabs";
-import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearchIndex";
-import { searchFilterValues } from "#/features/search/schemas";
+import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearch";
+import { searchFilterValues, searchSortValues } from "#/features/search/schemas";
 
+import { SearchFilterBar } from "./SearchFilterBar";
+import { SearchModifierHelp } from "./SearchModifierHelp";
 import { SearchResultList } from "./SearchResultList";
 
 import type { SearchFilter } from "#/features/search/schemas";
@@ -28,9 +31,10 @@ const pageCount = (total: number, perPage: number) =>
 export const SearchPage = () => {
   const { t } = useTranslation();
   const { workspaceId } = searchRoute.useParams();
-  const { q: query, filter, page } = searchRoute.useSearch();
+  const search = searchRoute.useSearch();
+  const { q: query, filter, page, sort } = search;
   const navigate = searchRoute.useNavigate();
-  const trimmedQuery = query.trim();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [inputValue, setInputValue] = useState(query);
   const [syncedQuery, setSyncedQuery] = useState(query);
@@ -40,13 +44,20 @@ export const SearchPage = () => {
     setInputValue(query);
   }
 
-  const { data, isFetching, error } = useWorkspaceSearch({
-    filter,
-    page,
-    perPage: RESULTS_PER_PAGE,
-    query,
+  const { data, isFetching, error, isEnabled, unresolved } = useWorkspaceSearch(
     workspaceId,
-  });
+    search,
+    RESULTS_PER_PAGE,
+  );
+
+  const insertModifier = (modifier: string) => {
+    setInputValue((prev) => `${prev.trimEnd()}${prev.trim() ? " " : ""}${modifier}`);
+    requestAnimationFrame(() => {
+      const input = inputRef.current;
+      input?.focus();
+      input?.setSelectionRange(input.value.length, input.value.length);
+    });
+  };
 
   const countOf = (value: SearchFilter) =>
     data === undefined
@@ -68,7 +79,14 @@ export const SearchPage = () => {
   };
 
   const renderResults = () => {
-    if (trimmedQuery.length === 0) {
+    if (unresolved.length > 0) {
+      return (
+        <p role="alert" className="m-0 px-[18px] py-6 text-caption text-danger">
+          {t("search.unresolved", { names: unresolved.join(", ") })}
+        </p>
+      );
+    }
+    if (query.trim().length === 0) {
       return <p className="m-0 px-[18px] py-6 text-caption text-muted">{t("search.prompt")}</p>;
     }
     if (error) {
@@ -78,7 +96,7 @@ export const SearchPage = () => {
         </p>
       );
     }
-    if (isFetching || data === undefined) {
+    if (!isEnabled || isFetching || data === undefined) {
       return (
         <div className="flex flex-col gap-3 px-[18px] py-4">
           {[0, 1, 2].map((index) => (
@@ -97,9 +115,23 @@ export const SearchPage = () => {
     }
     return (
       <>
-        <p className="m-0 px-[18px] pt-2.5 text-xs text-muted">
+        <div className="flex min-h-10 items-center justify-between gap-2.5 px-[18px] pt-2.5 text-xs text-muted">
           {t("search.count", { count: countOf(filter) })}
-        </p>
+          {(filter === "all" || filter === "messages") && (
+            <Select
+              label={t("search.sort.label")}
+              options={searchSortValues.map((value) => ({
+                label: t(`search.sort.${value}`),
+                value,
+              }))}
+              value={sort}
+              onChange={(next) => {
+                void navigate({ search: (prev) => ({ ...prev, page: 1, sort: next }) });
+              }}
+              className="flex-row items-center gap-2 [&_button]:h-7 [&_button]:w-28 [&_button]:text-[12.5px] [&_label]:text-xs [&_label]:font-normal [&_label]:text-muted"
+            />
+          )}
+        </div>
         <SearchResultList
           messages={data.messages.items}
           channels={data.channels.items}
@@ -143,7 +175,7 @@ export const SearchPage = () => {
       </header>
       <Form
         role="search"
-        className="shrink-0 px-[18px] pt-3 pb-2.5"
+        className="flex shrink-0 flex-col gap-2 px-[18px] pt-3 pb-2.5"
         onSubmit={(event) => {
           event.preventDefault();
           void navigate({ search: (prev) => ({ ...prev, page: 1, q: inputValue.trim() }) });
@@ -157,11 +189,14 @@ export const SearchPage = () => {
         >
           <IconSearch aria-hidden className="size-4 shrink-0" />
           <Input
+            ref={inputRef}
             placeholder={t("search.placeholder")}
             className="h-full min-w-0 flex-1 border-0 bg-transparent font-sans text-[15px] text-text outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
           />
         </SearchField>
+        <SearchModifierHelp onInsert={insertModifier} />
       </Form>
+      <SearchFilterBar />
       <Tabs
         selectedKey={filter}
         onSelectionChange={(key) => {
