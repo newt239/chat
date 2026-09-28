@@ -1,45 +1,113 @@
-import { useQuery } from "@connectrpc/connect-query";
-import { IconLink } from "@tabler/icons-react";
+import { useState } from "react";
+
+import { IconEdit, IconLink, IconPlus, IconTrash } from "@tabler/icons-react";
 import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
+import { ContextMenu } from "#/components/ui/ContextMenu";
+import { IconButton } from "#/components/ui/IconButton";
+import { MenuItem } from "#/components/ui/MenuItem";
 import { focusRing } from "#/components/ui/styles";
-import { ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
+import { toast } from "#/components/ui/toast";
+
+import { useChannelLinkActions, useChannelLinks } from "../hooks/useChannelLinks";
+import { ChannelLinkDialog } from "./ChannelLinkDialog";
+
+import type { ChannelLink } from "#/gen/chat/v1/channel_link_service_pb";
 
 type ChannelLinkBarProps = {
   channelId: string;
 };
 
-// チャンネルヘッダーの下に並べる関連リンク。編集は #13 でチャンネル情報から行う
+// チャンネルヘッダーの下に並べる関連リンク。編集できる人は右クリックで編集・削除し、+ で追加する
 export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
   const { t } = useTranslation();
-  const { data: links = [] } = useQuery(
-    ChannelLinkService.method.listChannelLinks,
-    { channelId },
-    { select: (res) => res.links },
-  );
+  const { data } = useChannelLinks(channelId);
+  const { remove } = useChannelLinkActions(channelId);
+  // undefined は閉じている、null は追加
+  const [editing, setEditing] = useState<ChannelLink | null | undefined>(undefined);
+  const links = data?.links ?? [];
 
   if (links.length === 0) {
     return null;
   }
+
+  const linkClassName = `inline-flex h-6 shrink-0 cursor-pointer items-center gap-1.5 rounded-[6px] px-2 text-[12.5px] whitespace-nowrap text-text no-underline data-hovered:bg-hover [&_svg]:size-3.5 [&_svg]:text-muted ${focusRing}`;
 
   return (
     <nav
       aria-label={t("shell.channel.links")}
       className="flex h-8 shrink-0 items-center gap-0.5 overflow-x-auto border-b border-border pr-2.5 pl-3.5 [scrollbar-width:none]"
     >
-      {links.map((link) => (
-        <Link
-          key={link.id}
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`inline-flex h-6 shrink-0 cursor-pointer items-center gap-1.5 rounded-[6px] px-2 text-[12.5px] whitespace-nowrap text-text no-underline data-hovered:bg-hover [&_svg]:size-3.5 [&_svg]:text-muted ${focusRing}`}
+      {links.map((link) => {
+        const anchor = (
+          <Link href={link.url} target="_blank" rel="noopener noreferrer" className={linkClassName}>
+            <IconLink aria-hidden />
+            {link.title}
+          </Link>
+        );
+        return data?.canEdit ? (
+          <ContextMenu
+            key={link.id}
+            aria-label={t("channel.links.menu", { title: link.title })}
+            menu={
+              <>
+                <MenuItem
+                  icon={<IconEdit />}
+                  onAction={() => {
+                    setEditing(link);
+                  }}
+                >
+                  {t("channel.links.edit")}
+                </MenuItem>
+                <MenuItem
+                  icon={<IconTrash />}
+                  tone="danger"
+                  onAction={() => {
+                    remove.mutate(
+                      { linkId: link.id },
+                      {
+                        onSuccess: () => {
+                          toast(t("channel.links.deleted"));
+                        },
+                      },
+                    );
+                  }}
+                >
+                  {t("common.delete")}
+                </MenuItem>
+              </>
+            }
+          >
+            {anchor}
+          </ContextMenu>
+        ) : (
+          <span key={link.id}>{anchor}</span>
+        );
+      })}
+      {data?.canEdit && (
+        <IconButton
+          label={t("channel.links.addTitle")}
+          className="size-6 [&_svg]:size-3.5"
+          onPress={() => {
+            setEditing(null);
+          }}
         >
-          <IconLink aria-hidden />
-          {link.title}
-        </Link>
-      ))}
+          <IconPlus />
+        </IconButton>
+      )}
+      {editing !== undefined && (
+        <ChannelLinkDialog
+          channelId={channelId}
+          link={editing}
+          isOpen
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              setEditing(undefined);
+            }
+          }}
+        />
+      )}
     </nav>
   );
 };

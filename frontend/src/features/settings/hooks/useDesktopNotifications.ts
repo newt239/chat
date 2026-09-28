@@ -4,6 +4,7 @@ import { useAtomValue } from "jotai";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useDMs } from "#/features/dm/hooks/useDM";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { navigateTo } from "#/lib/navigation";
 import { userAtom } from "#/providers/store/auth";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
@@ -16,6 +17,7 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
   const myId = useAtomValue(userAtom)?.id;
   const { data: channels } = useChannels(workspaceId);
   const { data: dms } = useDMs(workspaceId);
+  const displayName = useDisplayName();
 
   useEffect(() => {
     if (!wsClient || !desktop || level === "none" || !("Notification" in globalThis)) {
@@ -39,7 +41,7 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
       if (level === "mentions" && !isMention && !dm) {
         return;
       }
-      const author = message.user?.displayName ?? "";
+      const author = displayName(message.userId, message.user?.displayName ?? "");
       const notification = new Notification(channel ? `${author} · #${channel.name}` : author, {
         body: message.body,
         tag: message.id,
@@ -52,5 +54,5 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
         });
       });
     });
-  }, [wsClient, desktop, level, myId, channels, dms, currentChannelId, workspaceId]);
+  }, [wsClient, desktop, level, myId, channels, dms, currentChannelId, workspaceId, displayName]);
 };

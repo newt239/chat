@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Avatar } from "#/components/ui/Avatar";
 import { Link } from "#/components/ui/Link";
 import { MemberRow } from "#/features/member/components/MemberRow";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
 import { excerpt } from "#/features/search/utils/excerpt";
@@ -35,6 +36,7 @@ export const SearchResultList = ({
   workspaceId,
 }: SearchResultListProps) => {
   const { t } = useTranslation();
+  const displayName = useDisplayName();
   const shows = (section: SearchFilter) => filter === "all" || filter === section;
 
   return (
@@ -45,7 +47,7 @@ export const SearchResultList = ({
             if (message === undefined) {
               return null;
             }
-            const authorName = message.user?.displayName ?? "";
+            const authorName = displayName(message.userId, message.user?.displayName ?? "");
             const body = excerpt(message.body, highlights, 40);
             return (
               <div key={message.id} className="mx-[18px] my-1.5">
@@ -113,7 +115,7 @@ export const SearchResultList = ({
               <li key={user.userId}>
                 <MemberRow
                   userId={user.userId}
-                  name={user.displayName}
+                  name={displayName(user.userId, user.displayName)}
                   avatarUrl={user.avatarUrl}
                   detail={`${t(workspaceRoleKeys[user.role])} · ${user.email}`}
                 />

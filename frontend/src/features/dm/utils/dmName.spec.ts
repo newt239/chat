@@ -9,6 +9,7 @@ const members = [
   { displayName: "Bob", userId: "b" },
   { displayName: "Carol", userId: "c" },
 ];
+const displayName = (_userId: string, name: string) => name;
 
 test("1 対 1 は相手の名前にする", () => {
   const dm = create(DirectMessageSchema, {
@@ -16,16 +17,21 @@ test("1 対 1 は相手の名前にする", () => {
     name: "dm-xxx",
     type: DirectMessageType.DM,
   });
-  expect(dmName(dm)).toBe("Bob");
+  expect(dmName(dm, displayName)).toBe("Bob");
 });
 
-test("グループは名前があれば名前、なければ参加者を並べる", () => {
-  expect(
-    dmName(
-      create(DirectMessageSchema, { members, name: "設計", type: DirectMessageType.GROUP_DM }),
-    ),
-  ).toBe("設計");
-  expect(dmName(create(DirectMessageSchema, { members, type: DirectMessageType.GROUP_DM }))).toBe(
-    "Bob, Carol",
+test("グループは付けた名前があっても参加者を並べる", () => {
+  const dm = create(DirectMessageSchema, {
+    members,
+    name: "設計",
+    type: DirectMessageType.GROUP_DM,
+  });
+  expect(dmName(dm, displayName)).toBe("Bob, Carol");
+});
+
+test("ニックネームを付けた相手はニックネームで並べる", () => {
+  const dm = create(DirectMessageSchema, { members, type: DirectMessageType.GROUP_DM });
+  expect(dmName(dm, (userId, name) => (userId === "b" ? "ボブさん" : name))).toBe(
+    "ボブさん, Carol",
   );
 });

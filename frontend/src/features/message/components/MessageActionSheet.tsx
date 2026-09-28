@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { DialogFrame } from "#/components/ui/DialogFrame";
 import { cn, focusRing } from "#/components/ui/styles";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { EmojiPicker } from "#/features/reaction/components/EmojiPicker";
 
 import { toPlainText } from "../utils/markdown/plainText";
@@ -35,6 +36,7 @@ export const MessageActionSheet = ({
 }: MessageActionSheetProps) => {
   const { t } = useTranslation();
   const [isPickingEmoji, setIsPickingEmoji] = useState(false);
+  const displayName = useDisplayName();
   const close = () => {
     onOpenChange(false);
     setIsPickingEmoji(false);
@@ -70,7 +72,9 @@ export const MessageActionSheet = ({
       ) : (
         <>
           <div className="mx-4 mb-3 flex flex-col gap-0.5 rounded-lg bg-sunken px-3 py-2.5 text-[13px] text-muted">
-            <b className="text-text">{message.user?.displayName}</b>
+            <b className="text-text">
+              {displayName(message.userId, message.user?.displayName ?? "")}
+            </b>
             <span className="line-clamp-2">
               {toPlainText(message.body) || t("message.sheet.attachmentOnly")}
             </span>

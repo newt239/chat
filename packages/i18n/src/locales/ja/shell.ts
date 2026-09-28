@@ -49,6 +49,7 @@ export const shell = {
     pins: "ピン留め",
     profile: "プロフィール",
     thread: "スレッド",
+    userGroup: "ユーザーグループ",
   },
   sidebar: {
     channels: "チャンネル",

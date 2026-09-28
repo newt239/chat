@@ -51,6 +51,7 @@ export const shell: Messages["shell"] = {
     pins: "Pinned",
     profile: "Profile",
     thread: "Thread",
+    userGroup: "User group",
   },
   sidebar: {
     channels: "Channels",

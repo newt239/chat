@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
 import { UserSummarySchema } from "#/gen/chat/v1/user_pb";
+import { QueryWrapper } from "#/test/QueryWrapper";
 
 import { ReactionButton } from "./ReactionButton";
 
@@ -18,6 +19,7 @@ describe("ReactionButton", () => {
         onPress={onPress}
         onOpenList={vi.fn<() => void>()}
       />,
+      { wrapper: QueryWrapper },
     );
 
     const button = screen.getByRole("button", { name: "👍 2 件。Alice、Bob" });
@@ -37,6 +39,7 @@ describe("ReactionButton", () => {
         onPress={vi.fn<() => void>()}
         onOpenList={onOpenList}
       />,
+      { wrapper: QueryWrapper },
     );
 
     const button = screen.getByRole("button", { name: "🎉 5 件。A、B、C ほか 2 人" });

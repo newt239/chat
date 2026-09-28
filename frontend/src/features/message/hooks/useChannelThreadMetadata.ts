@@ -7,10 +7,10 @@ import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import type { ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 /** チャンネル内のメッセージ ID からスレッドメタデータを引けるようにする */
-export const useChannelThreadMetadata = (channelId: string | null) => {
+export const useChannelThreadMetadata = (channelId: string | null, includeDescendants: boolean) => {
   const { data: messages } = useQuery(
     MessageService.method.listMessagesWithThread,
-    channelId === null ? skipToken : { channelId },
+    channelId === null ? skipToken : { channelId, includeDescendants },
     { select: (res) => res.messages },
   );
 

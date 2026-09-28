@@ -276,6 +276,8 @@ func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspac
 		Where(
 			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
 			channel.HasMembersWith(channelmember.HasUserWith(user.ID(uID))),
+			// DM・グループ DM は ListDirectMessages で返す
+			channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate)),
 		).
 		WithWorkspace(func(q *ent.WorkspaceQuery) {
 			q.WithCreatedBy()

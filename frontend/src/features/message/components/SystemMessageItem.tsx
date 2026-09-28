@@ -4,6 +4,7 @@ import { useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { SystemMessageKind } from "#/gen/chat/v1/message_pb";
 import { toDate } from "#/lib/timestamp";
@@ -24,10 +25,14 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
   const { locale } = useAtomValue(preferencesAtom);
   const { workspaceId } = useParams({ strict: false });
   const { data: members } = useMembers(workspaceId ?? null);
+  const displayName = useDisplayName();
   const payload = message.payload ?? {};
   const nameOf = (key: string) => {
     const userId = textOf(payload[key]);
-    return members?.find((member) => member.userId === userId)?.displayName ?? userId;
+    return displayName(
+      userId,
+      members?.find((member) => member.userId === userId)?.displayName ?? userId,
+    );
   };
   const from = textOf(payload.from);
   const to = textOf(payload.to);

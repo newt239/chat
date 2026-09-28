@@ -1,6 +1,7 @@
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { userAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
 
@@ -14,11 +15,16 @@ export const useFormatReactors = () => {
   const { locale } = useAtomValue(preferencesAtom);
   const currentUserId = useAtomValue(userAtom)?.id;
   const listFormat = new Intl.ListFormat(locale);
+  const displayName = useDisplayName();
 
   return (users: UserSummary[]) => {
     const names = users
       .toSorted((a, b) => Number(b.id === currentUserId) - Number(a.id === currentUserId))
-      .map((user) => (user.id === currentUserId ? t("reaction.names.you") : user.displayName));
+      .map((user) =>
+        user.id === currentUserId
+          ? t("reaction.names.you")
+          : displayName(user.id, user.displayName),
+      );
     if (names.length <= MAX_NAMES) {
       return listFormat.format(names);
     }

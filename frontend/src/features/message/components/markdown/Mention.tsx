@@ -38,7 +38,7 @@ export const Mention = ({ "data-mention": username }: MentionProps) => {
         setRightSidePanelView({ type: "user-profile", userId: member.userId });
       }}
     >
-      @{username}
+      @{member.nickname ?? username}
     </Button>
   );
 };

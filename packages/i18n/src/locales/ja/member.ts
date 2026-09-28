@@ -1,4 +1,13 @@
 export const member = {
+  note: {
+    memo: "メモ",
+    memoPlaceholder: "担当・話し方のクセ・覚えておきたいことなど",
+    nickname: "表示名",
+    private: "自分だけに表示され、相手には通知されません",
+    realName: "本名: {{name}}",
+    saved: "ニックネームとメモを保存しました",
+    title: "自分だけに表示",
+  },
   profile: {
     bio: "自己紹介",
     email: "メール",

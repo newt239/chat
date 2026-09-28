@@ -1,6 +1,16 @@
 import type { Messages } from "../../messages";
 
 export const channel: Messages["channel"] = {
+  aggregate: {
+    count: "{{count}} channels",
+    hint: "Also shows posts from {{count}} nested channels",
+    open: "Open #{{name}}",
+    placeholder: "Message #{{name}}",
+    target: "Post to #{{name}}",
+    targetLabel: "Post to",
+    thisChannel: "{{name}} (this channel)",
+    toggle: "Include nested",
+  },
   create: {
     created: "Created #{{name}}",
     description: "Description (optional)",
@@ -17,13 +27,37 @@ export const channel: Messages["channel"] = {
   },
   info: {
     description: "Description",
+    descendants: "Nested channels: {{count}}",
+    descendantsHint: "Opening this channel also shows posts from nested channels",
     id: "Channel ID",
     loadFailed: "Couldn't load channel details",
+    mute: "Mute",
     noDescription: "No description yet",
     notFound: "Channel not found",
     private: "Private",
     public: "Public",
+    star: "Star",
     visibility: "Visibility",
+  },
+  links: {
+    add: "Add",
+    added: "Added the link",
+    addTitle: "Add a link",
+    deleted: "Deleted the link",
+    edit: "Edit",
+    editOf: "Edit {{title}}",
+    editTitle: "Edit link",
+    empty: "Add pages you open often, like specs or designs",
+    hint: "Everyone in the channel can see it",
+    invalidUrl: "Enter a URL starting with https://",
+    menu: "Actions for {{title}}",
+    moveDown: "Move {{title}} down",
+    moveUp: "Move {{title}} up",
+    title: "Title",
+    titleHint: "Leave blank to show the domain",
+    titlePlaceholder: "e.g. Design specs",
+    updated: "Updated the link",
+    url: "URL",
   },
   members: {
     actionFailed: "Something went wrong",
@@ -35,8 +69,11 @@ export const channel: Messages["channel"] = {
     leave: "Leave",
     loadFailed: "Couldn't load members",
     menu: "Actions for {{name}}",
+    others: "Other members",
     remove: "Remove from channel",
     title: "Members: {{count}}",
+    viewing: "Viewing now",
+    viewingNow: "Viewing",
   },
   name: {
     exists: "#{{name}} already exists",
@@ -57,5 +94,10 @@ export const channel: Messages["channel"] = {
     private: "Private channel",
     saved: "Saved channel settings",
     title: "Channel settings",
+  },
+  tree: {
+    childCount: "{{count}} nested",
+    collapse: "Collapse channels under {{name}}",
+    expand: "Expand channels under {{name}}",
   },
 };

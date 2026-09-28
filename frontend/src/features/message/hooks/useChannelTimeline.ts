@@ -11,6 +11,8 @@ import type { WsClient } from "#/lib/ws";
 
 type UseChannelTimelineArgs = {
   currentChannelId: string | null;
+  // 集約表示中の子孫チャンネル。購読してタイムラインに新着を積む
+  descendantIds: readonly string[];
   wsClient: WsClient | null;
   initialMessages: TimelineItem[] | undefined;
 };
@@ -40,6 +42,7 @@ const updateReactions = (
 
 export const useChannelTimeline = ({
   currentChannelId,
+  descendantIds,
   wsClient,
   initialMessages,
 }: UseChannelTimelineArgs) => {
@@ -55,23 +58,25 @@ export const useChannelTimeline = ({
     setTypingUserIds([]);
   }, [currentChannelId]);
 
+  const descendantKey = [...new Set(descendantIds)].toSorted().join(",");
+
   // WS 購読と join/leave 管理
   useEffect(() => {
     if (!wsClient || !currentChannelId) {
       return undefined;
     }
-    wsClient.joinChannel(currentChannelId);
+    const channelIds = [currentChannelId, ...descendantKey.split(",").filter(Boolean)];
+    for (const channelId of channelIds) {
+      wsClient.joinChannel(channelId);
+    }
 
+    const isShownChannel = (channelId: string) => channelIds.includes(channelId);
     const isCurrentChannel = (channelId: string) => channelId === currentChannelId;
 
     const unsubscribes = [
       wsClient.on("newMessage", ({ channelId, message }) => {
         // スレッドの返信はスレッドパネル側で表示するためタイムラインには積まない
-        if (
-          !isCurrentChannel(channelId) ||
-          message === undefined ||
-          message.parentId !== undefined
-        ) {
+        if (!isShownChannel(channelId) || message === undefined || message.parentId !== undefined) {
           return;
         }
         setTimeline((prev) =>
@@ -90,7 +95,7 @@ export const useChannelTimeline = ({
       }),
 
       wsClient.on("messageUpdated", ({ channelId, message }) => {
-        if (!isCurrentChannel(channelId) || message === undefined) {
+        if (!isShownChannel(channelId) || message === undefined) {
           return;
         }
         setTimeline((prev) =>
@@ -103,7 +108,7 @@ export const useChannelTimeline = ({
       }),
 
       wsClient.on("messageDeleted", ({ channelId, deletedMessageIds, deletedAt }) => {
-        if (!isCurrentChannel(channelId)) {
+        if (!isShownChannel(channelId)) {
           return;
         }
         const deletedIds = new Set(deletedMessageIds);
@@ -117,7 +122,7 @@ export const useChannelTimeline = ({
       }),
 
       wsClient.on("systemMessageCreated", ({ channelId, message }) => {
-        if (!isCurrentChannel(channelId) || message === undefined) {
+        if (!isShownChannel(channelId) || message === undefined) {
           return;
         }
         setTimeline((prev) =>
@@ -136,7 +141,7 @@ export const useChannelTimeline = ({
       }),
 
       wsClient.on("reactionAdded", ({ channelId, emoji, messageId, userId, user, createdAt }) => {
-        if (!isCurrentChannel(channelId)) {
+        if (!isShownChannel(channelId)) {
           return;
         }
         setTimeline((prev) =>
@@ -157,7 +162,7 @@ export const useChannelTimeline = ({
       }),
 
       wsClient.on("reactionRemoved", ({ channelId, emoji, messageId, userId }) => {
-        if (!isCurrentChannel(channelId)) {
+        if (!isShownChannel(channelId)) {
           return;
         }
         setTimeline((prev) =>
@@ -213,9 +218,11 @@ export const useChannelTimeline = ({
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }
-      wsClient.leaveChannel(currentChannelId);
+      for (const channelId of channelIds) {
+        wsClient.leaveChannel(channelId);
+      }
     };
-  }, [wsClient, currentChannelId]);
+  }, [wsClient, currentChannelId, descendantKey]);
 
   const orderedItems = useMemo(() => {
     if (!currentChannelId) {

@@ -3,6 +3,7 @@ import { useAtomValue } from "jotai";
 
 import { Avatar } from "#/components/ui/Avatar";
 import { Link } from "#/components/ui/Link";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";
 
@@ -20,7 +21,7 @@ type MessageLinkCardProps = {
 // ピン留めやブックマークの一覧で、元のメッセージへ移動するカード
 export const MessageLinkCard = ({ message, workspaceId, markedAt }: MessageLinkCardProps) => {
   const { locale } = useAtomValue(preferencesAtom);
-  const name = message.user?.displayName ?? "";
+  const name = useDisplayName()(message.userId, message.user?.displayName ?? "");
 
   return (
     <Link

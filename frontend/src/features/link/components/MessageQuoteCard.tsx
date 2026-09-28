@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Avatar } from "#/components/ui/Avatar";
 import { Link } from "#/components/ui/Link";
 import { lastSegment } from "#/features/channel/utils/channelPath";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { toPlainText } from "#/features/message/utils/markdown/plainText";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { toDate } from "#/lib/timestamp";
@@ -24,6 +25,7 @@ type MessageQuoteCardProps = {
 // 同じワークスペースのメッセージへのリンクを引用カードにする。閲覧できないメッセージは何も出さない
 export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
   const { t } = useTranslation();
+  const displayName = useDisplayName();
   const { locale } = useAtomValue(preferencesAtom);
   const { workspaceId } = useParams({ strict: false });
   // WebSocket で届いたメッセージには引用が含まれないため、あとから取得する
@@ -39,7 +41,7 @@ export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
   if (preview === undefined || workspaceId === undefined) {
     return null;
   }
-  const name = preview.user?.displayName ?? "";
+  const name = displayName(preview.user?.id ?? "", preview.user?.displayName ?? "");
   const excerpt = toPlainText(preview.bodyExcerpt);
 
   return (

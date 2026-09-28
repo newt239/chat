@@ -22,6 +22,7 @@ import { Route as AppWorkspaceIdActivityRouteImport } from "./routes/app/$worksp
 import { Route as AppWorkspaceIdAdminRouteImport } from "./routes/app/$workspaceId/admin";
 import { Route as AppWorkspaceIdBookmarksRouteImport } from "./routes/app/$workspaceId/bookmarks";
 import { Route as AppWorkspaceIdDmsRouteImport } from "./routes/app/$workspaceId/dms";
+import { Route as AppWorkspaceIdGroupsRouteImport } from "./routes/app/$workspaceId/groups";
 import { Route as AppWorkspaceIdInsightsRouteImport } from "./routes/app/$workspaceId/insights";
 import { Route as AppWorkspaceIdMeRouteImport } from "./routes/app/$workspaceId/me";
 import { Route as AppWorkspaceIdMentionsRouteImport } from "./routes/app/$workspaceId/mentions";
@@ -94,6 +95,11 @@ const AppWorkspaceIdDmsRoute = AppWorkspaceIdDmsRouteImport.update({
   path: "/dms",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
+const AppWorkspaceIdGroupsRoute = AppWorkspaceIdGroupsRouteImport.update({
+  id: "/groups",
+  path: "/groups",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
 const AppWorkspaceIdInsightsRoute = AppWorkspaceIdInsightsRouteImport.update({
   id: "/insights",
   path: "/insights",
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
+  "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
   "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
   "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
+  "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
   "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
   "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
+  "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
   "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/me": typeof AppWorkspaceIdMeRoute;
   "/app/$workspaceId/mentions": typeof AppWorkspaceIdMentionsRoute;
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
     | "/app/$workspaceId/dms"
+    | "/app/$workspaceId/groups"
     | "/app/$workspaceId/insights"
     | "/app/$workspaceId/me"
     | "/app/$workspaceId/mentions"
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
     | "/app/$workspaceId/dms"
+    | "/app/$workspaceId/groups"
     | "/app/$workspaceId/insights"
     | "/app/$workspaceId/me"
     | "/app/$workspaceId/mentions"
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
     | "/app/$workspaceId/dms"
+    | "/app/$workspaceId/groups"
     | "/app/$workspaceId/insights"
     | "/app/$workspaceId/me"
     | "/app/$workspaceId/mentions"
@@ -353,6 +365,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdDmsRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
+    "/app/$workspaceId/groups": {
+      id: "/app/$workspaceId/groups";
+      path: "/groups";
+      fullPath: "/app/$workspaceId/groups";
+      preLoaderRoute: typeof AppWorkspaceIdGroupsRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
     "/app/$workspaceId/insights": {
       id: "/app/$workspaceId/insights";
       path: "/insights";
@@ -419,6 +438,7 @@ interface AppWorkspaceIdRouteRouteChildren {
   AppWorkspaceIdAdminRoute: typeof AppWorkspaceIdAdminRoute;
   AppWorkspaceIdBookmarksRoute: typeof AppWorkspaceIdBookmarksRoute;
   AppWorkspaceIdDmsRoute: typeof AppWorkspaceIdDmsRoute;
+  AppWorkspaceIdGroupsRoute: typeof AppWorkspaceIdGroupsRoute;
   AppWorkspaceIdInsightsRoute: typeof AppWorkspaceIdInsightsRoute;
   AppWorkspaceIdMeRoute: typeof AppWorkspaceIdMeRoute;
   AppWorkspaceIdMentionsRoute: typeof AppWorkspaceIdMentionsRoute;
@@ -433,6 +453,7 @@ const AppWorkspaceIdRouteRouteChildren: AppWorkspaceIdRouteRouteChildren = {
   AppWorkspaceIdAdminRoute: AppWorkspaceIdAdminRoute,
   AppWorkspaceIdBookmarksRoute: AppWorkspaceIdBookmarksRoute,
   AppWorkspaceIdDmsRoute: AppWorkspaceIdDmsRoute,
+  AppWorkspaceIdGroupsRoute: AppWorkspaceIdGroupsRoute,
   AppWorkspaceIdInsightsRoute: AppWorkspaceIdInsightsRoute,
   AppWorkspaceIdMeRoute: AppWorkspaceIdMeRoute,
   AppWorkspaceIdMentionsRoute: AppWorkspaceIdMentionsRoute,

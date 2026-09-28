@@ -1,10 +1,12 @@
 import { create } from "@bufbuild/protobuf";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
 
 import { ChannelMemberSchema, ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
-import { rightSidePanelViewAtom } from "#/providers/store/ui";
+import { WorkspaceMemberSchema, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
+import { channelViewersAtom, rightSidePanelViewAtom } from "#/providers/store/ui";
+import { syncCurrentWorkspaceAtom } from "#/providers/store/workspace";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { ChannelMemberPanel } from "./ChannelMemberPanel";
@@ -31,6 +33,32 @@ describe("ChannelMemberPanel", () => {
     expect(row).toHaveTextContent("bob@example.com");
     await userEvent.click(row);
     expect(store.get(rightSidePanelViewAtom)).toEqual({ type: "user-profile", userId: "u-bob" });
+  });
+
+  test("閲覧中のメンバーを分けて、ニックネームで表示する", async () => {
+    const { store } = await renderWithProviders(
+      <ChannelMemberPanel channelId="c1" />,
+      "/app/ws1",
+      (routes) => {
+        routes.rpc(ChannelMemberService.method.listChannelMembers, () => ({
+          members: [
+            create(ChannelMemberSchema, { displayName: "Bob", email: "b@x", userId: "u-bob" }),
+            create(ChannelMemberSchema, { displayName: "Carol", email: "c@x", userId: "u-carol" }),
+          ],
+        }));
+        routes.rpc(WorkspaceService.method.listMembers, () => ({
+          members: [create(WorkspaceMemberSchema, { nickname: "ボブさん", userId: "u-bob" })],
+        }));
+      },
+    );
+    store.set(syncCurrentWorkspaceAtom, "ws1");
+    store.set(channelViewersAtom, { c1: ["u-bob"] });
+
+    const viewing = await screen.findByRole("region", { name: "いま閲覧中" });
+    expect(await within(viewing).findByText("ボブさん")).toBeInTheDocument();
+    expect(within(viewing).getByText("閲覧中")).toBeInTheDocument();
+    const others = screen.getByRole("region", { name: "その他のメンバー" });
+    expect(within(others).getByText("Carol")).toBeInTheDocument();
   });
 
   test("メンバーがいなければその旨を表示する", async () => {
