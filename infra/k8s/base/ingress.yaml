@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chat
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: INGRESS_IP_NAME
+    ingress.gcp.kubernetes.io/pre-shared-cert: CERTIFICATE_NAME
+    networking.gke.io/v1beta1.FrontendConfig: chat
+spec:
+  # Connect RPC のパス (/chat.v1.*) はパス単位の前方一致で振り分けられないため、ホストで分ける
+  rules:
+    - host: FRONTEND_DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  name: http
+    - host: API_DOMAIN
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  name: http
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: chat
+spec:
+  redirectToHttps:
+    enabled: true
