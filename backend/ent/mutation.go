@@ -81,34 +81,39 @@ const (
 // AttachmentMutation represents an operation that mutates the Attachment nodes in the graph.
 type AttachmentMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	file_name           *string
-	mime_type           *string
-	size_bytes          *int64
-	addsize_bytes       *int64
-	width               *int32
-	addwidth            *int32
-	height              *int32
-	addheight           *int32
-	duration_seconds    *float64
-	addduration_seconds *float64
-	storage_key         *string
-	status              *string
-	uploaded_at         *time.Time
-	expires_at          *time.Time
-	created_at          *time.Time
-	clearedFields       map[string]struct{}
-	message             *uuid.UUID
-	clearedmessage      bool
-	uploader            *uuid.UUID
-	cleareduploader     bool
-	channel             *uuid.UUID
-	clearedchannel      bool
-	done                bool
-	oldValue            func(context.Context) (*Attachment, error)
-	predicates          []predicate.Attachment
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	file_name             *string
+	mime_type             *string
+	size_bytes            *int64
+	addsize_bytes         *int64
+	width                 *int32
+	addwidth              *int32
+	height                *int32
+	addheight             *int32
+	duration_seconds      *float64
+	addduration_seconds   *float64
+	storage_key           *string
+	thumbnail_storage_key *string
+	thumbnail_width       *int32
+	addthumbnail_width    *int32
+	thumbnail_height      *int32
+	addthumbnail_height   *int32
+	status                *string
+	uploaded_at           *time.Time
+	expires_at            *time.Time
+	created_at            *time.Time
+	clearedFields         map[string]struct{}
+	message               *uuid.UUID
+	clearedmessage        bool
+	uploader              *uuid.UUID
+	cleareduploader       bool
+	channel               *uuid.UUID
+	clearedchannel        bool
+	done                  bool
+	oldValue              func(context.Context) (*Attachment, error)
+	predicates            []predicate.Attachment
 }
 
 var _ ent.Mutation = (*AttachmentMutation)(nil)
@@ -589,6 +594,195 @@ func (m *AttachmentMutation) ResetStorageKey() {
 	m.storage_key = nil
 }
 
+// SetThumbnailStorageKey sets the "thumbnail_storage_key" field.
+func (m *AttachmentMutation) SetThumbnailStorageKey(s string) {
+	m.thumbnail_storage_key = &s
+}
+
+// ThumbnailStorageKey returns the value of the "thumbnail_storage_key" field in the mutation.
+func (m *AttachmentMutation) ThumbnailStorageKey() (r string, exists bool) {
+	v := m.thumbnail_storage_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThumbnailStorageKey returns the old "thumbnail_storage_key" field's value of the Attachment entity.
+// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AttachmentMutation) OldThumbnailStorageKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThumbnailStorageKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThumbnailStorageKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThumbnailStorageKey: %w", err)
+	}
+	return oldValue.ThumbnailStorageKey, nil
+}
+
+// ClearThumbnailStorageKey clears the value of the "thumbnail_storage_key" field.
+func (m *AttachmentMutation) ClearThumbnailStorageKey() {
+	m.thumbnail_storage_key = nil
+	m.clearedFields[attachment.FieldThumbnailStorageKey] = struct{}{}
+}
+
+// ThumbnailStorageKeyCleared returns if the "thumbnail_storage_key" field was cleared in this mutation.
+func (m *AttachmentMutation) ThumbnailStorageKeyCleared() bool {
+	_, ok := m.clearedFields[attachment.FieldThumbnailStorageKey]
+	return ok
+}
+
+// ResetThumbnailStorageKey resets all changes to the "thumbnail_storage_key" field.
+func (m *AttachmentMutation) ResetThumbnailStorageKey() {
+	m.thumbnail_storage_key = nil
+	delete(m.clearedFields, attachment.FieldThumbnailStorageKey)
+}
+
+// SetThumbnailWidth sets the "thumbnail_width" field.
+func (m *AttachmentMutation) SetThumbnailWidth(i int32) {
+	m.thumbnail_width = &i
+	m.addthumbnail_width = nil
+}
+
+// ThumbnailWidth returns the value of the "thumbnail_width" field in the mutation.
+func (m *AttachmentMutation) ThumbnailWidth() (r int32, exists bool) {
+	v := m.thumbnail_width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThumbnailWidth returns the old "thumbnail_width" field's value of the Attachment entity.
+// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AttachmentMutation) OldThumbnailWidth(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThumbnailWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThumbnailWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThumbnailWidth: %w", err)
+	}
+	return oldValue.ThumbnailWidth, nil
+}
+
+// AddThumbnailWidth adds i to the "thumbnail_width" field.
+func (m *AttachmentMutation) AddThumbnailWidth(i int32) {
+	if m.addthumbnail_width != nil {
+		*m.addthumbnail_width += i
+	} else {
+		m.addthumbnail_width = &i
+	}
+}
+
+// AddedThumbnailWidth returns the value that was added to the "thumbnail_width" field in this mutation.
+func (m *AttachmentMutation) AddedThumbnailWidth() (r int32, exists bool) {
+	v := m.addthumbnail_width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearThumbnailWidth clears the value of the "thumbnail_width" field.
+func (m *AttachmentMutation) ClearThumbnailWidth() {
+	m.thumbnail_width = nil
+	m.addthumbnail_width = nil
+	m.clearedFields[attachment.FieldThumbnailWidth] = struct{}{}
+}
+
+// ThumbnailWidthCleared returns if the "thumbnail_width" field was cleared in this mutation.
+func (m *AttachmentMutation) ThumbnailWidthCleared() bool {
+	_, ok := m.clearedFields[attachment.FieldThumbnailWidth]
+	return ok
+}
+
+// ResetThumbnailWidth resets all changes to the "thumbnail_width" field.
+func (m *AttachmentMutation) ResetThumbnailWidth() {
+	m.thumbnail_width = nil
+	m.addthumbnail_width = nil
+	delete(m.clearedFields, attachment.FieldThumbnailWidth)
+}
+
+// SetThumbnailHeight sets the "thumbnail_height" field.
+func (m *AttachmentMutation) SetThumbnailHeight(i int32) {
+	m.thumbnail_height = &i
+	m.addthumbnail_height = nil
+}
+
+// ThumbnailHeight returns the value of the "thumbnail_height" field in the mutation.
+func (m *AttachmentMutation) ThumbnailHeight() (r int32, exists bool) {
+	v := m.thumbnail_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThumbnailHeight returns the old "thumbnail_height" field's value of the Attachment entity.
+// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AttachmentMutation) OldThumbnailHeight(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThumbnailHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThumbnailHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThumbnailHeight: %w", err)
+	}
+	return oldValue.ThumbnailHeight, nil
+}
+
+// AddThumbnailHeight adds i to the "thumbnail_height" field.
+func (m *AttachmentMutation) AddThumbnailHeight(i int32) {
+	if m.addthumbnail_height != nil {
+		*m.addthumbnail_height += i
+	} else {
+		m.addthumbnail_height = &i
+	}
+}
+
+// AddedThumbnailHeight returns the value that was added to the "thumbnail_height" field in this mutation.
+func (m *AttachmentMutation) AddedThumbnailHeight() (r int32, exists bool) {
+	v := m.addthumbnail_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearThumbnailHeight clears the value of the "thumbnail_height" field.
+func (m *AttachmentMutation) ClearThumbnailHeight() {
+	m.thumbnail_height = nil
+	m.addthumbnail_height = nil
+	m.clearedFields[attachment.FieldThumbnailHeight] = struct{}{}
+}
+
+// ThumbnailHeightCleared returns if the "thumbnail_height" field was cleared in this mutation.
+func (m *AttachmentMutation) ThumbnailHeightCleared() bool {
+	_, ok := m.clearedFields[attachment.FieldThumbnailHeight]
+	return ok
+}
+
+// ResetThumbnailHeight resets all changes to the "thumbnail_height" field.
+func (m *AttachmentMutation) ResetThumbnailHeight() {
+	m.thumbnail_height = nil
+	m.addthumbnail_height = nil
+	delete(m.clearedFields, attachment.FieldThumbnailHeight)
+}
+
 // SetStatus sets the "status" field.
 func (m *AttachmentMutation) SetStatus(s string) {
 	m.status = &s
@@ -910,7 +1104,7 @@ func (m *AttachmentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AttachmentMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 14)
 	if m.file_name != nil {
 		fields = append(fields, attachment.FieldFileName)
 	}
@@ -931,6 +1125,15 @@ func (m *AttachmentMutation) Fields() []string {
 	}
 	if m.storage_key != nil {
 		fields = append(fields, attachment.FieldStorageKey)
+	}
+	if m.thumbnail_storage_key != nil {
+		fields = append(fields, attachment.FieldThumbnailStorageKey)
+	}
+	if m.thumbnail_width != nil {
+		fields = append(fields, attachment.FieldThumbnailWidth)
+	}
+	if m.thumbnail_height != nil {
+		fields = append(fields, attachment.FieldThumbnailHeight)
 	}
 	if m.status != nil {
 		fields = append(fields, attachment.FieldStatus)
@@ -966,6 +1169,12 @@ func (m *AttachmentMutation) Field(name string) (ent.Value, bool) {
 		return m.DurationSeconds()
 	case attachment.FieldStorageKey:
 		return m.StorageKey()
+	case attachment.FieldThumbnailStorageKey:
+		return m.ThumbnailStorageKey()
+	case attachment.FieldThumbnailWidth:
+		return m.ThumbnailWidth()
+	case attachment.FieldThumbnailHeight:
+		return m.ThumbnailHeight()
 	case attachment.FieldStatus:
 		return m.Status()
 	case attachment.FieldUploadedAt:
@@ -997,6 +1206,12 @@ func (m *AttachmentMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldDurationSeconds(ctx)
 	case attachment.FieldStorageKey:
 		return m.OldStorageKey(ctx)
+	case attachment.FieldThumbnailStorageKey:
+		return m.OldThumbnailStorageKey(ctx)
+	case attachment.FieldThumbnailWidth:
+		return m.OldThumbnailWidth(ctx)
+	case attachment.FieldThumbnailHeight:
+		return m.OldThumbnailHeight(ctx)
 	case attachment.FieldStatus:
 		return m.OldStatus(ctx)
 	case attachment.FieldUploadedAt:
@@ -1063,6 +1278,27 @@ func (m *AttachmentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetStorageKey(v)
 		return nil
+	case attachment.FieldThumbnailStorageKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThumbnailStorageKey(v)
+		return nil
+	case attachment.FieldThumbnailWidth:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThumbnailWidth(v)
+		return nil
+	case attachment.FieldThumbnailHeight:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThumbnailHeight(v)
+		return nil
 	case attachment.FieldStatus:
 		v, ok := value.(string)
 		if !ok {
@@ -1111,6 +1347,12 @@ func (m *AttachmentMutation) AddedFields() []string {
 	if m.addduration_seconds != nil {
 		fields = append(fields, attachment.FieldDurationSeconds)
 	}
+	if m.addthumbnail_width != nil {
+		fields = append(fields, attachment.FieldThumbnailWidth)
+	}
+	if m.addthumbnail_height != nil {
+		fields = append(fields, attachment.FieldThumbnailHeight)
+	}
 	return fields
 }
 
@@ -1127,6 +1369,10 @@ func (m *AttachmentMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedHeight()
 	case attachment.FieldDurationSeconds:
 		return m.AddedDurationSeconds()
+	case attachment.FieldThumbnailWidth:
+		return m.AddedThumbnailWidth()
+	case attachment.FieldThumbnailHeight:
+		return m.AddedThumbnailHeight()
 	}
 	return nil, false
 }
@@ -1164,6 +1410,20 @@ func (m *AttachmentMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddDurationSeconds(v)
 		return nil
+	case attachment.FieldThumbnailWidth:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddThumbnailWidth(v)
+		return nil
+	case attachment.FieldThumbnailHeight:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddThumbnailHeight(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Attachment numeric field %s", name)
 }
@@ -1180,6 +1440,15 @@ func (m *AttachmentMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(attachment.FieldDurationSeconds) {
 		fields = append(fields, attachment.FieldDurationSeconds)
+	}
+	if m.FieldCleared(attachment.FieldThumbnailStorageKey) {
+		fields = append(fields, attachment.FieldThumbnailStorageKey)
+	}
+	if m.FieldCleared(attachment.FieldThumbnailWidth) {
+		fields = append(fields, attachment.FieldThumbnailWidth)
+	}
+	if m.FieldCleared(attachment.FieldThumbnailHeight) {
+		fields = append(fields, attachment.FieldThumbnailHeight)
 	}
 	if m.FieldCleared(attachment.FieldUploadedAt) {
 		fields = append(fields, attachment.FieldUploadedAt)
@@ -1209,6 +1478,15 @@ func (m *AttachmentMutation) ClearField(name string) error {
 		return nil
 	case attachment.FieldDurationSeconds:
 		m.ClearDurationSeconds()
+		return nil
+	case attachment.FieldThumbnailStorageKey:
+		m.ClearThumbnailStorageKey()
+		return nil
+	case attachment.FieldThumbnailWidth:
+		m.ClearThumbnailWidth()
+		return nil
+	case attachment.FieldThumbnailHeight:
+		m.ClearThumbnailHeight()
 		return nil
 	case attachment.FieldUploadedAt:
 		m.ClearUploadedAt()
@@ -1244,6 +1522,15 @@ func (m *AttachmentMutation) ResetField(name string) error {
 		return nil
 	case attachment.FieldStorageKey:
 		m.ResetStorageKey()
+		return nil
+	case attachment.FieldThumbnailStorageKey:
+		m.ResetThumbnailStorageKey()
+		return nil
+	case attachment.FieldThumbnailWidth:
+		m.ResetThumbnailWidth()
+		return nil
+	case attachment.FieldThumbnailHeight:
+		m.ResetThumbnailHeight()
 		return nil
 	case attachment.FieldStatus:
 		m.ResetStatus()

@@ -149,8 +149,10 @@ type PresignUploadRequest struct {
 	Width           *int32   `protobuf:"varint,5,opt,name=width,proto3,oneof" json:"width,omitempty"`
 	Height          *int32   `protobuf:"varint,6,opt,name=height,proto3,oneof" json:"height,omitempty"`
 	DurationSeconds *float64 `protobuf:"fixed64,7,opt,name=duration_seconds,json=durationSeconds,proto3,oneof" json:"duration_seconds,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// 動画のときにクライアントが切り出したサムネイル画像。指定すると画像用のアップロード URL も返す
+	Thumbnail     *ThumbnailUpload `protobuf:"bytes,8,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PresignUploadRequest) Reset() {
@@ -232,18 +234,94 @@ func (x *PresignUploadRequest) GetDurationSeconds() float64 {
 	return 0
 }
 
-type PresignUploadResponse struct {
+func (x *PresignUploadRequest) GetThumbnail() *ThumbnailUpload {
+	if x != nil {
+		return x.Thumbnail
+	}
+	return nil
+}
+
+type ThumbnailUpload struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AttachmentId  string                 `protobuf:"bytes,1,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
-	UploadUrl     string                 `protobuf:"bytes,2,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"`
-	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	ContentType   string                 `protobuf:"bytes,1,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	SizeBytes     int64                  `protobuf:"varint,2,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
+	Width         int32                  `protobuf:"varint,3,opt,name=width,proto3" json:"width,omitempty"`
+	Height        int32                  `protobuf:"varint,4,opt,name=height,proto3" json:"height,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *ThumbnailUpload) Reset() {
+	*x = ThumbnailUpload{}
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ThumbnailUpload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ThumbnailUpload) ProtoMessage() {}
+
+func (x *ThumbnailUpload) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ThumbnailUpload.ProtoReflect.Descriptor instead.
+func (*ThumbnailUpload) Descriptor() ([]byte, []int) {
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ThumbnailUpload) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *ThumbnailUpload) GetSizeBytes() int64 {
+	if x != nil {
+		return x.SizeBytes
+	}
+	return 0
+}
+
+func (x *ThumbnailUpload) GetWidth() int32 {
+	if x != nil {
+		return x.Width
+	}
+	return 0
+}
+
+func (x *ThumbnailUpload) GetHeight() int32 {
+	if x != nil {
+		return x.Height
+	}
+	return 0
+}
+
+type PresignUploadResponse struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	AttachmentId       string                 `protobuf:"bytes,1,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
+	UploadUrl          string                 `protobuf:"bytes,2,opt,name=upload_url,json=uploadUrl,proto3" json:"upload_url,omitempty"`
+	ExpiresAt          *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	ThumbnailUploadUrl *string                `protobuf:"bytes,4,opt,name=thumbnail_upload_url,json=thumbnailUploadUrl,proto3,oneof" json:"thumbnail_upload_url,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
 func (x *PresignUploadResponse) Reset() {
 	*x = PresignUploadResponse{}
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[2]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -255,7 +333,7 @@ func (x *PresignUploadResponse) String() string {
 func (*PresignUploadResponse) ProtoMessage() {}
 
 func (x *PresignUploadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[2]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -268,7 +346,7 @@ func (x *PresignUploadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PresignUploadResponse.ProtoReflect.Descriptor instead.
 func (*PresignUploadResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *PresignUploadResponse) GetAttachmentId() string {
@@ -292,6 +370,13 @@ func (x *PresignUploadResponse) GetExpiresAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *PresignUploadResponse) GetThumbnailUploadUrl() string {
+	if x != nil && x.ThumbnailUploadUrl != nil {
+		return *x.ThumbnailUploadUrl
+	}
+	return ""
+}
+
 type GetAttachmentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AttachmentId  string                 `protobuf:"bytes,1,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
@@ -301,7 +386,7 @@ type GetAttachmentRequest struct {
 
 func (x *GetAttachmentRequest) Reset() {
 	*x = GetAttachmentRequest{}
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[3]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -313,7 +398,7 @@ func (x *GetAttachmentRequest) String() string {
 func (*GetAttachmentRequest) ProtoMessage() {}
 
 func (x *GetAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[3]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -326,7 +411,7 @@ func (x *GetAttachmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*GetAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{3}
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetAttachmentRequest) GetAttachmentId() string {
@@ -345,7 +430,7 @@ type GetAttachmentResponse struct {
 
 func (x *GetAttachmentResponse) Reset() {
 	*x = GetAttachmentResponse{}
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[4]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +442,7 @@ func (x *GetAttachmentResponse) String() string {
 func (*GetAttachmentResponse) ProtoMessage() {}
 
 func (x *GetAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[4]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +455,7 @@ func (x *GetAttachmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*GetAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{4}
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetAttachmentResponse) GetAttachment() *Attachment {
@@ -381,15 +466,17 @@ func (x *GetAttachmentResponse) GetAttachment() *Attachment {
 }
 
 type GetDownloadUrlRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AttachmentId  string                 `protobuf:"bytes,1,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	AttachmentId string                 `protobuf:"bytes,1,opt,name=attachment_id,json=attachmentId,proto3" json:"attachment_id,omitempty"`
+	// true のときは本体ではなくサムネイル画像の URL を返す。サムネイルがなければ NotFound
+	Thumbnail     bool `protobuf:"varint,2,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetDownloadUrlRequest) Reset() {
 	*x = GetDownloadUrlRequest{}
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[5]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -401,7 +488,7 @@ func (x *GetDownloadUrlRequest) String() string {
 func (*GetDownloadUrlRequest) ProtoMessage() {}
 
 func (x *GetDownloadUrlRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[5]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -414,7 +501,7 @@ func (x *GetDownloadUrlRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDownloadUrlRequest.ProtoReflect.Descriptor instead.
 func (*GetDownloadUrlRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{5}
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetDownloadUrlRequest) GetAttachmentId() string {
@@ -422,6 +509,13 @@ func (x *GetDownloadUrlRequest) GetAttachmentId() string {
 		return x.AttachmentId
 	}
 	return ""
+}
+
+func (x *GetDownloadUrlRequest) GetThumbnail() bool {
+	if x != nil {
+		return x.Thumbnail
+	}
+	return false
 }
 
 type GetDownloadUrlResponse struct {
@@ -434,7 +528,7 @@ type GetDownloadUrlResponse struct {
 
 func (x *GetDownloadUrlResponse) Reset() {
 	*x = GetDownloadUrlResponse{}
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[6]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -446,7 +540,7 @@ func (x *GetDownloadUrlResponse) String() string {
 func (*GetDownloadUrlResponse) ProtoMessage() {}
 
 func (x *GetDownloadUrlResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[6]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -459,7 +553,7 @@ func (x *GetDownloadUrlResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDownloadUrlResponse.ProtoReflect.Descriptor instead.
 func (*GetDownloadUrlResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{6}
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetDownloadUrlResponse) GetUrl() string {
@@ -485,7 +579,7 @@ type DeleteAttachmentRequest struct {
 
 func (x *DeleteAttachmentRequest) Reset() {
 	*x = DeleteAttachmentRequest{}
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[7]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -497,7 +591,7 @@ func (x *DeleteAttachmentRequest) String() string {
 func (*DeleteAttachmentRequest) ProtoMessage() {}
 
 func (x *DeleteAttachmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[7]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -510,7 +604,7 @@ func (x *DeleteAttachmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAttachmentRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAttachmentRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{7}
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeleteAttachmentRequest) GetAttachmentId() string {
@@ -528,7 +622,7 @@ type DeleteAttachmentResponse struct {
 
 func (x *DeleteAttachmentResponse) Reset() {
 	*x = DeleteAttachmentResponse{}
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[8]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -540,7 +634,7 @@ func (x *DeleteAttachmentResponse) String() string {
 func (*DeleteAttachmentResponse) ProtoMessage() {}
 
 func (x *DeleteAttachmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_attachment_service_proto_msgTypes[8]
+	mi := &file_chat_v1_attachment_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -553,7 +647,7 @@ func (x *DeleteAttachmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAttachmentResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAttachmentResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{8}
+	return file_chat_v1_attachment_service_proto_rawDescGZIP(), []int{9}
 }
 
 var File_chat_v1_attachment_service_proto protoreflect.FileDescriptor
@@ -579,7 +673,7 @@ const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12,\n" +
 	"\x05media\x18\n" +
 	" \x01(\v2\x16.chat.v1.MediaMetadataR\x05mediaB\r\n" +
-	"\v_message_id\"\xfe\x02\n" +
+	"\v_message_id\"\xb6\x03\n" +
 	"\x14PresignUploadRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12$\n" +
@@ -589,24 +683,38 @@ const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"size_bytes\x18\x04 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tsizeBytes\x12&\n" +
 	"\x05width\x18\x05 \x01(\x05B\v\xbaH\b\x1a\x06\x18\xa0\x8d\x06 \x00H\x00R\x05width\x88\x01\x01\x12(\n" +
 	"\x06height\x18\x06 \x01(\x05B\v\xbaH\b\x1a\x06\x18\xa0\x8d\x06 \x00H\x01R\x06height\x88\x01\x01\x12G\n" +
-	"\x10duration_seconds\x18\a \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x18\xf5@)\x00\x00\x00\x00\x00\x00\x00\x00H\x02R\x0fdurationSeconds\x88\x01\x01B\b\n" +
+	"\x10duration_seconds\x18\a \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x18\xf5@)\x00\x00\x00\x00\x00\x00\x00\x00H\x02R\x0fdurationSeconds\x88\x01\x01\x126\n" +
+	"\tthumbnail\x18\b \x01(\v2\x18.chat.v1.ThumbnailUploadR\tthumbnailB\b\n" +
 	"\x06_widthB\t\n" +
 	"\a_heightB\x13\n" +
-	"\x11_duration_seconds\"\x96\x01\n" +
+	"\x11_duration_seconds\"\xd1\x01\n" +
+	"\x0fThumbnailUpload\x12K\n" +
+	"\fcontent_type\x18\x01 \x01(\tB(\xbaH%r#R\n" +
+	"image/jpegR\timage/pngR\n" +
+	"image/webpR\vcontentType\x12+\n" +
+	"\n" +
+	"size_bytes\x18\x02 \x01(\x03B\f\xbaH\t\"\a\x18\x80\x80\xc0\x02 \x00R\tsizeBytes\x12 \n" +
+	"\x05width\x18\x03 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\x80  \x00R\x05width\x12\"\n" +
+	"\x06height\x18\x04 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\x80  \x00R\x06height\"\xe6\x01\n" +
 	"\x15PresignUploadResponse\x12#\n" +
 	"\rattachment_id\x18\x01 \x01(\tR\fattachmentId\x12\x1d\n" +
 	"\n" +
 	"upload_url\x18\x02 \x01(\tR\tuploadUrl\x129\n" +
 	"\n" +
-	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"E\n" +
+	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x125\n" +
+	"\x14thumbnail_upload_url\x18\x04 \x01(\tH\x00R\x12thumbnailUploadUrl\x88\x01\x01B\x17\n" +
+	"\x15_thumbnail_upload_url\"E\n" +
 	"\x14GetAttachmentRequest\x12-\n" +
 	"\rattachment_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\fattachmentId\"L\n" +
 	"\x15GetAttachmentResponse\x123\n" +
 	"\n" +
 	"attachment\x18\x01 \x01(\v2\x13.chat.v1.AttachmentR\n" +
-	"attachment\"F\n" +
+	"attachment\"d\n" +
 	"\x15GetDownloadUrlRequest\x12-\n" +
-	"\rattachment_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\fattachmentId\"I\n" +
+	"\rattachment_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\fattachmentId\x12\x1c\n" +
+	"\tthumbnail\x18\x02 \x01(\bR\tthumbnail\"I\n" +
 	"\x16GetDownloadUrlResponse\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\x1d\n" +
 	"\n" +
@@ -633,38 +741,40 @@ func file_chat_v1_attachment_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_attachment_service_proto_rawDescData
 }
 
-var file_chat_v1_attachment_service_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_chat_v1_attachment_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_chat_v1_attachment_service_proto_goTypes = []any{
 	(*Attachment)(nil),               // 0: chat.v1.Attachment
 	(*PresignUploadRequest)(nil),     // 1: chat.v1.PresignUploadRequest
-	(*PresignUploadResponse)(nil),    // 2: chat.v1.PresignUploadResponse
-	(*GetAttachmentRequest)(nil),     // 3: chat.v1.GetAttachmentRequest
-	(*GetAttachmentResponse)(nil),    // 4: chat.v1.GetAttachmentResponse
-	(*GetDownloadUrlRequest)(nil),    // 5: chat.v1.GetDownloadUrlRequest
-	(*GetDownloadUrlResponse)(nil),   // 6: chat.v1.GetDownloadUrlResponse
-	(*DeleteAttachmentRequest)(nil),  // 7: chat.v1.DeleteAttachmentRequest
-	(*DeleteAttachmentResponse)(nil), // 8: chat.v1.DeleteAttachmentResponse
-	(*timestamppb.Timestamp)(nil),    // 9: google.protobuf.Timestamp
-	(*MediaMetadata)(nil),            // 10: chat.v1.MediaMetadata
+	(*ThumbnailUpload)(nil),          // 2: chat.v1.ThumbnailUpload
+	(*PresignUploadResponse)(nil),    // 3: chat.v1.PresignUploadResponse
+	(*GetAttachmentRequest)(nil),     // 4: chat.v1.GetAttachmentRequest
+	(*GetAttachmentResponse)(nil),    // 5: chat.v1.GetAttachmentResponse
+	(*GetDownloadUrlRequest)(nil),    // 6: chat.v1.GetDownloadUrlRequest
+	(*GetDownloadUrlResponse)(nil),   // 7: chat.v1.GetDownloadUrlResponse
+	(*DeleteAttachmentRequest)(nil),  // 8: chat.v1.DeleteAttachmentRequest
+	(*DeleteAttachmentResponse)(nil), // 9: chat.v1.DeleteAttachmentResponse
+	(*timestamppb.Timestamp)(nil),    // 10: google.protobuf.Timestamp
+	(*MediaMetadata)(nil),            // 11: chat.v1.MediaMetadata
 }
 var file_chat_v1_attachment_service_proto_depIdxs = []int32{
-	9,  // 0: chat.v1.Attachment.created_at:type_name -> google.protobuf.Timestamp
-	10, // 1: chat.v1.Attachment.media:type_name -> chat.v1.MediaMetadata
-	9,  // 2: chat.v1.PresignUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: chat.v1.GetAttachmentResponse.attachment:type_name -> chat.v1.Attachment
-	1,  // 4: chat.v1.AttachmentService.PresignUpload:input_type -> chat.v1.PresignUploadRequest
-	3,  // 5: chat.v1.AttachmentService.GetAttachment:input_type -> chat.v1.GetAttachmentRequest
-	5,  // 6: chat.v1.AttachmentService.GetDownloadUrl:input_type -> chat.v1.GetDownloadUrlRequest
-	7,  // 7: chat.v1.AttachmentService.DeleteAttachment:input_type -> chat.v1.DeleteAttachmentRequest
-	2,  // 8: chat.v1.AttachmentService.PresignUpload:output_type -> chat.v1.PresignUploadResponse
-	4,  // 9: chat.v1.AttachmentService.GetAttachment:output_type -> chat.v1.GetAttachmentResponse
-	6,  // 10: chat.v1.AttachmentService.GetDownloadUrl:output_type -> chat.v1.GetDownloadUrlResponse
-	8,  // 11: chat.v1.AttachmentService.DeleteAttachment:output_type -> chat.v1.DeleteAttachmentResponse
-	8,  // [8:12] is the sub-list for method output_type
-	4,  // [4:8] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	10, // 0: chat.v1.Attachment.created_at:type_name -> google.protobuf.Timestamp
+	11, // 1: chat.v1.Attachment.media:type_name -> chat.v1.MediaMetadata
+	2,  // 2: chat.v1.PresignUploadRequest.thumbnail:type_name -> chat.v1.ThumbnailUpload
+	10, // 3: chat.v1.PresignUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
+	0,  // 4: chat.v1.GetAttachmentResponse.attachment:type_name -> chat.v1.Attachment
+	1,  // 5: chat.v1.AttachmentService.PresignUpload:input_type -> chat.v1.PresignUploadRequest
+	4,  // 6: chat.v1.AttachmentService.GetAttachment:input_type -> chat.v1.GetAttachmentRequest
+	6,  // 7: chat.v1.AttachmentService.GetDownloadUrl:input_type -> chat.v1.GetDownloadUrlRequest
+	8,  // 8: chat.v1.AttachmentService.DeleteAttachment:input_type -> chat.v1.DeleteAttachmentRequest
+	3,  // 9: chat.v1.AttachmentService.PresignUpload:output_type -> chat.v1.PresignUploadResponse
+	5,  // 10: chat.v1.AttachmentService.GetAttachment:output_type -> chat.v1.GetAttachmentResponse
+	7,  // 11: chat.v1.AttachmentService.GetDownloadUrl:output_type -> chat.v1.GetDownloadUrlResponse
+	9,  // 12: chat.v1.AttachmentService.DeleteAttachment:output_type -> chat.v1.DeleteAttachmentResponse
+	9,  // [9:13] is the sub-list for method output_type
+	5,  // [5:9] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_attachment_service_proto_init() }
@@ -675,13 +785,14 @@ func file_chat_v1_attachment_service_proto_init() {
 	file_chat_v1_message_proto_init()
 	file_chat_v1_attachment_service_proto_msgTypes[0].OneofWrappers = []any{}
 	file_chat_v1_attachment_service_proto_msgTypes[1].OneofWrappers = []any{}
+	file_chat_v1_attachment_service_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_attachment_service_proto_rawDesc), len(file_chat_v1_attachment_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

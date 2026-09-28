@@ -44,12 +44,37 @@ message PresignUploadRequest {
     gte: 0
     lte: 86400
   }];
+  // 動画のときにクライアントが切り出したサムネイル画像。指定すると画像用のアップロード URL も返す
+  ThumbnailUpload thumbnail = 8;
+}
+
+message ThumbnailUpload {
+  string content_type = 1 [(buf.validate.field).string = {
+    in: [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ]
+  }];
+  int64 size_bytes = 2 [(buf.validate.field).int64 = {
+    gt: 0
+    lte: 5242880
+  }];
+  int32 width = 3 [(buf.validate.field).int32 = {
+    gt: 0
+    lte: 4096
+  }];
+  int32 height = 4 [(buf.validate.field).int32 = {
+    gt: 0
+    lte: 4096
+  }];
 }
 
 message PresignUploadResponse {
   string attachment_id = 1;
   string upload_url = 2;
   google.protobuf.Timestamp expires_at = 3;
+  optional string thumbnail_upload_url = 4;
 }
 
 message GetAttachmentRequest {
@@ -62,6 +87,8 @@ message GetAttachmentResponse {
 
 message GetDownloadUrlRequest {
   string attachment_id = 1 [(buf.validate.field).string.uuid = true];
+  // true のときは本体ではなくサムネイル画像の URL を返す。サムネイルがなければ NotFound
+  bool thumbnail = 2;
 }
 
 message GetDownloadUrlResponse {

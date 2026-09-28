@@ -38,6 +38,15 @@ func (Attachment) Fields() []ent.Field {
 			Nillable(),
 		field.String("storage_key").
 			NotEmpty(),
+		field.String("thumbnail_storage_key").
+			Optional().
+			Nillable(),
+		field.Int32("thumbnail_width").
+			Optional().
+			Nillable(),
+		field.Int32("thumbnail_height").
+			Optional().
+			Nillable(),
 		field.String("status").
 			Default("pending"),
 		field.Time("uploaded_at").

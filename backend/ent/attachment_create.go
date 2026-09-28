@@ -93,6 +93,48 @@ func (_c *AttachmentCreate) SetStorageKey(v string) *AttachmentCreate {
 	return _c
 }
 
+// SetThumbnailStorageKey sets the "thumbnail_storage_key" field.
+func (_c *AttachmentCreate) SetThumbnailStorageKey(v string) *AttachmentCreate {
+	_c.mutation.SetThumbnailStorageKey(v)
+	return _c
+}
+
+// SetNillableThumbnailStorageKey sets the "thumbnail_storage_key" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableThumbnailStorageKey(v *string) *AttachmentCreate {
+	if v != nil {
+		_c.SetThumbnailStorageKey(*v)
+	}
+	return _c
+}
+
+// SetThumbnailWidth sets the "thumbnail_width" field.
+func (_c *AttachmentCreate) SetThumbnailWidth(v int32) *AttachmentCreate {
+	_c.mutation.SetThumbnailWidth(v)
+	return _c
+}
+
+// SetNillableThumbnailWidth sets the "thumbnail_width" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableThumbnailWidth(v *int32) *AttachmentCreate {
+	if v != nil {
+		_c.SetThumbnailWidth(*v)
+	}
+	return _c
+}
+
+// SetThumbnailHeight sets the "thumbnail_height" field.
+func (_c *AttachmentCreate) SetThumbnailHeight(v int32) *AttachmentCreate {
+	_c.mutation.SetThumbnailHeight(v)
+	return _c
+}
+
+// SetNillableThumbnailHeight sets the "thumbnail_height" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableThumbnailHeight(v *int32) *AttachmentCreate {
+	if v != nil {
+		_c.SetThumbnailHeight(*v)
+	}
+	return _c
+}
+
 // SetStatus sets the "status" field.
 func (_c *AttachmentCreate) SetStatus(v string) *AttachmentCreate {
 	_c.mutation.SetStatus(v)
@@ -363,6 +405,18 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		_spec.SetField(attachment.FieldStorageKey, field.TypeString, value)
 		_node.StorageKey = value
 	}
+	if value, ok := _c.mutation.ThumbnailStorageKey(); ok {
+		_spec.SetField(attachment.FieldThumbnailStorageKey, field.TypeString, value)
+		_node.ThumbnailStorageKey = &value
+	}
+	if value, ok := _c.mutation.ThumbnailWidth(); ok {
+		_spec.SetField(attachment.FieldThumbnailWidth, field.TypeInt32, value)
+		_node.ThumbnailWidth = &value
+	}
+	if value, ok := _c.mutation.ThumbnailHeight(); ok {
+		_spec.SetField(attachment.FieldThumbnailHeight, field.TypeInt32, value)
+		_node.ThumbnailHeight = &value
+	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(attachment.FieldStatus, field.TypeString, value)
 		_node.Status = value
@@ -605,6 +659,72 @@ func (u *AttachmentUpsert) SetStorageKey(v string) *AttachmentUpsert {
 // UpdateStorageKey sets the "storage_key" field to the value that was provided on create.
 func (u *AttachmentUpsert) UpdateStorageKey() *AttachmentUpsert {
 	u.SetExcluded(attachment.FieldStorageKey)
+	return u
+}
+
+// SetThumbnailStorageKey sets the "thumbnail_storage_key" field.
+func (u *AttachmentUpsert) SetThumbnailStorageKey(v string) *AttachmentUpsert {
+	u.Set(attachment.FieldThumbnailStorageKey, v)
+	return u
+}
+
+// UpdateThumbnailStorageKey sets the "thumbnail_storage_key" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateThumbnailStorageKey() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldThumbnailStorageKey)
+	return u
+}
+
+// ClearThumbnailStorageKey clears the value of the "thumbnail_storage_key" field.
+func (u *AttachmentUpsert) ClearThumbnailStorageKey() *AttachmentUpsert {
+	u.SetNull(attachment.FieldThumbnailStorageKey)
+	return u
+}
+
+// SetThumbnailWidth sets the "thumbnail_width" field.
+func (u *AttachmentUpsert) SetThumbnailWidth(v int32) *AttachmentUpsert {
+	u.Set(attachment.FieldThumbnailWidth, v)
+	return u
+}
+
+// UpdateThumbnailWidth sets the "thumbnail_width" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateThumbnailWidth() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldThumbnailWidth)
+	return u
+}
+
+// AddThumbnailWidth adds v to the "thumbnail_width" field.
+func (u *AttachmentUpsert) AddThumbnailWidth(v int32) *AttachmentUpsert {
+	u.Add(attachment.FieldThumbnailWidth, v)
+	return u
+}
+
+// ClearThumbnailWidth clears the value of the "thumbnail_width" field.
+func (u *AttachmentUpsert) ClearThumbnailWidth() *AttachmentUpsert {
+	u.SetNull(attachment.FieldThumbnailWidth)
+	return u
+}
+
+// SetThumbnailHeight sets the "thumbnail_height" field.
+func (u *AttachmentUpsert) SetThumbnailHeight(v int32) *AttachmentUpsert {
+	u.Set(attachment.FieldThumbnailHeight, v)
+	return u
+}
+
+// UpdateThumbnailHeight sets the "thumbnail_height" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateThumbnailHeight() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldThumbnailHeight)
+	return u
+}
+
+// AddThumbnailHeight adds v to the "thumbnail_height" field.
+func (u *AttachmentUpsert) AddThumbnailHeight(v int32) *AttachmentUpsert {
+	u.Add(attachment.FieldThumbnailHeight, v)
+	return u
+}
+
+// ClearThumbnailHeight clears the value of the "thumbnail_height" field.
+func (u *AttachmentUpsert) ClearThumbnailHeight() *AttachmentUpsert {
+	u.SetNull(attachment.FieldThumbnailHeight)
 	return u
 }
 
@@ -851,6 +971,83 @@ func (u *AttachmentUpsertOne) SetStorageKey(v string) *AttachmentUpsertOne {
 func (u *AttachmentUpsertOne) UpdateStorageKey() *AttachmentUpsertOne {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.UpdateStorageKey()
+	})
+}
+
+// SetThumbnailStorageKey sets the "thumbnail_storage_key" field.
+func (u *AttachmentUpsertOne) SetThumbnailStorageKey(v string) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetThumbnailStorageKey(v)
+	})
+}
+
+// UpdateThumbnailStorageKey sets the "thumbnail_storage_key" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateThumbnailStorageKey() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateThumbnailStorageKey()
+	})
+}
+
+// ClearThumbnailStorageKey clears the value of the "thumbnail_storage_key" field.
+func (u *AttachmentUpsertOne) ClearThumbnailStorageKey() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearThumbnailStorageKey()
+	})
+}
+
+// SetThumbnailWidth sets the "thumbnail_width" field.
+func (u *AttachmentUpsertOne) SetThumbnailWidth(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetThumbnailWidth(v)
+	})
+}
+
+// AddThumbnailWidth adds v to the "thumbnail_width" field.
+func (u *AttachmentUpsertOne) AddThumbnailWidth(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddThumbnailWidth(v)
+	})
+}
+
+// UpdateThumbnailWidth sets the "thumbnail_width" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateThumbnailWidth() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateThumbnailWidth()
+	})
+}
+
+// ClearThumbnailWidth clears the value of the "thumbnail_width" field.
+func (u *AttachmentUpsertOne) ClearThumbnailWidth() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearThumbnailWidth()
+	})
+}
+
+// SetThumbnailHeight sets the "thumbnail_height" field.
+func (u *AttachmentUpsertOne) SetThumbnailHeight(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetThumbnailHeight(v)
+	})
+}
+
+// AddThumbnailHeight adds v to the "thumbnail_height" field.
+func (u *AttachmentUpsertOne) AddThumbnailHeight(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddThumbnailHeight(v)
+	})
+}
+
+// UpdateThumbnailHeight sets the "thumbnail_height" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateThumbnailHeight() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateThumbnailHeight()
+	})
+}
+
+// ClearThumbnailHeight clears the value of the "thumbnail_height" field.
+func (u *AttachmentUpsertOne) ClearThumbnailHeight() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearThumbnailHeight()
 	})
 }
 
@@ -1272,6 +1469,83 @@ func (u *AttachmentUpsertBulk) SetStorageKey(v string) *AttachmentUpsertBulk {
 func (u *AttachmentUpsertBulk) UpdateStorageKey() *AttachmentUpsertBulk {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.UpdateStorageKey()
+	})
+}
+
+// SetThumbnailStorageKey sets the "thumbnail_storage_key" field.
+func (u *AttachmentUpsertBulk) SetThumbnailStorageKey(v string) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetThumbnailStorageKey(v)
+	})
+}
+
+// UpdateThumbnailStorageKey sets the "thumbnail_storage_key" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateThumbnailStorageKey() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateThumbnailStorageKey()
+	})
+}
+
+// ClearThumbnailStorageKey clears the value of the "thumbnail_storage_key" field.
+func (u *AttachmentUpsertBulk) ClearThumbnailStorageKey() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearThumbnailStorageKey()
+	})
+}
+
+// SetThumbnailWidth sets the "thumbnail_width" field.
+func (u *AttachmentUpsertBulk) SetThumbnailWidth(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetThumbnailWidth(v)
+	})
+}
+
+// AddThumbnailWidth adds v to the "thumbnail_width" field.
+func (u *AttachmentUpsertBulk) AddThumbnailWidth(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddThumbnailWidth(v)
+	})
+}
+
+// UpdateThumbnailWidth sets the "thumbnail_width" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateThumbnailWidth() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateThumbnailWidth()
+	})
+}
+
+// ClearThumbnailWidth clears the value of the "thumbnail_width" field.
+func (u *AttachmentUpsertBulk) ClearThumbnailWidth() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearThumbnailWidth()
+	})
+}
+
+// SetThumbnailHeight sets the "thumbnail_height" field.
+func (u *AttachmentUpsertBulk) SetThumbnailHeight(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetThumbnailHeight(v)
+	})
+}
+
+// AddThumbnailHeight adds v to the "thumbnail_height" field.
+func (u *AttachmentUpsertBulk) AddThumbnailHeight(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddThumbnailHeight(v)
+	})
+}
+
+// UpdateThumbnailHeight sets the "thumbnail_height" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateThumbnailHeight() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateThumbnailHeight()
+	})
+}
+
+// ClearThumbnailHeight clears the value of the "thumbnail_height" field.
+func (u *AttachmentUpsertBulk) ClearThumbnailHeight() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearThumbnailHeight()
 	})
 }
 
