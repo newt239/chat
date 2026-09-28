@@ -51,7 +51,7 @@ packages は React Native と共有する前提のため、`lib` に DOM を含�
 
 ## i18n
 
-- i18next + react-i18next。辞書は `packages/i18n/src/locales/{ja,en}.ts`。日本語辞書が正で、英語辞書は `Messages` 型で同じキーを持つことを強制している。`t()` のキーは型検査される（`src/i18next.d.ts`）。
+- i18next + react-i18next。辞書は `packages/i18n/src/locales/{ja,en}/<名前空間>.ts` に機能ごとに分け、`index.ts` で束ねる（並行開発で同じファイルを編集しないため）。日本語辞書が正で、英語辞書は `Messages` 型で同じキーを持つことを強制している。`t()` のキーは型検査される（`src/i18next.d.ts`）。
 - キーは `機能.文脈.項目` の camelCase（例: `message.actions.delete`、`channel.create.title`）。部品共通は `ui.*`、汎用の動詞は `common.*`。
 - 変数は `{{name}}`。複数形は使わず、英語でも数に依存しない言い回しにする（辞書のキーを揃えるため）。
 - 日時は `formatDate` / `formatTime` / `formatDateTime` / `formatWeekday` / `formatRelativeTime(date, now, locale)`（`@chat/i18n`）を使い、`toLocaleString` を直接呼ばない。`locale` は `preferencesAtom` から取る。
