@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/attachment_service.proto.
  */
 export const file_chat_v1_attachment_service: GenFile = /*@__PURE__*/
-  fileDesc("CiBjaGF0L3YxL2F0dGFjaG1lbnRfc2VydmljZS5wcm90bxIHY2hhdC52MSKKAgoKQXR0YWNobWVudBIKCgJpZBgBIAEoCRIXCgptZXNzYWdlX2lkGAIgASgJSACIAQESEwoLdXBsb2FkZXJfaWQYAyABKAkSEgoKY2hhbm5lbF9pZBgEIAEoCRIRCglmaWxlX25hbWUYBSABKAkSEQoJbWltZV90eXBlGAYgASgJEhIKCnNpemVfYnl0ZXMYByABKAMSDgoGc3RhdHVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBW1lZGlhGAogASgLMhYuY2hhdC52MS5NZWRpYU1ldGFkYXRhQg0KC19tZXNzYWdlX2lkIrECChRQcmVzaWduVXBsb2FkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIaCglmaWxlX25hbWUYAiABKAlCB7pIBHICEAESHQoMY29udGVudF90eXBlGAMgASgJQge6SARyAhABEhsKCnNpemVfYnl0ZXMYBCABKANCB7pIBCICIAASHwoFd2lkdGgYBSABKAVCC7pICBoGGKCNBiAASACIAQESIAoGaGVpZ2h0GAYgASgFQgu6SAgaBhigjQYgAEgBiAEBEjYKEGR1cmF0aW9uX3NlY29uZHMYByABKAFCF7pIFBISGQAAAAAAGPVAKQAAAAAAAAAASAKIAQFCCAoGX3dpZHRoQgkKB19oZWlnaHRCEwoRX2R1cmF0aW9uX3NlY29uZHMicgoVUHJlc2lnblVwbG9hZFJlc3BvbnNlEhUKDWF0dGFjaG1lbnRfaWQYASABKAkSEgoKdXBsb2FkX3VybBgCIAEoCRIuCgpleHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCI3ChRHZXRBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASJAChVHZXRBdHRhY2htZW50UmVzcG9uc2USJwoKYXR0YWNobWVudBgBIAEoCzITLmNoYXQudjEuQXR0YWNobWVudCI4ChVHZXREb3dubG9hZFVybFJlcXVlc3QSHwoNYXR0YWNobWVudF9pZBgBIAEoCUIIukgFcgOwAQEiOQoWR2V0RG93bmxvYWRVcmxSZXNwb25zZRILCgN1cmwYASABKAkSEgoKZXhwaXJlc19pbhgCIAEoBSI6ChdEZWxldGVBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASIaChhEZWxldGVBdHRhY2htZW50UmVzcG9uc2Uy3wIKEUF0dGFjaG1lbnRTZXJ2aWNlEk4KDVByZXNpZ25VcGxvYWQSHS5jaGF0LnYxLlByZXNpZ25VcGxvYWRSZXF1ZXN0Gh4uY2hhdC52MS5QcmVzaWduVXBsb2FkUmVzcG9uc2USTgoNR2V0QXR0YWNobWVudBIdLmNoYXQudjEuR2V0QXR0YWNobWVudFJlcXVlc3QaHi5jaGF0LnYxLkdldEF0dGFjaG1lbnRSZXNwb25zZRJRCg5HZXREb3dubG9hZFVybBIeLmNoYXQudjEuR2V0RG93bmxvYWRVcmxSZXF1ZXN0Gh8uY2hhdC52MS5HZXREb3dubG9hZFVybFJlc3BvbnNlElcKEERlbGV0ZUF0dGFjaG1lbnQSIC5jaGF0LnYxLkRlbGV0ZUF0dGFjaG1lbnRSZXF1ZXN0GiEuY2hhdC52MS5EZWxldGVBdHRhY2htZW50UmVzcG9uc2VClwEKC2NvbS5jaGF0LnYxQhZBdHRhY2htZW50U2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
+  fileDesc("CiBjaGF0L3YxL2F0dGFjaG1lbnRfc2VydmljZS5wcm90bxIHY2hhdC52MSKKAgoKQXR0YWNobWVudBIKCgJpZBgBIAEoCRIXCgptZXNzYWdlX2lkGAIgASgJSACIAQESEwoLdXBsb2FkZXJfaWQYAyABKAkSEgoKY2hhbm5lbF9pZBgEIAEoCRIRCglmaWxlX25hbWUYBSABKAkSEQoJbWltZV90eXBlGAYgASgJEhIKCnNpemVfYnl0ZXMYByABKAMSDgoGc3RhdHVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBW1lZGlhGAogASgLMhYuY2hhdC52MS5NZWRpYU1ldGFkYXRhQg0KC19tZXNzYWdlX2lkIt4CChRQcmVzaWduVXBsb2FkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIaCglmaWxlX25hbWUYAiABKAlCB7pIBHICEAESHQoMY29udGVudF90eXBlGAMgASgJQge6SARyAhABEhsKCnNpemVfYnl0ZXMYBCABKANCB7pIBCICIAASHwoFd2lkdGgYBSABKAVCC7pICBoGGKCNBiAASACIAQESIAoGaGVpZ2h0GAYgASgFQgu6SAgaBhigjQYgAEgBiAEBEjYKEGR1cmF0aW9uX3NlY29uZHMYByABKAFCF7pIFBISGQAAAAAAGPVAKQAAAAAAAAAASAKIAQESKwoJdGh1bWJuYWlsGAggASgLMhguY2hhdC52MS5UaHVtYm5haWxVcGxvYWRCCAoGX3dpZHRoQgkKB19oZWlnaHRCEwoRX2R1cmF0aW9uX3NlY29uZHMiqgEKD1RodW1ibmFpbFVwbG9hZBI+Cgxjb250ZW50X3R5cGUYASABKAlCKLpIJXIjUgppbWFnZS9qcGVnUglpbWFnZS9wbmdSCmltYWdlL3dlYnASIAoKc2l6ZV9ieXRlcxgCIAEoA0IMukgJIgcYgIDAAiAAEhkKBXdpZHRoGAMgASgFQgq6SAcaBRiAICAAEhoKBmhlaWdodBgEIAEoBUIKukgHGgUYgCAgACKuAQoVUHJlc2lnblVwbG9hZFJlc3BvbnNlEhUKDWF0dGFjaG1lbnRfaWQYASABKAkSEgoKdXBsb2FkX3VybBgCIAEoCRIuCgpleHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIhChR0aHVtYm5haWxfdXBsb2FkX3VybBgEIAEoCUgAiAEBQhcKFV90aHVtYm5haWxfdXBsb2FkX3VybCI3ChRHZXRBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASJAChVHZXRBdHRhY2htZW50UmVzcG9uc2USJwoKYXR0YWNobWVudBgBIAEoCzITLmNoYXQudjEuQXR0YWNobWVudCJLChVHZXREb3dubG9hZFVybFJlcXVlc3QSHwoNYXR0YWNobWVudF9pZBgBIAEoCUIIukgFcgOwAQESEQoJdGh1bWJuYWlsGAIgASgIIjkKFkdldERvd25sb2FkVXJsUmVzcG9uc2USCwoDdXJsGAEgASgJEhIKCmV4cGlyZXNfaW4YAiABKAUiOgoXRGVsZXRlQXR0YWNobWVudFJlcXVlc3QSHwoNYXR0YWNobWVudF9pZBgBIAEoCUIIukgFcgOwAQEiGgoYRGVsZXRlQXR0YWNobWVudFJlc3BvbnNlMt8CChFBdHRhY2htZW50U2VydmljZRJOCg1QcmVzaWduVXBsb2FkEh0uY2hhdC52MS5QcmVzaWduVXBsb2FkUmVxdWVzdBoeLmNoYXQudjEuUHJlc2lnblVwbG9hZFJlc3BvbnNlEk4KDUdldEF0dGFjaG1lbnQSHS5jaGF0LnYxLkdldEF0dGFjaG1lbnRSZXF1ZXN0Gh4uY2hhdC52MS5HZXRBdHRhY2htZW50UmVzcG9uc2USUQoOR2V0RG93bmxvYWRVcmwSHi5jaGF0LnYxLkdldERvd25sb2FkVXJsUmVxdWVzdBofLmNoYXQudjEuR2V0RG93bmxvYWRVcmxSZXNwb25zZRJXChBEZWxldGVBdHRhY2htZW50EiAuY2hhdC52MS5EZWxldGVBdHRhY2htZW50UmVxdWVzdBohLmNoYXQudjEuRGVsZXRlQXR0YWNobWVudFJlc3BvbnNlQpcBCgtjb20uY2hhdC52MUIWQXR0YWNobWVudFNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.Attachment
@@ -119,6 +119,13 @@ export type PresignUploadRequest = Message<"chat.v1.PresignUploadRequest"> & {
    * @generated from field: optional double duration_seconds = 7;
    */
   durationSeconds?: number | undefined;
+
+  /**
+   * 動画のときにクライアントが切り出したサムネイル画像。指定すると画像用のアップロード URL も返す
+   *
+   * @generated from field: chat.v1.ThumbnailUpload thumbnail = 8;
+   */
+  thumbnail?: ThumbnailUpload | undefined;
 };
 
 /**
@@ -127,6 +134,38 @@ export type PresignUploadRequest = Message<"chat.v1.PresignUploadRequest"> & {
  */
 export const PresignUploadRequestSchema: GenMessage<PresignUploadRequest> = /*@__PURE__*/
   messageDesc(file_chat_v1_attachment_service, 1);
+
+/**
+ * @generated from message chat.v1.ThumbnailUpload
+ */
+export type ThumbnailUpload = Message<"chat.v1.ThumbnailUpload"> & {
+  /**
+   * @generated from field: string content_type = 1;
+   */
+  contentType: string;
+
+  /**
+   * @generated from field: int64 size_bytes = 2;
+   */
+  sizeBytes: bigint;
+
+  /**
+   * @generated from field: int32 width = 3;
+   */
+  width: number;
+
+  /**
+   * @generated from field: int32 height = 4;
+   */
+  height: number;
+};
+
+/**
+ * Describes the message chat.v1.ThumbnailUpload.
+ * Use `create(ThumbnailUploadSchema)` to create a new message.
+ */
+export const ThumbnailUploadSchema: GenMessage<ThumbnailUpload> = /*@__PURE__*/
+  messageDesc(file_chat_v1_attachment_service, 2);
 
 /**
  * @generated from message chat.v1.PresignUploadResponse
@@ -146,6 +185,11 @@ export type PresignUploadResponse = Message<"chat.v1.PresignUploadResponse"> & {
    * @generated from field: google.protobuf.Timestamp expires_at = 3;
    */
   expiresAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: optional string thumbnail_upload_url = 4;
+   */
+  thumbnailUploadUrl?: string | undefined;
 };
 
 /**
@@ -153,7 +197,7 @@ export type PresignUploadResponse = Message<"chat.v1.PresignUploadResponse"> & {
  * Use `create(PresignUploadResponseSchema)` to create a new message.
  */
 export const PresignUploadResponseSchema: GenMessage<PresignUploadResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 2);
+  messageDesc(file_chat_v1_attachment_service, 3);
 
 /**
  * @generated from message chat.v1.GetAttachmentRequest
@@ -170,7 +214,7 @@ export type GetAttachmentRequest = Message<"chat.v1.GetAttachmentRequest"> & {
  * Use `create(GetAttachmentRequestSchema)` to create a new message.
  */
 export const GetAttachmentRequestSchema: GenMessage<GetAttachmentRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 3);
+  messageDesc(file_chat_v1_attachment_service, 4);
 
 /**
  * @generated from message chat.v1.GetAttachmentResponse
@@ -187,7 +231,7 @@ export type GetAttachmentResponse = Message<"chat.v1.GetAttachmentResponse"> & {
  * Use `create(GetAttachmentResponseSchema)` to create a new message.
  */
 export const GetAttachmentResponseSchema: GenMessage<GetAttachmentResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 4);
+  messageDesc(file_chat_v1_attachment_service, 5);
 
 /**
  * @generated from message chat.v1.GetDownloadUrlRequest
@@ -197,6 +241,13 @@ export type GetDownloadUrlRequest = Message<"chat.v1.GetDownloadUrlRequest"> & {
    * @generated from field: string attachment_id = 1;
    */
   attachmentId: string;
+
+  /**
+   * true のときは本体ではなくサムネイル画像の URL を返す。サムネイルがなければ NotFound
+   *
+   * @generated from field: bool thumbnail = 2;
+   */
+  thumbnail: boolean;
 };
 
 /**
@@ -204,7 +255,7 @@ export type GetDownloadUrlRequest = Message<"chat.v1.GetDownloadUrlRequest"> & {
  * Use `create(GetDownloadUrlRequestSchema)` to create a new message.
  */
 export const GetDownloadUrlRequestSchema: GenMessage<GetDownloadUrlRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 5);
+  messageDesc(file_chat_v1_attachment_service, 6);
 
 /**
  * @generated from message chat.v1.GetDownloadUrlResponse
@@ -226,7 +277,7 @@ export type GetDownloadUrlResponse = Message<"chat.v1.GetDownloadUrlResponse"> &
  * Use `create(GetDownloadUrlResponseSchema)` to create a new message.
  */
 export const GetDownloadUrlResponseSchema: GenMessage<GetDownloadUrlResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 6);
+  messageDesc(file_chat_v1_attachment_service, 7);
 
 /**
  * @generated from message chat.v1.DeleteAttachmentRequest
@@ -243,7 +294,7 @@ export type DeleteAttachmentRequest = Message<"chat.v1.DeleteAttachmentRequest">
  * Use `create(DeleteAttachmentRequestSchema)` to create a new message.
  */
 export const DeleteAttachmentRequestSchema: GenMessage<DeleteAttachmentRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 7);
+  messageDesc(file_chat_v1_attachment_service, 8);
 
 /**
  * @generated from message chat.v1.DeleteAttachmentResponse
@@ -256,7 +307,7 @@ export type DeleteAttachmentResponse = Message<"chat.v1.DeleteAttachmentResponse
  * Use `create(DeleteAttachmentResponseSchema)` to create a new message.
  */
 export const DeleteAttachmentResponseSchema: GenMessage<DeleteAttachmentResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 8);
+  messageDesc(file_chat_v1_attachment_service, 9);
 
 /**
  * @generated from service chat.v1.AttachmentService

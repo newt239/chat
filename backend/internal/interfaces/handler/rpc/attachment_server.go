@@ -26,11 +26,24 @@ func (s *AttachmentServer) PresignUpload(ctx context.Context, req *chatv1.Presig
 		MimeType:  req.ContentType,
 		SizeBytes: req.SizeBytes,
 		Media:     entity.MediaMetadata{Width: req.Width, Height: req.Height, DurationSeconds: req.DurationSeconds},
+		Thumbnail: thumbnailInput(req.Thumbnail),
 	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	return &chatv1.PresignUploadResponse{AttachmentId: out.AttachmentID, UploadUrl: out.UploadURL, ExpiresAt: timestamppb.New(out.ExpiresAt)}, nil
+	return &chatv1.PresignUploadResponse{
+		AttachmentId:       out.AttachmentID,
+		UploadUrl:          out.UploadURL,
+		ThumbnailUploadUrl: out.ThumbnailUploadURL,
+		ExpiresAt:          timestamppb.New(out.ExpiresAt),
+	}, nil
+}
+
+func thumbnailInput(t *chatv1.ThumbnailUpload) *attachmentuc.ThumbnailInput {
+	if t == nil {
+		return nil
+	}
+	return &attachmentuc.ThumbnailInput{MimeType: t.ContentType, SizeBytes: t.SizeBytes, Width: t.Width, Height: t.Height}
 }
 
 func (s *AttachmentServer) GetAttachment(ctx context.Context, req *chatv1.GetAttachmentRequest) (*chatv1.GetAttachmentResponse, error) {
@@ -53,7 +66,7 @@ func (s *AttachmentServer) GetAttachment(ctx context.Context, req *chatv1.GetAtt
 }
 
 func (s *AttachmentServer) GetDownloadUrl(ctx context.Context, req *chatv1.GetDownloadUrlRequest) (*chatv1.GetDownloadUrlResponse, error) {
-	out, err := s.UC.GetDownloadURL(ctx, userIDFrom(ctx), req.AttachmentId)
+	out, err := s.UC.GetDownloadURL(ctx, userIDFrom(ctx), req.AttachmentId, req.Thumbnail)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}

@@ -4,6 +4,8 @@ type PlayerTrack = {
   fileName: string;
   messageId: string;
   parentId: string | undefined;
+  // 動画の読み込み中に映すサムネイル
+  posterUrl: string | undefined;
   channelId: string;
   workspaceId: string;
   authorName: string;
@@ -146,6 +148,7 @@ export const createMediaPlayer = () => {
     stop();
     const { audio, video } = getElements();
     const element = track.kind === "video" ? video : audio;
+    video.poster = track.posterUrl ?? "";
     setState({ duration: track.durationSeconds, isPlaying: true, track });
     place();
     resolveUrl = getUrl;
