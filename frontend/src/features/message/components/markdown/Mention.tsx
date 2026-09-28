@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 import { Badge } from "@mantine/core";
+import { useParams } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { useOptionalRouteParams } from "#/lib/routeParams";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 type MentionProps = {
@@ -13,7 +13,7 @@ type MentionProps = {
 };
 
 export const Mention = ({ "data-mention": username }: MentionProps) => {
-  const { workspaceId } = useOptionalRouteParams();
+  const { workspaceId } = useParams({ strict: false });
   const { data: members } = useMembers(workspaceId ?? null);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 

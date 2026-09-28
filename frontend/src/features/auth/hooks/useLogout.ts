@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { api } from "#/lib/api/client";
-import { paths } from "#/lib/paths";
 import { clearAuthAtom } from "#/providers/store/auth";
 
 /** サーバー側のセッションを失効させてからローカルの認証情報を破棄する */
@@ -20,7 +19,7 @@ export const useLogout = () => {
     onSettled: async () => {
       clearAuth();
       queryClient.clear();
-      await navigate(paths.login());
+      await navigate({ to: "/login" });
     },
   });
 };

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
 import { Badge, Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/core";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { useNotificationSync } from "#/features/notification/hooks/useNotificationSync";
-import { paths } from "#/lib/paths";
 import { currentChannelIdAtom, setCurrentChannelAtom } from "#/providers/store/workspace";
 
 import { useChannels } from "../hooks/useChannel";
@@ -30,7 +29,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {
       setCurrentChannel(channelId);
-      void navigate(paths.channel(workspaceId, channelId));
+      void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
     }
   };
 

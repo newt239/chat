@@ -1,9 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { api } from "#/lib/api/client";
-import { paths } from "#/lib/paths";
 import { setAuthAtom } from "#/providers/store/auth";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
@@ -30,7 +29,11 @@ export const useLogin = () => {
       setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken, user: data.user });
 
       // ワークスペースが選択済みならそのページへ、なければアプリのトップへ
-      void navigate(currentWorkspaceId ? paths.workspace(currentWorkspaceId) : paths.app());
+      if (currentWorkspaceId) {
+        void navigate({ params: { workspaceId: currentWorkspaceId }, to: "/app/$workspaceId" });
+      } else {
+        void navigate({ to: "/app" });
+      }
     },
   });
 };

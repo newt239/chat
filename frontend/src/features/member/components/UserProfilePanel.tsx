@@ -2,12 +2,11 @@ import { useMemo } from "react";
 
 import { Avatar, Badge, Button, Loader, Stack, Text } from "@mantine/core";
 import { IconMessage } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { useNavigate } from "react-router";
 
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { paths } from "#/lib/paths";
 import { userAtom } from "#/providers/store/auth";
 
 type UserProfilePanelProps = {
@@ -23,7 +22,10 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
 
   const handleStartDM = async () => {
     const dm = await createDM.mutateAsync({ userId });
-    void navigate(paths.channel(workspaceId, dm.id));
+    void navigate({
+      params: { channelId: dm.id, workspaceId },
+      to: "/app/$workspaceId/$channelId",
+    });
   };
   const member = useMemo(() => {
     if (members === undefined) {

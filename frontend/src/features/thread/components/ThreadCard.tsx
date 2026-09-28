@@ -1,10 +1,8 @@
 import { Card, Group, Stack, Text, Badge } from "@mantine/core";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { api } from "#/lib/api/client";
-import { paths } from "#/lib/paths";
-import { useWorkspaceId } from "#/lib/routeParams";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import type { ParticipatingThread } from "#/features/thread/schemas";
@@ -16,7 +14,7 @@ type ThreadCardProps = {
 
 export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
   const navigate = useNavigate();
-  const workspaceId = useWorkspaceId();
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
   const handleOpenThread = async () => {
@@ -26,7 +24,11 @@ export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
     onMarkedRead?.(thread.thread_id);
 
     if (thread.channel_id) {
-      await navigate(paths.channel(workspaceId, thread.channel_id, thread.first_message.id));
+      await navigate({
+        params: { channelId: thread.channel_id, workspaceId },
+        search: { message: thread.first_message.id },
+        to: "/app/$workspaceId/$channelId",
+      });
     }
     setRightSidePanelView({ threadId: thread.thread_id, type: "thread" });
   };

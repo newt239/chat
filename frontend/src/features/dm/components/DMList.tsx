@@ -1,9 +1,6 @@
 import { Text, UnstyledButton } from "@mantine/core";
 import { IconUser, IconUsers } from "@tabler/icons-react";
-import { Link } from "react-router";
-
-import { paths } from "#/lib/paths";
-import { useOptionalRouteParams } from "#/lib/routeParams";
+import { Link, useParams } from "@tanstack/react-router";
 
 import { useDMs } from "../hooks/useDM";
 
@@ -24,7 +21,7 @@ type DMListProps = {
 };
 
 export const DMList = ({ workspaceId }: DMListProps) => {
-  const { channelId } = useOptionalRouteParams();
+  const { channelId } = useParams({ strict: false });
   const { data: dms, isLoading } = useDMs(workspaceId);
 
   if (isLoading) {
@@ -54,7 +51,12 @@ export const DMList = ({ workspaceId }: DMListProps) => {
         const displayName = getDMDisplayName(dm);
 
         return (
-          <Link key={dm.id} to={paths.channel(workspaceId, dm.id)} className="block no-underline">
+          <Link
+            key={dm.id}
+            to="/app/$workspaceId/$channelId"
+            params={{ channelId: dm.id, workspaceId }}
+            className="block no-underline"
+          >
             <UnstyledButton
               className={`w-full px-3 py-1.5 rounded-md flex items-center space-x-2 transition-colors ${
                 isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"

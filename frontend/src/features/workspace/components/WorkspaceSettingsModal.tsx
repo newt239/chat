@@ -11,12 +11,11 @@ import {
   TextInput,
   Textarea,
 } from "@mantine/core";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 import { UserGroupManager } from "#/features/userGroup/components/UserGroupManager";
 import { WorkspaceMemberManager } from "#/features/workspace/components/WorkspaceMemberManager";
 import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActions";
-import { paths } from "#/lib/paths";
 
 import type { WorkspaceSummary } from "#/features/workspace/types";
 
@@ -47,7 +46,7 @@ export const WorkspaceSettingsModal = ({
     remove.mutate(undefined, {
       onSuccess: () => {
         onClose();
-        void navigate(paths.app());
+        void navigate({ to: "/app" });
       },
     });
   };

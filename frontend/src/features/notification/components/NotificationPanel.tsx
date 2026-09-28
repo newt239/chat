@@ -2,10 +2,9 @@ import { useCallback } from "react";
 
 import { ActionIcon, Badge, Card, ScrollArea, Stack, Text } from "@mantine/core";
 import { IconBell, IconX } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
-import { paths } from "#/lib/paths";
 import {
   markNotificationAsReadAtom,
   removeNotificationAtom,
@@ -83,9 +82,11 @@ export const NotificationPanel = () => {
       }
 
       // チャンネルに遷移
-      void navigate(
-        paths.channel(notification.workspaceId, notification.channelId, notification.messageId),
-      );
+      void navigate({
+        params: { channelId: notification.channelId, workspaceId: notification.workspaceId },
+        search: { message: notification.messageId },
+        to: "/app/$workspaceId/$channelId",
+      });
     },
     [markAsRead, navigate],
   );

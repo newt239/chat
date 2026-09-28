@@ -1,9 +1,8 @@
 import { Text, Stack, ScrollArea, Card } from "@mantine/core";
 import { IconBookmark } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { Link } from "react-router";
 
-import { paths } from "#/lib/paths";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 import { useBookmarks } from "../hooks/useBookmarks";
@@ -56,8 +55,15 @@ export const BookmarkList = () => {
             withBorder
             padding="md"
             radius="md"
-            component={Link}
-            to={paths.channel(workspaceId, bookmark.message.channelId, bookmark.message.id)}
+            renderRoot={(props) => (
+              <Link
+                {...props}
+                to="/app/$workspaceId/$channelId"
+                params={{ channelId: bookmark.message.channelId, workspaceId }}
+                search={{ message: bookmark.message.id }}
+              />
+            )}
+
             className="h-auto text-left justify-start"
           >
             <div className="flex-1 min-w-0">

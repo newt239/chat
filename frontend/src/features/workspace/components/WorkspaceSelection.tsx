@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
 
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { WorkspaceList } from "#/features/workspace/components/WorkspaceList";
 import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
-import { paths } from "#/lib/paths";
 import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "#/providers/store/workspace";
 
 export const WorkspaceSelection = () => {
@@ -30,7 +29,7 @@ export const WorkspaceSelection = () => {
       if (storedExists) {
         hasRedirected.current = true;
         setCurrentWorkspace(storedWorkspaceId);
-        void navigate(paths.workspace(storedWorkspaceId));
+        void navigate({ params: { workspaceId: storedWorkspaceId }, to: "/app/$workspaceId" });
         return;
       }
     }
@@ -40,7 +39,7 @@ export const WorkspaceSelection = () => {
     if (firstWorkspace) {
       hasRedirected.current = true;
       setCurrentWorkspace(firstWorkspace.id);
-      void navigate(paths.workspace(firstWorkspace.id));
+      void navigate({ params: { workspaceId: firstWorkspace.id }, to: "/app/$workspaceId" });
     }
   }, [setCurrentWorkspace, storedWorkspaceId, workspaces, navigate]);
 

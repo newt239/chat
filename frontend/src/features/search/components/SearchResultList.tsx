@@ -1,9 +1,8 @@
 import { Card, Stack, Text, Avatar, Badge } from "@mantine/core";
 import { IconHash, IconUser, IconUsers } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
-import { paths } from "#/lib/paths";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import type { SearchFilter } from "#/features/search/schemas";
@@ -39,11 +38,15 @@ export const SearchResultList = ({
   };
 
   const handleChannelClick = (channelId: string) => {
-    void navigate(paths.channel(workspaceId, channelId));
+    void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
   };
 
   const handleMessageClick = (channelId: string, messageId: string) => {
-    void navigate(paths.channel(workspaceId, channelId, messageId));
+    void navigate({
+      params: { channelId, workspaceId },
+      search: { message: messageId },
+      to: "/app/$workspaceId/$channelId",
+    });
   };
 
   const dateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {

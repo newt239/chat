@@ -1,10 +1,11 @@
 import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite-plus";
 
-const generatedFiles = ["src/lib/api/schema.ts"];
+const generatedFiles = ["src/lib/api/schema.ts", "src/routeTree.gen.ts"];
 
 export default defineConfig({
   fmt: {
@@ -70,8 +71,8 @@ export default defineConfig({
         },
       },
       {
-        // React Router の Data モードでは redirect() が返す Response を throw する
-        files: ["src/routes/routeTree.ts"],
+        // beforeLoad では redirect() の戻り値を throw して遷移させる
+        files: ["src/routes/**"],
         rules: {
           "typescript/only-throw-error": "off",
         },
@@ -206,6 +207,14 @@ export default defineConfig({
     },
   },
   plugins: [
+    tanstackRouter({
+      autoCodeSplitting: true,
+      generatedRouteTree: "./src/routeTree.gen.ts",
+      quoteStyle: "double",
+      routesDirectory: "./src/routes",
+      semicolons: true,
+      target: "react",
+    }),
     tailwindcss(),
     react(),
     VitePWA({

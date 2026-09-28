@@ -1,7 +1,5 @@
 import { Button, Stack, Text } from "@mantine/core";
-import { Link } from "react-router";
-
-import { paths } from "#/lib/paths";
+import { Link } from "@tanstack/react-router";
 
 export const NotFoundPage = () => (
   <Stack align="center" justify="center" className="h-screen" gap="md">
@@ -11,8 +9,6 @@ export const NotFoundPage = () => (
     <Text size="sm" c="dimmed">
       お探しのページは見つかりませんでした。
     </Text>
-    <Button component={Link} to={paths.app()}>
-      トップへ戻る
-    </Button>
+    <Button renderRoot={(props) => <Link {...props} to="/app" />}>トップへ戻る</Button>
   </Stack>
 );

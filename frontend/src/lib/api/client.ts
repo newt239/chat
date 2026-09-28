@@ -1,7 +1,6 @@
 import createClient from "openapi-fetch";
 
 import { navigateTo } from "#/lib/navigation";
-import { paths as routePaths } from "#/lib/paths";
 import { store } from "#/providers/store";
 import { accessTokenAtom, authAtom, clearAuthAtom, refreshTokenAtom } from "#/providers/store/auth";
 
@@ -106,7 +105,7 @@ api.use({
 
     // リフレッシュ失敗時は認証情報をクリアしてログイン画面へ
     resetAuthState();
-    navigateTo(routePaths.login());
+    navigateTo({ to: "/login" });
     return response;
   },
 });

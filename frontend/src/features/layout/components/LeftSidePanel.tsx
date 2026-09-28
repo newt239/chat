@@ -2,14 +2,13 @@ import { useState } from "react";
 
 import { Text, ActionIcon, ScrollArea } from "@mantine/core";
 import { IconX, IconPlus } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Link } from "react-router";
 
 import { ChannelList } from "#/features/channel/components/ChannelList";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
 import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
 import { DMList } from "#/features/dm/components/DMList";
-import { paths } from "#/lib/paths";
 import { leftSidePanelVisibleAtom, hideMobilePanelsAtom } from "#/providers/store/ui";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
@@ -52,7 +51,8 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
             <div className="px-2">
               {currentWorkspaceId && (
                 <Link
-                  to={paths.threads(currentWorkspaceId)}
+                  to="/app/$workspaceId/threads"
+                  params={{ workspaceId: currentWorkspaceId }}
                   className="block rounded px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   スレッド

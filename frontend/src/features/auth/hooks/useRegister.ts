@@ -1,9 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { api } from "#/lib/api/client";
-import { paths } from "#/lib/paths";
 import { setAuthAtom } from "#/providers/store/auth";
 
 import type { components } from "#/lib/api/schema";
@@ -26,7 +25,7 @@ export const useRegister = () => {
     },
     onSuccess: (data: AuthResponse) => {
       setAuth({ accessToken: data.accessToken, refreshToken: data.refreshToken, user: data.user });
-      void navigate(paths.app());
+      void navigate({ to: "/app" });
     },
   });
 };

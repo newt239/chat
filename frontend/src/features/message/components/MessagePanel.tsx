@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useRef, useCallback } from "react";
 
 import { Button, Card, Loader, Text } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
 import { useAutoScrollToBottom } from "#/features/message/hooks/useAutoScrollToBottom";
 import { useChannelThreadMetadata } from "#/features/message/hooks/useChannelThreadMetadata";
 import { useChannelTimeline } from "#/features/message/hooks/useChannelTimeline";
+import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { useHighlightedMessage } from "#/features/message/hooks/useHighlightedMessage";
 import { useMessageActions } from "#/features/message/hooks/useMessageActions";
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
 import { useOlderMessages } from "#/features/message/hooks/useOlderMessages";
-import { paths } from "#/lib/paths";
 import { userAtom } from "#/providers/store/auth";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
@@ -93,21 +92,7 @@ export const MessagePanel = () => {
     setRightSidebarView({ type: "hidden" });
   }, [currentChannelId, setRightSidebarView]);
 
-  const handleCopyLink = useCallback(
-    (messageId: string) => {
-      if (!currentWorkspaceId || !currentChannelId) {
-        return;
-      }
-      void navigator.clipboard.writeText(
-        paths.channel(currentWorkspaceId, currentChannelId, messageId),
-      );
-      notifications.show({
-        message: "メッセージリンクをクリップボードにコピーしました",
-        title: "コピーしました",
-      });
-    },
-    [currentWorkspaceId, currentChannelId],
-  );
+  const handleCopyLink = useCopyMessageLink(currentWorkspaceId, currentChannelId);
 
   const handleCreateThread = useCallback(
     (messageId: string) => {

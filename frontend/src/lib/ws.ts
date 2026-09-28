@@ -1,6 +1,5 @@
 import { logger } from "#/lib/logger";
 import { navigateTo } from "#/lib/navigation";
-import { paths } from "#/lib/paths";
 import { parseServerEvent } from "#/types/wsEvents";
 
 import type { ClientToServerMessage, WsEventPayloadMap, WsEventType } from "#/types/wsEvents";
@@ -115,7 +114,7 @@ export class WsClient {
         }
         case "error": {
           if (serverEvent.payload.code === "401") {
-            navigateTo(paths.login());
+            navigateTo({ to: "/login" });
           }
           this.emit("error", serverEvent.payload);
           break;

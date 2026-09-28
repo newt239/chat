@@ -1,9 +1,8 @@
 import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { Link } from "react-router";
+import { Link } from "@tanstack/react-router";
 
 import { useLogin } from "#/features/auth/hooks/useLogin";
-import { paths } from "#/lib/paths";
 
 type LoginFormValues = {
   email: string;
@@ -64,7 +63,7 @@ export const LoginForm = () => {
 
         <Text size="sm" className="text-center">
           アカウントをお持ちでない方は{" "}
-          <Anchor component={Link} to={paths.register()} size="sm">
+          <Anchor renderRoot={(props) => <Link {...props} to="/register" />} size="sm">
             新規登録
           </Anchor>
         </Text>

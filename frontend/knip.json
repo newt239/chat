@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/knip/schema.json",
-  "entry": ["src/main.tsx"],
+  "entry": ["src/routes/**/*.tsx"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": ["src/lib/api/schema.ts"],
   "ignoreDependencies": ["@types/*", "tailwindcss"]

@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { Button, Loader, Stack, Text } from "@mantine/core";
+import { useParams } from "@tanstack/react-router";
 
 import { ThreadCard } from "#/features/thread/components/ThreadCard";
 import { useParticipatingThreads } from "#/features/thread/hooks/useParticipatingThreads";
-import { useWorkspaceId } from "#/lib/routeParams";
 
 import type { ParticipatingThread } from "#/features/thread/schemas";
 
 export const ThreadListPage = () => {
-  const workspaceId = useWorkspaceId();
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
 
   const [cursorLastActivityAt, setCursorLastActivityAt] = useState<string | undefined>();
   const [cursorThreadId, setCursorThreadId] = useState<string | undefined>();

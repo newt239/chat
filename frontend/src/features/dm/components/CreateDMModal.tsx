@@ -1,10 +1,9 @@
 import { useState } from "react";
 
 import { Modal, Button, MultiSelect, Text, Group, TextInput } from "@mantine/core";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { paths } from "#/lib/paths";
 
 import { useCreateDM, useCreateGroupDM } from "../hooks/useDM";
 
@@ -46,7 +45,10 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
       : await createDM.mutateAsync({ userId: firstUserId });
 
     handleClose();
-    void navigate(paths.channel(workspaceId, dm.id));
+    void navigate({
+      params: { channelId: dm.id, workspaceId },
+      to: "/app/$workspaceId/$channelId",
+    });
   };
 
   const memberOptions = (members ?? []).map((member) => ({
