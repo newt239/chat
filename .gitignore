@@ -45,3 +45,6 @@ atlas.sum
 
 # Ansible
 ansible/inventory.ini
+
+# Playwright MCP
+.playwright-mcp/
