@@ -37,15 +37,18 @@ type WorkspaceUseCase interface {
 type workspaceInteractor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	userRepo      domainrepository.UserRepository
+	userNoteRepo  domainrepository.UserNoteRepository
 }
 
 func NewWorkspaceInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
+	userNoteRepo domainrepository.UserNoteRepository,
 ) WorkspaceUseCase {
 	return &workspaceInteractor{
 		workspaceRepo: workspaceRepo,
 		userRepo:      userRepo,
+		userNoteRepo:  userNoteRepo,
 	}
 }
 
@@ -270,6 +273,11 @@ func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembers
 		userMap[u.ID] = u
 	}
 
+	nicknames, err := i.userNoteRepo.FindNicknames(ctx, input.RequesterID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get nicknames: %w", err)
+	}
+
 	output := &ListMembersOutput{Members: make([]MemberInfo, 0, len(members))}
 	for _, m := range members {
 		user := userMap[m.UserID]
@@ -277,6 +285,9 @@ func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembers
 			UserID:   m.UserID,
 			Role:     string(m.Role),
 			JoinedAt: m.JoinedAt,
+		}
+		if nickname, ok := nicknames[m.UserID]; ok {
+			memberInfo.Nickname = &nickname
 		}
 		if user != nil {
 			memberInfo.Email = user.Email

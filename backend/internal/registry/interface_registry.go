@@ -29,9 +29,10 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 	uc := r.usecaseRegistry
 	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService(),
 		rpc.Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&rpc.AuthServer{UC: uc.NewAuthUseCase()})),
-		rpc.Register(chatv1connect.NewUserServiceHandler, chatv1connect.UserServiceHandler(&rpc.UserServer{UC: uc.NewUserUseCase()})),
+		rpc.Register(chatv1connect.NewUserServiceHandler, chatv1connect.UserServiceHandler(&rpc.UserServer{UC: uc.NewUserUseCase(), NoteUC: uc.NewUserNoteUseCase()})),
 		rpc.Register(chatv1connect.NewWorkspaceServiceHandler, chatv1connect.WorkspaceServiceHandler(&rpc.WorkspaceServer{UC: uc.NewWorkspaceUseCase()})),
 		rpc.Register(chatv1connect.NewChannelServiceHandler, chatv1connect.ChannelServiceHandler(&rpc.ChannelServer{UC: uc.NewChannelUseCase()})),
+		rpc.Register(chatv1connect.NewChannelLinkServiceHandler, chatv1connect.ChannelLinkServiceHandler(&rpc.ChannelLinkServer{UC: uc.NewChannelLinkUseCase()})),
 		rpc.Register(chatv1connect.NewChannelMemberServiceHandler, chatv1connect.ChannelMemberServiceHandler(&rpc.ChannelMemberServer{UC: uc.NewChannelMemberUseCase()})),
 		rpc.Register(chatv1connect.NewReadStateServiceHandler, chatv1connect.ReadStateServiceHandler(&rpc.ReadStateServer{UC: uc.NewReadStateUseCase()})),
 		rpc.Register(chatv1connect.NewDirectMessageServiceHandler, chatv1connect.DirectMessageServiceHandler(&rpc.DirectMessageServer{UC: uc.NewDMInteractor()})),
@@ -58,6 +59,7 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		AllowedOrigins:      r.infrastructureRegistry.config.CORS.AllowedOrigins,
 		WebSocketHub:        r.infrastructureRegistry.hub,
 		WorkspaceRepository: r.domainRegistry.NewWorkspaceRepository(),
+		ChannelAccess:       r.domainRegistry.NewChannelAccessService(),
 		RPCHandler:          r.NewRPCHandler(),
 	}
 

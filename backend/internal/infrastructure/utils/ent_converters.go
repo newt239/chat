@@ -122,6 +122,7 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 		Description: StringPtrFromNullable(c.Description),
 		IsPrivate:   c.IsPrivate,
 		Type:        channelType,
+		ParentID:    UUIDPtrToStringPtr(c.ParentID),
 		CreatedBy:   createdBy,
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,

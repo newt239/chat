@@ -12,11 +12,17 @@ type Attachment func(*sql.Selector)
 // Channel is the predicate function for channel builders.
 type Channel func(*sql.Selector)
 
+// ChannelLink is the predicate function for channellink builders.
+type ChannelLink func(*sql.Selector)
+
 // ChannelMember is the predicate function for channelmember builders.
 type ChannelMember func(*sql.Selector)
 
 // ChannelReadState is the predicate function for channelreadstate builders.
 type ChannelReadState func(*sql.Selector)
+
+// ChannelStar is the predicate function for channelstar builders.
+type ChannelStar func(*sql.Selector)
 
 // Message is the predicate function for message builders.
 type Message func(*sql.Selector)
@@ -56,6 +62,9 @@ type UserGroup func(*sql.Selector)
 
 // UserGroupMember is the predicate function for usergroupmember builders.
 type UserGroupMember func(*sql.Selector)
+
+// UserNote is the predicate function for usernote builders.
+type UserNote func(*sql.Selector)
 
 // UserThreadFollow is the predicate function for userthreadfollow builders.
 type UserThreadFollow func(*sql.Selector)

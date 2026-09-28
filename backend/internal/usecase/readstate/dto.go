@@ -8,9 +8,10 @@ type GetUnreadCountInput struct {
 }
 
 type UpdateReadStateInput struct {
-	ChannelID  string
-	UserID     string
-	LastReadAt time.Time
+	ChannelID          string
+	UserID             string
+	LastReadAt         time.Time
+	IncludeDescendants bool
 }
 
 type UnreadCountOutput struct {

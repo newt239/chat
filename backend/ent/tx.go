@@ -16,10 +16,14 @@ type Tx struct {
 	Attachment *AttachmentClient
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
+	// ChannelLink is the client for interacting with the ChannelLink builders.
+	ChannelLink *ChannelLinkClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
 	ChannelMember *ChannelMemberClient
 	// ChannelReadState is the client for interacting with the ChannelReadState builders.
 	ChannelReadState *ChannelReadStateClient
+	// ChannelStar is the client for interacting with the ChannelStar builders.
+	ChannelStar *ChannelStarClient
 	// Message is the client for interacting with the Message builders.
 	Message *MessageClient
 	// MessageBookmark is the client for interacting with the MessageBookmark builders.
@@ -46,6 +50,8 @@ type Tx struct {
 	UserGroup *UserGroupClient
 	// UserGroupMember is the client for interacting with the UserGroupMember builders.
 	UserGroupMember *UserGroupMemberClient
+	// UserNote is the client for interacting with the UserNote builders.
+	UserNote *UserNoteClient
 	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
 	UserThreadFollow *UserThreadFollowClient
 	// Workspace is the client for interacting with the Workspace builders.
@@ -185,8 +191,10 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.Channel = NewChannelClient(tx.config)
+	tx.ChannelLink = NewChannelLinkClient(tx.config)
 	tx.ChannelMember = NewChannelMemberClient(tx.config)
 	tx.ChannelReadState = NewChannelReadStateClient(tx.config)
+	tx.ChannelStar = NewChannelStarClient(tx.config)
 	tx.Message = NewMessageClient(tx.config)
 	tx.MessageBookmark = NewMessageBookmarkClient(tx.config)
 	tx.MessageGroupMention = NewMessageGroupMentionClient(tx.config)
@@ -200,6 +208,7 @@ func (tx *Tx) init() {
 	tx.User = NewUserClient(tx.config)
 	tx.UserGroup = NewUserGroupClient(tx.config)
 	tx.UserGroupMember = NewUserGroupMemberClient(tx.config)
+	tx.UserNote = NewUserNoteClient(tx.config)
 	tx.UserThreadFollow = NewUserThreadFollowClient(tx.config)
 	tx.Workspace = NewWorkspaceClient(tx.config)
 	tx.WorkspaceMember = NewWorkspaceMemberClient(tx.config)

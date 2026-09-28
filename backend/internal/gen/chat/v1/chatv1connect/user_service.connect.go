@@ -45,6 +45,11 @@ const (
 	UserServiceUpdatePasswordProcedure = "/chat.v1.UserService/UpdatePassword"
 	// UserServiceDeleteMeProcedure is the fully-qualified name of the UserService's DeleteMe RPC.
 	UserServiceDeleteMeProcedure = "/chat.v1.UserService/DeleteMe"
+	// UserServiceGetUserNoteProcedure is the fully-qualified name of the UserService's GetUserNote RPC.
+	UserServiceGetUserNoteProcedure = "/chat.v1.UserService/GetUserNote"
+	// UserServiceUpdateUserNoteProcedure is the fully-qualified name of the UserService's
+	// UpdateUserNote RPC.
+	UserServiceUpdateUserNoteProcedure = "/chat.v1.UserService/UpdateUserNote"
 )
 
 // UserServiceClient is a client for the chat.v1.UserService service.
@@ -54,6 +59,8 @@ type UserServiceClient interface {
 	UpdatePreferences(context.Context, *v1.UpdatePreferencesRequest) (*v1.UpdatePreferencesResponse, error)
 	UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error)
 	DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error)
+	GetUserNote(context.Context, *v1.GetUserNoteRequest) (*v1.GetUserNoteResponse, error)
+	UpdateUserNote(context.Context, *v1.UpdateUserNoteRequest) (*v1.UpdateUserNoteResponse, error)
 }
 
 // NewUserServiceClient constructs a client for the chat.v1.UserService service. By default, it uses
@@ -97,6 +104,18 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("DeleteMe")),
 			connect.WithClientOptions(opts...),
 		),
+		getUserNote: connect.NewClient[v1.GetUserNoteRequest, v1.GetUserNoteResponse](
+			httpClient,
+			baseURL+UserServiceGetUserNoteProcedure,
+			connect.WithSchema(userServiceMethods.ByName("GetUserNote")),
+			connect.WithClientOptions(opts...),
+		),
+		updateUserNote: connect.NewClient[v1.UpdateUserNoteRequest, v1.UpdateUserNoteResponse](
+			httpClient,
+			baseURL+UserServiceUpdateUserNoteProcedure,
+			connect.WithSchema(userServiceMethods.ByName("UpdateUserNote")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -107,6 +126,8 @@ type userServiceClient struct {
 	updatePreferences *connect.Client[v1.UpdatePreferencesRequest, v1.UpdatePreferencesResponse]
 	updatePassword    *connect.Client[v1.UpdatePasswordRequest, v1.UpdatePasswordResponse]
 	deleteMe          *connect.Client[v1.DeleteMeRequest, v1.DeleteMeResponse]
+	getUserNote       *connect.Client[v1.GetUserNoteRequest, v1.GetUserNoteResponse]
+	updateUserNote    *connect.Client[v1.UpdateUserNoteRequest, v1.UpdateUserNoteResponse]
 }
 
 // GetMe calls chat.v1.UserService.GetMe.
@@ -154,6 +175,24 @@ func (c *userServiceClient) DeleteMe(ctx context.Context, req *v1.DeleteMeReques
 	return nil, err
 }
 
+// GetUserNote calls chat.v1.UserService.GetUserNote.
+func (c *userServiceClient) GetUserNote(ctx context.Context, req *v1.GetUserNoteRequest) (*v1.GetUserNoteResponse, error) {
+	response, err := c.getUserNote.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// UpdateUserNote calls chat.v1.UserService.UpdateUserNote.
+func (c *userServiceClient) UpdateUserNote(ctx context.Context, req *v1.UpdateUserNoteRequest) (*v1.UpdateUserNoteResponse, error) {
+	response, err := c.updateUserNote.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // UserServiceHandler is an implementation of the chat.v1.UserService service.
 type UserServiceHandler interface {
 	GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error)
@@ -161,6 +200,8 @@ type UserServiceHandler interface {
 	UpdatePreferences(context.Context, *v1.UpdatePreferencesRequest) (*v1.UpdatePreferencesResponse, error)
 	UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error)
 	DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error)
+	GetUserNote(context.Context, *v1.GetUserNoteRequest) (*v1.GetUserNoteResponse, error)
+	UpdateUserNote(context.Context, *v1.UpdateUserNoteRequest) (*v1.UpdateUserNoteResponse, error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -200,6 +241,18 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("DeleteMe")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceGetUserNoteHandler := connect.NewUnaryHandlerSimple(
+		UserServiceGetUserNoteProcedure,
+		svc.GetUserNote,
+		connect.WithSchema(userServiceMethods.ByName("GetUserNote")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceUpdateUserNoteHandler := connect.NewUnaryHandlerSimple(
+		UserServiceUpdateUserNoteProcedure,
+		svc.UpdateUserNote,
+		connect.WithSchema(userServiceMethods.ByName("UpdateUserNote")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/chat.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceGetMeProcedure:
@@ -212,6 +265,10 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 			userServiceUpdatePasswordHandler.ServeHTTP(w, r)
 		case UserServiceDeleteMeProcedure:
 			userServiceDeleteMeHandler.ServeHTTP(w, r)
+		case UserServiceGetUserNoteProcedure:
+			userServiceGetUserNoteHandler.ServeHTTP(w, r)
+		case UserServiceUpdateUserNoteProcedure:
+			userServiceUpdateUserNoteHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -239,4 +296,12 @@ func (UnimplementedUserServiceHandler) UpdatePassword(context.Context, *v1.Updat
 
 func (UnimplementedUserServiceHandler) DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.DeleteMe is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) GetUserNote(context.Context, *v1.GetUserNoteRequest) (*v1.GetUserNoteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.GetUserNote is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) UpdateUserNote(context.Context, *v1.UpdateUserNoteRequest) (*v1.UpdateUserNoteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.UpdateUserNote is not implemented"))
 }

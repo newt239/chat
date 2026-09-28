@@ -10,6 +10,7 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -454,11 +455,274 @@ func (*DeleteMeResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{9}
 }
 
+// 自分だけに見える相手ユーザーのニックネームとメモ
+type UserNote struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TargetUserId  string                 `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
+	Nickname      *string                `protobuf:"bytes,2,opt,name=nickname,proto3,oneof" json:"nickname,omitempty"`
+	Memo          *string                `protobuf:"bytes,3,opt,name=memo,proto3,oneof" json:"memo,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserNote) Reset() {
+	*x = UserNote{}
+	mi := &file_chat_v1_user_service_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserNote) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserNote) ProtoMessage() {}
+
+func (x *UserNote) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_service_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserNote.ProtoReflect.Descriptor instead.
+func (*UserNote) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UserNote) GetTargetUserId() string {
+	if x != nil {
+		return x.TargetUserId
+	}
+	return ""
+}
+
+func (x *UserNote) GetNickname() string {
+	if x != nil && x.Nickname != nil {
+		return *x.Nickname
+	}
+	return ""
+}
+
+func (x *UserNote) GetMemo() string {
+	if x != nil && x.Memo != nil {
+		return *x.Memo
+	}
+	return ""
+}
+
+func (x *UserNote) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+type GetUserNoteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TargetUserId  string                 `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserNoteRequest) Reset() {
+	*x = GetUserNoteRequest{}
+	mi := &file_chat_v1_user_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserNoteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserNoteRequest) ProtoMessage() {}
+
+func (x *GetUserNoteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserNoteRequest.ProtoReflect.Descriptor instead.
+func (*GetUserNoteRequest) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetUserNoteRequest) GetTargetUserId() string {
+	if x != nil {
+		return x.TargetUserId
+	}
+	return ""
+}
+
+type GetUserNoteResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 未設定の場合は空
+	Note          *UserNote `protobuf:"bytes,1,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserNoteResponse) Reset() {
+	*x = GetUserNoteResponse{}
+	mi := &file_chat_v1_user_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserNoteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserNoteResponse) ProtoMessage() {}
+
+func (x *GetUserNoteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserNoteResponse.ProtoReflect.Descriptor instead.
+func (*GetUserNoteResponse) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetUserNoteResponse) GetNote() *UserNote {
+	if x != nil {
+		return x.Note
+	}
+	return nil
+}
+
+type UpdateUserNoteRequest struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	TargetUserId string                 `protobuf:"bytes,1,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
+	// 空文字で削除する
+	Nickname      string `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Memo          string `protobuf:"bytes,3,opt,name=memo,proto3" json:"memo,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateUserNoteRequest) Reset() {
+	*x = UpdateUserNoteRequest{}
+	mi := &file_chat_v1_user_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateUserNoteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateUserNoteRequest) ProtoMessage() {}
+
+func (x *UpdateUserNoteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateUserNoteRequest.ProtoReflect.Descriptor instead.
+func (*UpdateUserNoteRequest) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *UpdateUserNoteRequest) GetTargetUserId() string {
+	if x != nil {
+		return x.TargetUserId
+	}
+	return ""
+}
+
+func (x *UpdateUserNoteRequest) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *UpdateUserNoteRequest) GetMemo() string {
+	if x != nil {
+		return x.Memo
+	}
+	return ""
+}
+
+type UpdateUserNoteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Note          *UserNote              `protobuf:"bytes,1,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateUserNoteResponse) Reset() {
+	*x = UpdateUserNoteResponse{}
+	mi := &file_chat_v1_user_service_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateUserNoteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateUserNoteResponse) ProtoMessage() {}
+
+func (x *UpdateUserNoteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_service_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateUserNoteResponse.ProtoReflect.Descriptor instead.
+func (*UpdateUserNoteResponse) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *UpdateUserNoteResponse) GetNote() *UserNote {
+	if x != nil {
+		return x.Note
+	}
+	return nil
+}
+
 var File_chat_v1_user_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_user_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1achat/v1/user_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\"\x0e\n" +
+	"\x1achat/v1/user_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x0e\n" +
 	"\fGetMeRequest\"2\n" +
 	"\rGetMeResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.chat.v1.UserR\x04user\"\xa5\x01\n" +
@@ -481,13 +745,33 @@ const file_chat_v1_user_service_proto_rawDesc = "" +
 	"\fnew_password\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vnewPassword\"\x18\n" +
 	"\x16UpdatePasswordResponse\"\x11\n" +
 	"\x0fDeleteMeRequest\"\x12\n" +
-	"\x10DeleteMeResponse2\xf6\x02\n" +
+	"\x10DeleteMeResponse\"\xbb\x01\n" +
+	"\bUserNote\x12$\n" +
+	"\x0etarget_user_id\x18\x01 \x01(\tR\ftargetUserId\x12\x1f\n" +
+	"\bnickname\x18\x02 \x01(\tH\x00R\bnickname\x88\x01\x01\x12\x17\n" +
+	"\x04memo\x18\x03 \x01(\tH\x01R\x04memo\x88\x01\x01\x129\n" +
+	"\n" +
+	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\v\n" +
+	"\t_nicknameB\a\n" +
+	"\x05_memo\"D\n" +
+	"\x12GetUserNoteRequest\x12.\n" +
+	"\x0etarget_user_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\ftargetUserId\"<\n" +
+	"\x13GetUserNoteResponse\x12%\n" +
+	"\x04note\x18\x01 \x01(\v2\x11.chat.v1.UserNoteR\x04note\"\x8a\x01\n" +
+	"\x15UpdateUserNoteRequest\x12.\n" +
+	"\x0etarget_user_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\ftargetUserId\x12#\n" +
+	"\bnickname\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x182R\bnickname\x12\x1c\n" +
+	"\x04memo\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\x04memo\"?\n" +
+	"\x16UpdateUserNoteResponse\x12%\n" +
+	"\x04note\x18\x01 \x01(\v2\x11.chat.v1.UserNoteR\x04note2\x93\x04\n" +
 	"\vUserService\x126\n" +
 	"\x05GetMe\x12\x15.chat.v1.GetMeRequest\x1a\x16.chat.v1.GetMeResponse\x12?\n" +
 	"\bUpdateMe\x12\x18.chat.v1.UpdateMeRequest\x1a\x19.chat.v1.UpdateMeResponse\x12Z\n" +
 	"\x11UpdatePreferences\x12!.chat.v1.UpdatePreferencesRequest\x1a\".chat.v1.UpdatePreferencesResponse\x12Q\n" +
 	"\x0eUpdatePassword\x12\x1e.chat.v1.UpdatePasswordRequest\x1a\x1f.chat.v1.UpdatePasswordResponse\x12?\n" +
-	"\bDeleteMe\x12\x18.chat.v1.DeleteMeRequest\x1a\x19.chat.v1.DeleteMeResponseB\x91\x01\n" +
+	"\bDeleteMe\x12\x18.chat.v1.DeleteMeRequest\x1a\x19.chat.v1.DeleteMeResponse\x12H\n" +
+	"\vGetUserNote\x12\x1b.chat.v1.GetUserNoteRequest\x1a\x1c.chat.v1.GetUserNoteResponse\x12Q\n" +
+	"\x0eUpdateUserNote\x12\x1e.chat.v1.UpdateUserNoteRequest\x1a\x1f.chat.v1.UpdateUserNoteResponseB\x91\x01\n" +
 	"\vcom.chat.v1B\x10UserServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
 
 var (
@@ -502,7 +786,7 @@ func file_chat_v1_user_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_user_service_proto_rawDescData
 }
 
-var file_chat_v1_user_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_chat_v1_user_service_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_chat_v1_user_service_proto_goTypes = []any{
 	(*GetMeRequest)(nil),              // 0: chat.v1.GetMeRequest
 	(*GetMeResponse)(nil),             // 1: chat.v1.GetMeResponse
@@ -514,29 +798,42 @@ var file_chat_v1_user_service_proto_goTypes = []any{
 	(*UpdatePasswordResponse)(nil),    // 7: chat.v1.UpdatePasswordResponse
 	(*DeleteMeRequest)(nil),           // 8: chat.v1.DeleteMeRequest
 	(*DeleteMeResponse)(nil),          // 9: chat.v1.DeleteMeResponse
-	(*User)(nil),                      // 10: chat.v1.User
-	(*UserPreferences)(nil),           // 11: chat.v1.UserPreferences
+	(*UserNote)(nil),                  // 10: chat.v1.UserNote
+	(*GetUserNoteRequest)(nil),        // 11: chat.v1.GetUserNoteRequest
+	(*GetUserNoteResponse)(nil),       // 12: chat.v1.GetUserNoteResponse
+	(*UpdateUserNoteRequest)(nil),     // 13: chat.v1.UpdateUserNoteRequest
+	(*UpdateUserNoteResponse)(nil),    // 14: chat.v1.UpdateUserNoteResponse
+	(*User)(nil),                      // 15: chat.v1.User
+	(*UserPreferences)(nil),           // 16: chat.v1.UserPreferences
+	(*timestamppb.Timestamp)(nil),     // 17: google.protobuf.Timestamp
 }
 var file_chat_v1_user_service_proto_depIdxs = []int32{
-	10, // 0: chat.v1.GetMeResponse.user:type_name -> chat.v1.User
-	10, // 1: chat.v1.UpdateMeResponse.user:type_name -> chat.v1.User
-	11, // 2: chat.v1.UpdatePreferencesRequest.preferences:type_name -> chat.v1.UserPreferences
-	11, // 3: chat.v1.UpdatePreferencesResponse.preferences:type_name -> chat.v1.UserPreferences
-	0,  // 4: chat.v1.UserService.GetMe:input_type -> chat.v1.GetMeRequest
-	2,  // 5: chat.v1.UserService.UpdateMe:input_type -> chat.v1.UpdateMeRequest
-	4,  // 6: chat.v1.UserService.UpdatePreferences:input_type -> chat.v1.UpdatePreferencesRequest
-	6,  // 7: chat.v1.UserService.UpdatePassword:input_type -> chat.v1.UpdatePasswordRequest
-	8,  // 8: chat.v1.UserService.DeleteMe:input_type -> chat.v1.DeleteMeRequest
-	1,  // 9: chat.v1.UserService.GetMe:output_type -> chat.v1.GetMeResponse
-	3,  // 10: chat.v1.UserService.UpdateMe:output_type -> chat.v1.UpdateMeResponse
-	5,  // 11: chat.v1.UserService.UpdatePreferences:output_type -> chat.v1.UpdatePreferencesResponse
-	7,  // 12: chat.v1.UserService.UpdatePassword:output_type -> chat.v1.UpdatePasswordResponse
-	9,  // 13: chat.v1.UserService.DeleteMe:output_type -> chat.v1.DeleteMeResponse
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	15, // 0: chat.v1.GetMeResponse.user:type_name -> chat.v1.User
+	15, // 1: chat.v1.UpdateMeResponse.user:type_name -> chat.v1.User
+	16, // 2: chat.v1.UpdatePreferencesRequest.preferences:type_name -> chat.v1.UserPreferences
+	16, // 3: chat.v1.UpdatePreferencesResponse.preferences:type_name -> chat.v1.UserPreferences
+	17, // 4: chat.v1.UserNote.updated_at:type_name -> google.protobuf.Timestamp
+	10, // 5: chat.v1.GetUserNoteResponse.note:type_name -> chat.v1.UserNote
+	10, // 6: chat.v1.UpdateUserNoteResponse.note:type_name -> chat.v1.UserNote
+	0,  // 7: chat.v1.UserService.GetMe:input_type -> chat.v1.GetMeRequest
+	2,  // 8: chat.v1.UserService.UpdateMe:input_type -> chat.v1.UpdateMeRequest
+	4,  // 9: chat.v1.UserService.UpdatePreferences:input_type -> chat.v1.UpdatePreferencesRequest
+	6,  // 10: chat.v1.UserService.UpdatePassword:input_type -> chat.v1.UpdatePasswordRequest
+	8,  // 11: chat.v1.UserService.DeleteMe:input_type -> chat.v1.DeleteMeRequest
+	11, // 12: chat.v1.UserService.GetUserNote:input_type -> chat.v1.GetUserNoteRequest
+	13, // 13: chat.v1.UserService.UpdateUserNote:input_type -> chat.v1.UpdateUserNoteRequest
+	1,  // 14: chat.v1.UserService.GetMe:output_type -> chat.v1.GetMeResponse
+	3,  // 15: chat.v1.UserService.UpdateMe:output_type -> chat.v1.UpdateMeResponse
+	5,  // 16: chat.v1.UserService.UpdatePreferences:output_type -> chat.v1.UpdatePreferencesResponse
+	7,  // 17: chat.v1.UserService.UpdatePassword:output_type -> chat.v1.UpdatePasswordResponse
+	9,  // 18: chat.v1.UserService.DeleteMe:output_type -> chat.v1.DeleteMeResponse
+	12, // 19: chat.v1.UserService.GetUserNote:output_type -> chat.v1.GetUserNoteResponse
+	14, // 20: chat.v1.UserService.UpdateUserNote:output_type -> chat.v1.UpdateUserNoteResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_service_proto_init() }
@@ -546,13 +843,14 @@ func file_chat_v1_user_service_proto_init() {
 	}
 	file_chat_v1_user_proto_init()
 	file_chat_v1_user_service_proto_msgTypes[2].OneofWrappers = []any{}
+	file_chat_v1_user_service_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_service_proto_rawDesc), len(file_chat_v1_user_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -27,6 +27,7 @@ func (s *ChannelServer) CreateChannel(ctx context.Context, req *chatv1.CreateCha
 		Name:        req.Name,
 		Description: req.Description,
 		IsPrivate:   req.IsPrivate,
+		MemberIDs:   req.MemberIds,
 	})
 	if err != nil {
 		return nil, err
@@ -61,4 +62,12 @@ func (s *ChannelServer) DeleteChannel(ctx context.Context, req *chatv1.DeleteCha
 		return nil, err
 	}
 	return &chatv1.DeleteChannelResponse{}, nil
+}
+
+func (s *ChannelServer) SetChannelStarred(ctx context.Context, req *chatv1.SetChannelStarredRequest) (*chatv1.SetChannelStarredResponse, error) {
+	err := s.UC.SetChannelStarred(ctx, channeluc.SetChannelStarredInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), Starred: req.Starred})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.SetChannelStarredResponse{}, nil
 }

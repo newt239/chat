@@ -35,5 +35,6 @@ func DirectMessage(dm *dmuc.DMOutput) *chatv1.DirectMessage {
 		}),
 		CreatedAt: rfc3339Timestamp(dm.CreatedAt),
 		UpdatedAt: rfc3339Timestamp(dm.UpdatedAt),
+		IsStarred: dm.IsStarred,
 	}
 }

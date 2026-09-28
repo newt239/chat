@@ -84,6 +84,18 @@ func (r *DomainRegistry) NewAttachmentRepository() domainrepository.AttachmentRe
 	return repository.NewAttachmentRepository(r.client)
 }
 
+func (r *DomainRegistry) NewChannelStarRepository() domainrepository.ChannelStarRepository {
+	return repository.NewChannelStarRepository(r.client)
+}
+
+func (r *DomainRegistry) NewChannelLinkRepository() domainrepository.ChannelLinkRepository {
+	return repository.NewChannelLinkRepository(r.client)
+}
+
+func (r *DomainRegistry) NewUserNoteRepository() domainrepository.UserNoteRepository {
+	return repository.NewUserNoteRepository(r.client)
+}
+
 // Domain Services
 func (r *DomainRegistry) NewChannelAccessService() domainservice.ChannelAccessService {
 	return domainservice.NewChannelAccessService(

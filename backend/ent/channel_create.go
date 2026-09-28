@@ -75,6 +75,20 @@ func (_c *ChannelCreate) SetNillableChannelType(v *string) *ChannelCreate {
 	return _c
 }
 
+// SetParentID sets the "parent_id" field.
+func (_c *ChannelCreate) SetParentID(v uuid.UUID) *ChannelCreate {
+	_c.mutation.SetParentID(v)
+	return _c
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_c *ChannelCreate) SetNillableParentID(v *uuid.UUID) *ChannelCreate {
+	if v != nil {
+		_c.SetParentID(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ChannelCreate) SetCreatedAt(v time.Time) *ChannelCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -197,6 +211,26 @@ func (_c *ChannelCreate) AddReadStates(v ...*ChannelReadState) *ChannelCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddReadStateIDs(ids...)
+}
+
+// SetParent sets the "parent" edge to the Channel entity.
+func (_c *ChannelCreate) SetParent(v *Channel) *ChannelCreate {
+	return _c.SetParentID(v.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Channel entity by IDs.
+func (_c *ChannelCreate) AddChildIDs(ids ...uuid.UUID) *ChannelCreate {
+	_c.mutation.AddChildIDs(ids...)
+	return _c
+}
+
+// AddChildren adds the "children" edges to the Channel entity.
+func (_c *ChannelCreate) AddChildren(v ...*Channel) *ChannelCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddChildIDs(ids...)
 }
 
 // Mutation returns the ChannelMutation object of the builder.
@@ -431,6 +465,39 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   channel.ParentTable,
+			Columns: []string{channel.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ParentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   channel.ChildrenTable,
+			Columns: []string{channel.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
