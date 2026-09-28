@@ -18,6 +18,8 @@ import { Route as AppWorkspaceIdRouteRouteImport } from "./routes/app/$workspace
 import { Route as DevUiRouteImport } from "./routes/dev/ui";
 import { Route as AppWorkspaceIdIndexRouteImport } from "./routes/app/$workspaceId/index";
 import { Route as AppWorkspaceIdChannelIdRouteImport } from "./routes/app/$workspaceId/$channelId";
+import { Route as AppWorkspaceIdAdminRouteImport } from "./routes/app/$workspaceId/admin";
+import { Route as AppWorkspaceIdInsightsRouteImport } from "./routes/app/$workspaceId/insights";
 import { Route as AppWorkspaceIdSearchRouteImport } from "./routes/app/$workspaceId/search";
 import { Route as AppWorkspaceIdThreadsRouteImport } from "./routes/app/$workspaceId/threads";
 
@@ -66,6 +68,16 @@ const AppWorkspaceIdChannelIdRoute = AppWorkspaceIdChannelIdRouteImport.update({
   path: "/$channelId",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
+const AppWorkspaceIdAdminRoute = AppWorkspaceIdAdminRouteImport.update({
+  id: "/admin",
+  path: "/admin",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
+const AppWorkspaceIdInsightsRoute = AppWorkspaceIdInsightsRouteImport.update({
+  id: "/insights",
+  path: "/insights",
+  getParentRoute: () => AppWorkspaceIdRouteRoute,
+} as any);
 const AppWorkspaceIdSearchRoute = AppWorkspaceIdSearchRouteImport.update({
   id: "/search",
   path: "/search",
@@ -86,6 +98,8 @@ export interface FileRoutesByFullPath {
   "/dev/ui": typeof DevUiRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
+  "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
+  "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
@@ -97,6 +111,8 @@ export interface FileRoutesByTo {
   "/dev/ui": typeof DevUiRoute;
   "/app": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
+  "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
+  "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdIndexRoute;
@@ -111,6 +127,8 @@ export interface FileRoutesById {
   "/dev/ui": typeof DevUiRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
+  "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
+  "/app/$workspaceId/insights": typeof AppWorkspaceIdInsightsRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
@@ -126,6 +144,8 @@ export interface FileRouteTypes {
     | "/dev/ui"
     | "/app/"
     | "/app/$workspaceId/$channelId"
+    | "/app/$workspaceId/admin"
+    | "/app/$workspaceId/insights"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId/";
@@ -137,6 +157,8 @@ export interface FileRouteTypes {
     | "/dev/ui"
     | "/app"
     | "/app/$workspaceId/$channelId"
+    | "/app/$workspaceId/admin"
+    | "/app/$workspaceId/insights"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId";
@@ -150,6 +172,8 @@ export interface FileRouteTypes {
     | "/dev/ui"
     | "/app/"
     | "/app/$workspaceId/$channelId"
+    | "/app/$workspaceId/admin"
+    | "/app/$workspaceId/insights"
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId/";
@@ -228,6 +252,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdChannelIdRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
+    "/app/$workspaceId/admin": {
+      id: "/app/$workspaceId/admin";
+      path: "/admin";
+      fullPath: "/app/$workspaceId/admin";
+      preLoaderRoute: typeof AppWorkspaceIdAdminRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
+    "/app/$workspaceId/insights": {
+      id: "/app/$workspaceId/insights";
+      path: "/insights";
+      fullPath: "/app/$workspaceId/insights";
+      preLoaderRoute: typeof AppWorkspaceIdInsightsRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
     "/app/$workspaceId/search": {
       id: "/app/$workspaceId/search";
       path: "/search";
@@ -247,6 +285,8 @@ declare module "@tanstack/react-router" {
 
 interface AppWorkspaceIdRouteRouteChildren {
   AppWorkspaceIdChannelIdRoute: typeof AppWorkspaceIdChannelIdRoute;
+  AppWorkspaceIdAdminRoute: typeof AppWorkspaceIdAdminRoute;
+  AppWorkspaceIdInsightsRoute: typeof AppWorkspaceIdInsightsRoute;
   AppWorkspaceIdSearchRoute: typeof AppWorkspaceIdSearchRoute;
   AppWorkspaceIdThreadsRoute: typeof AppWorkspaceIdThreadsRoute;
   AppWorkspaceIdIndexRoute: typeof AppWorkspaceIdIndexRoute;
@@ -254,6 +294,8 @@ interface AppWorkspaceIdRouteRouteChildren {
 
 const AppWorkspaceIdRouteRouteChildren: AppWorkspaceIdRouteRouteChildren = {
   AppWorkspaceIdChannelIdRoute: AppWorkspaceIdChannelIdRoute,
+  AppWorkspaceIdAdminRoute: AppWorkspaceIdAdminRoute,
+  AppWorkspaceIdInsightsRoute: AppWorkspaceIdInsightsRoute,
   AppWorkspaceIdSearchRoute: AppWorkspaceIdSearchRoute,
   AppWorkspaceIdThreadsRoute: AppWorkspaceIdThreadsRoute,
   AppWorkspaceIdIndexRoute: AppWorkspaceIdIndexRoute,
