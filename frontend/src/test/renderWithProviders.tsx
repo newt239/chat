@@ -15,6 +15,7 @@ import { Provider as JotaiProvider, createStore } from "jotai";
 import { z } from "zod";
 
 import { adminSearchSchema } from "#/features/admin/schemas";
+import { workspaceSearchSchema } from "#/features/layout/schemas";
 import { searchQuerySchema } from "#/features/search/schemas";
 import { authAtom } from "#/providers/store/auth";
 
@@ -40,6 +41,7 @@ export const renderWithProviders = async (
   const workspaceRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/app/$workspaceId",
+    validateSearch: workspaceSearchSchema,
   });
   const searchRoute = createRoute({
     getParentRoute: () => workspaceRoute,

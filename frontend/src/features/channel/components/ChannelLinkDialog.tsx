@@ -15,8 +15,7 @@ type ChannelLinkDialogProps = {
   channelId: string;
   // null なら追加、あればそのリンクを編集する
   link: ChannelLink | null;
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onClose: () => void;
 };
 
 const hostOf = (url: string) => {
@@ -28,12 +27,7 @@ const hostOf = (url: string) => {
   }
 };
 
-export const ChannelLinkDialog = ({
-  channelId,
-  link,
-  isOpen,
-  onOpenChange,
-}: ChannelLinkDialogProps) => {
+export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialogProps) => {
   const { t } = useTranslation();
   const [url, setUrl] = useState(link?.url ?? "https://");
   const [title, setTitle] = useState(link?.title ?? "");
@@ -42,9 +36,6 @@ export const ChannelLinkDialog = ({
   const host = hostOf(url.trim());
   const failed = [create, update, remove].find((mutation) => mutation.isError);
 
-  const close = () => {
-    onOpenChange(false);
-  };
   const save = () => {
     setIsSubmitted(true);
     if (host === null) {
@@ -53,7 +44,7 @@ export const ChannelLinkDialog = ({
     const input = { title: title.trim() || host, url: url.trim() };
     const onSuccess = () => {
       toast(t(link ? "channel.links.updated" : "channel.links.added"));
-      close();
+      onClose();
     };
     if (link) {
       update.mutate({ ...input, linkId: link.id }, { onSuccess });
@@ -64,8 +55,12 @@ export const ChannelLinkDialog = ({
 
   return (
     <Dialog
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          onClose();
+        }
+      }}
       title={t(link ? "channel.links.editTitle" : "channel.links.addTitle")}
       footer={
         <>
@@ -80,7 +75,7 @@ export const ChannelLinkDialog = ({
                   {
                     onSuccess: () => {
                       toast(t("channel.links.deleted"));
-                      close();
+                      onClose();
                     },
                   },
                 );
@@ -89,7 +84,7 @@ export const ChannelLinkDialog = ({
               {t("common.delete")}
             </Button>
           )}
-          <Button variant="secondary" onPress={close}>
+          <Button variant="secondary" onPress={onClose}>
             {t("common.cancel")}
           </Button>
           <Button isPending={create.isPending || update.isPending} onPress={save}>

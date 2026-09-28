@@ -4,14 +4,13 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
 
 import { UserGroupSchema, UserGroupService } from "#/gen/chat/v1/user_group_service_pb";
-import { rightSidePanelViewAtom } from "#/providers/store/ui";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { UserGroupNavList } from "./UserGroupNavList";
 
 describe("UserGroupNavList", () => {
   test("グループを並べ、押すと右パネルに詳細を開く", async () => {
-    const { store } = await renderWithProviders(
+    const { router } = await renderWithProviders(
       <UserGroupNavList workspaceId="ws1" />,
       "/app/ws1",
       (routes) => {
@@ -21,8 +20,8 @@ describe("UserGroupNavList", () => {
       },
     );
 
-    await userEvent.click(await screen.findByRole("button", { name: "@frontend" }));
-    expect(store.get(rightSidePanelViewAtom)).toEqual({ groupId: "g1", type: "user-group" });
+    await userEvent.click(await screen.findByRole("link", { name: "@frontend" }));
+    expect(router.state.location.search).toEqual({ group: "g1" });
     expect(screen.getByRole("link", { name: "グループを管理" })).toBeInTheDocument();
   });
 });

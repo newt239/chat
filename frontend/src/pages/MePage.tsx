@@ -13,7 +13,7 @@ import {
   IconUser,
 } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -23,11 +23,11 @@ import { useLogout } from "#/features/auth/hooks/useLogout";
 import { NavLink } from "#/features/layout/components/NavLink";
 import { PageHeader } from "#/features/layout/components/PageHeader";
 import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
+import { openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
 import { userAtom } from "#/providers/store/auth";
-import { setRightSidePanelViewAtom, settingsSectionAtom } from "#/providers/store/ui";
 
-import type { SettingsSection } from "#/providers/store/ui";
+import type { SettingsSection } from "#/features/layout/schemas";
 
 const settingRows: [SettingsSection, typeof IconKey][] = [
   ["account", IconKey],
@@ -45,8 +45,6 @@ export const MePage = () => {
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const user = useAtomValue(userAtom);
   const isAdmin = useIsWorkspaceAdmin(workspaceId);
-  const setRightPanel = useSetAtom(setRightSidePanelViewAtom);
-  const setSettingsSection = useSetAtom(settingsSectionAtom);
   const logout = useLogout();
   const params = { workspaceId };
 
@@ -55,19 +53,14 @@ export const MePage = () => {
       <PageHeader icon={<IconUser />} title={t("shell.tabs.me")} />
       <div className={cn(mobileNavTone, "flex min-h-0 flex-1 flex-col overflow-y-auto p-1.5")}>
         {user && (
-          <Button
-            onPress={() => {
-              setRightPanel({ type: "user-profile", userId: user.id });
-            }}
-            className={cn(rowClassName, "h-auto gap-3 py-3")}
-          >
+          <NavLink to="." search={openPanel({ profile: user.id })} className="h-auto gap-3 py-3">
             <Avatar name={user.displayName} src={user.avatarUrl} size={52} presence="online" />
             <span className="flex min-w-0 flex-1 flex-col">
               <b className="truncate text-[16px]">{user.displayName}</b>
               <span className="truncate text-caption text-muted">{user.email}</span>
             </span>
             <IconChevronRight aria-hidden />
-          </Button>
+          </NavLink>
         )}
         <NavLink to="/app/$workspaceId/threads" params={params}>
           <IconMessages aria-hidden />
@@ -91,17 +84,11 @@ export const MePage = () => {
           {t("settings.title")}
         </h2>
         {settingRows.map(([section, Icon]) => (
-          <Button
-            key={section}
-            className={rowClassName}
-            onPress={() => {
-              setSettingsSection(section);
-            }}
-          >
+          <NavLink key={section} to="." search={openDialog({ settings: section })}>
             <Icon aria-hidden />
             <span className="flex-1">{t(`settings.sections.${section}`)}</span>
             <IconChevronRight aria-hidden />
-          </Button>
+          </NavLink>
         ))}
         <Button
           className={cn(rowClassName, "mt-3 text-danger [&_svg]:text-danger")}

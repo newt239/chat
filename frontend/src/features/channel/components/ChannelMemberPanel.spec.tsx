@@ -5,7 +5,7 @@ import { describe, expect, test } from "vite-plus/test";
 
 import { ChannelMemberSchema, ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
 import { WorkspaceMemberSchema, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
-import { channelViewersAtom, rightSidePanelViewAtom } from "#/providers/store/ui";
+import { channelViewersAtom } from "#/providers/store/ui";
 import { syncCurrentWorkspaceAtom } from "#/providers/store/workspace";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
@@ -13,7 +13,7 @@ import { ChannelMemberPanel } from "./ChannelMemberPanel";
 
 describe("ChannelMemberPanel", () => {
   test("メンバーを一覧し、押すとプロフィールを右パネルに開く", async () => {
-    const { store } = await renderWithProviders(
+    const { router } = await renderWithProviders(
       <ChannelMemberPanel channelId="c1" />,
       "/app/ws1",
       (routes) => {
@@ -32,7 +32,7 @@ describe("ChannelMemberPanel", () => {
     const row = await screen.findByRole("button", { name: /Bob/ });
     expect(row).toHaveTextContent("bob@example.com");
     await userEvent.click(row);
-    expect(store.get(rightSidePanelViewAtom)).toEqual({ type: "user-profile", userId: "u-bob" });
+    expect(router.state.location.search).toEqual({ profile: "u-bob" });
   });
 
   test("閲覧中のメンバーを分けて、ニックネームで表示する", async () => {

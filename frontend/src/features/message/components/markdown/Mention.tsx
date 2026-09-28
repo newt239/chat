@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 
-import { useParams } from "@tanstack/react-router";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 
 import { cn, focusRing } from "#/components/ui/styles";
+import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { userAtom } from "#/providers/store/auth";
-import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import { chipClassName } from "./chipClassName";
 
@@ -20,7 +20,7 @@ export const Mention = ({ "data-mention": username }: MentionProps) => {
   const { workspaceId } = useParams({ strict: false });
   const { data: members } = useMembers(workspaceId ?? null);
   const currentUser = useAtomValue(userAtom);
-  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
 
   // メンションは表示名の前方一致で解決される
   const member = members?.find((item) => item.displayName.startsWith(username));
@@ -35,7 +35,7 @@ export const Mention = ({ "data-mention": username }: MentionProps) => {
     <Button
       className={cn(className, focusRing)}
       onPress={() => {
-        setRightSidePanelView({ type: "user-profile", userId: member.userId });
+        void navigate({ search: openPanel({ profile: member.userId }), to: "." });
       }}
     >
       @{member.nickname ?? username}

@@ -3,6 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
+import { WorkspaceDialogs } from "#/features/layout/components/WorkspaceDialogs";
 import { ChannelLinkSchema, ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
@@ -21,7 +22,13 @@ const links = [
 const setup = async (canEdit: boolean) => {
   const reorder = vi.fn<(req: ReorderChannelLinksRequest) => void>();
   const createLink = vi.fn<(req: CreateChannelLinkRequest) => void>();
-  await renderWithProviders(<ChannelLinksSection channelId="c1" />, "/app/ws1", (routes) => {
+  const ui = (
+    <>
+      <ChannelLinksSection channelId="c1" />
+      <WorkspaceDialogs workspaceId="ws1" />
+    </>
+  );
+  await renderWithProviders(ui, "/app/ws1/c1", (routes) => {
     routes.rpc(ChannelLinkService.method.listChannelLinks, () => ({ canEdit, links }));
     routes.rpc(ChannelLinkService.method.reorderChannelLinks, (req) => {
       reorder(req);
@@ -49,7 +56,7 @@ describe("ChannelLinksSection", () => {
 
   test("表示名を空にして追加するとドメイン名を表示名にする", async () => {
     const { createLink } = await setup(true);
-    await userEvent.click(screen.getByRole("button", { name: "追加" }));
+    await userEvent.click(screen.getByRole("link", { name: "追加" }));
     const url = await screen.findByRole("textbox", { name: "URL" });
     await userEvent.clear(url);
     await userEvent.type(url, "https://docs.example.com/a");
@@ -67,7 +74,7 @@ describe("ChannelLinksSection", () => {
 
   test("URL が不正なら追加しない", async () => {
     const { createLink } = await setup(true);
-    await userEvent.click(screen.getByRole("button", { name: "追加" }));
+    await userEvent.click(screen.getByRole("link", { name: "追加" }));
     const url = await screen.findByRole("textbox", { name: "URL" });
     await userEvent.clear(url);
     await userEvent.type(url, "not a url");
@@ -80,7 +87,7 @@ describe("ChannelLinksSection", () => {
 
   test("編集できない人には操作を出さない", async () => {
     await setup(false);
-    expect(screen.queryByRole("button", { name: "追加" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "追加" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "設計書 を編集" })).not.toBeInTheDocument();
   });
 });

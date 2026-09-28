@@ -1,19 +1,17 @@
-import { useState } from "react";
-
 import { IconEdit, IconLink, IconPlus, IconTrash } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { ContextMenu } from "#/components/ui/ContextMenu";
 import { IconButton } from "#/components/ui/IconButton";
 import { MenuItem } from "#/components/ui/MenuItem";
+import { MenuItemLink } from "#/components/ui/MenuItemLink";
 import { focusRing } from "#/components/ui/styles";
 import { toast } from "#/components/ui/toast";
+import { openDialog } from "#/features/layout/utils/overlaySearch";
 
 import { useChannelLinkActions, useChannelLinks } from "../hooks/useChannelLinks";
-import { ChannelLinkDialog } from "./ChannelLinkDialog";
-
-import type { ChannelLink } from "#/gen/chat/v1/channel_link_service_pb";
 
 type ChannelLinkBarProps = {
   channelId: string;
@@ -24,8 +22,7 @@ export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
   const { t } = useTranslation();
   const { data } = useChannelLinks(channelId);
   const { remove } = useChannelLinkActions(channelId);
-  // undefined は閉じている、null は追加
-  const [editing, setEditing] = useState<ChannelLink | null | undefined>(undefined);
+  const navigate = useNavigate();
   const links = data?.links ?? [];
 
   if (links.length === 0) {
@@ -52,14 +49,13 @@ export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
             aria-label={t("channel.links.menu", { title: link.title })}
             menu={
               <>
-                <MenuItem
+                <MenuItemLink
                   icon={<IconEdit />}
-                  onAction={() => {
-                    setEditing(link);
-                  }}
+                  to="."
+                  search={openDialog({ dialog: "edit-link", link: link.id })}
                 >
                   {t("channel.links.edit")}
-                </MenuItem>
+                </MenuItemLink>
                 <MenuItem
                   icon={<IconTrash />}
                   tone="danger"
@@ -90,23 +86,11 @@ export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
           label={t("channel.links.addTitle")}
           className="size-6 [&_svg]:size-3.5"
           onPress={() => {
-            setEditing(null);
+            void navigate({ search: openDialog({ dialog: "add-link" }), to: "." });
           }}
         >
           <IconPlus />
         </IconButton>
-      )}
-      {editing !== undefined && (
-        <ChannelLinkDialog
-          channelId={channelId}
-          link={editing}
-          isOpen
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              setEditing(undefined);
-            }
-          }}
-        />
       )}
     </nav>
   );

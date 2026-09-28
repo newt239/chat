@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import {
   IconArrowUp,
   IconBold,
@@ -16,13 +14,13 @@ import {
   IconQuote,
   IconStrikethrough,
 } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton";
 import { cn } from "#/components/ui/styles";
-
-import { MarkdownHelpModal } from "./MarkdownHelpModal";
+import { openDialog } from "#/features/layout/utils/overlaySearch";
 
 import type { FormatKey } from "../utils/format";
 
@@ -65,7 +63,7 @@ export const MessageInputToolbar = ({
   onFileSelect,
 }: MessageInputToolbarProps) => {
   const { t } = useTranslation();
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="@container flex items-center gap-px px-[5px] pb-[5px]">
@@ -102,7 +100,7 @@ export const MessageInputToolbar = ({
         label={t("message.composer.help")}
         className={cn(buttonClassName, "hidden @lg:inline-grid")}
         onPress={() => {
-          setIsHelpOpen(true);
+          void navigate({ search: openDialog({ dialog: "markdown-help" }), to: "." });
         }}
       >
         <IconHelp />
@@ -127,7 +125,6 @@ export const MessageInputToolbar = ({
           <IconArrowUp />
         )}
       </IconButton>
-      <MarkdownHelpModal isOpen={isHelpOpen} onOpenChange={setIsHelpOpen} />
     </div>
   );
 };

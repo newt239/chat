@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 
 import { useNavigate } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
 
-import { settingsSectionAtom } from "#/providers/store/ui";
+import { closeDialog, openDialog } from "../utils/overlaySearch";
+import { workspaceRoute } from "../utils/workspaceRoute";
 
 /** ⌘K（Ctrl+K）で検索、⌘,（Ctrl+,）で設定を開く */
 export const useGlobalShortcuts = (workspaceId: string) => {
   const navigate = useNavigate();
-  const setSettingsSection = useSetAtom(settingsSectionAtom);
+  const isSettingsOpen = workspaceRoute.useSearch({
+    select: (search) => search.settings !== undefined,
+  });
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -21,12 +23,15 @@ export const useGlobalShortcuts = (workspaceId: string) => {
       }
       if (event.key === ",") {
         event.preventDefault();
-        setSettingsSection((current) => (current === null ? "theme" : null));
+        void navigate({
+          search: isSettingsOpen ? closeDialog : openDialog({ settings: "theme" }),
+          to: ".",
+        });
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [navigate, setSettingsSection, workspaceId]);
+  }, [navigate, isSettingsOpen, workspaceId]);
 };
