@@ -16,9 +16,14 @@
     "clean": "./scripts/clean.sh",
     "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",
     "openapi:bundle": "redocly bundle openapi/openapi.yaml -o openapi/bundled.yaml",
-    "generate:api": "openapi-typescript openapi/openapi.yaml -o frontend/src/lib/api/schema.ts"
+    "generate:api": "openapi-typescript openapi/openapi.yaml -o frontend/src/lib/api/schema.ts",
+    "generate:proto": "buf generate",
+    "proto:format": "buf format -w",
+    "proto:lint": "buf lint"
   },
   "devDependencies": {
+    "@bufbuild/buf": "1.73.0",
+    "@bufbuild/protoc-gen-es": "2.15.0",
     "@redocly/cli": "2.53.0",
     "lefthook": "2.1.14",
     "openapi-typescript": "7.13.0",

@@ -1,0 +1,22 @@
+version: v2
+clean: true
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/newt239/chat/internal/gen
+  disable:
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
+plugins:
+  - remote: buf.build/protocolbuffers/go:v1.36.12
+    out: backend/internal/gen
+    opt: paths=source_relative
+  - remote: buf.build/connectrpc/go:v1.21.0
+    out: backend/internal/gen
+    opt: paths=source_relative
+  # ランタイムの @bufbuild/protobuf とバージョンを揃えるためローカルのプラグインを使う
+  - local: protoc-gen-es
+    out: frontend/src/gen
+    opt: target=ts
+    include_imports: true

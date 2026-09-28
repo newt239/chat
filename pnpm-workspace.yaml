@@ -16,6 +16,8 @@ overrides:
   vitest: 4.1.11
 
 allowBuilds:
+  # バイナリは optionalDependencies で入るため postinstall は不要
+  "@bufbuild/buf": false
   core-js: true
   esbuild: true
   protobufjs: true
