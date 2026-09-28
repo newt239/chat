@@ -2,17 +2,15 @@ import type { Messages } from "../../messages";
 
 export const search: Messages["search"] = {
   count: "{{count}} results",
-  during: {
-    month: "Past 30 days",
-    today: "Today",
-    week: "Past 7 days",
-  },
   empty: "No results match",
   emptyHint: "Try fewer keywords or remove some filters",
   failed: "Couldn't load search results",
   filters: {
     clear: "Clear all filters",
-    during: "Date",
+    date: "Date",
+    dateClear: "Clear dates",
+    dateFrom: "From date",
+    dateTo: "To date",
     find: "Filter",
     from: "From",
     has: "Has",
@@ -31,9 +29,8 @@ export const search: Messages["search"] = {
     video: "Video",
   },
   help: {
-    after: "After a date (after:2026-09-01)",
-    before: "Before a date (before:2026-09-30)",
-    during: "Period (today / week / month)",
+    after: "On or after a date (after:2026-09-01)",
+    before: "On or before a date (before:2026-09-30)",
     from: "Sender (from:@name)",
     has: "Attachment type (image / file / link / video)",
     hint: "Click to insert, press Enter to apply",
@@ -43,6 +40,7 @@ export const search: Messages["search"] = {
     pinned: "Pinned messages",
     thread: "Thread replies and posts with replies",
   },
+  invalidDate: "Use the YYYY-MM-DD format for dates: {{tokens}}",
   inThread: "In thread",
   input: "Search keywords",
   next: "Next page",

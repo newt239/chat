@@ -11,7 +11,6 @@ const modifiers = [
   ["is:pinned", "pinned"],
   ["is:thread", "thread"],
   ["is:mention", "mention"],
-  ["during:week", "during"],
   ["after:", "after"],
   ["before:", "before"],
 ] as const;
