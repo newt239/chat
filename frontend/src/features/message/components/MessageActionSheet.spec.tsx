@@ -6,6 +6,7 @@ import { describe, expect, test, vi } from "vite-plus/test";
 
 import { MessageSchema } from "#/gen/chat/v1/message_pb";
 import { UserSummarySchema } from "#/gen/chat/v1/user_pb";
+import { QueryWrapper } from "#/test/QueryWrapper";
 
 import { MessageActionSheet } from "./MessageActionSheet";
 
@@ -44,6 +45,7 @@ const renderSheet = () => {
       ]}
       onReact={handlers.handleReact}
     />,
+    { wrapper: QueryWrapper },
   );
   return handlers;
 };

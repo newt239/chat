@@ -8,12 +8,15 @@ type UseMessageViewportDetectionArgs = {
   channelId: string | null;
   workspaceId: string | null;
   latestMessageId: string | null;
+  // 集約表示中は子孫チャンネルもまとめて既読にする
+  includeDescendants: boolean;
 };
 
 export const useMessageViewportDetection = ({
   channelId,
   workspaceId,
   latestMessageId,
+  includeDescendants,
 }: UseMessageViewportDetectionArgs) => {
   const latestMessageRef = useRef<HTMLDivElement | null>(null);
   const updateReadState = useUpdateReadState(workspaceId);
@@ -36,7 +39,11 @@ export const useMessageViewportDetection = ({
         const [entry] = entries;
         if (entry?.isIntersecting && !hasMarkedAsRead.current) {
           hasMarkedAsRead.current = true;
-          updateReadStateRef.current.mutate({ channelId, lastReadAt: timestampNow() });
+          updateReadStateRef.current.mutate({
+            channelId,
+            includeDescendants,
+            lastReadAt: timestampNow(),
+          });
         }
       },
       {
@@ -50,7 +57,7 @@ export const useMessageViewportDetection = ({
     return () => {
       observer.disconnect();
     };
-  }, [channelId, latestMessageId]);
+  }, [channelId, latestMessageId, includeDescendants]);
 
   return { latestMessageRef };
 };

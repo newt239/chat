@@ -27,7 +27,9 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
   const { data, isLoading, isError, error } = useThreadReplies(threadId);
   const sendReply = useSendThreadReply();
   const bodyRef = useRef<HTMLDivElement>(null);
-  const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
+  // 親チャンネルの集約表示から開いたスレッドは子孫チャンネルのものなので、返信先は親メッセージのチャンネルにする
+  const threadChannelId = data?.parentMessage?.channelId ?? channelId;
+  const handleCopyLink = useCopyMessageLink(workspaceId, threadChannelId);
 
   const replyCount = data?.replies.length;
   useEffect(() => {
@@ -81,7 +83,7 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
               replies={data.replies}
               currentUserId={currentUserId}
               workspaceId={workspaceId}
-              channelId={channelId}
+              channelId={threadChannelId}
             />
           </>
         ) : (
@@ -90,9 +92,14 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
       </div>
       {data?.parentMessage && (
         <ThreadReplyInput
-          channelId={channelId}
+          channelId={threadChannelId}
           onSubmit={(body, attachmentIds) => {
-            sendReply.mutate({ attachmentIds, body, channelId, parentId: threadId });
+            sendReply.mutate({
+              attachmentIds,
+              body,
+              channelId: threadChannelId,
+              parentId: threadId,
+            });
           }}
           isPending={sendReply.isPending}
           isError={sendReply.isError}

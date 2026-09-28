@@ -1,5 +1,7 @@
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 import {
   IconBellOff,
+  IconNote,
   IconChevronDown,
   IconDots,
   IconInfoCircle,
@@ -24,16 +26,19 @@ import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { dmName } from "#/features/dm/utils/dmName";
 import { BackButton } from "#/features/layout/components/BackButton";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
+import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useIsMobile } from "#/lib/useMediaQuery";
 import { pinsCountByChannelAtom, setRightSidePanelViewAtom } from "#/providers/store/ui";
 
-import { useChannels } from "../hooks/useChannel";
+import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { useChannelMembers } from "../hooks/useChannelMembers";
 import { ChannelLinkBar } from "./ChannelLinkBar";
 import { ChannelMenuItems } from "./ChannelMenuItems";
 import { ChannelName } from "./ChannelName";
+import { DescendantsToggle } from "./DescendantsToggle";
 
 import type { PanelView } from "#/providers/store/ui";
 
@@ -47,16 +52,31 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
   const isMobile = useIsMobile();
   const setRightPanel = useSetAtom(setRightSidePanelViewAtom);
   const pinsCount = useAtomValue(pinsCountByChannelAtom)[channelId] ?? 0;
-  const { data: channels } = useChannels(workspaceId);
+  const { channel, descendants, includesDescendants, setIncludesDescendants } =
+    useChannelAggregation(workspaceId, channelId);
   const { data: dms } = useDMs(workspaceId);
   const { data: members = [] } = useChannelMembers(channelId);
   const { setStarred } = useChannelListActions(workspaceId);
+  const displayName = useDisplayName();
 
-  const channel = channels?.find((candidate) => candidate.id === channelId);
   const dm = dms?.find((candidate) => candidate.id === channelId);
   const isStarred = channel?.isStarred ?? dm?.isStarred ?? false;
   const isMuted = channel?.isMuted ?? dm?.isMuted ?? false;
+  const isGroupDM = dm?.type === DirectMessageType.GROUP_DM;
   const [partner] = dm?.type === DirectMessageType.DM ? dm.members : [];
+  // 1 対 1 の DM では相手に付けたメモをトピックの位置に出す
+  const { data: memo } = useQuery(
+    UserService.method.getUserNote,
+    partner ? { targetUserId: partner.userId } : skipToken,
+    { select: (res) => res.note?.memo ?? "" },
+  );
+  const descendantsToggle = descendants.length > 0 && (
+    <DescendantsToggle
+      count={descendants.length}
+      isSelected={includesDescendants}
+      onChange={setIncludesDescendants}
+    />
+  );
   const infoView: PanelView = partner
     ? { type: "user-profile", userId: partner.userId }
     : dm
@@ -83,7 +103,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             dm && (
               <>
                 <DMAvatar dm={dm} size={22} />
-                <span className="min-w-0 truncate">{dmName(dm)}</span>
+                <span className="min-w-0 truncate">{dmName(dm, displayName)}</span>
               </>
             )
           )}
@@ -109,10 +129,20 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             </Button>
           </Tooltip>
         )}
-        <p className="m-0 min-w-0 flex-1 truncate pl-1.5 text-[12.5px] text-muted max-md:invisible">
+        {!isMobile && descendantsToggle}
+        <p className="m-0 flex min-w-0 flex-1 items-center gap-1 truncate pl-1.5 text-[12.5px] text-muted max-md:invisible [&_svg]:size-3.5 [&_svg]:shrink-0">
           {channel?.description}
+          {isGroupDM && t("dm.header.groupCount", { count: dm.members.length + 1 })}
+          {memo && (
+            <>
+              <IconNote aria-label={t("member.note.memo")} role="img" />
+              <span className="truncate" title={memo}>
+                {memo}
+              </span>
+            </>
+          )}
         </p>
-        {channel && members.length > 0 && (
+        {(channel !== undefined || isGroupDM) && members.length > 0 && (
           <Button
             aria-label={t("shell.rightPanel.members")}
             onPress={() => {
@@ -124,7 +154,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
               {members.slice(0, 3).map((member) => (
                 <Avatar
                   key={member.userId}
-                  name={member.displayName}
+                  name={displayName(member.userId, member.displayName)}
                   src={member.avatarUrl}
                   size={20}
                 />
@@ -190,6 +220,12 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           </MenuItem>
         </Menu>
       </header>
+      {isMobile && descendantsToggle && (
+        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3.5 py-1.5 text-xs text-muted">
+          {descendantsToggle}
+          {t("channel.aggregate.count", { count: descendants.length })}
+        </div>
+      )}
       {channel && !isMobile && <ChannelLinkBar channelId={channelId} />}
     </>
   );

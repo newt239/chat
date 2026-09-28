@@ -4,6 +4,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
 import { addNotificationAtom } from "#/providers/store/notification";
@@ -19,6 +20,7 @@ export const useNotificationSync = (
   const currentUser = useAtomValue(userAtom);
   const addNotification = useSetAtom(addNotificationAtom);
   const { data: channels } = useChannels(workspaceId);
+  const displayName = useDisplayName();
 
   useEffect(() => {
     if (!wsClient || workspaceId === null) {
@@ -36,7 +38,7 @@ export const useNotificationSync = (
 
       const isMention = message.mentions.some((mention) => mention.userId === currentUser?.id);
       const channelName = channels?.find((channel) => channel.id === channelId)?.name ?? "";
-      const userName = message.user?.displayName ?? "";
+      const userName = displayName(message.userId, message.user?.displayName ?? "");
 
       addNotification({
         channelId,
@@ -53,5 +55,14 @@ export const useNotificationSync = (
         workspaceId,
       });
     });
-  }, [wsClient, workspaceId, currentChannelId, currentUser?.id, channels, addNotification, t]);
+  }, [
+    wsClient,
+    workspaceId,
+    currentChannelId,
+    currentUser?.id,
+    channels,
+    addNotification,
+    t,
+    displayName,
+  ]);
 };

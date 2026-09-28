@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 
 import { formatDateTime, formatTime } from "@chat/i18n";
 import { IconBookmarkFilled } from "@tabler/icons-react";
@@ -10,6 +11,7 @@ import { AlertDialog } from "#/components/ui/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar";
 import { cn, focusRing } from "#/components/ui/styles";
 import { MessageAttachment } from "#/features/attachment/components/MessageAttachment";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
 import { toDate } from "#/lib/timestamp";
@@ -37,6 +39,8 @@ type MessageItemProps = {
   threadMetadata?: ThreadMetadata;
   onOpenThread?: (messageId: string) => void;
   isHighlighted?: boolean;
+  // 親チャンネルの集約表示で、子孫チャンネルのメッセージに付けるチップ
+  channelChip?: ReactNode;
 };
 
 export const MessageItem = ({
@@ -47,6 +51,7 @@ export const MessageItem = ({
   threadMetadata,
   onOpenThread,
   isHighlighted = false,
+  channelChip = null,
 }: MessageItemProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
@@ -95,7 +100,7 @@ export const MessageItem = ({
     setRightSidePanelView({ type: "user-profile", userId: message.userId });
   };
 
-  const displayName = message.user?.displayName ?? "";
+  const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
   const createdAt = toDate(message.createdAt);
   const showToolbar =
     !isMobile && !isEditing && !message.isDeleted && (isHovered || isFocusWithin || isOverlayOpen);
@@ -151,6 +156,7 @@ export const MessageItem = ({
           >
             {formatTime(createdAt, locale)}
           </time>
+          {channelChip}
           {message.editedAt && !message.isDeleted && (
             <span className="text-[11px] text-subtle">{t("message.edited")}</span>
           )}

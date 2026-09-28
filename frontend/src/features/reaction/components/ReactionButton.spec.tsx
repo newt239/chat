@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
 import { UserSummarySchema } from "#/gen/chat/v1/user_pb";
+import { QueryWrapper } from "#/test/QueryWrapper";
 
 import { ReactionButton } from "./ReactionButton";
 
@@ -17,6 +18,7 @@ describe("ReactionButton", () => {
         group={{ count: 2, emoji: "👍", hasUserReacted: true, users: [user("Alice"), user("Bob")] }}
         onPress={onPress}
       />,
+      { wrapper: QueryWrapper },
     );
 
     const button = screen.getByRole("button", { name: "👍 2 件。Alice、Bob" });

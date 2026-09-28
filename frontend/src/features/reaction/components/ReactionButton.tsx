@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles";
 import { Tooltip } from "#/components/ui/Tooltip";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { transitions } from "#/lib/motion";
 import { preferencesAtom } from "#/providers/store/preferences";
 
@@ -27,7 +28,10 @@ export const ReactionButton = ({ group, onPress }: ReactionButtonProps) => {
     setIsMounted(true);
   }, []);
   const { locale } = useAtomValue(preferencesAtom);
-  const names = new Intl.ListFormat(locale).format(group.users.map((user) => user.displayName));
+  const displayName = useDisplayName();
+  const names = new Intl.ListFormat(locale).format(
+    group.users.map((user) => displayName(user.id, user.displayName)),
+  );
 
   return (
     <Tooltip content={names}>

@@ -7,6 +7,7 @@ import { Avatar } from "#/components/ui/Avatar";
 import { Link } from "#/components/ui/Link";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { MemberRow } from "#/features/member/components/MemberRow";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { splitHighlights } from "#/features/search/utils/splitHighlights";
 import { toDate } from "#/lib/timestamp";
@@ -38,6 +39,7 @@ export const SearchResultList = ({
   workspaceId,
 }: SearchResultListProps) => {
   const { t } = useTranslation();
+  const displayName = useDisplayName();
   const { locale } = useAtomValue(preferencesAtom);
   const { data: allChannels } = useChannels(workspaceId);
   const channelNameOf = (channelId: string) =>
@@ -53,7 +55,7 @@ export const SearchResultList = ({
               return null;
             }
             const channelName = channelNameOf(message.channelId);
-            const authorName = message.user?.displayName ?? "";
+            const authorName = displayName(message.userId, message.user?.displayName ?? "");
             return (
               <article
                 key={message.id}
@@ -136,7 +138,7 @@ export const SearchResultList = ({
               <li key={user.userId}>
                 <MemberRow
                   userId={user.userId}
-                  name={user.displayName}
+                  name={displayName(user.userId, user.displayName)}
                   avatarUrl={user.avatarUrl}
                   detail={`${t(workspaceRoleKeys[user.role])} · ${user.email}`}
                 />

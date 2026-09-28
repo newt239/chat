@@ -1,6 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
+import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
+
+import { PostTargetPicker } from "#/features/channel/components/PostTargetPicker";
+import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggregation";
+import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 import { useSendMessage } from "../hooks/useMessage";
 import { BaseMessageInput } from "./BaseMessageInput";
@@ -12,17 +17,29 @@ type MessageInputProps = {
 export const MessageInput = ({ channelId }: MessageInputProps) => {
   const { t } = useTranslation();
   const sendMessage = useSendMessage();
+  const workspaceId = useAtomValue(currentWorkspaceIdAtom);
+  const { channel, descendants, includesDescendants } = useChannelAggregation(
+    workspaceId,
+    channelId,
+  );
+  const [selectedId, setSelectedId] = useState(channelId);
+  // 集約表示をやめたり子孫がなくなったりしたら親チャンネルに戻す
+  const target =
+    includesDescendants && channel
+      ? ([channel, ...descendants].find((candidate) => candidate.id === selectedId) ?? channel)
+      : null;
+  const targetId = target?.id ?? channelId;
 
   const handleSubmit = useCallback(
     (body: string, attachmentIds: string[]) => {
-      if (channelId !== null) {
-        sendMessage.mutate({ attachmentIds, body, channelId });
+      if (targetId !== null) {
+        sendMessage.mutate({ attachmentIds, body, channelId: targetId });
       }
     },
-    [sendMessage, channelId],
+    [sendMessage, targetId],
   );
 
-  if (!channelId) {
+  if (!channelId || targetId === null) {
     return null;
   }
 
@@ -30,10 +47,25 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
     <BaseMessageInput
       key={channelId}
       onSubmit={handleSubmit}
-      placeholder={t("message.composer.placeholder")}
+      placeholder={
+        target
+          ? t("channel.aggregate.placeholder", { name: target.name })
+          : t("message.composer.placeholder")
+      }
       isPending={sendMessage.isPending}
       error={sendMessage.isError ? sendMessage.error.message : undefined}
-      channelId={channelId}
+      channelId={targetId}
+      targetPicker={
+        target &&
+        channel && (
+          <PostTargetPicker
+            parent={channel}
+            descendants={descendants}
+            value={target.id}
+            onChange={setSelectedId}
+          />
+        )
+      }
     />
   );
 };

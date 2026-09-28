@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Avatar } from "#/components/ui/Avatar";
 import { Badge } from "#/components/ui/Badge";
 import { Link } from "#/components/ui/Link";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";
@@ -24,7 +25,7 @@ export const ThreadCard = ({ workspaceId, thread, onMarkedRead }: ThreadCardProp
   const { locale } = useAtomValue(preferencesAtom);
   const markThreadRead = useMutation(ThreadService.method.markThreadRead);
   const { firstMessage } = thread;
-  const author = firstMessage.user?.displayName ?? "";
+  const author = useDisplayName()(firstMessage.userId, firstMessage.user?.displayName ?? "");
 
   return (
     <Link

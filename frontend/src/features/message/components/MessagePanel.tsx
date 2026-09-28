@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button";
 import { Skeleton } from "#/components/ui/Skeleton";
+import { ChannelChip } from "#/features/channel/components/ChannelChip";
+import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggregation";
 import { useAutoScrollToBottom } from "#/features/message/hooks/useAutoScrollToBottom";
 import { useChannelThreadMetadata } from "#/features/message/hooks/useChannelThreadMetadata";
 import { useChannelTimeline } from "#/features/message/hooks/useChannelTimeline";
@@ -28,24 +30,50 @@ export const MessagePanel = () => {
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
   const [currentChannelId] = useAtom(currentChannelIdAtom);
   const currentUser = useAtomValue(userAtom);
-  const { data: messageResponse, isLoading, isError, error } = useMessages(currentChannelId);
+  const { channel, descendants, includesDescendants, isResolved } = useChannelAggregation(
+    currentWorkspaceId,
+    currentChannelId,
+  );
+  const {
+    data: messageResponse,
+    isLoading: isLoadingMessages,
+    isError,
+    error,
+  } = useMessages(isResolved ? currentChannelId : null, includesDescendants);
+  const isLoading = !isResolved || isLoadingMessages;
   const { wsClient } = useWsClient();
-  const threadMetadataById = useChannelThreadMetadata(currentChannelId);
+  const threadMetadataById = useChannelThreadMetadata(
+    isResolved ? currentChannelId : null,
+    includesDescendants,
+  );
 
   const {
     olderItems,
     hasMore: hasOlderMessages,
     isLoading: isLoadingOlder,
     loadOlder,
-  } = useOlderMessages(currentChannelId, messageResponse?.hasMore ?? false);
+  } = useOlderMessages(currentChannelId, includesDescendants, messageResponse?.hasMore ?? false);
 
   const initialMessages = useMemo(
     () => (messageResponse ? [...olderItems, ...messageResponse.messages] : undefined),
     [olderItems, messageResponse],
   );
 
+  // 一覧にない未参加の公開子孫も、届いたメッセージから購読する
+  const descendantIds = includesDescendants
+    ? [
+        ...descendants.map((descendant) => descendant.id),
+        ...(initialMessages ?? []).flatMap((item) =>
+          item.content.case === "userMessage" && item.content.value.channelId !== currentChannelId
+            ? [item.content.value.channelId]
+            : [],
+        ),
+      ]
+    : [];
+
   const { orderedItems, typingUserIds } = useChannelTimeline({
     currentChannelId,
+    descendantIds,
     initialMessages,
     wsClient: wsClient ?? null,
   });
@@ -76,6 +104,7 @@ export const MessagePanel = () => {
 
   const { latestMessageRef } = useMessageViewportDetection({
     channelId: currentChannelId,
+    includeDescendants: includesDescendants,
     latestMessageId: latestUserMessageId,
     workspaceId: currentWorkspaceId,
   });
@@ -179,6 +208,15 @@ export const MessagePanel = () => {
                     onOpenThread={handleOpenThread}
                     threadMetadata={threadMetadataById.get(msg.id)}
                     isHighlighted={msg.id === highlightedId}
+                    channelChip={
+                      channel && msg.channelId !== channel.id ? (
+                        <ChannelChip
+                          workspaceId={currentWorkspaceId}
+                          parentName={channel.name}
+                          channelId={msg.channelId}
+                        />
+                      ) : null
+                    }
                   />
                 </div>
               );

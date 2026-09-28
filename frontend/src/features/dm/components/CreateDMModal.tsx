@@ -60,6 +60,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
     (member) =>
       normalizedQuery.length === 0 ||
       member.displayName.toLowerCase().includes(normalizedQuery) ||
+      (member.nickname?.toLowerCase().includes(normalizedQuery) ?? false) ||
       member.email.toLowerCase().includes(normalizedQuery),
   );
   const selectedMembers = selectedIds.flatMap(
@@ -191,9 +192,11 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
                   key={member.userId}
                   className="inline-flex items-center gap-1 rounded-full bg-accent-soft py-0.5 pr-1 pl-2.5 text-xs font-semibold text-accent-text"
                 >
-                  {member.displayName}
+                  {member.nickname ?? member.displayName}
                   <AriaButton
-                    aria-label={t("dm.create.removeSelected", { name: member.displayName })}
+                    aria-label={t("dm.create.removeSelected", {
+                      name: member.nickname ?? member.displayName,
+                    })}
                     onPress={() => {
                       toggle(member.userId);
                     }}
@@ -270,7 +273,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
           {(member) => (
             <ListBoxItem
               id={member.userId}
-              textValue={member.displayName}
+              textValue={member.nickname ?? member.displayName}
               className="flex cursor-pointer items-center gap-2.5 px-2.5 py-1.5 text-[13px] text-text outline-none data-focus-visible:bg-hover data-hovered:bg-hover"
             >
               {({ isSelected }) => (
@@ -285,7 +288,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
                   </span>
                   <Avatar name={member.displayName} src={member.avatarUrl} size={24} />
                   <Text slot="label" className="min-w-0 flex-1 truncate">
-                    {member.displayName}
+                    {member.nickname ?? member.displayName}
                   </Text>
                   <Text slot="description" className="truncate text-[11.5px] text-subtle">
                     {member.email}

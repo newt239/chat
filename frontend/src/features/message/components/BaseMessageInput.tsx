@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
 import { Form, TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -23,6 +24,8 @@ type BaseMessageInputProps = {
   isPending: boolean;
   error?: string;
   channelId: string;
+  // 集約表示中の投稿先の切り替え。入力欄の上に出す
+  targetPicker?: ReactNode;
 };
 
 const urlPattern = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
@@ -33,6 +36,7 @@ export const BaseMessageInput = ({
   isPending,
   error,
   channelId,
+  targetPicker = null,
 }: BaseMessageInputProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -112,6 +116,7 @@ export const BaseMessageInput = ({
       }}
       className="shrink-0 px-[18px] pb-3 font-sans max-md:px-2.5 max-md:pb-2"
     >
+      {targetPicker}
       <div className="rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
         {pendingAttachments.length > 0 && (
           <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />

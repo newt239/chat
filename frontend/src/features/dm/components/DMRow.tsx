@@ -1,4 +1,5 @@
 import { ChannelNavItem } from "#/features/channel/components/ChannelNavItem";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 
 import { dmName } from "../utils/dmName";
 import { DMAvatar } from "./DMAvatar";
@@ -10,16 +11,19 @@ type DMRowProps = {
   dm: DirectMessage;
 };
 
-export const DMRow = ({ workspaceId, dm }: DMRowProps) => (
-  <ChannelNavItem
-    workspaceId={workspaceId}
-    channelId={dm.id}
-    isStarred={dm.isStarred}
-    isMuted={dm.isMuted}
-    unreadCount={dm.unreadCount}
-    showsBadge
-  >
-    <DMAvatar dm={dm} size={18} />
-    <span className="min-w-0 flex-1 truncate">{dmName(dm)}</span>
-  </ChannelNavItem>
-);
+export const DMRow = ({ workspaceId, dm }: DMRowProps) => {
+  const displayName = useDisplayName();
+  return (
+    <ChannelNavItem
+      workspaceId={workspaceId}
+      channelId={dm.id}
+      isStarred={dm.isStarred}
+      isMuted={dm.isMuted}
+      unreadCount={dm.unreadCount}
+      showsBadge
+    >
+      <DMAvatar dm={dm} size={18} />
+      <span className="min-w-0 flex-1 truncate">{dmName(dm, displayName)}</span>
+    </ChannelNavItem>
+  );
+};

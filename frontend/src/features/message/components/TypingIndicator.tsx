@@ -2,6 +2,7 @@ import { useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { preferencesAtom } from "#/providers/store/preferences";
 
@@ -14,15 +15,18 @@ export const TypingIndicator = ({ userIds }: TypingIndicatorProps) => {
   const { locale } = useAtomValue(preferencesAtom);
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: members } = useMembers(workspaceId);
+  const displayName = useDisplayName();
 
   if (userIds.length === 0) {
     return null;
   }
 
-  const names = userIds.map(
-    (userId) =>
+  const names = userIds.map((userId) =>
+    displayName(
+      userId,
       members?.find((member) => member.userId === userId)?.displayName ??
-      t("message.typing.someone"),
+        t("message.typing.someone"),
+    ),
   );
   const list = new Intl.ListFormat(locale).format(names.slice(0, 2));
 

@@ -16,6 +16,7 @@ import { MenuSeparator } from "#/components/ui/MenuSeparator";
 import { useChannelMemberActions } from "#/features/channel/hooks/useChannelMemberActions";
 import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
 import { channelRoleKeys } from "#/features/channel/utils/channelRole";
+import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { ChannelRole } from "#/gen/chat/v1/channel_member_service_pb";
 import { userAtom } from "#/providers/store/auth";
@@ -34,12 +35,13 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
   const { data: workspaceMembers } = useMembers(workspaceId);
   const { invite, join, leave, remove, updateRole } = useChannelMemberActions(workspaceId);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const displayName = useDisplayName();
 
   const memberIds = new Set(channelMembers?.map((member) => member.userId));
   const isJoined = currentUser !== null && memberIds.has(currentUser.id);
   const inviteOptions = (workspaceMembers ?? [])
     .filter((member) => !memberIds.has(member.userId))
-    .map((member) => ({ label: member.displayName, value: member.userId }));
+    .map((member) => ({ label: member.nickname ?? member.displayName, value: member.userId }));
   const failedAction = [remove, updateRole, leave, join].find((action) => action.isError);
 
   return (
@@ -73,49 +75,52 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
       </h4>
 
       <ul className="m-0 -mx-2 flex list-none flex-col p-0">
-        {channelMembers?.map((member) => (
-          <li
-            key={member.userId}
-            className="flex items-center gap-2.5 rounded-md px-2 py-1 text-[13.5px]"
-          >
-            <Avatar name={member.displayName} src={member.avatarUrl} size={28} />
-            <span className="min-w-0 flex-1 truncate">{member.displayName}</span>
-            {member.role === ChannelRole.ADMIN && (
-              <Badge tone="tag">{t("channel.roles.admin")}</Badge>
-            )}
-            <Menu
-              trigger={
-                <IconButton label={t("channel.members.menu", { name: member.displayName })}>
-                  <IconDots />
-                </IconButton>
-              }
+        {channelMembers?.map((member) => {
+          const name = displayName(member.userId, member.displayName);
+          return (
+            <li
+              key={member.userId}
+              className="flex items-center gap-2.5 rounded-md px-2 py-1 text-[13.5px]"
             >
-              {ROLES.map((role) => (
+              <Avatar name={member.displayName} src={member.avatarUrl} size={28} />
+              <span className="min-w-0 flex-1 truncate">{name}</span>
+              {member.role === ChannelRole.ADMIN && (
+                <Badge tone="tag">{t("channel.roles.admin")}</Badge>
+              )}
+              <Menu
+                trigger={
+                  <IconButton label={t("channel.members.menu", { name })}>
+                    <IconDots />
+                  </IconButton>
+                }
+              >
+                {ROLES.map((role) => (
+                  <MenuItem
+                    key={role}
+                    icon={
+                      member.role === role ? <IconCheck aria-hidden /> : <span className="size-4" />
+                    }
+                    onAction={() => {
+                      updateRole.mutate({ channelId, role, userId: member.userId });
+                    }}
+                  >
+                    {t(channelRoleKeys[role])}
+                  </MenuItem>
+                ))}
+                <MenuSeparator />
                 <MenuItem
-                  key={role}
-                  icon={
-                    member.role === role ? <IconCheck aria-hidden /> : <span className="size-4" />
-                  }
+                  tone="danger"
+                  icon={<IconUserMinus aria-hidden />}
                   onAction={() => {
-                    updateRole.mutate({ channelId, role, userId: member.userId });
+                    remove.mutate({ channelId, userId: member.userId });
                   }}
                 >
-                  {t(channelRoleKeys[role])}
+                  {t("channel.members.remove")}
                 </MenuItem>
-              ))}
-              <MenuSeparator />
-              <MenuItem
-                tone="danger"
-                icon={<IconUserMinus aria-hidden />}
-                onAction={() => {
-                  remove.mutate({ channelId, userId: member.userId });
-                }}
-              >
-                {t("channel.members.remove")}
-              </MenuItem>
-            </Menu>
-          </li>
-        ))}
+              </Menu>
+            </li>
+          );
+        })}
       </ul>
       {channelMembers?.length === 0 && (
         <p className="m-0 text-caption text-muted">{t("channel.members.empty")}</p>

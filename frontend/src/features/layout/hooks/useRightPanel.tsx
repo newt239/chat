@@ -12,6 +12,7 @@ import { PinnedPanel } from "#/features/pin/components/PinnedPanel";
 import { SearchResultsPanel } from "#/features/search/components/SearchResultsPanel";
 import { ProfileEditor } from "#/features/settings/components/ProfileEditor";
 import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
+import { UserGroupPanel } from "#/features/userGroup/components/UserGroupPanel";
 import { userAtom } from "#/providers/store/auth";
 import { closeRightSidePanelAtom, rightSidePanelViewAtom } from "#/providers/store/ui";
 
@@ -95,6 +96,14 @@ export const useRightPanel = (workspaceId: string) => {
               key: `profile-${view.userId}`,
               title: t("shell.rightPanel.profile"),
             };
+      }
+      case "user-group": {
+        return {
+          body: <UserGroupPanel workspaceId={workspaceId} groupId={view.groupId} />,
+          extra: null,
+          key: `group-${view.groupId}`,
+          title: t("shell.rightPanel.userGroup"),
+        };
       }
       case "search": {
         return {

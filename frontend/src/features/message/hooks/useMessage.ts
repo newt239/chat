@@ -5,10 +5,10 @@ import { MessageService } from "#/gen/chat/v1/message_service_pb";
 
 export const MESSAGES_PAGE_SIZE = 50;
 
-export const useMessages = (channelId: string | null) =>
+export const useMessages = (channelId: string | null, includeDescendants: boolean) =>
   useQuery(
     MessageService.method.listMessages,
-    channelId === null ? skipToken : { channelId, limit: MESSAGES_PAGE_SIZE },
+    channelId === null ? skipToken : { channelId, includeDescendants, limit: MESSAGES_PAGE_SIZE },
   );
 
 /** スレッド付きの一覧も含め、メッセージ一覧を再取得する */

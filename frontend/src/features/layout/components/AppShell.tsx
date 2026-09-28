@@ -1,6 +1,7 @@
 import { Outlet, useParams } from "@tanstack/react-router";
 
 import { useChannelRealtimeSync } from "#/features/channel/hooks/useChannelRealtimeSync";
+import { useChannelViewersSync } from "#/features/channel/hooks/useChannelViewers";
 import { useDMRealtimeSync } from "#/features/dm/hooks/useDMRealtimeSync";
 import { useNotificationSync } from "#/features/notification/hooks/useNotificationSync";
 import { SettingsDialog } from "#/features/settings/components/SettingsDialog";
@@ -28,6 +29,7 @@ export const AppShell = ({ workspaceId }: AppShellProps) => {
   useNotificationSync(workspaceId, currentChannelId);
   useDesktopNotifications(workspaceId, currentChannelId);
   useGlobalShortcuts(workspaceId);
+  useChannelViewersSync();
 
   return (
     <>
