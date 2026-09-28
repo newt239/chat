@@ -1,9 +1,0 @@
-UpdateChannelMemberRoleRequest:
-  type: object
-  properties:
-    role:
-      type: string
-      enum: [member, admin]
-  required:
-    - role
-

@@ -1,9 +1,0 @@
-AddReactionRequest:
-  type: object
-  properties:
-    emoji:
-      type: string
-      minLength: 1
-  required:
-    - emoji
-

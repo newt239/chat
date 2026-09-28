@@ -1,9 +1,0 @@
-ListBookmarksResponse:
-  type: object
-  properties:
-    bookmarks:
-      type: array
-      items:
-        $ref: "../../openapi.yaml#/components/schemas/BookmarkWithMessage"
-  required:
-    - bookmarks

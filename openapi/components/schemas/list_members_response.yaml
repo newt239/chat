@@ -1,9 +1,0 @@
-ListMembersResponse:
-  type: object
-  properties:
-    members:
-      type: array
-      items:
-        $ref: "../../openapi.yaml#/components/schemas/MemberInfo"
-  required:
-    - members
