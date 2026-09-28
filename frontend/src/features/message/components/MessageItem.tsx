@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 
 import { AlertDialog } from "#/components/ui/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar";
+import { Badge } from "#/components/ui/Badge";
 import { cn, focusRing } from "#/components/ui/styles";
 import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
@@ -107,6 +108,11 @@ export const MessageItem = ({
   };
 
   const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
+  // Webhook の投稿はプロフィールを持たないボットユーザー名義なので、プロフィールを開かない
+  const isBot = message.user?.isBot ?? false;
+  const avatar = (
+    <Avatar name={displayName} src={message.user?.avatarUrl} size={isMobile ? 34 : 32} />
+  );
   const createdAt = toDate(message.createdAt);
   const showToolbar =
     !isMobile && !isEditing && !message.isDeleted && (isHovered || isFocusWithin || isOverlayOpen);
@@ -139,13 +145,17 @@ export const MessageItem = ({
         "transition-colors motion-reduce:transition-none",
       )}
     >
-      <Button
-        aria-label={t("message.profileOf", { name: displayName })}
-        onPress={openProfile}
-        className={`mt-0.5 self-start rounded-md ${focusRing}`}
-      >
-        <Avatar name={displayName} src={message.user?.avatarUrl} size={isMobile ? 34 : 32} />
-      </Button>
+      {isBot ? (
+        <span className="mt-0.5 self-start">{avatar}</span>
+      ) : (
+        <Button
+          aria-label={t("message.profileOf", { name: displayName })}
+          onPress={openProfile}
+          className={`mt-0.5 self-start rounded-md ${focusRing}`}
+        >
+          {avatar}
+        </Button>
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
         {message.pin && (
@@ -160,12 +170,21 @@ export const MessageItem = ({
           </span>
         )}
         <div className="flex flex-wrap items-baseline gap-[7px] leading-[1.3]">
-          <Button
-            onPress={openProfile}
-            className={`cursor-pointer rounded-sm text-sm font-bold text-text data-hovered:underline data-hovered:underline-offset-2 ${focusRing}`}
-          >
-            {displayName}
-          </Button>
+          {isBot ? (
+            <>
+              <span className="text-sm font-bold text-text">{displayName}</span>
+              <Badge tone="tag" className="self-center">
+                {t("webhook.appTag")}
+              </Badge>
+            </>
+          ) : (
+            <Button
+              onPress={openProfile}
+              className={`cursor-pointer rounded-sm text-sm font-bold text-text data-hovered:underline data-hovered:underline-offset-2 ${focusRing}`}
+            >
+              {displayName}
+            </Button>
+          )}
           <time
             dateTime={createdAt.toISOString()}
             title={formatDateTime(createdAt, locale)}

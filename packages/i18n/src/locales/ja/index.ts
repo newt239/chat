@@ -20,6 +20,7 @@ import { settings } from "./settings";
 import { shell } from "./shell";
 import { ui } from "./ui";
 import { userGroup } from "./userGroup";
+import { webhook } from "./webhook";
 import { workspace } from "./workspace";
 
 export const ja = {
@@ -44,5 +45,6 @@ export const ja = {
   shell,
   ui,
   userGroup,
+  webhook,
   workspace,
 } as const;

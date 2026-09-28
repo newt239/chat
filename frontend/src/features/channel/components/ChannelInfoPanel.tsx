@@ -7,6 +7,7 @@ import { Switch } from "#/components/ui/Switch";
 import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { useChannels } from "#/features/channel/hooks/useChannel";
+import { WebhooksSection } from "#/features/webhook/components/WebhooksSection";
 import { currentChannelIdAtom } from "#/providers/store/workspace";
 
 import { useChannelListActions } from "../hooks/useChannelListActions";
@@ -123,6 +124,7 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
         </Switch>
       </section>
       <ChannelMemberManager channelId={activeChannel.id} workspaceId={workspaceId} />
+      <WebhooksSection channelId={activeChannel.id} />
       <ChannelSettingsPanel
         key={activeChannel.id}
         channelId={activeChannel.id}

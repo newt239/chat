@@ -6,9 +6,9 @@ import { navigateTo } from "#/lib/navigation";
 import { store } from "#/providers/store";
 import { accessTokenAtom, authAtom, clearAuthAtom } from "#/providers/store/auth";
 
-import type { Interceptor } from "@connectrpc/connect";
+import { apiBaseUrl as baseUrl } from "./baseUrl";
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+import type { Interceptor } from "@connectrpc/connect";
 
 // 認証 interceptor を通すと 401 時に refresh が再帰するため、refresh 専用の client を分ける
 const authClient = createClient(AuthService, createConnectTransport({ baseUrl }));
