@@ -33,7 +33,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 		AllowCredentials: true,
 	}))
 
-	e.Use(middleware.Logger())
+	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 
 	e.GET("/healthz", func(c echo.Context) error {
