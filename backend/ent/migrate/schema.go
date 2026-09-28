@@ -15,6 +15,9 @@ var (
 		{Name: "file_name", Type: field.TypeString},
 		{Name: "mime_type", Type: field.TypeString},
 		{Name: "size_bytes", Type: field.TypeInt64},
+		{Name: "width", Type: field.TypeInt32, Nullable: true},
+		{Name: "height", Type: field.TypeInt32, Nullable: true},
+		{Name: "duration_seconds", Type: field.TypeFloat64, Nullable: true},
 		{Name: "storage_key", Type: field.TypeString},
 		{Name: "status", Type: field.TypeString, Default: "pending"},
 		{Name: "uploaded_at", Type: field.TypeTime, Nullable: true},
@@ -32,19 +35,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "attachments_messages_message",
-				Columns:    []*schema.Column{AttachmentsColumns[9]},
+				Columns:    []*schema.Column{AttachmentsColumns[12]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "attachments_users_uploader",
-				Columns:    []*schema.Column{AttachmentsColumns[10]},
+				Columns:    []*schema.Column{AttachmentsColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "attachments_channels_channel",
-				Columns:    []*schema.Column{AttachmentsColumns[11]},
+				Columns:    []*schema.Column{AttachmentsColumns[14]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -53,7 +56,7 @@ var (
 			{
 				Name:    "attachment_status",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[5]},
+				Columns: []*schema.Column{AttachmentsColumns[8]},
 			},
 		},
 	}
@@ -374,6 +377,12 @@ var (
 		{Name: "image_url", Type: field.TypeString, Nullable: true},
 		{Name: "site_name", Type: field.TypeString, Nullable: true},
 		{Name: "card_type", Type: field.TypeString, Nullable: true},
+		{Name: "image_width", Type: field.TypeInt32, Nullable: true},
+		{Name: "image_height", Type: field.TypeInt32, Nullable: true},
+		{Name: "youtube_video_id", Type: field.TypeString, Nullable: true},
+		{Name: "youtube_channel_name", Type: field.TypeString, Nullable: true},
+		{Name: "youtube_duration_seconds", Type: field.TypeInt32, Nullable: true},
+		{Name: "linked_message_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_link_message", Type: field.TypeUUID},
 	}
@@ -385,7 +394,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "message_links_messages_message",
-				Columns:    []*schema.Column{MessageLinksColumns[8]},
+				Columns:    []*schema.Column{MessageLinksColumns[14]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -394,7 +403,7 @@ var (
 			{
 				Name:    "messagelink_url_message_link_message",
 				Unique:  true,
-				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[8]},
+				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[14]},
 			},
 		},
 	}

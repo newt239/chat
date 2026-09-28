@@ -271,13 +271,15 @@ func (r *InterfaceRegistry) NewRPCHandler() http.Handler {
 - メンション機能（@user, @group）
 - リアクション機能（絵文字）
 - ピン留め機能
-- メッセージ内リンクの OGP プレビュー
+- メッセージ内リンクの OGP プレビュー（YouTube の動画情報を含む）
+- 同じワークスペースのメッセージリンクの引用カード
+- 出力は `MessageOutputBuilder` で閲覧者ごとに組み立てる（詳細は [message-display.md](./message-display.md)）
 
 ### 5. ファイル管理
 
 - ファイルアップロード（Wasabi S3 互換ストレージ）
 - プリサインド URL 生成
-- メタデータ管理
+- メタデータ管理（画像・動画・音声の寸法と再生時間はクライアントが計測して送る）
 
 ### 6. ブックマーク機能
 

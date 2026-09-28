@@ -141,6 +141,34 @@ func (r *messageRepository) FindByChannelIDIncludingDeleted(ctx context.Context,
 	return result, nil
 }
 
+func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error) {
+	parsedIDs := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		parsedID, err := utils.ParseUUID(id, "message ID")
+		if err != nil {
+			return nil, err
+		}
+		parsedIDs = append(parsedIDs, parsedID)
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	messages, err := client.Message.Query().
+		Where(message.IDIn(parsedIDs...)).
+		WithChannel().
+		WithUser().
+		WithParent().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*entity.Message, 0, len(messages))
+	for _, m := range messages {
+		result = append(result, utils.MessageToEntity(m))
+	}
+	return result, nil
+}
+
 func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID string) ([]*entity.Message, error) {
 	pID, err := utils.ParseUUID(parentID, "parent ID")
 	if err != nil {
@@ -430,6 +458,7 @@ func (r *messageRepository) FindReactions(ctx context.Context, messageID string)
 			}).WithUser()
 		}).
 		WithUser().
+		Order(ent.Asc(messagereaction.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -467,6 +496,7 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 			}).WithUser()
 		}).
 		WithUser().
+		Order(ent.Asc(messagereaction.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err

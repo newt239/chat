@@ -71,6 +71,21 @@ func SizeBytes(v int64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldSizeBytes, v))
 }
 
+// Width applies equality check predicate on the "width" field. It's identical to WidthEQ.
+func Width(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldWidth, v))
+}
+
+// Height applies equality check predicate on the "height" field. It's identical to HeightEQ.
+func Height(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldHeight, v))
+}
+
+// DurationSeconds applies equality check predicate on the "duration_seconds" field. It's identical to DurationSecondsEQ.
+func DurationSeconds(v float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldDurationSeconds, v))
+}
+
 // StorageKey applies equality check predicate on the "storage_key" field. It's identical to StorageKeyEQ.
 func StorageKey(v string) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldStorageKey, v))
@@ -264,6 +279,156 @@ func SizeBytesLT(v int64) predicate.Attachment {
 // SizeBytesLTE applies the LTE predicate on the "size_bytes" field.
 func SizeBytesLTE(v int64) predicate.Attachment {
 	return predicate.Attachment(sql.FieldLTE(FieldSizeBytes, v))
+}
+
+// WidthEQ applies the EQ predicate on the "width" field.
+func WidthEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldWidth, v))
+}
+
+// WidthNEQ applies the NEQ predicate on the "width" field.
+func WidthNEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldWidth, v))
+}
+
+// WidthIn applies the In predicate on the "width" field.
+func WidthIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldWidth, vs...))
+}
+
+// WidthNotIn applies the NotIn predicate on the "width" field.
+func WidthNotIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldWidth, vs...))
+}
+
+// WidthGT applies the GT predicate on the "width" field.
+func WidthGT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGT(FieldWidth, v))
+}
+
+// WidthGTE applies the GTE predicate on the "width" field.
+func WidthGTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGTE(FieldWidth, v))
+}
+
+// WidthLT applies the LT predicate on the "width" field.
+func WidthLT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLT(FieldWidth, v))
+}
+
+// WidthLTE applies the LTE predicate on the "width" field.
+func WidthLTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLTE(FieldWidth, v))
+}
+
+// WidthIsNil applies the IsNil predicate on the "width" field.
+func WidthIsNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldIsNull(FieldWidth))
+}
+
+// WidthNotNil applies the NotNil predicate on the "width" field.
+func WidthNotNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotNull(FieldWidth))
+}
+
+// HeightEQ applies the EQ predicate on the "height" field.
+func HeightEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldHeight, v))
+}
+
+// HeightNEQ applies the NEQ predicate on the "height" field.
+func HeightNEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldHeight, v))
+}
+
+// HeightIn applies the In predicate on the "height" field.
+func HeightIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldHeight, vs...))
+}
+
+// HeightNotIn applies the NotIn predicate on the "height" field.
+func HeightNotIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldHeight, vs...))
+}
+
+// HeightGT applies the GT predicate on the "height" field.
+func HeightGT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGT(FieldHeight, v))
+}
+
+// HeightGTE applies the GTE predicate on the "height" field.
+func HeightGTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGTE(FieldHeight, v))
+}
+
+// HeightLT applies the LT predicate on the "height" field.
+func HeightLT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLT(FieldHeight, v))
+}
+
+// HeightLTE applies the LTE predicate on the "height" field.
+func HeightLTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLTE(FieldHeight, v))
+}
+
+// HeightIsNil applies the IsNil predicate on the "height" field.
+func HeightIsNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldIsNull(FieldHeight))
+}
+
+// HeightNotNil applies the NotNil predicate on the "height" field.
+func HeightNotNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotNull(FieldHeight))
+}
+
+// DurationSecondsEQ applies the EQ predicate on the "duration_seconds" field.
+func DurationSecondsEQ(v float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldDurationSeconds, v))
+}
+
+// DurationSecondsNEQ applies the NEQ predicate on the "duration_seconds" field.
+func DurationSecondsNEQ(v float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldDurationSeconds, v))
+}
+
+// DurationSecondsIn applies the In predicate on the "duration_seconds" field.
+func DurationSecondsIn(vs ...float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldDurationSeconds, vs...))
+}
+
+// DurationSecondsNotIn applies the NotIn predicate on the "duration_seconds" field.
+func DurationSecondsNotIn(vs ...float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldDurationSeconds, vs...))
+}
+
+// DurationSecondsGT applies the GT predicate on the "duration_seconds" field.
+func DurationSecondsGT(v float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGT(FieldDurationSeconds, v))
+}
+
+// DurationSecondsGTE applies the GTE predicate on the "duration_seconds" field.
+func DurationSecondsGTE(v float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGTE(FieldDurationSeconds, v))
+}
+
+// DurationSecondsLT applies the LT predicate on the "duration_seconds" field.
+func DurationSecondsLT(v float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLT(FieldDurationSeconds, v))
+}
+
+// DurationSecondsLTE applies the LTE predicate on the "duration_seconds" field.
+func DurationSecondsLTE(v float64) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLTE(FieldDurationSeconds, v))
+}
+
+// DurationSecondsIsNil applies the IsNil predicate on the "duration_seconds" field.
+func DurationSecondsIsNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldIsNull(FieldDurationSeconds))
+}
+
+// DurationSecondsNotNil applies the NotNil predicate on the "duration_seconds" field.
+func DurationSecondsNotNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotNull(FieldDurationSeconds))
 }
 
 // StorageKeyEQ applies the EQ predicate on the "storage_key" field.

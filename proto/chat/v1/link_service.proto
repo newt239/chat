@@ -3,17 +3,10 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
 
 service LinkService {
   rpc FetchOgp(FetchOgpRequest) returns (FetchOgpResponse);
-}
-
-message OgpData {
-  optional string title = 1;
-  optional string description = 2;
-  optional string image_url = 3;
-  optional string site_name = 4;
-  optional string card_type = 5;
 }
 
 message FetchOgpRequest {

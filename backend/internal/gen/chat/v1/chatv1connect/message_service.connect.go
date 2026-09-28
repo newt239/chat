@@ -48,6 +48,9 @@ const (
 	// MessageServiceDeleteMessageProcedure is the fully-qualified name of the MessageService's
 	// DeleteMessage RPC.
 	MessageServiceDeleteMessageProcedure = "/chat.v1.MessageService/DeleteMessage"
+	// MessageServiceGetMessagePreviewProcedure is the fully-qualified name of the MessageService's
+	// GetMessagePreview RPC.
+	MessageServiceGetMessagePreviewProcedure = "/chat.v1.MessageService/GetMessagePreview"
 )
 
 // MessageServiceClient is a client for the chat.v1.MessageService service.
@@ -57,6 +60,8 @@ type MessageServiceClient interface {
 	CreateMessage(context.Context, *v1.CreateMessageRequest) (*v1.CreateMessageResponse, error)
 	UpdateMessage(context.Context, *v1.UpdateMessageRequest) (*v1.UpdateMessageResponse, error)
 	DeleteMessage(context.Context, *v1.DeleteMessageRequest) (*v1.DeleteMessageResponse, error)
+	// メッセージリンクの引用カードを取得する。参照できないメッセージは NotFound を返す
+	GetMessagePreview(context.Context, *v1.GetMessagePreviewRequest) (*v1.GetMessagePreviewResponse, error)
 }
 
 // NewMessageServiceClient constructs a client for the chat.v1.MessageService service. By default,
@@ -100,6 +105,12 @@ func NewMessageServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(messageServiceMethods.ByName("DeleteMessage")),
 			connect.WithClientOptions(opts...),
 		),
+		getMessagePreview: connect.NewClient[v1.GetMessagePreviewRequest, v1.GetMessagePreviewResponse](
+			httpClient,
+			baseURL+MessageServiceGetMessagePreviewProcedure,
+			connect.WithSchema(messageServiceMethods.ByName("GetMessagePreview")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -110,6 +121,7 @@ type messageServiceClient struct {
 	createMessage          *connect.Client[v1.CreateMessageRequest, v1.CreateMessageResponse]
 	updateMessage          *connect.Client[v1.UpdateMessageRequest, v1.UpdateMessageResponse]
 	deleteMessage          *connect.Client[v1.DeleteMessageRequest, v1.DeleteMessageResponse]
+	getMessagePreview      *connect.Client[v1.GetMessagePreviewRequest, v1.GetMessagePreviewResponse]
 }
 
 // ListMessages calls chat.v1.MessageService.ListMessages.
@@ -157,6 +169,15 @@ func (c *messageServiceClient) DeleteMessage(ctx context.Context, req *v1.Delete
 	return nil, err
 }
 
+// GetMessagePreview calls chat.v1.MessageService.GetMessagePreview.
+func (c *messageServiceClient) GetMessagePreview(ctx context.Context, req *v1.GetMessagePreviewRequest) (*v1.GetMessagePreviewResponse, error) {
+	response, err := c.getMessagePreview.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // MessageServiceHandler is an implementation of the chat.v1.MessageService service.
 type MessageServiceHandler interface {
 	ListMessages(context.Context, *v1.ListMessagesRequest) (*v1.ListMessagesResponse, error)
@@ -164,6 +185,8 @@ type MessageServiceHandler interface {
 	CreateMessage(context.Context, *v1.CreateMessageRequest) (*v1.CreateMessageResponse, error)
 	UpdateMessage(context.Context, *v1.UpdateMessageRequest) (*v1.UpdateMessageResponse, error)
 	DeleteMessage(context.Context, *v1.DeleteMessageRequest) (*v1.DeleteMessageResponse, error)
+	// メッセージリンクの引用カードを取得する。参照できないメッセージは NotFound を返す
+	GetMessagePreview(context.Context, *v1.GetMessagePreviewRequest) (*v1.GetMessagePreviewResponse, error)
 }
 
 // NewMessageServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -203,6 +226,12 @@ func NewMessageServiceHandler(svc MessageServiceHandler, opts ...connect.Handler
 		connect.WithSchema(messageServiceMethods.ByName("DeleteMessage")),
 		connect.WithHandlerOptions(opts...),
 	)
+	messageServiceGetMessagePreviewHandler := connect.NewUnaryHandlerSimple(
+		MessageServiceGetMessagePreviewProcedure,
+		svc.GetMessagePreview,
+		connect.WithSchema(messageServiceMethods.ByName("GetMessagePreview")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/chat.v1.MessageService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MessageServiceListMessagesProcedure:
@@ -215,6 +244,8 @@ func NewMessageServiceHandler(svc MessageServiceHandler, opts ...connect.Handler
 			messageServiceUpdateMessageHandler.ServeHTTP(w, r)
 		case MessageServiceDeleteMessageProcedure:
 			messageServiceDeleteMessageHandler.ServeHTTP(w, r)
+		case MessageServiceGetMessagePreviewProcedure:
+			messageServiceGetMessagePreviewHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -242,4 +273,8 @@ func (UnimplementedMessageServiceHandler) UpdateMessage(context.Context, *v1.Upd
 
 func (UnimplementedMessageServiceHandler) DeleteMessage(context.Context, *v1.DeleteMessageRequest) (*v1.DeleteMessageResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.MessageService.DeleteMessage is not implemented"))
+}
+
+func (UnimplementedMessageServiceHandler) GetMessagePreview(context.Context, *v1.GetMessagePreviewRequest) (*v1.GetMessagePreviewResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.MessageService.GetMessagePreview is not implemented"))
 }

@@ -58,11 +58,11 @@
 
 | イベント | 配信範囲 | 説明 |
 | --- | --- | --- |
-| `newMessage` | チャンネル購読者 | 新着メッセージ |
-| `messageUpdated` | チャンネル購読者 | メッセージ編集 |
+| `newMessage` | チャンネル購読者 | 新着メッセージ（メッセージリンクの引用カードは含めない） |
+| `messageUpdated` | チャンネル購読者 | メッセージ編集（引用カードは含めない） |
 | `messageDeleted` | チャンネル購読者 | メッセージ削除（一緒に削除されたスレッド返信の ID も含む） |
-| `reactionAdded` / `reactionRemoved` | チャンネル購読者 | リアクションの増減 |
-| `pinCreated` / `pinDeleted` | チャンネル参加者 | ピン留めの増減 |
+| `reactionAdded` / `reactionRemoved` | チャンネル購読者 | リアクションの増減（追加時は押したユーザーと日時を含む） |
+| `pinCreated` / `pinDeleted` | チャンネル参加者 | ピン留めの増減（追加時はピン留めしたユーザーを含む） |
 | `systemMessageCreated` | チャンネル購読者 | システムメッセージ |
 | `unreadCount` | 対象ユーザー | 未読数とメンション有無 |
 | `typing` / `stopTyping` | チャンネル参加者（送信者を除く） | 入力中状態 |

@@ -5,7 +5,7 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Message as Message$1, TimelineItem } from "./message_pb";
+import type { Message as Message$1, MessagePreview, TimelineItem } from "./message_pb";
 import { file_chat_v1_message } from "./message_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/message_service.proto.
  */
 export const file_chat_v1_message_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch1jaGF0L3YxL21lc3NhZ2Vfc2VydmljZS5wcm90bxIHY2hhdC52MSLAAQoTTGlzdE1lc3NhZ2VzUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgVsaW1pdBgCIAEoBUIJukgGGgQYZCgAEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgFIAEoCCJRChRMaXN0TWVzc2FnZXNSZXNwb25zZRInCghtZXNzYWdlcxgBIAMoCzIVLmNoYXQudjEuVGltZWxpbmVJdGVtEhAKCGhhc19tb3JlGAIgASgIIsoBCh1MaXN0TWVzc2FnZXNXaXRoVGhyZWFkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgVsaW1pdBgCIAEoBUIJukgGGgQYZCgAEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgFIAEoCCJWCh5MaXN0TWVzc2FnZXNXaXRoVGhyZWFkUmVzcG9uc2USIgoIbWVzc2FnZXMYASADKAsyEC5jaGF0LnYxLk1lc3NhZ2USEAoIaGFzX21vcmUYAiABKAgiogEKFENyZWF0ZU1lc3NhZ2VSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEhUKBGJvZHkYAiABKAlCB7pIBHICEAESIAoJcGFyZW50X2lkGAMgASgJQgi6SAVyA7ABAUgAiAEBEiUKDmF0dGFjaG1lbnRfaWRzGAQgAygJQg26SAqSAQciBXIDsAEBQgwKCl9wYXJlbnRfaWQiOgoVQ3JlYXRlTWVzc2FnZVJlc3BvbnNlEiEKB21lc3NhZ2UYASABKAsyEC5jaGF0LnYxLk1lc3NhZ2UiTgoUVXBkYXRlTWVzc2FnZVJlcXVlc3QSHAoKbWVzc2FnZV9pZBgBIAEoCUIIukgFcgOwAQESGAoEYm9keRgCIAEoCUIKukgHcgUQARiQTiI6ChVVcGRhdGVNZXNzYWdlUmVzcG9uc2USIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZSI0ChREZWxldGVNZXNzYWdlUmVxdWVzdBIcCgptZXNzYWdlX2lkGAEgASgJQgi6SAVyA7ABASIXChVEZWxldGVNZXNzYWdlUmVzcG9uc2UyuAMKDk1lc3NhZ2VTZXJ2aWNlEksKDExpc3RNZXNzYWdlcxIcLmNoYXQudjEuTGlzdE1lc3NhZ2VzUmVxdWVzdBodLmNoYXQudjEuTGlzdE1lc3NhZ2VzUmVzcG9uc2USaQoWTGlzdE1lc3NhZ2VzV2l0aFRocmVhZBImLmNoYXQudjEuTGlzdE1lc3NhZ2VzV2l0aFRocmVhZFJlcXVlc3QaJy5jaGF0LnYxLkxpc3RNZXNzYWdlc1dpdGhUaHJlYWRSZXNwb25zZRJOCg1DcmVhdGVNZXNzYWdlEh0uY2hhdC52MS5DcmVhdGVNZXNzYWdlUmVxdWVzdBoeLmNoYXQudjEuQ3JlYXRlTWVzc2FnZVJlc3BvbnNlEk4KDVVwZGF0ZU1lc3NhZ2USHS5jaGF0LnYxLlVwZGF0ZU1lc3NhZ2VSZXF1ZXN0Gh4uY2hhdC52MS5VcGRhdGVNZXNzYWdlUmVzcG9uc2USTgoNRGVsZXRlTWVzc2FnZRIdLmNoYXQudjEuRGVsZXRlTWVzc2FnZVJlcXVlc3QaHi5jaGF0LnYxLkRlbGV0ZU1lc3NhZ2VSZXNwb25zZUKUAQoLY29tLmNoYXQudjFCE01lc3NhZ2VTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
+  fileDesc("Ch1jaGF0L3YxL21lc3NhZ2Vfc2VydmljZS5wcm90bxIHY2hhdC52MSLAAQoTTGlzdE1lc3NhZ2VzUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgVsaW1pdBgCIAEoBUIJukgGGgQYZCgAEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgFIAEoCCJRChRMaXN0TWVzc2FnZXNSZXNwb25zZRInCghtZXNzYWdlcxgBIAMoCzIVLmNoYXQudjEuVGltZWxpbmVJdGVtEhAKCGhhc19tb3JlGAIgASgIIsoBCh1MaXN0TWVzc2FnZXNXaXRoVGhyZWFkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIYCgVsaW1pdBgCIAEoBUIJukgGGgQYZCgAEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgFIAEoCCJWCh5MaXN0TWVzc2FnZXNXaXRoVGhyZWFkUmVzcG9uc2USIgoIbWVzc2FnZXMYASADKAsyEC5jaGF0LnYxLk1lc3NhZ2USEAoIaGFzX21vcmUYAiABKAgiogEKFENyZWF0ZU1lc3NhZ2VSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEhUKBGJvZHkYAiABKAlCB7pIBHICEAESIAoJcGFyZW50X2lkGAMgASgJQgi6SAVyA7ABAUgAiAEBEiUKDmF0dGFjaG1lbnRfaWRzGAQgAygJQg26SAqSAQciBXIDsAEBQgwKCl9wYXJlbnRfaWQiOgoVQ3JlYXRlTWVzc2FnZVJlc3BvbnNlEiEKB21lc3NhZ2UYASABKAsyEC5jaGF0LnYxLk1lc3NhZ2UiTgoUVXBkYXRlTWVzc2FnZVJlcXVlc3QSHAoKbWVzc2FnZV9pZBgBIAEoCUIIukgFcgOwAQESGAoEYm9keRgCIAEoCUIKukgHcgUQARiQTiI6ChVVcGRhdGVNZXNzYWdlUmVzcG9uc2USIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZSI0ChREZWxldGVNZXNzYWdlUmVxdWVzdBIcCgptZXNzYWdlX2lkGAEgASgJQgi6SAVyA7ABASIXChVEZWxldGVNZXNzYWdlUmVzcG9uc2UiOAoYR2V0TWVzc2FnZVByZXZpZXdSZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBIkUKGUdldE1lc3NhZ2VQcmV2aWV3UmVzcG9uc2USKAoHcHJldmlldxgBIAEoCzIXLmNoYXQudjEuTWVzc2FnZVByZXZpZXcylAQKDk1lc3NhZ2VTZXJ2aWNlEksKDExpc3RNZXNzYWdlcxIcLmNoYXQudjEuTGlzdE1lc3NhZ2VzUmVxdWVzdBodLmNoYXQudjEuTGlzdE1lc3NhZ2VzUmVzcG9uc2USaQoWTGlzdE1lc3NhZ2VzV2l0aFRocmVhZBImLmNoYXQudjEuTGlzdE1lc3NhZ2VzV2l0aFRocmVhZFJlcXVlc3QaJy5jaGF0LnYxLkxpc3RNZXNzYWdlc1dpdGhUaHJlYWRSZXNwb25zZRJOCg1DcmVhdGVNZXNzYWdlEh0uY2hhdC52MS5DcmVhdGVNZXNzYWdlUmVxdWVzdBoeLmNoYXQudjEuQ3JlYXRlTWVzc2FnZVJlc3BvbnNlEk4KDVVwZGF0ZU1lc3NhZ2USHS5jaGF0LnYxLlVwZGF0ZU1lc3NhZ2VSZXF1ZXN0Gh4uY2hhdC52MS5VcGRhdGVNZXNzYWdlUmVzcG9uc2USTgoNRGVsZXRlTWVzc2FnZRIdLmNoYXQudjEuRGVsZXRlTWVzc2FnZVJlcXVlc3QaHi5jaGF0LnYxLkRlbGV0ZU1lc3NhZ2VSZXNwb25zZRJaChFHZXRNZXNzYWdlUHJldmlldxIhLmNoYXQudjEuR2V0TWVzc2FnZVByZXZpZXdSZXF1ZXN0GiIuY2hhdC52MS5HZXRNZXNzYWdlUHJldmlld1Jlc3BvbnNlQpQBCgtjb20uY2hhdC52MUITTWVzc2FnZVNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.ListMessagesRequest
@@ -262,6 +262,40 @@ export const DeleteMessageResponseSchema: GenMessage<DeleteMessageResponse> = /*
   messageDesc(file_chat_v1_message_service, 9);
 
 /**
+ * @generated from message chat.v1.GetMessagePreviewRequest
+ */
+export type GetMessagePreviewRequest = Message<"chat.v1.GetMessagePreviewRequest"> & {
+  /**
+   * @generated from field: string message_id = 1;
+   */
+  messageId: string;
+};
+
+/**
+ * Describes the message chat.v1.GetMessagePreviewRequest.
+ * Use `create(GetMessagePreviewRequestSchema)` to create a new message.
+ */
+export const GetMessagePreviewRequestSchema: GenMessage<GetMessagePreviewRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_message_service, 10);
+
+/**
+ * @generated from message chat.v1.GetMessagePreviewResponse
+ */
+export type GetMessagePreviewResponse = Message<"chat.v1.GetMessagePreviewResponse"> & {
+  /**
+   * @generated from field: chat.v1.MessagePreview preview = 1;
+   */
+  preview?: MessagePreview | undefined;
+};
+
+/**
+ * Describes the message chat.v1.GetMessagePreviewResponse.
+ * Use `create(GetMessagePreviewResponseSchema)` to create a new message.
+ */
+export const GetMessagePreviewResponseSchema: GenMessage<GetMessagePreviewResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_message_service, 11);
+
+/**
  * @generated from service chat.v1.MessageService
  */
 export const MessageService: GenService<{
@@ -304,6 +338,16 @@ export const MessageService: GenService<{
     methodKind: "unary";
     input: typeof DeleteMessageRequestSchema;
     output: typeof DeleteMessageResponseSchema;
+  },
+  /**
+   * メッセージリンクの引用カードを取得する。参照できないメッセージは NotFound を返す
+   *
+   * @generated from rpc chat.v1.MessageService.GetMessagePreview
+   */
+  getMessagePreview: {
+    methodKind: "unary";
+    input: typeof GetMessagePreviewRequestSchema;
+    output: typeof GetMessagePreviewResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_chat_v1_message_service, 0);

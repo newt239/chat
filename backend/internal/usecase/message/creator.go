@@ -13,62 +13,45 @@ import (
 
 type MessageCreator struct {
 	messageRepo           domainrepository.MessageRepository
-	channelRepo           domainrepository.ChannelRepository
-	channelMemberRepo     domainrepository.ChannelMemberRepository
-	workspaceRepo         domainrepository.WorkspaceRepository
-	userRepo              domainrepository.UserRepository
-	userGroupRepo         domainrepository.UserGroupRepository
 	userMentionRepo       domainrepository.MessageUserMentionRepository
 	groupMentionRepo      domainrepository.MessageGroupMentionRepository
 	linkRepo              domainrepository.MessageLinkRepository
 	threadRepo            domainrepository.ThreadRepository
 	attachmentRepo        domainrepository.AttachmentRepository
-	ogpService            service.OGPService
 	notificationSvc       Notifier
 	mentionService        service.MentionService
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
-	assembler             *MessageOutputAssembler
+	outputBuilder         *MessageOutputBuilder
 	channelAccessSvc      service.ChannelAccessService
 }
 
 func NewMessageCreator(
 	messageRepo domainrepository.MessageRepository,
-	channelRepo domainrepository.ChannelRepository,
-	channelMemberRepo domainrepository.ChannelMemberRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
-	userRepo domainrepository.UserRepository,
-	userGroupRepo domainrepository.UserGroupRepository,
 	userMentionRepo domainrepository.MessageUserMentionRepository,
 	groupMentionRepo domainrepository.MessageGroupMentionRepository,
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
-	ogpService service.OGPService,
 	notificationSvc Notifier,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
+	outputBuilder *MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
 ) *MessageCreator {
 	return &MessageCreator{
 		messageRepo:           messageRepo,
-		channelRepo:           channelRepo,
-		channelMemberRepo:     channelMemberRepo,
-		workspaceRepo:         workspaceRepo,
-		userRepo:              userRepo,
-		userGroupRepo:         userGroupRepo,
 		userMentionRepo:       userMentionRepo,
 		groupMentionRepo:      groupMentionRepo,
 		linkRepo:              linkRepo,
 		threadRepo:            threadRepo,
 		attachmentRepo:        attachmentRepo,
-		ogpService:            ogpService,
 		notificationSvc:       notificationSvc,
 		mentionService:        mentionService,
 		linkProcessingService: linkProcessingService,
 		transactionManager:    transactionManager,
-		assembler:             NewMessageOutputAssembler(),
+		outputBuilder:         outputBuilder,
 		channelAccessSvc:      channelAccessSvc,
 	}
 }
@@ -123,64 +106,19 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 			return fmt.Errorf("failed to extract mentions and links: %w", err)
 		}
 
-		user, err := c.userRepo.FindByID(txCtx, input.UserID)
+		outputs, err := c.outputBuilder.Build(txCtx, input.UserID, []*entity.Message{message})
 		if err != nil {
-			return fmt.Errorf("failed to fetch user: %w", err)
+			return err
 		}
-
-		userMentions, err := c.userMentionRepo.FindByMessageID(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch user mentions: %w", err)
-		}
-		groupMentions, err := c.groupMentionRepo.FindByMessageID(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch group mentions: %w", err)
-		}
-		links, err := c.linkRepo.FindByMessageID(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch links: %w", err)
-		}
-		attachmentList, err := c.attachmentRepo.FindByMessageID(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch attachments: %w", err)
-		}
-
-		groupIDs := make([]string, 0)
-		groupIDSet := make(map[string]bool)
-		for _, mention := range groupMentions {
-			if !groupIDSet[mention.GroupID] {
-				groupIDs = append(groupIDs, mention.GroupID)
-				groupIDSet[mention.GroupID] = true
-			}
-		}
-
-		groups := make(map[string]*entity.UserGroup)
-		if len(groupIDs) > 0 {
-			groupList, err := c.userGroupRepo.FindByIDs(txCtx, groupIDs)
-			if err != nil {
-				return fmt.Errorf("failed to fetch groups: %w", err)
-			}
-			for _, group := range groupList {
-				groups[group.ID] = group
-			}
-		}
-
-		reactions := []*entity.MessageReaction{}
-
-		userMap := map[string]*entity.User{user.ID: user}
-
-		output := c.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
-		result = &output
-
+		result = &outputs[0]
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	if c.notificationSvc != nil {
-		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, *result)
+		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, result.WithoutMessagePreviews())
 	}
 
 	return result, nil
@@ -211,30 +149,12 @@ func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, mes
 		}
 	}
 
-	links, err := c.linkProcessingService.ProcessLinks(ctx, body)
+	links, err := c.linkProcessingService.ProcessLinks(ctx, body, workspaceID)
 	if err != nil {
 		return fmt.Errorf("failed to process links: %w", err)
 	}
-
 	for _, link := range links {
-		existingLink, err := c.linkRepo.FindByURL(ctx, link.URL)
-		if err != nil {
-			continue // エラーは無視
-		}
-
-		if existingLink != nil {
-			link.MessageID = messageID
-			link.Title = existingLink.Title
-			link.Description = existingLink.Description
-			link.ImageURL = existingLink.ImageURL
-			link.SiteName = existingLink.SiteName
-			link.CardType = existingLink.CardType
-			link.CreatedAt = time.Now()
-		} else {
-			link.MessageID = messageID
-			link.CreatedAt = time.Now()
-		}
-
+		link.MessageID = messageID
 		if err := c.linkRepo.Create(ctx, link); err != nil {
 			return fmt.Errorf("failed to create link: %w", err)
 		}

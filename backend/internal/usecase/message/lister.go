@@ -12,64 +12,29 @@ import (
 
 // MessageLister はメッセージ一覧取得を担当するユースケースです
 type MessageLister struct {
-	messageRepo       domainrepository.MessageRepository
-	systemMsgRepo     domainrepository.SystemMessageRepository
-	channelRepo       domainrepository.ChannelRepository
-	channelMemberRepo domainrepository.ChannelMemberRepository
-	workspaceRepo     domainrepository.WorkspaceRepository
-	userRepo          domainrepository.UserRepository
-	userGroupRepo     domainrepository.UserGroupRepository
-	userMentionRepo   domainrepository.MessageUserMentionRepository
-	groupMentionRepo  domainrepository.MessageGroupMentionRepository
-	linkRepo          domainrepository.MessageLinkRepository
-	threadRepo        domainrepository.ThreadRepository
-	attachmentRepo    domainrepository.AttachmentRepository
-	assembler         *MessageOutputAssembler
-	outputBuilder     *MessageOutputBuilder
-	channelAccessSvc  service.ChannelAccessService
+	messageRepo      domainrepository.MessageRepository
+	systemMsgRepo    domainrepository.SystemMessageRepository
+	userRepo         domainrepository.UserRepository
+	threadRepo       domainrepository.ThreadRepository
+	outputBuilder    *MessageOutputBuilder
+	channelAccessSvc service.ChannelAccessService
 }
 
 // NewMessageLister は新しいMessageListerを作成します
 func NewMessageLister(
 	messageRepo domainrepository.MessageRepository,
 	systemMsgRepo domainrepository.SystemMessageRepository,
-	channelRepo domainrepository.ChannelRepository,
-	channelMemberRepo domainrepository.ChannelMemberRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
-	userGroupRepo domainrepository.UserGroupRepository,
-	userMentionRepo domainrepository.MessageUserMentionRepository,
-	groupMentionRepo domainrepository.MessageGroupMentionRepository,
-	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
-	attachmentRepo domainrepository.AttachmentRepository,
+	outputBuilder *MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
 ) *MessageLister {
-	assembler := NewMessageOutputAssembler()
 	return &MessageLister{
-		messageRepo:       messageRepo,
-		systemMsgRepo:     systemMsgRepo,
-		channelRepo:       channelRepo,
-		channelMemberRepo: channelMemberRepo,
-		workspaceRepo:     workspaceRepo,
-		userRepo:          userRepo,
-		userGroupRepo:     userGroupRepo,
-		userMentionRepo:   userMentionRepo,
-		groupMentionRepo:  groupMentionRepo,
-		linkRepo:          linkRepo,
-		threadRepo:        threadRepo,
-		attachmentRepo:    attachmentRepo,
-		assembler:         assembler,
-		outputBuilder: NewMessageOutputBuilder(
-			messageRepo,
-			userRepo,
-			userGroupRepo,
-			userMentionRepo,
-			groupMentionRepo,
-			linkRepo,
-			attachmentRepo,
-			assembler,
-		),
+		messageRepo:      messageRepo,
+		systemMsgRepo:    systemMsgRepo,
+		userRepo:         userRepo,
+		threadRepo:       threadRepo,
+		outputBuilder:    outputBuilder,
 		channelAccessSvc: channelAccessSvc,
 	}
 }
@@ -113,7 +78,7 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 
 	// ユーザーメッセージの出力へ変換
 	messages, hasMoreUser := l.prepareMessageList(messages, limit)
-	userOutputs, err := l.outputBuilder.Build(ctx, messages)
+	userOutputs, err := l.outputBuilder.Build(ctx, input.UserID, messages)
 	if err != nil {
 		return nil, err
 	}
@@ -240,119 +205,21 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 		return nil, fmt.Errorf("failed to fetch thread replies: %w", err)
 	}
 
-	// 親メッセージとリプライのメッセージIDを収集
-	allMessages := append([]*entity.Message{parentMessage}, replies...)
-	messageIDs := make([]string, len(allMessages))
-	for idx, msg := range allMessages {
-		messageIDs[idx] = msg.ID
-	}
-
-	// メンション、リンク、リアクション、添付ファイルを一括取得
-	userMentions, _ := l.userMentionRepo.FindByMessageIDs(ctx, messageIDs)
-	groupMentions, _ := l.groupMentionRepo.FindByMessageIDs(ctx, messageIDs)
-	links, _ := l.linkRepo.FindByMessageIDs(ctx, messageIDs)
-	reactions, _ := l.messageRepo.FindReactionsByMessageIDs(ctx, messageIDs)
-	attachments, _ := l.attachmentRepo.FindByMessageIDs(ctx, messageIDs)
-
-	// ユーザーIDを収集
-	userIDs := make([]string, 0)
-	userIDSet := make(map[string]bool)
-	for _, msg := range allMessages {
-		if !userIDSet[msg.UserID] {
-			userIDs = append(userIDs, msg.UserID)
-			userIDSet[msg.UserID] = true
-		}
-		if msg.DeletedBy != nil && !userIDSet[*msg.DeletedBy] {
-			userIDs = append(userIDs, *msg.DeletedBy)
-			userIDSet[*msg.DeletedBy] = true
-		}
-	}
-	for _, reactionList := range reactions {
-		for _, reaction := range reactionList {
-			if !userIDSet[reaction.UserID] {
-				userIDs = append(userIDs, reaction.UserID)
-				userIDSet[reaction.UserID] = true
-			}
-		}
-	}
-
-	// ユーザー情報を一括取得
-	users, _ := l.userRepo.FindByIDs(ctx, userIDs)
-	userMap := make(map[string]*entity.User)
-	for _, user := range users {
-		userMap[user.ID] = user
-	}
-
-	// メンション、リンク、リアクションをメッセージIDでグループ化
-	userMentionsByMessage := make(map[string][]*entity.MessageUserMention)
-	for _, mention := range userMentions {
-		userMentionsByMessage[mention.MessageID] = append(userMentionsByMessage[mention.MessageID], mention)
-	}
-
-	groupMentionsByMessage := make(map[string][]*entity.MessageGroupMention)
-	for _, mention := range groupMentions {
-		groupMentionsByMessage[mention.MessageID] = append(groupMentionsByMessage[mention.MessageID], mention)
-	}
-
-	linksByMessage := make(map[string][]*entity.MessageLink)
-	for _, link := range links {
-		linksByMessage[link.MessageID] = append(linksByMessage[link.MessageID], link)
-	}
-
-	// グループ情報を取得
-	groupIDs := make([]string, 0)
-	groupIDSet := make(map[string]bool)
-	for _, mention := range groupMentions {
-		if !groupIDSet[mention.GroupID] {
-			groupIDs = append(groupIDs, mention.GroupID)
-			groupIDSet[mention.GroupID] = true
-		}
-	}
-
-	groups := make(map[string]*entity.UserGroup)
-	if len(groupIDs) > 0 {
-		groupList, err := l.userGroupRepo.FindByIDs(ctx, groupIDs)
-		if err == nil {
-			for _, group := range groupList {
-				groups[group.ID] = group
-			}
-		}
-	}
-
-	// 親メッセージ出力を作成
-	parentOutput := l.assembler.AssembleMessageOutput(
-		parentMessage,
-		userMap[parentMessage.UserID],
-		userMentionsByMessage[parentMessage.ID],
-		groupMentionsByMessage[parentMessage.ID],
-		linksByMessage[parentMessage.ID],
-		reactions[parentMessage.ID],
-		attachments[parentMessage.ID],
-		groups,
-		userMap,
-	)
-
-	// リプライ出力を作成
-	replyOutputs := make([]MessageOutput, 0, len(replies))
-	for _, reply := range replies {
-		replyOutputs = append(replyOutputs, l.assembler.AssembleMessageOutput(
-			reply,
-			userMap[reply.UserID],
-			userMentionsByMessage[reply.ID],
-			groupMentionsByMessage[reply.ID],
-			linksByMessage[reply.ID],
-			reactions[reply.ID],
-			attachments[reply.ID],
-			groups,
-			userMap,
-		))
+	outputs, err := l.outputBuilder.Build(ctx, input.UserID, append([]*entity.Message{parentMessage}, replies...))
+	if err != nil {
+		return nil, err
 	}
 
 	return &GetThreadRepliesOutput{
-		ParentMessage: parentOutput,
-		Replies:       replyOutputs,
+		ParentMessage: outputs[0],
+		Replies:       outputs[1:],
 		HasMore:       false,
 	}, nil
+}
+
+// GetMessagePreview はメッセージリンクの引用カードを取得します
+func (l *MessageLister) GetMessagePreview(ctx context.Context, input GetMessagePreviewInput) (*MessagePreviewOutput, error) {
+	return l.outputBuilder.BuildPreview(ctx, input.UserID, input.MessageID)
 }
 
 // GetThreadMetadata はスレッドメタデータを取得します

@@ -16,6 +16,7 @@ type MessageUseCase interface {
 	DeleteMessage(ctx context.Context, input DeleteMessageInput) error
 	GetThreadReplies(ctx context.Context, input GetThreadRepliesInput) (*GetThreadRepliesOutput, error)
 	GetThreadMetadata(ctx context.Context, input GetThreadMetadataInput) (*ThreadMetadataOutput, error)
+	GetMessagePreview(ctx context.Context, input GetMessagePreviewInput) (*MessagePreviewOutput, error)
 	ListMessagesWithThread(ctx context.Context, input ListMessagesInput) ([]MessageWithThreadOutput, error)
 }
 
@@ -35,13 +36,12 @@ func NewMessageUseCase(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
-	userGroupRepo domainrepository.UserGroupRepository,
 	userMentionRepo domainrepository.MessageUserMentionRepository,
 	groupMentionRepo domainrepository.MessageGroupMentionRepository,
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
-	ogpService service.OGPService,
+	outputBuilder *MessageOutputBuilder,
 	notificationSvc Notifier,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
@@ -49,77 +49,52 @@ func NewMessageUseCase(
 	channelAccessSvc service.ChannelAccessService,
 	logger service.Logger,
 ) MessageUseCase {
-	// 各機能のユースケースを作成
-	creator := NewMessageCreator(
-		messageRepo,
-		channelRepo,
-		channelMemberRepo,
-		workspaceRepo,
-		userRepo,
-		userGroupRepo,
-		userMentionRepo,
-		groupMentionRepo,
-		linkRepo,
-		threadRepo,
-		attachmentRepo,
-		ogpService,
-		notificationSvc,
-		mentionService,
-		linkProcessingService,
-		transactionManager,
-		channelAccessSvc,
-	)
-
-	updater := NewMessageUpdater(
-		messageRepo,
-		channelRepo,
-		channelMemberRepo,
-		workspaceRepo,
-		userRepo,
-		userGroupRepo,
-		userMentionRepo,
-		groupMentionRepo,
-		linkRepo,
-		attachmentRepo,
-		notificationSvc,
-		mentionService,
-		linkProcessingService,
-		transactionManager,
-		channelAccessSvc,
-	)
-
-	deleter := NewMessageDeleter(
-		messageRepo,
-		channelRepo,
-		channelMemberRepo,
-		workspaceRepo,
-		threadRepo,
-		notificationSvc,
-		channelAccessSvc,
-		logger,
-	)
-
-	lister := NewMessageLister(
-		messageRepo,
-		systemMsgRepo,
-		channelRepo,
-		channelMemberRepo,
-		workspaceRepo,
-		userRepo,
-		userGroupRepo,
-		userMentionRepo,
-		groupMentionRepo,
-		linkRepo,
-		threadRepo,
-		attachmentRepo,
-		channelAccessSvc,
-	)
-
 	return &messageInteractor{
-		creator: creator,
-		updater: updater,
-		deleter: deleter,
-		lister:  lister,
+		creator: NewMessageCreator(
+			messageRepo,
+			userMentionRepo,
+			groupMentionRepo,
+			linkRepo,
+			threadRepo,
+			attachmentRepo,
+			notificationSvc,
+			mentionService,
+			linkProcessingService,
+			transactionManager,
+			outputBuilder,
+			channelAccessSvc,
+		),
+		updater: NewMessageUpdater(
+			messageRepo,
+			workspaceRepo,
+			userMentionRepo,
+			groupMentionRepo,
+			linkRepo,
+			notificationSvc,
+			mentionService,
+			linkProcessingService,
+			transactionManager,
+			outputBuilder,
+			channelAccessSvc,
+		),
+		deleter: NewMessageDeleter(
+			messageRepo,
+			channelRepo,
+			channelMemberRepo,
+			workspaceRepo,
+			threadRepo,
+			notificationSvc,
+			channelAccessSvc,
+			logger,
+		),
+		lister: NewMessageLister(
+			messageRepo,
+			systemMsgRepo,
+			userRepo,
+			threadRepo,
+			outputBuilder,
+			channelAccessSvc,
+		),
 	}
 }
 
@@ -156,4 +131,9 @@ func (i *messageInteractor) GetThreadMetadata(ctx context.Context, input GetThre
 // ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
 func (i *messageInteractor) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) ([]MessageWithThreadOutput, error) {
 	return i.lister.ListMessagesWithThread(ctx, input)
+}
+
+// GetMessagePreview はメッセージリンクの引用カードを取得します
+func (i *messageInteractor) GetMessagePreview(ctx context.Context, input GetMessagePreviewInput) (*MessagePreviewOutput, error) {
+	return i.lister.GetMessagePreview(ctx, input)
 }

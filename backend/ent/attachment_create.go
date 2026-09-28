@@ -42,6 +42,48 @@ func (_c *AttachmentCreate) SetSizeBytes(v int64) *AttachmentCreate {
 	return _c
 }
 
+// SetWidth sets the "width" field.
+func (_c *AttachmentCreate) SetWidth(v int32) *AttachmentCreate {
+	_c.mutation.SetWidth(v)
+	return _c
+}
+
+// SetNillableWidth sets the "width" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableWidth(v *int32) *AttachmentCreate {
+	if v != nil {
+		_c.SetWidth(*v)
+	}
+	return _c
+}
+
+// SetHeight sets the "height" field.
+func (_c *AttachmentCreate) SetHeight(v int32) *AttachmentCreate {
+	_c.mutation.SetHeight(v)
+	return _c
+}
+
+// SetNillableHeight sets the "height" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableHeight(v *int32) *AttachmentCreate {
+	if v != nil {
+		_c.SetHeight(*v)
+	}
+	return _c
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (_c *AttachmentCreate) SetDurationSeconds(v float64) *AttachmentCreate {
+	_c.mutation.SetDurationSeconds(v)
+	return _c
+}
+
+// SetNillableDurationSeconds sets the "duration_seconds" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableDurationSeconds(v *float64) *AttachmentCreate {
+	if v != nil {
+		_c.SetDurationSeconds(*v)
+	}
+	return _c
+}
+
 // SetStorageKey sets the "storage_key" field.
 func (_c *AttachmentCreate) SetStorageKey(v string) *AttachmentCreate {
 	_c.mutation.SetStorageKey(v)
@@ -300,6 +342,18 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.SizeBytes(); ok {
 		_spec.SetField(attachment.FieldSizeBytes, field.TypeInt64, value)
 		_node.SizeBytes = value
+	}
+	if value, ok := _c.mutation.Width(); ok {
+		_spec.SetField(attachment.FieldWidth, field.TypeInt32, value)
+		_node.Width = &value
+	}
+	if value, ok := _c.mutation.Height(); ok {
+		_spec.SetField(attachment.FieldHeight, field.TypeInt32, value)
+		_node.Height = &value
+	}
+	if value, ok := _c.mutation.DurationSeconds(); ok {
+		_spec.SetField(attachment.FieldDurationSeconds, field.TypeFloat64, value)
+		_node.DurationSeconds = &value
 	}
 	if value, ok := _c.mutation.StorageKey(); ok {
 		_spec.SetField(attachment.FieldStorageKey, field.TypeString, value)

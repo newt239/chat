@@ -78,6 +78,21 @@ func (r *UseCaseRegistry) NewChannelMemberUseCase() channelmemberuc.ChannelMembe
 	)
 }
 
+// NewMessageOutputBuilder はメッセージを返すユースケースで共有する出力の組み立て役です
+func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuilder {
+	return messageuc.NewMessageOutputBuilder(
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewUserGroupRepository(),
+		r.domainRegistry.NewMessageUserMentionRepository(),
+		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.domainRegistry.NewMessageLinkRepository(),
+		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewPinRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+	)
+}
+
 func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 	return messageuc.NewMessageUseCase(
 		r.domainRegistry.NewMessageRepository(),
@@ -86,13 +101,12 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
 		r.domainRegistry.NewMessageUserMentionRepository(),
 		r.domainRegistry.NewMessageGroupMentionRepository(),
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewThreadRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
-		r.infrastructureRegistry.NewOGPService(),
+		r.NewMessageOutputBuilder(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.infrastructureRegistry.NewMentionService(),
 		r.infrastructureRegistry.NewLinkProcessingService(),
@@ -149,15 +163,7 @@ func (r *UseCaseRegistry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
 	return bookmarkuc.NewBookmarkInteractor(
 		r.domainRegistry.NewBookmarkRepository(),
 		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
-		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewMessageUserMentionRepository(),
-		r.domainRegistry.NewMessageGroupMentionRepository(),
-		r.domainRegistry.NewMessageLinkRepository(),
-		r.domainRegistry.NewAttachmentRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
+		r.NewMessageOutputBuilder(),
 		r.domainRegistry.NewChannelAccessService(),
 	)
 }
@@ -171,6 +177,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
+		r.NewMessageOutputBuilder(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.NewSystemMessageUseCase(),
 	)
@@ -183,19 +190,6 @@ func (r *UseCaseRegistry) NewAttachmentUseCase() *attachmentuc.Interactor {
 		r.domainRegistry.NewChannelAccessService(),
 		r.infrastructureRegistry.NewStorageService(),
 		r.infrastructureRegistry.NewStorageConfig(),
-	)
-}
-
-func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuilder {
-	return messageuc.NewMessageOutputBuilder(
-		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
-		r.domainRegistry.NewMessageUserMentionRepository(),
-		r.domainRegistry.NewMessageGroupMentionRepository(),
-		r.domainRegistry.NewMessageLinkRepository(),
-		r.domainRegistry.NewAttachmentRepository(),
-		messageuc.NewMessageOutputAssembler(),
 	)
 }
 
