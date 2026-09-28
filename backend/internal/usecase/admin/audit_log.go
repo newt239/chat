@@ -21,15 +21,15 @@ func (i *Interactor) ListAuditLogs(ctx context.Context, input ListAuditLogsInput
 		return nil, err
 	}
 
-	logs, total, err := i.auditLogRepo.List(ctx, input.filter(input.Limit, input.Offset))
+	page, err := i.auditLogRepo.List(ctx, input.filter(input.Limit, input.PageToken))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list audit logs: %w", err)
 	}
-	outputs, err := i.withActors(ctx, logs)
+	outputs, err := i.withActors(ctx, page.Logs)
 	if err != nil {
 		return nil, err
 	}
-	return &ListAuditLogsOutput{Logs: outputs, TotalCount: total}, nil
+	return &ListAuditLogsOutput{Logs: outputs, NextPageToken: page.NextPageToken}, nil
 }
 
 // ExportAuditLogs は絞り込んだ監査ログを CSV で返し、書き出したこと自体も監査ログに残します
@@ -37,15 +37,12 @@ func (i *Interactor) ExportAuditLogs(ctx context.Context, input AuditLogQuery) (
 	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
 	}
-	if _, err := i.permissionSvc.Ensure(ctx, input.WorkspaceID, input.RequesterID, entity.PermissionExportData); err != nil {
-		return nil, err
-	}
 
-	logs, _, err := i.auditLogRepo.List(ctx, input.filter(maxExportAuditLogs, 0))
+	page, err := i.auditLogRepo.List(ctx, input.filter(maxExportAuditLogs, ""))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list audit logs: %w", err)
 	}
-	outputs, err := i.withActors(ctx, logs)
+	outputs, err := i.withActors(ctx, page.Logs)
 	if err != nil {
 		return nil, err
 	}
@@ -58,10 +55,8 @@ func (i *Interactor) ExportAuditLogs(ctx context.Context, input AuditLogQuery) (
 	i.recorder.Record(ctx, entity.AuditLog{
 		WorkspaceID: input.WorkspaceID,
 		ActorID:     &input.RequesterID,
-		Action:      entity.AuditActionDataExported,
-		TargetType:  entity.AuditTargetData,
-		TargetLabel: "監査ログ",
-		Metadata:    map[string]string{"kind": "audit_log", "format": "csv", "count": strconv.Itoa(len(outputs))},
+		Action:      entity.AuditActionAuditLogExported,
+		Metadata:    map[string]string{"count": strconv.Itoa(len(outputs))},
 	})
 	return &ExportOutput{
 		Content:  content,
@@ -69,7 +64,7 @@ func (i *Interactor) ExportAuditLogs(ctx context.Context, input AuditLogQuery) (
 	}, nil
 }
 
-func (q AuditLogQuery) filter(limit, offset int) entity.AuditLogFilter {
+func (q AuditLogQuery) filter(limit int, pageToken string) entity.AuditLogFilter {
 	return entity.AuditLogFilter{
 		WorkspaceID: q.WorkspaceID,
 		ActorID:     q.ActorID,
@@ -77,7 +72,7 @@ func (q AuditLogQuery) filter(limit, offset int) entity.AuditLogFilter {
 		Since:       q.Since,
 		Until:       q.Until,
 		Limit:       limit,
-		Offset:      offset,
+		PageToken:   pageToken,
 	}
 }
 

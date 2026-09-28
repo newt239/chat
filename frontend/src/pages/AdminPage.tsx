@@ -79,7 +79,7 @@ export const AdminPage = () => {
         onSelectionChange={(key) => {
           const next = adminTabValues.find((value) => value === key);
           if (next !== undefined) {
-            void navigate({ search: { tab: next } });
+            void navigate({ search: (prev) => ({ ...prev, tab: next }) });
           }
         }}
         className="min-h-0 flex-1"

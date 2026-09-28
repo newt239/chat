@@ -9,6 +9,7 @@ import { Button } from "#/components/ui/Button";
 import { toast } from "#/components/ui/toast";
 import { closeRightSidePanelAtom } from "#/providers/store/ui";
 
+import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroupActions, useUserGroups } from "../hooks/useUserGroups";
 import { UserGroupDialog } from "./UserGroupDialog";
 import { UserGroupMembers } from "./UserGroupMembers";
@@ -25,6 +26,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   const { remove } = useUserGroupActions();
   const closePanel = useSetAtom(closeRightSidePanelAtom);
   const [dialog, setDialog] = useState<"edit" | "delete" | null>(null);
+  const canManage = useCanManageUserGroups(workspaceId);
   const group = groups?.find((candidate) => candidate.id === groupId);
 
   if (group === undefined) {
@@ -41,16 +43,18 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
           <p className="m-0 text-[13px]">{group.description}</p>
         )}
         <div className="flex flex-wrap gap-1.5">
-          <Button
-            variant="secondary"
-            size="sm"
-            onPress={() => {
-              setDialog("edit");
-            }}
-          >
-            <IconEdit aria-hidden />
-            {t("userGroup.edit")}
-          </Button>
+          {canManage && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onPress={() => {
+                setDialog("edit");
+              }}
+            >
+              <IconEdit aria-hidden />
+              {t("userGroup.edit")}
+            </Button>
+          )}
           <Button
             variant="secondary"
             size="sm"
@@ -62,17 +66,19 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
             <IconAt aria-hidden />
             {t("userGroup.copyMention")}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-danger"
-            onPress={() => {
-              setDialog("delete");
-            }}
-          >
-            <IconTrash aria-hidden />
-            {t("common.delete")}
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-danger"
+              onPress={() => {
+                setDialog("delete");
+              }}
+            >
+              <IconTrash aria-hidden />
+              {t("common.delete")}
+            </Button>
+          )}
         </div>
       </section>
       <section className="flex flex-col gap-2 px-4 py-3">

@@ -10,7 +10,6 @@ import (
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
-	exportuc "github.com/newt239/chat/internal/usecase/export"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 	mentionuc "github.com/newt239/chat/internal/usecase/mention"
@@ -73,18 +72,6 @@ func (r *UseCaseRegistry) NewAdminUseCase() *adminuc.Interactor {
 
 func (r *UseCaseRegistry) NewInsightUseCase() *insightuc.Interactor {
 	return insightuc.NewInteractor(r.domainRegistry.NewWorkspaceRepository(), r.domainRegistry.NewInsightRepository())
-}
-
-func (r *UseCaseRegistry) NewExportUseCase() *exportuc.Interactor {
-	return exportuc.NewInteractor(
-		r.domainRegistry.NewWorkspaceRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewPermissionService(),
-		r.NewAuditRecorder(),
-	)
 }
 
 func (r *UseCaseRegistry) NewWorkspaceUseCase() workspaceuc.WorkspaceUseCase {
@@ -198,7 +185,6 @@ func (r *UseCaseRegistry) NewUserGroupUseCase() usergroupuc.UserGroupUseCase {
 		r.domainRegistry.NewUserGroupRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewPermissionService(),
 	)
 }
 

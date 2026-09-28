@@ -44,10 +44,10 @@ const setup = async (myRole: WorkspaceRole) => {
 };
 
 describe("AdminPermissionsTab", () => {
-  test("9 つの操作を並べ、オーナー列は常にオンで変更できない", async () => {
+  test("6 つの操作を並べ、オーナー列は常にオンで変更できない", async () => {
     await setup(WorkspaceRole.ADMIN);
-    expect(screen.getAllByRole("rowheader")).toHaveLength(9);
-    const owner = screen.getByRole("switch", { name: "オーナー: データのエクスポート" });
+    expect(screen.getAllByRole("rowheader")).toHaveLength(6);
+    const owner = screen.getByRole("switch", { name: "オーナー: 他人のメッセージの削除" });
     expect(owner).toBeChecked();
     expect(owner).toBeDisabled();
     expect(screen.getByRole("switch", { name: "メンバー: メッセージのピン留め" })).toBeChecked();

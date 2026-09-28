@@ -23,7 +23,7 @@ export const parentPath = (path: string) => ancestorPaths(path).at(-1) ?? null;
 
 export const lastSegment = (path: string) => path.split("/").at(-1) ?? path;
 
-// サーバーと同じ制約（各階層 32 文字以内・4 階層まで）に加え、使える文字を小文字の英数字・ハイフン・アンダースコアに絞る
+// サーバーと同じ制約（小文字の英数字・ハイフン・アンダースコア、各階層 32 文字以内・4 階層まで）
 export const validateChannelPath = (
   path: string,
   existingNames: readonly string[],

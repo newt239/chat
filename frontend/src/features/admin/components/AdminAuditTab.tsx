@@ -2,38 +2,44 @@ import { useState } from "react";
 
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { formatNumber } from "@chat/i18n";
-import { IconChevronLeft, IconChevronRight, IconDownload } from "@tabler/icons-react";
+import { IconDownload } from "@tabler/icons-react";
+import { getRouteApi } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button";
-import { IconButton } from "#/components/ui/IconButton";
 import { Select } from "#/components/ui/Select";
 import { cn } from "#/components/ui/styles";
+import { TextField } from "#/components/ui/TextField";
 import { toast } from "#/components/ui/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
-import { useAuditLogs } from "#/features/admin/hooks/useAdminQueries";
+import { useAuditLogPages } from "#/features/admin/hooks/useAdminQueries";
+import { auditActionKeyValues, auditPeriodValues } from "#/features/admin/schemas";
 import { downloadText } from "#/features/admin/utils/downloadText";
 import { auditActionKeys } from "#/features/admin/utils/labels";
+import { toLocalDateTime } from "#/features/admin/utils/localDateTime";
 import { AuditAction } from "#/gen/chat/v1/admin_service_pb";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { AuditLogTable } from "./AuditLogTable";
 
+import type { adminSearchSchema } from "#/features/admin/schemas";
 import type { AdminMember } from "#/gen/chat/v1/admin_service_pb";
+
+import type { z } from "zod";
+
+type AdminSearch = z.infer<typeof adminSearchSchema>;
 
 const PAGE_SIZE = 50;
 const HOUR = 60 * 60 * 1000;
 
-const periods = {
+const presetDurations = {
   all: null,
   day: 24 * HOUR,
   month: 30 * 24 * HOUR,
   quarter: 90 * 24 * HOUR,
   week: 7 * 24 * HOUR,
 } as const;
-type Period = keyof typeof periods;
-const periodValues = ["day", "week", "month", "quarter", "all"] as const;
 
 const actions = [
   AuditAction.LOGIN,
@@ -46,8 +52,23 @@ const actions = [
   AuditAction.CHANNEL_ARCHIVED,
   AuditAction.CHANNEL_UNARCHIVED,
   AuditAction.PERMISSION_CHANGED,
-  AuditAction.DATA_EXPORTED,
+  AuditAction.AUDIT_LOG_EXPORTED,
 ];
+
+const adminRoute = getRouteApi("/app/$workspaceId/admin");
+
+const parseLocalDateTime = (value: string | undefined) =>
+  value === undefined ? undefined : new Date(value);
+
+// 終了は含まない（until 未満）
+const auditRange = (search: AdminSearch, now: number) => {
+  const period = search.period ?? "month";
+  if (period === "custom") {
+    return { since: parseLocalDateTime(search.since), until: parseLocalDateTime(search.until) };
+  }
+  const duration = presetDurations[period];
+  return { since: duration === null ? undefined : new Date(now - duration), until: undefined };
+};
 
 type AdminAuditTabProps = {
   workspaceId: string;
@@ -58,76 +79,111 @@ export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
   const { exportAuditLogs } = useAdminActions();
-  const [actorId, setActorId] = useState("all");
-  const [actionKey, setActionKey] = useState("all");
-  const [period, setPeriod] = useState<Period>("month");
-  const [page, setPage] = useState(0);
-  // 期間の起点は絞り込みを変えたときに固定し、再描画のたびにクエリが変わらないようにする
+  const search = adminRoute.useSearch();
+  const navigate = adminRoute.useNavigate();
+  // プリセットの期間の起点は絞り込みを変えたときに固定し、再描画のたびにクエリが変わらないようにする
   const [now, setNow] = useState(() => Date.now());
 
-  const periodMs = periods[period];
-  const action = actions.find((value) => auditActionKeys[value] === actionKey);
+  const period = search.period ?? "month";
+  const { since, until } = auditRange(search, now);
+  const isInvalidRange = since !== undefined && until !== undefined && since >= until;
+  const action = actions.find((value) => auditActionKeys[value] === search.action);
+
   const filter = {
     actions: action === undefined ? [] : [action],
-    actorId: actorId === "all" ? undefined : actorId,
-    since: periodMs === null ? undefined : timestampFromDate(new Date(now - periodMs)),
+    actorId: search.actor,
+    since: since === undefined ? undefined : timestampFromDate(since),
+    until: until === undefined ? undefined : timestampFromDate(until),
     workspaceId,
   };
-  const { data, error, isPlaceholderData } = useAuditLogs({
-    ...filter,
-    limit: PAGE_SIZE,
-    offset: page * PAGE_SIZE,
-  });
+  const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData } =
+    useAuditLogPages({ ...filter, limit: PAGE_SIZE });
+  const logs = data?.pages.flatMap((page) => page.logs) ?? [];
 
-  const changeFilter =
-    <T,>(setter: (value: T) => void) =>
-    (value: T) => {
-      setter(value);
-      setPage(0);
-      setNow(Date.now());
-    };
-  const total = data?.totalCount ?? 0;
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const updateSearch = (patch: Partial<AdminSearch>) => {
+    setNow(Date.now());
+    void navigate({ replace: true, search: (prev) => ({ ...prev, ...patch }) });
+  };
 
   return (
     <div className="flex flex-col gap-3.5">
-      <div className="flex flex-wrap items-end gap-2">
-        <Select
-          label={t("admin.audit.actorFilter")}
-          className="w-44"
-          value={actorId}
-          onChange={changeFilter(setActorId)}
-          options={[
-            { label: t("admin.audit.allActors"), value: "all" },
-            ...members.map((member) => ({ label: member.displayName, value: member.userId })),
-          ]}
-        />
-        <Select
-          label={t("admin.audit.actionFilter")}
-          className="w-52"
-          value={actionKey}
-          onChange={changeFilter(setActionKey)}
-          options={[
-            { label: t("admin.audit.allActions"), value: "all" },
-            ...actions.map((value) => ({
-              label: t(`admin.audit.actions.${auditActionKeys[value]}`),
-              value: auditActionKeys[value],
-            })),
-          ]}
-        />
-        <Select
-          label={t("admin.audit.periodFilter")}
-          className="w-32"
-          value={period}
-          onChange={changeFilter(setPeriod)}
-          options={periodValues.map((value) => ({
-            label: t(`admin.audit.periods.${value}`),
-            value,
-          }))}
-        />
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-wrap items-start gap-2">
+          <Select
+            label={t("admin.audit.actorFilter")}
+            className="w-44"
+            value={search.actor ?? "all"}
+            onChange={(value) => {
+              updateSearch({ actor: value === "all" ? undefined : value });
+            }}
+            options={[
+              { label: t("admin.audit.allActors"), value: "all" },
+              ...members.map((member) => ({ label: member.displayName, value: member.userId })),
+            ]}
+          />
+          <Select
+            label={t("admin.audit.actionFilter")}
+            className="w-52"
+            value={action === undefined ? "all" : auditActionKeys[action]}
+            onChange={(value) => {
+              updateSearch({ action: auditActionKeyValues.find((key) => key === value) });
+            }}
+            options={[
+              { label: t("admin.audit.allActions"), value: "all" },
+              ...actions.map((value) => ({
+                label: t(`admin.audit.actions.${auditActionKeys[value]}`),
+                value: auditActionKeys[value],
+              })),
+            ]}
+          />
+          <Select
+            label={t("admin.audit.periodFilter")}
+            className="w-36"
+            value={period}
+            onChange={(value) => {
+              // 日時の指定に切り替えたときは、それまでの期間を初期値にする
+              updateSearch(
+                value === "custom"
+                  ? {
+                      period: value,
+                      since: toLocalDateTime(since ?? new Date(now - presetDurations.month)),
+                      until: undefined,
+                    }
+                  : { period: value, since: undefined, until: undefined },
+              );
+            }}
+            options={auditPeriodValues.map((value) => ({
+              label: t(`admin.audit.periods.${value}`),
+              value,
+            }))}
+          />
+          {period === "custom" && (
+            <>
+              <TextField
+                type="datetime-local"
+                label={t("admin.audit.since")}
+                className="w-52"
+                value={search.since ?? ""}
+                onChange={(value) => {
+                  updateSearch({ since: value || undefined });
+                }}
+              />
+              <TextField
+                type="datetime-local"
+                label={t("admin.audit.until")}
+                className="w-52"
+                value={search.until ?? ""}
+                errorMessage={isInvalidRange ? t("admin.audit.invalidRange") : undefined}
+                onChange={(value) => {
+                  updateSearch({ until: value || undefined });
+                }}
+              />
+            </>
+          )}
+        </div>
         <Button
           variant="secondary"
-          className="ml-auto"
+          className="mt-[22px] ml-auto"
           isPending={exportAuditLogs.isPending}
           onPress={() => {
             exportAuditLogs.mutate(filter, {
@@ -153,39 +209,23 @@ export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
             isPlaceholderData && "opacity-60",
           )}
         >
-          <AuditLogTable logs={data?.logs ?? []} />
+          <AuditLogTable logs={logs} />
         </div>
       )}
       <nav className="flex items-center justify-between gap-2 text-xs text-muted tabular-nums">
-        <span>
-          {total === 0
-            ? t("admin.audit.range", { from: 0, to: 0, total: 0 })
-            : t("admin.audit.range", {
-                from: formatNumber(page * PAGE_SIZE + 1, locale),
-                to: formatNumber(Math.min(total, (page + 1) * PAGE_SIZE), locale),
-                total: formatNumber(total, locale),
-              })}
-        </span>
-        <span className="flex items-center gap-1">
-          <IconButton
-            label={t("admin.audit.prev")}
-            isDisabled={page === 0}
+        <span>{t("admin.audit.loaded", { shown: formatNumber(logs.length, locale) })}</span>
+        {hasNextPage && (
+          <Button
+            variant="secondary"
+            size="sm"
+            isPending={isFetchingNextPage}
             onPress={() => {
-              setPage(page - 1);
+              void fetchNextPage();
             }}
           >
-            <IconChevronLeft />
-          </IconButton>
-          <IconButton
-            label={t("admin.audit.next")}
-            isDisabled={page + 1 >= pageCount}
-            onPress={() => {
-              setPage(page + 1);
-            }}
-          >
-            <IconChevronRight />
-          </IconButton>
-        </span>
+            {t("admin.audit.loadMore")}
+          </Button>
+        )}
       </nav>
     </div>
   );

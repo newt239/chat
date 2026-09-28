@@ -53,7 +53,7 @@ message CreateChannelRequest {
   // 存在しない親は自動で作成する
   string name = 2 [(buf.validate.field).string = {
     max_len: 200
-    pattern: "^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$"
+    pattern: "^[a-z0-9_-]{1,32}(/[a-z0-9_-]{1,32}){0,3}$"
   }];
   optional string description = 3;
   bool is_private = 4;
@@ -78,7 +78,7 @@ message UpdateChannelRequest {
   // 変更できるのは末尾のセグメントのみ
   optional string name = 2 [(buf.validate.field).string = {
     max_len: 200
-    pattern: "^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$"
+    pattern: "^[a-z0-9_-]{1,32}(/[a-z0-9_-]{1,32}){0,3}$"
   }];
   optional string description = 3;
   optional bool is_private = 4;

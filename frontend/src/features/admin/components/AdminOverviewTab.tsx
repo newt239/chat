@@ -36,10 +36,6 @@ export const AdminOverviewTab = ({ workspaceId, members }: AdminOverviewTabProps
       value: active.filter((member) => isAdminRole(member.role)).length,
     },
     { label: t("admin.overview.suspended"), value: members.length - active.length },
-    {
-      label: t("admin.overview.twoFactorMissing"),
-      value: active.filter((member) => !member.twoFactorEnabled).length,
-    },
   ];
   const ranking = (valueOf: (member: AdminMember) => number, format: (value: number) => string) =>
     members

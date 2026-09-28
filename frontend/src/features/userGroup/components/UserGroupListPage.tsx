@@ -13,6 +13,7 @@ import { focusRing } from "#/components/ui/styles";
 import { PageHeader } from "#/features/layout/components/PageHeader";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
+import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroups } from "../hooks/useUserGroups";
 import { UserGroupDialog } from "./UserGroupDialog";
 
@@ -23,19 +24,24 @@ export const UserGroupListPage = () => {
   const { data: groups, isLoading } = useUserGroups(workspaceId);
   const setRightPanel = useSetAtom(setRightSidePanelViewAtom);
   const [isCreating, setIsCreating] = useState(false);
+  const canManage = useCanManageUserGroups(workspaceId);
 
   return (
     <>
       <PageHeader icon={<IconUsers />} title={t("userGroup.pageTitle")}>
-        <Button
-          size="sm"
-          onPress={() => {
-            setIsCreating(true);
-          }}
-        >
-          <IconPlus aria-hidden />
-          {t("userGroup.create")}
-        </Button>
+        {canManage ? (
+          <Button
+            size="sm"
+            onPress={() => {
+              setIsCreating(true);
+            }}
+          >
+            <IconPlus aria-hidden />
+            {t("userGroup.create")}
+          </Button>
+        ) : (
+          <span className="text-caption text-muted max-md:hidden">{t("userGroup.adminOnly")}</span>
+        )}
       </PageHeader>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {isLoading ? (
@@ -44,7 +50,7 @@ export const UserGroupListPage = () => {
           <EmptyState
             icon={<IconUsers />}
             title={t("userGroup.empty")}
-            description={t("userGroup.emptyHint")}
+            description={canManage ? t("userGroup.emptyHint") : t("userGroup.adminOnly")}
           />
         ) : (
           <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5 p-0">
