@@ -1,9 +1,14 @@
+import { captureVideoFrame } from "./captureVideoFrame";
 import { mediaKindOf } from "./mediaKind";
+
+import type { VideoThumbnail } from "./captureVideoFrame";
 
 export type MediaSize = {
   width?: number;
   height?: number;
   durationSeconds?: number;
+  // 動画の再生前に表示する画像。切り出せなければ付けない
+  thumbnail?: VideoThumbnail;
 };
 
 const TIMEOUT_MS = 5_000;
@@ -49,12 +54,20 @@ export const measureMedia = async (file: File): Promise<MediaSize> => {
       const audio = await loadElement(document.createElement("audio"), "loadedmetadata", src);
       return { durationSeconds: finite(audio.duration) };
     }
-    const video = await loadElement(document.createElement("video"), "loadedmetadata", src);
-    return {
+    const element = document.createElement("video");
+    element.muted = true;
+    element.playsInline = true;
+    element.preload = "auto";
+    const video = await loadElement(element, "loadedmetadata", src);
+    const size = {
       durationSeconds: finite(video.duration),
       height: positive(video.videoHeight),
       width: positive(video.videoWidth),
     };
+    if (size.width === undefined || size.height === undefined) {
+      return size;
+    }
+    return { ...size, thumbnail: await captureVideoFrame(video).catch(() => undefined) };
   } catch {
     return {};
   } finally {

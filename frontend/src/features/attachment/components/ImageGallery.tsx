@@ -48,6 +48,7 @@ export const ImageGallery = ({ images, message }: ImageGalleryProps) => {
           style={{ aspectRatio: `${box.width} / ${box.height}`, width: box.width }}
         >
           <AttachmentImage
+            thumbnail={false}
             attachmentId={first.id}
             alt={first.fileName}
             className={imageClassName}
@@ -80,6 +81,7 @@ export const ImageGallery = ({ images, message }: ImageGalleryProps) => {
             className={tileClassName}
           >
             <AttachmentImage
+              thumbnail={false}
               attachmentId={image.id}
               alt={image.fileName}
               className={imageClassName}
