@@ -21,6 +21,8 @@ type RouterConfig struct {
 	WorkspaceRepository repository.WorkspaceRepository
 	ChannelAccess       service.ChannelAccessService
 	RPCHandler          http.Handler
+	// 開発用のローカルストレージを使うときだけ設定する
+	StorageHandler http.Handler
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -29,7 +31,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     cfg.AllowedOrigins,
-		AllowMethods:     connectcors.AllowedMethods(),
+		AllowMethods:     append(connectcors.AllowedMethods(), http.MethodPut),
 		AllowHeaders:     append(connectcors.AllowedHeaders(), echo.HeaderAuthorization),
 		ExposeHeaders:    connectcors.ExposedHeaders(),
 		AllowCredentials: true,
@@ -45,6 +47,10 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.ChannelAccess, cfg.AllowedOrigins))
 
 	e.Any("/chat.v1.*", echo.WrapHandler(cfg.RPCHandler))
+
+	if cfg.StorageHandler != nil {
+		e.Any("/storage/*", echo.WrapHandler(cfg.StorageHandler))
+	}
 
 	return e
 }

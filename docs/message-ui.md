@@ -13,5 +13,5 @@
 ## 表示
 
 - 時刻は `formatTime`、ツールチップに `formatDateTime`。スレッドの最終返信は `formatRelativeTime`。人名の列挙は `Intl.ListFormat`。
-- Markdown の見た目は `markdownClassName`（本文とプレビューで共有）。本格的な整備は #14 で行う。
+- Markdown の見た目は `markdownClassName`（本文とプレビューで共有）。メディア・リンク・リアクションの表示は `message-display.md` を参照。
 - 投稿欄の書式ボタンはコンテナクエリで幅が足りるとき（スレッド欄やモバイル以外）だけ出す。高さは `field-sizing: content` で内容に合わせる。

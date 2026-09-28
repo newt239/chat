@@ -42,8 +42,3 @@ export const usePinnedMessages = (channelId: string | null) => {
 
   return { ...query, pins: pinsSorted };
 };
-
-export const useIsPinned = (messageId: string, channelId: string | null) => {
-  const { data: pins } = usePins(channelId);
-  return pins?.some((pin) => pin.message.id === messageId) ?? false;
-};

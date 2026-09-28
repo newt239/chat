@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { create } from "@bufbuild/protobuf";
 import { timestampNow } from "@bufbuild/protobuf/wkt";
 
-import { ReactionSchema, TimelineItemSchema } from "#/gen/chat/v1/message_pb";
+import { MessagePinSchema, ReactionSchema, TimelineItemSchema } from "#/gen/chat/v1/message_pb";
 import { toDate } from "#/lib/timestamp";
 
 import type { Message, Reaction, TimelineItem } from "#/gen/chat/v1/message_pb";
@@ -135,7 +135,7 @@ export const useChannelTimeline = ({
         );
       }),
 
-      wsClient.on("reactionAdded", ({ channelId, emoji, messageId, userId }) => {
+      wsClient.on("reactionAdded", ({ channelId, emoji, messageId, userId, user, createdAt }) => {
         if (!isCurrentChannel(channelId)) {
           return;
         }
@@ -146,10 +146,10 @@ export const useChannelTimeline = ({
               : [
                   ...reactions,
                   create(ReactionSchema, {
-                    createdAt: timestampNow(),
+                    createdAt: createdAt ?? timestampNow(),
                     emoji,
                     messageId,
-                    user: { id: userId },
+                    user: user ?? { id: userId },
                   }),
                 ],
           ),
@@ -163,6 +163,35 @@ export const useChannelTimeline = ({
         setTimeline((prev) =>
           updateReactions(prev, messageId, (reactions) =>
             reactions.filter((r) => !(r.emoji === emoji && r.user?.id === userId)),
+          ),
+        );
+      }),
+
+      wsClient.on("pinCreated", ({ channelId, messageId, pinnedByUser, pinnedAt }) => {
+        if (!isCurrentChannel(channelId)) {
+          return;
+        }
+        setTimeline((prev) =>
+          updateUserMessages(
+            prev,
+            (message) => message.id === messageId,
+            (message) => ({
+              ...message,
+              pin: create(MessagePinSchema, { pinnedAt, pinnedBy: pinnedByUser }),
+            }),
+          ),
+        );
+      }),
+
+      wsClient.on("pinDeleted", ({ channelId, messageId }) => {
+        if (!isCurrentChannel(channelId)) {
+          return;
+        }
+        setTimeline((prev) =>
+          updateUserMessages(
+            prev,
+            (message) => message.id === messageId,
+            (message) => ({ ...message, pin: undefined }),
           ),
         );
       }),

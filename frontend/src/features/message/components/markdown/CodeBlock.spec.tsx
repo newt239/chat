@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
 
 import { CodeBlock } from "./CodeBlock";
@@ -44,5 +45,18 @@ describe("CodeBlock", () => {
       { timeout: 5000 },
     );
     expect(screen.getByText("unknown")).toBeInTheDocument();
+  });
+
+  test("12 行を超えるコードは折りたたみ、すべて表示で広げる", async () => {
+    renderCodeBlock(Array.from({ length: 20 }, (_, i) => `line ${i}`).join("\n"));
+
+    await userEvent.click(screen.getByRole("button", { name: "すべて表示（20 行）" }));
+    expect(screen.queryByRole("button", { name: "すべて表示（20 行）" })).toBeNull();
+  });
+
+  test("短いコードは折りたたまない", () => {
+    renderCodeBlock("a\nb");
+
+    expect(screen.queryByRole("button", { name: /すべて表示/ })).toBeNull();
   });
 });
