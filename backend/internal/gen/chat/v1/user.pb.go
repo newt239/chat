@@ -7,6 +7,7 @@
 package chatv1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -21,6 +22,107 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SidebarStyle int32
+
+const (
+	SidebarStyle_SIDEBAR_STYLE_UNSPECIFIED SidebarStyle = 0
+	SidebarStyle_SIDEBAR_STYLE_TINTED      SidebarStyle = 1
+	SidebarStyle_SIDEBAR_STYLE_LIGHT       SidebarStyle = 2
+)
+
+// Enum value maps for SidebarStyle.
+var (
+	SidebarStyle_name = map[int32]string{
+		0: "SIDEBAR_STYLE_UNSPECIFIED",
+		1: "SIDEBAR_STYLE_TINTED",
+		2: "SIDEBAR_STYLE_LIGHT",
+	}
+	SidebarStyle_value = map[string]int32{
+		"SIDEBAR_STYLE_UNSPECIFIED": 0,
+		"SIDEBAR_STYLE_TINTED":      1,
+		"SIDEBAR_STYLE_LIGHT":       2,
+	}
+)
+
+func (x SidebarStyle) Enum() *SidebarStyle {
+	p := new(SidebarStyle)
+	*p = x
+	return p
+}
+
+func (x SidebarStyle) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SidebarStyle) Descriptor() protoreflect.EnumDescriptor {
+	return file_chat_v1_user_proto_enumTypes[0].Descriptor()
+}
+
+func (SidebarStyle) Type() protoreflect.EnumType {
+	return &file_chat_v1_user_proto_enumTypes[0]
+}
+
+func (x SidebarStyle) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SidebarStyle.Descriptor instead.
+func (SidebarStyle) EnumDescriptor() ([]byte, []int) {
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{0}
+}
+
+type ColorMode int32
+
+const (
+	ColorMode_COLOR_MODE_UNSPECIFIED ColorMode = 0
+	ColorMode_COLOR_MODE_LIGHT       ColorMode = 1
+	ColorMode_COLOR_MODE_DARK        ColorMode = 2
+	ColorMode_COLOR_MODE_SYSTEM      ColorMode = 3
+)
+
+// Enum value maps for ColorMode.
+var (
+	ColorMode_name = map[int32]string{
+		0: "COLOR_MODE_UNSPECIFIED",
+		1: "COLOR_MODE_LIGHT",
+		2: "COLOR_MODE_DARK",
+		3: "COLOR_MODE_SYSTEM",
+	}
+	ColorMode_value = map[string]int32{
+		"COLOR_MODE_UNSPECIFIED": 0,
+		"COLOR_MODE_LIGHT":       1,
+		"COLOR_MODE_DARK":        2,
+		"COLOR_MODE_SYSTEM":      3,
+	}
+)
+
+func (x ColorMode) Enum() *ColorMode {
+	p := new(ColorMode)
+	*p = x
+	return p
+}
+
+func (x ColorMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ColorMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_chat_v1_user_proto_enumTypes[1].Descriptor()
+}
+
+func (ColorMode) Type() protoreflect.EnumType {
+	return &file_chat_v1_user_proto_enumTypes[1]
+}
+
+func (x ColorMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ColorMode.Descriptor instead.
+func (ColorMode) EnumDescriptor() ([]byte, []int) {
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
+}
+
 // ログイン中のユーザー自身の情報
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -29,6 +131,7 @@ type User struct {
 	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl     *string                `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	Bio           *string                `protobuf:"bytes,5,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	Preferences   *UserPreferences       `protobuf:"bytes,6,opt,name=preferences,proto3" json:"preferences,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -98,6 +201,135 @@ func (x *User) GetBio() string {
 	return ""
 }
 
+func (x *User) GetPreferences() *UserPreferences {
+	if x != nil {
+		return x.Preferences
+	}
+	return nil
+}
+
+// テーマ入力。色は OKLCH の色相と彩度から計算する
+type ThemePreference struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Hue           int32                  `protobuf:"varint,1,opt,name=hue,proto3" json:"hue,omitempty"`
+	Chroma        float64                `protobuf:"fixed64,2,opt,name=chroma,proto3" json:"chroma,omitempty"`
+	Sidebar       SidebarStyle           `protobuf:"varint,3,opt,name=sidebar,proto3,enum=chat.v1.SidebarStyle" json:"sidebar,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ThemePreference) Reset() {
+	*x = ThemePreference{}
+	mi := &file_chat_v1_user_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ThemePreference) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ThemePreference) ProtoMessage() {}
+
+func (x *ThemePreference) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ThemePreference.ProtoReflect.Descriptor instead.
+func (*ThemePreference) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ThemePreference) GetHue() int32 {
+	if x != nil {
+		return x.Hue
+	}
+	return 0
+}
+
+func (x *ThemePreference) GetChroma() float64 {
+	if x != nil {
+		return x.Chroma
+	}
+	return 0
+}
+
+func (x *ThemePreference) GetSidebar() SidebarStyle {
+	if x != nil {
+		return x.Sidebar
+	}
+	return SidebarStyle_SIDEBAR_STYLE_UNSPECIFIED
+}
+
+// 端末をまたいで共有する表示設定
+type UserPreferences struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Theme         *ThemePreference       `protobuf:"bytes,1,opt,name=theme,proto3" json:"theme,omitempty"`
+	ColorMode     ColorMode              `protobuf:"varint,2,opt,name=color_mode,json=colorMode,proto3,enum=chat.v1.ColorMode" json:"color_mode,omitempty"`
+	Locale        string                 `protobuf:"bytes,3,opt,name=locale,proto3" json:"locale,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserPreferences) Reset() {
+	*x = UserPreferences{}
+	mi := &file_chat_v1_user_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserPreferences) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserPreferences) ProtoMessage() {}
+
+func (x *UserPreferences) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserPreferences.ProtoReflect.Descriptor instead.
+func (*UserPreferences) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *UserPreferences) GetTheme() *ThemePreference {
+	if x != nil {
+		return x.Theme
+	}
+	return nil
+}
+
+func (x *UserPreferences) GetColorMode() ColorMode {
+	if x != nil {
+		return x.ColorMode
+	}
+	return ColorMode_COLOR_MODE_UNSPECIFIED
+}
+
+func (x *UserPreferences) GetLocale() string {
+	if x != nil {
+		return x.Locale
+	}
+	return ""
+}
+
 // メッセージの投稿者などに埋め込む最小限のユーザー情報
 type UserSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -110,7 +342,7 @@ type UserSummary struct {
 
 func (x *UserSummary) Reset() {
 	*x = UserSummary{}
-	mi := &file_chat_v1_user_proto_msgTypes[1]
+	mi := &file_chat_v1_user_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -122,7 +354,7 @@ func (x *UserSummary) String() string {
 func (*UserSummary) ProtoMessage() {}
 
 func (x *UserSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_proto_msgTypes[1]
+	mi := &file_chat_v1_user_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -135,7 +367,7 @@ func (x *UserSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserSummary.ProtoReflect.Descriptor instead.
 func (*UserSummary) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *UserSummary) GetId() string {
@@ -163,22 +395,45 @@ var File_chat_v1_user_proto protoreflect.FileDescriptor
 
 const file_chat_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12chat/v1/user.proto\x12\achat.v1\"\xa1\x01\n" +
+	"\x12chat/v1/user.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\xdd\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
 	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\x04 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
-	"\x03bio\x18\x05 \x01(\tH\x01R\x03bio\x88\x01\x01B\r\n" +
+	"\x03bio\x18\x05 \x01(\tH\x01R\x03bio\x88\x01\x01\x12:\n" +
+	"\vpreferences\x18\x06 \x01(\v2\x18.chat.v1.UserPreferencesR\vpreferencesB\r\n" +
 	"\v_avatar_urlB\x06\n" +
-	"\x04_bio\"s\n" +
+	"\x04_bio\"\x9d\x01\n" +
+	"\x0fThemePreference\x12\x1c\n" +
+	"\x03hue\x18\x01 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x10\xe8\x02(\x00R\x03hue\x12/\n" +
+	"\x06chroma\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\xaeG\xe1z\x14\xae\xd7?)\x00\x00\x00\x00\x00\x00\x00\x00R\x06chroma\x12;\n" +
+	"\asidebar\x18\x03 \x01(\x0e2\x15.chat.v1.SidebarStyleB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\xaf\x01\n" +
+	"\x0fUserPreferences\x126\n" +
+	"\x05theme\x18\x01 \x01(\v2\x18.chat.v1.ThemePreferenceB\x06\xbaH\x03\xc8\x01\x01R\x05theme\x12=\n" +
+	"\n" +
+	"color_mode\x18\x02 \x01(\x0e2\x12.chat.v1.ColorModeB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\tcolorMode\x12%\n" +
+	"\x06locale\x18\x03 \x01(\tB\r\xbaH\n" +
+	"r\bR\x02jaR\x02enR\x06locale\"s\n" +
 	"\vUserSummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tH\x00R\tavatarUrl\x88\x01\x01B\r\n" +
-	"\v_avatar_urlB\x8a\x01\n" +
+	"\v_avatar_url*`\n" +
+	"\fSidebarStyle\x12\x1d\n" +
+	"\x19SIDEBAR_STYLE_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14SIDEBAR_STYLE_TINTED\x10\x01\x12\x17\n" +
+	"\x13SIDEBAR_STYLE_LIGHT\x10\x02*i\n" +
+	"\tColorMode\x12\x1a\n" +
+	"\x16COLOR_MODE_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10COLOR_MODE_LIGHT\x10\x01\x12\x13\n" +
+	"\x0fCOLOR_MODE_DARK\x10\x02\x12\x15\n" +
+	"\x11COLOR_MODE_SYSTEM\x10\x03B\x8a\x01\n" +
 	"\vcom.chat.v1B\tUserProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
 
 var (
@@ -193,17 +448,26 @@ func file_chat_v1_user_proto_rawDescGZIP() []byte {
 	return file_chat_v1_user_proto_rawDescData
 }
 
-var file_chat_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_chat_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_chat_v1_user_proto_goTypes = []any{
-	(*User)(nil),        // 0: chat.v1.User
-	(*UserSummary)(nil), // 1: chat.v1.UserSummary
+	(SidebarStyle)(0),       // 0: chat.v1.SidebarStyle
+	(ColorMode)(0),          // 1: chat.v1.ColorMode
+	(*User)(nil),            // 2: chat.v1.User
+	(*ThemePreference)(nil), // 3: chat.v1.ThemePreference
+	(*UserPreferences)(nil), // 4: chat.v1.UserPreferences
+	(*UserSummary)(nil),     // 5: chat.v1.UserSummary
 }
 var file_chat_v1_user_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	4, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
+	0, // 1: chat.v1.ThemePreference.sidebar:type_name -> chat.v1.SidebarStyle
+	3, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
+	1, // 3: chat.v1.UserPreferences.color_mode:type_name -> chat.v1.ColorMode
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_proto_init() }
@@ -212,19 +476,20 @@ func file_chat_v1_user_proto_init() {
 		return
 	}
 	file_chat_v1_user_proto_msgTypes[0].OneofWrappers = []any{}
-	file_chat_v1_user_proto_msgTypes[1].OneofWrappers = []any{}
+	file_chat_v1_user_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_proto_rawDesc), len(file_chat_v1_user_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_chat_v1_user_proto_goTypes,
 		DependencyIndexes: file_chat_v1_user_proto_depIdxs,
+		EnumInfos:         file_chat_v1_user_proto_enumTypes,
 		MessageInfos:      file_chat_v1_user_proto_msgTypes,
 	}.Build()
 	File_chat_v1_user_proto = out.File

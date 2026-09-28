@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package chat.v1;
 
+import "buf/validate/validate.proto";
+
 // ログイン中のユーザー自身の情報
 message User {
   string id = 1;
@@ -9,6 +11,51 @@ message User {
   string display_name = 3;
   optional string avatar_url = 4;
   optional string bio = 5;
+  UserPreferences preferences = 6;
+}
+
+enum SidebarStyle {
+  SIDEBAR_STYLE_UNSPECIFIED = 0;
+  SIDEBAR_STYLE_TINTED = 1;
+  SIDEBAR_STYLE_LIGHT = 2;
+}
+
+enum ColorMode {
+  COLOR_MODE_UNSPECIFIED = 0;
+  COLOR_MODE_LIGHT = 1;
+  COLOR_MODE_DARK = 2;
+  COLOR_MODE_SYSTEM = 3;
+}
+
+// テーマ入力。色は OKLCH の色相と彩度から計算する
+message ThemePreference {
+  int32 hue = 1 [(buf.validate.field).int32 = {
+    gte: 0
+    lt: 360
+  }];
+  double chroma = 2 [(buf.validate.field).double = {
+    gte: 0
+    lte: 0.37
+  }];
+  SidebarStyle sidebar = 3 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+}
+
+// 端末をまたいで共有する表示設定
+message UserPreferences {
+  ThemePreference theme = 1 [(buf.validate.field).required = true];
+  ColorMode color_mode = 2 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  string locale = 3 [(buf.validate.field).string = {
+    in: [
+      "ja",
+      "en"
+    ]
+  }];
 }
 
 // メッセージの投稿者などに埋め込む最小限のユーザー情報

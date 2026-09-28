@@ -75,6 +75,7 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend:/app/frontend
+      - ./packages:/app/packages
       - ./pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
       - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
       - ./package.json:/app/package.json:ro

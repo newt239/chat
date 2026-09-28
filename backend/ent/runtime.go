@@ -348,12 +348,24 @@ func init() {
 	userDescDisplayName := userFields[3].Descriptor()
 	// user.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
+	// userDescThemeHue is the schema descriptor for theme_hue field.
+	userDescThemeHue := userFields[6].Descriptor()
+	// user.DefaultThemeHue holds the default value on creation for the theme_hue field.
+	user.DefaultThemeHue = userDescThemeHue.Default.(int)
+	// userDescThemeChroma is the schema descriptor for theme_chroma field.
+	userDescThemeChroma := userFields[7].Descriptor()
+	// user.DefaultThemeChroma holds the default value on creation for the theme_chroma field.
+	user.DefaultThemeChroma = userDescThemeChroma.Default.(float64)
+	// userDescLocale is the schema descriptor for locale field.
+	userDescLocale := userFields[10].Descriptor()
+	// user.DefaultLocale holds the default value on creation for the locale field.
+	user.DefaultLocale = userDescLocale.Default.(string)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[6].Descriptor()
+	userDescCreatedAt := userFields[11].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[7].Descriptor()
+	userDescUpdatedAt := userFields[12].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

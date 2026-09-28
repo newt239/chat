@@ -3,6 +3,7 @@
 package user
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -25,6 +26,16 @@ const (
 	FieldBio = "bio"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
+	// FieldThemeHue holds the string denoting the theme_hue field in the database.
+	FieldThemeHue = "theme_hue"
+	// FieldThemeChroma holds the string denoting the theme_chroma field in the database.
+	FieldThemeChroma = "theme_chroma"
+	// FieldThemeSidebar holds the string denoting the theme_sidebar field in the database.
+	FieldThemeSidebar = "theme_sidebar"
+	// FieldColorMode holds the string denoting the color_mode field in the database.
+	FieldColorMode = "color_mode"
+	// FieldLocale holds the string denoting the locale field in the database.
+	FieldLocale = "locale"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -158,6 +169,11 @@ var Columns = []string{
 	FieldDisplayName,
 	FieldBio,
 	FieldAvatarURL,
+	FieldThemeHue,
+	FieldThemeChroma,
+	FieldThemeSidebar,
+	FieldColorMode,
+	FieldLocale,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -179,6 +195,12 @@ var (
 	PasswordHashValidator func(string) error
 	// DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	DisplayNameValidator func(string) error
+	// DefaultThemeHue holds the default value on creation for the "theme_hue" field.
+	DefaultThemeHue int
+	// DefaultThemeChroma holds the default value on creation for the "theme_chroma" field.
+	DefaultThemeChroma float64
+	// DefaultLocale holds the default value on creation for the "locale" field.
+	DefaultLocale string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -188,6 +210,59 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// ThemeSidebar defines the type for the "theme_sidebar" enum field.
+type ThemeSidebar string
+
+// ThemeSidebarTinted is the default value of the ThemeSidebar enum.
+const DefaultThemeSidebar = ThemeSidebarTinted
+
+// ThemeSidebar values.
+const (
+	ThemeSidebarTinted ThemeSidebar = "tinted"
+	ThemeSidebarLight  ThemeSidebar = "light"
+)
+
+func (ts ThemeSidebar) String() string {
+	return string(ts)
+}
+
+// ThemeSidebarValidator is a validator for the "theme_sidebar" field enum values. It is called by the builders before save.
+func ThemeSidebarValidator(ts ThemeSidebar) error {
+	switch ts {
+	case ThemeSidebarTinted, ThemeSidebarLight:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for theme_sidebar field: %q", ts)
+	}
+}
+
+// ColorMode defines the type for the "color_mode" enum field.
+type ColorMode string
+
+// ColorModeSystem is the default value of the ColorMode enum.
+const DefaultColorMode = ColorModeSystem
+
+// ColorMode values.
+const (
+	ColorModeLight  ColorMode = "light"
+	ColorModeDark   ColorMode = "dark"
+	ColorModeSystem ColorMode = "system"
+)
+
+func (cm ColorMode) String() string {
+	return string(cm)
+}
+
+// ColorModeValidator is a validator for the "color_mode" field enum values. It is called by the builders before save.
+func ColorModeValidator(cm ColorMode) error {
+	switch cm {
+	case ColorModeLight, ColorModeDark, ColorModeSystem:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for color_mode field: %q", cm)
+	}
+}
 
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
@@ -220,6 +295,31 @@ func ByBio(opts ...sql.OrderTermOption) OrderOption {
 // ByAvatarURL orders the results by the avatar_url field.
 func ByAvatarURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAvatarURL, opts...).ToFunc()
+}
+
+// ByThemeHue orders the results by the theme_hue field.
+func ByThemeHue(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThemeHue, opts...).ToFunc()
+}
+
+// ByThemeChroma orders the results by the theme_chroma field.
+func ByThemeChroma(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThemeChroma, opts...).ToFunc()
+}
+
+// ByThemeSidebar orders the results by the theme_sidebar field.
+func ByThemeSidebar(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThemeSidebar, opts...).ToFunc()
+}
+
+// ByColorMode orders the results by the color_mode field.
+func ByColorMode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldColorMode, opts...).ToFunc()
+}
+
+// ByLocale orders the results by the locale field.
+func ByLocale(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocale, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

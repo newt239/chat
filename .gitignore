@@ -48,3 +48,6 @@ ansible/inventory.ini
 
 # Playwright MCP
 .playwright-mcp/
+
+# スクリーンショット
+.shots/

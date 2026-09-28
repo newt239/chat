@@ -33,11 +33,19 @@
 - 新しいコンポーネントを実装した際は必ず Vitest でテストを書いてください。
   - ユニットテストは対象のファイルと同階層に`filename.spec.{ts,tsx}`という名前で実装してください。
   - テストユーティリティは`vitest`ではなく`vite-plus/test`からインポートしてください（lint ルールで強制されます）。
+- UI は Tailwind CSS v4 + React Aria Components で作ります（Mantine は移行中で、新しいコードでは使わないでください）。設計は`docs/ui-foundation.md`を参照してください。
+  - 基本部品は`src/components/ui/`にあります。まずここの部品を使い、足りなければ React Aria Components で部品を追加してください。
+  - 色・角丸・文字・影はトークンのユーティリティ（`bg-surface`、`text-muted`、`border-border`、`rounded-md`、`text-caption`、`shadow-lg`など）だけを使い、`bg-white`や`gray-*`、`#fff`などの色を直書きしないでください。
+  - 状態によるスタイルは React Aria の data 属性（`data-hovered:`、`data-pressed:`、`data-selected:`、`data-focus-visible:`など）で書いてください。
+  - 画面の文言は直接書かず、`useTranslation()`の`t("機能.文脈.項目")`で`packages/i18n`の辞書から取ってください。日本語と英語の両方の辞書に追加します。日時は`@chat/i18n`のフォーマッタを使ってください。
+  - アニメーションは`motion/react`を使い、値は`#/lib/motion`の`transitions`から選んでください。
+  - 通知は`#/components/ui/toast`の`toast()`を使ってください。
+- DOM に依存しない共有ロジック（トークン・テーマ生成・i18n 辞書など）は`packages/`に置きます。変更したら`pnpm --filter "./packages/*" run codecheck`を実行してください。
 - 型定義に`interface`を使用せず、必ず`type`を使用してください（ライブラリの型拡張で`interface`が必須な`src/tanstack-router.d.ts`のような`.d.ts`は例外です）。
 - 関数は関数宣言ではなくアロー関数式で定義してください（lint ルール `func-style` で強制されます）。
 - 安易に`window`オブジェクトを使用しないでください。
   - ページ遷移には TanStack Router の`Link`や`useNavigate`を使い、`to`にはルート ID（`"/app/$workspaceId/$channelId"`など）、パラメータは`params` / `search`で渡してください。URL 文字列を手で組み立てないでください。
-  - Mantine のコンポーネントをリンクにする場合は`component={Link}`ではなく`renderRoot={(props) => <Link {...props} to="..." />}`を使ってください（`to`の型検査を効かせるため）。
+  - リンクは`#/components/ui/Link`（見た目がボタンなら`#/components/ui/LinkButton`）を使ってください。TanStack Router の`createLink`で React Aria の`Link`を包んだもので、`to` / `params`が型検査されます。`@tanstack/react-router`の`Link`に見た目のクラスを直接書かないでください。
   - React のツリー外（fetch インターセプタや WebSocket クライアント）から遷移する場合は`src/lib/navigation.ts`の`navigateTo`を使ってください。
   - ルートパラメータは`useParams({ from: "/app/$workspaceId" })`のように`from`を指定して取得してください。ルートの外からも使うコンポーネントでは`useParams({ strict: false })`を使います。
 - ルーティングは TanStack Router のファイルベースルーティングです。

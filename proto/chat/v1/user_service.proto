@@ -9,6 +9,7 @@ import "google/protobuf/timestamp.proto";
 service UserService {
   rpc GetMe(GetMeRequest) returns (GetMeResponse);
   rpc UpdateMe(UpdateMeRequest) returns (UpdateMeResponse);
+  rpc UpdatePreferences(UpdatePreferencesRequest) returns (UpdatePreferencesResponse);
   rpc UpdatePassword(UpdatePasswordRequest) returns (UpdatePasswordResponse);
   rpc DeleteMe(DeleteMeRequest) returns (DeleteMeResponse);
   rpc GetUserNote(GetUserNoteRequest) returns (GetUserNoteResponse);
@@ -29,6 +30,14 @@ message UpdateMeRequest {
 
 message UpdateMeResponse {
   User user = 1;
+}
+
+message UpdatePreferencesRequest {
+  UserPreferences preferences = 1 [(buf.validate.field).required = true];
+}
+
+message UpdatePreferencesResponse {
+  UserPreferences preferences = 1;
 }
 
 message UpdatePasswordRequest {

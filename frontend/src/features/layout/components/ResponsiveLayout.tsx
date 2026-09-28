@@ -1,5 +1,6 @@
 import { useAtomValue } from "jotai";
 
+import { useSyncPreferences } from "#/features/settings/hooks/usePreferences";
 import { GlobalHeaderPanel } from "#/features/workspace/components/Header";
 import {
   leftSidePanelVisibleAtom,
@@ -13,6 +14,7 @@ import { MobileBottomBar } from "./MobileBottomBar";
 import { RightSidePanel } from "./RightSidePanel";
 
 export const ResponsiveLayout = () => {
+  useSyncPreferences();
   const leftSidePanelVisible = useAtomValue(leftSidePanelVisibleAtom);
   const rightSidePanelView = useAtomValue(rightSidePanelViewAtom);
   const mobileActivePanel = useAtomValue(mobileActivePanelAtom);

@@ -83,6 +83,76 @@ func (_c *UserCreate) SetNillableAvatarURL(v *string) *UserCreate {
 	return _c
 }
 
+// SetThemeHue sets the "theme_hue" field.
+func (_c *UserCreate) SetThemeHue(v int) *UserCreate {
+	_c.mutation.SetThemeHue(v)
+	return _c
+}
+
+// SetNillableThemeHue sets the "theme_hue" field if the given value is not nil.
+func (_c *UserCreate) SetNillableThemeHue(v *int) *UserCreate {
+	if v != nil {
+		_c.SetThemeHue(*v)
+	}
+	return _c
+}
+
+// SetThemeChroma sets the "theme_chroma" field.
+func (_c *UserCreate) SetThemeChroma(v float64) *UserCreate {
+	_c.mutation.SetThemeChroma(v)
+	return _c
+}
+
+// SetNillableThemeChroma sets the "theme_chroma" field if the given value is not nil.
+func (_c *UserCreate) SetNillableThemeChroma(v *float64) *UserCreate {
+	if v != nil {
+		_c.SetThemeChroma(*v)
+	}
+	return _c
+}
+
+// SetThemeSidebar sets the "theme_sidebar" field.
+func (_c *UserCreate) SetThemeSidebar(v user.ThemeSidebar) *UserCreate {
+	_c.mutation.SetThemeSidebar(v)
+	return _c
+}
+
+// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
+func (_c *UserCreate) SetNillableThemeSidebar(v *user.ThemeSidebar) *UserCreate {
+	if v != nil {
+		_c.SetThemeSidebar(*v)
+	}
+	return _c
+}
+
+// SetColorMode sets the "color_mode" field.
+func (_c *UserCreate) SetColorMode(v user.ColorMode) *UserCreate {
+	_c.mutation.SetColorMode(v)
+	return _c
+}
+
+// SetNillableColorMode sets the "color_mode" field if the given value is not nil.
+func (_c *UserCreate) SetNillableColorMode(v *user.ColorMode) *UserCreate {
+	if v != nil {
+		_c.SetColorMode(*v)
+	}
+	return _c
+}
+
+// SetLocale sets the "locale" field.
+func (_c *UserCreate) SetLocale(v string) *UserCreate {
+	_c.mutation.SetLocale(v)
+	return _c
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (_c *UserCreate) SetNillableLocale(v *string) *UserCreate {
+	if v != nil {
+		_c.SetLocale(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -355,6 +425,26 @@ func (_c *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserCreate) defaults() {
+	if _, ok := _c.mutation.ThemeHue(); !ok {
+		v := user.DefaultThemeHue
+		_c.mutation.SetThemeHue(v)
+	}
+	if _, ok := _c.mutation.ThemeChroma(); !ok {
+		v := user.DefaultThemeChroma
+		_c.mutation.SetThemeChroma(v)
+	}
+	if _, ok := _c.mutation.ThemeSidebar(); !ok {
+		v := user.DefaultThemeSidebar
+		_c.mutation.SetThemeSidebar(v)
+	}
+	if _, ok := _c.mutation.ColorMode(); !ok {
+		v := user.DefaultColorMode
+		_c.mutation.SetColorMode(v)
+	}
+	if _, ok := _c.mutation.Locale(); !ok {
+		v := user.DefaultLocale
+		_c.mutation.SetLocale(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -394,6 +484,31 @@ func (_c *UserCreate) check() error {
 		if err := user.DisplayNameValidator(v); err != nil {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "User.display_name": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.ThemeHue(); !ok {
+		return &ValidationError{Name: "theme_hue", err: errors.New(`ent: missing required field "User.theme_hue"`)}
+	}
+	if _, ok := _c.mutation.ThemeChroma(); !ok {
+		return &ValidationError{Name: "theme_chroma", err: errors.New(`ent: missing required field "User.theme_chroma"`)}
+	}
+	if _, ok := _c.mutation.ThemeSidebar(); !ok {
+		return &ValidationError{Name: "theme_sidebar", err: errors.New(`ent: missing required field "User.theme_sidebar"`)}
+	}
+	if v, ok := _c.mutation.ThemeSidebar(); ok {
+		if err := user.ThemeSidebarValidator(v); err != nil {
+			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "User.theme_sidebar": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ColorMode(); !ok {
+		return &ValidationError{Name: "color_mode", err: errors.New(`ent: missing required field "User.color_mode"`)}
+	}
+	if v, ok := _c.mutation.ColorMode(); ok {
+		if err := user.ColorModeValidator(v); err != nil {
+			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Locale(); !ok {
+		return &ValidationError{Name: "locale", err: errors.New(`ent: missing required field "User.locale"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -456,6 +571,26 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 		_node.AvatarURL = value
+	}
+	if value, ok := _c.mutation.ThemeHue(); ok {
+		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
+		_node.ThemeHue = value
+	}
+	if value, ok := _c.mutation.ThemeChroma(); ok {
+		_spec.SetField(user.FieldThemeChroma, field.TypeFloat64, value)
+		_node.ThemeChroma = value
+	}
+	if value, ok := _c.mutation.ThemeSidebar(); ok {
+		_spec.SetField(user.FieldThemeSidebar, field.TypeEnum, value)
+		_node.ThemeSidebar = value
+	}
+	if value, ok := _c.mutation.ColorMode(); ok {
+		_spec.SetField(user.FieldColorMode, field.TypeEnum, value)
+		_node.ColorMode = value
+	}
+	if value, ok := _c.mutation.Locale(); ok {
+		_spec.SetField(user.FieldLocale, field.TypeString, value)
+		_node.Locale = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)

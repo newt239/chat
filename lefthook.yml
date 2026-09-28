@@ -12,4 +12,14 @@ pre-commit:
       run: pnpm --filter chat-frontend run format:fix
       stage_fixed: true
       fail_text: フォーマットエラーがあります
+    3_packages_lint:
+      glob: "packages/**/*.ts"
+      run: pnpm --filter "./packages/*" run lint:fix
+      stage_fixed: true
+      fail_text: リントエラーがあります
+    4_packages_format:
+      glob: "packages/**/*.{ts,json}"
+      run: pnpm --filter "./packages/*" run format:fix
+      stage_fixed: true
+      fail_text: フォーマットエラーがあります
 # Go のリントはコンテナ起動が前提のため CI の backend ジョブで担保する

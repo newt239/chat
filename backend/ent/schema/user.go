@@ -30,6 +30,19 @@ func (User) Fields() []ent.Field {
 			Optional(),
 		field.String("avatar_url").
 			Optional(),
+		// 表示設定。既定値は Jade プリセット・システムに合わせる・日本語
+		field.Int("theme_hue").
+			Default(168),
+		field.Float("theme_chroma").
+			Default(0.12),
+		field.Enum("theme_sidebar").
+			Values("tinted", "light").
+			Default("tinted"),
+		field.Enum("color_mode").
+			Values("light", "dark", "system").
+			Default("system"),
+		field.String("locale").
+			Default("ja"),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

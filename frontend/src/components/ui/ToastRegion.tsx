@@ -1,0 +1,55 @@
+import { IconAlertCircle, IconCircleCheck, IconX } from "@tabler/icons-react";
+import {
+  Button,
+  Text,
+  UNSTABLE_Toast as Toast,
+  UNSTABLE_ToastContent as ToastContent,
+  UNSTABLE_ToastRegion as AriaToastRegion,
+} from "react-aria-components";
+import { useTranslation } from "react-i18next";
+
+import { focusRing } from "./styles";
+import { toastQueue } from "./toast";
+
+const toneIcons = {
+  danger: <IconAlertCircle aria-hidden className="size-4 shrink-0 text-danger" />,
+  default: null,
+  success: <IconCircleCheck aria-hidden className="size-4 shrink-0 text-success" />,
+};
+
+export const ToastRegion = () => {
+  const { t } = useTranslation();
+  return (
+    <AriaToastRegion
+      queue={toastQueue}
+      aria-label={t("ui.toast.region")}
+      className="fixed bottom-5 left-1/2 z-[400] flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
+    >
+      {({ toast }) => (
+        <Toast
+          toast={toast}
+          className={`flex max-w-[min(480px,calc(100vw-32px))] animate-pop-in items-center gap-2 rounded-md bg-text py-[7px] pr-1.5 pl-3.5 font-sans text-[13px] text-surface shadow-lg motion-reduce:animate-none ${focusRing}`}
+        >
+          {toneIcons[toast.content.tone]}
+          <ToastContent className="flex min-w-0 flex-1 flex-col">
+            <Text slot="title" className="font-semibold">
+              {toast.content.title}
+            </Text>
+            {toast.content.description && (
+              <Text slot="description" className="opacity-80">
+                {toast.content.description}
+              </Text>
+            )}
+          </ToastContent>
+          <Button
+            slot="close"
+            aria-label={t("ui.toast.dismiss")}
+            className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-sm opacity-70 outline-none data-focus-visible:opacity-100 data-hovered:opacity-100"
+          >
+            <IconX aria-hidden className="size-3.5" />
+          </Button>
+        </Toast>
+      )}
+    </AriaToastRegion>
+  );
+};

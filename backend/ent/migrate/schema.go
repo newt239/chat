@@ -670,6 +670,11 @@ var (
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "bio", Type: field.TypeString, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "theme_hue", Type: field.TypeInt, Default: 168},
+		{Name: "theme_chroma", Type: field.TypeFloat64, Default: 0.12},
+		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}, Default: "tinted"},
+		{Name: "color_mode", Type: field.TypeEnum, Enums: []string{"light", "dark", "system"}, Default: "system"},
+		{Name: "locale", Type: field.TypeString, Default: "ja"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

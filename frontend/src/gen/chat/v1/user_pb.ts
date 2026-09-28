@@ -2,15 +2,16 @@
 // @generated from file chat/v1/user.proto (package chat.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/user.proto.
  */
 export const file_chat_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEieQoEVXNlchIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSFwoKYXZhdGFyX3VybBgEIAEoCUgAiAEBEhAKA2JpbxgFIAEoCUgBiAEBQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8iVwoLVXNlclN1bW1hcnkSCgoCaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhcKCmF2YXRhcl91cmwYAyABKAlIAIgBAUINCgtfYXZhdGFyX3VybEKKAQoLY29tLmNoYXQudjFCCVVzZXJQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z");
+  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEiqAEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ihwEKD1RoZW1lUHJlZmVyZW5jZRIXCgNodWUYASABKAVCCrpIBxoFEOgCKAASJwoGY2hyb21hGAIgASgBQhe6SBQSEhmuR+F6FK7XPykAAAAAAAAAABIyCgdzaWRlYmFyGAMgASgOMhUuY2hhdC52MS5TaWRlYmFyU3R5bGVCCrpIB4IBBBABIAAilQEKD1VzZXJQcmVmZXJlbmNlcxIvCgV0aGVtZRgBIAEoCzIYLmNoYXQudjEuVGhlbWVQcmVmZXJlbmNlQga6SAPIAQESMgoKY29sb3JfbW9kZRgCIAEoDjISLmNoYXQudjEuQ29sb3JNb2RlQgq6SAeCAQQQASAAEh0KBmxvY2FsZRgDIAEoCUINukgKcghSAmphUgJlbiJXCgtVc2VyU3VtbWFyeRIKCgJpZBgBIAEoCRIUCgxkaXNwbGF5X25hbWUYAiABKAkSFwoKYXZhdGFyX3VybBgDIAEoCUgAiAEBQg0KC19hdmF0YXJfdXJsKmAKDFNpZGViYXJTdHlsZRIdChlTSURFQkFSX1NUWUxFX1VOU1BFQ0lGSUVEEAASGAoUU0lERUJBUl9TVFlMRV9USU5URUQQARIXChNTSURFQkFSX1NUWUxFX0xJR0hUEAIqaQoJQ29sb3JNb2RlEhoKFkNPTE9SX01PREVfVU5TUEVDSUZJRUQQABIUChBDT0xPUl9NT0RFX0xJR0hUEAESEwoPQ09MT1JfTU9ERV9EQVJLEAISFQoRQ09MT1JfTU9ERV9TWVNURU0QA0KKAQoLY29tLmNoYXQudjFCCVVzZXJQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate]);
 
 /**
  * ログイン中のユーザー自身の情報
@@ -42,6 +43,11 @@ export type User = Message<"chat.v1.User"> & {
    * @generated from field: optional string bio = 5;
    */
   bio?: string | undefined;
+
+  /**
+   * @generated from field: chat.v1.UserPreferences preferences = 6;
+   */
+  preferences?: UserPreferences | undefined;
 };
 
 /**
@@ -50,6 +56,64 @@ export type User = Message<"chat.v1.User"> & {
  */
 export const UserSchema: GenMessage<User> = /*@__PURE__*/
   messageDesc(file_chat_v1_user, 0);
+
+/**
+ * テーマ入力。色は OKLCH の色相と彩度から計算する
+ *
+ * @generated from message chat.v1.ThemePreference
+ */
+export type ThemePreference = Message<"chat.v1.ThemePreference"> & {
+  /**
+   * @generated from field: int32 hue = 1;
+   */
+  hue: number;
+
+  /**
+   * @generated from field: double chroma = 2;
+   */
+  chroma: number;
+
+  /**
+   * @generated from field: chat.v1.SidebarStyle sidebar = 3;
+   */
+  sidebar: SidebarStyle;
+};
+
+/**
+ * Describes the message chat.v1.ThemePreference.
+ * Use `create(ThemePreferenceSchema)` to create a new message.
+ */
+export const ThemePreferenceSchema: GenMessage<ThemePreference> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user, 1);
+
+/**
+ * 端末をまたいで共有する表示設定
+ *
+ * @generated from message chat.v1.UserPreferences
+ */
+export type UserPreferences = Message<"chat.v1.UserPreferences"> & {
+  /**
+   * @generated from field: chat.v1.ThemePreference theme = 1;
+   */
+  theme?: ThemePreference | undefined;
+
+  /**
+   * @generated from field: chat.v1.ColorMode color_mode = 2;
+   */
+  colorMode: ColorMode;
+
+  /**
+   * @generated from field: string locale = 3;
+   */
+  locale: string;
+};
+
+/**
+ * Describes the message chat.v1.UserPreferences.
+ * Use `create(UserPreferencesSchema)` to create a new message.
+ */
+export const UserPreferencesSchema: GenMessage<UserPreferences> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user, 2);
 
 /**
  * メッセージの投稿者などに埋め込む最小限のユーザー情報
@@ -78,5 +142,62 @@ export type UserSummary = Message<"chat.v1.UserSummary"> & {
  * Use `create(UserSummarySchema)` to create a new message.
  */
 export const UserSummarySchema: GenMessage<UserSummary> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user, 1);
+  messageDesc(file_chat_v1_user, 3);
+
+/**
+ * @generated from enum chat.v1.SidebarStyle
+ */
+export enum SidebarStyle {
+  /**
+   * @generated from enum value: SIDEBAR_STYLE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: SIDEBAR_STYLE_TINTED = 1;
+   */
+  TINTED = 1,
+
+  /**
+   * @generated from enum value: SIDEBAR_STYLE_LIGHT = 2;
+   */
+  LIGHT = 2,
+}
+
+/**
+ * Describes the enum chat.v1.SidebarStyle.
+ */
+export const SidebarStyleSchema: GenEnum<SidebarStyle> = /*@__PURE__*/
+  enumDesc(file_chat_v1_user, 0);
+
+/**
+ * @generated from enum chat.v1.ColorMode
+ */
+export enum ColorMode {
+  /**
+   * @generated from enum value: COLOR_MODE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: COLOR_MODE_LIGHT = 1;
+   */
+  LIGHT = 1,
+
+  /**
+   * @generated from enum value: COLOR_MODE_DARK = 2;
+   */
+  DARK = 2,
+
+  /**
+   * @generated from enum value: COLOR_MODE_SYSTEM = 3;
+   */
+  SYSTEM = 3,
+}
+
+/**
+ * Describes the enum chat.v1.ColorMode.
+ */
+export const ColorModeSchema: GenEnum<ColorMode> = /*@__PURE__*/
+  enumDesc(file_chat_v1_user, 1);
 

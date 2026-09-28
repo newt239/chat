@@ -19,9 +19,17 @@ func UserToEntity(u *ent.User) *entity.User {
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
 		DisplayName:  u.DisplayName,
+		Bio:          StringPtrFromNullable(u.Bio),
 		AvatarURL:    StringPtrFromNullable(u.AvatarURL),
-		CreatedAt:    u.CreatedAt,
-		UpdatedAt:    u.UpdatedAt,
+		Preferences: entity.UserPreferences{
+			ThemeHue:     u.ThemeHue,
+			ThemeChroma:  u.ThemeChroma,
+			ThemeSidebar: entity.SidebarStyle(u.ThemeSidebar),
+			ColorMode:    entity.ColorMode(u.ColorMode),
+			Locale:       u.Locale,
+		},
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
 	}
 }
 

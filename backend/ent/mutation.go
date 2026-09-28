@@ -12951,6 +12951,13 @@ type UserMutation struct {
 	display_name               *string
 	bio                        *string
 	avatar_url                 *string
+	theme_hue                  *int
+	addtheme_hue               *int
+	theme_chroma               *float64
+	addtheme_chroma            *float64
+	theme_sidebar              *user.ThemeSidebar
+	color_mode                 *user.ColorMode
+	locale                     *string
 	created_at                 *time.Time
 	updated_at                 *time.Time
 	clearedFields              map[string]struct{}
@@ -13306,6 +13313,226 @@ func (m *UserMutation) AvatarURLCleared() bool {
 func (m *UserMutation) ResetAvatarURL() {
 	m.avatar_url = nil
 	delete(m.clearedFields, user.FieldAvatarURL)
+}
+
+// SetThemeHue sets the "theme_hue" field.
+func (m *UserMutation) SetThemeHue(i int) {
+	m.theme_hue = &i
+	m.addtheme_hue = nil
+}
+
+// ThemeHue returns the value of the "theme_hue" field in the mutation.
+func (m *UserMutation) ThemeHue() (r int, exists bool) {
+	v := m.theme_hue
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThemeHue returns the old "theme_hue" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldThemeHue(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThemeHue is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThemeHue requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThemeHue: %w", err)
+	}
+	return oldValue.ThemeHue, nil
+}
+
+// AddThemeHue adds i to the "theme_hue" field.
+func (m *UserMutation) AddThemeHue(i int) {
+	if m.addtheme_hue != nil {
+		*m.addtheme_hue += i
+	} else {
+		m.addtheme_hue = &i
+	}
+}
+
+// AddedThemeHue returns the value that was added to the "theme_hue" field in this mutation.
+func (m *UserMutation) AddedThemeHue() (r int, exists bool) {
+	v := m.addtheme_hue
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetThemeHue resets all changes to the "theme_hue" field.
+func (m *UserMutation) ResetThemeHue() {
+	m.theme_hue = nil
+	m.addtheme_hue = nil
+}
+
+// SetThemeChroma sets the "theme_chroma" field.
+func (m *UserMutation) SetThemeChroma(f float64) {
+	m.theme_chroma = &f
+	m.addtheme_chroma = nil
+}
+
+// ThemeChroma returns the value of the "theme_chroma" field in the mutation.
+func (m *UserMutation) ThemeChroma() (r float64, exists bool) {
+	v := m.theme_chroma
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThemeChroma returns the old "theme_chroma" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldThemeChroma(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThemeChroma is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThemeChroma requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThemeChroma: %w", err)
+	}
+	return oldValue.ThemeChroma, nil
+}
+
+// AddThemeChroma adds f to the "theme_chroma" field.
+func (m *UserMutation) AddThemeChroma(f float64) {
+	if m.addtheme_chroma != nil {
+		*m.addtheme_chroma += f
+	} else {
+		m.addtheme_chroma = &f
+	}
+}
+
+// AddedThemeChroma returns the value that was added to the "theme_chroma" field in this mutation.
+func (m *UserMutation) AddedThemeChroma() (r float64, exists bool) {
+	v := m.addtheme_chroma
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetThemeChroma resets all changes to the "theme_chroma" field.
+func (m *UserMutation) ResetThemeChroma() {
+	m.theme_chroma = nil
+	m.addtheme_chroma = nil
+}
+
+// SetThemeSidebar sets the "theme_sidebar" field.
+func (m *UserMutation) SetThemeSidebar(us user.ThemeSidebar) {
+	m.theme_sidebar = &us
+}
+
+// ThemeSidebar returns the value of the "theme_sidebar" field in the mutation.
+func (m *UserMutation) ThemeSidebar() (r user.ThemeSidebar, exists bool) {
+	v := m.theme_sidebar
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThemeSidebar returns the old "theme_sidebar" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldThemeSidebar(ctx context.Context) (v user.ThemeSidebar, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThemeSidebar is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThemeSidebar requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThemeSidebar: %w", err)
+	}
+	return oldValue.ThemeSidebar, nil
+}
+
+// ResetThemeSidebar resets all changes to the "theme_sidebar" field.
+func (m *UserMutation) ResetThemeSidebar() {
+	m.theme_sidebar = nil
+}
+
+// SetColorMode sets the "color_mode" field.
+func (m *UserMutation) SetColorMode(um user.ColorMode) {
+	m.color_mode = &um
+}
+
+// ColorMode returns the value of the "color_mode" field in the mutation.
+func (m *UserMutation) ColorMode() (r user.ColorMode, exists bool) {
+	v := m.color_mode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColorMode returns the old "color_mode" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldColorMode(ctx context.Context) (v user.ColorMode, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldColorMode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldColorMode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColorMode: %w", err)
+	}
+	return oldValue.ColorMode, nil
+}
+
+// ResetColorMode resets all changes to the "color_mode" field.
+func (m *UserMutation) ResetColorMode() {
+	m.color_mode = nil
+}
+
+// SetLocale sets the "locale" field.
+func (m *UserMutation) SetLocale(s string) {
+	m.locale = &s
+}
+
+// Locale returns the value of the "locale" field in the mutation.
+func (m *UserMutation) Locale() (r string, exists bool) {
+	v := m.locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocale returns the old "locale" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldLocale(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocale: %w", err)
+	}
+	return oldValue.Locale, nil
+}
+
+// ResetLocale resets all changes to the "locale" field.
+func (m *UserMutation) ResetLocale() {
+	m.locale = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -14116,7 +14343,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 12)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -14131,6 +14358,21 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.avatar_url != nil {
 		fields = append(fields, user.FieldAvatarURL)
+	}
+	if m.theme_hue != nil {
+		fields = append(fields, user.FieldThemeHue)
+	}
+	if m.theme_chroma != nil {
+		fields = append(fields, user.FieldThemeChroma)
+	}
+	if m.theme_sidebar != nil {
+		fields = append(fields, user.FieldThemeSidebar)
+	}
+	if m.color_mode != nil {
+		fields = append(fields, user.FieldColorMode)
+	}
+	if m.locale != nil {
+		fields = append(fields, user.FieldLocale)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -14156,6 +14398,16 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Bio()
 	case user.FieldAvatarURL:
 		return m.AvatarURL()
+	case user.FieldThemeHue:
+		return m.ThemeHue()
+	case user.FieldThemeChroma:
+		return m.ThemeChroma()
+	case user.FieldThemeSidebar:
+		return m.ThemeSidebar()
+	case user.FieldColorMode:
+		return m.ColorMode()
+	case user.FieldLocale:
+		return m.Locale()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
@@ -14179,6 +14431,16 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldBio(ctx)
 	case user.FieldAvatarURL:
 		return m.OldAvatarURL(ctx)
+	case user.FieldThemeHue:
+		return m.OldThemeHue(ctx)
+	case user.FieldThemeChroma:
+		return m.OldThemeChroma(ctx)
+	case user.FieldThemeSidebar:
+		return m.OldThemeSidebar(ctx)
+	case user.FieldColorMode:
+		return m.OldColorMode(ctx)
+	case user.FieldLocale:
+		return m.OldLocale(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
@@ -14227,6 +14489,41 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAvatarURL(v)
 		return nil
+	case user.FieldThemeHue:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThemeHue(v)
+		return nil
+	case user.FieldThemeChroma:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThemeChroma(v)
+		return nil
+	case user.FieldThemeSidebar:
+		v, ok := value.(user.ThemeSidebar)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThemeSidebar(v)
+		return nil
+	case user.FieldColorMode:
+		v, ok := value.(user.ColorMode)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColorMode(v)
+		return nil
+	case user.FieldLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocale(v)
+		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -14248,13 +14545,26 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *UserMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addtheme_hue != nil {
+		fields = append(fields, user.FieldThemeHue)
+	}
+	if m.addtheme_chroma != nil {
+		fields = append(fields, user.FieldThemeChroma)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case user.FieldThemeHue:
+		return m.AddedThemeHue()
+	case user.FieldThemeChroma:
+		return m.AddedThemeChroma()
+	}
 	return nil, false
 }
 
@@ -14263,6 +14573,20 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *UserMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldThemeHue:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddThemeHue(v)
+		return nil
+	case user.FieldThemeChroma:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddThemeChroma(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }
@@ -14319,6 +14643,21 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldAvatarURL:
 		m.ResetAvatarURL()
+		return nil
+	case user.FieldThemeHue:
+		m.ResetThemeHue()
+		return nil
+	case user.FieldThemeChroma:
+		m.ResetThemeChroma()
+		return nil
+	case user.FieldThemeSidebar:
+		m.ResetThemeSidebar()
+		return nil
+	case user.FieldColorMode:
+		m.ResetColorMode()
+		return nil
+	case user.FieldLocale:
+		m.ResetLocale()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()
