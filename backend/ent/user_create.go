@@ -932,6 +932,78 @@ func (u *UserUpsert) ClearAvatarURL() *UserUpsert {
 	return u
 }
 
+// SetThemeHue sets the "theme_hue" field.
+func (u *UserUpsert) SetThemeHue(v int) *UserUpsert {
+	u.Set(user.FieldThemeHue, v)
+	return u
+}
+
+// UpdateThemeHue sets the "theme_hue" field to the value that was provided on create.
+func (u *UserUpsert) UpdateThemeHue() *UserUpsert {
+	u.SetExcluded(user.FieldThemeHue)
+	return u
+}
+
+// AddThemeHue adds v to the "theme_hue" field.
+func (u *UserUpsert) AddThemeHue(v int) *UserUpsert {
+	u.Add(user.FieldThemeHue, v)
+	return u
+}
+
+// SetThemeChroma sets the "theme_chroma" field.
+func (u *UserUpsert) SetThemeChroma(v float64) *UserUpsert {
+	u.Set(user.FieldThemeChroma, v)
+	return u
+}
+
+// UpdateThemeChroma sets the "theme_chroma" field to the value that was provided on create.
+func (u *UserUpsert) UpdateThemeChroma() *UserUpsert {
+	u.SetExcluded(user.FieldThemeChroma)
+	return u
+}
+
+// AddThemeChroma adds v to the "theme_chroma" field.
+func (u *UserUpsert) AddThemeChroma(v float64) *UserUpsert {
+	u.Add(user.FieldThemeChroma, v)
+	return u
+}
+
+// SetThemeSidebar sets the "theme_sidebar" field.
+func (u *UserUpsert) SetThemeSidebar(v user.ThemeSidebar) *UserUpsert {
+	u.Set(user.FieldThemeSidebar, v)
+	return u
+}
+
+// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
+func (u *UserUpsert) UpdateThemeSidebar() *UserUpsert {
+	u.SetExcluded(user.FieldThemeSidebar)
+	return u
+}
+
+// SetColorMode sets the "color_mode" field.
+func (u *UserUpsert) SetColorMode(v user.ColorMode) *UserUpsert {
+	u.Set(user.FieldColorMode, v)
+	return u
+}
+
+// UpdateColorMode sets the "color_mode" field to the value that was provided on create.
+func (u *UserUpsert) UpdateColorMode() *UserUpsert {
+	u.SetExcluded(user.FieldColorMode)
+	return u
+}
+
+// SetLocale sets the "locale" field.
+func (u *UserUpsert) SetLocale(v string) *UserUpsert {
+	u.Set(user.FieldLocale, v)
+	return u
+}
+
+// UpdateLocale sets the "locale" field to the value that was provided on create.
+func (u *UserUpsert) UpdateLocale() *UserUpsert {
+	u.SetExcluded(user.FieldLocale)
+	return u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (u *UserUpsert) SetUpdatedAt(v time.Time) *UserUpsert {
 	u.Set(user.FieldUpdatedAt, v)
@@ -1076,6 +1148,90 @@ func (u *UserUpsertOne) UpdateAvatarURL() *UserUpsertOne {
 func (u *UserUpsertOne) ClearAvatarURL() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearAvatarURL()
+	})
+}
+
+// SetThemeHue sets the "theme_hue" field.
+func (u *UserUpsertOne) SetThemeHue(v int) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetThemeHue(v)
+	})
+}
+
+// AddThemeHue adds v to the "theme_hue" field.
+func (u *UserUpsertOne) AddThemeHue(v int) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddThemeHue(v)
+	})
+}
+
+// UpdateThemeHue sets the "theme_hue" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateThemeHue() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateThemeHue()
+	})
+}
+
+// SetThemeChroma sets the "theme_chroma" field.
+func (u *UserUpsertOne) SetThemeChroma(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetThemeChroma(v)
+	})
+}
+
+// AddThemeChroma adds v to the "theme_chroma" field.
+func (u *UserUpsertOne) AddThemeChroma(v float64) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.AddThemeChroma(v)
+	})
+}
+
+// UpdateThemeChroma sets the "theme_chroma" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateThemeChroma() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateThemeChroma()
+	})
+}
+
+// SetThemeSidebar sets the "theme_sidebar" field.
+func (u *UserUpsertOne) SetThemeSidebar(v user.ThemeSidebar) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetThemeSidebar(v)
+	})
+}
+
+// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateThemeSidebar() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateThemeSidebar()
+	})
+}
+
+// SetColorMode sets the "color_mode" field.
+func (u *UserUpsertOne) SetColorMode(v user.ColorMode) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetColorMode(v)
+	})
+}
+
+// UpdateColorMode sets the "color_mode" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateColorMode() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateColorMode()
+	})
+}
+
+// SetLocale sets the "locale" field.
+func (u *UserUpsertOne) SetLocale(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLocale(v)
+	})
+}
+
+// UpdateLocale sets the "locale" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateLocale() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLocale()
 	})
 }
 
@@ -1392,6 +1548,90 @@ func (u *UserUpsertBulk) UpdateAvatarURL() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearAvatarURL() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearAvatarURL()
+	})
+}
+
+// SetThemeHue sets the "theme_hue" field.
+func (u *UserUpsertBulk) SetThemeHue(v int) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetThemeHue(v)
+	})
+}
+
+// AddThemeHue adds v to the "theme_hue" field.
+func (u *UserUpsertBulk) AddThemeHue(v int) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddThemeHue(v)
+	})
+}
+
+// UpdateThemeHue sets the "theme_hue" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateThemeHue() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateThemeHue()
+	})
+}
+
+// SetThemeChroma sets the "theme_chroma" field.
+func (u *UserUpsertBulk) SetThemeChroma(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetThemeChroma(v)
+	})
+}
+
+// AddThemeChroma adds v to the "theme_chroma" field.
+func (u *UserUpsertBulk) AddThemeChroma(v float64) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.AddThemeChroma(v)
+	})
+}
+
+// UpdateThemeChroma sets the "theme_chroma" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateThemeChroma() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateThemeChroma()
+	})
+}
+
+// SetThemeSidebar sets the "theme_sidebar" field.
+func (u *UserUpsertBulk) SetThemeSidebar(v user.ThemeSidebar) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetThemeSidebar(v)
+	})
+}
+
+// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateThemeSidebar() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateThemeSidebar()
+	})
+}
+
+// SetColorMode sets the "color_mode" field.
+func (u *UserUpsertBulk) SetColorMode(v user.ColorMode) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetColorMode(v)
+	})
+}
+
+// UpdateColorMode sets the "color_mode" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateColorMode() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateColorMode()
+	})
+}
+
+// SetLocale sets the "locale" field.
+func (u *UserUpsertBulk) SetLocale(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLocale(v)
+	})
+}
+
+// UpdateLocale sets the "locale" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateLocale() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLocale()
 	})
 }
 
