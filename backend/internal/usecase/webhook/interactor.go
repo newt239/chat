@@ -25,7 +25,7 @@ const MaxTextLength = 4000
 const maxSenderNameLength = 80
 
 var (
-	ErrWebhookNotFound    = errors.New("Webhook が見つかりません")
+	ErrWebhookNotFound    = errors.New("指定された Webhook が見つかりません")
 	ErrUnauthorized       = errors.New("この Webhook を編集できるのは発行者と管理者だけです")
 	ErrUnsupportedChannel = errors.New("DM には Webhook を追加できません")
 	ErrInactive           = errors.New("発行者がチャンネルを閲覧できなくなったため、この Webhook は使えません")
