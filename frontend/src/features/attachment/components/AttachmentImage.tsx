@@ -7,14 +7,21 @@ import { useAttachmentUrl } from "../api/client";
 
 type AttachmentImageProps = {
   attachmentId: string;
+  // true なら動画のサムネイルを表示する
+  thumbnail: boolean;
   alt: string;
   className: string;
 };
 
 // 署名付き URL を取得して表示する。取得中は枠だけを出してレイアウトを保つ
-export const AttachmentImage = ({ attachmentId, alt, className }: AttachmentImageProps) => {
+export const AttachmentImage = ({
+  attachmentId,
+  thumbnail,
+  alt,
+  className,
+}: AttachmentImageProps) => {
   const { t } = useTranslation();
-  const { data: url, isError } = useAttachmentUrl(attachmentId);
+  const { data: url, isError } = useAttachmentUrl(attachmentId, thumbnail);
 
   if (isError) {
     return (

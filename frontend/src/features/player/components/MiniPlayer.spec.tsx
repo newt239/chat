@@ -28,6 +28,7 @@ const playAudio = () =>
         kind: "audio",
         messageId: "m1",
         parentId: undefined,
+        posterUrl: undefined,
         workspaceId: "ws1",
       },
       () => Promise.resolve("https://storage.example.com/a1"),

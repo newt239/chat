@@ -7,7 +7,7 @@ import { toast } from "#/components/ui/toast";
 import { usePlayerState } from "#/features/player/hooks/usePlayerState";
 import { mediaPlayer } from "#/features/player/mediaPlayer";
 
-import { useDownloadUrl } from "../api/client";
+import { useAttachmentUrl, useDownloadUrl } from "../api/client";
 
 import type { Message, MessageAttachment } from "#/gen/chat/v1/message_pb";
 
@@ -21,6 +21,10 @@ export const useMediaControls = (
   const { workspaceId = "" } = useParams({ strict: false });
   const state = usePlayerState();
   const { mutateAsync: fetchUrl } = useDownloadUrl();
+  const { data: posterUrl } = useAttachmentUrl(
+    kind === "video" && attachment.media?.thumbnail ? attachment.id : null,
+    true,
+  );
   const isActive =
     state.track?.attachmentId === attachment.id && state.track.messageId === message.id;
 
@@ -36,6 +40,7 @@ export const useMediaControls = (
           kind,
           messageId: message.id,
           parentId: message.parentId,
+          posterUrl,
           workspaceId,
         },
         async () => {

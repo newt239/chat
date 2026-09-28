@@ -105,6 +105,13 @@ message MediaMetadata {
   optional int32 width = 1;
   optional int32 height = 2;
   optional double duration_seconds = 3;
+  // 動画の再生前に表示するサムネイル。画像は GetDownloadUrl の thumbnail で取得する
+  MediaThumbnail thumbnail = 4;
+}
+
+message MediaThumbnail {
+  int32 width = 1;
+  int32 height = 2;
 }
 
 message ThreadMetadata {

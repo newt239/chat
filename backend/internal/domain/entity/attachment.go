@@ -31,4 +31,12 @@ type MediaMetadata struct {
 	Width           *int32
 	Height          *int32
 	DurationSeconds *float64
+	Thumbnail       *Thumbnail
+}
+
+// Thumbnail は動画の再生前に表示する画像です。アップロード時にクライアントが切り出します
+type Thumbnail struct {
+	StorageKey string
+	Width      int32
+	Height     int32
 }

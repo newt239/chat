@@ -168,6 +168,9 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 		SetNillableWidth(att.Media.Width).
 		SetNillableHeight(att.Media.Height).
 		SetNillableDurationSeconds(att.Media.DurationSeconds)
+	if t := att.Media.Thumbnail; t != nil {
+		create.SetThumbnailStorageKey(t.StorageKey).SetThumbnailWidth(t.Width).SetThumbnailHeight(t.Height)
+	}
 	if att.UploadedAt != nil {
 		create.SetUploadedAt(*att.UploadedAt)
 	}

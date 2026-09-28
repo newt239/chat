@@ -10,6 +10,7 @@ import { VideoSlot } from "#/features/player/components/VideoSlot";
 import { formatDuration } from "#/features/player/utils/formatDuration";
 
 import { useMediaControls } from "../hooks/useMediaControls";
+import { AttachmentImage } from "./AttachmentImage";
 
 import type { Message, MessageAttachment } from "#/gen/chat/v1/message_pb";
 
@@ -34,7 +35,7 @@ export const VideoAttachment = ({ attachment, message }: VideoAttachmentProps) =
     position,
     rate,
   } = useMediaControls(attachment, message, "video");
-  const { width, height } = attachment.media ?? {};
+  const { width, height, thumbnail } = attachment.media ?? {};
   const ratio = width && height ? width / height : 16 / 9;
 
   return (
@@ -44,7 +45,18 @@ export const VideoAttachment = ({ attachment, message }: VideoAttachmentProps) =
       style={{ width: Math.min(MAX_WIDTH, Math.round(MAX_HEIGHT * ratio)) }}
     >
       <div className="relative w-full bg-media" style={{ aspectRatio: ratio }}>
-        {isActive && <VideoSlot kind="inline" />}
+        {isActive ? (
+          <VideoSlot kind="inline" />
+        ) : (
+          thumbnail && (
+            <AttachmentImage
+              attachmentId={attachment.id}
+              thumbnail
+              alt=""
+              className="absolute inset-0 size-full object-cover"
+            />
+          )
+        )}
         <Button
           aria-label={
             isPlaying
@@ -55,9 +67,12 @@ export const VideoAttachment = ({ attachment, message }: VideoAttachmentProps) =
           className={`absolute inset-0 grid cursor-pointer place-items-center ${focusRing}`}
         >
           {!isActive && (
-            <span className="absolute bottom-2.5 left-3 max-w-[calc(100%-24px)] truncate text-[13px] text-media-fg">
-              {attachment.fileName}
-            </span>
+            <>
+              <span className="absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-media/72 to-transparent" />
+              <span className="absolute bottom-2.5 left-3 max-w-[calc(100%-24px)] truncate text-[13px] text-media-fg">
+                {attachment.fileName}
+              </span>
+            </>
           )}
           {!isPlaying && (
             <span className="grid h-10 w-14 place-items-center rounded-xl bg-media/72 text-media-fg [&_svg]:size-5">
