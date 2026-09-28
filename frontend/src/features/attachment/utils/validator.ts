@@ -1,7 +1,5 @@
 const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 
-type ValidationResult = { valid: true } | { valid: false; error: string };
-
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) {
     return "0 B";
@@ -14,20 +12,10 @@ export const formatFileSize = (bytes: number): string => {
   return `${(bytes / k ** i).toFixed(2)} ${units[i]}`;
 };
 
-export const validateFile = (file: File): ValidationResult => {
+// 問題がなければ null、あれば理由を返す。文言は呼び出し側で辞書から取る
+export const validateFile = (file: File) => {
   if (file.size > MAX_FILE_SIZE) {
-    return {
-      error: `ファイルサイズが上限 (1GB) を超えています: ${formatFileSize(file.size)}`,
-      valid: false,
-    };
+    return "tooLarge";
   }
-
-  if (file.size === 0) {
-    return {
-      error: "ファイルが空です",
-      valid: false,
-    };
-  }
-
-  return { valid: true };
+  return file.size === 0 ? "empty" : null;
 };

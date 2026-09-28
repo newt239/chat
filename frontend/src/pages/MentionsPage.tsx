@@ -1,20 +1,19 @@
 import { IconAt } from "@tabler/icons-react";
+import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState } from "#/components/ui/EmptyState";
 import { PageHeader } from "#/features/layout/components/PageHeader";
+import { MentionList } from "#/features/mention/components/MentionList";
 
-// メンション一覧の中身は #15 で実装する
 export const MentionsPage = () => {
   const { t } = useTranslation();
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   return (
     <>
-      <PageHeader icon={<IconAt />} title={t("shell.nav.mentions")} />
-      <EmptyState
-        icon={<IconAt />}
-        title={t("shell.mentions.emptyTitle")}
-        description={t("shell.mentions.emptyDescription")}
-      />
+      <PageHeader icon={<IconAt />} title={t("shell.nav.mentions")}>
+        <span className="hidden text-caption text-muted md:inline">{t("inbox.replyHint")}</span>
+      </PageHeader>
+      <MentionList workspaceId={workspaceId} />
     </>
   );
 };

@@ -1,17 +1,14 @@
-import { formatDateTime } from "@chat/i18n";
 import { IconHash, IconLock, IconUsers } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar";
 import { Link } from "#/components/ui/Link";
-import { useChannels } from "#/features/channel/hooks/useChannel";
 import { MemberRow } from "#/features/member/components/MemberRow";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { MessageListCard } from "#/features/message/components/MessageListCard";
+import { excerpt } from "#/features/search/utils/excerpt";
 import { splitHighlights } from "#/features/search/utils/splitHighlights";
-import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { SearchResultSection } from "./SearchResultSection";
 
@@ -40,10 +37,6 @@ export const SearchResultList = ({
 }: SearchResultListProps) => {
   const { t } = useTranslation();
   const displayName = useDisplayName();
-  const { locale } = useAtomValue(preferencesAtom);
-  const { data: allChannels } = useChannels(workspaceId);
-  const channelNameOf = (channelId: string) =>
-    allChannels?.find((channel) => channel.id === channelId)?.name;
   const shows = (section: SearchFilter) => filter === "all" || filter === section;
 
   return (
@@ -54,50 +47,34 @@ export const SearchResultList = ({
             if (message === undefined) {
               return null;
             }
-            const channelName = channelNameOf(message.channelId);
             const authorName = displayName(message.userId, message.user?.displayName ?? "");
+            const body = excerpt(message.body, highlights, 40);
             return (
-              <article
-                key={message.id}
-                className="mx-[18px] my-1.5 rounded-lg border border-border"
-              >
-                <header className="flex items-center gap-1.5 rounded-t-lg border-b border-border bg-sunken py-1.5 pr-2 pl-3 text-xs text-muted">
-                  {channelName !== undefined && (
-                    <b className="font-semibold text-text">#{channelName}</b>
-                  )}
-                  <span className="flex-1">
-                    {formatDateTime(toDate(message.createdAt), locale)}
-                  </span>
-                  <Link
-                    to="/app/$workspaceId/$channelId"
-                    params={{ channelId: message.channelId, workspaceId }}
-                    search={{ message: message.id }}
-                    className="rounded-sm px-2 py-0.5 text-xs font-semibold no-underline data-hovered:bg-hover"
-                  >
-                    {t("search.showInChannel")}
-                  </Link>
-                </header>
-                <div className="flex gap-2.5 px-3 py-2">
-                  <Avatar name={authorName} src={message.user?.avatarUrl} size={32} />
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="text-body-strong">{authorName}</span>
-                    <p className="m-0 line-clamp-3 text-[14px] break-words whitespace-pre-wrap">
-                      {splitHighlights(message.body, highlights).map((part) =>
-                        part.isMatch ? (
-                          <mark
-                            key={part.start}
-                            className="rounded-[2px] bg-mention-chip text-inherit"
-                          >
-                            {part.text}
-                          </mark>
-                        ) : (
-                          part.text
-                        ),
-                      )}
-                    </p>
+              <div key={message.id} className="mx-[18px] my-1.5">
+                <MessageListCard workspaceId={workspaceId} message={message}>
+                  <div className="flex gap-2.5 px-3 py-2">
+                    <Avatar name={authorName} src={message.user?.avatarUrl} size={32} />
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="text-body-strong">{authorName}</span>
+                      <p className="m-0 line-clamp-3 text-[14px] break-words whitespace-pre-wrap">
+                        {body.isTrimmed && "…"}
+                        {splitHighlights(body.text, body.ranges).map((part) =>
+                          part.isMatch ? (
+                            <mark
+                              key={part.start}
+                              className="rounded-[2px] bg-mention-chip text-inherit"
+                            >
+                              {part.text}
+                            </mark>
+                          ) : (
+                            part.text
+                          ),
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </article>
+                </MessageListCard>
+              </div>
             );
           })}
         </SearchResultSection>

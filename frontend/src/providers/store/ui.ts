@@ -13,8 +13,7 @@ export type PanelView =
   | { type: "thread"; threadId: string }
   | { type: "pins"; channelId: string }
   | { type: "user-profile"; userId: string }
-  | { type: "user-group"; groupId: string }
-  | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" };
+  | { type: "user-group"; groupId: string };
 
 export type RightPanelView = Exclude<PanelView, { type: "thread" }>;
 

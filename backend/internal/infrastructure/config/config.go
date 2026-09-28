@@ -13,8 +13,17 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	Storage  StorageConfig
 	Wasabi   WasabiConfig
 	CORS     CORSConfig
+}
+
+// StorageConfig は添付ファイルの保存先。Driver は wasabi（S3 互換）か local（開発用）
+type StorageConfig struct {
+	Driver string
+	// local のときの保存先ディレクトリと、署名付き URL に使うバックエンドの公開 URL
+	LocalDir      string
+	PublicBaseURL string
 }
 
 type ServerConfig struct {
@@ -59,6 +68,11 @@ func Load() (*Config, error) {
 			Secret:          getEnv("JWT_SECRET", "change-me-in-production"),
 			AccessTokenTTL:  getEnvInt("JWT_ACCESS_TOKEN_TTL", 15),
 			RefreshTokenTTL: getEnvInt("JWT_REFRESH_TOKEN_TTL", 30),
+		},
+		Storage: StorageConfig{
+			Driver:        getEnv("STORAGE_DRIVER", "wasabi"),
+			LocalDir:      getEnv("LOCAL_STORAGE_DIR", "tmp/storage"),
+			PublicBaseURL: getEnv("PUBLIC_BASE_URL", "http://localhost:"+getEnv("PORT", "8080")),
 		},
 		Wasabi: WasabiConfig{
 			Endpoint:        getEnv("WASABI_ENDPOINT", "https://s3.wasabisys.com"),
@@ -107,7 +121,10 @@ func (c *Config) Validate() error {
 	if c.JWT.Secret == "change-me-in-production" && c.Server.Env == "production" {
 		return fmt.Errorf("JWT_SECRET must be set in production")
 	}
-	if c.Server.Env == "production" && (c.Wasabi.AccessKeyID == "" || c.Wasabi.SecretAccessKey == "") {
+	if c.Storage.Driver != "wasabi" && c.Storage.Driver != "local" {
+		return fmt.Errorf("STORAGE_DRIVER must be wasabi or local: %q", c.Storage.Driver)
+	}
+	if c.Server.Env == "production" && c.Storage.Driver == "wasabi" && (c.Wasabi.AccessKeyID == "" || c.Wasabi.SecretAccessKey == "") {
 		return fmt.Errorf("wasabi credentials must be set in production")
 	}
 	if c.Server.Env == "production" && os.Getenv("DATABASE_URL") == "" {

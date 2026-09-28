@@ -12,6 +12,7 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/infrastructure/mention"
 	"github.com/newt239/chat/internal/infrastructure/ogp"
+	"github.com/newt239/chat/internal/infrastructure/storage/local"
 	"github.com/newt239/chat/internal/infrastructure/storage/wasabi"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
@@ -54,6 +55,9 @@ func (r *InfrastructureRegistry) NewOGPService() service.OGPService {
 }
 
 func (r *InfrastructureRegistry) NewStorageService() service.StorageService {
+	if r.config.Storage.Driver == "local" {
+		return r.NewLocalStorage()
+	}
 	client, err := wasabi.NewClient(context.Background(), r.NewWasabiConfig())
 	if err != nil {
 		// エラーハンドリング: ログ出力してnilを返す
@@ -64,7 +68,23 @@ func (r *InfrastructureRegistry) NewStorageService() service.StorageService {
 }
 
 func (r *InfrastructureRegistry) NewStorageConfig() service.StorageConfig {
+	if r.config.Storage.Driver == "local" {
+		return r.NewLocalStorage()
+	}
 	return r.NewWasabiConfig()
+}
+
+// NewLocalStorage は開発用のストレージ。STORAGE_DRIVER=local のときだけ使う
+func (r *InfrastructureRegistry) NewLocalStorage() *local.Storage {
+	wasabiCfg := wasabi.NewConfig()
+	return local.New(&local.Config{
+		Dir:             r.config.Storage.LocalDir,
+		BaseURL:         r.config.Storage.PublicBaseURL,
+		Secret:          r.config.JWT.Secret,
+		MaxFileSize:     wasabiCfg.MaxFileSize,
+		UploadExpires:   wasabiCfg.UploadExpires,
+		DownloadExpires: wasabiCfg.DownloadExpires,
+	})
 }
 
 func (r *InfrastructureRegistry) NewWasabiConfig() *wasabi.Config {

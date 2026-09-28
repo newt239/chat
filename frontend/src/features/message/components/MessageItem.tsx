@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { formatDateTime, formatTime } from "@chat/i18n";
-import { IconBookmarkFilled } from "@tabler/icons-react";
+import { IconBookmarkFilled, IconPin } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -10,10 +10,12 @@ import { useTranslation } from "react-i18next";
 import { AlertDialog } from "#/components/ui/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar";
 import { cn, focusRing } from "#/components/ui/styles";
-import { MessageAttachment } from "#/features/attachment/components/MessageAttachment";
+import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
+import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
+import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/reactionTabs";
 import { toDate } from "#/lib/timestamp";
 import { useIsMobile } from "#/lib/useMediaQuery";
 import { userAtom } from "#/providers/store/auth";
@@ -64,6 +66,7 @@ export const MessageItem = ({
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [isFocusWithin, setIsFocusWithin] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [reactionTab, setReactionTab] = useState<string | null>(null);
   const { isPressed, longPressProps } = useLongPress(() => {
     setIsSheetOpen(true);
   }, isMobile && !isEditing);
@@ -84,6 +87,9 @@ export const MessageItem = ({
     },
     onReplyInThread: () => {
       onCreateThread(message.id);
+    },
+    onViewReactions: () => {
+      setReactionTab(ALL_REACTIONS_TAB);
     },
   });
 
@@ -128,6 +134,7 @@ export const MessageItem = ({
         (isHovered || isOverlayOpen) && "bg-hover",
         isMobile && "select-none [-webkit-touch-callout:none]",
         isPressed && "bg-hover",
+        message.pin && "bg-pin-bg shadow-[inset_3px_0_0_var(--color-pin-bar)]",
         isHighlighted && "bg-accent-soft",
         "transition-colors motion-reduce:transition-none",
       )}
@@ -141,6 +148,17 @@ export const MessageItem = ({
       </Button>
 
       <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+        {message.pin && (
+          <span className="-mb-0.5 inline-flex items-center gap-1 self-start text-[11px] font-semibold text-accent-text [&_svg]:size-3">
+            <IconPin aria-hidden />
+            {t("pin.label", {
+              name:
+                message.pin.pinnedBy?.id === currentUserId
+                  ? t("reaction.names.you")
+                  : (message.pin.pinnedBy?.displayName ?? ""),
+            })}
+          </span>
+        )}
         <div className="flex flex-wrap items-baseline gap-[7px] leading-[1.3]">
           <Button
             onPress={openProfile}
@@ -185,11 +203,13 @@ export const MessageItem = ({
           <MessageContent message={message} />
         )}
 
-        {message.attachments.map((attachment) => (
-          <MessageAttachment key={attachment.id} attachment={attachment} />
-        ))}
+        {!message.isDeleted && <MessageAttachments message={message} />}
 
-        <ReactionList messageId={message.id} reactions={message.reactions} />
+        <ReactionList
+          messageId={message.id}
+          reactions={message.reactions}
+          onOpenList={setReactionTab}
+        />
 
         {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (
           <ThreadMetadataPreview
@@ -223,6 +243,8 @@ export const MessageItem = ({
           onReact={react}
         />
       )}
+
+      <ReactionsDialog message={message} tab={reactionTab} onTabChange={setReactionTab} />
 
       <AlertDialog
         isOpen={isDeleteOpen}

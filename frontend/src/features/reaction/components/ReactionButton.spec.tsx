@@ -1,5 +1,5 @@
 import { create } from "@bufbuild/protobuf";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
@@ -17,6 +17,7 @@ describe("ReactionButton", () => {
       <ReactionButton
         group={{ count: 2, emoji: "👍", hasUserReacted: true, users: [user("Alice"), user("Bob")] }}
         onPress={onPress}
+        onOpenList={vi.fn<() => void>()}
       />,
       { wrapper: QueryWrapper },
     );
@@ -27,5 +28,22 @@ describe("ReactionButton", () => {
 
     await userEvent.click(button);
     expect(onPress).toHaveBeenCalledOnce();
+  });
+
+  test("5 人以上は先頭の 3 人と残りの人数にまとめ、右クリックで一覧を開く", () => {
+    const onOpenList = vi.fn<() => void>();
+    const users = ["A", "B", "C", "D", "E"].map((name) => user(name));
+    render(
+      <ReactionButton
+        group={{ count: 5, emoji: "🎉", hasUserReacted: false, users }}
+        onPress={vi.fn<() => void>()}
+        onOpenList={onOpenList}
+      />,
+      { wrapper: QueryWrapper },
+    );
+
+    const button = screen.getByRole("button", { name: "🎉 5 件。A、B、C ほか 2 人" });
+    fireEvent.contextMenu(button);
+    expect(onOpenList).toHaveBeenCalledOnce();
   });
 });
