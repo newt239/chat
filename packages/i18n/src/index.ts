@@ -1,6 +1,9 @@
 export {
+  formatBytes,
   formatDate,
   formatDateTime,
+  formatMonthDay,
+  formatNumber,
   formatRelativeTime,
   formatTime,
   formatWeekday,
