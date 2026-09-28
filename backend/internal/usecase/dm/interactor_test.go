@@ -23,7 +23,7 @@ func newInteractor(memberIDs ...string) *Interactor {
 	for _, id := range memberIDs {
 		members[id] = &entity.WorkspaceMember{Role: entity.WorkspaceRoleMember}
 	}
-	return NewInteractor(nil, nil, nil, nil, &stubWorkspaceRepo{members: members})
+	return NewInteractor(nil, nil, nil, nil, nil, nil, &stubWorkspaceRepo{members: members})
 }
 
 func TestCreateDMRejectsNonWorkspaceMember(t *testing.T) {
