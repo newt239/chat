@@ -9,7 +9,7 @@ describe("SearchModifierHelp", () => {
     const onInsert = vi.fn<(modifier: string) => void>();
     render(<SearchModifierHelp onInsert={onInsert} />);
     await userEvent.click(screen.getByRole("button", { name: "from:@ を挿入" }));
-    await userEvent.click(screen.getByRole("button", { name: "during:week を挿入" }));
-    expect(onInsert.mock.calls).toEqual([["from:@"], ["during:week"]]);
+    await userEvent.click(screen.getByRole("button", { name: "after: を挿入" }));
+    expect(onInsert.mock.calls).toEqual([["from:@"], ["after:"]]);
   });
 });

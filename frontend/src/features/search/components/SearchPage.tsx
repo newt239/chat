@@ -44,7 +44,7 @@ export const SearchPage = () => {
     setInputValue(query);
   }
 
-  const { data, isFetching, error, isEnabled, unresolved } = useWorkspaceSearch(
+  const { data, isFetching, error, isEnabled, unresolved, resolved } = useWorkspaceSearch(
     workspaceId,
     search,
     RESULTS_PER_PAGE,
@@ -79,6 +79,14 @@ export const SearchPage = () => {
   };
 
   const renderResults = () => {
+    const { invalidDates } = resolved.query;
+    if (invalidDates.length > 0) {
+      return (
+        <p role="alert" className="m-0 px-[18px] py-6 text-caption text-danger">
+          {t("search.invalidDate", { tokens: invalidDates.join(", ") })}
+        </p>
+      );
+    }
     if (unresolved.length > 0) {
       return (
         <p role="alert" className="m-0 px-[18px] py-6 text-caption text-danger">
