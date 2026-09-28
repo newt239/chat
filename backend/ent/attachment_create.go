@@ -45,6 +45,48 @@ func (_c *AttachmentCreate) SetSizeBytes(v int64) *AttachmentCreate {
 	return _c
 }
 
+// SetWidth sets the "width" field.
+func (_c *AttachmentCreate) SetWidth(v int32) *AttachmentCreate {
+	_c.mutation.SetWidth(v)
+	return _c
+}
+
+// SetNillableWidth sets the "width" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableWidth(v *int32) *AttachmentCreate {
+	if v != nil {
+		_c.SetWidth(*v)
+	}
+	return _c
+}
+
+// SetHeight sets the "height" field.
+func (_c *AttachmentCreate) SetHeight(v int32) *AttachmentCreate {
+	_c.mutation.SetHeight(v)
+	return _c
+}
+
+// SetNillableHeight sets the "height" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableHeight(v *int32) *AttachmentCreate {
+	if v != nil {
+		_c.SetHeight(*v)
+	}
+	return _c
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (_c *AttachmentCreate) SetDurationSeconds(v float64) *AttachmentCreate {
+	_c.mutation.SetDurationSeconds(v)
+	return _c
+}
+
+// SetNillableDurationSeconds sets the "duration_seconds" field if the given value is not nil.
+func (_c *AttachmentCreate) SetNillableDurationSeconds(v *float64) *AttachmentCreate {
+	if v != nil {
+		_c.SetDurationSeconds(*v)
+	}
+	return _c
+}
+
 // SetStorageKey sets the "storage_key" field.
 func (_c *AttachmentCreate) SetStorageKey(v string) *AttachmentCreate {
 	_c.mutation.SetStorageKey(v)
@@ -305,6 +347,18 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		_spec.SetField(attachment.FieldSizeBytes, field.TypeInt64, value)
 		_node.SizeBytes = value
 	}
+	if value, ok := _c.mutation.Width(); ok {
+		_spec.SetField(attachment.FieldWidth, field.TypeInt32, value)
+		_node.Width = &value
+	}
+	if value, ok := _c.mutation.Height(); ok {
+		_spec.SetField(attachment.FieldHeight, field.TypeInt32, value)
+		_node.Height = &value
+	}
+	if value, ok := _c.mutation.DurationSeconds(); ok {
+		_spec.SetField(attachment.FieldDurationSeconds, field.TypeFloat64, value)
+		_node.DurationSeconds = &value
+	}
 	if value, ok := _c.mutation.StorageKey(); ok {
 		_spec.SetField(attachment.FieldStorageKey, field.TypeString, value)
 		_node.StorageKey = value
@@ -470,6 +524,78 @@ func (u *AttachmentUpsert) AddSizeBytes(v int64) *AttachmentUpsert {
 	return u
 }
 
+// SetWidth sets the "width" field.
+func (u *AttachmentUpsert) SetWidth(v int32) *AttachmentUpsert {
+	u.Set(attachment.FieldWidth, v)
+	return u
+}
+
+// UpdateWidth sets the "width" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateWidth() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldWidth)
+	return u
+}
+
+// AddWidth adds v to the "width" field.
+func (u *AttachmentUpsert) AddWidth(v int32) *AttachmentUpsert {
+	u.Add(attachment.FieldWidth, v)
+	return u
+}
+
+// ClearWidth clears the value of the "width" field.
+func (u *AttachmentUpsert) ClearWidth() *AttachmentUpsert {
+	u.SetNull(attachment.FieldWidth)
+	return u
+}
+
+// SetHeight sets the "height" field.
+func (u *AttachmentUpsert) SetHeight(v int32) *AttachmentUpsert {
+	u.Set(attachment.FieldHeight, v)
+	return u
+}
+
+// UpdateHeight sets the "height" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateHeight() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldHeight)
+	return u
+}
+
+// AddHeight adds v to the "height" field.
+func (u *AttachmentUpsert) AddHeight(v int32) *AttachmentUpsert {
+	u.Add(attachment.FieldHeight, v)
+	return u
+}
+
+// ClearHeight clears the value of the "height" field.
+func (u *AttachmentUpsert) ClearHeight() *AttachmentUpsert {
+	u.SetNull(attachment.FieldHeight)
+	return u
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (u *AttachmentUpsert) SetDurationSeconds(v float64) *AttachmentUpsert {
+	u.Set(attachment.FieldDurationSeconds, v)
+	return u
+}
+
+// UpdateDurationSeconds sets the "duration_seconds" field to the value that was provided on create.
+func (u *AttachmentUpsert) UpdateDurationSeconds() *AttachmentUpsert {
+	u.SetExcluded(attachment.FieldDurationSeconds)
+	return u
+}
+
+// AddDurationSeconds adds v to the "duration_seconds" field.
+func (u *AttachmentUpsert) AddDurationSeconds(v float64) *AttachmentUpsert {
+	u.Add(attachment.FieldDurationSeconds, v)
+	return u
+}
+
+// ClearDurationSeconds clears the value of the "duration_seconds" field.
+func (u *AttachmentUpsert) ClearDurationSeconds() *AttachmentUpsert {
+	u.SetNull(attachment.FieldDurationSeconds)
+	return u
+}
+
 // SetStorageKey sets the "storage_key" field.
 func (u *AttachmentUpsert) SetStorageKey(v string) *AttachmentUpsert {
 	u.Set(attachment.FieldStorageKey, v)
@@ -627,6 +753,90 @@ func (u *AttachmentUpsertOne) AddSizeBytes(v int64) *AttachmentUpsertOne {
 func (u *AttachmentUpsertOne) UpdateSizeBytes() *AttachmentUpsertOne {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.UpdateSizeBytes()
+	})
+}
+
+// SetWidth sets the "width" field.
+func (u *AttachmentUpsertOne) SetWidth(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetWidth(v)
+	})
+}
+
+// AddWidth adds v to the "width" field.
+func (u *AttachmentUpsertOne) AddWidth(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddWidth(v)
+	})
+}
+
+// UpdateWidth sets the "width" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateWidth() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateWidth()
+	})
+}
+
+// ClearWidth clears the value of the "width" field.
+func (u *AttachmentUpsertOne) ClearWidth() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearWidth()
+	})
+}
+
+// SetHeight sets the "height" field.
+func (u *AttachmentUpsertOne) SetHeight(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetHeight(v)
+	})
+}
+
+// AddHeight adds v to the "height" field.
+func (u *AttachmentUpsertOne) AddHeight(v int32) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddHeight(v)
+	})
+}
+
+// UpdateHeight sets the "height" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateHeight() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateHeight()
+	})
+}
+
+// ClearHeight clears the value of the "height" field.
+func (u *AttachmentUpsertOne) ClearHeight() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearHeight()
+	})
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (u *AttachmentUpsertOne) SetDurationSeconds(v float64) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetDurationSeconds(v)
+	})
+}
+
+// AddDurationSeconds adds v to the "duration_seconds" field.
+func (u *AttachmentUpsertOne) AddDurationSeconds(v float64) *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddDurationSeconds(v)
+	})
+}
+
+// UpdateDurationSeconds sets the "duration_seconds" field to the value that was provided on create.
+func (u *AttachmentUpsertOne) UpdateDurationSeconds() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateDurationSeconds()
+	})
+}
+
+// ClearDurationSeconds clears the value of the "duration_seconds" field.
+func (u *AttachmentUpsertOne) ClearDurationSeconds() *AttachmentUpsertOne {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearDurationSeconds()
 	})
 }
 
@@ -964,6 +1174,90 @@ func (u *AttachmentUpsertBulk) AddSizeBytes(v int64) *AttachmentUpsertBulk {
 func (u *AttachmentUpsertBulk) UpdateSizeBytes() *AttachmentUpsertBulk {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.UpdateSizeBytes()
+	})
+}
+
+// SetWidth sets the "width" field.
+func (u *AttachmentUpsertBulk) SetWidth(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetWidth(v)
+	})
+}
+
+// AddWidth adds v to the "width" field.
+func (u *AttachmentUpsertBulk) AddWidth(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddWidth(v)
+	})
+}
+
+// UpdateWidth sets the "width" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateWidth() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateWidth()
+	})
+}
+
+// ClearWidth clears the value of the "width" field.
+func (u *AttachmentUpsertBulk) ClearWidth() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearWidth()
+	})
+}
+
+// SetHeight sets the "height" field.
+func (u *AttachmentUpsertBulk) SetHeight(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetHeight(v)
+	})
+}
+
+// AddHeight adds v to the "height" field.
+func (u *AttachmentUpsertBulk) AddHeight(v int32) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddHeight(v)
+	})
+}
+
+// UpdateHeight sets the "height" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateHeight() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateHeight()
+	})
+}
+
+// ClearHeight clears the value of the "height" field.
+func (u *AttachmentUpsertBulk) ClearHeight() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearHeight()
+	})
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (u *AttachmentUpsertBulk) SetDurationSeconds(v float64) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.SetDurationSeconds(v)
+	})
+}
+
+// AddDurationSeconds adds v to the "duration_seconds" field.
+func (u *AttachmentUpsertBulk) AddDurationSeconds(v float64) *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.AddDurationSeconds(v)
+	})
+}
+
+// UpdateDurationSeconds sets the "duration_seconds" field to the value that was provided on create.
+func (u *AttachmentUpsertBulk) UpdateDurationSeconds() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.UpdateDurationSeconds()
+	})
+}
+
+// ClearDurationSeconds clears the value of the "duration_seconds" field.
+func (u *AttachmentUpsertBulk) ClearDurationSeconds() *AttachmentUpsertBulk {
+	return u.Update(func(s *AttachmentUpsert) {
+		s.ClearDurationSeconds()
 	})
 }
 

@@ -31,6 +31,9 @@ func (Channel) Fields() []ent.Field {
 		field.Time("archived_at").
 			Optional().
 			Nillable(),
+		field.UUID("parent_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -56,6 +59,10 @@ func (Channel) Edges() []ent.Edge {
 			Ref("channel"),
 		edge.From("read_states", ChannelReadState.Type).
 			Ref("channel"),
+		edge.To("children", Channel.Type).
+			From("parent").
+			Field("parent_id").
+			Unique(),
 	}
 }
 

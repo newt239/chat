@@ -34,6 +34,7 @@ type Attachment struct {
 	SizeBytes     int64                  `protobuf:"varint,7,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
 	Status        string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Media         *MediaMetadata         `protobuf:"bytes,10,opt,name=media,proto3" json:"media,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -131,14 +132,25 @@ func (x *Attachment) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Attachment) GetMedia() *MediaMetadata {
+	if x != nil {
+		return x.Media
+	}
+	return nil
+}
+
 type PresignUploadRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	FileName      string                 `protobuf:"bytes,2,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
-	ContentType   string                 `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
-	SizeBytes     int64                  `protobuf:"varint,4,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId   string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	FileName    string                 `protobuf:"bytes,2,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	ContentType string                 `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	SizeBytes   int64                  `protobuf:"varint,4,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
+	// 画像・動画・音声のときにクライアントが計測した値を送る
+	Width           *int32   `protobuf:"varint,5,opt,name=width,proto3,oneof" json:"width,omitempty"`
+	Height          *int32   `protobuf:"varint,6,opt,name=height,proto3,oneof" json:"height,omitempty"`
+	DurationSeconds *float64 `protobuf:"fixed64,7,opt,name=duration_seconds,json=durationSeconds,proto3,oneof" json:"duration_seconds,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *PresignUploadRequest) Reset() {
@@ -195,6 +207,27 @@ func (x *PresignUploadRequest) GetContentType() string {
 func (x *PresignUploadRequest) GetSizeBytes() int64 {
 	if x != nil {
 		return x.SizeBytes
+	}
+	return 0
+}
+
+func (x *PresignUploadRequest) GetWidth() int32 {
+	if x != nil && x.Width != nil {
+		return *x.Width
+	}
+	return 0
+}
+
+func (x *PresignUploadRequest) GetHeight() int32 {
+	if x != nil && x.Height != nil {
+		return *x.Height
+	}
+	return 0
+}
+
+func (x *PresignUploadRequest) GetDurationSeconds() float64 {
+	if x != nil && x.DurationSeconds != nil {
+		return *x.DurationSeconds
 	}
 	return 0
 }
@@ -527,7 +560,7 @@ var File_chat_v1_attachment_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"\n" +
-	" chat/v1/attachment_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbb\x02\n" +
+	" chat/v1/attachment_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe9\x02\n" +
 	"\n" +
 	"Attachment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\"\n" +
@@ -543,15 +576,23 @@ const file_chat_v1_attachment_service_proto_rawDesc = "" +
 	"size_bytes\x18\a \x01(\x03R\tsizeBytes\x12\x16\n" +
 	"\x06status\x18\b \x01(\tR\x06status\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\r\n" +
-	"\v_message_id\"\xb9\x01\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12,\n" +
+	"\x05media\x18\n" +
+	" \x01(\v2\x16.chat.v1.MediaMetadataR\x05mediaB\r\n" +
+	"\v_message_id\"\xfe\x02\n" +
 	"\x14PresignUploadRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12$\n" +
 	"\tfile_name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bfileName\x12*\n" +
 	"\fcontent_type\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vcontentType\x12&\n" +
 	"\n" +
-	"size_bytes\x18\x04 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tsizeBytes\"\x96\x01\n" +
+	"size_bytes\x18\x04 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tsizeBytes\x12&\n" +
+	"\x05width\x18\x05 \x01(\x05B\v\xbaH\b\x1a\x06\x18\xa0\x8d\x06 \x00H\x00R\x05width\x88\x01\x01\x12(\n" +
+	"\x06height\x18\x06 \x01(\x05B\v\xbaH\b\x1a\x06\x18\xa0\x8d\x06 \x00H\x01R\x06height\x88\x01\x01\x12G\n" +
+	"\x10duration_seconds\x18\a \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x18\xf5@)\x00\x00\x00\x00\x00\x00\x00\x00H\x02R\x0fdurationSeconds\x88\x01\x01B\b\n" +
+	"\x06_widthB\t\n" +
+	"\a_heightB\x13\n" +
+	"\x11_duration_seconds\"\x96\x01\n" +
 	"\x15PresignUploadResponse\x12#\n" +
 	"\rattachment_id\x18\x01 \x01(\tR\fattachmentId\x12\x1d\n" +
 	"\n" +
@@ -604,24 +645,26 @@ var file_chat_v1_attachment_service_proto_goTypes = []any{
 	(*DeleteAttachmentRequest)(nil),  // 7: chat.v1.DeleteAttachmentRequest
 	(*DeleteAttachmentResponse)(nil), // 8: chat.v1.DeleteAttachmentResponse
 	(*timestamppb.Timestamp)(nil),    // 9: google.protobuf.Timestamp
+	(*MediaMetadata)(nil),            // 10: chat.v1.MediaMetadata
 }
 var file_chat_v1_attachment_service_proto_depIdxs = []int32{
-	9, // 0: chat.v1.Attachment.created_at:type_name -> google.protobuf.Timestamp
-	9, // 1: chat.v1.PresignUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
-	0, // 2: chat.v1.GetAttachmentResponse.attachment:type_name -> chat.v1.Attachment
-	1, // 3: chat.v1.AttachmentService.PresignUpload:input_type -> chat.v1.PresignUploadRequest
-	3, // 4: chat.v1.AttachmentService.GetAttachment:input_type -> chat.v1.GetAttachmentRequest
-	5, // 5: chat.v1.AttachmentService.GetDownloadUrl:input_type -> chat.v1.GetDownloadUrlRequest
-	7, // 6: chat.v1.AttachmentService.DeleteAttachment:input_type -> chat.v1.DeleteAttachmentRequest
-	2, // 7: chat.v1.AttachmentService.PresignUpload:output_type -> chat.v1.PresignUploadResponse
-	4, // 8: chat.v1.AttachmentService.GetAttachment:output_type -> chat.v1.GetAttachmentResponse
-	6, // 9: chat.v1.AttachmentService.GetDownloadUrl:output_type -> chat.v1.GetDownloadUrlResponse
-	8, // 10: chat.v1.AttachmentService.DeleteAttachment:output_type -> chat.v1.DeleteAttachmentResponse
-	7, // [7:11] is the sub-list for method output_type
-	3, // [3:7] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	9,  // 0: chat.v1.Attachment.created_at:type_name -> google.protobuf.Timestamp
+	10, // 1: chat.v1.Attachment.media:type_name -> chat.v1.MediaMetadata
+	9,  // 2: chat.v1.PresignUploadResponse.expires_at:type_name -> google.protobuf.Timestamp
+	0,  // 3: chat.v1.GetAttachmentResponse.attachment:type_name -> chat.v1.Attachment
+	1,  // 4: chat.v1.AttachmentService.PresignUpload:input_type -> chat.v1.PresignUploadRequest
+	3,  // 5: chat.v1.AttachmentService.GetAttachment:input_type -> chat.v1.GetAttachmentRequest
+	5,  // 6: chat.v1.AttachmentService.GetDownloadUrl:input_type -> chat.v1.GetDownloadUrlRequest
+	7,  // 7: chat.v1.AttachmentService.DeleteAttachment:input_type -> chat.v1.DeleteAttachmentRequest
+	2,  // 8: chat.v1.AttachmentService.PresignUpload:output_type -> chat.v1.PresignUploadResponse
+	4,  // 9: chat.v1.AttachmentService.GetAttachment:output_type -> chat.v1.GetAttachmentResponse
+	6,  // 10: chat.v1.AttachmentService.GetDownloadUrl:output_type -> chat.v1.GetDownloadUrlResponse
+	8,  // 11: chat.v1.AttachmentService.DeleteAttachment:output_type -> chat.v1.DeleteAttachmentResponse
+	8,  // [8:12] is the sub-list for method output_type
+	4,  // [4:8] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_attachment_service_proto_init() }
@@ -629,7 +672,9 @@ func file_chat_v1_attachment_service_proto_init() {
 	if File_chat_v1_attachment_service_proto != nil {
 		return
 	}
+	file_chat_v1_message_proto_init()
 	file_chat_v1_attachment_service_proto_msgTypes[0].OneofWrappers = []any{}
+	file_chat_v1_attachment_service_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

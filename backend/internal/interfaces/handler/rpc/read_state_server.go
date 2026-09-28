@@ -13,9 +13,10 @@ type ReadStateServer struct {
 
 func (s *ReadStateServer) UpdateReadState(ctx context.Context, req *chatv1.UpdateReadStateRequest) (*chatv1.UpdateReadStateResponse, error) {
 	err := s.UC.UpdateReadState(ctx, readstateuc.UpdateReadStateInput{
-		ChannelID:  req.ChannelId,
-		UserID:     userIDFrom(ctx),
-		LastReadAt: req.LastReadAt.AsTime(),
+		ChannelID:          req.ChannelId,
+		UserID:             userIDFrom(ctx),
+		LastReadAt:         req.LastReadAt.AsTime(),
+		IncludeDescendants: req.IncludeDescendants,
 	})
 	if err != nil {
 		return nil, err

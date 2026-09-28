@@ -27,6 +27,7 @@ type Channel struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	WorkspaceId string                 `protobuf:"bytes,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	// スラッシュ区切りのフルパス (例: dev/frontend)
 	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Description *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	IsPrivate   bool                   `protobuf:"varint,5,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
@@ -35,8 +36,12 @@ type Channel struct {
 	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	UnreadCount int32                  `protobuf:"varint,9,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
 	HasMention  bool                   `protobuf:"varint,10,opt,name=has_mention,json=hasMention,proto3" json:"has_mention,omitempty"`
+	ParentId    *string                `protobuf:"bytes,11,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
+	IsStarred   bool                   `protobuf:"varint,12,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
+	// false の場合はツリーを組み立てるために返している未参加の祖先チャンネル
+	IsMember bool `protobuf:"varint,13,opt,name=is_member,json=isMember,proto3" json:"is_member,omitempty"`
 	// アーカイブ中の場合だけ設定される
-	ArchivedAt    *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=archived_at,json=archivedAt,proto3,oneof" json:"archived_at,omitempty"`
+	ArchivedAt    *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=archived_at,json=archivedAt,proto3,oneof" json:"archived_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -141,6 +146,27 @@ func (x *Channel) GetHasMention() bool {
 	return false
 }
 
+func (x *Channel) GetParentId() string {
+	if x != nil && x.ParentId != nil {
+		return *x.ParentId
+	}
+	return ""
+}
+
+func (x *Channel) GetIsStarred() bool {
+	if x != nil {
+		return x.IsStarred
+	}
+	return false
+}
+
+func (x *Channel) GetIsMember() bool {
+	if x != nil {
+		return x.IsMember
+	}
+	return false
+}
+
 func (x *Channel) GetArchivedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ArchivedAt
@@ -237,11 +263,14 @@ func (x *ListChannelsResponse) GetChannels() []*Channel {
 }
 
 type CreateChannelRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	IsPrivate     bool                   `protobuf:"varint,4,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	// 存在しない親は自動で作成する
+	Name        string  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description *string `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	IsPrivate   bool    `protobuf:"varint,4,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
+	// 作成者以外に参加させるユーザー
+	MemberIds     []string `protobuf:"bytes,5,rep,name=member_ids,json=memberIds,proto3" json:"member_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -302,6 +331,13 @@ func (x *CreateChannelRequest) GetIsPrivate() bool {
 		return x.IsPrivate
 	}
 	return false
+}
+
+func (x *CreateChannelRequest) GetMemberIds() []string {
+	if x != nil {
+		return x.MemberIds
+	}
+	return nil
 }
 
 type CreateChannelResponse struct {
@@ -437,11 +473,12 @@ func (x *GetChannelResponse) GetChannel() *Channel {
 }
 
 type UpdateChannelRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	Name          *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	IsPrivate     *bool                  `protobuf:"varint,4,opt,name=is_private,json=isPrivate,proto3,oneof" json:"is_private,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	// 変更できるのは末尾のセグメントのみ
+	Name          *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Description   *string `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	IsPrivate     *bool   `protobuf:"varint,4,opt,name=is_private,json=isPrivate,proto3,oneof" json:"is_private,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -628,6 +665,94 @@ func (*DeleteChannelResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{10}
 }
 
+type SetChannelStarredRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	Starred       bool                   `protobuf:"varint,2,opt,name=starred,proto3" json:"starred,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetChannelStarredRequest) Reset() {
+	*x = SetChannelStarredRequest{}
+	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetChannelStarredRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetChannelStarredRequest) ProtoMessage() {}
+
+func (x *SetChannelStarredRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetChannelStarredRequest.ProtoReflect.Descriptor instead.
+func (*SetChannelStarredRequest) Descriptor() ([]byte, []int) {
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SetChannelStarredRequest) GetChannelId() string {
+	if x != nil {
+		return x.ChannelId
+	}
+	return ""
+}
+
+func (x *SetChannelStarredRequest) GetStarred() bool {
+	if x != nil {
+		return x.Starred
+	}
+	return false
+}
+
+type SetChannelStarredResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetChannelStarredResponse) Reset() {
+	*x = SetChannelStarredResponse{}
+	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetChannelStarredResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetChannelStarredResponse) ProtoMessage() {}
+
+func (x *SetChannelStarredResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetChannelStarredResponse.ProtoReflect.Descriptor instead.
+func (*SetChannelStarredResponse) Descriptor() ([]byte, []int) {
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{12}
+}
+
 type ArchiveChannelRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
@@ -637,7 +762,7 @@ type ArchiveChannelRequest struct {
 
 func (x *ArchiveChannelRequest) Reset() {
 	*x = ArchiveChannelRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -649,7 +774,7 @@ func (x *ArchiveChannelRequest) String() string {
 func (*ArchiveChannelRequest) ProtoMessage() {}
 
 func (x *ArchiveChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -662,7 +787,7 @@ func (x *ArchiveChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArchiveChannelRequest.ProtoReflect.Descriptor instead.
 func (*ArchiveChannelRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{11}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ArchiveChannelRequest) GetChannelId() string {
@@ -681,7 +806,7 @@ type ArchiveChannelResponse struct {
 
 func (x *ArchiveChannelResponse) Reset() {
 	*x = ArchiveChannelResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -693,7 +818,7 @@ func (x *ArchiveChannelResponse) String() string {
 func (*ArchiveChannelResponse) ProtoMessage() {}
 
 func (x *ArchiveChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -706,7 +831,7 @@ func (x *ArchiveChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArchiveChannelResponse.ProtoReflect.Descriptor instead.
 func (*ArchiveChannelResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{12}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ArchiveChannelResponse) GetChannel() *Channel {
@@ -725,7 +850,7 @@ type UnarchiveChannelRequest struct {
 
 func (x *UnarchiveChannelRequest) Reset() {
 	*x = UnarchiveChannelRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -737,7 +862,7 @@ func (x *UnarchiveChannelRequest) String() string {
 func (*UnarchiveChannelRequest) ProtoMessage() {}
 
 func (x *UnarchiveChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -750,7 +875,7 @@ func (x *UnarchiveChannelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnarchiveChannelRequest.ProtoReflect.Descriptor instead.
 func (*UnarchiveChannelRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{13}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *UnarchiveChannelRequest) GetChannelId() string {
@@ -769,7 +894,7 @@ type UnarchiveChannelResponse struct {
 
 func (x *UnarchiveChannelResponse) Reset() {
 	*x = UnarchiveChannelResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -781,7 +906,7 @@ func (x *UnarchiveChannelResponse) String() string {
 func (*UnarchiveChannelResponse) ProtoMessage() {}
 
 func (x *UnarchiveChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -794,7 +919,7 @@ func (x *UnarchiveChannelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnarchiveChannelResponse.ProtoReflect.Descriptor instead.
 func (*UnarchiveChannelResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{14}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UnarchiveChannelResponse) GetChannel() *Channel {
@@ -808,7 +933,7 @@ var File_chat_v1_channel_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd1\x03\n" +
+	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbd\x04\n" +
 	"\aChannel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -825,21 +950,30 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\funread_count\x18\t \x01(\x05R\vunreadCount\x12\x1f\n" +
 	"\vhas_mention\x18\n" +
 	" \x01(\bR\n" +
-	"hasMention\x12@\n" +
-	"\varchived_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampH\x01R\n" +
+	"hasMention\x12 \n" +
+	"\tparent_id\x18\v \x01(\tH\x01R\bparentId\x88\x01\x01\x12\x1d\n" +
+	"\n" +
+	"is_starred\x18\f \x01(\bR\tisStarred\x12\x1b\n" +
+	"\tis_member\x18\r \x01(\bR\bisMember\x12@\n" +
+	"\varchived_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampH\x02R\n" +
 	"archivedAt\x88\x01\x01B\x0e\n" +
-	"\f_descriptionB\x0e\n" +
+	"\f_descriptionB\f\n" +
+	"\n" +
+	"_parent_idB\x0e\n" +
 	"\f_archived_at\"A\n" +
 	"\x13ListChannelsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"D\n" +
 	"\x14ListChannelsResponse\x12,\n" +
-	"\bchannels\x18\x01 \x03(\v2\x10.chat.v1.ChannelR\bchannels\"\xb5\x01\n" +
+	"\bchannels\x18\x01 \x03(\v2\x10.chat.v1.ChannelR\bchannels\"\x98\x02\n" +
 	"\x14CreateChannelRequest\x12*\n" +
-	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12%\n" +
+	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12P\n" +
+	"\x04name\x18\x02 \x01(\tB<\xbaH9r7\x18\xc8\x0122^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$R\x04name\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1d\n" +
 	"\n" +
-	"is_private\x18\x04 \x01(\bR\tisPrivateB\x0e\n" +
+	"is_private\x18\x04 \x01(\bR\tisPrivate\x12,\n" +
+	"\n" +
+	"member_ids\x18\x05 \x03(\tB\r\xbaH\n" +
+	"\x92\x01\a\"\x05r\x03\xb0\x01\x01R\tmemberIdsB\x0e\n" +
 	"\f_description\"C\n" +
 	"\x15CreateChannelResponse\x12*\n" +
 	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"<\n" +
@@ -847,11 +981,11 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"@\n" +
 	"\x12GetChannelResponse\x12*\n" +
-	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"\xd4\x01\n" +
+	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"\x89\x02\n" +
 	"\x14UpdateChannelRequest\x12'\n" +
 	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12 \n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x04name\x88\x01\x01\x12%\n" +
+	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12U\n" +
+	"\x04name\x18\x02 \x01(\tB<\xbaH9r7\x18\xc8\x0122^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$H\x00R\x04name\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x01R\vdescription\x88\x01\x01\x12\"\n" +
 	"\n" +
 	"is_private\x18\x04 \x01(\bH\x02R\tisPrivate\x88\x01\x01B\a\n" +
@@ -863,7 +997,12 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\x14DeleteChannelRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"\x17\n" +
-	"\x15DeleteChannelResponse\"@\n" +
+	"\x15DeleteChannelResponse\"]\n" +
+	"\x18SetChannelStarredRequest\x12'\n" +
+	"\n" +
+	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x18\n" +
+	"\astarred\x18\x02 \x01(\bR\astarred\"\x1b\n" +
+	"\x19SetChannelStarredResponse\"@\n" +
 	"\x15ArchiveChannelRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"D\n" +
@@ -873,14 +1012,15 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"F\n" +
 	"\x18UnarchiveChannelResponse\x12*\n" +
-	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel2\xc0\x04\n" +
+	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel2\x9c\x05\n" +
 	"\x0eChannelService\x12K\n" +
 	"\fListChannels\x12\x1c.chat.v1.ListChannelsRequest\x1a\x1d.chat.v1.ListChannelsResponse\x12N\n" +
 	"\rCreateChannel\x12\x1d.chat.v1.CreateChannelRequest\x1a\x1e.chat.v1.CreateChannelResponse\x12E\n" +
 	"\n" +
 	"GetChannel\x12\x1a.chat.v1.GetChannelRequest\x1a\x1b.chat.v1.GetChannelResponse\x12N\n" +
 	"\rUpdateChannel\x12\x1d.chat.v1.UpdateChannelRequest\x1a\x1e.chat.v1.UpdateChannelResponse\x12N\n" +
-	"\rDeleteChannel\x12\x1d.chat.v1.DeleteChannelRequest\x1a\x1e.chat.v1.DeleteChannelResponse\x12Q\n" +
+	"\rDeleteChannel\x12\x1d.chat.v1.DeleteChannelRequest\x1a\x1e.chat.v1.DeleteChannelResponse\x12Z\n" +
+	"\x11SetChannelStarred\x12!.chat.v1.SetChannelStarredRequest\x1a\".chat.v1.SetChannelStarredResponse\x12Q\n" +
 	"\x0eArchiveChannel\x12\x1e.chat.v1.ArchiveChannelRequest\x1a\x1f.chat.v1.ArchiveChannelResponse\x12W\n" +
 	"\x10UnarchiveChannel\x12 .chat.v1.UnarchiveChannelRequest\x1a!.chat.v1.UnarchiveChannelResponseB\x94\x01\n" +
 	"\vcom.chat.v1B\x13ChannelServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
@@ -897,29 +1037,31 @@ func file_chat_v1_channel_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_channel_service_proto_rawDescData
 }
 
-var file_chat_v1_channel_service_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_chat_v1_channel_service_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_chat_v1_channel_service_proto_goTypes = []any{
-	(*Channel)(nil),                  // 0: chat.v1.Channel
-	(*ListChannelsRequest)(nil),      // 1: chat.v1.ListChannelsRequest
-	(*ListChannelsResponse)(nil),     // 2: chat.v1.ListChannelsResponse
-	(*CreateChannelRequest)(nil),     // 3: chat.v1.CreateChannelRequest
-	(*CreateChannelResponse)(nil),    // 4: chat.v1.CreateChannelResponse
-	(*GetChannelRequest)(nil),        // 5: chat.v1.GetChannelRequest
-	(*GetChannelResponse)(nil),       // 6: chat.v1.GetChannelResponse
-	(*UpdateChannelRequest)(nil),     // 7: chat.v1.UpdateChannelRequest
-	(*UpdateChannelResponse)(nil),    // 8: chat.v1.UpdateChannelResponse
-	(*DeleteChannelRequest)(nil),     // 9: chat.v1.DeleteChannelRequest
-	(*DeleteChannelResponse)(nil),    // 10: chat.v1.DeleteChannelResponse
-	(*ArchiveChannelRequest)(nil),    // 11: chat.v1.ArchiveChannelRequest
-	(*ArchiveChannelResponse)(nil),   // 12: chat.v1.ArchiveChannelResponse
-	(*UnarchiveChannelRequest)(nil),  // 13: chat.v1.UnarchiveChannelRequest
-	(*UnarchiveChannelResponse)(nil), // 14: chat.v1.UnarchiveChannelResponse
-	(*timestamppb.Timestamp)(nil),    // 15: google.protobuf.Timestamp
+	(*Channel)(nil),                   // 0: chat.v1.Channel
+	(*ListChannelsRequest)(nil),       // 1: chat.v1.ListChannelsRequest
+	(*ListChannelsResponse)(nil),      // 2: chat.v1.ListChannelsResponse
+	(*CreateChannelRequest)(nil),      // 3: chat.v1.CreateChannelRequest
+	(*CreateChannelResponse)(nil),     // 4: chat.v1.CreateChannelResponse
+	(*GetChannelRequest)(nil),         // 5: chat.v1.GetChannelRequest
+	(*GetChannelResponse)(nil),        // 6: chat.v1.GetChannelResponse
+	(*UpdateChannelRequest)(nil),      // 7: chat.v1.UpdateChannelRequest
+	(*UpdateChannelResponse)(nil),     // 8: chat.v1.UpdateChannelResponse
+	(*DeleteChannelRequest)(nil),      // 9: chat.v1.DeleteChannelRequest
+	(*DeleteChannelResponse)(nil),     // 10: chat.v1.DeleteChannelResponse
+	(*SetChannelStarredRequest)(nil),  // 11: chat.v1.SetChannelStarredRequest
+	(*SetChannelStarredResponse)(nil), // 12: chat.v1.SetChannelStarredResponse
+	(*ArchiveChannelRequest)(nil),     // 13: chat.v1.ArchiveChannelRequest
+	(*ArchiveChannelResponse)(nil),    // 14: chat.v1.ArchiveChannelResponse
+	(*UnarchiveChannelRequest)(nil),   // 15: chat.v1.UnarchiveChannelRequest
+	(*UnarchiveChannelResponse)(nil),  // 16: chat.v1.UnarchiveChannelResponse
+	(*timestamppb.Timestamp)(nil),     // 17: google.protobuf.Timestamp
 }
 var file_chat_v1_channel_service_proto_depIdxs = []int32{
-	15, // 0: chat.v1.Channel.created_at:type_name -> google.protobuf.Timestamp
-	15, // 1: chat.v1.Channel.updated_at:type_name -> google.protobuf.Timestamp
-	15, // 2: chat.v1.Channel.archived_at:type_name -> google.protobuf.Timestamp
+	17, // 0: chat.v1.Channel.created_at:type_name -> google.protobuf.Timestamp
+	17, // 1: chat.v1.Channel.updated_at:type_name -> google.protobuf.Timestamp
+	17, // 2: chat.v1.Channel.archived_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: chat.v1.ListChannelsResponse.channels:type_name -> chat.v1.Channel
 	0,  // 4: chat.v1.CreateChannelResponse.channel:type_name -> chat.v1.Channel
 	0,  // 5: chat.v1.GetChannelResponse.channel:type_name -> chat.v1.Channel
@@ -931,17 +1073,19 @@ var file_chat_v1_channel_service_proto_depIdxs = []int32{
 	5,  // 11: chat.v1.ChannelService.GetChannel:input_type -> chat.v1.GetChannelRequest
 	7,  // 12: chat.v1.ChannelService.UpdateChannel:input_type -> chat.v1.UpdateChannelRequest
 	9,  // 13: chat.v1.ChannelService.DeleteChannel:input_type -> chat.v1.DeleteChannelRequest
-	11, // 14: chat.v1.ChannelService.ArchiveChannel:input_type -> chat.v1.ArchiveChannelRequest
-	13, // 15: chat.v1.ChannelService.UnarchiveChannel:input_type -> chat.v1.UnarchiveChannelRequest
-	2,  // 16: chat.v1.ChannelService.ListChannels:output_type -> chat.v1.ListChannelsResponse
-	4,  // 17: chat.v1.ChannelService.CreateChannel:output_type -> chat.v1.CreateChannelResponse
-	6,  // 18: chat.v1.ChannelService.GetChannel:output_type -> chat.v1.GetChannelResponse
-	8,  // 19: chat.v1.ChannelService.UpdateChannel:output_type -> chat.v1.UpdateChannelResponse
-	10, // 20: chat.v1.ChannelService.DeleteChannel:output_type -> chat.v1.DeleteChannelResponse
-	12, // 21: chat.v1.ChannelService.ArchiveChannel:output_type -> chat.v1.ArchiveChannelResponse
-	14, // 22: chat.v1.ChannelService.UnarchiveChannel:output_type -> chat.v1.UnarchiveChannelResponse
-	16, // [16:23] is the sub-list for method output_type
-	9,  // [9:16] is the sub-list for method input_type
+	11, // 14: chat.v1.ChannelService.SetChannelStarred:input_type -> chat.v1.SetChannelStarredRequest
+	13, // 15: chat.v1.ChannelService.ArchiveChannel:input_type -> chat.v1.ArchiveChannelRequest
+	15, // 16: chat.v1.ChannelService.UnarchiveChannel:input_type -> chat.v1.UnarchiveChannelRequest
+	2,  // 17: chat.v1.ChannelService.ListChannels:output_type -> chat.v1.ListChannelsResponse
+	4,  // 18: chat.v1.ChannelService.CreateChannel:output_type -> chat.v1.CreateChannelResponse
+	6,  // 19: chat.v1.ChannelService.GetChannel:output_type -> chat.v1.GetChannelResponse
+	8,  // 20: chat.v1.ChannelService.UpdateChannel:output_type -> chat.v1.UpdateChannelResponse
+	10, // 21: chat.v1.ChannelService.DeleteChannel:output_type -> chat.v1.DeleteChannelResponse
+	12, // 22: chat.v1.ChannelService.SetChannelStarred:output_type -> chat.v1.SetChannelStarredResponse
+	14, // 23: chat.v1.ChannelService.ArchiveChannel:output_type -> chat.v1.ArchiveChannelResponse
+	16, // 24: chat.v1.ChannelService.UnarchiveChannel:output_type -> chat.v1.UnarchiveChannelResponse
+	17, // [17:25] is the sub-list for method output_type
+	9,  // [9:17] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
 	9,  // [9:9] is the sub-list for extension extendee
 	0,  // [0:9] is the sub-list for field type_name
@@ -961,7 +1105,7 @@ func file_chat_v1_channel_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_channel_service_proto_rawDesc), len(file_chat_v1_channel_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

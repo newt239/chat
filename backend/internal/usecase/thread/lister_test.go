@@ -63,6 +63,14 @@ func (stubLinkRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.M
 	return nil, nil
 }
 
+type stubPinRepo struct {
+	domainrepository.PinRepository
+}
+
+func (stubPinRepo) FindByMessageIDs(_ context.Context, _ []string) (map[string]*entity.MessagePin, error) {
+	return map[string]*entity.MessagePin{}, nil
+}
+
 type stubAttachmentRepo struct {
 	domainrepository.AttachmentRepository
 }
@@ -80,7 +88,7 @@ func TestListParticipatingThreadsBuildsMessages(t *testing.T) {
 	}}}
 	builder := message.NewMessageOutputBuilder(
 		stubReactionRepo{}, stubUserRepo{}, nil, stubUserMentionRepo{}, stubGroupMentionRepo{}, stubLinkRepo{}, stubAttachmentRepo{},
-		message.NewMessageOutputAssembler(),
+		stubPinRepo{}, nil,
 	)
 
 	out, err := NewThreadLister(threadRepo, builder).ListParticipatingThreads(context.Background(), ListParticipatingThreadsInput{})

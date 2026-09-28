@@ -17,13 +17,27 @@ type MessageServer struct {
 	UC messageuc.MessageUseCase
 }
 
-func listMessagesInput(ctx context.Context, channelID string, limit int32, since, until *timestamppb.Timestamp) messageuc.ListMessagesInput {
-	input := messageuc.ListMessagesInput{ChannelID: channelID, UserID: userIDFrom(ctx), Limit: defaultMessageLimit}
-	if limit > 0 {
-		input.Limit = int(limit)
+// listMessagesRequest は ListMessages と ListMessagesWithThread のリクエストに共通する項目です
+type listMessagesRequest interface {
+	GetChannelId() string
+	GetLimit() int32
+	GetSince() *timestamppb.Timestamp
+	GetUntil() *timestamppb.Timestamp
+	GetIncludeDescendants() bool
+}
+
+func listMessagesInput(ctx context.Context, req listMessagesRequest) messageuc.ListMessagesInput {
+	input := messageuc.ListMessagesInput{
+		ChannelID:          req.GetChannelId(),
+		UserID:             userIDFrom(ctx),
+		Limit:              defaultMessageLimit,
+		Since:              optionalTime(req.GetSince()),
+		Until:              optionalTime(req.GetUntil()),
+		IncludeDescendants: req.GetIncludeDescendants(),
 	}
-	input.Since = optionalTime(since)
-	input.Until = optionalTime(until)
+	if req.GetLimit() > 0 {
+		input.Limit = int(req.GetLimit())
+	}
 	return input
 }
 
@@ -36,7 +50,7 @@ func optionalTime(t *timestamppb.Timestamp) *time.Time {
 }
 
 func (s *MessageServer) ListMessages(ctx context.Context, req *chatv1.ListMessagesRequest) (*chatv1.ListMessagesResponse, error) {
-	out, err := s.UC.ListMessages(ctx, listMessagesInput(ctx, req.ChannelId, req.Limit, req.Since, req.Until))
+	out, err := s.UC.ListMessages(ctx, listMessagesInput(ctx, req))
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +58,7 @@ func (s *MessageServer) ListMessages(ctx context.Context, req *chatv1.ListMessag
 }
 
 func (s *MessageServer) ListMessagesWithThread(ctx context.Context, req *chatv1.ListMessagesWithThreadRequest) (*chatv1.ListMessagesWithThreadResponse, error) {
-	input := listMessagesInput(ctx, req.ChannelId, req.Limit, req.Since, req.Until)
+	input := listMessagesInput(ctx, req)
 	// has_more はスレッド付きの一覧では求まらないため通常の一覧から得る
 	list, err := s.UC.ListMessages(ctx, input)
 	if err != nil {
@@ -84,4 +98,12 @@ func (s *MessageServer) DeleteMessage(ctx context.Context, req *chatv1.DeleteMes
 		return nil, err
 	}
 	return &chatv1.DeleteMessageResponse{}, nil
+}
+
+func (s *MessageServer) GetMessagePreview(ctx context.Context, req *chatv1.GetMessagePreviewRequest) (*chatv1.GetMessagePreviewResponse, error) {
+	out, err := s.UC.GetMessagePreview(ctx, messageuc.GetMessagePreviewInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.GetMessagePreviewResponse{Preview: presenter.MessagePreview(*out)}, nil
 }

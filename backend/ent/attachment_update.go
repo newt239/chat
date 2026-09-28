@@ -81,6 +81,87 @@ func (_u *AttachmentUpdate) AddSizeBytes(v int64) *AttachmentUpdate {
 	return _u
 }
 
+// SetWidth sets the "width" field.
+func (_u *AttachmentUpdate) SetWidth(v int32) *AttachmentUpdate {
+	_u.mutation.ResetWidth()
+	_u.mutation.SetWidth(v)
+	return _u
+}
+
+// SetNillableWidth sets the "width" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableWidth(v *int32) *AttachmentUpdate {
+	if v != nil {
+		_u.SetWidth(*v)
+	}
+	return _u
+}
+
+// AddWidth adds value to the "width" field.
+func (_u *AttachmentUpdate) AddWidth(v int32) *AttachmentUpdate {
+	_u.mutation.AddWidth(v)
+	return _u
+}
+
+// ClearWidth clears the value of the "width" field.
+func (_u *AttachmentUpdate) ClearWidth() *AttachmentUpdate {
+	_u.mutation.ClearWidth()
+	return _u
+}
+
+// SetHeight sets the "height" field.
+func (_u *AttachmentUpdate) SetHeight(v int32) *AttachmentUpdate {
+	_u.mutation.ResetHeight()
+	_u.mutation.SetHeight(v)
+	return _u
+}
+
+// SetNillableHeight sets the "height" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableHeight(v *int32) *AttachmentUpdate {
+	if v != nil {
+		_u.SetHeight(*v)
+	}
+	return _u
+}
+
+// AddHeight adds value to the "height" field.
+func (_u *AttachmentUpdate) AddHeight(v int32) *AttachmentUpdate {
+	_u.mutation.AddHeight(v)
+	return _u
+}
+
+// ClearHeight clears the value of the "height" field.
+func (_u *AttachmentUpdate) ClearHeight() *AttachmentUpdate {
+	_u.mutation.ClearHeight()
+	return _u
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (_u *AttachmentUpdate) SetDurationSeconds(v float64) *AttachmentUpdate {
+	_u.mutation.ResetDurationSeconds()
+	_u.mutation.SetDurationSeconds(v)
+	return _u
+}
+
+// SetNillableDurationSeconds sets the "duration_seconds" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableDurationSeconds(v *float64) *AttachmentUpdate {
+	if v != nil {
+		_u.SetDurationSeconds(*v)
+	}
+	return _u
+}
+
+// AddDurationSeconds adds value to the "duration_seconds" field.
+func (_u *AttachmentUpdate) AddDurationSeconds(v float64) *AttachmentUpdate {
+	_u.mutation.AddDurationSeconds(v)
+	return _u
+}
+
+// ClearDurationSeconds clears the value of the "duration_seconds" field.
+func (_u *AttachmentUpdate) ClearDurationSeconds() *AttachmentUpdate {
+	_u.mutation.ClearDurationSeconds()
+	return _u
+}
+
 // SetStorageKey sets the "storage_key" field.
 func (_u *AttachmentUpdate) SetStorageKey(v string) *AttachmentUpdate {
 	_u.mutation.SetStorageKey(v)
@@ -295,6 +376,33 @@ func (_u *AttachmentUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	if value, ok := _u.mutation.AddedSizeBytes(); ok {
 		_spec.AddField(attachment.FieldSizeBytes, field.TypeInt64, value)
 	}
+	if value, ok := _u.mutation.Width(); ok {
+		_spec.SetField(attachment.FieldWidth, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedWidth(); ok {
+		_spec.AddField(attachment.FieldWidth, field.TypeInt32, value)
+	}
+	if _u.mutation.WidthCleared() {
+		_spec.ClearField(attachment.FieldWidth, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.Height(); ok {
+		_spec.SetField(attachment.FieldHeight, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedHeight(); ok {
+		_spec.AddField(attachment.FieldHeight, field.TypeInt32, value)
+	}
+	if _u.mutation.HeightCleared() {
+		_spec.ClearField(attachment.FieldHeight, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.DurationSeconds(); ok {
+		_spec.SetField(attachment.FieldDurationSeconds, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedDurationSeconds(); ok {
+		_spec.AddField(attachment.FieldDurationSeconds, field.TypeFloat64, value)
+	}
+	if _u.mutation.DurationSecondsCleared() {
+		_spec.ClearField(attachment.FieldDurationSeconds, field.TypeFloat64)
+	}
 	if value, ok := _u.mutation.StorageKey(); ok {
 		_spec.SetField(attachment.FieldStorageKey, field.TypeString, value)
 	}
@@ -466,6 +574,87 @@ func (_u *AttachmentUpdateOne) SetNillableSizeBytes(v *int64) *AttachmentUpdateO
 // AddSizeBytes adds value to the "size_bytes" field.
 func (_u *AttachmentUpdateOne) AddSizeBytes(v int64) *AttachmentUpdateOne {
 	_u.mutation.AddSizeBytes(v)
+	return _u
+}
+
+// SetWidth sets the "width" field.
+func (_u *AttachmentUpdateOne) SetWidth(v int32) *AttachmentUpdateOne {
+	_u.mutation.ResetWidth()
+	_u.mutation.SetWidth(v)
+	return _u
+}
+
+// SetNillableWidth sets the "width" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableWidth(v *int32) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetWidth(*v)
+	}
+	return _u
+}
+
+// AddWidth adds value to the "width" field.
+func (_u *AttachmentUpdateOne) AddWidth(v int32) *AttachmentUpdateOne {
+	_u.mutation.AddWidth(v)
+	return _u
+}
+
+// ClearWidth clears the value of the "width" field.
+func (_u *AttachmentUpdateOne) ClearWidth() *AttachmentUpdateOne {
+	_u.mutation.ClearWidth()
+	return _u
+}
+
+// SetHeight sets the "height" field.
+func (_u *AttachmentUpdateOne) SetHeight(v int32) *AttachmentUpdateOne {
+	_u.mutation.ResetHeight()
+	_u.mutation.SetHeight(v)
+	return _u
+}
+
+// SetNillableHeight sets the "height" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableHeight(v *int32) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetHeight(*v)
+	}
+	return _u
+}
+
+// AddHeight adds value to the "height" field.
+func (_u *AttachmentUpdateOne) AddHeight(v int32) *AttachmentUpdateOne {
+	_u.mutation.AddHeight(v)
+	return _u
+}
+
+// ClearHeight clears the value of the "height" field.
+func (_u *AttachmentUpdateOne) ClearHeight() *AttachmentUpdateOne {
+	_u.mutation.ClearHeight()
+	return _u
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (_u *AttachmentUpdateOne) SetDurationSeconds(v float64) *AttachmentUpdateOne {
+	_u.mutation.ResetDurationSeconds()
+	_u.mutation.SetDurationSeconds(v)
+	return _u
+}
+
+// SetNillableDurationSeconds sets the "duration_seconds" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableDurationSeconds(v *float64) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetDurationSeconds(*v)
+	}
+	return _u
+}
+
+// AddDurationSeconds adds value to the "duration_seconds" field.
+func (_u *AttachmentUpdateOne) AddDurationSeconds(v float64) *AttachmentUpdateOne {
+	_u.mutation.AddDurationSeconds(v)
+	return _u
+}
+
+// ClearDurationSeconds clears the value of the "duration_seconds" field.
+func (_u *AttachmentUpdateOne) ClearDurationSeconds() *AttachmentUpdateOne {
+	_u.mutation.ClearDurationSeconds()
 	return _u
 }
 
@@ -712,6 +901,33 @@ func (_u *AttachmentUpdateOne) sqlSave(ctx context.Context) (_node *Attachment, 
 	}
 	if value, ok := _u.mutation.AddedSizeBytes(); ok {
 		_spec.AddField(attachment.FieldSizeBytes, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.Width(); ok {
+		_spec.SetField(attachment.FieldWidth, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedWidth(); ok {
+		_spec.AddField(attachment.FieldWidth, field.TypeInt32, value)
+	}
+	if _u.mutation.WidthCleared() {
+		_spec.ClearField(attachment.FieldWidth, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.Height(); ok {
+		_spec.SetField(attachment.FieldHeight, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedHeight(); ok {
+		_spec.AddField(attachment.FieldHeight, field.TypeInt32, value)
+	}
+	if _u.mutation.HeightCleared() {
+		_spec.ClearField(attachment.FieldHeight, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.DurationSeconds(); ok {
+		_spec.SetField(attachment.FieldDurationSeconds, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedDurationSeconds(); ok {
+		_spec.AddField(attachment.FieldDurationSeconds, field.TypeFloat64, value)
+	}
+	if _u.mutation.DurationSecondsCleared() {
+		_spec.ClearField(attachment.FieldDurationSeconds, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.StorageKey(); ok {
 		_spec.SetField(attachment.FieldStorageKey, field.TypeString, value)

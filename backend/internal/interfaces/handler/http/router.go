@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
@@ -18,6 +19,7 @@ type RouterConfig struct {
 
 	WebSocketHub        *websocket.Hub
 	WorkspaceRepository repository.WorkspaceRepository
+	ChannelAccess       service.ChannelAccessService
 	RPCHandler          http.Handler
 }
 
@@ -40,7 +42,7 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})
 
-	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.AllowedOrigins))
+	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.ChannelAccess, cfg.AllowedOrigins))
 
 	e.Any("/chat.v1.*", echo.WrapHandler(cfg.RPCHandler))
 

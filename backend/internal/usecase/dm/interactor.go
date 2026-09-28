@@ -15,6 +15,7 @@ var ErrNotWorkspaceMember = errors.New("ワークスペースのメンバーで�
 type Interactor struct {
 	channelRepo       repository.ChannelRepository
 	channelMemberRepo repository.ChannelMemberRepository
+	channelStarRepo   repository.ChannelStarRepository
 	userRepo          repository.UserRepository
 	workspaceRepo     repository.WorkspaceRepository
 }
@@ -22,12 +23,14 @@ type Interactor struct {
 func NewInteractor(
 	channelRepo repository.ChannelRepository,
 	channelMemberRepo repository.ChannelMemberRepository,
+	channelStarRepo repository.ChannelStarRepository,
 	userRepo repository.UserRepository,
 	workspaceRepo repository.WorkspaceRepository,
 ) *Interactor {
 	return &Interactor{
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
+		channelStarRepo:   channelStarRepo,
 		userRepo:          userRepo,
 		workspaceRepo:     workspaceRepo,
 	}
@@ -99,7 +102,7 @@ func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput
 		input.MemberIDs = append([]string{input.CreatorID}, input.MemberIDs...)
 	}
 
-	if len(input.MemberIDs) > 9 {
+	if len(input.MemberIDs) > entity.MaxGroupDMMembers {
 		return nil, entity.ErrGroupDMMaxMembers
 	}
 
@@ -148,12 +151,22 @@ func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutp
 		return nil, err
 	}
 
+	channelIDs := make([]string, len(channels))
+	for idx, ch := range channels {
+		channelIDs[idx] = ch.ID
+	}
+	starred, err := i.channelStarRepo.FindStarredChannelIDs(ctx, input.UserID, channelIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	result := make([]*DMOutput, 0, len(channels))
 	for _, ch := range channels {
 		output, err := i.buildDMOutput(ctx, ch, input.UserID)
 		if err != nil {
 			return nil, err
 		}
+		output.IsStarred = starred[ch.ID]
 		result = append(result, output)
 	}
 

@@ -27,6 +27,12 @@ type Attachment struct {
 	MimeType string `json:"mime_type,omitempty"`
 	// SizeBytes holds the value of the "size_bytes" field.
 	SizeBytes int64 `json:"size_bytes,omitempty"`
+	// Width holds the value of the "width" field.
+	Width *int32 `json:"width,omitempty"`
+	// Height holds the value of the "height" field.
+	Height *int32 `json:"height,omitempty"`
+	// DurationSeconds holds the value of the "duration_seconds" field.
+	DurationSeconds *float64 `json:"duration_seconds,omitempty"`
 	// StorageKey holds the value of the "storage_key" field.
 	StorageKey string `json:"storage_key,omitempty"`
 	// Status holds the value of the "status" field.
@@ -97,7 +103,9 @@ func (*Attachment) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case attachment.FieldSizeBytes:
+		case attachment.FieldDurationSeconds:
+			values[i] = new(sql.NullFloat64)
+		case attachment.FieldSizeBytes, attachment.FieldWidth, attachment.FieldHeight:
 			values[i] = new(sql.NullInt64)
 		case attachment.FieldFileName, attachment.FieldMimeType, attachment.FieldStorageKey, attachment.FieldStatus:
 			values[i] = new(sql.NullString)
@@ -149,6 +157,27 @@ func (_m *Attachment) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field size_bytes", values[i])
 			} else if value.Valid {
 				_m.SizeBytes = value.Int64
+			}
+		case attachment.FieldWidth:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field width", values[i])
+			} else if value.Valid {
+				_m.Width = new(int32)
+				*_m.Width = int32(value.Int64)
+			}
+		case attachment.FieldHeight:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field height", values[i])
+			} else if value.Valid {
+				_m.Height = new(int32)
+				*_m.Height = int32(value.Int64)
+			}
+		case attachment.FieldDurationSeconds:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field duration_seconds", values[i])
+			} else if value.Valid {
+				_m.DurationSeconds = new(float64)
+				*_m.DurationSeconds = value.Float64
 			}
 		case attachment.FieldStorageKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -260,6 +289,21 @@ func (_m *Attachment) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("size_bytes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SizeBytes))
+	builder.WriteString(", ")
+	if v := _m.Width; v != nil {
+		builder.WriteString("width=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.Height; v != nil {
+		builder.WriteString("height=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.DurationSeconds; v != nil {
+		builder.WriteString("duration_seconds=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("storage_key=")
 	builder.WriteString(_m.StorageKey)

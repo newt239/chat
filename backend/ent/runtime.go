@@ -9,8 +9,10 @@ import (
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelreadstate"
+	"github.com/newt239/chat/ent/channelstar"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -25,6 +27,7 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -50,15 +53,15 @@ func init() {
 	// attachment.SizeBytesValidator is a validator for the "size_bytes" field. It is called by the builders before save.
 	attachment.SizeBytesValidator = attachmentDescSizeBytes.Validators[0].(func(int64) error)
 	// attachmentDescStorageKey is the schema descriptor for storage_key field.
-	attachmentDescStorageKey := attachmentFields[4].Descriptor()
+	attachmentDescStorageKey := attachmentFields[7].Descriptor()
 	// attachment.StorageKeyValidator is a validator for the "storage_key" field. It is called by the builders before save.
 	attachment.StorageKeyValidator = attachmentDescStorageKey.Validators[0].(func(string) error)
 	// attachmentDescStatus is the schema descriptor for status field.
-	attachmentDescStatus := attachmentFields[5].Descriptor()
+	attachmentDescStatus := attachmentFields[8].Descriptor()
 	// attachment.DefaultStatus holds the default value on creation for the status field.
 	attachment.DefaultStatus = attachmentDescStatus.Default.(string)
 	// attachmentDescCreatedAt is the schema descriptor for created_at field.
-	attachmentDescCreatedAt := attachmentFields[8].Descriptor()
+	attachmentDescCreatedAt := attachmentFields[11].Descriptor()
 	// attachment.DefaultCreatedAt holds the default value on creation for the created_at field.
 	attachment.DefaultCreatedAt = attachmentDescCreatedAt.Default.(func() time.Time)
 	// attachmentDescID is the schema descriptor for id field.
@@ -118,11 +121,11 @@ func init() {
 	// channel.DefaultChannelType holds the default value on creation for the channel_type field.
 	channel.DefaultChannelType = channelDescChannelType.Default.(string)
 	// channelDescCreatedAt is the schema descriptor for created_at field.
-	channelDescCreatedAt := channelFields[6].Descriptor()
+	channelDescCreatedAt := channelFields[7].Descriptor()
 	// channel.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channel.DefaultCreatedAt = channelDescCreatedAt.Default.(func() time.Time)
 	// channelDescUpdatedAt is the schema descriptor for updated_at field.
-	channelDescUpdatedAt := channelFields[7].Descriptor()
+	channelDescUpdatedAt := channelFields[8].Descriptor()
 	// channel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	channel.DefaultUpdatedAt = channelDescUpdatedAt.Default.(func() time.Time)
 	// channel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -131,6 +134,34 @@ func init() {
 	channelDescID := channelFields[0].Descriptor()
 	// channel.DefaultID holds the default value on creation for the id field.
 	channel.DefaultID = channelDescID.Default.(func() uuid.UUID)
+	channellinkFields := schema.ChannelLink{}.Fields()
+	_ = channellinkFields
+	// channellinkDescTitle is the schema descriptor for title field.
+	channellinkDescTitle := channellinkFields[1].Descriptor()
+	// channellink.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	channellink.TitleValidator = channellinkDescTitle.Validators[0].(func(string) error)
+	// channellinkDescURL is the schema descriptor for url field.
+	channellinkDescURL := channellinkFields[2].Descriptor()
+	// channellink.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	channellink.URLValidator = channellinkDescURL.Validators[0].(func(string) error)
+	// channellinkDescPosition is the schema descriptor for position field.
+	channellinkDescPosition := channellinkFields[3].Descriptor()
+	// channellink.DefaultPosition holds the default value on creation for the position field.
+	channellink.DefaultPosition = channellinkDescPosition.Default.(int)
+	// channellinkDescCreatedAt is the schema descriptor for created_at field.
+	channellinkDescCreatedAt := channellinkFields[4].Descriptor()
+	// channellink.DefaultCreatedAt holds the default value on creation for the created_at field.
+	channellink.DefaultCreatedAt = channellinkDescCreatedAt.Default.(func() time.Time)
+	// channellinkDescUpdatedAt is the schema descriptor for updated_at field.
+	channellinkDescUpdatedAt := channellinkFields[5].Descriptor()
+	// channellink.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	channellink.DefaultUpdatedAt = channellinkDescUpdatedAt.Default.(func() time.Time)
+	// channellink.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	channellink.UpdateDefaultUpdatedAt = channellinkDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// channellinkDescID is the schema descriptor for id field.
+	channellinkDescID := channellinkFields[0].Descriptor()
+	// channellink.DefaultID holds the default value on creation for the id field.
+	channellink.DefaultID = channellinkDescID.Default.(func() uuid.UUID)
 	channelmemberFields := schema.ChannelMember{}.Fields()
 	_ = channelmemberFields
 	// channelmemberDescRole is the schema descriptor for role field.
@@ -155,6 +186,16 @@ func init() {
 	channelreadstateDescID := channelreadstateFields[0].Descriptor()
 	// channelreadstate.DefaultID holds the default value on creation for the id field.
 	channelreadstate.DefaultID = channelreadstateDescID.Default.(func() uuid.UUID)
+	channelstarFields := schema.ChannelStar{}.Fields()
+	_ = channelstarFields
+	// channelstarDescCreatedAt is the schema descriptor for created_at field.
+	channelstarDescCreatedAt := channelstarFields[1].Descriptor()
+	// channelstar.DefaultCreatedAt holds the default value on creation for the created_at field.
+	channelstar.DefaultCreatedAt = channelstarDescCreatedAt.Default.(func() time.Time)
+	// channelstarDescID is the schema descriptor for id field.
+	channelstarDescID := channelstarFields[0].Descriptor()
+	// channelstar.DefaultID holds the default value on creation for the id field.
+	channelstar.DefaultID = channelstarDescID.Default.(func() uuid.UUID)
 	messageFields := schema.Message{}.Fields()
 	_ = messageFields
 	// messageDescBody is the schema descriptor for body field.
@@ -196,7 +237,7 @@ func init() {
 	// messagelink.URLValidator is a validator for the "url" field. It is called by the builders before save.
 	messagelink.URLValidator = messagelinkDescURL.Validators[0].(func(string) error)
 	// messagelinkDescCreatedAt is the schema descriptor for created_at field.
-	messagelinkDescCreatedAt := messagelinkFields[7].Descriptor()
+	messagelinkDescCreatedAt := messagelinkFields[13].Descriptor()
 	// messagelink.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagelink.DefaultCreatedAt = messagelinkDescCreatedAt.Default.(func() time.Time)
 	// messagelinkDescID is the schema descriptor for id field.
@@ -351,6 +392,18 @@ func init() {
 	usergroupmemberDescID := usergroupmemberFields[0].Descriptor()
 	// usergroupmember.DefaultID holds the default value on creation for the id field.
 	usergroupmember.DefaultID = usergroupmemberDescID.Default.(func() uuid.UUID)
+	usernoteFields := schema.UserNote{}.Fields()
+	_ = usernoteFields
+	// usernoteDescUpdatedAt is the schema descriptor for updated_at field.
+	usernoteDescUpdatedAt := usernoteFields[3].Descriptor()
+	// usernote.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	usernote.DefaultUpdatedAt = usernoteDescUpdatedAt.Default.(func() time.Time)
+	// usernote.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	usernote.UpdateDefaultUpdatedAt = usernoteDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// usernoteDescID is the schema descriptor for id field.
+	usernoteDescID := usernoteFields[0].Descriptor()
+	// usernote.DefaultID holds the default value on creation for the id field.
+	usernote.DefaultID = usernoteDescID.Default.(func() uuid.UUID)
 	userthreadfollowFields := schema.UserThreadFollow{}.Fields()
 	_ = userthreadfollowFields
 	// userthreadfollowDescCreatedAt is the schema descriptor for created_at field.

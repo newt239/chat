@@ -25,6 +25,13 @@ message Message {
   UserSummary deleted_by = 16;
   // スレッド付きの一覧取得でのみ設定される
   ThreadMetadata thread_metadata = 17;
+  // ピン留めされている場合のみ設定される
+  MessagePin pin = 18;
+}
+
+message MessagePin {
+  UserSummary pinned_by = 1;
+  google.protobuf.Timestamp pinned_at = 2;
 }
 
 message UserMention {
@@ -40,11 +47,42 @@ message GroupMention {
 message MessageLink {
   string id = 1;
   string url = 2;
-  optional string title = 3;
-  optional string description = 4;
-  optional string image_url = 5;
-  optional string site_name = 6;
-  optional string card_type = 7;
+  // 同じワークスペースのメッセージへのリンクでは OGP を取得しないため空になる
+  OgpData ogp = 3;
+  // 同じワークスペースのメッセージへのリンクのときに設定される
+  optional string linked_message_id = 4;
+  // linked_message_id のメッセージを閲覧者が参照できる場合のみ設定される。WebSocket のイベントには含めない
+  MessagePreview message_preview = 5;
+}
+
+message OgpData {
+  optional string title = 1;
+  optional string description = 2;
+  optional string image_url = 3;
+  optional string site_name = 4;
+  optional string card_type = 5;
+  optional int32 image_width = 6;
+  optional int32 image_height = 7;
+  // YouTube の動画 URL のときのみ設定される
+  YouTubeVideo youtube = 8;
+}
+
+message YouTubeVideo {
+  string video_id = 1;
+  optional string channel_name = 2;
+  optional int32 duration_seconds = 3;
+}
+
+// メッセージリンクを引用カードとして展開するための情報
+message MessagePreview {
+  string message_id = 1;
+  string channel_id = 2;
+  string channel_name = 3;
+  optional string parent_id = 4;
+  UserSummary user = 5;
+  // 先頭の一部だけを返す
+  string body_excerpt = 6;
+  google.protobuf.Timestamp created_at = 7;
 }
 
 message Reaction {
@@ -59,6 +97,14 @@ message MessageAttachment {
   string file_name = 2;
   string mime_type = 3;
   int64 size_bytes = 4;
+  MediaMetadata media = 5;
+}
+
+// 画像・動画・音声の表示に使うメタデータ。アップロード時にクライアントが計測した値
+message MediaMetadata {
+  optional int32 width = 1;
+  optional int32 height = 2;
+  optional double duration_seconds = 3;
 }
 
 message ThreadMetadata {

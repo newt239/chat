@@ -10,5 +10,5 @@ import (
 // SystemMessageRepository はシステムメッセージの永続化を扱います
 type SystemMessageRepository interface {
 	Create(ctx context.Context, msg *entity.SystemMessage) error
-	FindByChannelID(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.SystemMessage, error)
+	FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.SystemMessage, error)
 }

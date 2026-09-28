@@ -27,6 +27,7 @@ type DMOutput struct {
 	Members     []DMMemberOutput
 	CreatedAt   string
 	UpdatedAt   string
+	IsStarred   bool
 }
 
 type DMMemberOutput struct {

@@ -77,8 +77,8 @@ func (r *messageRepository) FindAllByChannelIDs(ctx context.Context, channelIDs 
 	return result, nil
 }
 
-func (r *messageRepository) FindByChannelID(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
-	chID, err := utils.ParseUUID(channelID, "channel ID")
+func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
+	chIDs, err := parseChannelIDs(channelIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (r *messageRepository) FindByChannelID(ctx context.Context, channelID strin
 	client := transaction.ResolveClient(ctx, r.client)
 	query := client.Message.Query().
 		Where(
-			message.HasChannelWith(channel.ID(chID)),
+			message.HasChannelWith(channel.IDIn(chIDs...)),
 			message.Not(message.HasParent()),
 			message.DeletedAtIsNil(),
 		)
@@ -165,6 +165,34 @@ func (r *messageRepository) FindByChannelIDIncludingDeleted(ctx context.Context,
 		result = append(result, utils.MessageToEntity(m))
 	}
 
+	return result, nil
+}
+
+func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error) {
+	parsedIDs := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		parsedID, err := utils.ParseUUID(id, "message ID")
+		if err != nil {
+			return nil, err
+		}
+		parsedIDs = append(parsedIDs, parsedID)
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	messages, err := client.Message.Query().
+		Where(message.IDIn(parsedIDs...)).
+		WithChannel().
+		WithUser().
+		WithParent().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*entity.Message, 0, len(messages))
+	for _, m := range messages {
+		result = append(result, utils.MessageToEntity(m))
+	}
 	return result, nil
 }
 
@@ -457,6 +485,7 @@ func (r *messageRepository) FindReactions(ctx context.Context, messageID string)
 			}).WithUser()
 		}).
 		WithUser().
+		Order(ent.Asc(messagereaction.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -494,6 +523,7 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 			}).WithUser()
 		}).
 		WithUser().
+		Order(ent.Asc(messagereaction.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -557,4 +587,16 @@ func (r *messageRepository) Search(ctx context.Context, workspaceID, query strin
 	// For now, returning empty implementation
 	// This requires full-text search which is better handled with PostgreSQL's full-text search or external search engine
 	return []*entity.Message{}, nil
+}
+
+func parseChannelIDs(channelIDs []string) ([]uuid.UUID, error) {
+	ids := make([]uuid.UUID, 0, len(channelIDs))
+	for _, id := range channelIDs {
+		parsed, err := utils.ParseUUID(id, "channel ID")
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, parsed)
+	}
+	return ids, nil
 }

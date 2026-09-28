@@ -6,11 +6,13 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
+	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
@@ -33,7 +35,9 @@ var errorCodes = []struct {
 		domerr.ErrNotFound, domerr.ErrMessageNotFound, domerr.ErrChannelNotFound,
 		adminuc.ErrMemberNotFound,
 		bookmarkuc.ErrMessageNotFound,
+		entity.ErrUserNotFound,
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
+		channellinkuc.ErrLinkNotFound,
 		channelmemberuc.ErrChannelNotFound, channelmemberuc.ErrUserNotFound,
 		messageuc.ErrChannelNotFound, messageuc.ErrParentMessageNotFound, messageuc.ErrMessageNotFound, messageuc.ErrAttachmentNotFound,
 		pinuc.ErrMessageNotFound,
@@ -51,6 +55,7 @@ var errorCodes = []struct {
 		adminuc.ErrOwnerOnlyPermissions,
 		bookmarkuc.ErrUnauthorized,
 		channeluc.ErrUnauthorized,
+		channellinkuc.ErrUnauthorized,
 		channelmemberuc.ErrUnauthorized, channelmemberuc.ErrChannelNotPublic,
 		dmuc.ErrNotWorkspaceMember,
 		mentionuc.ErrUnauthorized,
@@ -66,6 +71,7 @@ var errorCodes = []struct {
 	{connect.CodeAlreadyExists, []error{
 		domerr.ErrUserAlreadyExists,
 		bookmarkuc.ErrBookmarkExists,
+		channeluc.ErrChannelNameExists,
 		channelmemberuc.ErrAlreadyMember,
 		pinuc.ErrPinExists,
 		reactionuc.ErrReactionExists,
@@ -75,6 +81,8 @@ var errorCodes = []struct {
 		domerr.ErrInvalidInput, domerr.ErrValidation,
 		adminuc.ErrInvalidPermission,
 		insightuc.ErrInvalidTimeZone,
+		entity.ErrGroupDMMaxMembers,
+		channeluc.ErrMemberNotInWorkspace,
 		channelmemberuc.ErrInvalidRole,
 		searchuc.ErrInvalidQuery, searchuc.ErrInvalidDateRange,
 		workspaceuc.ErrInvalidRole,
@@ -83,6 +91,7 @@ var errorCodes = []struct {
 		domerr.ErrChannelArchived,
 		adminuc.ErrCannotSuspendOwner, adminuc.ErrCannotSuspendSelf,
 		channeluc.ErrCannotArchiveDM,
+		channeluc.ErrChannelHasChildren,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,
 		usergroupuc.ErrUserNotInGroup,

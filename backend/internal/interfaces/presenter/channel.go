@@ -36,6 +36,9 @@ func Channel(c channeluc.ChannelOutput) *chatv1.Channel {
 		UnreadCount: int32(c.UnreadCount),
 		HasMention:  c.HasMention,
 		ArchivedAt:  optionalTimestamp(c.ArchivedAt),
+		ParentId:    c.ParentID,
+		IsStarred:   c.IsStarred,
+		IsMember:    c.IsMember,
 	}
 }
 

@@ -9,22 +9,15 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"golang.org/x/net/html"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
-	"github.com/newt239/chat/internal/domain/service"
 )
-
-type OGPData struct {
-	Title       *string
-	Description *string
-	ImageURL    *string
-	SiteName    *string
-	CardType    *string
-}
 
 type OGPService struct {
 	httpClient *http.Client
@@ -35,7 +28,9 @@ var ErrBlockedAddress = errors.New("内部ネットワーク宛の URL は取得
 
 const (
 	maxOGPRedirects = 3
-	maxOGPBodyBytes = 1024 * 1024
+	// YouTube の動画ページはメタデータが 700KB 付近にあるため余裕を持たせる
+	maxOGPBodyBytes = 2 * 1024 * 1024
+	userAgent       = "Mozilla/5.0 (compatible; ChatApp/1.0; +https://example.com)"
 )
 
 // isBlockedIP はループバック・プライベート・リンクローカル（クラウドのメタデータ含む）を弾きます
@@ -82,27 +77,34 @@ func NewOGPService() *OGPService {
 	}
 }
 
-func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*service.OGPData, error) {
-	// URLの検証
+func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*entity.OGPData, error) {
 	parsedURL, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid URL: %w", err)
 	}
-
 	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
 		return nil, fmt.Errorf("unsupported URL scheme: %s", parsedURL.Scheme)
 	}
 
-	// HTTPリクエストの作成
-	req, err := http.NewRequestWithContext(ctx, "GET", urlStr, nil)
+	if videoID, ok := youTubeVideoID(parsedURL); ok {
+		return s.fetchYouTube(ctx, videoID), nil
+	}
+
+	meta, err := s.fetchMeta(ctx, parsedURL)
+	if err != nil {
+		return nil, err
+	}
+	return buildOGPData(meta, parsedURL), nil
+}
+
+// get は GET リクエストを送り、200 以外や内部ネットワーク宛をエラーにします
+func (s *OGPService) get(ctx context.Context, urlStr string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+	req.Header.Set("User-Agent", userAgent)
 
-	// User-Agentを設定（一部サイトでブロックされるのを防ぐ）
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; ChatApp/1.0; +https://example.com)")
-
-	// リクエスト実行
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		if errors.Is(err, ErrBlockedAddress) {
@@ -110,137 +112,120 @@ func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*service.OGPD
 		}
 		return nil, fmt.Errorf("failed to fetch URL: %w", err)
 	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			_ = err // エラーログは出力しない（既にレスポンスを読み取った後なので）
-		}
-	}()
-
 	if resp.StatusCode != http.StatusOK {
+		_ = resp.Body.Close()
 		return nil, fmt.Errorf("HTTP error: %d", resp.StatusCode)
 	}
+	return resp, nil
+}
 
-	// Content-Typeの確認
-	contentType := resp.Header.Get("Content-Type")
-	if !strings.Contains(contentType, "text/html") {
+func (s *OGPService) fetchMeta(ctx context.Context, pageURL *url.URL) (map[string]string, error) {
+	resp, err := s.get(ctx, pageURL.String())
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if contentType := resp.Header.Get("Content-Type"); !strings.Contains(contentType, "text/html") {
 		return nil, fmt.Errorf("unsupported content type: %s", contentType)
 	}
 
-	// HTMLの読み込み（最初の1MBまで）
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxOGPBodyBytes))
+	doc, err := html.Parse(io.LimitReader(resp.Body, maxOGPBodyBytes))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		return nil, fmt.Errorf("failed to parse HTML: %w", err)
 	}
-
-	// HTMLの解析
-	return s.parseHTML(string(body), parsedURL), nil
+	meta := map[string]string{}
+	collectMeta(doc, meta, false)
+	return meta, nil
 }
 
-func (s *OGPService) parseHTML(htmlContent string, baseURL *url.URL) *service.OGPData {
-	doc, err := html.Parse(strings.NewReader(htmlContent))
-	if err != nil {
-		return &service.OGPData{}
-	}
-
-	ogpData := &service.OGPData{}
-	s.extractMetaTags(doc, ogpData, baseURL)
-	return ogpData
-}
-
-func (s *OGPService) extractMetaTags(n *html.Node, ogpData *service.OGPData, baseURL *url.URL) {
-	if n.Type == html.ElementNode && n.Data == "meta" {
-		// metaタグの属性を取得
-		attrs := make(map[string]string)
+// collectMeta は <meta>・<title>・投稿者の microdata を最初に出現した値だけ集めます
+func collectMeta(n *html.Node, meta map[string]string, inAuthor bool) {
+	if n.Type == html.ElementNode {
+		attrs := make(map[string]string, len(n.Attr))
 		for _, attr := range n.Attr {
 			attrs[attr.Key] = attr.Val
 		}
-
-		// Twitter Card メタタグの処理
-		if name, ok := attrs["name"]; ok && strings.HasPrefix(name, "twitter:") {
-			content := attrs["content"]
-			switch name {
-			case "twitter:title":
-				if ogpData.Title == nil {
-					ogpData.Title = &content
-				}
-			case "twitter:description":
-				if ogpData.Description == nil {
-					ogpData.Description = &content
-				}
-			case "twitter:image":
-				if ogpData.ImageURL == nil {
-					ogpData.ImageURL = s.resolveURL(content, baseURL)
-				}
-			case "twitter:card":
-				ogpData.CardType = &content
+		switch n.Data {
+		case "meta":
+			key := attrs["property"]
+			if key == "" {
+				key = attrs["name"]
+			}
+			if key == "" && attrs["itemprop"] != "" {
+				key = "itemprop:" + attrs["itemprop"]
+			}
+			setOnce(meta, key, attrs["content"])
+		case "link":
+			if inAuthor && attrs["itemprop"] == "name" {
+				setOnce(meta, "author:name", attrs["content"])
+			}
+		case "title":
+			if n.FirstChild != nil {
+				setOnce(meta, "title", strings.TrimSpace(n.FirstChild.Data))
 			}
 		}
-
-		// Open Graph メタタグの処理
-		if property, ok := attrs["property"]; ok && strings.HasPrefix(property, "og:") {
-			content := attrs["content"]
-			switch property {
-			case "og:title":
-				if ogpData.Title == nil {
-					ogpData.Title = &content
-				}
-			case "og:description":
-				if ogpData.Description == nil {
-					ogpData.Description = &content
-				}
-			case "og:image":
-				if ogpData.ImageURL == nil {
-					ogpData.ImageURL = s.resolveURL(content, baseURL)
-				}
-			case "og:site_name":
-				ogpData.SiteName = &content
-			}
-		}
-
-		// 標準HTMLメタタグの処理
-		if name, ok := attrs["name"]; ok {
-			content := attrs["content"]
-			switch name {
-			case "description":
-				if ogpData.Description == nil {
-					ogpData.Description = &content
-				}
-			}
-		}
+		inAuthor = inAuthor || attrs["itemprop"] == "author"
 	}
 
-	// titleタグの処理
-	if n.Type == html.ElementNode && n.Data == "title" && ogpData.Title == nil {
-		if n.FirstChild != nil {
-			title := strings.TrimSpace(n.FirstChild.Data)
-			ogpData.Title = &title
-		}
-	}
-
-	// 子ノードを再帰的に処理
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		s.extractMetaTags(c, ogpData, baseURL)
+		collectMeta(c, meta, inAuthor)
 	}
 }
 
-func (s *OGPService) resolveURL(urlStr string, baseURL *url.URL) *string {
-	if urlStr == "" {
+func setOnce(meta map[string]string, key, value string) {
+	if _, exists := meta[key]; key != "" && value != "" && !exists {
+		meta[key] = value
+	}
+}
+
+func buildOGPData(meta map[string]string, baseURL *url.URL) *entity.OGPData {
+	return &entity.OGPData{
+		Title:       firstOf(meta, "og:title", "twitter:title", "title"),
+		Description: firstOf(meta, "og:description", "twitter:description", "description"),
+		ImageURL:    resolveURL(firstOf(meta, "og:image", "og:image:url", "twitter:image"), baseURL),
+		SiteName:    firstOf(meta, "og:site_name"),
+		CardType:    firstOf(meta, "twitter:card"),
+		ImageWidth:  parseInt32(meta["og:image:width"]),
+		ImageHeight: parseInt32(meta["og:image:height"]),
+	}
+}
+
+func firstOf(meta map[string]string, keys ...string) *string {
+	for _, key := range keys {
+		if value, ok := meta[key]; ok {
+			return &value
+		}
+	}
+	return nil
+}
+
+func nonEmpty(s string) *string {
+	if s == "" {
 		return nil
 	}
+	return &s
+}
 
-	// 絶対URLの場合はそのまま返す
-	if strings.HasPrefix(urlStr, "http://") || strings.HasPrefix(urlStr, "https://") {
-		return &urlStr
+func parseInt32(s string) *int32 {
+	v, err := strconv.ParseInt(s, 10, 32)
+	if err != nil || v <= 0 {
+		return nil
 	}
+	n := int32(v)
+	return &n
+}
 
-	// 相対URLの場合はbaseURLと結合
-	resolvedURL, err := baseURL.Parse(urlStr)
+func resolveURL(urlStr *string, baseURL *url.URL) *string {
+	if urlStr == nil {
+		return nil
+	}
+	resolvedURL, err := baseURL.Parse(*urlStr)
 	if err != nil {
 		return nil
 	}
-
-	resolvedStr := resolvedURL.String()
-	return &resolvedStr
+	resolved := resolvedURL.String()
+	return &resolved
 }
 
 // ExtractURLs はテキストからURLを抽出します

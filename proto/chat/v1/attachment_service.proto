@@ -3,6 +3,7 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
 import "google/protobuf/timestamp.proto";
 
 service AttachmentService {
@@ -22,6 +23,7 @@ message Attachment {
   int64 size_bytes = 7;
   string status = 8;
   google.protobuf.Timestamp created_at = 9;
+  MediaMetadata media = 10;
 }
 
 message PresignUploadRequest {
@@ -29,6 +31,19 @@ message PresignUploadRequest {
   string file_name = 2 [(buf.validate.field).string.min_len = 1];
   string content_type = 3 [(buf.validate.field).string.min_len = 1];
   int64 size_bytes = 4 [(buf.validate.field).int64.gt = 0];
+  // 画像・動画・音声のときにクライアントが計測した値を送る
+  optional int32 width = 5 [(buf.validate.field).int32 = {
+    gt: 0
+    lte: 100000
+  }];
+  optional int32 height = 6 [(buf.validate.field).int32 = {
+    gt: 0
+    lte: 100000
+  }];
+  optional double duration_seconds = 7 [(buf.validate.field).double = {
+    gte: 0
+    lte: 86400
+  }];
 }
 
 message PresignUploadResponse {

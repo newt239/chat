@@ -11,6 +11,7 @@ service ChannelService {
   rpc GetChannel(GetChannelRequest) returns (GetChannelResponse);
   rpc UpdateChannel(UpdateChannelRequest) returns (UpdateChannelResponse);
   rpc DeleteChannel(DeleteChannelRequest) returns (DeleteChannelResponse);
+  rpc SetChannelStarred(SetChannelStarredRequest) returns (SetChannelStarredResponse);
   // チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
   rpc ArchiveChannel(ArchiveChannelRequest) returns (ArchiveChannelResponse);
   rpc UnarchiveChannel(UnarchiveChannelRequest) returns (UnarchiveChannelResponse);
@@ -19,6 +20,7 @@ service ChannelService {
 message Channel {
   string id = 1;
   string workspace_id = 2;
+  // スラッシュ区切りのフルパス (例: dev/frontend)
   string name = 3;
   optional string description = 4;
   bool is_private = 5;
@@ -27,8 +29,12 @@ message Channel {
   google.protobuf.Timestamp updated_at = 8;
   int32 unread_count = 9;
   bool has_mention = 10;
+  optional string parent_id = 11;
+  bool is_starred = 12;
+  // false の場合はツリーを組み立てるために返している未参加の祖先チャンネル
+  bool is_member = 13;
   // アーカイブ中の場合だけ設定される
-  optional google.protobuf.Timestamp archived_at = 11;
+  optional google.protobuf.Timestamp archived_at = 14;
 }
 
 message ListChannelsRequest {
@@ -41,9 +47,15 @@ message ListChannelsResponse {
 
 message CreateChannelRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
-  string name = 2 [(buf.validate.field).string.min_len = 1];
+  // 存在しない親は自動で作成する
+  string name = 2 [(buf.validate.field).string = {
+    max_len: 200
+    pattern: "^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$"
+  }];
   optional string description = 3;
   bool is_private = 4;
+  // 作成者以外に参加させるユーザー
+  repeated string member_ids = 5 [(buf.validate.field).repeated.items.string.uuid = true];
 }
 
 message CreateChannelResponse {
@@ -60,7 +72,11 @@ message GetChannelResponse {
 
 message UpdateChannelRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
-  optional string name = 2 [(buf.validate.field).string.min_len = 1];
+  // 変更できるのは末尾のセグメントのみ
+  optional string name = 2 [(buf.validate.field).string = {
+    max_len: 200
+    pattern: "^[\\p{L}\\p{N}_-]{1,32}(/[\\p{L}\\p{N}_-]{1,32}){0,3}$"
+  }];
   optional string description = 3;
   optional bool is_private = 4;
 }
@@ -75,6 +91,12 @@ message DeleteChannelRequest {
 
 message DeleteChannelResponse {}
 
+message SetChannelStarredRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  bool starred = 2;
+}
+
+message SetChannelStarredResponse {}
 message ArchiveChannelRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
 }

@@ -86,6 +86,36 @@ func CardType(v string) predicate.MessageLink {
 	return predicate.MessageLink(sql.FieldEQ(FieldCardType, v))
 }
 
+// ImageWidth applies equality check predicate on the "image_width" field. It's identical to ImageWidthEQ.
+func ImageWidth(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldImageWidth, v))
+}
+
+// ImageHeight applies equality check predicate on the "image_height" field. It's identical to ImageHeightEQ.
+func ImageHeight(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldImageHeight, v))
+}
+
+// YoutubeVideoID applies equality check predicate on the "youtube_video_id" field. It's identical to YoutubeVideoIDEQ.
+func YoutubeVideoID(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldYoutubeVideoID, v))
+}
+
+// YoutubeChannelName applies equality check predicate on the "youtube_channel_name" field. It's identical to YoutubeChannelNameEQ.
+func YoutubeChannelName(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldYoutubeChannelName, v))
+}
+
+// YoutubeDurationSeconds applies equality check predicate on the "youtube_duration_seconds" field. It's identical to YoutubeDurationSecondsEQ.
+func YoutubeDurationSeconds(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldYoutubeDurationSeconds, v))
+}
+
+// LinkedMessageID applies equality check predicate on the "linked_message_id" field. It's identical to LinkedMessageIDEQ.
+func LinkedMessageID(v uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldLinkedMessageID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.MessageLink {
 	return predicate.MessageLink(sql.FieldEQ(FieldCreatedAt, v))
@@ -529,6 +559,356 @@ func CardTypeEqualFold(v string) predicate.MessageLink {
 // CardTypeContainsFold applies the ContainsFold predicate on the "card_type" field.
 func CardTypeContainsFold(v string) predicate.MessageLink {
 	return predicate.MessageLink(sql.FieldContainsFold(FieldCardType, v))
+}
+
+// ImageWidthEQ applies the EQ predicate on the "image_width" field.
+func ImageWidthEQ(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldImageWidth, v))
+}
+
+// ImageWidthNEQ applies the NEQ predicate on the "image_width" field.
+func ImageWidthNEQ(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldImageWidth, v))
+}
+
+// ImageWidthIn applies the In predicate on the "image_width" field.
+func ImageWidthIn(vs ...int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldImageWidth, vs...))
+}
+
+// ImageWidthNotIn applies the NotIn predicate on the "image_width" field.
+func ImageWidthNotIn(vs ...int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldImageWidth, vs...))
+}
+
+// ImageWidthGT applies the GT predicate on the "image_width" field.
+func ImageWidthGT(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldImageWidth, v))
+}
+
+// ImageWidthGTE applies the GTE predicate on the "image_width" field.
+func ImageWidthGTE(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldImageWidth, v))
+}
+
+// ImageWidthLT applies the LT predicate on the "image_width" field.
+func ImageWidthLT(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldImageWidth, v))
+}
+
+// ImageWidthLTE applies the LTE predicate on the "image_width" field.
+func ImageWidthLTE(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldImageWidth, v))
+}
+
+// ImageWidthIsNil applies the IsNil predicate on the "image_width" field.
+func ImageWidthIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldImageWidth))
+}
+
+// ImageWidthNotNil applies the NotNil predicate on the "image_width" field.
+func ImageWidthNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldImageWidth))
+}
+
+// ImageHeightEQ applies the EQ predicate on the "image_height" field.
+func ImageHeightEQ(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldImageHeight, v))
+}
+
+// ImageHeightNEQ applies the NEQ predicate on the "image_height" field.
+func ImageHeightNEQ(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldImageHeight, v))
+}
+
+// ImageHeightIn applies the In predicate on the "image_height" field.
+func ImageHeightIn(vs ...int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldImageHeight, vs...))
+}
+
+// ImageHeightNotIn applies the NotIn predicate on the "image_height" field.
+func ImageHeightNotIn(vs ...int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldImageHeight, vs...))
+}
+
+// ImageHeightGT applies the GT predicate on the "image_height" field.
+func ImageHeightGT(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldImageHeight, v))
+}
+
+// ImageHeightGTE applies the GTE predicate on the "image_height" field.
+func ImageHeightGTE(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldImageHeight, v))
+}
+
+// ImageHeightLT applies the LT predicate on the "image_height" field.
+func ImageHeightLT(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldImageHeight, v))
+}
+
+// ImageHeightLTE applies the LTE predicate on the "image_height" field.
+func ImageHeightLTE(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldImageHeight, v))
+}
+
+// ImageHeightIsNil applies the IsNil predicate on the "image_height" field.
+func ImageHeightIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldImageHeight))
+}
+
+// ImageHeightNotNil applies the NotNil predicate on the "image_height" field.
+func ImageHeightNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldImageHeight))
+}
+
+// YoutubeVideoIDEQ applies the EQ predicate on the "youtube_video_id" field.
+func YoutubeVideoIDEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDNEQ applies the NEQ predicate on the "youtube_video_id" field.
+func YoutubeVideoIDNEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDIn applies the In predicate on the "youtube_video_id" field.
+func YoutubeVideoIDIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldYoutubeVideoID, vs...))
+}
+
+// YoutubeVideoIDNotIn applies the NotIn predicate on the "youtube_video_id" field.
+func YoutubeVideoIDNotIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldYoutubeVideoID, vs...))
+}
+
+// YoutubeVideoIDGT applies the GT predicate on the "youtube_video_id" field.
+func YoutubeVideoIDGT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDGTE applies the GTE predicate on the "youtube_video_id" field.
+func YoutubeVideoIDGTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDLT applies the LT predicate on the "youtube_video_id" field.
+func YoutubeVideoIDLT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDLTE applies the LTE predicate on the "youtube_video_id" field.
+func YoutubeVideoIDLTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDContains applies the Contains predicate on the "youtube_video_id" field.
+func YoutubeVideoIDContains(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContains(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDHasPrefix applies the HasPrefix predicate on the "youtube_video_id" field.
+func YoutubeVideoIDHasPrefix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasPrefix(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDHasSuffix applies the HasSuffix predicate on the "youtube_video_id" field.
+func YoutubeVideoIDHasSuffix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasSuffix(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDIsNil applies the IsNil predicate on the "youtube_video_id" field.
+func YoutubeVideoIDIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldYoutubeVideoID))
+}
+
+// YoutubeVideoIDNotNil applies the NotNil predicate on the "youtube_video_id" field.
+func YoutubeVideoIDNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldYoutubeVideoID))
+}
+
+// YoutubeVideoIDEqualFold applies the EqualFold predicate on the "youtube_video_id" field.
+func YoutubeVideoIDEqualFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEqualFold(FieldYoutubeVideoID, v))
+}
+
+// YoutubeVideoIDContainsFold applies the ContainsFold predicate on the "youtube_video_id" field.
+func YoutubeVideoIDContainsFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContainsFold(FieldYoutubeVideoID, v))
+}
+
+// YoutubeChannelNameEQ applies the EQ predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameNEQ applies the NEQ predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameNEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameIn applies the In predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldYoutubeChannelName, vs...))
+}
+
+// YoutubeChannelNameNotIn applies the NotIn predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameNotIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldYoutubeChannelName, vs...))
+}
+
+// YoutubeChannelNameGT applies the GT predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameGT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameGTE applies the GTE predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameGTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameLT applies the LT predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameLT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameLTE applies the LTE predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameLTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameContains applies the Contains predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameContains(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContains(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameHasPrefix applies the HasPrefix predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameHasPrefix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasPrefix(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameHasSuffix applies the HasSuffix predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameHasSuffix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasSuffix(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameIsNil applies the IsNil predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldYoutubeChannelName))
+}
+
+// YoutubeChannelNameNotNil applies the NotNil predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldYoutubeChannelName))
+}
+
+// YoutubeChannelNameEqualFold applies the EqualFold predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameEqualFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEqualFold(FieldYoutubeChannelName, v))
+}
+
+// YoutubeChannelNameContainsFold applies the ContainsFold predicate on the "youtube_channel_name" field.
+func YoutubeChannelNameContainsFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContainsFold(FieldYoutubeChannelName, v))
+}
+
+// YoutubeDurationSecondsEQ applies the EQ predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsEQ(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldYoutubeDurationSeconds, v))
+}
+
+// YoutubeDurationSecondsNEQ applies the NEQ predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsNEQ(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldYoutubeDurationSeconds, v))
+}
+
+// YoutubeDurationSecondsIn applies the In predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsIn(vs ...int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldYoutubeDurationSeconds, vs...))
+}
+
+// YoutubeDurationSecondsNotIn applies the NotIn predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsNotIn(vs ...int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldYoutubeDurationSeconds, vs...))
+}
+
+// YoutubeDurationSecondsGT applies the GT predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsGT(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldYoutubeDurationSeconds, v))
+}
+
+// YoutubeDurationSecondsGTE applies the GTE predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsGTE(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldYoutubeDurationSeconds, v))
+}
+
+// YoutubeDurationSecondsLT applies the LT predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsLT(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldYoutubeDurationSeconds, v))
+}
+
+// YoutubeDurationSecondsLTE applies the LTE predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsLTE(v int32) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldYoutubeDurationSeconds, v))
+}
+
+// YoutubeDurationSecondsIsNil applies the IsNil predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldYoutubeDurationSeconds))
+}
+
+// YoutubeDurationSecondsNotNil applies the NotNil predicate on the "youtube_duration_seconds" field.
+func YoutubeDurationSecondsNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldYoutubeDurationSeconds))
+}
+
+// LinkedMessageIDEQ applies the EQ predicate on the "linked_message_id" field.
+func LinkedMessageIDEQ(v uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldLinkedMessageID, v))
+}
+
+// LinkedMessageIDNEQ applies the NEQ predicate on the "linked_message_id" field.
+func LinkedMessageIDNEQ(v uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldLinkedMessageID, v))
+}
+
+// LinkedMessageIDIn applies the In predicate on the "linked_message_id" field.
+func LinkedMessageIDIn(vs ...uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldLinkedMessageID, vs...))
+}
+
+// LinkedMessageIDNotIn applies the NotIn predicate on the "linked_message_id" field.
+func LinkedMessageIDNotIn(vs ...uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldLinkedMessageID, vs...))
+}
+
+// LinkedMessageIDGT applies the GT predicate on the "linked_message_id" field.
+func LinkedMessageIDGT(v uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldLinkedMessageID, v))
+}
+
+// LinkedMessageIDGTE applies the GTE predicate on the "linked_message_id" field.
+func LinkedMessageIDGTE(v uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldLinkedMessageID, v))
+}
+
+// LinkedMessageIDLT applies the LT predicate on the "linked_message_id" field.
+func LinkedMessageIDLT(v uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldLinkedMessageID, v))
+}
+
+// LinkedMessageIDLTE applies the LTE predicate on the "linked_message_id" field.
+func LinkedMessageIDLTE(v uuid.UUID) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldLinkedMessageID, v))
+}
+
+// LinkedMessageIDIsNil applies the IsNil predicate on the "linked_message_id" field.
+func LinkedMessageIDIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldLinkedMessageID))
+}
+
+// LinkedMessageIDNotNil applies the NotNil predicate on the "linked_message_id" field.
+func LinkedMessageIDNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldLinkedMessageID))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mime"
+	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
@@ -56,7 +58,8 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 	}
 	expiresAt := time.Now().Add(expires)
 
-	uploadURL, err := i.storageService.GenerateUploadURL(storageKey, input.MimeType, input.SizeBytes, expires)
+	mimeType := normalizeMimeType(input.MimeType, input.FileName)
+	uploadURL, err := i.storageService.GenerateUploadURL(storageKey, mimeType, input.SizeBytes, expires)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +69,9 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 		UploaderID: input.UserID,
 		ChannelID:  input.ChannelID,
 		FileName:   input.FileName,
-		MimeType:   input.MimeType,
+		MimeType:   mimeType,
 		SizeBytes:  input.SizeBytes,
+		Media:      input.Media,
 		StorageKey: storageKey,
 		Status:     entity.AttachmentStatusPending,
 		ExpiresAt:  &expiresAt,
@@ -117,6 +121,7 @@ func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID strin
 		FileName:   attachment.FileName,
 		MimeType:   attachment.MimeType,
 		SizeBytes:  attachment.SizeBytes,
+		Media:      attachment.Media,
 		Status:     string(attachment.Status),
 		CreatedAt:  attachment.CreatedAt,
 	}, nil
@@ -175,4 +180,16 @@ func (i *Interactor) Delete(ctx context.Context, userID, attachmentID string) er
 	}
 
 	return i.storageService.DeleteObject(attachment.StorageKey)
+}
+
+// normalizeMimeType はパラメータを除いて小文字にし、判別できない種別はファイル名の拡張子から推定します
+func normalizeMimeType(mimeType, fileName string) string {
+	mediaType, _, err := mime.ParseMediaType(mimeType)
+	if err == nil && mediaType != "application/octet-stream" {
+		return mediaType
+	}
+	if guessed, _, err := mime.ParseMediaType(mime.TypeByExtension(filepath.Ext(fileName))); err == nil {
+		return guessed
+	}
+	return "application/octet-stream"
 }

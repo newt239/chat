@@ -92,6 +92,20 @@ func (_c *ChannelCreate) SetNillableArchivedAt(v *time.Time) *ChannelCreate {
 	return _c
 }
 
+// SetParentID sets the "parent_id" field.
+func (_c *ChannelCreate) SetParentID(v uuid.UUID) *ChannelCreate {
+	_c.mutation.SetParentID(v)
+	return _c
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (_c *ChannelCreate) SetNillableParentID(v *uuid.UUID) *ChannelCreate {
+	if v != nil {
+		_c.SetParentID(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ChannelCreate) SetCreatedAt(v time.Time) *ChannelCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -214,6 +228,26 @@ func (_c *ChannelCreate) AddReadStates(v ...*ChannelReadState) *ChannelCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddReadStateIDs(ids...)
+}
+
+// SetParent sets the "parent" edge to the Channel entity.
+func (_c *ChannelCreate) SetParent(v *Channel) *ChannelCreate {
+	return _c.SetParentID(v.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Channel entity by IDs.
+func (_c *ChannelCreate) AddChildIDs(ids ...uuid.UUID) *ChannelCreate {
+	_c.mutation.AddChildIDs(ids...)
+	return _c
+}
+
+// AddChildren adds the "children" edges to the Channel entity.
+func (_c *ChannelCreate) AddChildren(v ...*Channel) *ChannelCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddChildIDs(ids...)
 }
 
 // Mutation returns the ChannelMutation object of the builder.
@@ -460,6 +494,39 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   channel.ParentTable,
+			Columns: []string{channel.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ParentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   channel.ChildrenTable,
+			Columns: []string{channel.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -587,6 +654,24 @@ func (u *ChannelUpsert) UpdateArchivedAt() *ChannelUpsert {
 // ClearArchivedAt clears the value of the "archived_at" field.
 func (u *ChannelUpsert) ClearArchivedAt() *ChannelUpsert {
 	u.SetNull(channel.FieldArchivedAt)
+	return u
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *ChannelUpsert) SetParentID(v uuid.UUID) *ChannelUpsert {
+	u.Set(channel.FieldParentID, v)
+	return u
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *ChannelUpsert) UpdateParentID() *ChannelUpsert {
+	u.SetExcluded(channel.FieldParentID)
+	return u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *ChannelUpsert) ClearParentID() *ChannelUpsert {
+	u.SetNull(channel.FieldParentID)
 	return u
 }
 
@@ -741,6 +826,27 @@ func (u *ChannelUpsertOne) UpdateArchivedAt() *ChannelUpsertOne {
 func (u *ChannelUpsertOne) ClearArchivedAt() *ChannelUpsertOne {
 	return u.Update(func(s *ChannelUpsert) {
 		s.ClearArchivedAt()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *ChannelUpsertOne) SetParentID(v uuid.UUID) *ChannelUpsertOne {
+	return u.Update(func(s *ChannelUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *ChannelUpsertOne) UpdateParentID() *ChannelUpsertOne {
+	return u.Update(func(s *ChannelUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *ChannelUpsertOne) ClearParentID() *ChannelUpsertOne {
+	return u.Update(func(s *ChannelUpsert) {
+		s.ClearParentID()
 	})
 }
 
@@ -1064,6 +1170,27 @@ func (u *ChannelUpsertBulk) UpdateArchivedAt() *ChannelUpsertBulk {
 func (u *ChannelUpsertBulk) ClearArchivedAt() *ChannelUpsertBulk {
 	return u.Update(func(s *ChannelUpsert) {
 		s.ClearArchivedAt()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *ChannelUpsertBulk) SetParentID(v uuid.UUID) *ChannelUpsertBulk {
+	return u.Update(func(s *ChannelUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *ChannelUpsertBulk) UpdateParentID() *ChannelUpsertBulk {
+	return u.Update(func(s *ChannelUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *ChannelUpsertBulk) ClearParentID() *ChannelUpsertBulk {
+	return u.Update(func(s *ChannelUpsert) {
+		s.ClearParentID()
 	})
 }
 

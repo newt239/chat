@@ -1,18 +1,12 @@
 package service
 
-import "context"
+import (
+	"context"
 
-// OGPData represents Open Graph Protocol data
-type OGPData struct {
-	Title       *string
-	Description *string
-	ImageURL    *string
-	SiteName    *string
-	CardType    *string
-}
+	"github.com/newt239/chat/internal/domain/entity"
+)
 
-// OGPService defines the interface for OGP operations
 type OGPService interface {
-	FetchOGP(ctx context.Context, url string) (*OGPData, error)
+	FetchOGP(ctx context.Context, url string) (*entity.OGPData, error)
 	ExtractURLs(text string) []string
 }

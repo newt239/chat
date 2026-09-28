@@ -45,6 +45,18 @@ func (f ChannelFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelMutation", m)
 }
 
+// The ChannelLinkFunc type is an adapter to allow the use of ordinary
+// function as ChannelLink mutator.
+type ChannelLinkFunc func(context.Context, *ent.ChannelLinkMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChannelLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChannelLinkMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelLinkMutation", m)
+}
+
 // The ChannelMemberFunc type is an adapter to allow the use of ordinary
 // function as ChannelMember mutator.
 type ChannelMemberFunc func(context.Context, *ent.ChannelMemberMutation) (ent.Value, error)
@@ -67,6 +79,18 @@ func (f ChannelReadStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelReadStateMutation", m)
+}
+
+// The ChannelStarFunc type is an adapter to allow the use of ordinary
+// function as ChannelStar mutator.
+type ChannelStarFunc func(context.Context, *ent.ChannelStarMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChannelStarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChannelStarMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelStarMutation", m)
 }
 
 // The MessageFunc type is an adapter to allow the use of ordinary
@@ -223,6 +247,18 @@ func (f UserGroupMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserGroupMemberMutation", m)
+}
+
+// The UserNoteFunc type is an adapter to allow the use of ordinary
+// function as UserNote mutator.
+type UserNoteFunc func(context.Context, *ent.UserNoteMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserNoteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserNoteMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserNoteMutation", m)
 }
 
 // The UserThreadFollowFunc type is an adapter to allow the use of ordinary

@@ -7,6 +7,7 @@ import (
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
+	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	exportuc "github.com/newt239/chat/internal/usecase/export"
@@ -22,6 +23,7 @@ import (
 	threaduc "github.com/newt239/chat/internal/usecase/thread"
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
+	usernoteuc "github.com/newt239/chat/internal/usecase/usernote"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -89,6 +91,7 @@ func (r *UseCaseRegistry) NewWorkspaceUseCase() workspaceuc.WorkspaceUseCase {
 	return workspaceuc.NewWorkspaceInteractor(
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewUserNoteRepository(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
 	)
@@ -98,6 +101,7 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 	return channeluc.NewChannelInteractor(
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewChannelStarRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewReadStateRepository(),
 		r.infrastructureRegistry.NewTransactionManager(),
@@ -118,6 +122,21 @@ func (r *UseCaseRegistry) NewChannelMemberUseCase() channelmemberuc.ChannelMembe
 	)
 }
 
+// NewMessageOutputBuilder はメッセージを返すユースケースで共有する出力の組み立て役です
+func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuilder {
+	return messageuc.NewMessageOutputBuilder(
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewUserGroupRepository(),
+		r.domainRegistry.NewMessageUserMentionRepository(),
+		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.domainRegistry.NewMessageLinkRepository(),
+		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewPinRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+	)
+}
+
 func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 	return messageuc.NewMessageUseCase(
 		r.domainRegistry.NewMessageRepository(),
@@ -126,13 +145,12 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
 		r.domainRegistry.NewMessageUserMentionRepository(),
 		r.domainRegistry.NewMessageGroupMentionRepository(),
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewThreadRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
-		r.infrastructureRegistry.NewOGPService(),
+		r.NewMessageOutputBuilder(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.infrastructureRegistry.NewMentionService(),
 		r.infrastructureRegistry.NewLinkProcessingService(),
@@ -191,15 +209,7 @@ func (r *UseCaseRegistry) NewBookmarkUseCase() bookmarkuc.BookmarkUseCase {
 	return bookmarkuc.NewBookmarkInteractor(
 		r.domainRegistry.NewBookmarkRepository(),
 		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
-		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewMessageUserMentionRepository(),
-		r.domainRegistry.NewMessageGroupMentionRepository(),
-		r.domainRegistry.NewMessageLinkRepository(),
-		r.domainRegistry.NewAttachmentRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
+		r.NewMessageOutputBuilder(),
 		r.domainRegistry.NewChannelAccessService(),
 	)
 }
@@ -213,6 +223,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
+		r.NewMessageOutputBuilder(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.NewSystemMessageUseCase(),
 		r.domainRegistry.NewPermissionService(),
@@ -226,19 +237,6 @@ func (r *UseCaseRegistry) NewAttachmentUseCase() *attachmentuc.Interactor {
 		r.domainRegistry.NewChannelAccessService(),
 		r.infrastructureRegistry.NewStorageService(),
 		r.infrastructureRegistry.NewStorageConfig(),
-	)
-}
-
-func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuilder {
-	return messageuc.NewMessageOutputBuilder(
-		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewUserRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
-		r.domainRegistry.NewMessageUserMentionRepository(),
-		r.domainRegistry.NewMessageGroupMentionRepository(),
-		r.domainRegistry.NewMessageLinkRepository(),
-		r.domainRegistry.NewAttachmentRepository(),
-		messageuc.NewMessageOutputAssembler(),
 	)
 }
 
@@ -265,6 +263,7 @@ func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
 	return dmuc.NewInteractor(
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewChannelStarRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 	)
@@ -290,5 +289,21 @@ func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewSessionRepository(),
 		r.infrastructureRegistry.NewPasswordService(),
+	)
+}
+
+func (r *UseCaseRegistry) NewChannelLinkUseCase() channellinkuc.UseCase {
+	return channellinkuc.NewInteractor(
+		r.domainRegistry.NewChannelLinkRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.domainRegistry.NewPermissionService(),
+		r.infrastructureRegistry.NewTransactionManager(),
+	)
+}
+
+func (r *UseCaseRegistry) NewUserNoteUseCase() usernoteuc.UseCase {
+	return usernoteuc.NewInteractor(
+		r.domainRegistry.NewUserNoteRepository(),
+		r.domainRegistry.NewUserRepository(),
 	)
 }

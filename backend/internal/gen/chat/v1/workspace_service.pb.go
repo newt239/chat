@@ -195,8 +195,10 @@ type WorkspaceMember struct {
 	Bio         *string                `protobuf:"bytes,5,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
 	Role        WorkspaceRole          `protobuf:"varint,6,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
 	JoinedAt    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
+	// 自分だけに見えるニックネーム
+	Nickname *string `protobuf:"bytes,8,opt,name=nickname,proto3,oneof" json:"nickname,omitempty"`
 	// 停止中の場合だけ設定される
-	SuspendedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=suspended_at,json=suspendedAt,proto3,oneof" json:"suspended_at,omitempty"`
+	SuspendedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=suspended_at,json=suspendedAt,proto3,oneof" json:"suspended_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -278,6 +280,13 @@ func (x *WorkspaceMember) GetJoinedAt() *timestamppb.Timestamp {
 		return x.JoinedAt
 	}
 	return nil
+}
+
+func (x *WorkspaceMember) GetNickname() string {
+	if x != nil && x.Nickname != nil {
+		return *x.Nickname
+	}
+	return ""
 }
 
 func (x *WorkspaceMember) GetSuspendedAt() *timestamppb.Timestamp {
@@ -1415,7 +1424,7 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x0e\n" +
 	"\f_descriptionB\v\n" +
-	"\t_icon_url\"\xef\x02\n" +
+	"\t_icon_url\"\x9d\x03\n" +
 	"\x0fWorkspaceMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -1424,10 +1433,12 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"avatar_url\x18\x04 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
 	"\x03bio\x18\x05 \x01(\tH\x01R\x03bio\x88\x01\x01\x12*\n" +
 	"\x04role\x18\x06 \x01(\x0e2\x16.chat.v1.WorkspaceRoleR\x04role\x127\n" +
-	"\tjoined_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAt\x12B\n" +
-	"\fsuspended_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampH\x02R\vsuspendedAt\x88\x01\x01B\r\n" +
+	"\tjoined_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAt\x12\x1f\n" +
+	"\bnickname\x18\b \x01(\tH\x02R\bnickname\x88\x01\x01\x12B\n" +
+	"\fsuspended_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampH\x03R\vsuspendedAt\x88\x01\x01B\r\n" +
 	"\v_avatar_urlB\x06\n" +
-	"\x04_bioB\x0f\n" +
+	"\x04_bioB\v\n" +
+	"\t_nicknameB\x0f\n" +
 	"\r_suspended_at\"\x94\x02\n" +
 	"\x0fPublicWorkspace\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +

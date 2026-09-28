@@ -42,24 +42,21 @@ func (r *linkRepository) Create(ctx context.Context, link *entity.MessageLink) e
 		builder = builder.SetID(linkID)
 	}
 
-	if link.Title != nil {
-		builder = builder.SetTitle(*link.Title)
-	}
-
-	if link.Description != nil {
-		builder = builder.SetDescription(*link.Description)
-	}
-
-	if link.ImageURL != nil {
-		builder = builder.SetImageURL(*link.ImageURL)
-	}
-
-	if link.SiteName != nil {
-		builder = builder.SetSiteName(*link.SiteName)
-	}
-
-	if link.CardType != nil {
-		builder = builder.SetCardType(*link.CardType)
+	ogp := link.OGP
+	builder = builder.
+		SetNillableTitle(ogp.Title).
+		SetNillableDescription(ogp.Description).
+		SetNillableImageURL(ogp.ImageURL).
+		SetNillableSiteName(ogp.SiteName).
+		SetNillableCardType(ogp.CardType).
+		SetNillableImageWidth(ogp.ImageWidth).
+		SetNillableImageHeight(ogp.ImageHeight).
+		SetNillableLinkedMessageID(utils.ParseUUIDPtr(link.LinkedMessageID))
+	if ogp.YouTube != nil {
+		builder = builder.
+			SetYoutubeVideoID(ogp.YouTube.VideoID).
+			SetNillableYoutubeChannelName(ogp.YouTube.ChannelName).
+			SetNillableYoutubeDurationSeconds(ogp.YouTube.DurationSeconds)
 	}
 
 	ml, err := builder.Save(ctx)
@@ -151,12 +148,8 @@ func (r *linkRepository) FindByURL(ctx context.Context, url string) (*entity.Mes
 	client := transaction.ResolveClient(ctx, r.client)
 	ml, err := client.MessageLink.Query().
 		Where(messagelink.URL(url)).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		Only(ctx)
+		Order(ent.Desc(messagelink.FieldCreatedAt)).
+		First(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil

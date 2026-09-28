@@ -48,6 +48,9 @@ const (
 	// ChannelServiceDeleteChannelProcedure is the fully-qualified name of the ChannelService's
 	// DeleteChannel RPC.
 	ChannelServiceDeleteChannelProcedure = "/chat.v1.ChannelService/DeleteChannel"
+	// ChannelServiceSetChannelStarredProcedure is the fully-qualified name of the ChannelService's
+	// SetChannelStarred RPC.
+	ChannelServiceSetChannelStarredProcedure = "/chat.v1.ChannelService/SetChannelStarred"
 	// ChannelServiceArchiveChannelProcedure is the fully-qualified name of the ChannelService's
 	// ArchiveChannel RPC.
 	ChannelServiceArchiveChannelProcedure = "/chat.v1.ChannelService/ArchiveChannel"
@@ -63,6 +66,7 @@ type ChannelServiceClient interface {
 	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
 	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
+	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
 	// チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
 	ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error)
 	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
@@ -109,6 +113,12 @@ func NewChannelServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(channelServiceMethods.ByName("DeleteChannel")),
 			connect.WithClientOptions(opts...),
 		),
+		setChannelStarred: connect.NewClient[v1.SetChannelStarredRequest, v1.SetChannelStarredResponse](
+			httpClient,
+			baseURL+ChannelServiceSetChannelStarredProcedure,
+			connect.WithSchema(channelServiceMethods.ByName("SetChannelStarred")),
+			connect.WithClientOptions(opts...),
+		),
 		archiveChannel: connect.NewClient[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse](
 			httpClient,
 			baseURL+ChannelServiceArchiveChannelProcedure,
@@ -126,13 +136,14 @@ func NewChannelServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 
 // channelServiceClient implements ChannelServiceClient.
 type channelServiceClient struct {
-	listChannels     *connect.Client[v1.ListChannelsRequest, v1.ListChannelsResponse]
-	createChannel    *connect.Client[v1.CreateChannelRequest, v1.CreateChannelResponse]
-	getChannel       *connect.Client[v1.GetChannelRequest, v1.GetChannelResponse]
-	updateChannel    *connect.Client[v1.UpdateChannelRequest, v1.UpdateChannelResponse]
-	deleteChannel    *connect.Client[v1.DeleteChannelRequest, v1.DeleteChannelResponse]
-	archiveChannel   *connect.Client[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse]
-	unarchiveChannel *connect.Client[v1.UnarchiveChannelRequest, v1.UnarchiveChannelResponse]
+	listChannels      *connect.Client[v1.ListChannelsRequest, v1.ListChannelsResponse]
+	createChannel     *connect.Client[v1.CreateChannelRequest, v1.CreateChannelResponse]
+	getChannel        *connect.Client[v1.GetChannelRequest, v1.GetChannelResponse]
+	updateChannel     *connect.Client[v1.UpdateChannelRequest, v1.UpdateChannelResponse]
+	deleteChannel     *connect.Client[v1.DeleteChannelRequest, v1.DeleteChannelResponse]
+	setChannelStarred *connect.Client[v1.SetChannelStarredRequest, v1.SetChannelStarredResponse]
+	archiveChannel    *connect.Client[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse]
+	unarchiveChannel  *connect.Client[v1.UnarchiveChannelRequest, v1.UnarchiveChannelResponse]
 }
 
 // ListChannels calls chat.v1.ChannelService.ListChannels.
@@ -180,6 +191,15 @@ func (c *channelServiceClient) DeleteChannel(ctx context.Context, req *v1.Delete
 	return nil, err
 }
 
+// SetChannelStarred calls chat.v1.ChannelService.SetChannelStarred.
+func (c *channelServiceClient) SetChannelStarred(ctx context.Context, req *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error) {
+	response, err := c.setChannelStarred.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // ArchiveChannel calls chat.v1.ChannelService.ArchiveChannel.
 func (c *channelServiceClient) ArchiveChannel(ctx context.Context, req *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error) {
 	response, err := c.archiveChannel.CallUnary(ctx, connect.NewRequest(req))
@@ -205,6 +225,7 @@ type ChannelServiceHandler interface {
 	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
 	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
+	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
 	// チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
 	ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error)
 	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
@@ -247,6 +268,12 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 		connect.WithSchema(channelServiceMethods.ByName("DeleteChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
+	channelServiceSetChannelStarredHandler := connect.NewUnaryHandlerSimple(
+		ChannelServiceSetChannelStarredProcedure,
+		svc.SetChannelStarred,
+		connect.WithSchema(channelServiceMethods.ByName("SetChannelStarred")),
+		connect.WithHandlerOptions(opts...),
+	)
 	channelServiceArchiveChannelHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceArchiveChannelProcedure,
 		svc.ArchiveChannel,
@@ -271,6 +298,8 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 			channelServiceUpdateChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceDeleteChannelProcedure:
 			channelServiceDeleteChannelHandler.ServeHTTP(w, r)
+		case ChannelServiceSetChannelStarredProcedure:
+			channelServiceSetChannelStarredHandler.ServeHTTP(w, r)
 		case ChannelServiceArchiveChannelProcedure:
 			channelServiceArchiveChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceUnarchiveChannelProcedure:
@@ -302,6 +331,10 @@ func (UnimplementedChannelServiceHandler) UpdateChannel(context.Context, *v1.Upd
 
 func (UnimplementedChannelServiceHandler) DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.DeleteChannel is not implemented"))
+}
+
+func (UnimplementedChannelServiceHandler) SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.SetChannelStarred is not implemented"))
 }
 
 func (UnimplementedChannelServiceHandler) ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error) {

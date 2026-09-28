@@ -22,82 +22,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type OgpData struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Title         *string                `protobuf:"bytes,1,opt,name=title,proto3,oneof" json:"title,omitempty"`
-	Description   *string                `protobuf:"bytes,2,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	ImageUrl      *string                `protobuf:"bytes,3,opt,name=image_url,json=imageUrl,proto3,oneof" json:"image_url,omitempty"`
-	SiteName      *string                `protobuf:"bytes,4,opt,name=site_name,json=siteName,proto3,oneof" json:"site_name,omitempty"`
-	CardType      *string                `protobuf:"bytes,5,opt,name=card_type,json=cardType,proto3,oneof" json:"card_type,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *OgpData) Reset() {
-	*x = OgpData{}
-	mi := &file_chat_v1_link_service_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OgpData) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OgpData) ProtoMessage() {}
-
-func (x *OgpData) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_link_service_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use OgpData.ProtoReflect.Descriptor instead.
-func (*OgpData) Descriptor() ([]byte, []int) {
-	return file_chat_v1_link_service_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *OgpData) GetTitle() string {
-	if x != nil && x.Title != nil {
-		return *x.Title
-	}
-	return ""
-}
-
-func (x *OgpData) GetDescription() string {
-	if x != nil && x.Description != nil {
-		return *x.Description
-	}
-	return ""
-}
-
-func (x *OgpData) GetImageUrl() string {
-	if x != nil && x.ImageUrl != nil {
-		return *x.ImageUrl
-	}
-	return ""
-}
-
-func (x *OgpData) GetSiteName() string {
-	if x != nil && x.SiteName != nil {
-		return *x.SiteName
-	}
-	return ""
-}
-
-func (x *OgpData) GetCardType() string {
-	if x != nil && x.CardType != nil {
-		return *x.CardType
-	}
-	return ""
-}
-
 type FetchOgpRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
@@ -107,7 +31,7 @@ type FetchOgpRequest struct {
 
 func (x *FetchOgpRequest) Reset() {
 	*x = FetchOgpRequest{}
-	mi := &file_chat_v1_link_service_proto_msgTypes[1]
+	mi := &file_chat_v1_link_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -119,7 +43,7 @@ func (x *FetchOgpRequest) String() string {
 func (*FetchOgpRequest) ProtoMessage() {}
 
 func (x *FetchOgpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_link_service_proto_msgTypes[1]
+	mi := &file_chat_v1_link_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -132,7 +56,7 @@ func (x *FetchOgpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchOgpRequest.ProtoReflect.Descriptor instead.
 func (*FetchOgpRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_link_service_proto_rawDescGZIP(), []int{1}
+	return file_chat_v1_link_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *FetchOgpRequest) GetUrl() string {
@@ -151,7 +75,7 @@ type FetchOgpResponse struct {
 
 func (x *FetchOgpResponse) Reset() {
 	*x = FetchOgpResponse{}
-	mi := &file_chat_v1_link_service_proto_msgTypes[2]
+	mi := &file_chat_v1_link_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -163,7 +87,7 @@ func (x *FetchOgpResponse) String() string {
 func (*FetchOgpResponse) ProtoMessage() {}
 
 func (x *FetchOgpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_link_service_proto_msgTypes[2]
+	mi := &file_chat_v1_link_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -176,7 +100,7 @@ func (x *FetchOgpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FetchOgpResponse.ProtoReflect.Descriptor instead.
 func (*FetchOgpResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_link_service_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_link_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *FetchOgpResponse) GetOgp() *OgpData {
@@ -190,21 +114,7 @@ var File_chat_v1_link_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_link_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1achat/v1/link_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\xf5\x01\n" +
-	"\aOgpData\x12\x19\n" +
-	"\x05title\x18\x01 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x02 \x01(\tH\x01R\vdescription\x88\x01\x01\x12 \n" +
-	"\timage_url\x18\x03 \x01(\tH\x02R\bimageUrl\x88\x01\x01\x12 \n" +
-	"\tsite_name\x18\x04 \x01(\tH\x03R\bsiteName\x88\x01\x01\x12 \n" +
-	"\tcard_type\x18\x05 \x01(\tH\x04R\bcardType\x88\x01\x01B\b\n" +
-	"\x06_titleB\x0e\n" +
-	"\f_descriptionB\f\n" +
-	"\n" +
-	"_image_urlB\f\n" +
-	"\n" +
-	"_site_nameB\f\n" +
-	"\n" +
-	"_card_type\"-\n" +
+	"\x1achat/v1/link_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\"-\n" +
 	"\x0fFetchOgpRequest\x12\x1a\n" +
 	"\x03url\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x88\x01\x01R\x03url\"6\n" +
 	"\x10FetchOgpResponse\x12\"\n" +
@@ -225,16 +135,16 @@ func file_chat_v1_link_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_link_service_proto_rawDescData
 }
 
-var file_chat_v1_link_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_chat_v1_link_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_chat_v1_link_service_proto_goTypes = []any{
-	(*OgpData)(nil),          // 0: chat.v1.OgpData
-	(*FetchOgpRequest)(nil),  // 1: chat.v1.FetchOgpRequest
-	(*FetchOgpResponse)(nil), // 2: chat.v1.FetchOgpResponse
+	(*FetchOgpRequest)(nil),  // 0: chat.v1.FetchOgpRequest
+	(*FetchOgpResponse)(nil), // 1: chat.v1.FetchOgpResponse
+	(*OgpData)(nil),          // 2: chat.v1.OgpData
 }
 var file_chat_v1_link_service_proto_depIdxs = []int32{
-	0, // 0: chat.v1.FetchOgpResponse.ogp:type_name -> chat.v1.OgpData
-	1, // 1: chat.v1.LinkService.FetchOgp:input_type -> chat.v1.FetchOgpRequest
-	2, // 2: chat.v1.LinkService.FetchOgp:output_type -> chat.v1.FetchOgpResponse
+	2, // 0: chat.v1.FetchOgpResponse.ogp:type_name -> chat.v1.OgpData
+	0, // 1: chat.v1.LinkService.FetchOgp:input_type -> chat.v1.FetchOgpRequest
+	1, // 2: chat.v1.LinkService.FetchOgp:output_type -> chat.v1.FetchOgpResponse
 	2, // [2:3] is the sub-list for method output_type
 	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -247,14 +157,14 @@ func file_chat_v1_link_service_proto_init() {
 	if File_chat_v1_link_service_proto != nil {
 		return
 	}
-	file_chat_v1_link_service_proto_msgTypes[0].OneofWrappers = []any{}
+	file_chat_v1_message_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_link_service_proto_rawDesc), len(file_chat_v1_link_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -30,6 +30,8 @@ type Channel struct {
 	ChannelType string `json:"channel_type,omitempty"`
 	// ArchivedAt holds the value of the "archived_at" field.
 	ArchivedAt *time.Time `json:"archived_at,omitempty"`
+	// ParentID holds the value of the "parent_id" field.
+	ParentID *uuid.UUID `json:"parent_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -56,9 +58,13 @@ type ChannelEdges struct {
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// ReadStates holds the value of the read_states edge.
 	ReadStates []*ChannelReadState `json:"read_states,omitempty"`
+	// Parent holds the value of the parent edge.
+	Parent *Channel `json:"parent,omitempty"`
+	// Children holds the value of the children edge.
+	Children []*Channel `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [8]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -119,11 +125,33 @@ func (e ChannelEdges) ReadStatesOrErr() ([]*ChannelReadState, error) {
 	return nil, &NotLoadedError{edge: "read_states"}
 }
 
+// ParentOrErr returns the Parent value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ChannelEdges) ParentOrErr() (*Channel, error) {
+	if e.Parent != nil {
+		return e.Parent, nil
+	} else if e.loadedTypes[6] {
+		return nil, &NotFoundError{label: channel.Label}
+	}
+	return nil, &NotLoadedError{edge: "parent"}
+}
+
+// ChildrenOrErr returns the Children value or an error if the edge
+// was not loaded in eager-loading.
+func (e ChannelEdges) ChildrenOrErr() ([]*Channel, error) {
+	if e.loadedTypes[7] {
+		return e.Children, nil
+	}
+	return nil, &NotLoadedError{edge: "children"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Channel) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case channel.FieldParentID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case channel.FieldIsPrivate:
 			values[i] = new(sql.NullBool)
 		case channel.FieldName, channel.FieldDescription, channel.FieldChannelType:
@@ -187,6 +215,13 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ArchivedAt = new(time.Time)
 				*_m.ArchivedAt = value.Time
+			}
+		case channel.FieldParentID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
+			} else if value.Valid {
+				_m.ParentID = new(uuid.UUID)
+				*_m.ParentID = *value.S.(*uuid.UUID)
 			}
 		case channel.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -257,6 +292,16 @@ func (_m *Channel) QueryReadStates() *ChannelReadStateQuery {
 	return NewChannelClient(_m.config).QueryReadStates(_m)
 }
 
+// QueryParent queries the "parent" edge of the Channel entity.
+func (_m *Channel) QueryParent() *ChannelQuery {
+	return NewChannelClient(_m.config).QueryParent(_m)
+}
+
+// QueryChildren queries the "children" edge of the Channel entity.
+func (_m *Channel) QueryChildren() *ChannelQuery {
+	return NewChannelClient(_m.config).QueryChildren(_m)
+}
+
 // Update returns a builder for updating this Channel.
 // Note that you need to call Channel.Unwrap() before calling this method if this Channel
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -295,6 +340,11 @@ func (_m *Channel) String() string {
 	if v := _m.ArchivedAt; v != nil {
 		builder.WriteString("archived_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ParentID; v != nil {
+		builder.WriteString("parent_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")

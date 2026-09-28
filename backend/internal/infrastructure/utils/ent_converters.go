@@ -117,6 +117,7 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 		Description: StringPtrFromNullable(c.Description),
 		IsPrivate:   c.IsPrivate,
 		Type:        channelType,
+		ParentID:    UUIDPtrToStringPtr(c.ParentID),
 		CreatedBy:   createdBy,
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,
@@ -281,6 +282,7 @@ func AttachmentToEntity(a *ent.Attachment) *entity.Attachment {
 		FileName:   a.FileName,
 		MimeType:   a.MimeType,
 		SizeBytes:  a.SizeBytes,
+		Media:      entity.MediaMetadata{Width: a.Width, Height: a.Height, DurationSeconds: a.DurationSeconds},
 		StorageKey: a.StorageKey,
 		Status:     entity.AttachmentStatus(a.Status),
 		UploadedAt: &a.UploadedAt,
@@ -378,16 +380,30 @@ func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 	if ml.Edges.Message != nil {
 		messageID = ml.Edges.Message.ID.String()
 	}
+	var youtube *entity.YouTubeVideo
+	if ml.YoutubeVideoID != nil {
+		youtube = &entity.YouTubeVideo{
+			VideoID:         *ml.YoutubeVideoID,
+			ChannelName:     ml.YoutubeChannelName,
+			DurationSeconds: ml.YoutubeDurationSeconds,
+		}
+	}
 	return &entity.MessageLink{
-		ID:          ml.ID.String(),
-		MessageID:   messageID,
-		URL:         ml.URL,
-		Title:       StringPtrFromNullable(ml.Title),
-		Description: StringPtrFromNullable(ml.Description),
-		ImageURL:    StringPtrFromNullable(ml.ImageURL),
-		SiteName:    StringPtrFromNullable(ml.SiteName),
-		CardType:    StringPtrFromNullable(ml.CardType),
-		CreatedAt:   ml.CreatedAt,
+		ID:        ml.ID.String(),
+		MessageID: messageID,
+		URL:       ml.URL,
+		OGP: entity.OGPData{
+			Title:       StringPtrFromNullable(ml.Title),
+			Description: StringPtrFromNullable(ml.Description),
+			ImageURL:    StringPtrFromNullable(ml.ImageURL),
+			SiteName:    StringPtrFromNullable(ml.SiteName),
+			CardType:    StringPtrFromNullable(ml.CardType),
+			ImageWidth:  ml.ImageWidth,
+			ImageHeight: ml.ImageHeight,
+			YouTube:     youtube,
+		},
+		LinkedMessageID: UUIDPtrToStringPtr(ml.LinkedMessageID),
+		CreatedAt:       ml.CreatedAt,
 	}
 }
 
