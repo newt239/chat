@@ -271,6 +271,8 @@ export default defineConfig({
     },
   },
   test: {
+    // theme.spec.ts が @theme の定義漏れを検査するため globals.css だけは中身を読み込む
+    css: { include: [/globals\.css/] },
     environment: "jsdom",
     globals: false,
     include: ["src/**/*.{spec,test}.{ts,tsx}"],

@@ -4,8 +4,140 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+/* ThemeProvider が @chat/design-tokens から計算した値を :root の --c-* などに書き込む。
+   inline にすることでユーティリティが変数を直接参照し、テーマ切り替えが即座に反映される */
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-raised: var(--c-raised);
+  --color-sunken: var(--c-sunken);
+  --color-hover: var(--c-hover);
+  --color-border: var(--c-border);
+  --color-border-strong: var(--c-border-strong);
+  --color-text: var(--c-text);
+  --color-muted: var(--c-muted);
+  --color-subtle: var(--c-subtle);
+  --color-accent: var(--c-accent);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-accent-fg: var(--c-accent-fg);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-accent-text: var(--c-accent-text);
+  --color-focus: var(--c-focus);
+  --color-mention-bg: var(--c-mention-bg);
+  --color-mention-bar: var(--c-mention-bar);
+  --color-mention-chip: var(--c-mention-chip);
+  --color-mention-text: var(--c-mention-text);
+  --color-pin-bg: var(--c-pin-bg);
+  --color-pin-bar: var(--c-pin-bar);
+  --color-danger: var(--c-danger);
+  --color-danger-fg: var(--c-danger-fg);
+  --color-success: var(--c-success);
+  --color-badge: var(--c-badge);
+  --color-badge-fg: var(--c-badge-fg);
+  --color-overlay: var(--c-overlay);
+  --color-side: var(--c-side);
+  --color-side-fg: var(--c-side-fg);
+  --color-side-muted: var(--c-side-muted);
+  --color-side-strong: var(--c-side-strong);
+  --color-side-hover: var(--c-side-hover);
+  --color-side-active: var(--c-side-active);
+  --color-side-active-fg: var(--c-side-active-fg);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-full: var(--r-full);
+
+  --shadow-sm: var(--sh-sm);
+  --shadow-md: var(--sh-md);
+  --shadow-lg: var(--sh-lg);
+  --shadow-xl: var(--sh-xl);
+
+  --text-title: var(--t-title-size);
+  --text-title--line-height: var(--t-title-line);
+  --text-title--font-weight: var(--t-title-weight);
+  --text-body: var(--t-body-size);
+  --text-body--line-height: var(--t-body-line);
+  --text-body--font-weight: var(--t-body-weight);
+  --text-body-strong: var(--t-body-strong-size);
+  --text-body-strong--line-height: var(--t-body-strong-line);
+  --text-body-strong--font-weight: var(--t-body-strong-weight);
+  --text-label: var(--t-label-size);
+  --text-label--line-height: var(--t-label-line);
+  --text-label--font-weight: var(--t-label-weight);
+  --text-caption: var(--t-caption-size);
+  --text-caption--line-height: var(--t-caption-line);
+  --text-caption--font-weight: var(--t-caption-weight);
+  --text-mono: var(--t-mono-size);
+  --text-mono--line-height: var(--t-mono-line);
+  --text-mono--font-weight: var(--t-mono-weight);
+
+  --font-sans: var(--ff-sans);
+  --font-mono: var(--ff-mono);
+}
+
+@theme {
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  --animate-fade-in: fade-in 120ms var(--ease-standard);
+  --animate-fade-out: fade-out 120ms var(--ease-standard) forwards;
+  --animate-pop-in: pop-in 120ms var(--ease-standard);
+  --animate-pop-out: fade-out 120ms var(--ease-standard) forwards;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+}
+
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+/* preflight の代わりに React Aria Components の要素だけ UA スタイルを打ち消す */
+@layer base {
+  :where([data-rac]) {
+    box-sizing: border-box;
+  }
+  :where(button[data-rac], input[data-rac], textarea[data-rac]) {
+    margin: 0;
+    font: inherit;
+    color: inherit;
+  }
+  :where(button[data-rac]) {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  :where(ul[data-rac], ol[data-rac]) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
 :root {
   color-scheme: light dark;
+}
+
+:root[data-mode="light"] {
+  color-scheme: light;
+}
+
+:root[data-mode="dark"] {
+  color-scheme: dark;
 }
 
 * {
@@ -21,4 +153,13 @@ body {
 
 #root {
   height: 100%;
+}
+
+/* shiki は defaultColor: false で両モードの色を CSS 変数として出力する */
+.shiki span {
+  color: var(--shiki-light);
+}
+
+[data-mode="dark"] .shiki span {
+  color: var(--shiki-dark);
 }

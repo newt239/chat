@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from "./routes/login";
 import { Route as RegisterRouteImport } from "./routes/register";
 import { Route as AppIndexRouteImport } from "./routes/app/index";
 import { Route as AppWorkspaceIdRouteRouteImport } from "./routes/app/$workspaceId/route";
+import { Route as DevUiRouteImport } from "./routes/dev/ui";
 import { Route as AppWorkspaceIdIndexRouteImport } from "./routes/app/$workspaceId/index";
 import { Route as AppWorkspaceIdChannelIdRouteImport } from "./routes/app/$workspaceId/$channelId";
 import { Route as AppWorkspaceIdSearchRouteImport } from "./routes/app/$workspaceId/search";
@@ -50,6 +51,11 @@ const AppWorkspaceIdRouteRoute = AppWorkspaceIdRouteRouteImport.update({
   path: "/$workspaceId",
   getParentRoute: () => AppRouteRoute,
 } as any);
+const DevUiRoute = DevUiRouteImport.update({
+  id: "/dev/ui",
+  path: "/dev/ui",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const AppWorkspaceIdIndexRoute = AppWorkspaceIdIndexRouteImport.update({
   id: "/",
   path: "/",
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   "/login": typeof LoginRoute;
   "/register": typeof RegisterRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
+  "/dev/ui": typeof DevUiRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
   "/register": typeof RegisterRoute;
+  "/dev/ui": typeof DevUiRoute;
   "/app": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   "/login": typeof LoginRoute;
   "/register": typeof RegisterRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
+  "/dev/ui": typeof DevUiRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRoute;
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | "/login"
     | "/register"
     | "/app/$workspaceId"
+    | "/dev/ui"
     | "/app/"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/search"
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | "/"
     | "/login"
     | "/register"
+    | "/dev/ui"
     | "/app"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/search"
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | "/login"
     | "/register"
     | "/app/$workspaceId"
+    | "/dev/ui"
     | "/app/"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/search"
@@ -148,6 +160,7 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren;
   LoginRoute: typeof LoginRoute;
   RegisterRoute: typeof RegisterRoute;
+  DevUiRoute: typeof DevUiRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -193,6 +206,13 @@ declare module "@tanstack/react-router" {
       fullPath: "/app/$workspaceId";
       preLoaderRoute: typeof AppWorkspaceIdRouteRouteImport;
       parentRoute: typeof AppRouteRoute;
+    };
+    "/dev/ui": {
+      id: "/dev/ui";
+      path: "/dev/ui";
+      fullPath: "/dev/ui";
+      preLoaderRoute: typeof DevUiRouteImport;
+      parentRoute: typeof rootRouteImport;
     };
     "/app/$workspaceId/": {
       id: "/app/$workspaceId/";
@@ -261,6 +281,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  DevUiRoute: DevUiRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
