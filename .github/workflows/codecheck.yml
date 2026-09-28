@@ -19,6 +19,9 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      # DOM に依存しない共有パッケージ（design-tokens / i18n）
+      - name: Packages
+        run: pnpm --filter "./packages/*" run codecheck
       - name: Typecheck
         run: pnpm --filter chat-frontend run typecheck
       - name: Oxlint
