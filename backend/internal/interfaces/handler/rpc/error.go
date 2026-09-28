@@ -8,10 +8,12 @@ import (
 
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/logger"
+	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
@@ -28,6 +30,7 @@ var errorCodes = []struct {
 }{
 	{connect.CodeNotFound, []error{
 		domerr.ErrNotFound, domerr.ErrMessageNotFound, domerr.ErrChannelNotFound,
+		adminuc.ErrMemberNotFound,
 		bookmarkuc.ErrMessageNotFound,
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
 		channelmemberuc.ErrChannelNotFound, channelmemberuc.ErrUserNotFound,
@@ -44,6 +47,7 @@ var errorCodes = []struct {
 	}},
 	{connect.CodePermissionDenied, []error{
 		domerr.ErrUnauthorized, domerr.ErrForbidden,
+		adminuc.ErrOwnerOnlyPermissions,
 		bookmarkuc.ErrUnauthorized,
 		channeluc.ErrUnauthorized,
 		channelmemberuc.ErrUnauthorized, channelmemberuc.ErrChannelNotPublic,
@@ -67,11 +71,16 @@ var errorCodes = []struct {
 	}},
 	{connect.CodeInvalidArgument, []error{
 		domerr.ErrInvalidInput, domerr.ErrValidation,
+		adminuc.ErrInvalidPermission,
+		insightuc.ErrInvalidTimeZone,
 		channelmemberuc.ErrInvalidRole,
 		searchuc.ErrInvalidQuery,
 		workspaceuc.ErrInvalidRole,
 	}},
 	{connect.CodeFailedPrecondition, []error{
+		domerr.ErrChannelArchived,
+		adminuc.ErrCannotSuspendOwner, adminuc.ErrCannotSuspendSelf,
+		channeluc.ErrCannotArchiveDM,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,
 		usergroupuc.ErrUserNotInGroup,

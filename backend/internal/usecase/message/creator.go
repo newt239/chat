@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/domain/transaction"
@@ -77,6 +78,9 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 	channel, err := c.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
+	}
+	if channel.ArchivedAt != nil {
+		return nil, domerr.ErrChannelArchived
 	}
 
 	if input.ParentID != nil {

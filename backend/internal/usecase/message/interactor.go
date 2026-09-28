@@ -47,6 +47,7 @@ func NewMessageUseCase(
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
 	channelAccessSvc service.ChannelAccessService,
+	permissionSvc service.PermissionService,
 	logger service.Logger,
 ) MessageUseCase {
 	// 各機能のユースケースを作成
@@ -92,10 +93,10 @@ func NewMessageUseCase(
 		messageRepo,
 		channelRepo,
 		channelMemberRepo,
-		workspaceRepo,
 		threadRepo,
 		notificationSvc,
 		channelAccessSvc,
+		permissionSvc,
 		logger,
 	)
 

@@ -87,13 +87,14 @@ type DeleteWorkspaceOutput struct {
 }
 
 type MemberInfo struct {
-	UserID      string    `json:"userId"`
-	Email       string    `json:"email"`
-	DisplayName string    `json:"displayName"`
-	AvatarURL   *string   `json:"avatarUrl,omitempty"`
-	Bio         *string   `json:"bio,omitempty"`
-	Role        string    `json:"role"`
-	JoinedAt    time.Time `json:"joinedAt"`
+	UserID      string     `json:"userId"`
+	Email       string     `json:"email"`
+	DisplayName string     `json:"displayName"`
+	AvatarURL   *string    `json:"avatarUrl,omitempty"`
+	Bio         *string    `json:"bio,omitempty"`
+	Role        string     `json:"role"`
+	JoinedAt    time.Time  `json:"joinedAt"`
+	SuspendedAt *time.Time `json:"suspendedAt,omitempty"`
 }
 
 type ListMembersOutput struct {

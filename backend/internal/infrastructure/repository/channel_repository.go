@@ -167,8 +167,10 @@ func (r *channelRepository) Update(ctx context.Context, ch *entity.Channel) erro
 		builder = builder.ClearDescription()
 	}
 
-	// is_private 更新
-	builder = builder.SetIsPrivate(ch.IsPrivate)
+	builder = builder.SetIsPrivate(ch.IsPrivate).SetNillableArchivedAt(ch.ArchivedAt)
+	if ch.ArchivedAt == nil {
+		builder = builder.ClearArchivedAt()
+	}
 
 	c, err := builder.Save(ctx)
 	if err != nil {

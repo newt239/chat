@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strings"
 	"time"
+	_ "time/tzdata" // インサイトでクライアントのタイムゾーンを扱うため、tzdata のないイメージでも読み込めるよう埋め込む
 
 	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/config"

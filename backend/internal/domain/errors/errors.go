@@ -10,6 +10,7 @@ var (
 	ErrNotFound           = errors.New("指定されたリソースが見つかりません")
 	ErrMessageNotFound    = errors.New("メッセージが見つかりません")
 	ErrChannelNotFound    = errors.New("チャンネルが見つかりません")
+	ErrChannelArchived    = errors.New("アーカイブされたチャンネルには投稿できません")
 	ErrUnauthorized       = errors.New("操作を実行する権限がありません")
 	ErrForbidden          = errors.New("アクセスが禁止されています")
 	ErrInvalidInput       = errors.New("入力内容が不正です")

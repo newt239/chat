@@ -40,6 +40,15 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 		return nil, domainerrors.ErrChannelNotFound
 	}
 
+	// 停止中のメンバーは FindMember で除外されるため非公開チャンネルでも先に確認する
+	member, err := s.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
+	}
+	if member == nil {
+		return nil, domainerrors.ErrUnauthorized
+	}
+
 	if ch.IsPrivate {
 		isMember, err := s.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
@@ -48,15 +57,6 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 		if !isMember {
 			return nil, domainerrors.ErrUnauthorized
 		}
-		return ch, nil
-	}
-
-	member, err := s.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, domainerrors.ErrUnauthorized
 	}
 
 	return ch, nil

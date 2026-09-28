@@ -36,6 +36,7 @@ type interactor struct {
 	messageAssembler  *message.MessageOutputAssembler
 	channelAccessSvc  service.ChannelAccessService
 	systemMessageUC   systemmessage.UseCase
+	permissionSvc     service.PermissionService
 }
 
 func NewPinInteractor(
@@ -48,6 +49,7 @@ func NewPinInteractor(
 	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
 	systemMessageUC systemmessage.UseCase,
+	permissionSvc service.PermissionService,
 ) PinUseCase {
 	return &interactor{
 		pinRepo:           pinRepo,
@@ -60,7 +62,18 @@ func NewPinInteractor(
 		messageAssembler:  message.NewMessageOutputAssembler(),
 		channelAccessSvc:  channelAccessSvc,
 		systemMessageUC:   systemMessageUC,
+		permissionSvc:     permissionSvc,
 	}
+}
+
+// ensureCanPin はチャンネルを閲覧でき、ピン留めが許可されたロールであることを確認します
+func (i *interactor) ensureCanPin(ctx context.Context, channelID, userID string) error {
+	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID)
+	if err != nil {
+		return err
+	}
+	_, err = i.permissionSvc.Ensure(ctx, ch.WorkspaceID, userID, entity.PermissionPinMessages)
+	return err
 }
 
 type PinMessageInput struct {
@@ -104,7 +117,7 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 	}
 
 	// アクセス権確認
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
+	if err := i.ensureCanPin(ctx, input.ChannelID, input.UserID); err != nil {
 		return err
 	}
 
@@ -165,7 +178,7 @@ func (i *interactor) UnpinMessage(ctx context.Context, input UnpinMessageInput) 
 	}
 
 	// アクセス権確認
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
+	if err := i.ensureCanPin(ctx, input.ChannelID, input.UserID); err != nil {
 		return err
 	}
 

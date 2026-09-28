@@ -44,6 +44,8 @@ func SessionToEntity(s *ent.Session) *entity.Session {
 		RefreshTokenHash: s.RefreshTokenHash,
 		ExpiresAt:        s.ExpiresAt,
 		RevokedAt:        revokedAt,
+		IPAddress:        s.IPAddress,
+		UserAgent:        s.UserAgent,
 		CreatedAt:        s.CreatedAt,
 	}
 }
@@ -86,6 +88,7 @@ func WorkspaceMemberToEntity(wm *ent.WorkspaceMember) *entity.WorkspaceMember {
 		UserID:      userID,
 		Role:        entity.WorkspaceRole(wm.Role),
 		JoinedAt:    wm.JoinedAt,
+		SuspendedAt: wm.SuspendedAt,
 	}
 }
 
@@ -117,6 +120,7 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 		CreatedBy:   createdBy,
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,
+		ArchivedAt:  c.ArchivedAt,
 	}
 }
 

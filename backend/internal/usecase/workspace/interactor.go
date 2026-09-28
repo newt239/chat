@@ -8,6 +8,8 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	domainservice "github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/usecase/audit"
 )
 
 var (
@@ -37,15 +39,21 @@ type WorkspaceUseCase interface {
 type workspaceInteractor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	userRepo      domainrepository.UserRepository
+	permissionSvc domainservice.PermissionService
+	recorder      audit.Recorder
 }
 
 func NewWorkspaceInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
+	permissionSvc domainservice.PermissionService,
+	recorder audit.Recorder,
 ) WorkspaceUseCase {
 	return &workspaceInteractor{
 		workspaceRepo: workspaceRepo,
 		userRepo:      userRepo,
+		permissionSvc: permissionSvc,
+		recorder:      recorder,
 	}
 }
 
@@ -274,9 +282,10 @@ func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembers
 	for _, m := range members {
 		user := userMap[m.UserID]
 		memberInfo := MemberInfo{
-			UserID:   m.UserID,
-			Role:     string(m.Role),
-			JoinedAt: m.JoinedAt,
+			UserID:      m.UserID,
+			Role:        string(m.Role),
+			JoinedAt:    m.JoinedAt,
+			SuspendedAt: m.SuspendedAt,
 		}
 		if user != nil {
 			memberInfo.Email = user.Email
@@ -323,6 +332,20 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.UserID, entity.WorkspaceRole(input.Role)); err != nil {
 		return nil, fmt.Errorf("failed to update member role: %w", err)
 	}
+
+	label := input.UserID
+	if user, err := i.userRepo.FindByID(ctx, input.UserID); err == nil && user != nil {
+		label = user.DisplayName
+	}
+	i.recorder.Record(ctx, entity.AuditLog{
+		WorkspaceID: input.WorkspaceID,
+		ActorID:     &input.UpdaterID,
+		Action:      entity.AuditActionMemberRoleChanged,
+		TargetType:  entity.AuditTargetUser,
+		TargetID:    input.UserID,
+		TargetLabel: label,
+		Metadata:    map[string]string{"from": string(target.Role), "to": input.Role},
+	})
 
 	return &MemberActionOutput{Success: true}, nil
 }
@@ -431,13 +454,13 @@ func (i *workspaceInteractor) JoinPublicWorkspace(ctx context.Context, input Joi
 	return &MemberActionOutput{Success: true}, nil
 }
 
-// AddMemberByEmail adds a user by email with role, requires owner/admin
+// AddMemberByEmail はメンバーの招待が許可されたロールだけが実行でき、管理者として追加できるのは管理者だけです
 func (i *workspaceInteractor) AddMemberByEmail(ctx context.Context, input AddMemberByEmailInput) (*MemberActionOutput, error) {
-	requester, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.RequestedBy)
+	requester, err := i.permissionSvc.Ensure(ctx, input.WorkspaceID, input.RequestedBy, entity.PermissionInviteMembers)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check requester membership: %w", err)
+		return nil, err
 	}
-	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
+	if entity.WorkspaceRole(input.Role) == entity.WorkspaceRoleAdmin && !requester.IsAdmin() {
 		return nil, ErrUnauthorized
 	}
 

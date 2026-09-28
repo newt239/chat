@@ -1,12 +1,16 @@
 package registry
 
 import (
+	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
+	"github.com/newt239/chat/internal/usecase/audit"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	exportuc "github.com/newt239/chat/internal/usecase/export"
+	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
@@ -39,8 +43,44 @@ func (r *UseCaseRegistry) NewAuthUseCase() authuc.AuthUseCase {
 	return authuc.NewAuthInteractor(
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewSessionRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
 		r.infrastructureRegistry.NewJWTService(),
 		r.infrastructureRegistry.NewPasswordService(),
+		r.NewAuditRecorder(),
+	)
+}
+
+func (r *UseCaseRegistry) NewAuditRecorder() audit.Recorder {
+	return audit.NewRecorder(r.domainRegistry.NewAuditLogRepository(), r.infrastructureRegistry.NewLogger())
+}
+
+func (r *UseCaseRegistry) NewAdminUseCase() *adminuc.Interactor {
+	return adminuc.NewInteractor(
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewSessionRepository(),
+		r.domainRegistry.NewAuditLogRepository(),
+		r.domainRegistry.NewPermissionRepository(),
+		r.domainRegistry.NewInsightRepository(),
+		r.domainRegistry.NewPermissionService(),
+		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewTransactionManager(),
+	)
+}
+
+func (r *UseCaseRegistry) NewInsightUseCase() *insightuc.Interactor {
+	return insightuc.NewInteractor(r.domainRegistry.NewWorkspaceRepository(), r.domainRegistry.NewInsightRepository())
+}
+
+func (r *UseCaseRegistry) NewExportUseCase() *exportuc.Interactor {
+	return exportuc.NewInteractor(
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewPermissionService(),
+		r.NewAuditRecorder(),
 	)
 }
 
@@ -48,6 +88,8 @@ func (r *UseCaseRegistry) NewWorkspaceUseCase() workspaceuc.WorkspaceUseCase {
 	return workspaceuc.NewWorkspaceInteractor(
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewPermissionService(),
+		r.NewAuditRecorder(),
 	)
 }
 
@@ -60,6 +102,8 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewSystemMessageUseCase(),
 		r.domainRegistry.NewChannelAccessService(),
+		r.domainRegistry.NewPermissionService(),
+		r.NewAuditRecorder(),
 	)
 }
 
@@ -93,6 +137,7 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.infrastructureRegistry.NewLinkProcessingService(),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.domainRegistry.NewChannelAccessService(),
+		r.domainRegistry.NewPermissionService(),
 		r.infrastructureRegistry.NewLogger(),
 	)
 }
@@ -133,6 +178,7 @@ func (r *UseCaseRegistry) NewUserGroupUseCase() usergroupuc.UserGroupUseCase {
 		r.domainRegistry.NewUserGroupRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewPermissionService(),
 	)
 }
 
@@ -168,6 +214,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.infrastructureRegistry.NewNotificationService(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.NewSystemMessageUseCase(),
+		r.domainRegistry.NewPermissionService(),
 	)
 }
 

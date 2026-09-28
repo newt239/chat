@@ -31,9 +31,11 @@ type WorkspaceMember struct {
 	UserID      string
 	Role        WorkspaceRole
 	JoinedAt    time.Time
+	SuspendedAt *time.Time
 }
 
-func (m *WorkspaceMember) CanCreateChannel() bool {
+// IsAdmin はワークスペースの管理画面を操作できるロールかを返します
+func (m *WorkspaceMember) IsAdmin() bool {
 	if m == nil {
 		return false
 	}

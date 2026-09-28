@@ -48,6 +48,7 @@ type Channel struct {
 	CreatedBy   string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	ArchivedAt  *time.Time
 }
 
 type ChannelParams struct {

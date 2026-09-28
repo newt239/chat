@@ -21,9 +21,10 @@ func Register[T any](newHandler func(T, ...connect.HandlerOption) (string, http.
 
 // NewHandler は全サービスを共通の interceptor 付きで登録した http.Handler を返します
 func NewHandler(jwtService authuc.JWTService, registrations ...Registration) http.Handler {
-	// 外側から順にエラー変換・認証・入力検証を適用する
+	// 外側から順にエラー変換・操作元の記録・認証・入力検証を適用する
 	interceptors := connect.WithInterceptors(
 		newErrorInterceptor(),
+		newClientInfoInterceptor(),
 		newAuthInterceptor(jwtService),
 		validate.NewInterceptor(),
 	)
