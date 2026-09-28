@@ -3,6 +3,7 @@ import {
   IconBookmarkOff,
   IconExternalLink,
   IconLink,
+  IconList,
   IconMessageReply,
   IconPencil,
   IconPin,
@@ -19,7 +20,6 @@ import {
   useRemoveBookmark,
 } from "#/features/bookmark/hooks/useBookmarks";
 import { usePinActions } from "#/features/pin/hooks/usePinActions";
-import { useIsPinned } from "#/features/pin/hooks/usePinnedMessages";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -42,6 +42,7 @@ type Options = {
   onCopyLink: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onViewReactions: () => void;
 };
 
 // ホバー時の「その他」メニューとモバイルのシートで同じ操作を並べる
@@ -52,6 +53,7 @@ export const useMessageMenuActions = ({
   onCopyLink,
   onEdit,
   onDelete,
+  onViewReactions,
 }: Options) => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -59,7 +61,7 @@ export const useMessageMenuActions = ({
   const isBookmarked = useIsBookmarked(message.id);
   const addBookmark = useAddBookmark();
   const removeBookmark = useRemoveBookmark();
-  const isPinned = useIsPinned(message.id, message.channelId);
+  const isPinned = message.pin !== undefined;
   const { pin, unpin } = usePinActions();
   const canModify = isAuthor && !message.isDeleted;
 
@@ -129,6 +131,13 @@ export const useMessageMenuActions = ({
       id: "pin",
       label: t(isPinned ? "message.actions.unpin" : "message.actions.pin"),
       onAction: togglePin,
+      tone: "default",
+    },
+    message.reactions.length > 0 && {
+      icon: IconList,
+      id: "reactions",
+      label: t("reaction.list.open"),
+      onAction: onViewReactions,
       tone: "default",
     },
     {

@@ -66,6 +66,9 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		ChannelAccess:       r.domainRegistry.NewChannelAccessService(),
 		RPCHandler:          r.NewRPCHandler(),
 	}
+	if r.infrastructureRegistry.config.Storage.Driver == "local" {
+		routerConfig.StorageHandler = r.infrastructureRegistry.NewLocalStorage()
+	}
 
 	return http.NewRouter(routerConfig)
 }

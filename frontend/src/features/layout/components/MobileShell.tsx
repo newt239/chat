@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Outlet, useCanGoBack, useMatches, useNavigate, useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 
+import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { ActivityPage } from "#/pages/ActivityPage";
 import { DMsPage } from "#/pages/DMsPage";
 import { MePage } from "#/pages/MePage";
@@ -84,6 +85,8 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
           </MobileStackLayer>
         )}
       </div>
+      {/* タブの画面ではボトムタブの上に出す。チャンネルの画面では入力欄の上（ChannelPage） */}
+      {routeTab !== undefined && !content && <MiniPlayer variant="mobile" />}
       {routeTab !== undefined && !content && <MobileTabBar workspaceId={workspaceId} />}
     </div>
   );
