@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -67,10 +68,38 @@ func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateR
 		return err
 	}
 
+	if err := i.markAsRead(ctx, channel, input.UserID, input.LastReadAt); err != nil {
+		return err
+	}
+	if !input.IncludeDescendants {
+		return nil
+	}
+
+	descendants, err := i.channelAccessSvc.AccessibleDescendants(ctx, channel, input.UserID)
+	if err != nil {
+		return err
+	}
+	for _, ch := range descendants {
+		// 集約表示で見えていた範囲までを既読にするため、既読位置は戻さない
+		current, err := i.readStateRepo.FindByChannelAndUser(ctx, ch.ID, input.UserID)
+		if err != nil {
+			return fmt.Errorf("failed to load read state: %w", err)
+		}
+		if current != nil && !current.LastReadAt.Before(input.LastReadAt) {
+			continue
+		}
+		if err := i.markAsRead(ctx, ch, input.UserID, input.LastReadAt); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (i *readStateInteractor) markAsRead(ctx context.Context, channel *entity.Channel, userID string, lastReadAt time.Time) error {
 	readState := &entity.ChannelReadState{
 		ChannelID:  channel.ID,
-		UserID:     input.UserID,
-		LastReadAt: input.LastReadAt,
+		UserID:     userID,
+		LastReadAt: lastReadAt,
 	}
 
 	if err := i.readStateRepo.Upsert(ctx, readState); err != nil {
@@ -79,21 +108,19 @@ func (i *readStateInteractor) UpdateReadState(ctx context.Context, input UpdateR
 
 	// 未読数とメンション有無を取得してWebSocket通知を送信
 	if i.notificationSvc != nil {
-		count, err := i.readStateRepo.GetUnreadCount(ctx, channel.ID, input.UserID)
+		count, err := i.readStateRepo.GetUnreadCount(ctx, channel.ID, userID)
 		if err != nil {
 			fmt.Printf("Warning: failed to get unread count for notification: %v\n", err)
 			return nil
 		}
 
-		mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, []string{channel.ID}, input.UserID)
+		mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, []string{channel.ID}, userID)
 		if err != nil {
 			fmt.Printf("Warning: failed to get unread mention count for notification: %v\n", err)
 		}
 
-		i.notificationSvc.NotifyUnreadCount(channel.WorkspaceID, input.UserID, channel.ID, count, mentionCounts[channel.ID] > 0)
+		i.notificationSvc.NotifyUnreadCount(channel.WorkspaceID, userID, channel.ID, count, mentionCounts[channel.ID] > 0)
 	}
 
 	return nil
 }
-
-// ensureChannelAccess は ChannelAccessService に委譲済み

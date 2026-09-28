@@ -47,6 +47,8 @@ message WorkspaceMember {
   optional string bio = 5;
   WorkspaceRole role = 6;
   google.protobuf.Timestamp joined_at = 7;
+  // 自分だけに見えるニックネーム
+  optional string nickname = 8;
 }
 
 message PublicWorkspace {

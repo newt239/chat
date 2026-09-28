@@ -23,7 +23,7 @@ func newInteractor(memberIDs ...string) *Interactor {
 	for _, id := range memberIDs {
 		members[id] = &entity.WorkspaceMember{Role: entity.WorkspaceRoleMember}
 	}
-	return NewInteractor(nil, nil, nil, &stubWorkspaceRepo{members: members})
+	return NewInteractor(nil, nil, nil, nil, &stubWorkspaceRepo{members: members})
 }
 
 func TestCreateDMRejectsNonWorkspaceMember(t *testing.T) {
@@ -60,7 +60,7 @@ func TestCreateGroupDMRejectsTooManyMembers(t *testing.T) {
 	_, err := uc.CreateGroupDM(context.Background(), CreateGroupDMInput{
 		WorkspaceID: "general",
 		CreatorID:   "alice",
-		MemberIDs:   []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"},
+		MemberIDs:   []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
 	})
 
 	if !errors.Is(err, entity.ErrGroupDMMaxMembers) {

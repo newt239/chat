@@ -7,13 +7,15 @@ import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { User } from "./user_pb";
 import { file_chat_v1_user } from "./user_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/user_service.proto.
  */
 export const file_chat_v1_user_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpjaGF0L3YxL3VzZXJfc2VydmljZS5wcm90bxIHY2hhdC52MSIOCgxHZXRNZVJlcXVlc3QiLAoNR2V0TWVSZXNwb25zZRIbCgR1c2VyGAEgASgLMg0uY2hhdC52MS5Vc2VyIogBCg9VcGRhdGVNZVJlcXVlc3QSIgoMZGlzcGxheV9uYW1lGAEgASgJQge6SARyAhABSACIAQESEAoDYmlvGAIgASgJSAGIAQESFwoKYXZhdGFyX3VybBgDIAEoCUgCiAEBQg8KDV9kaXNwbGF5X25hbWVCBgoEX2Jpb0INCgtfYXZhdGFyX3VybCIvChBVcGRhdGVNZVJlc3BvbnNlEhsKBHVzZXIYASABKAsyDS5jaGF0LnYxLlVzZXIiWQoVVXBkYXRlUGFzc3dvcmRSZXF1ZXN0EiEKEGN1cnJlbnRfcGFzc3dvcmQYASABKAlCB7pIBHICEAESHQoMbmV3X3Bhc3N3b3JkGAIgASgJQge6SARyAhAIIhgKFlVwZGF0ZVBhc3N3b3JkUmVzcG9uc2UiEQoPRGVsZXRlTWVSZXF1ZXN0IhIKEERlbGV0ZU1lUmVzcG9uc2UymgIKC1VzZXJTZXJ2aWNlEjYKBUdldE1lEhUuY2hhdC52MS5HZXRNZVJlcXVlc3QaFi5jaGF0LnYxLkdldE1lUmVzcG9uc2USPwoIVXBkYXRlTWUSGC5jaGF0LnYxLlVwZGF0ZU1lUmVxdWVzdBoZLmNoYXQudjEuVXBkYXRlTWVSZXNwb25zZRJRCg5VcGRhdGVQYXNzd29yZBIeLmNoYXQudjEuVXBkYXRlUGFzc3dvcmRSZXF1ZXN0Gh8uY2hhdC52MS5VcGRhdGVQYXNzd29yZFJlc3BvbnNlEj8KCERlbGV0ZU1lEhguY2hhdC52MS5EZWxldGVNZVJlcXVlc3QaGS5jaGF0LnYxLkRlbGV0ZU1lUmVzcG9uc2VCkQEKC2NvbS5jaGF0LnYxQhBVc2VyU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_user]);
+  fileDesc("ChpjaGF0L3YxL3VzZXJfc2VydmljZS5wcm90bxIHY2hhdC52MSIOCgxHZXRNZVJlcXVlc3QiLAoNR2V0TWVSZXNwb25zZRIbCgR1c2VyGAEgASgLMg0uY2hhdC52MS5Vc2VyIogBCg9VcGRhdGVNZVJlcXVlc3QSIgoMZGlzcGxheV9uYW1lGAEgASgJQge6SARyAhABSACIAQESEAoDYmlvGAIgASgJSAGIAQESFwoKYXZhdGFyX3VybBgDIAEoCUgCiAEBQg8KDV9kaXNwbGF5X25hbWVCBgoEX2Jpb0INCgtfYXZhdGFyX3VybCIvChBVcGRhdGVNZVJlc3BvbnNlEhsKBHVzZXIYASABKAsyDS5jaGF0LnYxLlVzZXIiWQoVVXBkYXRlUGFzc3dvcmRSZXF1ZXN0EiEKEGN1cnJlbnRfcGFzc3dvcmQYASABKAlCB7pIBHICEAESHQoMbmV3X3Bhc3N3b3JkGAIgASgJQge6SARyAhAIIhgKFlVwZGF0ZVBhc3N3b3JkUmVzcG9uc2UiEQoPRGVsZXRlTWVSZXF1ZXN0IhIKEERlbGV0ZU1lUmVzcG9uc2UikgEKCFVzZXJOb3RlEhYKDnRhcmdldF91c2VyX2lkGAEgASgJEhUKCG5pY2tuYW1lGAIgASgJSACIAQESEQoEbWVtbxgDIAEoCUgBiAEBEi4KCnVwZGF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQgsKCV9uaWNrbmFtZUIHCgVfbWVtbyI2ChJHZXRVc2VyTm90ZVJlcXVlc3QSIAoOdGFyZ2V0X3VzZXJfaWQYASABKAlCCLpIBXIDsAEBIjYKE0dldFVzZXJOb3RlUmVzcG9uc2USHwoEbm90ZRgBIAEoCzIRLmNoYXQudjEuVXNlck5vdGUibAoVVXBkYXRlVXNlck5vdGVSZXF1ZXN0EiAKDnRhcmdldF91c2VyX2lkGAEgASgJQgi6SAVyA7ABARIZCghuaWNrbmFtZRgCIAEoCUIHukgEcgIYMhIWCgRtZW1vGAMgASgJQgi6SAVyAxjQDyI5ChZVcGRhdGVVc2VyTm90ZVJlc3BvbnNlEh8KBG5vdGUYASABKAsyES5jaGF0LnYxLlVzZXJOb3RlMrcDCgtVc2VyU2VydmljZRI2CgVHZXRNZRIVLmNoYXQudjEuR2V0TWVSZXF1ZXN0GhYuY2hhdC52MS5HZXRNZVJlc3BvbnNlEj8KCFVwZGF0ZU1lEhguY2hhdC52MS5VcGRhdGVNZVJlcXVlc3QaGS5jaGF0LnYxLlVwZGF0ZU1lUmVzcG9uc2USUQoOVXBkYXRlUGFzc3dvcmQSHi5jaGF0LnYxLlVwZGF0ZVBhc3N3b3JkUmVxdWVzdBofLmNoYXQudjEuVXBkYXRlUGFzc3dvcmRSZXNwb25zZRI/CghEZWxldGVNZRIYLmNoYXQudjEuRGVsZXRlTWVSZXF1ZXN0GhkuY2hhdC52MS5EZWxldGVNZVJlc3BvbnNlEkgKC0dldFVzZXJOb3RlEhsuY2hhdC52MS5HZXRVc2VyTm90ZVJlcXVlc3QaHC5jaGF0LnYxLkdldFVzZXJOb3RlUmVzcG9uc2USUQoOVXBkYXRlVXNlck5vdGUSHi5jaGF0LnYxLlVwZGF0ZVVzZXJOb3RlUmVxdWVzdBofLmNoYXQudjEuVXBkYXRlVXNlck5vdGVSZXNwb25zZUKRAQoLY29tLmNoYXQudjFCEFVzZXJTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_user, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.GetMeRequest
@@ -151,6 +153,122 @@ export const DeleteMeResponseSchema: GenMessage<DeleteMeResponse> = /*@__PURE__*
   messageDesc(file_chat_v1_user_service, 7);
 
 /**
+ * 自分だけに見える相手ユーザーのニックネームとメモ
+ *
+ * @generated from message chat.v1.UserNote
+ */
+export type UserNote = Message<"chat.v1.UserNote"> & {
+  /**
+   * @generated from field: string target_user_id = 1;
+   */
+  targetUserId: string;
+
+  /**
+   * @generated from field: optional string nickname = 2;
+   */
+  nickname?: string | undefined;
+
+  /**
+   * @generated from field: optional string memo = 3;
+   */
+  memo?: string | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 4;
+   */
+  updatedAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message chat.v1.UserNote.
+ * Use `create(UserNoteSchema)` to create a new message.
+ */
+export const UserNoteSchema: GenMessage<UserNote> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user_service, 8);
+
+/**
+ * @generated from message chat.v1.GetUserNoteRequest
+ */
+export type GetUserNoteRequest = Message<"chat.v1.GetUserNoteRequest"> & {
+  /**
+   * @generated from field: string target_user_id = 1;
+   */
+  targetUserId: string;
+};
+
+/**
+ * Describes the message chat.v1.GetUserNoteRequest.
+ * Use `create(GetUserNoteRequestSchema)` to create a new message.
+ */
+export const GetUserNoteRequestSchema: GenMessage<GetUserNoteRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user_service, 9);
+
+/**
+ * @generated from message chat.v1.GetUserNoteResponse
+ */
+export type GetUserNoteResponse = Message<"chat.v1.GetUserNoteResponse"> & {
+  /**
+   * 未設定の場合は空
+   *
+   * @generated from field: chat.v1.UserNote note = 1;
+   */
+  note?: UserNote | undefined;
+};
+
+/**
+ * Describes the message chat.v1.GetUserNoteResponse.
+ * Use `create(GetUserNoteResponseSchema)` to create a new message.
+ */
+export const GetUserNoteResponseSchema: GenMessage<GetUserNoteResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user_service, 10);
+
+/**
+ * @generated from message chat.v1.UpdateUserNoteRequest
+ */
+export type UpdateUserNoteRequest = Message<"chat.v1.UpdateUserNoteRequest"> & {
+  /**
+   * @generated from field: string target_user_id = 1;
+   */
+  targetUserId: string;
+
+  /**
+   * 空文字で削除する
+   *
+   * @generated from field: string nickname = 2;
+   */
+  nickname: string;
+
+  /**
+   * @generated from field: string memo = 3;
+   */
+  memo: string;
+};
+
+/**
+ * Describes the message chat.v1.UpdateUserNoteRequest.
+ * Use `create(UpdateUserNoteRequestSchema)` to create a new message.
+ */
+export const UpdateUserNoteRequestSchema: GenMessage<UpdateUserNoteRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user_service, 11);
+
+/**
+ * @generated from message chat.v1.UpdateUserNoteResponse
+ */
+export type UpdateUserNoteResponse = Message<"chat.v1.UpdateUserNoteResponse"> & {
+  /**
+   * @generated from field: chat.v1.UserNote note = 1;
+   */
+  note?: UserNote | undefined;
+};
+
+/**
+ * Describes the message chat.v1.UpdateUserNoteResponse.
+ * Use `create(UpdateUserNoteResponseSchema)` to create a new message.
+ */
+export const UpdateUserNoteResponseSchema: GenMessage<UpdateUserNoteResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user_service, 12);
+
+/**
  * @generated from service chat.v1.UserService
  */
 export const UserService: GenService<{
@@ -185,6 +303,22 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof DeleteMeRequestSchema;
     output: typeof DeleteMeResponseSchema;
+  },
+  /**
+   * @generated from rpc chat.v1.UserService.GetUserNote
+   */
+  getUserNote: {
+    methodKind: "unary";
+    input: typeof GetUserNoteRequestSchema;
+    output: typeof GetUserNoteResponseSchema;
+  },
+  /**
+   * @generated from rpc chat.v1.UserService.UpdateUserNote
+   */
+  updateUserNote: {
+    methodKind: "unary";
+    input: typeof UpdateUserNoteRequestSchema;
+    output: typeof UpdateUserNoteResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_chat_v1_user_service, 0);

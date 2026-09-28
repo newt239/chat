@@ -11,6 +11,10 @@ import (
 
 type ChannelAccessService interface {
 	EnsureChannelAccess(ctx context.Context, channelID string, userID string) (*entity.Channel, error)
+	// FilterAccessible は公開チャンネルと参加中の非公開チャンネルだけを残します
+	FilterAccessible(ctx context.Context, channels []*entity.Channel, userID string) ([]*entity.Channel, error)
+	// AccessibleDescendants は閲覧できる子孫チャンネルを返します
+	AccessibleDescendants(ctx context.Context, ch *entity.Channel, userID string) ([]*entity.Channel, error)
 }
 
 type channelAccessService struct {
@@ -60,4 +64,29 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 	}
 
 	return ch, nil
+}
+
+func (s *channelAccessService) FilterAccessible(ctx context.Context, channels []*entity.Channel, userID string) ([]*entity.Channel, error) {
+	result := make([]*entity.Channel, 0, len(channels))
+	for _, ch := range channels {
+		if ch.IsPrivate {
+			isMember, err := s.channelMemberRepo.IsMember(ctx, ch.ID, userID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to verify channel membership: %w", err)
+			}
+			if !isMember {
+				continue
+			}
+		}
+		result = append(result, ch)
+	}
+	return result, nil
+}
+
+func (s *channelAccessService) AccessibleDescendants(ctx context.Context, ch *entity.Channel, userID string) ([]*entity.Channel, error) {
+	descendants, err := s.channelRepo.FindDescendants(ctx, ch)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load descendant channels: %w", err)
+	}
+	return s.FilterAccessible(ctx, descendants, userID)
 }

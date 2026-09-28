@@ -50,8 +50,8 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 	return utils.MessageToEntity(m), nil
 }
 
-func (r *messageRepository) FindByChannelID(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
-	chID, err := utils.ParseUUID(channelID, "channel ID")
+func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
+	chIDs, err := parseChannelIDs(channelIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (r *messageRepository) FindByChannelID(ctx context.Context, channelID strin
 	client := transaction.ResolveClient(ctx, r.client)
 	query := client.Message.Query().
 		Where(
-			message.HasChannelWith(channel.ID(chID)),
+			message.HasChannelWith(channel.IDIn(chIDs...)),
 			message.Not(message.HasParent()),
 			message.DeletedAtIsNil(),
 		)
@@ -530,4 +530,16 @@ func (r *messageRepository) Search(ctx context.Context, workspaceID, query strin
 	// For now, returning empty implementation
 	// This requires full-text search which is better handled with PostgreSQL's full-text search or external search engine
 	return []*entity.Message{}, nil
+}
+
+func parseChannelIDs(channelIDs []string) ([]uuid.UUID, error) {
+	ids := make([]uuid.UUID, 0, len(channelIDs))
+	for _, id := range channelIDs {
+		parsed, err := utils.ParseUUID(id, "channel ID")
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, parsed)
+	}
+	return ids, nil
 }
