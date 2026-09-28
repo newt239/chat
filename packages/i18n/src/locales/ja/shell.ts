@@ -32,10 +32,6 @@ export const shell = {
     profile: "プロフィール",
     settings: "設定",
   },
-  mentions: {
-    emptyDescription: "あなた宛てのメンションがここに並びます",
-    emptyTitle: "メンションはありません",
-  },
   nav: {
     activity: "通知",
     admin: "管理画面",
@@ -52,7 +48,6 @@ export const shell = {
     myProfile: "あなたのプロフィール",
     pins: "ピン留め",
     profile: "プロフィール",
-    search: "検索結果",
     thread: "スレッド",
   },
   sidebar: {
@@ -75,7 +70,6 @@ export const shell = {
   thread: {
     emptyDescription: "投稿や返信をしたスレッドがここに並びます",
     emptyTitle: "参加中のスレッドはありません",
-    loadMore: "さらに読み込む",
     notFound: "スレッドが見つかりません",
     replyCount: "{{count}} 件の返信",
   },

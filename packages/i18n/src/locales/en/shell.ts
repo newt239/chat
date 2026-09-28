@@ -34,10 +34,6 @@ export const shell: Messages["shell"] = {
     profile: "Profile",
     settings: "Settings",
   },
-  mentions: {
-    emptyDescription: "Messages that mention you appear here",
-    emptyTitle: "No mentions",
-  },
   nav: {
     activity: "Activity",
     admin: "Admin",
@@ -54,7 +50,6 @@ export const shell: Messages["shell"] = {
     myProfile: "Your profile",
     pins: "Pinned",
     profile: "Profile",
-    search: "Search results",
     thread: "Thread",
   },
   sidebar: {
@@ -77,7 +72,6 @@ export const shell: Messages["shell"] = {
   thread: {
     emptyDescription: "Threads you post or reply in appear here",
     emptyTitle: "No threads",
-    loadMore: "Load more",
     notFound: "Thread not found",
     replyCount: "Replies: {{count}}",
   },

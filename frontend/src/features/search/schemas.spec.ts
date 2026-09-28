@@ -17,19 +17,42 @@ describe("searchFilterMessages", () => {
 
 describe("searchQuerySchema", () => {
   test("クエリが無いときは既定値を返す", () => {
-    expect(searchQuerySchema.parse({})).toEqual({ filter: "all", page: 1, q: "" });
+    expect(searchQuerySchema.parse({})).toEqual({
+      filter: "all",
+      page: 1,
+      q: "",
+      replies: true,
+      sort: "newest",
+      subs: true,
+    });
   });
 
   test("正しいクエリはそのまま返す", () => {
-    expect(searchQuerySchema.parse({ filter: "messages", page: 3, q: "hello" })).toEqual({
+    expect(
+      searchQuerySchema.parse({
+        filter: "messages",
+        page: 3,
+        q: "hello",
+        replies: false,
+        sort: "relevance",
+        subs: false,
+      }),
+    ).toEqual({
       filter: "messages",
       page: 3,
       q: "hello",
+      replies: false,
+      sort: "relevance",
+      subs: false,
     });
   });
 
   test("不正な filter は all にフォールバックする", () => {
     expect(searchQuerySchema.parse({ filter: "unknown" }).filter).toBe("all");
+  });
+
+  test("不正な sort は新しい順にフォールバックする", () => {
+    expect(searchQuerySchema.parse({ sort: "old" }).sort).toBe("newest");
   });
 
   test("不正な page は 1 にフォールバックする", () => {

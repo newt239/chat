@@ -3,8 +3,8 @@ import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Link } from "#/components/ui/Link";
+import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useDMs } from "#/features/dm/hooks/useDM";
-import { unreadNotificationCountAtom } from "#/providers/store/notification";
 import { mobileTabAtom } from "#/providers/store/ui";
 
 import type { MobileTab } from "#/providers/store/ui";
@@ -28,7 +28,11 @@ export const MobileTabBar = ({ workspaceId }: MobileTabBarProps) => {
   const tab = useAtomValue(mobileTabAtom);
   const { data: dms = [] } = useDMs(workspaceId);
   const dmUnread = dms.reduce((sum, dm) => sum + (dm.isMuted ? 0 : dm.unreadCount), 0);
-  const activityUnread = useAtomValue(unreadNotificationCountAtom);
+  const { data: channels = [] } = useChannels(workspaceId);
+  // 通知タブはメンション一覧。未読のメンションがあるチャンネルの数を出す
+  const activityUnread = channels.filter(
+    (channel) => channel.hasMention && !channel.isMuted,
+  ).length;
   const params = { workspaceId };
   const state = (name: MobileTab) => (tab === name ? "on" : "off");
 

@@ -12,8 +12,7 @@ export type PanelView =
   | { type: "channel-info"; channelId?: string | null }
   | { type: "thread"; threadId: string }
   | { type: "pins"; channelId: string }
-  | { type: "user-profile"; userId: string }
-  | { type: "search"; query: string; filter: "all" | "messages" | "channels" | "users" };
+  | { type: "user-profile"; userId: string };
 
 export type RightPanelView = Exclude<PanelView, { type: "thread" }>;
 

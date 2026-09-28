@@ -23,6 +23,7 @@
     "@bufbuild/protobuf": "2.15.0",
     "@chat/design-tokens": "workspace:*",
     "@chat/i18n": "workspace:*",
+    "@chat/search-query": "workspace:*",
     "@connectrpc/connect": "2.2.0",
     "@connectrpc/connect-query": "2.3.1",
     "@connectrpc/connect-web": "2.2.0",
