@@ -1,53 +1,46 @@
 import { useState } from "react";
 
-import { Card, Stack, Text, Loader, SegmentedControl, Pagination, TextInput } from "@mantine/core";
-import { IconSearch } from "@tabler/icons-react";
+import { IconChevronLeft, IconChevronRight, IconSearch } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
+import { Form, Input, SearchField } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { IconButton } from "#/components/ui/IconButton";
+import { Skeleton } from "#/components/ui/Skeleton";
+import { Tab } from "#/components/ui/Tab";
+import { TabList } from "#/components/ui/TabList";
+import { TabPanel } from "#/components/ui/TabPanel";
+import { Tabs } from "#/components/ui/Tabs";
 import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearchIndex";
 import { searchFilterValues } from "#/features/search/schemas";
 
 import { SearchResultList } from "./SearchResultList";
 
+import type { SearchFilter } from "#/features/search/schemas";
+
 const RESULTS_PER_PAGE = 20;
 
 const searchRoute = getRouteApi("/app/$workspaceId/search");
 
-type SearchQuery = ReturnType<typeof searchRoute.useSearch>;
-
-const calculatePages = (total: number, per: number) =>
-  Math.max(1, Math.ceil(total / Math.max(1, per)));
+const pageCount = (total: number, perPage: number) =>
+  Math.max(1, Math.ceil(total / Math.max(1, perPage)));
 
 export const SearchPage = () => {
+  const { t } = useTranslation();
   const { workspaceId } = searchRoute.useParams();
   const { q: query, filter, page } = searchRoute.useSearch();
   const navigate = searchRoute.useNavigate();
-
-  const updateQuery = (patch: Partial<SearchQuery>) => {
-    void navigate({ search: (prev) => ({ ...prev, ...patch }) });
-  };
   const trimmedQuery = query.trim();
 
   const [inputValue, setInputValue] = useState(query);
   const [syncedQuery, setSyncedQuery] = useState(query);
-
   // URL のクエリが変わったら入力欄に反映する
   if (syncedQuery !== query) {
     setSyncedQuery(query);
     setInputValue(query);
   }
 
-  const handleSearchSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    updateQuery({ page: 1, q: inputValue.trim() });
-  };
-
-  const {
-    data,
-    isLoading: isInitialLoading,
-    isFetching,
-    error,
-  } = useWorkspaceSearch({
+  const { data, isFetching, error } = useWorkspaceSearch({
     filter,
     page,
     perPage: RESULTS_PER_PAGE,
@@ -55,163 +48,148 @@ export const SearchPage = () => {
     workspaceId,
   });
 
-  const isLoading = isInitialLoading || isFetching;
+  const countOf = (value: SearchFilter) =>
+    data === undefined
+      ? 0
+      : value === "all"
+        ? Object.values(data).reduce((sum, section) => sum + section.total, 0)
+        : data[value].total;
+  const totalPages =
+    data === undefined
+      ? 0
+      : Math.max(
+          ...Object.entries(data)
+            .filter(([key]) => filter === "all" || key === filter)
+            .map(([, section]) => pageCount(section.total, section.perPage)),
+        );
 
-  const messages = (data?.messages.items ?? []).flatMap((hit) =>
-    hit.message ? [hit.message] : [],
-  );
-  const channels = data?.channels.items ?? [];
-  const users = data?.users.items ?? [];
-  const groups = data?.groups.items ?? [];
-
-  const messageCount = data?.messages.total ?? 0;
-  const channelCount = data?.channels.total ?? 0;
-  const userCount = data?.users.total ?? 0;
-  const groupCount = data?.groups.total ?? 0;
-
-  const countByFilter: Record<typeof filter, number> = {
-    all: messageCount + channelCount + userCount + groupCount,
-    channels: channelCount,
-    groups: groupCount,
-    messages: messageCount,
-    users: userCount,
+  const goToPage = (next: number) => {
+    void navigate({ search: (prev) => ({ ...prev, page: next }) });
   };
 
-  const totalResults = countByFilter[filter];
-
-  const totalPages = (() => {
-    if (!data) {
-      return 0;
+  const renderResults = () => {
+    if (trimmedQuery.length === 0) {
+      return <p className="m-0 px-[18px] py-6 text-caption text-muted">{t("search.prompt")}</p>;
     }
-
-    if (filter === "messages") {
-      return calculatePages(messageCount, data.messages.perPage);
+    if (error) {
+      return (
+        <p role="alert" className="m-0 px-[18px] py-6 text-caption text-danger">
+          {t("search.failed")}
+        </p>
+      );
     }
-    if (filter === "channels") {
-      return calculatePages(channelCount, data.channels.perPage);
+    if (isFetching || data === undefined) {
+      return (
+        <div className="flex flex-col gap-3 px-[18px] py-4">
+          {[0, 1, 2].map((index) => (
+            <Skeleton key={index} className="h-16 w-full rounded-lg" />
+          ))}
+        </div>
+      );
     }
-    if (filter === "users") {
-      return calculatePages(userCount, data.users.perPage);
+    if (countOf(filter) === 0) {
+      return (
+        <div className="flex flex-col items-center gap-1 px-[18px] py-10 text-center">
+          <b className="text-body-strong">{t("search.empty")}</b>
+          <span className="text-caption text-muted">{t("search.emptyHint")}</span>
+        </div>
+      );
     }
-    if (filter === "groups") {
-      return calculatePages(groupCount, data.groups.perPage);
-    }
-
-    return Math.max(
-      calculatePages(messageCount, data.messages.perPage),
-      calculatePages(channelCount, data.channels.perPage),
-      calculatePages(userCount, data.users.perPage),
-      calculatePages(groupCount, data.groups.perPage),
+    return (
+      <>
+        <p className="m-0 px-[18px] pt-2.5 text-xs text-muted">
+          {t("search.count", { count: countOf(filter) })}
+        </p>
+        <SearchResultList
+          messages={data.messages.items}
+          channels={data.channels.items}
+          users={data.users.items}
+          groups={data.groups.items}
+          filter={filter}
+          workspaceId={workspaceId}
+        />
+        {totalPages > 1 && (
+          <nav className="flex items-center justify-center gap-2 pb-6 text-caption text-muted">
+            <IconButton
+              label={t("search.prev")}
+              isDisabled={page <= 1}
+              onPress={() => {
+                goToPage(page - 1);
+              }}
+            >
+              <IconChevronLeft />
+            </IconButton>
+            <span className="tabular-nums">{t("search.page", { page, total: totalPages })}</span>
+            <IconButton
+              label={t("search.next")}
+              isDisabled={page >= totalPages}
+              onPress={() => {
+                goToPage(page + 1);
+              }}
+            >
+              <IconChevronRight />
+            </IconButton>
+          </nav>
+        )}
+      </>
     );
-  })();
-
-  const handlePageChange = (value: number) => {
-    updateQuery({ page: value });
   };
-
-  const handleFilterChange = (value: string) => {
-    const parsed = searchFilterValues.find((filterValue) => filterValue === value);
-    if (parsed !== undefined) {
-      updateQuery({ filter: parsed, page: 1 });
-    }
-  };
-
-  const filterLabels: Record<typeof filter, string> = {
-    all: "すべて",
-    channels: "チャンネル",
-    groups: "グループ",
-    messages: "メッセージ",
-    users: "ユーザー",
-  };
-
-  const filterOptions = searchFilterValues.map((value) => ({
-    label: `${filterLabels[value]} (${countByFilter[value]})`,
-    value,
-  }));
-
-  const showPagination =
-    trimmedQuery.length > 0 && !isLoading && !error && totalPages > 1 && page <= totalPages;
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <Card withBorder padding="lg" radius="md" className="mb-4">
-        <Stack gap="md">
-          <form onSubmit={handleSearchSubmit}>
-            <TextInput
-              value={inputValue}
-              onChange={(event) => {
-                setInputValue(event.currentTarget.value);
-              }}
-              placeholder="メッセージ、チャンネル、ユーザーを検索"
-              leftSection={<IconSearch size={16} />}
-              aria-label="検索キーワード"
-            />
-          </form>
-
-          <div>
-            <Text size="xl" fw={600}>
-              検索結果
-            </Text>
-            {trimmedQuery && (
-              <Text size="sm" c="dimmed" className="mt-1">
-                「{query}」の検索結果: {totalResults}件
-              </Text>
-            )}
-          </div>
-
-          <SegmentedControl value={filter} onChange={handleFilterChange} data={filterOptions} />
-        </Stack>
-      </Card>
-
-      <div className="flex-1 overflow-y-auto">
-        {trimmedQuery ? (
-          error ? (
-            <Card withBorder padding="xl" radius="md" className="flex items-center justify-center">
-              <Text c="red" size="sm">
-                検索用データの読み込みに失敗しました
-              </Text>
-            </Card>
-          ) : isLoading ? (
-            <div className="flex h-full items-center justify-center">
-              <Loader size="sm" />
-            </div>
-          ) : !data || totalResults === 0 ? (
-            <Card withBorder padding="xl" radius="md" className="flex items-center justify-center">
-              <Text c="dimmed" size="sm">
-                検索結果が見つかりませんでした
-              </Text>
-            </Card>
-          ) : (
-            <>
-              <SearchResultList
-                messages={messages}
-                channels={channels}
-                users={users}
-                groups={groups}
-                filter={filter}
-                workspaceId={workspaceId}
-              />
-              {showPagination && (
-                <div className="mt-6 flex justify-center">
-                  <Pagination
-                    value={page}
-                    total={totalPages}
-                    onChange={handlePageChange}
-                    size="sm"
-                    aria-label="検索結果ページネーション"
-                  />
-                </div>
+    <section className="flex h-full min-h-0 flex-col bg-surface font-sans text-text">
+      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-4 text-[15px] font-bold">
+        <IconSearch aria-hidden className="size-[18px] text-muted" />
+        <h1 className="m-0 text-[15px] font-bold">{t("search.title")}</h1>
+      </header>
+      <Form
+        role="search"
+        className="shrink-0 px-[18px] pt-3 pb-2.5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void navigate({ search: (prev) => ({ ...prev, page: 1, q: inputValue.trim() }) });
+        }}
+      >
+        <SearchField
+          value={inputValue}
+          onChange={setInputValue}
+          aria-label={t("search.input")}
+          className="flex h-10 items-center gap-2 rounded-[10px] border border-border-strong bg-surface pr-1.5 pl-3 text-muted data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft"
+        >
+          <IconSearch aria-hidden className="size-4 shrink-0" />
+          <Input
+            placeholder={t("search.placeholder")}
+            className="h-full min-w-0 flex-1 border-0 bg-transparent font-sans text-[15px] text-text outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
+          />
+        </SearchField>
+      </Form>
+      <Tabs
+        selectedKey={filter}
+        onSelectionChange={(key) => {
+          const next = searchFilterValues.find((value) => value === key);
+          if (next !== undefined) {
+            void navigate({ search: (prev) => ({ ...prev, filter: next, page: 1 }) });
+          }
+        }}
+        className="min-h-0 flex-1"
+      >
+        <TabList aria-label={t("search.tabs")}>
+          {searchFilterValues.map((value) => (
+            <Tab key={value} id={value}>
+              {t(`search.sections.${value}`)}
+              {data !== undefined && (filter === "all" || value === filter) && (
+                <small className="font-mono text-[11px] font-normal text-subtle">
+                  {countOf(value)}
+                </small>
               )}
-            </>
-          )
-        ) : (
-          <Card withBorder padding="xl" radius="md" className="flex items-center justify-center">
-            <Text c="dimmed" size="sm">
-              キーワードを入力して検索してください
-            </Text>
-          </Card>
-        )}
-      </div>
-    </div>
+            </Tab>
+          ))}
+        </TabList>
+        {searchFilterValues.map((value) => (
+          <TabPanel key={value} id={value} className="overflow-y-auto">
+            {renderResults()}
+          </TabPanel>
+        ))}
+      </Tabs>
+    </section>
   );
 };

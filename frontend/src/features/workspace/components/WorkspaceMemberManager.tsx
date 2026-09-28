@@ -10,8 +10,8 @@ import { IconButton } from "#/components/ui/IconButton";
 import { Select } from "#/components/ui/Select";
 import { TextField } from "#/components/ui/TextField";
 import { useMembers } from "#/features/member/hooks/useMembers";
+import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspaceMemberActions";
-import { workspaceRoleNames } from "#/features/workspace/utils/workspaceRole";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
 const ROLES = [WorkspaceRole.MEMBER, WorkspaceRole.ADMIN];
@@ -26,7 +26,7 @@ export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerPr
   const { invite, remove, updateRole } = useWorkspaceMemberActions();
   const [email, setEmail] = useState("");
   const roleOptions = ROLES.map((role) => ({
-    label: t(`workspace.role.${workspaceRoleNames[role]}`),
+    label: t(workspaceRoleKeys[role]),
     value: String(role),
   }));
 
@@ -44,9 +44,7 @@ export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerPr
               <span className="truncate text-caption text-muted">{member.email}</span>
             </span>
             {member.role === WorkspaceRole.OWNER ? (
-              <span className="text-caption text-muted">
-                {t(`workspace.role.${workspaceRoleNames[member.role]}`)}
-              </span>
+              <span className="text-caption text-muted">{t(workspaceRoleKeys[member.role])}</span>
             ) : (
               <>
                 <Select

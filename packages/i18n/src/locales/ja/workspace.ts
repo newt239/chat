@@ -24,12 +24,6 @@ export const workspace = {
     role: "ロール",
     title: "メンバー（{{count}} 人）",
   },
-  role: {
-    admin: "管理者",
-    guest: "ゲスト",
-    member: "メンバー",
-    owner: "オーナー",
-  },
   settings: {
     delete: "ワークスペースを削除",
     deleteConfirm: "{{name}} を削除しますか？",

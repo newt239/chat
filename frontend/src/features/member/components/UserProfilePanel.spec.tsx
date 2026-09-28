@@ -1,0 +1,68 @@
+import { create } from "@bufbuild/protobuf";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, test } from "vite-plus/test";
+
+import { DirectMessageSchema, DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
+import {
+  WorkspaceMemberSchema,
+  WorkspaceRole,
+  WorkspaceService,
+} from "#/gen/chat/v1/workspace_service_pb";
+import { currentUser, renderWithProviders } from "#/test/renderWithProviders";
+
+import { UserProfilePanel } from "./UserProfilePanel";
+
+const render = (userId: string) =>
+  renderWithProviders(
+    <UserProfilePanel workspaceId="ws1" userId={userId} />,
+    "/app/ws1",
+    (routes) => {
+      routes.rpc(WorkspaceService.method.listMembers, () => ({
+        members: [
+          create(WorkspaceMemberSchema, {
+            displayName: currentUser.displayName,
+            email: currentUser.email,
+            role: WorkspaceRole.OWNER,
+            userId: currentUser.id,
+          }),
+          create(WorkspaceMemberSchema, {
+            bio: "フロントエンド担当",
+            displayName: "Bob",
+            email: "bob@example.com",
+            role: WorkspaceRole.ADMIN,
+            userId: "u-bob",
+          }),
+        ],
+      }));
+      routes.rpc(DirectMessageService.method.createDirectMessage, () => ({
+        directMessage: create(DirectMessageSchema, { id: "dm1" }),
+      }));
+    },
+  );
+
+describe("UserProfilePanel", () => {
+  test("プロフィールを表示し、メッセージボタンで DM を開く", async () => {
+    const { router } = await render("u-bob");
+    expect(await screen.findByRole("heading", { name: "Bob" })).toBeInTheDocument();
+    expect(screen.getByText("管理者")).toBeInTheDocument();
+    expect(screen.getByText("bob@example.com")).toBeInTheDocument();
+    expect(screen.getByText("フロントエンド担当")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "メッセージ" }));
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/app/ws1/dm1");
+    });
+  });
+
+  test("自分のプロフィールにはメッセージボタンを出さない", async () => {
+    await render(currentUser.id);
+    expect(await screen.findByText("オーナー")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "メッセージ" })).not.toBeInTheDocument();
+  });
+
+  test("見つからないユーザーはその旨を表示する", async () => {
+    await render("u-unknown");
+    expect(await screen.findByText("ユーザーが見つかりませんでした")).toBeInTheDocument();
+  });
+});

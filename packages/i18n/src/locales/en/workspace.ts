@@ -25,12 +25,6 @@ export const workspace: Messages["workspace"] = {
     role: "Role",
     title: "Members ({{count}})",
   },
-  role: {
-    admin: "Admin",
-    guest: "Guest",
-    member: "Member",
-    owner: "Owner",
-  },
   settings: {
     delete: "Delete workspace",
     deleteConfirm: "Delete {{name}}?",

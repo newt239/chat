@@ -1,81 +1,50 @@
-import { Text, Stack, Loader, Avatar, Box } from "@mantine/core";
-import { useSetAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 
+import { Skeleton } from "#/components/ui/Skeleton";
 import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
-import { setRightSidePanelViewAtom } from "#/providers/store/ui";
+import { MemberRow } from "#/features/member/components/MemberRow";
 
 type ChannelMemberPanelProps = {
   channelId: string;
 };
 
 export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
+  const { t } = useTranslation();
   const { data: members, isLoading, error } = useChannelMembers(channelId);
-  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
-
-  const handleUserClick = (userId: string) => {
-    setRightSidePanelView({ type: "user-profile", userId });
-  };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader size="sm" />
+      <div className="flex flex-col gap-2 p-3">
+        {[0, 1, 2].map((index) => (
+          <div key={index} className="flex items-center gap-2.5">
+            <Skeleton className="size-8 rounded-md" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        ))}
       </div>
     );
   }
 
-  if (error) {
+  if (error || members === undefined || members.length === 0) {
     return (
-      <div className="p-4">
-        <Text c="red" size="sm">
-          メンバー情報の読み込みに失敗しました
-        </Text>
-      </div>
-    );
-  }
-
-  if (!members || members.length === 0) {
-    return (
-      <div className="p-4">
-        <Text c="dimmed" size="sm">
-          メンバーが見つかりませんでした
-        </Text>
-      </div>
+      <p className="m-0 p-4 text-caption text-muted">
+        {error ? t("channel.members.loadFailed") : t("channel.members.empty")}
+      </p>
     );
   }
 
   return (
-    <div className="h-full overflow-y-auto">
-      <Stack gap={0}>
-        {members.map((member) => (
-          <Box
-            key={member.userId}
-            className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 p-2 transition-colors"
-            onClick={() => {
-              handleUserClick(member.userId);
-            }}
-          >
-            <Avatar
-              src={member.avatarUrl ?? undefined}
-              alt={member.displayName}
-              radius="xl"
-              size="md"
-            >
-              {member.displayName.slice(0, 2).toUpperCase()}
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Text size="sm" fw={500} className="truncate">
-                  {member.displayName}
-                </Text>
-              </div>
-              <Text size="xs" c="dimmed" className="truncate">
-                {member.email}
-              </Text>
-            </div>
-          </Box>
-        ))}
-      </Stack>
-    </div>
+    <ul className="m-0 flex h-full list-none flex-col overflow-y-auto bg-surface p-1.5">
+      {members.map((member) => (
+        <li key={member.userId}>
+          <MemberRow
+            userId={member.userId}
+            name={member.displayName}
+            avatarUrl={member.avatarUrl}
+            detail={member.email}
+          />
+        </li>
+      ))}
+    </ul>
   );
 };
