@@ -17,7 +17,7 @@
 - 依存関係に変更が生まれた場合は `docker-compose down -v` でコンテナを停止・削除し、`docker-compose up -d --build` で再起動してください。
 - ローカルで動作させるための実装は不要です。
 - テスト用アカウントとしてユーザー名`alice@example.com`、パスワード`password123`を使用できます。
-- コミット時に lefthook の pre-commit フックが lint・format・ファイル名チェックを実行します。ホスト側に`pnpm install`済みであることが前提のため、Docker のみで開発している場合は`LEFTHOOK=0 git commit`で回避できます。
+- コミット時に lefthook の pre-commit フックが lint・format を実行します。ホスト側に`pnpm install`済みであることが前提のため、Docker のみで開発している場合は`LEFTHOOK=0 git commit`で回避できます。
 
 ## リファクタリング
 
@@ -27,26 +27,31 @@
 
 ツールチェーンは **Vite+ (`vite-plus`)** に統合されています。lint (Oxlint) / format (Oxfmt) / test (Vitest) の設定はすべて `frontend/vite.config.ts` に集約されており、`.eslintrc` や `.prettierrc` は存在しません。
 
-- フロントエンドの実装をした際は、必ず最後に`pnpm --filter chat-frontend run codecheck`を実行してください（typecheck / lint / format / ls-lint / knip / test を一括で実行します）。
+- フロントエンドの実装をした際は、必ず最後に`pnpm --filter chat-frontend run codecheck`を実行してください（typecheck / lint / format / knip / test を一括で実行します）。
   - 個別に実行する場合は `pnpm run typecheck`、`pnpm run lint:fix`、`pnpm run format:fix` を使ってください。
   - 修正にあたり、any/unknown などの型を使用することや、型アサーション・型ガードを使用することを禁止します。その実装にふさわしい型を書くか、ライブラリから提供されているものをインポートして使用してください。どうしても型アサーションを使用する必要がある場合は最後にまとめて確認を取ってください。
 - 新しいコンポーネントを実装した際は必ず Vitest でテストを書いてください。
   - ユニットテストは対象のファイルと同階層に`filename.spec.{ts,tsx}`という名前で実装してください。
   - テストユーティリティは`vitest`ではなく`vite-plus/test`からインポートしてください（lint ルールで強制されます）。
-- 型定義に`interface`を使用せず、必ず`type`を使用してください。
+- 型定義に`interface`を使用せず、必ず`type`を使用してください（ライブラリの型拡張で`interface`が必須な`src/tanstack-router.d.ts`のような`.d.ts`は例外です）。
 - 関数は関数宣言ではなくアロー関数式で定義してください（lint ルール `func-style` で強制されます）。
 - 安易に`window`オブジェクトを使用しないでください。
-  - 例えばページ遷移であれば React Router の Link コンポーネントや useNavigate を使用してください。
-  - 遷移先のパスは直接文字列で書かず、`src/lib/paths.ts`のパスビルダーを経由してください。React Router の`to`は型検査が効かないため、存在しないパスへのリンクを防ぐ目的です。
+  - ページ遷移には TanStack Router の`Link`や`useNavigate`を使い、`to`にはルート ID（`"/app/$workspaceId/$channelId"`など）、パラメータは`params` / `search`で渡してください。URL 文字列を手で組み立てないでください。
+  - Mantine のコンポーネントをリンクにする場合は`component={Link}`ではなく`renderRoot={(props) => <Link {...props} to="..." />}`を使ってください（`to`の型検査を効かせるため）。
   - React のツリー外（fetch インターセプタや WebSocket クライアント）から遷移する場合は`src/lib/navigation.ts`の`navigateTo`を使ってください。
-  - ルートパラメータは`useParams`を直接呼ばず、`src/lib/routeParams.ts`の`useWorkspaceId` / `useChannelId` / `useOptionalRouteParams`を使ってください。
+  - ルートパラメータは`useParams({ from: "/app/$workspaceId" })`のように`from`を指定して取得してください。ルートの外からも使うコンポーネントでは`useParams({ strict: false })`を使います。
+- ルーティングは TanStack Router のファイルベースルーティングです。
+  - `src/routes/`はルート定義専用です。`createFileRoute`で`Route`をエクスポートするだけにし、コンポーネントは`src/pages/`や`src/features/`に定義してください（ルートファイルは 1 ファイル 1 コンポーネント規約の対象外です）。
+  - search params は各ルートの`validateSearch`に zod スキーマを渡して検証し、`getRouteApi(...).useSearch()`などで読んでください。
+  - `src/routeTree.gen.ts`は Vite プラグインが自動生成します。手で編集しないでください。
 - 使用しない引数は削除してください。また、極力引数は Optional にしないようにしてください。
-- インポート文は原則として絶対パスで書いてください。パスエイリアスは`#/`です（`#/lib/paths`のように書きます）。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
+- インポート文は原則として絶対パスで書いてください。パスエイリアスは`#/`です（`#/lib/router`のように書きます）。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
 - 1 つのファイルにつき 1 つのコンポーネントを定義してください。コンポーネント名とファイル名は一致させ、Named Export でコンポーネントをエクスポートしてください。
-  - ファイル名の規約は ls-lint で検証されます。コンポーネントは PascalCase、それ以外（hooks・ユーティリティ）は camelCase です。
+  - ファイル名はコンポーネントを PascalCase、それ以外（hooks・ユーティリティ）を camelCase にしてください。
 - 関数の返り値の型は明示しないでください。
-- バックエンドのレスポンススキーマを変更した場合はリポジトリルートで`pnpm run openapi:bundle && pnpm run generate:api`を実行して、バンドル済みスキーマと API クライアントの型を更新してください。
-  - `openapi-typescript`は TypeScript 5 系にしか対応していないため、フロントエンド（TypeScript 7）ではなくルートワークスペースに配置しています。
+- API は Connect RPC です。`proto/chat/v1/`の定義を変更したらリポジトリルートで`pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto`を実行し、生成物（`backend/internal/gen/`・`frontend/src/gen/`）もコミットしてください。生成物は手で編集しないでください。
+  - API の呼び出しは`@connectrpc/connect-query`の`useQuery(Service.method.xxx, input)` / `useMutation(Service.method.xxx)`を使ってください。キャッシュの無効化には`createConnectQueryKey`で作ったキーを使います（`useQuery`のキーには transport も含まれるため、`setQueryData`ではなく部分一致の`setQueriesData`を使ってください）。
+  - 日時は`google.protobuf.Timestamp`で届くため、`#/lib/timestamp`の`toDate`で`Date`に変換してください。
 
 ## バックエンド
 
@@ -55,3 +60,6 @@
 - 冗長なコードは避けてください。
 - 過度に共通化しないでください。同様の処理が 2, 3 個しかないのに共通化してしまうと保守性が低下します。
 - データベースのテーブル名は単数形で命名してください。
+- API は`internal/interfaces/handler/rpc/`のサービスに実装し、ユースケースの出力から proto のメッセージへの変換は`internal/interfaces/presenter/`に置いてください。
+  - ユースケースのエラーは`rpc/error.go`の対応表で Connect のエラーコードに変換されるため、サービスではそのまま返してください。新しいエラーを追加したら対応表にも追加してください。
+  - 入力の制約は proto に protovalidate のルールとして書いてください。

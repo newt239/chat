@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { api } from "#/lib/api/client";
+import { callUnaryMethod } from "@connectrpc/connect-query";
+
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
+import { transport } from "#/lib/api/transport";
 
 import { MESSAGES_PAGE_SIZE } from "./useMessage";
 
-import type { TimelineItem } from "../types";
+import type { TimelineItem } from "#/gen/chat/v1/message_pb";
+
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
 
 /** 「さらに読み込む」で取得した過去メッセージを保持する */
 export const useOlderMessages = (channelId: string | null, initialHasMore: boolean) => {
@@ -22,23 +27,20 @@ export const useOlderMessages = (channelId: string | null, initialHasMore: boole
   }, [initialHasMore, channelId]);
 
   const loadOlder = useCallback(
-    async (until: string) => {
+    async (until: Timestamp | undefined) => {
       if (channelId === null) {
         return;
       }
 
       setIsLoading(true);
       try {
-        const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
-          params: { path: { channelId }, query: { limit: MESSAGES_PAGE_SIZE, until } },
+        const response = await callUnaryMethod(transport, MessageService.method.listMessages, {
+          channelId,
+          limit: MESSAGES_PAGE_SIZE,
+          until,
         });
-
-        if (error) {
-          throw new Error(error.error);
-        }
-
-        setOlderItems((prev) => [...data.messages, ...prev]);
-        setHasMore(data.hasMore);
+        setOlderItems((prev) => [...response.messages, ...prev]);
+        setHasMore(response.hasMore);
       } finally {
         setIsLoading(false);
       }

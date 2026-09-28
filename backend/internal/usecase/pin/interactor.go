@@ -32,7 +32,7 @@ type interactor struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
-	notificationSvc   service.NotificationService
+	notificationSvc   Notifier
 	messageAssembler  *message.MessageOutputAssembler
 	channelAccessSvc  service.ChannelAccessService
 	systemMessageUC   systemmessage.UseCase
@@ -45,7 +45,7 @@ func NewPinInteractor(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
-	notificationSvc service.NotificationService,
+	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
 	systemMessageUC systemmessage.UseCase,
 ) PinUseCase {
@@ -143,13 +143,12 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 				workspaceID = ch.WorkspaceID
 			}
 		}
-		payload := map[string]interface{}{
-			"message":  p.Message.ID,
-			"pinnedBy": p.PinnedBy,
-			"pinnedAt": p.PinnedAt.Format(time.RFC3339),
-		}
 		if workspaceID != "" {
-			i.notificationSvc.NotifyPinCreated(workspaceID, input.ChannelID, payload)
+			i.notificationSvc.NotifyPinCreated(workspaceID, input.ChannelID, PinNotification{
+				MessageID: p.Message.ID,
+				PinnedBy:  p.PinnedBy,
+				PinnedAt:  p.PinnedAt,
+			})
 		}
 	}
 	return nil
@@ -176,12 +175,11 @@ func (i *interactor) UnpinMessage(ctx context.Context, input UnpinMessageInput) 
 	if i.notificationSvc != nil {
 		ch, _ := i.channelRepo.FindByID(ctx, input.ChannelID)
 		if ch != nil {
-			payload := map[string]interface{}{
-				"message":  input.MessageID,
-				"pinnedBy": input.UserID,
-				"pinnedAt": time.Now().Format(time.RFC3339),
-			}
-			i.notificationSvc.NotifyPinDeleted(ch.WorkspaceID, input.ChannelID, payload)
+			i.notificationSvc.NotifyPinDeleted(ch.WorkspaceID, input.ChannelID, PinNotification{
+				MessageID: input.MessageID,
+				PinnedBy:  input.UserID,
+				PinnedAt:  time.Now(),
+			})
 		}
 	}
 	return nil

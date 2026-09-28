@@ -1,9 +1,0 @@
-ListChannelMembersResponse:
-  type: object
-  properties:
-    members:
-      type: array
-      items:
-        $ref: "../../openapi.yaml#/components/schemas/ChannelMemberInfo"
-  required:
-    - members

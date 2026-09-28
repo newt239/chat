@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+import "google/protobuf/timestamp.proto";
+
+service PinService {
+  rpc ListPins(ListPinsRequest) returns (ListPinsResponse);
+  rpc CreatePin(CreatePinRequest) returns (CreatePinResponse);
+  rpc DeletePin(DeletePinRequest) returns (DeletePinResponse);
+}
+
+message PinnedMessage {
+  Message message = 1;
+  string pinned_by = 2;
+  google.protobuf.Timestamp pinned_at = 3;
+}
+
+message ListPinsRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  // 0 の場合はサーバーの既定値を使う
+  int32 limit = 2 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 100
+  }];
+  optional string cursor = 3;
+}
+
+message ListPinsResponse {
+  repeated PinnedMessage pins = 1;
+  optional string next_cursor = 2;
+}
+
+message CreatePinRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string message_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message CreatePinResponse {}
+
+message DeletePinRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string message_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message DeletePinResponse {}

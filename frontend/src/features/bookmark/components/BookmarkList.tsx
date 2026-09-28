@@ -1,9 +1,9 @@
 import { Text, Stack, ScrollArea, Card } from "@mantine/core";
 import { IconBookmark } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { Link } from "react-router";
 
-import { paths } from "#/lib/paths";
+import { toDate } from "#/lib/timestamp";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 import { useBookmarks } from "../hooks/useBookmarks";
@@ -36,7 +36,7 @@ export const BookmarkList = () => {
     );
   }
 
-  if (!bookmarks?.bookmarks || bookmarks.bookmarks.length === 0) {
+  if (!bookmarks || bookmarks.length === 0) {
     return (
       <div className="p-4 text-center">
         <IconBookmark size={48} className="mx-auto mb-4 text-gray-400" />
@@ -50,14 +50,20 @@ export const BookmarkList = () => {
   return (
     <ScrollArea h={400}>
       <Stack gap="xs" p="xs">
-        {bookmarks.bookmarks.map((bookmark) => (
+        {bookmarks.map((bookmark) => (
           <Card
             key={`${bookmark.userId}-${bookmark.message.id}`}
             withBorder
             padding="md"
             radius="md"
-            component={Link}
-            to={paths.channel(workspaceId, bookmark.message.channelId, bookmark.message.id)}
+            renderRoot={(props) => (
+              <Link
+                {...props}
+                to="/app/$workspaceId/$channelId"
+                params={{ channelId: bookmark.message.channelId, workspaceId }}
+                search={{ message: bookmark.message.id }}
+              />
+            )}
             className="h-auto text-left justify-start"
           >
             <div className="flex-1 min-w-0">
@@ -65,7 +71,7 @@ export const BookmarkList = () => {
                 {bookmark.message.body}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {new Date(bookmark.createdAt).toLocaleDateString("ja-JP", {
+                {toDate(bookmark.createdAt).toLocaleDateString("ja-JP", {
                   day: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",

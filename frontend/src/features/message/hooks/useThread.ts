@@ -1,78 +1,29 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { api } from "#/lib/api/client";
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
+import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 
-type CreateThreadReplyInput = {
-  body: string;
-  attachmentIds: string[];
-};
+import { useInvalidateMessages } from "./useMessage";
 
 /** スレッドの返信一覧を取得するフック */
-export const useThreadReplies = (messageId: string | null) =>
-  useQuery({
-    enabled: messageId !== null,
-    queryFn: async () => {
-      if (messageId === null) {
-        return null;
-      }
-
-      const { data, error } = await api.GET("/api/messages/{messageId}/thread", {
-        params: { path: { messageId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
-    queryKey: ["messages", messageId, "thread", "replies"],
-  });
+export const useThreadReplies = (messageId: string) =>
+  useQuery(ThreadService.method.getThreadReplies, { messageId });
 
 /** スレッドに返信を送信するフック */
-export const useSendThreadReply = (messageId: string | null, channelId: string | null) => {
+export const useSendThreadReply = () => {
   const queryClient = useQueryClient();
+  const invalidateMessages = useInvalidateMessages();
 
-  return useMutation({
-    mutationFn: async (input: CreateThreadReplyInput) => {
-      if (messageId === null) {
-        throw new Error("親メッセージが選択されていません");
-      }
-
-      if (channelId === null) {
-        throw new Error("チャンネルが選択されていません");
-      }
-
-      const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
-        body: {
-          attachmentIds: input.attachmentIds,
-          body: input.body,
-          parentId: messageId,
-        },
-        params: { path: { channelId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
+  return useMutation(MessageService.method.createMessage, {
     onSuccess: async () => {
-      if (messageId !== null && channelId !== null) {
-        // スレッド返信一覧を再取得
-        await queryClient.invalidateQueries({
-          queryKey: ["messages", messageId, "thread", "replies"],
-        });
-        // スレッドメタデータを再取得
-        await queryClient.invalidateQueries({
-          queryKey: ["messages", messageId, "thread", "metadata"],
-        });
-        // メッセージ一覧も再取得（スレッドプレビューの更新のため）
-        await queryClient.invalidateQueries({
-          queryKey: ["channels", channelId, "messages"],
-        });
-      }
+      // スレッドの返信とメタデータに加え、スレッドプレビューのためにメッセージ一覧も再取得する
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: createConnectQueryKey({ cardinality: "finite", schema: ThreadService }),
+        }),
+        invalidateMessages(),
+      ]);
     },
   });
 };

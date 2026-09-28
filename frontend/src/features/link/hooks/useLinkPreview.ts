@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 
-import { api } from "#/lib/api/client";
+import { useMutation } from "@connectrpc/connect-query";
+
+import { LinkService } from "#/gen/chat/v1/link_service_pb";
 
 import type { LinkPreview, OGPData } from "../types";
 
@@ -15,28 +17,27 @@ type UseLinkPreviewReturn = {
 export const useLinkPreview = (): UseLinkPreviewReturn => {
   const [previews, setPreviews] = useState<Map<string, LinkPreview>>(new Map());
 
-  const fetchOGP = useCallback(async (url: string): Promise<OGPData | null> => {
-    try {
-      const response = await api.POST("/api/links/fetch-ogp", {
-        body: { url },
-      });
+  const { mutateAsync: fetchOgp } = useMutation(LinkService.method.fetchOgp);
 
-      if (response.error) {
-        throw new Error(response.error.error || "OGPの取得に失敗しました");
+  const fetchOGP = useCallback(
+    async (url: string): Promise<OGPData | null> => {
+      try {
+        const { ogp } = await fetchOgp({ url });
+
+        return {
+          cardType: ogp?.cardType || undefined,
+          description: ogp?.description || undefined,
+          imageUrl: ogp?.imageUrl || undefined,
+          siteName: ogp?.siteName || undefined,
+          title: ogp?.title || undefined,
+        };
+      } catch (_error) {
+        console.error("OGPの取得に失敗しました:", _error);
+        return null;
       }
-
-      return {
-        cardType: response.data.ogpData.cardType || undefined,
-        description: response.data.ogpData.description || undefined,
-        imageUrl: response.data.ogpData.imageUrl || undefined,
-        siteName: response.data.ogpData.siteName || undefined,
-        title: response.data.ogpData.title || undefined,
-      };
-    } catch (_error) {
-      console.error("OGPの取得に失敗しました:", _error);
-      return null;
-    }
-  }, []);
+    },
+    [fetchOgp],
+  );
 
   const addPreview = useCallback(
     async (url: string) => {

@@ -84,7 +84,7 @@ export const AccountSettingsPanel = () => {
             color="red"
             loading={deleteAccount.isPending}
             onClick={() => {
-              deleteAccount.mutate();
+              deleteAccount.mutate({});
             }}
           >
             削除する

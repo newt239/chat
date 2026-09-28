@@ -6,6 +6,7 @@ import { useSetAtom } from "jotai";
 import { MessageAttachment } from "#/features/attachment/components/MessageAttachment";
 import { useIsBookmarked } from "#/features/bookmark/hooks/useBookmarks";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
+import { toDate } from "#/lib/timestamp";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import { dateTimeFormatter } from "../utils/time";
@@ -13,16 +14,16 @@ import { MessageActions } from "./MessageActions";
 import { MessageContent } from "./MessageContent";
 import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 
-import type { MessageWithUser, ThreadMetadata } from "../types";
+import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 type MessageItemProps = {
-  message: MessageWithUser;
+  message: Message;
   currentUserId: string | null;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   onEdit?: (messageId: string, nextBody: string) => Promise<void>;
   onDelete?: (messageId: string) => Promise<void>;
-  threadMetadata?: ThreadMetadata | null;
+  threadMetadata?: ThreadMetadata;
   onOpenThread?: (messageId: string) => void;
 };
 
@@ -42,6 +43,7 @@ export const MessageItem = ({
   const [isSaving, setIsSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const isAuthor = message.userId === currentUserId;
+  const displayName = message.user?.displayName ?? "";
   const isBookmarked = useIsBookmarked(message.id);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
@@ -118,15 +120,15 @@ export const MessageItem = ({
       {/* アバターとメッセージコンテンツ */}
       <div className="flex gap-3">
         <Avatar
-          src={message.user.avatarUrl ?? undefined}
-          alt={message.user.displayName}
+          src={message.user?.avatarUrl}
+          alt={displayName}
           size="md"
           color="blue"
           radius="xl"
           onClick={handleUserClick}
           className="cursor-pointer"
         >
-          {message.user.displayName.charAt(0).toUpperCase()}
+          {displayName.charAt(0).toUpperCase()}
         </Avatar>
 
         {/* メッセージコンテンツ */}
@@ -139,10 +141,10 @@ export const MessageItem = ({
               onClick={handleUserClick}
               className="cursor-pointer hover:underline"
             >
-              {message.user.displayName}
+              {displayName}
             </Text>
             <Text size="xs" c="dimmed">
-              {dateTimeFormatter().format(new Date(message.createdAt))}
+              {dateTimeFormatter().format(toDate(message.createdAt))}
             </Text>
           </div>
 
@@ -192,7 +194,7 @@ export const MessageItem = ({
           </div>
 
           {/* 添付ファイル */}
-          {message.attachments && message.attachments.length > 0 && (
+          {message.attachments.length > 0 && (
             <div className="mt-2 space-y-2">
               {message.attachments.map((attachment) => (
                 <MessageAttachment key={attachment.id} attachment={attachment} />
@@ -201,7 +203,7 @@ export const MessageItem = ({
           )}
 
           {/* リアクション */}
-          <ReactionList messageId={message.id} reactions={message.reactions ?? []} />
+          <ReactionList messageId={message.id} reactions={message.reactions} />
 
           {/* スレッドメタデータプレビュー */}
           {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (

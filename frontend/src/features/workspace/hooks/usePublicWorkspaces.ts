@@ -1,35 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { api } from "#/lib/api/client";
+import { workspaceServiceKey } from "#/features/workspace/hooks/useWorkspace";
+import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 
 /** 参加できる公開ワークスペースの一覧を取得する */
 export const usePublicWorkspaces = () =>
-  useQuery({
-    queryFn: async () => {
-      const { data, error } = await api.GET("/api/workspaces/public");
-      if (error) {
-        throw new Error(error.error);
-      }
-      return data.workspaces;
-    },
-    queryKey: ["workspaces", "public"],
-  });
+  useQuery(WorkspaceService.method.listPublicWorkspaces, {}, { select: (res) => res.workspaces });
 
 /** 公開ワークスペースに参加する */
 export const useJoinPublicWorkspace = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (workspaceId: string) => {
-      const { error } = await api.POST("/api/workspaces/{id}/join", {
-        params: { path: { id: workspaceId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
+  return useMutation(WorkspaceService.method.joinPublicWorkspace, {
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      await queryClient.invalidateQueries({ queryKey: workspaceServiceKey });
     },
   });
 };

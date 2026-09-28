@@ -1,10 +1,10 @@
 import { Card, ScrollArea, Stack, Text } from "@mantine/core";
 import { IconPin } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { Link } from "react-router";
 
 import { usePinnedMessages } from "#/features/pin/hooks/usePinnedMessages";
-import { paths } from "#/lib/paths";
+import { toDate } from "#/lib/timestamp";
 import { currentWorkspaceIdAtom, currentChannelIdAtom } from "#/providers/store/workspace";
 
 type PinnedPanelProps = {
@@ -61,8 +61,14 @@ export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
             withBorder
             padding="md"
             radius="md"
-            component={Link}
-            to={paths.channel(workspaceId, effectiveChannelId, pin.message.id)}
+            renderRoot={(props) => (
+              <Link
+                {...props}
+                to="/app/$workspaceId/$channelId"
+                params={{ channelId: effectiveChannelId, workspaceId }}
+                search={{ message: pin.message.id }}
+              />
+            )}
             className="h-auto text-left justify-start"
           >
             <div className="flex-1 min-w-0">
@@ -70,7 +76,7 @@ export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
                 {pin.message.body}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {new Date(pin.pinnedAt).toLocaleDateString("ja-JP", {
+                {toDate(pin.pinnedAt).toLocaleDateString("ja-JP", {
                   day: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",

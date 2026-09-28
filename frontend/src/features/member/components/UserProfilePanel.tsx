@@ -2,12 +2,12 @@ import { useMemo } from "react";
 
 import { Avatar, Badge, Button, Loader, Stack, Text } from "@mantine/core";
 import { IconMessage } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { useNavigate } from "react-router";
 
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { paths } from "#/lib/paths";
+import { workspaceRoleLabels } from "#/features/workspace/utils/workspaceRole";
 import { userAtom } from "#/providers/store/auth";
 
 type UserProfilePanelProps = {
@@ -18,12 +18,17 @@ type UserProfilePanelProps = {
 export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps) => {
   const { data: members, isLoading, isError, error } = useMembers(workspaceId);
   const currentUser = useAtomValue(userAtom);
-  const createDM = useCreateDM(workspaceId);
+  const createDM = useCreateDM();
   const navigate = useNavigate();
 
   const handleStartDM = async () => {
-    const dm = await createDM.mutateAsync({ userId });
-    void navigate(paths.channel(workspaceId, dm.id));
+    const { directMessage } = await createDM.mutateAsync({ userId, workspaceId });
+    if (directMessage !== undefined) {
+      void navigate({
+        params: { channelId: directMessage.id, workspaceId },
+        to: "/app/$workspaceId/$channelId",
+      });
+    }
   };
   const member = useMemo(() => {
     if (members === undefined) {
@@ -105,7 +110,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
             ロール
           </Text>
           <Badge size="sm" variant="light" color="gray">
-            {member.role}
+            {workspaceRoleLabels[member.role]}
           </Badge>
         </Stack>
         <Stack gap="xs">

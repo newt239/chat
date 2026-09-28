@@ -1,8 +1,0 @@
-ListPublicWorkspacesResponse:
-  type: object
-  properties:
-    workspaces:
-      type: array
-      items:
-        $ref: "../../openapi.yaml#/components/schemas/PublicWorkspaceItem"
-  required: [workspaces]

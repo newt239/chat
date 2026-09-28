@@ -29,7 +29,7 @@ type reactionInteractor struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
-	notificationSvc   service.NotificationService
+	notificationSvc   Notifier
 	channelAccessSvc  service.ChannelAccessService
 }
 
@@ -39,7 +39,7 @@ func NewReactionInteractor(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
-	notificationSvc service.NotificationService,
+	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
 ) ReactionUseCase {
 	return &reactionInteractor{
@@ -80,17 +80,13 @@ func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionI
 		return fmt.Errorf("failed to add reaction: %w", err)
 	}
 
-	i.notifyReaction(ctx, message.ChannelID, service.ReactionNotification{
-		MessageID: input.MessageID,
-		UserID:    input.UserID,
-		Emoji:     input.Emoji,
-	}, true)
+	i.notifyReaction(ctx, message.ChannelID, ReactionNotification(input), true)
 
 	return nil
 }
 
 // notifyReaction はリアクションの追加・削除をチャンネル購読者に通知します
-func (i *reactionInteractor) notifyReaction(ctx context.Context, channelID string, reaction service.ReactionNotification, added bool) {
+func (i *reactionInteractor) notifyReaction(ctx context.Context, channelID string, reaction ReactionNotification, added bool) {
 	if i.notificationSvc == nil {
 		return
 	}
@@ -127,11 +123,7 @@ func (i *reactionInteractor) RemoveReaction(ctx context.Context, input RemoveRea
 		return fmt.Errorf("failed to remove reaction: %w", err)
 	}
 
-	i.notifyReaction(ctx, message.ChannelID, service.ReactionNotification{
-		MessageID: input.MessageID,
-		UserID:    input.UserID,
-		Emoji:     input.Emoji,
-	}, false)
+	i.notifyReaction(ctx, message.ChannelID, ReactionNotification(input), false)
 
 	return nil
 }

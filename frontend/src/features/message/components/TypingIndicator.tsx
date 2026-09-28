@@ -1,14 +1,14 @@
 import { Text } from "@mantine/core";
+import { useParams } from "@tanstack/react-router";
 
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { useWorkspaceId } from "#/lib/routeParams";
 
 type TypingIndicatorProps = {
   userIds: string[];
 };
 
 export const TypingIndicator = ({ userIds }: TypingIndicatorProps) => {
-  const workspaceId = useWorkspaceId();
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: members } = useMembers(workspaceId);
 
   if (userIds.length === 0) {

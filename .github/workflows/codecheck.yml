@@ -25,8 +25,6 @@ jobs:
         run: pnpm --filter chat-frontend run lint
       - name: Oxfmt
         run: pnpm --filter chat-frontend run format
-      - name: ls-lint
-        run: pnpm --filter chat-frontend run ls-lint
       - name: Knip
         run: pnpm --filter chat-frontend run knip
       - name: Test
@@ -56,7 +54,7 @@ jobs:
           version: latest
           working-directory: ./backend
 
-  openapi:
+  proto:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -70,14 +68,17 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm run proto:lint
+      - name: Check format
+        run: pnpm exec buf format --diff --exit-code
       # コミット済みの生成物が最新か検証する
-      - name: Regenerate OpenAPI artifacts
-        run: |
-          pnpm run openapi:bundle
-          pnpm run generate:api
+      - name: Regenerate code
+        run: pnpm run generate:proto
       - name: Verify no diff
         run: |
-          if ! git diff --exit-code --stat; then
-            echo "::error::OpenAPI の生成物が最新ではありません。'pnpm run openapi:bundle' と 'pnpm run generate:api' を実行してコミットしてください。"
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            echo "::error::proto の生成物が最新ではありません。'pnpm run generate:proto' を実行してコミットしてください。"
             exit 1
           fi

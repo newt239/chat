@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useRef, useCallback } from "react";
 
 import { Button, Card, Loader, Text } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 
 import { useAutoScrollToBottom } from "#/features/message/hooks/useAutoScrollToBottom";
 import { useChannelThreadMetadata } from "#/features/message/hooks/useChannelThreadMetadata";
 import { useChannelTimeline } from "#/features/message/hooks/useChannelTimeline";
+import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { useHighlightedMessage } from "#/features/message/hooks/useHighlightedMessage";
 import { useMessageActions } from "#/features/message/hooks/useMessageActions";
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
 import { useOlderMessages } from "#/features/message/hooks/useOlderMessages";
-import { paths } from "#/lib/paths";
 import { userAtom } from "#/providers/store/auth";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
@@ -64,8 +63,8 @@ export const MessagePanel = () => {
       ? (() => {
           for (let i = orderedItems.length - 1; i >= 0; i--) {
             const item = orderedItems[i];
-            if (item?.type === "user" && item.userMessage) {
-              return item.userMessage.id;
+            if (item?.content.case === "userMessage") {
+              return item.content.value.id;
             }
           }
           return null;
@@ -93,21 +92,7 @@ export const MessagePanel = () => {
     setRightSidebarView({ type: "hidden" });
   }, [currentChannelId, setRightSidebarView]);
 
-  const handleCopyLink = useCallback(
-    (messageId: string) => {
-      if (!currentWorkspaceId || !currentChannelId) {
-        return;
-      }
-      void navigator.clipboard.writeText(
-        paths.channel(currentWorkspaceId, currentChannelId, messageId),
-      );
-      notifications.show({
-        message: "メッセージリンクをクリップボードにコピーしました",
-        title: "コピーしました",
-      });
-    },
-    [currentWorkspaceId, currentChannelId],
-  );
+  const handleCopyLink = useCopyMessageLink(currentWorkspaceId, currentChannelId);
 
   const handleCreateThread = useCallback(
     (messageId: string) => {
@@ -123,7 +108,7 @@ export const MessagePanel = () => {
     [setRightSidebarView],
   );
 
-  const { handleEdit, handleDelete } = useMessageActions(currentChannelId);
+  const { handleEdit, handleDelete } = useMessageActions();
 
   if (currentWorkspaceId === null) {
     return (
@@ -168,8 +153,8 @@ export const MessagePanel = () => {
             )}
             <div className="flex flex-1 flex-col justify-end">
               {orderedItems.map((item) => {
-                if (item.type === "user" && item.userMessage) {
-                  const msg = item.userMessage;
+                if (item.content.case === "userMessage") {
+                  const msg = item.content.value;
                   const isLatestMessage = msg.id === latestUserMessageId;
                   const isHighlighted = msg.id === highlightedId;
                   return (
@@ -197,11 +182,11 @@ export const MessagePanel = () => {
                     </div>
                   );
                 }
-                if (item.type === "system" && item.systemMessage) {
+                if (item.content.case === "systemMessage") {
                   return (
                     <SystemMessageItem
-                      key={`s-${item.systemMessage.id}`}
-                      message={item.systemMessage}
+                      key={`s-${item.content.value.id}`}
+                      message={item.content.value}
                     />
                   );
                 }

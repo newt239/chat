@@ -1,10 +1,11 @@
 import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite-plus";
 
-const generatedFiles = ["src/lib/api/schema.ts"];
+const generatedFiles = ["src/gen/", "src/routeTree.gen.ts"];
 
 export default defineConfig({
   fmt: {
@@ -70,8 +71,8 @@ export default defineConfig({
         },
       },
       {
-        // React Router の Data モードでは redirect() が返す Response を throw する
-        files: ["src/routes/routeTree.ts"],
+        // beforeLoad では redirect() の戻り値を throw して遷移させる
+        files: ["src/routes/**"],
         rules: {
           "typescript/only-throw-error": "off",
         },
@@ -188,7 +189,7 @@ export default defineConfig({
       // Promise を直接返す関数に async を強制すると require-await と衝突するため
       "typescript/promise-function-async": "off",
       "typescript/strict-boolean-expressions": "off",
-      // ファイル名規約は ls-lint 側で PascalCase / camelCase を強制している
+      // コンポーネントは PascalCase、それ以外は camelCase と種類で使い分けるため
       "unicorn/filename-case": "off",
       // zod のスキーマ定義では呼び出しのネストが自然なため
       "unicorn/max-nested-calls": "off",
@@ -206,6 +207,14 @@ export default defineConfig({
     },
   },
   plugins: [
+    tanstackRouter({
+      autoCodeSplitting: true,
+      generatedRouteTree: "./src/routeTree.gen.ts",
+      quoteStyle: "double",
+      routesDirectory: "./src/routes",
+      semicolons: true,
+      target: "react",
+    }),
     tailwindcss(),
     react(),
     VitePWA({
@@ -254,6 +263,10 @@ export default defineConfig({
       "/ws": {
         target: "ws://localhost:8080",
         ws: true,
+      },
+      "^/chat\\.v1\\.": {
+        changeOrigin: true,
+        target: "http://localhost:8080",
       },
     },
   },

@@ -1,59 +1,42 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { api } from "#/lib/api/client";
+import { BookmarkService } from "#/gen/chat/v1/bookmark_service_pb";
 
 export const useBookmarks = () =>
-  useQuery({
-    queryFn: async () => {
-      const response = await api.GET("/api/bookmarks");
-      if (response.error) {
-        throw new Error(response.error.error);
-      }
-      return response.data;
+  useQuery(
+    BookmarkService.method.listBookmarks,
+    {},
+    {
+      // メッセージが削除されたブックマークは表示できないため除く
+      select: (res) =>
+        res.bookmarks.flatMap(({ message, ...bookmark }) =>
+          message === undefined ? [] : [{ ...bookmark, message }],
+        ),
     },
-    queryKey: ["bookmarks"],
-  });
+  );
 
-export const useAddBookmark = () => {
+const useInvalidateBookmarks = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({ messageId }: { messageId: string }) => {
-      const response = await api.POST("/api/messages/{messageId}/bookmarks", {
-        params: { path: { messageId } },
-      });
-      if (response.error) {
-        throw new Error(response.error.error);
-      }
-      return response.data;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
-    },
-  });
+  return async () => {
+    await queryClient.invalidateQueries({
+      queryKey: createConnectQueryKey({
+        cardinality: "finite",
+        schema: BookmarkService.method.listBookmarks,
+      }),
+    });
+  };
 };
 
-export const useRemoveBookmark = () => {
-  const queryClient = useQueryClient();
+export const useAddBookmark = () =>
+  useMutation(BookmarkService.method.addBookmark, { onSuccess: useInvalidateBookmarks() });
 
-  return useMutation({
-    mutationFn: async ({ messageId }: { messageId: string }) => {
-      const response = await api.DELETE("/api/messages/{messageId}/bookmarks", {
-        params: { path: { messageId } },
-      });
-      if (response.error) {
-        throw new Error(response.error.error);
-      }
-      return response.data;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
-    },
-  });
-};
+export const useRemoveBookmark = () =>
+  useMutation(BookmarkService.method.removeBookmark, { onSuccess: useInvalidateBookmarks() });
 
 export const useIsBookmarked = (messageId: string) => {
   const { data: bookmarks } = useBookmarks();
 
-  return bookmarks?.bookmarks.some((bookmark) => bookmark.message.id === messageId) ?? false;
+  return bookmarks?.some((bookmark) => bookmark.message.id === messageId) ?? false;
 };

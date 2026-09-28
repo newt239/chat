@@ -1,11 +1,9 @@
 import type { ReactNode } from "react";
 
 import { Badge } from "@mantine/core";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
-import { paths } from "#/lib/paths";
-import { useOptionalRouteParams } from "#/lib/routeParams";
 
 type ChannelLinkProps = {
   "data-channel": string;
@@ -14,7 +12,7 @@ type ChannelLinkProps = {
 
 export const ChannelLink = ({ "data-channel": channelName }: ChannelLinkProps) => {
   const navigate = useNavigate();
-  const { workspaceId } = useOptionalRouteParams();
+  const { workspaceId } = useParams({ strict: false });
   const { data: channels } = useChannels(workspaceId ?? null);
 
   const channel = channels?.find((item) => item.name === channelName);
@@ -23,7 +21,10 @@ export const ChannelLink = ({ "data-channel": channelName }: ChannelLinkProps) =
     if (workspaceId === undefined || channel === undefined) {
       return;
     }
-    void navigate(paths.channel(workspaceId, channel.id));
+    void navigate({
+      params: { channelId: channel.id, workspaceId },
+      to: "/app/$workspaceId/$channelId",
+    });
   };
 
   return (

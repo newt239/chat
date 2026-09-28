@@ -25,7 +25,7 @@ type readStateInteractor struct {
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
-	notificationSvc   service.NotificationService
+	notificationSvc   Notifier
 	channelAccessSvc  service.ChannelAccessService
 }
 
@@ -34,7 +34,7 @@ func NewReadStateInteractor(
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
-	notificationSvc service.NotificationService,
+	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
 ) ReadStateUseCase {
 	return &readStateInteractor{

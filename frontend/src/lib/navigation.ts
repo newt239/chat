@@ -1,16 +1,14 @@
-import type { DataRouter } from "react-router";
+import type { AnyRouter, NavigateOptions } from "@tanstack/react-router";
 
-type NavigableRouter = Pick<DataRouter, "navigate">;
+let registeredRouter: Pick<AnyRouter, "navigate"> | null = null;
 
-let dataRouter: NavigableRouter | null = null;
-
-export const registerRouter = (router: NavigableRouter) => {
-  dataRouter = router;
+export const registerRouter = (router: Pick<AnyRouter, "navigate">) => {
+  registeredRouter = router;
 };
 
-export const navigateTo = (path: string) => {
-  if (dataRouter === null) {
+export const navigateTo = (options: NavigateOptions) => {
+  if (registeredRouter === null) {
     return;
   }
-  void dataRouter.navigate(path);
+  void registeredRouter.navigate(options);
 };

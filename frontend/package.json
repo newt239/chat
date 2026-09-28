@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vp build",
-    "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run ls-lint && pnpm run knip && pnpm run test",
+    "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run knip && pnpm run test",
     "dev": "vp dev",
     "format": "vp fmt --check",
     "format:fix": "vp fmt",
@@ -13,7 +13,6 @@
     "knip": "knip",
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
-    "ls-lint": "ls-lint",
     "preinstall": "npx only-allow pnpm",
     "preview": "vp preview",
     "test": "vp test run",
@@ -21,6 +20,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@bufbuild/protobuf": "2.15.0",
+    "@connectrpc/connect": "2.2.0",
+    "@connectrpc/connect-query": "2.3.1",
+    "@connectrpc/connect-web": "2.2.0",
     "@emoji-mart/data": "1.2.1",
     "@emoji-mart/react": "1.1.1",
     "@mantine/code-highlight": "9.6.1",
@@ -30,11 +33,10 @@
     "@mantine/notifications": "9.6.1",
     "@tabler/icons-react": "3.46.0",
     "@tanstack/react-query": "5.102.8",
+    "@tanstack/react-router": "1.170.38",
     "jotai": "3.0.0",
-    "openapi-fetch": "0.17.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-router": "8.3.1",
     "rehype-react": "8.0.0",
     "rehype-sanitize": "6.0.0",
     "remark-gfm": "4.0.1",
@@ -45,8 +47,8 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@ls-lint/ls-lint": "2.3.1",
     "@tailwindcss/vite": "4.3.3",
+    "@tanstack/router-plugin": "1.168.40",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",

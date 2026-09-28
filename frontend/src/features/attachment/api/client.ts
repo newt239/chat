@@ -1,37 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation } from "@connectrpc/connect-query";
 
-import { api } from "#/lib/api/client";
+import { AttachmentService } from "#/gen/chat/v1/attachment_service_pb";
 
-import type { PresignRequest } from "./types";
+export const usePresignUpload = () => useMutation(AttachmentService.method.presignUpload);
 
-export const usePresignUpload = () =>
-  useMutation({
-    mutationFn: async (params: PresignRequest & { channelId: string }) => {
-      const { data, error } = await api.POST("/api/attachments/presign", {
-        body: params,
-      });
-
-      if (error) {
-        throw new Error(error.error || "プリサイン URL の取得に失敗しました");
-      }
-
-      return data;
-    },
-  });
-
-export const useDownloadUrl = () =>
-  useMutation({
-    mutationFn: async (attachmentId: string) => {
-      const { data, error } = await api.GET("/api/attachments/{id}/download", {
-        params: {
-          path: { id: attachmentId },
-        },
-      });
-
-      if (error) {
-        throw new Error(error.error || "ダウンロード URL の取得に失敗しました");
-      }
-
-      return data;
-    },
-  });
+export const useDownloadUrl = () => useMutation(AttachmentService.method.getDownloadUrl);

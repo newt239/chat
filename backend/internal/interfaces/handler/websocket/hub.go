@@ -1,13 +1,14 @@
 package websocket
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/encoding/protojson"
+
+	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 )
 
 // Hub はWebSocket接続を管理します
@@ -383,136 +384,72 @@ func (c *Client) readPump() {
 
 // handleMessage はクライアントからのメッセージを処理します
 func (c *Client) handleMessage(data []byte) {
-	msg, err := ParseClientMessage(data)
-	if err != nil {
+	var event chatv1.ClientEvent
+	if err := protojson.Unmarshal(data, &event); err != nil {
 		log.Printf("[WebSocket] メッセージパースエラー: user=%s error=%v", c.userID, err)
 		c.sendError("PARSE_ERROR", "メッセージのパースに失敗しました")
 		return
 	}
 
-	log.Printf("[WebSocket] イベント処理開始: type=%s user=%s workspace=%s",
-		msg.Type, c.userID, c.workspaceID)
-
-	// イベントタイプに応じた処理
-	switch msg.Type {
-	case EventTypeJoinChannel:
-		c.handleJoinChannel(msg.Payload)
-	case EventTypeLeaveChannel:
-		c.handleLeaveChannel(msg.Payload)
-	case EventTypePostMessage:
-		c.handlePostMessage(msg.Payload)
-	case EventTypeTyping:
-		c.handleTyping(msg.Payload)
-	case EventTypeUpdateReadState:
-		c.handleUpdateReadState(msg.Payload)
+	switch e := event.Event.(type) {
+	case *chatv1.ClientEvent_JoinChannel:
+		c.handleJoinChannel(e.JoinChannel.GetChannelId())
+	case *chatv1.ClientEvent_LeaveChannel:
+		c.handleLeaveChannel(e.LeaveChannel.GetChannelId())
+	case *chatv1.ClientEvent_Typing:
+		c.notifyTyping(e.Typing.GetChannelId(), true)
+	case *chatv1.ClientEvent_StopTyping:
+		c.notifyTyping(e.StopTyping.GetChannelId(), false)
 	default:
-		log.Printf("[WebSocket] 未知のイベントタイプ: type=%s user=%s", msg.Type, c.userID)
-		c.sendError("UNKNOWN_EVENT", fmt.Sprintf("未知のイベントタイプです: %s", msg.Type))
+		log.Printf("[WebSocket] 未知のイベント: user=%s", c.userID)
+		c.sendError("UNKNOWN_EVENT", "未知のイベントです")
 	}
-	log.Printf("[WebSocket] イベント処理完了: type=%s user=%s", msg.Type, c.userID)
 }
 
-// handleJoinChannel はjoin_channelイベントを処理します
-func (c *Client) handleJoinChannel(payload json.RawMessage) {
-	var joinPayload JoinChannelPayload
-	if err := json.Unmarshal(payload, &joinPayload); err != nil {
-		log.Printf("join_channelペイロードの解析に失敗しました: %v", err)
+// handleJoinChannel はチャンネルの購読を開始します
+func (c *Client) handleJoinChannel(channelID string) {
+	if channelID == "" {
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
 
-	// 購読チャンネルリストに追加
-	c.subscribedChannels[joinPayload.ChannelID] = true
-
-	// Hubに購読情報を通知
+	c.subscribedChannels[channelID] = true
 	c.hub.subscribe <- &SubscribeRequest{
 		WorkspaceID: c.workspaceID,
-		ChannelID:   joinPayload.ChannelID,
+		ChannelID:   channelID,
 		UserID:      c.userID,
 	}
 
 	log.Printf("[WebSocket] チャンネル購読追加: user=%s workspace=%s channel=%s 購読数=%d",
-		c.userID, c.workspaceID, joinPayload.ChannelID, len(c.subscribedChannels))
+		c.userID, c.workspaceID, channelID, len(c.subscribedChannels))
 
-	c.sendAck(EventTypeJoinChannel, true, "")
+	c.sendAck("join_channel")
 }
 
-// handleLeaveChannel はleave_channelイベントを処理します
-func (c *Client) handleLeaveChannel(payload json.RawMessage) {
-	var leavePayload LeaveChannelPayload
-	if err := json.Unmarshal(payload, &leavePayload); err != nil {
-		log.Printf("leave_channelペイロードの解析に失敗しました: %v", err)
+// handleLeaveChannel はチャンネルの購読を解除します
+func (c *Client) handleLeaveChannel(channelID string) {
+	if channelID == "" {
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
 
-	// 購読チャンネルリストから削除
-	delete(c.subscribedChannels, leavePayload.ChannelID)
-
-	// Hubに購読解除情報を通知
+	delete(c.subscribedChannels, channelID)
 	c.hub.unsubscribe <- &UnsubscribeRequest{
 		WorkspaceID: c.workspaceID,
-		ChannelID:   leavePayload.ChannelID,
+		ChannelID:   channelID,
 		UserID:      c.userID,
 	}
 
 	log.Printf("[WebSocket] チャンネル購読解除: user=%s workspace=%s channel=%s 購読数=%d",
-		c.userID, c.workspaceID, leavePayload.ChannelID, len(c.subscribedChannels))
+		c.userID, c.workspaceID, channelID, len(c.subscribedChannels))
 
-	c.sendAck(EventTypeLeaveChannel, true, "")
+	c.sendAck("leave_channel")
 }
 
-// handlePostMessage はpost_messageイベントを処理します
-// メッセージの保存は HTTP API が担うため、ここでは入力中状態の解除のみ行います
-func (c *Client) handlePostMessage(payload json.RawMessage) {
-	var postPayload PostMessagePayload
-	if err := json.Unmarshal(payload, &postPayload); err != nil {
-		log.Printf("post_messageペイロードの解析に失敗しました: %v", err)
-		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
-		return
-	}
-
-	c.notifyTyping(postPayload.ChannelID, EventTypeStopTyping)
-	c.sendError("NOT_SUPPORTED", "メッセージの投稿は HTTP API を使用してください")
-}
-
-// handleTyping はtypingイベントを処理します
-func (c *Client) handleTyping(payload json.RawMessage) {
-	var typingPayload TypingPayload
-	if err := json.Unmarshal(payload, &typingPayload); err != nil {
-		log.Printf("typingペイロードの解析に失敗しました: %v", err)
-		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
-		return
-	}
-
-	log.Printf("ユーザー%sがチャンネル%sで入力中です", c.userID, typingPayload.ChannelID)
-
-	c.notifyTyping(typingPayload.ChannelID, EventTypeTyping)
-}
-
-// handleUpdateReadState はupdate_read_stateイベントを処理します
-// 既読の保存は HTTP API が担うため、ここでは受理せずクライアントに通知します
-func (c *Client) handleUpdateReadState(payload json.RawMessage) {
-	var readStatePayload UpdateReadStatePayload
-	if err := json.Unmarshal(payload, &readStatePayload); err != nil {
-		log.Printf("update_read_stateペイロードの解析に失敗しました: %v", err)
-		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
-		return
-	}
-
-	c.sendError("NOT_SUPPORTED", "既読の更新は HTTP API を使用してください")
-}
-
-// sendAck はACK応答を送信します
-func (c *Client) sendAck(eventType EventType, success bool, message string) {
-	payload := AckPayload{
-		Type:    eventType,
-		Success: success,
-		Message: message,
-	}
-	data, err := SendServerMessage(EventTypeAck, payload)
-	if err != nil {
-		log.Printf("ACKの送信に失敗しました: %v", err)
+// sendEvent は接続中のクライアントにだけイベントを送信します
+func (c *Client) sendEvent(event *chatv1.ServerEvent) {
+	data := encodeServerEvent(event)
+	if data == nil {
 		return
 	}
 	select {
@@ -521,21 +458,12 @@ func (c *Client) sendAck(eventType EventType, success bool, message string) {
 	}
 }
 
-// sendError はエラー応答を送信します
+func (c *Client) sendAck(eventName string) {
+	c.sendEvent(&chatv1.ServerEvent{Event: &chatv1.ServerEvent_Ack{Ack: &chatv1.AckEvent{Event: eventName, Success: true}}})
+}
+
 func (c *Client) sendError(code string, message string) {
-	payload := ErrorPayload{
-		Code:    code,
-		Message: message,
-	}
-	data, err := SendServerMessage(EventTypeError, payload)
-	if err != nil {
-		log.Printf("エラー送信に失敗しました: %v", err)
-		return
-	}
-	select {
-	case c.send <- data:
-	default:
-	}
+	c.sendEvent(&chatv1.ServerEvent{Event: &chatv1.ServerEvent_Error{Error: &chatv1.ErrorEvent{Code: code, Message: message}}})
 }
 
 // writePump はWebSocketにメッセージを書き込みます
@@ -586,15 +514,17 @@ func (c *Client) writePump() {
 }
 
 // notifyTyping は入力中状態の開始・停止をチャンネルの他ユーザーに通知します
-func (c *Client) notifyTyping(channelID string, eventType EventType) {
-	message, err := SendServerMessage(eventType, TypingNotificationPayload{
-		ChannelID: channelID,
-		UserID:    c.userID,
-	})
-	if err != nil {
-		log.Printf("%sメッセージの生成に失敗しました: %v", eventType, err)
+func (c *Client) notifyTyping(channelID string, typing bool) {
+	if channelID == "" {
+		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
 		return
 	}
-
-	c.hub.BroadcastToChannel(c.workspaceID, channelID, message, c.userID)
+	payload := &chatv1.TypingEvent{ChannelId: channelID, UserId: c.userID}
+	event := &chatv1.ServerEvent{Event: &chatv1.ServerEvent_StopTyping{StopTyping: payload}}
+	if typing {
+		event.Event = &chatv1.ServerEvent_Typing{Typing: payload}
+	}
+	if data := encodeServerEvent(event); data != nil {
+		c.hub.BroadcastToChannel(c.workspaceID, channelID, data, c.userID)
+	}
 }

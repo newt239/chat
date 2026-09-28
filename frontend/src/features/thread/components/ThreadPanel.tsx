@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { Divider, Loader, Stack, Text } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { ThreadReplyInput } from "#/features/message/components/ThreadReplyInput";
 import { ThreadReplyList } from "#/features/message/components/ThreadReplyList";
+import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { useThreadReplies, useSendThreadReply } from "#/features/message/hooks/useThread";
 import { userAtom } from "#/providers/store/auth";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
@@ -21,7 +21,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
   const [currentChannelId] = useAtom(currentChannelIdAtom);
   const { data: threadData, isLoading, isError, error } = useThreadReplies(threadId);
-  const sendReply = useSendThreadReply(threadId, currentChannelId);
+  const sendReply = useSendThreadReply();
   const repliesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
@@ -41,17 +41,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
     }
   }, [sendReply.isSuccess]);
 
-  const handleCopyLink = useCallback(
-    (msgId: string) => {
-      const url = `${window.location.origin}/app/${currentWorkspaceId}/${currentChannelId}?message=${msgId}`;
-      void navigator.clipboard.writeText(url);
-      notifications.show({
-        message: "メッセージリンクをクリップボードにコピーしました",
-        title: "コピーしました",
-      });
-    },
-    [currentWorkspaceId, currentChannelId],
-  );
+  const handleCopyLink = useCopyMessageLink(currentWorkspaceId, currentChannelId);
 
   const handleCreateThread = useCallback(
     (msgId: string) => {
@@ -62,9 +52,11 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
 
   const handleSendReply = useCallback(
     (body: string, attachmentIds: string[]) => {
-      sendReply.mutate({ attachmentIds, body });
+      if (currentChannelId !== null) {
+        sendReply.mutate({ attachmentIds, body, channelId: currentChannelId, parentId: threadId });
+      }
     },
-    [sendReply],
+    [sendReply, currentChannelId, threadId],
   );
 
   if (!currentWorkspaceId || !currentChannelId) {
@@ -88,7 +80,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
           <Text c="red" size="sm">
             {error.message}
           </Text>
-        ) : threadData ? (
+        ) : threadData?.parentMessage ? (
           <>
             <div className="flex-1 overflow-y-auto">
               <Stack gap="md">

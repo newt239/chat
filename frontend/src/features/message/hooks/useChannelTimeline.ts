@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 
-import type { MessageWithUser, TimelineItem } from "#/features/message/types";
+import { create } from "@bufbuild/protobuf";
+import { timestampNow } from "@bufbuild/protobuf/wkt";
+
+import { ReactionSchema, TimelineItemSchema } from "#/gen/chat/v1/message_pb";
+import { toDate } from "#/lib/timestamp";
+
+import type { Message, Reaction, TimelineItem } from "#/gen/chat/v1/message_pb";
 import type { WsClient } from "#/lib/ws";
 
 type UseChannelTimelineArgs = {
@@ -9,28 +15,28 @@ type UseChannelTimelineArgs = {
   initialMessages: TimelineItem[] | undefined;
 };
 
-const replaceMessage = (items: TimelineItem[], message: MessageWithUser) =>
+/** ユーザーメッセージの項目だけを更新する */
+const updateUserMessages = (
+  items: TimelineItem[],
+  shouldUpdate: (message: Message) => boolean,
+  update: (message: Message) => Message,
+) =>
   items.map((item) =>
-    item.type === "user" && item.userMessage?.id === message.id
-      ? { ...item, userMessage: message }
+    item.content.case === "userMessage" && shouldUpdate(item.content.value)
+      ? { ...item, content: { case: "userMessage" as const, value: update(item.content.value) } }
       : item,
   );
 
-/** リアクションの追加・削除をタイムライン上のメッセージへ反映する */
-const applyReaction = (
+const updateReactions = (
   items: TimelineItem[],
   messageId: string,
-  update: (reactions: NonNullable<MessageWithUser["reactions"]>) => MessageWithUser["reactions"],
+  update: (reactions: Reaction[]) => Reaction[],
 ) =>
-  items.map((item) => {
-    if (item.type !== "user" || item.userMessage?.id !== messageId) {
-      return item;
-    }
-    return {
-      ...item,
-      userMessage: { ...item.userMessage, reactions: update(item.userMessage.reactions ?? []) },
-    };
-  });
+  updateUserMessages(
+    items,
+    (message) => message.id === messageId,
+    (message) => ({ ...message, reactions: update(message.reactions) }),
+  );
 
 export const useChannelTimeline = ({
   currentChannelId,
@@ -59,94 +65,117 @@ export const useChannelTimeline = ({
     const isCurrentChannel = (channelId: string) => channelId === currentChannelId;
 
     const unsubscribes = [
-      wsClient.on("new_message", ({ channel_id, message }) => {
-        if (!isCurrentChannel(channel_id)) {
+      wsClient.on("newMessage", ({ channelId, message }) => {
+        // スレッドの返信はスレッドパネル側で表示するためタイムラインには積まない
+        if (
+          !isCurrentChannel(channelId) ||
+          message === undefined ||
+          message.parentId !== undefined
+        ) {
           return;
         }
         setTimeline((prev) =>
-          prev.some((item) => item.type === "user" && item.userMessage?.id === message.id)
+          prev.some(
+            (item) => item.content.case === "userMessage" && item.content.value.id === message.id,
+          )
             ? prev
-            : [...prev, { createdAt: message.createdAt, type: "user", userMessage: message }],
+            : [
+                ...prev,
+                create(TimelineItemSchema, {
+                  content: { case: "userMessage", value: message },
+                  createdAt: message.createdAt,
+                }),
+              ],
         );
       }),
 
-      wsClient.on("message_updated", ({ channel_id, message }) => {
-        if (isCurrentChannel(channel_id)) {
-          setTimeline((prev) => replaceMessage(prev, message));
-        }
-      }),
-
-      wsClient.on("message_deleted", ({ channel_id, deleteData }) => {
-        if (!isCurrentChannel(channel_id)) {
+      wsClient.on("messageUpdated", ({ channelId, message }) => {
+        if (!isCurrentChannel(channelId) || message === undefined) {
           return;
         }
         setTimeline((prev) =>
-          prev.map((item) =>
-            item.type === "user" && item.userMessage?.id === deleteData.id
-              ? {
-                  ...item,
-                  userMessage: {
-                    ...item.userMessage,
-                    deletedAt: deleteData.deleted_at,
-                    isDeleted: true,
-                  },
-                }
-              : item,
+          updateUserMessages(
+            prev,
+            (current) => current.id === message.id,
+            () => message,
           ),
         );
       }),
 
-      wsClient.on("system_message_created", ({ channel_id, message }) => {
-        if (!isCurrentChannel(channel_id)) {
+      wsClient.on("messageDeleted", ({ channelId, deletedMessageIds, deletedAt }) => {
+        if (!isCurrentChannel(channelId)) {
           return;
         }
+        const deletedIds = new Set(deletedMessageIds);
         setTimeline((prev) =>
-          prev.some((item) => item.type === "system" && item.systemMessage?.id === message.id)
-            ? prev
-            : [...prev, { createdAt: message.createdAt, systemMessage: message, type: "system" }],
+          updateUserMessages(
+            prev,
+            (message) => deletedIds.has(message.id),
+            (message) => ({ ...message, deletedAt, isDeleted: true }),
+          ),
         );
       }),
 
-      wsClient.on("reaction_added", ({ channel_id, emoji, message_id, user_id }) => {
-        if (!isCurrentChannel(channel_id)) {
+      wsClient.on("systemMessageCreated", ({ channelId, message }) => {
+        if (!isCurrentChannel(channelId) || message === undefined) {
           return;
         }
         setTimeline((prev) =>
-          applyReaction(prev, message_id, (reactions) =>
-            reactions.some((r) => r.emoji === emoji && r.user.id === user_id)
+          prev.some(
+            (item) => item.content.case === "systemMessage" && item.content.value.id === message.id,
+          )
+            ? prev
+            : [
+                ...prev,
+                create(TimelineItemSchema, {
+                  content: { case: "systemMessage", value: message },
+                  createdAt: message.createdAt,
+                }),
+              ],
+        );
+      }),
+
+      wsClient.on("reactionAdded", ({ channelId, emoji, messageId, userId }) => {
+        if (!isCurrentChannel(channelId)) {
+          return;
+        }
+        setTimeline((prev) =>
+          updateReactions(prev, messageId, (reactions) =>
+            reactions.some((r) => r.emoji === emoji && r.user?.id === userId)
               ? reactions
               : [
                   ...reactions,
-                  {
-                    createdAt: new Date().toISOString(),
+                  create(ReactionSchema, {
+                    createdAt: timestampNow(),
                     emoji,
-                    user: { displayName: "", id: user_id },
-                  },
+                    messageId,
+                    user: { id: userId },
+                  }),
                 ],
           ),
         );
       }),
 
-      wsClient.on("reaction_removed", ({ channel_id, emoji, message_id, user_id }) => {
-        if (!isCurrentChannel(channel_id)) {
+      wsClient.on("reactionRemoved", ({ channelId, emoji, messageId, userId }) => {
+        if (!isCurrentChannel(channelId)) {
           return;
         }
         setTimeline((prev) =>
-          applyReaction(prev, message_id, (reactions) =>
-            reactions.filter((r) => !(r.emoji === emoji && r.user.id === user_id)),
+          updateReactions(prev, messageId, (reactions) =>
+            reactions.filter((r) => !(r.emoji === emoji && r.user?.id === userId)),
           ),
         );
       }),
 
-      wsClient.on("typing", ({ channel_id, user_id }) => {
-        if (isCurrentChannel(channel_id)) {
-          setTypingUserIds((prev) => (prev.includes(user_id) ? prev : [...prev, user_id]));
+      wsClient.on("typing", ({ channelId, userId }) => {
+        if (isCurrentChannel(channelId)) {
+          setTypingUserIds((prev) => (prev.includes(userId) ? prev : [...prev, userId]));
         }
       }),
 
-      wsClient.on("stop_typing", ({ channel_id, user_id }) => {
-        if (isCurrentChannel(channel_id)) {
-          setTypingUserIds((prev) => prev.filter((id) => id !== user_id));
+      wsClient.on("stopTyping", ({ channelId, userId }) => {
+        if (isCurrentChannel(channelId)) {
+          setTypingUserIds((prev) => prev.filter((id) => id !== userId));
         }
       }),
     ];
@@ -161,12 +190,12 @@ export const useChannelTimeline = ({
 
   const orderedItems = useMemo(() => {
     if (!currentChannelId) {
-      return [] as TimelineItem[];
+      return [];
     }
 
     const seen = new Set<string>();
     const unique = timeline.filter((item) => {
-      const id = item.userMessage?.id ?? item.systemMessage?.id;
+      const id = item.content.value?.id;
       if (id === undefined || seen.has(id)) {
         return id === undefined;
       }
@@ -174,9 +203,7 @@ export const useChannelTimeline = ({
       return true;
     });
 
-    return unique.toSorted(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    );
+    return unique.toSorted((a, b) => toDate(a.createdAt).getTime() - toDate(b.createdAt).getTime());
   }, [timeline, currentChannelId]);
 
   return { orderedItems, typingUserIds };

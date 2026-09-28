@@ -11,9 +11,9 @@ const resolveErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-export const useMessageActions = (currentChannelId: string | null) => {
-  const updateMessage = useUpdateMessage(currentChannelId);
-  const deleteMessage = useDeleteMessage(currentChannelId);
+export const useMessageActions = () => {
+  const updateMessage = useUpdateMessage();
+  const deleteMessage = useDeleteMessage();
 
   const handleEdit = useCallback(
     async (messageId: string, nextBody: string) => {

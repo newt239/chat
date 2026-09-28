@@ -1,10 +1,9 @@
 import { useState } from "react";
 
 import { Modal, Button, MultiSelect, Text, Group, TextInput } from "@mantine/core";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { paths } from "#/lib/paths";
 
 import { useCreateDM, useCreateGroupDM } from "../hooks/useDM";
 
@@ -20,8 +19,8 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const [groupName, setGroupName] = useState("");
 
   const { data: members } = useMembers(opened ? workspaceId : null);
-  const createDM = useCreateDM(workspaceId);
-  const createGroupDM = useCreateGroupDM(workspaceId);
+  const createDM = useCreateDM();
+  const createGroupDM = useCreateGroupDM();
 
   const isGroup = selectedUserIds.length > 1;
   const isPending = createDM.isPending || createGroupDM.isPending;
@@ -38,15 +37,21 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
       return;
     }
 
-    const dm = isGroup
+    const { directMessage } = isGroup
       ? await createGroupDM.mutateAsync({
           name: groupName.trim() === "" ? undefined : groupName.trim(),
           userIds: selectedUserIds,
+          workspaceId,
         })
-      : await createDM.mutateAsync({ userId: firstUserId });
+      : await createDM.mutateAsync({ userId: firstUserId, workspaceId });
 
     handleClose();
-    void navigate(paths.channel(workspaceId, dm.id));
+    if (directMessage !== undefined) {
+      void navigate({
+        params: { channelId: directMessage.id, workspaceId },
+        to: "/app/$workspaceId/$channelId",
+      });
+    }
   };
 
   const memberOptions = (members ?? []).map((member) => ({

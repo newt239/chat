@@ -1,11 +1,10 @@
-import { Outlet } from "react-router";
+import { Outlet, useParams } from "@tanstack/react-router";
 
 import { ChannelHeader } from "#/features/channel/components/ChannelHeader";
 import { MessageInput } from "#/features/message/components/MessageInput";
-import { useOptionalRouteParams } from "#/lib/routeParams";
 
 export const CenterPanel = () => {
-  const { channelId } = useOptionalRouteParams();
+  const { channelId } = useParams({ strict: false });
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-white">

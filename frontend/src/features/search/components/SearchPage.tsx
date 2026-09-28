@@ -2,24 +2,30 @@ import { useState } from "react";
 
 import { Card, Stack, Text, Loader, SegmentedControl, Pagination, TextInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
+import { getRouteApi } from "@tanstack/react-router";
 
-import { useSearchQueryParams } from "#/features/search/hooks/useSearchQueryParams";
 import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearchIndex";
 import { searchFilterValues } from "#/features/search/schemas";
-import { useWorkspaceId } from "#/lib/routeParams";
 
 import { SearchResultList } from "./SearchResultList";
 
 const RESULTS_PER_PAGE = 20;
 
+const searchRoute = getRouteApi("/app/$workspaceId/search");
+
+type SearchQuery = ReturnType<typeof searchRoute.useSearch>;
+
 const calculatePages = (total: number, per: number) =>
   Math.max(1, Math.ceil(total / Math.max(1, per)));
 
 export const SearchPage = () => {
-  const workspaceId = useWorkspaceId();
-  const { query: searchQuery, updateQuery } = useSearchQueryParams();
+  const { workspaceId } = searchRoute.useParams();
+  const { q: query, filter, page } = searchRoute.useSearch();
+  const navigate = searchRoute.useNavigate();
 
-  const { q: query, filter, page } = searchQuery;
+  const updateQuery = (patch: Partial<SearchQuery>) => {
+    void navigate({ search: (prev) => ({ ...prev, ...patch }) });
+  };
   const trimmedQuery = query.trim();
 
   const [inputValue, setInputValue] = useState(query);

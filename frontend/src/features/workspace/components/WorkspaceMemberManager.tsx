@@ -5,15 +5,14 @@ import { IconUserMinus } from "@tabler/icons-react";
 
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspaceMemberActions";
+import { workspaceRoleLabels } from "#/features/workspace/utils/workspaceRole";
+import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
-import type { components } from "#/lib/api/schema";
-
-type WorkspaceRole = components["schemas"]["UpdateMemberRoleRequest"]["role"];
-
-const ROLE_OPTIONS: { label: string; value: WorkspaceRole }[] = [
-  { label: "メンバー", value: "member" },
-  { label: "管理者", value: "admin" },
-];
+const ROLE_OPTIONS = [WorkspaceRole.MEMBER, WorkspaceRole.ADMIN].map((role) => ({
+  label: workspaceRoleLabels[role],
+  role,
+  value: String(role),
+}));
 
 type WorkspaceMemberManagerProps = {
   workspaceId: string;
@@ -21,12 +20,12 @@ type WorkspaceMemberManagerProps = {
 
 export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerProps) => {
   const { data: members } = useMembers(workspaceId);
-  const { invite, remove, updateRole } = useWorkspaceMemberActions(workspaceId);
+  const { invite, remove, updateRole } = useWorkspaceMemberActions();
   const [email, setEmail] = useState("");
 
   const handleInvite = () => {
     if (email.trim().length > 0) {
-      invite.mutate({ email: email.trim(), role: "member" });
+      invite.mutate({ email: email.trim(), role: WorkspaceRole.MEMBER, workspaceId });
       setEmail("");
     }
   };
@@ -50,9 +49,9 @@ export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerPr
               </div>
             </Group>
             <Group gap={4} wrap="nowrap">
-              {member.role === "owner" ? (
+              {member.role === WorkspaceRole.OWNER ? (
                 <Text size="xs" c="dimmed">
-                  オーナー
+                  {workspaceRoleLabels[member.role]}
                 </Text>
               ) : (
                 <>
@@ -60,12 +59,12 @@ export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerPr
                     size="xs"
                     w={110}
                     data={ROLE_OPTIONS}
-                    value={member.role}
+                    value={String(member.role)}
                     allowDeselect={false}
                     onChange={(value) => {
                       const role = ROLE_OPTIONS.find((option) => option.value === value);
                       if (role !== undefined) {
-                        updateRole.mutate({ role: role.value, userId: member.userId });
+                        updateRole.mutate({ role: role.role, userId: member.userId, workspaceId });
                       }
                     }}
                   />
@@ -74,7 +73,7 @@ export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerPr
                     color="red"
                     aria-label={`${member.displayName} をワークスペースから外す`}
                     onClick={() => {
-                      remove.mutate({ userId: member.userId });
+                      remove.mutate({ userId: member.userId, workspaceId });
                     }}
                   >
                     <IconUserMinus size={16} />

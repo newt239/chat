@@ -1,9 +1,9 @@
 import { Avatar, Badge, Card, Loader, Stack, Text } from "@mantine/core";
+import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearchIndex";
-import { paths } from "#/lib/paths";
+import { toDate } from "#/lib/timestamp";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 const SIDEBAR_CONTAINER_CLASS = "border-l border-gray-200 bg-gray-50 p-4 h-full overflow-y-auto";
@@ -33,11 +33,15 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
   };
 
   const handleChannelClick = (channelId: string) => {
-    void navigate(paths.channel(workspaceId, channelId));
+    void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
   };
 
   const handleMessageClick = (channelId: string, messageId: string) => {
-    void navigate(paths.channel(workspaceId, channelId, messageId));
+    void navigate({
+      params: { channelId, workspaceId },
+      search: { message: messageId },
+      to: "/app/$workspaceId/$channelId",
+    });
   };
 
   if (trimmedQuery.length === 0) {
@@ -183,7 +187,7 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
               >
                 <Stack gap="4">
                   <Text size="xs" c="dimmed">
-                    {dateTimeFormatter.format(new Date(message.createdAt))}
+                    {dateTimeFormatter.format(toDate(message.createdAt))}
                   </Text>
                   <Text size="sm">{message.body}</Text>
                 </Stack>

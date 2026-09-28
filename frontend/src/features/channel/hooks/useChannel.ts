@@ -1,65 +1,26 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createConnectQueryKey, skipToken, useMutation, useQuery } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { api } from "#/lib/api/client";
+import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
-import type { components } from "#/lib/api/schema";
-
-type CreateChannelInput = {
-  name: string;
-  description?: string;
-  isPrivate?: boolean;
-};
-
-export const useChannels = (workspaceId: string | null) =>
-  useQuery({
-    enabled: workspaceId !== null,
-    queryFn: async (): Promise<components["schemas"]["Channel"][]> => {
-      if (workspaceId === null) {
-        return [];
-      }
-
-      const { data, error } = await api.GET("/api/workspaces/{id}/channels", {
-        params: { path: { id: workspaceId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
-    queryKey: ["workspaces", workspaceId, "channels"],
+export const channelListKey = (workspaceId: string) =>
+  createConnectQueryKey({
+    cardinality: "finite",
+    input: { workspaceId },
+    schema: ChannelService.method.listChannels,
   });
 
-export const useCreateChannel = (workspaceId: string | null) => {
+export const useChannels = (workspaceId: string | null) =>
+  useQuery(ChannelService.method.listChannels, workspaceId === null ? skipToken : { workspaceId }, {
+    select: (res) => res.channels,
+  });
+
+export const useCreateChannel = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (input: CreateChannelInput) => {
-      if (workspaceId === null) {
-        throw new Error("ワークスペースが選択されていません");
-      }
-
-      const { data, error } = await api.POST("/api/workspaces/{id}/channels", {
-        body: {
-          description: input.description,
-          isPrivate: input.isPrivate ?? false,
-          name: input.name,
-        },
-        params: { path: { id: workspaceId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      if (workspaceId === null) {
-        return;
-      }
-      void queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
+  return useMutation(ChannelService.method.createChannel, {
+    onSuccess: async (_, { workspaceId = "" }) => {
+      await queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) });
     },
   });
 };

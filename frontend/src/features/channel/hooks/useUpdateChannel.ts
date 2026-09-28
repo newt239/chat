@@ -1,34 +1,15 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { api } from "#/lib/api/client";
+import { channelListKey } from "#/features/channel/hooks/useChannel";
+import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
-type UpdateChannelInput = {
-  channelId: string;
-  name?: string;
-  description?: string;
-  isPrivate?: boolean;
-};
-
-export const useUpdateChannel = (workspaceId: string | null) => {
+export const useUpdateChannel = (workspaceId: string) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async ({ channelId, ...body }: UpdateChannelInput) => {
-      const { data, error } = await api.PATCH("/api/channels/{channelId}", {
-        body,
-        params: { path: { channelId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
+  return useMutation(ChannelService.method.updateChannel, {
     onSuccess: async () => {
-      if (workspaceId !== null) {
-        await queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "channels"] });
-      }
+      await queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) });
     },
   });
 };

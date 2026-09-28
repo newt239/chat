@@ -1,5 +1,6 @@
 import React from "react";
 
+import { TransportProvider } from "@connectrpc/connect-query";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -7,6 +8,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
+import { transport } from "./lib/api/transport";
 import { queryClient } from "./providers/query/query";
 import { store } from "./providers/store";
 import "@mantine/core/styles.css";
@@ -21,10 +23,12 @@ if (rootEl) {
     <React.StrictMode>
       <JotaiProvider store={store}>
         <QueryClientProvider client={queryClient}>
-          <MantineProvider>
-            <Notifications />
-            <App />
-          </MantineProvider>
+          <TransportProvider transport={transport}>
+            <MantineProvider>
+              <Notifications />
+              <App />
+            </MantineProvider>
+          </TransportProvider>
         </QueryClientProvider>
       </JotaiProvider>
     </React.StrictMode>,

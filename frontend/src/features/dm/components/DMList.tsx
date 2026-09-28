@@ -1,18 +1,15 @@
 import { Text, UnstyledButton } from "@mantine/core";
 import { IconUser, IconUsers } from "@tabler/icons-react";
-import { Link } from "react-router";
+import { Link, useParams } from "@tanstack/react-router";
 
-import { paths } from "#/lib/paths";
-import { useOptionalRouteParams } from "#/lib/routeParams";
+import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
 
 import { useDMs } from "../hooks/useDM";
 
-import type { components } from "#/lib/api/schema";
+import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
 
-type DM = components["schemas"]["DMOutput"];
-
-const getDMDisplayName = (dm: DM) => {
-  if (dm.type === "dm") {
+const getDMDisplayName = (dm: DirectMessage) => {
+  if (dm.type === DirectMessageType.DM) {
     const [otherMember] = dm.members;
     return otherMember?.displayName || "不明なユーザー";
   }
@@ -24,7 +21,7 @@ type DMListProps = {
 };
 
 export const DMList = ({ workspaceId }: DMListProps) => {
-  const { channelId } = useOptionalRouteParams();
+  const { channelId } = useParams({ strict: false });
   const { data: dms, isLoading } = useDMs(workspaceId);
 
   if (isLoading) {
@@ -54,13 +51,18 @@ export const DMList = ({ workspaceId }: DMListProps) => {
         const displayName = getDMDisplayName(dm);
 
         return (
-          <Link key={dm.id} to={paths.channel(workspaceId, dm.id)} className="block no-underline">
+          <Link
+            key={dm.id}
+            to="/app/$workspaceId/$channelId"
+            params={{ channelId: dm.id, workspaceId }}
+            className="block no-underline"
+          >
             <UnstyledButton
               className={`w-full px-3 py-1.5 rounded-md flex items-center space-x-2 transition-colors ${
                 isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
               }`}
             >
-              {dm.type === "dm" ? <IconUser size={16} /> : <IconUsers size={16} />}
+              {dm.type === DirectMessageType.DM ? <IconUser size={16} /> : <IconUsers size={16} />}
               <Text size="sm" truncate className="flex-1">
                 {displayName}
               </Text>

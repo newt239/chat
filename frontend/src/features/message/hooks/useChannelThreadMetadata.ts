@@ -1,32 +1,18 @@
 import { useMemo } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 
-import { api } from "#/lib/api/client";
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
 
-import type { ThreadMetadata } from "../types";
+import type { ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 /** チャンネル内のメッセージ ID からスレッドメタデータを引けるようにする */
 export const useChannelThreadMetadata = (channelId: string | null) => {
-  const { data: messages } = useQuery({
-    enabled: channelId !== null,
-    queryFn: async () => {
-      if (channelId === null) {
-        return [];
-      }
-
-      const { data, error } = await api.GET("/api/channels/{channelId}/messages/with-threads", {
-        params: { path: { channelId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data.messages;
-    },
-    queryKey: ["channels", channelId, "messages", "with-threads"],
-  });
+  const { data: messages } = useQuery(
+    MessageService.method.listMessagesWithThread,
+    channelId === null ? skipToken : { channelId },
+    { select: (res) => res.messages },
+  );
 
   return useMemo(() => {
     const map = new Map<string, ThreadMetadata>();

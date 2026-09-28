@@ -1,36 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { Button, Loader, Stack, Text } from "@mantine/core";
+import { useParams } from "@tanstack/react-router";
 
 import { ThreadCard } from "#/features/thread/components/ThreadCard";
 import { useParticipatingThreads } from "#/features/thread/hooks/useParticipatingThreads";
-import { useWorkspaceId } from "#/lib/routeParams";
 
-import type { ParticipatingThread } from "#/features/thread/schemas";
+import type { Message } from "#/gen/chat/v1/message_pb";
+import type { ParticipatingThread, ThreadCursor } from "#/gen/chat/v1/thread_service_pb";
+
+type ThreadItem = ParticipatingThread & { firstMessage: Message };
 
 export const ThreadListPage = () => {
-  const workspaceId = useWorkspaceId();
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
 
-  const [cursorLastActivityAt, setCursorLastActivityAt] = useState<string | undefined>();
-  const [cursorThreadId, setCursorThreadId] = useState<string | undefined>();
+  const [cursor, setCursor] = useState<ThreadCursor>();
 
-  const { data, isLoading, isFetching, refetch } = useParticipatingThreads({
-    cursorLastActivityAt,
-    cursorThreadId,
-    limit: 20,
-    workspaceId,
-  });
+  const { data, isLoading, isFetching, refetch } = useParticipatingThreads(workspaceId, cursor);
 
   // ページを跨いで結果を積み上げる
-  const [items, setItems] = useState<ParticipatingThread[]>([]);
+  const [items, setItems] = useState<ThreadItem[]>([]);
 
   useEffect(() => {
     if (!data) {
       return;
     }
     setItems((prev) => {
-      const known = new Set(prev.map((item) => item.thread_id));
-      return [...prev, ...data.items.filter((item) => !known.has(item.thread_id))];
+      const known = new Set(prev.map((item) => item.threadId));
+      return [...prev, ...data.threads.filter((item) => !known.has(item.threadId))];
     });
   }, [data]);
 
@@ -38,7 +35,7 @@ export const ThreadListPage = () => {
     setItems([]);
   }, [workspaceId]);
 
-  const next = data?.next_cursor;
+  const next = data?.nextCursor;
 
   const isBusy = isLoading || isFetching;
 
@@ -46,13 +43,12 @@ export const ThreadListPage = () => {
     if (!next) {
       return;
     }
-    setCursorLastActivityAt(next.last_activity_at);
-    setCursorThreadId(next.thread_id);
+    setCursor(next);
   };
 
   const handleMarkedRead = (threadId: string) => {
     setItems((prev) =>
-      prev.map((item) => (item.thread_id === threadId ? { ...item, unread_count: 0 } : item)),
+      prev.map((item) => (item.threadId === threadId ? { ...item, unreadCount: 0 } : item)),
     );
     void refetch();
   };
@@ -74,7 +70,7 @@ export const ThreadListPage = () => {
         ) : (
           <Stack gap={8}>
             {items.map((t) => (
-              <ThreadCard key={t.thread_id} thread={t} onMarkedRead={handleMarkedRead} />
+              <ThreadCard key={t.threadId} thread={t} onMarkedRead={handleMarkedRead} />
             ))}
           </Stack>
         )}

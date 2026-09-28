@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 
 import { Card, Text, Button, Group, Stack, Loader } from "@mantine/core";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
-import { paths } from "#/lib/paths";
 import { currentWorkspaceIdAtom, setCurrentWorkspaceAtom } from "#/providers/store/workspace";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
@@ -85,7 +84,10 @@ export const WorkspaceList = () => {
                     fullWidth
                     onClick={() => {
                       setCurrentWorkspace(workspace.id);
-                      void navigate(paths.workspace(workspace.id));
+                      void navigate({
+                        params: { workspaceId: workspace.id },
+                        to: "/app/$workspaceId",
+                      });
                     }}
                   >
                     {isSelected ? "選択中" : "開く"}

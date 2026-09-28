@@ -80,7 +80,7 @@ export const useFileUpload = () => {
           channelId: options.channelId,
           contentType: file.type || "application/octet-stream",
           fileName: file.name,
-          sizeBytes: file.size,
+          sizeBytes: BigInt(file.size),
         });
 
         // アップロード中に変更

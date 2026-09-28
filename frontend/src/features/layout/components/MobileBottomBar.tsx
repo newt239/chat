@@ -1,10 +1,8 @@
 import { ActionIcon, Group } from "@mantine/core";
 import { IconMenu2, IconInfoCircle, IconBookmark, IconSearch } from "@tabler/icons-react";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
-import { paths } from "#/lib/paths";
-import { useOptionalRouteParams } from "#/lib/routeParams";
 import {
   hideMobilePanelsAtom,
   mobileActivePanelAtom,
@@ -20,7 +18,7 @@ export const MobileBottomBar = () => {
   const hideMobilePanels = useSetAtom(hideMobilePanelsAtom);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
   const navigate = useNavigate();
-  const { workspaceId } = useOptionalRouteParams();
+  const { workspaceId } = useParams({ strict: false });
 
   const handleLeftPanelClick = () => {
     if (mobileActivePanel === "left") {
@@ -43,7 +41,7 @@ export const MobileBottomBar = () => {
       return;
     }
     hideMobilePanels();
-    void navigate(paths.search(workspaceId));
+    void navigate({ params: { workspaceId }, to: "/app/$workspaceId/search" });
   };
 
   const handleBookmarkClick = () => {

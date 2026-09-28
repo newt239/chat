@@ -4,14 +4,14 @@ import { LinkPreviewEmbed } from "#/features/link/components/LinkPreviewEmbed";
 
 import { renderMarkdown } from "../utils/markdown/renderer";
 
-import type { MessageWithUser } from "../types";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 type MessageContentProps = {
-  message: MessageWithUser;
+  message: Message;
 };
 
 export const MessageContent = ({ message }: MessageContentProps) => {
-  const { body, links = [] } = message;
+  const { body, links } = message;
 
   const rendered = renderMarkdown(body);
 

@@ -23,7 +23,7 @@ type MessageUpdater struct {
 	groupMentionRepo      domainrepository.MessageGroupMentionRepository
 	linkRepo              domainrepository.MessageLinkRepository
 	attachmentRepo        domainrepository.AttachmentRepository
-	notificationSvc       service.NotificationService
+	notificationSvc       Notifier
 	mentionService        service.MentionService
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
@@ -43,7 +43,7 @@ func NewMessageUpdater(
 	groupMentionRepo domainrepository.MessageGroupMentionRepository,
 	linkRepo domainrepository.MessageLinkRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
-	notificationSvc service.NotificationService,
+	notificationSvc Notifier,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,

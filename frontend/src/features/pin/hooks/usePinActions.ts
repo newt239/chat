@@ -1,60 +1,30 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
 
-import { api } from "#/lib/api/client";
-import { store } from "#/providers/store";
+import { PinService } from "#/gen/chat/v1/pin_service_pb";
 import { addChannelPinsDeltaAtom } from "#/providers/store/ui";
-import { currentChannelIdAtom } from "#/providers/store/workspace";
 
-export const usePinActions = (channelIdParam?: string | null) => {
+export const pinListKey = (channelId: string) =>
+  createConnectQueryKey({
+    cardinality: "finite",
+    input: { channelId },
+    schema: PinService.method.listPins,
+  });
+
+export const usePinActions = () => {
   const queryClient = useQueryClient();
   const addPinsDelta = useSetAtom(addChannelPinsDeltaAtom);
-  const currentChannelId = channelIdParam ?? store.get(currentChannelIdAtom);
 
-  const pin = useMutation({
-    mutationFn: async ({ messageId }: { messageId: string }) => {
-      if (!currentChannelId) {
-        throw new Error("チャンネルが選択されていません");
-      }
-      const { data, error } = await api.POST("/api/channels/{channelId}/pins", {
-        body: { messageId },
-        params: { path: { channelId: currentChannelId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-      return data;
-    },
-    onSuccess: () => {
-      if (!currentChannelId) {
-        return;
-      }
-      void queryClient.invalidateQueries({ queryKey: ["channels", currentChannelId, "pins"] });
-      addPinsDelta({ channelId: currentChannelId, delta: 1 });
-    },
-  });
+  const onSuccess =
+    (delta: number) =>
+    async (_: unknown, { channelId = "" }) => {
+      addPinsDelta({ channelId, delta });
+      await queryClient.invalidateQueries({ queryKey: pinListKey(channelId) });
+    };
 
-  const unpin = useMutation({
-    mutationFn: async ({ messageId }: { messageId: string }) => {
-      if (!currentChannelId) {
-        throw new Error("チャンネルが選択されていません");
-      }
-      const { error } = await api.DELETE("/api/channels/{channelId}/pins/{messageId}", {
-        params: { path: { channelId: currentChannelId, messageId } },
-      });
-      if (error) {
-        throw new Error(error.error);
-      }
-      return { ok: true } as const;
-    },
-    onSuccess: () => {
-      if (!currentChannelId) {
-        return;
-      }
-      void queryClient.invalidateQueries({ queryKey: ["channels", currentChannelId, "pins"] });
-      addPinsDelta({ channelId: currentChannelId, delta: -1 });
-    },
-  });
+  const pin = useMutation(PinService.method.createPin, { onSuccess: onSuccess(1) });
+  const unpin = useMutation(PinService.method.deletePin, { onSuccess: onSuccess(-1) });
 
   return { pin, unpin };
 };

@@ -1,17 +1,17 @@
 import { useCallback } from "react";
 
 import { Text } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import { useSetAtom } from "jotai";
 
+import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import { MessageItem } from "./MessageItem";
 
-import type { MessageWithUser } from "../types";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 type ThreadReplyListProps = {
-  replies: MessageWithUser[];
+  replies: Message[];
   currentUserId: string | null;
   workspaceId: string;
   channelId: string;
@@ -25,17 +25,7 @@ export const ThreadReplyList = ({
 }: ThreadReplyListProps) => {
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
-  const handleCopyLink = useCallback(
-    (messageId: string) => {
-      const url = `${window.location.origin}/app/${workspaceId}/${channelId}?message=${messageId}`;
-      void navigator.clipboard.writeText(url);
-      notifications.show({
-        message: "メッセージリンクをクリップボードにコピーしました",
-        title: "コピーしました",
-      });
-    },
-    [workspaceId, channelId],
-  );
+  const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
 
   const handleCreateThread = useCallback(
     (messageId: string) => {

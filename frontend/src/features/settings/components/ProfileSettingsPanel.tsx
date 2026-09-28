@@ -25,7 +25,7 @@ export const ProfileSettingsPanel = ({ onUpdated }: Props) => {
 
   const onSubmit = async () => {
     await mutation.mutateAsync({
-      avatarUrl: avatarUrl || null,
+      avatarUrl: avatarUrl || undefined,
       bio,
       displayName: displayName || undefined,
     });

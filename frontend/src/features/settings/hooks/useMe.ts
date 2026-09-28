@@ -1,16 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@connectrpc/connect-query";
 
-import { api } from "#/lib/api/client";
+import { UserService } from "#/gen/chat/v1/user_service_pb";
 
 /** ログイン中ユーザーのプロフィールを取得する */
-export const useMe = () =>
-  useQuery({
-    queryFn: async () => {
-      const { data, error } = await api.GET("/api/users/me");
-      if (error) {
-        throw new Error(error.error);
-      }
-      return data;
-    },
-    queryKey: ["users", "me"],
-  });
+export const useMe = () => useQuery(UserService.method.getMe, {}, { select: (res) => res.user });

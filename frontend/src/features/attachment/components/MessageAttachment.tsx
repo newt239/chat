@@ -2,7 +2,7 @@ import { useDownloadUrl } from "../api/client";
 import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
 
-import type { MessageAttachmentInfo } from "../api/types";
+import type { MessageAttachment as MessageAttachmentInfo } from "#/gen/chat/v1/message_pb";
 
 type MessageAttachmentProps = {
   attachment: MessageAttachmentInfo;
@@ -13,8 +13,8 @@ export const MessageAttachment = ({ attachment }: MessageAttachmentProps) => {
 
   const handleDownload = async () => {
     try {
-      const data = await downloadMutation.mutateAsync(attachment.id);
-      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+      const { url } = await downloadMutation.mutateAsync({ attachmentId: attachment.id });
+      window.open(url, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("ダウンロードに失敗しました:", error);
     }
@@ -27,7 +27,7 @@ export const MessageAttachment = ({ attachment }: MessageAttachmentProps) => {
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-gray-900 truncate">{attachment.fileName}</div>
-        <div className="text-xs text-gray-500">{formatFileSize(attachment.sizeBytes)}</div>
+        <div className="text-xs text-gray-500">{formatFileSize(Number(attachment.sizeBytes))}</div>
       </div>
       <button
         type="button"

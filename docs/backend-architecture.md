@@ -7,15 +7,15 @@
 ## 技術スタック
 
 - **言語**: Go 1.24.6
-- **Web フレームワーク**: Echo v4.13.4
+- **Web フレームワーク**: Echo v4.15.4 (Connect RPC のハンドラーと WebSocket をマウント)
+- **API**: Connect RPC (connect-go v1.21) + Protocol Buffers (buf で `proto/` からコード生成)
 - **ORM**: Ent v0.14.5 (スキーマ駆動型 ORM)
 - **データベース**: PostgreSQL
 - **認証**: JWT (golang-jwt/jwt/v5 v5.2.0)
 - **WebSocket**: Gorilla WebSocket v1.5.3
 - **ストレージ**: Wasabi (S3 互換、AWS SDK v2)
 - **ログ**: Zap v1.26.0
-- **バリデーション**: validator/v10 v10.27.0
-- **OpenAPI**: oapi-codegen (スキーマ生成・検証)
+- **バリデーション**: protovalidate (proto に書いた制約を Connect の interceptor で検証)
 
 ## ディレクトリ構成
 
@@ -66,19 +66,18 @@ backend/
     │   ├── transaction/          # トランザクション実装 (Entベース)
     │   ├── storage/              # Wasabi S3ストレージ
     │   ├── logger/               # Zapロガー
-    │   ├── notification/         # WebSocket通知サービス
     │   ├── mention/              # メンション処理サービス
     │   ├── link/                 # リンク処理サービス
     │   ├── ogp/                  # OGPメタデータ取得
     │   ├── utils/                # ユーティリティ (Ent変換など)
     │   └── seed/                 # データシード
-    ├── interfaces/               # インターフェース層 (3,379行)
+    ├── interfaces/               # インターフェース層
     │   ├── handler/              # 外部インターフェース
-    │   │   ├── http/             # HTTPハンドラー (17ファイル)
-    │   │   │   ├── handler/      # ハンドラー実装
-    │   │   │   └── middleware/   # 認証・検証ミドルウェア
-    │   │   └── websocket/        # WebSocketハンドラー
-    │   └── openapi/              # OpenAPI生成コード
+    │   │   ├── http/             # Echo のルーター (Connect RPC・WebSocket・ヘルスチェックのマウント)
+    │   │   ├── rpc/              # Connect RPC のサービス実装と interceptor (認証・入力検証・エラー変換)
+    │   │   └── websocket/        # WebSocket の Hub と、ユースケースの変更通知の配信
+    │   └── presenter/            # ユースケースの出力を proto のメッセージに変換
+    ├── gen/                      # buf が proto から生成したコード (編集しない)
     ├── registry/                 # 依存性注入コンテナ (Registryパターン)
     │   ├── registry.go           # メインレジストリ
     │   ├── domain_registry.go    # ドメイン層の依存解決
@@ -229,9 +228,13 @@ func (r *UseCaseRegistry) NewAuthUseCase() auth.AuthUseCase {
     )
 }
 
-// InterfaceRegistry: ハンドラーとルーターの構築
-func (r *InterfaceRegistry) NewAuthHandler() *handler.AuthHandler {
-    return handler.NewAuthHandler(r.usecaseRegistry.NewAuthUseCase())
+// InterfaceRegistry: Connect RPC のサービスとルーターの構築
+func (r *InterfaceRegistry) NewRPCHandler() http.Handler {
+    uc := r.usecaseRegistry
+    return rpc.NewHandler(r.infrastructureRegistry.NewJWTService(),
+        rpc.Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&rpc.AuthServer{UC: uc.NewAuthUseCase()})),
+        // ...
+    )
 }
 ```
 
@@ -308,7 +311,7 @@ func (r *InterfaceRegistry) NewAuthHandler() *handler.AuthHandler {
 
 ### 11. 通知システム
 
-- WebSocket ベースのリアルタイム通知
+- WebSocket ベースのリアルタイム通知。各ユースケースが必要な通知だけを `Notifier` インターフェースとして定義し、`interfaces/handler/websocket` の `Notifier` がまとめて実装する
 - 新規メッセージの即時配信
 - 未読メッセージカウント更新
 - メンション通知
@@ -332,114 +335,40 @@ func (r *InterfaceRegistry) NewAuthHandler() *handler.AuthHandler {
 
 ## API 設計
 
-### RESTful API
+### Connect RPC
 
-```
-# 認証
-POST   /api/auth/register                        # ユーザー登録
-POST   /api/auth/login                           # ログイン
-POST   /api/auth/refresh                         # トークンリフレッシュ
-POST   /api/auth/logout                          # ログアウト（全セッション失効）
+API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/chat.v1.<Service>/<Method>` で、すべて POST です (Connect プロトコル、JSON)。`AuthService` の `Register` / `Login` / `Refresh` 以外は `Authorization: Bearer <アクセストークン>` が必要です。
 
-# ユーザー
-GET    /api/users/me                             # 現在のユーザー情報
-PATCH  /api/users/me                             # プロフィール更新
-DELETE /api/users/me                             # アカウント削除
-PATCH  /api/users/me/password                    # パスワード変更
+| サービス | RPC | 定義 |
+| --- | --- | --- |
+| `AttachmentService` | PresignUpload / GetAttachment / GetDownloadUrl / DeleteAttachment | `attachment_service.proto` |
+| `AuthService` | Register / Login / Refresh / Logout | `auth_service.proto` |
+| `BookmarkService` | ListBookmarks / AddBookmark / RemoveBookmark | `bookmark_service.proto` |
+| `ChannelMemberService` | ListChannelMembers / InviteChannelMember / JoinChannel / LeaveChannel / RemoveChannelMember / UpdateChannelMemberRole | `channel_member_service.proto` |
+| `ChannelService` | ListChannels / CreateChannel / GetChannel / UpdateChannel / DeleteChannel | `channel_service.proto` |
+| `DirectMessageService` | ListDirectMessages / CreateDirectMessage / CreateGroupDirectMessage | `direct_message_service.proto` |
+| `LinkService` | FetchOgp | `link_service.proto` |
+| `MessageService` | ListMessages / ListMessagesWithThread / CreateMessage / UpdateMessage / DeleteMessage | `message_service.proto` |
+| `PinService` | ListPins / CreatePin / DeletePin | `pin_service.proto` |
+| `ReactionService` | ListReactions / AddReaction / RemoveReaction | `reaction_service.proto` |
+| `ReadStateService` | UpdateReadState / GetUnreadCount | `read_state_service.proto` |
+| `SearchService` | SearchWorkspace | `search_service.proto` |
+| `ThreadService` | GetThreadReplies / GetThreadMetadata / ListParticipatingThreads / MarkThreadRead / FollowThread / UnfollowThread | `thread_service.proto` |
+| `UserGroupService` | CreateUserGroup / ListUserGroups / GetUserGroup / UpdateUserGroup / DeleteUserGroup / ListUserGroupMembers / AddUserGroupMember / RemoveUserGroupMember | `user_group_service.proto` |
+| `UserService` | GetMe / UpdateMe / UpdatePassword / DeleteMe | `user_service.proto` |
+| `WorkspaceService` | ListWorkspaces / CreateWorkspace / GetWorkspace / UpdateWorkspace / DeleteWorkspace / ListPublicWorkspaces / JoinPublicWorkspace / ListMembers / AddMemberByEmail / UpdateMemberRole / RemoveMember | `workspace_service.proto` |
 
-# ワークスペース
-GET    /api/workspaces                           # 参加中のワークスペース一覧
-POST   /api/workspaces                           # ワークスペース作成
-GET    /api/workspaces/public                    # 公開ワークスペース一覧
-GET    /api/workspaces/:id                       # ワークスペース詳細
-PATCH  /api/workspaces/:id                       # ワークスペース更新
-DELETE /api/workspaces/:id                       # ワークスペース削除
-POST   /api/workspaces/:id/join                  # 公開ワークスペースに参加
-GET    /api/workspaces/:id/members               # メンバー一覧
-POST   /api/workspaces/:id/members               # メールアドレスでメンバー追加
-PATCH  /api/workspaces/:id/members/:userId       # メンバーのロール変更
-DELETE /api/workspaces/:id/members/:userId       # メンバー削除
+ヘルスチェックのみ `GET /healthz` で提供しています。
 
-# チャンネル
-GET    /api/workspaces/:id/channels              # チャンネル一覧（未読数付き）
-POST   /api/workspaces/:id/channels              # チャンネル作成
-GET    /api/channels/:channelId                  # チャンネル詳細
-PATCH  /api/channels/:channelId                  # チャンネル更新
-DELETE /api/channels/:channelId                  # チャンネル削除
-GET    /api/channels/:channelId/members          # チャンネルメンバー一覧
-POST   /api/channels/:channelId/members          # チャンネルメンバー招待
-POST   /api/channels/:channelId/members/self     # 公開チャンネルに参加
-DELETE /api/channels/:channelId/members/self     # チャンネルから退出
-DELETE /api/channels/:channelId/members/:userId  # チャンネルメンバー削除
-PATCH  /api/channels/:channelId/members/:userId/role # チャンネルメンバーのロール変更
-
-# DM
-GET    /api/workspaces/:id/dms                   # DM 一覧
-POST   /api/workspaces/:id/dms                   # DM 作成
-POST   /api/workspaces/:id/group-dms             # グループ DM 作成（最大 9 人）
-
-# メッセージ
-GET    /api/channels/:channelId/messages         # メッセージ一覧（システムメッセージ含む）
-POST   /api/channels/:channelId/messages         # メッセージ送信
-GET    /api/channels/:channelId/messages/with-threads # スレッドメタデータ付き一覧
-PATCH  /api/messages/:messageId                  # メッセージ更新
-DELETE /api/messages/:messageId                  # メッセージ削除（論理削除）
-
-# スレッド
-GET    /api/messages/:messageId/thread           # スレッド返信一覧
-GET    /api/messages/:messageId/thread/metadata  # スレッドメタデータ
-POST   /api/messages/:messageId/follow           # スレッドフォロー
-DELETE /api/messages/:messageId/follow           # スレッドフォロー解除
-POST   /api/threads/:threadId/read               # スレッド既読
-GET    /api/workspaces/:workspaceId/threads/participating # 参加中スレッド一覧
-
-# 添付ファイル
-POST   /api/attachments/presign                  # アップロード用プリサイン URL 発行
-GET    /api/attachments/:id                      # ファイル情報取得
-GET    /api/attachments/:id/download             # ダウンロード用プリサイン URL 発行
-DELETE /api/attachments/:id                      # ファイル削除
-
-# ブックマーク
-GET    /api/bookmarks                            # ブックマーク一覧
-POST   /api/messages/:messageId/bookmarks        # ブックマーク作成
-DELETE /api/messages/:messageId/bookmarks        # ブックマーク削除
-
-# ピン留め
-GET    /api/channels/:channelId/pins             # ピン留め一覧
-POST   /api/channels/:channelId/pins             # ピン留め作成
-DELETE /api/channels/:channelId/pins/:messageId  # ピン留め解除
-
-# リアクション
-GET    /api/messages/:messageId/reactions        # リアクション一覧
-POST   /api/messages/:messageId/reactions        # リアクション作成
-DELETE /api/messages/:messageId/reactions/:emoji # リアクション削除
-
-# 既読状態
-POST   /api/channels/:channelId/reads            # チャンネル既読状態更新
-GET    /api/channels/:channelId/unread_count     # 未読数取得
-
-# ユーザーグループ
-GET    /api/user-groups?workspaceId=             # ユーザーグループ一覧
-POST   /api/user-groups                          # ユーザーグループ作成
-GET    /api/user-groups/:id                      # ユーザーグループ詳細
-PATCH  /api/user-groups/:id                      # ユーザーグループ更新
-DELETE /api/user-groups/:id                      # ユーザーグループ削除
-GET    /api/user-groups/:id/members              # メンバー一覧
-POST   /api/user-groups/:id/members              # メンバー追加
-DELETE /api/user-groups/:id/members?userId=      # メンバー削除
-
-# 検索・リンク・ヘルスチェック
-GET    /api/workspaces/:workspaceId/search       # 横断検索（メッセージ/チャンネル/ユーザー/グループ）
-POST   /api/links/fetch-ogp                      # OGP 取得
-GET    /healthz                                  # ヘルスチェック
-```
+エラーは Connect のエラーコードで返します。ユースケースのエラーとの対応は `internal/interfaces/handler/rpc/error.go` にまとめています (例: 見つからない → `not_found`、権限なし → `permission_denied`、入力の制約違反 → `invalid_argument`)。
 
 ### WebSocket
 
 - エンドポイント: `GET /ws?token=<JWT>&workspaceId=<id>`
 - JWT 認証による接続、`CORS_ALLOWED_ORIGINS` による Origin 検証
-- クライアント → サーバー: `join_channel` / `leave_channel` / `post_message` / `typing` / `stop_typing` / `update_read_state`
-- サーバー → クライアント: `new_message` / `message_updated` / `message_deleted` / `unread_count` / `pin_created` / `pin_deleted` / `system_message_created` / `reaction_added` / `reaction_removed` / `typing` / `stop_typing` / `ack` / `error`
+- メッセージは `proto/chat/v1/event.proto` の `ClientEvent` / `ServerEvent` を protojson で JSON にしたもの（例: `{"joinChannel":{"channelId":"..."}}`）
+- クライアント → サーバー: `joinChannel` / `leaveChannel` / `typing` / `stopTyping`
+- サーバー → クライアント: `newMessage` / `messageUpdated` / `messageDeleted` / `unreadCount` / `pinCreated` / `pinDeleted` / `systemMessageCreated` / `reactionAdded` / `reactionRemoved` / `typing` / `stopTyping` / `ack` / `error`
 
 ## データベース設計
 
@@ -509,7 +438,8 @@ type Config struct {
 
 | 対象 | 内容 |
 | --- | --- |
-| `internal/interfaces/handler/http/router_test.go` | 登録済みルートと OpenAPI 定義の過不足を検証 |
+| `internal/interfaces/handler/http/router_test.go` | Connect RPC とヘルスチェックのマウント |
+| `internal/interfaces/handler/rpc/handler_test.go` | 認証 interceptor・入力検証・エラーコード変換 |
 | `internal/usecase/workspace/interactor_test.go` | ワークスペースのロール変更の権限 |
 | `internal/usecase/dm/interactor_test.go` | DM 作成時のワークスペースメンバー検証 |
 | `internal/usecase/thread/reader_test.go` | スレッド既読・フォローの認可 |
@@ -542,11 +472,11 @@ type Config struct {
 - アクセストークン（既定 15 分）とリフレッシュトークン（既定 30 日）。それぞれ `JWT_ACCESS_TOKEN_TTL` / `JWT_REFRESH_TOKEN_TTL` で変更できます
 - リフレッシュトークンによるセッション管理
 - パスワードのハッシュ化（bcrypt）
-- ミドルウェアによるトークン検証
+- Connect の interceptor によるトークン検証
 
 ### データ保護
 
-- リクエストバリデーション（validator/v10）
+- リクエストバリデーション（protovalidate）
 - SQL インジェクション対策（Ent ORM）
 - CORS 設定（環境変数による制御）
 - ファイルアップロードの検証

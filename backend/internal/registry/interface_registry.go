@@ -1,10 +1,13 @@
 package registry
 
 import (
+	nethttp "net/http"
+
 	"github.com/labstack/echo/v4"
 
+	"github.com/newt239/chat/internal/gen/chat/v1/chatv1connect"
 	"github.com/newt239/chat/internal/interfaces/handler/http"
-	"github.com/newt239/chat/internal/interfaces/handler/http/handler"
+	"github.com/newt239/chat/internal/interfaces/handler/rpc"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
@@ -22,125 +25,39 @@ func NewInterfaceRegistry(usecaseRegistry *UseCaseRegistry, infrastructureRegist
 	}
 }
 
-func (r *InterfaceRegistry) NewAuthHandler() *handler.AuthHandler {
-	return &handler.AuthHandler{
-		AuthUC: r.usecaseRegistry.NewAuthUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewWorkspaceHandler() *handler.WorkspaceHandler {
-	return &handler.WorkspaceHandler{
-		WorkspaceUC: r.usecaseRegistry.NewWorkspaceUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewChannelHandler() *handler.ChannelHandler {
-	return &handler.ChannelHandler{
-		ChannelUC: r.usecaseRegistry.NewChannelUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewChannelMemberHandler() *handler.ChannelMemberHandler {
-	return &handler.ChannelMemberHandler{
-		ChannelMemberUseCase: r.usecaseRegistry.NewChannelMemberUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewMessageHandler() *handler.MessageHandler {
-	return &handler.MessageHandler{
-		MessageUC: r.usecaseRegistry.NewMessageUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewReadStateHandler() *handler.ReadStateHandler {
-	return &handler.ReadStateHandler{
-		ReadStateUC: r.usecaseRegistry.NewReadStateUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewReactionHandler() *handler.ReactionHandler {
-	return &handler.ReactionHandler{
-		ReactionUC: r.usecaseRegistry.NewReactionUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewUserGroupHandler() *handler.UserGroupHandler {
-	return &handler.UserGroupHandler{
-		UserGroupUC: r.usecaseRegistry.NewUserGroupUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewLinkHandler() *handler.LinkHandler {
-	return &handler.LinkHandler{
-		LinkUC: r.usecaseRegistry.NewLinkUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewBookmarkHandler() *handler.BookmarkHandler {
-	return &handler.BookmarkHandler{
-		BookmarkUC: r.usecaseRegistry.NewBookmarkUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewPinHandler() *handler.PinHandler {
-	return &handler.PinHandler{
-		UC: r.usecaseRegistry.NewPinUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewAttachmentHandler() *handler.AttachmentHandler {
-	return &handler.AttachmentHandler{
-		AttachmentUseCase: r.usecaseRegistry.NewAttachmentUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewSearchHandler() *handler.SearchHandler {
-	return &handler.SearchHandler{
-		SearchUC: r.usecaseRegistry.NewSearchUseCase(),
-	}
-}
-
-func (r *InterfaceRegistry) NewDMHandler() *handler.DMHandler {
-	return &handler.DMHandler{
-		DMInteractor: r.usecaseRegistry.NewDMInteractor(),
-	}
-}
-
-func (r *InterfaceRegistry) NewThreadHandler() *handler.ThreadHandler {
-	return &handler.ThreadHandler{
-		ThreadLister: r.usecaseRegistry.NewThreadLister(),
-		ThreadReader: r.usecaseRegistry.NewThreadReader(),
-	}
-}
-
-func (r *InterfaceRegistry) NewUserHandler() *handler.UserHandler {
-	return &handler.UserHandler{
-		UC: r.usecaseRegistry.NewUserUseCase(),
-	}
+func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
+	uc := r.usecaseRegistry
+	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService(),
+		rpc.Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&rpc.AuthServer{UC: uc.NewAuthUseCase()})),
+		rpc.Register(chatv1connect.NewUserServiceHandler, chatv1connect.UserServiceHandler(&rpc.UserServer{UC: uc.NewUserUseCase()})),
+		rpc.Register(chatv1connect.NewWorkspaceServiceHandler, chatv1connect.WorkspaceServiceHandler(&rpc.WorkspaceServer{UC: uc.NewWorkspaceUseCase()})),
+		rpc.Register(chatv1connect.NewChannelServiceHandler, chatv1connect.ChannelServiceHandler(&rpc.ChannelServer{UC: uc.NewChannelUseCase()})),
+		rpc.Register(chatv1connect.NewChannelMemberServiceHandler, chatv1connect.ChannelMemberServiceHandler(&rpc.ChannelMemberServer{UC: uc.NewChannelMemberUseCase()})),
+		rpc.Register(chatv1connect.NewReadStateServiceHandler, chatv1connect.ReadStateServiceHandler(&rpc.ReadStateServer{UC: uc.NewReadStateUseCase()})),
+		rpc.Register(chatv1connect.NewDirectMessageServiceHandler, chatv1connect.DirectMessageServiceHandler(&rpc.DirectMessageServer{UC: uc.NewDMInteractor()})),
+		rpc.Register(chatv1connect.NewUserGroupServiceHandler, chatv1connect.UserGroupServiceHandler(&rpc.UserGroupServer{UC: uc.NewUserGroupUseCase()})),
+		rpc.Register(chatv1connect.NewBookmarkServiceHandler, chatv1connect.BookmarkServiceHandler(&rpc.BookmarkServer{UC: uc.NewBookmarkUseCase()})),
+		rpc.Register(chatv1connect.NewLinkServiceHandler, chatv1connect.LinkServiceHandler(&rpc.LinkServer{UC: uc.NewLinkUseCase()})),
+		rpc.Register(chatv1connect.NewAttachmentServiceHandler, chatv1connect.AttachmentServiceHandler(&rpc.AttachmentServer{UC: uc.NewAttachmentUseCase()})),
+		rpc.Register(chatv1connect.NewSearchServiceHandler, chatv1connect.SearchServiceHandler(&rpc.SearchServer{UC: uc.NewSearchUseCase()})),
+		rpc.Register(chatv1connect.NewMessageServiceHandler, chatv1connect.MessageServiceHandler(&rpc.MessageServer{UC: uc.NewMessageUseCase()})),
+		rpc.Register(chatv1connect.NewThreadServiceHandler, chatv1connect.ThreadServiceHandler(&rpc.ThreadServer{
+			MessageUC:    uc.NewMessageUseCase(),
+			ThreadLister: uc.NewThreadLister(),
+			ThreadReader: uc.NewThreadReader(),
+		})),
+		rpc.Register(chatv1connect.NewReactionServiceHandler, chatv1connect.ReactionServiceHandler(&rpc.ReactionServer{UC: uc.NewReactionUseCase()})),
+		rpc.Register(chatv1connect.NewPinServiceHandler, chatv1connect.PinServiceHandler(&rpc.PinServer{UC: uc.NewPinUseCase()})),
+	)
 }
 
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
-		JWTService:           r.infrastructureRegistry.NewJWTService(),
-		AllowedOrigins:       r.infrastructureRegistry.config.CORS.AllowedOrigins,
-		WebSocketHub:         r.infrastructureRegistry.hub,
-		WorkspaceRepository:  r.domainRegistry.NewWorkspaceRepository(),
-		AuthHandler:          r.NewAuthHandler(),
-		WorkspaceHandler:     r.NewWorkspaceHandler(),
-		ChannelHandler:       r.NewChannelHandler(),
-		ChannelMemberHandler: r.NewChannelMemberHandler(),
-		MessageHandler:       r.NewMessageHandler(),
-		ReadStateHandler:     r.NewReadStateHandler(),
-		ReactionHandler:      r.NewReactionHandler(),
-		UserGroupHandler:     r.NewUserGroupHandler(),
-		LinkHandler:          r.NewLinkHandler(),
-		BookmarkHandler:      r.NewBookmarkHandler(),
-		PinHandler:           r.NewPinHandler(),
-		AttachmentHandler:    r.NewAttachmentHandler(),
-		SearchHandler:        r.NewSearchHandler(),
-		DMHandler:            r.NewDMHandler(),
-		ThreadHandler:        r.NewThreadHandler(),
-		UserHandler:          r.NewUserHandler(),
+		JWTService:          r.infrastructureRegistry.NewJWTService(),
+		AllowedOrigins:      r.infrastructureRegistry.config.CORS.AllowedOrigins,
+		WebSocketHub:        r.infrastructureRegistry.hub,
+		WorkspaceRepository: r.domainRegistry.NewWorkspaceRepository(),
+		RPCHandler:          r.NewRPCHandler(),
 	}
 
 	return http.NewRouter(routerConfig)

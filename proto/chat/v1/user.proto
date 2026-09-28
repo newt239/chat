@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package chat.v1;
+
+// ログイン中のユーザー自身の情報
+message User {
+  string id = 1;
+  string email = 2;
+  string display_name = 3;
+  optional string avatar_url = 4;
+  optional string bio = 5;
+}
+
+// メッセージの投稿者などに埋め込む最小限のユーザー情報
+message UserSummary {
+  string id = 1;
+  string display_name = 2;
+  optional string avatar_url = 3;
+}

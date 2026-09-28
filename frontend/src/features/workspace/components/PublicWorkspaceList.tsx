@@ -46,9 +46,9 @@ export const PublicWorkspaceList = () => {
               <Button
                 size="xs"
                 variant="light"
-                loading={join.isPending && join.variables === workspace.id}
+                loading={join.isPending && join.variables.workspaceId === workspace.id}
                 onClick={() => {
-                  join.mutate(workspace.id);
+                  join.mutate({ workspaceId: workspace.id });
                 }}
               >
                 参加する

@@ -1,15 +1,16 @@
 import { Avatar, Group, Text } from "@mantine/core";
 import { IconMessageCircle } from "@tabler/icons-react";
 
-import type { ThreadMetadata } from "../types";
+import { toDate } from "#/lib/timestamp";
+
+import type { ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 type ThreadMetadataPreviewProps = {
   metadata: ThreadMetadata;
   onClick: () => void;
 };
 
-const formatRelativeTime = (dateString: string) => {
-  const date = new Date(dateString);
+const formatRelativeTime = (date: Date) => {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -55,12 +56,12 @@ export const ThreadMetadataPreview = ({ metadata, onClick }: ThreadMetadataPrevi
       </Text>
       {metadata.lastReplyAt && (
         <Text size="sm" c="dimmed">
-          最終返信: {formatRelativeTime(metadata.lastReplyAt)}
+          最終返信: {formatRelativeTime(toDate(metadata.lastReplyAt))}
         </Text>
       )}
       {metadata.lastReplyUser && (
         <Avatar
-          src={metadata.lastReplyUser.avatarUrl ?? undefined}
+          src={metadata.lastReplyUser.avatarUrl}
           alt={metadata.lastReplyUser.displayName}
           size="xs"
           radius="xl"

@@ -1,8 +1,3 @@
-import type { components } from "#/lib/api/schema";
-
-export type MessageAttachmentInfo = components["schemas"]["MessageAttachment"];
-export type PresignRequest = components["schemas"]["PresignRequest"];
-
 type AttachmentUploadState =
   | { status: "idle" }
   | { status: "validating" }

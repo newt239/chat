@@ -12,19 +12,18 @@
     "format:fix": "turbo run format:fix",
     "typecheck": "turbo run typecheck",
     "knip": "turbo run knip",
-    "ls-lint": "turbo run ls-lint",
     "codecheck": "turbo run codecheck",
     "clean": "./scripts/clean.sh",
     "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",
-    "openapi:bundle": "redocly bundle openapi/openapi.yaml -o openapi/bundled.yaml",
-    "generate:api": "openapi-typescript openapi/openapi.yaml -o frontend/src/lib/api/schema.ts"
+    "generate:proto": "buf generate",
+    "proto:format": "buf format -w",
+    "proto:lint": "buf lint"
   },
   "devDependencies": {
-    "@redocly/cli": "2.53.0",
+    "@bufbuild/buf": "1.73.0",
+    "@bufbuild/protoc-gen-es": "2.15.0",
     "lefthook": "2.1.14",
-    "openapi-typescript": "7.13.0",
-    "turbo": "2.10.12",
-    "typescript": "5.9.3"
+    "turbo": "2.10.12"
   },
   "packageManager": "pnpm@12.5.1"
 }

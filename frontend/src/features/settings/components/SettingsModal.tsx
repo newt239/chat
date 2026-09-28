@@ -15,7 +15,7 @@ export const SettingsModal = ({ opened, onClose }: SettingsModalProps) => {
 
   const handleLogout = () => {
     onClose();
-    logout.mutate();
+    logout.mutate({});
   };
 
   return (

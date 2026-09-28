@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
 import { Badge, Button, Card, Loader, ScrollArea, Stack, Text } from "@mantine/core";
+import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
 
 import { useNotificationSync } from "#/features/notification/hooks/useNotificationSync";
-import { paths } from "#/lib/paths";
 import { currentChannelIdAtom, setCurrentChannelAtom } from "#/providers/store/workspace";
 
 import { useChannels } from "../hooks/useChannel";
@@ -30,7 +29,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
   const handleChannelClick = (channelId: string) => {
     if (workspaceId) {
       setCurrentChannel(channelId);
-      void navigate(paths.channel(workspaceId, channelId));
+      void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
     }
   };
 
@@ -77,7 +76,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
             <Stack gap={4}>
               {channels.map((channel) => {
                 const isSelected = channel.id === currentChannelId;
-                const unreadCount = channel.unreadCount ?? 0;
+                const { unreadCount } = channel;
                 const hasUnread = unreadCount > 0;
 
                 return (
@@ -101,7 +100,7 @@ export const ChannelList = ({ workspaceId }: ChannelListProps) => {
                     <div className="flex items-center gap-1">
                       {hasUnread ? (
                         <Badge
-                          color={channel.hasMention === true ? "red" : "blue"}
+                          color={channel.hasMention ? "red" : "blue"}
                           size="xs"
                           className="flex items-center justify-center"
                         >

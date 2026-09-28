@@ -9,9 +9,9 @@ Slack風コミュニケーションアプリのフロントエンドアプリケ
 - **Vite** - ビルドツール
 - **Mantine 8** - UIコンポーネントライブラリ
 - **Tailwind CSS** - ユーティリティファーストCSS
-- **TanStack Query** - サーバー状態管理
+- **TanStack Query** + **connect-query** - サーバー状態管理
 - **Jotai** - クライアント状態管理
-- **openapi-fetch** - 型安全なAPIクライアント
+- **Connect RPC** (`@connectrpc/connect-web`) - proto から生成した型安全なAPIクライアント
 - **PWA** - プログレッシブウェブアプリ対応
 
 ## 開発開始
@@ -67,10 +67,10 @@ pnpm typecheck
 
 ## API型定義の生成
 
-バックエンドのOpenAPIスキーマから型定義を生成:
+`proto/` の定義から `src/gen/` の型とサービス定義を生成（リポジトリルートで実行）:
 
 ```bash
-pnpm run generate:api
+pnpm run generate:proto
 ```
 
 ## プロジェクト構成
@@ -79,12 +79,14 @@ pnpm run generate:api
 src/
 ├── main.tsx                 # エントリーポイント
 ├── App.tsx                  # ルートコンポーネント
-├── routes/                  # ルート定義（React Router Data モード）
+├── routes/                  # ルート定義（TanStack Router ファイルベース）
+├── routeTree.gen.ts         # routes/ から自動生成されるルートツリー
+├── pages/                   # ルートから参照するページコンポーネント
 ├── styles/                  # グローバルスタイル
 ├── lib/                     # 共通ライブラリ
-│   ├── api/                 # APIクライアント（OpenAPI 生成型）
-│   ├── paths.ts             # パスビルダー
-│   ├── routeParams.ts       # ルートパラメータ取得
+│   ├── api/                 # Connect RPC の transport（認証とトークン更新）
+│   ├── router.ts            # ルーターの生成
+│   ├── navigation.ts        # React ツリー外からの遷移
 │   └── ws.ts                # WebSocketクライアント
 ├── providers/               # Jotai ストア / TanStack Query / WebSocket
 ├── features/                # 機能別モジュール

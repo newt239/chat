@@ -11,7 +11,6 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/link"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/infrastructure/mention"
-	"github.com/newt239/chat/internal/infrastructure/notification"
 	"github.com/newt239/chat/internal/infrastructure/ogp"
 	"github.com/newt239/chat/internal/infrastructure/storage/wasabi"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -46,8 +45,8 @@ func (r *InfrastructureRegistry) NewPasswordService() authuc.PasswordService {
 	return auth.NewPasswordService()
 }
 
-func (r *InfrastructureRegistry) NewNotificationService() service.NotificationService {
-	return notification.NewWebSocketNotificationService(r.hub)
+func (r *InfrastructureRegistry) NewNotificationService() *websocket.Notifier {
+	return websocket.NewNotifier(r.hub)
 }
 
 func (r *InfrastructureRegistry) NewOGPService() service.OGPService {

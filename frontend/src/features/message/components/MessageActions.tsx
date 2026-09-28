@@ -51,7 +51,7 @@ export const MessageActions = ({
   const removeBookmark = useRemoveBookmark();
   const isBookmarked = useIsBookmarked(messageId);
   const channelId = useAtomValue(currentChannelIdAtom);
-  const { pin, unpin } = usePinActions(channelId);
+  const { pin, unpin } = usePinActions();
   const isPinned = useIsPinned(messageId, channelId);
 
   const handleEmojiSelect = async (emoji: string) => {
@@ -154,11 +154,10 @@ export const MessageActions = ({
           <Menu.Item
             leftSection={<IconPin size={14} />}
             onClick={() => {
-              if (isPinned) {
-                unpin.mutate({ messageId });
-              } else {
-                pin.mutate({ messageId });
+              if (channelId === null) {
+                return;
               }
+              (isPinned ? unpin : pin).mutate({ channelId, messageId });
             }}
           >
             {isPinned ? "ピン留めを解除" : "ピン留めする"}
