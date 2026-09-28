@@ -1,9 +1,9 @@
 // NavLink などが参照する --nav-* の割り当て。同じ一覧をサイドバーとモバイルの画面で色だけ変えて使う
 export const sidebarNavTone =
-  "[--dot-ring:var(--c-side)] [--nav-active-fg:var(--c-side-active-fg)] [--nav-active:var(--c-side-active)] [--nav-fg:var(--c-side-fg)] [--nav-hover:var(--c-side-hover)] [--nav-muted:var(--c-side-muted)] [--nav-strong:var(--c-side-strong)]";
+  "[--dot-ring:var(--c-side)] [--nav-active-fg:var(--c-side-active-fg)] [--nav-active:var(--c-side-active)] [--nav-fg:var(--c-side-fg)] [--nav-hover:var(--c-side-hover)] [--nav-muted:var(--c-side-muted)] [--nav-strong:var(--c-side-strong)] [--tree-line:color-mix(in_srgb,var(--c-side-muted)_65%,transparent)]";
 
 export const mobileNavTone =
-  "[--dot-ring:var(--c-surface)] [--nav-active-fg:var(--c-accent-text)] [--nav-active:var(--c-accent-soft)] [--nav-fg:var(--c-text)] [--nav-hover:var(--c-hover)] [--nav-muted:var(--c-muted)] [--nav-row:44px] [--nav-size:15px] [--nav-strong:var(--c-text)]";
+  "[--dot-ring:var(--c-surface)] [--nav-active-fg:var(--c-accent-text)] [--nav-active:var(--c-accent-soft)] [--nav-fg:var(--c-text)] [--nav-hover:var(--c-hover)] [--nav-muted:var(--c-muted)] [--nav-row:44px] [--nav-size:15px] [--nav-strong:var(--c-text)] [--tree-line:var(--c-border-strong)]";
 
 // 一覧の行。リンクは NavLink、ボタンの行はこのクラスを直接使う。現在地は data-status="active"
 export const navItemClassName =
