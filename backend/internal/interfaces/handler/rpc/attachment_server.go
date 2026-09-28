@@ -6,7 +6,9 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
+	"github.com/newt239/chat/internal/interfaces/presenter"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
 )
 
@@ -23,6 +25,7 @@ func (s *AttachmentServer) PresignUpload(ctx context.Context, req *chatv1.Presig
 		FileName:  req.FileName,
 		MimeType:  req.ContentType,
 		SizeBytes: req.SizeBytes,
+		Media:     entity.MediaMetadata{Width: req.Width, Height: req.Height, DurationSeconds: req.DurationSeconds},
 	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -45,6 +48,7 @@ func (s *AttachmentServer) GetAttachment(ctx context.Context, req *chatv1.GetAtt
 		SizeBytes:  out.SizeBytes,
 		Status:     out.Status,
 		CreatedAt:  timestamppb.New(out.CreatedAt),
+		Media:      presenter.MediaMetadata(out.Media),
 	}}, nil
 }
 

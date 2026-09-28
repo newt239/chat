@@ -31,6 +31,18 @@ type MessageLink struct {
 	SiteName string `json:"site_name,omitempty"`
 	// CardType holds the value of the "card_type" field.
 	CardType string `json:"card_type,omitempty"`
+	// ImageWidth holds the value of the "image_width" field.
+	ImageWidth *int32 `json:"image_width,omitempty"`
+	// ImageHeight holds the value of the "image_height" field.
+	ImageHeight *int32 `json:"image_height,omitempty"`
+	// YoutubeVideoID holds the value of the "youtube_video_id" field.
+	YoutubeVideoID *string `json:"youtube_video_id,omitempty"`
+	// YoutubeChannelName holds the value of the "youtube_channel_name" field.
+	YoutubeChannelName *string `json:"youtube_channel_name,omitempty"`
+	// YoutubeDurationSeconds holds the value of the "youtube_duration_seconds" field.
+	YoutubeDurationSeconds *int32 `json:"youtube_duration_seconds,omitempty"`
+	// LinkedMessageID holds the value of the "linked_message_id" field.
+	LinkedMessageID *uuid.UUID `json:"linked_message_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -65,7 +77,11 @@ func (*MessageLink) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case messagelink.FieldURL, messagelink.FieldTitle, messagelink.FieldDescription, messagelink.FieldImageURL, messagelink.FieldSiteName, messagelink.FieldCardType:
+		case messagelink.FieldLinkedMessageID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case messagelink.FieldImageWidth, messagelink.FieldImageHeight, messagelink.FieldYoutubeDurationSeconds:
+			values[i] = new(sql.NullInt64)
+		case messagelink.FieldURL, messagelink.FieldTitle, messagelink.FieldDescription, messagelink.FieldImageURL, messagelink.FieldSiteName, messagelink.FieldCardType, messagelink.FieldYoutubeVideoID, messagelink.FieldYoutubeChannelName:
 			values[i] = new(sql.NullString)
 		case messagelink.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -129,6 +145,48 @@ func (_m *MessageLink) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field card_type", values[i])
 			} else if value.Valid {
 				_m.CardType = value.String
+			}
+		case messagelink.FieldImageWidth:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field image_width", values[i])
+			} else if value.Valid {
+				_m.ImageWidth = new(int32)
+				*_m.ImageWidth = int32(value.Int64)
+			}
+		case messagelink.FieldImageHeight:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field image_height", values[i])
+			} else if value.Valid {
+				_m.ImageHeight = new(int32)
+				*_m.ImageHeight = int32(value.Int64)
+			}
+		case messagelink.FieldYoutubeVideoID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field youtube_video_id", values[i])
+			} else if value.Valid {
+				_m.YoutubeVideoID = new(string)
+				*_m.YoutubeVideoID = value.String
+			}
+		case messagelink.FieldYoutubeChannelName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field youtube_channel_name", values[i])
+			} else if value.Valid {
+				_m.YoutubeChannelName = new(string)
+				*_m.YoutubeChannelName = value.String
+			}
+		case messagelink.FieldYoutubeDurationSeconds:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field youtube_duration_seconds", values[i])
+			} else if value.Valid {
+				_m.YoutubeDurationSeconds = new(int32)
+				*_m.YoutubeDurationSeconds = int32(value.Int64)
+			}
+		case messagelink.FieldLinkedMessageID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field linked_message_id", values[i])
+			} else if value.Valid {
+				_m.LinkedMessageID = new(uuid.UUID)
+				*_m.LinkedMessageID = *value.S.(*uuid.UUID)
 			}
 		case messagelink.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -201,6 +259,36 @@ func (_m *MessageLink) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("card_type=")
 	builder.WriteString(_m.CardType)
+	builder.WriteString(", ")
+	if v := _m.ImageWidth; v != nil {
+		builder.WriteString("image_width=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ImageHeight; v != nil {
+		builder.WriteString("image_height=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.YoutubeVideoID; v != nil {
+		builder.WriteString("youtube_video_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.YoutubeChannelName; v != nil {
+		builder.WriteString("youtube_channel_name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.YoutubeDurationSeconds; v != nil {
+		builder.WriteString("youtube_duration_seconds=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.LinkedMessageID; v != nil {
+		builder.WriteString("linked_message_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

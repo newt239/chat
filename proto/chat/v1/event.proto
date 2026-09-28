@@ -3,6 +3,7 @@ syntax = "proto3";
 package chat.v1;
 
 import "chat/v1/message.proto";
+import "chat/v1/user.proto";
 import "google/protobuf/timestamp.proto";
 
 // WebSocket でクライアントからサーバーへ送るイベント
@@ -62,6 +63,8 @@ message PinEvent {
   string message_id = 2;
   string pinned_by = 3;
   google.protobuf.Timestamp pinned_at = 4;
+  // pin_created のときのみ設定される
+  UserSummary pinned_by_user = 5;
 }
 
 message SystemMessageEvent {
@@ -74,6 +77,9 @@ message ReactionEvent {
   string message_id = 2;
   string user_id = 3;
   string emoji = 4;
+  // reaction_added のときのみ設定される
+  UserSummary user = 5;
+  google.protobuf.Timestamp created_at = 6;
 }
 
 message TypingEvent {

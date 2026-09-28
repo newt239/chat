@@ -27,6 +27,15 @@ func (Attachment) Fields() []ent.Field {
 			NotEmpty(),
 		field.Int64("size_bytes").
 			NonNegative(),
+		field.Int32("width").
+			Optional().
+			Nillable(),
+		field.Int32("height").
+			Optional().
+			Nillable(),
+		field.Float("duration_seconds").
+			Optional().
+			Nillable(),
 		field.String("storage_key").
 			NotEmpty(),
 		field.String("status").

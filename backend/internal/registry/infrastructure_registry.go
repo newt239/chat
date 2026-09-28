@@ -91,6 +91,8 @@ func (r *InfrastructureRegistry) NewLinkProcessingService() service.LinkProcessi
 	return link.NewLinkProcessingService(
 		r.NewOGPService(),
 		r.domainRegistry.NewMessageLinkRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelRepository(),
 	)
 }
 

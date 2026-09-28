@@ -4,6 +4,7 @@ import (
 	"context"
 
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
 // SearchUseCase は検索機能のユースケースインターフェースです
@@ -22,10 +23,7 @@ func NewSearchUseCase(
 	messageRepo domainrepository.MessageRepository,
 	userRepo domainrepository.UserRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
-	userMentionRepo domainrepository.MessageUserMentionRepository,
-	groupMentionRepo domainrepository.MessageGroupMentionRepository,
-	linkRepo domainrepository.MessageLinkRepository,
-	attachmentRepo domainrepository.AttachmentRepository,
+	messageOutputBuilder *messageuc.MessageOutputBuilder,
 ) SearchUseCase {
 	return &searchInteractor{
 		workspaceSearcher: NewWorkspaceSearcher(
@@ -34,10 +32,7 @@ func NewSearchUseCase(
 			messageRepo,
 			userRepo,
 			userGroupRepo,
-			userMentionRepo,
-			groupMentionRepo,
-			linkRepo,
-			attachmentRepo,
+			messageOutputBuilder,
 		),
 	}
 }

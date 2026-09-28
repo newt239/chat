@@ -622,11 +622,13 @@ func (x *UnreadCountEvent) GetHasMention() bool {
 }
 
 type PinEvent struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	MessageId     string                 `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	PinnedBy      string                 `protobuf:"bytes,3,opt,name=pinned_by,json=pinnedBy,proto3" json:"pinned_by,omitempty"`
-	PinnedAt      *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=pinned_at,json=pinnedAt,proto3" json:"pinned_at,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	MessageId string                 `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	PinnedBy  string                 `protobuf:"bytes,3,opt,name=pinned_by,json=pinnedBy,proto3" json:"pinned_by,omitempty"`
+	PinnedAt  *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=pinned_at,json=pinnedAt,proto3" json:"pinned_at,omitempty"`
+	// pin_created のときのみ設定される
+	PinnedByUser  *UserSummary `protobuf:"bytes,5,opt,name=pinned_by_user,json=pinnedByUser,proto3" json:"pinned_by_user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -689,6 +691,13 @@ func (x *PinEvent) GetPinnedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *PinEvent) GetPinnedByUser() *UserSummary {
+	if x != nil {
+		return x.PinnedByUser
+	}
+	return nil
+}
+
 type SystemMessageEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
@@ -742,11 +751,14 @@ func (x *SystemMessageEvent) GetMessage() *SystemMessage {
 }
 
 type ReactionEvent struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	MessageId     string                 `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Emoji         string                 `protobuf:"bytes,4,opt,name=emoji,proto3" json:"emoji,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	MessageId string                 `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	UserId    string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Emoji     string                 `protobuf:"bytes,4,opt,name=emoji,proto3" json:"emoji,omitempty"`
+	// reaction_added のときのみ設定される
+	User          *UserSummary           `protobuf:"bytes,5,opt,name=user,proto3" json:"user,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -807,6 +819,20 @@ func (x *ReactionEvent) GetEmoji() string {
 		return x.Emoji
 	}
 	return ""
+}
+
+func (x *ReactionEvent) GetUser() *UserSummary {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+func (x *ReactionEvent) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
 }
 
 type TypingEvent struct {
@@ -978,7 +1004,7 @@ var File_chat_v1_event_proto protoreflect.FileDescriptor
 
 const file_chat_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x13chat/v1/event.proto\x12\achat.v1\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfb\x01\n" +
+	"\x13chat/v1/event.proto\x12\achat.v1\x1a\x15chat/v1/message.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfb\x01\n" +
 	"\vClientEvent\x12:\n" +
 	"\fjoin_channel\x18\x01 \x01(\v2\x15.chat.v1.ChannelEventH\x00R\vjoinChannel\x12<\n" +
 	"\rleave_channel\x18\x02 \x01(\v2\x15.chat.v1.ChannelEventH\x00R\fleaveChannel\x12/\n" +
@@ -1026,25 +1052,29 @@ const file_chat_v1_event_proto_rawDesc = "" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x12!\n" +
 	"\funread_count\x18\x02 \x01(\x05R\vunreadCount\x12\x1f\n" +
 	"\vhas_mention\x18\x03 \x01(\bR\n" +
-	"hasMention\"\x9e\x01\n" +
+	"hasMention\"\xda\x01\n" +
 	"\bPinEvent\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x02 \x01(\tR\tmessageId\x12\x1b\n" +
 	"\tpinned_by\x18\x03 \x01(\tR\bpinnedBy\x127\n" +
-	"\tpinned_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\bpinnedAt\"e\n" +
+	"\tpinned_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\bpinnedAt\x12:\n" +
+	"\x0epinned_by_user\x18\x05 \x01(\v2\x14.chat.v1.UserSummaryR\fpinnedByUser\"e\n" +
 	"\x12SystemMessageEvent\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x120\n" +
-	"\amessage\x18\x02 \x01(\v2\x16.chat.v1.SystemMessageR\amessage\"|\n" +
+	"\amessage\x18\x02 \x01(\v2\x16.chat.v1.SystemMessageR\amessage\"\xe1\x01\n" +
 	"\rReactionEvent\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x02 \x01(\tR\tmessageId\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x14\n" +
-	"\x05emoji\x18\x04 \x01(\tR\x05emoji\"E\n" +
+	"\x05emoji\x18\x04 \x01(\tR\x05emoji\x12(\n" +
+	"\x04user\x18\x05 \x01(\v2\x14.chat.v1.UserSummaryR\x04user\x129\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"E\n" +
 	"\vTypingEvent\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x12\x17\n" +
@@ -1088,7 +1118,8 @@ var file_chat_v1_event_proto_goTypes = []any{
 	(*ErrorEvent)(nil),            // 11: chat.v1.ErrorEvent
 	(*Message)(nil),               // 12: chat.v1.Message
 	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
-	(*SystemMessage)(nil),         // 14: chat.v1.SystemMessage
+	(*UserSummary)(nil),           // 14: chat.v1.UserSummary
+	(*SystemMessage)(nil),         // 15: chat.v1.SystemMessage
 }
 var file_chat_v1_event_proto_depIdxs = []int32{
 	1,  // 0: chat.v1.ClientEvent.join_channel:type_name -> chat.v1.ChannelEvent
@@ -1111,12 +1142,15 @@ var file_chat_v1_event_proto_depIdxs = []int32{
 	12, // 17: chat.v1.MessageEvent.message:type_name -> chat.v1.Message
 	13, // 18: chat.v1.MessageDeletedEvent.deleted_at:type_name -> google.protobuf.Timestamp
 	13, // 19: chat.v1.PinEvent.pinned_at:type_name -> google.protobuf.Timestamp
-	14, // 20: chat.v1.SystemMessageEvent.message:type_name -> chat.v1.SystemMessage
-	21, // [21:21] is the sub-list for method output_type
-	21, // [21:21] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	14, // 20: chat.v1.PinEvent.pinned_by_user:type_name -> chat.v1.UserSummary
+	15, // 21: chat.v1.SystemMessageEvent.message:type_name -> chat.v1.SystemMessage
+	14, // 22: chat.v1.ReactionEvent.user:type_name -> chat.v1.UserSummary
+	13, // 23: chat.v1.ReactionEvent.created_at:type_name -> google.protobuf.Timestamp
+	24, // [24:24] is the sub-list for method output_type
+	24, // [24:24] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_event_proto_init() }
@@ -1125,6 +1159,7 @@ func file_chat_v1_event_proto_init() {
 		return
 	}
 	file_chat_v1_message_proto_init()
+	file_chat_v1_user_proto_init()
 	file_chat_v1_event_proto_msgTypes[0].OneofWrappers = []any{
 		(*ClientEvent_JoinChannel)(nil),
 		(*ClientEvent_LeaveChannel)(nil),

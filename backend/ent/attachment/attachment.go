@@ -21,6 +21,12 @@ const (
 	FieldMimeType = "mime_type"
 	// FieldSizeBytes holds the string denoting the size_bytes field in the database.
 	FieldSizeBytes = "size_bytes"
+	// FieldWidth holds the string denoting the width field in the database.
+	FieldWidth = "width"
+	// FieldHeight holds the string denoting the height field in the database.
+	FieldHeight = "height"
+	// FieldDurationSeconds holds the string denoting the duration_seconds field in the database.
+	FieldDurationSeconds = "duration_seconds"
 	// FieldStorageKey holds the string denoting the storage_key field in the database.
 	FieldStorageKey = "storage_key"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -68,6 +74,9 @@ var Columns = []string{
 	FieldFileName,
 	FieldMimeType,
 	FieldSizeBytes,
+	FieldWidth,
+	FieldHeight,
+	FieldDurationSeconds,
 	FieldStorageKey,
 	FieldStatus,
 	FieldUploadedAt,
@@ -136,6 +145,21 @@ func ByMimeType(opts ...sql.OrderTermOption) OrderOption {
 // BySizeBytes orders the results by the size_bytes field.
 func BySizeBytes(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSizeBytes, opts...).ToFunc()
+}
+
+// ByWidth orders the results by the width field.
+func ByWidth(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWidth, opts...).ToFunc()
+}
+
+// ByHeight orders the results by the height field.
+func ByHeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHeight, opts...).ToFunc()
+}
+
+// ByDurationSeconds orders the results by the duration_seconds field.
+func ByDurationSeconds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDurationSeconds, opts...).ToFunc()
 }
 
 // ByStorageKey orders the results by the storage_key field.

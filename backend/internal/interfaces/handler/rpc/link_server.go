@@ -4,6 +4,7 @@ import (
 	"context"
 
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
+	"github.com/newt239/chat/internal/interfaces/presenter"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 )
 
@@ -16,12 +17,5 @@ func (s *LinkServer) FetchOgp(ctx context.Context, req *chatv1.FetchOgpRequest) 
 	if err != nil {
 		return nil, err
 	}
-	ogp := out.OGPData
-	return &chatv1.FetchOgpResponse{Ogp: &chatv1.OgpData{
-		Title:       ogp.Title,
-		Description: ogp.Description,
-		ImageUrl:    ogp.ImageURL,
-		SiteName:    ogp.SiteName,
-		CardType:    ogp.CardType,
-	}}, nil
+	return &chatv1.FetchOgpResponse{Ogp: presenter.OGPData(out.OGPData)}, nil
 }

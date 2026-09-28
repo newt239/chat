@@ -33,7 +33,7 @@ type interactor struct {
 	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
 	notificationSvc   Notifier
-	messageAssembler  *message.MessageOutputAssembler
+	outputBuilder     *message.MessageOutputBuilder
 	channelAccessSvc  service.ChannelAccessService
 	systemMessageUC   systemmessage.UseCase
 }
@@ -46,6 +46,7 @@ func NewPinInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc Notifier,
+	outputBuilder *message.MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
 	systemMessageUC systemmessage.UseCase,
 ) PinUseCase {
@@ -57,7 +58,7 @@ func NewPinInteractor(
 		workspaceRepo:     workspaceRepo,
 		userRepo:          userRepo,
 		notificationSvc:   notificationSvc,
-		messageAssembler:  message.NewMessageOutputAssembler(),
+		outputBuilder:     outputBuilder,
 		channelAccessSvc:  channelAccessSvc,
 		systemMessageUC:   systemMessageUC,
 	}
@@ -144,11 +145,11 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 			}
 		}
 		if workspaceID != "" {
-			i.notificationSvc.NotifyPinCreated(workspaceID, input.ChannelID, PinNotification{
-				MessageID: p.Message.ID,
-				PinnedBy:  p.PinnedBy,
-				PinnedAt:  p.PinnedAt,
-			})
+			notification := PinNotification{MessageID: p.Message.ID, PinnedBy: p.PinnedBy, PinnedAt: p.PinnedAt}
+			if u, _ := i.userRepo.FindByID(ctx, p.PinnedBy); u != nil {
+				notification.PinnedByUser = &message.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL}
+			}
+			i.notificationSvc.NotifyPinCreated(workspaceID, input.ChannelID, notification)
 		}
 	}
 	return nil
@@ -199,49 +200,25 @@ func (i *interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPi
 		return nil, fmt.Errorf("failed to list pins: %w", err)
 	}
 
-	// メッセージのユーザー情報などを組み立て
-	// すでに repository で Message を WithUser/WithChannel 済み -> Assembler で出力化
-	// 補助データを最小にするため必要ユーザーだけ読み足し
-	// Assembler は mentions/links/reactions/attachments も必要だが、
-	// bookmark と同様の一覧を踏襲する場合は messageAssembler のみで十分
-
-	// 収集用
-	users := map[string]*entity.User{}
-	userIDs := []string{}
+	pinned := make([]*entity.MessagePin, 0, len(pins))
+	messages := make([]*entity.Message, 0, len(pins))
 	for _, p := range pins {
-		if p.Message != nil && p.Message.UserID != "" {
-			users[p.Message.UserID] = nil
+		if p.Message != nil {
+			pinned = append(pinned, p)
+			messages = append(messages, p.Message)
 		}
 	}
-	for id := range users {
-		userIDs = append(userIDs, id)
-	}
-	if len(userIDs) > 0 {
-		found, err := i.userRepo.FindByIDs(ctx, userIDs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load users: %w", err)
-		}
-		for _, u := range found {
-			users[u.ID] = u
-		}
+	messageOutputs, err := i.outputBuilder.Build(ctx, input.UserID, messages)
+	if err != nil {
+		return nil, err
 	}
 
-	outputs := make([]PinnedMessageOutput, 0, len(pins))
-	for _, p := range pins {
-		if p.Message == nil {
-			continue
-		}
-		msgOut := i.messageAssembler.AssembleMessageOutput(
-			p.Message,
-			users[p.Message.UserID],
-			nil, nil, nil, nil, nil,
-			nil,
-			users,
-		)
+	outputs := make([]PinnedMessageOutput, 0, len(messageOutputs))
+	for idx, msgOut := range messageOutputs {
 		outputs = append(outputs, PinnedMessageOutput{
 			Message:  msgOut,
-			PinnedBy: p.PinnedBy,
-			PinnedAt: p.PinnedAt,
+			PinnedBy: pinned[idx].PinnedBy,
+			PinnedAt: pinned[idx].PinnedAt,
 		})
 	}
 

@@ -14,7 +14,7 @@ import type { JsonObject, Message as Message$1 } from "@bufbuild/protobuf";
  * Describes the file chat/v1/message.proto.
  */
 export const file_chat_v1_message: GenFile = /*@__PURE__*/
-  fileDesc("ChVjaGF0L3YxL21lc3NhZ2UucHJvdG8SB2NoYXQudjEi3AQKB01lc3NhZ2USCgoCaWQYASABKAkSEgoKY2hhbm5lbF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEiIKBHVzZXIYBCABKAsyFC5jaGF0LnYxLlVzZXJTdW1tYXJ5EhYKCXBhcmVudF9pZBgFIAEoCUgAiAEBEgwKBGJvZHkYBiABKAkSJgoIbWVudGlvbnMYByADKAsyFC5jaGF0LnYxLlVzZXJNZW50aW9uEiUKBmdyb3VwcxgIIAMoCzIVLmNoYXQudjEuR3JvdXBNZW50aW9uEiMKBWxpbmtzGAkgAygLMhQuY2hhdC52MS5NZXNzYWdlTGluaxIkCglyZWFjdGlvbnMYCiADKAsyES5jaGF0LnYxLlJlYWN0aW9uEi8KC2F0dGFjaG1lbnRzGAsgAygLMhouY2hhdC52MS5NZXNzYWdlQXR0YWNobWVudBIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCgllZGl0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmRlbGV0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhIKCmlzX2RlbGV0ZWQYDyABKAgSKAoKZGVsZXRlZF9ieRgQIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkSMAoPdGhyZWFkX21ldGFkYXRhGBEgASgLMhcuY2hhdC52MS5UaHJlYWRNZXRhZGF0YUIMCgpfcGFyZW50X2lkIjQKC1VzZXJNZW50aW9uEg8KB3VzZXJfaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJIi4KDEdyb3VwTWVudGlvbhIQCghncm91cF9pZBgBIAEoCRIMCgRuYW1lGAIgASgJIuABCgtNZXNzYWdlTGluaxIKCgJpZBgBIAEoCRILCgN1cmwYAiABKAkSEgoFdGl0bGUYAyABKAlIAIgBARIYCgtkZXNjcmlwdGlvbhgEIAEoCUgBiAEBEhYKCWltYWdlX3VybBgFIAEoCUgCiAEBEhYKCXNpdGVfbmFtZRgGIAEoCUgDiAEBEhYKCWNhcmRfdHlwZRgHIAEoCUgEiAEBQggKBl90aXRsZUIOCgxfZGVzY3JpcHRpb25CDAoKX2ltYWdlX3VybEIMCgpfc2l0ZV9uYW1lQgwKCl9jYXJkX3R5cGUigQEKCFJlYWN0aW9uEhIKCm1lc3NhZ2VfaWQYASABKAkSIgoEdXNlchgCIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkSDQoFZW1vamkYAyABKAkSLgoKY3JlYXRlZF9hdBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiWQoRTWVzc2FnZUF0dGFjaG1lbnQSCgoCaWQYASABKAkSEQoJZmlsZV9uYW1lGAIgASgJEhEKCW1pbWVfdHlwZRgDIAEoCRISCgpzaXplX2J5dGVzGAQgASgDIrkBCg5UaHJlYWRNZXRhZGF0YRISCgptZXNzYWdlX2lkGAEgASgJEhMKC3JlcGx5X2NvdW50GAIgASgFEjEKDWxhc3RfcmVwbHlfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi0KD2xhc3RfcmVwbHlfdXNlchgEIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkSHAoUcGFydGljaXBhbnRfdXNlcl9pZHMYBSADKAki1wEKDVN5c3RlbU1lc3NhZ2USCgoCaWQYASABKAkSEgoKY2hhbm5lbF9pZBgCIAEoCRIoCgRraW5kGAMgASgOMhouY2hhdC52MS5TeXN0ZW1NZXNzYWdlS2luZBIoCgdwYXlsb2FkGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIVCghhY3Rvcl9pZBgFIAEoCUgAiAEBEi4KCmNyZWF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQgsKCV9hY3Rvcl9pZCKlAQoMVGltZWxpbmVJdGVtEigKDHVzZXJfbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZUgAEjAKDnN5c3RlbV9tZXNzYWdlGAIgASgLMhYuY2hhdC52MS5TeXN0ZW1NZXNzYWdlSAASLgoKY3JlYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCCQoHY29udGVudCqOAwoRU3lzdGVtTWVzc2FnZUtpbmQSIwofU1lTVEVNX01FU1NBR0VfS0lORF9VTlNQRUNJRklFRBAAEiUKIVNZU1RFTV9NRVNTQUdFX0tJTkRfTUVNQkVSX0pPSU5FRBABEiQKIFNZU1RFTV9NRVNTQUdFX0tJTkRfTUVNQkVSX0FEREVEEAISJgoiU1lTVEVNX01FU1NBR0VfS0lORF9NRU1CRVJfUkVNT1ZFRBADEiMKH1NZU1RFTV9NRVNTQUdFX0tJTkRfTUVNQkVSX0xFRlQQBBIvCitTWVNURU1fTUVTU0FHRV9LSU5EX0NIQU5ORUxfUFJJVkFDWV9DSEFOR0VEEAUSLAooU1lTVEVNX01FU1NBR0VfS0lORF9DSEFOTkVMX05BTUVfQ0hBTkdFRBAGEjMKL1NZU1RFTV9NRVNTQUdFX0tJTkRfQ0hBTk5FTF9ERVNDUklQVElPTl9DSEFOR0VEEAcSJgoiU1lTVEVNX01FU1NBR0VfS0lORF9NRVNTQUdFX1BJTk5FRBAIQo0BCgtjb20uY2hhdC52MUIMTWVzc2FnZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_chat_v1_user, file_google_protobuf_struct, file_google_protobuf_timestamp]);
+  fileDesc("ChVjaGF0L3YxL21lc3NhZ2UucHJvdG8SB2NoYXQudjEi/gQKB01lc3NhZ2USCgoCaWQYASABKAkSEgoKY2hhbm5lbF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEiIKBHVzZXIYBCABKAsyFC5jaGF0LnYxLlVzZXJTdW1tYXJ5EhYKCXBhcmVudF9pZBgFIAEoCUgAiAEBEgwKBGJvZHkYBiABKAkSJgoIbWVudGlvbnMYByADKAsyFC5jaGF0LnYxLlVzZXJNZW50aW9uEiUKBmdyb3VwcxgIIAMoCzIVLmNoYXQudjEuR3JvdXBNZW50aW9uEiMKBWxpbmtzGAkgAygLMhQuY2hhdC52MS5NZXNzYWdlTGluaxIkCglyZWFjdGlvbnMYCiADKAsyES5jaGF0LnYxLlJlYWN0aW9uEi8KC2F0dGFjaG1lbnRzGAsgAygLMhouY2hhdC52MS5NZXNzYWdlQXR0YWNobWVudBIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCgllZGl0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmRlbGV0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhIKCmlzX2RlbGV0ZWQYDyABKAgSKAoKZGVsZXRlZF9ieRgQIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkSMAoPdGhyZWFkX21ldGFkYXRhGBEgASgLMhcuY2hhdC52MS5UaHJlYWRNZXRhZGF0YRIgCgNwaW4YEiABKAsyEy5jaGF0LnYxLk1lc3NhZ2VQaW5CDAoKX3BhcmVudF9pZCJkCgpNZXNzYWdlUGluEicKCXBpbm5lZF9ieRgBIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkSLQoJcGlubmVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCI0CgtVc2VyTWVudGlvbhIPCgd1c2VyX2lkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCSIuCgxHcm91cE1lbnRpb24SEAoIZ3JvdXBfaWQYASABKAkSDAoEbmFtZRgCIAEoCSKtAQoLTWVzc2FnZUxpbmsSCgoCaWQYASABKAkSCwoDdXJsGAIgASgJEh0KA29ncBgDIAEoCzIQLmNoYXQudjEuT2dwRGF0YRIeChFsaW5rZWRfbWVzc2FnZV9pZBgEIAEoCUgAiAEBEjAKD21lc3NhZ2VfcHJldmlldxgFIAEoCzIXLmNoYXQudjEuTWVzc2FnZVByZXZpZXdCFAoSX2xpbmtlZF9tZXNzYWdlX2lkIsECCgdPZ3BEYXRhEhIKBXRpdGxlGAEgASgJSACIAQESGAoLZGVzY3JpcHRpb24YAiABKAlIAYgBARIWCglpbWFnZV91cmwYAyABKAlIAogBARIWCglzaXRlX25hbWUYBCABKAlIA4gBARIWCgljYXJkX3R5cGUYBSABKAlIBIgBARIYCgtpbWFnZV93aWR0aBgGIAEoBUgFiAEBEhkKDGltYWdlX2hlaWdodBgHIAEoBUgGiAEBEiYKB3lvdXR1YmUYCCABKAsyFS5jaGF0LnYxLllvdVR1YmVWaWRlb0IICgZfdGl0bGVCDgoMX2Rlc2NyaXB0aW9uQgwKCl9pbWFnZV91cmxCDAoKX3NpdGVfbmFtZUIMCgpfY2FyZF90eXBlQg4KDF9pbWFnZV93aWR0aEIPCg1faW1hZ2VfaGVpZ2h0IoABCgxZb3VUdWJlVmlkZW8SEAoIdmlkZW9faWQYASABKAkSGQoMY2hhbm5lbF9uYW1lGAIgASgJSACIAQESHQoQZHVyYXRpb25fc2Vjb25kcxgDIAEoBUgBiAEBQg8KDV9jaGFubmVsX25hbWVCEwoRX2R1cmF0aW9uX3NlY29uZHMi3gEKDk1lc3NhZ2VQcmV2aWV3EhIKCm1lc3NhZ2VfaWQYASABKAkSEgoKY2hhbm5lbF9pZBgCIAEoCRIUCgxjaGFubmVsX25hbWUYAyABKAkSFgoJcGFyZW50X2lkGAQgASgJSACIAQESIgoEdXNlchgFIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkSFAoMYm9keV9leGNlcnB0GAYgASgJEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQgwKCl9wYXJlbnRfaWQigQEKCFJlYWN0aW9uEhIKCm1lc3NhZ2VfaWQYASABKAkSIgoEdXNlchgCIAEoCzIULmNoYXQudjEuVXNlclN1bW1hcnkSDQoFZW1vamkYAyABKAkSLgoKY3JlYXRlZF9hdBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAigAEKEU1lc3NhZ2VBdHRhY2htZW50EgoKAmlkGAEgASgJEhEKCWZpbGVfbmFtZRgCIAEoCRIRCgltaW1lX3R5cGUYAyABKAkSEgoKc2l6ZV9ieXRlcxgEIAEoAxIlCgVtZWRpYRgFIAEoCzIWLmNoYXQudjEuTWVkaWFNZXRhZGF0YSKBAQoNTWVkaWFNZXRhZGF0YRISCgV3aWR0aBgBIAEoBUgAiAEBEhMKBmhlaWdodBgCIAEoBUgBiAEBEh0KEGR1cmF0aW9uX3NlY29uZHMYAyABKAFIAogBAUIICgZfd2lkdGhCCQoHX2hlaWdodEITChFfZHVyYXRpb25fc2Vjb25kcyK5AQoOVGhyZWFkTWV0YWRhdGESEgoKbWVzc2FnZV9pZBgBIAEoCRITCgtyZXBseV9jb3VudBgCIAEoBRIxCg1sYXN0X3JlcGx5X2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCg9sYXN0X3JlcGx5X3VzZXIYBCABKAsyFC5jaGF0LnYxLlVzZXJTdW1tYXJ5EhwKFHBhcnRpY2lwYW50X3VzZXJfaWRzGAUgAygJItcBCg1TeXN0ZW1NZXNzYWdlEgoKAmlkGAEgASgJEhIKCmNoYW5uZWxfaWQYAiABKAkSKAoEa2luZBgDIAEoDjIaLmNoYXQudjEuU3lzdGVtTWVzc2FnZUtpbmQSKAoHcGF5bG9hZBgEIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSFQoIYWN0b3JfaWQYBSABKAlIAIgBARIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEILCglfYWN0b3JfaWQipQEKDFRpbWVsaW5lSXRlbRIoCgx1c2VyX21lc3NhZ2UYASABKAsyEC5jaGF0LnYxLk1lc3NhZ2VIABIwCg5zeXN0ZW1fbWVzc2FnZRgCIAEoCzIWLmNoYXQudjEuU3lzdGVtTWVzc2FnZUgAEi4KCmNyZWF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQgkKB2NvbnRlbnQqjgMKEVN5c3RlbU1lc3NhZ2VLaW5kEiMKH1NZU1RFTV9NRVNTQUdFX0tJTkRfVU5TUEVDSUZJRUQQABIlCiFTWVNURU1fTUVTU0FHRV9LSU5EX01FTUJFUl9KT0lORUQQARIkCiBTWVNURU1fTUVTU0FHRV9LSU5EX01FTUJFUl9BRERFRBACEiYKIlNZU1RFTV9NRVNTQUdFX0tJTkRfTUVNQkVSX1JFTU9WRUQQAxIjCh9TWVNURU1fTUVTU0FHRV9LSU5EX01FTUJFUl9MRUZUEAQSLworU1lTVEVNX01FU1NBR0VfS0lORF9DSEFOTkVMX1BSSVZBQ1lfQ0hBTkdFRBAFEiwKKFNZU1RFTV9NRVNTQUdFX0tJTkRfQ0hBTk5FTF9OQU1FX0NIQU5HRUQQBhIzCi9TWVNURU1fTUVTU0FHRV9LSU5EX0NIQU5ORUxfREVTQ1JJUFRJT05fQ0hBTkdFRBAHEiYKIlNZU1RFTV9NRVNTQUdFX0tJTkRfTUVTU0FHRV9QSU5ORUQQCEKNAQoLY29tLmNoYXQudjFCDE1lc3NhZ2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_chat_v1_user, file_google_protobuf_struct, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.Message
@@ -106,6 +106,13 @@ export type Message = Message$1<"chat.v1.Message"> & {
    * @generated from field: chat.v1.ThreadMetadata thread_metadata = 17;
    */
   threadMetadata?: ThreadMetadata | undefined;
+
+  /**
+   * ピン留めされている場合のみ設定される
+   *
+   * @generated from field: chat.v1.MessagePin pin = 18;
+   */
+  pin?: MessagePin | undefined;
 };
 
 /**
@@ -114,6 +121,28 @@ export type Message = Message$1<"chat.v1.Message"> & {
  */
 export const MessageSchema: GenMessage<Message> = /*@__PURE__*/
   messageDesc(file_chat_v1_message, 0);
+
+/**
+ * @generated from message chat.v1.MessagePin
+ */
+export type MessagePin = Message$1<"chat.v1.MessagePin"> & {
+  /**
+   * @generated from field: chat.v1.UserSummary pinned_by = 1;
+   */
+  pinnedBy?: UserSummary | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp pinned_at = 2;
+   */
+  pinnedAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message chat.v1.MessagePin.
+ * Use `create(MessagePinSchema)` to create a new message.
+ */
+export const MessagePinSchema: GenMessage<MessagePin> = /*@__PURE__*/
+  messageDesc(file_chat_v1_message, 1);
 
 /**
  * @generated from message chat.v1.UserMention
@@ -135,7 +164,7 @@ export type UserMention = Message$1<"chat.v1.UserMention"> & {
  * Use `create(UserMentionSchema)` to create a new message.
  */
 export const UserMentionSchema: GenMessage<UserMention> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 1);
+  messageDesc(file_chat_v1_message, 2);
 
 /**
  * @generated from message chat.v1.GroupMention
@@ -157,7 +186,7 @@ export type GroupMention = Message$1<"chat.v1.GroupMention"> & {
  * Use `create(GroupMentionSchema)` to create a new message.
  */
 export const GroupMentionSchema: GenMessage<GroupMention> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 2);
+  messageDesc(file_chat_v1_message, 3);
 
 /**
  * @generated from message chat.v1.MessageLink
@@ -174,29 +203,25 @@ export type MessageLink = Message$1<"chat.v1.MessageLink"> & {
   url: string;
 
   /**
-   * @generated from field: optional string title = 3;
+   * 同じワークスペースのメッセージへのリンクでは OGP を取得しないため空になる
+   *
+   * @generated from field: chat.v1.OgpData ogp = 3;
    */
-  title?: string | undefined;
+  ogp?: OgpData | undefined;
 
   /**
-   * @generated from field: optional string description = 4;
+   * 同じワークスペースのメッセージへのリンクのときに設定される
+   *
+   * @generated from field: optional string linked_message_id = 4;
    */
-  description?: string | undefined;
+  linkedMessageId?: string | undefined;
 
   /**
-   * @generated from field: optional string image_url = 5;
+   * linked_message_id のメッセージを閲覧者が参照できる場合のみ設定される。WebSocket のイベントには含めない
+   *
+   * @generated from field: chat.v1.MessagePreview message_preview = 5;
    */
-  imageUrl?: string | undefined;
-
-  /**
-   * @generated from field: optional string site_name = 6;
-   */
-  siteName?: string | undefined;
-
-  /**
-   * @generated from field: optional string card_type = 7;
-   */
-  cardType?: string | undefined;
+  messagePreview?: MessagePreview | undefined;
 };
 
 /**
@@ -204,7 +229,139 @@ export type MessageLink = Message$1<"chat.v1.MessageLink"> & {
  * Use `create(MessageLinkSchema)` to create a new message.
  */
 export const MessageLinkSchema: GenMessage<MessageLink> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 3);
+  messageDesc(file_chat_v1_message, 4);
+
+/**
+ * @generated from message chat.v1.OgpData
+ */
+export type OgpData = Message$1<"chat.v1.OgpData"> & {
+  /**
+   * @generated from field: optional string title = 1;
+   */
+  title?: string | undefined;
+
+  /**
+   * @generated from field: optional string description = 2;
+   */
+  description?: string | undefined;
+
+  /**
+   * @generated from field: optional string image_url = 3;
+   */
+  imageUrl?: string | undefined;
+
+  /**
+   * @generated from field: optional string site_name = 4;
+   */
+  siteName?: string | undefined;
+
+  /**
+   * @generated from field: optional string card_type = 5;
+   */
+  cardType?: string | undefined;
+
+  /**
+   * @generated from field: optional int32 image_width = 6;
+   */
+  imageWidth?: number | undefined;
+
+  /**
+   * @generated from field: optional int32 image_height = 7;
+   */
+  imageHeight?: number | undefined;
+
+  /**
+   * YouTube の動画 URL のときのみ設定される
+   *
+   * @generated from field: chat.v1.YouTubeVideo youtube = 8;
+   */
+  youtube?: YouTubeVideo | undefined;
+};
+
+/**
+ * Describes the message chat.v1.OgpData.
+ * Use `create(OgpDataSchema)` to create a new message.
+ */
+export const OgpDataSchema: GenMessage<OgpData> = /*@__PURE__*/
+  messageDesc(file_chat_v1_message, 5);
+
+/**
+ * @generated from message chat.v1.YouTubeVideo
+ */
+export type YouTubeVideo = Message$1<"chat.v1.YouTubeVideo"> & {
+  /**
+   * @generated from field: string video_id = 1;
+   */
+  videoId: string;
+
+  /**
+   * @generated from field: optional string channel_name = 2;
+   */
+  channelName?: string | undefined;
+
+  /**
+   * @generated from field: optional int32 duration_seconds = 3;
+   */
+  durationSeconds?: number | undefined;
+};
+
+/**
+ * Describes the message chat.v1.YouTubeVideo.
+ * Use `create(YouTubeVideoSchema)` to create a new message.
+ */
+export const YouTubeVideoSchema: GenMessage<YouTubeVideo> = /*@__PURE__*/
+  messageDesc(file_chat_v1_message, 6);
+
+/**
+ * メッセージリンクを引用カードとして展開するための情報
+ *
+ * @generated from message chat.v1.MessagePreview
+ */
+export type MessagePreview = Message$1<"chat.v1.MessagePreview"> & {
+  /**
+   * @generated from field: string message_id = 1;
+   */
+  messageId: string;
+
+  /**
+   * @generated from field: string channel_id = 2;
+   */
+  channelId: string;
+
+  /**
+   * @generated from field: string channel_name = 3;
+   */
+  channelName: string;
+
+  /**
+   * @generated from field: optional string parent_id = 4;
+   */
+  parentId?: string | undefined;
+
+  /**
+   * @generated from field: chat.v1.UserSummary user = 5;
+   */
+  user?: UserSummary | undefined;
+
+  /**
+   * 先頭の一部だけを返す
+   *
+   * @generated from field: string body_excerpt = 6;
+   */
+  bodyExcerpt: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 7;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message chat.v1.MessagePreview.
+ * Use `create(MessagePreviewSchema)` to create a new message.
+ */
+export const MessagePreviewSchema: GenMessage<MessagePreview> = /*@__PURE__*/
+  messageDesc(file_chat_v1_message, 7);
 
 /**
  * @generated from message chat.v1.Reaction
@@ -236,7 +393,7 @@ export type Reaction = Message$1<"chat.v1.Reaction"> & {
  * Use `create(ReactionSchema)` to create a new message.
  */
 export const ReactionSchema: GenMessage<Reaction> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 4);
+  messageDesc(file_chat_v1_message, 8);
 
 /**
  * @generated from message chat.v1.MessageAttachment
@@ -261,6 +418,11 @@ export type MessageAttachment = Message$1<"chat.v1.MessageAttachment"> & {
    * @generated from field: int64 size_bytes = 4;
    */
   sizeBytes: bigint;
+
+  /**
+   * @generated from field: chat.v1.MediaMetadata media = 5;
+   */
+  media?: MediaMetadata | undefined;
 };
 
 /**
@@ -268,7 +430,36 @@ export type MessageAttachment = Message$1<"chat.v1.MessageAttachment"> & {
  * Use `create(MessageAttachmentSchema)` to create a new message.
  */
 export const MessageAttachmentSchema: GenMessage<MessageAttachment> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 5);
+  messageDesc(file_chat_v1_message, 9);
+
+/**
+ * 画像・動画・音声の表示に使うメタデータ。アップロード時にクライアントが計測した値
+ *
+ * @generated from message chat.v1.MediaMetadata
+ */
+export type MediaMetadata = Message$1<"chat.v1.MediaMetadata"> & {
+  /**
+   * @generated from field: optional int32 width = 1;
+   */
+  width?: number | undefined;
+
+  /**
+   * @generated from field: optional int32 height = 2;
+   */
+  height?: number | undefined;
+
+  /**
+   * @generated from field: optional double duration_seconds = 3;
+   */
+  durationSeconds?: number | undefined;
+};
+
+/**
+ * Describes the message chat.v1.MediaMetadata.
+ * Use `create(MediaMetadataSchema)` to create a new message.
+ */
+export const MediaMetadataSchema: GenMessage<MediaMetadata> = /*@__PURE__*/
+  messageDesc(file_chat_v1_message, 10);
 
 /**
  * @generated from message chat.v1.ThreadMetadata
@@ -305,7 +496,7 @@ export type ThreadMetadata = Message$1<"chat.v1.ThreadMetadata"> & {
  * Use `create(ThreadMetadataSchema)` to create a new message.
  */
 export const ThreadMetadataSchema: GenMessage<ThreadMetadata> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 6);
+  messageDesc(file_chat_v1_message, 11);
 
 /**
  * @generated from message chat.v1.SystemMessage
@@ -349,7 +540,7 @@ export type SystemMessage = Message$1<"chat.v1.SystemMessage"> & {
  * Use `create(SystemMessageSchema)` to create a new message.
  */
 export const SystemMessageSchema: GenMessage<SystemMessage> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 7);
+  messageDesc(file_chat_v1_message, 12);
 
 /**
  * ユーザーメッセージとシステムメッセージを時系列で並べるための項目
@@ -385,7 +576,7 @@ export type TimelineItem = Message$1<"chat.v1.TimelineItem"> & {
  * Use `create(TimelineItemSchema)` to create a new message.
  */
 export const TimelineItemSchema: GenMessage<TimelineItem> = /*@__PURE__*/
-  messageDesc(file_chat_v1_message, 8);
+  messageDesc(file_chat_v1_message, 13);
 
 /**
  * @generated from enum chat.v1.SystemMessageKind

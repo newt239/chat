@@ -69,28 +69,34 @@ const (
 // AttachmentMutation represents an operation that mutates the Attachment nodes in the graph.
 type AttachmentMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	file_name       *string
-	mime_type       *string
-	size_bytes      *int64
-	addsize_bytes   *int64
-	storage_key     *string
-	status          *string
-	uploaded_at     *time.Time
-	expires_at      *time.Time
-	created_at      *time.Time
-	clearedFields   map[string]struct{}
-	message         *uuid.UUID
-	clearedmessage  bool
-	uploader        *uuid.UUID
-	cleareduploader bool
-	channel         *uuid.UUID
-	clearedchannel  bool
-	done            bool
-	oldValue        func(context.Context) (*Attachment, error)
-	predicates      []predicate.Attachment
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	file_name           *string
+	mime_type           *string
+	size_bytes          *int64
+	addsize_bytes       *int64
+	width               *int32
+	addwidth            *int32
+	height              *int32
+	addheight           *int32
+	duration_seconds    *float64
+	addduration_seconds *float64
+	storage_key         *string
+	status              *string
+	uploaded_at         *time.Time
+	expires_at          *time.Time
+	created_at          *time.Time
+	clearedFields       map[string]struct{}
+	message             *uuid.UUID
+	clearedmessage      bool
+	uploader            *uuid.UUID
+	cleareduploader     bool
+	channel             *uuid.UUID
+	clearedchannel      bool
+	done                bool
+	oldValue            func(context.Context) (*Attachment, error)
+	predicates          []predicate.Attachment
 }
 
 var _ ent.Mutation = (*AttachmentMutation)(nil)
@@ -323,6 +329,216 @@ func (m *AttachmentMutation) AddedSizeBytes() (r int64, exists bool) {
 func (m *AttachmentMutation) ResetSizeBytes() {
 	m.size_bytes = nil
 	m.addsize_bytes = nil
+}
+
+// SetWidth sets the "width" field.
+func (m *AttachmentMutation) SetWidth(i int32) {
+	m.width = &i
+	m.addwidth = nil
+}
+
+// Width returns the value of the "width" field in the mutation.
+func (m *AttachmentMutation) Width() (r int32, exists bool) {
+	v := m.width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWidth returns the old "width" field's value of the Attachment entity.
+// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AttachmentMutation) OldWidth(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWidth: %w", err)
+	}
+	return oldValue.Width, nil
+}
+
+// AddWidth adds i to the "width" field.
+func (m *AttachmentMutation) AddWidth(i int32) {
+	if m.addwidth != nil {
+		*m.addwidth += i
+	} else {
+		m.addwidth = &i
+	}
+}
+
+// AddedWidth returns the value that was added to the "width" field in this mutation.
+func (m *AttachmentMutation) AddedWidth() (r int32, exists bool) {
+	v := m.addwidth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWidth clears the value of the "width" field.
+func (m *AttachmentMutation) ClearWidth() {
+	m.width = nil
+	m.addwidth = nil
+	m.clearedFields[attachment.FieldWidth] = struct{}{}
+}
+
+// WidthCleared returns if the "width" field was cleared in this mutation.
+func (m *AttachmentMutation) WidthCleared() bool {
+	_, ok := m.clearedFields[attachment.FieldWidth]
+	return ok
+}
+
+// ResetWidth resets all changes to the "width" field.
+func (m *AttachmentMutation) ResetWidth() {
+	m.width = nil
+	m.addwidth = nil
+	delete(m.clearedFields, attachment.FieldWidth)
+}
+
+// SetHeight sets the "height" field.
+func (m *AttachmentMutation) SetHeight(i int32) {
+	m.height = &i
+	m.addheight = nil
+}
+
+// Height returns the value of the "height" field in the mutation.
+func (m *AttachmentMutation) Height() (r int32, exists bool) {
+	v := m.height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeight returns the old "height" field's value of the Attachment entity.
+// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AttachmentMutation) OldHeight(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeight: %w", err)
+	}
+	return oldValue.Height, nil
+}
+
+// AddHeight adds i to the "height" field.
+func (m *AttachmentMutation) AddHeight(i int32) {
+	if m.addheight != nil {
+		*m.addheight += i
+	} else {
+		m.addheight = &i
+	}
+}
+
+// AddedHeight returns the value that was added to the "height" field in this mutation.
+func (m *AttachmentMutation) AddedHeight() (r int32, exists bool) {
+	v := m.addheight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearHeight clears the value of the "height" field.
+func (m *AttachmentMutation) ClearHeight() {
+	m.height = nil
+	m.addheight = nil
+	m.clearedFields[attachment.FieldHeight] = struct{}{}
+}
+
+// HeightCleared returns if the "height" field was cleared in this mutation.
+func (m *AttachmentMutation) HeightCleared() bool {
+	_, ok := m.clearedFields[attachment.FieldHeight]
+	return ok
+}
+
+// ResetHeight resets all changes to the "height" field.
+func (m *AttachmentMutation) ResetHeight() {
+	m.height = nil
+	m.addheight = nil
+	delete(m.clearedFields, attachment.FieldHeight)
+}
+
+// SetDurationSeconds sets the "duration_seconds" field.
+func (m *AttachmentMutation) SetDurationSeconds(f float64) {
+	m.duration_seconds = &f
+	m.addduration_seconds = nil
+}
+
+// DurationSeconds returns the value of the "duration_seconds" field in the mutation.
+func (m *AttachmentMutation) DurationSeconds() (r float64, exists bool) {
+	v := m.duration_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDurationSeconds returns the old "duration_seconds" field's value of the Attachment entity.
+// If the Attachment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AttachmentMutation) OldDurationSeconds(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDurationSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDurationSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDurationSeconds: %w", err)
+	}
+	return oldValue.DurationSeconds, nil
+}
+
+// AddDurationSeconds adds f to the "duration_seconds" field.
+func (m *AttachmentMutation) AddDurationSeconds(f float64) {
+	if m.addduration_seconds != nil {
+		*m.addduration_seconds += f
+	} else {
+		m.addduration_seconds = &f
+	}
+}
+
+// AddedDurationSeconds returns the value that was added to the "duration_seconds" field in this mutation.
+func (m *AttachmentMutation) AddedDurationSeconds() (r float64, exists bool) {
+	v := m.addduration_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDurationSeconds clears the value of the "duration_seconds" field.
+func (m *AttachmentMutation) ClearDurationSeconds() {
+	m.duration_seconds = nil
+	m.addduration_seconds = nil
+	m.clearedFields[attachment.FieldDurationSeconds] = struct{}{}
+}
+
+// DurationSecondsCleared returns if the "duration_seconds" field was cleared in this mutation.
+func (m *AttachmentMutation) DurationSecondsCleared() bool {
+	_, ok := m.clearedFields[attachment.FieldDurationSeconds]
+	return ok
+}
+
+// ResetDurationSeconds resets all changes to the "duration_seconds" field.
+func (m *AttachmentMutation) ResetDurationSeconds() {
+	m.duration_seconds = nil
+	m.addduration_seconds = nil
+	delete(m.clearedFields, attachment.FieldDurationSeconds)
 }
 
 // SetStorageKey sets the "storage_key" field.
@@ -682,7 +898,7 @@ func (m *AttachmentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AttachmentMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 11)
 	if m.file_name != nil {
 		fields = append(fields, attachment.FieldFileName)
 	}
@@ -691,6 +907,15 @@ func (m *AttachmentMutation) Fields() []string {
 	}
 	if m.size_bytes != nil {
 		fields = append(fields, attachment.FieldSizeBytes)
+	}
+	if m.width != nil {
+		fields = append(fields, attachment.FieldWidth)
+	}
+	if m.height != nil {
+		fields = append(fields, attachment.FieldHeight)
+	}
+	if m.duration_seconds != nil {
+		fields = append(fields, attachment.FieldDurationSeconds)
 	}
 	if m.storage_key != nil {
 		fields = append(fields, attachment.FieldStorageKey)
@@ -721,6 +946,12 @@ func (m *AttachmentMutation) Field(name string) (ent.Value, bool) {
 		return m.MimeType()
 	case attachment.FieldSizeBytes:
 		return m.SizeBytes()
+	case attachment.FieldWidth:
+		return m.Width()
+	case attachment.FieldHeight:
+		return m.Height()
+	case attachment.FieldDurationSeconds:
+		return m.DurationSeconds()
 	case attachment.FieldStorageKey:
 		return m.StorageKey()
 	case attachment.FieldStatus:
@@ -746,6 +977,12 @@ func (m *AttachmentMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldMimeType(ctx)
 	case attachment.FieldSizeBytes:
 		return m.OldSizeBytes(ctx)
+	case attachment.FieldWidth:
+		return m.OldWidth(ctx)
+	case attachment.FieldHeight:
+		return m.OldHeight(ctx)
+	case attachment.FieldDurationSeconds:
+		return m.OldDurationSeconds(ctx)
 	case attachment.FieldStorageKey:
 		return m.OldStorageKey(ctx)
 	case attachment.FieldStatus:
@@ -785,6 +1022,27 @@ func (m *AttachmentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSizeBytes(v)
+		return nil
+	case attachment.FieldWidth:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWidth(v)
+		return nil
+	case attachment.FieldHeight:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeight(v)
+		return nil
+	case attachment.FieldDurationSeconds:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDurationSeconds(v)
 		return nil
 	case attachment.FieldStorageKey:
 		v, ok := value.(string)
@@ -832,6 +1090,15 @@ func (m *AttachmentMutation) AddedFields() []string {
 	if m.addsize_bytes != nil {
 		fields = append(fields, attachment.FieldSizeBytes)
 	}
+	if m.addwidth != nil {
+		fields = append(fields, attachment.FieldWidth)
+	}
+	if m.addheight != nil {
+		fields = append(fields, attachment.FieldHeight)
+	}
+	if m.addduration_seconds != nil {
+		fields = append(fields, attachment.FieldDurationSeconds)
+	}
 	return fields
 }
 
@@ -842,6 +1109,12 @@ func (m *AttachmentMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case attachment.FieldSizeBytes:
 		return m.AddedSizeBytes()
+	case attachment.FieldWidth:
+		return m.AddedWidth()
+	case attachment.FieldHeight:
+		return m.AddedHeight()
+	case attachment.FieldDurationSeconds:
+		return m.AddedDurationSeconds()
 	}
 	return nil, false
 }
@@ -858,6 +1131,27 @@ func (m *AttachmentMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddSizeBytes(v)
 		return nil
+	case attachment.FieldWidth:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWidth(v)
+		return nil
+	case attachment.FieldHeight:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeight(v)
+		return nil
+	case attachment.FieldDurationSeconds:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDurationSeconds(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Attachment numeric field %s", name)
 }
@@ -866,6 +1160,15 @@ func (m *AttachmentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AttachmentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(attachment.FieldWidth) {
+		fields = append(fields, attachment.FieldWidth)
+	}
+	if m.FieldCleared(attachment.FieldHeight) {
+		fields = append(fields, attachment.FieldHeight)
+	}
+	if m.FieldCleared(attachment.FieldDurationSeconds) {
+		fields = append(fields, attachment.FieldDurationSeconds)
+	}
 	if m.FieldCleared(attachment.FieldUploadedAt) {
 		fields = append(fields, attachment.FieldUploadedAt)
 	}
@@ -886,6 +1189,15 @@ func (m *AttachmentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AttachmentMutation) ClearField(name string) error {
 	switch name {
+	case attachment.FieldWidth:
+		m.ClearWidth()
+		return nil
+	case attachment.FieldHeight:
+		m.ClearHeight()
+		return nil
+	case attachment.FieldDurationSeconds:
+		m.ClearDurationSeconds()
+		return nil
 	case attachment.FieldUploadedAt:
 		m.ClearUploadedAt()
 		return nil
@@ -908,6 +1220,15 @@ func (m *AttachmentMutation) ResetField(name string) error {
 		return nil
 	case attachment.FieldSizeBytes:
 		m.ResetSizeBytes()
+		return nil
+	case attachment.FieldWidth:
+		m.ResetWidth()
+		return nil
+	case attachment.FieldHeight:
+		m.ResetHeight()
+		return nil
+	case attachment.FieldDurationSeconds:
+		m.ResetDurationSeconds()
 		return nil
 	case attachment.FieldStorageKey:
 		m.ResetStorageKey()
@@ -5572,22 +5893,31 @@ func (m *MessageGroupMentionMutation) ResetEdge(name string) error {
 // MessageLinkMutation represents an operation that mutates the MessageLink nodes in the graph.
 type MessageLinkMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	url            *string
-	title          *string
-	description    *string
-	image_url      *string
-	site_name      *string
-	card_type      *string
-	created_at     *time.Time
-	clearedFields  map[string]struct{}
-	message        *uuid.UUID
-	clearedmessage bool
-	done           bool
-	oldValue       func(context.Context) (*MessageLink, error)
-	predicates     []predicate.MessageLink
+	op                          Op
+	typ                         string
+	id                          *uuid.UUID
+	url                         *string
+	title                       *string
+	description                 *string
+	image_url                   *string
+	site_name                   *string
+	card_type                   *string
+	image_width                 *int32
+	addimage_width              *int32
+	image_height                *int32
+	addimage_height             *int32
+	youtube_video_id            *string
+	youtube_channel_name        *string
+	youtube_duration_seconds    *int32
+	addyoutube_duration_seconds *int32
+	linked_message_id           *uuid.UUID
+	created_at                  *time.Time
+	clearedFields               map[string]struct{}
+	message                     *uuid.UUID
+	clearedmessage              bool
+	done                        bool
+	oldValue                    func(context.Context) (*MessageLink, error)
+	predicates                  []predicate.MessageLink
 }
 
 var _ ent.Mutation = (*MessageLinkMutation)(nil)
@@ -5975,6 +6305,363 @@ func (m *MessageLinkMutation) ResetCardType() {
 	delete(m.clearedFields, messagelink.FieldCardType)
 }
 
+// SetImageWidth sets the "image_width" field.
+func (m *MessageLinkMutation) SetImageWidth(i int32) {
+	m.image_width = &i
+	m.addimage_width = nil
+}
+
+// ImageWidth returns the value of the "image_width" field in the mutation.
+func (m *MessageLinkMutation) ImageWidth() (r int32, exists bool) {
+	v := m.image_width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImageWidth returns the old "image_width" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldImageWidth(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImageWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImageWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImageWidth: %w", err)
+	}
+	return oldValue.ImageWidth, nil
+}
+
+// AddImageWidth adds i to the "image_width" field.
+func (m *MessageLinkMutation) AddImageWidth(i int32) {
+	if m.addimage_width != nil {
+		*m.addimage_width += i
+	} else {
+		m.addimage_width = &i
+	}
+}
+
+// AddedImageWidth returns the value that was added to the "image_width" field in this mutation.
+func (m *MessageLinkMutation) AddedImageWidth() (r int32, exists bool) {
+	v := m.addimage_width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearImageWidth clears the value of the "image_width" field.
+func (m *MessageLinkMutation) ClearImageWidth() {
+	m.image_width = nil
+	m.addimage_width = nil
+	m.clearedFields[messagelink.FieldImageWidth] = struct{}{}
+}
+
+// ImageWidthCleared returns if the "image_width" field was cleared in this mutation.
+func (m *MessageLinkMutation) ImageWidthCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldImageWidth]
+	return ok
+}
+
+// ResetImageWidth resets all changes to the "image_width" field.
+func (m *MessageLinkMutation) ResetImageWidth() {
+	m.image_width = nil
+	m.addimage_width = nil
+	delete(m.clearedFields, messagelink.FieldImageWidth)
+}
+
+// SetImageHeight sets the "image_height" field.
+func (m *MessageLinkMutation) SetImageHeight(i int32) {
+	m.image_height = &i
+	m.addimage_height = nil
+}
+
+// ImageHeight returns the value of the "image_height" field in the mutation.
+func (m *MessageLinkMutation) ImageHeight() (r int32, exists bool) {
+	v := m.image_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImageHeight returns the old "image_height" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldImageHeight(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImageHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImageHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImageHeight: %w", err)
+	}
+	return oldValue.ImageHeight, nil
+}
+
+// AddImageHeight adds i to the "image_height" field.
+func (m *MessageLinkMutation) AddImageHeight(i int32) {
+	if m.addimage_height != nil {
+		*m.addimage_height += i
+	} else {
+		m.addimage_height = &i
+	}
+}
+
+// AddedImageHeight returns the value that was added to the "image_height" field in this mutation.
+func (m *MessageLinkMutation) AddedImageHeight() (r int32, exists bool) {
+	v := m.addimage_height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearImageHeight clears the value of the "image_height" field.
+func (m *MessageLinkMutation) ClearImageHeight() {
+	m.image_height = nil
+	m.addimage_height = nil
+	m.clearedFields[messagelink.FieldImageHeight] = struct{}{}
+}
+
+// ImageHeightCleared returns if the "image_height" field was cleared in this mutation.
+func (m *MessageLinkMutation) ImageHeightCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldImageHeight]
+	return ok
+}
+
+// ResetImageHeight resets all changes to the "image_height" field.
+func (m *MessageLinkMutation) ResetImageHeight() {
+	m.image_height = nil
+	m.addimage_height = nil
+	delete(m.clearedFields, messagelink.FieldImageHeight)
+}
+
+// SetYoutubeVideoID sets the "youtube_video_id" field.
+func (m *MessageLinkMutation) SetYoutubeVideoID(s string) {
+	m.youtube_video_id = &s
+}
+
+// YoutubeVideoID returns the value of the "youtube_video_id" field in the mutation.
+func (m *MessageLinkMutation) YoutubeVideoID() (r string, exists bool) {
+	v := m.youtube_video_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldYoutubeVideoID returns the old "youtube_video_id" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldYoutubeVideoID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldYoutubeVideoID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldYoutubeVideoID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldYoutubeVideoID: %w", err)
+	}
+	return oldValue.YoutubeVideoID, nil
+}
+
+// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
+func (m *MessageLinkMutation) ClearYoutubeVideoID() {
+	m.youtube_video_id = nil
+	m.clearedFields[messagelink.FieldYoutubeVideoID] = struct{}{}
+}
+
+// YoutubeVideoIDCleared returns if the "youtube_video_id" field was cleared in this mutation.
+func (m *MessageLinkMutation) YoutubeVideoIDCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldYoutubeVideoID]
+	return ok
+}
+
+// ResetYoutubeVideoID resets all changes to the "youtube_video_id" field.
+func (m *MessageLinkMutation) ResetYoutubeVideoID() {
+	m.youtube_video_id = nil
+	delete(m.clearedFields, messagelink.FieldYoutubeVideoID)
+}
+
+// SetYoutubeChannelName sets the "youtube_channel_name" field.
+func (m *MessageLinkMutation) SetYoutubeChannelName(s string) {
+	m.youtube_channel_name = &s
+}
+
+// YoutubeChannelName returns the value of the "youtube_channel_name" field in the mutation.
+func (m *MessageLinkMutation) YoutubeChannelName() (r string, exists bool) {
+	v := m.youtube_channel_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldYoutubeChannelName returns the old "youtube_channel_name" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldYoutubeChannelName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldYoutubeChannelName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldYoutubeChannelName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldYoutubeChannelName: %w", err)
+	}
+	return oldValue.YoutubeChannelName, nil
+}
+
+// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
+func (m *MessageLinkMutation) ClearYoutubeChannelName() {
+	m.youtube_channel_name = nil
+	m.clearedFields[messagelink.FieldYoutubeChannelName] = struct{}{}
+}
+
+// YoutubeChannelNameCleared returns if the "youtube_channel_name" field was cleared in this mutation.
+func (m *MessageLinkMutation) YoutubeChannelNameCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldYoutubeChannelName]
+	return ok
+}
+
+// ResetYoutubeChannelName resets all changes to the "youtube_channel_name" field.
+func (m *MessageLinkMutation) ResetYoutubeChannelName() {
+	m.youtube_channel_name = nil
+	delete(m.clearedFields, messagelink.FieldYoutubeChannelName)
+}
+
+// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
+func (m *MessageLinkMutation) SetYoutubeDurationSeconds(i int32) {
+	m.youtube_duration_seconds = &i
+	m.addyoutube_duration_seconds = nil
+}
+
+// YoutubeDurationSeconds returns the value of the "youtube_duration_seconds" field in the mutation.
+func (m *MessageLinkMutation) YoutubeDurationSeconds() (r int32, exists bool) {
+	v := m.youtube_duration_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldYoutubeDurationSeconds returns the old "youtube_duration_seconds" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldYoutubeDurationSeconds(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldYoutubeDurationSeconds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldYoutubeDurationSeconds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldYoutubeDurationSeconds: %w", err)
+	}
+	return oldValue.YoutubeDurationSeconds, nil
+}
+
+// AddYoutubeDurationSeconds adds i to the "youtube_duration_seconds" field.
+func (m *MessageLinkMutation) AddYoutubeDurationSeconds(i int32) {
+	if m.addyoutube_duration_seconds != nil {
+		*m.addyoutube_duration_seconds += i
+	} else {
+		m.addyoutube_duration_seconds = &i
+	}
+}
+
+// AddedYoutubeDurationSeconds returns the value that was added to the "youtube_duration_seconds" field in this mutation.
+func (m *MessageLinkMutation) AddedYoutubeDurationSeconds() (r int32, exists bool) {
+	v := m.addyoutube_duration_seconds
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
+func (m *MessageLinkMutation) ClearYoutubeDurationSeconds() {
+	m.youtube_duration_seconds = nil
+	m.addyoutube_duration_seconds = nil
+	m.clearedFields[messagelink.FieldYoutubeDurationSeconds] = struct{}{}
+}
+
+// YoutubeDurationSecondsCleared returns if the "youtube_duration_seconds" field was cleared in this mutation.
+func (m *MessageLinkMutation) YoutubeDurationSecondsCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldYoutubeDurationSeconds]
+	return ok
+}
+
+// ResetYoutubeDurationSeconds resets all changes to the "youtube_duration_seconds" field.
+func (m *MessageLinkMutation) ResetYoutubeDurationSeconds() {
+	m.youtube_duration_seconds = nil
+	m.addyoutube_duration_seconds = nil
+	delete(m.clearedFields, messagelink.FieldYoutubeDurationSeconds)
+}
+
+// SetLinkedMessageID sets the "linked_message_id" field.
+func (m *MessageLinkMutation) SetLinkedMessageID(u uuid.UUID) {
+	m.linked_message_id = &u
+}
+
+// LinkedMessageID returns the value of the "linked_message_id" field in the mutation.
+func (m *MessageLinkMutation) LinkedMessageID() (r uuid.UUID, exists bool) {
+	v := m.linked_message_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLinkedMessageID returns the old "linked_message_id" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldLinkedMessageID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLinkedMessageID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLinkedMessageID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLinkedMessageID: %w", err)
+	}
+	return oldValue.LinkedMessageID, nil
+}
+
+// ClearLinkedMessageID clears the value of the "linked_message_id" field.
+func (m *MessageLinkMutation) ClearLinkedMessageID() {
+	m.linked_message_id = nil
+	m.clearedFields[messagelink.FieldLinkedMessageID] = struct{}{}
+}
+
+// LinkedMessageIDCleared returns if the "linked_message_id" field was cleared in this mutation.
+func (m *MessageLinkMutation) LinkedMessageIDCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldLinkedMessageID]
+	return ok
+}
+
+// ResetLinkedMessageID resets all changes to the "linked_message_id" field.
+func (m *MessageLinkMutation) ResetLinkedMessageID() {
+	m.linked_message_id = nil
+	delete(m.clearedFields, messagelink.FieldLinkedMessageID)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *MessageLinkMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -6084,7 +6771,7 @@ func (m *MessageLinkMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageLinkMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 13)
 	if m.url != nil {
 		fields = append(fields, messagelink.FieldURL)
 	}
@@ -6102,6 +6789,24 @@ func (m *MessageLinkMutation) Fields() []string {
 	}
 	if m.card_type != nil {
 		fields = append(fields, messagelink.FieldCardType)
+	}
+	if m.image_width != nil {
+		fields = append(fields, messagelink.FieldImageWidth)
+	}
+	if m.image_height != nil {
+		fields = append(fields, messagelink.FieldImageHeight)
+	}
+	if m.youtube_video_id != nil {
+		fields = append(fields, messagelink.FieldYoutubeVideoID)
+	}
+	if m.youtube_channel_name != nil {
+		fields = append(fields, messagelink.FieldYoutubeChannelName)
+	}
+	if m.youtube_duration_seconds != nil {
+		fields = append(fields, messagelink.FieldYoutubeDurationSeconds)
+	}
+	if m.linked_message_id != nil {
+		fields = append(fields, messagelink.FieldLinkedMessageID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, messagelink.FieldCreatedAt)
@@ -6126,6 +6831,18 @@ func (m *MessageLinkMutation) Field(name string) (ent.Value, bool) {
 		return m.SiteName()
 	case messagelink.FieldCardType:
 		return m.CardType()
+	case messagelink.FieldImageWidth:
+		return m.ImageWidth()
+	case messagelink.FieldImageHeight:
+		return m.ImageHeight()
+	case messagelink.FieldYoutubeVideoID:
+		return m.YoutubeVideoID()
+	case messagelink.FieldYoutubeChannelName:
+		return m.YoutubeChannelName()
+	case messagelink.FieldYoutubeDurationSeconds:
+		return m.YoutubeDurationSeconds()
+	case messagelink.FieldLinkedMessageID:
+		return m.LinkedMessageID()
 	case messagelink.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -6149,6 +6866,18 @@ func (m *MessageLinkMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldSiteName(ctx)
 	case messagelink.FieldCardType:
 		return m.OldCardType(ctx)
+	case messagelink.FieldImageWidth:
+		return m.OldImageWidth(ctx)
+	case messagelink.FieldImageHeight:
+		return m.OldImageHeight(ctx)
+	case messagelink.FieldYoutubeVideoID:
+		return m.OldYoutubeVideoID(ctx)
+	case messagelink.FieldYoutubeChannelName:
+		return m.OldYoutubeChannelName(ctx)
+	case messagelink.FieldYoutubeDurationSeconds:
+		return m.OldYoutubeDurationSeconds(ctx)
+	case messagelink.FieldLinkedMessageID:
+		return m.OldLinkedMessageID(ctx)
 	case messagelink.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -6202,6 +6931,48 @@ func (m *MessageLinkMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCardType(v)
 		return nil
+	case messagelink.FieldImageWidth:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImageWidth(v)
+		return nil
+	case messagelink.FieldImageHeight:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImageHeight(v)
+		return nil
+	case messagelink.FieldYoutubeVideoID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetYoutubeVideoID(v)
+		return nil
+	case messagelink.FieldYoutubeChannelName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetYoutubeChannelName(v)
+		return nil
+	case messagelink.FieldYoutubeDurationSeconds:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetYoutubeDurationSeconds(v)
+		return nil
+	case messagelink.FieldLinkedMessageID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLinkedMessageID(v)
+		return nil
 	case messagelink.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -6216,13 +6987,31 @@ func (m *MessageLinkMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *MessageLinkMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addimage_width != nil {
+		fields = append(fields, messagelink.FieldImageWidth)
+	}
+	if m.addimage_height != nil {
+		fields = append(fields, messagelink.FieldImageHeight)
+	}
+	if m.addyoutube_duration_seconds != nil {
+		fields = append(fields, messagelink.FieldYoutubeDurationSeconds)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *MessageLinkMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case messagelink.FieldImageWidth:
+		return m.AddedImageWidth()
+	case messagelink.FieldImageHeight:
+		return m.AddedImageHeight()
+	case messagelink.FieldYoutubeDurationSeconds:
+		return m.AddedYoutubeDurationSeconds()
+	}
 	return nil, false
 }
 
@@ -6231,6 +7020,27 @@ func (m *MessageLinkMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *MessageLinkMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case messagelink.FieldImageWidth:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddImageWidth(v)
+		return nil
+	case messagelink.FieldImageHeight:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddImageHeight(v)
+		return nil
+	case messagelink.FieldYoutubeDurationSeconds:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddYoutubeDurationSeconds(v)
+		return nil
 	}
 	return fmt.Errorf("unknown MessageLink numeric field %s", name)
 }
@@ -6253,6 +7063,24 @@ func (m *MessageLinkMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(messagelink.FieldCardType) {
 		fields = append(fields, messagelink.FieldCardType)
+	}
+	if m.FieldCleared(messagelink.FieldImageWidth) {
+		fields = append(fields, messagelink.FieldImageWidth)
+	}
+	if m.FieldCleared(messagelink.FieldImageHeight) {
+		fields = append(fields, messagelink.FieldImageHeight)
+	}
+	if m.FieldCleared(messagelink.FieldYoutubeVideoID) {
+		fields = append(fields, messagelink.FieldYoutubeVideoID)
+	}
+	if m.FieldCleared(messagelink.FieldYoutubeChannelName) {
+		fields = append(fields, messagelink.FieldYoutubeChannelName)
+	}
+	if m.FieldCleared(messagelink.FieldYoutubeDurationSeconds) {
+		fields = append(fields, messagelink.FieldYoutubeDurationSeconds)
+	}
+	if m.FieldCleared(messagelink.FieldLinkedMessageID) {
+		fields = append(fields, messagelink.FieldLinkedMessageID)
 	}
 	return fields
 }
@@ -6283,6 +7111,24 @@ func (m *MessageLinkMutation) ClearField(name string) error {
 	case messagelink.FieldCardType:
 		m.ClearCardType()
 		return nil
+	case messagelink.FieldImageWidth:
+		m.ClearImageWidth()
+		return nil
+	case messagelink.FieldImageHeight:
+		m.ClearImageHeight()
+		return nil
+	case messagelink.FieldYoutubeVideoID:
+		m.ClearYoutubeVideoID()
+		return nil
+	case messagelink.FieldYoutubeChannelName:
+		m.ClearYoutubeChannelName()
+		return nil
+	case messagelink.FieldYoutubeDurationSeconds:
+		m.ClearYoutubeDurationSeconds()
+		return nil
+	case messagelink.FieldLinkedMessageID:
+		m.ClearLinkedMessageID()
+		return nil
 	}
 	return fmt.Errorf("unknown MessageLink nullable field %s", name)
 }
@@ -6308,6 +7154,24 @@ func (m *MessageLinkMutation) ResetField(name string) error {
 		return nil
 	case messagelink.FieldCardType:
 		m.ResetCardType()
+		return nil
+	case messagelink.FieldImageWidth:
+		m.ResetImageWidth()
+		return nil
+	case messagelink.FieldImageHeight:
+		m.ResetImageHeight()
+		return nil
+	case messagelink.FieldYoutubeVideoID:
+		m.ResetYoutubeVideoID()
+		return nil
+	case messagelink.FieldYoutubeChannelName:
+		m.ResetYoutubeChannelName()
+		return nil
+	case messagelink.FieldYoutubeDurationSeconds:
+		m.ResetYoutubeDurationSeconds()
+		return nil
+	case messagelink.FieldLinkedMessageID:
+		m.ResetLinkedMessageID()
 		return nil
 	case messagelink.FieldCreatedAt:
 		m.ResetCreatedAt()

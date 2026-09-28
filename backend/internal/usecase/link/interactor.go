@@ -27,15 +27,5 @@ func (i *linkInteractor) FetchOGP(ctx context.Context, input FetchOGPInput) (*Fe
 		return nil, fmt.Errorf("failed to fetch OGP data: %w", err)
 	}
 
-	output := &FetchOGPOutput{
-		OGPData: OGPData{
-			Title:       ogpData.Title,
-			Description: ogpData.Description,
-			ImageURL:    ogpData.ImageURL,
-			SiteName:    ogpData.SiteName,
-			CardType:    ogpData.CardType,
-		},
-	}
-
-	return output, nil
+	return &FetchOGPOutput{OGPData: *ogpData}, nil
 }

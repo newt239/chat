@@ -48,15 +48,15 @@ func init() {
 	// attachment.SizeBytesValidator is a validator for the "size_bytes" field. It is called by the builders before save.
 	attachment.SizeBytesValidator = attachmentDescSizeBytes.Validators[0].(func(int64) error)
 	// attachmentDescStorageKey is the schema descriptor for storage_key field.
-	attachmentDescStorageKey := attachmentFields[4].Descriptor()
+	attachmentDescStorageKey := attachmentFields[7].Descriptor()
 	// attachment.StorageKeyValidator is a validator for the "storage_key" field. It is called by the builders before save.
 	attachment.StorageKeyValidator = attachmentDescStorageKey.Validators[0].(func(string) error)
 	// attachmentDescStatus is the schema descriptor for status field.
-	attachmentDescStatus := attachmentFields[5].Descriptor()
+	attachmentDescStatus := attachmentFields[8].Descriptor()
 	// attachment.DefaultStatus holds the default value on creation for the status field.
 	attachment.DefaultStatus = attachmentDescStatus.Default.(string)
 	// attachmentDescCreatedAt is the schema descriptor for created_at field.
-	attachmentDescCreatedAt := attachmentFields[8].Descriptor()
+	attachmentDescCreatedAt := attachmentFields[11].Descriptor()
 	// attachment.DefaultCreatedAt holds the default value on creation for the created_at field.
 	attachment.DefaultCreatedAt = attachmentDescCreatedAt.Default.(func() time.Time)
 	// attachmentDescID is the schema descriptor for id field.
@@ -156,7 +156,7 @@ func init() {
 	// messagelink.URLValidator is a validator for the "url" field. It is called by the builders before save.
 	messagelink.URLValidator = messagelinkDescURL.Validators[0].(func(string) error)
 	// messagelinkDescCreatedAt is the schema descriptor for created_at field.
-	messagelinkDescCreatedAt := messagelinkFields[7].Descriptor()
+	messagelinkDescCreatedAt := messagelinkFields[13].Descriptor()
 	// messagelink.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagelink.DefaultCreatedAt = messagelinkDescCreatedAt.Default.(func() time.Time)
 	// messagelinkDescID is the schema descriptor for id field.

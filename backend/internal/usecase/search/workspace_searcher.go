@@ -24,10 +24,6 @@ type WorkspaceSearcher struct {
 	messageRepo          domainrepository.MessageRepository
 	userRepo             domainrepository.UserRepository
 	userGroupRepo        domainrepository.UserGroupRepository
-	userMentionRepo      domainrepository.MessageUserMentionRepository
-	groupMentionRepo     domainrepository.MessageGroupMentionRepository
-	linkRepo             domainrepository.MessageLinkRepository
-	attachmentRepo       domainrepository.AttachmentRepository
 	messageOutputBuilder *messageuc.MessageOutputBuilder
 }
 
@@ -37,34 +33,15 @@ func NewWorkspaceSearcher(
 	messageRepo domainrepository.MessageRepository,
 	userRepo domainrepository.UserRepository,
 	userGroupRepo domainrepository.UserGroupRepository,
-	userMentionRepo domainrepository.MessageUserMentionRepository,
-	groupMentionRepo domainrepository.MessageGroupMentionRepository,
-	linkRepo domainrepository.MessageLinkRepository,
-	attachmentRepo domainrepository.AttachmentRepository,
+	messageOutputBuilder *messageuc.MessageOutputBuilder,
 ) *WorkspaceSearcher {
-	assembler := messageuc.NewMessageOutputAssembler()
-	outputBuilder := messageuc.NewMessageOutputBuilder(
-		messageRepo,
-		userRepo,
-		userGroupRepo,
-		userMentionRepo,
-		groupMentionRepo,
-		linkRepo,
-		attachmentRepo,
-		assembler,
-	)
-
 	return &WorkspaceSearcher{
 		workspaceRepo:        workspaceRepo,
 		channelRepo:          channelRepo,
 		messageRepo:          messageRepo,
 		userRepo:             userRepo,
 		userGroupRepo:        userGroupRepo,
-		userMentionRepo:      userMentionRepo,
-		groupMentionRepo:     groupMentionRepo,
-		linkRepo:             linkRepo,
-		attachmentRepo:       attachmentRepo,
-		messageOutputBuilder: outputBuilder,
+		messageOutputBuilder: messageOutputBuilder,
 	}
 }
 
@@ -214,7 +191,7 @@ func (s *WorkspaceSearcher) searchMessages(
 		return PaginatedMessages{}, fmt.Errorf("failed to search messages: %w", err)
 	}
 
-	outputs, err := s.messageOutputBuilder.Build(ctx, messages)
+	outputs, err := s.messageOutputBuilder.Build(ctx, userID, messages)
 	if err != nil {
 		return PaginatedMessages{}, fmt.Errorf("failed to build message outputs: %w", err)
 	}

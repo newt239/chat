@@ -164,7 +164,10 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 		SetMimeType(att.MimeType).
 		SetSizeBytes(att.SizeBytes).
 		SetStorageKey(att.StorageKey).
-		SetStatus(string(att.Status))
+		SetStatus(string(att.Status)).
+		SetNillableWidth(att.Media.Width).
+		SetNillableHeight(att.Media.Height).
+		SetNillableDurationSeconds(att.Media.DurationSeconds)
 	if att.UploadedAt != nil {
 		create.SetUploadedAt(*att.UploadedAt)
 	}

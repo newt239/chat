@@ -14,57 +14,43 @@ import (
 // MessageUpdater はメッセージ更新を担当するユースケースです
 type MessageUpdater struct {
 	messageRepo           domainrepository.MessageRepository
-	channelRepo           domainrepository.ChannelRepository
-	channelMemberRepo     domainrepository.ChannelMemberRepository
 	workspaceRepo         domainrepository.WorkspaceRepository
-	userRepo              domainrepository.UserRepository
-	userGroupRepo         domainrepository.UserGroupRepository
 	userMentionRepo       domainrepository.MessageUserMentionRepository
 	groupMentionRepo      domainrepository.MessageGroupMentionRepository
 	linkRepo              domainrepository.MessageLinkRepository
-	attachmentRepo        domainrepository.AttachmentRepository
 	notificationSvc       Notifier
 	mentionService        service.MentionService
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
-	assembler             *MessageOutputAssembler
+	outputBuilder         *MessageOutputBuilder
 	channelAccessSvc      service.ChannelAccessService
 }
 
 // NewMessageUpdater は新しいMessageUpdaterを作成します
 func NewMessageUpdater(
 	messageRepo domainrepository.MessageRepository,
-	channelRepo domainrepository.ChannelRepository,
-	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
-	userRepo domainrepository.UserRepository,
-	userGroupRepo domainrepository.UserGroupRepository,
 	userMentionRepo domainrepository.MessageUserMentionRepository,
 	groupMentionRepo domainrepository.MessageGroupMentionRepository,
 	linkRepo domainrepository.MessageLinkRepository,
-	attachmentRepo domainrepository.AttachmentRepository,
 	notificationSvc Notifier,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
+	outputBuilder *MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
 ) *MessageUpdater {
 	return &MessageUpdater{
 		messageRepo:           messageRepo,
-		channelRepo:           channelRepo,
-		channelMemberRepo:     channelMemberRepo,
 		workspaceRepo:         workspaceRepo,
-		userRepo:              userRepo,
-		userGroupRepo:         userGroupRepo,
 		userMentionRepo:       userMentionRepo,
 		groupMentionRepo:      groupMentionRepo,
 		linkRepo:              linkRepo,
-		attachmentRepo:        attachmentRepo,
 		notificationSvc:       notificationSvc,
 		mentionService:        mentionService,
 		linkProcessingService: linkProcessingService,
 		transactionManager:    transactionManager,
-		assembler:             NewMessageOutputAssembler(),
+		outputBuilder:         outputBuilder,
 		channelAccessSvc:      channelAccessSvc,
 	}
 }
@@ -128,73 +114,20 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 			return fmt.Errorf("failed to extract and save mentions/links: %w", err)
 		}
 
-		// 更新後のデータを取得してMessageOutputを構築
-		userMentions, err := u.userMentionRepo.FindByMessageID(txCtx, message.ID)
+		outputs, err := u.outputBuilder.Build(txCtx, input.EditorID, []*entity.Message{message})
 		if err != nil {
-			return fmt.Errorf("failed to fetch user mentions: %w", err)
+			return err
 		}
-
-		groupMentions, err := u.groupMentionRepo.FindByMessageID(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch group mentions: %w", err)
-		}
-
-		links, err := u.linkRepo.FindByMessageID(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch links: %w", err)
-		}
-
-		reactions, err := u.messageRepo.FindReactions(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch reactions: %w", err)
-		}
-
-		attachmentList, err := u.attachmentRepo.FindByMessageID(txCtx, message.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch attachments: %w", err)
-		}
-
-		// ユーザー情報を取得
-		user, err := u.userRepo.FindByID(txCtx, message.UserID)
-		if err != nil {
-			return fmt.Errorf("ユーザー情報の取得に失敗しました: %w", err)
-		}
-
-		// グループ情報を取得
-		groupIDs := make([]string, 0)
-		groupIDSet := make(map[string]bool)
-		for _, gm := range groupMentions {
-			if !groupIDSet[gm.GroupID] {
-				groupIDs = append(groupIDs, gm.GroupID)
-				groupIDSet[gm.GroupID] = true
-			}
-		}
-
-		groups := make(map[string]*entity.UserGroup)
-		if len(groupIDs) > 0 {
-			groupList, err := u.userGroupRepo.FindByIDs(txCtx, groupIDs)
-			if err != nil {
-				return fmt.Errorf("failed to fetch groups: %w", err)
-			}
-			for _, group := range groupList {
-				groups[group.ID] = group
-			}
-		}
-
-		userMap := map[string]*entity.User{user.ID: user}
-		output := u.assembler.AssembleMessageOutput(message, user, userMentions, groupMentions, links, reactions, attachmentList, groups, userMap)
-		result = &output
-
+		result = &outputs[0]
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	// WebSocket通知を送信
 	if u.notificationSvc != nil {
-		u.notificationSvc.NotifyUpdatedMessage(channel.WorkspaceID, channel.ID, *result)
+		u.notificationSvc.NotifyUpdatedMessage(channel.WorkspaceID, channel.ID, result.WithoutMessagePreviews())
 	}
 
 	return result, nil
@@ -254,35 +187,12 @@ func (u *MessageUpdater) extractAndSaveMentionsAndLinks(ctx context.Context, mes
 		}
 	}
 
-	// リンクの抽出とOGP取得
-	links, err := u.linkProcessingService.ProcessLinks(ctx, body)
+	links, err := u.linkProcessingService.ProcessLinks(ctx, body, workspaceID)
 	if err != nil {
 		return fmt.Errorf("failed to process links: %w", err)
 	}
-
 	for _, link := range links {
-		// 既存のリンクをチェック
-		existingLink, err := u.linkRepo.FindByURL(ctx, link.URL)
-		if err != nil {
-			continue // エラーは無視
-		}
-
-		if existingLink != nil {
-			// 既存のリンクを再利用
-			link.MessageID = messageID
-			link.Title = existingLink.Title
-			link.Description = existingLink.Description
-			link.ImageURL = existingLink.ImageURL
-			link.SiteName = existingLink.SiteName
-			link.CardType = existingLink.CardType
-			link.CreatedAt = time.Now()
-		} else {
-			// 新しいリンクを保存
-			link.MessageID = messageID
-			link.CreatedAt = time.Now()
-		}
-
-		// リンクを保存
+		link.MessageID = messageID
 		if err := u.linkRepo.Create(ctx, link); err != nil {
 			return fmt.Errorf("failed to create link: %w", err)
 		}

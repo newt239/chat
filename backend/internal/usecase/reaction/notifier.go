@@ -1,5 +1,7 @@
 package reaction
 
+import "time"
+
 // Notifier はリアクションの変更をチャンネルの参加者へ配信します
 type Notifier interface {
 	NotifyReactionAdded(workspaceID, channelID string, reaction ReactionNotification)
@@ -11,4 +13,7 @@ type ReactionNotification struct {
 	MessageID string
 	UserID    string
 	Emoji     string
+	// 追加のときのみ設定される
+	User      *UserInfo
+	CreatedAt time.Time
 }

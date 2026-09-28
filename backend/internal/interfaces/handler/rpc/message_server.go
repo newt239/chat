@@ -85,3 +85,11 @@ func (s *MessageServer) DeleteMessage(ctx context.Context, req *chatv1.DeleteMes
 	}
 	return &chatv1.DeleteMessageResponse{}, nil
 }
+
+func (s *MessageServer) GetMessagePreview(ctx context.Context, req *chatv1.GetMessagePreviewRequest) (*chatv1.GetMessagePreviewResponse, error) {
+	out, err := s.UC.GetMessagePreview(ctx, messageuc.GetMessagePreviewInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.GetMessagePreviewResponse{Preview: presenter.MessagePreview(*out)}, nil
+}
