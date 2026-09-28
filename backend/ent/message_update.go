@@ -114,6 +114,46 @@ func (_u *MessageUpdate) ClearDeletedBy() *MessageUpdate {
 	return _u
 }
 
+// SetSenderName sets the "sender_name" field.
+func (_u *MessageUpdate) SetSenderName(v string) *MessageUpdate {
+	_u.mutation.SetSenderName(v)
+	return _u
+}
+
+// SetNillableSenderName sets the "sender_name" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableSenderName(v *string) *MessageUpdate {
+	if v != nil {
+		_u.SetSenderName(*v)
+	}
+	return _u
+}
+
+// ClearSenderName clears the value of the "sender_name" field.
+func (_u *MessageUpdate) ClearSenderName() *MessageUpdate {
+	_u.mutation.ClearSenderName()
+	return _u
+}
+
+// SetSenderAvatarURL sets the "sender_avatar_url" field.
+func (_u *MessageUpdate) SetSenderAvatarURL(v string) *MessageUpdate {
+	_u.mutation.SetSenderAvatarURL(v)
+	return _u
+}
+
+// SetNillableSenderAvatarURL sets the "sender_avatar_url" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableSenderAvatarURL(v *string) *MessageUpdate {
+	if v != nil {
+		_u.SetSenderAvatarURL(*v)
+	}
+	return _u
+}
+
+// ClearSenderAvatarURL clears the value of the "sender_avatar_url" field.
+func (_u *MessageUpdate) ClearSenderAvatarURL() *MessageUpdate {
+	_u.mutation.ClearSenderAvatarURL()
+	return _u
+}
+
 // SetChannelID sets the "channel" edge to the Channel entity by ID.
 func (_u *MessageUpdate) SetChannelID(id uuid.UUID) *MessageUpdate {
 	_u.mutation.SetChannelID(id)
@@ -613,6 +653,18 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DeletedByCleared() {
 		_spec.ClearField(message.FieldDeletedBy, field.TypeUUID)
+	}
+	if value, ok := _u.mutation.SenderName(); ok {
+		_spec.SetField(message.FieldSenderName, field.TypeString, value)
+	}
+	if _u.mutation.SenderNameCleared() {
+		_spec.ClearField(message.FieldSenderName, field.TypeString)
+	}
+	if value, ok := _u.mutation.SenderAvatarURL(); ok {
+		_spec.SetField(message.FieldSenderAvatarURL, field.TypeString, value)
+	}
+	if _u.mutation.SenderAvatarURLCleared() {
+		_spec.ClearField(message.FieldSenderAvatarURL, field.TypeString)
 	}
 	if _u.mutation.ChannelCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1245,6 +1297,46 @@ func (_u *MessageUpdateOne) ClearDeletedBy() *MessageUpdateOne {
 	return _u
 }
 
+// SetSenderName sets the "sender_name" field.
+func (_u *MessageUpdateOne) SetSenderName(v string) *MessageUpdateOne {
+	_u.mutation.SetSenderName(v)
+	return _u
+}
+
+// SetNillableSenderName sets the "sender_name" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableSenderName(v *string) *MessageUpdateOne {
+	if v != nil {
+		_u.SetSenderName(*v)
+	}
+	return _u
+}
+
+// ClearSenderName clears the value of the "sender_name" field.
+func (_u *MessageUpdateOne) ClearSenderName() *MessageUpdateOne {
+	_u.mutation.ClearSenderName()
+	return _u
+}
+
+// SetSenderAvatarURL sets the "sender_avatar_url" field.
+func (_u *MessageUpdateOne) SetSenderAvatarURL(v string) *MessageUpdateOne {
+	_u.mutation.SetSenderAvatarURL(v)
+	return _u
+}
+
+// SetNillableSenderAvatarURL sets the "sender_avatar_url" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableSenderAvatarURL(v *string) *MessageUpdateOne {
+	if v != nil {
+		_u.SetSenderAvatarURL(*v)
+	}
+	return _u
+}
+
+// ClearSenderAvatarURL clears the value of the "sender_avatar_url" field.
+func (_u *MessageUpdateOne) ClearSenderAvatarURL() *MessageUpdateOne {
+	_u.mutation.ClearSenderAvatarURL()
+	return _u
+}
+
 // SetChannelID sets the "channel" edge to the Channel entity by ID.
 func (_u *MessageUpdateOne) SetChannelID(id uuid.UUID) *MessageUpdateOne {
 	_u.mutation.SetChannelID(id)
@@ -1774,6 +1866,18 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 	}
 	if _u.mutation.DeletedByCleared() {
 		_spec.ClearField(message.FieldDeletedBy, field.TypeUUID)
+	}
+	if value, ok := _u.mutation.SenderName(); ok {
+		_spec.SetField(message.FieldSenderName, field.TypeString, value)
+	}
+	if _u.mutation.SenderNameCleared() {
+		_spec.ClearField(message.FieldSenderName, field.TypeString)
+	}
+	if value, ok := _u.mutation.SenderAvatarURL(); ok {
+		_spec.SetField(message.FieldSenderAvatarURL, field.TypeString, value)
+	}
+	if _u.mutation.SenderAvatarURLCleared() {
+		_spec.ClearField(message.FieldSenderAvatarURL, field.TypeString)
 	}
 	if _u.mutation.ChannelCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -81,6 +81,16 @@ func DeletedBy(v uuid.UUID) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldDeletedBy, v))
 }
 
+// SenderName applies equality check predicate on the "sender_name" field. It's identical to SenderNameEQ.
+func SenderName(v string) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldSenderName, v))
+}
+
+// SenderAvatarURL applies equality check predicate on the "sender_avatar_url" field. It's identical to SenderAvatarURLEQ.
+func SenderAvatarURL(v string) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldSenderAvatarURL, v))
+}
+
 // BodyEQ applies the EQ predicate on the "body" field.
 func BodyEQ(v string) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldBody, v))
@@ -334,6 +344,156 @@ func DeletedByIsNil() predicate.Message {
 // DeletedByNotNil applies the NotNil predicate on the "deleted_by" field.
 func DeletedByNotNil() predicate.Message {
 	return predicate.Message(sql.FieldNotNull(FieldDeletedBy))
+}
+
+// SenderNameEQ applies the EQ predicate on the "sender_name" field.
+func SenderNameEQ(v string) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldSenderName, v))
+}
+
+// SenderNameNEQ applies the NEQ predicate on the "sender_name" field.
+func SenderNameNEQ(v string) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldSenderName, v))
+}
+
+// SenderNameIn applies the In predicate on the "sender_name" field.
+func SenderNameIn(vs ...string) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldSenderName, vs...))
+}
+
+// SenderNameNotIn applies the NotIn predicate on the "sender_name" field.
+func SenderNameNotIn(vs ...string) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldSenderName, vs...))
+}
+
+// SenderNameGT applies the GT predicate on the "sender_name" field.
+func SenderNameGT(v string) predicate.Message {
+	return predicate.Message(sql.FieldGT(FieldSenderName, v))
+}
+
+// SenderNameGTE applies the GTE predicate on the "sender_name" field.
+func SenderNameGTE(v string) predicate.Message {
+	return predicate.Message(sql.FieldGTE(FieldSenderName, v))
+}
+
+// SenderNameLT applies the LT predicate on the "sender_name" field.
+func SenderNameLT(v string) predicate.Message {
+	return predicate.Message(sql.FieldLT(FieldSenderName, v))
+}
+
+// SenderNameLTE applies the LTE predicate on the "sender_name" field.
+func SenderNameLTE(v string) predicate.Message {
+	return predicate.Message(sql.FieldLTE(FieldSenderName, v))
+}
+
+// SenderNameContains applies the Contains predicate on the "sender_name" field.
+func SenderNameContains(v string) predicate.Message {
+	return predicate.Message(sql.FieldContains(FieldSenderName, v))
+}
+
+// SenderNameHasPrefix applies the HasPrefix predicate on the "sender_name" field.
+func SenderNameHasPrefix(v string) predicate.Message {
+	return predicate.Message(sql.FieldHasPrefix(FieldSenderName, v))
+}
+
+// SenderNameHasSuffix applies the HasSuffix predicate on the "sender_name" field.
+func SenderNameHasSuffix(v string) predicate.Message {
+	return predicate.Message(sql.FieldHasSuffix(FieldSenderName, v))
+}
+
+// SenderNameIsNil applies the IsNil predicate on the "sender_name" field.
+func SenderNameIsNil() predicate.Message {
+	return predicate.Message(sql.FieldIsNull(FieldSenderName))
+}
+
+// SenderNameNotNil applies the NotNil predicate on the "sender_name" field.
+func SenderNameNotNil() predicate.Message {
+	return predicate.Message(sql.FieldNotNull(FieldSenderName))
+}
+
+// SenderNameEqualFold applies the EqualFold predicate on the "sender_name" field.
+func SenderNameEqualFold(v string) predicate.Message {
+	return predicate.Message(sql.FieldEqualFold(FieldSenderName, v))
+}
+
+// SenderNameContainsFold applies the ContainsFold predicate on the "sender_name" field.
+func SenderNameContainsFold(v string) predicate.Message {
+	return predicate.Message(sql.FieldContainsFold(FieldSenderName, v))
+}
+
+// SenderAvatarURLEQ applies the EQ predicate on the "sender_avatar_url" field.
+func SenderAvatarURLEQ(v string) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLNEQ applies the NEQ predicate on the "sender_avatar_url" field.
+func SenderAvatarURLNEQ(v string) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLIn applies the In predicate on the "sender_avatar_url" field.
+func SenderAvatarURLIn(vs ...string) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldSenderAvatarURL, vs...))
+}
+
+// SenderAvatarURLNotIn applies the NotIn predicate on the "sender_avatar_url" field.
+func SenderAvatarURLNotIn(vs ...string) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldSenderAvatarURL, vs...))
+}
+
+// SenderAvatarURLGT applies the GT predicate on the "sender_avatar_url" field.
+func SenderAvatarURLGT(v string) predicate.Message {
+	return predicate.Message(sql.FieldGT(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLGTE applies the GTE predicate on the "sender_avatar_url" field.
+func SenderAvatarURLGTE(v string) predicate.Message {
+	return predicate.Message(sql.FieldGTE(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLLT applies the LT predicate on the "sender_avatar_url" field.
+func SenderAvatarURLLT(v string) predicate.Message {
+	return predicate.Message(sql.FieldLT(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLLTE applies the LTE predicate on the "sender_avatar_url" field.
+func SenderAvatarURLLTE(v string) predicate.Message {
+	return predicate.Message(sql.FieldLTE(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLContains applies the Contains predicate on the "sender_avatar_url" field.
+func SenderAvatarURLContains(v string) predicate.Message {
+	return predicate.Message(sql.FieldContains(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLHasPrefix applies the HasPrefix predicate on the "sender_avatar_url" field.
+func SenderAvatarURLHasPrefix(v string) predicate.Message {
+	return predicate.Message(sql.FieldHasPrefix(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLHasSuffix applies the HasSuffix predicate on the "sender_avatar_url" field.
+func SenderAvatarURLHasSuffix(v string) predicate.Message {
+	return predicate.Message(sql.FieldHasSuffix(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLIsNil applies the IsNil predicate on the "sender_avatar_url" field.
+func SenderAvatarURLIsNil() predicate.Message {
+	return predicate.Message(sql.FieldIsNull(FieldSenderAvatarURL))
+}
+
+// SenderAvatarURLNotNil applies the NotNil predicate on the "sender_avatar_url" field.
+func SenderAvatarURLNotNil() predicate.Message {
+	return predicate.Message(sql.FieldNotNull(FieldSenderAvatarURL))
+}
+
+// SenderAvatarURLEqualFold applies the EqualFold predicate on the "sender_avatar_url" field.
+func SenderAvatarURLEqualFold(v string) predicate.Message {
+	return predicate.Message(sql.FieldEqualFold(FieldSenderAvatarURL, v))
+}
+
+// SenderAvatarURLContainsFold applies the ContainsFold predicate on the "sender_avatar_url" field.
+func SenderAvatarURLContainsFold(v string) predicate.Message {
+	return predicate.Message(sql.FieldContainsFold(FieldSenderAvatarURL, v))
 }
 
 // HasChannel applies the HasEdge predicate on the "channel" edge.

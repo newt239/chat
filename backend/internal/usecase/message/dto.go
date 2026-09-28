@@ -56,6 +56,7 @@ type UserInfo struct {
 	ID          string  `json:"id"`
 	DisplayName string  `json:"displayName"`
 	AvatarURL   *string `json:"avatarUrl,omitempty"`
+	IsBot       bool    `json:"isBot"`
 }
 
 type UserMention struct {

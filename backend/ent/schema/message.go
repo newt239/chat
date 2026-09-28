@@ -30,6 +30,13 @@ func (Message) Fields() []ent.Field {
 			Optional(),
 		field.UUID("deleted_by", uuid.UUID{}).
 			Optional(),
+		// Webhook が投稿ごとに指定した表示名とアイコン
+		field.String("sender_name").
+			Optional().
+			Nillable(),
+		field.String("sender_avatar_url").
+			Optional().
+			Nillable(),
 	}
 }
 

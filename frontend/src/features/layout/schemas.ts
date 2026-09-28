@@ -24,6 +24,8 @@ export const workspaceSearchSchema = z.object({
       "markdown-help",
       "add-link",
       "edit-link",
+      "add-webhook",
+      "edit-webhook",
     ])
     .optional()
     .catch(undefined),
@@ -42,6 +44,8 @@ export const workspaceSearchSchema = z.object({
   // リアクション一覧を開いているメッセージ
   reactions: optionalId,
   settings: z.enum(settingsSections).optional().catch(undefined),
+  // edit-webhook で編集する Webhook
+  webhook: optionalId,
   // モバイルで長押ししたメッセージの操作シート
   sheet: optionalId,
 });

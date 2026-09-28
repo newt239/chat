@@ -23,6 +23,7 @@ import (
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 	usernoteuc "github.com/newt239/chat/internal/usecase/usernote"
+	webhookuc "github.com/newt239/chat/internal/usecase/webhook"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -122,6 +123,31 @@ func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuil
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewPinRepository(),
 		r.domainRegistry.NewChannelAccessService(),
+	)
+}
+
+func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
+	return webhookuc.NewInteractor(
+		r.domainRegistry.NewWebhookRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		messageuc.NewMessageCreator(
+			r.domainRegistry.NewMessageRepository(),
+			r.domainRegistry.NewMessageUserMentionRepository(),
+			r.domainRegistry.NewMessageGroupMentionRepository(),
+			r.domainRegistry.NewMessageLinkRepository(),
+			r.domainRegistry.NewThreadRepository(),
+			r.domainRegistry.NewAttachmentRepository(),
+			r.infrastructureRegistry.NewNotificationService(),
+			r.infrastructureRegistry.NewMentionService(),
+			r.infrastructureRegistry.NewLinkProcessingService(),
+			r.infrastructureRegistry.NewTransactionManager(),
+			r.NewMessageOutputBuilder(),
+			r.domainRegistry.NewChannelAccessService(),
+		),
+		r.infrastructureRegistry.NewTransactionManager(),
+		r.NewAuditRecorder(),
 	)
 }
 

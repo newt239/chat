@@ -332,10 +332,12 @@ func (x *UserPreferences) GetLocale() string {
 
 // メッセージの投稿者などに埋め込む最小限のユーザー情報
 type UserSummary struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	AvatarUrl     *string                `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	DisplayName string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	AvatarUrl   *string                `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	// Webhook の投稿名義のボットユーザー。プロフィールを持たない
+	IsBot         bool `protobuf:"varint,4,opt,name=is_bot,json=isBot,proto3" json:"is_bot,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -391,6 +393,13 @@ func (x *UserSummary) GetAvatarUrl() string {
 	return ""
 }
 
+func (x *UserSummary) GetIsBot() bool {
+	if x != nil {
+		return x.IsBot
+	}
+	return false
+}
+
 var File_chat_v1_user_proto protoreflect.FileDescriptor
 
 const file_chat_v1_user_proto_rawDesc = "" +
@@ -418,12 +427,13 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"color_mode\x18\x02 \x01(\x0e2\x12.chat.v1.ColorModeB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\tcolorMode\x12%\n" +
 	"\x06locale\x18\x03 \x01(\tB\r\xbaH\n" +
-	"r\bR\x02jaR\x02enR\x06locale\"s\n" +
+	"r\bR\x02jaR\x02enR\x06locale\"\x8a\x01\n" +
 	"\vUserSummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +
 	"\n" +
-	"avatar_url\x18\x03 \x01(\tH\x00R\tavatarUrl\x88\x01\x01B\r\n" +
+	"avatar_url\x18\x03 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
+	"\x06is_bot\x18\x04 \x01(\bR\x05isBotB\r\n" +
 	"\v_avatar_url*`\n" +
 	"\fSidebarStyle\x12\x1d\n" +
 	"\x19SIDEBAR_STYLE_UNSPECIFIED\x10\x00\x12\x18\n" +

@@ -15,6 +15,7 @@ const noDialog = {
   reactions: undefined,
   settings: undefined,
   sheet: undefined,
+  webhook: undefined,
 } satisfies Record<keyof DialogSearch, undefined>;
 
 // Link / navigate の search に渡す。今のルートの search（?message= など）は残す

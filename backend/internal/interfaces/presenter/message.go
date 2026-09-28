@@ -12,7 +12,7 @@ import (
 )
 
 func UserSummary(u messageuc.UserInfo) *chatv1.UserSummary {
-	return &chatv1.UserSummary{Id: u.ID, DisplayName: u.DisplayName, AvatarUrl: u.AvatarURL}
+	return &chatv1.UserSummary{Id: u.ID, DisplayName: u.DisplayName, AvatarUrl: u.AvatarURL, IsBot: u.IsBot}
 }
 
 func Message(m messageuc.MessageOutput) *chatv1.Message {

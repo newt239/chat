@@ -39,7 +39,7 @@
 | `panel` | `members` / `info` / `pins` | 表示中のチャンネルの右パネル。チャンネルの外では無視する |
 | `profile` | ユーザー ID | プロフィールの右パネル（自分なら編集） |
 | `group` | グループ ID | ユーザーグループの右パネル |
-| `dialog` | `create-channel` / `create-dm` / `create-group` / `edit-group` / `create-workspace` / `workspace-settings` / `markdown-help` / `add-link` / `edit-link` | ダイアログ。`edit-group` は `group`、`edit-link` は `link`（関連リンク ID）と組み合わせる |
+| `dialog` | `create-channel` / `create-dm` / `create-group` / `edit-group` / `create-workspace` / `workspace-settings` / `markdown-help` / `add-link` / `edit-link` / `add-webhook` / `edit-webhook` | ダイアログ。`edit-group` は `group`、`edit-link` は `link`（関連リンク ID）、`edit-webhook` は `webhook`（Webhook ID）と組み合わせる |
 | `settings` | `account` / `notifications` / `theme` / `display` / `shortcuts` | 設定とその項目 |
 | `reactions`・`emoji` | メッセージ ID・絵文字（なければすべて） | リアクション一覧とそのタブ |
 | `image` | 添付 ID | ライトボックスで開いている画像 |

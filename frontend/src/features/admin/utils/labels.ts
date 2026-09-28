@@ -14,6 +14,8 @@ export const auditActionKeys = {
   [AuditAction.CHANNEL_UNARCHIVED]: "channelUnarchived",
   [AuditAction.PERMISSION_CHANGED]: "permissionChanged",
   [AuditAction.AUDIT_LOG_EXPORTED]: "auditLogExported",
+  [AuditAction.WEBHOOK_CREATED]: "webhookCreated",
+  [AuditAction.WEBHOOK_DELETED]: "webhookDeleted",
 } as const;
 
 // 権限やセキュリティに関わる操作は目立たせる

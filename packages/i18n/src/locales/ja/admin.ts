@@ -14,6 +14,8 @@ export const admin = {
       memberSuspended: "メンバーを停止",
       permissionChanged: "権限を変更",
       unspecified: "不明な操作",
+      webhookCreated: "Webhook を作成",
+      webhookDeleted: "Webhook を削除",
     },
     actorFilter: "実行者",
     allActions: "すべての操作",

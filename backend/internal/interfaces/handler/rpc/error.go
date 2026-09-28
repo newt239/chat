@@ -24,6 +24,7 @@ import (
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
+	webhookuc "github.com/newt239/chat/internal/usecase/webhook"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -45,6 +46,7 @@ var errorCodes = []struct {
 		readstateuc.ErrChannelNotFound,
 		searchuc.ErrWorkspaceNotFound,
 		usergroupuc.ErrUserGroupNotFound,
+		webhookuc.ErrWebhookNotFound,
 		workspaceuc.ErrWorkspaceNotFound,
 	}},
 	{connect.CodeUnauthenticated, []error{
@@ -66,6 +68,7 @@ var errorCodes = []struct {
 		searchuc.ErrUnauthorized,
 		useruc.ErrUnauthorized,
 		usergroupuc.ErrUnauthorized,
+		webhookuc.ErrUnauthorized,
 		workspaceuc.ErrUnauthorized,
 	}},
 	{connect.CodeAlreadyExists, []error{
@@ -95,6 +98,7 @@ var errorCodes = []struct {
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,
 		usergroupuc.ErrUserNotInGroup,
+		webhookuc.ErrUnsupportedChannel,
 		workspaceuc.ErrCannotRemoveOwner, workspaceuc.ErrCannotChangeOwnerRole,
 	}},
 	{connect.CodeAborted, []error{domerr.ErrConflict}},

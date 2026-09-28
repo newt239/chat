@@ -285,6 +285,18 @@ func (f UserThreadFollowFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserThreadFollowMutation", m)
 }
 
+// The WebhookFunc type is an adapter to allow the use of ordinary
+// function as Webhook mutator.
+type WebhookFunc func(context.Context, *ent.WebhookMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WebhookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WebhookMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WebhookMutation", m)
+}
+
 // The WorkspaceFunc type is an adapter to allow the use of ordinary
 // function as Workspace mutator.
 type WorkspaceFunc func(context.Context, *ent.WorkspaceMutation) (ent.Value, error)

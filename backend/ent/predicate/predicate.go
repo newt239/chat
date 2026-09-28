@@ -75,6 +75,9 @@ type UserNote func(*sql.Selector)
 // UserThreadFollow is the predicate function for userthreadfollow builders.
 type UserThreadFollow func(*sql.Selector)
 
+// Webhook is the predicate function for webhook builders.
+type Webhook func(*sql.Selector)
+
 // Workspace is the predicate function for workspace builders.
 type Workspace func(*sql.Selector)
 

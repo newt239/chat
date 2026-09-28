@@ -53,6 +53,7 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewAdminServiceHandler, chatv1connect.AdminServiceHandler(&rpc.AdminServer{UC: uc.NewAdminUseCase()})),
 		rpc.Register(chatv1connect.NewPermissionServiceHandler, chatv1connect.PermissionServiceHandler(&rpc.PermissionServer{UC: uc.NewAdminUseCase()})),
 		rpc.Register(chatv1connect.NewInsightServiceHandler, chatv1connect.InsightServiceHandler(&rpc.InsightServer{UC: uc.NewInsightUseCase()})),
+		rpc.Register(chatv1connect.NewWebhookServiceHandler, chatv1connect.WebhookServiceHandler(&rpc.WebhookServer{UC: uc.NewWebhookUseCase()})),
 	)
 }
 
@@ -64,6 +65,7 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		WorkspaceRepository: r.domainRegistry.NewWorkspaceRepository(),
 		ChannelAccess:       r.domainRegistry.NewChannelAccessService(),
 		RPCHandler:          r.NewRPCHandler(),
+		WebhookPoster:       r.usecaseRegistry.NewWebhookUseCase(),
 	}
 	if r.infrastructureRegistry.config.Storage.Driver == "local" {
 		routerConfig.StorageHandler = r.infrastructureRegistry.NewLocalStorage()

@@ -12,6 +12,9 @@ type Message struct {
 	EditedAt  *time.Time
 	DeletedAt *time.Time
 	DeletedBy *string
+	// Webhook が投稿ごとに指定した表示名とアイコン
+	SenderName      *string
+	SenderAvatarURL *string
 }
 
 type MessageReaction struct {

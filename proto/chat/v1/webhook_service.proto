@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/user.proto";
+import "google/protobuf/timestamp.proto";
+
+// チャンネルの着信 Webhook。チャンネルを閲覧できるメンバーなら誰でも発行でき、編集・削除は発行者とワークスペースの管理者だけができる。
+// 投稿は POST /webhooks/{webhook_id}/{token} に JSON を送る（docs/webhooks.md）
+service WebhookService {
+  rpc ListWebhooks(ListWebhooksRequest) returns (ListWebhooksResponse);
+  rpc CreateWebhook(CreateWebhookRequest) returns (CreateWebhookResponse);
+  rpc UpdateWebhook(UpdateWebhookRequest) returns (UpdateWebhookResponse);
+  // 古いトークンは直ちに使えなくなる
+  rpc RegenerateWebhookToken(RegenerateWebhookTokenRequest) returns (RegenerateWebhookTokenResponse);
+  rpc DeleteWebhook(DeleteWebhookRequest) returns (DeleteWebhookResponse);
+}
+
+message Webhook {
+  string id = 1;
+  string channel_id = 2;
+  string name = 3;
+  optional string avatar_url = 4;
+  UserSummary created_by = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp last_used_at = 7;
+  // 閲覧者が編集・削除できるか
+  bool can_manage = 8;
+}
+
+message ListWebhooksRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ListWebhooksResponse {
+  // 作成日時の昇順
+  repeated Webhook webhooks = 1;
+}
+
+message CreateWebhookRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string name = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 80
+  }];
+  optional string avatar_url = 3 [(buf.validate.field).string = {
+    uri: true
+    max_len: 2048
+  }];
+}
+
+message CreateWebhookResponse {
+  Webhook webhook = 1;
+  // URL に埋め込むトークン。サーバーはハッシュしか保存しないため、この応答でしか取得できない
+  string token = 2;
+}
+
+message UpdateWebhookRequest {
+  string webhook_id = 1 [(buf.validate.field).string.uuid = true];
+  string name = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 80
+  }];
+  // 未指定ならアイコンを外す
+  optional string avatar_url = 3 [(buf.validate.field).string = {
+    uri: true
+    max_len: 2048
+  }];
+}
+
+message UpdateWebhookResponse {
+  Webhook webhook = 1;
+}
+
+message RegenerateWebhookTokenRequest {
+  string webhook_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message RegenerateWebhookTokenResponse {
+  string token = 1;
+}
+
+message DeleteWebhookRequest {
+  string webhook_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteWebhookResponse {}

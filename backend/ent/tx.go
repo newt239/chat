@@ -60,6 +60,8 @@ type Tx struct {
 	UserNote *UserNoteClient
 	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
 	UserThreadFollow *UserThreadFollowClient
+	// Webhook is the client for interacting with the Webhook builders.
+	Webhook *WebhookClient
 	// Workspace is the client for interacting with the Workspace builders.
 	Workspace *WorkspaceClient
 	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
@@ -220,6 +222,7 @@ func (tx *Tx) init() {
 	tx.UserGroupMember = NewUserGroupMemberClient(tx.config)
 	tx.UserNote = NewUserNoteClient(tx.config)
 	tx.UserThreadFollow = NewUserThreadFollowClient(tx.config)
+	tx.Webhook = NewWebhookClient(tx.config)
 	tx.Workspace = NewWorkspaceClient(tx.config)
 	tx.WorkspaceMember = NewWorkspaceMemberClient(tx.config)
 	tx.WorkspacePermission = NewWorkspacePermissionClient(tx.config)

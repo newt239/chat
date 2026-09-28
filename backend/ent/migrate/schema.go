@@ -340,6 +340,8 @@ var (
 		{Name: "edited_at", Type: field.TypeTime, Nullable: true},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "deleted_by", Type: field.TypeUUID, Nullable: true},
+		{Name: "sender_name", Type: field.TypeString, Nullable: true},
+		{Name: "sender_avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "message_channel", Type: field.TypeUUID},
 		{Name: "message_user", Type: field.TypeUUID},
 		{Name: "message_parent", Type: field.TypeUUID, Nullable: true},
@@ -352,19 +354,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "messages_channels_channel",
-				Columns:    []*schema.Column{MessagesColumns[6]},
+				Columns:    []*schema.Column{MessagesColumns[8]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_users_user",
-				Columns:    []*schema.Column{MessagesColumns[7]},
+				Columns:    []*schema.Column{MessagesColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_messages_parent",
-				Columns:    []*schema.Column{MessagesColumns[8]},
+				Columns:    []*schema.Column{MessagesColumns[10]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -707,6 +709,7 @@ var (
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "bio", Type: field.TypeString, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "is_bot", Type: field.TypeBool, Default: false},
 		{Name: "theme_hue", Type: field.TypeInt, Default: 168},
 		{Name: "theme_chroma", Type: field.TypeFloat64, Default: 0.12},
 		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}, Default: "tinted"},
@@ -867,6 +870,45 @@ var (
 			},
 		},
 	}
+	// WebhookColumns holds the columns for the "webhook" table.
+	WebhookColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "token_hash", Type: field.TypeString},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "webhook_channel", Type: field.TypeUUID},
+		{Name: "webhook_created_by", Type: field.TypeUUID},
+		{Name: "webhook_bot_user", Type: field.TypeUUID},
+	}
+	// WebhookTable holds the schema information for the "webhook" table.
+	WebhookTable = &schema.Table{
+		Name:       "webhook",
+		Columns:    WebhookColumns,
+		PrimaryKey: []*schema.Column{WebhookColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "webhook_channels_channel",
+				Columns:    []*schema.Column{WebhookColumns[7]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "webhook_users_created_by",
+				Columns:    []*schema.Column{WebhookColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "webhook_users_bot_user",
+				Columns:    []*schema.Column{WebhookColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// WorkspacesColumns holds the columns for the "workspaces" table.
 	WorkspacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 12},
@@ -987,6 +1029,7 @@ var (
 		UserGroupMembersTable,
 		UserNoteTable,
 		UserThreadFollowsTable,
+		WebhookTable,
 		WorkspacesTable,
 		WorkspaceMembersTable,
 		WorkspacePermissionTable,
@@ -1053,6 +1096,12 @@ func init() {
 	}
 	UserThreadFollowsTable.ForeignKeys[0].RefTable = UsersTable
 	UserThreadFollowsTable.ForeignKeys[1].RefTable = MessagesTable
+	WebhookTable.ForeignKeys[0].RefTable = ChannelsTable
+	WebhookTable.ForeignKeys[1].RefTable = UsersTable
+	WebhookTable.ForeignKeys[2].RefTable = UsersTable
+	WebhookTable.Annotation = &entsql.Annotation{
+		Table: "webhook",
+	}
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[0].RefTable = WorkspacesTable
 	WorkspaceMembersTable.ForeignKeys[1].RefTable = UsersTable

@@ -244,7 +244,9 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 	builder := client.Message.Create().
 		SetChannelID(channelID).
 		SetUserID(userID).
-		SetBody(msg.Body)
+		SetBody(msg.Body).
+		SetNillableSenderName(msg.SenderName).
+		SetNillableSenderAvatarURL(msg.SenderAvatarURL)
 
 	if msg.ID != "" {
 		messageID, err := utils.ParseUUID(msg.ID, "message ID")

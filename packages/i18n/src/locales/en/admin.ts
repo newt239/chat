@@ -16,6 +16,8 @@ export const admin: Messages["admin"] = {
       memberSuspended: "Suspended a member",
       permissionChanged: "Changed a permission",
       unspecified: "Unknown action",
+      webhookCreated: "Created a webhook",
+      webhookDeleted: "Deleted a webhook",
     },
     actorFilter: "Actor",
     allActions: "All actions",

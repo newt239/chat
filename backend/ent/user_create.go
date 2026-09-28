@@ -83,6 +83,20 @@ func (_c *UserCreate) SetNillableAvatarURL(v *string) *UserCreate {
 	return _c
 }
 
+// SetIsBot sets the "is_bot" field.
+func (_c *UserCreate) SetIsBot(v bool) *UserCreate {
+	_c.mutation.SetIsBot(v)
+	return _c
+}
+
+// SetNillableIsBot sets the "is_bot" field if the given value is not nil.
+func (_c *UserCreate) SetNillableIsBot(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetIsBot(*v)
+	}
+	return _c
+}
+
 // SetThemeHue sets the "theme_hue" field.
 func (_c *UserCreate) SetThemeHue(v int) *UserCreate {
 	_c.mutation.SetThemeHue(v)
@@ -425,6 +439,10 @@ func (_c *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserCreate) defaults() {
+	if _, ok := _c.mutation.IsBot(); !ok {
+		v := user.DefaultIsBot
+		_c.mutation.SetIsBot(v)
+	}
 	if _, ok := _c.mutation.ThemeHue(); !ok {
 		v := user.DefaultThemeHue
 		_c.mutation.SetThemeHue(v)
@@ -484,6 +502,9 @@ func (_c *UserCreate) check() error {
 		if err := user.DisplayNameValidator(v); err != nil {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "User.display_name": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.IsBot(); !ok {
+		return &ValidationError{Name: "is_bot", err: errors.New(`ent: missing required field "User.is_bot"`)}
 	}
 	if _, ok := _c.mutation.ThemeHue(); !ok {
 		return &ValidationError{Name: "theme_hue", err: errors.New(`ent: missing required field "User.theme_hue"`)}
@@ -571,6 +592,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 		_node.AvatarURL = value
+	}
+	if value, ok := _c.mutation.IsBot(); ok {
+		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
+		_node.IsBot = value
 	}
 	if value, ok := _c.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
@@ -932,6 +957,18 @@ func (u *UserUpsert) ClearAvatarURL() *UserUpsert {
 	return u
 }
 
+// SetIsBot sets the "is_bot" field.
+func (u *UserUpsert) SetIsBot(v bool) *UserUpsert {
+	u.Set(user.FieldIsBot, v)
+	return u
+}
+
+// UpdateIsBot sets the "is_bot" field to the value that was provided on create.
+func (u *UserUpsert) UpdateIsBot() *UserUpsert {
+	u.SetExcluded(user.FieldIsBot)
+	return u
+}
+
 // SetThemeHue sets the "theme_hue" field.
 func (u *UserUpsert) SetThemeHue(v int) *UserUpsert {
 	u.Set(user.FieldThemeHue, v)
@@ -1148,6 +1185,20 @@ func (u *UserUpsertOne) UpdateAvatarURL() *UserUpsertOne {
 func (u *UserUpsertOne) ClearAvatarURL() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearAvatarURL()
+	})
+}
+
+// SetIsBot sets the "is_bot" field.
+func (u *UserUpsertOne) SetIsBot(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsBot(v)
+	})
+}
+
+// UpdateIsBot sets the "is_bot" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateIsBot() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsBot()
 	})
 }
 
@@ -1548,6 +1599,20 @@ func (u *UserUpsertBulk) UpdateAvatarURL() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearAvatarURL() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearAvatarURL()
+	})
+}
+
+// SetIsBot sets the "is_bot" field.
+func (u *UserUpsertBulk) SetIsBot(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsBot(v)
+	})
+}
+
+// UpdateIsBot sets the "is_bot" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateIsBot() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsBot()
 	})
 }
 

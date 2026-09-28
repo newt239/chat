@@ -26,6 +26,8 @@ const (
 	FieldBio = "bio"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
+	// FieldIsBot holds the string denoting the is_bot field in the database.
+	FieldIsBot = "is_bot"
 	// FieldThemeHue holds the string denoting the theme_hue field in the database.
 	FieldThemeHue = "theme_hue"
 	// FieldThemeChroma holds the string denoting the theme_chroma field in the database.
@@ -169,6 +171,7 @@ var Columns = []string{
 	FieldDisplayName,
 	FieldBio,
 	FieldAvatarURL,
+	FieldIsBot,
 	FieldThemeHue,
 	FieldThemeChroma,
 	FieldThemeSidebar,
@@ -195,6 +198,8 @@ var (
 	PasswordHashValidator func(string) error
 	// DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	DisplayNameValidator func(string) error
+	// DefaultIsBot holds the default value on creation for the "is_bot" field.
+	DefaultIsBot bool
 	// DefaultThemeHue holds the default value on creation for the "theme_hue" field.
 	DefaultThemeHue int
 	// DefaultThemeChroma holds the default value on creation for the "theme_chroma" field.
@@ -295,6 +300,11 @@ func ByBio(opts ...sql.OrderTermOption) OrderOption {
 // ByAvatarURL orders the results by the avatar_url field.
 func ByAvatarURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAvatarURL, opts...).ToFunc()
+}
+
+// ByIsBot orders the results by the is_bot field.
+func ByIsBot(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsBot, opts...).ToFunc()
 }
 
 // ByThemeHue orders the results by the theme_hue field.

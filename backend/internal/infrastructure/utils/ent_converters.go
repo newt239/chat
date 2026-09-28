@@ -21,6 +21,7 @@ func UserToEntity(u *ent.User) *entity.User {
 		DisplayName:  u.DisplayName,
 		Bio:          StringPtrFromNullable(u.Bio),
 		AvatarURL:    StringPtrFromNullable(u.AvatarURL),
+		IsBot:        u.IsBot,
 		Preferences: entity.UserPreferences{
 			ThemeHue:     u.ThemeHue,
 			ThemeChroma:  u.ThemeChroma,
@@ -199,6 +200,9 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 		EditedAt:  editedAt,
 		DeletedAt: deletedAt,
 		DeletedBy: deletedBy,
+
+		SenderName:      m.SenderName,
+		SenderAvatarURL: m.SenderAvatarURL,
 	}
 }
 

@@ -8,6 +8,7 @@ import { SettingsDialog } from "#/features/settings/components/SettingsDialog";
 import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog";
 import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
+import { WebhookDialogLoader } from "#/features/webhook/components/WebhookDialogLoader";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
 import { WorkspaceSettingsModal } from "#/features/workspace/components/WorkspaceSettingsModal";
 import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
@@ -22,7 +23,7 @@ type WorkspaceDialogsProps = {
 // ?dialog= で開くダイアログ。開くボタンが複数の画面にあっても、ここで一度だけ描く
 export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const navigate = useNavigate();
-  const { dialog, group, link } = workspaceRoute.useSearch();
+  const { dialog, group, link, webhook } = workspaceRoute.useSearch();
   const channelId = useParams({ select: (params) => params.channelId, strict: false });
   const { data: workspaces } = useWorkspaces();
   const { data: groups } = useUserGroups(workspaceId);
@@ -78,6 +79,14 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
           <ChannelLinkDialogLoader
             channelId={channelId}
             linkId={dialog === "edit-link" ? (link ?? null) : null}
+            onClose={close}
+          />
+        )}
+      {channelId !== undefined &&
+        (dialog === "add-webhook" || (dialog === "edit-webhook" && webhook !== undefined)) && (
+          <WebhookDialogLoader
+            channelId={channelId}
+            webhookId={dialog === "edit-webhook" ? (webhook ?? null) : null}
             onClose={close}
           />
         )}
