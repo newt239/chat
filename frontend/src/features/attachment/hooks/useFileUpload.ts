@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { usePresignUpload } from "../api/client";
 import { measureMedia } from "../utils/measureMedia";
-import { validateFile } from "../utils/validator";
+import { formatFileSize, validateFile } from "../utils/validator";
 
 import type { PendingAttachment } from "../api/types";
 
@@ -10,18 +12,22 @@ type UploadOptions = {
   channelId: string;
 };
 
-const uploadToStorage = (
-  file: File,
-  uploadUrl: string,
-  onProgress: (progress: number) => void,
-): Promise<void> =>
+// 進捗の通知と、失敗したときの文言（辞書から取ったもの）
+type UploadHandlers = {
+  onProgress: (progress: number) => void;
+  http: (status: number) => string;
+  network: string;
+  aborted: string;
+};
+
+const uploadToStorage = (file: File, uploadUrl: string, handlers: UploadHandlers): Promise<void> =>
   new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
     xhr.upload.addEventListener("progress", (e) => {
       if (e.lengthComputable) {
         const progress = Math.round((e.loaded / e.total) * 100);
-        onProgress(progress);
+        handlers.onProgress(progress);
       }
     });
 
@@ -29,16 +35,16 @@ const uploadToStorage = (
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve();
       } else {
-        reject(new Error(`アップロードに失敗しました (HTTP ${xhr.status})`));
+        reject(new Error(handlers.http(xhr.status)));
       }
     });
 
     xhr.addEventListener("error", () => {
-      reject(new Error("ネットワークエラーが発生しました"));
+      reject(new Error(handlers.network));
     });
 
     xhr.addEventListener("abort", () => {
-      reject(new Error("アップロードがキャンセルされました"));
+      reject(new Error(handlers.aborted));
     });
 
     xhr.open("PUT", uploadUrl);
@@ -49,17 +55,24 @@ const uploadToStorage = (
 export const useFileUpload = () => {
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const presignMutation = usePresignUpload();
+  const { t } = useTranslation();
 
   const uploadFile = useCallback(
     async (file: File, options: UploadOptions): Promise<string | null> => {
       // バリデーション
-      const validation = validateFile(file);
-      if (!validation.valid) {
+      const invalidReason = validateFile(file);
+      if (invalidReason !== null) {
         setPendingAttachments((prev) => [
           ...prev,
           {
             file,
-            state: { error: validation.error, status: "error" },
+            state: {
+              error:
+                invalidReason === "empty"
+                  ? t("attachment.errors.empty")
+                  : t("attachment.errors.tooLarge", { size: formatFileSize(file.size) }),
+              status: "error",
+            },
           },
         ]);
         return null;
@@ -98,17 +111,22 @@ export const useFileUpload = () => {
         });
 
         // ストレージへ直接アップロード
-        await uploadToStorage(file, presignData.uploadUrl, (progress) => {
-          setPendingAttachments((prev) => {
-            const next = [...prev];
-            if (next[pendingIndex]) {
-              next[pendingIndex] = {
-                file: next[pendingIndex].file,
-                state: { progress, status: "uploading" },
-              };
-            }
-            return next;
-          });
+        await uploadToStorage(file, presignData.uploadUrl, {
+          aborted: t("attachment.errors.aborted"),
+          http: (status) => t("attachment.errors.http", { status }),
+          network: t("attachment.errors.network"),
+          onProgress: (progress) => {
+            setPendingAttachments((prev) => {
+              const next = [...prev];
+              if (next[pendingIndex]) {
+                next[pendingIndex] = {
+                  file: next[pendingIndex].file,
+                  state: { progress, status: "uploading" },
+                };
+              }
+              return next;
+            });
+          },
         });
 
         // 完了状態に変更
@@ -125,7 +143,8 @@ export const useFileUpload = () => {
 
         return presignData.attachmentId;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "アップロードに失敗しました";
+        const errorMessage =
+          error instanceof Error ? error.message : t("attachment.errors.unknown");
 
         setPendingAttachments((prev) => {
           const next = [...prev];
@@ -141,7 +160,7 @@ export const useFileUpload = () => {
         return null;
       }
     },
-    [pendingAttachments.length, presignMutation],
+    [pendingAttachments.length, presignMutation, t],
   );
 
   const removeAttachment = useCallback((index: number) => {

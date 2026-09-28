@@ -8,6 +8,14 @@ export const attachment: Messages["attachment"] = {
   },
   download: "Download",
   downloadFailed: "Couldn't download the file",
+  errors: {
+    aborted: "Upload canceled",
+    empty: "The file is empty",
+    http: "Upload failed (HTTP {{status}})",
+    network: "A network error occurred",
+    tooLarge: "The file exceeds the 1 GB limit: {{size}}",
+    unknown: "Upload failed",
+  },
   expand: "Enlarge {{name}}",
   failed: "Error: {{error}}",
   lightbox: {
