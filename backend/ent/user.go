@@ -28,6 +28,16 @@ type User struct {
 	Bio string `json:"bio,omitempty"`
 	// AvatarURL holds the value of the "avatar_url" field.
 	AvatarURL string `json:"avatar_url,omitempty"`
+	// ThemeHue holds the value of the "theme_hue" field.
+	ThemeHue int `json:"theme_hue,omitempty"`
+	// ThemeChroma holds the value of the "theme_chroma" field.
+	ThemeChroma float64 `json:"theme_chroma,omitempty"`
+	// ThemeSidebar holds the value of the "theme_sidebar" field.
+	ThemeSidebar user.ThemeSidebar `json:"theme_sidebar,omitempty"`
+	// ColorMode holds the value of the "color_mode" field.
+	ColorMode user.ColorMode `json:"color_mode,omitempty"`
+	// Locale holds the value of the "locale" field.
+	Locale string `json:"locale,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -193,7 +203,11 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL:
+		case user.FieldThemeChroma:
+			values[i] = new(sql.NullFloat64)
+		case user.FieldThemeHue:
+			values[i] = new(sql.NullInt64)
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -249,6 +263,36 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field avatar_url", values[i])
 			} else if value.Valid {
 				_m.AvatarURL = value.String
+			}
+		case user.FieldThemeHue:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field theme_hue", values[i])
+			} else if value.Valid {
+				_m.ThemeHue = int(value.Int64)
+			}
+		case user.FieldThemeChroma:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field theme_chroma", values[i])
+			} else if value.Valid {
+				_m.ThemeChroma = value.Float64
+			}
+		case user.FieldThemeSidebar:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field theme_sidebar", values[i])
+			} else if value.Valid {
+				_m.ThemeSidebar = user.ThemeSidebar(value.String)
+			}
+		case user.FieldColorMode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field color_mode", values[i])
+			} else if value.Valid {
+				_m.ColorMode = user.ColorMode(value.String)
+			}
+		case user.FieldLocale:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field locale", values[i])
+			} else if value.Valid {
+				_m.Locale = value.String
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -377,6 +421,21 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("avatar_url=")
 	builder.WriteString(_m.AvatarURL)
+	builder.WriteString(", ")
+	builder.WriteString("theme_hue=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ThemeHue))
+	builder.WriteString(", ")
+	builder.WriteString("theme_chroma=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ThemeChroma))
+	builder.WriteString(", ")
+	builder.WriteString("theme_sidebar=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ThemeSidebar))
+	builder.WriteString(", ")
+	builder.WriteString("color_mode=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ColorMode))
+	builder.WriteString(", ")
+	builder.WriteString("locale=")
+	builder.WriteString(_m.Locale)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

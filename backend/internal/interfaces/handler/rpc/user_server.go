@@ -33,6 +33,17 @@ func (s *UserServer) UpdateMe(ctx context.Context, req *chatv1.UpdateMeRequest) 
 	return &chatv1.UpdateMeResponse{User: presenter.Me(out)}, nil
 }
 
+func (s *UserServer) UpdatePreferences(ctx context.Context, req *chatv1.UpdatePreferencesRequest) (*chatv1.UpdatePreferencesResponse, error) {
+	out, err := s.UC.UpdatePreferences(ctx, useruc.UpdatePreferencesInput{
+		UserID:      userIDFrom(ctx),
+		Preferences: presenter.PreferencesFromProto(req.Preferences),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.UpdatePreferencesResponse{Preferences: presenter.Preferences(*out)}, nil
+}
+
 func (s *UserServer) UpdatePassword(ctx context.Context, req *chatv1.UpdatePasswordRequest) (*chatv1.UpdatePasswordResponse, error) {
 	err := s.UC.UpdatePassword(ctx, useruc.UpdatePasswordInput{
 		UserID:          userIDFrom(ctx),

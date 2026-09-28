@@ -126,7 +126,13 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 	builder := client.User.UpdateOneID(userID).
 		SetEmail(usr.Email).
 		SetPasswordHash(usr.PasswordHash).
-		SetDisplayName(usr.DisplayName)
+		SetDisplayName(usr.DisplayName).
+		SetNillableBio(usr.Bio).
+		SetThemeHue(usr.Preferences.ThemeHue).
+		SetThemeChroma(usr.Preferences.ThemeChroma).
+		SetThemeSidebar(user.ThemeSidebar(usr.Preferences.ThemeSidebar)).
+		SetColorMode(user.ColorMode(usr.Preferences.ColorMode)).
+		SetLocale(usr.Preferences.Locale)
 
 	if usr.AvatarURL != nil {
 		builder = builder.SetAvatarURL(*usr.AvatarURL)

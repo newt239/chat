@@ -81,6 +81,21 @@ func AvatarURL(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAvatarURL, v))
 }
 
+// ThemeHue applies equality check predicate on the "theme_hue" field. It's identical to ThemeHueEQ.
+func ThemeHue(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldThemeHue, v))
+}
+
+// ThemeChroma applies equality check predicate on the "theme_chroma" field. It's identical to ThemeChromaEQ.
+func ThemeChroma(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldThemeChroma, v))
+}
+
+// Locale applies equality check predicate on the "locale" field. It's identical to LocaleEQ.
+func Locale(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLocale, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -434,6 +449,191 @@ func AvatarURLEqualFold(v string) predicate.User {
 // AvatarURLContainsFold applies the ContainsFold predicate on the "avatar_url" field.
 func AvatarURLContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldAvatarURL, v))
+}
+
+// ThemeHueEQ applies the EQ predicate on the "theme_hue" field.
+func ThemeHueEQ(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldThemeHue, v))
+}
+
+// ThemeHueNEQ applies the NEQ predicate on the "theme_hue" field.
+func ThemeHueNEQ(v int) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldThemeHue, v))
+}
+
+// ThemeHueIn applies the In predicate on the "theme_hue" field.
+func ThemeHueIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldIn(FieldThemeHue, vs...))
+}
+
+// ThemeHueNotIn applies the NotIn predicate on the "theme_hue" field.
+func ThemeHueNotIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldThemeHue, vs...))
+}
+
+// ThemeHueGT applies the GT predicate on the "theme_hue" field.
+func ThemeHueGT(v int) predicate.User {
+	return predicate.User(sql.FieldGT(FieldThemeHue, v))
+}
+
+// ThemeHueGTE applies the GTE predicate on the "theme_hue" field.
+func ThemeHueGTE(v int) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldThemeHue, v))
+}
+
+// ThemeHueLT applies the LT predicate on the "theme_hue" field.
+func ThemeHueLT(v int) predicate.User {
+	return predicate.User(sql.FieldLT(FieldThemeHue, v))
+}
+
+// ThemeHueLTE applies the LTE predicate on the "theme_hue" field.
+func ThemeHueLTE(v int) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldThemeHue, v))
+}
+
+// ThemeChromaEQ applies the EQ predicate on the "theme_chroma" field.
+func ThemeChromaEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldThemeChroma, v))
+}
+
+// ThemeChromaNEQ applies the NEQ predicate on the "theme_chroma" field.
+func ThemeChromaNEQ(v float64) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldThemeChroma, v))
+}
+
+// ThemeChromaIn applies the In predicate on the "theme_chroma" field.
+func ThemeChromaIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldIn(FieldThemeChroma, vs...))
+}
+
+// ThemeChromaNotIn applies the NotIn predicate on the "theme_chroma" field.
+func ThemeChromaNotIn(vs ...float64) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldThemeChroma, vs...))
+}
+
+// ThemeChromaGT applies the GT predicate on the "theme_chroma" field.
+func ThemeChromaGT(v float64) predicate.User {
+	return predicate.User(sql.FieldGT(FieldThemeChroma, v))
+}
+
+// ThemeChromaGTE applies the GTE predicate on the "theme_chroma" field.
+func ThemeChromaGTE(v float64) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldThemeChroma, v))
+}
+
+// ThemeChromaLT applies the LT predicate on the "theme_chroma" field.
+func ThemeChromaLT(v float64) predicate.User {
+	return predicate.User(sql.FieldLT(FieldThemeChroma, v))
+}
+
+// ThemeChromaLTE applies the LTE predicate on the "theme_chroma" field.
+func ThemeChromaLTE(v float64) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldThemeChroma, v))
+}
+
+// ThemeSidebarEQ applies the EQ predicate on the "theme_sidebar" field.
+func ThemeSidebarEQ(v ThemeSidebar) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldThemeSidebar, v))
+}
+
+// ThemeSidebarNEQ applies the NEQ predicate on the "theme_sidebar" field.
+func ThemeSidebarNEQ(v ThemeSidebar) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldThemeSidebar, v))
+}
+
+// ThemeSidebarIn applies the In predicate on the "theme_sidebar" field.
+func ThemeSidebarIn(vs ...ThemeSidebar) predicate.User {
+	return predicate.User(sql.FieldIn(FieldThemeSidebar, vs...))
+}
+
+// ThemeSidebarNotIn applies the NotIn predicate on the "theme_sidebar" field.
+func ThemeSidebarNotIn(vs ...ThemeSidebar) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldThemeSidebar, vs...))
+}
+
+// ColorModeEQ applies the EQ predicate on the "color_mode" field.
+func ColorModeEQ(v ColorMode) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldColorMode, v))
+}
+
+// ColorModeNEQ applies the NEQ predicate on the "color_mode" field.
+func ColorModeNEQ(v ColorMode) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldColorMode, v))
+}
+
+// ColorModeIn applies the In predicate on the "color_mode" field.
+func ColorModeIn(vs ...ColorMode) predicate.User {
+	return predicate.User(sql.FieldIn(FieldColorMode, vs...))
+}
+
+// ColorModeNotIn applies the NotIn predicate on the "color_mode" field.
+func ColorModeNotIn(vs ...ColorMode) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldColorMode, vs...))
+}
+
+// LocaleEQ applies the EQ predicate on the "locale" field.
+func LocaleEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLocale, v))
+}
+
+// LocaleNEQ applies the NEQ predicate on the "locale" field.
+func LocaleNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldLocale, v))
+}
+
+// LocaleIn applies the In predicate on the "locale" field.
+func LocaleIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldLocale, vs...))
+}
+
+// LocaleNotIn applies the NotIn predicate on the "locale" field.
+func LocaleNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldLocale, vs...))
+}
+
+// LocaleGT applies the GT predicate on the "locale" field.
+func LocaleGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldLocale, v))
+}
+
+// LocaleGTE applies the GTE predicate on the "locale" field.
+func LocaleGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldLocale, v))
+}
+
+// LocaleLT applies the LT predicate on the "locale" field.
+func LocaleLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldLocale, v))
+}
+
+// LocaleLTE applies the LTE predicate on the "locale" field.
+func LocaleLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldLocale, v))
+}
+
+// LocaleContains applies the Contains predicate on the "locale" field.
+func LocaleContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldLocale, v))
+}
+
+// LocaleHasPrefix applies the HasPrefix predicate on the "locale" field.
+func LocaleHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldLocale, v))
+}
+
+// LocaleHasSuffix applies the HasSuffix predicate on the "locale" field.
+func LocaleHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldLocale, v))
+}
+
+// LocaleEqualFold applies the EqualFold predicate on the "locale" field.
+func LocaleEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldLocale, v))
+}
+
+// LocaleContainsFold applies the ContainsFold predicate on the "locale" field.
+func LocaleContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldLocale, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

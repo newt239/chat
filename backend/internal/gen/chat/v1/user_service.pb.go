@@ -206,6 +206,94 @@ func (x *UpdateMeResponse) GetUser() *User {
 	return nil
 }
 
+type UpdatePreferencesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Preferences   *UserPreferences       `protobuf:"bytes,1,opt,name=preferences,proto3" json:"preferences,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdatePreferencesRequest) Reset() {
+	*x = UpdatePreferencesRequest{}
+	mi := &file_chat_v1_user_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdatePreferencesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePreferencesRequest) ProtoMessage() {}
+
+func (x *UpdatePreferencesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePreferencesRequest.ProtoReflect.Descriptor instead.
+func (*UpdatePreferencesRequest) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *UpdatePreferencesRequest) GetPreferences() *UserPreferences {
+	if x != nil {
+		return x.Preferences
+	}
+	return nil
+}
+
+type UpdatePreferencesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Preferences   *UserPreferences       `protobuf:"bytes,1,opt,name=preferences,proto3" json:"preferences,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdatePreferencesResponse) Reset() {
+	*x = UpdatePreferencesResponse{}
+	mi := &file_chat_v1_user_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdatePreferencesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePreferencesResponse) ProtoMessage() {}
+
+func (x *UpdatePreferencesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePreferencesResponse.ProtoReflect.Descriptor instead.
+func (*UpdatePreferencesResponse) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *UpdatePreferencesResponse) GetPreferences() *UserPreferences {
+	if x != nil {
+		return x.Preferences
+	}
+	return nil
+}
+
 type UpdatePasswordRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	CurrentPassword string                 `protobuf:"bytes,1,opt,name=current_password,json=currentPassword,proto3" json:"current_password,omitempty"`
@@ -216,7 +304,7 @@ type UpdatePasswordRequest struct {
 
 func (x *UpdatePasswordRequest) Reset() {
 	*x = UpdatePasswordRequest{}
-	mi := &file_chat_v1_user_service_proto_msgTypes[4]
+	mi := &file_chat_v1_user_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -228,7 +316,7 @@ func (x *UpdatePasswordRequest) String() string {
 func (*UpdatePasswordRequest) ProtoMessage() {}
 
 func (x *UpdatePasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_service_proto_msgTypes[4]
+	mi := &file_chat_v1_user_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -241,7 +329,7 @@ func (x *UpdatePasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePasswordRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePasswordRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{4}
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdatePasswordRequest) GetCurrentPassword() string {
@@ -266,7 +354,7 @@ type UpdatePasswordResponse struct {
 
 func (x *UpdatePasswordResponse) Reset() {
 	*x = UpdatePasswordResponse{}
-	mi := &file_chat_v1_user_service_proto_msgTypes[5]
+	mi := &file_chat_v1_user_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -278,7 +366,7 @@ func (x *UpdatePasswordResponse) String() string {
 func (*UpdatePasswordResponse) ProtoMessage() {}
 
 func (x *UpdatePasswordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_service_proto_msgTypes[5]
+	mi := &file_chat_v1_user_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -291,7 +379,7 @@ func (x *UpdatePasswordResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePasswordResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePasswordResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{5}
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{7}
 }
 
 type DeleteMeRequest struct {
@@ -302,7 +390,7 @@ type DeleteMeRequest struct {
 
 func (x *DeleteMeRequest) Reset() {
 	*x = DeleteMeRequest{}
-	mi := &file_chat_v1_user_service_proto_msgTypes[6]
+	mi := &file_chat_v1_user_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -314,7 +402,7 @@ func (x *DeleteMeRequest) String() string {
 func (*DeleteMeRequest) ProtoMessage() {}
 
 func (x *DeleteMeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_service_proto_msgTypes[6]
+	mi := &file_chat_v1_user_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -327,7 +415,7 @@ func (x *DeleteMeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMeRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMeRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{6}
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{8}
 }
 
 type DeleteMeResponse struct {
@@ -338,7 +426,7 @@ type DeleteMeResponse struct {
 
 func (x *DeleteMeResponse) Reset() {
 	*x = DeleteMeResponse{}
-	mi := &file_chat_v1_user_service_proto_msgTypes[7]
+	mi := &file_chat_v1_user_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -350,7 +438,7 @@ func (x *DeleteMeResponse) String() string {
 func (*DeleteMeResponse) ProtoMessage() {}
 
 func (x *DeleteMeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_service_proto_msgTypes[7]
+	mi := &file_chat_v1_user_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -363,7 +451,7 @@ func (x *DeleteMeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMeResponse.ProtoReflect.Descriptor instead.
 func (*DeleteMeResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{7}
+	return file_chat_v1_user_service_proto_rawDescGZIP(), []int{9}
 }
 
 var File_chat_v1_user_service_proto protoreflect.FileDescriptor
@@ -383,16 +471,21 @@ const file_chat_v1_user_service_proto_rawDesc = "" +
 	"\x04_bioB\r\n" +
 	"\v_avatar_url\"5\n" +
 	"\x10UpdateMeResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.chat.v1.UserR\x04user\"w\n" +
+	"\x04user\x18\x01 \x01(\v2\r.chat.v1.UserR\x04user\"^\n" +
+	"\x18UpdatePreferencesRequest\x12B\n" +
+	"\vpreferences\x18\x01 \x01(\v2\x18.chat.v1.UserPreferencesB\x06\xbaH\x03\xc8\x01\x01R\vpreferences\"W\n" +
+	"\x19UpdatePreferencesResponse\x12:\n" +
+	"\vpreferences\x18\x01 \x01(\v2\x18.chat.v1.UserPreferencesR\vpreferences\"w\n" +
 	"\x15UpdatePasswordRequest\x122\n" +
 	"\x10current_password\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0fcurrentPassword\x12*\n" +
 	"\fnew_password\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vnewPassword\"\x18\n" +
 	"\x16UpdatePasswordResponse\"\x11\n" +
 	"\x0fDeleteMeRequest\"\x12\n" +
-	"\x10DeleteMeResponse2\x9a\x02\n" +
+	"\x10DeleteMeResponse2\xf6\x02\n" +
 	"\vUserService\x126\n" +
 	"\x05GetMe\x12\x15.chat.v1.GetMeRequest\x1a\x16.chat.v1.GetMeResponse\x12?\n" +
-	"\bUpdateMe\x12\x18.chat.v1.UpdateMeRequest\x1a\x19.chat.v1.UpdateMeResponse\x12Q\n" +
+	"\bUpdateMe\x12\x18.chat.v1.UpdateMeRequest\x1a\x19.chat.v1.UpdateMeResponse\x12Z\n" +
+	"\x11UpdatePreferences\x12!.chat.v1.UpdatePreferencesRequest\x1a\".chat.v1.UpdatePreferencesResponse\x12Q\n" +
 	"\x0eUpdatePassword\x12\x1e.chat.v1.UpdatePasswordRequest\x1a\x1f.chat.v1.UpdatePasswordResponse\x12?\n" +
 	"\bDeleteMe\x12\x18.chat.v1.DeleteMeRequest\x1a\x19.chat.v1.DeleteMeResponseB\x91\x01\n" +
 	"\vcom.chat.v1B\x10UserServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
@@ -409,34 +502,41 @@ func file_chat_v1_user_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_user_service_proto_rawDescData
 }
 
-var file_chat_v1_user_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_chat_v1_user_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_chat_v1_user_service_proto_goTypes = []any{
-	(*GetMeRequest)(nil),           // 0: chat.v1.GetMeRequest
-	(*GetMeResponse)(nil),          // 1: chat.v1.GetMeResponse
-	(*UpdateMeRequest)(nil),        // 2: chat.v1.UpdateMeRequest
-	(*UpdateMeResponse)(nil),       // 3: chat.v1.UpdateMeResponse
-	(*UpdatePasswordRequest)(nil),  // 4: chat.v1.UpdatePasswordRequest
-	(*UpdatePasswordResponse)(nil), // 5: chat.v1.UpdatePasswordResponse
-	(*DeleteMeRequest)(nil),        // 6: chat.v1.DeleteMeRequest
-	(*DeleteMeResponse)(nil),       // 7: chat.v1.DeleteMeResponse
-	(*User)(nil),                   // 8: chat.v1.User
+	(*GetMeRequest)(nil),              // 0: chat.v1.GetMeRequest
+	(*GetMeResponse)(nil),             // 1: chat.v1.GetMeResponse
+	(*UpdateMeRequest)(nil),           // 2: chat.v1.UpdateMeRequest
+	(*UpdateMeResponse)(nil),          // 3: chat.v1.UpdateMeResponse
+	(*UpdatePreferencesRequest)(nil),  // 4: chat.v1.UpdatePreferencesRequest
+	(*UpdatePreferencesResponse)(nil), // 5: chat.v1.UpdatePreferencesResponse
+	(*UpdatePasswordRequest)(nil),     // 6: chat.v1.UpdatePasswordRequest
+	(*UpdatePasswordResponse)(nil),    // 7: chat.v1.UpdatePasswordResponse
+	(*DeleteMeRequest)(nil),           // 8: chat.v1.DeleteMeRequest
+	(*DeleteMeResponse)(nil),          // 9: chat.v1.DeleteMeResponse
+	(*User)(nil),                      // 10: chat.v1.User
+	(*UserPreferences)(nil),           // 11: chat.v1.UserPreferences
 }
 var file_chat_v1_user_service_proto_depIdxs = []int32{
-	8, // 0: chat.v1.GetMeResponse.user:type_name -> chat.v1.User
-	8, // 1: chat.v1.UpdateMeResponse.user:type_name -> chat.v1.User
-	0, // 2: chat.v1.UserService.GetMe:input_type -> chat.v1.GetMeRequest
-	2, // 3: chat.v1.UserService.UpdateMe:input_type -> chat.v1.UpdateMeRequest
-	4, // 4: chat.v1.UserService.UpdatePassword:input_type -> chat.v1.UpdatePasswordRequest
-	6, // 5: chat.v1.UserService.DeleteMe:input_type -> chat.v1.DeleteMeRequest
-	1, // 6: chat.v1.UserService.GetMe:output_type -> chat.v1.GetMeResponse
-	3, // 7: chat.v1.UserService.UpdateMe:output_type -> chat.v1.UpdateMeResponse
-	5, // 8: chat.v1.UserService.UpdatePassword:output_type -> chat.v1.UpdatePasswordResponse
-	7, // 9: chat.v1.UserService.DeleteMe:output_type -> chat.v1.DeleteMeResponse
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	10, // 0: chat.v1.GetMeResponse.user:type_name -> chat.v1.User
+	10, // 1: chat.v1.UpdateMeResponse.user:type_name -> chat.v1.User
+	11, // 2: chat.v1.UpdatePreferencesRequest.preferences:type_name -> chat.v1.UserPreferences
+	11, // 3: chat.v1.UpdatePreferencesResponse.preferences:type_name -> chat.v1.UserPreferences
+	0,  // 4: chat.v1.UserService.GetMe:input_type -> chat.v1.GetMeRequest
+	2,  // 5: chat.v1.UserService.UpdateMe:input_type -> chat.v1.UpdateMeRequest
+	4,  // 6: chat.v1.UserService.UpdatePreferences:input_type -> chat.v1.UpdatePreferencesRequest
+	6,  // 7: chat.v1.UserService.UpdatePassword:input_type -> chat.v1.UpdatePasswordRequest
+	8,  // 8: chat.v1.UserService.DeleteMe:input_type -> chat.v1.DeleteMeRequest
+	1,  // 9: chat.v1.UserService.GetMe:output_type -> chat.v1.GetMeResponse
+	3,  // 10: chat.v1.UserService.UpdateMe:output_type -> chat.v1.UpdateMeResponse
+	5,  // 11: chat.v1.UserService.UpdatePreferences:output_type -> chat.v1.UpdatePreferencesResponse
+	7,  // 12: chat.v1.UserService.UpdatePassword:output_type -> chat.v1.UpdatePasswordResponse
+	9,  // 13: chat.v1.UserService.DeleteMe:output_type -> chat.v1.DeleteMeResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_service_proto_init() }
@@ -452,7 +552,7 @@ func file_chat_v1_user_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_service_proto_rawDesc), len(file_chat_v1_user_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

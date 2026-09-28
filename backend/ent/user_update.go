@@ -124,6 +124,90 @@ func (_u *UserUpdate) ClearAvatarURL() *UserUpdate {
 	return _u
 }
 
+// SetThemeHue sets the "theme_hue" field.
+func (_u *UserUpdate) SetThemeHue(v int) *UserUpdate {
+	_u.mutation.ResetThemeHue()
+	_u.mutation.SetThemeHue(v)
+	return _u
+}
+
+// SetNillableThemeHue sets the "theme_hue" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableThemeHue(v *int) *UserUpdate {
+	if v != nil {
+		_u.SetThemeHue(*v)
+	}
+	return _u
+}
+
+// AddThemeHue adds value to the "theme_hue" field.
+func (_u *UserUpdate) AddThemeHue(v int) *UserUpdate {
+	_u.mutation.AddThemeHue(v)
+	return _u
+}
+
+// SetThemeChroma sets the "theme_chroma" field.
+func (_u *UserUpdate) SetThemeChroma(v float64) *UserUpdate {
+	_u.mutation.ResetThemeChroma()
+	_u.mutation.SetThemeChroma(v)
+	return _u
+}
+
+// SetNillableThemeChroma sets the "theme_chroma" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableThemeChroma(v *float64) *UserUpdate {
+	if v != nil {
+		_u.SetThemeChroma(*v)
+	}
+	return _u
+}
+
+// AddThemeChroma adds value to the "theme_chroma" field.
+func (_u *UserUpdate) AddThemeChroma(v float64) *UserUpdate {
+	_u.mutation.AddThemeChroma(v)
+	return _u
+}
+
+// SetThemeSidebar sets the "theme_sidebar" field.
+func (_u *UserUpdate) SetThemeSidebar(v user.ThemeSidebar) *UserUpdate {
+	_u.mutation.SetThemeSidebar(v)
+	return _u
+}
+
+// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableThemeSidebar(v *user.ThemeSidebar) *UserUpdate {
+	if v != nil {
+		_u.SetThemeSidebar(*v)
+	}
+	return _u
+}
+
+// SetColorMode sets the "color_mode" field.
+func (_u *UserUpdate) SetColorMode(v user.ColorMode) *UserUpdate {
+	_u.mutation.SetColorMode(v)
+	return _u
+}
+
+// SetNillableColorMode sets the "color_mode" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableColorMode(v *user.ColorMode) *UserUpdate {
+	if v != nil {
+		_u.SetColorMode(*v)
+	}
+	return _u
+}
+
+// SetLocale sets the "locale" field.
+func (_u *UserUpdate) SetLocale(v string) *UserUpdate {
+	_u.mutation.SetLocale(v)
+	return _u
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableLocale(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetLocale(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdate) SetUpdatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -656,6 +740,16 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "User.display_name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ThemeSidebar(); ok {
+		if err := user.ThemeSidebarValidator(v); err != nil {
+			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "User.theme_sidebar": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ColorMode(); ok {
+		if err := user.ColorModeValidator(v); err != nil {
+			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -691,6 +785,27 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.ThemeHue(); ok {
+		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedThemeHue(); ok {
+		_spec.AddField(user.FieldThemeHue, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ThemeChroma(); ok {
+		_spec.SetField(user.FieldThemeChroma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedThemeChroma(); ok {
+		_spec.AddField(user.FieldThemeChroma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.ThemeSidebar(); ok {
+		_spec.SetField(user.FieldThemeSidebar, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ColorMode(); ok {
+		_spec.SetField(user.FieldColorMode, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Locale(); ok {
+		_spec.SetField(user.FieldLocale, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -1382,6 +1497,90 @@ func (_u *UserUpdateOne) ClearAvatarURL() *UserUpdateOne {
 	return _u
 }
 
+// SetThemeHue sets the "theme_hue" field.
+func (_u *UserUpdateOne) SetThemeHue(v int) *UserUpdateOne {
+	_u.mutation.ResetThemeHue()
+	_u.mutation.SetThemeHue(v)
+	return _u
+}
+
+// SetNillableThemeHue sets the "theme_hue" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableThemeHue(v *int) *UserUpdateOne {
+	if v != nil {
+		_u.SetThemeHue(*v)
+	}
+	return _u
+}
+
+// AddThemeHue adds value to the "theme_hue" field.
+func (_u *UserUpdateOne) AddThemeHue(v int) *UserUpdateOne {
+	_u.mutation.AddThemeHue(v)
+	return _u
+}
+
+// SetThemeChroma sets the "theme_chroma" field.
+func (_u *UserUpdateOne) SetThemeChroma(v float64) *UserUpdateOne {
+	_u.mutation.ResetThemeChroma()
+	_u.mutation.SetThemeChroma(v)
+	return _u
+}
+
+// SetNillableThemeChroma sets the "theme_chroma" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableThemeChroma(v *float64) *UserUpdateOne {
+	if v != nil {
+		_u.SetThemeChroma(*v)
+	}
+	return _u
+}
+
+// AddThemeChroma adds value to the "theme_chroma" field.
+func (_u *UserUpdateOne) AddThemeChroma(v float64) *UserUpdateOne {
+	_u.mutation.AddThemeChroma(v)
+	return _u
+}
+
+// SetThemeSidebar sets the "theme_sidebar" field.
+func (_u *UserUpdateOne) SetThemeSidebar(v user.ThemeSidebar) *UserUpdateOne {
+	_u.mutation.SetThemeSidebar(v)
+	return _u
+}
+
+// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableThemeSidebar(v *user.ThemeSidebar) *UserUpdateOne {
+	if v != nil {
+		_u.SetThemeSidebar(*v)
+	}
+	return _u
+}
+
+// SetColorMode sets the "color_mode" field.
+func (_u *UserUpdateOne) SetColorMode(v user.ColorMode) *UserUpdateOne {
+	_u.mutation.SetColorMode(v)
+	return _u
+}
+
+// SetNillableColorMode sets the "color_mode" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableColorMode(v *user.ColorMode) *UserUpdateOne {
+	if v != nil {
+		_u.SetColorMode(*v)
+	}
+	return _u
+}
+
+// SetLocale sets the "locale" field.
+func (_u *UserUpdateOne) SetLocale(v string) *UserUpdateOne {
+	_u.mutation.SetLocale(v)
+	return _u
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableLocale(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetLocale(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdateOne) SetUpdatedAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -1927,6 +2126,16 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "User.display_name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ThemeSidebar(); ok {
+		if err := user.ThemeSidebarValidator(v); err != nil {
+			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "User.theme_sidebar": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ColorMode(); ok {
+		if err := user.ColorModeValidator(v); err != nil {
+			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -1979,6 +2188,27 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.ThemeHue(); ok {
+		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedThemeHue(); ok {
+		_spec.AddField(user.FieldThemeHue, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ThemeChroma(); ok {
+		_spec.SetField(user.FieldThemeChroma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedThemeChroma(); ok {
+		_spec.AddField(user.FieldThemeChroma, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.ThemeSidebar(); ok {
+		_spec.SetField(user.FieldThemeSidebar, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ColorMode(); ok {
+		_spec.SetField(user.FieldColorMode, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Locale(); ok {
+		_spec.SetField(user.FieldLocale, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

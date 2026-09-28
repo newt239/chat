@@ -37,6 +37,9 @@ const (
 	UserServiceGetMeProcedure = "/chat.v1.UserService/GetMe"
 	// UserServiceUpdateMeProcedure is the fully-qualified name of the UserService's UpdateMe RPC.
 	UserServiceUpdateMeProcedure = "/chat.v1.UserService/UpdateMe"
+	// UserServiceUpdatePreferencesProcedure is the fully-qualified name of the UserService's
+	// UpdatePreferences RPC.
+	UserServiceUpdatePreferencesProcedure = "/chat.v1.UserService/UpdatePreferences"
 	// UserServiceUpdatePasswordProcedure is the fully-qualified name of the UserService's
 	// UpdatePassword RPC.
 	UserServiceUpdatePasswordProcedure = "/chat.v1.UserService/UpdatePassword"
@@ -48,6 +51,7 @@ const (
 type UserServiceClient interface {
 	GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error)
 	UpdateMe(context.Context, *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error)
+	UpdatePreferences(context.Context, *v1.UpdatePreferencesRequest) (*v1.UpdatePreferencesResponse, error)
 	UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error)
 	DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error)
 }
@@ -75,6 +79,12 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("UpdateMe")),
 			connect.WithClientOptions(opts...),
 		),
+		updatePreferences: connect.NewClient[v1.UpdatePreferencesRequest, v1.UpdatePreferencesResponse](
+			httpClient,
+			baseURL+UserServiceUpdatePreferencesProcedure,
+			connect.WithSchema(userServiceMethods.ByName("UpdatePreferences")),
+			connect.WithClientOptions(opts...),
+		),
 		updatePassword: connect.NewClient[v1.UpdatePasswordRequest, v1.UpdatePasswordResponse](
 			httpClient,
 			baseURL+UserServiceUpdatePasswordProcedure,
@@ -92,10 +102,11 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
-	getMe          *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
-	updateMe       *connect.Client[v1.UpdateMeRequest, v1.UpdateMeResponse]
-	updatePassword *connect.Client[v1.UpdatePasswordRequest, v1.UpdatePasswordResponse]
-	deleteMe       *connect.Client[v1.DeleteMeRequest, v1.DeleteMeResponse]
+	getMe             *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
+	updateMe          *connect.Client[v1.UpdateMeRequest, v1.UpdateMeResponse]
+	updatePreferences *connect.Client[v1.UpdatePreferencesRequest, v1.UpdatePreferencesResponse]
+	updatePassword    *connect.Client[v1.UpdatePasswordRequest, v1.UpdatePasswordResponse]
+	deleteMe          *connect.Client[v1.DeleteMeRequest, v1.DeleteMeResponse]
 }
 
 // GetMe calls chat.v1.UserService.GetMe.
@@ -110,6 +121,15 @@ func (c *userServiceClient) GetMe(ctx context.Context, req *v1.GetMeRequest) (*v
 // UpdateMe calls chat.v1.UserService.UpdateMe.
 func (c *userServiceClient) UpdateMe(ctx context.Context, req *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error) {
 	response, err := c.updateMe.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// UpdatePreferences calls chat.v1.UserService.UpdatePreferences.
+func (c *userServiceClient) UpdatePreferences(ctx context.Context, req *v1.UpdatePreferencesRequest) (*v1.UpdatePreferencesResponse, error) {
+	response, err := c.updatePreferences.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -138,6 +158,7 @@ func (c *userServiceClient) DeleteMe(ctx context.Context, req *v1.DeleteMeReques
 type UserServiceHandler interface {
 	GetMe(context.Context, *v1.GetMeRequest) (*v1.GetMeResponse, error)
 	UpdateMe(context.Context, *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error)
+	UpdatePreferences(context.Context, *v1.UpdatePreferencesRequest) (*v1.UpdatePreferencesResponse, error)
 	UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error)
 	DeleteMe(context.Context, *v1.DeleteMeRequest) (*v1.DeleteMeResponse, error)
 }
@@ -161,6 +182,12 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("UpdateMe")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceUpdatePreferencesHandler := connect.NewUnaryHandlerSimple(
+		UserServiceUpdatePreferencesProcedure,
+		svc.UpdatePreferences,
+		connect.WithSchema(userServiceMethods.ByName("UpdatePreferences")),
+		connect.WithHandlerOptions(opts...),
+	)
 	userServiceUpdatePasswordHandler := connect.NewUnaryHandlerSimple(
 		UserServiceUpdatePasswordProcedure,
 		svc.UpdatePassword,
@@ -179,6 +206,8 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 			userServiceGetMeHandler.ServeHTTP(w, r)
 		case UserServiceUpdateMeProcedure:
 			userServiceUpdateMeHandler.ServeHTTP(w, r)
+		case UserServiceUpdatePreferencesProcedure:
+			userServiceUpdatePreferencesHandler.ServeHTTP(w, r)
 		case UserServiceUpdatePasswordProcedure:
 			userServiceUpdatePasswordHandler.ServeHTTP(w, r)
 		case UserServiceDeleteMeProcedure:
@@ -198,6 +227,10 @@ func (UnimplementedUserServiceHandler) GetMe(context.Context, *v1.GetMeRequest) 
 
 func (UnimplementedUserServiceHandler) UpdateMe(context.Context, *v1.UpdateMeRequest) (*v1.UpdateMeResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.UpdateMe is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) UpdatePreferences(context.Context, *v1.UpdatePreferencesRequest) (*v1.UpdatePreferencesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserService.UpdatePreferences is not implemented"))
 }
 
 func (UnimplementedUserServiceHandler) UpdatePassword(context.Context, *v1.UpdatePasswordRequest) (*v1.UpdatePasswordResponse, error) {

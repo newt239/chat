@@ -5,7 +5,7 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { User } from "./user_pb";
+import type { User, UserPreferences } from "./user_pb";
 import { file_chat_v1_user } from "./user_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/user_service.proto.
  */
 export const file_chat_v1_user_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpjaGF0L3YxL3VzZXJfc2VydmljZS5wcm90bxIHY2hhdC52MSIOCgxHZXRNZVJlcXVlc3QiLAoNR2V0TWVSZXNwb25zZRIbCgR1c2VyGAEgASgLMg0uY2hhdC52MS5Vc2VyIogBCg9VcGRhdGVNZVJlcXVlc3QSIgoMZGlzcGxheV9uYW1lGAEgASgJQge6SARyAhABSACIAQESEAoDYmlvGAIgASgJSAGIAQESFwoKYXZhdGFyX3VybBgDIAEoCUgCiAEBQg8KDV9kaXNwbGF5X25hbWVCBgoEX2Jpb0INCgtfYXZhdGFyX3VybCIvChBVcGRhdGVNZVJlc3BvbnNlEhsKBHVzZXIYASABKAsyDS5jaGF0LnYxLlVzZXIiWQoVVXBkYXRlUGFzc3dvcmRSZXF1ZXN0EiEKEGN1cnJlbnRfcGFzc3dvcmQYASABKAlCB7pIBHICEAESHQoMbmV3X3Bhc3N3b3JkGAIgASgJQge6SARyAhAIIhgKFlVwZGF0ZVBhc3N3b3JkUmVzcG9uc2UiEQoPRGVsZXRlTWVSZXF1ZXN0IhIKEERlbGV0ZU1lUmVzcG9uc2UymgIKC1VzZXJTZXJ2aWNlEjYKBUdldE1lEhUuY2hhdC52MS5HZXRNZVJlcXVlc3QaFi5jaGF0LnYxLkdldE1lUmVzcG9uc2USPwoIVXBkYXRlTWUSGC5jaGF0LnYxLlVwZGF0ZU1lUmVxdWVzdBoZLmNoYXQudjEuVXBkYXRlTWVSZXNwb25zZRJRCg5VcGRhdGVQYXNzd29yZBIeLmNoYXQudjEuVXBkYXRlUGFzc3dvcmRSZXF1ZXN0Gh8uY2hhdC52MS5VcGRhdGVQYXNzd29yZFJlc3BvbnNlEj8KCERlbGV0ZU1lEhguY2hhdC52MS5EZWxldGVNZVJlcXVlc3QaGS5jaGF0LnYxLkRlbGV0ZU1lUmVzcG9uc2VCkQEKC2NvbS5jaGF0LnYxQhBVc2VyU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_user]);
+  fileDesc("ChpjaGF0L3YxL3VzZXJfc2VydmljZS5wcm90bxIHY2hhdC52MSIOCgxHZXRNZVJlcXVlc3QiLAoNR2V0TWVSZXNwb25zZRIbCgR1c2VyGAEgASgLMg0uY2hhdC52MS5Vc2VyIogBCg9VcGRhdGVNZVJlcXVlc3QSIgoMZGlzcGxheV9uYW1lGAEgASgJQge6SARyAhABSACIAQESEAoDYmlvGAIgASgJSAGIAQESFwoKYXZhdGFyX3VybBgDIAEoCUgCiAEBQg8KDV9kaXNwbGF5X25hbWVCBgoEX2Jpb0INCgtfYXZhdGFyX3VybCIvChBVcGRhdGVNZVJlc3BvbnNlEhsKBHVzZXIYASABKAsyDS5jaGF0LnYxLlVzZXIiUQoYVXBkYXRlUHJlZmVyZW5jZXNSZXF1ZXN0EjUKC3ByZWZlcmVuY2VzGAEgASgLMhguY2hhdC52MS5Vc2VyUHJlZmVyZW5jZXNCBrpIA8gBASJKChlVcGRhdGVQcmVmZXJlbmNlc1Jlc3BvbnNlEi0KC3ByZWZlcmVuY2VzGAEgASgLMhguY2hhdC52MS5Vc2VyUHJlZmVyZW5jZXMiWQoVVXBkYXRlUGFzc3dvcmRSZXF1ZXN0EiEKEGN1cnJlbnRfcGFzc3dvcmQYASABKAlCB7pIBHICEAESHQoMbmV3X3Bhc3N3b3JkGAIgASgJQge6SARyAhAIIhgKFlVwZGF0ZVBhc3N3b3JkUmVzcG9uc2UiEQoPRGVsZXRlTWVSZXF1ZXN0IhIKEERlbGV0ZU1lUmVzcG9uc2Uy9gIKC1VzZXJTZXJ2aWNlEjYKBUdldE1lEhUuY2hhdC52MS5HZXRNZVJlcXVlc3QaFi5jaGF0LnYxLkdldE1lUmVzcG9uc2USPwoIVXBkYXRlTWUSGC5jaGF0LnYxLlVwZGF0ZU1lUmVxdWVzdBoZLmNoYXQudjEuVXBkYXRlTWVSZXNwb25zZRJaChFVcGRhdGVQcmVmZXJlbmNlcxIhLmNoYXQudjEuVXBkYXRlUHJlZmVyZW5jZXNSZXF1ZXN0GiIuY2hhdC52MS5VcGRhdGVQcmVmZXJlbmNlc1Jlc3BvbnNlElEKDlVwZGF0ZVBhc3N3b3JkEh4uY2hhdC52MS5VcGRhdGVQYXNzd29yZFJlcXVlc3QaHy5jaGF0LnYxLlVwZGF0ZVBhc3N3b3JkUmVzcG9uc2USPwoIRGVsZXRlTWUSGC5jaGF0LnYxLkRlbGV0ZU1lUmVxdWVzdBoZLmNoYXQudjEuRGVsZXRlTWVSZXNwb25zZUKRAQoLY29tLmNoYXQudjFCEFVzZXJTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_user]);
 
 /**
  * @generated from message chat.v1.GetMeRequest
@@ -90,6 +90,40 @@ export const UpdateMeResponseSchema: GenMessage<UpdateMeResponse> = /*@__PURE__*
   messageDesc(file_chat_v1_user_service, 3);
 
 /**
+ * @generated from message chat.v1.UpdatePreferencesRequest
+ */
+export type UpdatePreferencesRequest = Message<"chat.v1.UpdatePreferencesRequest"> & {
+  /**
+   * @generated from field: chat.v1.UserPreferences preferences = 1;
+   */
+  preferences?: UserPreferences | undefined;
+};
+
+/**
+ * Describes the message chat.v1.UpdatePreferencesRequest.
+ * Use `create(UpdatePreferencesRequestSchema)` to create a new message.
+ */
+export const UpdatePreferencesRequestSchema: GenMessage<UpdatePreferencesRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user_service, 4);
+
+/**
+ * @generated from message chat.v1.UpdatePreferencesResponse
+ */
+export type UpdatePreferencesResponse = Message<"chat.v1.UpdatePreferencesResponse"> & {
+  /**
+   * @generated from field: chat.v1.UserPreferences preferences = 1;
+   */
+  preferences?: UserPreferences | undefined;
+};
+
+/**
+ * Describes the message chat.v1.UpdatePreferencesResponse.
+ * Use `create(UpdatePreferencesResponseSchema)` to create a new message.
+ */
+export const UpdatePreferencesResponseSchema: GenMessage<UpdatePreferencesResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user_service, 5);
+
+/**
  * @generated from message chat.v1.UpdatePasswordRequest
  */
 export type UpdatePasswordRequest = Message<"chat.v1.UpdatePasswordRequest"> & {
@@ -109,7 +143,7 @@ export type UpdatePasswordRequest = Message<"chat.v1.UpdatePasswordRequest"> & {
  * Use `create(UpdatePasswordRequestSchema)` to create a new message.
  */
 export const UpdatePasswordRequestSchema: GenMessage<UpdatePasswordRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_service, 4);
+  messageDesc(file_chat_v1_user_service, 6);
 
 /**
  * @generated from message chat.v1.UpdatePasswordResponse
@@ -122,7 +156,7 @@ export type UpdatePasswordResponse = Message<"chat.v1.UpdatePasswordResponse"> &
  * Use `create(UpdatePasswordResponseSchema)` to create a new message.
  */
 export const UpdatePasswordResponseSchema: GenMessage<UpdatePasswordResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_service, 5);
+  messageDesc(file_chat_v1_user_service, 7);
 
 /**
  * @generated from message chat.v1.DeleteMeRequest
@@ -135,7 +169,7 @@ export type DeleteMeRequest = Message<"chat.v1.DeleteMeRequest"> & {
  * Use `create(DeleteMeRequestSchema)` to create a new message.
  */
 export const DeleteMeRequestSchema: GenMessage<DeleteMeRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_service, 6);
+  messageDesc(file_chat_v1_user_service, 8);
 
 /**
  * @generated from message chat.v1.DeleteMeResponse
@@ -148,7 +182,7 @@ export type DeleteMeResponse = Message<"chat.v1.DeleteMeResponse"> & {
  * Use `create(DeleteMeResponseSchema)` to create a new message.
  */
 export const DeleteMeResponseSchema: GenMessage<DeleteMeResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_service, 7);
+  messageDesc(file_chat_v1_user_service, 9);
 
 /**
  * @generated from service chat.v1.UserService
@@ -169,6 +203,14 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof UpdateMeRequestSchema;
     output: typeof UpdateMeResponseSchema;
+  },
+  /**
+   * @generated from rpc chat.v1.UserService.UpdatePreferences
+   */
+  updatePreferences: {
+    methodKind: "unary";
+    input: typeof UpdatePreferencesRequestSchema;
+    output: typeof UpdatePreferencesResponseSchema;
   },
   /**
    * @generated from rpc chat.v1.UserService.UpdatePassword

@@ -17,6 +17,7 @@ var (
 type UseCase interface {
 	GetMe(ctx context.Context, userID string) (*MeOutput, error)
 	UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutput, error)
+	UpdatePreferences(ctx context.Context, input UpdatePreferencesInput) (*entity.UserPreferences, error)
 	UpdatePassword(ctx context.Context, input UpdatePasswordInput) error
 	DeleteMe(ctx context.Context, userID string) error
 }
@@ -105,6 +106,21 @@ func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutp
 	return toMeOutput(u), nil
 }
 
+// UpdatePreferences はテーマ・表示モード・言語の設定を丸ごと置き換えます
+func (i *interactor) UpdatePreferences(ctx context.Context, input UpdatePreferencesInput) (*entity.UserPreferences, error) {
+	u, err := i.findMe(ctx, input.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	u.Preferences = input.Preferences
+	if err := i.userRepo.Update(ctx, u); err != nil {
+		return nil, err
+	}
+
+	return &u.Preferences, nil
+}
+
 func (i *interactor) findMe(ctx context.Context, userID string) (*entity.User, error) {
 	if userID == "" {
 		return nil, ErrUnauthorized
@@ -127,5 +143,6 @@ func toMeOutput(u *entity.User) *MeOutput {
 		DisplayName: u.DisplayName,
 		Bio:         u.Bio,
 		AvatarURL:   u.AvatarURL,
+		Preferences: u.Preferences,
 	}
 }
