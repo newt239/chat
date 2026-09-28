@@ -26,6 +26,10 @@ func (Session) Fields() []ent.Field {
 		field.Time("expires_at"),
 		field.Time("revoked_at").
 			Optional(),
+		field.String("ip_address").
+			Default(""),
+		field.String("user_agent").
+			Default(""),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

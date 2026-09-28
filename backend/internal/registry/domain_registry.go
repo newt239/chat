@@ -84,6 +84,18 @@ func (r *DomainRegistry) NewAttachmentRepository() domainrepository.AttachmentRe
 	return repository.NewAttachmentRepository(r.client)
 }
 
+func (r *DomainRegistry) NewAuditLogRepository() domainrepository.AuditLogRepository {
+	return repository.NewAuditLogRepository(r.client)
+}
+
+func (r *DomainRegistry) NewPermissionRepository() domainrepository.PermissionRepository {
+	return repository.NewPermissionRepository(r.client)
+}
+
+func (r *DomainRegistry) NewInsightRepository() domainrepository.InsightRepository {
+	return repository.NewInsightRepository(r.client)
+}
+
 func (r *DomainRegistry) NewChannelStarRepository() domainrepository.ChannelStarRepository {
 	return repository.NewChannelStarRepository(r.client)
 }
@@ -103,4 +115,8 @@ func (r *DomainRegistry) NewChannelAccessService() domainservice.ChannelAccessSe
 		r.NewChannelMemberRepository(),
 		r.NewWorkspaceRepository(),
 	)
+}
+
+func (r *DomainRegistry) NewPermissionService() domainservice.PermissionService {
+	return domainservice.NewPermissionService(r.NewWorkspaceRepository(), r.NewPermissionRepository())
 }

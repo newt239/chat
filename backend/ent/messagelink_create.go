@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -20,6 +22,7 @@ type MessageLinkCreate struct {
 	config
 	mutation *MessageLinkMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetURL sets the "url" field.
@@ -313,6 +316,7 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 		_node = &MessageLink{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(messagelink.Table, sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -389,11 +393,644 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.MessageLink.Create().
+//		SetURL(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MessageLinkUpsert) {
+//			SetURL(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *MessageLinkCreate) OnConflict(opts ...sql.ConflictOption) *MessageLinkUpsertOne {
+	_c.conflict = opts
+	return &MessageLinkUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.MessageLink.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *MessageLinkCreate) OnConflictColumns(columns ...string) *MessageLinkUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &MessageLinkUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// MessageLinkUpsertOne is the builder for "upsert"-ing
+	//  one MessageLink node.
+	MessageLinkUpsertOne struct {
+		create *MessageLinkCreate
+	}
+
+	// MessageLinkUpsert is the "OnConflict" setter.
+	MessageLinkUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetURL sets the "url" field.
+func (u *MessageLinkUpsert) SetURL(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateURL() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldURL)
+	return u
+}
+
+// SetTitle sets the "title" field.
+func (u *MessageLinkUpsert) SetTitle(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldTitle, v)
+	return u
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateTitle() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldTitle)
+	return u
+}
+
+// ClearTitle clears the value of the "title" field.
+func (u *MessageLinkUpsert) ClearTitle() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldTitle)
+	return u
+}
+
+// SetDescription sets the "description" field.
+func (u *MessageLinkUpsert) SetDescription(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateDescription() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *MessageLinkUpsert) ClearDescription() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldDescription)
+	return u
+}
+
+// SetImageURL sets the "image_url" field.
+func (u *MessageLinkUpsert) SetImageURL(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldImageURL, v)
+	return u
+}
+
+// UpdateImageURL sets the "image_url" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateImageURL() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldImageURL)
+	return u
+}
+
+// ClearImageURL clears the value of the "image_url" field.
+func (u *MessageLinkUpsert) ClearImageURL() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldImageURL)
+	return u
+}
+
+// SetSiteName sets the "site_name" field.
+func (u *MessageLinkUpsert) SetSiteName(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldSiteName, v)
+	return u
+}
+
+// UpdateSiteName sets the "site_name" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateSiteName() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldSiteName)
+	return u
+}
+
+// ClearSiteName clears the value of the "site_name" field.
+func (u *MessageLinkUpsert) ClearSiteName() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldSiteName)
+	return u
+}
+
+// SetCardType sets the "card_type" field.
+func (u *MessageLinkUpsert) SetCardType(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldCardType, v)
+	return u
+}
+
+// UpdateCardType sets the "card_type" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateCardType() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldCardType)
+	return u
+}
+
+// ClearCardType clears the value of the "card_type" field.
+func (u *MessageLinkUpsert) ClearCardType() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldCardType)
+	return u
+}
+
+// SetImageWidth sets the "image_width" field.
+func (u *MessageLinkUpsert) SetImageWidth(v int32) *MessageLinkUpsert {
+	u.Set(messagelink.FieldImageWidth, v)
+	return u
+}
+
+// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateImageWidth() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldImageWidth)
+	return u
+}
+
+// AddImageWidth adds v to the "image_width" field.
+func (u *MessageLinkUpsert) AddImageWidth(v int32) *MessageLinkUpsert {
+	u.Add(messagelink.FieldImageWidth, v)
+	return u
+}
+
+// ClearImageWidth clears the value of the "image_width" field.
+func (u *MessageLinkUpsert) ClearImageWidth() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldImageWidth)
+	return u
+}
+
+// SetImageHeight sets the "image_height" field.
+func (u *MessageLinkUpsert) SetImageHeight(v int32) *MessageLinkUpsert {
+	u.Set(messagelink.FieldImageHeight, v)
+	return u
+}
+
+// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateImageHeight() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldImageHeight)
+	return u
+}
+
+// AddImageHeight adds v to the "image_height" field.
+func (u *MessageLinkUpsert) AddImageHeight(v int32) *MessageLinkUpsert {
+	u.Add(messagelink.FieldImageHeight, v)
+	return u
+}
+
+// ClearImageHeight clears the value of the "image_height" field.
+func (u *MessageLinkUpsert) ClearImageHeight() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldImageHeight)
+	return u
+}
+
+// SetYoutubeVideoID sets the "youtube_video_id" field.
+func (u *MessageLinkUpsert) SetYoutubeVideoID(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldYoutubeVideoID, v)
+	return u
+}
+
+// UpdateYoutubeVideoID sets the "youtube_video_id" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateYoutubeVideoID() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldYoutubeVideoID)
+	return u
+}
+
+// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
+func (u *MessageLinkUpsert) ClearYoutubeVideoID() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldYoutubeVideoID)
+	return u
+}
+
+// SetYoutubeChannelName sets the "youtube_channel_name" field.
+func (u *MessageLinkUpsert) SetYoutubeChannelName(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldYoutubeChannelName, v)
+	return u
+}
+
+// UpdateYoutubeChannelName sets the "youtube_channel_name" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateYoutubeChannelName() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldYoutubeChannelName)
+	return u
+}
+
+// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
+func (u *MessageLinkUpsert) ClearYoutubeChannelName() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldYoutubeChannelName)
+	return u
+}
+
+// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsert) SetYoutubeDurationSeconds(v int32) *MessageLinkUpsert {
+	u.Set(messagelink.FieldYoutubeDurationSeconds, v)
+	return u
+}
+
+// UpdateYoutubeDurationSeconds sets the "youtube_duration_seconds" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateYoutubeDurationSeconds() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldYoutubeDurationSeconds)
+	return u
+}
+
+// AddYoutubeDurationSeconds adds v to the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsert) AddYoutubeDurationSeconds(v int32) *MessageLinkUpsert {
+	u.Add(messagelink.FieldYoutubeDurationSeconds, v)
+	return u
+}
+
+// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsert) ClearYoutubeDurationSeconds() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldYoutubeDurationSeconds)
+	return u
+}
+
+// SetLinkedMessageID sets the "linked_message_id" field.
+func (u *MessageLinkUpsert) SetLinkedMessageID(v uuid.UUID) *MessageLinkUpsert {
+	u.Set(messagelink.FieldLinkedMessageID, v)
+	return u
+}
+
+// UpdateLinkedMessageID sets the "linked_message_id" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateLinkedMessageID() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldLinkedMessageID)
+	return u
+}
+
+// ClearLinkedMessageID clears the value of the "linked_message_id" field.
+func (u *MessageLinkUpsert) ClearLinkedMessageID() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldLinkedMessageID)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.MessageLink.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(messagelink.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MessageLinkUpsertOne) UpdateNewValues() *MessageLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(messagelink.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(messagelink.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.MessageLink.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *MessageLinkUpsertOne) Ignore() *MessageLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MessageLinkUpsertOne) DoNothing() *MessageLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MessageLinkCreate.OnConflict
+// documentation for more info.
+func (u *MessageLinkUpsertOne) Update(set func(*MessageLinkUpsert)) *MessageLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MessageLinkUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *MessageLinkUpsertOne) SetURL(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateURL() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetTitle sets the "title" field.
+func (u *MessageLinkUpsertOne) SetTitle(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetTitle(v)
+	})
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateTitle() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateTitle()
+	})
+}
+
+// ClearTitle clears the value of the "title" field.
+func (u *MessageLinkUpsertOne) ClearTitle() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearTitle()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *MessageLinkUpsertOne) SetDescription(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateDescription() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *MessageLinkUpsertOne) ClearDescription() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetImageURL sets the "image_url" field.
+func (u *MessageLinkUpsertOne) SetImageURL(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetImageURL(v)
+	})
+}
+
+// UpdateImageURL sets the "image_url" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateImageURL() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateImageURL()
+	})
+}
+
+// ClearImageURL clears the value of the "image_url" field.
+func (u *MessageLinkUpsertOne) ClearImageURL() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearImageURL()
+	})
+}
+
+// SetSiteName sets the "site_name" field.
+func (u *MessageLinkUpsertOne) SetSiteName(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetSiteName(v)
+	})
+}
+
+// UpdateSiteName sets the "site_name" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateSiteName() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateSiteName()
+	})
+}
+
+// ClearSiteName clears the value of the "site_name" field.
+func (u *MessageLinkUpsertOne) ClearSiteName() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearSiteName()
+	})
+}
+
+// SetCardType sets the "card_type" field.
+func (u *MessageLinkUpsertOne) SetCardType(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetCardType(v)
+	})
+}
+
+// UpdateCardType sets the "card_type" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateCardType() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateCardType()
+	})
+}
+
+// ClearCardType clears the value of the "card_type" field.
+func (u *MessageLinkUpsertOne) ClearCardType() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearCardType()
+	})
+}
+
+// SetImageWidth sets the "image_width" field.
+func (u *MessageLinkUpsertOne) SetImageWidth(v int32) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetImageWidth(v)
+	})
+}
+
+// AddImageWidth adds v to the "image_width" field.
+func (u *MessageLinkUpsertOne) AddImageWidth(v int32) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.AddImageWidth(v)
+	})
+}
+
+// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateImageWidth() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateImageWidth()
+	})
+}
+
+// ClearImageWidth clears the value of the "image_width" field.
+func (u *MessageLinkUpsertOne) ClearImageWidth() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearImageWidth()
+	})
+}
+
+// SetImageHeight sets the "image_height" field.
+func (u *MessageLinkUpsertOne) SetImageHeight(v int32) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetImageHeight(v)
+	})
+}
+
+// AddImageHeight adds v to the "image_height" field.
+func (u *MessageLinkUpsertOne) AddImageHeight(v int32) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.AddImageHeight(v)
+	})
+}
+
+// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateImageHeight() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateImageHeight()
+	})
+}
+
+// ClearImageHeight clears the value of the "image_height" field.
+func (u *MessageLinkUpsertOne) ClearImageHeight() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearImageHeight()
+	})
+}
+
+// SetYoutubeVideoID sets the "youtube_video_id" field.
+func (u *MessageLinkUpsertOne) SetYoutubeVideoID(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetYoutubeVideoID(v)
+	})
+}
+
+// UpdateYoutubeVideoID sets the "youtube_video_id" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateYoutubeVideoID() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateYoutubeVideoID()
+	})
+}
+
+// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
+func (u *MessageLinkUpsertOne) ClearYoutubeVideoID() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearYoutubeVideoID()
+	})
+}
+
+// SetYoutubeChannelName sets the "youtube_channel_name" field.
+func (u *MessageLinkUpsertOne) SetYoutubeChannelName(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetYoutubeChannelName(v)
+	})
+}
+
+// UpdateYoutubeChannelName sets the "youtube_channel_name" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateYoutubeChannelName() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateYoutubeChannelName()
+	})
+}
+
+// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
+func (u *MessageLinkUpsertOne) ClearYoutubeChannelName() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearYoutubeChannelName()
+	})
+}
+
+// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsertOne) SetYoutubeDurationSeconds(v int32) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetYoutubeDurationSeconds(v)
+	})
+}
+
+// AddYoutubeDurationSeconds adds v to the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsertOne) AddYoutubeDurationSeconds(v int32) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.AddYoutubeDurationSeconds(v)
+	})
+}
+
+// UpdateYoutubeDurationSeconds sets the "youtube_duration_seconds" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateYoutubeDurationSeconds() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateYoutubeDurationSeconds()
+	})
+}
+
+// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsertOne) ClearYoutubeDurationSeconds() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearYoutubeDurationSeconds()
+	})
+}
+
+// SetLinkedMessageID sets the "linked_message_id" field.
+func (u *MessageLinkUpsertOne) SetLinkedMessageID(v uuid.UUID) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetLinkedMessageID(v)
+	})
+}
+
+// UpdateLinkedMessageID sets the "linked_message_id" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateLinkedMessageID() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateLinkedMessageID()
+	})
+}
+
+// ClearLinkedMessageID clears the value of the "linked_message_id" field.
+func (u *MessageLinkUpsertOne) ClearLinkedMessageID() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearLinkedMessageID()
+	})
+}
+
+// Exec executes the query.
+func (u *MessageLinkUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MessageLinkCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MessageLinkUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *MessageLinkUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: MessageLinkUpsertOne.ID is not supported by MySQL driver. Use MessageLinkUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *MessageLinkUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // MessageLinkCreateBulk is the builder for creating many MessageLink entities in bulk.
 type MessageLinkCreateBulk struct {
 	config
 	err      error
 	builders []*MessageLinkCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the MessageLink entities in the database.
@@ -423,6 +1060,7 @@ func (_c *MessageLinkCreateBulk) Save(ctx context.Context) ([]*MessageLink, erro
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -469,6 +1107,389 @@ func (_c *MessageLinkCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *MessageLinkCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.MessageLink.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MessageLinkUpsert) {
+//			SetURL(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *MessageLinkCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageLinkUpsertBulk {
+	_c.conflict = opts
+	return &MessageLinkUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.MessageLink.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *MessageLinkCreateBulk) OnConflictColumns(columns ...string) *MessageLinkUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &MessageLinkUpsertBulk{
+		create: _c,
+	}
+}
+
+// MessageLinkUpsertBulk is the builder for "upsert"-ing
+// a bulk of MessageLink nodes.
+type MessageLinkUpsertBulk struct {
+	create *MessageLinkCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.MessageLink.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(messagelink.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MessageLinkUpsertBulk) UpdateNewValues() *MessageLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(messagelink.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(messagelink.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.MessageLink.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *MessageLinkUpsertBulk) Ignore() *MessageLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MessageLinkUpsertBulk) DoNothing() *MessageLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MessageLinkCreateBulk.OnConflict
+// documentation for more info.
+func (u *MessageLinkUpsertBulk) Update(set func(*MessageLinkUpsert)) *MessageLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MessageLinkUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *MessageLinkUpsertBulk) SetURL(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateURL() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetTitle sets the "title" field.
+func (u *MessageLinkUpsertBulk) SetTitle(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetTitle(v)
+	})
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateTitle() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateTitle()
+	})
+}
+
+// ClearTitle clears the value of the "title" field.
+func (u *MessageLinkUpsertBulk) ClearTitle() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearTitle()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *MessageLinkUpsertBulk) SetDescription(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateDescription() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *MessageLinkUpsertBulk) ClearDescription() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetImageURL sets the "image_url" field.
+func (u *MessageLinkUpsertBulk) SetImageURL(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetImageURL(v)
+	})
+}
+
+// UpdateImageURL sets the "image_url" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateImageURL() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateImageURL()
+	})
+}
+
+// ClearImageURL clears the value of the "image_url" field.
+func (u *MessageLinkUpsertBulk) ClearImageURL() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearImageURL()
+	})
+}
+
+// SetSiteName sets the "site_name" field.
+func (u *MessageLinkUpsertBulk) SetSiteName(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetSiteName(v)
+	})
+}
+
+// UpdateSiteName sets the "site_name" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateSiteName() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateSiteName()
+	})
+}
+
+// ClearSiteName clears the value of the "site_name" field.
+func (u *MessageLinkUpsertBulk) ClearSiteName() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearSiteName()
+	})
+}
+
+// SetCardType sets the "card_type" field.
+func (u *MessageLinkUpsertBulk) SetCardType(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetCardType(v)
+	})
+}
+
+// UpdateCardType sets the "card_type" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateCardType() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateCardType()
+	})
+}
+
+// ClearCardType clears the value of the "card_type" field.
+func (u *MessageLinkUpsertBulk) ClearCardType() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearCardType()
+	})
+}
+
+// SetImageWidth sets the "image_width" field.
+func (u *MessageLinkUpsertBulk) SetImageWidth(v int32) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetImageWidth(v)
+	})
+}
+
+// AddImageWidth adds v to the "image_width" field.
+func (u *MessageLinkUpsertBulk) AddImageWidth(v int32) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.AddImageWidth(v)
+	})
+}
+
+// UpdateImageWidth sets the "image_width" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateImageWidth() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateImageWidth()
+	})
+}
+
+// ClearImageWidth clears the value of the "image_width" field.
+func (u *MessageLinkUpsertBulk) ClearImageWidth() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearImageWidth()
+	})
+}
+
+// SetImageHeight sets the "image_height" field.
+func (u *MessageLinkUpsertBulk) SetImageHeight(v int32) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetImageHeight(v)
+	})
+}
+
+// AddImageHeight adds v to the "image_height" field.
+func (u *MessageLinkUpsertBulk) AddImageHeight(v int32) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.AddImageHeight(v)
+	})
+}
+
+// UpdateImageHeight sets the "image_height" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateImageHeight() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateImageHeight()
+	})
+}
+
+// ClearImageHeight clears the value of the "image_height" field.
+func (u *MessageLinkUpsertBulk) ClearImageHeight() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearImageHeight()
+	})
+}
+
+// SetYoutubeVideoID sets the "youtube_video_id" field.
+func (u *MessageLinkUpsertBulk) SetYoutubeVideoID(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetYoutubeVideoID(v)
+	})
+}
+
+// UpdateYoutubeVideoID sets the "youtube_video_id" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateYoutubeVideoID() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateYoutubeVideoID()
+	})
+}
+
+// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
+func (u *MessageLinkUpsertBulk) ClearYoutubeVideoID() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearYoutubeVideoID()
+	})
+}
+
+// SetYoutubeChannelName sets the "youtube_channel_name" field.
+func (u *MessageLinkUpsertBulk) SetYoutubeChannelName(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetYoutubeChannelName(v)
+	})
+}
+
+// UpdateYoutubeChannelName sets the "youtube_channel_name" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateYoutubeChannelName() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateYoutubeChannelName()
+	})
+}
+
+// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
+func (u *MessageLinkUpsertBulk) ClearYoutubeChannelName() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearYoutubeChannelName()
+	})
+}
+
+// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsertBulk) SetYoutubeDurationSeconds(v int32) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetYoutubeDurationSeconds(v)
+	})
+}
+
+// AddYoutubeDurationSeconds adds v to the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsertBulk) AddYoutubeDurationSeconds(v int32) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.AddYoutubeDurationSeconds(v)
+	})
+}
+
+// UpdateYoutubeDurationSeconds sets the "youtube_duration_seconds" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateYoutubeDurationSeconds() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateYoutubeDurationSeconds()
+	})
+}
+
+// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
+func (u *MessageLinkUpsertBulk) ClearYoutubeDurationSeconds() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearYoutubeDurationSeconds()
+	})
+}
+
+// SetLinkedMessageID sets the "linked_message_id" field.
+func (u *MessageLinkUpsertBulk) SetLinkedMessageID(v uuid.UUID) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetLinkedMessageID(v)
+	})
+}
+
+// UpdateLinkedMessageID sets the "linked_message_id" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateLinkedMessageID() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateLinkedMessageID()
+	})
+}
+
+// ClearLinkedMessageID clears the value of the "linked_message_id" field.
+func (u *MessageLinkUpsertBulk) ClearLinkedMessageID() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearLinkedMessageID()
+	})
+}
+
+// Exec executes the query.
+func (u *MessageLinkUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the MessageLinkCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MessageLinkCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MessageLinkUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

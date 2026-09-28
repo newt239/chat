@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type ThreadReadStateCreate struct {
 	config
 	mutation *ThreadReadStateMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetLastReadAt sets the "last_read_at" field.
@@ -202,6 +205,7 @@ func (_c *ThreadReadStateCreate) createSpec() (*ThreadReadState, *sqlgraph.Creat
 		_node = &ThreadReadState{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(threadreadstate.Table, sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -255,11 +259,202 @@ func (_c *ThreadReadStateCreate) createSpec() (*ThreadReadState, *sqlgraph.Creat
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ThreadReadState.Create().
+//		SetLastReadAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ThreadReadStateUpsert) {
+//			SetLastReadAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ThreadReadStateCreate) OnConflict(opts ...sql.ConflictOption) *ThreadReadStateUpsertOne {
+	_c.conflict = opts
+	return &ThreadReadStateUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ThreadReadState.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ThreadReadStateCreate) OnConflictColumns(columns ...string) *ThreadReadStateUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ThreadReadStateUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ThreadReadStateUpsertOne is the builder for "upsert"-ing
+	//  one ThreadReadState node.
+	ThreadReadStateUpsertOne struct {
+		create *ThreadReadStateCreate
+	}
+
+	// ThreadReadStateUpsert is the "OnConflict" setter.
+	ThreadReadStateUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetLastReadAt sets the "last_read_at" field.
+func (u *ThreadReadStateUpsert) SetLastReadAt(v time.Time) *ThreadReadStateUpsert {
+	u.Set(threadreadstate.FieldLastReadAt, v)
+	return u
+}
+
+// UpdateLastReadAt sets the "last_read_at" field to the value that was provided on create.
+func (u *ThreadReadStateUpsert) UpdateLastReadAt() *ThreadReadStateUpsert {
+	u.SetExcluded(threadreadstate.FieldLastReadAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ThreadReadStateUpsert) SetUpdatedAt(v time.Time) *ThreadReadStateUpsert {
+	u.Set(threadreadstate.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ThreadReadStateUpsert) UpdateUpdatedAt() *ThreadReadStateUpsert {
+	u.SetExcluded(threadreadstate.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ThreadReadState.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(threadreadstate.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ThreadReadStateUpsertOne) UpdateNewValues() *ThreadReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(threadreadstate.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(threadreadstate.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ThreadReadState.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ThreadReadStateUpsertOne) Ignore() *ThreadReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ThreadReadStateUpsertOne) DoNothing() *ThreadReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ThreadReadStateCreate.OnConflict
+// documentation for more info.
+func (u *ThreadReadStateUpsertOne) Update(set func(*ThreadReadStateUpsert)) *ThreadReadStateUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ThreadReadStateUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetLastReadAt sets the "last_read_at" field.
+func (u *ThreadReadStateUpsertOne) SetLastReadAt(v time.Time) *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetLastReadAt(v)
+	})
+}
+
+// UpdateLastReadAt sets the "last_read_at" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertOne) UpdateLastReadAt() *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateLastReadAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ThreadReadStateUpsertOne) SetUpdatedAt(v time.Time) *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertOne) UpdateUpdatedAt() *ThreadReadStateUpsertOne {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ThreadReadStateUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ThreadReadStateCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ThreadReadStateUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ThreadReadStateUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ThreadReadStateUpsertOne.ID is not supported by MySQL driver. Use ThreadReadStateUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ThreadReadStateUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ThreadReadStateCreateBulk is the builder for creating many ThreadReadState entities in bulk.
 type ThreadReadStateCreateBulk struct {
 	config
 	err      error
 	builders []*ThreadReadStateCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ThreadReadState entities in the database.
@@ -289,6 +484,7 @@ func (_c *ThreadReadStateCreateBulk) Save(ctx context.Context) ([]*ThreadReadSta
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -335,6 +531,151 @@ func (_c *ThreadReadStateCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ThreadReadStateCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ThreadReadState.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ThreadReadStateUpsert) {
+//			SetLastReadAt(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ThreadReadStateCreateBulk) OnConflict(opts ...sql.ConflictOption) *ThreadReadStateUpsertBulk {
+	_c.conflict = opts
+	return &ThreadReadStateUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ThreadReadState.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ThreadReadStateCreateBulk) OnConflictColumns(columns ...string) *ThreadReadStateUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ThreadReadStateUpsertBulk{
+		create: _c,
+	}
+}
+
+// ThreadReadStateUpsertBulk is the builder for "upsert"-ing
+// a bulk of ThreadReadState nodes.
+type ThreadReadStateUpsertBulk struct {
+	create *ThreadReadStateCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ThreadReadState.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(threadreadstate.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ThreadReadStateUpsertBulk) UpdateNewValues() *ThreadReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(threadreadstate.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(threadreadstate.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ThreadReadState.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ThreadReadStateUpsertBulk) Ignore() *ThreadReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ThreadReadStateUpsertBulk) DoNothing() *ThreadReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ThreadReadStateCreateBulk.OnConflict
+// documentation for more info.
+func (u *ThreadReadStateUpsertBulk) Update(set func(*ThreadReadStateUpsert)) *ThreadReadStateUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ThreadReadStateUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetLastReadAt sets the "last_read_at" field.
+func (u *ThreadReadStateUpsertBulk) SetLastReadAt(v time.Time) *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetLastReadAt(v)
+	})
+}
+
+// UpdateLastReadAt sets the "last_read_at" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertBulk) UpdateLastReadAt() *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateLastReadAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ThreadReadStateUpsertBulk) SetUpdatedAt(v time.Time) *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ThreadReadStateUpsertBulk) UpdateUpdatedAt() *ThreadReadStateUpsertBulk {
+	return u.Update(func(s *ThreadReadStateUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ThreadReadStateUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ThreadReadStateCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ThreadReadStateCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ThreadReadStateUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

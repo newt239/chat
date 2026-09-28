@@ -9,6 +9,9 @@ import (
 // Attachment is the predicate function for attachment builders.
 type Attachment func(*sql.Selector)
 
+// AuditLog is the predicate function for auditlog builders.
+type AuditLog func(*sql.Selector)
+
 // Channel is the predicate function for channel builders.
 type Channel func(*sql.Selector)
 
@@ -74,3 +77,6 @@ type Workspace func(*sql.Selector)
 
 // WorkspaceMember is the predicate function for workspacemember builders.
 type WorkspaceMember func(*sql.Selector)
+
+// WorkspacePermission is the predicate function for workspacepermission builders.
+type WorkspacePermission func(*sql.Selector)

@@ -76,6 +76,11 @@ func ChannelType(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldChannelType, v))
 }
 
+// ArchivedAt applies equality check predicate on the "archived_at" field. It's identical to ArchivedAtEQ.
+func ArchivedAt(v time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldArchivedAt, v))
+}
+
 // ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
 func ParentID(v uuid.UUID) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldParentID, v))
@@ -314,6 +319,56 @@ func ChannelTypeEqualFold(v string) predicate.Channel {
 // ChannelTypeContainsFold applies the ContainsFold predicate on the "channel_type" field.
 func ChannelTypeContainsFold(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldContainsFold(FieldChannelType, v))
+}
+
+// ArchivedAtEQ applies the EQ predicate on the "archived_at" field.
+func ArchivedAtEQ(v time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldEQ(FieldArchivedAt, v))
+}
+
+// ArchivedAtNEQ applies the NEQ predicate on the "archived_at" field.
+func ArchivedAtNEQ(v time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldNEQ(FieldArchivedAt, v))
+}
+
+// ArchivedAtIn applies the In predicate on the "archived_at" field.
+func ArchivedAtIn(vs ...time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldIn(FieldArchivedAt, vs...))
+}
+
+// ArchivedAtNotIn applies the NotIn predicate on the "archived_at" field.
+func ArchivedAtNotIn(vs ...time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldNotIn(FieldArchivedAt, vs...))
+}
+
+// ArchivedAtGT applies the GT predicate on the "archived_at" field.
+func ArchivedAtGT(v time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldGT(FieldArchivedAt, v))
+}
+
+// ArchivedAtGTE applies the GTE predicate on the "archived_at" field.
+func ArchivedAtGTE(v time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldGTE(FieldArchivedAt, v))
+}
+
+// ArchivedAtLT applies the LT predicate on the "archived_at" field.
+func ArchivedAtLT(v time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldLT(FieldArchivedAt, v))
+}
+
+// ArchivedAtLTE applies the LTE predicate on the "archived_at" field.
+func ArchivedAtLTE(v time.Time) predicate.Channel {
+	return predicate.Channel(sql.FieldLTE(FieldArchivedAt, v))
+}
+
+// ArchivedAtIsNil applies the IsNil predicate on the "archived_at" field.
+func ArchivedAtIsNil() predicate.Channel {
+	return predicate.Channel(sql.FieldIsNull(FieldArchivedAt))
+}
+
+// ArchivedAtNotNil applies the NotNil predicate on the "archived_at" field.
+func ArchivedAtNotNil() predicate.Channel {
+	return predicate.Channel(sql.FieldNotNull(FieldArchivedAt))
 }
 
 // ParentIDEQ applies the EQ predicate on the "parent_id" field.

@@ -35,6 +35,7 @@ func Channel(c channeluc.ChannelOutput) *chatv1.Channel {
 		UpdatedAt:   timestamppb.New(c.UpdatedAt),
 		UnreadCount: int32(c.UnreadCount),
 		HasMention:  c.HasMention,
+		ArchivedAt:  optionalTimestamp(c.ArchivedAt),
 		ParentId:    c.ParentID,
 		IsStarred:   c.IsStarred,
 		IsMember:    c.IsMember,

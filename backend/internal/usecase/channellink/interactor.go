@@ -28,44 +28,33 @@ type UseCase interface {
 }
 
 type interactor struct {
-	linkRepo          domainrepository.ChannelLinkRepository
-	channelMemberRepo domainrepository.ChannelMemberRepository
-	workspaceRepo     domainrepository.WorkspaceRepository
-	channelAccessSvc  domainservice.ChannelAccessService
-	txManager         domaintransaction.Manager
+	linkRepo         domainrepository.ChannelLinkRepository
+	channelAccessSvc domainservice.ChannelAccessService
+	permissionSvc    domainservice.PermissionService
+	txManager        domaintransaction.Manager
 }
 
 func NewInteractor(
 	linkRepo domainrepository.ChannelLinkRepository,
-	channelMemberRepo domainrepository.ChannelMemberRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
 	channelAccessSvc domainservice.ChannelAccessService,
+	permissionSvc domainservice.PermissionService,
 	txManager domaintransaction.Manager,
 ) UseCase {
 	return &interactor{
-		linkRepo:          linkRepo,
-		channelMemberRepo: channelMemberRepo,
-		workspaceRepo:     workspaceRepo,
-		channelAccessSvc:  channelAccessSvc,
-		txManager:         txManager,
+		linkRepo:         linkRepo,
+		channelAccessSvc: channelAccessSvc,
+		permissionSvc:    permissionSvc,
+		txManager:        txManager,
 	}
 }
 
-// canEdit は権限設定 (#16) の導入時に差し替える前提で、編集可否の判定をここに集約しています
-// 現状はチャンネルの参加者とワークスペースの管理者が編集できます
+// canEdit は権限設定の「関連リンクの編集」が許可されているかを返します
 func (i *interactor) canEdit(ctx context.Context, ch *entity.Channel, userID string) (bool, error) {
-	isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-	if err != nil {
-		return false, fmt.Errorf("failed to verify channel membership: %w", err)
+	_, err := i.permissionSvc.Ensure(ctx, ch.WorkspaceID, userID, entity.PermissionEditChannelLinks)
+	if errors.Is(err, domerr.ErrUnauthorized) {
+		return false, nil
 	}
-	if isMember {
-		return true, nil
-	}
-	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return false, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	return member.CanCreateChannel(), nil
+	return err == nil, err
 }
 
 // ensureEditable はチャンネルの閲覧権限と関連リンクの編集権限を確認します

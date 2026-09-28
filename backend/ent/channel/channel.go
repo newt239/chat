@@ -23,6 +23,8 @@ const (
 	FieldIsPrivate = "is_private"
 	// FieldChannelType holds the string denoting the channel_type field in the database.
 	FieldChannelType = "channel_type"
+	// FieldArchivedAt holds the string denoting the archived_at field in the database.
+	FieldArchivedAt = "archived_at"
 	// FieldParentID holds the string denoting the parent_id field in the database.
 	FieldParentID = "parent_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -106,6 +108,7 @@ var Columns = []string{
 	FieldDescription,
 	FieldIsPrivate,
 	FieldChannelType,
+	FieldArchivedAt,
 	FieldParentID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -176,6 +179,11 @@ func ByIsPrivate(opts ...sql.OrderTermOption) OrderOption {
 // ByChannelType orders the results by the channel_type field.
 func ByChannelType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChannelType, opts...).ToFunc()
+}
+
+// ByArchivedAt orders the results by the archived_at field.
+func ByArchivedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArchivedAt, opts...).ToFunc()
 }
 
 // ByParentID orders the results by the parent_id field.

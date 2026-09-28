@@ -3,11 +3,13 @@ package rpc
 import (
 	"context"
 	"errors"
+	"net"
 	"strings"
 
 	"connectrpc.com/connect"
 
 	"github.com/newt239/chat/internal/gen/chat/v1/chatv1connect"
+	"github.com/newt239/chat/internal/usecase/audit"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
@@ -51,4 +53,27 @@ func newErrorInterceptor() connect.UnaryInterceptorFunc {
 			return nil, toConnectError(req.Spec().Procedure, err)
 		}
 	}
+}
+
+// newClientInfoInterceptor は監査ログやセッションに残す操作元の IP アドレスと User-Agent を context に載せます
+func newClientInfoInterceptor() connect.UnaryInterceptorFunc {
+	return func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			info := audit.ClientInfo{IPAddress: clientIP(req), UserAgent: req.Header().Get("User-Agent")}
+			return next(audit.WithClientInfo(ctx, info), req)
+		}
+	}
+}
+
+// clientIP はロードバランサーを経由する前提で X-Forwarded-For の先頭を優先します
+func clientIP(req connect.AnyRequest) string {
+	if forwarded := req.Header().Get("X-Forwarded-For"); forwarded != "" {
+		first, _, _ := strings.Cut(forwarded, ",")
+		return strings.TrimSpace(first)
+	}
+	host, _, err := net.SplitHostPort(req.Peer().Addr)
+	if err != nil {
+		return req.Peer().Addr
+	}
+	return host
 }

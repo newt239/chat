@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/newt239/chat/ent/attachment"
+	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
@@ -35,6 +36,7 @@ import (
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
+	"github.com/newt239/chat/ent/workspacepermission"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -96,6 +98,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			attachment.Table:          attachment.ValidColumn,
+			auditlog.Table:            auditlog.ValidColumn,
 			channel.Table:             channel.ValidColumn,
 			channellink.Table:         channellink.ValidColumn,
 			channelmember.Table:       channelmember.ValidColumn,
@@ -118,6 +121,7 @@ func checkColumn(t, c string) error {
 			userthreadfollow.Table:    userthreadfollow.ValidColumn,
 			workspace.Table:           workspace.ValidColumn,
 			workspacemember.Table:     workspacemember.ValidColumn,
+			workspacepermission.Table: workspacepermission.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

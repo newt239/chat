@@ -8,5 +8,7 @@ type Session struct {
 	RefreshTokenHash string
 	ExpiresAt        time.Time
 	RevokedAt        *time.Time
+	IPAddress        string
+	UserAgent        string
 	CreatedAt        time.Time
 }

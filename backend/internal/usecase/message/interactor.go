@@ -47,6 +47,7 @@ func NewMessageUseCase(
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,
 	channelAccessSvc service.ChannelAccessService,
+	permissionSvc service.PermissionService,
 	logger service.Logger,
 ) MessageUseCase {
 	return &messageInteractor{
@@ -81,10 +82,10 @@ func NewMessageUseCase(
 			messageRepo,
 			channelRepo,
 			channelMemberRepo,
-			workspaceRepo,
 			threadRepo,
 			notificationSvc,
 			channelAccessSvc,
+			permissionSvc,
 			logger,
 		),
 		lister: NewMessageLister(

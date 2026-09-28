@@ -49,6 +49,8 @@ message WorkspaceMember {
   google.protobuf.Timestamp joined_at = 7;
   // 自分だけに見えるニックネーム
   optional string nickname = 8;
+  // 停止中の場合だけ設定される
+  optional google.protobuf.Timestamp suspended_at = 9;
 }
 
 message PublicWorkspace {

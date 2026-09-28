@@ -16,7 +16,7 @@ const (
 	channelID = "channel"
 	memberID  = "member"
 	adminID   = "admin"
-	outsider  = "outsider"
+	guestID   = "guest"
 )
 
 type stubAccess struct {
@@ -27,24 +27,21 @@ func (stubAccess) EnsureChannelAccess(_ context.Context, id string, _ string) (*
 	return &entity.Channel{ID: id, WorkspaceID: "general"}, nil
 }
 
-type stubMemberRepo struct {
-	domainrepository.ChannelMemberRepository
-}
-
-func (stubMemberRepo) IsMember(_ context.Context, _ string, userID string) (bool, error) {
-	return userID == memberID, nil
-}
-
 type stubWorkspaceRepo struct {
 	domainrepository.WorkspaceRepository
 }
 
 func (stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
-	role := entity.WorkspaceRoleMember
-	if userID == adminID {
-		role = entity.WorkspaceRoleAdmin
-	}
-	return &entity.WorkspaceMember{UserID: userID, Role: role}, nil
+	roles := map[string]entity.WorkspaceRole{memberID: entity.WorkspaceRoleMember, adminID: entity.WorkspaceRoleAdmin, guestID: entity.WorkspaceRoleGuest}
+	return &entity.WorkspaceMember{UserID: userID, Role: roles[userID]}, nil
+}
+
+type stubPermissionRepo struct {
+	domainrepository.PermissionRepository
+}
+
+func (stubPermissionRepo) FindOverrides(context.Context, string) ([]entity.PermissionOverride, error) {
+	return nil, nil
 }
 
 type fakeLinkRepo struct {
@@ -92,7 +89,8 @@ func (stubTxManager) Do(ctx context.Context, fn func(ctx context.Context) error)
 
 func newInteractor() (UseCase, *fakeLinkRepo) {
 	repo := &fakeLinkRepo{}
-	return NewInteractor(repo, stubMemberRepo{}, stubWorkspaceRepo{}, stubAccess{}, stubTxManager{}), repo
+	permissionSvc := domainservice.NewPermissionService(stubWorkspaceRepo{}, stubPermissionRepo{})
+	return NewInteractor(repo, stubAccess{}, permissionSvc, stubTxManager{}), repo
 }
 
 func TestCreateLinkPermission(t *testing.T) {
@@ -104,14 +102,14 @@ func TestCreateLinkPermission(t *testing.T) {
 			t.Fatalf("%s がリンクを追加できません: %v", userID, err)
 		}
 	}
-	if _, err := uc.Create(ctx, CreateInput{ChannelID: channelID, UserID: outsider, Title: "x", URL: "https://example.com"}); !errors.Is(err, ErrUnauthorized) {
-		t.Fatalf("チャンネル外の一般メンバーがリンクを追加できています: %v", err)
+	if _, err := uc.Create(ctx, CreateInput{ChannelID: channelID, UserID: guestID, Title: "x", URL: "https://example.com"}); !errors.Is(err, ErrUnauthorized) {
+		t.Fatalf("既定ではゲストがリンクを追加できないはず: %v", err)
 	}
 	if repo.links[1].Position != 1 {
 		t.Fatalf("新しいリンクが末尾に追加されていません: %d", repo.links[1].Position)
 	}
 
-	list, err := uc.List(ctx, ListInput{ChannelID: channelID, UserID: outsider})
+	list, err := uc.List(ctx, ListInput{ChannelID: channelID, UserID: guestID})
 	if err != nil || list.CanEdit || len(list.Links) != 2 {
 		t.Fatalf("閲覧のみのユーザーへの一覧が正しくありません: %+v err=%v", list, err)
 	}

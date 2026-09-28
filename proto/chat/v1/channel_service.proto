@@ -12,6 +12,9 @@ service ChannelService {
   rpc UpdateChannel(UpdateChannelRequest) returns (UpdateChannelResponse);
   rpc DeleteChannel(DeleteChannelRequest) returns (DeleteChannelResponse);
   rpc SetChannelStarred(SetChannelStarredRequest) returns (SetChannelStarredResponse);
+  // チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
+  rpc ArchiveChannel(ArchiveChannelRequest) returns (ArchiveChannelResponse);
+  rpc UnarchiveChannel(UnarchiveChannelRequest) returns (UnarchiveChannelResponse);
 }
 
 message Channel {
@@ -30,6 +33,8 @@ message Channel {
   bool is_starred = 12;
   // false の場合はツリーを組み立てるために返している未参加の祖先チャンネル
   bool is_member = 13;
+  // アーカイブ中の場合だけ設定される
+  optional google.protobuf.Timestamp archived_at = 14;
 }
 
 message ListChannelsRequest {
@@ -92,3 +97,18 @@ message SetChannelStarredRequest {
 }
 
 message SetChannelStarredResponse {}
+message ArchiveChannelRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ArchiveChannelResponse {
+  Channel channel = 1;
+}
+
+message UnarchiveChannelRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message UnarchiveChannelResponse {
+  Channel channel = 1;
+}

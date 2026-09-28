@@ -18,6 +18,18 @@ func ParseUUID(id string, label string) (uuid.UUID, error) {
 	return parsed, nil
 }
 
+func ParseUUIDs(ids []string, label string) ([]uuid.UUID, error) {
+	parsed := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		u, err := ParseUUID(id, label)
+		if err != nil {
+			return nil, err
+		}
+		parsed = append(parsed, u)
+	}
+	return parsed, nil
+}
+
 // ParseUUIDPtr は文字列ポインタをUUIDポインタに変換します
 func ParseUUIDPtr(id *string) *uuid.UUID {
 	if id == nil {

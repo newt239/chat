@@ -28,6 +28,9 @@ func (Channel) Fields() []ent.Field {
 		field.String("channel_type").
 			Default("public").
 			Optional(),
+		field.Time("archived_at").
+			Optional().
+			Nillable(),
 		field.UUID("parent_id", uuid.UUID{}).
 			Optional().
 			Nillable(),

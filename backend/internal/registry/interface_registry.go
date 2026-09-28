@@ -50,6 +50,10 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		})),
 		rpc.Register(chatv1connect.NewReactionServiceHandler, chatv1connect.ReactionServiceHandler(&rpc.ReactionServer{UC: uc.NewReactionUseCase()})),
 		rpc.Register(chatv1connect.NewPinServiceHandler, chatv1connect.PinServiceHandler(&rpc.PinServer{UC: uc.NewPinUseCase()})),
+		rpc.Register(chatv1connect.NewAdminServiceHandler, chatv1connect.AdminServiceHandler(&rpc.AdminServer{UC: uc.NewAdminUseCase()})),
+		rpc.Register(chatv1connect.NewPermissionServiceHandler, chatv1connect.PermissionServiceHandler(&rpc.PermissionServer{UC: uc.NewAdminUseCase()})),
+		rpc.Register(chatv1connect.NewInsightServiceHandler, chatv1connect.InsightServiceHandler(&rpc.InsightServer{UC: uc.NewInsightUseCase()})),
+		rpc.Register(chatv1connect.NewExportServiceHandler, chatv1connect.ExportServiceHandler(&rpc.ExportServer{UC: uc.NewExportUseCase()})),
 	)
 }
 

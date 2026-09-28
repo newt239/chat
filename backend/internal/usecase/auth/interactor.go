@@ -9,6 +9,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/usecase/audit"
 )
 
 // Service interfaces
@@ -43,10 +44,12 @@ type AuthUseCase interface {
 }
 
 type authInteractor struct {
-	userRepo    domainrepository.UserRepository
-	sessionRepo domainrepository.SessionRepository
-	jwtService  JWTService
-	passwordSvc PasswordService
+	userRepo      domainrepository.UserRepository
+	sessionRepo   domainrepository.SessionRepository
+	workspaceRepo domainrepository.WorkspaceRepository
+	jwtService    JWTService
+	passwordSvc   PasswordService
+	recorder      audit.Recorder
 
 	// Configuration
 	accessTokenDuration  time.Duration
@@ -57,14 +60,18 @@ type authInteractor struct {
 func NewAuthInteractor(
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
 	jwtService JWTService,
 	passwordSvc PasswordService,
+	recorder audit.Recorder,
 ) AuthUseCase {
 	return &authInteractor{
 		userRepo:             userRepo,
 		sessionRepo:          sessionRepo,
+		workspaceRepo:        workspaceRepo,
 		jwtService:           jwtService,
 		passwordSvc:          passwordSvc,
+		recorder:             recorder,
 		accessTokenDuration:  15 * time.Minute,
 		refreshTokenDuration: 7 * 24 * time.Hour, // 7 days
 	}
@@ -97,8 +104,7 @@ func (i *authInteractor) Register(ctx context.Context, input RegisterInput) (*Au
 		return nil, err
 	}
 
-	// Generate tokens
-	return i.generateAuthOutput(ctx, user)
+	return i.createSession(ctx, user)
 }
 
 func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
@@ -113,11 +119,39 @@ func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutp
 
 	// Verify password
 	if err := i.passwordSvc.VerifyPassword(input.Password, user.PasswordHash); err != nil {
+		i.recordLogin(ctx, user, entity.AuditActionLoginFailed)
 		return nil, ErrInvalidCredentials
 	}
 
-	// Generate tokens
-	return i.generateAuthOutput(ctx, user)
+	out, err := i.createSession(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	i.recordLogin(ctx, user, entity.AuditActionLogin)
+	return out, nil
+}
+
+// recordLogin はログインがワークスペースに属さないため、ユーザーが参加している全ワークスペースの監査ログに記録します
+func (i *authInteractor) recordLogin(ctx context.Context, user *entity.User, action entity.AuditAction) {
+	workspaces, err := i.workspaceRepo.FindByUserID(ctx, user.ID)
+	if err != nil {
+		return
+	}
+	// 失敗したログインは本人の操作とは限らないため実行者を空にする
+	var actorID *string
+	if action == entity.AuditActionLogin {
+		actorID = &user.ID
+	}
+	for _, ws := range workspaces {
+		i.recorder.Record(ctx, entity.AuditLog{
+			WorkspaceID: ws.ID,
+			ActorID:     actorID,
+			Action:      action,
+			TargetType:  entity.AuditTargetUser,
+			TargetID:    user.ID,
+			TargetLabel: user.Email,
+		})
+	}
 }
 
 func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error) {
@@ -142,21 +176,22 @@ func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInp
 		return nil, err
 	}
 
-	// Verify that this refresh token exists in active sessions
-	validSession := false
 	for _, session := range sessions {
-		if err := i.passwordSvc.VerifyPassword(input.RefreshToken, session.RefreshTokenHash); err == nil {
-			validSession = true
-			break
+		if err := i.passwordSvc.VerifyPassword(input.RefreshToken, session.RefreshTokenHash); err != nil {
+			continue
 		}
+		// セッションはログイン単位で保持し、リフレッシュではトークンだけを差し替える
+		tokens, err := i.issueTokens(user)
+		if err != nil {
+			return nil, err
+		}
+		if err := i.sessionRepo.Rotate(ctx, session.ID, tokens.refreshTokenHash, tokens.output.ExpiresAt); err != nil {
+			return nil, err
+		}
+		return tokens.output, nil
 	}
 
-	if !validSession {
-		return nil, ErrInvalidToken
-	}
-
-	// Generate new tokens
-	return i.generateAuthOutput(ctx, user)
+	return nil, ErrInvalidToken
 }
 
 func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error) {
@@ -167,48 +202,62 @@ func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) (*Logout
 	return &LogoutOutput{Success: true}, nil
 }
 
-// Helper function to generate auth output with tokens
-func (i *authInteractor) generateAuthOutput(ctx context.Context, user *entity.User) (*AuthOutput, error) {
-	// Generate access token
+type issuedTokens struct {
+	output           *AuthOutput
+	refreshTokenHash string
+}
+
+func (i *authInteractor) issueTokens(user *entity.User) (*issuedTokens, error) {
 	accessToken, err := i.jwtService.GenerateToken(user.ID, i.accessTokenDuration)
 	if err != nil {
 		return nil, err
 	}
 
-	// Generate refresh token (random secure string)
 	refreshToken, err := generateSecureToken()
 	if err != nil {
 		return nil, err
 	}
 
-	// Hash refresh token for storage
 	refreshTokenHash, err := i.passwordSvc.HashPassword(refreshToken)
 	if err != nil {
 		return nil, err
 	}
 
-	// Store session
-	session := &entity.Session{
-		UserID:           user.ID,
-		RefreshTokenHash: refreshTokenHash,
-		ExpiresAt:        time.Now().Add(i.refreshTokenDuration),
-	}
+	return &issuedTokens{
+		output: &AuthOutput{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			ExpiresAt:    time.Now().Add(i.refreshTokenDuration),
+			User: UserInfo{
+				ID:          user.ID,
+				Email:       user.Email,
+				DisplayName: user.DisplayName,
+				AvatarURL:   user.AvatarURL,
+			},
+		},
+		refreshTokenHash: refreshTokenHash,
+	}, nil
+}
 
-	if err := i.sessionRepo.Create(ctx, session); err != nil {
+// createSession はトークンを発行し、ログイン元の端末情報とともにセッションを保存します
+func (i *authInteractor) createSession(ctx context.Context, user *entity.User) (*AuthOutput, error) {
+	tokens, err := i.issueTokens(user)
+	if err != nil {
 		return nil, err
 	}
 
-	return &AuthOutput{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		ExpiresAt:    session.ExpiresAt,
-		User: UserInfo{
-			ID:          user.ID,
-			Email:       user.Email,
-			DisplayName: user.DisplayName,
-			AvatarURL:   user.AvatarURL,
-		},
-	}, nil
+	client := audit.ClientInfoFrom(ctx)
+	session := &entity.Session{
+		UserID:           user.ID,
+		RefreshTokenHash: tokens.refreshTokenHash,
+		ExpiresAt:        tokens.output.ExpiresAt,
+		IPAddress:        client.IPAddress,
+		UserAgent:        client.UserAgent,
+	}
+	if err := i.sessionRepo.Create(ctx, session); err != nil {
+		return nil, err
+	}
+	return tokens.output, nil
 }
 
 // generateSecureToken generates a cryptographically secure random token

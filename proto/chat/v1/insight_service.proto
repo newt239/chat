@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+
+// ワークスペースの指標。メンバー全員が閲覧でき、個人を特定できる数値は含まない（my_daily_messages は本人の数値）
+service InsightService {
+  rpc GetInsights(GetInsightsRequest) returns (GetInsightsResponse);
+}
+
+// 直近 30 日（current）とその前の 30 日（previous）の比較
+message CountComparison {
+  int64 current = 1;
+  int64 previous = 2;
+}
+
+message RatioComparison {
+  // 0〜1
+  double current = 1;
+  double previous = 2;
+}
+
+message DailyActivity {
+  // 指定したタイムゾーンでの日付 (YYYY-MM-DD)
+  string date = 1;
+  int32 message_count = 2;
+  // その日に投稿かリアクションをした人数
+  int32 active_member_count = 3;
+}
+
+message ChannelActivity {
+  string channel_id = 1;
+  string name = 2;
+  bool is_private = 3;
+  // 直近 30 日の投稿数
+  int32 message_count = 4;
+  // 直近 7 日の投稿数
+  int32 recent_message_count = 5;
+}
+
+message HeatmapCell {
+  // ISO 8601 の曜日 (1 = 月曜日, 7 = 日曜日)
+  int32 weekday = 1;
+  // 0〜23
+  int32 hour = 2;
+  // heatmap_weeks 週間の合計
+  int32 message_count = 3;
+}
+
+enum StorageCategory {
+  STORAGE_CATEGORY_UNSPECIFIED = 0;
+  STORAGE_CATEGORY_IMAGE = 1;
+  STORAGE_CATEGORY_VIDEO = 2;
+  STORAGE_CATEGORY_AUDIO = 3;
+  STORAGE_CATEGORY_FILE = 4;
+}
+
+message StorageUsage {
+  StorageCategory category = 1;
+  int64 bytes = 2;
+  int32 file_count = 3;
+}
+
+message DailyCount {
+  string date = 1;
+  int32 count = 2;
+}
+
+message GetInsightsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  // IANA のタイムゾーン名 (例: Asia/Tokyo)。日付・曜日・時刻の区切りに使う
+  string time_zone = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetInsightsResponse {
+  // 期間内に投稿かリアクションをしたメンバーの人数
+  CountComparison active_members = 1;
+  // 期間の終わり時点のメンバー数（停止中を除く）
+  CountComparison member_count = 2;
+  RatioComparison active_rate = 3;
+  CountComparison message_count = 4;
+  // 期間の終わり時点の添付ファイルの合計サイズ
+  CountComparison storage_bytes = 5;
+  // 直近 30 日（今日を含む、古い順）
+  repeated DailyActivity daily_activity = 6;
+  // DM を除く、閲覧できるチャンネル（管理者は非公開を含むすべて）。30 日の投稿数の多い順
+  repeated ChannelActivity channels = 7;
+  // 7 × 24 のすべてのセル（曜日、時刻の順）
+  repeated HeatmapCell heatmap = 8;
+  int32 heatmap_weeks = 9;
+  repeated StorageUsage storage_breakdown = 10;
+  // 自分の直近 7 日の投稿数（今日を含む、古い順）
+  repeated DailyCount my_daily_messages = 11;
+}

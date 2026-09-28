@@ -103,6 +103,26 @@ func (_u *ChannelUpdate) ClearChannelType() *ChannelUpdate {
 	return _u
 }
 
+// SetArchivedAt sets the "archived_at" field.
+func (_u *ChannelUpdate) SetArchivedAt(v time.Time) *ChannelUpdate {
+	_u.mutation.SetArchivedAt(v)
+	return _u
+}
+
+// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
+func (_u *ChannelUpdate) SetNillableArchivedAt(v *time.Time) *ChannelUpdate {
+	if v != nil {
+		_u.SetArchivedAt(*v)
+	}
+	return _u
+}
+
+// ClearArchivedAt clears the value of the "archived_at" field.
+func (_u *ChannelUpdate) ClearArchivedAt() *ChannelUpdate {
+	_u.mutation.ClearArchivedAt()
+	return _u
+}
+
 // SetParentID sets the "parent_id" field.
 func (_u *ChannelUpdate) SetParentID(v uuid.UUID) *ChannelUpdate {
 	_u.mutation.SetParentID(v)
@@ -440,6 +460,12 @@ func (_u *ChannelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ChannelTypeCleared() {
 		_spec.ClearField(channel.FieldChannelType, field.TypeString)
+	}
+	if value, ok := _u.mutation.ArchivedAt(); ok {
+		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ArchivedAtCleared() {
+		_spec.ClearField(channel.FieldArchivedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(channel.FieldUpdatedAt, field.TypeTime, value)
@@ -844,6 +870,26 @@ func (_u *ChannelUpdateOne) ClearChannelType() *ChannelUpdateOne {
 	return _u
 }
 
+// SetArchivedAt sets the "archived_at" field.
+func (_u *ChannelUpdateOne) SetArchivedAt(v time.Time) *ChannelUpdateOne {
+	_u.mutation.SetArchivedAt(v)
+	return _u
+}
+
+// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
+func (_u *ChannelUpdateOne) SetNillableArchivedAt(v *time.Time) *ChannelUpdateOne {
+	if v != nil {
+		_u.SetArchivedAt(*v)
+	}
+	return _u
+}
+
+// ClearArchivedAt clears the value of the "archived_at" field.
+func (_u *ChannelUpdateOne) ClearArchivedAt() *ChannelUpdateOne {
+	_u.mutation.ClearArchivedAt()
+	return _u
+}
+
 // SetParentID sets the "parent_id" field.
 func (_u *ChannelUpdateOne) SetParentID(v uuid.UUID) *ChannelUpdateOne {
 	_u.mutation.SetParentID(v)
@@ -1211,6 +1257,12 @@ func (_u *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err er
 	}
 	if _u.mutation.ChannelTypeCleared() {
 		_spec.ClearField(channel.FieldChannelType, field.TypeString)
+	}
+	if value, ok := _u.mutation.ArchivedAt(); ok {
+		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ArchivedAtCleared() {
+		_spec.ClearField(channel.FieldArchivedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(channel.FieldUpdatedAt, field.TypeTime, value)

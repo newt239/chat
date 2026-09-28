@@ -9,6 +9,8 @@ import (
 
 type MessageRepository interface {
 	FindByID(ctx context.Context, id string) (*entity.Message, error)
+	// FindAllByChannelIDs はスレッドの返信を含む削除されていないメッセージを古い順に返します
+	FindAllByChannelIDs(ctx context.Context, channelIDs []string) ([]*entity.Message, error)
 	FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error)
 	FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error)
 	FindByChannelIDIncludingDeleted(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error)

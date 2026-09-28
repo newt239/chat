@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -20,6 +22,7 @@ type UserNoteCreate struct {
 	config
 	mutation *UserNoteMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetNickname sets the "nickname" field.
@@ -187,6 +190,7 @@ func (_c *UserNoteCreate) createSpec() (*UserNote, *sqlgraph.CreateSpec) {
 		_node = &UserNote{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(usernote.Table, sqlgraph.NewFieldSpec(usernote.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -240,11 +244,251 @@ func (_c *UserNoteCreate) createSpec() (*UserNote, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserNote.Create().
+//		SetNickname(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserNoteUpsert) {
+//			SetNickname(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserNoteCreate) OnConflict(opts ...sql.ConflictOption) *UserNoteUpsertOne {
+	_c.conflict = opts
+	return &UserNoteUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserNote.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserNoteCreate) OnConflictColumns(columns ...string) *UserNoteUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserNoteUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// UserNoteUpsertOne is the builder for "upsert"-ing
+	//  one UserNote node.
+	UserNoteUpsertOne struct {
+		create *UserNoteCreate
+	}
+
+	// UserNoteUpsert is the "OnConflict" setter.
+	UserNoteUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetNickname sets the "nickname" field.
+func (u *UserNoteUpsert) SetNickname(v string) *UserNoteUpsert {
+	u.Set(usernote.FieldNickname, v)
+	return u
+}
+
+// UpdateNickname sets the "nickname" field to the value that was provided on create.
+func (u *UserNoteUpsert) UpdateNickname() *UserNoteUpsert {
+	u.SetExcluded(usernote.FieldNickname)
+	return u
+}
+
+// ClearNickname clears the value of the "nickname" field.
+func (u *UserNoteUpsert) ClearNickname() *UserNoteUpsert {
+	u.SetNull(usernote.FieldNickname)
+	return u
+}
+
+// SetMemo sets the "memo" field.
+func (u *UserNoteUpsert) SetMemo(v string) *UserNoteUpsert {
+	u.Set(usernote.FieldMemo, v)
+	return u
+}
+
+// UpdateMemo sets the "memo" field to the value that was provided on create.
+func (u *UserNoteUpsert) UpdateMemo() *UserNoteUpsert {
+	u.SetExcluded(usernote.FieldMemo)
+	return u
+}
+
+// ClearMemo clears the value of the "memo" field.
+func (u *UserNoteUpsert) ClearMemo() *UserNoteUpsert {
+	u.SetNull(usernote.FieldMemo)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *UserNoteUpsert) SetUpdatedAt(v time.Time) *UserNoteUpsert {
+	u.Set(usernote.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *UserNoteUpsert) UpdateUpdatedAt() *UserNoteUpsert {
+	u.SetExcluded(usernote.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.UserNote.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(usernote.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserNoteUpsertOne) UpdateNewValues() *UserNoteUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(usernote.FieldID)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserNote.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *UserNoteUpsertOne) Ignore() *UserNoteUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserNoteUpsertOne) DoNothing() *UserNoteUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserNoteCreate.OnConflict
+// documentation for more info.
+func (u *UserNoteUpsertOne) Update(set func(*UserNoteUpsert)) *UserNoteUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserNoteUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetNickname sets the "nickname" field.
+func (u *UserNoteUpsertOne) SetNickname(v string) *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetNickname(v)
+	})
+}
+
+// UpdateNickname sets the "nickname" field to the value that was provided on create.
+func (u *UserNoteUpsertOne) UpdateNickname() *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateNickname()
+	})
+}
+
+// ClearNickname clears the value of the "nickname" field.
+func (u *UserNoteUpsertOne) ClearNickname() *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.ClearNickname()
+	})
+}
+
+// SetMemo sets the "memo" field.
+func (u *UserNoteUpsertOne) SetMemo(v string) *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetMemo(v)
+	})
+}
+
+// UpdateMemo sets the "memo" field to the value that was provided on create.
+func (u *UserNoteUpsertOne) UpdateMemo() *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateMemo()
+	})
+}
+
+// ClearMemo clears the value of the "memo" field.
+func (u *UserNoteUpsertOne) ClearMemo() *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.ClearMemo()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *UserNoteUpsertOne) SetUpdatedAt(v time.Time) *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *UserNoteUpsertOne) UpdateUpdatedAt() *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *UserNoteUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserNoteCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserNoteUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *UserNoteUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: UserNoteUpsertOne.ID is not supported by MySQL driver. Use UserNoteUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *UserNoteUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // UserNoteCreateBulk is the builder for creating many UserNote entities in bulk.
 type UserNoteCreateBulk struct {
 	config
 	err      error
 	builders []*UserNoteCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the UserNote entities in the database.
@@ -274,6 +518,7 @@ func (_c *UserNoteCreateBulk) Save(ctx context.Context) ([]*UserNote, error) {
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -320,6 +565,176 @@ func (_c *UserNoteCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *UserNoteCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.UserNote.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.UserNoteUpsert) {
+//			SetNickname(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *UserNoteCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserNoteUpsertBulk {
+	_c.conflict = opts
+	return &UserNoteUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.UserNote.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *UserNoteCreateBulk) OnConflictColumns(columns ...string) *UserNoteUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &UserNoteUpsertBulk{
+		create: _c,
+	}
+}
+
+// UserNoteUpsertBulk is the builder for "upsert"-ing
+// a bulk of UserNote nodes.
+type UserNoteUpsertBulk struct {
+	create *UserNoteCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.UserNote.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(usernote.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *UserNoteUpsertBulk) UpdateNewValues() *UserNoteUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(usernote.FieldID)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.UserNote.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *UserNoteUpsertBulk) Ignore() *UserNoteUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *UserNoteUpsertBulk) DoNothing() *UserNoteUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the UserNoteCreateBulk.OnConflict
+// documentation for more info.
+func (u *UserNoteUpsertBulk) Update(set func(*UserNoteUpsert)) *UserNoteUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&UserNoteUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetNickname sets the "nickname" field.
+func (u *UserNoteUpsertBulk) SetNickname(v string) *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetNickname(v)
+	})
+}
+
+// UpdateNickname sets the "nickname" field to the value that was provided on create.
+func (u *UserNoteUpsertBulk) UpdateNickname() *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateNickname()
+	})
+}
+
+// ClearNickname clears the value of the "nickname" field.
+func (u *UserNoteUpsertBulk) ClearNickname() *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.ClearNickname()
+	})
+}
+
+// SetMemo sets the "memo" field.
+func (u *UserNoteUpsertBulk) SetMemo(v string) *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetMemo(v)
+	})
+}
+
+// UpdateMemo sets the "memo" field to the value that was provided on create.
+func (u *UserNoteUpsertBulk) UpdateMemo() *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateMemo()
+	})
+}
+
+// ClearMemo clears the value of the "memo" field.
+func (u *UserNoteUpsertBulk) ClearMemo() *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.ClearMemo()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *UserNoteUpsertBulk) SetUpdatedAt(v time.Time) *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *UserNoteUpsertBulk) UpdateUpdatedAt() *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *UserNoteUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the UserNoteCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for UserNoteCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *UserNoteUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

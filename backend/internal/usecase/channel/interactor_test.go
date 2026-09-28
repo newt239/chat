@@ -13,6 +13,7 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/usecase/audit/audittest"
 )
 
 const (
@@ -152,6 +153,15 @@ func (stubReadStateRepo) GetUnreadMentionCountBatch(_ context.Context, _ []strin
 	return map[string]int{}, nil
 }
 
+type stubPermissionRepo struct {
+	domainrepository.PermissionRepository
+	overrides []entity.PermissionOverride
+}
+
+func (r *stubPermissionRepo) FindOverrides(context.Context, string) ([]entity.PermissionOverride, error) {
+	return r.overrides, nil
+}
+
 type stubTxManager struct{}
 
 func (stubTxManager) Do(ctx context.Context, fn func(ctx context.Context) error) error {
@@ -159,10 +169,12 @@ func (stubTxManager) Do(ctx context.Context, fn func(ctx context.Context) error)
 }
 
 type fixture struct {
-	uc       ChannelUseCase
-	channels *fakeChannelRepo
-	members  *fakeMemberRepo
-	stars    *fakeStarRepo
+	uc          ChannelUseCase
+	channels    *fakeChannelRepo
+	members     *fakeMemberRepo
+	stars       *fakeStarRepo
+	permissions *stubPermissionRepo
+	recorder    *audittest.Recorder
 }
 
 func newFixture() *fixture {
@@ -171,8 +183,11 @@ func newFixture() *fixture {
 	stars := &fakeStarRepo{starred: map[string]bool{}}
 	workspaces := stubWorkspaceRepo{}
 	access := domainservice.NewChannelAccessService(channels, members, workspaces)
-	uc := NewChannelInteractor(channels, members, stars, workspaces, stubReadStateRepo{}, stubTxManager{}, nil, access)
-	return &fixture{uc: uc, channels: channels, members: members, stars: stars}
+	permissions := &stubPermissionRepo{}
+	recorder := &audittest.Recorder{}
+	permissionSvc := domainservice.NewPermissionService(workspaces, permissions)
+	uc := NewChannelInteractor(channels, members, stars, workspaces, stubReadStateRepo{}, stubTxManager{}, nil, access, permissionSvc, recorder)
+	return &fixture{uc: uc, channels: channels, members: members, stars: stars, permissions: permissions, recorder: recorder}
 }
 
 func (f *fixture) create(t *testing.T, userID, name string, isPrivate bool) *ChannelOutput {
@@ -243,14 +258,78 @@ func TestCreateChannelUnderInaccessiblePrivateParent(t *testing.T) {
 }
 
 func TestCreateChannelPermission(t *testing.T) {
-	f := newFixture()
-	ctx := context.Background()
-
-	if _, err := f.uc.CreateChannel(ctx, CreateChannelInput{WorkspaceID: workspaceID, UserID: memberID, Name: "public"}); !errors.Is(err, ErrUnauthorized) {
-		t.Fatalf("一般メンバーが公開チャンネルを作成できています: %v", err)
+	denyPrivate := entity.PermissionOverride{Role: entity.WorkspaceRoleMember, Permission: entity.PermissionCreatePrivateChannel, Allowed: false}
+	tests := []struct {
+		name      string
+		userID    string
+		isPrivate bool
+		overrides []entity.PermissionOverride
+		wantErr   error
+	}{
+		{name: "既定ではメンバーは公開チャンネルを作れる", userID: memberID},
+		{name: "既定ではゲストは非公開チャンネルを作れない", userID: guestID, isPrivate: true, wantErr: domerr.ErrUnauthorized},
+		{name: "非公開チャンネルの作成を禁止するとメンバーは作れない", userID: memberID, isPrivate: true, overrides: []entity.PermissionOverride{denyPrivate}, wantErr: domerr.ErrUnauthorized},
+		{name: "非公開チャンネルを禁止しても公開チャンネルは作れる", userID: memberID, overrides: []entity.PermissionOverride{denyPrivate}},
 	}
-	if _, err := f.uc.CreateChannel(ctx, CreateChannelInput{WorkspaceID: workspaceID, UserID: guestID, Name: "private", IsPrivate: true}); !errors.Is(err, ErrUnauthorized) {
-		t.Fatalf("ゲストが非公開チャンネルを作成できています: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture()
+			f.permissions.overrides = tt.overrides
+			_, err := f.uc.CreateChannel(context.Background(), CreateChannelInput{WorkspaceID: workspaceID, UserID: tt.userID, Name: "room", IsPrivate: tt.isPrivate})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			var wantActions []entity.AuditAction
+			if tt.wantErr == nil {
+				wantActions = []entity.AuditAction{entity.AuditActionChannelCreated}
+			}
+			if !slices.Equal(f.recorder.Actions(), wantActions) {
+				t.Errorf("監査ログが期待と異なります: %v", f.recorder.Actions())
+			}
+		})
+	}
+}
+
+func TestSetArchived(t *testing.T) {
+	tests := []struct {
+		name    string
+		userID  string
+		dm      bool
+		wantErr error
+	}{
+		{name: "作成者はアーカイブできる", userID: memberID},
+		{name: "管理者はアーカイブできる", userID: adminID},
+		{name: "作成者以外のメンバーはアーカイブできない", userID: guestID, wantErr: ErrUnauthorized},
+		{name: "DM はアーカイブできない", userID: memberID, dm: true, wantErr: ErrCannotArchiveDM},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture()
+			ch := f.create(t, memberID, "room", false)
+			if tt.dm {
+				f.channels.channels[ch.ID].Type = entity.ChannelTypeDM
+			}
+			f.recorder.Logs = nil
+
+			out, err := f.uc.SetArchived(context.Background(), SetArchivedInput{ChannelID: ch.ID, UserID: tt.userID, Archived: true})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if tt.wantErr != nil {
+				if len(f.recorder.Logs) != 0 {
+					t.Errorf("失敗時に監査ログが記録されました")
+				}
+				return
+			}
+			if out.ArchivedAt == nil || !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionChannelArchived}) {
+				t.Errorf("アーカイブされていないか記録がありません: %+v %v", out, f.recorder.Actions())
+			}
+
+			// 同じ状態への変更は記録しない
+			if _, err := f.uc.SetArchived(context.Background(), SetArchivedInput{ChannelID: ch.ID, UserID: tt.userID, Archived: true}); err != nil || len(f.recorder.Logs) != 1 {
+				t.Errorf("二重にアーカイブした場合は何もしないはず: %v %v", err, f.recorder.Actions())
+			}
+		})
 	}
 }
 

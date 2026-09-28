@@ -26,6 +26,10 @@ func (WorkspaceMember) Fields() []ent.Field {
 		field.Time("joined_at").
 			Default(time.Now).
 			Immutable(),
+		// 停止中のメンバーはワークスペースの API を利用できない
+		field.Time("suspended_at").
+			Optional().
+			Nillable(),
 	}
 }
 

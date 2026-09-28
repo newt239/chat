@@ -6,7 +6,10 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	domainservice "github.com/newt239/chat/internal/domain/service"
+	"github.com/newt239/chat/internal/usecase/audit/audittest"
 )
 
 // ロール変更の検証に必要な最小限のスタブ
@@ -21,15 +24,54 @@ func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID strin
 	return r.members[userID], nil
 }
 
+func (r *stubWorkspaceRepo) AddMember(_ context.Context, m *entity.WorkspaceMember) error {
+	r.members[m.UserID] = m
+	return nil
+}
+
 func (r *stubWorkspaceRepo) UpdateMemberRole(_ context.Context, _ string, _ string, role entity.WorkspaceRole) error {
 	r.updateCall++
 	r.updatedTo = role
 	return nil
 }
 
-func newInteractor(members map[string]*entity.WorkspaceMember) (WorkspaceUseCase, *stubWorkspaceRepo) {
+type stubUserRepo struct {
+	domainrepository.UserRepository
+}
+
+func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error) {
+	return &entity.User{ID: id, DisplayName: "name-" + id}, nil
+}
+
+func (stubUserRepo) FindByEmail(_ context.Context, email string) (*entity.User, error) {
+	return &entity.User{ID: email, Email: email}, nil
+}
+
+type stubPermissionRepo struct {
+	domainrepository.PermissionRepository
+	overrides []entity.PermissionOverride
+}
+
+func (r *stubPermissionRepo) FindOverrides(context.Context, string) ([]entity.PermissionOverride, error) {
+	return r.overrides, nil
+}
+
+type fixture struct {
+	uc       WorkspaceUseCase
+	repo     *stubWorkspaceRepo
+	recorder *audittest.Recorder
+}
+
+func newFixture(members map[string]*entity.WorkspaceMember, overrides ...entity.PermissionOverride) fixture {
 	repo := &stubWorkspaceRepo{members: members}
-	return NewWorkspaceInteractor(repo, nil, nil), repo
+	recorder := &audittest.Recorder{}
+	permissionSvc := domainservice.NewPermissionService(repo, &stubPermissionRepo{overrides: overrides})
+	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, permissionSvc, recorder), repo: repo, recorder: recorder}
+}
+
+func newInteractor(members map[string]*entity.WorkspaceMember) (WorkspaceUseCase, *stubWorkspaceRepo) {
+	f := newFixture(members)
+	return f.uc, f.repo
 }
 
 func member(role entity.WorkspaceRole) *entity.WorkspaceMember {
@@ -109,6 +151,50 @@ func TestUpdateMemberRole(t *testing.T) {
 			}
 			if repo.updateCall != tt.wantCalls {
 				t.Errorf("更新回数が期待と異なります: got=%d want=%d", repo.updateCall, tt.wantCalls)
+			}
+		})
+	}
+}
+
+func TestUpdateMemberRoleRecordsAuditLog(t *testing.T) {
+	f := newFixture(map[string]*entity.WorkspaceMember{
+		"admin":  member(entity.WorkspaceRoleAdmin),
+		"target": member(entity.WorkspaceRoleMember),
+	})
+	_, err := f.uc.UpdateMemberRole(context.Background(), UpdateMemberRoleInput{WorkspaceID: "ws", UpdaterID: "admin", UserID: "target", Role: "admin"})
+	if err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(f.recorder.Logs) != 1 {
+		t.Fatalf("監査ログが 1 件記録されるはず: got=%d", len(f.recorder.Logs))
+	}
+	log := f.recorder.Logs[0]
+	if log.Action != entity.AuditActionMemberRoleChanged || *log.ActorID != "admin" || log.TargetID != "target" {
+		t.Errorf("監査ログの内容が期待と異なります: %+v", log)
+	}
+	if log.Metadata["from"] != "member" || log.Metadata["to"] != "admin" {
+		t.Errorf("変更前後のロールが記録されていません: %+v", log.Metadata)
+	}
+}
+
+func TestAddMemberByEmailPermission(t *testing.T) {
+	allowMemberInvite := entity.PermissionOverride{Role: entity.WorkspaceRoleMember, Permission: entity.PermissionInviteMembers, Allowed: true}
+	tests := []struct {
+		name      string
+		overrides []entity.PermissionOverride
+		role      string
+		wantErr   error
+	}{
+		{name: "既定ではメンバーは招待できない", role: "member", wantErr: domerr.ErrUnauthorized},
+		{name: "権限を許可するとメンバーも招待できる", overrides: []entity.PermissionOverride{allowMemberInvite}, role: "member"},
+		{name: "招待を許可されたメンバーでも管理者としては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: "admin", wantErr: ErrUnauthorized},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(map[string]*entity.WorkspaceMember{"user": member(entity.WorkspaceRoleMember)}, tt.overrides...)
+			_, err := f.uc.AddMemberByEmail(context.Background(), AddMemberByEmailInput{WorkspaceID: "ws", Email: "new@example.com", Role: tt.role, RequestedBy: "user"})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
 			}
 		})
 	}

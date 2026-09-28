@@ -8,6 +8,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
 var (
@@ -33,34 +34,27 @@ type userGroupInteractor struct {
 	userGroupRepo domainrepository.UserGroupRepository
 	workspaceRepo domainrepository.WorkspaceRepository
 	userRepo      domainrepository.UserRepository
+	permissionSvc domainservice.PermissionService
 }
 
 func NewUserGroupInteractor(
 	userGroupRepo domainrepository.UserGroupRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
+	permissionSvc domainservice.PermissionService,
 ) UserGroupUseCase {
 	return &userGroupInteractor{
 		userGroupRepo: userGroupRepo,
 		workspaceRepo: workspaceRepo,
 		userRepo:      userRepo,
+		permissionSvc: permissionSvc,
 	}
 }
 
-// ensureCanManage は作成者またはワークスペースの owner/admin であることを確認します
-func (i *userGroupInteractor) ensureCanManage(ctx context.Context, group *entity.UserGroup, userID string) error {
-	if group.CreatedBy == userID {
-		return nil
-	}
-
-	member, err := i.workspaceRepo.FindMember(ctx, group.WorkspaceID, userID)
-	if err != nil {
-		return fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil || (member.Role != entity.WorkspaceRoleOwner && member.Role != entity.WorkspaceRoleAdmin) {
-		return ErrUnauthorized
-	}
-	return nil
+// ensureCanManage はユーザーグループの編集が許可されたロールであることを確認します
+func (i *userGroupInteractor) ensureCanManage(ctx context.Context, workspaceID, userID string) error {
+	_, err := i.permissionSvc.Ensure(ctx, workspaceID, userID, entity.PermissionEditUserGroups)
+	return err
 }
 
 func (i *userGroupInteractor) CreateUserGroup(ctx context.Context, input CreateUserGroupInput) (*CreateUserGroupOutput, error) {
@@ -73,13 +67,8 @@ func (i *userGroupInteractor) CreateUserGroup(ctx context.Context, input CreateU
 		return nil, errors.New("ワークスペースが見つかりません")
 	}
 
-	// 作成者がワークスペースのメンバーかチェック
-	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.CreatedBy)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, ErrUnauthorized
+	if err := i.ensureCanManage(ctx, input.WorkspaceID, input.CreatedBy); err != nil {
+		return nil, err
 	}
 
 	// グループ名の重複チェック
@@ -119,7 +108,7 @@ func (i *userGroupInteractor) UpdateUserGroup(ctx context.Context, input UpdateU
 		return nil, ErrUserGroupNotFound
 	}
 
-	if err := i.ensureCanManage(ctx, group, input.UpdatedBy); err != nil {
+	if err := i.ensureCanManage(ctx, group.WorkspaceID, input.UpdatedBy); err != nil {
 		return nil, err
 	}
 
@@ -159,7 +148,7 @@ func (i *userGroupInteractor) DeleteUserGroup(ctx context.Context, input DeleteU
 		return nil, ErrUserGroupNotFound
 	}
 
-	if err := i.ensureCanManage(ctx, group, input.DeletedBy); err != nil {
+	if err := i.ensureCanManage(ctx, group.WorkspaceID, input.DeletedBy); err != nil {
 		return nil, err
 	}
 
@@ -235,9 +224,8 @@ func (i *userGroupInteractor) AddMember(ctx context.Context, input AddMemberInpu
 		return nil, ErrUserGroupNotFound
 	}
 
-	// 権限チェック（作成者のみメンバー追加可能）
-	if group.CreatedBy != input.AddedBy {
-		return nil, ErrUnauthorized
+	if err := i.ensureCanManage(ctx, group.WorkspaceID, input.AddedBy); err != nil {
+		return nil, err
 	}
 
 	// 既にメンバーかチェック
@@ -273,9 +261,11 @@ func (i *userGroupInteractor) RemoveMember(ctx context.Context, input RemoveMemb
 		return nil, ErrUserGroupNotFound
 	}
 
-	// 権限チェック（作成者または本人のみ削除可能）
-	if group.CreatedBy != input.RemovedBy && input.UserID != input.RemovedBy {
-		return nil, ErrUnauthorized
+	// 本人はグループから抜けられる
+	if input.UserID != input.RemovedBy {
+		if err := i.ensureCanManage(ctx, group.WorkspaceID, input.RemovedBy); err != nil {
+			return nil, err
+		}
 	}
 
 	// メンバーかチェック

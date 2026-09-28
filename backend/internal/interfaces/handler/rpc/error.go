@@ -9,11 +9,13 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/logger"
+	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
@@ -31,6 +33,7 @@ var errorCodes = []struct {
 }{
 	{connect.CodeNotFound, []error{
 		domerr.ErrNotFound, domerr.ErrMessageNotFound, domerr.ErrChannelNotFound,
+		adminuc.ErrMemberNotFound,
 		bookmarkuc.ErrMessageNotFound,
 		entity.ErrUserNotFound,
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
@@ -49,6 +52,7 @@ var errorCodes = []struct {
 	}},
 	{connect.CodePermissionDenied, []error{
 		domerr.ErrUnauthorized, domerr.ErrForbidden,
+		adminuc.ErrOwnerOnlyPermissions,
 		bookmarkuc.ErrUnauthorized,
 		channeluc.ErrUnauthorized,
 		channellinkuc.ErrUnauthorized,
@@ -75,6 +79,8 @@ var errorCodes = []struct {
 	}},
 	{connect.CodeInvalidArgument, []error{
 		domerr.ErrInvalidInput, domerr.ErrValidation,
+		adminuc.ErrInvalidPermission,
+		insightuc.ErrInvalidTimeZone,
 		entity.ErrGroupDMMaxMembers,
 		channeluc.ErrMemberNotInWorkspace,
 		channelmemberuc.ErrInvalidRole,
@@ -82,6 +88,9 @@ var errorCodes = []struct {
 		workspaceuc.ErrInvalidRole,
 	}},
 	{connect.CodeFailedPrecondition, []error{
+		domerr.ErrChannelArchived,
+		adminuc.ErrCannotSuspendOwner, adminuc.ErrCannotSuspendSelf,
+		channeluc.ErrCannotArchiveDM,
 		channeluc.ErrChannelHasChildren,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,

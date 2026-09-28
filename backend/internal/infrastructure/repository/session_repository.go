@@ -82,7 +82,9 @@ func (r *sessionRepository) Create(ctx context.Context, sess *entity.Session) er
 	builder := client.Session.Create().
 		SetUserID(uid).
 		SetRefreshTokenHash(sess.RefreshTokenHash).
-		SetExpiresAt(sess.ExpiresAt)
+		SetExpiresAt(sess.ExpiresAt).
+		SetIPAddress(sess.IPAddress).
+		SetUserAgent(sess.UserAgent)
 
 	if sess.ID != "" {
 		sessionID, err := utils.ParseUUID(sess.ID, "session ID")
@@ -128,6 +130,45 @@ func (r *sessionRepository) Revoke(ctx context.Context, id string) error {
 		Exec(ctx)
 }
 
+func (r *sessionRepository) Rotate(ctx context.Context, id string, refreshTokenHash string, expiresAt time.Time) error {
+	sessionID, err := utils.ParseUUID(id, "session ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	return client.Session.UpdateOneID(sessionID).
+		SetRefreshTokenHash(refreshTokenHash).
+		SetExpiresAt(expiresAt).
+		Exec(ctx)
+}
+
+func (r *sessionRepository) FindLatestByUserIDs(ctx context.Context, userIDs []string) (map[string]*entity.Session, error) {
+	uids, err := utils.ParseUUIDs(userIDs, "user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	sessions, err := client.Session.Query().
+		Where(session.HasUserWith(user.IDIn(uids...))).
+		WithUser().
+		Order(ent.Desc(session.FieldCreatedAt)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]*entity.Session, len(userIDs))
+	for _, s := range sessions {
+		e := utils.SessionToEntity(s)
+		if _, ok := result[e.UserID]; !ok {
+			result[e.UserID] = e
+		}
+	}
+	return result, nil
+}
+
 func (r *sessionRepository) RevokeAllByUserID(ctx context.Context, userID string) error {
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
@@ -138,7 +179,7 @@ func (r *sessionRepository) RevokeAllByUserID(ctx context.Context, userID string
 	client := transaction.ResolveClient(ctx, r.client)
 
 	_, err = client.Session.Update().
-		Where(session.HasUserWith(user.ID(uid))).
+		Where(session.HasUserWith(user.ID(uid)), session.RevokedAtIsNil()).
 		SetRevokedAt(now).
 		Save(ctx)
 

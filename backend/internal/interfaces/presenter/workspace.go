@@ -47,6 +47,7 @@ func WorkspaceMember(m workspaceuc.MemberInfo) *chatv1.WorkspaceMember {
 		Bio:         m.Bio,
 		Role:        workspaceRoles[m.Role],
 		JoinedAt:    timestamppb.New(m.JoinedAt),
+		SuspendedAt: optionalTimestamp(m.SuspendedAt),
 		Nickname:    m.Nickname,
 	}
 }

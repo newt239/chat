@@ -15,10 +15,10 @@ type MessageDeleter struct {
 	messageRepo       domainrepository.MessageRepository
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
-	workspaceRepo     domainrepository.WorkspaceRepository
 	threadRepo        domainrepository.ThreadRepository
 	notificationSvc   Notifier
 	channelAccessSvc  service.ChannelAccessService
+	permissionSvc     service.PermissionService
 	logger            service.Logger
 }
 
@@ -27,20 +27,20 @@ func NewMessageDeleter(
 	messageRepo domainrepository.MessageRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
 	threadRepo domainrepository.ThreadRepository,
 	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
+	permissionSvc service.PermissionService,
 	logger service.Logger,
 ) *MessageDeleter {
 	return &MessageDeleter{
 		messageRepo:       messageRepo,
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
-		workspaceRepo:     workspaceRepo,
 		threadRepo:        threadRepo,
 		notificationSvc:   notificationSvc,
 		channelAccessSvc:  channelAccessSvc,
+		permissionSvc:     permissionSvc,
 		logger:            logger,
 	}
 }
@@ -67,13 +67,11 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 		return ErrMessageAlreadyDeleted
 	}
 
-	// 権限確認: 投稿者本人または管理者
-	canDelete, err := d.canModifyMessage(ctx, channel.WorkspaceID, message.UserID, input.ExecutorID)
-	if err != nil {
-		return fmt.Errorf("権限確認に失敗しました: %w", err)
-	}
-	if !canDelete {
-		return ErrUnauthorized
+	// 他人のメッセージは権限設定で許可されたロールだけが削除できる
+	if message.UserID != input.ExecutorID {
+		if _, err := d.permissionSvc.Ensure(ctx, channel.WorkspaceID, input.ExecutorID, entity.PermissionDeleteOthersMessages); err != nil {
+			return err
+		}
 	}
 
 	// 削除対象メッセージIDのリストを作成
@@ -105,30 +103,4 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	}
 
 	return nil
-}
-
-// ensureChannelAccess は ChannelAccessService に委譲済み
-
-// canModifyMessage はユーザーがメッセージを編集・削除できるかどうかを確認します
-func (d *MessageDeleter) canModifyMessage(ctx context.Context, workspaceID, messageOwnerID, executorID string) (bool, error) {
-	// 投稿者本人の場合は許可
-	if messageOwnerID == executorID {
-		return true, nil
-	}
-
-	// 管理者権限チェック
-	member, err := d.workspaceRepo.FindMember(ctx, workspaceID, executorID)
-	if err != nil {
-		return false, fmt.Errorf("ワークスペースメンバー情報の取得に失敗しました: %w", err)
-	}
-	if member == nil {
-		return false, nil
-	}
-
-	// owner または admin の場合は許可
-	if member.Role == entity.WorkspaceRoleOwner || member.Role == entity.WorkspaceRoleAdmin {
-		return true, nil
-	}
-
-	return false, nil
 }

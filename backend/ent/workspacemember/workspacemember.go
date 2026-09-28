@@ -19,6 +19,8 @@ const (
 	FieldRole = "role"
 	// FieldJoinedAt holds the string denoting the joined_at field in the database.
 	FieldJoinedAt = "joined_at"
+	// FieldSuspendedAt holds the string denoting the suspended_at field in the database.
+	FieldSuspendedAt = "suspended_at"
 	// EdgeWorkspace holds the string denoting the workspace edge name in mutations.
 	EdgeWorkspace = "workspace"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -46,6 +48,7 @@ var Columns = []string{
 	FieldID,
 	FieldRole,
 	FieldJoinedAt,
+	FieldSuspendedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "workspace_members"
@@ -95,6 +98,11 @@ func ByRole(opts ...sql.OrderTermOption) OrderOption {
 // ByJoinedAt orders the results by the joined_at field.
 func ByJoinedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldJoinedAt, opts...).ToFunc()
+}
+
+// BySuspendedAt orders the results by the suspended_at field.
+func BySuspendedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSuspendedAt, opts...).ToFunc()
 }
 
 // ByWorkspaceField orders the results by workspace field.

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type SystemMessageCreate struct {
 	config
 	mutation *SystemMessageMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetKind sets the "kind" field.
@@ -188,6 +191,7 @@ func (_c *SystemMessageCreate) createSpec() (*SystemMessage, *sqlgraph.CreateSpe
 		_node = &SystemMessage{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemmessage.Table, sqlgraph.NewFieldSpec(systemmessage.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -241,11 +245,202 @@ func (_c *SystemMessageCreate) createSpec() (*SystemMessage, *sqlgraph.CreateSpe
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.SystemMessage.Create().
+//		SetKind(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.SystemMessageUpsert) {
+//			SetKind(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *SystemMessageCreate) OnConflict(opts ...sql.ConflictOption) *SystemMessageUpsertOne {
+	_c.conflict = opts
+	return &SystemMessageUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.SystemMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *SystemMessageCreate) OnConflictColumns(columns ...string) *SystemMessageUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &SystemMessageUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// SystemMessageUpsertOne is the builder for "upsert"-ing
+	//  one SystemMessage node.
+	SystemMessageUpsertOne struct {
+		create *SystemMessageCreate
+	}
+
+	// SystemMessageUpsert is the "OnConflict" setter.
+	SystemMessageUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetKind sets the "kind" field.
+func (u *SystemMessageUpsert) SetKind(v string) *SystemMessageUpsert {
+	u.Set(systemmessage.FieldKind, v)
+	return u
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *SystemMessageUpsert) UpdateKind() *SystemMessageUpsert {
+	u.SetExcluded(systemmessage.FieldKind)
+	return u
+}
+
+// SetPayload sets the "payload" field.
+func (u *SystemMessageUpsert) SetPayload(v map[string]interface{}) *SystemMessageUpsert {
+	u.Set(systemmessage.FieldPayload, v)
+	return u
+}
+
+// UpdatePayload sets the "payload" field to the value that was provided on create.
+func (u *SystemMessageUpsert) UpdatePayload() *SystemMessageUpsert {
+	u.SetExcluded(systemmessage.FieldPayload)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.SystemMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(systemmessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *SystemMessageUpsertOne) UpdateNewValues() *SystemMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(systemmessage.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(systemmessage.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.SystemMessage.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *SystemMessageUpsertOne) Ignore() *SystemMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *SystemMessageUpsertOne) DoNothing() *SystemMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the SystemMessageCreate.OnConflict
+// documentation for more info.
+func (u *SystemMessageUpsertOne) Update(set func(*SystemMessageUpsert)) *SystemMessageUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&SystemMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetKind sets the "kind" field.
+func (u *SystemMessageUpsertOne) SetKind(v string) *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *SystemMessageUpsertOne) UpdateKind() *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdateKind()
+	})
+}
+
+// SetPayload sets the "payload" field.
+func (u *SystemMessageUpsertOne) SetPayload(v map[string]interface{}) *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetPayload(v)
+	})
+}
+
+// UpdatePayload sets the "payload" field to the value that was provided on create.
+func (u *SystemMessageUpsertOne) UpdatePayload() *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdatePayload()
+	})
+}
+
+// Exec executes the query.
+func (u *SystemMessageUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for SystemMessageCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *SystemMessageUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *SystemMessageUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: SystemMessageUpsertOne.ID is not supported by MySQL driver. Use SystemMessageUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *SystemMessageUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // SystemMessageCreateBulk is the builder for creating many SystemMessage entities in bulk.
 type SystemMessageCreateBulk struct {
 	config
 	err      error
 	builders []*SystemMessageCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the SystemMessage entities in the database.
@@ -275,6 +470,7 @@ func (_c *SystemMessageCreateBulk) Save(ctx context.Context) ([]*SystemMessage, 
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -321,6 +517,151 @@ func (_c *SystemMessageCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *SystemMessageCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.SystemMessage.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.SystemMessageUpsert) {
+//			SetKind(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *SystemMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemMessageUpsertBulk {
+	_c.conflict = opts
+	return &SystemMessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.SystemMessage.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *SystemMessageCreateBulk) OnConflictColumns(columns ...string) *SystemMessageUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &SystemMessageUpsertBulk{
+		create: _c,
+	}
+}
+
+// SystemMessageUpsertBulk is the builder for "upsert"-ing
+// a bulk of SystemMessage nodes.
+type SystemMessageUpsertBulk struct {
+	create *SystemMessageCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.SystemMessage.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(systemmessage.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *SystemMessageUpsertBulk) UpdateNewValues() *SystemMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(systemmessage.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(systemmessage.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.SystemMessage.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *SystemMessageUpsertBulk) Ignore() *SystemMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *SystemMessageUpsertBulk) DoNothing() *SystemMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the SystemMessageCreateBulk.OnConflict
+// documentation for more info.
+func (u *SystemMessageUpsertBulk) Update(set func(*SystemMessageUpsert)) *SystemMessageUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&SystemMessageUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetKind sets the "kind" field.
+func (u *SystemMessageUpsertBulk) SetKind(v string) *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *SystemMessageUpsertBulk) UpdateKind() *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdateKind()
+	})
+}
+
+// SetPayload sets the "payload" field.
+func (u *SystemMessageUpsertBulk) SetPayload(v map[string]interface{}) *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetPayload(v)
+	})
+}
+
+// UpdatePayload sets the "payload" field to the value that was provided on create.
+func (u *SystemMessageUpsertBulk) UpdatePayload() *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdatePayload()
+	})
+}
+
+// Exec executes the query.
+func (u *SystemMessageUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the SystemMessageCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for SystemMessageCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *SystemMessageUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

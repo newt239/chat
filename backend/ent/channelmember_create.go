@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type ChannelMemberCreate struct {
 	config
 	mutation *ChannelMemberMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetRole sets the "role" field.
@@ -181,6 +184,7 @@ func (_c *ChannelMemberCreate) createSpec() (*ChannelMember, *sqlgraph.CreateSpe
 		_node = &ChannelMember{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(channelmember.Table, sqlgraph.NewFieldSpec(channelmember.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -230,11 +234,176 @@ func (_c *ChannelMemberCreate) createSpec() (*ChannelMember, *sqlgraph.CreateSpe
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ChannelMember.Create().
+//		SetRole(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelMemberUpsert) {
+//			SetRole(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ChannelMemberCreate) OnConflict(opts ...sql.ConflictOption) *ChannelMemberUpsertOne {
+	_c.conflict = opts
+	return &ChannelMemberUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ChannelMember.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ChannelMemberCreate) OnConflictColumns(columns ...string) *ChannelMemberUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ChannelMemberUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ChannelMemberUpsertOne is the builder for "upsert"-ing
+	//  one ChannelMember node.
+	ChannelMemberUpsertOne struct {
+		create *ChannelMemberCreate
+	}
+
+	// ChannelMemberUpsert is the "OnConflict" setter.
+	ChannelMemberUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetRole sets the "role" field.
+func (u *ChannelMemberUpsert) SetRole(v string) *ChannelMemberUpsert {
+	u.Set(channelmember.FieldRole, v)
+	return u
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *ChannelMemberUpsert) UpdateRole() *ChannelMemberUpsert {
+	u.SetExcluded(channelmember.FieldRole)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ChannelMember.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(channelmember.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ChannelMemberUpsertOne) UpdateNewValues() *ChannelMemberUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(channelmember.FieldID)
+		}
+		if _, exists := u.create.mutation.JoinedAt(); exists {
+			s.SetIgnore(channelmember.FieldJoinedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ChannelMember.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ChannelMemberUpsertOne) Ignore() *ChannelMemberUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ChannelMemberUpsertOne) DoNothing() *ChannelMemberUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ChannelMemberCreate.OnConflict
+// documentation for more info.
+func (u *ChannelMemberUpsertOne) Update(set func(*ChannelMemberUpsert)) *ChannelMemberUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ChannelMemberUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRole sets the "role" field.
+func (u *ChannelMemberUpsertOne) SetRole(v string) *ChannelMemberUpsertOne {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *ChannelMemberUpsertOne) UpdateRole() *ChannelMemberUpsertOne {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.UpdateRole()
+	})
+}
+
+// Exec executes the query.
+func (u *ChannelMemberUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ChannelMemberCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ChannelMemberUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ChannelMemberUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ChannelMemberUpsertOne.ID is not supported by MySQL driver. Use ChannelMemberUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ChannelMemberUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ChannelMemberCreateBulk is the builder for creating many ChannelMember entities in bulk.
 type ChannelMemberCreateBulk struct {
 	config
 	err      error
 	builders []*ChannelMemberCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ChannelMember entities in the database.
@@ -264,6 +433,7 @@ func (_c *ChannelMemberCreateBulk) Save(ctx context.Context) ([]*ChannelMember, 
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -310,6 +480,137 @@ func (_c *ChannelMemberCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ChannelMemberCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ChannelMember.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelMemberUpsert) {
+//			SetRole(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ChannelMemberCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelMemberUpsertBulk {
+	_c.conflict = opts
+	return &ChannelMemberUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ChannelMember.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ChannelMemberCreateBulk) OnConflictColumns(columns ...string) *ChannelMemberUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ChannelMemberUpsertBulk{
+		create: _c,
+	}
+}
+
+// ChannelMemberUpsertBulk is the builder for "upsert"-ing
+// a bulk of ChannelMember nodes.
+type ChannelMemberUpsertBulk struct {
+	create *ChannelMemberCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ChannelMember.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(channelmember.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ChannelMemberUpsertBulk) UpdateNewValues() *ChannelMemberUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(channelmember.FieldID)
+			}
+			if _, exists := b.mutation.JoinedAt(); exists {
+				s.SetIgnore(channelmember.FieldJoinedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ChannelMember.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ChannelMemberUpsertBulk) Ignore() *ChannelMemberUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ChannelMemberUpsertBulk) DoNothing() *ChannelMemberUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ChannelMemberCreateBulk.OnConflict
+// documentation for more info.
+func (u *ChannelMemberUpsertBulk) Update(set func(*ChannelMemberUpsert)) *ChannelMemberUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ChannelMemberUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRole sets the "role" field.
+func (u *ChannelMemberUpsertBulk) SetRole(v string) *ChannelMemberUpsertBulk {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *ChannelMemberUpsertBulk) UpdateRole() *ChannelMemberUpsertBulk {
+	return u.Update(func(s *ChannelMemberUpsert) {
+		s.UpdateRole()
+	})
+}
+
+// Exec executes the query.
+func (u *ChannelMemberUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ChannelMemberCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ChannelMemberCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ChannelMemberUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

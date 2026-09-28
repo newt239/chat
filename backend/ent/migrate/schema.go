@@ -60,6 +60,43 @@ var (
 			},
 		},
 	}
+	// AuditLogColumns holds the columns for the "audit_log" table.
+	AuditLogColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeString},
+		{Name: "actor_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "action", Type: field.TypeString},
+		{Name: "target_type", Type: field.TypeString, Default: ""},
+		{Name: "target_id", Type: field.TypeString, Default: ""},
+		{Name: "target_label", Type: field.TypeString, Default: ""},
+		{Name: "metadata", Type: field.TypeJSON},
+		{Name: "ip_address", Type: field.TypeString, Default: ""},
+		{Name: "user_agent", Type: field.TypeString, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// AuditLogTable holds the schema information for the "audit_log" table.
+	AuditLogTable = &schema.Table{
+		Name:       "audit_log",
+		Columns:    AuditLogColumns,
+		PrimaryKey: []*schema.Column{AuditLogColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "auditlog_workspace_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{AuditLogColumns[1], AuditLogColumns[10]},
+			},
+			{
+				Name:    "auditlog_workspace_id_actor_id",
+				Unique:  false,
+				Columns: []*schema.Column{AuditLogColumns[1], AuditLogColumns[2]},
+			},
+			{
+				Name:    "auditlog_workspace_id_action",
+				Unique:  false,
+				Columns: []*schema.Column{AuditLogColumns[1], AuditLogColumns[3]},
+			},
+		},
+	}
 	// ChannelsColumns holds the columns for the "channels" table.
 	ChannelsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -67,6 +104,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "is_private", Type: field.TypeBool, Default: false},
 		{Name: "channel_type", Type: field.TypeString, Nullable: true, Default: "public"},
+		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "channel_workspace", Type: field.TypeString, Size: 12},
@@ -81,19 +119,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "channels_workspaces_workspace",
-				Columns:    []*schema.Column{ChannelsColumns[7]},
+				Columns:    []*schema.Column{ChannelsColumns[8]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "channels_users_created_by",
-				Columns:    []*schema.Column{ChannelsColumns[8]},
+				Columns:    []*schema.Column{ChannelsColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "channels_channels_children",
-				Columns:    []*schema.Column{ChannelsColumns[9]},
+				Columns:    []*schema.Column{ChannelsColumns[10]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -107,7 +145,7 @@ var (
 			{
 				Name:    "channel_name_channel_workspace",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelsColumns[1], ChannelsColumns[7]},
+				Columns: []*schema.Column{ChannelsColumns[1], ChannelsColumns[8]},
 			},
 		},
 	}
@@ -521,6 +559,8 @@ var (
 		{Name: "refresh_token_hash", Type: field.TypeString},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "ip_address", Type: field.TypeString, Default: ""},
+		{Name: "user_agent", Type: field.TypeString, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "session_user", Type: field.TypeUUID},
 	}
@@ -532,7 +572,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sessions_users_user",
-				Columns:    []*schema.Column{SessionsColumns[5]},
+				Columns:    []*schema.Column{SessionsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -827,6 +867,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeString},
 		{Name: "joined_at", Type: field.TypeTime},
+		{Name: "suspended_at", Type: field.TypeTime, Nullable: true},
 		{Name: "workspace_member_workspace", Type: field.TypeString, Size: 12},
 		{Name: "workspace_member_user", Type: field.TypeUUID},
 	}
@@ -838,13 +879,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workspace_members_workspaces_workspace",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[3]},
+				Columns:    []*schema.Column{WorkspaceMembersColumns[4]},
 				RefColumns: []*schema.Column{WorkspacesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "workspace_members_users_user",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[4]},
+				Columns:    []*schema.Column{WorkspaceMembersColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -853,13 +894,36 @@ var (
 			{
 				Name:    "workspacemember_workspace_member_workspace_workspace_member_user",
 				Unique:  true,
-				Columns: []*schema.Column{WorkspaceMembersColumns[3], WorkspaceMembersColumns[4]},
+				Columns: []*schema.Column{WorkspaceMembersColumns[4], WorkspaceMembersColumns[5]},
+			},
+		},
+	}
+	// WorkspacePermissionColumns holds the columns for the "workspace_permission" table.
+	WorkspacePermissionColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeString},
+		{Name: "role", Type: field.TypeString},
+		{Name: "permission", Type: field.TypeString},
+		{Name: "allowed", Type: field.TypeBool},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// WorkspacePermissionTable holds the schema information for the "workspace_permission" table.
+	WorkspacePermissionTable = &schema.Table{
+		Name:       "workspace_permission",
+		Columns:    WorkspacePermissionColumns,
+		PrimaryKey: []*schema.Column{WorkspacePermissionColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "workspacepermission_workspace_id_role_permission",
+				Unique:  true,
+				Columns: []*schema.Column{WorkspacePermissionColumns[1], WorkspacePermissionColumns[2], WorkspacePermissionColumns[3]},
 			},
 		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AttachmentsTable,
+		AuditLogTable,
 		ChannelsTable,
 		ChannelLinkTable,
 		ChannelMembersTable,
@@ -882,6 +946,7 @@ var (
 		UserThreadFollowsTable,
 		WorkspacesTable,
 		WorkspaceMembersTable,
+		WorkspacePermissionTable,
 	}
 )
 
@@ -889,6 +954,9 @@ func init() {
 	AttachmentsTable.ForeignKeys[0].RefTable = MessagesTable
 	AttachmentsTable.ForeignKeys[1].RefTable = UsersTable
 	AttachmentsTable.ForeignKeys[2].RefTable = ChannelsTable
+	AuditLogTable.Annotation = &entsql.Annotation{
+		Table: "audit_log",
+	}
 	ChannelsTable.ForeignKeys[0].RefTable = WorkspacesTable
 	ChannelsTable.ForeignKeys[1].RefTable = UsersTable
 	ChannelsTable.ForeignKeys[2].RefTable = ChannelsTable
@@ -940,4 +1008,7 @@ func init() {
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[0].RefTable = WorkspacesTable
 	WorkspaceMembersTable.ForeignKeys[1].RefTable = UsersTable
+	WorkspacePermissionTable.Annotation = &entsql.Annotation{
+		Table: "workspace_permission",
+	}
 }

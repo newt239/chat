@@ -15,6 +15,7 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
+	"github.com/newt239/chat/internal/usecase/audit"
 	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
 
@@ -25,6 +26,7 @@ var (
 	ErrChannelNameExists    = errors.New("同じ名前のチャンネルがすでに存在します")
 	ErrChannelHasChildren   = errors.New("下の階層にチャンネルがあるため削除できません")
 	ErrMemberNotInWorkspace = errors.New("ワークスペースのメンバーではないユーザーが含まれています")
+	ErrCannotArchiveDM      = errors.New("DM はアーカイブできません")
 )
 
 type ChannelUseCase interface {
@@ -33,6 +35,7 @@ type ChannelUseCase interface {
 	ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error)
 	CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error)
 	UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error)
+	SetArchived(ctx context.Context, input SetArchivedInput) (*ChannelOutput, error)
 	SetChannelStarred(ctx context.Context, input SetChannelStarredInput) error
 }
 
@@ -45,6 +48,8 @@ type channelInteractor struct {
 	txManager         domaintransaction.Manager
 	systemMessageUC   systemmessage.UseCase
 	channelAccessSvc  domainservice.ChannelAccessService
+	permissionSvc     domainservice.PermissionService
+	recorder          audit.Recorder
 }
 
 func NewChannelInteractor(
@@ -56,6 +61,8 @@ func NewChannelInteractor(
 	txManager domaintransaction.Manager,
 	systemMessageUC systemmessage.UseCase,
 	channelAccessSvc domainservice.ChannelAccessService,
+	permissionSvc domainservice.PermissionService,
+	recorder audit.Recorder,
 ) ChannelUseCase {
 	return &channelInteractor{
 		channelRepo:       channelRepo,
@@ -66,6 +73,8 @@ func NewChannelInteractor(
 		txManager:         txManager,
 		systemMessageUC:   systemMessageUC,
 		channelAccessSvc:  channelAccessSvc,
+		permissionSvc:     permissionSvc,
+		recorder:          recorder,
 	}
 }
 
@@ -176,21 +185,6 @@ func (i *channelInteractor) findMissingAncestors(ctx context.Context, workspaceI
 	return i.channelAccessSvc.FilterAccessible(ctx, ancestors, userID)
 }
 
-// ensureCanCreateChannel は権限設定 (#16) の導入時に差し替える前提で作成権限の判定をまとめています
-func ensureCanCreateChannel(member *entity.WorkspaceMember, isPrivate bool) error {
-	if member == nil {
-		return ErrUnauthorized
-	}
-	// 非公開チャンネルは 10 人を超える DM の代わりにも使うため、ゲスト以外なら作成できる
-	if isPrivate && member.Role != entity.WorkspaceRoleGuest {
-		return nil
-	}
-	if !member.CanCreateChannel() {
-		return ErrUnauthorized
-	}
-	return nil
-}
-
 func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error) {
 	if err := validateWorkspaceID(input.WorkspaceID); err != nil {
 		return nil, err
@@ -207,11 +201,11 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, ErrWorkspaceNotFound
 	}
 
-	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify membership: %w", err)
+	permission := entity.PermissionCreatePublicChannel
+	if input.IsPrivate {
+		permission = entity.PermissionCreatePrivateChannel
 	}
-	if err := ensureCanCreateChannel(member, input.IsPrivate); err != nil {
+	if _, err := i.permissionSvc.Ensure(ctx, input.WorkspaceID, input.UserID, permission); err != nil {
 		return nil, err
 	}
 
@@ -266,6 +260,7 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, err
 	}
 
+	i.recordChannelAction(ctx, channel, input.UserID, entity.AuditActionChannelCreated)
 	output := toChannelOutput(channel)
 	output.IsMember = true
 	return &output, nil
@@ -373,15 +368,8 @@ func (i *channelInteractor) DeleteChannel(ctx context.Context, input DeleteChann
 		return ErrChannelNotFound
 	}
 
-	// 作成者かワークスペースの管理者のみ削除できる
-	if ch.CreatedBy != input.UserID {
-		member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
-		if err != nil {
-			return fmt.Errorf("failed to verify membership: %w", err)
-		}
-		if member == nil || !member.CanCreateChannel() {
-			return ErrUnauthorized
-		}
+	if err := i.ensureCanManage(ctx, ch, input.UserID); err != nil {
+		return err
 	}
 
 	descendants, err := i.channelRepo.FindDescendants(ctx, ch)
@@ -395,7 +383,66 @@ func (i *channelInteractor) DeleteChannel(ctx context.Context, input DeleteChann
 	if err := i.channelRepo.Delete(ctx, input.ChannelID); err != nil {
 		return fmt.Errorf("failed to delete channel: %w", err)
 	}
+	i.recordChannelAction(ctx, ch, input.UserID, entity.AuditActionChannelDeleted)
 	return nil
+}
+
+// SetArchived はチャンネルをアーカイブ・解除します。アーカイブ中は投稿できません
+func (i *channelInteractor) SetArchived(ctx context.Context, input SetArchivedInput) (*ChannelOutput, error) {
+	ch, err := i.channelRepo.FindByID(ctx, input.ChannelID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch channel: %w", err)
+	}
+	if ch == nil {
+		return nil, ErrChannelNotFound
+	}
+	if ch.Type == entity.ChannelTypeDM || ch.Type == entity.ChannelTypeGroupDM {
+		return nil, ErrCannotArchiveDM
+	}
+	if err := i.ensureCanManage(ctx, ch, input.UserID); err != nil {
+		return nil, err
+	}
+
+	if (ch.ArchivedAt != nil) != input.Archived {
+		action := entity.AuditActionChannelUnarchived
+		ch.ArchivedAt = nil
+		if input.Archived {
+			now := time.Now()
+			ch.ArchivedAt = &now
+			action = entity.AuditActionChannelArchived
+		}
+		if err := i.channelRepo.Update(ctx, ch); err != nil {
+			return nil, fmt.Errorf("failed to update channel: %w", err)
+		}
+		i.recordChannelAction(ctx, ch, input.UserID, action)
+	}
+
+	out := toChannelOutput(ch)
+	return &out, nil
+}
+
+// ensureCanManage はチャンネルの作成者かワークスペースの管理者であることを確認します
+func (i *channelInteractor) ensureCanManage(ctx context.Context, ch *entity.Channel, userID string) error {
+	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to verify membership: %w", err)
+	}
+	if member == nil || (ch.CreatedBy != userID && !member.IsAdmin()) {
+		return ErrUnauthorized
+	}
+	return nil
+}
+
+func (i *channelInteractor) recordChannelAction(ctx context.Context, ch *entity.Channel, actorID string, action entity.AuditAction) {
+	i.recorder.Record(ctx, entity.AuditLog{
+		WorkspaceID: ch.WorkspaceID,
+		ActorID:     &actorID,
+		Action:      action,
+		TargetType:  entity.AuditTargetChannel,
+		TargetID:    ch.ID,
+		TargetLabel: ch.Name,
+		Metadata:    map[string]string{"private": fmt.Sprint(ch.IsPrivate)},
+	})
 }
 
 func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error) {
@@ -416,7 +463,7 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 
 	// 権限: ワークスペースの管理権限（チャンネル編集権限として流用）
 	wsMember, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
-	if err != nil || wsMember == nil || !wsMember.CanCreateChannel() {
+	if err != nil || wsMember == nil || !wsMember.IsAdmin() {
 		return nil, ErrUnauthorized
 	}
 
@@ -564,6 +611,7 @@ func toChannelOutputWithUnread(channel *entity.Channel, unreadCount int, hasMent
 		UnreadCount: unreadCount,
 		HasMention:  hasMention,
 		ParentID:    channel.ParentID,
+		ArchivedAt:  channel.ArchivedAt,
 	}
 }
 

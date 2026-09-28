@@ -57,6 +57,22 @@ func (s *ChannelServer) UpdateChannel(ctx context.Context, req *chatv1.UpdateCha
 	return &chatv1.UpdateChannelResponse{Channel: presenter.Channel(*out)}, nil
 }
 
+func (s *ChannelServer) ArchiveChannel(ctx context.Context, req *chatv1.ArchiveChannelRequest) (*chatv1.ArchiveChannelResponse, error) {
+	out, err := s.UC.SetArchived(ctx, channeluc.SetArchivedInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), Archived: true})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.ArchiveChannelResponse{Channel: presenter.Channel(*out)}, nil
+}
+
+func (s *ChannelServer) UnarchiveChannel(ctx context.Context, req *chatv1.UnarchiveChannelRequest) (*chatv1.UnarchiveChannelResponse, error) {
+	out, err := s.UC.SetArchived(ctx, channeluc.SetArchivedInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), Archived: false})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.UnarchiveChannelResponse{Channel: presenter.Channel(*out)}, nil
+}
+
 func (s *ChannelServer) DeleteChannel(ctx context.Context, req *chatv1.DeleteChannelRequest) (*chatv1.DeleteChannelResponse, error) {
 	if err := s.UC.DeleteChannel(ctx, channeluc.DeleteChannelInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx)}); err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/attachment"
+	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
@@ -30,6 +31,7 @@ import (
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
+	"github.com/newt239/chat/ent/workspacepermission"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -66,6 +68,44 @@ func init() {
 	attachmentDescID := attachmentFields[0].Descriptor()
 	// attachment.DefaultID holds the default value on creation for the id field.
 	attachment.DefaultID = attachmentDescID.Default.(func() uuid.UUID)
+	auditlogFields := schema.AuditLog{}.Fields()
+	_ = auditlogFields
+	// auditlogDescWorkspaceID is the schema descriptor for workspace_id field.
+	auditlogDescWorkspaceID := auditlogFields[1].Descriptor()
+	// auditlog.WorkspaceIDValidator is a validator for the "workspace_id" field. It is called by the builders before save.
+	auditlog.WorkspaceIDValidator = auditlogDescWorkspaceID.Validators[0].(func(string) error)
+	// auditlogDescAction is the schema descriptor for action field.
+	auditlogDescAction := auditlogFields[3].Descriptor()
+	// auditlog.ActionValidator is a validator for the "action" field. It is called by the builders before save.
+	auditlog.ActionValidator = auditlogDescAction.Validators[0].(func(string) error)
+	// auditlogDescTargetType is the schema descriptor for target_type field.
+	auditlogDescTargetType := auditlogFields[4].Descriptor()
+	// auditlog.DefaultTargetType holds the default value on creation for the target_type field.
+	auditlog.DefaultTargetType = auditlogDescTargetType.Default.(string)
+	// auditlogDescTargetID is the schema descriptor for target_id field.
+	auditlogDescTargetID := auditlogFields[5].Descriptor()
+	// auditlog.DefaultTargetID holds the default value on creation for the target_id field.
+	auditlog.DefaultTargetID = auditlogDescTargetID.Default.(string)
+	// auditlogDescTargetLabel is the schema descriptor for target_label field.
+	auditlogDescTargetLabel := auditlogFields[6].Descriptor()
+	// auditlog.DefaultTargetLabel holds the default value on creation for the target_label field.
+	auditlog.DefaultTargetLabel = auditlogDescTargetLabel.Default.(string)
+	// auditlogDescIPAddress is the schema descriptor for ip_address field.
+	auditlogDescIPAddress := auditlogFields[8].Descriptor()
+	// auditlog.DefaultIPAddress holds the default value on creation for the ip_address field.
+	auditlog.DefaultIPAddress = auditlogDescIPAddress.Default.(string)
+	// auditlogDescUserAgent is the schema descriptor for user_agent field.
+	auditlogDescUserAgent := auditlogFields[9].Descriptor()
+	// auditlog.DefaultUserAgent holds the default value on creation for the user_agent field.
+	auditlog.DefaultUserAgent = auditlogDescUserAgent.Default.(string)
+	// auditlogDescCreatedAt is the schema descriptor for created_at field.
+	auditlogDescCreatedAt := auditlogFields[10].Descriptor()
+	// auditlog.DefaultCreatedAt holds the default value on creation for the created_at field.
+	auditlog.DefaultCreatedAt = auditlogDescCreatedAt.Default.(func() time.Time)
+	// auditlogDescID is the schema descriptor for id field.
+	auditlogDescID := auditlogFields[0].Descriptor()
+	// auditlog.DefaultID holds the default value on creation for the id field.
+	auditlog.DefaultID = auditlogDescID.Default.(func() uuid.UUID)
 	channelFields := schema.Channel{}.Fields()
 	_ = channelFields
 	// channelDescName is the schema descriptor for name field.
@@ -81,11 +121,11 @@ func init() {
 	// channel.DefaultChannelType holds the default value on creation for the channel_type field.
 	channel.DefaultChannelType = channelDescChannelType.Default.(string)
 	// channelDescCreatedAt is the schema descriptor for created_at field.
-	channelDescCreatedAt := channelFields[6].Descriptor()
+	channelDescCreatedAt := channelFields[7].Descriptor()
 	// channel.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channel.DefaultCreatedAt = channelDescCreatedAt.Default.(func() time.Time)
 	// channelDescUpdatedAt is the schema descriptor for updated_at field.
-	channelDescUpdatedAt := channelFields[7].Descriptor()
+	channelDescUpdatedAt := channelFields[8].Descriptor()
 	// channel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	channel.DefaultUpdatedAt = channelDescUpdatedAt.Default.(func() time.Time)
 	// channel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -244,8 +284,16 @@ func init() {
 	sessionDescRefreshTokenHash := sessionFields[1].Descriptor()
 	// session.RefreshTokenHashValidator is a validator for the "refresh_token_hash" field. It is called by the builders before save.
 	session.RefreshTokenHashValidator = sessionDescRefreshTokenHash.Validators[0].(func(string) error)
+	// sessionDescIPAddress is the schema descriptor for ip_address field.
+	sessionDescIPAddress := sessionFields[4].Descriptor()
+	// session.DefaultIPAddress holds the default value on creation for the ip_address field.
+	session.DefaultIPAddress = sessionDescIPAddress.Default.(string)
+	// sessionDescUserAgent is the schema descriptor for user_agent field.
+	sessionDescUserAgent := sessionFields[5].Descriptor()
+	// session.DefaultUserAgent holds the default value on creation for the user_agent field.
+	session.DefaultUserAgent = sessionDescUserAgent.Default.(string)
 	// sessionDescCreatedAt is the schema descriptor for created_at field.
-	sessionDescCreatedAt := sessionFields[4].Descriptor()
+	sessionDescCreatedAt := sessionFields[6].Descriptor()
 	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
 	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
 	// sessionDescID is the schema descriptor for id field.
@@ -420,4 +468,28 @@ func init() {
 	workspacememberDescID := workspacememberFields[0].Descriptor()
 	// workspacemember.DefaultID holds the default value on creation for the id field.
 	workspacemember.DefaultID = workspacememberDescID.Default.(func() uuid.UUID)
+	workspacepermissionFields := schema.WorkspacePermission{}.Fields()
+	_ = workspacepermissionFields
+	// workspacepermissionDescWorkspaceID is the schema descriptor for workspace_id field.
+	workspacepermissionDescWorkspaceID := workspacepermissionFields[1].Descriptor()
+	// workspacepermission.WorkspaceIDValidator is a validator for the "workspace_id" field. It is called by the builders before save.
+	workspacepermission.WorkspaceIDValidator = workspacepermissionDescWorkspaceID.Validators[0].(func(string) error)
+	// workspacepermissionDescRole is the schema descriptor for role field.
+	workspacepermissionDescRole := workspacepermissionFields[2].Descriptor()
+	// workspacepermission.RoleValidator is a validator for the "role" field. It is called by the builders before save.
+	workspacepermission.RoleValidator = workspacepermissionDescRole.Validators[0].(func(string) error)
+	// workspacepermissionDescPermission is the schema descriptor for permission field.
+	workspacepermissionDescPermission := workspacepermissionFields[3].Descriptor()
+	// workspacepermission.PermissionValidator is a validator for the "permission" field. It is called by the builders before save.
+	workspacepermission.PermissionValidator = workspacepermissionDescPermission.Validators[0].(func(string) error)
+	// workspacepermissionDescUpdatedAt is the schema descriptor for updated_at field.
+	workspacepermissionDescUpdatedAt := workspacepermissionFields[5].Descriptor()
+	// workspacepermission.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	workspacepermission.DefaultUpdatedAt = workspacepermissionDescUpdatedAt.Default.(func() time.Time)
+	// workspacepermission.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	workspacepermission.UpdateDefaultUpdatedAt = workspacepermissionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// workspacepermissionDescID is the schema descriptor for id field.
+	workspacepermissionDescID := workspacepermissionFields[0].Descriptor()
+	// workspacepermission.DefaultID holds the default value on creation for the id field.
+	workspacepermission.DefaultID = workspacepermissionDescID.Default.(func() uuid.UUID)
 }

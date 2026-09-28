@@ -3,10 +3,12 @@ package repository
 import (
 	"context"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 
 	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -47,7 +49,7 @@ func (r *workspaceRepository) FindByUserID(ctx context.Context, userID string) (
 		return nil, err
 	}
 	workspaces, err := client.Workspace.Query().
-		Where(workspace.HasMembersWith(workspacemember.HasUserWith(user.ID(uid)))).
+		Where(workspace.HasMembersWith(workspacemember.HasUserWith(user.ID(uid)), workspacemember.SuspendedAtIsNil())).
 		WithCreatedBy().
 		All(ctx)
 	if err != nil {
@@ -206,6 +208,26 @@ func (r *workspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID 
 	return err
 }
 
+func (r *workspaceRepository) SetMemberSuspended(ctx context.Context, workspaceID string, userID string, suspendedAt *time.Time) error {
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	update := client.WorkspaceMember.Update().
+		Where(
+			workspacemember.HasWorkspaceWith(workspace.ID(workspaceID)),
+			workspacemember.HasUserWith(user.ID(uid)),
+		)
+	if suspendedAt == nil {
+		update = update.ClearSuspendedAt()
+	} else {
+		update = update.SetSuspendedAt(*suspendedAt)
+	}
+	return update.Exec(ctx)
+}
+
 func (r *workspaceRepository) RemoveMember(ctx context.Context, workspaceID, userID string) error {
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
@@ -243,6 +265,14 @@ func (r *workspaceRepository) FindMembersByWorkspaceID(ctx context.Context, work
 }
 
 func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string, userID string) (*entity.WorkspaceMember, error) {
+	return r.findMember(ctx, workspaceID, userID, workspacemember.SuspendedAtIsNil())
+}
+
+func (r *workspaceRepository) FindMemberIncludingSuspended(ctx context.Context, workspaceID string, userID string) (*entity.WorkspaceMember, error) {
+	return r.findMember(ctx, workspaceID, userID)
+}
+
+func (r *workspaceRepository) findMember(ctx context.Context, workspaceID string, userID string, predicates ...predicate.WorkspaceMember) (*entity.WorkspaceMember, error) {
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
@@ -254,6 +284,7 @@ func (r *workspaceRepository) FindMember(ctx context.Context, workspaceID string
 			s.Where(sql.EQ(workspacemember.WorkspaceColumn, workspaceID))
 			s.Where(sql.EQ(workspacemember.UserColumn, uid))
 		}).
+		Where(predicates...).
 		WithWorkspace().
 		WithUser().
 		Only(ctx)

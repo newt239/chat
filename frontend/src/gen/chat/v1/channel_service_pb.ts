@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/channel_service.proto.
  */
 export const file_chat_v1_channel_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch1jaGF0L3YxL2NoYW5uZWxfc2VydmljZS5wcm90bxIHY2hhdC52MSLjAgoHQ2hhbm5lbBIKCgJpZBgBIAEoCRIUCgx3b3Jrc3BhY2VfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIYCgtkZXNjcmlwdGlvbhgEIAEoCUgAiAEBEhIKCmlzX3ByaXZhdGUYBSABKAgSEgoKY3JlYXRlZF9ieRgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgx1bnJlYWRfY291bnQYCSABKAUSEwoLaGFzX21lbnRpb24YCiABKAgSFgoJcGFyZW50X2lkGAsgASgJSAGIAQESEgoKaXNfc3RhcnJlZBgMIAEoCBIRCglpc19tZW1iZXIYDSABKAhCDgoMX2Rlc2NyaXB0aW9uQgwKCl9wYXJlbnRfaWQiNAoTTGlzdENoYW5uZWxzUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAEiOgoUTGlzdENoYW5uZWxzUmVzcG9uc2USIgoIY2hhbm5lbHMYASADKAsyEC5jaGF0LnYxLkNoYW5uZWwi4gEKFENyZWF0ZUNoYW5uZWxSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARJKCgRuYW1lGAIgASgJQjy6SDlyNxjIATIyXltccHtMfVxwe059Xy1dezEsMzJ9KC9bXHB7TH1ccHtOfV8tXXsxLDMyfSl7MCwzfSQSGAoLZGVzY3JpcHRpb24YAyABKAlIAIgBARISCgppc19wcml2YXRlGAQgASgIEiEKCm1lbWJlcl9pZHMYBSADKAlCDbpICpIBByIFcgOwAQFCDgoMX2Rlc2NyaXB0aW9uIjoKFUNyZWF0ZUNoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsIjEKEUdldENoYW5uZWxSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBIjcKEkdldENoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsIuABChRVcGRhdGVDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARJPCgRuYW1lGAIgASgJQjy6SDlyNxjIATIyXltccHtMfVxwe059Xy1dezEsMzJ9KC9bXHB7TH1ccHtOfV8tXXsxLDMyfSl7MCwzfSRIAIgBARIYCgtkZXNjcmlwdGlvbhgDIAEoCUgBiAEBEhcKCmlzX3ByaXZhdGUYBCABKAhIAogBAUIHCgVfbmFtZUIOCgxfZGVzY3JpcHRpb25CDQoLX2lzX3ByaXZhdGUiOgoVVXBkYXRlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiNAoURGVsZXRlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiFwoVRGVsZXRlQ2hhbm5lbFJlc3BvbnNlIkkKGFNldENoYW5uZWxTdGFycmVkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIPCgdzdGFycmVkGAIgASgIIhsKGVNldENoYW5uZWxTdGFycmVkUmVzcG9uc2Uy8AMKDkNoYW5uZWxTZXJ2aWNlEksKDExpc3RDaGFubmVscxIcLmNoYXQudjEuTGlzdENoYW5uZWxzUmVxdWVzdBodLmNoYXQudjEuTGlzdENoYW5uZWxzUmVzcG9uc2USTgoNQ3JlYXRlQ2hhbm5lbBIdLmNoYXQudjEuQ3JlYXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLkNyZWF0ZUNoYW5uZWxSZXNwb25zZRJFCgpHZXRDaGFubmVsEhouY2hhdC52MS5HZXRDaGFubmVsUmVxdWVzdBobLmNoYXQudjEuR2V0Q2hhbm5lbFJlc3BvbnNlEk4KDVVwZGF0ZUNoYW5uZWwSHS5jaGF0LnYxLlVwZGF0ZUNoYW5uZWxSZXF1ZXN0Gh4uY2hhdC52MS5VcGRhdGVDaGFubmVsUmVzcG9uc2USTgoNRGVsZXRlQ2hhbm5lbBIdLmNoYXQudjEuRGVsZXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLkRlbGV0ZUNoYW5uZWxSZXNwb25zZRJaChFTZXRDaGFubmVsU3RhcnJlZBIhLmNoYXQudjEuU2V0Q2hhbm5lbFN0YXJyZWRSZXF1ZXN0GiIuY2hhdC52MS5TZXRDaGFubmVsU3RhcnJlZFJlc3BvbnNlQpQBCgtjb20uY2hhdC52MUITQ2hhbm5lbFNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("Ch1jaGF0L3YxL2NoYW5uZWxfc2VydmljZS5wcm90bxIHY2hhdC52MSKpAwoHQ2hhbm5lbBIKCgJpZBgBIAEoCRIUCgx3b3Jrc3BhY2VfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIYCgtkZXNjcmlwdGlvbhgEIAEoCUgAiAEBEhIKCmlzX3ByaXZhdGUYBSABKAgSEgoKY3JlYXRlZF9ieRgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgx1bnJlYWRfY291bnQYCSABKAUSEwoLaGFzX21lbnRpb24YCiABKAgSFgoJcGFyZW50X2lkGAsgASgJSAGIAQESEgoKaXNfc3RhcnJlZBgMIAEoCBIRCglpc19tZW1iZXIYDSABKAgSNAoLYXJjaGl2ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAKIAQFCDgoMX2Rlc2NyaXB0aW9uQgwKCl9wYXJlbnRfaWRCDgoMX2FyY2hpdmVkX2F0IjQKE0xpc3RDaGFubmVsc1JlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABIjoKFExpc3RDaGFubmVsc1Jlc3BvbnNlEiIKCGNoYW5uZWxzGAEgAygLMhAuY2hhdC52MS5DaGFubmVsIuIBChRDcmVhdGVDaGFubmVsUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESSgoEbmFtZRgCIAEoCUI8ukg5cjcYyAEyMl5bXHB7TH1ccHtOfV8tXXsxLDMyfSgvW1xwe0x9XHB7Tn1fLV17MSwzMn0pezAsM30kEhgKC2Rlc2NyaXB0aW9uGAMgASgJSACIAQESEgoKaXNfcHJpdmF0ZRgEIAEoCBIhCgptZW1iZXJfaWRzGAUgAygJQg26SAqSAQciBXIDsAEBQg4KDF9kZXNjcmlwdGlvbiI6ChVDcmVhdGVDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCIxChFHZXRDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASI3ChJHZXRDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCLgAQoUVXBkYXRlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESTwoEbmFtZRgCIAEoCUI8ukg5cjcYyAEyMl5bXHB7TH1ccHtOfV8tXXsxLDMyfSgvW1xwe0x9XHB7Tn1fLV17MSwzMn0pezAsM30kSACIAQESGAoLZGVzY3JpcHRpb24YAyABKAlIAYgBARIXCgppc19wcml2YXRlGAQgASgISAKIAQFCBwoFX25hbWVCDgoMX2Rlc2NyaXB0aW9uQg0KC19pc19wcml2YXRlIjoKFVVwZGF0ZUNoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsIjQKFERlbGV0ZUNoYW5uZWxSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBIhcKFURlbGV0ZUNoYW5uZWxSZXNwb25zZSJJChhTZXRDaGFubmVsU3RhcnJlZFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESDwoHc3RhcnJlZBgCIAEoCCIbChlTZXRDaGFubmVsU3RhcnJlZFJlc3BvbnNlIjUKFUFyY2hpdmVDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASI7ChZBcmNoaXZlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiNwoXVW5hcmNoaXZlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiPQoYVW5hcmNoaXZlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwynAUKDkNoYW5uZWxTZXJ2aWNlEksKDExpc3RDaGFubmVscxIcLmNoYXQudjEuTGlzdENoYW5uZWxzUmVxdWVzdBodLmNoYXQudjEuTGlzdENoYW5uZWxzUmVzcG9uc2USTgoNQ3JlYXRlQ2hhbm5lbBIdLmNoYXQudjEuQ3JlYXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLkNyZWF0ZUNoYW5uZWxSZXNwb25zZRJFCgpHZXRDaGFubmVsEhouY2hhdC52MS5HZXRDaGFubmVsUmVxdWVzdBobLmNoYXQudjEuR2V0Q2hhbm5lbFJlc3BvbnNlEk4KDVVwZGF0ZUNoYW5uZWwSHS5jaGF0LnYxLlVwZGF0ZUNoYW5uZWxSZXF1ZXN0Gh4uY2hhdC52MS5VcGRhdGVDaGFubmVsUmVzcG9uc2USTgoNRGVsZXRlQ2hhbm5lbBIdLmNoYXQudjEuRGVsZXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLkRlbGV0ZUNoYW5uZWxSZXNwb25zZRJaChFTZXRDaGFubmVsU3RhcnJlZBIhLmNoYXQudjEuU2V0Q2hhbm5lbFN0YXJyZWRSZXF1ZXN0GiIuY2hhdC52MS5TZXRDaGFubmVsU3RhcnJlZFJlc3BvbnNlElEKDkFyY2hpdmVDaGFubmVsEh4uY2hhdC52MS5BcmNoaXZlQ2hhbm5lbFJlcXVlc3QaHy5jaGF0LnYxLkFyY2hpdmVDaGFubmVsUmVzcG9uc2USVwoQVW5hcmNoaXZlQ2hhbm5lbBIgLmNoYXQudjEuVW5hcmNoaXZlQ2hhbm5lbFJlcXVlc3QaIS5jaGF0LnYxLlVuYXJjaGl2ZUNoYW5uZWxSZXNwb25zZUKUAQoLY29tLmNoYXQudjFCE0NoYW5uZWxTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.Channel
@@ -87,6 +87,13 @@ export type Channel = Message<"chat.v1.Channel"> & {
    * @generated from field: bool is_member = 13;
    */
   isMember: boolean;
+
+  /**
+   * アーカイブ中の場合だけ設定される
+   *
+   * @generated from field: optional google.protobuf.Timestamp archived_at = 14;
+   */
+  archivedAt?: Timestamp | undefined;
 };
 
 /**
@@ -339,6 +346,74 @@ export const SetChannelStarredResponseSchema: GenMessage<SetChannelStarredRespon
   messageDesc(file_chat_v1_channel_service, 12);
 
 /**
+ * @generated from message chat.v1.ArchiveChannelRequest
+ */
+export type ArchiveChannelRequest = Message<"chat.v1.ArchiveChannelRequest"> & {
+  /**
+   * @generated from field: string channel_id = 1;
+   */
+  channelId: string;
+};
+
+/**
+ * Describes the message chat.v1.ArchiveChannelRequest.
+ * Use `create(ArchiveChannelRequestSchema)` to create a new message.
+ */
+export const ArchiveChannelRequestSchema: GenMessage<ArchiveChannelRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_channel_service, 13);
+
+/**
+ * @generated from message chat.v1.ArchiveChannelResponse
+ */
+export type ArchiveChannelResponse = Message<"chat.v1.ArchiveChannelResponse"> & {
+  /**
+   * @generated from field: chat.v1.Channel channel = 1;
+   */
+  channel?: Channel | undefined;
+};
+
+/**
+ * Describes the message chat.v1.ArchiveChannelResponse.
+ * Use `create(ArchiveChannelResponseSchema)` to create a new message.
+ */
+export const ArchiveChannelResponseSchema: GenMessage<ArchiveChannelResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_channel_service, 14);
+
+/**
+ * @generated from message chat.v1.UnarchiveChannelRequest
+ */
+export type UnarchiveChannelRequest = Message<"chat.v1.UnarchiveChannelRequest"> & {
+  /**
+   * @generated from field: string channel_id = 1;
+   */
+  channelId: string;
+};
+
+/**
+ * Describes the message chat.v1.UnarchiveChannelRequest.
+ * Use `create(UnarchiveChannelRequestSchema)` to create a new message.
+ */
+export const UnarchiveChannelRequestSchema: GenMessage<UnarchiveChannelRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_channel_service, 15);
+
+/**
+ * @generated from message chat.v1.UnarchiveChannelResponse
+ */
+export type UnarchiveChannelResponse = Message<"chat.v1.UnarchiveChannelResponse"> & {
+  /**
+   * @generated from field: chat.v1.Channel channel = 1;
+   */
+  channel?: Channel | undefined;
+};
+
+/**
+ * Describes the message chat.v1.UnarchiveChannelResponse.
+ * Use `create(UnarchiveChannelResponseSchema)` to create a new message.
+ */
+export const UnarchiveChannelResponseSchema: GenMessage<UnarchiveChannelResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_channel_service, 16);
+
+/**
  * @generated from service chat.v1.ChannelService
  */
 export const ChannelService: GenService<{
@@ -389,6 +464,24 @@ export const ChannelService: GenService<{
     methodKind: "unary";
     input: typeof SetChannelStarredRequestSchema;
     output: typeof SetChannelStarredResponseSchema;
+  },
+  /**
+   * チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
+   *
+   * @generated from rpc chat.v1.ChannelService.ArchiveChannel
+   */
+  archiveChannel: {
+    methodKind: "unary";
+    input: typeof ArchiveChannelRequestSchema;
+    output: typeof ArchiveChannelResponseSchema;
+  },
+  /**
+   * @generated from rpc chat.v1.ChannelService.UnarchiveChannel
+   */
+  unarchiveChannel: {
+    methodKind: "unary";
+    input: typeof UnarchiveChannelRequestSchema;
+    output: typeof UnarchiveChannelResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_chat_v1_channel_service, 0);

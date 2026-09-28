@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type ChannelLinkCreate struct {
 	config
 	mutation *ChannelLinkMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTitle sets the "title" field.
@@ -230,6 +233,7 @@ func (_c *ChannelLinkCreate) createSpec() (*ChannelLink, *sqlgraph.CreateSpec) {
 		_node = &ChannelLink{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(channellink.Table, sqlgraph.NewFieldSpec(channellink.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -291,11 +295,267 @@ func (_c *ChannelLinkCreate) createSpec() (*ChannelLink, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ChannelLink.Create().
+//		SetTitle(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelLinkUpsert) {
+//			SetTitle(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ChannelLinkCreate) OnConflict(opts ...sql.ConflictOption) *ChannelLinkUpsertOne {
+	_c.conflict = opts
+	return &ChannelLinkUpsertOne{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ChannelLink.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ChannelLinkCreate) OnConflictColumns(columns ...string) *ChannelLinkUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ChannelLinkUpsertOne{
+		create: _c,
+	}
+}
+
+type (
+	// ChannelLinkUpsertOne is the builder for "upsert"-ing
+	//  one ChannelLink node.
+	ChannelLinkUpsertOne struct {
+		create *ChannelLinkCreate
+	}
+
+	// ChannelLinkUpsert is the "OnConflict" setter.
+	ChannelLinkUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTitle sets the "title" field.
+func (u *ChannelLinkUpsert) SetTitle(v string) *ChannelLinkUpsert {
+	u.Set(channellink.FieldTitle, v)
+	return u
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *ChannelLinkUpsert) UpdateTitle() *ChannelLinkUpsert {
+	u.SetExcluded(channellink.FieldTitle)
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *ChannelLinkUpsert) SetURL(v string) *ChannelLinkUpsert {
+	u.Set(channellink.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ChannelLinkUpsert) UpdateURL() *ChannelLinkUpsert {
+	u.SetExcluded(channellink.FieldURL)
+	return u
+}
+
+// SetPosition sets the "position" field.
+func (u *ChannelLinkUpsert) SetPosition(v int) *ChannelLinkUpsert {
+	u.Set(channellink.FieldPosition, v)
+	return u
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ChannelLinkUpsert) UpdatePosition() *ChannelLinkUpsert {
+	u.SetExcluded(channellink.FieldPosition)
+	return u
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ChannelLinkUpsert) AddPosition(v int) *ChannelLinkUpsert {
+	u.Add(channellink.FieldPosition, v)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ChannelLinkUpsert) SetUpdatedAt(v time.Time) *ChannelLinkUpsert {
+	u.Set(channellink.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ChannelLinkUpsert) UpdateUpdatedAt() *ChannelLinkUpsert {
+	u.SetExcluded(channellink.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.ChannelLink.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(channellink.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ChannelLinkUpsertOne) UpdateNewValues() *ChannelLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(channellink.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(channellink.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ChannelLink.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ChannelLinkUpsertOne) Ignore() *ChannelLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ChannelLinkUpsertOne) DoNothing() *ChannelLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ChannelLinkCreate.OnConflict
+// documentation for more info.
+func (u *ChannelLinkUpsertOne) Update(set func(*ChannelLinkUpsert)) *ChannelLinkUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ChannelLinkUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTitle sets the "title" field.
+func (u *ChannelLinkUpsertOne) SetTitle(v string) *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetTitle(v)
+	})
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *ChannelLinkUpsertOne) UpdateTitle() *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateTitle()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *ChannelLinkUpsertOne) SetURL(v string) *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ChannelLinkUpsertOne) UpdateURL() *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetPosition sets the "position" field.
+func (u *ChannelLinkUpsertOne) SetPosition(v int) *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetPosition(v)
+	})
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ChannelLinkUpsertOne) AddPosition(v int) *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.AddPosition(v)
+	})
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ChannelLinkUpsertOne) UpdatePosition() *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdatePosition()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ChannelLinkUpsertOne) SetUpdatedAt(v time.Time) *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ChannelLinkUpsertOne) UpdateUpdatedAt() *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ChannelLinkUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ChannelLinkCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ChannelLinkUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ChannelLinkUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ChannelLinkUpsertOne.ID is not supported by MySQL driver. Use ChannelLinkUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ChannelLinkUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ChannelLinkCreateBulk is the builder for creating many ChannelLink entities in bulk.
 type ChannelLinkCreateBulk struct {
 	config
 	err      error
 	builders []*ChannelLinkCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ChannelLink entities in the database.
@@ -325,6 +585,7 @@ func (_c *ChannelLinkCreateBulk) Save(ctx context.Context) ([]*ChannelLink, erro
 					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -371,6 +632,186 @@ func (_c *ChannelLinkCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (_c *ChannelLinkCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ChannelLink.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ChannelLinkUpsert) {
+//			SetTitle(v+v).
+//		}).
+//		Exec(ctx)
+func (_c *ChannelLinkCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelLinkUpsertBulk {
+	_c.conflict = opts
+	return &ChannelLinkUpsertBulk{
+		create: _c,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ChannelLink.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (_c *ChannelLinkCreateBulk) OnConflictColumns(columns ...string) *ChannelLinkUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
+	return &ChannelLinkUpsertBulk{
+		create: _c,
+	}
+}
+
+// ChannelLinkUpsertBulk is the builder for "upsert"-ing
+// a bulk of ChannelLink nodes.
+type ChannelLinkUpsertBulk struct {
+	create *ChannelLinkCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ChannelLink.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(channellink.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *ChannelLinkUpsertBulk) UpdateNewValues() *ChannelLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(channellink.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(channellink.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ChannelLink.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ChannelLinkUpsertBulk) Ignore() *ChannelLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ChannelLinkUpsertBulk) DoNothing() *ChannelLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ChannelLinkCreateBulk.OnConflict
+// documentation for more info.
+func (u *ChannelLinkUpsertBulk) Update(set func(*ChannelLinkUpsert)) *ChannelLinkUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ChannelLinkUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTitle sets the "title" field.
+func (u *ChannelLinkUpsertBulk) SetTitle(v string) *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetTitle(v)
+	})
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *ChannelLinkUpsertBulk) UpdateTitle() *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateTitle()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *ChannelLinkUpsertBulk) SetURL(v string) *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *ChannelLinkUpsertBulk) UpdateURL() *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetPosition sets the "position" field.
+func (u *ChannelLinkUpsertBulk) SetPosition(v int) *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetPosition(v)
+	})
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ChannelLinkUpsertBulk) AddPosition(v int) *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.AddPosition(v)
+	})
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ChannelLinkUpsertBulk) UpdatePosition() *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdatePosition()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ChannelLinkUpsertBulk) SetUpdatedAt(v time.Time) *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ChannelLinkUpsertBulk) UpdateUpdatedAt() *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *ChannelLinkUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ChannelLinkCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ChannelLinkCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ChannelLinkUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
