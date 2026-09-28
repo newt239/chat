@@ -4,8 +4,7 @@ export {
   hasSearchConditions,
   parseSearchQuery,
   searchDateRange,
-  searchDuringValues,
   searchHasValues,
   searchIsValues,
 } from "./query";
-export type { SearchDuring, SearchHas, SearchIs, SearchQuery } from "./query";
+export type { SearchHas, SearchIs, SearchQuery } from "./query";
