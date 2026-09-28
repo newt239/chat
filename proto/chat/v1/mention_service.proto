@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+import "google/protobuf/timestamp.proto";
+
+service MentionService {
+  // 自分宛てのメンション（@自分、所属グループ、@channel / @here）を含むメッセージを新しい順に返す
+  rpc ListMentions(ListMentionsRequest) returns (ListMentionsResponse);
+}
+
+message MentionCursor {
+  google.protobuf.Timestamp created_at = 1 [(buf.validate.field).required = true];
+  string message_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message ListMentionsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  // 前ページの next_cursor をそのまま渡す
+  MentionCursor cursor = 2;
+  // 0 の場合はサーバーの既定値を使う
+  int32 limit = 3 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 100
+  }];
+}
+
+message ListMentionsResponse {
+  repeated Message messages = 1;
+  // 次のページがない場合は未設定
+  MentionCursor next_cursor = 2;
+}

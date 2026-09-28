@@ -348,6 +348,7 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 | `ChannelService` | ListChannels / CreateChannel / GetChannel / UpdateChannel / DeleteChannel | `channel_service.proto` |
 | `DirectMessageService` | ListDirectMessages / CreateDirectMessage / CreateGroupDirectMessage | `direct_message_service.proto` |
 | `LinkService` | FetchOgp | `link_service.proto` |
+| `MentionService` | ListMentions | `mention_service.proto` |
 | `MessageService` | ListMessages / ListMessagesWithThread / CreateMessage / UpdateMessage / DeleteMessage | `message_service.proto` |
 | `PinService` | ListPins / CreatePin / DeletePin | `pin_service.proto` |
 | `ReactionService` | ListReactions / AddReaction / RemoveReaction | `reaction_service.proto` |

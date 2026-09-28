@@ -61,13 +61,15 @@ type MessageEdges struct {
 	Links []*MessageLink `json:"links,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*Attachment `json:"attachments,omitempty"`
+	// Pins holds the value of the pins edge.
+	Pins []*MessagePin `json:"pins,omitempty"`
 	// UserThreadFollows holds the value of the user_thread_follows edge.
 	UserThreadFollows []*UserThreadFollow `json:"user_thread_follows,omitempty"`
 	// ThreadReadStates holds the value of the thread_read_states edge.
 	ThreadReadStates []*ThreadReadState `json:"thread_read_states,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [12]bool
+	loadedTypes [13]bool
 }
 
 // ChannelOrErr returns the Channel value or an error if the edge
@@ -166,10 +168,19 @@ func (e MessageEdges) AttachmentsOrErr() ([]*Attachment, error) {
 	return nil, &NotLoadedError{edge: "attachments"}
 }
 
+// PinsOrErr returns the Pins value or an error if the edge
+// was not loaded in eager-loading.
+func (e MessageEdges) PinsOrErr() ([]*MessagePin, error) {
+	if e.loadedTypes[10] {
+		return e.Pins, nil
+	}
+	return nil, &NotLoadedError{edge: "pins"}
+}
+
 // UserThreadFollowsOrErr returns the UserThreadFollows value or an error if the edge
 // was not loaded in eager-loading.
 func (e MessageEdges) UserThreadFollowsOrErr() ([]*UserThreadFollow, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.UserThreadFollows, nil
 	}
 	return nil, &NotLoadedError{edge: "user_thread_follows"}
@@ -178,7 +189,7 @@ func (e MessageEdges) UserThreadFollowsOrErr() ([]*UserThreadFollow, error) {
 // ThreadReadStatesOrErr returns the ThreadReadStates value or an error if the edge
 // was not loaded in eager-loading.
 func (e MessageEdges) ThreadReadStatesOrErr() ([]*ThreadReadState, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[12] {
 		return e.ThreadReadStates, nil
 	}
 	return nil, &NotLoadedError{edge: "thread_read_states"}
@@ -334,6 +345,11 @@ func (_m *Message) QueryLinks() *MessageLinkQuery {
 // QueryAttachments queries the "attachments" edge of the Message entity.
 func (_m *Message) QueryAttachments() *AttachmentQuery {
 	return NewMessageClient(_m.config).QueryAttachments(_m)
+}
+
+// QueryPins queries the "pins" edge of the Message entity.
+func (_m *Message) QueryPins() *MessagePinQuery {
+	return NewMessageClient(_m.config).QueryPins(_m)
 }
 
 // QueryUserThreadFollows queries the "user_thread_follows" edge of the Message entity.

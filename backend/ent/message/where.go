@@ -566,6 +566,29 @@ func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Message {
 	})
 }
 
+// HasPins applies the HasEdge predicate on the "pins" edge.
+func HasPins() predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, PinsTable, PinsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPinsWith applies the HasEdge predicate on the "pins" edge with a given conditions (other predicates).
+func HasPinsWith(preds ...predicate.MessagePin) predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := newPinsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasUserThreadFollows applies the HasEdge predicate on the "user_thread_follows" edge.
 func HasUserThreadFollows() predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {

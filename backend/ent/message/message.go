@@ -45,6 +45,8 @@ const (
 	EdgeLinks = "links"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
+	// EdgePins holds the string denoting the pins edge name in mutations.
+	EdgePins = "pins"
 	// EdgeUserThreadFollows holds the string denoting the user_thread_follows edge name in mutations.
 	EdgeUserThreadFollows = "user_thread_follows"
 	// EdgeThreadReadStates holds the string denoting the thread_read_states edge name in mutations.
@@ -115,6 +117,13 @@ const (
 	AttachmentsInverseTable = "attachments"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
 	AttachmentsColumn = "attachment_message"
+	// PinsTable is the table that holds the pins relation/edge.
+	PinsTable = "message_pins"
+	// PinsInverseTable is the table name for the MessagePin entity.
+	// It exists in this package in order to avoid circular dependency with the "messagepin" package.
+	PinsInverseTable = "message_pins"
+	// PinsColumn is the table column denoting the pins relation/edge.
+	PinsColumn = "message_pin_message"
 	// UserThreadFollowsTable is the table that holds the user_thread_follows relation/edge.
 	UserThreadFollowsTable = "user_thread_follows"
 	// UserThreadFollowsInverseTable is the table name for the UserThreadFollow entity.
@@ -325,6 +334,20 @@ func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByPinsCount orders the results by pins count.
+func ByPinsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPinsStep(), opts...)
+	}
+}
+
+// ByPins orders the results by pins terms.
+func ByPins(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPinsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByUserThreadFollowsCount orders the results by user_thread_follows count.
 func ByUserThreadFollowsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -420,6 +443,13 @@ func newAttachmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AttachmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, AttachmentsTable, AttachmentsColumn),
+	)
+}
+func newPinsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PinsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, PinsTable, PinsColumn),
 	)
 }
 func newUserThreadFollowsStep() *sqlgraph.Step {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
@@ -14,17 +15,44 @@ type SearchServer struct {
 }
 
 func (s *SearchServer) SearchWorkspace(ctx context.Context, req *chatv1.SearchWorkspaceRequest) (*chatv1.SearchWorkspaceResponse, error) {
-	filter := strings.ToLower(strings.TrimPrefix(req.Filter.String(), "SEARCH_FILTER_"))
+	sort := domainrepository.MessageSearchSortNewest
+	if req.Sort == chatv1.SearchSort_SEARCH_SORT_RELEVANCE {
+		sort = domainrepository.MessageSearchSortRelevance
+	}
 	out, err := s.UC.SearchWorkspace(ctx, searchuc.WorkspaceSearchInput{
 		WorkspaceID: req.WorkspaceId,
 		RequesterID: userIDFrom(ctx),
 		Query:       req.Query,
-		Filter:      searchuc.SearchFilter(filter).Normalize(),
-		Page:        max(int(req.Page), 1),
+		Target:      searchuc.SearchTarget(strings.ToLower(strings.TrimPrefix(req.Target.String(), "SEARCH_TARGET_"))),
+		Filter:      messageFilter(req.MessageFilter),
+		Sort:        sort,
+		Page:        int(req.Page),
 		PerPage:     int(req.PerPage),
 	})
 	if err != nil {
 		return nil, err
 	}
 	return presenter.SearchResult(out), nil
+}
+
+func messageFilter(f *chatv1.MessageSearchFilter) searchuc.MessageFilter {
+	if f == nil {
+		return searchuc.MessageFilter{}
+	}
+	has := make([]domainrepository.MessageContentKind, 0, len(f.Has))
+	for _, h := range f.Has {
+		has = append(has, domainrepository.MessageContentKind(strings.ToLower(strings.TrimPrefix(h.String(), "SEARCH_HAS_"))))
+	}
+	return searchuc.MessageFilter{
+		FromUserIDs:               f.FromUserIds,
+		ChannelIDs:                f.ChannelIds,
+		IncludeDescendantChannels: f.IncludeDescendantChannels,
+		Has:                       has,
+		PinnedOnly:                f.PinnedOnly,
+		ThreadOnly:                f.ThreadOnly,
+		MentionsMe:                f.MentionsMe,
+		ExcludeReplies:            f.ExcludeReplies,
+		After:                     optionalTime(f.After),
+		Before:                    optionalTime(f.Before),
+	}
 }
