@@ -1,5 +1,6 @@
 import { useAtomValue } from "jotai";
 
+import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { useSyncPreferences } from "#/features/settings/hooks/usePreferences";
 import { GlobalHeaderPanel } from "#/features/workspace/components/Header";
 import {
@@ -65,6 +66,8 @@ export const ResponsiveLayout = () => {
           </div>
         )}
       </div>
+
+      <MiniPlayer variant="mobile" />
 
       {/* モバイルボトムバー */}
       <div className="md:hidden">

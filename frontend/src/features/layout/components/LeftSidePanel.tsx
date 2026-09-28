@@ -9,6 +9,7 @@ import { ChannelList } from "#/features/channel/components/ChannelList";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
 import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
 import { DMList } from "#/features/dm/components/DMList";
+import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { leftSidePanelVisibleAtom, hideMobilePanelsAtom } from "#/providers/store/ui";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
@@ -109,6 +110,8 @@ export const LeftSidePanel = ({ className = "" }: LeftSidePanelProps) => {
           </div>
         </ScrollArea>
       </div>
+
+      <MiniPlayer variant="sidebar" />
 
       {/* チャンネル作成モーダル */}
       <CreateChannelModal

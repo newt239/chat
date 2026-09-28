@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 
 import { usePresignUpload } from "../api/client";
+import { measureMedia } from "../utils/measureMedia";
 import { validateFile } from "../utils/validator";
 
 import type { PendingAttachment } from "../api/types";
@@ -9,7 +10,7 @@ type UploadOptions = {
   channelId: string;
 };
 
-const uploadToWasabi = (
+const uploadToStorage = (
   file: File,
   uploadUrl: string,
   onProgress: (progress: number) => void,
@@ -75,8 +76,9 @@ export const useFileUpload = () => {
       ]);
 
       try {
-        // プリサイン URL を取得
+        // 表示時にレイアウトを予約できるよう、寸法と再生時間を送る
         const presignData = await presignMutation.mutateAsync({
+          ...(await measureMedia(file)),
           channelId: options.channelId,
           contentType: file.type || "application/octet-stream",
           fileName: file.name,
@@ -95,8 +97,8 @@ export const useFileUpload = () => {
           return next;
         });
 
-        // Wasabi へ直接アップロード
-        await uploadToWasabi(file, presignData.uploadUrl, (progress) => {
+        // ストレージへ直接アップロード
+        await uploadToStorage(file, presignData.uploadUrl, (progress) => {
           setPendingAttachments((prev) => {
             const next = [...prev];
             if (next[pendingIndex]) {

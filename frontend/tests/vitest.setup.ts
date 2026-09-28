@@ -12,6 +12,15 @@ vi.stubGlobal("matchMedia", (query: string) => ({
   removeEventListener: () => {},
 }));
 
+// jsdom は IntersectionObserver を実装していないため、何も通知しない実装で置き換える
+vi.stubGlobal(
+  "IntersectionObserver",
+  class {
+    public observe() {}
+    public disconnect() {}
+  },
+);
+
 // Node 26 の組み込み localStorage が jsdom のものを覆い隠し、未設定だと undefined になるため
 const memoryStorage = new Map<string, string>();
 vi.stubGlobal("localStorage", {

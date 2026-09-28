@@ -8,13 +8,13 @@ import { useDownloadUrl } from "../api/client";
 import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";
 
-import type { MessageAttachment as MessageAttachmentInfo } from "#/gen/chat/v1/message_pb";
+import type { MessageAttachment } from "#/gen/chat/v1/message_pb";
 
-type MessageAttachmentProps = {
-  attachment: MessageAttachmentInfo;
+type FileAttachmentProps = {
+  attachment: MessageAttachment;
 };
 
-export const MessageAttachment = ({ attachment }: MessageAttachmentProps) => {
+export const FileAttachment = ({ attachment }: FileAttachmentProps) => {
   const { t } = useTranslation();
   const downloadMutation = useDownloadUrl();
 
