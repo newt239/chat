@@ -7,22 +7,16 @@ type AttachmentListProps = {
   onRemove: (index: number) => void;
 };
 
-export const AttachmentList = ({ attachments, onRemove }: AttachmentListProps) => {
-  if (attachments.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-2 p-2 border-t border-gray-200">
-      {attachments.map((attachment, index) => (
-        <AttachmentListItem
-          key={`${attachment.file.name}-${attachment.file.lastModified}`}
-          attachment={attachment}
-          onRemove={() => {
-            onRemove(index);
-          }}
-        />
-      ))}
-    </div>
-  );
-};
+export const AttachmentList = ({ attachments, onRemove }: AttachmentListProps) => (
+  <div className="flex flex-wrap gap-1.5 px-2.5 pt-2">
+    {attachments.map((attachment, index) => (
+      <AttachmentListItem
+        key={`${attachment.file.name}-${attachment.file.lastModified}`}
+        attachment={attachment}
+        onRemove={() => {
+          onRemove(index);
+        }}
+      />
+    ))}
+  </div>
+);
