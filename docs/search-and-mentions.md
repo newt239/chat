@@ -6,7 +6,7 @@
 
 - `from:` や `in:` などの修飾子はクライアントで解析し、`SearchWorkspaceRequest.message_filter`（構造化したフィルタ）とキーワード `query` に分けて送る。サーバーは修飾子の文字列を解釈しない。
   - 理由: チップ UI と入力欄の双方向の反映や、React Native との共有をクライアント側のパーサーでまとめて扱うため。
-- `during:today|week|month` はクライアントで `after` / `before` の日時に変換する。タイムゾーンの解釈をサーバーに持ち込まないため。
+- `after:` / `before:` の日付はクライアントで `after` / `before` の日時に変換する。タイムゾーンの解釈をサーバーに持ち込まないため。
 - フィルタの条件はすべて AND。`from_user_ids` / `channel_ids` はそれぞれの中で OR、`has` は指定したものをすべて満たすもの。
 - キーワードが空でも、絞り込み条件（返信を除く以外）が 1 つでもあれば検索できる。チャンネル・ユーザー・グループはキーワードがあるときだけ検索する。
 
@@ -65,16 +65,18 @@ TF-IDF のような重み付けはしない。ユーザーが結果の順序を�
 ### 修飾子のパーサー（`@chat/search-query`）
 
 - `packages/search-query` に DOM に依存しない純粋関数として置く（React Native と共有するため）。`parseSearchQuery` / `formatSearchQuery` / `searchDateRange`。
-- 対応する修飾子は `from:@名前` `in:#チャンネル` `has:image|file|link|video` `is:pinned|thread|mention` `during:today|week|month` `after:YYYY-MM-DD` `before:YYYY-MM-DD`。空白を含む名前は `from:@"Alice Smith"` のようにクォートする。
+- 対応する修飾子は `from:@名前` `in:#チャンネル` `has:image|file|link|video` `is:pinned|thread|mention` `after:YYYY-MM-DD` `before:YYYY-MM-DD`。空白を含む名前は `from:@"Alice Smith"` のようにクォートする。
   - `is:mention` は North Star に合わせて追加した（「自分宛て」チップを入力欄と同期させるため）。
-- 解釈できない修飾子（値が空・未知の値・存在しない日付）は語として残す。入力途中の `from:@` を黙って消さないため。
-- `during:week` / `month` は今日を含む 7 / 30 日。`after:` / `before:` は Slack と同じく指定した日を含まない。日付は端末のローカル時刻で解釈する。
+- 解釈できない修飾子（値が空・未知の値）は語として残す。入力途中の `from:@` を黙って消さないため。
+- 相対的な期間（`during:`）は持たない。期間は `after:` / `before:` の `YYYY-MM-DD` だけで指定する（ユーザー決定）。形式が不正・存在しない日付は語にせず `invalidDates` に分け、画面は検索せずにエラーを出し、期間チップを警告表示にする。
+- `after:` / `before:` はどちらも指定した日を含む（Slack とは異なる）。期間チップの「開始日」「終了日」とそのまま対応させるため。日付は端末のローカル時刻で解釈する。
 - 名前から ID への解決は UI 側（`useResolvedSearchQuery`）。投稿者は表示名・ニックネーム・メールのローカル部の完全一致（大文字小文字は区別しない）、チャンネルはフルパス名の一致。解決できない名前があれば検索せず、チップを警告表示にして知らせる（黙って条件を外すと結果が広がって誤解させるため）。
 
 ### 検索画面の状態
 
 - URL の search params は `q`（修飾子を含む入力欄の文字列そのもの）・`filter`（タブ）・`page`・`sort`・`subs`（下階層を含む）・`replies`（返信を含む）。
 - チップは `q` を解析して描き、操作したら `formatSearchQuery` で `q` を書き戻す。状態の正を `q` の 1 つにすることで、チップと入力欄の双方向の同期を単純にした。書き戻すと修飾子の順序は正規化される。
+- 期間チップはネイティブの日付入力（開始日・終了日）で `after:` / `before:` を書き換える。日付を指定し直すと不正な日付の修飾子は取り除く。
 - 「下階層を含む」と「返信を含む」は修飾子を持たないため URL の別の値にした。前者は `in:` のチャンネルに下階層があるときだけ出す。
 - ヘルプの修飾子を押すと入力欄に挿入するだけで、Enter で確定する（`from:@` のように続きを入力するものがあるため）。
 - 抜粋は最初の一致の 40 文字前から切り出す。

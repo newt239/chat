@@ -41,12 +41,12 @@ export const useWorkspaceSearch = (workspaceId: string, search: SearchParams, pe
         ...inChannels.flatMap(({ name, channel }) => (channel ? [] : [`#${name}`])),
       ];
   const needsResolve = users.length > 0 || inChannels.length > 0;
-  // 日付の範囲は日単位なので、描画のたびに now が変わってもクエリのキーは変わらない
-  const { after, before } = searchDateRange(query, new Date());
+  const { after, before } = searchDateRange(query);
   const isEnabled =
     (text.length > 0 || hasSearchConditions(query)) &&
     !(needsResolve && isResolving) &&
-    unresolved.length === 0;
+    unresolved.length === 0 &&
+    query.invalidDates.length === 0;
 
   const result = useQuery(
     SearchService.method.searchWorkspace,
