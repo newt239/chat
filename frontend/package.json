@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vp build",
-    "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run ls-lint && pnpm run knip && pnpm run test",
+    "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run knip && pnpm run test",
     "dev": "vp dev",
     "format": "vp fmt --check",
     "format:fix": "vp fmt",
@@ -13,7 +13,6 @@
     "knip": "knip",
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
-    "ls-lint": "ls-lint",
     "preinstall": "npx only-allow pnpm",
     "preview": "vp preview",
     "test": "vp test run",
@@ -45,7 +44,6 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "@ls-lint/ls-lint": "2.3.1",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",

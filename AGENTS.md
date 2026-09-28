@@ -27,7 +27,7 @@
 
 ツールチェーンは **Vite+ (`vite-plus`)** に統合されています。lint (Oxlint) / format (Oxfmt) / test (Vitest) の設定はすべて `frontend/vite.config.ts` に集約されており、`.eslintrc` や `.prettierrc` は存在しません。
 
-- フロントエンドの実装をした際は、必ず最後に`pnpm --filter chat-frontend run codecheck`を実行してください（typecheck / lint / format / ls-lint / knip / test を一括で実行します）。
+- フロントエンドの実装をした際は、必ず最後に`pnpm --filter chat-frontend run codecheck`を実行してください（typecheck / lint / format / knip / test を一括で実行します）。
   - 個別に実行する場合は `pnpm run typecheck`、`pnpm run lint:fix`、`pnpm run format:fix` を使ってください。
   - 修正にあたり、any/unknown などの型を使用することや、型アサーション・型ガードを使用することを禁止します。その実装にふさわしい型を書くか、ライブラリから提供されているものをインポートして使用してください。どうしても型アサーションを使用する必要がある場合は最後にまとめて確認を取ってください。
 - 新しいコンポーネントを実装した際は必ず Vitest でテストを書いてください。
@@ -43,7 +43,7 @@
 - 使用しない引数は削除してください。また、極力引数は Optional にしないようにしてください。
 - インポート文は原則として絶対パスで書いてください。パスエイリアスは`#/`です（`#/lib/paths`のように書きます）。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
 - 1 つのファイルにつき 1 つのコンポーネントを定義してください。コンポーネント名とファイル名は一致させ、Named Export でコンポーネントをエクスポートしてください。
-  - ファイル名の規約は ls-lint で検証されます。コンポーネントは PascalCase、それ以外（hooks・ユーティリティ）は camelCase です。
+  - ファイル名はコンポーネントを PascalCase、それ以外（hooks・ユーティリティ）を camelCase にしてください。
 - 関数の返り値の型は明示しないでください。
 - バックエンドのレスポンススキーマを変更した場合はリポジトリルートで`pnpm run openapi:bundle && pnpm run generate:api`を実行して、バンドル済みスキーマと API クライアントの型を更新してください。
   - `openapi-typescript`は TypeScript 5 系にしか対応していないため、フロントエンド（TypeScript 7）ではなくルートワークスペースに配置しています。

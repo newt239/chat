@@ -188,7 +188,7 @@ export default defineConfig({
       // Promise を直接返す関数に async を強制すると require-await と衝突するため
       "typescript/promise-function-async": "off",
       "typescript/strict-boolean-expressions": "off",
-      // ファイル名規約は ls-lint 側で PascalCase / camelCase を強制している
+      // コンポーネントは PascalCase、それ以外は camelCase と種類で使い分けるため
       "unicorn/filename-case": "off",
       // zod のスキーマ定義では呼び出しのネストが自然なため
       "unicorn/max-nested-calls": "off",

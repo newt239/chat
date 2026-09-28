@@ -88,7 +88,7 @@ pnpm run openapi:bundle && pnpm run generate:api
 
 - pnpm 11 (workspace) + Turborepo
 - lefthook (pre-commit フック)
-- ls-lint (ファイル名規約) / knip (未使用コード検出)
+- knip (未使用コード検出)
 - OpenAPI (Redocly でバンドル、oapi-codegen と openapi-typescript でコード生成)
 
 ### インフラ
@@ -242,7 +242,7 @@ xdg-open backend/ent/schema-viz.html
 
 | ジョブ | 内容 |
 | --- | --- |
-| frontend | typecheck / Oxlint / Oxfmt / ls-lint / knip / Vitest / ビルド |
+| frontend | typecheck / Oxlint / Oxfmt / knip / Vitest / ビルド |
 | backend | `go build` と golangci-lint |
 | openapi | `openapi/bundled.yaml` と `frontend/src/lib/api/schema.ts` が最新かを再生成して差分検証 |
 

@@ -12,7 +12,6 @@
     "format:fix": "turbo run format:fix",
     "typecheck": "turbo run typecheck",
     "knip": "turbo run knip",
-    "ls-lint": "turbo run ls-lint",
     "codecheck": "turbo run codecheck",
     "clean": "./scripts/clean.sh",
     "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",

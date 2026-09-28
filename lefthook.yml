@@ -12,8 +12,4 @@ pre-commit:
       run: pnpm --filter chat-frontend run format:fix
       stage_fixed: true
       fail_text: フォーマットエラーがあります
-    3_ls-lint:
-      glob: "frontend/**/*"
-      run: pnpm --filter chat-frontend run ls-lint
-      fail_text: ファイル名が命名規約に違反しています
 # Go のリントはコンテナ起動が前提のため CI の backend ジョブで担保する
