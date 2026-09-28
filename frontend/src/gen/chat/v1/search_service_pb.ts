@@ -13,13 +13,93 @@ import type { UserGroup } from "./user_group_service_pb";
 import { file_chat_v1_user_group_service } from "./user_group_service_pb";
 import type { WorkspaceMember } from "./workspace_service_pb";
 import { file_chat_v1_workspace_service } from "./workspace_service_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/search_service.proto.
  */
 export const file_chat_v1_search_service: GenFile = /*@__PURE__*/
-  fileDesc("ChxjaGF0L3YxL3NlYXJjaF9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIqoBChZTZWFyY2hXb3Jrc3BhY2VSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARIWCgVxdWVyeRgCIAEoCUIHukgEcgIQARIlCgZmaWx0ZXIYAyABKA4yFS5jaGF0LnYxLlNlYXJjaEZpbHRlchIVCgRwYWdlGAQgASgFQge6SAQaAigAEhsKCHBlcl9wYWdlGAUgASgFQgm6SAYaBBgyKAAi0wEKF1NlYXJjaFdvcmtzcGFjZVJlc3BvbnNlEi4KCG1lc3NhZ2VzGAEgASgLMhwuY2hhdC52MS5NZXNzYWdlU2VhcmNoUmVzdWx0Ei4KCGNoYW5uZWxzGAIgASgLMhwuY2hhdC52MS5DaGFubmVsU2VhcmNoUmVzdWx0EigKBXVzZXJzGAMgASgLMhkuY2hhdC52MS5Vc2VyU2VhcmNoUmVzdWx0Ei4KBmdyb3VwcxgEIAEoCzIeLmNoYXQudjEuVXNlckdyb3VwU2VhcmNoUmVzdWx0IncKE01lc3NhZ2VTZWFyY2hSZXN1bHQSHwoFaXRlbXMYASADKAsyEC5jaGF0LnYxLk1lc3NhZ2USDQoFdG90YWwYAiABKAUSDAoEcGFnZRgDIAEoBRIQCghwZXJfcGFnZRgEIAEoBRIQCghoYXNfbW9yZRgFIAEoCCJ3ChNDaGFubmVsU2VhcmNoUmVzdWx0Eh8KBWl0ZW1zGAEgAygLMhAuY2hhdC52MS5DaGFubmVsEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEAoIcGVyX3BhZ2UYBCABKAUSEAoIaGFzX21vcmUYBSABKAgifAoQVXNlclNlYXJjaFJlc3VsdBInCgVpdGVtcxgBIAMoCzIYLmNoYXQudjEuV29ya3NwYWNlTWVtYmVyEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEAoIcGVyX3BhZ2UYBCABKAUSEAoIaGFzX21vcmUYBSABKAgiewoVVXNlckdyb3VwU2VhcmNoUmVzdWx0EiEKBWl0ZW1zGAEgAygLMhIuY2hhdC52MS5Vc2VyR3JvdXASDQoFdG90YWwYAiABKAUSDAoEcGFnZRgDIAEoBRIQCghwZXJfcGFnZRgEIAEoBRIQCghoYXNfbW9yZRgFIAEoCCqvAQoMU2VhcmNoRmlsdGVyEh0KGVNFQVJDSF9GSUxURVJfVU5TUEVDSUZJRUQQABIVChFTRUFSQ0hfRklMVEVSX0FMTBABEhoKFlNFQVJDSF9GSUxURVJfTUVTU0FHRVMQAhIaChZTRUFSQ0hfRklMVEVSX0NIQU5ORUxTEAMSFwoTU0VBUkNIX0ZJTFRFUl9VU0VSUxAEEhgKFFNFQVJDSF9GSUxURVJfR1JPVVBTEAUyZQoNU2VhcmNoU2VydmljZRJUCg9TZWFyY2hXb3Jrc3BhY2USHy5jaGF0LnYxLlNlYXJjaFdvcmtzcGFjZVJlcXVlc3QaIC5jaGF0LnYxLlNlYXJjaFdvcmtzcGFjZVJlc3BvbnNlQpMBCgtjb20uY2hhdC52MUISU2VhcmNoU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_channel_service, file_chat_v1_message, file_chat_v1_user_group_service, file_chat_v1_workspace_service]);
+  fileDesc("ChxjaGF0L3YxL3NlYXJjaF9zZXJ2aWNlLnByb3RvEgdjaGF0LnYxIukCChNNZXNzYWdlU2VhcmNoRmlsdGVyEiYKDWZyb21fdXNlcl9pZHMYASADKAlCD7pIDJIBCRAUIgVyA7ABARIkCgtjaGFubmVsX2lkcxgCIAMoCUIPukgMkgEJEBQiBXIDsAEBEiMKG2luY2x1ZGVfZGVzY2VuZGFudF9jaGFubmVscxgDIAEoCBIwCgNoYXMYBCADKA4yEi5jaGF0LnYxLlNlYXJjaEhhc0IPukgMkgEJIgeCAQQQASAAEhMKC3Bpbm5lZF9vbmx5GAUgASgIEhMKC3RocmVhZF9vbmx5GAYgASgIEikKBWFmdGVyGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIqCgZiZWZvcmUYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhMKC21lbnRpb25zX21lGAkgASgIEhcKD2V4Y2x1ZGVfcmVwbGllcxgKIAEoCCKEAgoWU2VhcmNoV29ya3NwYWNlUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESFwoFcXVlcnkYAiABKAlCCLpIBXIDGMgBEiUKBnRhcmdldBgDIAEoDjIVLmNoYXQudjEuU2VhcmNoVGFyZ2V0EhUKBHBhZ2UYBCABKAVCB7pIBBoCKAASGwoIcGVyX3BhZ2UYBSABKAVCCbpIBhoEGDIoABI0Cg5tZXNzYWdlX2ZpbHRlchgGIAEoCzIcLmNoYXQudjEuTWVzc2FnZVNlYXJjaEZpbHRlchIhCgRzb3J0GAcgASgOMhMuY2hhdC52MS5TZWFyY2hTb3J0ItMBChdTZWFyY2hXb3Jrc3BhY2VSZXNwb25zZRIuCghtZXNzYWdlcxgBIAEoCzIcLmNoYXQudjEuTWVzc2FnZVNlYXJjaFJlc3VsdBIuCghjaGFubmVscxgCIAEoCzIcLmNoYXQudjEuQ2hhbm5lbFNlYXJjaFJlc3VsdBIoCgV1c2VycxgDIAEoCzIZLmNoYXQudjEuVXNlclNlYXJjaFJlc3VsdBIuCgZncm91cHMYBCABKAsyHi5jaGF0LnYxLlVzZXJHcm91cFNlYXJjaFJlc3VsdCInCglUZXh0UmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgFIl0KEE1lc3NhZ2VTZWFyY2hIaXQSIQoHbWVzc2FnZRgBIAEoCzIQLmNoYXQudjEuTWVzc2FnZRImCgpoaWdobGlnaHRzGAIgAygLMhIuY2hhdC52MS5UZXh0UmFuZ2UigAEKE01lc3NhZ2VTZWFyY2hSZXN1bHQSKAoFaXRlbXMYASADKAsyGS5jaGF0LnYxLk1lc3NhZ2VTZWFyY2hIaXQSDQoFdG90YWwYAiABKAUSDAoEcGFnZRgDIAEoBRIQCghwZXJfcGFnZRgEIAEoBRIQCghoYXNfbW9yZRgFIAEoCCJ3ChNDaGFubmVsU2VhcmNoUmVzdWx0Eh8KBWl0ZW1zGAEgAygLMhAuY2hhdC52MS5DaGFubmVsEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEAoIcGVyX3BhZ2UYBCABKAUSEAoIaGFzX21vcmUYBSABKAgifAoQVXNlclNlYXJjaFJlc3VsdBInCgVpdGVtcxgBIAMoCzIYLmNoYXQudjEuV29ya3NwYWNlTWVtYmVyEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEAoIcGVyX3BhZ2UYBCABKAUSEAoIaGFzX21vcmUYBSABKAgiewoVVXNlckdyb3VwU2VhcmNoUmVzdWx0EiEKBWl0ZW1zGAEgAygLMhIuY2hhdC52MS5Vc2VyR3JvdXASDQoFdG90YWwYAiABKAUSDAoEcGFnZRgDIAEoBRIQCghwZXJfcGFnZRgEIAEoBRIQCghoYXNfbW9yZRgFIAEoCCqvAQoMU2VhcmNoVGFyZ2V0Eh0KGVNFQVJDSF9UQVJHRVRfVU5TUEVDSUZJRUQQABIVChFTRUFSQ0hfVEFSR0VUX0FMTBABEhoKFlNFQVJDSF9UQVJHRVRfTUVTU0FHRVMQAhIaChZTRUFSQ0hfVEFSR0VUX0NIQU5ORUxTEAMSFwoTU0VBUkNIX1RBUkdFVF9VU0VSUxAEEhgKFFNFQVJDSF9UQVJHRVRfR1JPVVBTEAUqXAoKU2VhcmNoU29ydBIbChdTRUFSQ0hfU09SVF9VTlNQRUNJRklFRBAAEhYKElNFQVJDSF9TT1JUX05FV0VTVBABEhkKFVNFQVJDSF9TT1JUX1JFTEVWQU5DRRACKn0KCVNlYXJjaEhhcxIaChZTRUFSQ0hfSEFTX1VOU1BFQ0lGSUVEEAASFAoQU0VBUkNIX0hBU19JTUFHRRABEhMKD1NFQVJDSF9IQVNfRklMRRACEhMKD1NFQVJDSF9IQVNfTElOSxADEhQKEFNFQVJDSF9IQVNfVklERU8QBDJlCg1TZWFyY2hTZXJ2aWNlElQKD1NlYXJjaFdvcmtzcGFjZRIfLmNoYXQudjEuU2VhcmNoV29ya3NwYWNlUmVxdWVzdBogLmNoYXQudjEuU2VhcmNoV29ya3NwYWNlUmVzcG9uc2VCkwEKC2NvbS5jaGF0LnYxQhJTZWFyY2hTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_channel_service, file_chat_v1_message, file_chat_v1_user_group_service, file_chat_v1_workspace_service, file_google_protobuf_timestamp]);
+
+/**
+ * メッセージ検索の絞り込み条件。指定した条件はすべて AND で結合する
+ *
+ * @generated from message chat.v1.MessageSearchFilter
+ */
+export type MessageSearchFilter = Message<"chat.v1.MessageSearchFilter"> & {
+  /**
+   * いずれかのユーザーの投稿
+   *
+   * @generated from field: repeated string from_user_ids = 1;
+   */
+  fromUserIds: string[];
+
+  /**
+   * いずれかのチャンネルの投稿。空の場合は閲覧できるすべてのチャンネル
+   *
+   * @generated from field: repeated string channel_ids = 2;
+   */
+  channelIds: string[];
+
+  /**
+   * channel_ids の下階層（名前が "<親>/" で始まるチャンネル）も含める
+   *
+   * @generated from field: bool include_descendant_channels = 3;
+   */
+  includeDescendantChannels: boolean;
+
+  /**
+   * @generated from field: repeated chat.v1.SearchHas has = 4;
+   */
+  has: SearchHas[];
+
+  /**
+   * @generated from field: bool pinned_only = 5;
+   */
+  pinnedOnly: boolean;
+
+  /**
+   * スレッドに属するメッセージ（返信、または返信のある親）のみ
+   *
+   * @generated from field: bool thread_only = 6;
+   */
+  threadOnly: boolean;
+
+  /**
+   * after 以降（含む）
+   *
+   * @generated from field: google.protobuf.Timestamp after = 7;
+   */
+  after?: Timestamp | undefined;
+
+  /**
+   * before より前（含まない）
+   *
+   * @generated from field: google.protobuf.Timestamp before = 8;
+   */
+  before?: Timestamp | undefined;
+
+  /**
+   * 自分宛てのメンション（@自分、所属グループ、@channel / @here）を含むもののみ
+   *
+   * @generated from field: bool mentions_me = 9;
+   */
+  mentionsMe: boolean;
+
+  /**
+   * @generated from field: bool exclude_replies = 10;
+   */
+  excludeReplies: boolean;
+};
+
+/**
+ * Describes the message chat.v1.MessageSearchFilter.
+ * Use `create(MessageSearchFilterSchema)` to create a new message.
+ */
+export const MessageSearchFilterSchema: GenMessage<MessageSearchFilter> = /*@__PURE__*/
+  messageDesc(file_chat_v1_search_service, 0);
 
 /**
  * @generated from message chat.v1.SearchWorkspaceRequest
@@ -31,6 +111,8 @@ export type SearchWorkspaceRequest = Message<"chat.v1.SearchWorkspaceRequest"> &
   workspaceId: string;
 
   /**
+   * 空白区切りの語をすべて含むものを探す。message_filter に条件があれば空でもよい
+   *
    * @generated from field: string query = 2;
    */
   query: string;
@@ -38,9 +120,9 @@ export type SearchWorkspaceRequest = Message<"chat.v1.SearchWorkspaceRequest"> &
   /**
    * 未指定の場合はすべての種類を検索する
    *
-   * @generated from field: chat.v1.SearchFilter filter = 3;
+   * @generated from field: chat.v1.SearchTarget target = 3;
    */
-  filter: SearchFilter;
+  target: SearchTarget;
 
   /**
    * 0 の場合は 1 ページ目として扱う
@@ -55,6 +137,18 @@ export type SearchWorkspaceRequest = Message<"chat.v1.SearchWorkspaceRequest"> &
    * @generated from field: int32 per_page = 5;
    */
   perPage: number;
+
+  /**
+   * @generated from field: chat.v1.MessageSearchFilter message_filter = 6;
+   */
+  messageFilter?: MessageSearchFilter | undefined;
+
+  /**
+   * メッセージの並び順
+   *
+   * @generated from field: chat.v1.SearchSort sort = 7;
+   */
+  sort: SearchSort;
 };
 
 /**
@@ -62,7 +156,7 @@ export type SearchWorkspaceRequest = Message<"chat.v1.SearchWorkspaceRequest"> &
  * Use `create(SearchWorkspaceRequestSchema)` to create a new message.
  */
 export const SearchWorkspaceRequestSchema: GenMessage<SearchWorkspaceRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_search_service, 0);
+  messageDesc(file_chat_v1_search_service, 1);
 
 /**
  * @generated from message chat.v1.SearchWorkspaceResponse
@@ -94,16 +188,64 @@ export type SearchWorkspaceResponse = Message<"chat.v1.SearchWorkspaceResponse">
  * Use `create(SearchWorkspaceResponseSchema)` to create a new message.
  */
 export const SearchWorkspaceResponseSchema: GenMessage<SearchWorkspaceResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_search_service, 1);
+  messageDesc(file_chat_v1_search_service, 2);
+
+/**
+ * body 内の範囲。JavaScript の String と同じ UTF-16 コード単位のオフセットで、end は含まない
+ *
+ * @generated from message chat.v1.TextRange
+ */
+export type TextRange = Message<"chat.v1.TextRange"> & {
+  /**
+   * @generated from field: int32 start = 1;
+   */
+  start: number;
+
+  /**
+   * @generated from field: int32 end = 2;
+   */
+  end: number;
+};
+
+/**
+ * Describes the message chat.v1.TextRange.
+ * Use `create(TextRangeSchema)` to create a new message.
+ */
+export const TextRangeSchema: GenMessage<TextRange> = /*@__PURE__*/
+  messageDesc(file_chat_v1_search_service, 3);
+
+/**
+ * @generated from message chat.v1.MessageSearchHit
+ */
+export type MessageSearchHit = Message<"chat.v1.MessageSearchHit"> & {
+  /**
+   * @generated from field: chat.v1.Message message = 1;
+   */
+  message?: Message$1 | undefined;
+
+  /**
+   * 検索語に一致した body 内の範囲（昇順、重なりなし）
+   *
+   * @generated from field: repeated chat.v1.TextRange highlights = 2;
+   */
+  highlights: TextRange[];
+};
+
+/**
+ * Describes the message chat.v1.MessageSearchHit.
+ * Use `create(MessageSearchHitSchema)` to create a new message.
+ */
+export const MessageSearchHitSchema: GenMessage<MessageSearchHit> = /*@__PURE__*/
+  messageDesc(file_chat_v1_search_service, 4);
 
 /**
  * @generated from message chat.v1.MessageSearchResult
  */
 export type MessageSearchResult = Message<"chat.v1.MessageSearchResult"> & {
   /**
-   * @generated from field: repeated chat.v1.Message items = 1;
+   * @generated from field: repeated chat.v1.MessageSearchHit items = 1;
    */
-  items: Message$1[];
+  items: MessageSearchHit[];
 
   /**
    * @generated from field: int32 total = 2;
@@ -131,7 +273,7 @@ export type MessageSearchResult = Message<"chat.v1.MessageSearchResult"> & {
  * Use `create(MessageSearchResultSchema)` to create a new message.
  */
 export const MessageSearchResultSchema: GenMessage<MessageSearchResult> = /*@__PURE__*/
-  messageDesc(file_chat_v1_search_service, 2);
+  messageDesc(file_chat_v1_search_service, 5);
 
 /**
  * @generated from message chat.v1.ChannelSearchResult
@@ -168,7 +310,7 @@ export type ChannelSearchResult = Message<"chat.v1.ChannelSearchResult"> & {
  * Use `create(ChannelSearchResultSchema)` to create a new message.
  */
 export const ChannelSearchResultSchema: GenMessage<ChannelSearchResult> = /*@__PURE__*/
-  messageDesc(file_chat_v1_search_service, 3);
+  messageDesc(file_chat_v1_search_service, 6);
 
 /**
  * @generated from message chat.v1.UserSearchResult
@@ -205,7 +347,7 @@ export type UserSearchResult = Message<"chat.v1.UserSearchResult"> & {
  * Use `create(UserSearchResultSchema)` to create a new message.
  */
 export const UserSearchResultSchema: GenMessage<UserSearchResult> = /*@__PURE__*/
-  messageDesc(file_chat_v1_search_service, 4);
+  messageDesc(file_chat_v1_search_service, 7);
 
 /**
  * @generated from message chat.v1.UserGroupSearchResult
@@ -242,48 +384,114 @@ export type UserGroupSearchResult = Message<"chat.v1.UserGroupSearchResult"> & {
  * Use `create(UserGroupSearchResultSchema)` to create a new message.
  */
 export const UserGroupSearchResultSchema: GenMessage<UserGroupSearchResult> = /*@__PURE__*/
-  messageDesc(file_chat_v1_search_service, 5);
+  messageDesc(file_chat_v1_search_service, 8);
 
 /**
- * @generated from enum chat.v1.SearchFilter
+ * @generated from enum chat.v1.SearchTarget
  */
-export enum SearchFilter {
+export enum SearchTarget {
   /**
-   * @generated from enum value: SEARCH_FILTER_UNSPECIFIED = 0;
+   * @generated from enum value: SEARCH_TARGET_UNSPECIFIED = 0;
    */
   UNSPECIFIED = 0,
 
   /**
-   * @generated from enum value: SEARCH_FILTER_ALL = 1;
+   * @generated from enum value: SEARCH_TARGET_ALL = 1;
    */
   ALL = 1,
 
   /**
-   * @generated from enum value: SEARCH_FILTER_MESSAGES = 2;
+   * @generated from enum value: SEARCH_TARGET_MESSAGES = 2;
    */
   MESSAGES = 2,
 
   /**
-   * @generated from enum value: SEARCH_FILTER_CHANNELS = 3;
+   * @generated from enum value: SEARCH_TARGET_CHANNELS = 3;
    */
   CHANNELS = 3,
 
   /**
-   * @generated from enum value: SEARCH_FILTER_USERS = 4;
+   * @generated from enum value: SEARCH_TARGET_USERS = 4;
    */
   USERS = 4,
 
   /**
-   * @generated from enum value: SEARCH_FILTER_GROUPS = 5;
+   * @generated from enum value: SEARCH_TARGET_GROUPS = 5;
    */
   GROUPS = 5,
 }
 
 /**
- * Describes the enum chat.v1.SearchFilter.
+ * Describes the enum chat.v1.SearchTarget.
  */
-export const SearchFilterSchema: GenEnum<SearchFilter> = /*@__PURE__*/
+export const SearchTargetSchema: GenEnum<SearchTarget> = /*@__PURE__*/
   enumDesc(file_chat_v1_search_service, 0);
+
+/**
+ * @generated from enum chat.v1.SearchSort
+ */
+export enum SearchSort {
+  /**
+   * 新しい順として扱う
+   *
+   * @generated from enum value: SEARCH_SORT_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: SEARCH_SORT_NEWEST = 1;
+   */
+  NEWEST = 1,
+
+  /**
+   * @generated from enum value: SEARCH_SORT_RELEVANCE = 2;
+   */
+  RELEVANCE = 2,
+}
+
+/**
+ * Describes the enum chat.v1.SearchSort.
+ */
+export const SearchSortSchema: GenEnum<SearchSort> = /*@__PURE__*/
+  enumDesc(file_chat_v1_search_service, 1);
+
+/**
+ * @generated from enum chat.v1.SearchHas
+ */
+export enum SearchHas {
+  /**
+   * @generated from enum value: SEARCH_HAS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: SEARCH_HAS_IMAGE = 1;
+   */
+  IMAGE = 1,
+
+  /**
+   * 画像・動画以外の添付ファイル
+   *
+   * @generated from enum value: SEARCH_HAS_FILE = 2;
+   */
+  FILE = 2,
+
+  /**
+   * @generated from enum value: SEARCH_HAS_LINK = 3;
+   */
+  LINK = 3,
+
+  /**
+   * @generated from enum value: SEARCH_HAS_VIDEO = 4;
+   */
+  VIDEO = 4,
+}
+
+/**
+ * Describes the enum chat.v1.SearchHas.
+ */
+export const SearchHasSchema: GenEnum<SearchHas> = /*@__PURE__*/
+  enumDesc(file_chat_v1_search_service, 2);
 
 /**
  * @generated from service chat.v1.SearchService

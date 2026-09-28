@@ -7,25 +7,77 @@ import "chat/v1/channel_service.proto";
 import "chat/v1/message.proto";
 import "chat/v1/user_group_service.proto";
 import "chat/v1/workspace_service.proto";
+import "google/protobuf/timestamp.proto";
 
 service SearchService {
   rpc SearchWorkspace(SearchWorkspaceRequest) returns (SearchWorkspaceResponse);
 }
 
-enum SearchFilter {
-  SEARCH_FILTER_UNSPECIFIED = 0;
-  SEARCH_FILTER_ALL = 1;
-  SEARCH_FILTER_MESSAGES = 2;
-  SEARCH_FILTER_CHANNELS = 3;
-  SEARCH_FILTER_USERS = 4;
-  SEARCH_FILTER_GROUPS = 5;
+enum SearchTarget {
+  SEARCH_TARGET_UNSPECIFIED = 0;
+  SEARCH_TARGET_ALL = 1;
+  SEARCH_TARGET_MESSAGES = 2;
+  SEARCH_TARGET_CHANNELS = 3;
+  SEARCH_TARGET_USERS = 4;
+  SEARCH_TARGET_GROUPS = 5;
+}
+
+enum SearchSort {
+  // 新しい順として扱う
+  SEARCH_SORT_UNSPECIFIED = 0;
+  SEARCH_SORT_NEWEST = 1;
+  SEARCH_SORT_RELEVANCE = 2;
+}
+
+enum SearchHas {
+  SEARCH_HAS_UNSPECIFIED = 0;
+  SEARCH_HAS_IMAGE = 1;
+  // 画像・動画以外の添付ファイル
+  SEARCH_HAS_FILE = 2;
+  SEARCH_HAS_LINK = 3;
+  SEARCH_HAS_VIDEO = 4;
+}
+
+// メッセージ検索の絞り込み条件。指定した条件はすべて AND で結合する
+message MessageSearchFilter {
+  // いずれかのユーザーの投稿
+  repeated string from_user_ids = 1 [(buf.validate.field).repeated = {
+    max_items: 20
+    items: {
+      string: {uuid: true}
+    }
+  }];
+  // いずれかのチャンネルの投稿。空の場合は閲覧できるすべてのチャンネル
+  repeated string channel_ids = 2 [(buf.validate.field).repeated = {
+    max_items: 20
+    items: {
+      string: {uuid: true}
+    }
+  }];
+  // channel_ids の下階層（名前が "<親>/" で始まるチャンネル）も含める
+  bool include_descendant_channels = 3;
+  repeated SearchHas has = 4 [(buf.validate.field).repeated.items.enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  bool pinned_only = 5;
+  // スレッドに属するメッセージ（返信、または返信のある親）のみ
+  bool thread_only = 6;
+  // after 以降（含む）
+  google.protobuf.Timestamp after = 7;
+  // before より前（含まない）
+  google.protobuf.Timestamp before = 8;
+  // 自分宛てのメンション（@自分、所属グループ、@channel / @here）を含むもののみ
+  bool mentions_me = 9;
+  bool exclude_replies = 10;
 }
 
 message SearchWorkspaceRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
-  string query = 2 [(buf.validate.field).string.min_len = 1];
+  // 空白区切りの語をすべて含むものを探す。message_filter に条件があれば空でもよい
+  string query = 2 [(buf.validate.field).string.max_len = 200];
   // 未指定の場合はすべての種類を検索する
-  SearchFilter filter = 3;
+  SearchTarget target = 3;
   // 0 の場合は 1 ページ目として扱う
   int32 page = 4 [(buf.validate.field).int32.gte = 0];
   // 0 の場合はサーバーの既定値を使う
@@ -33,6 +85,9 @@ message SearchWorkspaceRequest {
     gte: 0
     lte: 50
   }];
+  MessageSearchFilter message_filter = 6;
+  // メッセージの並び順
+  SearchSort sort = 7;
 }
 
 message SearchWorkspaceResponse {
@@ -42,8 +97,20 @@ message SearchWorkspaceResponse {
   UserGroupSearchResult groups = 4;
 }
 
+// body 内の範囲。JavaScript の String と同じ UTF-16 コード単位のオフセットで、end は含まない
+message TextRange {
+  int32 start = 1;
+  int32 end = 2;
+}
+
+message MessageSearchHit {
+  Message message = 1;
+  // 検索語に一致した body 内の範囲（昇順、重なりなし）
+  repeated TextRange highlights = 2;
+}
+
 message MessageSearchResult {
-  repeated Message items = 1;
+  repeated MessageSearchHit items = 1;
   int32 total = 2;
   int32 page = 3;
   int32 per_page = 4;
