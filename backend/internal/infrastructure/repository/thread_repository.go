@@ -2,15 +2,16 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
-	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
@@ -192,204 +193,156 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 	return result, nil
 }
 
+const latestReplyCount = 2
+
 func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input domainrepository.FindParticipatingThreadsInput) (*domainrepository.FindParticipatingThreadsOutput, error) {
 	userID, err := utils.ParseUUID(input.UserID, "user ID")
 	if err != nil {
 		return nil, err
 	}
-	// workspace ID is slug (string)
 
 	client := transaction.ResolveClient(ctx, r.client)
+	empty := &domainrepository.FindParticipatingThreadsOutput{Items: []domainrepository.ParticipatingThread{}}
 
-	// 参加しているワークスペースとチャンネルのIDを取得
-	workspaceMember, err := client.WorkspaceMember.Query().
+	isMember, err := client.WorkspaceMember.Query().
 		Where(
 			workspacemember.HasUserWith(user.ID(userID)),
 			workspacemember.HasWorkspaceWith(workspace.ID(input.WorkspaceID)),
 		).
-		Only(ctx)
+		Exist(ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return &domainrepository.FindParticipatingThreadsOutput{
-				Items:      []domainrepository.ParticipatingThread{},
-				NextCursor: nil,
-			}, nil
-		}
 		return nil, err
 	}
-	if workspaceMember == nil {
-		return &domainrepository.FindParticipatingThreadsOutput{
-			Items:      []domainrepository.ParticipatingThread{},
-			NextCursor: nil,
-		}, nil
+	if !isMember {
+		return empty, nil
 	}
 
-	// パブリックチャンネルはメンバー行を持たないため、
-	// 「ワークスペース内のパブリックチャンネル」と「参加中のプライベートチャンネル」を対象にする
-	accessibleChannels := channel.Or(
-		channel.And(
-			channel.HasWorkspaceWith(workspace.ID(input.WorkspaceID)),
-			channel.IsPrivate(false),
-		),
-		channel.HasMembersWith(channelmember.HasUserWith(user.ID(userID))),
-	)
-
-	// スレッド起点メッセージ（parent_id == null）で、参加中のものを検索
 	query := client.Message.Query().
 		Where(
 			message.Not(message.HasParent()),
-			message.HasChannelWith(accessibleChannels),
+			message.HasChannelWith(viewableChannel(input.WorkspaceID, userID)),
+			message.Or(
+				message.HasUserThreadFollowsWith(userthreadfollow.HasUserWith(user.ID(userID))),
+				message.HasRepliesWith(message.HasUserWith(user.ID(userID))),
+				message.HasRepliesWith(message.HasUserMentionsWith(messageusermention.HasUserWith(user.ID(userID)))),
+			),
 		)
 
-	// 参加条件でフィルタ
-	query = query.Where(
-		message.Or(
-			// フォロー中
-			message.HasUserThreadFollowsWith(userthreadfollow.HasUserWith(user.ID(userID))),
-			// 返信した
-			message.HasRepliesWith(message.HasUserWith(user.ID(userID))),
-			// メンションされた
-			message.HasRepliesWith(message.HasUserMentionsWith(messageusermention.HasUserWith(user.ID(userID)))),
-		),
-	)
-
-	// カーソルベースのページネーション
 	if input.CursorLastActivityAt != nil && input.CursorThreadID != nil {
 		cursorThreadID, err := utils.ParseUUID(*input.CursorThreadID, "cursor thread ID")
 		if err != nil {
 			return nil, err
 		}
-		query = query.Where(
-			message.Or(
-				message.And(
-					message.CreatedAtLT(*input.CursorLastActivityAt),
-				),
-				message.And(
-					message.CreatedAtEQ(*input.CursorLastActivityAt),
-					message.IDLT(cursorThreadID),
-				),
-			),
-		)
+		query = query.Where(predicate.Message(func(s *sql.Selector) {
+			s.Where(sql.P(func(b *sql.Builder) {
+				b.WriteString("(" + lastActivityExpr(s) + ", " + s.C(message.FieldID) + ") < (").
+					Arg(*input.CursorLastActivityAt).Comma().Arg(cursorThreadID).WriteString(")")
+			}))
+		}))
 	}
 
-	// ソート: lastActivityAt DESC, threadId DESC
-	query = query.
-		Order(ent.Desc(message.FieldCreatedAt), ent.Desc(message.FieldID)).
-		Limit(input.Limit + 1). // 次のページがあるか確認するため+1
+	threads, err := query.
+		Order(func(s *sql.Selector) { s.OrderExpr(sql.Expr(lastActivityExpr(s) + " DESC")) }, ent.Desc(message.FieldID)).
+		Limit(input.Limit + 1).
 		WithChannel().
-		WithUser()
-
-	threads, err := query.All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// 次のページがあるかチェック
-	hasMore := len(threads) > input.Limit
-	if hasMore {
-		threads = threads[:input.Limit]
-	}
-
-	// スレッドIDリストを作成
-	threadIDs := make([]uuid.UUID, len(threads))
-	threadIDStrs := make([]string, len(threads))
-	for i, t := range threads {
-		threadIDs[i] = t.ID
-		threadIDStrs[i] = t.ID.String()
-	}
-
-	// 各スレッドのメタデータを計算
-	metadataMap, err := r.CalculateMetadataByMessageIDs(ctx, threadIDStrs)
-	if err != nil {
-		return nil, err
-	}
-
-	// 各スレッドの未読数を計算
-	readStates, err := client.ThreadReadState.Query().
-		Where(
-			threadreadstate.HasUserWith(user.ID(userID)),
-			threadreadstate.HasThreadWith(message.IDIn(threadIDs...)),
-		).
+		WithUser().
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	readStateMap := make(map[uuid.UUID]time.Time)
-	for _, rs := range readStates {
-		threadID, err := rs.QueryThread().OnlyID(ctx)
-		if err != nil {
-			continue
-		}
-		readStateMap[threadID] = rs.LastReadAt
+	hasMore := len(threads) > input.Limit
+	if hasMore {
+		threads = threads[:input.Limit]
+	}
+	if len(threads) == 0 {
+		return empty, nil
 	}
 
-	// 結果を構築
+	threadIDs := make([]uuid.UUID, len(threads))
+	for i, t := range threads {
+		threadIDs[i] = t.ID
+	}
+
+	replies, err := client.Message.Query().
+		Where(message.HasParentWith(message.IDIn(threadIDs...)), message.DeletedAtIsNil()).
+		Order(ent.Asc(message.FieldCreatedAt), ent.Asc(message.FieldID)).
+		WithParent().
+		WithChannel().
+		WithUser().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	repliesByThread := make(map[uuid.UUID][]*ent.Message)
+	for _, reply := range replies {
+		parentID := reply.Edges.Parent.ID
+		repliesByThread[parentID] = append(repliesByThread[parentID], reply)
+	}
+
+	readStates, err := client.ThreadReadState.Query().
+		Where(
+			threadreadstate.HasUserWith(user.ID(userID)),
+			threadreadstate.HasThreadWith(message.IDIn(threadIDs...)),
+		).
+		WithThread().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	lastReadAt := make(map[uuid.UUID]time.Time)
+	for _, rs := range readStates {
+		lastReadAt[rs.Edges.Thread.ID] = rs.LastReadAt
+	}
+
 	items := make([]domainrepository.ParticipatingThread, 0, len(threads))
 	for _, thread := range threads {
+		threadReplies := repliesByThread[thread.ID]
+		lastActivityAt := thread.CreatedAt
+		if len(threadReplies) > 0 {
+			lastActivityAt = threadReplies[len(threadReplies)-1].CreatedAt
+		}
+
+		readAt, hasRead := lastReadAt[thread.ID]
+		unreadCount := 0
+		for _, reply := range threadReplies {
+			if reply.Edges.User.ID != userID && (!hasRead || reply.CreatedAt.After(readAt)) {
+				unreadCount++
+			}
+		}
+
 		var channelID *string
 		if thread.Edges.Channel != nil {
 			cid := thread.Edges.Channel.ID.String()
 			channelID = &cid
 		}
 
-		// スレッドメタデータから情報取得
-		replyCount := 0
-		lastActivityAt := thread.CreatedAt
-		if metadata, ok := metadataMap[thread.ID.String()]; ok {
-			replyCount = metadata.ReplyCount
-			if metadata.LastReplyAt != nil {
-				lastActivityAt = *metadata.LastReplyAt
-			}
-		}
-
-		// 未読数を計算
-		unreadCount := 0
-		if lastReadAt, ok := readStateMap[thread.ID]; ok {
-			count, err := client.Message.Query().
-				Where(
-					message.HasParentWith(message.ID(thread.ID)),
-					message.CreatedAtGT(lastReadAt),
-				).
-				Count(ctx)
-			if err == nil {
-				unreadCount = count
-			}
-		} else {
-			// 既読状態がない場合は全て未読
-			count, err := client.Message.Query().
-				Where(message.HasParentWith(message.ID(thread.ID))).
-				Count(ctx)
-			if err == nil {
-				unreadCount = count
-			}
-		}
-
-		firstMessage := utils.MessageToEntity(thread)
-
 		items = append(items, domainrepository.ParticipatingThread{
 			ThreadID:       thread.ID.String(),
 			ChannelID:      channelID,
-			FirstMessage:   firstMessage,
-			ReplyCount:     replyCount,
+			FirstMessage:   utils.MessageToEntity(thread),
+			LatestReplies:  toMessageEntities(threadReplies[max(len(threadReplies)-latestReplyCount, 0):]),
+			ReplyCount:     len(threadReplies),
 			LastActivityAt: lastActivityAt,
 			UnreadCount:    unreadCount,
 		})
 	}
 
 	var nextCursor *domainrepository.ThreadCursor
-	if hasMore && len(items) > 0 {
+	if hasMore {
 		lastItem := items[len(items)-1]
-		nextCursor = &domainrepository.ThreadCursor{
-			LastActivityAt: lastItem.LastActivityAt,
-			ThreadID:       lastItem.ThreadID,
-		}
+		nextCursor = &domainrepository.ThreadCursor{LastActivityAt: lastItem.LastActivityAt, ThreadID: lastItem.ThreadID}
 	}
 
-	return &domainrepository.FindParticipatingThreadsOutput{
-		Items:      items,
-		NextCursor: nextCursor,
-	}, nil
+	return &domainrepository.FindParticipatingThreadsOutput{Items: items, NextCursor: nextCursor}, nil
+}
+
+// lastActivityExpr はスレッドの最終アクティビティ（削除されていない最新の返信、なければ親の投稿日時）を表す SQL 式です
+func lastActivityExpr(s *sql.Selector) string {
+	return fmt.Sprintf(
+		"COALESCE((SELECT MAX(r.%[1]s) FROM %[2]s AS r WHERE r.%[3]s = %[4]s AND r.%[5]s IS NULL), %[6]s)",
+		message.FieldCreatedAt, message.Table, message.ParentColumn, s.C(message.FieldID), message.FieldDeletedAt, s.C(message.FieldCreatedAt),
+	)
 }
 
 func (r *threadRepository) UpsertReadState(ctx context.Context, userID, threadID string, lastReadAt time.Time) error {

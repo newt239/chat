@@ -5,12 +5,12 @@ import {
   searchFilterValues,
   searchQuerySchema,
 } from "#/features/search/schemas";
-import { SearchFilter } from "#/gen/chat/v1/search_service_pb";
+import { SearchTarget } from "#/gen/chat/v1/search_service_pb";
 
 describe("searchFilterMessages", () => {
   test("すべての検索フィルタが proto の enum の異なる値に対応する", () => {
     const values = searchFilterValues.map((filter) => searchFilterMessages[filter]);
-    expect(values).not.toContain(SearchFilter.UNSPECIFIED);
+    expect(values).not.toContain(SearchTarget.UNSPECIFIED);
     expect(new Set(values).size).toBe(searchFilterValues.length);
   });
 });

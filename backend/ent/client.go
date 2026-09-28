@@ -1525,6 +1525,22 @@ func (c *MessageClient) QueryAttachments(_m *Message) *AttachmentQuery {
 	return query
 }
 
+// QueryPins queries the pins edge of a Message.
+func (c *MessageClient) QueryPins(_m *Message) *MessagePinQuery {
+	query := (&MessagePinClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, id),
+			sqlgraph.To(messagepin.Table, messagepin.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, message.PinsTable, message.PinsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryUserThreadFollows queries the user_thread_follows edge of a Message.
 func (c *MessageClient) QueryUserThreadFollows(_m *Message) *UserThreadFollowQuery {
 	query := (&UserThreadFollowClient{config: c.config}).Query()

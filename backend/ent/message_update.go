@@ -18,6 +18,7 @@ import (
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/messagelink"
+	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
@@ -259,6 +260,21 @@ func (_u *MessageUpdate) AddAttachments(v ...*Attachment) *MessageUpdate {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// AddPinIDs adds the "pins" edge to the MessagePin entity by IDs.
+func (_u *MessageUpdate) AddPinIDs(ids ...uuid.UUID) *MessageUpdate {
+	_u.mutation.AddPinIDs(ids...)
+	return _u
+}
+
+// AddPins adds the "pins" edges to the MessagePin entity.
+func (_u *MessageUpdate) AddPins(v ...*MessagePin) *MessageUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPinIDs(ids...)
+}
+
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
 func (_u *MessageUpdate) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageUpdate {
 	_u.mutation.AddUserThreadFollowIDs(ids...)
@@ -457,6 +473,27 @@ func (_u *MessageUpdate) RemoveAttachments(v ...*Attachment) *MessageUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
+}
+
+// ClearPins clears all "pins" edges to the MessagePin entity.
+func (_u *MessageUpdate) ClearPins() *MessageUpdate {
+	_u.mutation.ClearPins()
+	return _u
+}
+
+// RemovePinIDs removes the "pins" edge to MessagePin entities by IDs.
+func (_u *MessageUpdate) RemovePinIDs(ids ...uuid.UUID) *MessageUpdate {
+	_u.mutation.RemovePinIDs(ids...)
+	return _u
+}
+
+// RemovePins removes "pins" edges to MessagePin entities.
+func (_u *MessageUpdate) RemovePins(v ...*MessagePin) *MessageUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePinIDs(ids...)
 }
 
 // ClearUserThreadFollows clears all "user_thread_follows" edges to the UserThreadFollow entity.
@@ -979,6 +1016,51 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.PinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.PinsTable,
+			Columns: []string{message.PinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPinsIDs(); len(nodes) > 0 && !_u.mutation.PinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.PinsTable,
+			Columns: []string{message.PinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PinsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.PinsTable,
+			Columns: []string{message.PinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.UserThreadFollowsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1309,6 +1391,21 @@ func (_u *MessageUpdateOne) AddAttachments(v ...*Attachment) *MessageUpdateOne {
 	return _u.AddAttachmentIDs(ids...)
 }
 
+// AddPinIDs adds the "pins" edge to the MessagePin entity by IDs.
+func (_u *MessageUpdateOne) AddPinIDs(ids ...uuid.UUID) *MessageUpdateOne {
+	_u.mutation.AddPinIDs(ids...)
+	return _u
+}
+
+// AddPins adds the "pins" edges to the MessagePin entity.
+func (_u *MessageUpdateOne) AddPins(v ...*MessagePin) *MessageUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPinIDs(ids...)
+}
+
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
 func (_u *MessageUpdateOne) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageUpdateOne {
 	_u.mutation.AddUserThreadFollowIDs(ids...)
@@ -1507,6 +1604,27 @@ func (_u *MessageUpdateOne) RemoveAttachments(v ...*Attachment) *MessageUpdateOn
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAttachmentIDs(ids...)
+}
+
+// ClearPins clears all "pins" edges to the MessagePin entity.
+func (_u *MessageUpdateOne) ClearPins() *MessageUpdateOne {
+	_u.mutation.ClearPins()
+	return _u
+}
+
+// RemovePinIDs removes the "pins" edge to MessagePin entities by IDs.
+func (_u *MessageUpdateOne) RemovePinIDs(ids ...uuid.UUID) *MessageUpdateOne {
+	_u.mutation.RemovePinIDs(ids...)
+	return _u
+}
+
+// RemovePins removes "pins" edges to MessagePin entities.
+func (_u *MessageUpdateOne) RemovePins(v ...*MessagePin) *MessageUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePinIDs(ids...)
 }
 
 // ClearUserThreadFollows clears all "user_thread_follows" edges to the UserThreadFollow entity.
@@ -2052,6 +2170,51 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.PinsTable,
+			Columns: []string{message.PinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPinsIDs(); len(nodes) > 0 && !_u.mutation.PinsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.PinsTable,
+			Columns: []string{message.PinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PinsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.PinsTable,
+			Columns: []string{message.PinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -10,6 +10,7 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -22,81 +23,315 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type SearchFilter int32
+type SearchTarget int32
 
 const (
-	SearchFilter_SEARCH_FILTER_UNSPECIFIED SearchFilter = 0
-	SearchFilter_SEARCH_FILTER_ALL         SearchFilter = 1
-	SearchFilter_SEARCH_FILTER_MESSAGES    SearchFilter = 2
-	SearchFilter_SEARCH_FILTER_CHANNELS    SearchFilter = 3
-	SearchFilter_SEARCH_FILTER_USERS       SearchFilter = 4
-	SearchFilter_SEARCH_FILTER_GROUPS      SearchFilter = 5
+	SearchTarget_SEARCH_TARGET_UNSPECIFIED SearchTarget = 0
+	SearchTarget_SEARCH_TARGET_ALL         SearchTarget = 1
+	SearchTarget_SEARCH_TARGET_MESSAGES    SearchTarget = 2
+	SearchTarget_SEARCH_TARGET_CHANNELS    SearchTarget = 3
+	SearchTarget_SEARCH_TARGET_USERS       SearchTarget = 4
+	SearchTarget_SEARCH_TARGET_GROUPS      SearchTarget = 5
 )
 
-// Enum value maps for SearchFilter.
+// Enum value maps for SearchTarget.
 var (
-	SearchFilter_name = map[int32]string{
-		0: "SEARCH_FILTER_UNSPECIFIED",
-		1: "SEARCH_FILTER_ALL",
-		2: "SEARCH_FILTER_MESSAGES",
-		3: "SEARCH_FILTER_CHANNELS",
-		4: "SEARCH_FILTER_USERS",
-		5: "SEARCH_FILTER_GROUPS",
+	SearchTarget_name = map[int32]string{
+		0: "SEARCH_TARGET_UNSPECIFIED",
+		1: "SEARCH_TARGET_ALL",
+		2: "SEARCH_TARGET_MESSAGES",
+		3: "SEARCH_TARGET_CHANNELS",
+		4: "SEARCH_TARGET_USERS",
+		5: "SEARCH_TARGET_GROUPS",
 	}
-	SearchFilter_value = map[string]int32{
-		"SEARCH_FILTER_UNSPECIFIED": 0,
-		"SEARCH_FILTER_ALL":         1,
-		"SEARCH_FILTER_MESSAGES":    2,
-		"SEARCH_FILTER_CHANNELS":    3,
-		"SEARCH_FILTER_USERS":       4,
-		"SEARCH_FILTER_GROUPS":      5,
+	SearchTarget_value = map[string]int32{
+		"SEARCH_TARGET_UNSPECIFIED": 0,
+		"SEARCH_TARGET_ALL":         1,
+		"SEARCH_TARGET_MESSAGES":    2,
+		"SEARCH_TARGET_CHANNELS":    3,
+		"SEARCH_TARGET_USERS":       4,
+		"SEARCH_TARGET_GROUPS":      5,
 	}
 )
 
-func (x SearchFilter) Enum() *SearchFilter {
-	p := new(SearchFilter)
+func (x SearchTarget) Enum() *SearchTarget {
+	p := new(SearchTarget)
 	*p = x
 	return p
 }
 
-func (x SearchFilter) String() string {
+func (x SearchTarget) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (SearchFilter) Descriptor() protoreflect.EnumDescriptor {
+func (SearchTarget) Descriptor() protoreflect.EnumDescriptor {
 	return file_chat_v1_search_service_proto_enumTypes[0].Descriptor()
 }
 
-func (SearchFilter) Type() protoreflect.EnumType {
+func (SearchTarget) Type() protoreflect.EnumType {
 	return &file_chat_v1_search_service_proto_enumTypes[0]
 }
 
-func (x SearchFilter) Number() protoreflect.EnumNumber {
+func (x SearchTarget) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use SearchFilter.Descriptor instead.
-func (SearchFilter) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use SearchTarget.Descriptor instead.
+func (SearchTarget) EnumDescriptor() ([]byte, []int) {
 	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{0}
+}
+
+type SearchSort int32
+
+const (
+	// 新しい順として扱う
+	SearchSort_SEARCH_SORT_UNSPECIFIED SearchSort = 0
+	SearchSort_SEARCH_SORT_NEWEST      SearchSort = 1
+	SearchSort_SEARCH_SORT_RELEVANCE   SearchSort = 2
+)
+
+// Enum value maps for SearchSort.
+var (
+	SearchSort_name = map[int32]string{
+		0: "SEARCH_SORT_UNSPECIFIED",
+		1: "SEARCH_SORT_NEWEST",
+		2: "SEARCH_SORT_RELEVANCE",
+	}
+	SearchSort_value = map[string]int32{
+		"SEARCH_SORT_UNSPECIFIED": 0,
+		"SEARCH_SORT_NEWEST":      1,
+		"SEARCH_SORT_RELEVANCE":   2,
+	}
+)
+
+func (x SearchSort) Enum() *SearchSort {
+	p := new(SearchSort)
+	*p = x
+	return p
+}
+
+func (x SearchSort) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SearchSort) Descriptor() protoreflect.EnumDescriptor {
+	return file_chat_v1_search_service_proto_enumTypes[1].Descriptor()
+}
+
+func (SearchSort) Type() protoreflect.EnumType {
+	return &file_chat_v1_search_service_proto_enumTypes[1]
+}
+
+func (x SearchSort) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SearchSort.Descriptor instead.
+func (SearchSort) EnumDescriptor() ([]byte, []int) {
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{1}
+}
+
+type SearchHas int32
+
+const (
+	SearchHas_SEARCH_HAS_UNSPECIFIED SearchHas = 0
+	SearchHas_SEARCH_HAS_IMAGE       SearchHas = 1
+	// 画像・動画以外の添付ファイル
+	SearchHas_SEARCH_HAS_FILE  SearchHas = 2
+	SearchHas_SEARCH_HAS_LINK  SearchHas = 3
+	SearchHas_SEARCH_HAS_VIDEO SearchHas = 4
+)
+
+// Enum value maps for SearchHas.
+var (
+	SearchHas_name = map[int32]string{
+		0: "SEARCH_HAS_UNSPECIFIED",
+		1: "SEARCH_HAS_IMAGE",
+		2: "SEARCH_HAS_FILE",
+		3: "SEARCH_HAS_LINK",
+		4: "SEARCH_HAS_VIDEO",
+	}
+	SearchHas_value = map[string]int32{
+		"SEARCH_HAS_UNSPECIFIED": 0,
+		"SEARCH_HAS_IMAGE":       1,
+		"SEARCH_HAS_FILE":        2,
+		"SEARCH_HAS_LINK":        3,
+		"SEARCH_HAS_VIDEO":       4,
+	}
+)
+
+func (x SearchHas) Enum() *SearchHas {
+	p := new(SearchHas)
+	*p = x
+	return p
+}
+
+func (x SearchHas) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SearchHas) Descriptor() protoreflect.EnumDescriptor {
+	return file_chat_v1_search_service_proto_enumTypes[2].Descriptor()
+}
+
+func (SearchHas) Type() protoreflect.EnumType {
+	return &file_chat_v1_search_service_proto_enumTypes[2]
+}
+
+func (x SearchHas) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SearchHas.Descriptor instead.
+func (SearchHas) EnumDescriptor() ([]byte, []int) {
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{2}
+}
+
+// メッセージ検索の絞り込み条件。指定した条件はすべて AND で結合する
+type MessageSearchFilter struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// いずれかのユーザーの投稿
+	FromUserIds []string `protobuf:"bytes,1,rep,name=from_user_ids,json=fromUserIds,proto3" json:"from_user_ids,omitempty"`
+	// いずれかのチャンネルの投稿。空の場合は閲覧できるすべてのチャンネル
+	ChannelIds []string `protobuf:"bytes,2,rep,name=channel_ids,json=channelIds,proto3" json:"channel_ids,omitempty"`
+	// channel_ids の下階層（名前が "<親>/" で始まるチャンネル）も含める
+	IncludeDescendantChannels bool        `protobuf:"varint,3,opt,name=include_descendant_channels,json=includeDescendantChannels,proto3" json:"include_descendant_channels,omitempty"`
+	Has                       []SearchHas `protobuf:"varint,4,rep,packed,name=has,proto3,enum=chat.v1.SearchHas" json:"has,omitempty"`
+	PinnedOnly                bool        `protobuf:"varint,5,opt,name=pinned_only,json=pinnedOnly,proto3" json:"pinned_only,omitempty"`
+	// スレッドに属するメッセージ（返信、または返信のある親）のみ
+	ThreadOnly bool `protobuf:"varint,6,opt,name=thread_only,json=threadOnly,proto3" json:"thread_only,omitempty"`
+	// after 以降（含む）
+	After *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=after,proto3" json:"after,omitempty"`
+	// before より前（含まない）
+	Before *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=before,proto3" json:"before,omitempty"`
+	// 自分宛てのメンション（@自分、所属グループ、@channel / @here）を含むもののみ
+	MentionsMe     bool `protobuf:"varint,9,opt,name=mentions_me,json=mentionsMe,proto3" json:"mentions_me,omitempty"`
+	ExcludeReplies bool `protobuf:"varint,10,opt,name=exclude_replies,json=excludeReplies,proto3" json:"exclude_replies,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *MessageSearchFilter) Reset() {
+	*x = MessageSearchFilter{}
+	mi := &file_chat_v1_search_service_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MessageSearchFilter) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MessageSearchFilter) ProtoMessage() {}
+
+func (x *MessageSearchFilter) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_search_service_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MessageSearchFilter.ProtoReflect.Descriptor instead.
+func (*MessageSearchFilter) Descriptor() ([]byte, []int) {
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *MessageSearchFilter) GetFromUserIds() []string {
+	if x != nil {
+		return x.FromUserIds
+	}
+	return nil
+}
+
+func (x *MessageSearchFilter) GetChannelIds() []string {
+	if x != nil {
+		return x.ChannelIds
+	}
+	return nil
+}
+
+func (x *MessageSearchFilter) GetIncludeDescendantChannels() bool {
+	if x != nil {
+		return x.IncludeDescendantChannels
+	}
+	return false
+}
+
+func (x *MessageSearchFilter) GetHas() []SearchHas {
+	if x != nil {
+		return x.Has
+	}
+	return nil
+}
+
+func (x *MessageSearchFilter) GetPinnedOnly() bool {
+	if x != nil {
+		return x.PinnedOnly
+	}
+	return false
+}
+
+func (x *MessageSearchFilter) GetThreadOnly() bool {
+	if x != nil {
+		return x.ThreadOnly
+	}
+	return false
+}
+
+func (x *MessageSearchFilter) GetAfter() *timestamppb.Timestamp {
+	if x != nil {
+		return x.After
+	}
+	return nil
+}
+
+func (x *MessageSearchFilter) GetBefore() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Before
+	}
+	return nil
+}
+
+func (x *MessageSearchFilter) GetMentionsMe() bool {
+	if x != nil {
+		return x.MentionsMe
+	}
+	return false
+}
+
+func (x *MessageSearchFilter) GetExcludeReplies() bool {
+	if x != nil {
+		return x.ExcludeReplies
+	}
+	return false
 }
 
 type SearchWorkspaceRequest struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	Query       string                 `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	// 空白区切りの語をすべて含むものを探す。message_filter に条件があれば空でもよい
+	Query string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
 	// 未指定の場合はすべての種類を検索する
-	Filter SearchFilter `protobuf:"varint,3,opt,name=filter,proto3,enum=chat.v1.SearchFilter" json:"filter,omitempty"`
+	Target SearchTarget `protobuf:"varint,3,opt,name=target,proto3,enum=chat.v1.SearchTarget" json:"target,omitempty"`
 	// 0 の場合は 1 ページ目として扱う
 	Page int32 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
 	// 0 の場合はサーバーの既定値を使う
-	PerPage       int32 `protobuf:"varint,5,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
+	PerPage       int32                `protobuf:"varint,5,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
+	MessageFilter *MessageSearchFilter `protobuf:"bytes,6,opt,name=message_filter,json=messageFilter,proto3" json:"message_filter,omitempty"`
+	// メッセージの並び順
+	Sort          SearchSort `protobuf:"varint,7,opt,name=sort,proto3,enum=chat.v1.SearchSort" json:"sort,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SearchWorkspaceRequest) Reset() {
 	*x = SearchWorkspaceRequest{}
-	mi := &file_chat_v1_search_service_proto_msgTypes[0]
+	mi := &file_chat_v1_search_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -108,7 +343,7 @@ func (x *SearchWorkspaceRequest) String() string {
 func (*SearchWorkspaceRequest) ProtoMessage() {}
 
 func (x *SearchWorkspaceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_search_service_proto_msgTypes[0]
+	mi := &file_chat_v1_search_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -121,7 +356,7 @@ func (x *SearchWorkspaceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchWorkspaceRequest.ProtoReflect.Descriptor instead.
 func (*SearchWorkspaceRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{0}
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SearchWorkspaceRequest) GetWorkspaceId() string {
@@ -138,11 +373,11 @@ func (x *SearchWorkspaceRequest) GetQuery() string {
 	return ""
 }
 
-func (x *SearchWorkspaceRequest) GetFilter() SearchFilter {
+func (x *SearchWorkspaceRequest) GetTarget() SearchTarget {
 	if x != nil {
-		return x.Filter
+		return x.Target
 	}
-	return SearchFilter_SEARCH_FILTER_UNSPECIFIED
+	return SearchTarget_SEARCH_TARGET_UNSPECIFIED
 }
 
 func (x *SearchWorkspaceRequest) GetPage() int32 {
@@ -159,6 +394,20 @@ func (x *SearchWorkspaceRequest) GetPerPage() int32 {
 	return 0
 }
 
+func (x *SearchWorkspaceRequest) GetMessageFilter() *MessageSearchFilter {
+	if x != nil {
+		return x.MessageFilter
+	}
+	return nil
+}
+
+func (x *SearchWorkspaceRequest) GetSort() SearchSort {
+	if x != nil {
+		return x.Sort
+	}
+	return SearchSort_SEARCH_SORT_UNSPECIFIED
+}
+
 type SearchWorkspaceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Messages      *MessageSearchResult   `protobuf:"bytes,1,opt,name=messages,proto3" json:"messages,omitempty"`
@@ -171,7 +420,7 @@ type SearchWorkspaceResponse struct {
 
 func (x *SearchWorkspaceResponse) Reset() {
 	*x = SearchWorkspaceResponse{}
-	mi := &file_chat_v1_search_service_proto_msgTypes[1]
+	mi := &file_chat_v1_search_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -183,7 +432,7 @@ func (x *SearchWorkspaceResponse) String() string {
 func (*SearchWorkspaceResponse) ProtoMessage() {}
 
 func (x *SearchWorkspaceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_search_service_proto_msgTypes[1]
+	mi := &file_chat_v1_search_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -196,7 +445,7 @@ func (x *SearchWorkspaceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchWorkspaceResponse.ProtoReflect.Descriptor instead.
 func (*SearchWorkspaceResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{1}
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *SearchWorkspaceResponse) GetMessages() *MessageSearchResult {
@@ -227,9 +476,115 @@ func (x *SearchWorkspaceResponse) GetGroups() *UserGroupSearchResult {
 	return nil
 }
 
+// body 内の範囲。JavaScript の String と同じ UTF-16 コード単位のオフセットで、end は含まない
+type TextRange struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Start         int32                  `protobuf:"varint,1,opt,name=start,proto3" json:"start,omitempty"`
+	End           int32                  `protobuf:"varint,2,opt,name=end,proto3" json:"end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TextRange) Reset() {
+	*x = TextRange{}
+	mi := &file_chat_v1_search_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TextRange) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TextRange) ProtoMessage() {}
+
+func (x *TextRange) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_search_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TextRange.ProtoReflect.Descriptor instead.
+func (*TextRange) Descriptor() ([]byte, []int) {
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TextRange) GetStart() int32 {
+	if x != nil {
+		return x.Start
+	}
+	return 0
+}
+
+func (x *TextRange) GetEnd() int32 {
+	if x != nil {
+		return x.End
+	}
+	return 0
+}
+
+type MessageSearchHit struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Message *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	// 検索語に一致した body 内の範囲（昇順、重なりなし）
+	Highlights    []*TextRange `protobuf:"bytes,2,rep,name=highlights,proto3" json:"highlights,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MessageSearchHit) Reset() {
+	*x = MessageSearchHit{}
+	mi := &file_chat_v1_search_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MessageSearchHit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MessageSearchHit) ProtoMessage() {}
+
+func (x *MessageSearchHit) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_search_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MessageSearchHit.ProtoReflect.Descriptor instead.
+func (*MessageSearchHit) Descriptor() ([]byte, []int) {
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *MessageSearchHit) GetMessage() *Message {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+func (x *MessageSearchHit) GetHighlights() []*TextRange {
+	if x != nil {
+		return x.Highlights
+	}
+	return nil
+}
+
 type MessageSearchResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*Message             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Items         []*MessageSearchHit    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
 	PerPage       int32                  `protobuf:"varint,4,opt,name=per_page,json=perPage,proto3" json:"per_page,omitempty"`
@@ -240,7 +595,7 @@ type MessageSearchResult struct {
 
 func (x *MessageSearchResult) Reset() {
 	*x = MessageSearchResult{}
-	mi := &file_chat_v1_search_service_proto_msgTypes[2]
+	mi := &file_chat_v1_search_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -252,7 +607,7 @@ func (x *MessageSearchResult) String() string {
 func (*MessageSearchResult) ProtoMessage() {}
 
 func (x *MessageSearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_search_service_proto_msgTypes[2]
+	mi := &file_chat_v1_search_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -265,10 +620,10 @@ func (x *MessageSearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MessageSearchResult.ProtoReflect.Descriptor instead.
 func (*MessageSearchResult) Descriptor() ([]byte, []int) {
-	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *MessageSearchResult) GetItems() []*Message {
+func (x *MessageSearchResult) GetItems() []*MessageSearchHit {
 	if x != nil {
 		return x.Items
 	}
@@ -316,7 +671,7 @@ type ChannelSearchResult struct {
 
 func (x *ChannelSearchResult) Reset() {
 	*x = ChannelSearchResult{}
-	mi := &file_chat_v1_search_service_proto_msgTypes[3]
+	mi := &file_chat_v1_search_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -328,7 +683,7 @@ func (x *ChannelSearchResult) String() string {
 func (*ChannelSearchResult) ProtoMessage() {}
 
 func (x *ChannelSearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_search_service_proto_msgTypes[3]
+	mi := &file_chat_v1_search_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -341,7 +696,7 @@ func (x *ChannelSearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChannelSearchResult.ProtoReflect.Descriptor instead.
 func (*ChannelSearchResult) Descriptor() ([]byte, []int) {
-	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{3}
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ChannelSearchResult) GetItems() []*Channel {
@@ -392,7 +747,7 @@ type UserSearchResult struct {
 
 func (x *UserSearchResult) Reset() {
 	*x = UserSearchResult{}
-	mi := &file_chat_v1_search_service_proto_msgTypes[4]
+	mi := &file_chat_v1_search_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -404,7 +759,7 @@ func (x *UserSearchResult) String() string {
 func (*UserSearchResult) ProtoMessage() {}
 
 func (x *UserSearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_search_service_proto_msgTypes[4]
+	mi := &file_chat_v1_search_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -417,7 +772,7 @@ func (x *UserSearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserSearchResult.ProtoReflect.Descriptor instead.
 func (*UserSearchResult) Descriptor() ([]byte, []int) {
-	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{4}
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UserSearchResult) GetItems() []*WorkspaceMember {
@@ -468,7 +823,7 @@ type UserGroupSearchResult struct {
 
 func (x *UserGroupSearchResult) Reset() {
 	*x = UserGroupSearchResult{}
-	mi := &file_chat_v1_search_service_proto_msgTypes[5]
+	mi := &file_chat_v1_search_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -480,7 +835,7 @@ func (x *UserGroupSearchResult) String() string {
 func (*UserGroupSearchResult) ProtoMessage() {}
 
 func (x *UserGroupSearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_search_service_proto_msgTypes[5]
+	mi := &file_chat_v1_search_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +848,7 @@ func (x *UserGroupSearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserGroupSearchResult.ProtoReflect.Descriptor instead.
 func (*UserGroupSearchResult) Descriptor() ([]byte, []int) {
-	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{5}
+	return file_chat_v1_search_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UserGroupSearchResult) GetItems() []*UserGroup {
@@ -535,20 +890,46 @@ var File_chat_v1_search_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_search_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1cchat/v1/search_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1dchat/v1/channel_service.proto\x1a\x15chat/v1/message.proto\x1a chat/v1/user_group_service.proto\x1a\x1fchat/v1/workspace_service.proto\"\xd5\x01\n" +
+	"\x1cchat/v1/search_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1dchat/v1/channel_service.proto\x1a\x15chat/v1/message.proto\x1a chat/v1/user_group_service.proto\x1a\x1fchat/v1/workspace_service.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe5\x03\n" +
+	"\x13MessageSearchFilter\x123\n" +
+	"\rfrom_user_ids\x18\x01 \x03(\tB\x0f\xbaH\f\x92\x01\t\x10\x14\"\x05r\x03\xb0\x01\x01R\vfromUserIds\x120\n" +
+	"\vchannel_ids\x18\x02 \x03(\tB\x0f\xbaH\f\x92\x01\t\x10\x14\"\x05r\x03\xb0\x01\x01R\n" +
+	"channelIds\x12>\n" +
+	"\x1binclude_descendant_channels\x18\x03 \x01(\bR\x19includeDescendantChannels\x125\n" +
+	"\x03has\x18\x04 \x03(\x0e2\x12.chat.v1.SearchHasB\x0f\xbaH\f\x92\x01\t\"\a\x82\x01\x04\x10\x01 \x00R\x03has\x12\x1f\n" +
+	"\vpinned_only\x18\x05 \x01(\bR\n" +
+	"pinnedOnly\x12\x1f\n" +
+	"\vthread_only\x18\x06 \x01(\bR\n" +
+	"threadOnly\x120\n" +
+	"\x05after\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x05after\x122\n" +
+	"\x06before\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x06before\x12\x1f\n" +
+	"\vmentions_me\x18\t \x01(\bR\n" +
+	"mentionsMe\x12'\n" +
+	"\x0fexclude_replies\x18\n" +
+	" \x01(\bR\x0eexcludeReplies\"\xc4\x02\n" +
 	"\x16SearchWorkspaceRequest\x12*\n" +
-	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1d\n" +
-	"\x05query\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05query\x12-\n" +
-	"\x06filter\x18\x03 \x01(\x0e2\x15.chat.v1.SearchFilterR\x06filter\x12\x1b\n" +
+	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1e\n" +
+	"\x05query\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05query\x12-\n" +
+	"\x06target\x18\x03 \x01(\x0e2\x15.chat.v1.SearchTargetR\x06target\x12\x1b\n" +
 	"\x04page\x18\x04 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x04page\x12$\n" +
-	"\bper_page\x18\x05 \x01(\x05B\t\xbaH\x06\x1a\x04\x182(\x00R\aperPage\"\xf6\x01\n" +
+	"\bper_page\x18\x05 \x01(\x05B\t\xbaH\x06\x1a\x04\x182(\x00R\aperPage\x12C\n" +
+	"\x0emessage_filter\x18\x06 \x01(\v2\x1c.chat.v1.MessageSearchFilterR\rmessageFilter\x12'\n" +
+	"\x04sort\x18\a \x01(\x0e2\x13.chat.v1.SearchSortR\x04sort\"\xf6\x01\n" +
 	"\x17SearchWorkspaceResponse\x128\n" +
 	"\bmessages\x18\x01 \x01(\v2\x1c.chat.v1.MessageSearchResultR\bmessages\x128\n" +
 	"\bchannels\x18\x02 \x01(\v2\x1c.chat.v1.ChannelSearchResultR\bchannels\x12/\n" +
 	"\x05users\x18\x03 \x01(\v2\x19.chat.v1.UserSearchResultR\x05users\x126\n" +
-	"\x06groups\x18\x04 \x01(\v2\x1e.chat.v1.UserGroupSearchResultR\x06groups\"\x9d\x01\n" +
-	"\x13MessageSearchResult\x12&\n" +
-	"\x05items\x18\x01 \x03(\v2\x10.chat.v1.MessageR\x05items\x12\x14\n" +
+	"\x06groups\x18\x04 \x01(\v2\x1e.chat.v1.UserGroupSearchResultR\x06groups\"3\n" +
+	"\tTextRange\x12\x14\n" +
+	"\x05start\x18\x01 \x01(\x05R\x05start\x12\x10\n" +
+	"\x03end\x18\x02 \x01(\x05R\x03end\"r\n" +
+	"\x10MessageSearchHit\x12*\n" +
+	"\amessage\x18\x01 \x01(\v2\x10.chat.v1.MessageR\amessage\x122\n" +
+	"\n" +
+	"highlights\x18\x02 \x03(\v2\x12.chat.v1.TextRangeR\n" +
+	"highlights\"\xa6\x01\n" +
+	"\x13MessageSearchResult\x12/\n" +
+	"\x05items\x18\x01 \x03(\v2\x19.chat.v1.MessageSearchHitR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x19\n" +
 	"\bper_page\x18\x04 \x01(\x05R\aperPage\x12\x19\n" +
@@ -571,13 +952,24 @@ const file_chat_v1_search_service_proto_rawDesc = "" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x19\n" +
 	"\bper_page\x18\x04 \x01(\x05R\aperPage\x12\x19\n" +
 	"\bhas_more\x18\x05 \x01(\bR\ahasMore*\xaf\x01\n" +
-	"\fSearchFilter\x12\x1d\n" +
-	"\x19SEARCH_FILTER_UNSPECIFIED\x10\x00\x12\x15\n" +
-	"\x11SEARCH_FILTER_ALL\x10\x01\x12\x1a\n" +
-	"\x16SEARCH_FILTER_MESSAGES\x10\x02\x12\x1a\n" +
-	"\x16SEARCH_FILTER_CHANNELS\x10\x03\x12\x17\n" +
-	"\x13SEARCH_FILTER_USERS\x10\x04\x12\x18\n" +
-	"\x14SEARCH_FILTER_GROUPS\x10\x052e\n" +
+	"\fSearchTarget\x12\x1d\n" +
+	"\x19SEARCH_TARGET_UNSPECIFIED\x10\x00\x12\x15\n" +
+	"\x11SEARCH_TARGET_ALL\x10\x01\x12\x1a\n" +
+	"\x16SEARCH_TARGET_MESSAGES\x10\x02\x12\x1a\n" +
+	"\x16SEARCH_TARGET_CHANNELS\x10\x03\x12\x17\n" +
+	"\x13SEARCH_TARGET_USERS\x10\x04\x12\x18\n" +
+	"\x14SEARCH_TARGET_GROUPS\x10\x05*\\\n" +
+	"\n" +
+	"SearchSort\x12\x1b\n" +
+	"\x17SEARCH_SORT_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12SEARCH_SORT_NEWEST\x10\x01\x12\x19\n" +
+	"\x15SEARCH_SORT_RELEVANCE\x10\x02*}\n" +
+	"\tSearchHas\x12\x1a\n" +
+	"\x16SEARCH_HAS_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10SEARCH_HAS_IMAGE\x10\x01\x12\x13\n" +
+	"\x0fSEARCH_HAS_FILE\x10\x02\x12\x13\n" +
+	"\x0fSEARCH_HAS_LINK\x10\x03\x12\x14\n" +
+	"\x10SEARCH_HAS_VIDEO\x10\x042e\n" +
 	"\rSearchService\x12T\n" +
 	"\x0fSearchWorkspace\x12\x1f.chat.v1.SearchWorkspaceRequest\x1a .chat.v1.SearchWorkspaceResponseB\x93\x01\n" +
 	"\vcom.chat.v1B\x12SearchServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
@@ -594,38 +986,51 @@ func file_chat_v1_search_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_search_service_proto_rawDescData
 }
 
-var file_chat_v1_search_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_chat_v1_search_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_chat_v1_search_service_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_chat_v1_search_service_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_chat_v1_search_service_proto_goTypes = []any{
-	(SearchFilter)(0),               // 0: chat.v1.SearchFilter
-	(*SearchWorkspaceRequest)(nil),  // 1: chat.v1.SearchWorkspaceRequest
-	(*SearchWorkspaceResponse)(nil), // 2: chat.v1.SearchWorkspaceResponse
-	(*MessageSearchResult)(nil),     // 3: chat.v1.MessageSearchResult
-	(*ChannelSearchResult)(nil),     // 4: chat.v1.ChannelSearchResult
-	(*UserSearchResult)(nil),        // 5: chat.v1.UserSearchResult
-	(*UserGroupSearchResult)(nil),   // 6: chat.v1.UserGroupSearchResult
-	(*Message)(nil),                 // 7: chat.v1.Message
-	(*Channel)(nil),                 // 8: chat.v1.Channel
-	(*WorkspaceMember)(nil),         // 9: chat.v1.WorkspaceMember
-	(*UserGroup)(nil),               // 10: chat.v1.UserGroup
+	(SearchTarget)(0),               // 0: chat.v1.SearchTarget
+	(SearchSort)(0),                 // 1: chat.v1.SearchSort
+	(SearchHas)(0),                  // 2: chat.v1.SearchHas
+	(*MessageSearchFilter)(nil),     // 3: chat.v1.MessageSearchFilter
+	(*SearchWorkspaceRequest)(nil),  // 4: chat.v1.SearchWorkspaceRequest
+	(*SearchWorkspaceResponse)(nil), // 5: chat.v1.SearchWorkspaceResponse
+	(*TextRange)(nil),               // 6: chat.v1.TextRange
+	(*MessageSearchHit)(nil),        // 7: chat.v1.MessageSearchHit
+	(*MessageSearchResult)(nil),     // 8: chat.v1.MessageSearchResult
+	(*ChannelSearchResult)(nil),     // 9: chat.v1.ChannelSearchResult
+	(*UserSearchResult)(nil),        // 10: chat.v1.UserSearchResult
+	(*UserGroupSearchResult)(nil),   // 11: chat.v1.UserGroupSearchResult
+	(*timestamppb.Timestamp)(nil),   // 12: google.protobuf.Timestamp
+	(*Message)(nil),                 // 13: chat.v1.Message
+	(*Channel)(nil),                 // 14: chat.v1.Channel
+	(*WorkspaceMember)(nil),         // 15: chat.v1.WorkspaceMember
+	(*UserGroup)(nil),               // 16: chat.v1.UserGroup
 }
 var file_chat_v1_search_service_proto_depIdxs = []int32{
-	0,  // 0: chat.v1.SearchWorkspaceRequest.filter:type_name -> chat.v1.SearchFilter
-	3,  // 1: chat.v1.SearchWorkspaceResponse.messages:type_name -> chat.v1.MessageSearchResult
-	4,  // 2: chat.v1.SearchWorkspaceResponse.channels:type_name -> chat.v1.ChannelSearchResult
-	5,  // 3: chat.v1.SearchWorkspaceResponse.users:type_name -> chat.v1.UserSearchResult
-	6,  // 4: chat.v1.SearchWorkspaceResponse.groups:type_name -> chat.v1.UserGroupSearchResult
-	7,  // 5: chat.v1.MessageSearchResult.items:type_name -> chat.v1.Message
-	8,  // 6: chat.v1.ChannelSearchResult.items:type_name -> chat.v1.Channel
-	9,  // 7: chat.v1.UserSearchResult.items:type_name -> chat.v1.WorkspaceMember
-	10, // 8: chat.v1.UserGroupSearchResult.items:type_name -> chat.v1.UserGroup
-	1,  // 9: chat.v1.SearchService.SearchWorkspace:input_type -> chat.v1.SearchWorkspaceRequest
-	2,  // 10: chat.v1.SearchService.SearchWorkspace:output_type -> chat.v1.SearchWorkspaceResponse
-	10, // [10:11] is the sub-list for method output_type
-	9,  // [9:10] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	2,  // 0: chat.v1.MessageSearchFilter.has:type_name -> chat.v1.SearchHas
+	12, // 1: chat.v1.MessageSearchFilter.after:type_name -> google.protobuf.Timestamp
+	12, // 2: chat.v1.MessageSearchFilter.before:type_name -> google.protobuf.Timestamp
+	0,  // 3: chat.v1.SearchWorkspaceRequest.target:type_name -> chat.v1.SearchTarget
+	3,  // 4: chat.v1.SearchWorkspaceRequest.message_filter:type_name -> chat.v1.MessageSearchFilter
+	1,  // 5: chat.v1.SearchWorkspaceRequest.sort:type_name -> chat.v1.SearchSort
+	8,  // 6: chat.v1.SearchWorkspaceResponse.messages:type_name -> chat.v1.MessageSearchResult
+	9,  // 7: chat.v1.SearchWorkspaceResponse.channels:type_name -> chat.v1.ChannelSearchResult
+	10, // 8: chat.v1.SearchWorkspaceResponse.users:type_name -> chat.v1.UserSearchResult
+	11, // 9: chat.v1.SearchWorkspaceResponse.groups:type_name -> chat.v1.UserGroupSearchResult
+	13, // 10: chat.v1.MessageSearchHit.message:type_name -> chat.v1.Message
+	6,  // 11: chat.v1.MessageSearchHit.highlights:type_name -> chat.v1.TextRange
+	7,  // 12: chat.v1.MessageSearchResult.items:type_name -> chat.v1.MessageSearchHit
+	14, // 13: chat.v1.ChannelSearchResult.items:type_name -> chat.v1.Channel
+	15, // 14: chat.v1.UserSearchResult.items:type_name -> chat.v1.WorkspaceMember
+	16, // 15: chat.v1.UserGroupSearchResult.items:type_name -> chat.v1.UserGroup
+	4,  // 16: chat.v1.SearchService.SearchWorkspace:input_type -> chat.v1.SearchWorkspaceRequest
+	5,  // 17: chat.v1.SearchService.SearchWorkspace:output_type -> chat.v1.SearchWorkspaceResponse
+	17, // [17:18] is the sub-list for method output_type
+	16, // [16:17] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_search_service_proto_init() }
@@ -642,8 +1047,8 @@ func file_chat_v1_search_service_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_search_service_proto_rawDesc), len(file_chat_v1_search_service_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   6,
+			NumEnums:      3,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

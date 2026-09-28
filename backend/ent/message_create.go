@@ -19,6 +19,7 @@ import (
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/messagelink"
+	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/threadreadstate"
@@ -254,6 +255,21 @@ func (_c *MessageCreate) AddAttachments(v ...*Attachment) *MessageCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddAttachmentIDs(ids...)
+}
+
+// AddPinIDs adds the "pins" edge to the MessagePin entity by IDs.
+func (_c *MessageCreate) AddPinIDs(ids ...uuid.UUID) *MessageCreate {
+	_c.mutation.AddPinIDs(ids...)
+	return _c
+}
+
+// AddPins adds the "pins" edges to the MessagePin entity.
+func (_c *MessageCreate) AddPins(v ...*MessagePin) *MessageCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPinIDs(ids...)
 }
 
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
@@ -562,6 +578,22 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PinsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   message.PinsTable,
+			Columns: []string{message.PinsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

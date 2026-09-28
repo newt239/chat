@@ -174,25 +174,27 @@ export const SearchResultsPanel = ({ workspaceId, query, filter }: SearchResults
             <Text size="xs" c="dimmed">
               メッセージ
             </Text>
-            {data.messages.items.map((message) => (
-              <Card
-                key={message.id}
-                withBorder
-                padding="md"
-                radius="md"
-                className="cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => {
-                  handleMessageClick(message.channelId, message.id);
-                }}
-              >
-                <Stack gap="4">
-                  <Text size="xs" c="dimmed">
-                    {dateTimeFormatter.format(toDate(message.createdAt))}
-                  </Text>
-                  <Text size="sm">{message.body}</Text>
-                </Stack>
-              </Card>
-            ))}
+            {data.messages.items
+              .flatMap(({ message }) => (message ? [message] : []))
+              .map((message) => (
+                <Card
+                  key={message.id}
+                  withBorder
+                  padding="md"
+                  radius="md"
+                  className="cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => {
+                    handleMessageClick(message.channelId, message.id);
+                  }}
+                >
+                  <Stack gap="4">
+                    <Text size="xs" c="dimmed">
+                      {dateTimeFormatter.format(toDate(message.createdAt))}
+                    </Text>
+                    <Text size="sm">{message.body}</Text>
+                  </Stack>
+                </Card>
+              ))}
           </Stack>
         )}
       </Stack>

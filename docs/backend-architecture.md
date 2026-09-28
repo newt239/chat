@@ -351,6 +351,7 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 | `ExportService` | ExportMessages | `export_service.proto` |
 | `InsightService` | GetInsights | `insight_service.proto` |
 | `LinkService` | FetchOgp | `link_service.proto` |
+| `MentionService` | ListMentions | `mention_service.proto` |
 | `MessageService` | ListMessages / ListMessagesWithThread / CreateMessage / UpdateMessage / DeleteMessage | `message_service.proto` |
 | `PermissionService` | GetPermissions / UpdatePermission | `permission_service.proto` |
 | `PinService` | ListPins / CreatePin / DeletePin | `pin_service.proto` |
