@@ -19,9 +19,9 @@ describe("PostTargetPicker", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "投稿先: #dev" }));
     expect(
-      await screen.findByRole("menuitem", { name: "# dev（このチャンネル）" }),
+      await screen.findByRole("menuitem", { name: "dev（このチャンネル）" }),
     ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("menuitem", { name: "# frontend/web" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "frontend/web" }));
     expect(onChange).toHaveBeenCalledWith("web");
   });
 });

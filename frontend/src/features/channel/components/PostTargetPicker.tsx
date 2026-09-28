@@ -29,7 +29,7 @@ export const PostTargetPicker = ({
   const labelOf = (channel: Channel) =>
     channel.id === parent.id
       ? t("channel.aggregate.thisChannel", { name: lastSegment(parent.name) })
-      : `# ${relativePath(parent.name, channel.name)}`;
+      : relativePath(parent.name, channel.name);
   const selected = [parent, ...descendants].find((channel) => channel.id === value) ?? parent;
 
   return (

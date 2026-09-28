@@ -6,7 +6,7 @@ export const channel = {
     placeholder: "#{{name}} へのメッセージ",
     target: "投稿先: #{{name}}",
     targetLabel: "投稿先",
-    thisChannel: "# {{name}}（このチャンネル）",
+    thisChannel: "{{name}}（このチャンネル）",
     toggle: "下階層を含む",
   },
   create: {

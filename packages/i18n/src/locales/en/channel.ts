@@ -8,7 +8,7 @@ export const channel: Messages["channel"] = {
     placeholder: "Message #{{name}}",
     target: "Post to #{{name}}",
     targetLabel: "Post to",
-    thisChannel: "# {{name}} (this channel)",
+    thisChannel: "{{name}} (this channel)",
     toggle: "Include nested",
   },
   create: {
