@@ -1,20 +1,27 @@
-import { Card, Stack, Text, Avatar, Badge } from "@mantine/core";
-import { IconHash, IconUser, IconUsers } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
+import { formatDateTime } from "@chat/i18n";
+import { IconHash, IconLock, IconUsers } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
+import { useTranslation } from "react-i18next";
 
-import { workspaceRoleLabels } from "#/features/workspace/utils/workspaceRole";
+import { Avatar } from "#/components/ui/Avatar";
+import { Link } from "#/components/ui/Link";
+import { useChannels } from "#/features/channel/hooks/useChannel";
+import { MemberRow } from "#/features/member/components/MemberRow";
+import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { splitHighlights } from "#/features/search/utils/splitHighlights";
 import { toDate } from "#/lib/timestamp";
-import { setRightSidePanelViewAtom } from "#/providers/store/ui";
+import { preferencesAtom } from "#/providers/store/preferences";
+
+import { SearchResultSection } from "./SearchResultSection";
 
 import type { SearchFilter } from "#/features/search/schemas";
 import type { Channel } from "#/gen/chat/v1/channel_service_pb";
-import type { Message } from "#/gen/chat/v1/message_pb";
+import type { MessageSearchHit } from "#/gen/chat/v1/search_service_pb";
 import type { UserGroup } from "#/gen/chat/v1/user_group_service_pb";
 import type { WorkspaceMember } from "#/gen/chat/v1/workspace_service_pb";
 
 type SearchResultListProps = {
-  messages: Message[];
+  messages: MessageSearchHit[];
   channels: Channel[];
   users: WorkspaceMember[];
   groups: UserGroup[];
@@ -30,188 +37,135 @@ export const SearchResultList = ({
   filter,
   workspaceId,
 }: SearchResultListProps) => {
-  const navigate = useNavigate();
-  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
-
-  const handleUserClick = (userId: string) => {
-    setRightSidePanelView({ type: "user-profile", userId });
-  };
-
-  const handleChannelClick = (channelId: string) => {
-    void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
-  };
-
-  const handleMessageClick = (channelId: string, messageId: string) => {
-    void navigate({
-      params: { channelId, workspaceId },
-      search: { message: messageId },
-      to: "/app/$workspaceId/$channelId",
-    });
-  };
-
-  const dateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
+  const { t } = useTranslation();
+  const { locale } = useAtomValue(preferencesAtom);
+  const { data: allChannels } = useChannels(workspaceId);
+  const channelNameOf = (channelId: string) =>
+    allChannels?.find((channel) => channel.id === channelId)?.name;
+  const shows = (section: SearchFilter) => filter === "all" || filter === section;
 
   return (
-    <Stack gap="md">
-      {(filter === "all" || filter === "channels") && channels.length > 0 && (
-        <div>
-          <Text size="sm" fw={600} c="dimmed" className="mb-2">
-            チャンネル
-          </Text>
-          <Stack gap="xs">
-            {channels.map((channel) => (
-              <Card
-                key={channel.id}
-                withBorder
-                padding="md"
-                radius="md"
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => {
-                  handleChannelClick(channel.id);
-                }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="mt-1">
-                    <IconHash size={20} className="text-gray-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Text size="sm" fw={600}>
-                        {channel.name}
-                      </Text>
-                      {channel.isPrivate && (
-                        <Badge size="xs" variant="light" color="gray">
-                          プライベート
-                        </Badge>
-                      )}
-                    </div>
-                    {channel.description && (
-                      <Text size="xs" c="dimmed" className="mt-1">
-                        {channel.description}
-                      </Text>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </Stack>
-        </div>
-      )}
-
-      {(filter === "all" || filter === "users") && users.length > 0 && (
-        <div>
-          <Text size="sm" fw={600} c="dimmed" className="mb-2">
-            ユーザー
-          </Text>
-          <Stack gap="xs">
-            {users.map((user) => (
-              <Card
-                key={user.userId}
-                withBorder
-                padding="md"
-                radius="md"
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => {
-                  handleUserClick(user.userId);
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  {user.avatarUrl ? (
-                    <Avatar src={user.avatarUrl} size="md" radius="xl" />
-                  ) : (
-                    <Avatar size="md" radius="xl" color="blue">
-                      <IconUser size={20} />
-                    </Avatar>
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Text size="sm" fw={600}>
-                        {user.displayName}
-                      </Text>
-                      <Badge size="xs" variant="light" color="blue">
-                        {workspaceRoleLabels[user.role]}
-                      </Badge>
-                    </div>
-                    <Text size="xs" c="dimmed">
-                      {user.email}
-                    </Text>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </Stack>
-        </div>
-      )}
-
-      {(filter === "all" || filter === "messages") && messages.length > 0 && (
-        <div>
-          <Text size="sm" fw={600} c="dimmed" className="mb-2">
-            メッセージ
-          </Text>
-          <Stack gap="xs">
-            {messages.map((message) => (
-              <Card
+    <div className="flex flex-col gap-1 pb-4 font-sans text-text">
+      {shows("messages") && messages.length > 0 && (
+        <SearchResultSection title={t("search.sections.messages")}>
+          {messages.map(({ message, highlights }) => {
+            if (message === undefined) {
+              return null;
+            }
+            const channelName = channelNameOf(message.channelId);
+            const authorName = message.user?.displayName ?? "";
+            return (
+              <article
                 key={message.id}
-                withBorder
-                padding="md"
-                radius="md"
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => {
-                  handleMessageClick(message.channelId, message.id);
-                }}
+                className="mx-[18px] my-1.5 rounded-lg border border-border"
               >
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <Text size="xs" c="dimmed">
-                      投稿日時: {dateTimeFormatter.format(toDate(message.createdAt))}
-                    </Text>
-                    {message.editedAt && (
-                      <Text size="xs" c="dimmed">
-                        (編集済み)
-                      </Text>
-                    )}
+                <header className="flex items-center gap-1.5 rounded-t-lg border-b border-border bg-sunken py-1.5 pr-2 pl-3 text-xs text-muted">
+                  {channelName !== undefined && (
+                    <b className="font-semibold text-text">#{channelName}</b>
+                  )}
+                  <span className="flex-1">
+                    {formatDateTime(toDate(message.createdAt), locale)}
+                  </span>
+                  <Link
+                    to="/app/$workspaceId/$channelId"
+                    params={{ channelId: message.channelId, workspaceId }}
+                    search={{ message: message.id }}
+                    className="rounded-sm px-2 py-0.5 text-xs font-semibold no-underline data-hovered:bg-hover"
+                  >
+                    {t("search.showInChannel")}
+                  </Link>
+                </header>
+                <div className="flex gap-2.5 px-3 py-2">
+                  <Avatar name={authorName} src={message.user?.avatarUrl} size={32} />
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="text-body-strong">{authorName}</span>
+                    <p className="m-0 line-clamp-3 text-[14px] break-words whitespace-pre-wrap">
+                      {splitHighlights(message.body, highlights).map((part) =>
+                        part.isMatch ? (
+                          <mark
+                            key={part.start}
+                            className="rounded-[2px] bg-mention-chip text-inherit"
+                          >
+                            {part.text}
+                          </mark>
+                        ) : (
+                          part.text
+                        ),
+                      )}
+                    </p>
                   </div>
-                  <Text size="sm" lineClamp={3}>
-                    {message.body}
-                  </Text>
                 </div>
-              </Card>
-            ))}
-          </Stack>
-        </div>
+              </article>
+            );
+          })}
+        </SearchResultSection>
       )}
 
-      {(filter === "all" || filter === "groups") && groups.length > 0 && (
-        <div>
-          <Text size="sm" fw={600} c="dimmed" className="mb-2">
-            ユーザーグループ
-          </Text>
-          <Stack gap="xs">
-            {groups.map((group) => (
-              <Card key={group.id} withBorder padding="md" radius="md">
-                <div className="flex items-center gap-3">
-                  <Avatar size="md" radius="xl" color="grape">
-                    <IconUsers size={20} />
-                  </Avatar>
-                  <div className="flex-1">
-                    <Text size="sm" fw={600}>
-                      @{group.name}
-                    </Text>
-                    {typeof group.description === "string" && group.description.length > 0 && (
-                      <Text size="xs" c="dimmed">
-                        {group.description}
-                      </Text>
-                    )}
-                  </div>
-                </div>
-              </Card>
+      {shows("channels") && channels.length > 0 && (
+        <SearchResultSection title={t("search.sections.channels")}>
+          <ul className="m-0 flex list-none flex-col px-2.5 py-0">
+            {channels.map((channel) => (
+              <li key={channel.id}>
+                <Link
+                  to="/app/$workspaceId/$channelId"
+                  params={{ channelId: channel.id, workspaceId }}
+                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13.5px] text-text no-underline data-hovered:bg-hover"
+                >
+                  {channel.isPrivate ? (
+                    <IconLock aria-hidden className="size-4 shrink-0 text-muted" />
+                  ) : (
+                    <IconHash aria-hidden className="size-4 shrink-0 text-muted" />
+                  )}
+                  <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+                    <span className="truncate">{channel.name}</span>
+                    <small className="truncate text-xs text-muted">
+                      {channel.description || t("search.noDescription")}
+                    </small>
+                  </span>
+                </Link>
+              </li>
             ))}
-          </Stack>
-        </div>
+          </ul>
+        </SearchResultSection>
       )}
-    </Stack>
+
+      {shows("users") && users.length > 0 && (
+        <SearchResultSection title={t("search.sections.users")}>
+          <ul className="m-0 flex list-none flex-col px-2.5 py-0">
+            {users.map((user) => (
+              <li key={user.userId}>
+                <MemberRow
+                  userId={user.userId}
+                  name={user.displayName}
+                  avatarUrl={user.avatarUrl}
+                  detail={`${t(workspaceRoleKeys[user.role])} · ${user.email}`}
+                />
+              </li>
+            ))}
+          </ul>
+        </SearchResultSection>
+      )}
+
+      {shows("groups") && groups.length > 0 && (
+        <SearchResultSection title={t("search.sections.groups")}>
+          <ul className="m-0 flex list-none flex-col px-2.5 py-0">
+            {groups.map((group) => (
+              <li
+                key={group.id}
+                className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13.5px]"
+              >
+                <IconUsers aria-hidden className="size-4 shrink-0 text-muted" />
+                <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
+                  <span className="truncate font-semibold text-accent-text">@{group.name}</span>
+                  <small className="truncate text-xs text-muted">
+                    {group.description || t("search.noDescription")}
+                  </small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </SearchResultSection>
+      )}
+    </div>
   );
 };

@@ -1,8 +1,12 @@
 import { useState } from "react";
 
-import { ActionIcon, Button, Card, Group, Stack, Text, TextInput } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
+import { Form } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { Button } from "#/components/ui/Button";
+import { IconButton } from "#/components/ui/IconButton";
+import { TextField } from "#/components/ui/TextField";
 import { UserGroupMembers } from "#/features/userGroup/components/UserGroupMembers";
 import { useUserGroupActions, useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 
@@ -11,71 +15,67 @@ type UserGroupManagerProps = {
 };
 
 export const UserGroupManager = ({ workspaceId }: UserGroupManagerProps) => {
+  const { t } = useTranslation();
   const { data: groups } = useUserGroups(workspaceId);
   const { create, remove } = useUserGroupActions();
   const [name, setName] = useState("");
 
   return (
-    <Stack gap="sm">
-      <Text fw={600}>ユーザーグループ ({groups?.length ?? 0})</Text>
+    <div className="flex flex-col gap-3 bg-surface font-sans text-text">
+      <h3 className="m-0 text-[13px] font-bold">
+        {t("userGroup.title", { count: groups?.length ?? 0 })}
+      </h3>
+
+      {groups?.length === 0 && (
+        <p className="m-0 text-caption text-muted">{t("userGroup.empty")}</p>
+      )}
 
       {groups?.map((group) => (
-        <Card key={group.id} withBorder padding="sm" radius="md">
-          <Group justify="space-between" className="mb-2">
-            <div>
-              <Text size="sm" fw={600}>
-                @{group.name}
-              </Text>
+        <article
+          key={group.id}
+          className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-3.5"
+        >
+          <header className="flex items-start gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="text-sm font-bold text-accent-text">@{group.name}</span>
               {group.description !== undefined && group.description.length > 0 && (
-                <Text size="xs" c="dimmed">
-                  {group.description}
-                </Text>
+                <p className="m-0 text-[12.5px] text-muted">{group.description}</p>
               )}
             </div>
-            <ActionIcon
-              variant="subtle"
-              color="red"
-              aria-label={`${group.name} を削除`}
-              onClick={() => {
+            <IconButton
+              label={t("userGroup.delete", { name: group.name })}
+              onPress={() => {
                 remove.mutate({ groupId: group.id });
               }}
             >
-              <IconTrash size={16} />
-            </ActionIcon>
-          </Group>
+              <IconTrash />
+            </IconButton>
+          </header>
           <UserGroupMembers groupId={group.id} workspaceId={workspaceId} />
-        </Card>
+        </article>
       ))}
 
-      <Group gap="xs" align="end">
-        <TextInput
-          size="xs"
-          className="flex-1"
-          label="グループを作成"
-          placeholder="グループ名"
+      <Form
+        className="flex items-end gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          create.mutate({ name: name.trim(), workspaceId });
+          setName("");
+        }}
+      >
+        <TextField
+          label={t("userGroup.createLabel")}
+          placeholder={t("userGroup.createPlaceholder")}
           value={name}
-          onChange={(event) => {
-            setName(event.currentTarget.value);
-          }}
+          onChange={setName}
+          className="flex-1"
         />
-        <Button
-          size="xs"
-          disabled={name.trim().length === 0}
-          loading={create.isPending}
-          onClick={() => {
-            create.mutate({ name: name.trim(), workspaceId });
-            setName("");
-          }}
-        >
-          作成
+        <Button type="submit" isDisabled={name.trim().length === 0} isPending={create.isPending}>
+          {t("userGroup.create")}
         </Button>
-      </Group>
+      </Form>
 
-      {create.isError && (
-        <Text c="red" size="xs">
-          {create.error.message}
-        </Text>
-      )}
-    </Stack>
+      {create.isError && <p className="m-0 text-caption text-danger">{create.error.message}</p>}
+    </div>
   );
 };

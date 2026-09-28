@@ -1,0 +1,23 @@
+export const search = {
+  count: "{{count}} 件",
+  empty: "条件に一致する結果はありません",
+  emptyHint: "キーワードを減らしてみてください",
+  failed: "検索結果を読み込めませんでした",
+  input: "検索キーワード",
+  next: "次のページ",
+  noDescription: "説明なし",
+  page: "{{page}} / {{total}} ページ",
+  placeholder: "メッセージ、チャンネル、ユーザーを検索",
+  prev: "前のページ",
+  prompt: "キーワードを入力して検索してください",
+  sections: {
+    all: "すべて",
+    channels: "チャンネル",
+    groups: "ユーザーグループ",
+    messages: "メッセージ",
+    users: "ユーザー",
+  },
+  showInChannel: "チャンネルで表示",
+  tabs: "検索対象",
+  title: "検索",
+} as const;
