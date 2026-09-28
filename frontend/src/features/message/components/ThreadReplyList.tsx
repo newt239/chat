@@ -1,10 +1,9 @@
 import { useCallback } from "react";
 
-import { useSetAtom } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
-import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import { MessageItem } from "./MessageItem";
 
@@ -24,15 +23,18 @@ export const ThreadReplyList = ({
   channelId,
 }: ThreadReplyListProps) => {
   const { t } = useTranslation();
-  const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
 
   const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
 
   const handleCreateThread = useCallback(
     (messageId: string) => {
-      setRightSidePanelView({ threadId: messageId, type: "thread" });
+      void navigate({
+        params: { channelId, messageId, workspaceId },
+        to: "/app/$workspaceId/$channelId/thread/$messageId",
+      });
     },
-    [setRightSidePanelView],
+    [navigate, channelId, workspaceId],
   );
 
   if (replies.length === 0) {

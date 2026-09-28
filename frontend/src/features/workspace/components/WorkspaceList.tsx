@@ -1,8 +1,6 @@
-import { useState } from "react";
-
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
 import { LinkButton } from "#/components/ui/LinkButton";
 import { Skeleton } from "#/components/ui/Skeleton";
 
@@ -11,23 +9,22 @@ import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 import { PublicWorkspaceList } from "./PublicWorkspaceList";
 import { WorkspaceLogo } from "./WorkspaceLogo";
 
+const route = getRouteApi("/app/");
+
 export const WorkspaceList = () => {
   const { t } = useTranslation();
   const { data: workspaces, isLoading, isError } = useWorkspaces();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { dialog } = route.useSearch();
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-6">
       <section className="flex flex-col gap-3">
         <header className="flex items-center justify-between gap-2">
           <h1 className="m-0 text-title">{t("workspace.list.title")}</h1>
-          <Button
-            onPress={() => {
-              setIsModalOpen(true);
-            }}
-          >
+          <LinkButton to="/app" search={{ dialog: "create-workspace" }}>
             {t("workspace.create.title")}
-          </Button>
+          </LinkButton>
         </header>
         {isLoading && <Skeleton className="h-16 w-full" />}
         {isError && <p className="m-0 text-danger">{t("workspace.list.loadFailed")}</p>}
@@ -58,7 +55,15 @@ export const WorkspaceList = () => {
 
       <PublicWorkspaceList />
 
-      <CreateWorkspaceModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
+      <CreateWorkspaceModal
+        isOpen={dialog === "create-workspace"}
+        onOpenChange={(isOpen) => {
+          void navigate({
+            search: { dialog: isOpen ? "create-workspace" : undefined },
+            to: "/app",
+          });
+        }}
+      />
     </div>
   );
 };

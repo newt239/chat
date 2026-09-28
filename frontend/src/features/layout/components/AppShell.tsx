@@ -3,7 +3,6 @@ import { Outlet, useParams } from "@tanstack/react-router";
 import { useChannelRealtimeSync } from "#/features/channel/hooks/useChannelRealtimeSync";
 import { useChannelViewersSync } from "#/features/channel/hooks/useChannelViewers";
 import { useDMRealtimeSync } from "#/features/dm/hooks/useDMRealtimeSync";
-import { SettingsDialog } from "#/features/settings/components/SettingsDialog";
 import { useDesktopNotifications } from "#/features/settings/hooks/useDesktopNotifications";
 import { useIsMobile } from "#/lib/useMediaQuery";
 
@@ -11,6 +10,7 @@ import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
 import { MobileShell } from "./MobileShell";
 import { RightSidePanel } from "./RightSidePanel";
 import { Sidebar } from "./Sidebar";
+import { WorkspaceDialogs } from "./WorkspaceDialogs";
 
 type AppShellProps = {
   workspaceId: string;
@@ -42,7 +42,7 @@ export const AppShell = ({ workspaceId }: AppShellProps) => {
           <RightSidePanel workspaceId={workspaceId} />
         </div>
       )}
-      <SettingsDialog />
+      <WorkspaceDialogs workspaceId={workspaceId} />
     </>
   );
 };

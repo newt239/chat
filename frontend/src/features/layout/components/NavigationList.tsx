@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import {
   IconAt,
   IconBookmark,
@@ -7,15 +5,15 @@ import {
   IconMessages,
   IconShieldCheck,
 } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { ChannelList } from "#/features/channel/components/ChannelList";
-import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
-import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
 import { DMList } from "#/features/dm/components/DMList";
 import { UserGroupNavList } from "#/features/userGroup/components/UserGroupNavList";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
 
+import { openDialog } from "../utils/overlaySearch";
 import { NavLink } from "./NavLink";
 import { SidebarSection } from "./SidebarSection";
 import { StarredSection } from "./StarredSection";
@@ -28,7 +26,7 @@ type NavigationListProps = {
 export const NavigationList = ({ workspaceId }: NavigationListProps) => {
   const { t } = useTranslation();
   const isAdmin = useIsWorkspaceAdmin(workspaceId);
-  const [dialog, setDialog] = useState<"channel" | "dm" | null>(null);
+  const navigate = useNavigate();
   const params = { workspaceId };
 
   return (
@@ -55,7 +53,7 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
           onAdd={{
             label: t("shell.sidebar.createChannel"),
             onPress: () => {
-              setDialog("channel");
+              void navigate({ search: openDialog({ dialog: "create-channel" }), to: "." });
             },
           }}
         >
@@ -67,7 +65,7 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
           onAdd={{
             label: t("shell.sidebar.createDM"),
             onPress: () => {
-              setDialog("dm");
+              void navigate({ search: openDialog({ dialog: "create-dm" }), to: "." });
             },
           }}
         >
@@ -89,20 +87,6 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
           )}
         </SidebarSection>
       </nav>
-      <CreateChannelModal
-        workspaceId={workspaceId}
-        opened={dialog === "channel"}
-        onClose={() => {
-          setDialog(null);
-        }}
-      />
-      <CreateDMModal
-        workspaceId={workspaceId}
-        opened={dialog === "dm"}
-        onClose={() => {
-          setDialog(null);
-        }}
-      />
     </>
   );
 };

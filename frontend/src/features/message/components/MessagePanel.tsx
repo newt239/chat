@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useCallback } from "react";
 
 import { IconHash } from "@tabler/icons-react";
-import { useAtom, useSetAtom, useAtomValue } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
+import { useAtom, useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button";
@@ -16,7 +17,6 @@ import { useHighlightedMessage } from "#/features/message/hooks/useHighlightedMe
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
 import { useOlderMessages } from "#/features/message/hooks/useOlderMessages";
 import { userAtom } from "#/providers/store/auth";
-import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
@@ -86,7 +86,7 @@ export const MessagePanel = () => {
   };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const setRightSidebarView = useSetAtom(setRightSidePanelViewAtom);
+  const navigate = useNavigate();
 
   // 最新メッセージのIDを取得（ユーザーメッセージのみ）
   const latestUserMessageId =
@@ -120,17 +120,18 @@ export const MessagePanel = () => {
     }
   }, [messageResponse, isLoading, currentChannelId, scrollToBottom, targetMessageId]);
 
-  useEffect(() => {
-    setRightSidebarView({ type: "hidden" });
-  }, [currentChannelId, setRightSidebarView]);
-
   const handleCopyLink = useCopyMessageLink(currentWorkspaceId, currentChannelId);
 
   const handleOpenThread = useCallback(
     (messageId: string) => {
-      setRightSidebarView({ threadId: messageId, type: "thread" });
+      if (currentWorkspaceId !== null && currentChannelId !== null) {
+        void navigate({
+          params: { channelId: currentChannelId, messageId, workspaceId: currentWorkspaceId },
+          to: "/app/$workspaceId/$channelId/thread/$messageId",
+        });
+      }
     },
-    [setRightSidebarView],
+    [navigate, currentChannelId, currentWorkspaceId],
   );
 
   if (currentWorkspaceId === null || currentChannelId === null) {

@@ -1,17 +1,14 @@
-import { useState } from "react";
-
 import { IconArrowDown, IconArrowUp, IconEdit, IconLink } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
 import { IconButton } from "#/components/ui/IconButton";
+import { LinkButton } from "#/components/ui/LinkButton";
 import { focusRing } from "#/components/ui/styles";
+import { openDialog } from "#/features/layout/utils/overlaySearch";
 
 import { useChannelLinkActions, useChannelLinks } from "../hooks/useChannelLinks";
-import { ChannelLinkDialog } from "./ChannelLinkDialog";
-
-import type { ChannelLink } from "#/gen/chat/v1/channel_link_service_pb";
 
 type ChannelLinksSectionProps = {
   channelId: string;
@@ -22,8 +19,7 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
   const { t } = useTranslation();
   const { data } = useChannelLinks(channelId);
   const { move } = useChannelLinkActions(channelId);
-  // undefined は閉じている、null は追加
-  const [editing, setEditing] = useState<ChannelLink | null | undefined>(undefined);
+  const navigate = useNavigate();
   const links = data?.links ?? [];
   const linkIds = links.map((link) => link.id);
   const canEdit = data?.canEdit ?? false;
@@ -33,15 +29,9 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
       <h4 className="m-0 flex items-center justify-between text-xs font-semibold text-muted">
         {t("shell.channel.links")}
         {canEdit && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onPress={() => {
-              setEditing(null);
-            }}
-          >
+          <LinkButton size="sm" variant="ghost" to="." search={openDialog({ dialog: "add-link" })}>
             {t("channel.links.add")}
-          </Button>
+          </LinkButton>
         )}
       </h4>
       {links.length === 0 && (
@@ -88,7 +78,10 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
                 <IconButton
                   label={t("channel.links.editOf", { title: link.title })}
                   onPress={() => {
-                    setEditing(link);
+                    void navigate({
+                      search: openDialog({ dialog: "edit-link", link: link.id }),
+                      to: ".",
+                    });
                   }}
                 >
                   <IconEdit />
@@ -98,18 +91,6 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
           </li>
         ))}
       </ul>
-      {editing !== undefined && (
-        <ChannelLinkDialog
-          channelId={channelId}
-          link={editing}
-          isOpen
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              setEditing(undefined);
-            }
-          }}
-        />
-      )}
     </section>
   );
 };

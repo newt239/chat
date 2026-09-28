@@ -17,13 +17,13 @@ const image = (id: string, width: number, height: number) =>
     mimeType: "image/png",
   });
 
-const render = (images: ReturnType<typeof image>[]) =>
+const render = (images: ReturnType<typeof image>[], url = "/app/ws1/ch1") =>
   renderWithProviders(
     <ImageGallery
       images={images}
       message={create(MessageSchema, { id: "m1", user: { displayName: "Alice", id: "u1" } })}
     />,
-    "/app/ws1/ch1",
+    url,
     (routes) => {
       routes.rpc(AttachmentService.method.getDownloadUrl, ({ attachmentId }) => ({
         url: `https://storage.example.com/${attachmentId}`,
@@ -45,7 +45,9 @@ describe("ImageGallery", () => {
   });
 
   test("4 枚を超えた分は +N で示し、ライトボックスで前後の画像へ移れる", async () => {
-    await render(["a", "b", "c", "d", "e", "f"].map((id) => image(id, 800, 600)));
+    const { router } = await render(
+      ["a", "b", "c", "d", "e", "f"].map((id) => image(id, 800, 600)),
+    );
 
     expect(screen.getAllByRole("button", { name: /を拡大/ })).toHaveLength(4);
     expect(screen.getByText("+2")).toBeInTheDocument();
@@ -53,6 +55,7 @@ describe("ImageGallery", () => {
     await userEvent.click(screen.getByRole("button", { name: "d.png を拡大" }));
     const dialog = await screen.findByRole("dialog", { name: "画像ビューア" });
     expect(within(dialog).getByText("4 / 6")).toBeInTheDocument();
+    expect(router.state.location.search).toEqual({ image: "d" });
 
     await userEvent.keyboard("{ArrowRight}");
     expect(within(dialog).getByText("5 / 6")).toBeInTheDocument();
@@ -60,10 +63,21 @@ describe("ImageGallery", () => {
     await userEvent.click(within(dialog).getByRole("button", { name: "前の画像" }));
     expect(within(dialog).getByText("3 / 6")).toBeInTheDocument();
     expect(within(dialog).getByText("c.png")).toBeInTheDocument();
+    expect(router.state.location.search).toEqual({ image: "c" });
 
     await userEvent.keyboard("{Escape}");
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull();
     });
+    expect(router.state.location.search).toEqual({});
+  });
+
+  test("?image= の画像をライトボックスで開いた状態で表示する", async () => {
+    await render(
+      ["a", "b"].map((id) => image(id, 800, 600)),
+      "/app/ws1/ch1?image=b",
+    );
+    const dialog = await screen.findByRole("dialog", { name: "画像ビューア" });
+    expect(within(dialog).getByText("2 / 2")).toBeInTheDocument();
   });
 });

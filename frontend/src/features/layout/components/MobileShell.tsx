@@ -72,10 +72,8 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
           </MobileStackLayer>
         )}
         {content && (
-          <MobileStackLayer
-            key={content.key}
-            onBack={leafRouteId === THREAD_ROUTE_ID && canGoBack ? back : close}
-          >
+          // パネルも URL で開くので、戻るは履歴を戻る。ディープリンクで開いたときだけ閉じる
+          <MobileStackLayer key={content.key} onBack={canGoBack ? back : close}>
             <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border px-3">
               <BackButton />
               <h2 className="m-0 min-w-0 flex-1 truncate text-[16px] font-bold">{content.title}</h2>

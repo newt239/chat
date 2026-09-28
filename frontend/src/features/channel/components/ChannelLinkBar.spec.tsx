@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
+import { WorkspaceDialogs } from "#/features/layout/components/WorkspaceDialogs";
 import { ChannelLinkSchema, ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
@@ -13,7 +14,13 @@ import type { UpdateChannelLinkRequest } from "#/gen/chat/v1/channel_link_servic
 describe("ChannelLinkBar", () => {
   test("右クリックの「編集」でリンクを編集する", async () => {
     const update = vi.fn<(req: UpdateChannelLinkRequest) => void>();
-    await renderWithProviders(<ChannelLinkBar channelId="c1" />, "/app/ws1", (routes) => {
+    const ui = (
+      <>
+        <ChannelLinkBar channelId="c1" />
+        <WorkspaceDialogs workspaceId="ws1" />
+      </>
+    );
+    await renderWithProviders(ui, "/app/ws1/c1", (routes) => {
       routes.rpc(ChannelLinkService.method.listChannelLinks, () => ({
         canEdit: true,
         links: [create(ChannelLinkSchema, { id: "l1", title: "設計書", url: "https://a.com" })],

@@ -1,16 +1,17 @@
 import { useState } from "react";
 
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { AlertDialog } from "#/components/ui/AlertDialog";
 import { Button } from "#/components/ui/Button";
+import { LinkButton } from "#/components/ui/LinkButton";
 import { TextField } from "#/components/ui/TextField";
 import { toast } from "#/components/ui/toast";
 import { useLogout } from "#/features/auth/hooks/useLogout";
+import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { userAtom } from "#/providers/store/auth";
-import { setRightSidePanelViewAtom, settingsSectionAtom } from "#/providers/store/ui";
 
 import { useDeleteAccount, useUpdatePassword } from "../hooks/useAccount";
 import { SettingRow } from "./SettingRow";
@@ -18,8 +19,6 @@ import { SettingRow } from "./SettingRow";
 export const AccountSettings = () => {
   const { t } = useTranslation();
   const user = useAtomValue(userAtom);
-  const setRightPanel = useSetAtom(setRightSidePanelViewAtom);
-  const setSettingsSection = useSetAtom(settingsSectionAtom);
   const updatePassword = useUpdatePassword();
   const deleteAccount = useDeleteAccount();
   const logout = useLogout();
@@ -34,17 +33,9 @@ export const AccountSettings = () => {
           title={t("settings.account.profile")}
           description={t("settings.account.profileDescription")}
         >
-          <Button
-            variant="secondary"
-            onPress={() => {
-              if (user) {
-                setSettingsSection(null);
-                setRightPanel({ type: "user-profile", userId: user.id });
-              }
-            }}
-          >
+          <LinkButton variant="secondary" to="." search={openPanel({ profile: user?.id })}>
             {t("settings.account.openProfile")}
-          </Button>
+          </LinkButton>
         </SettingRow>
         <SettingRow title={t("auth.email")} description={user?.email ?? null}>
           <Button
