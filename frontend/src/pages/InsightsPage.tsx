@@ -1,20 +1,19 @@
 import { IconChartBar } from "@tabler/icons-react";
+import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState } from "#/components/ui/EmptyState";
+import { InsightsDashboard } from "#/features/insights/components/InsightsDashboard";
 import { PageHeader } from "#/features/layout/components/PageHeader";
 
-// インサイトの中身は #16 で実装する
 export const InsightsPage = () => {
   const { t } = useTranslation();
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   return (
-    <>
-      <PageHeader icon={<IconChartBar />} title={t("shell.nav.insights")} />
-      <EmptyState
-        icon={<IconChartBar />}
-        title={t("shell.nav.insights")}
-        description={t("shell.comingSoon")}
-      />
-    </>
+    <section className="flex h-full min-h-0 flex-col bg-surface font-sans text-text">
+      <PageHeader icon={<IconChartBar />} title={t("insights.title")} />
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <InsightsDashboard workspaceId={workspaceId} />
+      </div>
+    </section>
   );
 };

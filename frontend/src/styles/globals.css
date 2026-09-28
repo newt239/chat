@@ -1,12 +1,11 @@
-/* Mantine のスタイルと競合させないため preflight(base レイヤー)は読み込まない。
-   Tailwind v4 は CSS-first 設定のため、JS 側の corePlugins.preflight では無効化できない。 */
-@layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
+@import "tailwindcss";
 
 /* ThemeProvider が @chat/design-tokens から計算した値を :root の --c-* などに書き込む。
    inline にすることでユーティリティが変数を直接参照し、テーマ切り替えが即座に反映される */
 @theme inline {
+  --color-*: initial;
+  --color-white: #fff;
+
   --color-bg: var(--c-bg);
   --color-surface: var(--c-surface);
   --color-raised: var(--c-raised);
@@ -105,29 +104,6 @@
 
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
-/* preflight の代わりに React Aria Components の要素だけ UA スタイルを打ち消す */
-@layer base {
-  :where([data-rac]) {
-    box-sizing: border-box;
-  }
-  :where(button[data-rac], input[data-rac], textarea[data-rac]) {
-    margin: 0;
-    font: inherit;
-    color: inherit;
-  }
-  :where(button[data-rac]) {
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-  }
-  :where(ul[data-rac], ol[data-rac]) {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-}
-
 :root {
   color-scheme: light dark;
 }
@@ -140,19 +116,15 @@
   color-scheme: dark;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
+body,
 #root {
   height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 /* shiki は defaultColor: false で両モードの色を CSS 変数として出力する */

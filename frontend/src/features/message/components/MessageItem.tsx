@@ -144,10 +144,9 @@ export const MessageItem = ({
         <div className="flex flex-wrap items-baseline gap-[7px] leading-[1.3]">
           <Button
             onPress={openProfile}
-            className={`cursor-pointer rounded-sm text-text data-hovered:underline data-hovered:underline-offset-2 ${focusRing}`}
+            className={`cursor-pointer rounded-sm text-sm font-bold text-text data-hovered:underline data-hovered:underline-offset-2 ${focusRing}`}
           >
-            {/* Mantine のリセットが button の font を上書きするため、中の要素で指定する */}
-            <span className="text-sm font-bold">{displayName}</span>
+            {displayName}
           </Button>
           <time
             dateTime={createdAt.toISOString()}
