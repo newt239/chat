@@ -95,7 +95,7 @@ func (s *Storage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	stat, err := file.Stat()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -117,8 +117,11 @@ func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer file.Close()
-	if _, err := io.Copy(file, http.MaxBytesReader(w, r.Body, s.config.MaxFileSize)); err != nil {
+	_, err = io.Copy(file, http.MaxBytesReader(w, r.Body, s.config.MaxFileSize))
+	if closeErr := file.Close(); err == nil {
+		err = closeErr
+	}
+	if err != nil {
 		_ = os.Remove(path)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
