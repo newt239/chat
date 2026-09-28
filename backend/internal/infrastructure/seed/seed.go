@@ -481,29 +481,35 @@ func createSeedData(
 	linkRepo := repository.NewLinkRepository(client)
 	links := []*entity.MessageLink{
 		{
-			MessageID:   mentionMessages[0].ID,
-			URL:         "https://github.com/example/repo",
-			Title:       stringPtr("Example Repository"),
-			Description: stringPtr("A sample repository for demonstration"),
-			SiteName:    stringPtr("GitHub"),
-			CreatedAt:   mentionMessages[0].CreatedAt,
+			MessageID: mentionMessages[0].ID,
+			URL:       "https://github.com/example/repo",
+			OGP: entity.OGPData{
+				Title:       stringPtr("Example Repository"),
+				Description: stringPtr("A sample repository for demonstration"),
+				SiteName:    stringPtr("GitHub"),
+			},
+			CreatedAt: mentionMessages[0].CreatedAt,
 		},
 		{
-			MessageID:   mentionMessages[1].ID,
-			URL:         "https://docs.example.com/guide",
-			Title:       stringPtr("Developer Guide"),
-			Description: stringPtr("Comprehensive guide for developers"),
-			SiteName:    stringPtr("Example Docs"),
-			CreatedAt:   mentionMessages[1].CreatedAt,
+			MessageID: mentionMessages[1].ID,
+			URL:       "https://docs.example.com/guide",
+			OGP: entity.OGPData{
+				Title:       stringPtr("Developer Guide"),
+				Description: stringPtr("Comprehensive guide for developers"),
+				SiteName:    stringPtr("Example Docs"),
+			},
+			CreatedAt: mentionMessages[1].CreatedAt,
 		},
 		{
-			MessageID:   mentionMessages[2].ID,
-			URL:         "https://figma.com/design/example",
-			Title:       stringPtr("UI Design Mockups"),
-			Description: stringPtr("Latest UI mockups for the project"),
-			SiteName:    stringPtr("Figma"),
-			CardType:    stringPtr("summary_large_image"),
-			CreatedAt:   mentionMessages[2].CreatedAt,
+			MessageID: mentionMessages[2].ID,
+			URL:       "https://figma.com/design/example",
+			OGP: entity.OGPData{
+				Title:       stringPtr("UI Design Mockups"),
+				Description: stringPtr("Latest UI mockups for the project"),
+				SiteName:    stringPtr("Figma"),
+				CardType:    stringPtr("summary_large_image"),
+			},
+			CreatedAt: mentionMessages[2].CreatedAt,
 		},
 	}
 
@@ -523,6 +529,85 @@ func createSeedData(
 
 	if err := bookmarkRepo.AddBookmark(ctx, bookmark); err != nil {
 		return fmt.Errorf("failed to create bookmark: %w", err)
+	}
+
+	return createDisplaySamples(ctx, client, messageRepo, users, channels, messages, baseTime.Add(time.Duration(len(messages)+len(mentionMessages))*30*time.Minute))
+}
+
+// createDisplaySamples はメッセージ表示のバリエーション（YouTube・メッセージリンク・ピン・多数のリアクション）を作ります。
+// 添付ファイルは外部ストレージに実体が必要なため作りません
+func createDisplaySamples(
+	ctx context.Context,
+	client *ent.Client,
+	messageRepo domainrepository.MessageRepository,
+	users []*entity.User,
+	channels []*entity.Channel,
+	messages []*entity.Message,
+	startAt time.Time,
+) error {
+	permalink := func(msg *entity.Message) string {
+		return fmt.Sprintf("http://localhost:5173/app/general/%s?message=%s", msg.ChannelID, msg.ID)
+	}
+	youtubeURL := "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+	durationSeconds := int32(213)
+	thumbnailWidth, thumbnailHeight := int32(1280), int32(720)
+
+	samples := []struct {
+		message *entity.Message
+		link    *entity.MessageLink
+	}{
+		{
+			message: &entity.Message{ID: "f0c00001-0000-4000-8000-000000000001", ChannelID: channels[1].ID, UserID: users[2].ID, Body: "この動画がおすすめです " + youtubeURL},
+			link: &entity.MessageLink{URL: youtubeURL, OGP: entity.OGPData{
+				Title:       stringPtr("Rick Astley - Never Gonna Give You Up (Official Video)"),
+				SiteName:    stringPtr("YouTube"),
+				ImageURL:    stringPtr("https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"),
+				ImageWidth:  &thumbnailWidth,
+				ImageHeight: &thumbnailHeight,
+				YouTube:     &entity.YouTubeVideo{VideoID: "dQw4w9WgXcQ", ChannelName: stringPtr("Rick Astley"), DurationSeconds: &durationSeconds},
+			}},
+		},
+		{
+			message: &entity.Message{ID: "f0c00002-0000-4000-8000-000000000002", ChannelID: channels[0].ID, UserID: users[1].ID, Body: "レビュー依頼はこちらです " + permalink(messages[6])},
+			link:    &entity.MessageLink{URL: permalink(messages[6]), LinkedMessageID: &messages[6].ID},
+		},
+		{
+			// private-team のメッセージへのリンク。メンバーでない Charlie と Diana には引用カードが出ない
+			message: &entity.Message{ID: "f0c00003-0000-4000-8000-000000000003", ChannelID: channels[0].ID, UserID: users[0].ID, Body: "ロードマップの議論はここを見てください " + permalink(messages[9])},
+			link:    &entity.MessageLink{URL: permalink(messages[9]), LinkedMessageID: &messages[9].ID},
+		},
+	}
+
+	linkRepo := repository.NewLinkRepository(client)
+	for i, sample := range samples {
+		sample.message.CreatedAt = startAt.Add(time.Duration(i) * 10 * time.Minute)
+		if err := messageRepo.Create(ctx, sample.message); err != nil {
+			return fmt.Errorf("failed to create sample message: %w", err)
+		}
+		sample.link.MessageID = sample.message.ID
+		if err := linkRepo.Create(ctx, sample.link); err != nil {
+			return fmt.Errorf("failed to create sample link: %w", err)
+		}
+	}
+
+	pinRepo := repository.NewPinRepository(client)
+	for _, pin := range []*entity.MessagePin{
+		{ChannelID: messages[0].ChannelID, MessageID: messages[0].ID, PinnedBy: users[1].ID},
+		{ChannelID: messages[6].ChannelID, MessageID: messages[6].ID, PinnedBy: users[0].ID},
+	} {
+		if err := pinRepo.Create(ctx, pin); err != nil {
+			return fmt.Errorf("failed to create pin: %w", err)
+		}
+	}
+
+	// ツールチップや「+N」の確認用に、1 つのメッセージへ多くのリアクションを付ける
+	for i, emoji := range []string{"👍", "🎉", "❤️", "😂", "👀", "🚀", "✅", "🙏"} {
+		for _, user := range users[:len(users)-i%len(users)] {
+			reaction := &entity.MessageReaction{MessageID: messages[0].ID, UserID: user.ID, Emoji: emoji, CreatedAt: startAt.Add(time.Duration(i) * time.Minute)}
+			if err := messageRepo.AddReaction(ctx, reaction); err != nil {
+				return fmt.Errorf("failed to create sample reaction: %w", err)
+			}
+		}
 	}
 
 	return nil
