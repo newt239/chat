@@ -18,8 +18,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelreadstate"
+	"github.com/newt239/chat/ent/channelstar"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -33,6 +35,7 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -47,10 +50,14 @@ type Client struct {
 	Attachment *AttachmentClient
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
+	// ChannelLink is the client for interacting with the ChannelLink builders.
+	ChannelLink *ChannelLinkClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
 	ChannelMember *ChannelMemberClient
 	// ChannelReadState is the client for interacting with the ChannelReadState builders.
 	ChannelReadState *ChannelReadStateClient
+	// ChannelStar is the client for interacting with the ChannelStar builders.
+	ChannelStar *ChannelStarClient
 	// Message is the client for interacting with the Message builders.
 	Message *MessageClient
 	// MessageBookmark is the client for interacting with the MessageBookmark builders.
@@ -77,6 +84,8 @@ type Client struct {
 	UserGroup *UserGroupClient
 	// UserGroupMember is the client for interacting with the UserGroupMember builders.
 	UserGroupMember *UserGroupMemberClient
+	// UserNote is the client for interacting with the UserNote builders.
+	UserNote *UserNoteClient
 	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
 	UserThreadFollow *UserThreadFollowClient
 	// Workspace is the client for interacting with the Workspace builders.
@@ -96,8 +105,10 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Attachment = NewAttachmentClient(c.config)
 	c.Channel = NewChannelClient(c.config)
+	c.ChannelLink = NewChannelLinkClient(c.config)
 	c.ChannelMember = NewChannelMemberClient(c.config)
 	c.ChannelReadState = NewChannelReadStateClient(c.config)
+	c.ChannelStar = NewChannelStarClient(c.config)
 	c.Message = NewMessageClient(c.config)
 	c.MessageBookmark = NewMessageBookmarkClient(c.config)
 	c.MessageGroupMention = NewMessageGroupMentionClient(c.config)
@@ -111,6 +122,7 @@ func (c *Client) init() {
 	c.User = NewUserClient(c.config)
 	c.UserGroup = NewUserGroupClient(c.config)
 	c.UserGroupMember = NewUserGroupMemberClient(c.config)
+	c.UserNote = NewUserNoteClient(c.config)
 	c.UserThreadFollow = NewUserThreadFollowClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
 	c.WorkspaceMember = NewWorkspaceMemberClient(c.config)
@@ -208,8 +220,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:              cfg,
 		Attachment:          NewAttachmentClient(cfg),
 		Channel:             NewChannelClient(cfg),
+		ChannelLink:         NewChannelLinkClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
+		ChannelStar:         NewChannelStarClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
@@ -223,6 +237,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		User:                NewUserClient(cfg),
 		UserGroup:           NewUserGroupClient(cfg),
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
+		UserNote:            NewUserNoteClient(cfg),
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
@@ -247,8 +262,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:              cfg,
 		Attachment:          NewAttachmentClient(cfg),
 		Channel:             NewChannelClient(cfg),
+		ChannelLink:         NewChannelLinkClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
+		ChannelStar:         NewChannelStarClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
@@ -262,6 +279,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		User:                NewUserClient(cfg),
 		UserGroup:           NewUserGroupClient(cfg),
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
+		UserNote:            NewUserNoteClient(cfg),
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
@@ -294,11 +312,12 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
-		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserThreadFollow,
-		c.Workspace, c.WorkspaceMember,
+		c.Attachment, c.Channel, c.ChannelLink, c.ChannelMember, c.ChannelReadState,
+		c.ChannelStar, c.Message, c.MessageBookmark, c.MessageGroupMention,
+		c.MessageLink, c.MessagePin, c.MessageReaction, c.MessageUserMention,
+		c.Session, c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup,
+		c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
+		c.WorkspaceMember,
 	} {
 		n.Use(hooks...)
 	}
@@ -308,11 +327,12 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Attachment, c.Channel, c.ChannelMember, c.ChannelReadState, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
-		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserThreadFollow,
-		c.Workspace, c.WorkspaceMember,
+		c.Attachment, c.Channel, c.ChannelLink, c.ChannelMember, c.ChannelReadState,
+		c.ChannelStar, c.Message, c.MessageBookmark, c.MessageGroupMention,
+		c.MessageLink, c.MessagePin, c.MessageReaction, c.MessageUserMention,
+		c.Session, c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup,
+		c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
+		c.WorkspaceMember,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -325,10 +345,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Attachment.mutate(ctx, m)
 	case *ChannelMutation:
 		return c.Channel.mutate(ctx, m)
+	case *ChannelLinkMutation:
+		return c.ChannelLink.mutate(ctx, m)
 	case *ChannelMemberMutation:
 		return c.ChannelMember.mutate(ctx, m)
 	case *ChannelReadStateMutation:
 		return c.ChannelReadState.mutate(ctx, m)
+	case *ChannelStarMutation:
+		return c.ChannelStar.mutate(ctx, m)
 	case *MessageMutation:
 		return c.Message.mutate(ctx, m)
 	case *MessageBookmarkMutation:
@@ -355,6 +379,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserGroup.mutate(ctx, m)
 	case *UserGroupMemberMutation:
 		return c.UserGroupMember.mutate(ctx, m)
+	case *UserNoteMutation:
+		return c.UserNote.mutate(ctx, m)
 	case *UserThreadFollowMutation:
 		return c.UserThreadFollow.mutate(ctx, m)
 	case *WorkspaceMutation:
@@ -751,6 +777,38 @@ func (c *ChannelClient) QueryReadStates(_m *Channel) *ChannelReadStateQuery {
 	return query
 }
 
+// QueryParent queries the parent edge of a Channel.
+func (c *ChannelClient) QueryParent(_m *Channel) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channel.Table, channel.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, channel.ParentTable, channel.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChildren queries the children edge of a Channel.
+func (c *ChannelClient) QueryChildren(_m *Channel) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channel.Table, channel.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, channel.ChildrenTable, channel.ChildrenColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ChannelClient) Hooks() []Hook {
 	return c.hooks.Channel
@@ -773,6 +831,171 @@ func (c *ChannelClient) mutate(ctx context.Context, m *ChannelMutation) (Value, 
 		return (&ChannelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Channel mutation op: %q", m.Op())
+	}
+}
+
+// ChannelLinkClient is a client for the ChannelLink schema.
+type ChannelLinkClient struct {
+	config
+}
+
+// NewChannelLinkClient returns a client for the ChannelLink from the given config.
+func NewChannelLinkClient(c config) *ChannelLinkClient {
+	return &ChannelLinkClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `channellink.Hooks(f(g(h())))`.
+func (c *ChannelLinkClient) Use(hooks ...Hook) {
+	c.hooks.ChannelLink = append(c.hooks.ChannelLink, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `channellink.Intercept(f(g(h())))`.
+func (c *ChannelLinkClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChannelLink = append(c.inters.ChannelLink, interceptors...)
+}
+
+// Create returns a builder for creating a ChannelLink entity.
+func (c *ChannelLinkClient) Create() *ChannelLinkCreate {
+	mutation := newChannelLinkMutation(c.config, OpCreate)
+	return &ChannelLinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChannelLink entities.
+func (c *ChannelLinkClient) CreateBulk(builders ...*ChannelLinkCreate) *ChannelLinkCreateBulk {
+	return &ChannelLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ChannelLinkClient) MapCreateBulk(slice any, setFunc func(*ChannelLinkCreate, int)) *ChannelLinkCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ChannelLinkCreateBulk{err: fmt.Errorf("calling to ChannelLinkClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ChannelLinkCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ChannelLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChannelLink.
+func (c *ChannelLinkClient) Update() *ChannelLinkUpdate {
+	mutation := newChannelLinkMutation(c.config, OpUpdate)
+	return &ChannelLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChannelLinkClient) UpdateOne(_m *ChannelLink) *ChannelLinkUpdateOne {
+	mutation := newChannelLinkMutation(c.config, OpUpdateOne, withChannelLink(_m))
+	return &ChannelLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChannelLinkClient) UpdateOneID(id uuid.UUID) *ChannelLinkUpdateOne {
+	mutation := newChannelLinkMutation(c.config, OpUpdateOne, withChannelLinkID(id))
+	return &ChannelLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChannelLink.
+func (c *ChannelLinkClient) Delete() *ChannelLinkDelete {
+	mutation := newChannelLinkMutation(c.config, OpDelete)
+	return &ChannelLinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChannelLinkClient) DeleteOne(_m *ChannelLink) *ChannelLinkDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChannelLinkClient) DeleteOneID(id uuid.UUID) *ChannelLinkDeleteOne {
+	builder := c.Delete().Where(channellink.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChannelLinkDeleteOne{builder}
+}
+
+// Query returns a query builder for ChannelLink.
+func (c *ChannelLinkClient) Query() *ChannelLinkQuery {
+	return &ChannelLinkQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChannelLink},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChannelLink entity by its id.
+func (c *ChannelLinkClient) Get(ctx context.Context, id uuid.UUID) (*ChannelLink, error) {
+	return c.Query().Where(channellink.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChannelLinkClient) GetX(ctx context.Context, id uuid.UUID) *ChannelLink {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryChannel queries the channel edge of a ChannelLink.
+func (c *ChannelLinkClient) QueryChannel(_m *ChannelLink) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channellink.Table, channellink.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channellink.ChannelTable, channellink.ChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedBy queries the created_by edge of a ChannelLink.
+func (c *ChannelLinkClient) QueryCreatedBy(_m *ChannelLink) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channellink.Table, channellink.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channellink.CreatedByTable, channellink.CreatedByColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ChannelLinkClient) Hooks() []Hook {
+	return c.hooks.ChannelLink
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChannelLinkClient) Interceptors() []Interceptor {
+	return c.inters.ChannelLink
+}
+
+func (c *ChannelLinkClient) mutate(ctx context.Context, m *ChannelLinkMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChannelLinkCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChannelLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChannelLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChannelLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChannelLink mutation op: %q", m.Op())
 	}
 }
 
@@ -1103,6 +1326,171 @@ func (c *ChannelReadStateClient) mutate(ctx context.Context, m *ChannelReadState
 		return (&ChannelReadStateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ChannelReadState mutation op: %q", m.Op())
+	}
+}
+
+// ChannelStarClient is a client for the ChannelStar schema.
+type ChannelStarClient struct {
+	config
+}
+
+// NewChannelStarClient returns a client for the ChannelStar from the given config.
+func NewChannelStarClient(c config) *ChannelStarClient {
+	return &ChannelStarClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `channelstar.Hooks(f(g(h())))`.
+func (c *ChannelStarClient) Use(hooks ...Hook) {
+	c.hooks.ChannelStar = append(c.hooks.ChannelStar, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `channelstar.Intercept(f(g(h())))`.
+func (c *ChannelStarClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChannelStar = append(c.inters.ChannelStar, interceptors...)
+}
+
+// Create returns a builder for creating a ChannelStar entity.
+func (c *ChannelStarClient) Create() *ChannelStarCreate {
+	mutation := newChannelStarMutation(c.config, OpCreate)
+	return &ChannelStarCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChannelStar entities.
+func (c *ChannelStarClient) CreateBulk(builders ...*ChannelStarCreate) *ChannelStarCreateBulk {
+	return &ChannelStarCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ChannelStarClient) MapCreateBulk(slice any, setFunc func(*ChannelStarCreate, int)) *ChannelStarCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ChannelStarCreateBulk{err: fmt.Errorf("calling to ChannelStarClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ChannelStarCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ChannelStarCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChannelStar.
+func (c *ChannelStarClient) Update() *ChannelStarUpdate {
+	mutation := newChannelStarMutation(c.config, OpUpdate)
+	return &ChannelStarUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChannelStarClient) UpdateOne(_m *ChannelStar) *ChannelStarUpdateOne {
+	mutation := newChannelStarMutation(c.config, OpUpdateOne, withChannelStar(_m))
+	return &ChannelStarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChannelStarClient) UpdateOneID(id uuid.UUID) *ChannelStarUpdateOne {
+	mutation := newChannelStarMutation(c.config, OpUpdateOne, withChannelStarID(id))
+	return &ChannelStarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChannelStar.
+func (c *ChannelStarClient) Delete() *ChannelStarDelete {
+	mutation := newChannelStarMutation(c.config, OpDelete)
+	return &ChannelStarDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChannelStarClient) DeleteOne(_m *ChannelStar) *ChannelStarDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChannelStarClient) DeleteOneID(id uuid.UUID) *ChannelStarDeleteOne {
+	builder := c.Delete().Where(channelstar.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChannelStarDeleteOne{builder}
+}
+
+// Query returns a query builder for ChannelStar.
+func (c *ChannelStarClient) Query() *ChannelStarQuery {
+	return &ChannelStarQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChannelStar},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChannelStar entity by its id.
+func (c *ChannelStarClient) Get(ctx context.Context, id uuid.UUID) (*ChannelStar, error) {
+	return c.Query().Where(channelstar.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChannelStarClient) GetX(ctx context.Context, id uuid.UUID) *ChannelStar {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a ChannelStar.
+func (c *ChannelStarClient) QueryUser(_m *ChannelStar) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelstar.Table, channelstar.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelstar.UserTable, channelstar.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannel queries the channel edge of a ChannelStar.
+func (c *ChannelStarClient) QueryChannel(_m *ChannelStar) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelstar.Table, channelstar.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelstar.ChannelTable, channelstar.ChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ChannelStarClient) Hooks() []Hook {
+	return c.hooks.ChannelStar
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChannelStarClient) Interceptors() []Interceptor {
+	return c.inters.ChannelStar
+}
+
+func (c *ChannelStarClient) mutate(ctx context.Context, m *ChannelStarMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChannelStarCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChannelStarUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChannelStarUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChannelStarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChannelStar mutation op: %q", m.Op())
 	}
 }
 
@@ -3603,6 +3991,171 @@ func (c *UserGroupMemberClient) mutate(ctx context.Context, m *UserGroupMemberMu
 	}
 }
 
+// UserNoteClient is a client for the UserNote schema.
+type UserNoteClient struct {
+	config
+}
+
+// NewUserNoteClient returns a client for the UserNote from the given config.
+func NewUserNoteClient(c config) *UserNoteClient {
+	return &UserNoteClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `usernote.Hooks(f(g(h())))`.
+func (c *UserNoteClient) Use(hooks ...Hook) {
+	c.hooks.UserNote = append(c.hooks.UserNote, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `usernote.Intercept(f(g(h())))`.
+func (c *UserNoteClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserNote = append(c.inters.UserNote, interceptors...)
+}
+
+// Create returns a builder for creating a UserNote entity.
+func (c *UserNoteClient) Create() *UserNoteCreate {
+	mutation := newUserNoteMutation(c.config, OpCreate)
+	return &UserNoteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserNote entities.
+func (c *UserNoteClient) CreateBulk(builders ...*UserNoteCreate) *UserNoteCreateBulk {
+	return &UserNoteCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserNoteClient) MapCreateBulk(slice any, setFunc func(*UserNoteCreate, int)) *UserNoteCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserNoteCreateBulk{err: fmt.Errorf("calling to UserNoteClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserNoteCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserNoteCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserNote.
+func (c *UserNoteClient) Update() *UserNoteUpdate {
+	mutation := newUserNoteMutation(c.config, OpUpdate)
+	return &UserNoteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserNoteClient) UpdateOne(_m *UserNote) *UserNoteUpdateOne {
+	mutation := newUserNoteMutation(c.config, OpUpdateOne, withUserNote(_m))
+	return &UserNoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserNoteClient) UpdateOneID(id uuid.UUID) *UserNoteUpdateOne {
+	mutation := newUserNoteMutation(c.config, OpUpdateOne, withUserNoteID(id))
+	return &UserNoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserNote.
+func (c *UserNoteClient) Delete() *UserNoteDelete {
+	mutation := newUserNoteMutation(c.config, OpDelete)
+	return &UserNoteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserNoteClient) DeleteOne(_m *UserNote) *UserNoteDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserNoteClient) DeleteOneID(id uuid.UUID) *UserNoteDeleteOne {
+	builder := c.Delete().Where(usernote.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserNoteDeleteOne{builder}
+}
+
+// Query returns a query builder for UserNote.
+func (c *UserNoteClient) Query() *UserNoteQuery {
+	return &UserNoteQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserNote},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserNote entity by its id.
+func (c *UserNoteClient) Get(ctx context.Context, id uuid.UUID) (*UserNote, error) {
+	return c.Query().Where(usernote.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserNoteClient) GetX(ctx context.Context, id uuid.UUID) *UserNote {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a UserNote.
+func (c *UserNoteClient) QueryOwner(_m *UserNote) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usernote.Table, usernote.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, usernote.OwnerTable, usernote.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTarget queries the target edge of a UserNote.
+func (c *UserNoteClient) QueryTarget(_m *UserNote) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(usernote.Table, usernote.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, usernote.TargetTable, usernote.TargetColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserNoteClient) Hooks() []Hook {
+	return c.hooks.UserNote
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserNoteClient) Interceptors() []Interceptor {
+	return c.inters.UserNote
+}
+
+func (c *UserNoteClient) mutate(ctx context.Context, m *UserNoteMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserNoteCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserNoteUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserNoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserNoteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserNote mutation op: %q", m.Op())
+	}
+}
+
 // UserThreadFollowClient is a client for the UserThreadFollow schema.
 type UserThreadFollowClient struct {
 	config
@@ -4133,15 +4686,17 @@ func (c *WorkspaceMemberClient) mutate(ctx context.Context, m *WorkspaceMemberMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember []ent.Hook
+		Attachment, Channel, ChannelLink, ChannelMember, ChannelReadState, ChannelStar,
+		Message, MessageBookmark, MessageGroupMention, MessageLink, MessagePin,
+		MessageReaction, MessageUserMention, Session, SystemMessage, ThreadReadState,
+		User, UserGroup, UserGroupMember, UserNote, UserThreadFollow, Workspace,
+		WorkspaceMember []ent.Hook
 	}
 	inters struct {
-		Attachment, Channel, ChannelMember, ChannelReadState, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserThreadFollow, Workspace, WorkspaceMember []ent.Interceptor
+		Attachment, Channel, ChannelLink, ChannelMember, ChannelReadState, ChannelStar,
+		Message, MessageBookmark, MessageGroupMention, MessageLink, MessagePin,
+		MessageReaction, MessageUserMention, Session, SystemMessage, ThreadReadState,
+		User, UserGroup, UserGroupMember, UserNote, UserThreadFollow, Workspace,
+		WorkspaceMember []ent.Interceptor
 	}
 )

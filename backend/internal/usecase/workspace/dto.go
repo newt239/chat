@@ -94,6 +94,8 @@ type MemberInfo struct {
 	Bio         *string   `json:"bio,omitempty"`
 	Role        string    `json:"role"`
 	JoinedAt    time.Time `json:"joinedAt"`
+	// 取得したユーザーだけに見えるニックネーム
+	Nickname *string `json:"nickname,omitempty"`
 }
 
 type ListMembersOutput struct {

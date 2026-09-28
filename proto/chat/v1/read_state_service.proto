@@ -13,6 +13,8 @@ service ReadStateService {
 message UpdateReadStateRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
   google.protobuf.Timestamp last_read_at = 2 [(buf.validate.field).required = true];
+  // 閲覧できる子孫チャンネルもまとめて既読にする
+  bool include_descendants = 3;
 }
 
 message UpdateReadStateResponse {}

@@ -3,22 +3,32 @@ package entity
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
+
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
 const (
-	MaxGroupDMMembers = 9
+	// 作成者を含むグループ DM の最大人数
+	MaxGroupDMMembers = 10
+	// チャンネルパスの最大階層数と 1 階層あたりの最大文字数
+	MaxChannelDepth         = 4
+	MaxChannelSegmentLength = 32
 )
 
+var channelSegmentPattern = regexp.MustCompile(`^[\p{L}\p{N}_-]+$`)
+
 var (
-	ErrChannelNameRequired       = errors.New("チャンネル名は必須です")
 	ErrChannelWorkspaceIDInvalid = errors.New("ワークスペースIDの形式が無効です")
 	ErrChannelCreatorInvalid     = errors.New("作成者IDはUUID形式で指定してください")
 	ErrInvalidChannelType        = errors.New("無効なチャンネル種別です")
-	ErrGroupDMMaxMembers         = errors.New("グループDMには9人までしか追加できません")
+	ErrGroupDMMaxMembers         = errors.New("グループDMは自分を含めて10人までです")
+	ErrChannelNameInvalid        = fmt.Errorf("%w: チャンネル名は英数字・日本語・ハイフン・アンダースコアをスラッシュで区切った4階層までのパスで指定してください", domerr.ErrValidation)
 )
 
 type ChannelType string
@@ -45,6 +55,7 @@ type Channel struct {
 	Description *string
 	IsPrivate   bool
 	Type        ChannelType
+	ParentID    *string
 	CreatedBy   string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -57,6 +68,7 @@ type ChannelParams struct {
 	Description *string
 	IsPrivate   bool
 	Type        ChannelType
+	ParentID    *string
 	CreatedBy   string
 	CreatedAt   time.Time
 }
@@ -85,8 +97,12 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 	}
 
 	name := strings.TrimSpace(params.Name)
-	if name == "" && (channelType == ChannelTypePublic || channelType == ChannelTypePrivate) {
-		return nil, ErrChannelNameRequired
+	if channelType == ChannelTypePublic || channelType == ChannelTypePrivate {
+		normalized, err := NormalizeChannelPath(name)
+		if err != nil {
+			return nil, err
+		}
+		name = normalized
 	}
 
 	var id string
@@ -116,22 +132,22 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 		Description: cloneString(params.Description),
 		IsPrivate:   isPrivate,
 		Type:        channelType,
+		ParentID:    cloneString(params.ParentID),
 		CreatedBy:   creatorID,
 		CreatedAt:   createdAt,
 		UpdatedAt:   createdAt,
 	}, nil
 }
 
+// ChangeName はチャンネル名を変更します。階層を移動する変更は受け付けません
 func (c *Channel) ChangeName(newName string) error {
-	if c == nil {
-		return errors.New("チャンネルが未初期化です")
+	name, err := NormalizeChannelPath(newName)
+	if err != nil {
+		return err
 	}
-
-	name := strings.TrimSpace(newName)
-	if name == "" {
-		return ErrChannelNameRequired
+	if ParentChannelPath(name) != ParentChannelPath(c.Name) {
+		return fmt.Errorf("%w: 変更できるのはチャンネル名の末尾の階層のみです", domerr.ErrValidation)
 	}
-
 	if c.Name == name {
 		return nil
 	}
@@ -139,6 +155,40 @@ func (c *Channel) ChangeName(newName string) error {
 	c.Name = name
 	c.UpdatedAt = time.Now().UTC()
 	return nil
+}
+
+// NormalizeChannelPath はスラッシュ区切りのチャンネルパスを検証し、英字を小文字にそろえます
+func NormalizeChannelPath(path string) (string, error) {
+	normalized := strings.ToLower(strings.TrimSpace(path))
+	segments := strings.Split(normalized, "/")
+	if normalized == "" || len(segments) > MaxChannelDepth {
+		return "", ErrChannelNameInvalid
+	}
+	for _, segment := range segments {
+		if utf8.RuneCountInString(segment) > MaxChannelSegmentLength || !channelSegmentPattern.MatchString(segment) {
+			return "", ErrChannelNameInvalid
+		}
+	}
+	return normalized, nil
+}
+
+// ParentChannelPath は親チャンネルのパスを返します。最上位の場合は空文字です
+func ParentChannelPath(path string) string {
+	idx := strings.LastIndex(path, "/")
+	if idx < 0 {
+		return ""
+	}
+	return path[:idx]
+}
+
+// AncestorChannelPaths は上位から順に祖先チャンネルのパスを返します
+func AncestorChannelPaths(path string) []string {
+	segments := strings.Split(path, "/")
+	ancestors := make([]string, 0, len(segments)-1)
+	for i := 1; i < len(segments); i++ {
+		ancestors = append(ancestors, strings.Join(segments[:i], "/"))
+	}
+	return ancestors
 }
 
 func cloneString(value *string) *string {

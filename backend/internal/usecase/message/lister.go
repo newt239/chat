@@ -89,13 +89,24 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 		limit = maxMessageLimit
 	}
 
-	messages, err := l.messageRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
+	channelIDs := []string{channel.ID}
+	if input.IncludeDescendants {
+		descendants, err := l.channelAccessSvc.AccessibleDescendants(ctx, channel, input.UserID)
+		if err != nil {
+			return nil, err
+		}
+		for _, d := range descendants {
+			channelIDs = append(channelIDs, d.ID)
+		}
+	}
+
+	messages, err := l.messageRepo.FindByChannelIDs(ctx, channelIDs, limit+1, input.Since, input.Until)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch messages: %w", err)
 	}
 
 	// システムメッセージ取得
-	systemMessages, err := l.systemMsgRepo.FindByChannelID(ctx, channel.ID, limit+1, input.Since, input.Until)
+	systemMessages, err := l.systemMsgRepo.FindByChannelIDs(ctx, channelIDs, limit+1, input.Since, input.Until)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch system messages: %w", err)
 	}

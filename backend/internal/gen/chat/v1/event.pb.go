@@ -31,6 +31,7 @@ type ClientEvent struct {
 	//	*ClientEvent_LeaveChannel
 	//	*ClientEvent_Typing
 	//	*ClientEvent_StopTyping
+	//	*ClientEvent_ViewChannel
 	Event         isClientEvent_Event `protobuf_oneof:"event"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -109,6 +110,15 @@ func (x *ClientEvent) GetStopTyping() *ChannelEvent {
 	return nil
 }
 
+func (x *ClientEvent) GetViewChannel() *ChannelEvent {
+	if x != nil {
+		if x, ok := x.Event.(*ClientEvent_ViewChannel); ok {
+			return x.ViewChannel
+		}
+	}
+	return nil
+}
+
 type isClientEvent_Event interface {
 	isClientEvent_Event()
 }
@@ -129,6 +139,11 @@ type ClientEvent_StopTyping struct {
 	StopTyping *ChannelEvent `protobuf:"bytes,4,opt,name=stop_typing,json=stopTyping,proto3,oneof"`
 }
 
+type ClientEvent_ViewChannel struct {
+	// 閲覧中のチャンネルを通知する。channel_id が空なら閲覧をやめたことを表す
+	ViewChannel *ChannelEvent `protobuf:"bytes,5,opt,name=view_channel,json=viewChannel,proto3,oneof"`
+}
+
 func (*ClientEvent_JoinChannel) isClientEvent_Event() {}
 
 func (*ClientEvent_LeaveChannel) isClientEvent_Event() {}
@@ -136,6 +151,8 @@ func (*ClientEvent_LeaveChannel) isClientEvent_Event() {}
 func (*ClientEvent_Typing) isClientEvent_Event() {}
 
 func (*ClientEvent_StopTyping) isClientEvent_Event() {}
+
+func (*ClientEvent_ViewChannel) isClientEvent_Event() {}
 
 type ChannelEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -199,6 +216,7 @@ type ServerEvent struct {
 	//	*ServerEvent_StopTyping
 	//	*ServerEvent_Ack
 	//	*ServerEvent_Error
+	//	*ServerEvent_ChannelViewers
 	Event         isServerEvent_Event `protobuf_oneof:"event"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -358,6 +376,15 @@ func (x *ServerEvent) GetError() *ErrorEvent {
 	return nil
 }
 
+func (x *ServerEvent) GetChannelViewers() *ChannelViewersEvent {
+	if x != nil {
+		if x, ok := x.Event.(*ServerEvent_ChannelViewers); ok {
+			return x.ChannelViewers
+		}
+	}
+	return nil
+}
+
 type isServerEvent_Event interface {
 	isServerEvent_Event()
 }
@@ -414,6 +441,10 @@ type ServerEvent_Error struct {
 	Error *ErrorEvent `protobuf:"bytes,13,opt,name=error,proto3,oneof"`
 }
 
+type ServerEvent_ChannelViewers struct {
+	ChannelViewers *ChannelViewersEvent `protobuf:"bytes,14,opt,name=channel_viewers,json=channelViewers,proto3,oneof"`
+}
+
 func (*ServerEvent_NewMessage) isServerEvent_Event() {}
 
 func (*ServerEvent_MessageUpdated) isServerEvent_Event() {}
@@ -439,6 +470,8 @@ func (*ServerEvent_StopTyping) isServerEvent_Event() {}
 func (*ServerEvent_Ack) isServerEvent_Event() {}
 
 func (*ServerEvent_Error) isServerEvent_Event() {}
+
+func (*ServerEvent_ChannelViewers) isServerEvent_Event() {}
 
 type MessageEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -974,21 +1007,75 @@ func (x *ErrorEvent) GetMessage() string {
 	return ""
 }
 
+// チャンネルを閲覧中のユーザー一覧
+type ChannelViewersEvent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	UserIds       []string               `protobuf:"bytes,2,rep,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChannelViewersEvent) Reset() {
+	*x = ChannelViewersEvent{}
+	mi := &file_chat_v1_event_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChannelViewersEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChannelViewersEvent) ProtoMessage() {}
+
+func (x *ChannelViewersEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_event_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChannelViewersEvent.ProtoReflect.Descriptor instead.
+func (*ChannelViewersEvent) Descriptor() ([]byte, []int) {
+	return file_chat_v1_event_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ChannelViewersEvent) GetChannelId() string {
+	if x != nil {
+		return x.ChannelId
+	}
+	return ""
+}
+
+func (x *ChannelViewersEvent) GetUserIds() []string {
+	if x != nil {
+		return x.UserIds
+	}
+	return nil
+}
+
 var File_chat_v1_event_proto protoreflect.FileDescriptor
 
 const file_chat_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x13chat/v1/event.proto\x12\achat.v1\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfb\x01\n" +
+	"\x13chat/v1/event.proto\x12\achat.v1\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb7\x02\n" +
 	"\vClientEvent\x12:\n" +
 	"\fjoin_channel\x18\x01 \x01(\v2\x15.chat.v1.ChannelEventH\x00R\vjoinChannel\x12<\n" +
 	"\rleave_channel\x18\x02 \x01(\v2\x15.chat.v1.ChannelEventH\x00R\fleaveChannel\x12/\n" +
 	"\x06typing\x18\x03 \x01(\v2\x15.chat.v1.ChannelEventH\x00R\x06typing\x128\n" +
 	"\vstop_typing\x18\x04 \x01(\v2\x15.chat.v1.ChannelEventH\x00R\n" +
-	"stopTypingB\a\n" +
+	"stopTyping\x12:\n" +
+	"\fview_channel\x18\x05 \x01(\v2\x15.chat.v1.ChannelEventH\x00R\vviewChannelB\a\n" +
 	"\x05event\"-\n" +
 	"\fChannelEvent\x12\x1d\n" +
 	"\n" +
-	"channel_id\x18\x01 \x01(\tR\tchannelId\"\x9f\x06\n" +
+	"channel_id\x18\x01 \x01(\tR\tchannelId\"\xe8\x06\n" +
 	"\vServerEvent\x128\n" +
 	"\vnew_message\x18\x01 \x01(\v2\x15.chat.v1.MessageEventH\x00R\n" +
 	"newMessage\x12@\n" +
@@ -1007,7 +1094,8 @@ const file_chat_v1_event_proto_rawDesc = "" +
 	"\vstop_typing\x18\v \x01(\v2\x14.chat.v1.TypingEventH\x00R\n" +
 	"stopTyping\x12%\n" +
 	"\x03ack\x18\f \x01(\v2\x11.chat.v1.AckEventH\x00R\x03ack\x12+\n" +
-	"\x05error\x18\r \x01(\v2\x13.chat.v1.ErrorEventH\x00R\x05errorB\a\n" +
+	"\x05error\x18\r \x01(\v2\x13.chat.v1.ErrorEventH\x00R\x05error\x12G\n" +
+	"\x0fchannel_viewers\x18\x0e \x01(\v2\x1c.chat.v1.ChannelViewersEventH\x00R\x0echannelViewersB\a\n" +
 	"\x05event\"Y\n" +
 	"\fMessageEvent\x12\x1d\n" +
 	"\n" +
@@ -1056,7 +1144,11 @@ const file_chat_v1_event_proto_rawDesc = "" +
 	"\n" +
 	"ErrorEvent\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessageB\x8b\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"O\n" +
+	"\x13ChannelViewersEvent\x12\x1d\n" +
+	"\n" +
+	"channel_id\x18\x01 \x01(\tR\tchannelId\x12\x19\n" +
+	"\buser_ids\x18\x02 \x03(\tR\auserIdsB\x8b\x01\n" +
 	"\vcom.chat.v1B\n" +
 	"EventProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
 
@@ -1072,7 +1164,7 @@ func file_chat_v1_event_proto_rawDescGZIP() []byte {
 	return file_chat_v1_event_proto_rawDescData
 }
 
-var file_chat_v1_event_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_chat_v1_event_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_chat_v1_event_proto_goTypes = []any{
 	(*ClientEvent)(nil),           // 0: chat.v1.ClientEvent
 	(*ChannelEvent)(nil),          // 1: chat.v1.ChannelEvent
@@ -1086,37 +1178,40 @@ var file_chat_v1_event_proto_goTypes = []any{
 	(*TypingEvent)(nil),           // 9: chat.v1.TypingEvent
 	(*AckEvent)(nil),              // 10: chat.v1.AckEvent
 	(*ErrorEvent)(nil),            // 11: chat.v1.ErrorEvent
-	(*Message)(nil),               // 12: chat.v1.Message
-	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
-	(*SystemMessage)(nil),         // 14: chat.v1.SystemMessage
+	(*ChannelViewersEvent)(nil),   // 12: chat.v1.ChannelViewersEvent
+	(*Message)(nil),               // 13: chat.v1.Message
+	(*timestamppb.Timestamp)(nil), // 14: google.protobuf.Timestamp
+	(*SystemMessage)(nil),         // 15: chat.v1.SystemMessage
 }
 var file_chat_v1_event_proto_depIdxs = []int32{
 	1,  // 0: chat.v1.ClientEvent.join_channel:type_name -> chat.v1.ChannelEvent
 	1,  // 1: chat.v1.ClientEvent.leave_channel:type_name -> chat.v1.ChannelEvent
 	1,  // 2: chat.v1.ClientEvent.typing:type_name -> chat.v1.ChannelEvent
 	1,  // 3: chat.v1.ClientEvent.stop_typing:type_name -> chat.v1.ChannelEvent
-	3,  // 4: chat.v1.ServerEvent.new_message:type_name -> chat.v1.MessageEvent
-	3,  // 5: chat.v1.ServerEvent.message_updated:type_name -> chat.v1.MessageEvent
-	4,  // 6: chat.v1.ServerEvent.message_deleted:type_name -> chat.v1.MessageDeletedEvent
-	5,  // 7: chat.v1.ServerEvent.unread_count:type_name -> chat.v1.UnreadCountEvent
-	6,  // 8: chat.v1.ServerEvent.pin_created:type_name -> chat.v1.PinEvent
-	6,  // 9: chat.v1.ServerEvent.pin_deleted:type_name -> chat.v1.PinEvent
-	7,  // 10: chat.v1.ServerEvent.system_message_created:type_name -> chat.v1.SystemMessageEvent
-	8,  // 11: chat.v1.ServerEvent.reaction_added:type_name -> chat.v1.ReactionEvent
-	8,  // 12: chat.v1.ServerEvent.reaction_removed:type_name -> chat.v1.ReactionEvent
-	9,  // 13: chat.v1.ServerEvent.typing:type_name -> chat.v1.TypingEvent
-	9,  // 14: chat.v1.ServerEvent.stop_typing:type_name -> chat.v1.TypingEvent
-	10, // 15: chat.v1.ServerEvent.ack:type_name -> chat.v1.AckEvent
-	11, // 16: chat.v1.ServerEvent.error:type_name -> chat.v1.ErrorEvent
-	12, // 17: chat.v1.MessageEvent.message:type_name -> chat.v1.Message
-	13, // 18: chat.v1.MessageDeletedEvent.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 19: chat.v1.PinEvent.pinned_at:type_name -> google.protobuf.Timestamp
-	14, // 20: chat.v1.SystemMessageEvent.message:type_name -> chat.v1.SystemMessage
-	21, // [21:21] is the sub-list for method output_type
-	21, // [21:21] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	1,  // 4: chat.v1.ClientEvent.view_channel:type_name -> chat.v1.ChannelEvent
+	3,  // 5: chat.v1.ServerEvent.new_message:type_name -> chat.v1.MessageEvent
+	3,  // 6: chat.v1.ServerEvent.message_updated:type_name -> chat.v1.MessageEvent
+	4,  // 7: chat.v1.ServerEvent.message_deleted:type_name -> chat.v1.MessageDeletedEvent
+	5,  // 8: chat.v1.ServerEvent.unread_count:type_name -> chat.v1.UnreadCountEvent
+	6,  // 9: chat.v1.ServerEvent.pin_created:type_name -> chat.v1.PinEvent
+	6,  // 10: chat.v1.ServerEvent.pin_deleted:type_name -> chat.v1.PinEvent
+	7,  // 11: chat.v1.ServerEvent.system_message_created:type_name -> chat.v1.SystemMessageEvent
+	8,  // 12: chat.v1.ServerEvent.reaction_added:type_name -> chat.v1.ReactionEvent
+	8,  // 13: chat.v1.ServerEvent.reaction_removed:type_name -> chat.v1.ReactionEvent
+	9,  // 14: chat.v1.ServerEvent.typing:type_name -> chat.v1.TypingEvent
+	9,  // 15: chat.v1.ServerEvent.stop_typing:type_name -> chat.v1.TypingEvent
+	10, // 16: chat.v1.ServerEvent.ack:type_name -> chat.v1.AckEvent
+	11, // 17: chat.v1.ServerEvent.error:type_name -> chat.v1.ErrorEvent
+	12, // 18: chat.v1.ServerEvent.channel_viewers:type_name -> chat.v1.ChannelViewersEvent
+	13, // 19: chat.v1.MessageEvent.message:type_name -> chat.v1.Message
+	14, // 20: chat.v1.MessageDeletedEvent.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 21: chat.v1.PinEvent.pinned_at:type_name -> google.protobuf.Timestamp
+	15, // 22: chat.v1.SystemMessageEvent.message:type_name -> chat.v1.SystemMessage
+	23, // [23:23] is the sub-list for method output_type
+	23, // [23:23] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_event_proto_init() }
@@ -1130,6 +1225,7 @@ func file_chat_v1_event_proto_init() {
 		(*ClientEvent_LeaveChannel)(nil),
 		(*ClientEvent_Typing)(nil),
 		(*ClientEvent_StopTyping)(nil),
+		(*ClientEvent_ViewChannel)(nil),
 	}
 	file_chat_v1_event_proto_msgTypes[2].OneofWrappers = []any{
 		(*ServerEvent_NewMessage)(nil),
@@ -1145,6 +1241,7 @@ func file_chat_v1_event_proto_init() {
 		(*ServerEvent_StopTyping)(nil),
 		(*ServerEvent_Ack)(nil),
 		(*ServerEvent_Error)(nil),
+		(*ServerEvent_ChannelViewers)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1152,7 +1249,7 @@ func file_chat_v1_event_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_event_proto_rawDesc), len(file_chat_v1_event_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

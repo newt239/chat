@@ -13,6 +13,7 @@ type CreateChannelInput struct {
 	Name        string
 	Description *string
 	IsPrivate   bool
+	MemberIDs   []string
 }
 
 type UpdateChannelInput struct {
@@ -33,6 +34,12 @@ type DeleteChannelInput struct {
 	UserID    string
 }
 
+type SetChannelStarredInput struct {
+	ChannelID string
+	UserID    string
+	Starred   bool
+}
+
 type ChannelOutput struct {
 	ID          string    `json:"id"`
 	WorkspaceID string    `json:"workspaceId"`
@@ -44,4 +51,7 @@ type ChannelOutput struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 	UnreadCount int       `json:"unreadCount"`
 	HasMention  bool      `json:"hasMention"`
+	ParentID    *string   `json:"parentId"`
+	IsStarred   bool      `json:"isStarred"`
+	IsMember    bool      `json:"isMember"`
 }

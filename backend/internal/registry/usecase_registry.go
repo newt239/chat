@@ -5,6 +5,7 @@ import (
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
+	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
@@ -17,6 +18,7 @@ import (
 	threaduc "github.com/newt239/chat/internal/usecase/thread"
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
+	usernoteuc "github.com/newt239/chat/internal/usecase/usernote"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -48,6 +50,7 @@ func (r *UseCaseRegistry) NewWorkspaceUseCase() workspaceuc.WorkspaceUseCase {
 	return workspaceuc.NewWorkspaceInteractor(
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewUserNoteRepository(),
 	)
 }
 
@@ -55,6 +58,7 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 	return channeluc.NewChannelInteractor(
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewChannelStarRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewReadStateRepository(),
 		r.infrastructureRegistry.NewTransactionManager(),
@@ -199,6 +203,7 @@ func (r *UseCaseRegistry) NewDMInteractor() *dmuc.Interactor {
 	return dmuc.NewInteractor(
 		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewChannelStarRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 	)
@@ -223,5 +228,22 @@ func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewSessionRepository(),
 		r.infrastructureRegistry.NewPasswordService(),
+	)
+}
+
+func (r *UseCaseRegistry) NewChannelLinkUseCase() channellinkuc.UseCase {
+	return channellinkuc.NewInteractor(
+		r.domainRegistry.NewChannelLinkRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.infrastructureRegistry.NewTransactionManager(),
+	)
+}
+
+func (r *UseCaseRegistry) NewUserNoteUseCase() usernoteuc.UseCase {
+	return usernoteuc.NewInteractor(
+		r.domainRegistry.NewUserNoteRepository(),
+		r.domainRegistry.NewUserRepository(),
 	)
 }

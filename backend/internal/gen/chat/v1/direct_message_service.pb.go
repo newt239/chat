@@ -82,6 +82,7 @@ type DirectMessage struct {
 	Members       []*DirectMessageMember `protobuf:"bytes,6,rep,name=members,proto3" json:"members,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	IsStarred     bool                   `protobuf:"varint,9,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -170,6 +171,13 @@ func (x *DirectMessage) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *DirectMessage) GetIsStarred() bool {
+	if x != nil {
+		return x.IsStarred
+	}
+	return false
 }
 
 type DirectMessageMember struct {
@@ -524,7 +532,7 @@ var File_chat_v1_direct_message_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"\n" +
-	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xeb\x02\n" +
+	"$chat/v1/direct_message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8a\x03\n" +
 	"\rDirectMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -535,7 +543,9 @@ const file_chat_v1_direct_message_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x0e\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1d\n" +
+	"\n" +
+	"is_starred\x18\t \x01(\bR\tisStarredB\x0e\n" +
 	"\f_description\"\x84\x01\n" +
 	"\x13DirectMessageMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +

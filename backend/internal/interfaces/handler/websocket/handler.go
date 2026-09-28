@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
@@ -27,7 +28,7 @@ func newUpgrader(allowedOrigins []string) websocket.Upgrader {
 }
 
 // Handler はWebSocketハンドラーを返します
-func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, allowedOrigins []string) echo.HandlerFunc {
+func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, channelAccess service.ChannelAccessService, allowedOrigins []string) echo.HandlerFunc {
 	upgrader := newUpgrader(allowedOrigins)
 
 	return func(c echo.Context) error {
@@ -96,6 +97,7 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 			userID:             claims.UserID,
 			workspaceID:        workspaceID,
 			subscribedChannels: make(map[string]bool),
+			channelAccess:      channelAccess,
 		}
 
 		client.hub.register <- client
