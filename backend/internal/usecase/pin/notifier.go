@@ -1,6 +1,10 @@
 package pin
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/usecase/message"
+)
 
 // Notifier はピン留めの変更をチャンネルの参加者へ配信します
 type Notifier interface {
@@ -13,4 +17,6 @@ type PinNotification struct {
 	MessageID string
 	PinnedBy  string
 	PinnedAt  time.Time
+	// ピン留めしたときのみ設定される
+	PinnedByUser *message.UserInfo
 }

@@ -15,4 +15,6 @@ type PinRepository interface {
 	// List は指定チャンネルのピン一覧を新しい順で返します（最大 limit 件）。
 	// cursor は pinned_at のカーソル（RFC3339 文字列等）を想定し、cursor より古いものを返します。
 	List(ctx context.Context, channelID string, limit int, cursor *string) ([]*entity.MessagePin, *string, error)
+	// FindByMessageIDs はメッセージ ID ごとのピンを返します（Message は設定しない）
+	FindByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*entity.MessagePin, error)
 }

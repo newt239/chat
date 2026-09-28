@@ -71,6 +71,14 @@ func (stubLinkRepo) FindByMessageIDs(_ context.Context, _ []string) ([]*entity.M
 	return nil, nil
 }
 
+type stubPinRepo struct {
+	domainrepository.PinRepository
+}
+
+func (stubPinRepo) FindByMessageIDs(_ context.Context, _ []string) (map[string]*entity.MessagePin, error) {
+	return map[string]*entity.MessagePin{}, nil
+}
+
 type stubAttachmentRepo struct {
 	domainrepository.AttachmentRepository
 }
@@ -83,7 +91,7 @@ func newLister(isMember bool, messages []*entity.Message) (*Lister, *stubMessage
 	messageRepo := &stubMessageRepo{messages: messages}
 	builder := messageuc.NewMessageOutputBuilder(
 		messageRepo, stubUserRepo{}, nil, stubUserMentionRepo{}, stubGroupMentionRepo{}, stubLinkRepo{}, stubAttachmentRepo{},
-		messageuc.NewMessageOutputAssembler(),
+		stubPinRepo{}, nil,
 	)
 	return NewLister(&stubWorkspaceRepo{isMember: isMember}, messageRepo, builder), messageRepo
 }

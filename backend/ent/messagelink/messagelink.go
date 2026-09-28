@@ -27,6 +27,18 @@ const (
 	FieldSiteName = "site_name"
 	// FieldCardType holds the string denoting the card_type field in the database.
 	FieldCardType = "card_type"
+	// FieldImageWidth holds the string denoting the image_width field in the database.
+	FieldImageWidth = "image_width"
+	// FieldImageHeight holds the string denoting the image_height field in the database.
+	FieldImageHeight = "image_height"
+	// FieldYoutubeVideoID holds the string denoting the youtube_video_id field in the database.
+	FieldYoutubeVideoID = "youtube_video_id"
+	// FieldYoutubeChannelName holds the string denoting the youtube_channel_name field in the database.
+	FieldYoutubeChannelName = "youtube_channel_name"
+	// FieldYoutubeDurationSeconds holds the string denoting the youtube_duration_seconds field in the database.
+	FieldYoutubeDurationSeconds = "youtube_duration_seconds"
+	// FieldLinkedMessageID holds the string denoting the linked_message_id field in the database.
+	FieldLinkedMessageID = "linked_message_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeMessage holds the string denoting the message edge name in mutations.
@@ -51,6 +63,12 @@ var Columns = []string{
 	FieldImageURL,
 	FieldSiteName,
 	FieldCardType,
+	FieldImageWidth,
+	FieldImageHeight,
+	FieldYoutubeVideoID,
+	FieldYoutubeChannelName,
+	FieldYoutubeDurationSeconds,
+	FieldLinkedMessageID,
 	FieldCreatedAt,
 }
 
@@ -120,6 +138,36 @@ func BySiteName(opts ...sql.OrderTermOption) OrderOption {
 // ByCardType orders the results by the card_type field.
 func ByCardType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCardType, opts...).ToFunc()
+}
+
+// ByImageWidth orders the results by the image_width field.
+func ByImageWidth(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImageWidth, opts...).ToFunc()
+}
+
+// ByImageHeight orders the results by the image_height field.
+func ByImageHeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImageHeight, opts...).ToFunc()
+}
+
+// ByYoutubeVideoID orders the results by the youtube_video_id field.
+func ByYoutubeVideoID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldYoutubeVideoID, opts...).ToFunc()
+}
+
+// ByYoutubeChannelName orders the results by the youtube_channel_name field.
+func ByYoutubeChannelName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldYoutubeChannelName, opts...).ToFunc()
+}
+
+// ByYoutubeDurationSeconds orders the results by the youtube_duration_seconds field.
+func ByYoutubeDurationSeconds(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldYoutubeDurationSeconds, opts...).ToFunc()
+}
+
+// ByLinkedMessageID orders the results by the linked_message_id field.
+func ByLinkedMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLinkedMessageID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

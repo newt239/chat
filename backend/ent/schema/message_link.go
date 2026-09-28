@@ -33,6 +33,24 @@ func (MessageLink) Fields() []ent.Field {
 			Optional(),
 		field.String("card_type").
 			Optional(),
+		field.Int32("image_width").
+			Optional().
+			Nillable(),
+		field.Int32("image_height").
+			Optional().
+			Nillable(),
+		field.String("youtube_video_id").
+			Optional().
+			Nillable(),
+		field.String("youtube_channel_name").
+			Optional().
+			Nillable(),
+		field.Int32("youtube_duration_seconds").
+			Optional().
+			Nillable(),
+		field.UUID("linked_message_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

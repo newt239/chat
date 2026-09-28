@@ -98,6 +98,90 @@ func (_c *MessageLinkCreate) SetNillableCardType(v *string) *MessageLinkCreate {
 	return _c
 }
 
+// SetImageWidth sets the "image_width" field.
+func (_c *MessageLinkCreate) SetImageWidth(v int32) *MessageLinkCreate {
+	_c.mutation.SetImageWidth(v)
+	return _c
+}
+
+// SetNillableImageWidth sets the "image_width" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableImageWidth(v *int32) *MessageLinkCreate {
+	if v != nil {
+		_c.SetImageWidth(*v)
+	}
+	return _c
+}
+
+// SetImageHeight sets the "image_height" field.
+func (_c *MessageLinkCreate) SetImageHeight(v int32) *MessageLinkCreate {
+	_c.mutation.SetImageHeight(v)
+	return _c
+}
+
+// SetNillableImageHeight sets the "image_height" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableImageHeight(v *int32) *MessageLinkCreate {
+	if v != nil {
+		_c.SetImageHeight(*v)
+	}
+	return _c
+}
+
+// SetYoutubeVideoID sets the "youtube_video_id" field.
+func (_c *MessageLinkCreate) SetYoutubeVideoID(v string) *MessageLinkCreate {
+	_c.mutation.SetYoutubeVideoID(v)
+	return _c
+}
+
+// SetNillableYoutubeVideoID sets the "youtube_video_id" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableYoutubeVideoID(v *string) *MessageLinkCreate {
+	if v != nil {
+		_c.SetYoutubeVideoID(*v)
+	}
+	return _c
+}
+
+// SetYoutubeChannelName sets the "youtube_channel_name" field.
+func (_c *MessageLinkCreate) SetYoutubeChannelName(v string) *MessageLinkCreate {
+	_c.mutation.SetYoutubeChannelName(v)
+	return _c
+}
+
+// SetNillableYoutubeChannelName sets the "youtube_channel_name" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableYoutubeChannelName(v *string) *MessageLinkCreate {
+	if v != nil {
+		_c.SetYoutubeChannelName(*v)
+	}
+	return _c
+}
+
+// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
+func (_c *MessageLinkCreate) SetYoutubeDurationSeconds(v int32) *MessageLinkCreate {
+	_c.mutation.SetYoutubeDurationSeconds(v)
+	return _c
+}
+
+// SetNillableYoutubeDurationSeconds sets the "youtube_duration_seconds" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableYoutubeDurationSeconds(v *int32) *MessageLinkCreate {
+	if v != nil {
+		_c.SetYoutubeDurationSeconds(*v)
+	}
+	return _c
+}
+
+// SetLinkedMessageID sets the "linked_message_id" field.
+func (_c *MessageLinkCreate) SetLinkedMessageID(v uuid.UUID) *MessageLinkCreate {
+	_c.mutation.SetLinkedMessageID(v)
+	return _c
+}
+
+// SetNillableLinkedMessageID sets the "linked_message_id" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableLinkedMessageID(v *uuid.UUID) *MessageLinkCreate {
+	if v != nil {
+		_c.SetLinkedMessageID(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *MessageLinkCreate) SetCreatedAt(v time.Time) *MessageLinkCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -256,6 +340,30 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CardType(); ok {
 		_spec.SetField(messagelink.FieldCardType, field.TypeString, value)
 		_node.CardType = value
+	}
+	if value, ok := _c.mutation.ImageWidth(); ok {
+		_spec.SetField(messagelink.FieldImageWidth, field.TypeInt32, value)
+		_node.ImageWidth = &value
+	}
+	if value, ok := _c.mutation.ImageHeight(); ok {
+		_spec.SetField(messagelink.FieldImageHeight, field.TypeInt32, value)
+		_node.ImageHeight = &value
+	}
+	if value, ok := _c.mutation.YoutubeVideoID(); ok {
+		_spec.SetField(messagelink.FieldYoutubeVideoID, field.TypeString, value)
+		_node.YoutubeVideoID = &value
+	}
+	if value, ok := _c.mutation.YoutubeChannelName(); ok {
+		_spec.SetField(messagelink.FieldYoutubeChannelName, field.TypeString, value)
+		_node.YoutubeChannelName = &value
+	}
+	if value, ok := _c.mutation.YoutubeDurationSeconds(); ok {
+		_spec.SetField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
+		_node.YoutubeDurationSeconds = &value
+	}
+	if value, ok := _c.mutation.LinkedMessageID(); ok {
+		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
+		_node.LinkedMessageID = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(messagelink.FieldCreatedAt, field.TypeTime, value)

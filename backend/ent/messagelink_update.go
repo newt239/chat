@@ -143,6 +143,147 @@ func (_u *MessageLinkUpdate) ClearCardType() *MessageLinkUpdate {
 	return _u
 }
 
+// SetImageWidth sets the "image_width" field.
+func (_u *MessageLinkUpdate) SetImageWidth(v int32) *MessageLinkUpdate {
+	_u.mutation.ResetImageWidth()
+	_u.mutation.SetImageWidth(v)
+	return _u
+}
+
+// SetNillableImageWidth sets the "image_width" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableImageWidth(v *int32) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetImageWidth(*v)
+	}
+	return _u
+}
+
+// AddImageWidth adds value to the "image_width" field.
+func (_u *MessageLinkUpdate) AddImageWidth(v int32) *MessageLinkUpdate {
+	_u.mutation.AddImageWidth(v)
+	return _u
+}
+
+// ClearImageWidth clears the value of the "image_width" field.
+func (_u *MessageLinkUpdate) ClearImageWidth() *MessageLinkUpdate {
+	_u.mutation.ClearImageWidth()
+	return _u
+}
+
+// SetImageHeight sets the "image_height" field.
+func (_u *MessageLinkUpdate) SetImageHeight(v int32) *MessageLinkUpdate {
+	_u.mutation.ResetImageHeight()
+	_u.mutation.SetImageHeight(v)
+	return _u
+}
+
+// SetNillableImageHeight sets the "image_height" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableImageHeight(v *int32) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetImageHeight(*v)
+	}
+	return _u
+}
+
+// AddImageHeight adds value to the "image_height" field.
+func (_u *MessageLinkUpdate) AddImageHeight(v int32) *MessageLinkUpdate {
+	_u.mutation.AddImageHeight(v)
+	return _u
+}
+
+// ClearImageHeight clears the value of the "image_height" field.
+func (_u *MessageLinkUpdate) ClearImageHeight() *MessageLinkUpdate {
+	_u.mutation.ClearImageHeight()
+	return _u
+}
+
+// SetYoutubeVideoID sets the "youtube_video_id" field.
+func (_u *MessageLinkUpdate) SetYoutubeVideoID(v string) *MessageLinkUpdate {
+	_u.mutation.SetYoutubeVideoID(v)
+	return _u
+}
+
+// SetNillableYoutubeVideoID sets the "youtube_video_id" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableYoutubeVideoID(v *string) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetYoutubeVideoID(*v)
+	}
+	return _u
+}
+
+// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
+func (_u *MessageLinkUpdate) ClearYoutubeVideoID() *MessageLinkUpdate {
+	_u.mutation.ClearYoutubeVideoID()
+	return _u
+}
+
+// SetYoutubeChannelName sets the "youtube_channel_name" field.
+func (_u *MessageLinkUpdate) SetYoutubeChannelName(v string) *MessageLinkUpdate {
+	_u.mutation.SetYoutubeChannelName(v)
+	return _u
+}
+
+// SetNillableYoutubeChannelName sets the "youtube_channel_name" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableYoutubeChannelName(v *string) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetYoutubeChannelName(*v)
+	}
+	return _u
+}
+
+// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
+func (_u *MessageLinkUpdate) ClearYoutubeChannelName() *MessageLinkUpdate {
+	_u.mutation.ClearYoutubeChannelName()
+	return _u
+}
+
+// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
+func (_u *MessageLinkUpdate) SetYoutubeDurationSeconds(v int32) *MessageLinkUpdate {
+	_u.mutation.ResetYoutubeDurationSeconds()
+	_u.mutation.SetYoutubeDurationSeconds(v)
+	return _u
+}
+
+// SetNillableYoutubeDurationSeconds sets the "youtube_duration_seconds" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableYoutubeDurationSeconds(v *int32) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetYoutubeDurationSeconds(*v)
+	}
+	return _u
+}
+
+// AddYoutubeDurationSeconds adds value to the "youtube_duration_seconds" field.
+func (_u *MessageLinkUpdate) AddYoutubeDurationSeconds(v int32) *MessageLinkUpdate {
+	_u.mutation.AddYoutubeDurationSeconds(v)
+	return _u
+}
+
+// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
+func (_u *MessageLinkUpdate) ClearYoutubeDurationSeconds() *MessageLinkUpdate {
+	_u.mutation.ClearYoutubeDurationSeconds()
+	return _u
+}
+
+// SetLinkedMessageID sets the "linked_message_id" field.
+func (_u *MessageLinkUpdate) SetLinkedMessageID(v uuid.UUID) *MessageLinkUpdate {
+	_u.mutation.SetLinkedMessageID(v)
+	return _u
+}
+
+// SetNillableLinkedMessageID sets the "linked_message_id" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableLinkedMessageID(v *uuid.UUID) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetLinkedMessageID(*v)
+	}
+	return _u
+}
+
+// ClearLinkedMessageID clears the value of the "linked_message_id" field.
+func (_u *MessageLinkUpdate) ClearLinkedMessageID() *MessageLinkUpdate {
+	_u.mutation.ClearLinkedMessageID()
+	return _u
+}
+
 // SetMessageID sets the "message" edge to the Message entity by ID.
 func (_u *MessageLinkUpdate) SetMessageID(id uuid.UUID) *MessageLinkUpdate {
 	_u.mutation.SetMessageID(id)
@@ -249,6 +390,51 @@ func (_u *MessageLinkUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.CardTypeCleared() {
 		_spec.ClearField(messagelink.FieldCardType, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImageWidth(); ok {
+		_spec.SetField(messagelink.FieldImageWidth, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedImageWidth(); ok {
+		_spec.AddField(messagelink.FieldImageWidth, field.TypeInt32, value)
+	}
+	if _u.mutation.ImageWidthCleared() {
+		_spec.ClearField(messagelink.FieldImageWidth, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.ImageHeight(); ok {
+		_spec.SetField(messagelink.FieldImageHeight, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedImageHeight(); ok {
+		_spec.AddField(messagelink.FieldImageHeight, field.TypeInt32, value)
+	}
+	if _u.mutation.ImageHeightCleared() {
+		_spec.ClearField(messagelink.FieldImageHeight, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.YoutubeVideoID(); ok {
+		_spec.SetField(messagelink.FieldYoutubeVideoID, field.TypeString, value)
+	}
+	if _u.mutation.YoutubeVideoIDCleared() {
+		_spec.ClearField(messagelink.FieldYoutubeVideoID, field.TypeString)
+	}
+	if value, ok := _u.mutation.YoutubeChannelName(); ok {
+		_spec.SetField(messagelink.FieldYoutubeChannelName, field.TypeString, value)
+	}
+	if _u.mutation.YoutubeChannelNameCleared() {
+		_spec.ClearField(messagelink.FieldYoutubeChannelName, field.TypeString)
+	}
+	if value, ok := _u.mutation.YoutubeDurationSeconds(); ok {
+		_spec.SetField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedYoutubeDurationSeconds(); ok {
+		_spec.AddField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
+	}
+	if _u.mutation.YoutubeDurationSecondsCleared() {
+		_spec.ClearField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.LinkedMessageID(); ok {
+		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
+	}
+	if _u.mutation.LinkedMessageIDCleared() {
+		_spec.ClearField(messagelink.FieldLinkedMessageID, field.TypeUUID)
 	}
 	if _u.mutation.MessageCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -413,6 +599,147 @@ func (_u *MessageLinkUpdateOne) ClearCardType() *MessageLinkUpdateOne {
 	return _u
 }
 
+// SetImageWidth sets the "image_width" field.
+func (_u *MessageLinkUpdateOne) SetImageWidth(v int32) *MessageLinkUpdateOne {
+	_u.mutation.ResetImageWidth()
+	_u.mutation.SetImageWidth(v)
+	return _u
+}
+
+// SetNillableImageWidth sets the "image_width" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableImageWidth(v *int32) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetImageWidth(*v)
+	}
+	return _u
+}
+
+// AddImageWidth adds value to the "image_width" field.
+func (_u *MessageLinkUpdateOne) AddImageWidth(v int32) *MessageLinkUpdateOne {
+	_u.mutation.AddImageWidth(v)
+	return _u
+}
+
+// ClearImageWidth clears the value of the "image_width" field.
+func (_u *MessageLinkUpdateOne) ClearImageWidth() *MessageLinkUpdateOne {
+	_u.mutation.ClearImageWidth()
+	return _u
+}
+
+// SetImageHeight sets the "image_height" field.
+func (_u *MessageLinkUpdateOne) SetImageHeight(v int32) *MessageLinkUpdateOne {
+	_u.mutation.ResetImageHeight()
+	_u.mutation.SetImageHeight(v)
+	return _u
+}
+
+// SetNillableImageHeight sets the "image_height" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableImageHeight(v *int32) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetImageHeight(*v)
+	}
+	return _u
+}
+
+// AddImageHeight adds value to the "image_height" field.
+func (_u *MessageLinkUpdateOne) AddImageHeight(v int32) *MessageLinkUpdateOne {
+	_u.mutation.AddImageHeight(v)
+	return _u
+}
+
+// ClearImageHeight clears the value of the "image_height" field.
+func (_u *MessageLinkUpdateOne) ClearImageHeight() *MessageLinkUpdateOne {
+	_u.mutation.ClearImageHeight()
+	return _u
+}
+
+// SetYoutubeVideoID sets the "youtube_video_id" field.
+func (_u *MessageLinkUpdateOne) SetYoutubeVideoID(v string) *MessageLinkUpdateOne {
+	_u.mutation.SetYoutubeVideoID(v)
+	return _u
+}
+
+// SetNillableYoutubeVideoID sets the "youtube_video_id" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableYoutubeVideoID(v *string) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetYoutubeVideoID(*v)
+	}
+	return _u
+}
+
+// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
+func (_u *MessageLinkUpdateOne) ClearYoutubeVideoID() *MessageLinkUpdateOne {
+	_u.mutation.ClearYoutubeVideoID()
+	return _u
+}
+
+// SetYoutubeChannelName sets the "youtube_channel_name" field.
+func (_u *MessageLinkUpdateOne) SetYoutubeChannelName(v string) *MessageLinkUpdateOne {
+	_u.mutation.SetYoutubeChannelName(v)
+	return _u
+}
+
+// SetNillableYoutubeChannelName sets the "youtube_channel_name" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableYoutubeChannelName(v *string) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetYoutubeChannelName(*v)
+	}
+	return _u
+}
+
+// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
+func (_u *MessageLinkUpdateOne) ClearYoutubeChannelName() *MessageLinkUpdateOne {
+	_u.mutation.ClearYoutubeChannelName()
+	return _u
+}
+
+// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
+func (_u *MessageLinkUpdateOne) SetYoutubeDurationSeconds(v int32) *MessageLinkUpdateOne {
+	_u.mutation.ResetYoutubeDurationSeconds()
+	_u.mutation.SetYoutubeDurationSeconds(v)
+	return _u
+}
+
+// SetNillableYoutubeDurationSeconds sets the "youtube_duration_seconds" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableYoutubeDurationSeconds(v *int32) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetYoutubeDurationSeconds(*v)
+	}
+	return _u
+}
+
+// AddYoutubeDurationSeconds adds value to the "youtube_duration_seconds" field.
+func (_u *MessageLinkUpdateOne) AddYoutubeDurationSeconds(v int32) *MessageLinkUpdateOne {
+	_u.mutation.AddYoutubeDurationSeconds(v)
+	return _u
+}
+
+// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
+func (_u *MessageLinkUpdateOne) ClearYoutubeDurationSeconds() *MessageLinkUpdateOne {
+	_u.mutation.ClearYoutubeDurationSeconds()
+	return _u
+}
+
+// SetLinkedMessageID sets the "linked_message_id" field.
+func (_u *MessageLinkUpdateOne) SetLinkedMessageID(v uuid.UUID) *MessageLinkUpdateOne {
+	_u.mutation.SetLinkedMessageID(v)
+	return _u
+}
+
+// SetNillableLinkedMessageID sets the "linked_message_id" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableLinkedMessageID(v *uuid.UUID) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetLinkedMessageID(*v)
+	}
+	return _u
+}
+
+// ClearLinkedMessageID clears the value of the "linked_message_id" field.
+func (_u *MessageLinkUpdateOne) ClearLinkedMessageID() *MessageLinkUpdateOne {
+	_u.mutation.ClearLinkedMessageID()
+	return _u
+}
+
 // SetMessageID sets the "message" edge to the Message entity by ID.
 func (_u *MessageLinkUpdateOne) SetMessageID(id uuid.UUID) *MessageLinkUpdateOne {
 	_u.mutation.SetMessageID(id)
@@ -549,6 +876,51 @@ func (_u *MessageLinkUpdateOne) sqlSave(ctx context.Context) (_node *MessageLink
 	}
 	if _u.mutation.CardTypeCleared() {
 		_spec.ClearField(messagelink.FieldCardType, field.TypeString)
+	}
+	if value, ok := _u.mutation.ImageWidth(); ok {
+		_spec.SetField(messagelink.FieldImageWidth, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedImageWidth(); ok {
+		_spec.AddField(messagelink.FieldImageWidth, field.TypeInt32, value)
+	}
+	if _u.mutation.ImageWidthCleared() {
+		_spec.ClearField(messagelink.FieldImageWidth, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.ImageHeight(); ok {
+		_spec.SetField(messagelink.FieldImageHeight, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedImageHeight(); ok {
+		_spec.AddField(messagelink.FieldImageHeight, field.TypeInt32, value)
+	}
+	if _u.mutation.ImageHeightCleared() {
+		_spec.ClearField(messagelink.FieldImageHeight, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.YoutubeVideoID(); ok {
+		_spec.SetField(messagelink.FieldYoutubeVideoID, field.TypeString, value)
+	}
+	if _u.mutation.YoutubeVideoIDCleared() {
+		_spec.ClearField(messagelink.FieldYoutubeVideoID, field.TypeString)
+	}
+	if value, ok := _u.mutation.YoutubeChannelName(); ok {
+		_spec.SetField(messagelink.FieldYoutubeChannelName, field.TypeString, value)
+	}
+	if _u.mutation.YoutubeChannelNameCleared() {
+		_spec.ClearField(messagelink.FieldYoutubeChannelName, field.TypeString)
+	}
+	if value, ok := _u.mutation.YoutubeDurationSeconds(); ok {
+		_spec.SetField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedYoutubeDurationSeconds(); ok {
+		_spec.AddField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
+	}
+	if _u.mutation.YoutubeDurationSecondsCleared() {
+		_spec.ClearField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.LinkedMessageID(); ok {
+		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
+	}
+	if _u.mutation.LinkedMessageIDCleared() {
+		_spec.ClearField(messagelink.FieldLinkedMessageID, field.TypeUUID)
 	}
 	if _u.mutation.MessageCleared() {
 		edge := &sqlgraph.EdgeSpec{

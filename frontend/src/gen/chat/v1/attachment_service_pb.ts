@@ -5,6 +5,8 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { MediaMetadata } from "./message_pb";
+import { file_chat_v1_message } from "./message_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -13,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/attachment_service.proto.
  */
 export const file_chat_v1_attachment_service: GenFile = /*@__PURE__*/
-  fileDesc("CiBjaGF0L3YxL2F0dGFjaG1lbnRfc2VydmljZS5wcm90bxIHY2hhdC52MSLjAQoKQXR0YWNobWVudBIKCgJpZBgBIAEoCRIXCgptZXNzYWdlX2lkGAIgASgJSACIAQESEwoLdXBsb2FkZXJfaWQYAyABKAkSEgoKY2hhbm5lbF9pZBgEIAEoCRIRCglmaWxlX25hbWUYBSABKAkSEQoJbWltZV90eXBlGAYgASgJEhIKCnNpemVfYnl0ZXMYByABKAMSDgoGc3RhdHVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQg0KC19tZXNzYWdlX2lkIowBChRQcmVzaWduVXBsb2FkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIaCglmaWxlX25hbWUYAiABKAlCB7pIBHICEAESHQoMY29udGVudF90eXBlGAMgASgJQge6SARyAhABEhsKCnNpemVfYnl0ZXMYBCABKANCB7pIBCICIAAicgoVUHJlc2lnblVwbG9hZFJlc3BvbnNlEhUKDWF0dGFjaG1lbnRfaWQYASABKAkSEgoKdXBsb2FkX3VybBgCIAEoCRIuCgpleHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCI3ChRHZXRBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASJAChVHZXRBdHRhY2htZW50UmVzcG9uc2USJwoKYXR0YWNobWVudBgBIAEoCzITLmNoYXQudjEuQXR0YWNobWVudCI4ChVHZXREb3dubG9hZFVybFJlcXVlc3QSHwoNYXR0YWNobWVudF9pZBgBIAEoCUIIukgFcgOwAQEiOQoWR2V0RG93bmxvYWRVcmxSZXNwb25zZRILCgN1cmwYASABKAkSEgoKZXhwaXJlc19pbhgCIAEoBSI6ChdEZWxldGVBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASIaChhEZWxldGVBdHRhY2htZW50UmVzcG9uc2Uy3wIKEUF0dGFjaG1lbnRTZXJ2aWNlEk4KDVByZXNpZ25VcGxvYWQSHS5jaGF0LnYxLlByZXNpZ25VcGxvYWRSZXF1ZXN0Gh4uY2hhdC52MS5QcmVzaWduVXBsb2FkUmVzcG9uc2USTgoNR2V0QXR0YWNobWVudBIdLmNoYXQudjEuR2V0QXR0YWNobWVudFJlcXVlc3QaHi5jaGF0LnYxLkdldEF0dGFjaG1lbnRSZXNwb25zZRJRCg5HZXREb3dubG9hZFVybBIeLmNoYXQudjEuR2V0RG93bmxvYWRVcmxSZXF1ZXN0Gh8uY2hhdC52MS5HZXREb3dubG9hZFVybFJlc3BvbnNlElcKEERlbGV0ZUF0dGFjaG1lbnQSIC5jaGF0LnYxLkRlbGV0ZUF0dGFjaG1lbnRSZXF1ZXN0GiEuY2hhdC52MS5EZWxldGVBdHRhY2htZW50UmVzcG9uc2VClwEKC2NvbS5jaGF0LnYxQhZBdHRhY2htZW50U2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("CiBjaGF0L3YxL2F0dGFjaG1lbnRfc2VydmljZS5wcm90bxIHY2hhdC52MSKKAgoKQXR0YWNobWVudBIKCgJpZBgBIAEoCRIXCgptZXNzYWdlX2lkGAIgASgJSACIAQESEwoLdXBsb2FkZXJfaWQYAyABKAkSEgoKY2hhbm5lbF9pZBgEIAEoCRIRCglmaWxlX25hbWUYBSABKAkSEQoJbWltZV90eXBlGAYgASgJEhIKCnNpemVfYnl0ZXMYByABKAMSDgoGc3RhdHVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBW1lZGlhGAogASgLMhYuY2hhdC52MS5NZWRpYU1ldGFkYXRhQg0KC19tZXNzYWdlX2lkIrECChRQcmVzaWduVXBsb2FkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIaCglmaWxlX25hbWUYAiABKAlCB7pIBHICEAESHQoMY29udGVudF90eXBlGAMgASgJQge6SARyAhABEhsKCnNpemVfYnl0ZXMYBCABKANCB7pIBCICIAASHwoFd2lkdGgYBSABKAVCC7pICBoGGKCNBiAASACIAQESIAoGaGVpZ2h0GAYgASgFQgu6SAgaBhigjQYgAEgBiAEBEjYKEGR1cmF0aW9uX3NlY29uZHMYByABKAFCF7pIFBISGQAAAAAAGPVAKQAAAAAAAAAASAKIAQFCCAoGX3dpZHRoQgkKB19oZWlnaHRCEwoRX2R1cmF0aW9uX3NlY29uZHMicgoVUHJlc2lnblVwbG9hZFJlc3BvbnNlEhUKDWF0dGFjaG1lbnRfaWQYASABKAkSEgoKdXBsb2FkX3VybBgCIAEoCRIuCgpleHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCI3ChRHZXRBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASJAChVHZXRBdHRhY2htZW50UmVzcG9uc2USJwoKYXR0YWNobWVudBgBIAEoCzITLmNoYXQudjEuQXR0YWNobWVudCI4ChVHZXREb3dubG9hZFVybFJlcXVlc3QSHwoNYXR0YWNobWVudF9pZBgBIAEoCUIIukgFcgOwAQEiOQoWR2V0RG93bmxvYWRVcmxSZXNwb25zZRILCgN1cmwYASABKAkSEgoKZXhwaXJlc19pbhgCIAEoBSI6ChdEZWxldGVBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASIaChhEZWxldGVBdHRhY2htZW50UmVzcG9uc2Uy3wIKEUF0dGFjaG1lbnRTZXJ2aWNlEk4KDVByZXNpZ25VcGxvYWQSHS5jaGF0LnYxLlByZXNpZ25VcGxvYWRSZXF1ZXN0Gh4uY2hhdC52MS5QcmVzaWduVXBsb2FkUmVzcG9uc2USTgoNR2V0QXR0YWNobWVudBIdLmNoYXQudjEuR2V0QXR0YWNobWVudFJlcXVlc3QaHi5jaGF0LnYxLkdldEF0dGFjaG1lbnRSZXNwb25zZRJRCg5HZXREb3dubG9hZFVybBIeLmNoYXQudjEuR2V0RG93bmxvYWRVcmxSZXF1ZXN0Gh8uY2hhdC52MS5HZXREb3dubG9hZFVybFJlc3BvbnNlElcKEERlbGV0ZUF0dGFjaG1lbnQSIC5jaGF0LnYxLkRlbGV0ZUF0dGFjaG1lbnRSZXF1ZXN0GiEuY2hhdC52MS5EZWxldGVBdHRhY2htZW50UmVzcG9uc2VClwEKC2NvbS5jaGF0LnYxQhZBdHRhY2htZW50U2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.Attachment
@@ -63,6 +65,11 @@ export type Attachment = Message<"chat.v1.Attachment"> & {
    * @generated from field: google.protobuf.Timestamp created_at = 9;
    */
   createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: chat.v1.MediaMetadata media = 10;
+   */
+  media?: MediaMetadata | undefined;
 };
 
 /**
@@ -95,6 +102,23 @@ export type PresignUploadRequest = Message<"chat.v1.PresignUploadRequest"> & {
    * @generated from field: int64 size_bytes = 4;
    */
   sizeBytes: bigint;
+
+  /**
+   * 画像・動画・音声のときにクライアントが計測した値を送る
+   *
+   * @generated from field: optional int32 width = 5;
+   */
+  width?: number | undefined;
+
+  /**
+   * @generated from field: optional int32 height = 6;
+   */
+  height?: number | undefined;
+
+  /**
+   * @generated from field: optional double duration_seconds = 7;
+   */
+  durationSeconds?: number | undefined;
 };
 
 /**

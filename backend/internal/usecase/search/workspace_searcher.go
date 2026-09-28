@@ -157,7 +157,7 @@ func (s *WorkspaceSearcher) searchMessages(
 		return PaginatedMessages{}, fmt.Errorf("failed to search messages: %w", err)
 	}
 
-	outputs, err := s.messageOutputBuilder.Build(ctx, messages)
+	outputs, err := s.messageOutputBuilder.Build(ctx, input.RequesterID, messages)
 	if err != nil {
 		return PaginatedMessages{}, fmt.Errorf("failed to build message outputs: %w", err)
 	}

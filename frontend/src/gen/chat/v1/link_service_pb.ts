@@ -5,50 +5,15 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { OgpData } from "./message_pb";
+import { file_chat_v1_message } from "./message_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/link_service.proto.
  */
 export const file_chat_v1_link_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpjaGF0L3YxL2xpbmtfc2VydmljZS5wcm90bxIHY2hhdC52MSLDAQoHT2dwRGF0YRISCgV0aXRsZRgBIAEoCUgAiAEBEhgKC2Rlc2NyaXB0aW9uGAIgASgJSAGIAQESFgoJaW1hZ2VfdXJsGAMgASgJSAKIAQESFgoJc2l0ZV9uYW1lGAQgASgJSAOIAQESFgoJY2FyZF90eXBlGAUgASgJSASIAQFCCAoGX3RpdGxlQg4KDF9kZXNjcmlwdGlvbkIMCgpfaW1hZ2VfdXJsQgwKCl9zaXRlX25hbWVCDAoKX2NhcmRfdHlwZSIoCg9GZXRjaE9ncFJlcXVlc3QSFQoDdXJsGAEgASgJQgi6SAVyA4gBASIxChBGZXRjaE9ncFJlc3BvbnNlEh0KA29ncBgBIAEoCzIQLmNoYXQudjEuT2dwRGF0YTJOCgtMaW5rU2VydmljZRI/CghGZXRjaE9ncBIYLmNoYXQudjEuRmV0Y2hPZ3BSZXF1ZXN0GhkuY2hhdC52MS5GZXRjaE9ncFJlc3BvbnNlQpEBCgtjb20uY2hhdC52MUIQTGlua1NlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate]);
-
-/**
- * @generated from message chat.v1.OgpData
- */
-export type OgpData = Message<"chat.v1.OgpData"> & {
-  /**
-   * @generated from field: optional string title = 1;
-   */
-  title?: string | undefined;
-
-  /**
-   * @generated from field: optional string description = 2;
-   */
-  description?: string | undefined;
-
-  /**
-   * @generated from field: optional string image_url = 3;
-   */
-  imageUrl?: string | undefined;
-
-  /**
-   * @generated from field: optional string site_name = 4;
-   */
-  siteName?: string | undefined;
-
-  /**
-   * @generated from field: optional string card_type = 5;
-   */
-  cardType?: string | undefined;
-};
-
-/**
- * Describes the message chat.v1.OgpData.
- * Use `create(OgpDataSchema)` to create a new message.
- */
-export const OgpDataSchema: GenMessage<OgpData> = /*@__PURE__*/
-  messageDesc(file_chat_v1_link_service, 0);
+  fileDesc("ChpjaGF0L3YxL2xpbmtfc2VydmljZS5wcm90bxIHY2hhdC52MSIoCg9GZXRjaE9ncFJlcXVlc3QSFQoDdXJsGAEgASgJQgi6SAVyA4gBASIxChBGZXRjaE9ncFJlc3BvbnNlEh0KA29ncBgBIAEoCzIQLmNoYXQudjEuT2dwRGF0YTJOCgtMaW5rU2VydmljZRI/CghGZXRjaE9ncBIYLmNoYXQudjEuRmV0Y2hPZ3BSZXF1ZXN0GhkuY2hhdC52MS5GZXRjaE9ncFJlc3BvbnNlQpEBCgtjb20uY2hhdC52MUIQTGlua1NlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_message]);
 
 /**
  * @generated from message chat.v1.FetchOgpRequest
@@ -65,7 +30,7 @@ export type FetchOgpRequest = Message<"chat.v1.FetchOgpRequest"> & {
  * Use `create(FetchOgpRequestSchema)` to create a new message.
  */
 export const FetchOgpRequestSchema: GenMessage<FetchOgpRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_link_service, 1);
+  messageDesc(file_chat_v1_link_service, 0);
 
 /**
  * @generated from message chat.v1.FetchOgpResponse
@@ -82,7 +47,7 @@ export type FetchOgpResponse = Message<"chat.v1.FetchOgpResponse"> & {
  * Use `create(FetchOgpResponseSchema)` to create a new message.
  */
 export const FetchOgpResponseSchema: GenMessage<FetchOgpResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_link_service, 2);
+  messageDesc(file_chat_v1_link_service, 1);
 
 /**
  * @generated from service chat.v1.LinkService

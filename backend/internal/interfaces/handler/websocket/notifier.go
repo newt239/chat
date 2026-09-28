@@ -75,7 +75,12 @@ func (n *Notifier) NotifyReactionRemoved(workspaceID, channelID string, reaction
 }
 
 func reactionEvent(channelID string, reaction reactionuc.ReactionNotification) *chatv1.ReactionEvent {
-	return &chatv1.ReactionEvent{ChannelId: channelID, MessageId: reaction.MessageID, UserId: reaction.UserID, Emoji: reaction.Emoji}
+	event := &chatv1.ReactionEvent{ChannelId: channelID, MessageId: reaction.MessageID, UserId: reaction.UserID, Emoji: reaction.Emoji}
+	if reaction.User != nil {
+		event.User = &chatv1.UserSummary{Id: reaction.User.ID, DisplayName: reaction.User.DisplayName, AvatarUrl: reaction.User.AvatarURL}
+		event.CreatedAt = timestamppb.New(reaction.CreatedAt)
+	}
+	return event
 }
 
 func (n *Notifier) NotifyUnreadCount(workspaceID, userID, channelID string, unreadCount int, hasMention bool) {
@@ -102,7 +107,11 @@ func (n *Notifier) NotifyPinDeleted(workspaceID, channelID string, pin pinuc.Pin
 }
 
 func pinEvent(channelID string, pin pinuc.PinNotification) *chatv1.PinEvent {
-	return &chatv1.PinEvent{ChannelId: channelID, MessageId: pin.MessageID, PinnedBy: pin.PinnedBy, PinnedAt: timestamppb.New(pin.PinnedAt)}
+	event := &chatv1.PinEvent{ChannelId: channelID, MessageId: pin.MessageID, PinnedBy: pin.PinnedBy, PinnedAt: timestamppb.New(pin.PinnedAt)}
+	if pin.PinnedByUser != nil {
+		event.PinnedByUser = presenter.UserSummary(*pin.PinnedByUser)
+	}
+	return event
 }
 
 func (n *Notifier) broadcastToChannel(workspaceID, channelID string, event *chatv1.ServerEvent) {

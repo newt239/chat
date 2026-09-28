@@ -80,7 +80,7 @@ func (l *Lister) ListMentions(ctx context.Context, input ListMentionsInput) (*Li
 		nextCursor = &Cursor{CreatedAt: last.CreatedAt, MessageID: last.ID}
 	}
 
-	outputs, err := l.messageOutputBuilder.Build(ctx, messages)
+	outputs, err := l.messageOutputBuilder.Build(ctx, input.UserID, messages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build message outputs: %w", err)
 	}

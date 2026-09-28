@@ -12,6 +12,8 @@ service MessageService {
   rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse);
   rpc UpdateMessage(UpdateMessageRequest) returns (UpdateMessageResponse);
   rpc DeleteMessage(DeleteMessageRequest) returns (DeleteMessageResponse);
+  // メッセージリンクの引用カードを取得する。参照できないメッセージは NotFound を返す
+  rpc GetMessagePreview(GetMessagePreviewRequest) returns (GetMessagePreviewResponse);
 }
 
 message ListMessagesRequest {
@@ -78,3 +80,11 @@ message DeleteMessageRequest {
 }
 
 message DeleteMessageResponse {}
+
+message GetMessagePreviewRequest {
+  string message_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetMessagePreviewResponse {
+  MessagePreview preview = 1;
+}

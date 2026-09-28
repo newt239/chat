@@ -1,6 +1,10 @@
 package attachment
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
+)
 
 type PresignInput struct {
 	UserID     string
@@ -8,6 +12,7 @@ type PresignInput struct {
 	FileName   string
 	MimeType   string
 	SizeBytes  int64
+	Media      entity.MediaMetadata
 	ExpiresMin int
 }
 
@@ -26,6 +31,7 @@ type AttachmentOutput struct {
 	FileName   string
 	MimeType   string
 	SizeBytes  int64
+	Media      entity.MediaMetadata
 	Status     string
 	CreatedAt  time.Time
 }

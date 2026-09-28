@@ -6,6 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
@@ -30,20 +31,18 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		}),
 		Links: ConvertAll(m.Links, func(l messageuc.LinkInfo) *chatv1.MessageLink {
 			return &chatv1.MessageLink{
-				Id:          l.ID,
-				Url:         l.URL,
-				Title:       l.Title,
-				Description: l.Description,
-				ImageUrl:    l.ImageURL,
-				SiteName:    l.SiteName,
-				CardType:    l.CardType,
+				Id:              l.ID,
+				Url:             l.URL,
+				Ogp:             OGPData(l.OGP),
+				LinkedMessageId: l.LinkedMessageID,
+				MessagePreview:  messagePreview(l.MessagePreview),
 			}
 		}),
 		Reactions: ConvertAll(m.Reactions, func(r messageuc.ReactionInfo) *chatv1.Reaction {
 			return &chatv1.Reaction{MessageId: m.ID, User: UserSummary(r.User), Emoji: r.Emoji, CreatedAt: timestamppb.New(r.CreatedAt)}
 		}),
 		Attachments: ConvertAll(m.Attachments, func(a messageuc.AttachmentInfo) *chatv1.MessageAttachment {
-			return &chatv1.MessageAttachment{Id: a.ID, FileName: a.FileName, MimeType: a.MimeType, SizeBytes: a.SizeBytes}
+			return &chatv1.MessageAttachment{Id: a.ID, FileName: a.FileName, MimeType: a.MimeType, SizeBytes: a.SizeBytes, Media: MediaMetadata(a.Media)}
 		}),
 		CreatedAt: timestamppb.New(m.CreatedAt),
 		EditedAt:  optionalTimestamp(m.EditedAt),
@@ -53,7 +52,49 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 	if m.DeletedBy != nil {
 		msg.DeletedBy = UserSummary(*m.DeletedBy)
 	}
+	if m.Pin != nil {
+		msg.Pin = &chatv1.MessagePin{PinnedBy: UserSummary(m.Pin.PinnedBy), PinnedAt: timestamppb.New(m.Pin.PinnedAt)}
+	}
 	return msg
+}
+
+func OGPData(o entity.OGPData) *chatv1.OgpData {
+	data := &chatv1.OgpData{
+		Title:       o.Title,
+		Description: o.Description,
+		ImageUrl:    o.ImageURL,
+		SiteName:    o.SiteName,
+		CardType:    o.CardType,
+		ImageWidth:  o.ImageWidth,
+		ImageHeight: o.ImageHeight,
+	}
+	if o.YouTube != nil {
+		data.Youtube = &chatv1.YouTubeVideo{VideoId: o.YouTube.VideoID, ChannelName: o.YouTube.ChannelName, DurationSeconds: o.YouTube.DurationSeconds}
+	}
+	return data
+}
+
+func MediaMetadata(m entity.MediaMetadata) *chatv1.MediaMetadata {
+	return &chatv1.MediaMetadata{Width: m.Width, Height: m.Height, DurationSeconds: m.DurationSeconds}
+}
+
+func MessagePreview(p messageuc.MessagePreviewOutput) *chatv1.MessagePreview {
+	return &chatv1.MessagePreview{
+		MessageId:   p.MessageID,
+		ChannelId:   p.ChannelID,
+		ChannelName: p.ChannelName,
+		ParentId:    p.ParentID,
+		User:        UserSummary(p.User),
+		BodyExcerpt: p.BodyExcerpt,
+		CreatedAt:   timestamppb.New(p.CreatedAt),
+	}
+}
+
+func messagePreview(p *messageuc.MessagePreviewOutput) *chatv1.MessagePreview {
+	if p == nil {
+		return nil
+	}
+	return MessagePreview(*p)
 }
 
 func MessageWithThread(m messageuc.MessageWithThreadOutput) *chatv1.Message {

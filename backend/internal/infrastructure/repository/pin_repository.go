@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/message"
@@ -105,6 +107,31 @@ func (r *pinRepository) List(ctx context.Context, channelID string, limit int, c
 		out = append(out, messagePinToEntity(mp))
 	}
 	return out, next, nil
+}
+
+func (r *pinRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*entity.MessagePin, error) {
+	ids := make([]uuid.UUID, 0, len(messageIDs))
+	for _, id := range messageIDs {
+		ids = append(ids, utils.ParseUUIDOrNil(id))
+	}
+
+	rows, err := transaction.ResolveClient(ctx, r.client).MessagePin.Query().
+		Where(messagepin.HasMessageWith(message.IDIn(ids...))).
+		WithChannel().
+		WithMessage().
+		WithPinnedBy().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pins := make(map[string]*entity.MessagePin, len(rows))
+	for _, mp := range rows {
+		pin := messagePinToEntity(mp)
+		pin.Message = nil
+		pins[pin.MessageID] = pin
+	}
+	return pins, nil
 }
 
 func messagePinToEntity(mp *ent.MessagePin) *entity.MessagePin {

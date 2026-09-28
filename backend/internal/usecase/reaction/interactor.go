@@ -80,7 +80,12 @@ func (i *reactionInteractor) AddReaction(ctx context.Context, input AddReactionI
 		return fmt.Errorf("failed to add reaction: %w", err)
 	}
 
-	i.notifyReaction(ctx, message.ChannelID, ReactionNotification(input), true)
+	notification := ReactionNotification{MessageID: input.MessageID, UserID: input.UserID, Emoji: input.Emoji, CreatedAt: reaction.CreatedAt}
+	if user, _ := i.userRepo.FindByID(ctx, input.UserID); user != nil {
+		userInfo := toReactionOutput(reaction, user).User
+		notification.User = &userInfo
+	}
+	i.notifyReaction(ctx, message.ChannelID, notification, true)
 
 	return nil
 }
@@ -123,7 +128,7 @@ func (i *reactionInteractor) RemoveReaction(ctx context.Context, input RemoveRea
 		return fmt.Errorf("failed to remove reaction: %w", err)
 	}
 
-	i.notifyReaction(ctx, message.ChannelID, ReactionNotification(input), false)
+	i.notifyReaction(ctx, message.ChannelID, ReactionNotification{MessageID: input.MessageID, UserID: input.UserID, Emoji: input.Emoji}, false)
 
 	return nil
 }
