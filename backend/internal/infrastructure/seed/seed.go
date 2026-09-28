@@ -186,6 +186,7 @@ func createSeedData(
 		description *string
 		isPrivate   bool
 		createdBy   string
+		parentID    *string
 	}{
 		{
 			id:          "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
@@ -215,6 +216,27 @@ func createSeedData(
 			isPrivate:   true,
 			createdBy:   users[0].ID,
 		},
+		// 階層チャンネルの例
+		{
+			id:          "d0000000-0000-4000-8000-000000000001",
+			name:        "dev",
+			description: stringPtr("開発チーム全体"),
+			createdBy:   users[0].ID,
+		},
+		{
+			id:          "d0000000-0000-4000-8000-000000000002",
+			name:        "dev/frontend",
+			description: stringPtr("フロントエンド開発"),
+			createdBy:   users[0].ID,
+			parentID:    stringPtr("d0000000-0000-4000-8000-000000000001"),
+		},
+		{
+			id:          "d0000000-0000-4000-8000-000000000003",
+			name:        "dev/backend",
+			description: stringPtr("バックエンド開発"),
+			createdBy:   users[1].ID,
+			parentID:    stringPtr("d0000000-0000-4000-8000-000000000001"),
+		},
 	}
 
 	// Use the "general" workspace for default channels
@@ -226,6 +248,7 @@ func createSeedData(
 			Name:        def.name,
 			Description: def.description,
 			IsPrivate:   def.isPrivate,
+			ParentID:    def.parentID,
 			CreatedBy:   def.createdBy,
 		})
 		if err != nil {
@@ -329,6 +352,26 @@ func createSeedData(
 			ChannelID: channels[3].ID, // private-team
 			UserID:    users[1].ID,    // Bob
 			Body:      "Sounds good! I think we should prioritize the user management features first.",
+		},
+
+		// 階層チャンネルのメッセージ
+		{
+			ID:        "d1000000-0000-4000-8000-000000000001",
+			ChannelID: channels[4].ID, // dev
+			UserID:    users[0].ID,    // Alice
+			Body:      "dev の下にフロントエンドとバックエンドのチャンネルを作りました。",
+		},
+		{
+			ID:        "d1000000-0000-4000-8000-000000000002",
+			ChannelID: channels[5].ID, // dev/frontend
+			UserID:    users[3].ID,    // Diana
+			Body:      "サイドバーのツリー表示を実装中です。",
+		},
+		{
+			ID:        "d1000000-0000-4000-8000-000000000003",
+			ChannelID: channels[6].ID, // dev/backend
+			UserID:    users[1].ID,    // Bob
+			Body:      "親チャンネルで子孫のメッセージをまとめて取得できるようにしました。",
 		},
 	}
 
