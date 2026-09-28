@@ -20,7 +20,7 @@ type UploadHandlers = {
   aborted: string;
 };
 
-const uploadToStorage = (file: File, uploadUrl: string, handlers: UploadHandlers): Promise<void> =>
+const uploadToStorage = (file: Blob, uploadUrl: string, handlers: UploadHandlers): Promise<void> =>
   new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
@@ -89,13 +89,20 @@ export const useFileUpload = () => {
       ]);
 
       try {
-        // 表示時にレイアウトを予約できるよう、寸法と再生時間を送る
+        // 表示時にレイアウトを予約できるよう、寸法と再生時間を送る。動画はサムネイルも一緒に上げる
+        const { thumbnail, ...media } = await measureMedia(file);
         const presignData = await presignMutation.mutateAsync({
-          ...(await measureMedia(file)),
+          ...media,
           channelId: options.channelId,
           contentType: file.type || "application/octet-stream",
           fileName: file.name,
           sizeBytes: BigInt(file.size),
+          thumbnail: thumbnail && {
+            contentType: thumbnail.blob.type,
+            height: thumbnail.height,
+            sizeBytes: BigInt(thumbnail.blob.size),
+            width: thumbnail.width,
+          },
         });
 
         // アップロード中に変更
@@ -110,11 +117,24 @@ export const useFileUpload = () => {
           return next;
         });
 
+        const errors = {
+          aborted: t("attachment.errors.aborted"),
+          http: (status: number) => t("attachment.errors.http", { status }),
+          network: t("attachment.errors.network"),
+        };
+        // サムネイルは表示を補うだけなので、失敗しても本体のアップロードは続ける
+        const { thumbnailUploadUrl } = presignData;
+        const thumbnailUpload =
+          thumbnail && thumbnailUploadUrl !== undefined
+            ? uploadToStorage(thumbnail.blob, thumbnailUploadUrl, {
+                ...errors,
+                onProgress: () => {},
+              }).catch(() => {})
+            : undefined;
+
         // ストレージへ直接アップロード
         await uploadToStorage(file, presignData.uploadUrl, {
-          aborted: t("attachment.errors.aborted"),
-          http: (status) => t("attachment.errors.http", { status }),
-          network: t("attachment.errors.network"),
+          ...errors,
           onProgress: (progress) => {
             setPendingAttachments((prev) => {
               const next = [...prev];
@@ -128,6 +148,8 @@ export const useFileUpload = () => {
             });
           },
         });
+
+        await thumbnailUpload;
 
         // 完了状態に変更
         setPendingAttachments((prev) => {

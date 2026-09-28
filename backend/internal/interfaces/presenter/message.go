@@ -75,7 +75,11 @@ func OGPData(o entity.OGPData) *chatv1.OgpData {
 }
 
 func MediaMetadata(m entity.MediaMetadata) *chatv1.MediaMetadata {
-	return &chatv1.MediaMetadata{Width: m.Width, Height: m.Height, DurationSeconds: m.DurationSeconds}
+	out := &chatv1.MediaMetadata{Width: m.Width, Height: m.Height, DurationSeconds: m.DurationSeconds}
+	if m.Thumbnail != nil {
+		out.Thumbnail = &chatv1.MediaThumbnail{Width: m.Thumbnail.Width, Height: m.Thumbnail.Height}
+	}
+	return out
 }
 
 func MessagePreview(p messageuc.MessagePreviewOutput) *chatv1.MessagePreview {

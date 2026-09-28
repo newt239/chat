@@ -2,7 +2,6 @@ import {
   emptySearchQuery,
   formatSearchQuery,
   hasSearchConditions,
-  searchDuringValues,
   searchHasValues,
 } from "@chat/search-query";
 import { getRouteApi } from "@tanstack/react-router";
@@ -13,6 +12,7 @@ import { focusRing } from "#/components/ui/styles";
 import { useResolvedSearchQuery } from "#/features/search/hooks/useResolvedSearchQuery";
 import { chipClassName } from "#/features/search/utils/chipClassName";
 
+import { SearchDateFilter } from "./SearchDateFilter";
 import { SearchFilterPicker } from "./SearchFilterPicker";
 
 import type { SearchParams } from "#/features/search/schemas";
@@ -104,25 +104,13 @@ export const SearchFilterBar = () => {
           {t("search.filters.subs")}
         </ToggleButton>
       )}
-      <SearchFilterPicker
-        label={t("search.filters.during")}
-        summary={
-          query.during
-            ? t(`search.during.${query.during}`)
-            : query.after || query.before
-              ? `${query.after ?? ""}〜${query.before ?? ""}`
-              : null
-        }
-        options={searchDuringValues.map((value) => ({
-          label: t(`search.during.${value}`),
-          value,
-        }))}
-        selected={query.during ? [query.during] : []}
-        onToggle={(during) => {
-          setQuery({ during: query.during === during ? null : during });
+      <SearchDateFilter
+        after={query.after}
+        before={query.before}
+        isInvalid={query.invalidDates.length > 0}
+        onChange={(range) => {
+          setQuery({ ...range, invalidDates: [] });
         }}
-        isSearchable={false}
-        isInvalid={false}
       />
       <SearchFilterPicker
         label={t("search.filters.has")}

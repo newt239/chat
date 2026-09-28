@@ -59,11 +59,11 @@ func init() {
 	// attachment.StorageKeyValidator is a validator for the "storage_key" field. It is called by the builders before save.
 	attachment.StorageKeyValidator = attachmentDescStorageKey.Validators[0].(func(string) error)
 	// attachmentDescStatus is the schema descriptor for status field.
-	attachmentDescStatus := attachmentFields[8].Descriptor()
+	attachmentDescStatus := attachmentFields[11].Descriptor()
 	// attachment.DefaultStatus holds the default value on creation for the status field.
 	attachment.DefaultStatus = attachmentDescStatus.Default.(string)
 	// attachmentDescCreatedAt is the schema descriptor for created_at field.
-	attachmentDescCreatedAt := attachmentFields[11].Descriptor()
+	attachmentDescCreatedAt := attachmentFields[14].Descriptor()
 	// attachment.DefaultCreatedAt holds the default value on creation for the created_at field.
 	attachment.DefaultCreatedAt = attachmentDescCreatedAt.Default.(func() time.Time)
 	// attachmentDescID is the schema descriptor for id field.

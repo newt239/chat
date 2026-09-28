@@ -11,10 +11,10 @@ import {
 describe("parseSearchQuery", () => {
   it("修飾子と語に分ける", () => {
     expect(
-      parseSearchQuery("リリース from:@alice in:#dev/frontend has:image during:week 手順"),
+      parseSearchQuery("リリース from:@alice in:#dev/frontend has:image after:2026-09-01 手順"),
     ).toEqual({
       ...emptySearchQuery,
-      during: "week",
+      after: "2026-09-01",
       from: ["alice"],
       has: ["image"],
       in: ["dev/frontend"],
@@ -32,10 +32,10 @@ describe("parseSearchQuery", () => {
     });
   });
 
-  it("同じ条件は重ねず、期間は後のものを使う", () => {
+  it("同じ条件は重ねず、日付は後のものを使う", () => {
     expect(
-      parseSearchQuery("has:file has:file is:thread is:mention during:today during:month"),
-    ).toMatchObject({ during: "month", has: ["file"], is: ["thread", "mention"] });
+      parseSearchQuery("has:file has:file is:thread is:mention after:2026-09-01 after:2026-09-05"),
+    ).toMatchObject({ after: "2026-09-05", has: ["file"], is: ["thread", "mention"] });
   });
 
   it("クォートで空白を含む名前を指定できる", () => {
@@ -45,18 +45,21 @@ describe("parseSearchQuery", () => {
     });
   });
 
-  it("日付を受け付け、存在しない日付は語として残す", () => {
-    expect(parseSearchQuery("after:2026-09-01 before:2026-02-30")).toMatchObject({
+  it("日付は YYYY-MM-DD だけを受け付け、それ以外は不正な日付として分ける", () => {
+    expect(
+      parseSearchQuery("after:2026-09-01 before:2026-02-30 after:2026/09/01 before:today"),
+    ).toMatchObject({
       after: "2026-09-01",
       before: null,
-      keywords: ["before:2026-02-30"],
+      invalidDates: ["before:2026-02-30", "after:2026/09/01", "before:today"],
+      keywords: [],
     });
   });
 
   it("解釈できない修飾子は語として残す", () => {
-    expect(parseSearchQuery("from: has:audio is:foo during:year url:x")).toMatchObject({
+    expect(parseSearchQuery("from: has:audio is:foo during:week url:x")).toMatchObject({
       has: [],
-      keywords: ["from:", "has:audio", "is:foo", "during:year", "url:x"],
+      keywords: ["from:", "has:audio", "is:foo", "during:week", "url:x"],
     });
     expect(parseSearchQuery("from:@ in:#").keywords).toEqual(["from:@", "in:#"]);
   });
@@ -72,20 +75,20 @@ describe("formatSearchQuery", () => {
       formatSearchQuery({
         after: "2026-09-01",
         before: "2026-09-30",
-        during: "today",
         from: ["Alice Smith", "bob"],
         has: ["link"],
         in: ["dev"],
+        invalidDates: ["after:yesterday"],
         is: ["pinned"],
         keywords: ["設計", "レビュー"],
       }),
     ).toBe(
-      '設計 レビュー from:@"Alice Smith" from:@bob in:#dev has:link is:pinned during:today after:2026-09-01 before:2026-09-30',
+      '設計 レビュー after:yesterday from:@"Alice Smith" from:@bob in:#dev has:link is:pinned after:2026-09-01 before:2026-09-30',
     );
   });
 
   it("解析した結果を戻すと同じ条件になる", () => {
-    const raw = 'from:@"Alice Smith" in:#dev has:image during:week 手順';
+    const raw = 'from:@"Alice Smith" in:#dev has:image before:2026-09-30 after:9/1 手順';
     expect(parseSearchQuery(formatSearchQuery(parseSearchQuery(raw)))).toEqual(
       parseSearchQuery(raw),
     );
@@ -102,38 +105,17 @@ describe("hasSearchConditions", () => {
 
 describe("searchDateRange", () => {
   // ローカルタイムで組み立てるため実行環境のタイムゾーンに依存しない
-  const now = new Date(2026, 8, 29, 15, 30);
-
-  it("during は今日を含む日数の 0 時から", () => {
-    expect(searchDateRange(parseSearchQuery("during:today"), now)).toEqual({
-      after: new Date(2026, 8, 29),
-      before: undefined,
+  it("after / before は指定した日を含む", () => {
+    expect(searchDateRange(parseSearchQuery("after:2026-09-01 before:2026-09-10"))).toEqual({
+      after: new Date(2026, 8, 1),
+      before: new Date(2026, 8, 11),
     });
-    expect(searchDateRange(parseSearchQuery("during:week"), now).after).toEqual(
-      new Date(2026, 8, 23),
+    expect(searchDateRange(parseSearchQuery("before:2026-12-31")).before).toEqual(
+      new Date(2027, 0, 1),
     );
-    expect(searchDateRange(parseSearchQuery("during:month"), now).after).toEqual(
-      new Date(2026, 7, 31),
-    );
-  });
-
-  it("after / before は指定した日を含まない", () => {
-    expect(searchDateRange(parseSearchQuery("after:2026-09-01 before:2026-09-10"), now)).toEqual({
-      after: new Date(2026, 8, 2),
-      before: new Date(2026, 8, 10),
-    });
-  });
-
-  it("重なる条件は狭い方を使う", () => {
-    expect(
-      searchDateRange(parseSearchQuery("during:month after:2026-09-20 before:2026-09-25"), now),
-    ).toEqual({ after: new Date(2026, 8, 21), before: new Date(2026, 8, 25) });
   });
 
   it("条件がなければ範囲なし", () => {
-    expect(searchDateRange(emptySearchQuery, now)).toEqual({
-      after: undefined,
-      before: undefined,
-    });
+    expect(searchDateRange(emptySearchQuery)).toEqual({ after: undefined, before: undefined });
   });
 });

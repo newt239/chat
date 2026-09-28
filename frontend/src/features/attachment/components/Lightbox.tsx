@@ -39,7 +39,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
   const { locale } = useAtomValue(preferencesAtom);
   const isMobile = useIsMobile();
   const image = index === null ? undefined : images[index];
-  const { data: url } = useAttachmentUrl(image?.id ?? null);
+  const { data: url } = useAttachmentUrl(image?.id ?? null, false);
   const hasMany = images.length > 1;
 
   const move = (delta: number) => {
@@ -172,6 +172,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
                   )}
                 >
                   <AttachmentImage
+                    thumbnail={false}
                     attachmentId={image.id}
                     alt={image.fileName}
                     className={cn(

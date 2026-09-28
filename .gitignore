@@ -51,3 +51,7 @@ ansible/inventory.ini
 
 # スクリーンショット
 .shots/
+
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/

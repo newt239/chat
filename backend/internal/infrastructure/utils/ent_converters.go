@@ -286,6 +286,10 @@ func AttachmentToEntity(a *ent.Attachment) *entity.Attachment {
 	if a.Edges.Channel != nil {
 		channelID = a.Edges.Channel.ID.String()
 	}
+	var thumbnail *entity.Thumbnail
+	if a.ThumbnailStorageKey != nil && a.ThumbnailWidth != nil && a.ThumbnailHeight != nil {
+		thumbnail = &entity.Thumbnail{StorageKey: *a.ThumbnailStorageKey, Width: *a.ThumbnailWidth, Height: *a.ThumbnailHeight}
+	}
 	return &entity.Attachment{
 		ID:         a.ID.String(),
 		MessageID:  messageID,
@@ -294,7 +298,7 @@ func AttachmentToEntity(a *ent.Attachment) *entity.Attachment {
 		FileName:   a.FileName,
 		MimeType:   a.MimeType,
 		SizeBytes:  a.SizeBytes,
-		Media:      entity.MediaMetadata{Width: a.Width, Height: a.Height, DurationSeconds: a.DurationSeconds},
+		Media:      entity.MediaMetadata{Width: a.Width, Height: a.Height, DurationSeconds: a.DurationSeconds, Thumbnail: thumbnail},
 		StorageKey: a.StorageKey,
 		Status:     entity.AttachmentStatus(a.Status),
 		UploadedAt: &a.UploadedAt,

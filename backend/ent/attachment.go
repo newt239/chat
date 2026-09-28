@@ -35,6 +35,12 @@ type Attachment struct {
 	DurationSeconds *float64 `json:"duration_seconds,omitempty"`
 	// StorageKey holds the value of the "storage_key" field.
 	StorageKey string `json:"storage_key,omitempty"`
+	// ThumbnailStorageKey holds the value of the "thumbnail_storage_key" field.
+	ThumbnailStorageKey *string `json:"thumbnail_storage_key,omitempty"`
+	// ThumbnailWidth holds the value of the "thumbnail_width" field.
+	ThumbnailWidth *int32 `json:"thumbnail_width,omitempty"`
+	// ThumbnailHeight holds the value of the "thumbnail_height" field.
+	ThumbnailHeight *int32 `json:"thumbnail_height,omitempty"`
 	// Status holds the value of the "status" field.
 	Status string `json:"status,omitempty"`
 	// UploadedAt holds the value of the "uploaded_at" field.
@@ -105,9 +111,9 @@ func (*Attachment) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case attachment.FieldDurationSeconds:
 			values[i] = new(sql.NullFloat64)
-		case attachment.FieldSizeBytes, attachment.FieldWidth, attachment.FieldHeight:
+		case attachment.FieldSizeBytes, attachment.FieldWidth, attachment.FieldHeight, attachment.FieldThumbnailWidth, attachment.FieldThumbnailHeight:
 			values[i] = new(sql.NullInt64)
-		case attachment.FieldFileName, attachment.FieldMimeType, attachment.FieldStorageKey, attachment.FieldStatus:
+		case attachment.FieldFileName, attachment.FieldMimeType, attachment.FieldStorageKey, attachment.FieldThumbnailStorageKey, attachment.FieldStatus:
 			values[i] = new(sql.NullString)
 		case attachment.FieldUploadedAt, attachment.FieldExpiresAt, attachment.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -184,6 +190,27 @@ func (_m *Attachment) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field storage_key", values[i])
 			} else if value.Valid {
 				_m.StorageKey = value.String
+			}
+		case attachment.FieldThumbnailStorageKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field thumbnail_storage_key", values[i])
+			} else if value.Valid {
+				_m.ThumbnailStorageKey = new(string)
+				*_m.ThumbnailStorageKey = value.String
+			}
+		case attachment.FieldThumbnailWidth:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field thumbnail_width", values[i])
+			} else if value.Valid {
+				_m.ThumbnailWidth = new(int32)
+				*_m.ThumbnailWidth = int32(value.Int64)
+			}
+		case attachment.FieldThumbnailHeight:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field thumbnail_height", values[i])
+			} else if value.Valid {
+				_m.ThumbnailHeight = new(int32)
+				*_m.ThumbnailHeight = int32(value.Int64)
 			}
 		case attachment.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -307,6 +334,21 @@ func (_m *Attachment) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("storage_key=")
 	builder.WriteString(_m.StorageKey)
+	builder.WriteString(", ")
+	if v := _m.ThumbnailStorageKey; v != nil {
+		builder.WriteString("thumbnail_storage_key=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ThumbnailWidth; v != nil {
+		builder.WriteString("thumbnail_width=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ThumbnailHeight; v != nil {
+		builder.WriteString("thumbnail_height=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(_m.Status)
