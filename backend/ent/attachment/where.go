@@ -91,6 +91,21 @@ func StorageKey(v string) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldStorageKey, v))
 }
 
+// ThumbnailStorageKey applies equality check predicate on the "thumbnail_storage_key" field. It's identical to ThumbnailStorageKeyEQ.
+func ThumbnailStorageKey(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailWidth applies equality check predicate on the "thumbnail_width" field. It's identical to ThumbnailWidthEQ.
+func ThumbnailWidth(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldThumbnailWidth, v))
+}
+
+// ThumbnailHeight applies equality check predicate on the "thumbnail_height" field. It's identical to ThumbnailHeightEQ.
+func ThumbnailHeight(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldThumbnailHeight, v))
+}
+
 // Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
 func Status(v string) predicate.Attachment {
 	return predicate.Attachment(sql.FieldEQ(FieldStatus, v))
@@ -494,6 +509,181 @@ func StorageKeyEqualFold(v string) predicate.Attachment {
 // StorageKeyContainsFold applies the ContainsFold predicate on the "storage_key" field.
 func StorageKeyContainsFold(v string) predicate.Attachment {
 	return predicate.Attachment(sql.FieldContainsFold(FieldStorageKey, v))
+}
+
+// ThumbnailStorageKeyEQ applies the EQ predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyEQ(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyNEQ applies the NEQ predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyNEQ(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyIn applies the In predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyIn(vs ...string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldThumbnailStorageKey, vs...))
+}
+
+// ThumbnailStorageKeyNotIn applies the NotIn predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyNotIn(vs ...string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldThumbnailStorageKey, vs...))
+}
+
+// ThumbnailStorageKeyGT applies the GT predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyGT(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGT(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyGTE applies the GTE predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyGTE(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGTE(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyLT applies the LT predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyLT(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLT(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyLTE applies the LTE predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyLTE(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLTE(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyContains applies the Contains predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyContains(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldContains(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyHasPrefix applies the HasPrefix predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyHasPrefix(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldHasPrefix(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyHasSuffix applies the HasSuffix predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyHasSuffix(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldHasSuffix(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyIsNil applies the IsNil predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyIsNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldIsNull(FieldThumbnailStorageKey))
+}
+
+// ThumbnailStorageKeyNotNil applies the NotNil predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyNotNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotNull(FieldThumbnailStorageKey))
+}
+
+// ThumbnailStorageKeyEqualFold applies the EqualFold predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyEqualFold(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEqualFold(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailStorageKeyContainsFold applies the ContainsFold predicate on the "thumbnail_storage_key" field.
+func ThumbnailStorageKeyContainsFold(v string) predicate.Attachment {
+	return predicate.Attachment(sql.FieldContainsFold(FieldThumbnailStorageKey, v))
+}
+
+// ThumbnailWidthEQ applies the EQ predicate on the "thumbnail_width" field.
+func ThumbnailWidthEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldThumbnailWidth, v))
+}
+
+// ThumbnailWidthNEQ applies the NEQ predicate on the "thumbnail_width" field.
+func ThumbnailWidthNEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldThumbnailWidth, v))
+}
+
+// ThumbnailWidthIn applies the In predicate on the "thumbnail_width" field.
+func ThumbnailWidthIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldThumbnailWidth, vs...))
+}
+
+// ThumbnailWidthNotIn applies the NotIn predicate on the "thumbnail_width" field.
+func ThumbnailWidthNotIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldThumbnailWidth, vs...))
+}
+
+// ThumbnailWidthGT applies the GT predicate on the "thumbnail_width" field.
+func ThumbnailWidthGT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGT(FieldThumbnailWidth, v))
+}
+
+// ThumbnailWidthGTE applies the GTE predicate on the "thumbnail_width" field.
+func ThumbnailWidthGTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGTE(FieldThumbnailWidth, v))
+}
+
+// ThumbnailWidthLT applies the LT predicate on the "thumbnail_width" field.
+func ThumbnailWidthLT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLT(FieldThumbnailWidth, v))
+}
+
+// ThumbnailWidthLTE applies the LTE predicate on the "thumbnail_width" field.
+func ThumbnailWidthLTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLTE(FieldThumbnailWidth, v))
+}
+
+// ThumbnailWidthIsNil applies the IsNil predicate on the "thumbnail_width" field.
+func ThumbnailWidthIsNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldIsNull(FieldThumbnailWidth))
+}
+
+// ThumbnailWidthNotNil applies the NotNil predicate on the "thumbnail_width" field.
+func ThumbnailWidthNotNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotNull(FieldThumbnailWidth))
+}
+
+// ThumbnailHeightEQ applies the EQ predicate on the "thumbnail_height" field.
+func ThumbnailHeightEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldEQ(FieldThumbnailHeight, v))
+}
+
+// ThumbnailHeightNEQ applies the NEQ predicate on the "thumbnail_height" field.
+func ThumbnailHeightNEQ(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNEQ(FieldThumbnailHeight, v))
+}
+
+// ThumbnailHeightIn applies the In predicate on the "thumbnail_height" field.
+func ThumbnailHeightIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldIn(FieldThumbnailHeight, vs...))
+}
+
+// ThumbnailHeightNotIn applies the NotIn predicate on the "thumbnail_height" field.
+func ThumbnailHeightNotIn(vs ...int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotIn(FieldThumbnailHeight, vs...))
+}
+
+// ThumbnailHeightGT applies the GT predicate on the "thumbnail_height" field.
+func ThumbnailHeightGT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGT(FieldThumbnailHeight, v))
+}
+
+// ThumbnailHeightGTE applies the GTE predicate on the "thumbnail_height" field.
+func ThumbnailHeightGTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldGTE(FieldThumbnailHeight, v))
+}
+
+// ThumbnailHeightLT applies the LT predicate on the "thumbnail_height" field.
+func ThumbnailHeightLT(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLT(FieldThumbnailHeight, v))
+}
+
+// ThumbnailHeightLTE applies the LTE predicate on the "thumbnail_height" field.
+func ThumbnailHeightLTE(v int32) predicate.Attachment {
+	return predicate.Attachment(sql.FieldLTE(FieldThumbnailHeight, v))
+}
+
+// ThumbnailHeightIsNil applies the IsNil predicate on the "thumbnail_height" field.
+func ThumbnailHeightIsNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldIsNull(FieldThumbnailHeight))
+}
+
+// ThumbnailHeightNotNil applies the NotNil predicate on the "thumbnail_height" field.
+func ThumbnailHeightNotNil() predicate.Attachment {
+	return predicate.Attachment(sql.FieldNotNull(FieldThumbnailHeight))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

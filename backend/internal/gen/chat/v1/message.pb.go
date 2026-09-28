@@ -912,8 +912,10 @@ type MediaMetadata struct {
 	Width           *int32                 `protobuf:"varint,1,opt,name=width,proto3,oneof" json:"width,omitempty"`
 	Height          *int32                 `protobuf:"varint,2,opt,name=height,proto3,oneof" json:"height,omitempty"`
 	DurationSeconds *float64               `protobuf:"fixed64,3,opt,name=duration_seconds,json=durationSeconds,proto3,oneof" json:"duration_seconds,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// 動画の再生前に表示するサムネイル。画像は GetDownloadUrl の thumbnail で取得する
+	Thumbnail     *MediaThumbnail `protobuf:"bytes,4,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *MediaMetadata) Reset() {
@@ -967,6 +969,65 @@ func (x *MediaMetadata) GetDurationSeconds() float64 {
 	return 0
 }
 
+func (x *MediaMetadata) GetThumbnail() *MediaThumbnail {
+	if x != nil {
+		return x.Thumbnail
+	}
+	return nil
+}
+
+type MediaThumbnail struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Width         int32                  `protobuf:"varint,1,opt,name=width,proto3" json:"width,omitempty"`
+	Height        int32                  `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MediaThumbnail) Reset() {
+	*x = MediaThumbnail{}
+	mi := &file_chat_v1_message_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MediaThumbnail) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MediaThumbnail) ProtoMessage() {}
+
+func (x *MediaThumbnail) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_message_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MediaThumbnail.ProtoReflect.Descriptor instead.
+func (*MediaThumbnail) Descriptor() ([]byte, []int) {
+	return file_chat_v1_message_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *MediaThumbnail) GetWidth() int32 {
+	if x != nil {
+		return x.Width
+	}
+	return 0
+}
+
+func (x *MediaThumbnail) GetHeight() int32 {
+	if x != nil {
+		return x.Height
+	}
+	return 0
+}
+
 type ThreadMetadata struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	MessageId          string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
@@ -980,7 +1041,7 @@ type ThreadMetadata struct {
 
 func (x *ThreadMetadata) Reset() {
 	*x = ThreadMetadata{}
-	mi := &file_chat_v1_message_proto_msgTypes[11]
+	mi := &file_chat_v1_message_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -992,7 +1053,7 @@ func (x *ThreadMetadata) String() string {
 func (*ThreadMetadata) ProtoMessage() {}
 
 func (x *ThreadMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_message_proto_msgTypes[11]
+	mi := &file_chat_v1_message_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1005,7 +1066,7 @@ func (x *ThreadMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ThreadMetadata.ProtoReflect.Descriptor instead.
 func (*ThreadMetadata) Descriptor() ([]byte, []int) {
-	return file_chat_v1_message_proto_rawDescGZIP(), []int{11}
+	return file_chat_v1_message_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ThreadMetadata) GetMessageId() string {
@@ -1058,7 +1119,7 @@ type SystemMessage struct {
 
 func (x *SystemMessage) Reset() {
 	*x = SystemMessage{}
-	mi := &file_chat_v1_message_proto_msgTypes[12]
+	mi := &file_chat_v1_message_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1070,7 +1131,7 @@ func (x *SystemMessage) String() string {
 func (*SystemMessage) ProtoMessage() {}
 
 func (x *SystemMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_message_proto_msgTypes[12]
+	mi := &file_chat_v1_message_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1083,7 +1144,7 @@ func (x *SystemMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SystemMessage.ProtoReflect.Descriptor instead.
 func (*SystemMessage) Descriptor() ([]byte, []int) {
-	return file_chat_v1_message_proto_rawDescGZIP(), []int{12}
+	return file_chat_v1_message_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SystemMessage) GetId() string {
@@ -1143,7 +1204,7 @@ type TimelineItem struct {
 
 func (x *TimelineItem) Reset() {
 	*x = TimelineItem{}
-	mi := &file_chat_v1_message_proto_msgTypes[13]
+	mi := &file_chat_v1_message_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1155,7 +1216,7 @@ func (x *TimelineItem) String() string {
 func (*TimelineItem) ProtoMessage() {}
 
 func (x *TimelineItem) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_message_proto_msgTypes[13]
+	mi := &file_chat_v1_message_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1168,7 +1229,7 @@ func (x *TimelineItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimelineItem.ProtoReflect.Descriptor instead.
 func (*TimelineItem) Descriptor() ([]byte, []int) {
-	return file_chat_v1_message_proto_rawDescGZIP(), []int{13}
+	return file_chat_v1_message_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *TimelineItem) GetContent() isTimelineItem_Content {
@@ -1320,14 +1381,18 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\tmime_type\x18\x03 \x01(\tR\bmimeType\x12\x1d\n" +
 	"\n" +
 	"size_bytes\x18\x04 \x01(\x03R\tsizeBytes\x12,\n" +
-	"\x05media\x18\x05 \x01(\v2\x16.chat.v1.MediaMetadataR\x05media\"\xa1\x01\n" +
+	"\x05media\x18\x05 \x01(\v2\x16.chat.v1.MediaMetadataR\x05media\"\xd8\x01\n" +
 	"\rMediaMetadata\x12\x19\n" +
 	"\x05width\x18\x01 \x01(\x05H\x00R\x05width\x88\x01\x01\x12\x1b\n" +
 	"\x06height\x18\x02 \x01(\x05H\x01R\x06height\x88\x01\x01\x12.\n" +
-	"\x10duration_seconds\x18\x03 \x01(\x01H\x02R\x0fdurationSeconds\x88\x01\x01B\b\n" +
+	"\x10duration_seconds\x18\x03 \x01(\x01H\x02R\x0fdurationSeconds\x88\x01\x01\x125\n" +
+	"\tthumbnail\x18\x04 \x01(\v2\x17.chat.v1.MediaThumbnailR\tthumbnailB\b\n" +
 	"\x06_widthB\t\n" +
 	"\a_heightB\x13\n" +
-	"\x11_duration_seconds\"\x80\x02\n" +
+	"\x11_duration_seconds\">\n" +
+	"\x0eMediaThumbnail\x12\x14\n" +
+	"\x05width\x18\x01 \x01(\x05R\x05width\x12\x16\n" +
+	"\x06height\x18\x02 \x01(\x05R\x06height\"\x80\x02\n" +
 	"\x0eThreadMetadata\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1f\n" +
@@ -1377,7 +1442,7 @@ func file_chat_v1_message_proto_rawDescGZIP() []byte {
 }
 
 var file_chat_v1_message_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_chat_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_chat_v1_message_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_chat_v1_message_proto_goTypes = []any{
 	(SystemMessageKind)(0),        // 0: chat.v1.SystemMessageKind
 	(*Message)(nil),               // 1: chat.v1.Message
@@ -1391,49 +1456,51 @@ var file_chat_v1_message_proto_goTypes = []any{
 	(*Reaction)(nil),              // 9: chat.v1.Reaction
 	(*MessageAttachment)(nil),     // 10: chat.v1.MessageAttachment
 	(*MediaMetadata)(nil),         // 11: chat.v1.MediaMetadata
-	(*ThreadMetadata)(nil),        // 12: chat.v1.ThreadMetadata
-	(*SystemMessage)(nil),         // 13: chat.v1.SystemMessage
-	(*TimelineItem)(nil),          // 14: chat.v1.TimelineItem
-	(*UserSummary)(nil),           // 15: chat.v1.UserSummary
-	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),       // 17: google.protobuf.Struct
+	(*MediaThumbnail)(nil),        // 12: chat.v1.MediaThumbnail
+	(*ThreadMetadata)(nil),        // 13: chat.v1.ThreadMetadata
+	(*SystemMessage)(nil),         // 14: chat.v1.SystemMessage
+	(*TimelineItem)(nil),          // 15: chat.v1.TimelineItem
+	(*UserSummary)(nil),           // 16: chat.v1.UserSummary
+	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),       // 18: google.protobuf.Struct
 }
 var file_chat_v1_message_proto_depIdxs = []int32{
-	15, // 0: chat.v1.Message.user:type_name -> chat.v1.UserSummary
+	16, // 0: chat.v1.Message.user:type_name -> chat.v1.UserSummary
 	3,  // 1: chat.v1.Message.mentions:type_name -> chat.v1.UserMention
 	4,  // 2: chat.v1.Message.groups:type_name -> chat.v1.GroupMention
 	5,  // 3: chat.v1.Message.links:type_name -> chat.v1.MessageLink
 	9,  // 4: chat.v1.Message.reactions:type_name -> chat.v1.Reaction
 	10, // 5: chat.v1.Message.attachments:type_name -> chat.v1.MessageAttachment
-	16, // 6: chat.v1.Message.created_at:type_name -> google.protobuf.Timestamp
-	16, // 7: chat.v1.Message.edited_at:type_name -> google.protobuf.Timestamp
-	16, // 8: chat.v1.Message.deleted_at:type_name -> google.protobuf.Timestamp
-	15, // 9: chat.v1.Message.deleted_by:type_name -> chat.v1.UserSummary
-	12, // 10: chat.v1.Message.thread_metadata:type_name -> chat.v1.ThreadMetadata
+	17, // 6: chat.v1.Message.created_at:type_name -> google.protobuf.Timestamp
+	17, // 7: chat.v1.Message.edited_at:type_name -> google.protobuf.Timestamp
+	17, // 8: chat.v1.Message.deleted_at:type_name -> google.protobuf.Timestamp
+	16, // 9: chat.v1.Message.deleted_by:type_name -> chat.v1.UserSummary
+	13, // 10: chat.v1.Message.thread_metadata:type_name -> chat.v1.ThreadMetadata
 	2,  // 11: chat.v1.Message.pin:type_name -> chat.v1.MessagePin
-	15, // 12: chat.v1.MessagePin.pinned_by:type_name -> chat.v1.UserSummary
-	16, // 13: chat.v1.MessagePin.pinned_at:type_name -> google.protobuf.Timestamp
+	16, // 12: chat.v1.MessagePin.pinned_by:type_name -> chat.v1.UserSummary
+	17, // 13: chat.v1.MessagePin.pinned_at:type_name -> google.protobuf.Timestamp
 	6,  // 14: chat.v1.MessageLink.ogp:type_name -> chat.v1.OgpData
 	8,  // 15: chat.v1.MessageLink.message_preview:type_name -> chat.v1.MessagePreview
 	7,  // 16: chat.v1.OgpData.youtube:type_name -> chat.v1.YouTubeVideo
-	15, // 17: chat.v1.MessagePreview.user:type_name -> chat.v1.UserSummary
-	16, // 18: chat.v1.MessagePreview.created_at:type_name -> google.protobuf.Timestamp
-	15, // 19: chat.v1.Reaction.user:type_name -> chat.v1.UserSummary
-	16, // 20: chat.v1.Reaction.created_at:type_name -> google.protobuf.Timestamp
+	16, // 17: chat.v1.MessagePreview.user:type_name -> chat.v1.UserSummary
+	17, // 18: chat.v1.MessagePreview.created_at:type_name -> google.protobuf.Timestamp
+	16, // 19: chat.v1.Reaction.user:type_name -> chat.v1.UserSummary
+	17, // 20: chat.v1.Reaction.created_at:type_name -> google.protobuf.Timestamp
 	11, // 21: chat.v1.MessageAttachment.media:type_name -> chat.v1.MediaMetadata
-	16, // 22: chat.v1.ThreadMetadata.last_reply_at:type_name -> google.protobuf.Timestamp
-	15, // 23: chat.v1.ThreadMetadata.last_reply_user:type_name -> chat.v1.UserSummary
-	0,  // 24: chat.v1.SystemMessage.kind:type_name -> chat.v1.SystemMessageKind
-	17, // 25: chat.v1.SystemMessage.payload:type_name -> google.protobuf.Struct
-	16, // 26: chat.v1.SystemMessage.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 27: chat.v1.TimelineItem.user_message:type_name -> chat.v1.Message
-	13, // 28: chat.v1.TimelineItem.system_message:type_name -> chat.v1.SystemMessage
-	16, // 29: chat.v1.TimelineItem.created_at:type_name -> google.protobuf.Timestamp
-	30, // [30:30] is the sub-list for method output_type
-	30, // [30:30] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	12, // 22: chat.v1.MediaMetadata.thumbnail:type_name -> chat.v1.MediaThumbnail
+	17, // 23: chat.v1.ThreadMetadata.last_reply_at:type_name -> google.protobuf.Timestamp
+	16, // 24: chat.v1.ThreadMetadata.last_reply_user:type_name -> chat.v1.UserSummary
+	0,  // 25: chat.v1.SystemMessage.kind:type_name -> chat.v1.SystemMessageKind
+	18, // 26: chat.v1.SystemMessage.payload:type_name -> google.protobuf.Struct
+	17, // 27: chat.v1.SystemMessage.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 28: chat.v1.TimelineItem.user_message:type_name -> chat.v1.Message
+	14, // 29: chat.v1.TimelineItem.system_message:type_name -> chat.v1.SystemMessage
+	17, // 30: chat.v1.TimelineItem.created_at:type_name -> google.protobuf.Timestamp
+	31, // [31:31] is the sub-list for method output_type
+	31, // [31:31] is the sub-list for method input_type
+	31, // [31:31] is the sub-list for extension type_name
+	31, // [31:31] is the sub-list for extension extendee
+	0,  // [0:31] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_message_proto_init() }
@@ -1448,8 +1515,8 @@ func file_chat_v1_message_proto_init() {
 	file_chat_v1_message_proto_msgTypes[6].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[7].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[10].OneofWrappers = []any{}
-	file_chat_v1_message_proto_msgTypes[12].OneofWrappers = []any{}
-	file_chat_v1_message_proto_msgTypes[13].OneofWrappers = []any{
+	file_chat_v1_message_proto_msgTypes[13].OneofWrappers = []any{}
+	file_chat_v1_message_proto_msgTypes[14].OneofWrappers = []any{
 		(*TimelineItem_UserMessage)(nil),
 		(*TimelineItem_SystemMessage)(nil),
 	}
@@ -1459,7 +1526,7 @@ func file_chat_v1_message_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_message_proto_rawDesc), len(file_chat_v1_message_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

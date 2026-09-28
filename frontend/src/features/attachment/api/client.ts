@@ -9,11 +9,11 @@ export const usePresignUpload = () => useMutation(AttachmentService.method.presi
 
 export const useDownloadUrl = () => useMutation(AttachmentService.method.getDownloadUrl);
 
-// 画像の表示用。同じ添付を複数の場所で表示しても 1 回だけ取得する
-export const useAttachmentUrl = (attachmentId: string | null) =>
+// 画像・サムネイルの表示用。同じ添付を複数の場所で表示しても 1 回だけ取得する
+export const useAttachmentUrl = (attachmentId: string | null, thumbnail: boolean) =>
   useQuery(
     AttachmentService.method.getDownloadUrl,
-    attachmentId === null ? skipToken : { attachmentId },
+    attachmentId === null ? skipToken : { attachmentId, thumbnail },
     {
       refetchOnWindowFocus: false,
       select: (res) => res.url,

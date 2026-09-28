@@ -13,14 +13,25 @@ type PresignInput struct {
 	MimeType   string
 	SizeBytes  int64
 	Media      entity.MediaMetadata
+	Thumbnail  *ThumbnailInput
 	ExpiresMin int
+}
+
+// ThumbnailInput は動画と一緒にアップロードするサムネイル画像です
+type ThumbnailInput struct {
+	MimeType  string
+	SizeBytes int64
+	Width     int32
+	Height    int32
 }
 
 type PresignOutput struct {
 	AttachmentID string
 	UploadURL    string
-	StorageKey   string
-	ExpiresAt    time.Time
+	// サムネイルを指定したときだけ返します
+	ThumbnailUploadURL *string
+	StorageKey         string
+	ExpiresAt          time.Time
 }
 
 type AttachmentOutput struct {

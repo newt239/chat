@@ -19,6 +19,9 @@ var (
 		{Name: "height", Type: field.TypeInt32, Nullable: true},
 		{Name: "duration_seconds", Type: field.TypeFloat64, Nullable: true},
 		{Name: "storage_key", Type: field.TypeString},
+		{Name: "thumbnail_storage_key", Type: field.TypeString, Nullable: true},
+		{Name: "thumbnail_width", Type: field.TypeInt32, Nullable: true},
+		{Name: "thumbnail_height", Type: field.TypeInt32, Nullable: true},
 		{Name: "status", Type: field.TypeString, Default: "pending"},
 		{Name: "uploaded_at", Type: field.TypeTime, Nullable: true},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
@@ -35,19 +38,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "attachments_messages_message",
-				Columns:    []*schema.Column{AttachmentsColumns[12]},
+				Columns:    []*schema.Column{AttachmentsColumns[15]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "attachments_users_uploader",
-				Columns:    []*schema.Column{AttachmentsColumns[13]},
+				Columns:    []*schema.Column{AttachmentsColumns[16]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "attachments_channels_channel",
-				Columns:    []*schema.Column{AttachmentsColumns[14]},
+				Columns:    []*schema.Column{AttachmentsColumns[17]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -56,7 +59,7 @@ var (
 			{
 				Name:    "attachment_status",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[8]},
+				Columns: []*schema.Column{AttachmentsColumns[11]},
 			},
 		},
 	}

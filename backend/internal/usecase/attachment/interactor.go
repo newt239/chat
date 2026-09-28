@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,11 @@ import (
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
+)
+
+var (
+	ErrThumbnailNotAllowed = errors.New("サムネイルは動画にだけ付けられます")
+	ErrThumbnailNotFound   = errors.New("サムネイルがありません")
 )
 
 type Interactor struct {
@@ -64,6 +70,21 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 		return nil, err
 	}
 
+	media := input.Media
+	var thumbnailUploadURL *string
+	if input.Thumbnail != nil {
+		if !strings.HasPrefix(mimeType, "video/") {
+			return nil, ErrThumbnailNotAllowed
+		}
+		thumbnailKey := storageKey + "-thumbnail"
+		url, err := i.storageService.GenerateUploadURL(thumbnailKey, input.Thumbnail.MimeType, input.Thumbnail.SizeBytes, expires)
+		if err != nil {
+			return nil, err
+		}
+		thumbnailUploadURL = &url
+		media.Thumbnail = &entity.Thumbnail{StorageKey: thumbnailKey, Width: input.Thumbnail.Width, Height: input.Thumbnail.Height}
+	}
+
 	attachment := &entity.Attachment{
 		ID:         attachmentID,
 		UploaderID: input.UserID,
@@ -71,7 +92,7 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 		FileName:   input.FileName,
 		MimeType:   mimeType,
 		SizeBytes:  input.SizeBytes,
-		Media:      input.Media,
+		Media:      media,
 		StorageKey: storageKey,
 		Status:     entity.AttachmentStatusPending,
 		ExpiresAt:  &expiresAt,
@@ -82,14 +103,16 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 	}
 
 	return &PresignOutput{
-		AttachmentID: attachment.ID,
-		UploadURL:    uploadURL,
-		StorageKey:   storageKey,
-		ExpiresAt:    expiresAt,
+		AttachmentID:       attachment.ID,
+		UploadURL:          uploadURL,
+		ThumbnailUploadURL: thumbnailUploadURL,
+		StorageKey:         storageKey,
+		ExpiresAt:          expiresAt,
 	}, nil
 }
 
-func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID string) (*AttachmentOutput, error) {
+// findAccessible は閲覧者が参照できるチャンネルの添付だけを返します
+func (i *Interactor) findAccessible(ctx context.Context, userID, attachmentID string) (*entity.Attachment, error) {
 	attachment, err := i.attachmentRepo.FindByID(ctx, attachmentID)
 	if err != nil {
 		return nil, err
@@ -110,6 +133,14 @@ func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID strin
 		channelID = message.ChannelID
 	}
 	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
+		return nil, err
+	}
+	return attachment, nil
+}
+
+func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID string) (*AttachmentOutput, error) {
+	attachment, err := i.findAccessible(ctx, userID, attachmentID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -127,31 +158,21 @@ func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID strin
 	}, nil
 }
 
-func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID string) (*DownloadURLOutput, error) {
-	attachment, err := i.attachmentRepo.FindByID(ctx, attachmentID)
+// GetDownloadURL は本体、thumbnail が true のときはサムネイル画像の署名付き URL を返します
+func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID string, thumbnail bool) (*DownloadURLOutput, error) {
+	attachment, err := i.findAccessible(ctx, userID, attachmentID)
 	if err != nil {
 		return nil, err
 	}
-	if attachment == nil {
-		return nil, errors.New("添付ファイルが見つかりません")
-	}
 
-	channelID := attachment.ChannelID
-	if attachment.MessageID != nil {
-		message, err := i.messageRepo.FindByID(ctx, *attachment.MessageID)
-		if err != nil {
-			return nil, err
+	storageKey := attachment.StorageKey
+	if thumbnail {
+		if attachment.Media.Thumbnail == nil {
+			return nil, ErrThumbnailNotFound
 		}
-		if message == nil {
-			return nil, errors.New("メッセージが見つかりません")
-		}
-		channelID = message.ChannelID
+		storageKey = attachment.Media.Thumbnail.StorageKey
 	}
-	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
-		return nil, err
-	}
-
-	downloadURL, err := i.storageService.GenerateDownloadURL(attachment.StorageKey, 0)
+	downloadURL, err := i.storageService.GenerateDownloadURL(storageKey, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +200,11 @@ func (i *Interactor) Delete(ctx context.Context, userID, attachmentID string) er
 		return err
 	}
 
+	if t := attachment.Media.Thumbnail; t != nil {
+		if err := i.storageService.DeleteObject(t.StorageKey); err != nil {
+			return err
+		}
+	}
 	return i.storageService.DeleteObject(attachment.StorageKey)
 }
 

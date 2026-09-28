@@ -11,6 +11,7 @@ const track = (attachmentId: string, kind: "audio" | "video") => ({
   kind,
   messageId: "message",
   parentId: undefined,
+  posterUrl: undefined,
   workspaceId: "workspace",
 });
 

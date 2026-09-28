@@ -176,6 +176,80 @@ func (_u *AttachmentUpdate) SetNillableStorageKey(v *string) *AttachmentUpdate {
 	return _u
 }
 
+// SetThumbnailStorageKey sets the "thumbnail_storage_key" field.
+func (_u *AttachmentUpdate) SetThumbnailStorageKey(v string) *AttachmentUpdate {
+	_u.mutation.SetThumbnailStorageKey(v)
+	return _u
+}
+
+// SetNillableThumbnailStorageKey sets the "thumbnail_storage_key" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableThumbnailStorageKey(v *string) *AttachmentUpdate {
+	if v != nil {
+		_u.SetThumbnailStorageKey(*v)
+	}
+	return _u
+}
+
+// ClearThumbnailStorageKey clears the value of the "thumbnail_storage_key" field.
+func (_u *AttachmentUpdate) ClearThumbnailStorageKey() *AttachmentUpdate {
+	_u.mutation.ClearThumbnailStorageKey()
+	return _u
+}
+
+// SetThumbnailWidth sets the "thumbnail_width" field.
+func (_u *AttachmentUpdate) SetThumbnailWidth(v int32) *AttachmentUpdate {
+	_u.mutation.ResetThumbnailWidth()
+	_u.mutation.SetThumbnailWidth(v)
+	return _u
+}
+
+// SetNillableThumbnailWidth sets the "thumbnail_width" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableThumbnailWidth(v *int32) *AttachmentUpdate {
+	if v != nil {
+		_u.SetThumbnailWidth(*v)
+	}
+	return _u
+}
+
+// AddThumbnailWidth adds value to the "thumbnail_width" field.
+func (_u *AttachmentUpdate) AddThumbnailWidth(v int32) *AttachmentUpdate {
+	_u.mutation.AddThumbnailWidth(v)
+	return _u
+}
+
+// ClearThumbnailWidth clears the value of the "thumbnail_width" field.
+func (_u *AttachmentUpdate) ClearThumbnailWidth() *AttachmentUpdate {
+	_u.mutation.ClearThumbnailWidth()
+	return _u
+}
+
+// SetThumbnailHeight sets the "thumbnail_height" field.
+func (_u *AttachmentUpdate) SetThumbnailHeight(v int32) *AttachmentUpdate {
+	_u.mutation.ResetThumbnailHeight()
+	_u.mutation.SetThumbnailHeight(v)
+	return _u
+}
+
+// SetNillableThumbnailHeight sets the "thumbnail_height" field if the given value is not nil.
+func (_u *AttachmentUpdate) SetNillableThumbnailHeight(v *int32) *AttachmentUpdate {
+	if v != nil {
+		_u.SetThumbnailHeight(*v)
+	}
+	return _u
+}
+
+// AddThumbnailHeight adds value to the "thumbnail_height" field.
+func (_u *AttachmentUpdate) AddThumbnailHeight(v int32) *AttachmentUpdate {
+	_u.mutation.AddThumbnailHeight(v)
+	return _u
+}
+
+// ClearThumbnailHeight clears the value of the "thumbnail_height" field.
+func (_u *AttachmentUpdate) ClearThumbnailHeight() *AttachmentUpdate {
+	_u.mutation.ClearThumbnailHeight()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *AttachmentUpdate) SetStatus(v string) *AttachmentUpdate {
 	_u.mutation.SetStatus(v)
@@ -405,6 +479,30 @@ func (_u *AttachmentUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if value, ok := _u.mutation.StorageKey(); ok {
 		_spec.SetField(attachment.FieldStorageKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ThumbnailStorageKey(); ok {
+		_spec.SetField(attachment.FieldThumbnailStorageKey, field.TypeString, value)
+	}
+	if _u.mutation.ThumbnailStorageKeyCleared() {
+		_spec.ClearField(attachment.FieldThumbnailStorageKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.ThumbnailWidth(); ok {
+		_spec.SetField(attachment.FieldThumbnailWidth, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedThumbnailWidth(); ok {
+		_spec.AddField(attachment.FieldThumbnailWidth, field.TypeInt32, value)
+	}
+	if _u.mutation.ThumbnailWidthCleared() {
+		_spec.ClearField(attachment.FieldThumbnailWidth, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.ThumbnailHeight(); ok {
+		_spec.SetField(attachment.FieldThumbnailHeight, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedThumbnailHeight(); ok {
+		_spec.AddField(attachment.FieldThumbnailHeight, field.TypeInt32, value)
+	}
+	if _u.mutation.ThumbnailHeightCleared() {
+		_spec.ClearField(attachment.FieldThumbnailHeight, field.TypeInt32)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(attachment.FieldStatus, field.TypeString, value)
@@ -672,6 +770,80 @@ func (_u *AttachmentUpdateOne) SetNillableStorageKey(v *string) *AttachmentUpdat
 	return _u
 }
 
+// SetThumbnailStorageKey sets the "thumbnail_storage_key" field.
+func (_u *AttachmentUpdateOne) SetThumbnailStorageKey(v string) *AttachmentUpdateOne {
+	_u.mutation.SetThumbnailStorageKey(v)
+	return _u
+}
+
+// SetNillableThumbnailStorageKey sets the "thumbnail_storage_key" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableThumbnailStorageKey(v *string) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetThumbnailStorageKey(*v)
+	}
+	return _u
+}
+
+// ClearThumbnailStorageKey clears the value of the "thumbnail_storage_key" field.
+func (_u *AttachmentUpdateOne) ClearThumbnailStorageKey() *AttachmentUpdateOne {
+	_u.mutation.ClearThumbnailStorageKey()
+	return _u
+}
+
+// SetThumbnailWidth sets the "thumbnail_width" field.
+func (_u *AttachmentUpdateOne) SetThumbnailWidth(v int32) *AttachmentUpdateOne {
+	_u.mutation.ResetThumbnailWidth()
+	_u.mutation.SetThumbnailWidth(v)
+	return _u
+}
+
+// SetNillableThumbnailWidth sets the "thumbnail_width" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableThumbnailWidth(v *int32) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetThumbnailWidth(*v)
+	}
+	return _u
+}
+
+// AddThumbnailWidth adds value to the "thumbnail_width" field.
+func (_u *AttachmentUpdateOne) AddThumbnailWidth(v int32) *AttachmentUpdateOne {
+	_u.mutation.AddThumbnailWidth(v)
+	return _u
+}
+
+// ClearThumbnailWidth clears the value of the "thumbnail_width" field.
+func (_u *AttachmentUpdateOne) ClearThumbnailWidth() *AttachmentUpdateOne {
+	_u.mutation.ClearThumbnailWidth()
+	return _u
+}
+
+// SetThumbnailHeight sets the "thumbnail_height" field.
+func (_u *AttachmentUpdateOne) SetThumbnailHeight(v int32) *AttachmentUpdateOne {
+	_u.mutation.ResetThumbnailHeight()
+	_u.mutation.SetThumbnailHeight(v)
+	return _u
+}
+
+// SetNillableThumbnailHeight sets the "thumbnail_height" field if the given value is not nil.
+func (_u *AttachmentUpdateOne) SetNillableThumbnailHeight(v *int32) *AttachmentUpdateOne {
+	if v != nil {
+		_u.SetThumbnailHeight(*v)
+	}
+	return _u
+}
+
+// AddThumbnailHeight adds value to the "thumbnail_height" field.
+func (_u *AttachmentUpdateOne) AddThumbnailHeight(v int32) *AttachmentUpdateOne {
+	_u.mutation.AddThumbnailHeight(v)
+	return _u
+}
+
+// ClearThumbnailHeight clears the value of the "thumbnail_height" field.
+func (_u *AttachmentUpdateOne) ClearThumbnailHeight() *AttachmentUpdateOne {
+	_u.mutation.ClearThumbnailHeight()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *AttachmentUpdateOne) SetStatus(v string) *AttachmentUpdateOne {
 	_u.mutation.SetStatus(v)
@@ -931,6 +1103,30 @@ func (_u *AttachmentUpdateOne) sqlSave(ctx context.Context) (_node *Attachment, 
 	}
 	if value, ok := _u.mutation.StorageKey(); ok {
 		_spec.SetField(attachment.FieldStorageKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ThumbnailStorageKey(); ok {
+		_spec.SetField(attachment.FieldThumbnailStorageKey, field.TypeString, value)
+	}
+	if _u.mutation.ThumbnailStorageKeyCleared() {
+		_spec.ClearField(attachment.FieldThumbnailStorageKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.ThumbnailWidth(); ok {
+		_spec.SetField(attachment.FieldThumbnailWidth, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedThumbnailWidth(); ok {
+		_spec.AddField(attachment.FieldThumbnailWidth, field.TypeInt32, value)
+	}
+	if _u.mutation.ThumbnailWidthCleared() {
+		_spec.ClearField(attachment.FieldThumbnailWidth, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.ThumbnailHeight(); ok {
+		_spec.SetField(attachment.FieldThumbnailHeight, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedThumbnailHeight(); ok {
+		_spec.AddField(attachment.FieldThumbnailHeight, field.TypeInt32, value)
+	}
+	if _u.mutation.ThumbnailHeightCleared() {
+		_spec.ClearField(attachment.FieldThumbnailHeight, field.TypeInt32)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(attachment.FieldStatus, field.TypeString, value)

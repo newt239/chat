@@ -29,6 +29,12 @@ const (
 	FieldDurationSeconds = "duration_seconds"
 	// FieldStorageKey holds the string denoting the storage_key field in the database.
 	FieldStorageKey = "storage_key"
+	// FieldThumbnailStorageKey holds the string denoting the thumbnail_storage_key field in the database.
+	FieldThumbnailStorageKey = "thumbnail_storage_key"
+	// FieldThumbnailWidth holds the string denoting the thumbnail_width field in the database.
+	FieldThumbnailWidth = "thumbnail_width"
+	// FieldThumbnailHeight holds the string denoting the thumbnail_height field in the database.
+	FieldThumbnailHeight = "thumbnail_height"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldUploadedAt holds the string denoting the uploaded_at field in the database.
@@ -78,6 +84,9 @@ var Columns = []string{
 	FieldHeight,
 	FieldDurationSeconds,
 	FieldStorageKey,
+	FieldThumbnailStorageKey,
+	FieldThumbnailWidth,
+	FieldThumbnailHeight,
 	FieldStatus,
 	FieldUploadedAt,
 	FieldExpiresAt,
@@ -165,6 +174,21 @@ func ByDurationSeconds(opts ...sql.OrderTermOption) OrderOption {
 // ByStorageKey orders the results by the storage_key field.
 func ByStorageKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStorageKey, opts...).ToFunc()
+}
+
+// ByThumbnailStorageKey orders the results by the thumbnail_storage_key field.
+func ByThumbnailStorageKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThumbnailStorageKey, opts...).ToFunc()
+}
+
+// ByThumbnailWidth orders the results by the thumbnail_width field.
+func ByThumbnailWidth(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThumbnailWidth, opts...).ToFunc()
+}
+
+// ByThumbnailHeight orders the results by the thumbnail_height field.
+func ByThumbnailHeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThumbnailHeight, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.
