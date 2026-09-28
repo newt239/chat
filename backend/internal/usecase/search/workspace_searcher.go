@@ -16,6 +16,7 @@ import (
 const (
 	defaultPerPage = 20
 	maxPerPage     = 50
+	maxTerms       = 10
 )
 
 type WorkspaceSearcher struct {
@@ -46,25 +47,21 @@ func NewWorkspaceSearcher(
 }
 
 func (s *WorkspaceSearcher) SearchWorkspace(ctx context.Context, input WorkspaceSearchInput) (*WorkspaceSearchOutput, error) {
-	trimmedQuery := strings.TrimSpace(input.Query)
-	if trimmedQuery == "" {
+	terms := splitTerms(input.Query)
+	if len(terms) == 0 && input.Filter.isEmpty() {
 		return nil, ErrInvalidQuery
 	}
-
-	filter := input.Filter.Normalize()
-
-	page := input.Page
-	if page < 1 {
-		page = 1
+	if input.Filter.After != nil && input.Filter.Before != nil && !input.Filter.After.Before(*input.Filter.Before) {
+		return nil, ErrInvalidDateRange
 	}
 
+	target := input.Target.Normalize()
+	page := max(input.Page, 1)
 	perPage := input.PerPage
 	if perPage <= 0 {
 		perPage = defaultPerPage
-	} else if perPage > maxPerPage {
-		perPage = maxPerPage
 	}
-
+	perPage = min(perPage, maxPerPage)
 	offset := (page - 1) * perPage
 
 	workspace, err := s.workspaceRepo.FindByID(ctx, input.WorkspaceID)
@@ -83,124 +80,138 @@ func (s *WorkspaceSearcher) SearchWorkspace(ctx context.Context, input Workspace
 		return nil, ErrUnauthorized
 	}
 
-	messagesResult := PaginatedMessages{
-		Items:   []messageuc.MessageOutput{},
-		Total:   0,
-		Page:    page,
-		PerPage: perPage,
-		HasMore: false,
+	out := &WorkspaceSearchOutput{
+		Messages: PaginatedMessages{Items: []MessageHit{}, Page: page, PerPage: perPage},
+		Channels: PaginatedChannels{Items: []channeluc.ChannelOutput{}, Page: page, PerPage: perPage},
+		Users:    PaginatedUsers{Items: []workspaceuc.MemberInfo{}, Page: page, PerPage: perPage},
+		Groups:   PaginatedUserGroups{Items: []usergroupuc.UserGroupOutput{}, Page: page, PerPage: perPage},
 	}
 
-	channelsResult := PaginatedChannels{
-		Items:   []channeluc.ChannelOutput{},
-		Total:   0,
-		Page:    page,
-		PerPage: perPage,
-		HasMore: false,
-	}
-
-	usersResult := PaginatedUsers{
-		Items:   []workspaceuc.MemberInfo{},
-		Total:   0,
-		Page:    page,
-		PerPage: perPage,
-		HasMore: false,
-	}
-
-	groupsResult := PaginatedUserGroups{
-		Items:   []usergroupuc.UserGroupOutput{},
-		Total:   0,
-		Page:    page,
-		PerPage: perPage,
-		HasMore: false,
-	}
-
-	// メッセージ検索
-	if filter.includesMessages() {
-		messagesResult, err = s.searchMessages(ctx, trimmedQuery, input.WorkspaceID, input.RequesterID, page, perPage, offset)
-		if err != nil {
+	if target.includesMessages() {
+		if out.Messages, err = s.searchMessages(ctx, input, terms, page, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
 
-	// チャンネル検索
-	if filter.includesChannels() {
-		channelsResult, err = s.searchChannels(ctx, trimmedQuery, input.WorkspaceID, input.RequesterID, page, perPage, offset)
-		if err != nil {
+	// チャンネル・ユーザー・グループはキーワードでのみ検索する
+	keyword := strings.Join(terms, " ")
+	if keyword == "" {
+		return out, nil
+	}
+	if target.includesChannels() {
+		if out.Channels, err = s.searchChannels(ctx, keyword, input.WorkspaceID, input.RequesterID, page, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
-
-	// ユーザー検索
-	if filter.includesUsers() {
-		usersResult, err = s.searchUsers(ctx, trimmedQuery, input.WorkspaceID, page, perPage, offset)
-		if err != nil {
+	if target.includesUsers() {
+		if out.Users, err = s.searchUsers(ctx, keyword, input.WorkspaceID, page, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
-
-	// ユーザーグループ検索
-	if filter.includesGroups() {
-		groupsResult, err = s.searchUserGroups(ctx, trimmedQuery, input.WorkspaceID, page, perPage, offset)
-		if err != nil {
+	if target.includesGroups() {
+		if out.Groups, err = s.searchUserGroups(ctx, keyword, input.WorkspaceID, page, perPage, offset); err != nil {
 			return nil, err
 		}
 	}
-
-	return &WorkspaceSearchOutput{
-		Messages: messagesResult,
-		Channels: channelsResult,
-		Users:    usersResult,
-		Groups:   groupsResult,
-	}, nil
+	return out, nil
 }
 
 func (s *WorkspaceSearcher) searchMessages(
 	ctx context.Context,
-	query string,
-	workspaceID string,
-	userID string,
+	input WorkspaceSearchInput,
+	terms []string,
 	page int,
 	limit int,
 	offset int,
 ) (PaginatedMessages, error) {
-	accessibleChannels, err := s.channelRepo.FindAccessibleChannels(ctx, workspaceID, userID)
-	if err != nil {
-		return PaginatedMessages{}, fmt.Errorf("failed to load accessible channels: %w", err)
+	result := PaginatedMessages{Items: []MessageHit{}, Page: page, PerPage: limit}
+	f := input.Filter
+
+	channelIDs := f.ChannelIDs
+	if len(channelIDs) > 0 && f.IncludeDescendantChannels {
+		channels, err := s.channelRepo.FindByWorkspaceID(ctx, input.WorkspaceID)
+		if err != nil {
+			return PaginatedMessages{}, fmt.Errorf("failed to load channels: %w", err)
+		}
+		channelIDs = withDescendantChannelIDs(channels, channelIDs)
 	}
 
-	channelIDs := make([]string, 0, len(accessibleChannels))
-	for _, ch := range accessibleChannels {
-		channelIDs = append(channelIDs, ch.ID)
-	}
-
-	result := PaginatedMessages{
-		Items:   []messageuc.MessageOutput{},
-		Total:   0,
-		Page:    page,
-		PerPage: limit,
-		HasMore: false,
-	}
-
-	if len(channelIDs) == 0 {
-		return result, nil
-	}
-
-	messages, total, err := s.messageRepo.SearchByChannelIDs(ctx, channelIDs, query, limit, offset)
+	messages, total, err := s.messageRepo.SearchMessages(ctx, domainrepository.MessageSearchCriteria{
+		WorkspaceID:    input.WorkspaceID,
+		ViewerID:       input.RequesterID,
+		Terms:          terms,
+		ChannelIDs:     channelIDs,
+		AuthorIDs:      f.FromUserIDs,
+		Has:            f.Has,
+		PinnedOnly:     f.PinnedOnly,
+		ThreadOnly:     f.ThreadOnly,
+		ExcludeReplies: f.ExcludeReplies,
+		MentionsViewer: f.MentionsMe,
+		After:          f.After,
+		Before:         f.Before,
+		Sort:           input.Sort,
+		Limit:          limit,
+		Offset:         offset,
+	})
 	if err != nil {
 		return PaginatedMessages{}, fmt.Errorf("failed to search messages: %w", err)
 	}
 
-	outputs, err := s.messageOutputBuilder.Build(ctx, userID, messages)
+	outputs, err := s.messageOutputBuilder.Build(ctx, input.RequesterID, messages)
 	if err != nil {
 		return PaginatedMessages{}, fmt.Errorf("failed to build message outputs: %w", err)
 	}
-
-	result.Items = outputs
+	for _, o := range outputs {
+		result.Items = append(result.Items, MessageHit{Message: o, Highlights: highlightRanges(o.Body, terms)})
+	}
 	result.Total = total
 	result.HasMore = offset+len(outputs) < total
-
 	return result, nil
+}
+
+// splitTerms は全角を含む空白で区切った語を重複なく最大 maxTerms 個返します
+func splitTerms(query string) []string {
+	terms := []string{}
+	seen := map[string]bool{}
+	for _, term := range strings.Fields(query) {
+		key := strings.ToLower(term)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		terms = append(terms, term)
+		if len(terms) == maxTerms {
+			break
+		}
+	}
+	return terms
+}
+
+// withDescendantChannelIDs は指定したチャンネルと、名前が "<親の名前>/" で始まる下階層のチャンネルの ID を返します
+func withDescendantChannelIDs(channels []*entity.Channel, ids []string) []string {
+	selected := map[string]bool{}
+	for _, id := range ids {
+		selected[id] = true
+	}
+	prefixes := []string{}
+	for _, ch := range channels {
+		if selected[ch.ID] {
+			prefixes = append(prefixes, ch.Name+"/")
+		}
+	}
+	result := append([]string{}, ids...)
+	for _, ch := range channels {
+		if selected[ch.ID] {
+			continue
+		}
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(ch.Name, prefix) {
+				result = append(result, ch.ID)
+				break
+			}
+		}
+	}
+	return result
 }
 
 func (s *WorkspaceSearcher) searchChannels(

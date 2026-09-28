@@ -24,11 +24,13 @@ const (
 )
 
 type UpdateReadStateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	LastReadAt    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=last_read_at,json=lastReadAt,proto3" json:"last_read_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	ChannelId  string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	LastReadAt *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=last_read_at,json=lastReadAt,proto3" json:"last_read_at,omitempty"`
+	// 閲覧できる子孫チャンネルもまとめて既読にする
+	IncludeDescendants bool `protobuf:"varint,3,opt,name=include_descendants,json=includeDescendants,proto3" json:"include_descendants,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *UpdateReadStateRequest) Reset() {
@@ -73,6 +75,13 @@ func (x *UpdateReadStateRequest) GetLastReadAt() *timestamppb.Timestamp {
 		return x.LastReadAt
 	}
 	return nil
+}
+
+func (x *UpdateReadStateRequest) GetIncludeDescendants() bool {
+	if x != nil {
+		return x.IncludeDescendants
+	}
+	return false
 }
 
 type UpdateReadStateResponse struct {
@@ -203,12 +212,13 @@ var File_chat_v1_read_state_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_read_state_service_proto_rawDesc = "" +
 	"\n" +
-	" chat/v1/read_state_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x87\x01\n" +
+	" chat/v1/read_state_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb8\x01\n" +
 	"\x16UpdateReadStateRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12D\n" +
 	"\flast_read_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\n" +
-	"lastReadAt\"\x19\n" +
+	"lastReadAt\x12/\n" +
+	"\x13include_descendants\x18\x03 \x01(\bR\x12includeDescendants\"\x19\n" +
 	"\x17UpdateReadStateResponse\"@\n" +
 	"\x15GetUnreadCountRequest\x12'\n" +
 	"\n" +

@@ -9,6 +9,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type stubMessageRepo struct {
@@ -21,6 +22,7 @@ func (r *stubMessageRepo) FindByID(_ context.Context, _ string) (*entity.Message
 }
 
 type stubChannelAccessService struct {
+	service.ChannelAccessService
 	err error
 }
 

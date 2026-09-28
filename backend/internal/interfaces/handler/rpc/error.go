@@ -6,12 +6,15 @@ import (
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
+	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
@@ -29,7 +32,9 @@ var errorCodes = []struct {
 	{connect.CodeNotFound, []error{
 		domerr.ErrNotFound, domerr.ErrMessageNotFound, domerr.ErrChannelNotFound,
 		bookmarkuc.ErrMessageNotFound,
+		entity.ErrUserNotFound,
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
+		channellinkuc.ErrLinkNotFound,
 		channelmemberuc.ErrChannelNotFound, channelmemberuc.ErrUserNotFound,
 		messageuc.ErrChannelNotFound, messageuc.ErrParentMessageNotFound, messageuc.ErrMessageNotFound, messageuc.ErrAttachmentNotFound,
 		pinuc.ErrMessageNotFound,
@@ -46,8 +51,10 @@ var errorCodes = []struct {
 		domerr.ErrUnauthorized, domerr.ErrForbidden,
 		bookmarkuc.ErrUnauthorized,
 		channeluc.ErrUnauthorized,
+		channellinkuc.ErrUnauthorized,
 		channelmemberuc.ErrUnauthorized, channelmemberuc.ErrChannelNotPublic,
 		dmuc.ErrNotWorkspaceMember,
+		mentionuc.ErrUnauthorized,
 		messageuc.ErrUnauthorized,
 		pinuc.ErrUnauthorized,
 		reactionuc.ErrUnauthorized,
@@ -60,6 +67,7 @@ var errorCodes = []struct {
 	{connect.CodeAlreadyExists, []error{
 		domerr.ErrUserAlreadyExists,
 		bookmarkuc.ErrBookmarkExists,
+		channeluc.ErrChannelNameExists,
 		channelmemberuc.ErrAlreadyMember,
 		pinuc.ErrPinExists,
 		reactionuc.ErrReactionExists,
@@ -67,11 +75,14 @@ var errorCodes = []struct {
 	}},
 	{connect.CodeInvalidArgument, []error{
 		domerr.ErrInvalidInput, domerr.ErrValidation,
+		entity.ErrGroupDMMaxMembers,
+		channeluc.ErrMemberNotInWorkspace,
 		channelmemberuc.ErrInvalidRole,
-		searchuc.ErrInvalidQuery,
+		searchuc.ErrInvalidQuery, searchuc.ErrInvalidDateRange,
 		workspaceuc.ErrInvalidRole,
 	}},
 	{connect.CodeFailedPrecondition, []error{
+		channeluc.ErrChannelHasChildren,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,
 		usergroupuc.ErrUserNotInGroup,

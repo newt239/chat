@@ -22,6 +22,8 @@ message ParticipatingThread {
   int32 reply_count = 4;
   google.protobuf.Timestamp last_activity_at = 5;
   int32 unread_count = 6;
+  // 最新の返信（古い順、最大 2 件）。すべての返信は GetThreadReplies で取得する
+  repeated Message latest_replies = 7;
 }
 
 message ThreadCursor {

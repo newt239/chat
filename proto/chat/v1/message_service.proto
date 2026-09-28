@@ -25,6 +25,8 @@ message ListMessagesRequest {
   }];
   google.protobuf.Timestamp since = 3;
   google.protobuf.Timestamp until = 4;
+  // 閲覧できる子孫チャンネルのメッセージもまとめて返す
+  bool include_descendants = 5;
 }
 
 message ListMessagesResponse {
@@ -41,6 +43,8 @@ message ListMessagesWithThreadRequest {
   }];
   google.protobuf.Timestamp since = 3;
   google.protobuf.Timestamp until = 4;
+  // 閲覧できる子孫チャンネルのメッセージもまとめて返す
+  bool include_descendants = 5;
 }
 
 message ListMessagesWithThreadResponse {

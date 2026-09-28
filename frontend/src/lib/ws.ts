@@ -48,6 +48,7 @@ export class WsClient {
     [K in WsEventType]: Set<(payload: WsEventPayload<K>) => void>;
   } = {
     ack: new Set(),
+    channelViewers: new Set(),
     error: new Set(),
     messageDeleted: new Set(),
     messageUpdated: new Set(),

@@ -14,8 +14,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelreadstate"
+	"github.com/newt239/chat/ent/channelstar"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -29,6 +31,7 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -94,8 +97,10 @@ func checkColumn(t, c string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			attachment.Table:          attachment.ValidColumn,
 			channel.Table:             channel.ValidColumn,
+			channellink.Table:         channellink.ValidColumn,
 			channelmember.Table:       channelmember.ValidColumn,
 			channelreadstate.Table:    channelreadstate.ValidColumn,
+			channelstar.Table:         channelstar.ValidColumn,
 			message.Table:             message.ValidColumn,
 			messagebookmark.Table:     messagebookmark.ValidColumn,
 			messagegroupmention.Table: messagegroupmention.ValidColumn,
@@ -109,6 +114,7 @@ func checkColumn(t, c string) error {
 			user.Table:                user.ValidColumn,
 			usergroup.Table:           usergroup.ValidColumn,
 			usergroupmember.Table:     usergroupmember.ValidColumn,
+			usernote.Table:            usernote.ValidColumn,
 			userthreadfollow.Table:    userthreadfollow.ValidColumn,
 			workspace.Table:           workspace.ValidColumn,
 			workspacemember.Table:     workspacemember.ValidColumn,

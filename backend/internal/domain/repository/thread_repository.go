@@ -46,6 +46,7 @@ type ParticipatingThread struct {
 	ThreadID       string
 	ChannelID      *string
 	FirstMessage   *entity.Message
+	LatestReplies  []*entity.Message
 	ReplyCount     int
 	LastActivityAt time.Time
 	UnreadCount    int

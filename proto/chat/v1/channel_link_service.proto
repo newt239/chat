@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// チャンネルの関連リンク
+service ChannelLinkService {
+  rpc ListChannelLinks(ListChannelLinksRequest) returns (ListChannelLinksResponse);
+  rpc CreateChannelLink(CreateChannelLinkRequest) returns (CreateChannelLinkResponse);
+  rpc UpdateChannelLink(UpdateChannelLinkRequest) returns (UpdateChannelLinkResponse);
+  rpc DeleteChannelLink(DeleteChannelLinkRequest) returns (DeleteChannelLinkResponse);
+  rpc ReorderChannelLinks(ReorderChannelLinksRequest) returns (ReorderChannelLinksResponse);
+}
+
+message ChannelLink {
+  string id = 1;
+  string channel_id = 2;
+  string title = 3;
+  string url = 4;
+  int32 position = 5;
+  string created_by = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message ListChannelLinksRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ListChannelLinksResponse {
+  // position の昇順
+  repeated ChannelLink links = 1;
+  bool can_edit = 2;
+}
+
+message CreateChannelLinkRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  string title = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  string url = 3 [(buf.validate.field).string = {
+    uri: true
+    max_len: 2048
+  }];
+}
+
+message CreateChannelLinkResponse {
+  ChannelLink link = 1;
+}
+
+message UpdateChannelLinkRequest {
+  string link_id = 1 [(buf.validate.field).string.uuid = true];
+  string title = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  string url = 3 [(buf.validate.field).string = {
+    uri: true
+    max_len: 2048
+  }];
+}
+
+message UpdateChannelLinkResponse {
+  ChannelLink link = 1;
+}
+
+message DeleteChannelLinkRequest {
+  string link_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteChannelLinkResponse {}
+
+message ReorderChannelLinksRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  // チャンネルの全リンクの ID を新しい並び順で指定する
+  repeated string link_ids = 2 [(buf.validate.field).repeated = {
+    unique: true
+    items: {
+      string: {uuid: true}
+    }
+  }];
+}
+
+message ReorderChannelLinksResponse {
+  repeated ChannelLink links = 1;
+}

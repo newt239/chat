@@ -10,7 +10,7 @@ import (
 type MessageRepository interface {
 	FindByID(ctx context.Context, id string) (*entity.Message, error)
 	FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error)
-	FindByChannelID(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error)
+	FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error)
 	FindByChannelIDIncludingDeleted(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error)
 	FindThreadReplies(ctx context.Context, parentID string) ([]*entity.Message, error)
 	FindThreadRepliesIncludingDeleted(ctx context.Context, parentID string) ([]*entity.Message, error)
@@ -24,5 +24,6 @@ type MessageRepository interface {
 	FindReactionsByMessageIDs(ctx context.Context, messageIDs []string) (map[string][]*entity.MessageReaction, error)
 	AddUserMention(ctx context.Context, mention *entity.MessageUserMention) error
 	AddGroupMention(ctx context.Context, mention *entity.MessageGroupMention) error
-	SearchByChannelIDs(ctx context.Context, channelIDs []string, query string, limit int, offset int) ([]*entity.Message, int, error)
+	SearchMessages(ctx context.Context, criteria MessageSearchCriteria) ([]*entity.Message, int, error)
+	FindMentions(ctx context.Context, input FindMentionsInput) ([]*entity.Message, error)
 }

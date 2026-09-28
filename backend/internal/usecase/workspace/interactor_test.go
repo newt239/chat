@@ -29,7 +29,7 @@ func (r *stubWorkspaceRepo) UpdateMemberRole(_ context.Context, _ string, _ stri
 
 func newInteractor(members map[string]*entity.WorkspaceMember) (WorkspaceUseCase, *stubWorkspaceRepo) {
 	repo := &stubWorkspaceRepo{members: members}
-	return NewWorkspaceInteractor(repo, nil), repo
+	return NewWorkspaceInteractor(repo, nil, nil), repo
 }
 
 func member(role entity.WorkspaceRole) *entity.WorkspaceMember {

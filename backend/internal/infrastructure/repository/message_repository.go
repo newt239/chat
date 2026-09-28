@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -51,8 +50,8 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 	return utils.MessageToEntity(m), nil
 }
 
-func (r *messageRepository) FindByChannelID(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
-	chID, err := utils.ParseUUID(channelID, "channel ID")
+func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
+	chIDs, err := parseChannelIDs(channelIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +59,7 @@ func (r *messageRepository) FindByChannelID(ctx context.Context, channelID strin
 	client := transaction.ResolveClient(ctx, r.client)
 	query := client.Message.Query().
 		Where(
-			message.HasChannelWith(channel.ID(chID)),
+			message.HasChannelWith(channel.IDIn(chIDs...)),
 			message.Not(message.HasParent()),
 			message.DeletedAtIsNil(),
 		)
@@ -227,72 +226,6 @@ func (r *messageRepository) FindThreadRepliesIncludingDeleted(ctx context.Contex
 	}
 
 	return result, nil
-}
-
-func (r *messageRepository) SearchByChannelIDs(ctx context.Context, channelIDs []string, query string, limit int, offset int) ([]*entity.Message, int, error) {
-	if len(channelIDs) == 0 {
-		return []*entity.Message{}, 0, nil
-	}
-
-	parsedChannelIDs := make([]uuid.UUID, 0, len(channelIDs))
-	for _, chID := range channelIDs {
-		parsedID, err := utils.ParseUUID(chID, "channel ID")
-		if err != nil {
-			return nil, 0, err
-		}
-		parsedChannelIDs = append(parsedChannelIDs, parsedID)
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	trimmedQuery := strings.TrimSpace(query)
-
-	messageQuery := client.Message.Query().
-		Where(
-			message.HasChannelWith(channel.IDIn(parsedChannelIDs...)),
-			message.DeletedAtIsNil(),
-		)
-
-	if trimmedQuery != "" {
-		messageQuery = messageQuery.Where(
-			message.Or(
-				message.BodyContainsFold(trimmedQuery),
-				message.HasUserWith(user.DisplayNameContainsFold(trimmedQuery)),
-				message.HasChannelWith(channel.NameContainsFold(trimmedQuery)),
-			),
-		)
-	}
-
-	total, err := messageQuery.Clone().Count(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	if offset > 0 {
-		messageQuery = messageQuery.Offset(offset)
-	}
-
-	if limit > 0 {
-		messageQuery = messageQuery.Limit(limit)
-	}
-
-	messages, err := messageQuery.
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
-		Order(ent.Desc(message.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-
-	return result, total, nil
 }
 
 func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) error {
@@ -627,4 +560,16 @@ func (r *messageRepository) Search(ctx context.Context, workspaceID, query strin
 	// For now, returning empty implementation
 	// This requires full-text search which is better handled with PostgreSQL's full-text search or external search engine
 	return []*entity.Message{}, nil
+}
+
+func parseChannelIDs(channelIDs []string) ([]uuid.UUID, error) {
+	ids := make([]uuid.UUID, 0, len(channelIDs))
+	for _, id := range channelIDs {
+		parsed, err := utils.ParseUUID(id, "channel ID")
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, parsed)
+	}
+	return ids, nil
 }

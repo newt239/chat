@@ -6,6 +6,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type stubMessageRepo struct {
@@ -40,7 +41,9 @@ func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error)
 	return &entity.User{ID: id, DisplayName: "Alice"}, nil
 }
 
-type stubChannelAccess struct{}
+type stubChannelAccess struct {
+	service.ChannelAccessService
+}
 
 func (stubChannelAccess) EnsureChannelAccess(_ context.Context, channelID string, _ string) (*entity.Channel, error) {
 	return &entity.Channel{ID: channelID}, nil

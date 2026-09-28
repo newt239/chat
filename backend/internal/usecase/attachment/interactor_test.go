@@ -7,6 +7,7 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type stubAttachmentRepo struct {
@@ -19,7 +20,9 @@ func (r *stubAttachmentRepo) CreatePending(_ context.Context, attachment *entity
 	return nil
 }
 
-type stubChannelAccess struct{}
+type stubChannelAccess struct {
+	service.ChannelAccessService
+}
 
 func (stubChannelAccess) EnsureChannelAccess(_ context.Context, channelID string, _ string) (*entity.Channel, error) {
 	return &entity.Channel{ID: channelID}, nil

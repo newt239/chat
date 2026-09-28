@@ -13,6 +13,8 @@ message ClientEvent {
     ChannelEvent leave_channel = 2;
     ChannelEvent typing = 3;
     ChannelEvent stop_typing = 4;
+    // 閲覧中のチャンネルを通知する。channel_id が空なら閲覧をやめたことを表す
+    ChannelEvent view_channel = 5;
   }
 }
 
@@ -36,6 +38,7 @@ message ServerEvent {
     TypingEvent stop_typing = 11;
     AckEvent ack = 12;
     ErrorEvent error = 13;
+    ChannelViewersEvent channel_viewers = 14;
   }
 }
 
@@ -97,4 +100,10 @@ message AckEvent {
 message ErrorEvent {
   string code = 1;
   string message = 2;
+}
+
+// チャンネルを閲覧中のユーザー一覧
+message ChannelViewersEvent {
+  string channel_id = 1;
+  repeated string user_ids = 2;
 }

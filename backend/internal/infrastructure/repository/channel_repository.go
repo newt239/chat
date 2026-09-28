@@ -131,6 +131,14 @@ func (r *channelRepository) Create(ctx context.Context, ch *entity.Channel) erro
 		builder = builder.SetDescription(*ch.Description)
 	}
 
+	if ch.ParentID != nil {
+		parentID, err := utils.ParseUUID(*ch.ParentID, "parent channel ID")
+		if err != nil {
+			return err
+		}
+		builder = builder.SetParentID(parentID)
+	}
+
 	c, err := builder.Save(ctx)
 	if err != nil {
 		return err
@@ -439,4 +447,47 @@ func (r *channelRepository) FindUserDMs(ctx context.Context, workspaceID string,
 	}
 
 	return result, nil
+}
+
+func (r *channelRepository) FindByNames(ctx context.Context, workspaceID string, names []string) ([]*entity.Channel, error) {
+	client := transaction.ResolveClient(ctx, r.client)
+	channels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+			channel.NameIn(names...),
+			channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate)),
+		).
+		WithWorkspace().
+		WithCreatedBy().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return channelsToEntities(channels), nil
+}
+
+func (r *channelRepository) FindDescendants(ctx context.Context, ch *entity.Channel) ([]*entity.Channel, error) {
+	client := transaction.ResolveClient(ctx, r.client)
+	channels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(ch.WorkspaceID)),
+			channel.NameHasPrefix(ch.Name+"/"),
+			channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate)),
+		).
+		WithWorkspace().
+		WithCreatedBy().
+		Order(ent.Asc(channel.FieldName)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return channelsToEntities(channels), nil
+}
+
+func channelsToEntities(channels []*ent.Channel) []*entity.Channel {
+	result := make([]*entity.Channel, 0, len(channels))
+	for _, c := range channels {
+		result = append(result, utils.ChannelToEntity(c))
+	}
+	return result
 }

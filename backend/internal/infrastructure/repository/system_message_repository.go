@@ -53,15 +53,15 @@ func (r *systemMessageRepository) Create(ctx context.Context, msg *entity.System
 	return nil
 }
 
-func (r *systemMessageRepository) FindByChannelID(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.SystemMessage, error) {
-	chID, err := utils.ParseUUID(channelID, "channel ID")
+func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.SystemMessage, error) {
+	chIDs, err := parseChannelIDs(channelIDs)
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
 	q := client.SystemMessage.Query().
-		Where(systemmessage.HasChannelWith(channel.ID(chID)))
+		Where(systemmessage.HasChannelWith(channel.IDIn(chIDs...)))
 
 	if since != nil {
 		q = q.Where(systemmessage.CreatedAtGT(*since))

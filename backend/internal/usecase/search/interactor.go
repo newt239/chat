@@ -12,10 +12,6 @@ type SearchUseCase interface {
 	SearchWorkspace(ctx context.Context, input WorkspaceSearchInput) (*WorkspaceSearchOutput, error)
 }
 
-type searchInteractor struct {
-	workspaceSearcher *WorkspaceSearcher
-}
-
 // NewSearchUseCase は検索ユースケースを構築します
 func NewSearchUseCase(
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -25,18 +21,5 @@ func NewSearchUseCase(
 	userGroupRepo domainrepository.UserGroupRepository,
 	messageOutputBuilder *messageuc.MessageOutputBuilder,
 ) SearchUseCase {
-	return &searchInteractor{
-		workspaceSearcher: NewWorkspaceSearcher(
-			workspaceRepo,
-			channelRepo,
-			messageRepo,
-			userRepo,
-			userGroupRepo,
-			messageOutputBuilder,
-		),
-	}
-}
-
-func (i *searchInteractor) SearchWorkspace(ctx context.Context, input WorkspaceSearchInput) (*WorkspaceSearchOutput, error) {
-	return i.workspaceSearcher.SearchWorkspace(ctx, input)
+	return NewWorkspaceSearcher(workspaceRepo, channelRepo, messageRepo, userRepo, userGroupRepo, messageOutputBuilder)
 }

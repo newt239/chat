@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 type builderMessageRepo struct {
@@ -86,6 +87,7 @@ func (r *builderPinRepo) FindByMessageIDs(_ context.Context, _ []string) (map[st
 
 // builderChannelAccess は accessible に含まれるチャンネルだけ参照を許可します
 type builderChannelAccess struct {
+	service.ChannelAccessService
 	accessible map[string]*entity.Channel
 }
 

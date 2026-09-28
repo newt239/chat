@@ -23,6 +23,8 @@ const (
 	FieldIsPrivate = "is_private"
 	// FieldChannelType holds the string denoting the channel_type field in the database.
 	FieldChannelType = "channel_type"
+	// FieldParentID holds the string denoting the parent_id field in the database.
+	FieldParentID = "parent_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -39,6 +41,10 @@ const (
 	EdgeAttachments = "attachments"
 	// EdgeReadStates holds the string denoting the read_states edge name in mutations.
 	EdgeReadStates = "read_states"
+	// EdgeParent holds the string denoting the parent edge name in mutations.
+	EdgeParent = "parent"
+	// EdgeChildren holds the string denoting the children edge name in mutations.
+	EdgeChildren = "children"
 	// Table holds the table name of the channel in the database.
 	Table = "channels"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
@@ -83,6 +89,14 @@ const (
 	ReadStatesInverseTable = "channel_read_states"
 	// ReadStatesColumn is the table column denoting the read_states relation/edge.
 	ReadStatesColumn = "channel_read_state_channel"
+	// ParentTable is the table that holds the parent relation/edge.
+	ParentTable = "channels"
+	// ParentColumn is the table column denoting the parent relation/edge.
+	ParentColumn = "parent_id"
+	// ChildrenTable is the table that holds the children relation/edge.
+	ChildrenTable = "channels"
+	// ChildrenColumn is the table column denoting the children relation/edge.
+	ChildrenColumn = "parent_id"
 )
 
 // Columns holds all SQL columns for channel fields.
@@ -92,6 +106,7 @@ var Columns = []string{
 	FieldDescription,
 	FieldIsPrivate,
 	FieldChannelType,
+	FieldParentID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -161,6 +176,11 @@ func ByIsPrivate(opts ...sql.OrderTermOption) OrderOption {
 // ByChannelType orders the results by the channel_type field.
 func ByChannelType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChannelType, opts...).ToFunc()
+}
+
+// ByParentID orders the results by the parent_id field.
+func ByParentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -242,6 +262,27 @@ func ByReadStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newReadStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByParentField orders the results by parent field.
+func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByChildrenCount orders the results by children count.
+func ByChildrenCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newChildrenStep(), opts...)
+	}
+}
+
+// ByChildren orders the results by children terms.
+func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newWorkspaceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -282,5 +323,19 @@ func newReadStatesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ReadStatesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ReadStatesTable, ReadStatesColumn),
+	)
+}
+func newParentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ParentTable, ParentColumn),
+	)
+}
+func newChildrenStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ChildrenTable, ChildrenColumn),
 	)
 }

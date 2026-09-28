@@ -27,11 +27,13 @@ type ListMessagesRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	ChannelId string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	// 0 の場合はサーバーの既定値を使う
-	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-	Since         *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=since,proto3" json:"since,omitempty"`
-	Until         *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Limit int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Since *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=since,proto3" json:"since,omitempty"`
+	Until *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
+	// 閲覧できる子孫チャンネルのメッセージもまとめて返す
+	IncludeDescendants bool `protobuf:"varint,5,opt,name=include_descendants,json=includeDescendants,proto3" json:"include_descendants,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ListMessagesRequest) Reset() {
@@ -92,6 +94,13 @@ func (x *ListMessagesRequest) GetUntil() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *ListMessagesRequest) GetIncludeDescendants() bool {
+	if x != nil {
+		return x.IncludeDescendants
+	}
+	return false
+}
+
 type ListMessagesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Messages      []*TimelineItem        `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
@@ -148,11 +157,13 @@ type ListMessagesWithThreadRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	ChannelId string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	// 0 の場合はサーバーの既定値を使う
-	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-	Since         *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=since,proto3" json:"since,omitempty"`
-	Until         *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Limit int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Since *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=since,proto3" json:"since,omitempty"`
+	Until *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
+	// 閲覧できる子孫チャンネルのメッセージもまとめて返す
+	IncludeDescendants bool `protobuf:"varint,5,opt,name=include_descendants,json=includeDescendants,proto3" json:"include_descendants,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ListMessagesWithThreadRequest) Reset() {
@@ -211,6 +222,13 @@ func (x *ListMessagesWithThreadRequest) GetUntil() *timestamppb.Timestamp {
 		return x.Until
 	}
 	return nil
+}
+
+func (x *ListMessagesWithThreadRequest) GetIncludeDescendants() bool {
+	if x != nil {
+		return x.IncludeDescendants
+	}
+	return false
 }
 
 type ListMessagesWithThreadResponse struct {
@@ -645,22 +663,24 @@ var File_chat_v1_message_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_message_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dchat/v1/message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x01\n" +
+	"\x1dchat/v1/message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf4\x01\n" +
 	"\x13ListMessagesRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x1f\n" +
 	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\x120\n" +
 	"\x05since\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
-	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\"d\n" +
+	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12/\n" +
+	"\x13include_descendants\x18\x05 \x01(\bR\x12includeDescendants\"d\n" +
 	"\x14ListMessagesResponse\x121\n" +
 	"\bmessages\x18\x01 \x03(\v2\x15.chat.v1.TimelineItemR\bmessages\x12\x19\n" +
-	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\xcd\x01\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\xfe\x01\n" +
 	"\x1dListMessagesWithThreadRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x1f\n" +
 	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\x120\n" +
 	"\x05since\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
-	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\"i\n" +
+	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12/\n" +
+	"\x13include_descendants\x18\x05 \x01(\bR\x12includeDescendants\"i\n" +
 	"\x1eListMessagesWithThreadResponse\x12,\n" +
 	"\bmessages\x18\x01 \x03(\v2\x10.chat.v1.MessageR\bmessages\x12\x19\n" +
 	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\xcc\x01\n" +

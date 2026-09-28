@@ -23,11 +23,12 @@ const (
 )
 
 type ListMessagesInput struct {
-	ChannelID string
-	UserID    string
-	Limit     int
-	Since     *time.Time
-	Until     *time.Time
+	ChannelID          string
+	UserID             string
+	Limit              int
+	Since              *time.Time
+	Until              *time.Time
+	IncludeDescendants bool
 }
 
 type CreateMessageInput struct {

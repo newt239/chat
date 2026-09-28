@@ -4,79 +4,69 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/usecase/message"
 )
 
 type ThreadLister struct {
-	threadRepo domainrepository.ThreadRepository
+	threadRepo           domainrepository.ThreadRepository
+	messageOutputBuilder *message.MessageOutputBuilder
 }
 
 func NewThreadLister(
 	threadRepo domainrepository.ThreadRepository,
+	messageOutputBuilder *message.MessageOutputBuilder,
 ) *ThreadLister {
 	return &ThreadLister{
-		threadRepo: threadRepo,
+		threadRepo:           threadRepo,
+		messageOutputBuilder: messageOutputBuilder,
 	}
 }
 
 func (l *ThreadLister) ListParticipatingThreads(ctx context.Context, input ListParticipatingThreadsInput) (*ListParticipatingThreadsOutput, error) {
-	// デフォルトリミット設定
 	limit := input.Limit
 	if limit <= 0 {
 		limit = 20
 	}
-	if limit > 100 {
-		limit = 100
-	}
+	limit = min(limit, 100)
 
-	repoInput := domainrepository.FindParticipatingThreadsInput{
+	result, err := l.threadRepo.FindParticipatingThreads(ctx, domainrepository.FindParticipatingThreadsInput{
 		WorkspaceID:          input.WorkspaceID,
 		UserID:               input.UserID,
 		CursorLastActivityAt: input.CursorLastActivityAt,
 		CursorThreadID:       input.CursorThreadID,
 		Limit:                limit,
-	}
-
-	result, err := l.threadRepo.FindParticipatingThreads(ctx, repoInput)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find participating threads: %w", err)
 	}
 
-	// エンティティをDTOに変換
+	// 親と最新の返信をまとめて組み立てる
+	messages := []*entity.Message{}
+	for _, item := range result.Items {
+		messages = append(messages, item.FirstMessage)
+		messages = append(messages, item.LatestReplies...)
+	}
+	outputs, err := l.messageOutputBuilder.Build(ctx, input.UserID, messages)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build message outputs: %w", err)
+	}
+
 	items := make([]ParticipatingThreadOutput, 0, len(result.Items))
 	for _, item := range result.Items {
-		var messageOutput *message.MessageOutput
-		if item.FirstMessage != nil {
-			// 最小限のメッセージ情報を構築
-			msg := &message.MessageOutput{
-				ID:          item.FirstMessage.ID,
-				ChannelID:   item.FirstMessage.ChannelID,
-				UserID:      item.FirstMessage.UserID,
-				ParentID:    item.FirstMessage.ParentID,
-				Body:        item.FirstMessage.Body,
-				CreatedAt:   item.FirstMessage.CreatedAt,
-				EditedAt:    item.FirstMessage.EditedAt,
-				DeletedAt:   item.FirstMessage.DeletedAt,
-				IsDeleted:   item.FirstMessage.DeletedAt != nil,
-				User:        message.UserInfo{ID: item.FirstMessage.UserID, DisplayName: "", AvatarURL: nil},
-				Mentions:    []message.UserMention{},
-				Groups:      []message.GroupMention{},
-				Links:       []message.LinkInfo{},
-				Reactions:   []message.ReactionInfo{},
-				Attachments: []message.AttachmentInfo{},
-			}
-			messageOutput = msg
-		}
-
+		first := outputs[0]
+		replyCount := len(item.LatestReplies)
 		items = append(items, ParticipatingThreadOutput{
 			ThreadID:       item.ThreadID,
 			ChannelID:      item.ChannelID,
-			FirstMessage:   messageOutput,
+			FirstMessage:   &first,
+			LatestReplies:  outputs[1 : 1+replyCount],
 			ReplyCount:     item.ReplyCount,
 			LastActivityAt: item.LastActivityAt,
 			UnreadCount:    item.UnreadCount,
 		})
+		outputs = outputs[1+replyCount:]
 	}
 
 	var nextCursor *ThreadCursorOutput

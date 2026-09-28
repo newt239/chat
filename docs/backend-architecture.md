@@ -256,7 +256,9 @@ func (r *InterfaceRegistry) NewRPCHandler() http.Handler {
 ### 3. チャンネル管理
 
 - パブリック・プライベートチャンネル
-- DM・グループ DM（最大 9 人）
+- 階層チャンネル（スラッシュ区切りのパス。親子関係と集約表示は [channel-hierarchy.md](./channel-hierarchy.md)）
+- DM・グループ DM（自分を含めて最大 10 人。超える場合はメンバー指定の非公開チャンネルを作る）
+- チャンネル・DM へのスター、チャンネルの関連リンク
 - チャンネルメンバー管理
 - ロールベースアクセス制御（owner, admin, member, guest）
 - システムメッセージによる変更履歴記録
@@ -350,6 +352,7 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 | `ChannelService` | ListChannels / CreateChannel / GetChannel / UpdateChannel / DeleteChannel | `channel_service.proto` |
 | `DirectMessageService` | ListDirectMessages / CreateDirectMessage / CreateGroupDirectMessage | `direct_message_service.proto` |
 | `LinkService` | FetchOgp | `link_service.proto` |
+| `MentionService` | ListMentions | `mention_service.proto` |
 | `MessageService` | ListMessages / ListMessagesWithThread / CreateMessage / UpdateMessage / DeleteMessage | `message_service.proto` |
 | `PinService` | ListPins / CreatePin / DeletePin | `pin_service.proto` |
 | `ReactionService` | ListReactions / AddReaction / RemoveReaction | `reaction_service.proto` |
@@ -369,12 +372,12 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 - エンドポイント: `GET /ws?token=<JWT>&workspaceId=<id>`
 - JWT 認証による接続、`CORS_ALLOWED_ORIGINS` による Origin 検証
 - メッセージは `proto/chat/v1/event.proto` の `ClientEvent` / `ServerEvent` を protojson で JSON にしたもの（例: `{"joinChannel":{"channelId":"..."}}`）
-- クライアント → サーバー: `joinChannel` / `leaveChannel` / `typing` / `stopTyping`
-- サーバー → クライアント: `newMessage` / `messageUpdated` / `messageDeleted` / `unreadCount` / `pinCreated` / `pinDeleted` / `systemMessageCreated` / `reactionAdded` / `reactionRemoved` / `typing` / `stopTyping` / `ack` / `error`
+- クライアント → サーバー: `joinChannel` / `leaveChannel` / `typing` / `stopTyping` / `viewChannel`
+- サーバー → クライアント: `newMessage` / `messageUpdated` / `messageDeleted` / `unreadCount` / `pinCreated` / `pinDeleted` / `systemMessageCreated` / `reactionAdded` / `reactionRemoved` / `typing` / `stopTyping` / `channelViewers` / `ack` / `error`
 
 ## データベース設計
 
-### 主要テーブル（Ent スキーマ: 20 テーブル）
+### 主要テーブル（Ent スキーマ）
 
 - `user` - ユーザー情報
 - `session` - セッション管理
@@ -383,6 +386,8 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 - `channel` - チャンネル
 - `channel_member` - チャンネルメンバー
 - `channel_read_state` - チャンネル既読状態
+- `channel_star` - チャンネル・DM へのスター
+- `channel_link` - チャンネルの関連リンク
 - `message` - メッセージ
 - `message_reaction` - メッセージリアクション
 - `message_pin` - ピン留めメッセージ
@@ -396,11 +401,13 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 - `thread_read_state` - スレッド既読状態
 - `user_thread_follow` - スレッドフォロー
 - `system_message` - システムメッセージ（監査ログ）
+- `user_note` - 自分だけに見える相手ユーザーのニックネームとメモ
 
 ### リレーション
 
 - ユーザー ↔ ワークスペース（多対多: workspace_member）
 - ワークスペース → チャンネル（1 対多）
+- チャンネル → チャンネル（1 対多: 階層の親子関係）
 - チャンネル ↔ ユーザー（多対多: channel_member）
 - チャンネル → メッセージ（1 対多）
 - メッセージ → メッセージ（1 対多: スレッド親子関係）

@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"context"
 	"log"
 	"sync"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	"github.com/newt239/chat/internal/domain/service"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 )
 
@@ -79,6 +81,12 @@ type Client struct {
 
 	// 購読中のチャンネルID一覧
 	subscribedChannels map[string]bool
+
+	// 閲覧中のチャンネルID。Hub.mu で保護する
+	viewingChannel string
+
+	// チャンネルの閲覧権限の確認に使う
+	channelAccess service.ChannelAccessService
 }
 
 // NewHub は新しいHubを作成します
@@ -122,6 +130,7 @@ func (h *Hub) Run() {
 						if c == client {
 							workspace[client.userID] = append(clients[:i], clients[i+1:]...)
 							close(client.send)
+							h.clearViewingChannel(client)
 							break
 						}
 					}
@@ -400,6 +409,8 @@ func (c *Client) handleMessage(data []byte) {
 		c.notifyTyping(e.Typing.GetChannelId(), true)
 	case *chatv1.ClientEvent_StopTyping:
 		c.notifyTyping(e.StopTyping.GetChannelId(), false)
+	case *chatv1.ClientEvent_ViewChannel:
+		c.handleViewChannel(e.ViewChannel.GetChannelId())
 	default:
 		log.Printf("[WebSocket] 未知のイベント: user=%s", c.userID)
 		c.sendError("UNKNOWN_EVENT", "未知のイベントです")
@@ -410,6 +421,10 @@ func (c *Client) handleMessage(data []byte) {
 func (c *Client) handleJoinChannel(channelID string) {
 	if channelID == "" {
 		c.sendError("INVALID_PAYLOAD", "無効なペイロードです")
+		return
+	}
+	if !c.canAccessChannel(channelID) {
+		c.sendError("FORBIDDEN", "チャンネルにアクセスできません")
 		return
 	}
 
@@ -444,6 +459,28 @@ func (c *Client) handleLeaveChannel(channelID string) {
 		c.userID, c.workspaceID, channelID, len(c.subscribedChannels))
 
 	c.sendAck("leave_channel")
+}
+
+// handleViewChannel は閲覧中のチャンネルを更新します。空文字は閲覧をやめたことを表します
+func (c *Client) handleViewChannel(channelID string) {
+	if channelID != "" && !c.canAccessChannel(channelID) {
+		c.sendError("FORBIDDEN", "チャンネルにアクセスできません")
+		return
+	}
+	c.hub.SetViewingChannel(c, channelID)
+	c.sendAck("view_channel")
+}
+
+// canAccessChannel は接続中のワークスペースのチャンネルで、閲覧権限があるかを確認します
+func (c *Client) canAccessChannel(channelID string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), writeWait)
+	defer cancel()
+	ch, err := c.channelAccess.EnsureChannelAccess(ctx, channelID, c.userID)
+	if err != nil {
+		log.Printf("[WebSocket] チャンネルへのアクセスを拒否しました: user=%s channel=%s error=%v", c.userID, channelID, err)
+		return false
+	}
+	return ch.WorkspaceID == c.workspaceID
 }
 
 // sendEvent は接続中のクライアントにだけイベントを送信します
