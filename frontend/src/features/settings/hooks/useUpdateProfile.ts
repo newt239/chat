@@ -1,45 +1,23 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtom } from "jotai";
 
-import { api } from "#/lib/api/client";
-import { store } from "#/providers/store";
+import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { authAtom } from "#/providers/store/auth";
-
-type UpdateProfileInput = {
-  displayName?: string;
-  bio?: string | null;
-  avatarUrl?: string | null;
-};
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
+  const [auth, setAuth] = useAtom(authAtom);
 
-  return useMutation({
-    mutationFn: async (input: UpdateProfileInput) => {
-      const { data, error } = await api.PATCH("/api/users/me", {
-        body: {
-          avatar_url: input.avatarUrl,
-          bio: input.bio,
-          display_name: input.displayName,
-        },
+  return useMutation(UserService.method.updateMe, {
+    onSuccess: async ({ user }) => {
+      setAuth({ ...auth, user: user ?? auth.user });
+      await queryClient.invalidateQueries({
+        queryKey: createConnectQueryKey({
+          cardinality: "finite",
+          schema: UserService.method.getMe,
+        }),
       });
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      // Auth の user を部分更新（型上存在するフィールドのみ反映）
-      const current = store.get(authAtom);
-      store.set(authAtom, {
-        accessToken: current.accessToken,
-        refreshToken: current.refreshToken,
-        user: current.user
-          ? { ...current.user, avatarUrl: data.avatarUrl ?? null, displayName: data.displayName }
-          : current.user,
-      });
-
-      return data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["users", "me"] });
     },
   });
 };

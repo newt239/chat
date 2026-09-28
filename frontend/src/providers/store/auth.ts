@@ -3,9 +3,10 @@ import { atomWithStorage } from "jotai/utils";
 
 import { storage } from "#/lib/storage";
 
-import type { components } from "#/lib/api/schema";
+import type { User as UserMessage } from "#/gen/chat/v1/user_pb";
 
-type User = components["schemas"]["User"];
+// $typeName などを含むメッセージ型をそのまま保存しないよう、必要なフィールドだけにする
+type User = Pick<UserMessage, "id" | "email" | "displayName" | "avatarUrl">;
 
 type AuthState = {
   user: User | null;
@@ -24,7 +25,14 @@ const createEmptyAuthState = (): AuthState => ({
 const sanitizeAuthState = (state: Partial<AuthState>): AuthState => ({
   accessToken: state.accessToken ?? null,
   refreshToken: state.refreshToken ?? null,
-  user: state.user ?? null,
+  user: state.user
+    ? {
+        avatarUrl: state.user.avatarUrl,
+        displayName: state.user.displayName,
+        email: state.user.email,
+        id: state.user.id,
+      }
+    : null,
 });
 
 const authStorageAtom = atomWithStorage<AuthState>(storageKey, createEmptyAuthState(), undefined, {
@@ -40,14 +48,13 @@ export const authAtom = atom(
 
 export const userAtom = atom<User | null>((get) => get(authAtom).user);
 export const accessTokenAtom = atom<string | null>((get) => get(authAtom).accessToken);
-export const refreshTokenAtom = atom<string | null>((get) => get(authAtom).refreshToken);
 export const isAuthenticatedAtom = atom<boolean>((get) => {
   const state = get(authAtom);
   return Boolean(state.user && state.accessToken && state.refreshToken);
 });
 
 type AuthPayload = {
-  user: User;
+  user: User | undefined;
   accessToken: string;
   refreshToken: string;
 };

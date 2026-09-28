@@ -1,25 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 
-import { api } from "#/lib/api/client";
+import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { clearAuthAtom } from "#/providers/store/auth";
 
-type UpdatePasswordInput = {
-  currentPassword: string;
-  newPassword: string;
-};
-
 /** パスワードを変更する。変更後はサーバー側の全セッションが失効する */
-export const useUpdatePassword = () =>
-  useMutation({
-    mutationFn: async (input: UpdatePasswordInput) => {
-      const { error } = await api.PATCH("/api/users/me/password", { body: input });
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-  });
+export const useUpdatePassword = () => useMutation(UserService.method.updatePassword);
 
 /** アカウントを削除してログイン画面へ戻す */
 export const useDeleteAccount = () => {
@@ -27,13 +15,7 @@ export const useDeleteAccount = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  return useMutation({
-    mutationFn: async () => {
-      const { error } = await api.DELETE("/api/users/me");
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
+  return useMutation(UserService.method.deleteMe, {
     onSuccess: async () => {
       clearAuth();
       queryClient.clear();

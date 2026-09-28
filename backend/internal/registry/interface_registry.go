@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/newt239/chat/internal/gen/chat/v1/chatv1connect"
 	"github.com/newt239/chat/internal/interfaces/handler/http"
 	"github.com/newt239/chat/internal/interfaces/handler/http/handler"
 	"github.com/newt239/chat/internal/interfaces/handler/rpc"
@@ -123,7 +124,11 @@ func (r *InterfaceRegistry) NewUserHandler() *handler.UserHandler {
 }
 
 func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
-	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService())
+	uc := r.usecaseRegistry
+	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService(),
+		rpc.Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&rpc.AuthServer{UC: uc.NewAuthUseCase()})),
+		rpc.Register(chatv1connect.NewUserServiceHandler, chatv1connect.UserServiceHandler(&rpc.UserServer{UC: uc.NewUserUseCase()})),
+	)
 }
 
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
