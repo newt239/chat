@@ -1,79 +1,49 @@
 import { useEffect, useMemo } from "react";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useSetAtom } from "jotai";
 
-import { api } from "#/lib/api/client";
+import { PinService } from "#/gen/chat/v1/pin_service_pb";
+import { toDate } from "#/lib/timestamp";
 import { setChannelPinsCountAtom } from "#/providers/store/ui";
 
-type PinnedMessage = {
-  id: string;
-  messageId: string;
-  channelId: string;
-  pinnedAt: string;
-  pinnedBy: string;
-  // サマリーとして message 本体の最小情報（バックエンドのOpenAPIに準拠）
-  message: {
-    id: string;
-    body: string;
-    createdAt: string;
-    user?: {
-      id: string;
-      displayName: string;
-      avatarUrl?: string | null;
-    } | null;
-  } | null;
-};
+const PIN_LIMIT = 100;
 
-type PinnedListResponse = {
-  pins: PinnedMessage[];
-  nextCursor?: string | null;
-};
-
-export const usePinnedMessages = (channelId: string | null, limit = 100) => {
-  const setPinsCount = useSetAtom(setChannelPinsCountAtom);
-
-  const query = useQuery({
-    enabled: channelId !== null,
-    queryFn: async () => {
-      if (channelId === null) {
-        return { nextCursor: null, pins: [] };
-      }
-
-      const { data, error } = await api.GET("/api/channels/{channelId}/pins", {
-        params: { path: { channelId }, query: { limit } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
+const usePins = (channelId: string | null) =>
+  useQuery(
+    PinService.method.listPins,
+    channelId === null ? skipToken : { channelId, limit: PIN_LIMIT },
+    {
+      // メッセージが削除されたピンは表示できないため除く
+      select: (res) =>
+        res.pins.flatMap(({ message, ...pin }) =>
+          message === undefined ? [] : [{ ...pin, message }],
+        ),
     },
-    queryKey: ["channels", channelId, "pins"],
-  });
+  );
+
+export const usePinnedMessages = (channelId: string | null) => {
+  const setPinsCount = useSetAtom(setChannelPinsCountAtom);
+  const query = usePins(channelId);
 
   useEffect(() => {
     if (channelId && query.data) {
-      setPinsCount({ channelId, count: query.data.pins.length });
+      setPinsCount({ channelId, count: query.data.length });
     }
   }, [channelId, query.data, setPinsCount]);
 
-  const pinsSorted = useMemo(() => {
-    const pins = query.data?.pins ?? [];
-    return [...pins].toSorted(
-      (a, b) => new Date(b.pinnedAt).getTime() - new Date(a.pinnedAt).getTime(),
-    );
-  }, [query.data]);
+  const pinsSorted = useMemo(
+    () =>
+      (query.data ?? []).toSorted(
+        (a, b) => toDate(b.pinnedAt).getTime() - toDate(a.pinnedAt).getTime(),
+      ),
+    [query.data],
+  );
 
   return { ...query, pins: pinsSorted };
 };
 
-export const useIsPinned = (messageId: string | null, channelId: string | null) => {
-  const queryClient = useQueryClient();
-  const data = queryClient.getQueryData<PinnedListResponse>(["channels", channelId, "pins"]);
-  if (!messageId || !channelId || !data) {
-    return false;
-  }
-  return data.pins.some((p) => p.message?.id === messageId);
+export const useIsPinned = (messageId: string, channelId: string | null) => {
+  const { data: pins } = usePins(channelId);
+  return pins?.some((pin) => pin.message.id === messageId) ?? false;
 };

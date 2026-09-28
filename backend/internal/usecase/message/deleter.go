@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -16,7 +17,7 @@ type MessageDeleter struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 	threadRepo        domainrepository.ThreadRepository
-	notificationSvc   service.NotificationService
+	notificationSvc   Notifier
 	channelAccessSvc  service.ChannelAccessService
 	logger            service.Logger
 }
@@ -28,7 +29,7 @@ func NewMessageDeleter(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	threadRepo domainrepository.ThreadRepository,
-	notificationSvc service.NotificationService,
+	notificationSvc Notifier,
 	channelAccessSvc service.ChannelAccessService,
 	logger service.Logger,
 ) *MessageDeleter {
@@ -96,12 +97,11 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 
 	// WebSocket通知を送信
 	if d.notificationSvc != nil {
-		deleteData := map[string]interface{}{
-			"messageId":  message.ID,
-			"channelId":  message.ChannelID,
-			"deletedIds": deleteIDs,
-		}
-		d.notificationSvc.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, deleteData)
+		d.notificationSvc.NotifyDeletedMessage(channel.WorkspaceID, channel.ID, MessageDeletion{
+			MessageID:  message.ID,
+			DeletedIDs: deleteIDs,
+			DeletedAt:  time.Now(),
+		})
 	}
 
 	return nil

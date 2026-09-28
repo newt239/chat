@@ -16,7 +16,7 @@ const authClient = createClient(AuthService, createConnectTransport({ baseUrl })
 let refreshPromise: Promise<string | null> | null = null;
 
 /** リフレッシュトークンでアクセストークンを更新する。同時に呼ばれても通信は 1 回にまとめる */
-export const refreshAccessToken = () => {
+const refreshAccessToken = () => {
   if (refreshPromise) {
     return refreshPromise;
   }

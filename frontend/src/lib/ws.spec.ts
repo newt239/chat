@@ -1,22 +1,20 @@
+import { create, toJsonString } from "@bufbuild/protobuf";
 import { describe, expect, test } from "vite-plus/test";
 
+import { ServerEventSchema } from "#/gen/chat/v1/event_pb";
 import { WsClient } from "#/lib/ws";
 
-const serverEvent = (type: string, payload: unknown) =>
-  new MessageEvent("message", { data: JSON.stringify({ payload, type }) });
+import type { MessageInitShape } from "@bufbuild/protobuf";
 
-const newMessagePayload = {
-  channel_id: "ch1",
-  message: {
-    body: "hello",
-    channelId: "ch1",
-    createdAt: "2026-01-01T00:00:00Z",
-    id: "m1",
-    isDeleted: false,
-    user: { displayName: "Alice", id: "u1" },
-    userId: "u1",
-  },
-};
+const serverEvent = (event: MessageInitShape<typeof ServerEventSchema>["event"]) =>
+  new MessageEvent("message", {
+    data: toJsonString(ServerEventSchema, create(ServerEventSchema, { event })),
+  });
+
+const newMessageEvent = serverEvent({
+  case: "newMessage",
+  value: { channelId: "ch1", message: { body: "hello", channelId: "ch1", id: "m1" } },
+});
 
 describe("WsClient のイベント購読", () => {
   test("購読したイベントだけにペイロードが届く", () => {
@@ -24,14 +22,14 @@ describe("WsClient のイベント購読", () => {
     const received: string[] = [];
     const other: string[] = [];
 
-    client.on("new_message", (payload) => {
-      received.push(payload.message.id);
+    client.on("newMessage", (payload) => {
+      received.push(payload.message?.id ?? "");
     });
-    client.on("message_deleted", (payload) => {
-      other.push(payload.deleteData.id);
+    client.on("messageDeleted", (payload) => {
+      other.push(payload.messageId);
     });
 
-    client.eventDispatcher(serverEvent("new_message", newMessagePayload));
+    client.eventDispatcher(newMessageEvent);
 
     expect(received).toEqual(["m1"]);
     expect(other).toEqual([]);
@@ -42,13 +40,13 @@ describe("WsClient のイベント購読", () => {
     const client = new WsClient("token", "ws1");
     const received: string[] = [];
 
-    const unsubscribe = client.on("new_message", (payload) => {
-      received.push(payload.message.id);
+    const unsubscribe = client.on("newMessage", (payload) => {
+      received.push(payload.message?.id ?? "");
     });
 
-    client.eventDispatcher(serverEvent("new_message", newMessagePayload));
+    client.eventDispatcher(newMessageEvent);
     unsubscribe();
-    client.eventDispatcher(serverEvent("new_message", newMessagePayload));
+    client.eventDispatcher(newMessageEvent);
 
     expect(received).toEqual(["m1"]);
     client.close();
@@ -62,7 +60,7 @@ describe("WsClient のイベント購読", () => {
       called = true;
     });
 
-    client.eventDispatcher(serverEvent("typing", { channel_id: "ch1" }));
+    client.eventDispatcher(new MessageEvent("message", { data: '{"typing":"not-an-object"}' }));
 
     expect(called).toBe(false);
     client.close();

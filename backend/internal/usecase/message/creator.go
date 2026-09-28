@@ -24,7 +24,7 @@ type MessageCreator struct {
 	threadRepo            domainrepository.ThreadRepository
 	attachmentRepo        domainrepository.AttachmentRepository
 	ogpService            service.OGPService
-	notificationSvc       service.NotificationService
+	notificationSvc       Notifier
 	mentionService        service.MentionService
 	linkProcessingService service.LinkProcessingService
 	transactionManager    transaction.Manager
@@ -45,7 +45,7 @@ func NewMessageCreator(
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 	ogpService service.OGPService,
-	notificationSvc service.NotificationService,
+	notificationSvc Notifier,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
 	transactionManager transaction.Manager,

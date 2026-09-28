@@ -9,7 +9,9 @@ import { useAddReaction, useRemoveReaction } from "../hooks/useReactions";
 import AddAnotherEmojiButton from "./AddAnotherEmojiButton";
 import { ReactionButton } from "./ReactionButton";
 
-import type { Reaction, ReactionGroup } from "../types";
+import type { ReactionGroup } from "../types";
+
+import type { Reaction } from "#/gen/chat/v1/message_pb";
 
 type ReactionListProps = {
   messageId: string;
@@ -25,21 +27,16 @@ export const ReactionList = ({ messageId, reactions }: ReactionListProps) => {
   const reactionGroups = useMemo((): ReactionGroup[] => {
     const groups = new Map<string, ReactionGroup>();
 
-    for (const reaction of reactions) {
-      const existing = groups.get(reaction.emoji);
+    for (const { emoji, user: reactedUser } of reactions) {
+      const users = reactedUser === undefined ? [] : [reactedUser];
+      const hasUserReacted = user !== null && reactedUser?.id === user.id;
+      const existing = groups.get(emoji);
       if (existing) {
         existing.count++;
-        existing.users.push(reaction.user);
-        if (user && reaction.user.id === user.id) {
-          existing.hasUserReacted = true;
-        }
+        existing.users.push(...users);
+        existing.hasUserReacted ||= hasUserReacted;
       } else {
-        groups.set(reaction.emoji, {
-          count: 1,
-          emoji: reaction.emoji,
-          hasUserReacted: user ? reaction.user.id === user.id : false,
-          users: [reaction.user],
-        });
+        groups.set(emoji, { count: 1, emoji, hasUserReacted, users });
       }
     }
 

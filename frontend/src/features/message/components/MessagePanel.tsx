@@ -63,8 +63,8 @@ export const MessagePanel = () => {
       ? (() => {
           for (let i = orderedItems.length - 1; i >= 0; i--) {
             const item = orderedItems[i];
-            if (item?.type === "user" && item.userMessage) {
-              return item.userMessage.id;
+            if (item?.content.case === "userMessage") {
+              return item.content.value.id;
             }
           }
           return null;
@@ -108,7 +108,7 @@ export const MessagePanel = () => {
     [setRightSidebarView],
   );
 
-  const { handleEdit, handleDelete } = useMessageActions(currentChannelId);
+  const { handleEdit, handleDelete } = useMessageActions();
 
   if (currentWorkspaceId === null) {
     return (
@@ -153,8 +153,8 @@ export const MessagePanel = () => {
             )}
             <div className="flex flex-1 flex-col justify-end">
               {orderedItems.map((item) => {
-                if (item.type === "user" && item.userMessage) {
-                  const msg = item.userMessage;
+                if (item.content.case === "userMessage") {
+                  const msg = item.content.value;
                   const isLatestMessage = msg.id === latestUserMessageId;
                   const isHighlighted = msg.id === highlightedId;
                   return (
@@ -182,11 +182,11 @@ export const MessagePanel = () => {
                     </div>
                   );
                 }
-                if (item.type === "system" && item.systemMessage) {
+                if (item.content.case === "systemMessage") {
                   return (
                     <SystemMessageItem
-                      key={`s-${item.systemMessage.id}`}
-                      message={item.systemMessage}
+                      key={`s-${item.content.value.id}`}
+                      message={item.content.value}
                     />
                   );
                 }

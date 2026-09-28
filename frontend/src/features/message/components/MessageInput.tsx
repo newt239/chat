@@ -8,13 +8,15 @@ type MessageInputProps = {
 };
 
 export const MessageInput = ({ channelId }: MessageInputProps) => {
-  const sendMessage = useSendMessage(channelId);
+  const sendMessage = useSendMessage();
 
   const handleSubmit = useCallback(
     (body: string, attachmentIds: string[]) => {
-      sendMessage.mutate({ attachmentIds, body });
+      if (channelId !== null) {
+        sendMessage.mutate({ attachmentIds, body, channelId });
+      }
     },
-    [sendMessage],
+    [sendMessage, channelId],
   );
 
   if (!channelId) {

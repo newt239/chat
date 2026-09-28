@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { channelListKey } from "#/features/channel/hooks/useChannel";
+import { pinListKey } from "#/features/pin/hooks/usePinActions";
+import { userAtom } from "#/providers/store/auth";
 import { addChannelPinsDeltaAtom } from "#/providers/store/ui";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
@@ -17,6 +19,7 @@ export const useChannelRealtimeSync = (
   const queryClient = useQueryClient();
   const { wsClient } = useWsClient();
   const addPinsDelta = useSetAtom(addChannelPinsDeltaAtom);
+  const currentUserId = useAtomValue(userAtom)?.id;
 
   useEffect(() => {
     if (!wsClient || workspaceId === null) {
@@ -38,32 +41,37 @@ export const useChannelRealtimeSync = (
     };
 
     const unsubscribes = [
-      wsClient.on("new_message", ({ channel_id }) => {
-        if (channel_id === currentChannelId) {
+      wsClient.on("newMessage", ({ channelId }) => {
+        if (channelId === currentChannelId) {
           return;
         }
-        updateChannel(channel_id, (channel) => ({
+        updateChannel(channelId, (channel) => ({
           ...channel,
           unreadCount: channel.unreadCount + 1,
         }));
       }),
 
-      wsClient.on("unread_count", ({ channel_id, has_mention, unread_count }) => {
-        updateChannel(channel_id, (channel) => ({
+      wsClient.on("unreadCount", ({ channelId, hasMention, unreadCount }) => {
+        updateChannel(channelId, (channel) => ({
           ...channel,
-          hasMention: has_mention,
-          unreadCount: unread_count,
+          hasMention,
+          unreadCount,
         }));
       }),
 
-      wsClient.on("pin_created", ({ channel_id }) => {
-        addPinsDelta({ channelId: channel_id, delta: 1 });
-        void queryClient.invalidateQueries({ queryKey: ["channels", channel_id, "pins"] });
+      // 自分の操作は usePinActions で件数を反映済みのため二重に数えない
+      wsClient.on("pinCreated", ({ channelId, pinnedBy }) => {
+        if (pinnedBy !== currentUserId) {
+          addPinsDelta({ channelId, delta: 1 });
+          void queryClient.invalidateQueries({ queryKey: pinListKey(channelId) });
+        }
       }),
 
-      wsClient.on("pin_deleted", ({ channel_id }) => {
-        addPinsDelta({ channelId: channel_id, delta: -1 });
-        void queryClient.invalidateQueries({ queryKey: ["channels", channel_id, "pins"] });
+      wsClient.on("pinDeleted", ({ channelId, pinnedBy }) => {
+        if (pinnedBy !== currentUserId) {
+          addPinsDelta({ channelId, delta: -1 });
+          void queryClient.invalidateQueries({ queryKey: pinListKey(channelId) });
+        }
       }),
     ];
 
@@ -72,5 +80,5 @@ export const useChannelRealtimeSync = (
         unsubscribe();
       }
     };
-  }, [wsClient, workspaceId, currentChannelId, queryClient, addPinsDelta]);
+  }, [wsClient, workspaceId, currentChannelId, queryClient, addPinsDelta, currentUserId]);
 };

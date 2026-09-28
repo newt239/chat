@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
+import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
 import { addNotificationAtom } from "#/providers/store/notification";
 import { useWsClient } from "#/providers/ws/useWsClient";
@@ -22,27 +23,31 @@ export const useNotificationSync = (
       return undefined;
     }
 
-    return wsClient.on("new_message", ({ channel_id, message }) => {
-      if (message.user.id === currentUser?.id || channel_id === currentChannelId) {
+    return wsClient.on("newMessage", ({ channelId, message }) => {
+      if (
+        message === undefined ||
+        message.userId === currentUser?.id ||
+        channelId === currentChannelId
+      ) {
         return;
       }
 
-      const isMention =
-        message.mentions?.some((mention) => mention.userId === currentUser?.id) === true;
-      const channelName = channels?.find((channel) => channel.id === channel_id)?.name ?? "";
+      const isMention = message.mentions.some((mention) => mention.userId === currentUser?.id);
+      const channelName = channels?.find((channel) => channel.id === channelId)?.name ?? "";
+      const userName = message.user?.displayName ?? "";
 
       addNotification({
-        channelId: channel_id,
+        channelId,
         channelName,
         id: message.id,
         isRead: false,
         message: message.body,
         messageId: message.id,
-        timestamp: new Date(message.createdAt),
-        title: isMention ? `${message.user.displayName} さんからのメンション` : channelName,
+        timestamp: toDate(message.createdAt),
+        title: isMention ? `${userName} さんからのメンション` : channelName,
         type: isMention ? "mention" : "message",
-        userId: message.user.id,
-        userName: message.user.displayName,
+        userId: message.userId,
+        userName,
         workspaceId,
       });
     });

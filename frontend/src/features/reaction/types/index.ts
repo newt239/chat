@@ -1,18 +1,8 @@
-export type UserInfo = {
-  id: string;
-  displayName: string;
-  avatarUrl?: string | null;
-};
-
-export type Reaction = {
-  user: UserInfo;
-  emoji: string;
-  createdAt: string;
-};
+import type { UserSummary } from "#/gen/chat/v1/user_pb";
 
 export type ReactionGroup = {
   emoji: string;
   count: number;
-  users: UserInfo[]; // ユーザー情報の配列
+  users: UserSummary[];
   hasUserReacted: boolean;
 };

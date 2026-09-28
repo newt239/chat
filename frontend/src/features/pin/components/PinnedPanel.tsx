@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 
 import { usePinnedMessages } from "#/features/pin/hooks/usePinnedMessages";
+import { toDate } from "#/lib/timestamp";
 import { currentWorkspaceIdAtom, currentChannelIdAtom } from "#/providers/store/workspace";
 
 type PinnedPanelProps = {
@@ -75,7 +76,7 @@ export const PinnedPanel = ({ channelId }: PinnedPanelProps) => {
                 {pin.message.body}
               </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                {new Date(pin.pinnedAt).toLocaleDateString("ja-JP", {
+                {toDate(pin.pinnedAt).toLocaleDateString("ja-JP", {
                   day: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",

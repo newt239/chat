@@ -8,10 +8,10 @@ import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
 import { MessageItem } from "./MessageItem";
 
-import type { MessageWithUser } from "../types";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 type ThreadReplyListProps = {
-  replies: MessageWithUser[];
+  replies: Message[];
   currentUserId: string | null;
   workspaceId: string;
   channelId: string;

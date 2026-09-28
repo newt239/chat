@@ -21,7 +21,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
   const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
   const [currentChannelId] = useAtom(currentChannelIdAtom);
   const { data: threadData, isLoading, isError, error } = useThreadReplies(threadId);
-  const sendReply = useSendThreadReply(threadId, currentChannelId);
+  const sendReply = useSendThreadReply();
   const repliesEndRef = useRef<HTMLDivElement>(null);
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
 
@@ -52,9 +52,11 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
 
   const handleSendReply = useCallback(
     (body: string, attachmentIds: string[]) => {
-      sendReply.mutate({ attachmentIds, body });
+      if (currentChannelId !== null) {
+        sendReply.mutate({ attachmentIds, body, channelId: currentChannelId, parentId: threadId });
+      }
     },
-    [sendReply],
+    [sendReply, currentChannelId, threadId],
   );
 
   if (!currentWorkspaceId || !currentChannelId) {
@@ -78,7 +80,7 @@ export const ThreadPanel = ({ threadId }: ThreadPanelProps) => {
           <Text c="red" size="sm">
             {error.message}
           </Text>
-        ) : threadData ? (
+        ) : threadData?.parentMessage ? (
           <>
             <div className="flex-1 overflow-y-auto">
               <Stack gap="md">

@@ -1,39 +1,39 @@
+import { useMutation } from "@connectrpc/connect-query";
 import { Card, Group, Stack, Text, Badge } from "@mantine/core";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 
-import { api } from "#/lib/api/client";
+import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
+import { toDate } from "#/lib/timestamp";
 import { setRightSidePanelViewAtom } from "#/providers/store/ui";
 
-import type { ParticipatingThread } from "#/features/thread/schemas";
+import type { Message } from "#/gen/chat/v1/message_pb";
+import type { ParticipatingThread } from "#/gen/chat/v1/thread_service_pb";
 
 type ThreadCardProps = {
-  thread: ParticipatingThread;
-  onMarkedRead?: (threadId: string) => void;
+  thread: ParticipatingThread & { firstMessage: Message };
+  onMarkedRead: (threadId: string) => void;
 };
 
 export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
   const navigate = useNavigate();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const setRightSidePanelView = useSetAtom(setRightSidePanelViewAtom);
+  const markThreadRead = useMutation(ThreadService.method.markThreadRead);
 
   const handleOpenThread = async () => {
-    await api.POST("/api/threads/{threadId}/read", {
-      params: { path: { threadId: thread.thread_id } },
-    });
-    onMarkedRead?.(thread.thread_id);
+    await markThreadRead.mutateAsync({ threadId: thread.threadId });
+    onMarkedRead(thread.threadId);
 
-    if (thread.channel_id) {
+    if (thread.channelId !== undefined) {
       await navigate({
-        params: { channelId: thread.channel_id, workspaceId },
-        search: { message: thread.first_message.id },
+        params: { channelId: thread.channelId, workspaceId },
+        search: { message: thread.firstMessage.id },
         to: "/app/$workspaceId/$channelId",
       });
     }
-    setRightSidePanelView({ threadId: thread.thread_id, type: "thread" });
+    setRightSidePanelView({ threadId: thread.threadId, type: "thread" });
   };
-
-  const first = thread.first_message;
 
   return (
     <Card
@@ -47,16 +47,16 @@ export const ThreadCard = ({ thread, onMarkedRead }: ThreadCardProps) => {
       <Stack gap={6}>
         <Group justify="space-between" align="center">
           <Text size="sm" c="dimmed">
-            最終更新: {new Date(thread.last_activity_at).toLocaleString()}
+            最終更新: {toDate(thread.lastActivityAt).toLocaleString()}
           </Text>
           <Group gap={8}>
-            {thread.unread_count > 0 && <Badge color="blue">未読 {thread.unread_count}</Badge>}
-            <Badge variant="light">返信 {thread.reply_count}</Badge>
+            {thread.unreadCount > 0 && <Badge color="blue">未読 {thread.unreadCount}</Badge>}
+            <Badge variant="light">返信 {thread.replyCount}</Badge>
           </Group>
         </Group>
-        <Text fw={600}>{first.body}</Text>
+        <Text fw={600}>{thread.firstMessage.body}</Text>
         <Text size="xs" c="dimmed">
-          投稿: {new Date(first.createdAt).toLocaleString()}
+          投稿: {toDate(thread.firstMessage.createdAt).toLocaleString()}
         </Text>
       </Stack>
     </Card>

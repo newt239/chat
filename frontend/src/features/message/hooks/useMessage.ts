@@ -1,115 +1,32 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createConnectQueryKey, skipToken, useMutation, useQuery } from "@connectrpc/connect-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { api } from "#/lib/api/client";
-
-import type { MessagesTimelineResponse } from "../types";
-
-type CreateMessageInput = {
-  body: string;
-  attachmentIds?: string[];
-};
-
-type UpdateMessageInput = {
-  messageId: string;
-  body: string;
-};
-
-type DeleteMessageInput = {
-  messageId: string;
-};
+import { MessageService } from "#/gen/chat/v1/message_service_pb";
 
 export const MESSAGES_PAGE_SIZE = 50;
 
 export const useMessages = (channelId: string | null) =>
-  useQuery({
-    enabled: channelId !== null,
-    queryFn: async (): Promise<MessagesTimelineResponse> => {
-      if (channelId === null) {
-        return { hasMore: false, messages: [] };
-      }
+  useQuery(
+    MessageService.method.listMessages,
+    channelId === null ? skipToken : { channelId, limit: MESSAGES_PAGE_SIZE },
+  );
 
-      const { data, error } = await api.GET("/api/channels/{channelId}/messages", {
-        params: { path: { channelId }, query: { limit: MESSAGES_PAGE_SIZE } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
-    queryKey: ["channels", channelId, "messages"],
-  });
-
-export const useSendMessage = (channelId: string | null) => {
+/** スレッド付きの一覧も含め、メッセージ一覧を再取得する */
+export const useInvalidateMessages = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (input: CreateMessageInput) => {
-      if (channelId === null) {
-        throw new Error("チャンネルが選択されていません");
-      }
-
-      const { data, error } = await api.POST("/api/channels/{channelId}/messages", {
-        body: { attachmentIds: input.attachmentIds, body: input.body },
-        params: { path: { channelId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
-    onSuccess: async () => {
-      if (channelId !== null) {
-        await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "messages"] });
-      }
-    },
-  });
+  return async () => {
+    await queryClient.invalidateQueries({
+      queryKey: createConnectQueryKey({ cardinality: "finite", schema: MessageService }),
+    });
+  };
 };
 
-export const useUpdateMessage = (channelId: string | null) => {
-  const queryClient = useQueryClient();
+export const useSendMessage = () =>
+  useMutation(MessageService.method.createMessage, { onSuccess: useInvalidateMessages() });
 
-  return useMutation({
-    mutationFn: async (input: UpdateMessageInput) => {
-      const { data, error } = await api.PATCH("/api/messages/{messageId}", {
-        body: { body: input.body },
-        params: { path: { messageId: input.messageId } },
-      });
+export const useUpdateMessage = () =>
+  useMutation(MessageService.method.updateMessage, { onSuccess: useInvalidateMessages() });
 
-      if (error) {
-        throw new Error(error.error);
-      }
-
-      return data;
-    },
-    onSuccess: async () => {
-      if (channelId !== null) {
-        await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "messages"] });
-      }
-    },
-  });
-};
-
-export const useDeleteMessage = (channelId: string | null) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: DeleteMessageInput) => {
-      const { error } = await api.DELETE("/api/messages/{messageId}", {
-        params: { path: { messageId: input.messageId } },
-      });
-
-      if (error) {
-        throw new Error(error.error);
-      }
-    },
-    onSuccess: async () => {
-      if (channelId !== null) {
-        await queryClient.invalidateQueries({ queryKey: ["channels", channelId, "messages"] });
-      }
-    },
-  });
-};
+export const useDeleteMessage = () =>
+  useMutation(MessageService.method.deleteMessage, { onSuccess: useInvalidateMessages() });

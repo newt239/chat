@@ -1,10 +1,10 @@
 import { Button, Tooltip } from "@mantine/core";
 
-import type { UserInfo } from "../types";
+import type { UserSummary } from "#/gen/chat/v1/user_pb";
 
 type ReactionButtonProps = {
   emoji: string;
-  users: UserInfo[];
+  users: UserSummary[];
   isActive: boolean;
   onClick: () => void;
 };

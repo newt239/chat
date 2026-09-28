@@ -1,8 +1,16 @@
+import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
+
+import { ClientEventSchema, ServerEventSchema } from "#/gen/chat/v1/event_pb";
 import { logger } from "#/lib/logger";
 import { navigateTo } from "#/lib/navigation";
-import { parseServerEvent } from "#/types/wsEvents";
 
-import type { ClientToServerMessage, WsEventPayloadMap, WsEventType } from "#/types/wsEvents";
+import type { ServerEvent } from "#/gen/chat/v1/event_pb";
+
+import type { MessageInitShape } from "@bufbuild/protobuf";
+
+type ServerEventOneof = Exclude<ServerEvent["event"], { case: undefined }>;
+type WsEventType = ServerEventOneof["case"];
+type WsEventPayload<K extends WsEventType> = Extract<ServerEventOneof, { case: K }>["value"];
 
 const WS_BC_NAME = "ws-control";
 const WS_RECONNECT_DELAY = 2_000; // 初期遅延: 2秒
@@ -13,6 +21,15 @@ const WS_MAX_RECONNECT_ATTEMPTS = 5; // 最大再接続試行回数
 const getWsUrl = (token: string, workspaceId: string): string => {
   const base = import.meta.env.VITE_WS_URL ?? "ws://localhost:8080";
   return `${base}/ws?token=${encodeURIComponent(token)}&workspaceId=${encodeURIComponent(workspaceId)}`;
+};
+
+const parseServerEvent = (data: string) => {
+  try {
+    return fromJsonString(ServerEventSchema, data, { ignoreUnknownFields: true });
+  } catch (error) {
+    logger.warn("WebSocketイベントの形式が想定と異なります:", error);
+    return null;
+  }
 };
 
 export class WsClient {
@@ -28,21 +45,21 @@ export class WsClient {
   private isActiveLeader = false;
 
   private readonly handlers: {
-    [K in WsEventType]: Set<(payload: WsEventPayloadMap[K]) => void>;
+    [K in WsEventType]: Set<(payload: WsEventPayload<K>) => void>;
   } = {
     ack: new Set(),
     error: new Set(),
-    message_deleted: new Set(),
-    message_updated: new Set(),
-    new_message: new Set(),
-    pin_created: new Set(),
-    pin_deleted: new Set(),
-    reaction_added: new Set(),
-    reaction_removed: new Set(),
-    stop_typing: new Set(),
-    system_message_created: new Set(),
+    messageDeleted: new Set(),
+    messageUpdated: new Set(),
+    newMessage: new Set(),
+    pinCreated: new Set(),
+    pinDeleted: new Set(),
+    reactionAdded: new Set(),
+    reactionRemoved: new Set(),
+    stopTyping: new Set(),
+    systemMessageCreated: new Set(),
     typing: new Set(),
-    unread_count: new Set(),
+    unreadCount: new Set(),
   };
 
   public constructor(token: string, workspaceId: string) {
@@ -55,87 +72,82 @@ export class WsClient {
 
   /** サーバーイベントを購読中のハンドラへ配る（WebSocket の message ハンドラ） */
   public readonly eventDispatcher = (event: MessageEvent<string>) => {
-    try {
-      const parsed = parseServerEvent(event.data);
-      if (!parsed.success) {
-        logger.warn("WebSocketイベントの形式が想定と異なります:", parsed.error);
-        return;
-      }
+    const oneof = parseServerEvent(event.data)?.event;
+    if (oneof?.case === undefined) {
+      return;
+    }
 
-      const serverEvent = parsed.data;
-      switch (serverEvent.type) {
-        case "new_message": {
-          this.emit("new_message", serverEvent.payload);
-          break;
-        }
-        case "message_updated": {
-          this.emit("message_updated", serverEvent.payload);
-          break;
-        }
-        case "message_deleted": {
-          this.emit("message_deleted", serverEvent.payload);
-          break;
-        }
-        case "unread_count": {
-          this.emit("unread_count", serverEvent.payload);
-          break;
-        }
-        case "pin_created": {
-          this.emit("pin_created", serverEvent.payload);
-          break;
-        }
-        case "pin_deleted": {
-          this.emit("pin_deleted", serverEvent.payload);
-          break;
-        }
-        case "system_message_created": {
-          this.emit("system_message_created", serverEvent.payload);
-          break;
-        }
-        case "reaction_added": {
-          this.emit("reaction_added", serverEvent.payload);
-          break;
-        }
-        case "reaction_removed": {
-          this.emit("reaction_removed", serverEvent.payload);
-          break;
-        }
-        case "typing": {
-          this.emit("typing", serverEvent.payload);
-          break;
-        }
-        case "stop_typing": {
-          this.emit("stop_typing", serverEvent.payload);
-          break;
-        }
-        case "ack": {
-          this.emit("ack", serverEvent.payload);
-          break;
-        }
-        case "error": {
-          if (serverEvent.payload.code === "401") {
-            navigateTo({ to: "/login" });
-          }
-          this.emit("error", serverEvent.payload);
-          break;
-        }
-        default: {
-          break;
-        }
+    // payload の型をイベントの種類ごとに絞り込むため、case ごとに emit する
+    switch (oneof.case) {
+      case "newMessage": {
+        this.emit(oneof.case, oneof.value);
+        break;
       }
-    } catch (error) {
-      logger.error("WebSocketイベント処理エラー:", error);
+      case "messageUpdated": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "messageDeleted": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "unreadCount": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "pinCreated": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "pinDeleted": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "systemMessageCreated": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "reactionAdded": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "reactionRemoved": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "typing": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "stopTyping": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "ack": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "error": {
+        if (oneof.value.code === "401") {
+          navigateTo({ to: "/login" });
+        }
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      default: {
+        break;
+      }
     }
   };
 
-  private emit<T extends WsEventType>(type: T, payload: WsEventPayloadMap[T]) {
+  private emit<T extends WsEventType>(type: T, payload: WsEventPayload<T>) {
     for (const handler of this.handlers[type]) {
       handler(payload);
     }
   }
 
   /** サーバーイベントの購読を開始する。戻り値を呼ぶと購読を解除する */
-  public on<T extends WsEventType>(type: T, cb: (payload: WsEventPayloadMap[T]) => void) {
+  public on<T extends WsEventType>(type: T, cb: (payload: WsEventPayload<T>) => void) {
     this.handlers[type].add(cb);
 
     return () => {
@@ -144,7 +156,7 @@ export class WsClient {
   }
 
   /** サーバーイベントの購読を解除する */
-  public off<T extends WsEventType>(type: T, cb: (payload: WsEventPayloadMap[T]) => void) {
+  public off<T extends WsEventType>(type: T, cb: (payload: WsEventPayload<T>) => void) {
     this.handlers[type].delete(cb);
   }
 
@@ -280,28 +292,22 @@ export class WsClient {
     return JSON.stringify(event);
   }
 
-  public joinChannel(channel_id: string) {
-    this.send({ payload: { channel_id }, type: "join_channel" });
+  public joinChannel(channelId: string) {
+    this.send({ case: "joinChannel", value: { channelId } });
   }
-  public leaveChannel(channel_id: string) {
-    this.send({ payload: { channel_id }, type: "leave_channel" });
+  public leaveChannel(channelId: string) {
+    this.send({ case: "leaveChannel", value: { channelId } });
   }
-  public postMessage(channel_id: string, body: string) {
-    this.send({ payload: { body, channel_id }, type: "post_message" });
+  public typing(channelId: string) {
+    this.send({ case: "typing", value: { channelId } });
   }
-  public typing(channel_id: string) {
-    this.send({ payload: { channel_id }, type: "typing" });
-  }
-  public stopTyping(channel_id: string) {
-    this.send({ payload: { channel_id }, type: "stop_typing" });
-  }
-  public updateReadState(channel_id: string, message_id: string) {
-    this.send({ payload: { channel_id, message_id }, type: "update_read_state" });
+  public stopTyping(channelId: string) {
+    this.send({ case: "stopTyping", value: { channelId } });
   }
 
-  private send(data: ClientToServerMessage) {
+  private send(event: NonNullable<MessageInitShape<typeof ClientEventSchema>["event"]>) {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(data));
+      this.ws.send(toJsonString(ClientEventSchema, create(ClientEventSchema, { event })));
     }
   }
 

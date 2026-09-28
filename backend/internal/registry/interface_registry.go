@@ -138,6 +138,14 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewLinkServiceHandler, chatv1connect.LinkServiceHandler(&rpc.LinkServer{UC: uc.NewLinkUseCase()})),
 		rpc.Register(chatv1connect.NewAttachmentServiceHandler, chatv1connect.AttachmentServiceHandler(&rpc.AttachmentServer{UC: uc.NewAttachmentUseCase()})),
 		rpc.Register(chatv1connect.NewSearchServiceHandler, chatv1connect.SearchServiceHandler(&rpc.SearchServer{UC: uc.NewSearchUseCase()})),
+		rpc.Register(chatv1connect.NewMessageServiceHandler, chatv1connect.MessageServiceHandler(&rpc.MessageServer{UC: uc.NewMessageUseCase()})),
+		rpc.Register(chatv1connect.NewThreadServiceHandler, chatv1connect.ThreadServiceHandler(&rpc.ThreadServer{
+			MessageUC:    uc.NewMessageUseCase(),
+			ThreadLister: uc.NewThreadLister(),
+			ThreadReader: uc.NewThreadReader(),
+		})),
+		rpc.Register(chatv1connect.NewReactionServiceHandler, chatv1connect.ReactionServiceHandler(&rpc.ReactionServer{UC: uc.NewReactionUseCase()})),
+		rpc.Register(chatv1connect.NewPinServiceHandler, chatv1connect.PinServiceHandler(&rpc.PinServer{UC: uc.NewPinUseCase()})),
 	)
 }
 
