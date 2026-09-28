@@ -30,6 +30,9 @@ func (User) Fields() []ent.Field {
 			Optional(),
 		field.String("avatar_url").
 			Optional(),
+		// Webhook の投稿名義。ログインできず、ワークスペースのメンバーにもならない
+		field.Bool("is_bot").
+			Default(false),
 		// 表示設定。既定値は Jade プリセット・システムに合わせる・日本語
 		field.Int("theme_hue").
 			Default(168),

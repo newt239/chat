@@ -16,6 +16,8 @@ const (
 	AuditActionChannelUnarchived AuditAction = "channel_unarchived"
 	AuditActionPermissionChanged AuditAction = "permission_changed"
 	AuditActionDataExported      AuditAction = "data_exported"
+	AuditActionWebhookCreated    AuditAction = "webhook_created"
+	AuditActionWebhookDeleted    AuditAction = "webhook_deleted"
 )
 
 type AuditTargetType string
@@ -25,6 +27,7 @@ const (
 	AuditTargetChannel AuditTargetType = "channel"
 	AuditTargetRole    AuditTargetType = "role"
 	AuditTargetData    AuditTargetType = "data"
+	AuditTargetWebhook AuditTargetType = "webhook"
 )
 
 type AuditLog struct {

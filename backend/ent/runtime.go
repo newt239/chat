@@ -30,6 +30,7 @@ import (
 	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
+	"github.com/newt239/chat/ent/webhook"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 	"github.com/newt239/chat/ent/workspacepermission"
@@ -359,24 +360,28 @@ func init() {
 	userDescDisplayName := userFields[3].Descriptor()
 	// user.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
+	// userDescIsBot is the schema descriptor for is_bot field.
+	userDescIsBot := userFields[6].Descriptor()
+	// user.DefaultIsBot holds the default value on creation for the is_bot field.
+	user.DefaultIsBot = userDescIsBot.Default.(bool)
 	// userDescThemeHue is the schema descriptor for theme_hue field.
-	userDescThemeHue := userFields[6].Descriptor()
+	userDescThemeHue := userFields[7].Descriptor()
 	// user.DefaultThemeHue holds the default value on creation for the theme_hue field.
 	user.DefaultThemeHue = userDescThemeHue.Default.(int)
 	// userDescThemeChroma is the schema descriptor for theme_chroma field.
-	userDescThemeChroma := userFields[7].Descriptor()
+	userDescThemeChroma := userFields[8].Descriptor()
 	// user.DefaultThemeChroma holds the default value on creation for the theme_chroma field.
 	user.DefaultThemeChroma = userDescThemeChroma.Default.(float64)
 	// userDescLocale is the schema descriptor for locale field.
-	userDescLocale := userFields[10].Descriptor()
+	userDescLocale := userFields[11].Descriptor()
 	// user.DefaultLocale holds the default value on creation for the locale field.
 	user.DefaultLocale = userDescLocale.Default.(string)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[11].Descriptor()
+	userDescCreatedAt := userFields[12].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[12].Descriptor()
+	userDescUpdatedAt := userFields[13].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -437,6 +442,30 @@ func init() {
 	userthreadfollowDescID := userthreadfollowFields[0].Descriptor()
 	// userthreadfollow.DefaultID holds the default value on creation for the id field.
 	userthreadfollow.DefaultID = userthreadfollowDescID.Default.(func() uuid.UUID)
+	webhookFields := schema.Webhook{}.Fields()
+	_ = webhookFields
+	// webhookDescName is the schema descriptor for name field.
+	webhookDescName := webhookFields[1].Descriptor()
+	// webhook.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	webhook.NameValidator = webhookDescName.Validators[0].(func(string) error)
+	// webhookDescTokenHash is the schema descriptor for token_hash field.
+	webhookDescTokenHash := webhookFields[3].Descriptor()
+	// webhook.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
+	webhook.TokenHashValidator = webhookDescTokenHash.Validators[0].(func(string) error)
+	// webhookDescCreatedAt is the schema descriptor for created_at field.
+	webhookDescCreatedAt := webhookFields[5].Descriptor()
+	// webhook.DefaultCreatedAt holds the default value on creation for the created_at field.
+	webhook.DefaultCreatedAt = webhookDescCreatedAt.Default.(func() time.Time)
+	// webhookDescUpdatedAt is the schema descriptor for updated_at field.
+	webhookDescUpdatedAt := webhookFields[6].Descriptor()
+	// webhook.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	webhook.DefaultUpdatedAt = webhookDescUpdatedAt.Default.(func() time.Time)
+	// webhook.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	webhook.UpdateDefaultUpdatedAt = webhookDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// webhookDescID is the schema descriptor for id field.
+	webhookDescID := webhookFields[0].Descriptor()
+	// webhook.DefaultID holds the default value on creation for the id field.
+	webhook.DefaultID = webhookDescID.Default.(func() uuid.UUID)
 	workspaceFields := schema.Workspace{}.Fields()
 	_ = workspaceFields
 	// workspaceDescName is the schema descriptor for name field.

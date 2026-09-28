@@ -76,27 +76,20 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 		}
 	}
 
-	var result *MessageOutput
-	err = c.transactionManager.Do(ctx, func(txCtx context.Context) error {
-		message := &entity.Message{
-			ChannelID: channel.ID,
-			UserID:    input.UserID,
-			ParentID:  input.ParentID,
-			Body:      input.Body,
-			CreatedAt: time.Now(),
-		}
-
-		if err := c.messageRepo.Create(txCtx, message); err != nil {
-			return fmt.Errorf("failed to create message: %w", err)
-		}
-
+	message := &entity.Message{
+		ChannelID: channel.ID,
+		UserID:    input.UserID,
+		ParentID:  input.ParentID,
+		Body:      input.Body,
+		CreatedAt: time.Now(),
+	}
+	return c.publish(ctx, channel, message, func(txCtx context.Context) error {
 		// スレッド返信は親メッセージの投稿者と返信者を自動フォローする
 		if input.ParentID != nil {
 			if err := c.followThread(txCtx, *input.ParentID, input.UserID); err != nil {
 				return err
 			}
 		}
-
 		if len(input.AttachmentIDs) > 0 {
 			if err := c.verifyAttachments(txCtx, input, channel.ID); err != nil {
 				return err
@@ -105,12 +98,31 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 				return fmt.Errorf("failed to attach files: %w", err)
 			}
 		}
+		return nil
+	})
+}
 
-		if err := c.extractAndSaveMentionsAndLinks(txCtx, message.ID, input.Body, channel.WorkspaceID); err != nil {
+// CreateBotMessage はボットユーザー名義のメッセージを投稿します。投稿の可否は呼び出し側で確認済みであることが前提です
+func (c *MessageCreator) CreateBotMessage(ctx context.Context, channel *entity.Channel, message *entity.Message) (*MessageOutput, error) {
+	message.ChannelID = channel.ID
+	message.CreatedAt = time.Now()
+	return c.publish(ctx, channel, message, func(context.Context) error { return nil })
+}
+
+// publish はメッセージを保存し、メンション・リンクを抽出してチャンネルの購読者へ配信します
+func (c *MessageCreator) publish(ctx context.Context, channel *entity.Channel, message *entity.Message, afterCreate func(txCtx context.Context) error) (*MessageOutput, error) {
+	var result *MessageOutput
+	err := c.transactionManager.Do(ctx, func(txCtx context.Context) error {
+		if err := c.messageRepo.Create(txCtx, message); err != nil {
+			return fmt.Errorf("failed to create message: %w", err)
+		}
+		if err := afterCreate(txCtx); err != nil {
+			return err
+		}
+		if err := c.extractAndSaveMentionsAndLinks(txCtx, message.ID, message.Body, channel.WorkspaceID); err != nil {
 			return fmt.Errorf("failed to extract mentions and links: %w", err)
 		}
-
-		outputs, err := c.outputBuilder.Build(txCtx, input.UserID, []*entity.Message{message})
+		outputs, err := c.outputBuilder.Build(txCtx, message.UserID, []*entity.Message{message})
 		if err != nil {
 			return err
 		}

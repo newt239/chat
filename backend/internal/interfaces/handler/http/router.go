@@ -21,6 +21,7 @@ type RouterConfig struct {
 	WorkspaceRepository repository.WorkspaceRepository
 	ChannelAccess       service.ChannelAccessService
 	RPCHandler          http.Handler
+	WebhookPoster       WebhookPoster
 	// 開発用のローカルストレージを使うときだけ設定する
 	StorageHandler http.Handler
 }
@@ -47,6 +48,9 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.ChannelAccess, cfg.AllowedOrigins))
 
 	e.Any("/chat.v1.*", echo.WrapHandler(cfg.RPCHandler))
+
+	// Webhook ごとに毎秒 1 回、瞬間的には 10 回まで受け付ける
+	e.POST("/webhooks/:id/:token", webhookHandler(cfg.WebhookPoster, newRateLimiter(1, 10)))
 
 	if cfg.StorageHandler != nil {
 		e.Any("/storage/*", echo.WrapHandler(cfg.StorageHandler))

@@ -31,6 +31,8 @@ enum AuditAction {
   AUDIT_ACTION_CHANNEL_UNARCHIVED = 9;
   AUDIT_ACTION_PERMISSION_CHANGED = 10;
   AUDIT_ACTION_DATA_EXPORTED = 11;
+  AUDIT_ACTION_WEBHOOK_CREATED = 12;
+  AUDIT_ACTION_WEBHOOK_DELETED = 13;
 }
 
 message AuditLog {
@@ -38,7 +40,7 @@ message AuditLog {
   // ログインの失敗など実行者を特定できない場合は空
   optional UserSummary actor = 2;
   AuditAction action = 3;
-  // user / channel / role / data
+  // user / channel / role / data / webhook
   string target_type = 4;
   string target_id = 5;
   // 記録時点の対象の名前（ユーザーの表示名、チャンネル名、ロール名など）

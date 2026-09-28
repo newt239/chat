@@ -35,6 +35,7 @@ import (
 	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
+	"github.com/newt239/chat/ent/webhook"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 	"github.com/newt239/chat/ent/workspacepermission"
@@ -121,6 +122,7 @@ func checkColumn(t, c string) error {
 			usergroupmember.Table:     usergroupmember.ValidColumn,
 			usernote.Table:            usernote.ValidColumn,
 			userthreadfollow.Table:    userthreadfollow.ValidColumn,
+			webhook.Table:             webhook.ValidColumn,
 			workspace.Table:           workspace.ValidColumn,
 			workspacemember.Table:     workspacemember.ValidColumn,
 			workspacepermission.Table: workspacepermission.ValidColumn,

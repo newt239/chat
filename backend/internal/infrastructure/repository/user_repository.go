@@ -92,7 +92,8 @@ func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 	builder := client.User.Create().
 		SetEmail(usr.Email).
 		SetPasswordHash(usr.PasswordHash).
-		SetDisplayName(usr.DisplayName)
+		SetDisplayName(usr.DisplayName).
+		SetIsBot(usr.IsBot)
 
 	if usr.ID != "" {
 		userID, err := utils.ParseUUID(usr.ID, "user ID")

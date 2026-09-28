@@ -36,6 +36,7 @@ import (
 	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
+	"github.com/newt239/chat/ent/webhook"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 	"github.com/newt239/chat/ent/workspacepermission"
@@ -73,6 +74,7 @@ const (
 	TypeUserGroupMember     = "UserGroupMember"
 	TypeUserNote            = "UserNote"
 	TypeUserThreadFollow    = "UserThreadFollow"
+	TypeWebhook             = "Webhook"
 	TypeWorkspace           = "Workspace"
 	TypeWorkspaceMember     = "WorkspaceMember"
 	TypeWorkspacePermission = "WorkspacePermission"
@@ -6196,6 +6198,8 @@ type MessageMutation struct {
 	edited_at                  *time.Time
 	deleted_at                 *time.Time
 	deleted_by                 *uuid.UUID
+	sender_name                *string
+	sender_avatar_url          *string
 	clearedFields              map[string]struct{}
 	channel                    *uuid.UUID
 	clearedchannel             bool
@@ -6559,6 +6563,104 @@ func (m *MessageMutation) DeletedByCleared() bool {
 func (m *MessageMutation) ResetDeletedBy() {
 	m.deleted_by = nil
 	delete(m.clearedFields, message.FieldDeletedBy)
+}
+
+// SetSenderName sets the "sender_name" field.
+func (m *MessageMutation) SetSenderName(s string) {
+	m.sender_name = &s
+}
+
+// SenderName returns the value of the "sender_name" field in the mutation.
+func (m *MessageMutation) SenderName() (r string, exists bool) {
+	v := m.sender_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSenderName returns the old "sender_name" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldSenderName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSenderName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSenderName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSenderName: %w", err)
+	}
+	return oldValue.SenderName, nil
+}
+
+// ClearSenderName clears the value of the "sender_name" field.
+func (m *MessageMutation) ClearSenderName() {
+	m.sender_name = nil
+	m.clearedFields[message.FieldSenderName] = struct{}{}
+}
+
+// SenderNameCleared returns if the "sender_name" field was cleared in this mutation.
+func (m *MessageMutation) SenderNameCleared() bool {
+	_, ok := m.clearedFields[message.FieldSenderName]
+	return ok
+}
+
+// ResetSenderName resets all changes to the "sender_name" field.
+func (m *MessageMutation) ResetSenderName() {
+	m.sender_name = nil
+	delete(m.clearedFields, message.FieldSenderName)
+}
+
+// SetSenderAvatarURL sets the "sender_avatar_url" field.
+func (m *MessageMutation) SetSenderAvatarURL(s string) {
+	m.sender_avatar_url = &s
+}
+
+// SenderAvatarURL returns the value of the "sender_avatar_url" field in the mutation.
+func (m *MessageMutation) SenderAvatarURL() (r string, exists bool) {
+	v := m.sender_avatar_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSenderAvatarURL returns the old "sender_avatar_url" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldSenderAvatarURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSenderAvatarURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSenderAvatarURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSenderAvatarURL: %w", err)
+	}
+	return oldValue.SenderAvatarURL, nil
+}
+
+// ClearSenderAvatarURL clears the value of the "sender_avatar_url" field.
+func (m *MessageMutation) ClearSenderAvatarURL() {
+	m.sender_avatar_url = nil
+	m.clearedFields[message.FieldSenderAvatarURL] = struct{}{}
+}
+
+// SenderAvatarURLCleared returns if the "sender_avatar_url" field was cleared in this mutation.
+func (m *MessageMutation) SenderAvatarURLCleared() bool {
+	_, ok := m.clearedFields[message.FieldSenderAvatarURL]
+	return ok
+}
+
+// ResetSenderAvatarURL resets all changes to the "sender_avatar_url" field.
+func (m *MessageMutation) ResetSenderAvatarURL() {
+	m.sender_avatar_url = nil
+	delete(m.clearedFields, message.FieldSenderAvatarURL)
 }
 
 // SetChannelID sets the "channel" edge to the Channel entity by id.
@@ -7252,7 +7354,7 @@ func (m *MessageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.body != nil {
 		fields = append(fields, message.FieldBody)
 	}
@@ -7267,6 +7369,12 @@ func (m *MessageMutation) Fields() []string {
 	}
 	if m.deleted_by != nil {
 		fields = append(fields, message.FieldDeletedBy)
+	}
+	if m.sender_name != nil {
+		fields = append(fields, message.FieldSenderName)
+	}
+	if m.sender_avatar_url != nil {
+		fields = append(fields, message.FieldSenderAvatarURL)
 	}
 	return fields
 }
@@ -7286,6 +7394,10 @@ func (m *MessageMutation) Field(name string) (ent.Value, bool) {
 		return m.DeletedAt()
 	case message.FieldDeletedBy:
 		return m.DeletedBy()
+	case message.FieldSenderName:
+		return m.SenderName()
+	case message.FieldSenderAvatarURL:
+		return m.SenderAvatarURL()
 	}
 	return nil, false
 }
@@ -7305,6 +7417,10 @@ func (m *MessageMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDeletedAt(ctx)
 	case message.FieldDeletedBy:
 		return m.OldDeletedBy(ctx)
+	case message.FieldSenderName:
+		return m.OldSenderName(ctx)
+	case message.FieldSenderAvatarURL:
+		return m.OldSenderAvatarURL(ctx)
 	}
 	return nil, fmt.Errorf("unknown Message field %s", name)
 }
@@ -7349,6 +7465,20 @@ func (m *MessageMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDeletedBy(v)
 		return nil
+	case message.FieldSenderName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSenderName(v)
+		return nil
+	case message.FieldSenderAvatarURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSenderAvatarURL(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Message field %s", name)
 }
@@ -7388,6 +7518,12 @@ func (m *MessageMutation) ClearedFields() []string {
 	if m.FieldCleared(message.FieldDeletedBy) {
 		fields = append(fields, message.FieldDeletedBy)
 	}
+	if m.FieldCleared(message.FieldSenderName) {
+		fields = append(fields, message.FieldSenderName)
+	}
+	if m.FieldCleared(message.FieldSenderAvatarURL) {
+		fields = append(fields, message.FieldSenderAvatarURL)
+	}
 	return fields
 }
 
@@ -7411,6 +7547,12 @@ func (m *MessageMutation) ClearField(name string) error {
 	case message.FieldDeletedBy:
 		m.ClearDeletedBy()
 		return nil
+	case message.FieldSenderName:
+		m.ClearSenderName()
+		return nil
+	case message.FieldSenderAvatarURL:
+		m.ClearSenderAvatarURL()
+		return nil
 	}
 	return fmt.Errorf("unknown Message nullable field %s", name)
 }
@@ -7433,6 +7575,12 @@ func (m *MessageMutation) ResetField(name string) error {
 		return nil
 	case message.FieldDeletedBy:
 		m.ResetDeletedBy()
+		return nil
+	case message.FieldSenderName:
+		m.ResetSenderName()
+		return nil
+	case message.FieldSenderAvatarURL:
+		m.ResetSenderAvatarURL()
 		return nil
 	}
 	return fmt.Errorf("unknown Message field %s", name)
@@ -13411,6 +13559,7 @@ type UserMutation struct {
 	display_name               *string
 	bio                        *string
 	avatar_url                 *string
+	is_bot                     *bool
 	theme_hue                  *int
 	addtheme_hue               *int
 	theme_chroma               *float64
@@ -13773,6 +13922,42 @@ func (m *UserMutation) AvatarURLCleared() bool {
 func (m *UserMutation) ResetAvatarURL() {
 	m.avatar_url = nil
 	delete(m.clearedFields, user.FieldAvatarURL)
+}
+
+// SetIsBot sets the "is_bot" field.
+func (m *UserMutation) SetIsBot(b bool) {
+	m.is_bot = &b
+}
+
+// IsBot returns the value of the "is_bot" field in the mutation.
+func (m *UserMutation) IsBot() (r bool, exists bool) {
+	v := m.is_bot
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsBot returns the old "is_bot" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIsBot(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsBot is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsBot requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsBot: %w", err)
+	}
+	return oldValue.IsBot, nil
+}
+
+// ResetIsBot resets all changes to the "is_bot" field.
+func (m *UserMutation) ResetIsBot() {
+	m.is_bot = nil
 }
 
 // SetThemeHue sets the "theme_hue" field.
@@ -14803,7 +14988,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -14818,6 +15003,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.avatar_url != nil {
 		fields = append(fields, user.FieldAvatarURL)
+	}
+	if m.is_bot != nil {
+		fields = append(fields, user.FieldIsBot)
 	}
 	if m.theme_hue != nil {
 		fields = append(fields, user.FieldThemeHue)
@@ -14858,6 +15046,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Bio()
 	case user.FieldAvatarURL:
 		return m.AvatarURL()
+	case user.FieldIsBot:
+		return m.IsBot()
 	case user.FieldThemeHue:
 		return m.ThemeHue()
 	case user.FieldThemeChroma:
@@ -14891,6 +15081,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldBio(ctx)
 	case user.FieldAvatarURL:
 		return m.OldAvatarURL(ctx)
+	case user.FieldIsBot:
+		return m.OldIsBot(ctx)
 	case user.FieldThemeHue:
 		return m.OldThemeHue(ctx)
 	case user.FieldThemeChroma:
@@ -14948,6 +15140,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAvatarURL(v)
+		return nil
+	case user.FieldIsBot:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsBot(v)
 		return nil
 	case user.FieldThemeHue:
 		v, ok := value.(int)
@@ -15103,6 +15302,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldAvatarURL:
 		m.ResetAvatarURL()
+		return nil
+	case user.FieldIsBot:
+		m.ResetIsBot()
 		return nil
 	case user.FieldThemeHue:
 		m.ResetThemeHue()
@@ -17856,6 +18058,834 @@ func (m *UserThreadFollowMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown UserThreadFollow edge %s", name)
+}
+
+// WebhookMutation represents an operation that mutates the Webhook nodes in the graph.
+type WebhookMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	name              *string
+	avatar_url        *string
+	token_hash        *string
+	last_used_at      *time.Time
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	channel           *uuid.UUID
+	clearedchannel    bool
+	created_by        *uuid.UUID
+	clearedcreated_by bool
+	bot_user          *uuid.UUID
+	clearedbot_user   bool
+	done              bool
+	oldValue          func(context.Context) (*Webhook, error)
+	predicates        []predicate.Webhook
+}
+
+var _ ent.Mutation = (*WebhookMutation)(nil)
+
+// webhookOption allows management of the mutation configuration using functional options.
+type webhookOption func(*WebhookMutation)
+
+// newWebhookMutation creates new mutation for the Webhook entity.
+func newWebhookMutation(c config, op Op, opts ...webhookOption) *WebhookMutation {
+	m := &WebhookMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWebhook,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWebhookID sets the ID field of the mutation.
+func withWebhookID(id uuid.UUID) webhookOption {
+	return func(m *WebhookMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Webhook
+		)
+		m.oldValue = func(ctx context.Context) (*Webhook, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Webhook.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWebhook sets the old Webhook of the mutation.
+func withWebhook(node *Webhook) webhookOption {
+	return func(m *WebhookMutation) {
+		m.oldValue = func(context.Context) (*Webhook, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WebhookMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WebhookMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Webhook entities.
+func (m *WebhookMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WebhookMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WebhookMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Webhook.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *WebhookMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *WebhookMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Webhook entity.
+// If the Webhook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *WebhookMutation) ResetName() {
+	m.name = nil
+}
+
+// SetAvatarURL sets the "avatar_url" field.
+func (m *WebhookMutation) SetAvatarURL(s string) {
+	m.avatar_url = &s
+}
+
+// AvatarURL returns the value of the "avatar_url" field in the mutation.
+func (m *WebhookMutation) AvatarURL() (r string, exists bool) {
+	v := m.avatar_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvatarURL returns the old "avatar_url" field's value of the Webhook entity.
+// If the Webhook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookMutation) OldAvatarURL(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAvatarURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAvatarURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvatarURL: %w", err)
+	}
+	return oldValue.AvatarURL, nil
+}
+
+// ClearAvatarURL clears the value of the "avatar_url" field.
+func (m *WebhookMutation) ClearAvatarURL() {
+	m.avatar_url = nil
+	m.clearedFields[webhook.FieldAvatarURL] = struct{}{}
+}
+
+// AvatarURLCleared returns if the "avatar_url" field was cleared in this mutation.
+func (m *WebhookMutation) AvatarURLCleared() bool {
+	_, ok := m.clearedFields[webhook.FieldAvatarURL]
+	return ok
+}
+
+// ResetAvatarURL resets all changes to the "avatar_url" field.
+func (m *WebhookMutation) ResetAvatarURL() {
+	m.avatar_url = nil
+	delete(m.clearedFields, webhook.FieldAvatarURL)
+}
+
+// SetTokenHash sets the "token_hash" field.
+func (m *WebhookMutation) SetTokenHash(s string) {
+	m.token_hash = &s
+}
+
+// TokenHash returns the value of the "token_hash" field in the mutation.
+func (m *WebhookMutation) TokenHash() (r string, exists bool) {
+	v := m.token_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTokenHash returns the old "token_hash" field's value of the Webhook entity.
+// If the Webhook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookMutation) OldTokenHash(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTokenHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTokenHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTokenHash: %w", err)
+	}
+	return oldValue.TokenHash, nil
+}
+
+// ResetTokenHash resets all changes to the "token_hash" field.
+func (m *WebhookMutation) ResetTokenHash() {
+	m.token_hash = nil
+}
+
+// SetLastUsedAt sets the "last_used_at" field.
+func (m *WebhookMutation) SetLastUsedAt(t time.Time) {
+	m.last_used_at = &t
+}
+
+// LastUsedAt returns the value of the "last_used_at" field in the mutation.
+func (m *WebhookMutation) LastUsedAt() (r time.Time, exists bool) {
+	v := m.last_used_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUsedAt returns the old "last_used_at" field's value of the Webhook entity.
+// If the Webhook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookMutation) OldLastUsedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUsedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUsedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUsedAt: %w", err)
+	}
+	return oldValue.LastUsedAt, nil
+}
+
+// ClearLastUsedAt clears the value of the "last_used_at" field.
+func (m *WebhookMutation) ClearLastUsedAt() {
+	m.last_used_at = nil
+	m.clearedFields[webhook.FieldLastUsedAt] = struct{}{}
+}
+
+// LastUsedAtCleared returns if the "last_used_at" field was cleared in this mutation.
+func (m *WebhookMutation) LastUsedAtCleared() bool {
+	_, ok := m.clearedFields[webhook.FieldLastUsedAt]
+	return ok
+}
+
+// ResetLastUsedAt resets all changes to the "last_used_at" field.
+func (m *WebhookMutation) ResetLastUsedAt() {
+	m.last_used_at = nil
+	delete(m.clearedFields, webhook.FieldLastUsedAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *WebhookMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *WebhookMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Webhook entity.
+// If the Webhook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *WebhookMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *WebhookMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *WebhookMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Webhook entity.
+// If the Webhook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WebhookMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *WebhookMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetChannelID sets the "channel" edge to the Channel entity by id.
+func (m *WebhookMutation) SetChannelID(id uuid.UUID) {
+	m.channel = &id
+}
+
+// ClearChannel clears the "channel" edge to the Channel entity.
+func (m *WebhookMutation) ClearChannel() {
+	m.clearedchannel = true
+}
+
+// ChannelCleared reports if the "channel" edge to the Channel entity was cleared.
+func (m *WebhookMutation) ChannelCleared() bool {
+	return m.clearedchannel
+}
+
+// ChannelID returns the "channel" edge ID in the mutation.
+func (m *WebhookMutation) ChannelID() (id uuid.UUID, exists bool) {
+	if m.channel != nil {
+		return *m.channel, true
+	}
+	return
+}
+
+// ChannelIDs returns the "channel" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChannelID instead. It exists only for internal usage by the builders.
+func (m *WebhookMutation) ChannelIDs() (ids []uuid.UUID) {
+	if id := m.channel; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChannel resets all changes to the "channel" edge.
+func (m *WebhookMutation) ResetChannel() {
+	m.channel = nil
+	m.clearedchannel = false
+}
+
+// SetCreatedByID sets the "created_by" edge to the User entity by id.
+func (m *WebhookMutation) SetCreatedByID(id uuid.UUID) {
+	m.created_by = &id
+}
+
+// ClearCreatedBy clears the "created_by" edge to the User entity.
+func (m *WebhookMutation) ClearCreatedBy() {
+	m.clearedcreated_by = true
+}
+
+// CreatedByCleared reports if the "created_by" edge to the User entity was cleared.
+func (m *WebhookMutation) CreatedByCleared() bool {
+	return m.clearedcreated_by
+}
+
+// CreatedByID returns the "created_by" edge ID in the mutation.
+func (m *WebhookMutation) CreatedByID() (id uuid.UUID, exists bool) {
+	if m.created_by != nil {
+		return *m.created_by, true
+	}
+	return
+}
+
+// CreatedByIDs returns the "created_by" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CreatedByID instead. It exists only for internal usage by the builders.
+func (m *WebhookMutation) CreatedByIDs() (ids []uuid.UUID) {
+	if id := m.created_by; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCreatedBy resets all changes to the "created_by" edge.
+func (m *WebhookMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.clearedcreated_by = false
+}
+
+// SetBotUserID sets the "bot_user" edge to the User entity by id.
+func (m *WebhookMutation) SetBotUserID(id uuid.UUID) {
+	m.bot_user = &id
+}
+
+// ClearBotUser clears the "bot_user" edge to the User entity.
+func (m *WebhookMutation) ClearBotUser() {
+	m.clearedbot_user = true
+}
+
+// BotUserCleared reports if the "bot_user" edge to the User entity was cleared.
+func (m *WebhookMutation) BotUserCleared() bool {
+	return m.clearedbot_user
+}
+
+// BotUserID returns the "bot_user" edge ID in the mutation.
+func (m *WebhookMutation) BotUserID() (id uuid.UUID, exists bool) {
+	if m.bot_user != nil {
+		return *m.bot_user, true
+	}
+	return
+}
+
+// BotUserIDs returns the "bot_user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BotUserID instead. It exists only for internal usage by the builders.
+func (m *WebhookMutation) BotUserIDs() (ids []uuid.UUID) {
+	if id := m.bot_user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBotUser resets all changes to the "bot_user" edge.
+func (m *WebhookMutation) ResetBotUser() {
+	m.bot_user = nil
+	m.clearedbot_user = false
+}
+
+// Where appends a list predicates to the WebhookMutation builder.
+func (m *WebhookMutation) Where(ps ...predicate.Webhook) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WebhookMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WebhookMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Webhook, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WebhookMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WebhookMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Webhook).
+func (m *WebhookMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WebhookMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.name != nil {
+		fields = append(fields, webhook.FieldName)
+	}
+	if m.avatar_url != nil {
+		fields = append(fields, webhook.FieldAvatarURL)
+	}
+	if m.token_hash != nil {
+		fields = append(fields, webhook.FieldTokenHash)
+	}
+	if m.last_used_at != nil {
+		fields = append(fields, webhook.FieldLastUsedAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, webhook.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, webhook.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WebhookMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case webhook.FieldName:
+		return m.Name()
+	case webhook.FieldAvatarURL:
+		return m.AvatarURL()
+	case webhook.FieldTokenHash:
+		return m.TokenHash()
+	case webhook.FieldLastUsedAt:
+		return m.LastUsedAt()
+	case webhook.FieldCreatedAt:
+		return m.CreatedAt()
+	case webhook.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WebhookMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case webhook.FieldName:
+		return m.OldName(ctx)
+	case webhook.FieldAvatarURL:
+		return m.OldAvatarURL(ctx)
+	case webhook.FieldTokenHash:
+		return m.OldTokenHash(ctx)
+	case webhook.FieldLastUsedAt:
+		return m.OldLastUsedAt(ctx)
+	case webhook.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case webhook.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Webhook field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WebhookMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case webhook.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case webhook.FieldAvatarURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvatarURL(v)
+		return nil
+	case webhook.FieldTokenHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTokenHash(v)
+		return nil
+	case webhook.FieldLastUsedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUsedAt(v)
+		return nil
+	case webhook.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case webhook.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Webhook field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WebhookMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WebhookMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WebhookMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Webhook numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WebhookMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(webhook.FieldAvatarURL) {
+		fields = append(fields, webhook.FieldAvatarURL)
+	}
+	if m.FieldCleared(webhook.FieldLastUsedAt) {
+		fields = append(fields, webhook.FieldLastUsedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WebhookMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WebhookMutation) ClearField(name string) error {
+	switch name {
+	case webhook.FieldAvatarURL:
+		m.ClearAvatarURL()
+		return nil
+	case webhook.FieldLastUsedAt:
+		m.ClearLastUsedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Webhook nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WebhookMutation) ResetField(name string) error {
+	switch name {
+	case webhook.FieldName:
+		m.ResetName()
+		return nil
+	case webhook.FieldAvatarURL:
+		m.ResetAvatarURL()
+		return nil
+	case webhook.FieldTokenHash:
+		m.ResetTokenHash()
+		return nil
+	case webhook.FieldLastUsedAt:
+		m.ResetLastUsedAt()
+		return nil
+	case webhook.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case webhook.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Webhook field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WebhookMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.channel != nil {
+		edges = append(edges, webhook.EdgeChannel)
+	}
+	if m.created_by != nil {
+		edges = append(edges, webhook.EdgeCreatedBy)
+	}
+	if m.bot_user != nil {
+		edges = append(edges, webhook.EdgeBotUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WebhookMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case webhook.EdgeChannel:
+		if id := m.channel; id != nil {
+			return []ent.Value{*id}
+		}
+	case webhook.EdgeCreatedBy:
+		if id := m.created_by; id != nil {
+			return []ent.Value{*id}
+		}
+	case webhook.EdgeBotUser:
+		if id := m.bot_user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WebhookMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WebhookMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WebhookMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedchannel {
+		edges = append(edges, webhook.EdgeChannel)
+	}
+	if m.clearedcreated_by {
+		edges = append(edges, webhook.EdgeCreatedBy)
+	}
+	if m.clearedbot_user {
+		edges = append(edges, webhook.EdgeBotUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WebhookMutation) EdgeCleared(name string) bool {
+	switch name {
+	case webhook.EdgeChannel:
+		return m.clearedchannel
+	case webhook.EdgeCreatedBy:
+		return m.clearedcreated_by
+	case webhook.EdgeBotUser:
+		return m.clearedbot_user
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WebhookMutation) ClearEdge(name string) error {
+	switch name {
+	case webhook.EdgeChannel:
+		m.ClearChannel()
+		return nil
+	case webhook.EdgeCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case webhook.EdgeBotUser:
+		m.ClearBotUser()
+		return nil
+	}
+	return fmt.Errorf("unknown Webhook unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WebhookMutation) ResetEdge(name string) error {
+	switch name {
+	case webhook.EdgeChannel:
+		m.ResetChannel()
+		return nil
+	case webhook.EdgeCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case webhook.EdgeBotUser:
+		m.ResetBotUser()
+		return nil
+	}
+	return fmt.Errorf("unknown Webhook edge %s", name)
 }
 
 // WorkspaceMutation represents an operation that mutates the Workspace nodes in the graph.

@@ -16,6 +16,7 @@ type User struct {
 	DisplayName  string
 	Bio          *string
 	AvatarURL    *string
+	IsBot        bool
 	Preferences  UserPreferences
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

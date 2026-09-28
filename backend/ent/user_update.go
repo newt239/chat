@@ -124,6 +124,20 @@ func (_u *UserUpdate) ClearAvatarURL() *UserUpdate {
 	return _u
 }
 
+// SetIsBot sets the "is_bot" field.
+func (_u *UserUpdate) SetIsBot(v bool) *UserUpdate {
+	_u.mutation.SetIsBot(v)
+	return _u
+}
+
+// SetNillableIsBot sets the "is_bot" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableIsBot(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetIsBot(*v)
+	}
+	return _u
+}
+
 // SetThemeHue sets the "theme_hue" field.
 func (_u *UserUpdate) SetThemeHue(v int) *UserUpdate {
 	_u.mutation.ResetThemeHue()
@@ -785,6 +799,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.IsBot(); ok {
+		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
@@ -1497,6 +1514,20 @@ func (_u *UserUpdateOne) ClearAvatarURL() *UserUpdateOne {
 	return _u
 }
 
+// SetIsBot sets the "is_bot" field.
+func (_u *UserUpdateOne) SetIsBot(v bool) *UserUpdateOne {
+	_u.mutation.SetIsBot(v)
+	return _u
+}
+
+// SetNillableIsBot sets the "is_bot" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableIsBot(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetIsBot(*v)
+	}
+	return _u
+}
+
 // SetThemeHue sets the "theme_hue" field.
 func (_u *UserUpdateOne) SetThemeHue(v int) *UserUpdateOne {
 	_u.mutation.ResetThemeHue()
@@ -2188,6 +2219,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.IsBot(); ok {
+		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)

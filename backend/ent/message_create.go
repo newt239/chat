@@ -97,6 +97,34 @@ func (_c *MessageCreate) SetNillableDeletedBy(v *uuid.UUID) *MessageCreate {
 	return _c
 }
 
+// SetSenderName sets the "sender_name" field.
+func (_c *MessageCreate) SetSenderName(v string) *MessageCreate {
+	_c.mutation.SetSenderName(v)
+	return _c
+}
+
+// SetNillableSenderName sets the "sender_name" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableSenderName(v *string) *MessageCreate {
+	if v != nil {
+		_c.SetSenderName(*v)
+	}
+	return _c
+}
+
+// SetSenderAvatarURL sets the "sender_avatar_url" field.
+func (_c *MessageCreate) SetSenderAvatarURL(v string) *MessageCreate {
+	_c.mutation.SetSenderAvatarURL(v)
+	return _c
+}
+
+// SetNillableSenderAvatarURL sets the "sender_avatar_url" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableSenderAvatarURL(v *string) *MessageCreate {
+	if v != nil {
+		_c.SetSenderAvatarURL(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *MessageCreate) SetID(v uuid.UUID) *MessageCreate {
 	_c.mutation.SetID(v)
@@ -421,6 +449,14 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DeletedBy(); ok {
 		_spec.SetField(message.FieldDeletedBy, field.TypeUUID, value)
 		_node.DeletedBy = value
+	}
+	if value, ok := _c.mutation.SenderName(); ok {
+		_spec.SetField(message.FieldSenderName, field.TypeString, value)
+		_node.SenderName = &value
+	}
+	if value, ok := _c.mutation.SenderAvatarURL(); ok {
+		_spec.SetField(message.FieldSenderAvatarURL, field.TypeString, value)
+		_node.SenderAvatarURL = &value
 	}
 	if nodes := _c.mutation.ChannelIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -751,6 +787,42 @@ func (u *MessageUpsert) ClearDeletedBy() *MessageUpsert {
 	return u
 }
 
+// SetSenderName sets the "sender_name" field.
+func (u *MessageUpsert) SetSenderName(v string) *MessageUpsert {
+	u.Set(message.FieldSenderName, v)
+	return u
+}
+
+// UpdateSenderName sets the "sender_name" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateSenderName() *MessageUpsert {
+	u.SetExcluded(message.FieldSenderName)
+	return u
+}
+
+// ClearSenderName clears the value of the "sender_name" field.
+func (u *MessageUpsert) ClearSenderName() *MessageUpsert {
+	u.SetNull(message.FieldSenderName)
+	return u
+}
+
+// SetSenderAvatarURL sets the "sender_avatar_url" field.
+func (u *MessageUpsert) SetSenderAvatarURL(v string) *MessageUpsert {
+	u.Set(message.FieldSenderAvatarURL, v)
+	return u
+}
+
+// UpdateSenderAvatarURL sets the "sender_avatar_url" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateSenderAvatarURL() *MessageUpsert {
+	u.SetExcluded(message.FieldSenderAvatarURL)
+	return u
+}
+
+// ClearSenderAvatarURL clears the value of the "sender_avatar_url" field.
+func (u *MessageUpsert) ClearSenderAvatarURL() *MessageUpsert {
+	u.SetNull(message.FieldSenderAvatarURL)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -876,6 +948,48 @@ func (u *MessageUpsertOne) UpdateDeletedBy() *MessageUpsertOne {
 func (u *MessageUpsertOne) ClearDeletedBy() *MessageUpsertOne {
 	return u.Update(func(s *MessageUpsert) {
 		s.ClearDeletedBy()
+	})
+}
+
+// SetSenderName sets the "sender_name" field.
+func (u *MessageUpsertOne) SetSenderName(v string) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetSenderName(v)
+	})
+}
+
+// UpdateSenderName sets the "sender_name" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateSenderName() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateSenderName()
+	})
+}
+
+// ClearSenderName clears the value of the "sender_name" field.
+func (u *MessageUpsertOne) ClearSenderName() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearSenderName()
+	})
+}
+
+// SetSenderAvatarURL sets the "sender_avatar_url" field.
+func (u *MessageUpsertOne) SetSenderAvatarURL(v string) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetSenderAvatarURL(v)
+	})
+}
+
+// UpdateSenderAvatarURL sets the "sender_avatar_url" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateSenderAvatarURL() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateSenderAvatarURL()
+	})
+}
+
+// ClearSenderAvatarURL clears the value of the "sender_avatar_url" field.
+func (u *MessageUpsertOne) ClearSenderAvatarURL() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearSenderAvatarURL()
 	})
 }
 
@@ -1171,6 +1285,48 @@ func (u *MessageUpsertBulk) UpdateDeletedBy() *MessageUpsertBulk {
 func (u *MessageUpsertBulk) ClearDeletedBy() *MessageUpsertBulk {
 	return u.Update(func(s *MessageUpsert) {
 		s.ClearDeletedBy()
+	})
+}
+
+// SetSenderName sets the "sender_name" field.
+func (u *MessageUpsertBulk) SetSenderName(v string) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetSenderName(v)
+	})
+}
+
+// UpdateSenderName sets the "sender_name" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateSenderName() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateSenderName()
+	})
+}
+
+// ClearSenderName clears the value of the "sender_name" field.
+func (u *MessageUpsertBulk) ClearSenderName() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearSenderName()
+	})
+}
+
+// SetSenderAvatarURL sets the "sender_avatar_url" field.
+func (u *MessageUpsertBulk) SetSenderAvatarURL(v string) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetSenderAvatarURL(v)
+	})
+}
+
+// UpdateSenderAvatarURL sets the "sender_avatar_url" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateSenderAvatarURL() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateSenderAvatarURL()
+	})
+}
+
+// ClearSenderAvatarURL clears the value of the "sender_avatar_url" field.
+func (u *MessageUpsertBulk) ClearSenderAvatarURL() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearSenderAvatarURL()
 	})
 }
 

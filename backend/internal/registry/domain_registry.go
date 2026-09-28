@@ -112,6 +112,10 @@ func (r *DomainRegistry) NewUserNoteRepository() domainrepository.UserNoteReposi
 	return repository.NewUserNoteRepository(r.client)
 }
 
+func (r *DomainRegistry) NewWebhookRepository() domainrepository.WebhookRepository {
+	return repository.NewWebhookRepository(r.client)
+}
+
 // Domain Services
 func (r *DomainRegistry) NewChannelAccessService() domainservice.ChannelAccessService {
 	return domainservice.NewChannelAccessService(

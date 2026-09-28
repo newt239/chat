@@ -25,6 +25,10 @@ const (
 	FieldDeletedAt = "deleted_at"
 	// FieldDeletedBy holds the string denoting the deleted_by field in the database.
 	FieldDeletedBy = "deleted_by"
+	// FieldSenderName holds the string denoting the sender_name field in the database.
+	FieldSenderName = "sender_name"
+	// FieldSenderAvatarURL holds the string denoting the sender_avatar_url field in the database.
+	FieldSenderAvatarURL = "sender_avatar_url"
 	// EdgeChannel holds the string denoting the channel edge name in mutations.
 	EdgeChannel = "channel"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -148,6 +152,8 @@ var Columns = []string{
 	FieldEditedAt,
 	FieldDeletedAt,
 	FieldDeletedBy,
+	FieldSenderName,
+	FieldSenderAvatarURL,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "messages"
@@ -213,6 +219,16 @@ func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByDeletedBy orders the results by the deleted_by field.
 func ByDeletedBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedBy, opts...).ToFunc()
+}
+
+// BySenderName orders the results by the sender_name field.
+func BySenderName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSenderName, opts...).ToFunc()
+}
+
+// BySenderAvatarURL orders the results by the sender_avatar_url field.
+func BySenderAvatarURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSenderAvatarURL, opts...).ToFunc()
 }
 
 // ByChannelField orders the results by channel field.

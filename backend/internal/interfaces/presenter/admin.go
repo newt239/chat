@@ -20,6 +20,8 @@ var auditActions = map[entity.AuditAction]chatv1.AuditAction{
 	entity.AuditActionChannelUnarchived: chatv1.AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED,
 	entity.AuditActionPermissionChanged: chatv1.AuditAction_AUDIT_ACTION_PERMISSION_CHANGED,
 	entity.AuditActionDataExported:      chatv1.AuditAction_AUDIT_ACTION_DATA_EXPORTED,
+	entity.AuditActionWebhookCreated:    chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_CREATED,
+	entity.AuditActionWebhookDeleted:    chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_DELETED,
 }
 
 var permissions = map[entity.Permission]chatv1.Permission{
