@@ -1,6 +1,6 @@
 # UI 基盤
 
-Mantine から Tailwind CSS v4 + React Aria Components への移行に向けた基盤の設計です。デザインゴールは North Star モック（issue #11）です。
+Tailwind CSS v4 + React Aria Components による UI 基盤の設計です。デザインゴールは North Star モック（issue #11）です。
 
 ## 構成
 
@@ -26,7 +26,7 @@ packages は React Native と共有する前提のため、`lib` に DOM を含�
   - 余白は Tailwind の既定（4px 刻み）がトークンと一致するのでそのまま使う。
 - トークンの正は JS オブジェクト。`ThemeProvider` が実行時に `:root` へ `--c-*` / `--r-*` / `--t-*` / `--sh-*` / `--ff-*` を書き込み、`globals.css` の `@theme inline` がそれを参照する。トークンを増やしたら `globals.css` にも追加する（`lib/theme.spec.ts` が書き漏れを検出する）。
 - ダークモードの Tailwind バリアントは `dark:`（`[data-mode="dark"]` を見る）。基本はトークンが切り替わるので使う必要はない。
-- 画面移行が終わるまで Tailwind の既定パレット（`gray-50` など）は残している。移行完了後に `@theme { --color-*: initial; }` で無効化し、直書きの色を禁止する。
+- Tailwind の既定パレット（`gray-50` など）は `@theme { --color-*: initial; }` で無効化している。例外はスイッチのつまみに使う `white` だけ。
 
 ## 設定の保存
 
@@ -35,11 +35,10 @@ packages は React Native と共有する前提のため、`lib` に DOM を含�
 - `useSyncPreferences()`（`/app` のレイアウトで呼ぶ）がアカウントの設定で端末の設定を上書きする。変更は `useUpdatePreferences()(patch)` を使う。即座に反映し、保存に失敗したら元に戻してトーストを出す。
 - 色相は整数で保存する（0〜359）。設定 UI は #12 で作る。
 
-## Mantine との共存
+## ベーススタイルとフォント
 
-- `ThemeProvider` の内側に `MantineProvider` を置き、Mantine のカラースキームはライトに固定している。既存画面は `bg-white` などを直書きしているため、Mantine だけダークにすると崩れる。各画面は移行時にトークンへ置き換わった時点でダークに対応する。
-- Tailwind の preflight は Mantine と競合するため読み込んでいない。代わりに `globals.css` で React Aria の要素（`[data-rac]`）だけ UA スタイルを打ち消している。Mantine 撤去後に preflight を戻す。
-- `Notifications`（Mantine）と `ToastRegion`（新）は両方マウントしている。
+- Tailwind の preflight を読み込み、`body` に `bg` / `text` トークンの色を付けている。
+- IBM Plex Sans JP / IBM Plex Mono は `@fontsource` でセルフホストする（外部 CDN に依存せず、オフラインの PWA でも表示できるようにするため）。`unicode-range` で分割されており、使う文字のファイルだけが読み込まれる。読み込んだ woff2 は Service Worker が CacheFirst で保持する。
 
 ## ui コンポーネントの方針
 
@@ -70,29 +69,29 @@ packages は React Native と共有する前提のため、`lib` に DOM を含�
 
 shiki を JavaScript 正規表現エンジンで使う（WASM を読み込まない）。言語はチャットでよく使うものに絞り、必要になった時点で読み込む（`features/message/utils/highlight.ts`）。色は `--shiki-light` / `--shiki-dark` を `globals.css` で表示モードに応じて切り替える。
 
-## Mantine からの置き換え
+## 部品の対応表
 
-| Mantine | 置き換え先 |
+| 用途 | 部品 |
 | --- | --- |
-| `Button` / `ActionIcon` | `Button`（`variant`: primary / secondary / ghost / danger、`size`: md / sm、`isPending`）/ `IconButton`（`label` 必須。aria-label とツールチップを兼ねる） |
-| `Button renderRoot={Link}` / `Anchor` | `LinkButton` / `Link`（`to` / `params` は TanStack Router と同じ） |
-| `TextInput` / `PasswordInput` / `Textarea` | `TextField`（`type="password"` など）/ `TextArea`。`label` 必須、`description`、`errorMessage` |
-| `Select` / `Autocomplete` | `Select` / `ComboBox`（`options: { value, label }[]`、`value`、`onChange(value)`） |
-| `Switch` / `Checkbox` | `Switch` / `Checkbox`（`isSelected`、`onChange(boolean)`、子にラベル） |
-| `Tabs` | `Tabs` + `TabList` + `Tab` + `TabPanel`（`id` で対応付け） |
-| `Menu` | `Menu`（`trigger` に IconButton など）+ `MenuItem`（`icon`、`shortcut`、`tone="danger"`、`onAction`）/ `MenuSeparator` / `MenuSection`。右クリックは同じ項目を `ContextMenu` の `menu` に渡す |
-| `Popover` / `HoverCard` | `DialogTrigger`（react-aria-components）の中に `Button` と `Popover` |
-| `Tooltip` | `Tooltip`（`content`、子は React Aria の Button などフォーカスできる要素） |
-| `Modal` | `Dialog`（`isOpen` / `onOpenChange` / `title` / `footer` / `size`）。モバイルでは自動で全画面シート |
-| `modals.openConfirmModal` | `AlertDialog`（`confirmLabel` / `onConfirm` / `tone="danger"`） |
-| `notifications.show` | `toast(title, { description, tone })` |
-| `Avatar` / `Avatar.Group` | `Avatar`（`name` / `src` / `size` / `presence`）/ グループ DM は `GroupAvatar`（`count`） |
-| `Badge` / `Indicator` | `Badge`（`tone`: count / tag / accent） |
-| `Slider` / `SegmentedControl` | `Slider`（`onChange` は動かしている間、`onChangeEnd` は確定時）/ `SegmentedControl`（`options`、`value`、`onChange`） |
+| ボタン / アイコンボタン | `Button`（`variant`: primary / secondary / ghost / danger、`size`: md / sm、`isPending`）/ `IconButton`（`label` 必須。aria-label とツールチップを兼ねる） |
+| リンク | `LinkButton` / `Link`（`to` / `params` は TanStack Router と同じ） |
+| テキスト入力 | `TextField`（`type="password"` など）/ `TextArea`。`label` 必須、`description`、`errorMessage` |
+| 選択 / 補完 | `Select` / `ComboBox`（`options: { value, label }[]`、`value`、`onChange(value)`） |
+| スイッチ / チェックボックス | `Switch` / `Checkbox`（`isSelected`、`onChange(boolean)`、子にラベル） |
+| タブ | `Tabs` + `TabList` + `Tab` + `TabPanel`（`id` で対応付け） |
+| メニュー | `Menu`（`trigger` に IconButton など）+ `MenuItem`（`icon`、`shortcut`、`tone="danger"`、`onAction`）/ `MenuSeparator` / `MenuSection`。右クリックは同じ項目を `ContextMenu` の `menu` に渡す |
+| ポップオーバー | `DialogTrigger`（react-aria-components）の中に `Button` と `Popover` |
+| ツールチップ | `Tooltip`（`content`、子は React Aria の Button などフォーカスできる要素） |
+| ダイアログ | `Dialog`（`isOpen` / `onOpenChange` / `title` / `footer` / `size`）。モバイルでは自動で全画面シート |
+| 確認ダイアログ | `AlertDialog`（`confirmLabel` / `onConfirm` / `tone="danger"`） |
+| 通知 | `toast(title, { description, tone })` |
+| アバター | `Avatar`（`name` / `src` / `size` / `presence`）/ グループ DM は `GroupAvatar`（`count`） |
+| バッジ | `Badge`（`tone`: count / tag / accent） |
+| スライダー / セグメント | `Slider`（`onChange` は動かしている間、`onChangeEnd` は確定時）/ `SegmentedControl`（`options`、`value`、`onChange`） |
 | リンクのメニュー項目 | `MenuItemLink`（`to` / `params`、`target="_blank"` で新しいタブ） |
 | 空の画面の案内 | `EmptyState`（`icon` / `title` / `description`） |
-| `Skeleton` / `Loader` | `Skeleton`（`className` で大きさと形を指定）/ `Button isPending` |
-| `Stack` / `Group` / `Text` / `Paper` | Tailwind（`flex flex-col gap-2`、`text-caption text-muted`、`rounded-lg border border-border bg-surface`） |
-| `@mantine/form` | React Aria のフォーム（`<Form>`、`validationErrors`）+ zod |
-| `@mantine/hooks` の `useMediaQuery` | `#/lib/useMediaQuery`（`useIsMobile`） |
-| `@mantine/code-highlight` | 置き換え済み（shiki） |
+| 読み込み中 | `Skeleton`（`className` で大きさと形を指定）/ `Button isPending` |
+| レイアウト・文字・面 | Tailwind（`flex flex-col gap-2`、`text-caption text-muted`、`rounded-lg border border-border bg-surface`） |
+| フォーム | React Aria のフォーム（`<Form>`、`validationErrors`）+ zod |
+| メディアクエリ | `#/lib/useMediaQuery`（`useIsMobile`） |
+| コードハイライト | shiki（上記） |

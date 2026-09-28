@@ -14,6 +14,7 @@ import { render } from "@testing-library/react";
 import { Provider as JotaiProvider, createStore } from "jotai";
 import { z } from "zod";
 
+import { adminSearchSchema } from "#/features/admin/schemas";
 import { searchQuerySchema } from "#/features/search/schemas";
 import { authAtom } from "#/providers/store/auth";
 
@@ -45,6 +46,12 @@ export const renderWithProviders = async (
     path: "/search",
     validateSearch: searchQuerySchema,
   });
+  const adminRoute = createRoute({
+    getParentRoute: () => workspaceRoute,
+    path: "/admin",
+    validateSearch: adminSearchSchema,
+  });
+  const insightsRoute = createRoute({ getParentRoute: () => workspaceRoute, path: "/insights" });
   const channelRoute = createRoute({
     getParentRoute: () => workspaceRoute,
     path: "/$channelId",
@@ -52,7 +59,9 @@ export const renderWithProviders = async (
   });
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: [url] }),
-    routeTree: rootRoute.addChildren([workspaceRoute.addChildren([searchRoute, channelRoute])]),
+    routeTree: rootRoute.addChildren([
+      workspaceRoute.addChildren([searchRoute, adminRoute, insightsRoute, channelRoute]),
+    ]),
   });
   await router.load();
 
