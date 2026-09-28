@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { ResponsiveLayout } from "#/features/layout/components/ResponsiveLayout";
+import { AppLayout } from "#/pages/AppLayout";
 import { store } from "#/providers/store";
 import { isAuthenticatedAtom } from "#/providers/store/auth";
 
@@ -11,5 +11,5 @@ export const Route = createFileRoute("/app")({
       throw redirect({ to: "/login" });
     }
   },
-  component: ResponsiveLayout,
+  component: AppLayout,
 });

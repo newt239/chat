@@ -1,116 +1,102 @@
 import { useState } from "react";
 
-import { ActionIcon, Avatar, Button, Group, Select, Stack, Text, TextInput } from "@mantine/core";
 import { IconUserMinus } from "@tabler/icons-react";
+import { Form } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 
+import { Avatar } from "#/components/ui/Avatar";
+import { Button } from "#/components/ui/Button";
+import { IconButton } from "#/components/ui/IconButton";
+import { Select } from "#/components/ui/Select";
+import { TextField } from "#/components/ui/TextField";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspaceMemberActions";
-import { workspaceRoleLabels } from "#/features/workspace/utils/workspaceRole";
+import { workspaceRoleNames } from "#/features/workspace/utils/workspaceRole";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
-const ROLE_OPTIONS = [WorkspaceRole.MEMBER, WorkspaceRole.ADMIN].map((role) => ({
-  label: workspaceRoleLabels[role],
-  role,
-  value: String(role),
-}));
+const ROLES = [WorkspaceRole.MEMBER, WorkspaceRole.ADMIN];
 
 type WorkspaceMemberManagerProps = {
   workspaceId: string;
 };
 
 export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerProps) => {
-  const { data: members } = useMembers(workspaceId);
+  const { t } = useTranslation();
+  const { data: members = [] } = useMembers(workspaceId);
   const { invite, remove, updateRole } = useWorkspaceMemberActions();
   const [email, setEmail] = useState("");
-
-  const handleInvite = () => {
-    if (email.trim().length > 0) {
-      invite.mutate({ email: email.trim(), role: WorkspaceRole.MEMBER, workspaceId });
-      setEmail("");
-    }
-  };
+  const roleOptions = ROLES.map((role) => ({
+    label: t(`workspace.role.${workspaceRoleNames[role]}`),
+    value: String(role),
+  }));
 
   return (
-    <Stack gap="sm">
-      <Text fw={600}>メンバー ({members?.length ?? 0})</Text>
-
-      <Stack gap="xs">
-        {members?.map((member) => (
-          <Group key={member.userId} justify="space-between" wrap="nowrap">
-            <Group gap="xs" wrap="nowrap" className="min-w-0">
-              <Avatar src={member.avatarUrl ?? undefined} size="sm" radius="xl" />
-              <div className="min-w-0">
-                <Text size="sm" truncate>
-                  {member.displayName}
-                </Text>
-                <Text size="xs" c="dimmed" truncate>
-                  {member.email}
-                </Text>
-              </div>
-            </Group>
-            <Group gap={4} wrap="nowrap">
-              {member.role === WorkspaceRole.OWNER ? (
-                <Text size="xs" c="dimmed">
-                  {workspaceRoleLabels[member.role]}
-                </Text>
-              ) : (
-                <>
-                  <Select
-                    size="xs"
-                    w={110}
-                    data={ROLE_OPTIONS}
-                    value={String(member.role)}
-                    allowDeselect={false}
-                    onChange={(value) => {
-                      const role = ROLE_OPTIONS.find((option) => option.value === value);
-                      if (role !== undefined) {
-                        updateRole.mutate({ role: role.role, userId: member.userId, workspaceId });
-                      }
-                    }}
-                  />
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    aria-label={`${member.displayName} をワークスペースから外す`}
-                    onClick={() => {
-                      remove.mutate({ userId: member.userId, workspaceId });
-                    }}
-                  >
-                    <IconUserMinus size={16} />
-                  </ActionIcon>
-                </>
-              )}
-            </Group>
-          </Group>
+    <section className="flex flex-col gap-2">
+      <h3 className="m-0 text-body-strong">
+        {t("workspace.members.title", { count: members.length })}
+      </h3>
+      <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+        {members.map((member) => (
+          <li key={member.userId} className="flex items-center gap-2">
+            <Avatar name={member.displayName} src={member.avatarUrl} size={28} />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-body">{member.displayName}</span>
+              <span className="truncate text-caption text-muted">{member.email}</span>
+            </span>
+            {member.role === WorkspaceRole.OWNER ? (
+              <span className="text-caption text-muted">
+                {t(`workspace.role.${workspaceRoleNames[member.role]}`)}
+              </span>
+            ) : (
+              <>
+                <Select
+                  label={t("workspace.members.role")}
+                  className="w-28 [&>label]:sr-only"
+                  options={roleOptions}
+                  value={String(member.role)}
+                  onChange={(value) => {
+                    const role = ROLES.find((candidate) => String(candidate) === value);
+                    if (role !== undefined) {
+                      updateRole.mutate({ role, userId: member.userId, workspaceId });
+                    }
+                  }}
+                />
+                <IconButton
+                  label={t("workspace.members.remove", { name: member.displayName })}
+                  onPress={() => {
+                    remove.mutate({ userId: member.userId, workspaceId });
+                  }}
+                >
+                  <IconUserMinus />
+                </IconButton>
+              </>
+            )}
+          </li>
         ))}
-      </Stack>
-
-      <Group gap="xs" align="end">
-        <TextInput
-          size="xs"
+      </ul>
+      <Form
+        className="flex items-end gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (email.trim().length > 0) {
+            invite.mutate({ email: email.trim(), role: WorkspaceRole.MEMBER, workspaceId });
+            setEmail("");
+          }
+        }}
+      >
+        <TextField
           className="flex-1"
-          label="メールアドレスで招待"
+          type="email"
+          label={t("workspace.members.invite")}
           placeholder="email@example.com"
           value={email}
-          onChange={(event) => {
-            setEmail(event.currentTarget.value);
-          }}
+          onChange={setEmail}
+          errorMessage={invite.isError ? invite.error.message : undefined}
         />
-        <Button
-          size="xs"
-          disabled={email.trim().length === 0}
-          loading={invite.isPending}
-          onClick={handleInvite}
-        >
-          招待
+        <Button type="submit" isDisabled={email.trim().length === 0} isPending={invite.isPending}>
+          {t("workspace.members.inviteSubmit")}
         </Button>
-      </Group>
-
-      {invite.isError && (
-        <Text c="red" size="xs">
-          {invite.error.message}
-        </Text>
-      )}
-    </Stack>
+      </Form>
+    </section>
   );
 };

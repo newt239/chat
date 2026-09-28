@@ -47,13 +47,14 @@ export const ThreadReplyList = ({
   return (
     <div className="space-y-1">
       {replies.map((reply) => (
-        <MessageItem
-          key={reply.id}
-          message={reply}
-          currentUserId={currentUserId}
-          onCopyLink={handleCopyLink}
-          onCreateThread={handleCreateThread}
-        />
+        <div key={reply.id} data-message-id={reply.id}>
+          <MessageItem
+            message={reply}
+            currentUserId={currentUserId}
+            onCopyLink={handleCopyLink}
+            onCreateThread={handleCreateThread}
+          />
+        </div>
       ))}
     </div>
   );

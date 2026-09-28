@@ -1,18 +1,14 @@
 import { useState } from "react";
 
-import {
-  Button,
-  Checkbox,
-  Divider,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  TextInput,
-  Textarea,
-} from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
+import { AlertDialog } from "#/components/ui/AlertDialog";
+import { Button } from "#/components/ui/Button";
+import { Checkbox } from "#/components/ui/Checkbox";
+import { Dialog } from "#/components/ui/Dialog";
+import { TextArea } from "#/components/ui/TextArea";
+import { TextField } from "#/components/ui/TextField";
 import { UserGroupManager } from "#/features/userGroup/components/UserGroupManager";
 import { WorkspaceMemberManager } from "#/features/workspace/components/WorkspaceMemberManager";
 import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActions";
@@ -20,16 +16,17 @@ import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActi
 import type { WorkspaceSummary } from "#/features/workspace/types";
 
 type WorkspaceSettingsModalProps = {
-  opened: boolean;
-  onClose: () => void;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
   workspace: WorkspaceSummary;
 };
 
 export const WorkspaceSettingsModal = ({
-  opened,
-  onClose,
+  isOpen,
+  onOpenChange,
   workspace,
 }: WorkspaceSettingsModalProps) => {
+  const { t } = useTranslation();
   const { update, remove } = useWorkspaceActions();
   const navigate = useNavigate();
 
@@ -38,111 +35,89 @@ export const WorkspaceSettingsModal = ({
   const [isPublic, setIsPublic] = useState(workspace.isPublic);
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
 
-  const handleSave = () => {
-    update.mutate({ description, isPublic, name, workspaceId: workspace.id });
-  };
-
-  const handleDelete = () => {
-    remove.mutate(
-      { workspaceId: workspace.id },
-      {
-        onSuccess: () => {
-          onClose();
-          void navigate({ to: "/app" });
-        },
-      },
-    );
-  };
-
   return (
-    <Modal opened={opened} onClose={onClose} title="ワークスペース設定" centered size="lg">
-      <Stack gap="md">
-        <TextInput
-          label="名前"
+    <Dialog
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title={t("workspace.settings.title")}
+      size="lg"
+    >
+      <section className="flex flex-col gap-3">
+        <TextField
+          label={t("workspace.settings.name")}
           value={name}
-          onChange={(event) => {
-            setName(event.currentTarget.value);
-          }}
-          required
+          onChange={setName}
+          isRequired
         />
-        <Textarea
-          label="説明"
+        <TextArea
+          label={t("workspace.settings.description")}
           value={description}
-          onChange={(event) => {
-            setDescription(event.currentTarget.value);
-          }}
-          autosize
-          minRows={2}
+          onChange={setDescription}
+          rows={2}
         />
-        <Checkbox
-          label="公開ワークスペースにする（誰でも参加できます）"
-          checked={isPublic}
-          onChange={(event) => {
-            setIsPublic(event.currentTarget.checked);
-          }}
-        />
-        <Group justify="flex-end">
-          <Button loading={update.isPending} onClick={handleSave}>
-            保存
+        <Checkbox isSelected={isPublic} onChange={setIsPublic}>
+          {t("workspace.settings.isPublic")}
+        </Checkbox>
+        <div className="flex items-center justify-end gap-3">
+          {update.isError && (
+            <p className="m-0 flex-1 text-caption text-danger">{update.error.message}</p>
+          )}
+          <Button
+            isPending={update.isPending}
+            onPress={() => {
+              update.mutate({ description, isPublic, name, workspaceId: workspace.id });
+            }}
+          >
+            {t("common.save")}
           </Button>
-        </Group>
-        {update.isError && (
-          <Text c="red" size="sm">
-            {update.error.message}
-          </Text>
-        )}
+        </div>
+      </section>
 
-        <Divider />
+      <hr className="my-1 h-px border-0 bg-border" />
+      <WorkspaceMemberManager workspaceId={workspace.id} />
+      <hr className="my-1 h-px border-0 bg-border" />
+      <UserGroupManager workspaceId={workspace.id} />
+      <hr className="my-1 h-px border-0 bg-border" />
 
-        <WorkspaceMemberManager workspaceId={workspace.id} />
+      <section className="flex flex-wrap items-center gap-3 rounded-lg border border-danger p-3">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <b className="text-body-strong text-danger">{t("workspace.settings.delete")}</b>
+          <span className="text-caption text-muted">
+            {t("workspace.settings.deleteDescription")}
+          </span>
+        </div>
+        <Button
+          variant="danger"
+          onPress={() => {
+            setIsDeleteConfirming(true);
+          }}
+        >
+          {t("common.delete")}
+        </Button>
+      </section>
 
-        <Divider />
-
-        <UserGroupManager workspaceId={workspace.id} />
-
-        <Divider />
-
-        <Stack gap="xs">
-          <Text fw={600} c="red">
-            ワークスペースの削除
-          </Text>
-          <Text size="xs" c="dimmed">
-            チャンネルとメッセージもすべて削除されます。この操作は取り消せません。
-          </Text>
-          {isDeleteConfirming ? (
-            <Group justify="flex-end">
-              <Button
-                variant="subtle"
-                onClick={() => {
-                  setIsDeleteConfirming(false);
-                }}
-              >
-                キャンセル
-              </Button>
-              <Button color="red" loading={remove.isPending} onClick={handleDelete}>
-                削除する
-              </Button>
-            </Group>
-          ) : (
-            <Group justify="flex-end">
-              <Button
-                variant="outline"
-                color="red"
-                onClick={() => {
-                  setIsDeleteConfirming(true);
-                }}
-              >
-                削除
-              </Button>
-            </Group>
-          )}
-          {remove.isError && (
-            <Text c="red" size="sm">
-              {remove.error.message}
-            </Text>
-          )}
-        </Stack>
-      </Stack>
-    </Modal>
+      <AlertDialog
+        isOpen={isDeleteConfirming}
+        onOpenChange={setIsDeleteConfirming}
+        title={t("workspace.settings.deleteConfirm", { name: workspace.name })}
+        confirmLabel={t("common.delete")}
+        tone="danger"
+        isPending={remove.isPending}
+        onConfirm={() => {
+          remove.mutate(
+            { workspaceId: workspace.id },
+            {
+              onSuccess: () => {
+                setIsDeleteConfirming(false);
+                onOpenChange(false);
+                void navigate({ to: "/app" });
+              },
+            },
+          );
+        }}
+      >
+        {t("workspace.settings.deleteDescription")}
+      </AlertDialog>
+    </Dialog>
   );
 };

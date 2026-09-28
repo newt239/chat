@@ -1,0 +1,93 @@
+import type { Messages } from "../../messages";
+
+export const shell: Messages["shell"] = {
+  admin: {
+    forbidden: "Only admins can open this page",
+  },
+  back: "Back",
+  channel: {
+    links: "Channel links",
+    muted: "Muted",
+    private: "Private channel",
+    public: "Public channel",
+  },
+  channelMenu: {
+    copyLink: "Copy link",
+    label: "Channel actions",
+    linkCopied: "Link copied",
+    markAsRead: "Mark all as read",
+    more: "More",
+    mute: "Mute",
+    star: "Star",
+    unmute: "Unmute",
+    unstar: "Unstar",
+  },
+  comingSoon: "This page is coming soon",
+  error: {
+    backToTop: "Back to top",
+    description: "Something went wrong while loading the page",
+    notFound: "We couldn't find that page",
+    title: "Something went wrong",
+  },
+  me: {
+    logout: "Log out",
+    profile: "Profile",
+    settings: "Settings",
+  },
+  mentions: {
+    emptyDescription: "Messages that mention you appear here",
+    emptyTitle: "No mentions",
+  },
+  nav: {
+    activity: "Activity",
+    admin: "Admin",
+    bookmarks: "Bookmarks",
+    insights: "Insights",
+    mentions: "Mentions",
+    search: "Search",
+    threads: "Threads",
+  },
+  openInNewTab: "Open in new tab",
+  rightPanel: {
+    channelInfo: "Channel info",
+    members: "Members",
+    myProfile: "Your profile",
+    pins: "Pinned",
+    profile: "Profile",
+    search: "Search results",
+    thread: "Thread",
+  },
+  sidebar: {
+    channels: "Channels",
+    createChannel: "Create channel",
+    createDM: "New message",
+    dms: "Direct messages",
+    label: "Navigation",
+    noChannels: "You haven't joined any channels",
+    noDMs: "No direct messages yet",
+    starred: "Starred",
+    workspace: "Workspace",
+  },
+  tabs: {
+    activity: "Activity",
+    dms: "DMs",
+    home: "Home",
+    me: "You",
+  },
+  thread: {
+    emptyDescription: "Threads you post or reply in appear here",
+    emptyTitle: "No threads",
+    loadMore: "Load more",
+    notFound: "Thread not found",
+    replyCount: "Replies: {{count}}",
+  },
+  workspace: {
+    create: "Create workspace",
+    settings: "Workspace settings",
+    switch: "Workspaces",
+  },
+  workspaceIndex: {
+    description: "Create or join a channel from the sidebar",
+    title: "No channels",
+  },
+};

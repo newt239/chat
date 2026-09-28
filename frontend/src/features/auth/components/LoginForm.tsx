@@ -1,73 +1,60 @@
-import { Anchor, Button, Paper, PasswordInput, Text, TextInput, Title } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
+import { Form } from "react-aria-components";
+import { useTranslation } from "react-i18next";
+
+import { Button } from "#/components/ui/Button";
+import { Link } from "#/components/ui/Link";
+import { TextField } from "#/components/ui/TextField";
 import { useLogin } from "#/features/auth/hooks/useLogin";
 
-type LoginFormValues = {
-  email: string;
-  password: string;
-};
+import { AuthCard } from "./AuthCard";
 
 export const LoginForm = () => {
+  const { t } = useTranslation();
   const login = useLogin();
-
-  const form = useForm<LoginFormValues>({
-    initialValues: {
-      email: "",
-      password: "",
-    },
-    validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : "有効なメールアドレスを入力してください"),
-      password: (value) => (value.length >= 8 ? null : "8文字以上のパスワードを入力してください"),
-    },
-  });
-
-  const handleSubmit = form.onSubmit((values) => {
-    login.mutate(values);
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
-    <Paper className="w-full max-w-md p-8" shadow="md" radius="md">
-      <Title order={2} className="mb-6 text-center">
-        ログイン
-      </Title>
-
-      <form onSubmit={handleSubmit}>
-        <TextInput
-          label="メールアドレス"
-          placeholder="email@example.com"
+    <AuthCard
+      title={t("auth.login.title")}
+      footer={
+        <>
+          {t("auth.login.noAccount")} <Link to="/register">{t("auth.register.title")}</Link>
+        </>
+      }
+    >
+      <Form
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          login.mutate({ email, password });
+        }}
+      >
+        <TextField
+          label={t("auth.email")}
           type="email"
-          required
-          className="mb-4"
-          {...form.getInputProps("email")}
+          autoComplete="email"
+          placeholder="email@example.com"
+          value={email}
+          onChange={setEmail}
+          isRequired
         />
-
-        <PasswordInput
-          label="パスワード"
-          placeholder="パスワード"
-          required
-          className="mb-6"
-          {...form.getInputProps("password")}
+        <TextField
+          label={t("auth.password")}
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={setPassword}
+          minLength={8}
+          isRequired
         />
-
-        {login.isError && (
-          <Text c="red" size="sm" className="mb-4">
-            {login.error.message}
-          </Text>
-        )}
-
-        <Button type="submit" fullWidth loading={login.isPending} className="mb-4">
-          ログイン
+        {login.isError && <p className="m-0 text-caption text-danger">{login.error.message}</p>}
+        <Button type="submit" isPending={login.isPending}>
+          {t("auth.login.submit")}
         </Button>
-
-        <Text size="sm" className="text-center">
-          アカウントをお持ちでない方は{" "}
-          <Anchor renderRoot={(props) => <Link {...props} to="/register" />} size="sm">
-            新規登録
-          </Anchor>
-        </Text>
-      </form>
-    </Paper>
+      </Form>
+    </AuthCard>
   );
 };
