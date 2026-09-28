@@ -341,14 +341,18 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 
 | サービス | RPC | 定義 |
 | --- | --- | --- |
+| `AdminService` | ListAuditLogs / ExportAuditLogs / ListAdminMembers / SuspendMember / ResumeMember | `admin_service.proto` |
 | `AttachmentService` | PresignUpload / GetAttachment / GetDownloadUrl / DeleteAttachment | `attachment_service.proto` |
 | `AuthService` | Register / Login / Refresh / Logout | `auth_service.proto` |
 | `BookmarkService` | ListBookmarks / AddBookmark / RemoveBookmark | `bookmark_service.proto` |
 | `ChannelMemberService` | ListChannelMembers / InviteChannelMember / JoinChannel / LeaveChannel / RemoveChannelMember / UpdateChannelMemberRole | `channel_member_service.proto` |
-| `ChannelService` | ListChannels / CreateChannel / GetChannel / UpdateChannel / DeleteChannel | `channel_service.proto` |
+| `ChannelService` | ListChannels / CreateChannel / GetChannel / UpdateChannel / DeleteChannel / ArchiveChannel / UnarchiveChannel | `channel_service.proto` |
 | `DirectMessageService` | ListDirectMessages / CreateDirectMessage / CreateGroupDirectMessage | `direct_message_service.proto` |
+| `ExportService` | ExportMessages | `export_service.proto` |
+| `InsightService` | GetInsights | `insight_service.proto` |
 | `LinkService` | FetchOgp | `link_service.proto` |
 | `MessageService` | ListMessages / ListMessagesWithThread / CreateMessage / UpdateMessage / DeleteMessage | `message_service.proto` |
+| `PermissionService` | GetPermissions / UpdatePermission | `permission_service.proto` |
 | `PinService` | ListPins / CreatePin / DeletePin | `pin_service.proto` |
 | `ReactionService` | ListReactions / AddReaction / RemoveReaction | `reaction_service.proto` |
 | `ReadStateService` | UpdateReadState / GetUnreadCount | `read_state_service.proto` |
@@ -393,7 +397,9 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 - `user_group_member` - ユーザーグループメンバー
 - `thread_read_state` - スレッド既読状態
 - `user_thread_follow` - スレッドフォロー
-- `system_message` - システムメッセージ（監査ログ）
+- `system_message` - システムメッセージ（チャンネルの変更履歴）
+- `audit_log` - 管理操作の監査ログ（[admin-insights.md](./admin-insights.md)）
+- `workspace_permission` - ロールごとの操作権限のうち既定値から変更されたもの
 
 ### リレーション
 
@@ -440,7 +446,12 @@ type Config struct {
 | --- | --- |
 | `internal/interfaces/handler/http/router_test.go` | Connect RPC とヘルスチェックのマウント |
 | `internal/interfaces/handler/rpc/handler_test.go` | 認証 interceptor・入力検証・エラーコード変換 |
-| `internal/usecase/workspace/interactor_test.go` | ワークスペースのロール変更の権限 |
+| `internal/usecase/workspace/interactor_test.go` | ワークスペースのロール変更・招待の権限と監査ログ |
+| `internal/usecase/admin/interactor_test.go` | メンバーの停止・再開、監査ログの閲覧・CSV、権限設定の変更 |
+| `internal/usecase/insight/interactor_test.go` | インサイトの前期比較・タイムゾーン・非公開チャンネルの扱い |
+| `internal/usecase/channel/interactor_test.go` | 権限設定に基づくチャンネル作成、アーカイブ |
+| `internal/usecase/auth/interactor_test.go` | ログインの監査ログ、リフレッシュ時のセッションの差し替え |
+| `internal/domain/entity/permission_test.go` | 権限マトリクスの既定値と上書き |
 | `internal/usecase/dm/interactor_test.go` | DM 作成時のワークスペースメンバー検証 |
 | `internal/usecase/thread/reader_test.go` | スレッド既読・フォローの認可 |
 | `internal/usecase/message/creator_test.go` | 添付ファイルの所有者・チャンネル検証 |
