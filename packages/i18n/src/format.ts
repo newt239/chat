@@ -17,6 +17,10 @@ export const formatTime = (date: Date, locale: Locale) =>
 export const formatDateTime = (date: Date, locale: Locale) =>
   new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, ...timeOptions }).format(date);
 
+// 9/28（グラフの軸など幅の狭い場所に使う）
+export const formatMonthDay = (date: Date, locale: Locale) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { day: "numeric", month: "numeric" }).format(date);
+
 // 月 / Mon
 export const formatWeekday = (date: Date, locale: Locale) =>
   new Intl.DateTimeFormat(toBcp47(locale), { weekday: "short" }).format(date);
@@ -39,4 +43,19 @@ export const formatRelativeTime = (date: Date, now: Date, locale: Locale) => {
     return format.format(0, "second");
   }
   return format.format(Math.trunc(diffSeconds / matched.seconds), matched.unit);
+};
+
+// 1,234
+export const formatNumber = (value: number, locale: Locale) =>
+  new Intl.NumberFormat(toBcp47(locale), { maximumFractionDigits: 1 }).format(value);
+
+const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
+
+// 1.5 MB（1 KB = 1024 B）
+export const formatBytes = (bytes: number, locale: Locale) => {
+  const exponent = Math.min(
+    byteUnits.length - 1,
+    Math.max(0, Math.floor(Math.log(Math.max(bytes, 1)) / Math.log(1024))),
+  );
+  return `${formatNumber(bytes / 1024 ** exponent, locale)} ${byteUnits[exponent]}`;
 };
