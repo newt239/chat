@@ -1,0 +1,22 @@
+{
+  "name": "@chat/search-query",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run test",
+    "format": "vp fmt --check",
+    "format:fix": "vp fmt",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
+    "test": "vp test run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite-plus": "0.3.1"
+  }
+}

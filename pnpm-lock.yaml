@@ -196,6 +196,9 @@ importers:
       '@chat/i18n':
         specifier: workspace:*
         version: link:../packages/i18n
+      '@chat/search-query':
+        specifier: workspace:*
+        version: link:../packages/search-query
       '@connectrpc/connect':
         specifier: 2.2.0
         version: 2.2.0(@bufbuild/protobuf@2.15.0)
@@ -356,6 +359,15 @@ importers:
       i18next:
         specifier: 26.4.2
         version: 26.4.2(typescript@7.0.2)
+    devDependencies:
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+      vite-plus:
+        specifier: 0.3.1
+        version: 0.3.1(@types/node@26.5.1)(jiti@2.7.0)(jsdom@30.0.1)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
+
+  packages/search-query:
     devDependencies:
       typescript:
         specifier: 7.0.2
