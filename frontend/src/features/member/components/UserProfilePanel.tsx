@@ -18,15 +18,17 @@ type UserProfilePanelProps = {
 export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps) => {
   const { data: members, isLoading, isError, error } = useMembers(workspaceId);
   const currentUser = useAtomValue(userAtom);
-  const createDM = useCreateDM(workspaceId);
+  const createDM = useCreateDM();
   const navigate = useNavigate();
 
   const handleStartDM = async () => {
-    const dm = await createDM.mutateAsync({ userId });
-    void navigate({
-      params: { channelId: dm.id, workspaceId },
-      to: "/app/$workspaceId/$channelId",
-    });
+    const { directMessage } = await createDM.mutateAsync({ userId, workspaceId });
+    if (directMessage !== undefined) {
+      void navigate({
+        params: { channelId: directMessage.id, workspaceId },
+        to: "/app/$workspaceId/$channelId",
+      });
+    }
   };
   const member = useMemo(() => {
     if (members === undefined) {

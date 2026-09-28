@@ -19,8 +19,8 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const [groupName, setGroupName] = useState("");
 
   const { data: members } = useMembers(opened ? workspaceId : null);
-  const createDM = useCreateDM(workspaceId);
-  const createGroupDM = useCreateGroupDM(workspaceId);
+  const createDM = useCreateDM();
+  const createGroupDM = useCreateGroupDM();
 
   const isGroup = selectedUserIds.length > 1;
   const isPending = createDM.isPending || createGroupDM.isPending;
@@ -37,18 +37,21 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
       return;
     }
 
-    const dm = isGroup
+    const { directMessage } = isGroup
       ? await createGroupDM.mutateAsync({
           name: groupName.trim() === "" ? undefined : groupName.trim(),
           userIds: selectedUserIds,
+          workspaceId,
         })
-      : await createDM.mutateAsync({ userId: firstUserId });
+      : await createDM.mutateAsync({ userId: firstUserId, workspaceId });
 
     handleClose();
-    void navigate({
-      params: { channelId: dm.id, workspaceId },
-      to: "/app/$workspaceId/$channelId",
-    });
+    if (directMessage !== undefined) {
+      void navigate({
+        params: { channelId: directMessage.id, workspaceId },
+        to: "/app/$workspaceId/$channelId",
+      });
+    }
   };
 
   const memberOptions = (members ?? []).map((member) => ({

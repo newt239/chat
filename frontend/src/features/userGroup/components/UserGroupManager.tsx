@@ -12,7 +12,7 @@ type UserGroupManagerProps = {
 
 export const UserGroupManager = ({ workspaceId }: UserGroupManagerProps) => {
   const { data: groups } = useUserGroups(workspaceId);
-  const { create, remove } = useUserGroupActions(workspaceId);
+  const { create, remove } = useUserGroupActions();
   const [name, setName] = useState("");
 
   return (
@@ -26,7 +26,7 @@ export const UserGroupManager = ({ workspaceId }: UserGroupManagerProps) => {
               <Text size="sm" fw={600}>
                 @{group.name}
               </Text>
-              {typeof group.description === "string" && group.description.length > 0 && (
+              {group.description !== undefined && group.description.length > 0 && (
                 <Text size="xs" c="dimmed">
                   {group.description}
                 </Text>
@@ -37,7 +37,7 @@ export const UserGroupManager = ({ workspaceId }: UserGroupManagerProps) => {
               color="red"
               aria-label={`${group.name} を削除`}
               onClick={() => {
-                remove.mutate(group.id);
+                remove.mutate({ groupId: group.id });
               }}
             >
               <IconTrash size={16} />
@@ -63,7 +63,7 @@ export const UserGroupManager = ({ workspaceId }: UserGroupManagerProps) => {
           disabled={name.trim().length === 0}
           loading={create.isPending}
           onClick={() => {
-            create.mutate({ name: name.trim() });
+            create.mutate({ name: name.trim(), workspaceId });
             setName("");
           }}
         >

@@ -17,7 +17,7 @@ type UserGroupMembersProps = {
 export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps) => {
   const { data: members } = useUserGroupMembers(groupId);
   const { data: workspaceMembers } = useMembers(workspaceId);
-  const { add, remove } = useUserGroupMemberActions(groupId);
+  const { add, remove } = useUserGroupMemberActions();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const memberIds = new Set(members?.map((member) => member.userId));
@@ -34,7 +34,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
             color="red"
             aria-label={`${displayNameOf(member.userId)} をグループから外す`}
             onClick={() => {
-              remove.mutate(member.userId);
+              remove.mutate({ groupId, userId: member.userId });
             }}
           >
             <IconUserMinus size={16} />
@@ -60,7 +60,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
           loading={add.isPending}
           onClick={() => {
             if (selectedUserId !== null) {
-              add.mutate(selectedUserId);
+              add.mutate({ groupId, userId: selectedUserId });
               setSelectedUserId(null);
             }
           }}

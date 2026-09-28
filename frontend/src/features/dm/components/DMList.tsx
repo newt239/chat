@@ -2,14 +2,14 @@ import { Text, UnstyledButton } from "@mantine/core";
 import { IconUser, IconUsers } from "@tabler/icons-react";
 import { Link, useParams } from "@tanstack/react-router";
 
+import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
+
 import { useDMs } from "../hooks/useDM";
 
-import type { components } from "#/lib/api/schema";
+import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
 
-type DM = components["schemas"]["DMOutput"];
-
-const getDMDisplayName = (dm: DM) => {
-  if (dm.type === "dm") {
+const getDMDisplayName = (dm: DirectMessage) => {
+  if (dm.type === DirectMessageType.DM) {
     const [otherMember] = dm.members;
     return otherMember?.displayName || "不明なユーザー";
   }
@@ -62,7 +62,7 @@ export const DMList = ({ workspaceId }: DMListProps) => {
                 isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
               }`}
             >
-              {dm.type === "dm" ? <IconUser size={16} /> : <IconUsers size={16} />}
+              {dm.type === DirectMessageType.DM ? <IconUser size={16} /> : <IconUsers size={16} />}
               <Text size="sm" truncate className="flex-1">
                 {displayName}
               </Text>
