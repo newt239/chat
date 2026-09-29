@@ -4,9 +4,13 @@ import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { z } from "zod";
 
+export const notificationLevels = ["all", "mentions", "none"] as const;
+
 const preferencesSchema = z.object({
   locale: z.enum(locales),
   mode: z.enum(colorModePreferences),
+  // 以前は端末ごとに持っていたため、端末の保存値にないことがある
+  notificationLevel: z.enum(notificationLevels).default("mentions"),
   theme: z.object({
     chroma: z.number().min(0).max(0.37),
     hue: z.number().min(0).max(360),
@@ -19,6 +23,7 @@ export type Preferences = z.infer<typeof preferencesSchema>;
 export const defaultPreferences: Preferences = {
   locale: defaultLocale,
   mode: "system",
+  notificationLevel: "mentions",
   theme: defaultTheme,
 };
 

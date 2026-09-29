@@ -3,8 +3,9 @@ import { afterEach, expect, test, vi } from "vite-plus/test";
 
 import { useVisualViewport } from "./useVisualViewport";
 
+// setup で差し替えた localStorage なども戻ってしまうため unstubAllGlobals は使わない
 afterEach(() => {
-  vi.unstubAllGlobals();
+  vi.stubGlobal("visualViewport", undefined);
 });
 
 test("キーボードで見える範囲が縮むと高さを合わせて開いているとみなす", () => {

@@ -34,6 +34,7 @@
     "@tabler/icons-react": "3.46.0",
     "@tanstack/react-query": "5.102.8",
     "@tanstack/react-router": "1.170.38",
+    "firebase": "12.19.0",
     "hast-util-to-jsx-runtime": "2.3.6",
     "i18next": "26.4.2",
     "jotai": "3.0.0",

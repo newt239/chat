@@ -1,3 +1,5 @@
+import { initializeApp } from "firebase/app";
+import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw";
 import { ExpirationPlugin } from "workbox-expiration";
 import {
   cleanupOutdatedCaches,
@@ -8,6 +10,7 @@ import { NavigationRoute, registerRoute } from "workbox-routing";
 import { CacheFirst, NetworkFirst } from "workbox-strategies";
 import { z } from "zod";
 
+import { firebaseConfig } from "../src/lib/firebaseConfig";
 import { notificationClickSchema } from "../src/lib/serviceWorkerMessage";
 
 import type { NotificationClick } from "../src/lib/serviceWorkerMessage";
@@ -38,6 +41,31 @@ self.addEventListener("message", (event) => {
     void self.skipWaiting();
   }
 });
+
+const pushDataSchema = z.object({
+  body: z.string(),
+  link: z.string(),
+  messageId: z.string(),
+  title: z.string(),
+});
+
+// 表示中のタブがあるときは Firebase がそちらへ渡すため、ここへはバックグラウンドのときだけ届く
+if (firebaseConfig) {
+  onBackgroundMessage(getMessaging(initializeApp(firebaseConfig.options)), ({ data }) => {
+    const parsed = pushDataSchema.safeParse(data);
+    if (!parsed.success) {
+      return;
+    }
+    const { body, link, messageId, title } = parsed.data;
+    // アプリ内のデスクトップ通知と同じ tag にして二重に出さない
+    void self.registration.showNotification(title, {
+      body,
+      data: { link },
+      icon: "/pwa-192x192.png",
+      tag: messageId,
+    });
+  });
+}
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();

@@ -16,8 +16,9 @@ export const settings = {
   notifications: {
     denied: "ブラウザで通知が許可されていません",
     desktop: "デスクトップ通知",
-    desktopDescription: "この端末のブラウザに通知を出します",
+    desktopDescription: "アプリを開いている間、この端末のブラウザに通知を出します",
     level: "通知するメッセージ",
+    levelDescription: "すべての端末で共通の設定です",
     levels: {
       all: "すべて",
       mentions: "メンションと DM",
@@ -25,6 +26,10 @@ export const settings = {
     },
     muteHint:
       "ミュートしたチャンネルと DM は通知しません。ミュートはチャンネルの見出しの「その他」から設定できます。",
+    push: "プッシュ通知",
+    pushDescription:
+      "アプリを閉じていても、メンション・DM・フォロー中のスレッドへの返信をこの端末に通知します",
+    pushFailed: "プッシュ通知を登録できませんでした",
   },
   profile: {
     avatarUrl: "アイコンの URL",

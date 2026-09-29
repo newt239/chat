@@ -1,18 +1,15 @@
 import { atomWithStorage } from "jotai/utils";
 
-export const notificationLevels = ["all", "mentions", "none"] as const;
-type NotificationLevel = (typeof notificationLevels)[number];
-
 type NotificationPreferences = {
-  // ブラウザのデスクトップ通知を出すか
+  // ブラウザのデスクトップ通知を出すか。通知の許可がブラウザごとに違うため端末ごとに決める
   desktop: boolean;
-  level: NotificationLevel;
+  // この端末で登録したプッシュ通知のトークン。登録していなければ null
+  pushToken: string | null;
 };
 
-// 通知の受け取り方は端末ごとに決める（通知の許可がブラウザごとに違うため）
 export const notificationPreferencesAtom = atomWithStorage<NotificationPreferences>(
   "notification-preferences",
-  { desktop: false, level: "mentions" },
+  { desktop: false, pushToken: null },
   undefined,
   { getOnInit: true },
 );
