@@ -12,8 +12,8 @@ type AuthResponse = {
   user?: User;
 };
 
-/** ログイン方法によらず、発行されたトークンを保存してアプリへ移動する */
-export const useCompleteLogin = () => {
+/** ログイン方法によらず、発行されたトークンを保存してアプリへ移動する。参加リンクから来たときはそのワークスペースを開く */
+export const useCompleteLogin = (joinedWorkspaceId: string | null) => {
   const setAuth = useSetAtom(setAuthAtom);
   const currentWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
   const navigate = useNavigate();
@@ -22,8 +22,9 @@ export const useCompleteLogin = () => {
     setAuth({ accessToken, refreshToken, user });
 
     // ワークスペースが選択済みならそのページへ、なければアプリのトップへ
-    if (currentWorkspaceId) {
-      void navigate({ params: { workspaceId: currentWorkspaceId }, to: "/app/$workspaceId" });
+    const workspaceId = joinedWorkspaceId ?? currentWorkspaceId;
+    if (workspaceId) {
+      void navigate({ params: { workspaceId }, to: "/app/$workspaceId" });
     } else {
       void navigate({ to: "/app" });
     }

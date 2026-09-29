@@ -5,14 +5,16 @@ package chat.v1;
 import "buf/validate/validate.proto";
 import "chat/v1/user.proto";
 
-// Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える（docs/auth.md）
+// Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える
 service AuthService {
   rpc GetAuthConfig(GetAuthConfigRequest) returns (GetAuthConfigResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
-  // 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+  // 未登録のメールアドレスは有効な招待があるか、登録を許可したワークスペースの参加リンクから来たときだけアカウントを作る
   rpc LoginWithGoogle(LoginWithGoogleRequest) returns (LoginWithGoogleResponse);
   // 招待リンクからパスワードを設定してアカウントを作る
   rpc SignUpWithInvitation(SignUpWithInvitationRequest) returns (SignUpWithInvitationResponse);
+  // 登録とメールでの登録を許可したワークスペースの参加リンクからアカウントを作る
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
   rpc Refresh(RefreshRequest) returns (RefreshResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
 }
@@ -37,6 +39,8 @@ message LoginResponse {
 message LoginWithGoogleRequest {
   // Google Identity Services が発行した ID トークン
   string id_token = 1 [(buf.validate.field).string.min_len = 1];
+  // 参加リンクから来たときのワークスペース。登録を許可していれば、未参加のユーザーを参加させる
+  optional string workspace_id = 2 [(buf.validate.field).string.min_len = 1];
 }
 
 message LoginWithGoogleResponse {
@@ -55,6 +59,22 @@ message SignUpWithInvitationRequest {
 }
 
 message SignUpWithInvitationResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  User user = 3;
+}
+
+message SignUpRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string email = 2 [(buf.validate.field).string.email = true];
+  string display_name = 3 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  string password = 4 [(buf.validate.field).string.min_len = 8];
+}
+
+message SignUpResponse {
   string access_token = 1;
   string refresh_token = 2;
   User user = 3;

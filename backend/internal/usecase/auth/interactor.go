@@ -41,12 +41,14 @@ var (
 	ErrInvitationNotFound   = domainerrors.ErrInvitationNotFound
 	ErrEmailNotVerified     = domainerrors.ErrEmailNotVerified
 	ErrPasswordAuthDisabled = domainerrors.ErrPasswordAuthDisabled
+	ErrSignupDisabled       = domainerrors.ErrSignupDisabled
 )
 
 type AuthUseCase interface {
 	PasswordAuthEnabled() bool
 	Login(ctx context.Context, input LoginInput) (*AuthOutput, error)
-	LoginWithGoogle(ctx context.Context, idToken string) (*AuthOutput, error)
+	LoginWithGoogle(ctx context.Context, input LoginWithGoogleInput) (*AuthOutput, error)
+	SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error)
 	SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error)
 	RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error)
 	Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error)
@@ -114,9 +116,9 @@ func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutp
 	return i.login(ctx, user)
 }
 
-// LoginWithGoogle は sub で照合し、未紐付けならメールアドレスで既存ユーザーに紐付け、どちらもなければ招待がある場合だけユーザーを作ります
-func (i *authInteractor) LoginWithGoogle(ctx context.Context, idToken string) (*AuthOutput, error) {
-	identity, err := i.googleVerifier.Verify(ctx, idToken)
+// LoginWithGoogle は sub で照合し、未紐付けならメールアドレスで既存ユーザーに紐付け、どちらもなければ招待か登録を許可したワークスペースがある場合だけユーザーを作ります
+func (i *authInteractor) LoginWithGoogle(ctx context.Context, input LoginWithGoogleInput) (*AuthOutput, error) {
+	identity, err := i.googleVerifier.Verify(ctx, input.IDToken)
 	if err != nil {
 		return nil, err
 	}
@@ -135,10 +137,12 @@ func (i *authInteractor) LoginWithGoogle(ctx context.Context, idToken string) (*
 		}
 	}
 	if user == nil {
-		user, err = i.createGoogleUser(ctx, identity)
-		if err != nil {
-			return nil, err
-		}
+		user, err = i.createGoogleUser(ctx, identity, input.WorkspaceID)
+	} else if input.WorkspaceID != nil {
+		err = i.joinSignupWorkspace(ctx, user.ID, *input.WorkspaceID)
+	}
+	if err != nil {
+		return nil, err
 	}
 	return i.login(ctx, user)
 }
@@ -159,13 +163,13 @@ func (i *authInteractor) linkGoogleAccount(ctx context.Context, identity *Google
 	return user, nil
 }
 
-func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleIdentity) (*entity.User, error) {
+func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*entity.User, error) {
 	email := entity.NormalizeEmail(identity.Email)
 	invitations, err := i.invitationRepo.FindPendingByEmail(ctx, email, time.Now())
 	if err != nil {
 		return nil, err
 	}
-	if len(invitations) == 0 {
+	if len(invitations) == 0 && workspaceID == nil {
 		return nil, ErrInvitationRequired
 	}
 
@@ -181,10 +185,78 @@ func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleI
 	if identity.Picture != "" {
 		user.AvatarURL = &identity.Picture
 	}
-	if err := i.createInvitedUser(ctx, user, invitations); err != nil {
+	if len(invitations) > 0 {
+		err = i.createInvitedUser(ctx, user, invitations)
+	} else {
+		err = i.createSignupUser(ctx, user, *workspaceID, false)
+	}
+	if err != nil {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (i *authInteractor) SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error) {
+	if !i.settings.PasswordAuthEnabled {
+		return nil, ErrPasswordAuthDisabled
+	}
+	email := entity.NormalizeEmail(input.Email)
+	existing, err := i.userRepo.FindByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil {
+		return nil, ErrUserAlreadyExists
+	}
+	hashed, err := i.passwordSvc.HashPassword(input.Password)
+	if err != nil {
+		return nil, err
+	}
+	user := &entity.User{Email: email, PasswordHash: hashed, DisplayName: input.DisplayName}
+	if err := i.createSignupUser(ctx, user, input.WorkspaceID, true); err != nil {
+		return nil, err
+	}
+	return i.login(ctx, user)
+}
+
+// createSignupUser は登録を許可したワークスペースにメンバーとして参加させる形でユーザーを作ります
+func (i *authInteractor) createSignupUser(ctx context.Context, user *entity.User, workspaceID string, byEmail bool) error {
+	if err := i.checkSignupEnabled(ctx, workspaceID, byEmail); err != nil {
+		return err
+	}
+	return i.txManager.Do(ctx, func(ctx context.Context) error {
+		if err := i.userRepo.Create(ctx, user); err != nil {
+			return err
+		}
+		return i.addSignupMember(ctx, workspaceID, user.ID)
+	})
+}
+
+// joinSignupWorkspace は参加リンクから既存のアカウントでログインしたとき、未参加ならメンバーとして参加させます
+func (i *authInteractor) joinSignupWorkspace(ctx context.Context, userID, workspaceID string) error {
+	if err := i.checkSignupEnabled(ctx, workspaceID, false); err != nil {
+		return err
+	}
+	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
+	if err != nil || member != nil {
+		return err
+	}
+	return i.addSignupMember(ctx, workspaceID, userID)
+}
+
+func (i *authInteractor) checkSignupEnabled(ctx context.Context, workspaceID string, byEmail bool) error {
+	ws, err := i.workspaceRepo.FindByID(ctx, workspaceID)
+	if err != nil {
+		return err
+	}
+	if ws == nil || !ws.SignupEnabled || (byEmail && !ws.EmailSignupEnabled) {
+		return ErrSignupDisabled
+	}
+	return nil
+}
+
+func (i *authInteractor) addSignupMember(ctx context.Context, workspaceID, userID string) error {
+	return i.workspaceRepo.AddMember(ctx, &entity.WorkspaceMember{WorkspaceID: workspaceID, UserID: userID, Role: entity.WorkspaceRoleMember, JoinedAt: time.Now()})
 }
 
 func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error) {

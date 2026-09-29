@@ -4,7 +4,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { ThreadReplyInput } from "#/features/message/components/ThreadReplyInput";
 import { ThreadReplyList } from "#/features/message/components/ThreadReplyList";

@@ -3,9 +3,9 @@ import { IconTrash } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Badge } from "#/components/ui/Badge";
-import { IconButton } from "#/components/ui/IconButton";
-import { LinkButton } from "#/components/ui/LinkButton";
+import { Badge } from "#/components/ui/Badge/Badge";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";
 

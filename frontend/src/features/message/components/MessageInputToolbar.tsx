@@ -20,8 +20,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { cn } from "#/components/ui/styles";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { cn } from "#/components/ui/styles/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { ScheduleSendMenu } from "#/features/schedule/components/ScheduleSendMenu";
 

@@ -19,9 +19,6 @@ export const workspace = {
   },
   invite: {
     addedDirectly: "{{email}} をワークスペースに追加しました",
-    copied: "招待リンクをコピーしました",
-    copy: "コピー",
-    copyFailed: "コピーできませんでした",
     email: "メールアドレスで招待",
     failed: "招待できませんでした",
     link: "{{email}} への招待リンク",

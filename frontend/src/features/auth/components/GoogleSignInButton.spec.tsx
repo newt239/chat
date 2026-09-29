@@ -1,13 +1,13 @@
 import { screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
+import { loadGoogleIdentity } from "#/features/auth/utils/googleIdentity";
 import { AuthService } from "#/gen/chat/v1/auth_service_pb";
-import { loadGoogleIdentity } from "#/lib/googleIdentity";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
-vi.mock("#/lib/googleIdentity", () => ({ loadGoogleIdentity: vi.fn() }));
+vi.mock("#/features/auth/utils/googleIdentity", () => ({ loadGoogleIdentity: vi.fn() }));
 
 const setupGoogle = () => {
   const configs: google.accounts.id.IdConfiguration[] = [];
@@ -34,9 +34,13 @@ describe("GoogleSignInButton", () => {
     vi.mocked(loadGoogleIdentity).mockResolvedValue();
     const { configs, renderButton } = setupGoogle();
     const loginWithGoogle = vi.fn(() => ({ accessToken: "a", refreshToken: "r" }));
-    await renderWithProviders(<GoogleSignInButton clientId="client-1" />, "/app/ws1", (routes) => {
-      routes.rpc(AuthService.method.loginWithGoogle, loginWithGoogle);
-    });
+    await renderWithProviders(
+      <GoogleSignInButton clientId="client-1" workspaceId={null} />,
+      "/app/ws1",
+      (routes) => {
+        routes.rpc(AuthService.method.loginWithGoogle, loginWithGoogle);
+      },
+    );
 
     await waitFor(() => {
       expect(renderButton).toHaveBeenCalledTimes(1);
@@ -54,7 +58,11 @@ describe("GoogleSignInButton", () => {
 
   test("スクリプトを読み込めなければその旨を表示する", async () => {
     vi.mocked(loadGoogleIdentity).mockRejectedValue(new Error("offline"));
-    await renderWithProviders(<GoogleSignInButton clientId="client-1" />, "/app/ws1", () => {});
+    await renderWithProviders(
+      <GoogleSignInButton clientId="client-1" workspaceId={null} />,
+      "/app/ws1",
+      () => {},
+    );
 
     expect(await screen.findByText("Google ログインを読み込めませんでした")).toBeInTheDocument();
   });

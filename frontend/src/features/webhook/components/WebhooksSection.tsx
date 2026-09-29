@@ -4,9 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Button } from "#/components/ui/Button";
-import { IconButton } from "#/components/ui/IconButton";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Button } from "#/components/ui/Button/Button";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";

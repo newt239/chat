@@ -5,7 +5,7 @@ import { useChannelViewersSync } from "#/features/channel/hooks/useChannelViewer
 import { useDMRealtimeSync } from "#/features/dm/hooks/useDMRealtimeSync";
 import { useDesktopNotifications } from "#/features/settings/hooks/useDesktopNotifications";
 import { useSyncPushToken } from "#/features/settings/hooks/usePushNotifications";
-import { useIsMobile } from "#/lib/useMediaQuery";
+import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useAppBadge } from "../hooks/useAppBadge";
 import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";

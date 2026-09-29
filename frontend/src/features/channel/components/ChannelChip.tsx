@@ -1,7 +1,7 @@
 import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
-import { Link } from "#/components/ui/Link";
+import { Link } from "#/components/ui/Link/Link";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
 import { useChannels } from "../hooks/useChannel";

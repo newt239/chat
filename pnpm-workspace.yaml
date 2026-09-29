@@ -5,19 +5,16 @@ packages:
 
 saveExact: true
 
-# 公開から7日未満のバージョンを弾く（サプライチェーン攻撃対策）
 minimumReleaseAge: 10080
 minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
   - "@pnpm/exe.*"
 
-# vite-plus 0.3 は vite 本体を専用コアに差し替える必要がある
 overrides:
-  vite: npm:@voidzero-dev/vite-plus-core@0.3.1
+  vite: npm:@voidzero-dev/vite-plus-core@0.3.3
   vitest: 4.1.11
 
 allowBuilds:
-  # バイナリは optionalDependencies で入るため postinstall は不要
   "@bufbuild/buf": false
   core-js: true
   esbuild: true
@@ -25,5 +22,4 @@ allowBuilds:
   unrs-resolver: true
   lefthook: true
   sharp: true
-  # 自動初期化用の設定を生成するだけで、設定は VITE_FIREBASE_* から渡すため不要
   "@firebase/util": false

@@ -3,9 +3,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { LinkButton } from "#/components/ui/LinkButton";
-import { focusRing } from "#/components/ui/styles";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { focusRing } from "#/components/ui/styles/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 
 import { useChannelLinkActions, useChannelLinks } from "../hooks/useChannelLinks";

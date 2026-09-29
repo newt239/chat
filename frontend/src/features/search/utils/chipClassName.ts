@@ -1,4 +1,4 @@
-import { cn, focusRing } from "#/components/ui/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 
 // North Star の .m-fchips。選択中は data-selected（ToggleButton）か data-active、名前を解決できなければ data-invalid
 export const chipClassName = cn(

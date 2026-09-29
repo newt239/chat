@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { Form, TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { AttachmentList } from "#/features/attachment/components/AttachmentList";
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
 import { useDraftAutosave } from "#/features/draft/hooks/useDraftAutosave";
@@ -14,7 +14,7 @@ import { LocationShareDialog } from "#/features/location/components/LocationShar
 import { PendingLocation } from "#/features/location/components/PendingLocation";
 import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
 import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
-import { useIsMobile } from "#/lib/useMediaQuery";
+import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { applyFormat, detectActiveFormats } from "../utils/format";

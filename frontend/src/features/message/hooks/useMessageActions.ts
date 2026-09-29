@@ -2,7 +2,7 @@ import { useCallback } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useDeleteMessage, useUpdateMessage } from "#/features/message/hooks/useMessage";
 
 const errorDescription = (error: unknown) =>

@@ -2,7 +2,7 @@ import { formatDateTime } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 import { useAuditLogFormatter } from "#/features/admin/hooks/useAuditLogFormatter";
 import { auditActionKeys, sensitiveAuditActions } from "#/features/admin/utils/labels";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";

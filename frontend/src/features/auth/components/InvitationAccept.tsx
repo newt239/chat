@@ -4,9 +4,9 @@ import { useQuery } from "@connectrpc/connect-query";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Link } from "#/components/ui/Link";
-import { TextField } from "#/components/ui/TextField";
+import { Button } from "#/components/ui/Button/Button";
+import { Link } from "#/components/ui/Link/Link";
+import { TextField } from "#/components/ui/TextField/TextField";
 import { useSignUpWithInvitation } from "#/features/auth/hooks/useSignUpWithInvitation";
 import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
 
@@ -49,6 +49,7 @@ export const InvitationAccept = ({ token }: InvitationAcceptProps) => {
     <AuthCard title={t("auth.invite.title", { workspace: workspaceName })} footer={footer}>
       <p className="m-0 text-caption text-muted">{t("auth.invite.lead", { email })}</p>
       <AuthMethods
+        workspaceId={null}
         passwordForm={
           <Form
             className="flex flex-col gap-4"

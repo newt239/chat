@@ -2,12 +2,12 @@ import { IconBell, IconKeyboard, IconKey, IconLanguage, IconPalette } from "@tab
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { Dialog } from "#/components/ui/Dialog";
-import { Link } from "#/components/ui/Link";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { Link } from "#/components/ui/Link/Link";
 import { settingsSections } from "#/features/layout/schemas";
 import { closeDialog, openDialog } from "#/features/layout/utils/overlaySearch";
 import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
-import { useIsMobile } from "#/lib/useMediaQuery";
+import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { AccountSettings } from "./AccountSettings";
 import { DisplaySettings } from "./DisplaySettings";

@@ -85,6 +85,16 @@ func IsPublic(v bool) predicate.Workspace {
 	return predicate.Workspace(sql.FieldEQ(FieldIsPublic, v))
 }
 
+// SignupEnabled applies equality check predicate on the "signup_enabled" field. It's identical to SignupEnabledEQ.
+func SignupEnabled(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldSignupEnabled, v))
+}
+
+// EmailSignupEnabled applies equality check predicate on the "email_signup_enabled" field. It's identical to EmailSignupEnabledEQ.
+func EmailSignupEnabled(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldEmailSignupEnabled, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Workspace {
 	return predicate.Workspace(sql.FieldEQ(FieldCreatedAt, v))
@@ -318,6 +328,26 @@ func IsPublicEQ(v bool) predicate.Workspace {
 // IsPublicNEQ applies the NEQ predicate on the "is_public" field.
 func IsPublicNEQ(v bool) predicate.Workspace {
 	return predicate.Workspace(sql.FieldNEQ(FieldIsPublic, v))
+}
+
+// SignupEnabledEQ applies the EQ predicate on the "signup_enabled" field.
+func SignupEnabledEQ(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldSignupEnabled, v))
+}
+
+// SignupEnabledNEQ applies the NEQ predicate on the "signup_enabled" field.
+func SignupEnabledNEQ(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldNEQ(FieldSignupEnabled, v))
+}
+
+// EmailSignupEnabledEQ applies the EQ predicate on the "email_signup_enabled" field.
+func EmailSignupEnabledEQ(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldEQ(FieldEmailSignupEnabled, v))
+}
+
+// EmailSignupEnabledNEQ applies the NEQ predicate on the "email_signup_enabled" field.
+func EmailSignupEnabledNEQ(v bool) predicate.Workspace {
+	return predicate.Workspace(sql.FieldNEQ(FieldEmailSignupEnabled, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

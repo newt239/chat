@@ -2,7 +2,7 @@ import { IconX } from "@tabler/icons-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { focusRing } from "#/components/ui/styles";
+import { focusRing } from "#/components/ui/styles/styles";
 
 import { formatFileSize } from "../utils/validator";
 import { FileIcon } from "./FileIcon";

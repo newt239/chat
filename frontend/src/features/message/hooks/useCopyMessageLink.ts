@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 
 export const useCopyMessageLink = (workspaceId: string | null, channelId: string | null) => {
   const router = useRouter();

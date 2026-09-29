@@ -4,10 +4,10 @@ import { IconLock } from "@tabler/icons-react";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { TextArea } from "#/components/ui/TextArea";
-import { TextField } from "#/components/ui/TextField";
-import { toast } from "#/components/ui/toast";
+import { Button } from "#/components/ui/Button/Button";
+import { TextArea } from "#/components/ui/TextArea/TextArea";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
 
 import { useUpdateUserNote } from "../hooks/useUserNote";
 

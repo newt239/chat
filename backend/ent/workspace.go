@@ -27,6 +27,10 @@ type Workspace struct {
 	IconURL string `json:"icon_url,omitempty"`
 	// IsPublic holds the value of the "is_public" field.
 	IsPublic bool `json:"is_public,omitempty"`
+	// SignupEnabled holds the value of the "signup_enabled" field.
+	SignupEnabled bool `json:"signup_enabled,omitempty"`
+	// EmailSignupEnabled holds the value of the "email_signup_enabled" field.
+	EmailSignupEnabled bool `json:"email_signup_enabled,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -96,7 +100,7 @@ func (*Workspace) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case workspace.FieldIsPublic:
+		case workspace.FieldIsPublic, workspace.FieldSignupEnabled, workspace.FieldEmailSignupEnabled:
 			values[i] = new(sql.NullBool)
 		case workspace.FieldID, workspace.FieldName, workspace.FieldDescription, workspace.FieldIconURL:
 			values[i] = new(sql.NullString)
@@ -148,6 +152,18 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_public", values[i])
 			} else if value.Valid {
 				_m.IsPublic = value.Bool
+			}
+		case workspace.FieldSignupEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field signup_enabled", values[i])
+			} else if value.Valid {
+				_m.SignupEnabled = value.Bool
+			}
+		case workspace.FieldEmailSignupEnabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field email_signup_enabled", values[i])
+			} else if value.Valid {
+				_m.EmailSignupEnabled = value.Bool
 			}
 		case workspace.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -235,6 +251,12 @@ func (_m *Workspace) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_public=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsPublic))
+	builder.WriteString(", ")
+	builder.WriteString("signup_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SignupEnabled))
+	builder.WriteString(", ")
+	builder.WriteString("email_signup_enabled=")
+	builder.WriteString(fmt.Sprintf("%v", _m.EmailSignupEnabled))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

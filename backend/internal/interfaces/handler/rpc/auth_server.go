@@ -25,11 +25,19 @@ func (s *AuthServer) Login(ctx context.Context, req *chatv1.LoginRequest) (*chat
 }
 
 func (s *AuthServer) LoginWithGoogle(ctx context.Context, req *chatv1.LoginWithGoogleRequest) (*chatv1.LoginWithGoogleResponse, error) {
-	out, err := s.UC.LoginWithGoogle(ctx, req.IdToken)
+	out, err := s.UC.LoginWithGoogle(ctx, authuc.LoginWithGoogleInput{IDToken: req.IdToken, WorkspaceID: req.WorkspaceId})
 	if err != nil {
 		return nil, err
 	}
 	return &chatv1.LoginWithGoogleResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+}
+
+func (s *AuthServer) SignUp(ctx context.Context, req *chatv1.SignUpRequest) (*chatv1.SignUpResponse, error) {
+	out, err := s.UC.SignUp(ctx, authuc.SignUpInput{WorkspaceID: req.WorkspaceId, Email: req.Email, DisplayName: req.DisplayName, Password: req.Password})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.SignUpResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) SignUpWithInvitation(ctx context.Context, req *chatv1.SignUpWithInvitationRequest) (*chatv1.SignUpWithInvitationResponse, error) {

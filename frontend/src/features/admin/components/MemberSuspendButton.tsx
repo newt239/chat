@@ -2,9 +2,9 @@ import { useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { AlertDialog } from "#/components/ui/AlertDialog";
-import { Button } from "#/components/ui/Button";
-import { toast } from "#/components/ui/toast";
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
+import { Button } from "#/components/ui/Button/Button";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 
 import type { AdminMember } from "#/gen/chat/v1/admin_service_pb";

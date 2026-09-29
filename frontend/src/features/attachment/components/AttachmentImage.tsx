@@ -1,7 +1,7 @@
 import { IconPhotoOff } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 
 import { useAttachmentUrl } from "../api/client";
 

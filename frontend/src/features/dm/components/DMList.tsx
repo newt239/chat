@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 
 import { useDMs } from "../hooks/useDM";
 import { DMRow } from "./DMRow";

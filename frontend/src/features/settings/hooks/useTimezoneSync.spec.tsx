@@ -3,7 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
 
-import { ToastRegion } from "#/components/ui/ToastRegion";
+import { ToastRegion } from "#/components/ui/ToastRegion/ToastRegion";
 import { UserPreferencesSchema } from "#/gen/chat/v1/user_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";

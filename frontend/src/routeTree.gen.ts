@@ -16,6 +16,7 @@ import { Route as AppIndexRouteImport } from "./routes/app/index";
 import { Route as AppWorkspaceIdRouteRouteImport } from "./routes/app/$workspaceId/route";
 import { Route as DevUiRouteImport } from "./routes/dev/ui";
 import { Route as InviteTokenRouteImport } from "./routes/invite.$token";
+import { Route as JoinWorkspaceIdRouteImport } from "./routes/join.$workspaceId";
 import { Route as AppWorkspaceIdIndexRouteImport } from "./routes/app/$workspaceId/index";
 import { Route as AppWorkspaceIdChannelIdRouteImport } from "./routes/app/$workspaceId/$channelId";
 import { Route as AppWorkspaceIdActivityRouteImport } from "./routes/app/$workspaceId/activity";
@@ -64,6 +65,11 @@ const DevUiRoute = DevUiRouteImport.update({
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: "/invite/$token",
   path: "/invite/$token",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const JoinWorkspaceIdRoute = JoinWorkspaceIdRouteImport.update({
+  id: "/join/$workspaceId",
+  path: "/join/$workspaceId",
   getParentRoute: () => rootRouteImport,
 } as any);
 const AppWorkspaceIdIndexRoute = AppWorkspaceIdIndexRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
   "/dev/ui": typeof DevUiRoute;
   "/invite/$token": typeof InviteTokenRoute;
+  "/join/$workspaceId": typeof JoinWorkspaceIdRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   "/login": typeof LoginRoute;
   "/dev/ui": typeof DevUiRoute;
   "/invite/$token": typeof InviteTokenRoute;
+  "/join/$workspaceId": typeof JoinWorkspaceIdRoute;
   "/app": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
   "/dev/ui": typeof DevUiRoute;
   "/invite/$token": typeof InviteTokenRoute;
+  "/join/$workspaceId": typeof JoinWorkspaceIdRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId"
     | "/dev/ui"
     | "/invite/$token"
+    | "/join/$workspaceId"
     | "/app/"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/activity"
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | "/login"
     | "/dev/ui"
     | "/invite/$token"
+    | "/join/$workspaceId"
     | "/app"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/activity"
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId"
     | "/dev/ui"
     | "/invite/$token"
+    | "/join/$workspaceId"
     | "/app/"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/activity"
@@ -282,6 +294,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute;
   DevUiRoute: typeof DevUiRoute;
   InviteTokenRoute: typeof InviteTokenRoute;
+  JoinWorkspaceIdRoute: typeof JoinWorkspaceIdRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -333,6 +346,13 @@ declare module "@tanstack/react-router" {
       path: "/invite/$token";
       fullPath: "/invite/$token";
       preLoaderRoute: typeof InviteTokenRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/join/$workspaceId": {
+      id: "/join/$workspaceId";
+      path: "/join/$workspaceId";
+      fullPath: "/join/$workspaceId";
+      preLoaderRoute: typeof JoinWorkspaceIdRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/app/$workspaceId/": {
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   DevUiRoute: DevUiRoute,
   InviteTokenRoute: InviteTokenRoute,
+  JoinWorkspaceIdRoute: JoinWorkspaceIdRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

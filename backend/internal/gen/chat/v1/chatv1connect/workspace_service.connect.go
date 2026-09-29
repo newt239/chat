@@ -54,6 +54,9 @@ const (
 	// WorkspaceServiceJoinPublicWorkspaceProcedure is the fully-qualified name of the
 	// WorkspaceService's JoinPublicWorkspace RPC.
 	WorkspaceServiceJoinPublicWorkspaceProcedure = "/chat.v1.WorkspaceService/JoinPublicWorkspace"
+	// WorkspaceServiceGetWorkspaceSignupInfoProcedure is the fully-qualified name of the
+	// WorkspaceService's GetWorkspaceSignupInfo RPC.
+	WorkspaceServiceGetWorkspaceSignupInfoProcedure = "/chat.v1.WorkspaceService/GetWorkspaceSignupInfo"
 	// WorkspaceServiceListMembersProcedure is the fully-qualified name of the WorkspaceService's
 	// ListMembers RPC.
 	WorkspaceServiceListMembersProcedure = "/chat.v1.WorkspaceService/ListMembers"
@@ -74,6 +77,8 @@ type WorkspaceServiceClient interface {
 	DeleteWorkspace(context.Context, *v1.DeleteWorkspaceRequest) (*v1.DeleteWorkspaceResponse, error)
 	ListPublicWorkspaces(context.Context, *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error)
 	JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error)
+	// 参加リンクの画面用。登録を許可していなければ NOT_FOUND
+	GetWorkspaceSignupInfo(context.Context, *v1.GetWorkspaceSignupInfoRequest) (*v1.GetWorkspaceSignupInfoResponse, error)
 	ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
 	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
@@ -132,6 +137,12 @@ func NewWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(workspaceServiceMethods.ByName("JoinPublicWorkspace")),
 			connect.WithClientOptions(opts...),
 		),
+		getWorkspaceSignupInfo: connect.NewClient[v1.GetWorkspaceSignupInfoRequest, v1.GetWorkspaceSignupInfoResponse](
+			httpClient,
+			baseURL+WorkspaceServiceGetWorkspaceSignupInfoProcedure,
+			connect.WithSchema(workspaceServiceMethods.ByName("GetWorkspaceSignupInfo")),
+			connect.WithClientOptions(opts...),
+		),
 		listMembers: connect.NewClient[v1.ListMembersRequest, v1.ListMembersResponse](
 			httpClient,
 			baseURL+WorkspaceServiceListMembersProcedure,
@@ -155,16 +166,17 @@ func NewWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL string, op
 
 // workspaceServiceClient implements WorkspaceServiceClient.
 type workspaceServiceClient struct {
-	listWorkspaces       *connect.Client[v1.ListWorkspacesRequest, v1.ListWorkspacesResponse]
-	createWorkspace      *connect.Client[v1.CreateWorkspaceRequest, v1.CreateWorkspaceResponse]
-	getWorkspace         *connect.Client[v1.GetWorkspaceRequest, v1.GetWorkspaceResponse]
-	updateWorkspace      *connect.Client[v1.UpdateWorkspaceRequest, v1.UpdateWorkspaceResponse]
-	deleteWorkspace      *connect.Client[v1.DeleteWorkspaceRequest, v1.DeleteWorkspaceResponse]
-	listPublicWorkspaces *connect.Client[v1.ListPublicWorkspacesRequest, v1.ListPublicWorkspacesResponse]
-	joinPublicWorkspace  *connect.Client[v1.JoinPublicWorkspaceRequest, v1.JoinPublicWorkspaceResponse]
-	listMembers          *connect.Client[v1.ListMembersRequest, v1.ListMembersResponse]
-	updateMemberRole     *connect.Client[v1.UpdateMemberRoleRequest, v1.UpdateMemberRoleResponse]
-	removeMember         *connect.Client[v1.RemoveMemberRequest, v1.RemoveMemberResponse]
+	listWorkspaces         *connect.Client[v1.ListWorkspacesRequest, v1.ListWorkspacesResponse]
+	createWorkspace        *connect.Client[v1.CreateWorkspaceRequest, v1.CreateWorkspaceResponse]
+	getWorkspace           *connect.Client[v1.GetWorkspaceRequest, v1.GetWorkspaceResponse]
+	updateWorkspace        *connect.Client[v1.UpdateWorkspaceRequest, v1.UpdateWorkspaceResponse]
+	deleteWorkspace        *connect.Client[v1.DeleteWorkspaceRequest, v1.DeleteWorkspaceResponse]
+	listPublicWorkspaces   *connect.Client[v1.ListPublicWorkspacesRequest, v1.ListPublicWorkspacesResponse]
+	joinPublicWorkspace    *connect.Client[v1.JoinPublicWorkspaceRequest, v1.JoinPublicWorkspaceResponse]
+	getWorkspaceSignupInfo *connect.Client[v1.GetWorkspaceSignupInfoRequest, v1.GetWorkspaceSignupInfoResponse]
+	listMembers            *connect.Client[v1.ListMembersRequest, v1.ListMembersResponse]
+	updateMemberRole       *connect.Client[v1.UpdateMemberRoleRequest, v1.UpdateMemberRoleResponse]
+	removeMember           *connect.Client[v1.RemoveMemberRequest, v1.RemoveMemberResponse]
 }
 
 // ListWorkspaces calls chat.v1.WorkspaceService.ListWorkspaces.
@@ -230,6 +242,15 @@ func (c *workspaceServiceClient) JoinPublicWorkspace(ctx context.Context, req *v
 	return nil, err
 }
 
+// GetWorkspaceSignupInfo calls chat.v1.WorkspaceService.GetWorkspaceSignupInfo.
+func (c *workspaceServiceClient) GetWorkspaceSignupInfo(ctx context.Context, req *v1.GetWorkspaceSignupInfoRequest) (*v1.GetWorkspaceSignupInfoResponse, error) {
+	response, err := c.getWorkspaceSignupInfo.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // ListMembers calls chat.v1.WorkspaceService.ListMembers.
 func (c *workspaceServiceClient) ListMembers(ctx context.Context, req *v1.ListMembersRequest) (*v1.ListMembersResponse, error) {
 	response, err := c.listMembers.CallUnary(ctx, connect.NewRequest(req))
@@ -266,6 +287,8 @@ type WorkspaceServiceHandler interface {
 	DeleteWorkspace(context.Context, *v1.DeleteWorkspaceRequest) (*v1.DeleteWorkspaceResponse, error)
 	ListPublicWorkspaces(context.Context, *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error)
 	JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error)
+	// 参加リンクの画面用。登録を許可していなければ NOT_FOUND
+	GetWorkspaceSignupInfo(context.Context, *v1.GetWorkspaceSignupInfoRequest) (*v1.GetWorkspaceSignupInfoResponse, error)
 	ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
 	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
@@ -320,6 +343,12 @@ func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.Han
 		connect.WithSchema(workspaceServiceMethods.ByName("JoinPublicWorkspace")),
 		connect.WithHandlerOptions(opts...),
 	)
+	workspaceServiceGetWorkspaceSignupInfoHandler := connect.NewUnaryHandlerSimple(
+		WorkspaceServiceGetWorkspaceSignupInfoProcedure,
+		svc.GetWorkspaceSignupInfo,
+		connect.WithSchema(workspaceServiceMethods.ByName("GetWorkspaceSignupInfo")),
+		connect.WithHandlerOptions(opts...),
+	)
 	workspaceServiceListMembersHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceListMembersProcedure,
 		svc.ListMembers,
@@ -354,6 +383,8 @@ func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.Han
 			workspaceServiceListPublicWorkspacesHandler.ServeHTTP(w, r)
 		case WorkspaceServiceJoinPublicWorkspaceProcedure:
 			workspaceServiceJoinPublicWorkspaceHandler.ServeHTTP(w, r)
+		case WorkspaceServiceGetWorkspaceSignupInfoProcedure:
+			workspaceServiceGetWorkspaceSignupInfoHandler.ServeHTTP(w, r)
 		case WorkspaceServiceListMembersProcedure:
 			workspaceServiceListMembersHandler.ServeHTTP(w, r)
 		case WorkspaceServiceUpdateMemberRoleProcedure:
@@ -395,6 +426,10 @@ func (UnimplementedWorkspaceServiceHandler) ListPublicWorkspaces(context.Context
 
 func (UnimplementedWorkspaceServiceHandler) JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.JoinPublicWorkspace is not implemented"))
+}
+
+func (UnimplementedWorkspaceServiceHandler) GetWorkspaceSignupInfo(context.Context, *v1.GetWorkspaceSignupInfoRequest) (*v1.GetWorkspaceSignupInfoResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.GetWorkspaceSignupInfo is not implemented"))
 }
 
 func (UnimplementedWorkspaceServiceHandler) ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error) {

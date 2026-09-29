@@ -2,11 +2,11 @@ import { IconPlus, IconUsers } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState } from "#/components/ui/EmptyState";
-import { Link } from "#/components/ui/Link";
-import { LinkButton } from "#/components/ui/LinkButton";
-import { Skeleton } from "#/components/ui/Skeleton";
-import { PageHeader } from "#/features/layout/components/PageHeader";
+import { PageHeader } from "#/components/block/PageHeader/PageHeader";
+import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
+import { Link } from "#/components/ui/Link/Link";
+import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
 
 import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";

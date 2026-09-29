@@ -1,8 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { focusRing } from "#/components/ui/styles";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { focusRing } from "#/components/ui/styles/styles";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 
 type MemberRowProps = {

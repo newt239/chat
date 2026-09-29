@@ -2,7 +2,7 @@ import { IconExternalLink, IconMapPin } from "@tabler/icons-react";
 import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { focusRing } from "#/components/ui/styles";
+import { focusRing } from "#/components/ui/styles/styles";
 
 import { externalMapUrl, formatCoordinates } from "../utils/externalMapUrl";
 import { LocationMap } from "./LocationMap";

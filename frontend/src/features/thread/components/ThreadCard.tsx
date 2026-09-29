@@ -3,8 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Badge } from "#/components/ui/Badge";
-import { Link } from "#/components/ui/Link";
+import { Badge } from "#/components/ui/Badge/Badge";
+import { Link } from "#/components/ui/Link/Link";
 import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";

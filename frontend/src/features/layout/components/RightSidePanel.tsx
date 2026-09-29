@@ -2,7 +2,7 @@ import { IconX } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { transitions } from "#/lib/motion";
 
 import { useRightPanel } from "../hooks/useRightPanel";

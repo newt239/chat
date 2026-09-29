@@ -1,6 +1,6 @@
 import { IconArrowDownRight, IconArrowUpRight, IconMinus } from "@tabler/icons-react";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 
 import type { Direction } from "#/features/insights/utils/chart";
 

@@ -12,7 +12,7 @@ vi.mock("./GoogleSignInButton", () => ({
 
 const setup = (passwordAuthEnabled: boolean) =>
   renderWithProviders(
-    <AuthMethods passwordForm={<p>パスワードのフォーム</p>} />,
+    <AuthMethods passwordForm={<p>パスワードのフォーム</p>} workspaceId={null} />,
     "/app/ws1",
     (routes) => {
       routes.rpc(AuthService.method.getAuthConfig, () => ({ passwordAuthEnabled }));

@@ -2,10 +2,10 @@ import { useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Dialog } from "#/components/ui/Dialog";
-import { TextField } from "#/components/ui/TextField";
-import { toast } from "#/components/ui/toast";
+import { Button } from "#/components/ui/Button/Button";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
 
 import { useUserGroupActions } from "../hooks/useUserGroups";
 

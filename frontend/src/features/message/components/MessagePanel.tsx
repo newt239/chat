@@ -5,8 +5,8 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Button } from "#/components/ui/Button/Button";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { ChannelChip } from "#/features/channel/components/ChannelChip";
 import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggregation";
 import { useAutoScrollToBottom } from "#/features/message/hooks/useAutoScrollToBottom";

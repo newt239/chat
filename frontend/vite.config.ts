@@ -152,7 +152,7 @@ export default defineConfig({
       "no-warning-comments": "off",
       "one-var": "off",
       "oxc/no-async-await": "off",
-      "oxc/no-barrel-file": "off",
+      "oxc/no-barrel-file": ["error", { threshold: 0 }],
       "oxc/no-optional-chaining": "off",
       "oxc/no-rest-spread-properties": "off",
       "react-perf/jsx-no-jsx-as-prop": "off",

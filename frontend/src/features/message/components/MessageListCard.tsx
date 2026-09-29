@@ -4,7 +4,7 @@ import { formatDateTime } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Link } from "#/components/ui/Link";
+import { Link } from "#/components/ui/Link/Link";
 import { useConversationLabel } from "#/features/channel/hooks/useConversationLabel";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";

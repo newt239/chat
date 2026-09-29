@@ -3,9 +3,9 @@ import { useAtom } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { SegmentedControl } from "#/components/ui/SegmentedControl";
-import { Slider } from "#/components/ui/Slider";
-import { focusRing } from "#/components/ui/styles";
+import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
+import { Slider } from "#/components/ui/Slider/Slider";
+import { focusRing } from "#/components/ui/styles/styles";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useUpdatePreferences } from "../hooks/usePreferences";

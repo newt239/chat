@@ -76,23 +76,19 @@ pnpm run generate:proto
 
 ```
 src/
-├── main.tsx                 # エントリーポイント
-├── App.tsx                  # ルートコンポーネント
-├── routes/                  # ルート定義（TanStack Router ファイルベース）
-├── routeTree.gen.ts         # routes/ から自動生成されるルートツリー
-├── pages/                   # ルートから参照するページコンポーネント
-├── styles/                  # グローバルスタイル
-├── lib/                     # 共通ライブラリ
-│   ├── api/                 # Connect RPC の transport（認証とトークン更新）
-│   ├── router.ts            # ルーターの生成
-│   ├── navigation.ts        # React ツリー外からの遷移
-│   └── ws.ts                # WebSocketクライアント
-├── providers/               # Jotai ストア / TanStack Query / WebSocket
-├── features/                # 機能別モジュール
-│   ├── attachment/ auth/ bookmark/ channel/ dm/ layout/ link/
-│   ├── member/ message/ notification/ pin/ reaction/ search/
-│   └── settings/ thread/ userGroup/ workspace/
-└── types/                   # WebSocket イベントなどの型定義
+├── main.tsx          # エントリーポイント
+├── App.tsx           # ルートコンポーネント
+├── routes/           # ルート定義（TanStack Router のファイルベースルーティング）
+├── routeTree.gen.ts  # routes/ から自動生成されるルートツリー
+├── components/
+│   ├── ui/           # 基本部品（<Name>/<Name>.tsx）
+│   └── block/        # 基本部品を組み合わせた汎用部品
+├── features/         # 機能別モジュール（components/ hooks/ utils/）
+├── hooks/            # 複数の機能で使う hooks
+├── lib/              # 横断的な処理（Connect RPC の transport、ルーター、WebSocket など）
+├── providers/        # Jotai ストア / TanStack Query / テーマ / WebSocket
+├── styles/           # グローバルスタイル
+└── gen/              # proto から生成したコード
 ```
 
 ## 環境変数

@@ -1,7 +1,7 @@
 import { IconX } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
 
 import type { OGPData } from "../types";
 

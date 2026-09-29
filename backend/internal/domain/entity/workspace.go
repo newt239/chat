@@ -21,9 +21,12 @@ type Workspace struct {
 	Description *string
 	IconURL     *string
 	IsPublic    bool
-	CreatedBy   string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	// 招待なしで参加リンクからアカウントを作れるか
+	SignupEnabled      bool
+	EmailSignupEnabled bool
+	CreatedBy          string
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
 
 type WorkspaceMember struct {

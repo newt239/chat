@@ -3,7 +3,7 @@ import { useCallback, useRef } from "react";
 import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { usePlayerState } from "#/features/player/hooks/usePlayerState";
 import { mediaPlayer } from "#/features/player/mediaPlayer";
 

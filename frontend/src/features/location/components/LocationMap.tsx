@@ -1,7 +1,7 @@
 import "leaflet/dist/leaflet.css";
 import { Circle, CircleMarker, MapContainer, TileLayer } from "react-leaflet";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 
 import type { MessageLocation } from "#/gen/chat/v1/message_pb";
 

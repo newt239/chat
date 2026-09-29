@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { TextField } from "#/components/ui/TextField";
+import { Button } from "#/components/ui/Button/Button";
+import { TextField } from "#/components/ui/TextField/TextField";
 import { useLogin } from "#/features/auth/hooks/useLogin";
 
 import { AuthCard } from "./AuthCard";
@@ -19,6 +19,7 @@ export const LoginForm = () => {
   return (
     <AuthCard title={t("auth.login.title")} footer={t("auth.login.invitationOnly")}>
       <AuthMethods
+        workspaceId={null}
         passwordForm={
           <Form
             className="flex flex-col gap-4"

@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/auth_service.proto.
  */
 export const file_chat_v1_auth_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpjaGF0L3YxL2F1dGhfc2VydmljZS5wcm90bxIHY2hhdC52MSIWChRHZXRBdXRoQ29uZmlnUmVxdWVzdCI2ChVHZXRBdXRoQ29uZmlnUmVzcG9uc2USHQoVcGFzc3dvcmRfYXV0aF9lbmFibGVkGAEgASgIIkEKDExvZ2luUmVxdWVzdBIWCgVlbWFpbBgBIAEoCUIHukgEcgJgARIZCghwYXNzd29yZBgCIAEoCUIHukgEcgIQASJZCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiMwoWTG9naW5XaXRoR29vZ2xlUmVxdWVzdBIZCghpZF90b2tlbhgBIAEoCUIHukgEcgIQASJjChdMb2dpbldpdGhHb29nbGVSZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyInEKG1NpZ25VcFdpdGhJbnZpdGF0aW9uUmVxdWVzdBIWCgV0b2tlbhgBIAEoCUIHukgEcgIQARIfCgxkaXNwbGF5X25hbWUYAiABKAlCCbpIBnIEEAEYZBIZCghwYXNzd29yZBgDIAEoCUIHukgEcgIQCCJoChxTaWduVXBXaXRoSW52aXRhdGlvblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiMAoOUmVmcmVzaFJlcXVlc3QSHgoNcmVmcmVzaF90b2tlbhgBIAEoCUIHukgEcgIQASJbCg9SZWZyZXNoUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlciIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlMskDCgtBdXRoU2VydmljZRJOCg1HZXRBdXRoQ29uZmlnEh0uY2hhdC52MS5HZXRBdXRoQ29uZmlnUmVxdWVzdBoeLmNoYXQudjEuR2V0QXV0aENvbmZpZ1Jlc3BvbnNlEjYKBUxvZ2luEhUuY2hhdC52MS5Mb2dpblJlcXVlc3QaFi5jaGF0LnYxLkxvZ2luUmVzcG9uc2USVAoPTG9naW5XaXRoR29vZ2xlEh8uY2hhdC52MS5Mb2dpbldpdGhHb29nbGVSZXF1ZXN0GiAuY2hhdC52MS5Mb2dpbldpdGhHb29nbGVSZXNwb25zZRJjChRTaWduVXBXaXRoSW52aXRhdGlvbhIkLmNoYXQudjEuU2lnblVwV2l0aEludml0YXRpb25SZXF1ZXN0GiUuY2hhdC52MS5TaWduVXBXaXRoSW52aXRhdGlvblJlc3BvbnNlEjwKB1JlZnJlc2gSFy5jaGF0LnYxLlJlZnJlc2hSZXF1ZXN0GhguY2hhdC52MS5SZWZyZXNoUmVzcG9uc2USOQoGTG9nb3V0EhYuY2hhdC52MS5Mb2dvdXRSZXF1ZXN0GhcuY2hhdC52MS5Mb2dvdXRSZXNwb25zZUKRAQoLY29tLmNoYXQudjFCEEF1dGhTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_user]);
+  fileDesc("ChpjaGF0L3YxL2F1dGhfc2VydmljZS5wcm90bxIHY2hhdC52MSIWChRHZXRBdXRoQ29uZmlnUmVxdWVzdCI2ChVHZXRBdXRoQ29uZmlnUmVzcG9uc2USHQoVcGFzc3dvcmRfYXV0aF9lbmFibGVkGAEgASgIIkEKDExvZ2luUmVxdWVzdBIWCgVlbWFpbBgBIAEoCUIHukgEcgJgARIZCghwYXNzd29yZBgCIAEoCUIHukgEcgIQASJZCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiaAoWTG9naW5XaXRoR29vZ2xlUmVxdWVzdBIZCghpZF90b2tlbhgBIAEoCUIHukgEcgIQARIiCgx3b3Jrc3BhY2VfaWQYAiABKAlCB7pIBHICEAFIAIgBAUIPCg1fd29ya3NwYWNlX2lkImMKF0xvZ2luV2l0aEdvb2dsZVJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIicQobU2lnblVwV2l0aEludml0YXRpb25SZXF1ZXN0EhYKBXRva2VuGAEgASgJQge6SARyAhABEh8KDGRpc3BsYXlfbmFtZRgCIAEoCUIJukgGcgQQARhkEhkKCHBhc3N3b3JkGAMgASgJQge6SARyAhAIImgKHFNpZ25VcFdpdGhJbnZpdGF0aW9uUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlciKCAQoNU2lnblVwUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESFgoFZW1haWwYAiABKAlCB7pIBHICYAESHwoMZGlzcGxheV9uYW1lGAMgASgJQgm6SAZyBBABGGQSGQoIcGFzc3dvcmQYBCABKAlCB7pIBHICEAgiWgoOU2lnblVwUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlciIwCg5SZWZyZXNoUmVxdWVzdBIeCg1yZWZyZXNoX3Rva2VuGAEgASgJQge6SARyAhABIlsKD1JlZnJlc2hSZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyIg8KDUxvZ291dFJlcXVlc3QiEAoOTG9nb3V0UmVzcG9uc2UyhAQKC0F1dGhTZXJ2aWNlEk4KDUdldEF1dGhDb25maWcSHS5jaGF0LnYxLkdldEF1dGhDb25maWdSZXF1ZXN0Gh4uY2hhdC52MS5HZXRBdXRoQ29uZmlnUmVzcG9uc2USNgoFTG9naW4SFS5jaGF0LnYxLkxvZ2luUmVxdWVzdBoWLmNoYXQudjEuTG9naW5SZXNwb25zZRJUCg9Mb2dpbldpdGhHb29nbGUSHy5jaGF0LnYxLkxvZ2luV2l0aEdvb2dsZVJlcXVlc3QaIC5jaGF0LnYxLkxvZ2luV2l0aEdvb2dsZVJlc3BvbnNlEmMKFFNpZ25VcFdpdGhJbnZpdGF0aW9uEiQuY2hhdC52MS5TaWduVXBXaXRoSW52aXRhdGlvblJlcXVlc3QaJS5jaGF0LnYxLlNpZ25VcFdpdGhJbnZpdGF0aW9uUmVzcG9uc2USOQoGU2lnblVwEhYuY2hhdC52MS5TaWduVXBSZXF1ZXN0GhcuY2hhdC52MS5TaWduVXBSZXNwb25zZRI8CgdSZWZyZXNoEhcuY2hhdC52MS5SZWZyZXNoUmVxdWVzdBoYLmNoYXQudjEuUmVmcmVzaFJlc3BvbnNlEjkKBkxvZ291dBIWLmNoYXQudjEuTG9nb3V0UmVxdWVzdBoXLmNoYXQudjEuTG9nb3V0UmVzcG9uc2VCkQEKC2NvbS5jaGF0LnYxQhBBdXRoU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_user]);
 
 /**
  * @generated from message chat.v1.GetAuthConfigRequest
@@ -104,6 +104,13 @@ export type LoginWithGoogleRequest = Message<"chat.v1.LoginWithGoogleRequest"> &
    * @generated from field: string id_token = 1;
    */
   idToken: string;
+
+  /**
+   * 参加リンクから来たときのワークスペース。登録を許可していれば、未参加のユーザーを参加させる
+   *
+   * @generated from field: optional string workspace_id = 2;
+   */
+  workspaceId?: string | undefined;
 };
 
 /**
@@ -195,6 +202,65 @@ export const SignUpWithInvitationResponseSchema: GenMessage<SignUpWithInvitation
   messageDesc(file_chat_v1_auth_service, 7);
 
 /**
+ * @generated from message chat.v1.SignUpRequest
+ */
+export type SignUpRequest = Message<"chat.v1.SignUpRequest"> & {
+  /**
+   * @generated from field: string workspace_id = 1;
+   */
+  workspaceId: string;
+
+  /**
+   * @generated from field: string email = 2;
+   */
+  email: string;
+
+  /**
+   * @generated from field: string display_name = 3;
+   */
+  displayName: string;
+
+  /**
+   * @generated from field: string password = 4;
+   */
+  password: string;
+};
+
+/**
+ * Describes the message chat.v1.SignUpRequest.
+ * Use `create(SignUpRequestSchema)` to create a new message.
+ */
+export const SignUpRequestSchema: GenMessage<SignUpRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_auth_service, 8);
+
+/**
+ * @generated from message chat.v1.SignUpResponse
+ */
+export type SignUpResponse = Message<"chat.v1.SignUpResponse"> & {
+  /**
+   * @generated from field: string access_token = 1;
+   */
+  accessToken: string;
+
+  /**
+   * @generated from field: string refresh_token = 2;
+   */
+  refreshToken: string;
+
+  /**
+   * @generated from field: chat.v1.User user = 3;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message chat.v1.SignUpResponse.
+ * Use `create(SignUpResponseSchema)` to create a new message.
+ */
+export const SignUpResponseSchema: GenMessage<SignUpResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_auth_service, 9);
+
+/**
  * @generated from message chat.v1.RefreshRequest
  */
 export type RefreshRequest = Message<"chat.v1.RefreshRequest"> & {
@@ -209,7 +275,7 @@ export type RefreshRequest = Message<"chat.v1.RefreshRequest"> & {
  * Use `create(RefreshRequestSchema)` to create a new message.
  */
 export const RefreshRequestSchema: GenMessage<RefreshRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 8);
+  messageDesc(file_chat_v1_auth_service, 10);
 
 /**
  * @generated from message chat.v1.RefreshResponse
@@ -236,7 +302,7 @@ export type RefreshResponse = Message<"chat.v1.RefreshResponse"> & {
  * Use `create(RefreshResponseSchema)` to create a new message.
  */
 export const RefreshResponseSchema: GenMessage<RefreshResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 9);
+  messageDesc(file_chat_v1_auth_service, 11);
 
 /**
  * @generated from message chat.v1.LogoutRequest
@@ -249,7 +315,7 @@ export type LogoutRequest = Message<"chat.v1.LogoutRequest"> & {
  * Use `create(LogoutRequestSchema)` to create a new message.
  */
 export const LogoutRequestSchema: GenMessage<LogoutRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 10);
+  messageDesc(file_chat_v1_auth_service, 12);
 
 /**
  * @generated from message chat.v1.LogoutResponse
@@ -262,10 +328,10 @@ export type LogoutResponse = Message<"chat.v1.LogoutResponse"> & {
  * Use `create(LogoutResponseSchema)` to create a new message.
  */
 export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 11);
+  messageDesc(file_chat_v1_auth_service, 13);
 
 /**
- * Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える（docs/auth.md）
+ * Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える
  *
  * @generated from service chat.v1.AuthService
  */
@@ -287,7 +353,7 @@ export const AuthService: GenService<{
     output: typeof LoginResponseSchema;
   },
   /**
-   * 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+   * 未登録のメールアドレスは有効な招待があるか、登録を許可したワークスペースの参加リンクから来たときだけアカウントを作る
    *
    * @generated from rpc chat.v1.AuthService.LoginWithGoogle
    */
@@ -305,6 +371,16 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof SignUpWithInvitationRequestSchema;
     output: typeof SignUpWithInvitationResponseSchema;
+  },
+  /**
+   * 登録とメールでの登録を許可したワークスペースの参加リンクからアカウントを作る
+   *
+   * @generated from rpc chat.v1.AuthService.SignUp
+   */
+  signUp: {
+    methodKind: "unary";
+    input: typeof SignUpRequestSchema;
+    output: typeof SignUpResponseSchema;
   },
   /**
    * @generated from rpc chat.v1.AuthService.Refresh

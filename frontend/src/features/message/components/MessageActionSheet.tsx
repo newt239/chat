@@ -4,8 +4,8 @@ import { IconMoodPlus } from "@tabler/icons-react";
 import { Button, Heading, Menu, MenuItem, Separator } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { DialogFrame } from "#/components/ui/DialogFrame";
-import { cn, focusRing } from "#/components/ui/styles";
+import { DialogFrame } from "#/components/ui/Dialog/DialogFrame";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { EmojiPicker } from "#/features/reaction/components/EmojiPicker";
 

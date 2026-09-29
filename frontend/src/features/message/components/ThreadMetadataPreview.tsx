@@ -3,8 +3,8 @@ import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { focusRing } from "#/components/ui/styles";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { focusRing } from "#/components/ui/styles/styles";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";
 

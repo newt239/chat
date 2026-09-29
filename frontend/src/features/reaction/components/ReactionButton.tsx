@@ -4,14 +4,14 @@ import { motion } from "motion/react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, focusRing } from "#/components/ui/styles";
-import { Tooltip } from "#/components/ui/Tooltip";
+import { cn, focusRing } from "#/components/ui/styles/styles";
+import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { transitions } from "#/lib/motion";
 
 import { useFormatReactors } from "../hooks/useFormatReactors";
 import { reactionPillClassName } from "../styles";
 
-import type { ReactionGroup } from "../types";
+import type { ReactionGroup } from "#/features/reaction/types/reactionGroup";
 
 type ReactionButtonProps = {
   group: ReactionGroup;

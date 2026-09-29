@@ -16,6 +16,19 @@ type LoginInput struct {
 	Password string
 }
 
+type LoginWithGoogleInput struct {
+	IDToken string
+	// 参加リンクから来た場合のワークスペース。招待がなくても登録を許可していればアカウントを作る
+	WorkspaceID *string
+}
+
+type SignUpInput struct {
+	WorkspaceID string
+	Email       string
+	DisplayName string
+	Password    string
+}
+
 type SignUpWithInvitationInput struct {
 	Token       string
 	DisplayName string

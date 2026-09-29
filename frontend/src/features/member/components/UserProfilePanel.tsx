@@ -4,9 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Button } from "#/components/ui/Button";
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Button } from "#/components/ui/Button/Button";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";

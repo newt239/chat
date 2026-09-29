@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { ToggleButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, focusRing } from "#/components/ui/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 
 import { DataTable } from "./DataTable";
 

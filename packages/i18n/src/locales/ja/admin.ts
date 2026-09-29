@@ -54,6 +54,15 @@ export const admin = {
     unknownActor: "不明",
   },
   invitations: {
+    signup: {
+      email: "メールアドレスとパスワードでの登録を許可",
+      emailDisabled: "このサーバーではパスワード認証が無効なため、メールアドレスでは登録できません",
+      enabled: "参加リンクからの新規登録を許可",
+      link: "参加リンク",
+      note: "許可すると、参加リンクを知っている人は招待なしでアカウントを作り、メンバーとして参加できます。",
+      title: "新規登録",
+      updated: "新規登録の設定を更新しました",
+    },
     columns: {
       email: "メールアドレス",
       expiresAt: "有効期限",

@@ -26,15 +26,17 @@ func WorkspaceRoleName(role chatv1.WorkspaceRole) string {
 
 func Workspace(w workspaceuc.WorkspaceOutput) *chatv1.Workspace {
 	return &chatv1.Workspace{
-		Id:          w.ID,
-		Name:        w.Name,
-		Description: w.Description,
-		IconUrl:     w.IconURL,
-		IsPublic:    w.IsPublic,
-		Role:        workspaceRoles[w.Role],
-		CreatedBy:   w.CreatedBy,
-		CreatedAt:   timestamppb.New(w.CreatedAt),
-		UpdatedAt:   timestamppb.New(w.UpdatedAt),
+		Id:                 w.ID,
+		Name:               w.Name,
+		Description:        w.Description,
+		IconUrl:            w.IconURL,
+		IsPublic:           w.IsPublic,
+		SignupEnabled:      w.SignupEnabled,
+		EmailSignupEnabled: w.EmailSignupEnabled,
+		Role:               workspaceRoles[w.Role],
+		CreatedBy:          w.CreatedBy,
+		CreatedAt:          timestamppb.New(w.CreatedAt),
+		UpdatedAt:          timestamppb.New(w.UpdatedAt),
 	}
 }
 

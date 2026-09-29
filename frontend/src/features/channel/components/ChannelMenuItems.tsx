@@ -10,9 +10,9 @@ import {
 import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { MenuItem } from "#/components/ui/MenuItem";
-import { MenuItemLink } from "#/components/ui/MenuItemLink";
-import { toast } from "#/components/ui/toast";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
+import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannelListActions } from "#/features/channel/hooks/useChannelListActions";
 
 type ChannelMenuItemsProps = {

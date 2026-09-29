@@ -8,7 +8,7 @@ import { getRouteApi } from "@tanstack/react-router";
 import { Button, ToggleButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { focusRing } from "#/components/ui/styles";
+import { focusRing } from "#/components/ui/styles/styles";
 import { useResolvedSearchQuery } from "#/features/search/hooks/useResolvedSearchQuery";
 import { chipClassName } from "#/features/search/utils/chipClassName";
 

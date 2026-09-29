@@ -3,15 +3,15 @@ import { useEffect } from "react";
 import { Outlet, useCanGoBack, useMatches, useNavigate, useRouter } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 
+import { DMsPage } from "#/features/dm/components/DMsPage";
+import { useVisualViewport } from "#/features/layout/hooks/useVisualViewport";
 import { MiniPlayer } from "#/features/player/components/MiniPlayer";
-import { useVisualViewport } from "#/lib/useVisualViewport";
-import { ActivityPage } from "#/pages/ActivityPage";
-import { DMsPage } from "#/pages/DMsPage";
-import { MePage } from "#/pages/MePage";
 import { mobileTabAtom } from "#/providers/store/ui";
 
 import { useRightPanel } from "../hooks/useRightPanel";
+import { ActivityPage } from "./ActivityPage";
 import { BackButton } from "./BackButton";
+import { MePage } from "./MePage";
 import { MobileHome } from "./MobileHome";
 import { MobileStackLayer } from "./MobileStackLayer";
 import { MobileTabBar } from "./MobileTabBar";

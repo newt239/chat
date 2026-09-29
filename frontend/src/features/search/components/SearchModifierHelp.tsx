@@ -1,8 +1,8 @@
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { focusRing } from "#/components/ui/styles";
-import { Tooltip } from "#/components/ui/Tooltip";
+import { focusRing } from "#/components/ui/styles/styles";
+import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 
 const modifiers = [
   ["from:@", "from"],

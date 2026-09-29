@@ -79,18 +79,20 @@ func (WorkspaceRole) EnumDescriptor() ([]byte, []int) {
 }
 
 type Workspace struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	IconUrl       *string                `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
-	IsPublic      bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
-	Role          WorkspaceRole          `protobuf:"varint,6,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
-	CreatedBy     string                 `protobuf:"bytes,7,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name               string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description        *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	IconUrl            *string                `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
+	IsPublic           bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+	Role               WorkspaceRole          `protobuf:"varint,6,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
+	CreatedBy          string                 `protobuf:"bytes,7,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	SignupEnabled      bool                   `protobuf:"varint,10,opt,name=signup_enabled,json=signupEnabled,proto3" json:"signup_enabled,omitempty"`
+	EmailSignupEnabled bool                   `protobuf:"varint,11,opt,name=email_signup_enabled,json=emailSignupEnabled,proto3" json:"email_signup_enabled,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *Workspace) Reset() {
@@ -184,6 +186,20 @@ func (x *Workspace) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *Workspace) GetSignupEnabled() bool {
+	if x != nil {
+		return x.SignupEnabled
+	}
+	return false
+}
+
+func (x *Workspace) GetEmailSignupEnabled() bool {
+	if x != nil {
+		return x.EmailSignupEnabled
+	}
+	return false
 }
 
 type WorkspaceMember struct {
@@ -686,14 +702,16 @@ func (x *GetWorkspaceResponse) GetWorkspace() *Workspace {
 }
 
 type UpdateWorkspaceRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	Name          *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	IconUrl       *string                `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
-	IsPublic      *bool                  `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	WorkspaceId        string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	Name               *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Description        *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	IconUrl            *string                `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
+	IsPublic           *bool                  `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
+	SignupEnabled      *bool                  `protobuf:"varint,6,opt,name=signup_enabled,json=signupEnabled,proto3,oneof" json:"signup_enabled,omitempty"`
+	EmailSignupEnabled *bool                  `protobuf:"varint,7,opt,name=email_signup_enabled,json=emailSignupEnabled,proto3,oneof" json:"email_signup_enabled,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *UpdateWorkspaceRequest) Reset() {
@@ -757,6 +775,20 @@ func (x *UpdateWorkspaceRequest) GetIconUrl() string {
 func (x *UpdateWorkspaceRequest) GetIsPublic() bool {
 	if x != nil && x.IsPublic != nil {
 		return *x.IsPublic
+	}
+	return false
+}
+
+func (x *UpdateWorkspaceRequest) GetSignupEnabled() bool {
+	if x != nil && x.SignupEnabled != nil {
+		return *x.SignupEnabled
+	}
+	return false
+}
+
+func (x *UpdateWorkspaceRequest) GetEmailSignupEnabled() bool {
+	if x != nil && x.EmailSignupEnabled != nil {
+		return *x.EmailSignupEnabled
 	}
 	return false
 }
@@ -1045,6 +1077,118 @@ func (*JoinPublicWorkspaceResponse) Descriptor() ([]byte, []int) {
 	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{16}
 }
 
+type GetWorkspaceSignupInfoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWorkspaceSignupInfoRequest) Reset() {
+	*x = GetWorkspaceSignupInfoRequest{}
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkspaceSignupInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkspaceSignupInfoRequest) ProtoMessage() {}
+
+func (x *GetWorkspaceSignupInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkspaceSignupInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetWorkspaceSignupInfoRequest) Descriptor() ([]byte, []int) {
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetWorkspaceSignupInfoRequest) GetWorkspaceId() string {
+	if x != nil {
+		return x.WorkspaceId
+	}
+	return ""
+}
+
+type GetWorkspaceSignupInfoResponse struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name               string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	IconUrl            *string                `protobuf:"bytes,3,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
+	EmailSignupEnabled bool                   `protobuf:"varint,4,opt,name=email_signup_enabled,json=emailSignupEnabled,proto3" json:"email_signup_enabled,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *GetWorkspaceSignupInfoResponse) Reset() {
+	*x = GetWorkspaceSignupInfoResponse{}
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWorkspaceSignupInfoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWorkspaceSignupInfoResponse) ProtoMessage() {}
+
+func (x *GetWorkspaceSignupInfoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWorkspaceSignupInfoResponse.ProtoReflect.Descriptor instead.
+func (*GetWorkspaceSignupInfoResponse) Descriptor() ([]byte, []int) {
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetWorkspaceSignupInfoResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetWorkspaceSignupInfoResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *GetWorkspaceSignupInfoResponse) GetIconUrl() string {
+	if x != nil && x.IconUrl != nil {
+		return *x.IconUrl
+	}
+	return ""
+}
+
+func (x *GetWorkspaceSignupInfoResponse) GetEmailSignupEnabled() bool {
+	if x != nil {
+		return x.EmailSignupEnabled
+	}
+	return false
+}
+
 type ListMembersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
@@ -1054,7 +1198,7 @@ type ListMembersRequest struct {
 
 func (x *ListMembersRequest) Reset() {
 	*x = ListMembersRequest{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[17]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1066,7 +1210,7 @@ func (x *ListMembersRequest) String() string {
 func (*ListMembersRequest) ProtoMessage() {}
 
 func (x *ListMembersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[17]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1079,7 +1223,7 @@ func (x *ListMembersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMembersRequest.ProtoReflect.Descriptor instead.
 func (*ListMembersRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{17}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListMembersRequest) GetWorkspaceId() string {
@@ -1098,7 +1242,7 @@ type ListMembersResponse struct {
 
 func (x *ListMembersResponse) Reset() {
 	*x = ListMembersResponse{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[18]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1110,7 +1254,7 @@ func (x *ListMembersResponse) String() string {
 func (*ListMembersResponse) ProtoMessage() {}
 
 func (x *ListMembersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[18]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1123,7 +1267,7 @@ func (x *ListMembersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMembersResponse.ProtoReflect.Descriptor instead.
 func (*ListMembersResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{18}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ListMembersResponse) GetMembers() []*WorkspaceMember {
@@ -1144,7 +1288,7 @@ type UpdateMemberRoleRequest struct {
 
 func (x *UpdateMemberRoleRequest) Reset() {
 	*x = UpdateMemberRoleRequest{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1156,7 +1300,7 @@ func (x *UpdateMemberRoleRequest) String() string {
 func (*UpdateMemberRoleRequest) ProtoMessage() {}
 
 func (x *UpdateMemberRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1169,7 +1313,7 @@ func (x *UpdateMemberRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMemberRoleRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMemberRoleRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{19}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *UpdateMemberRoleRequest) GetWorkspaceId() string {
@@ -1201,7 +1345,7 @@ type UpdateMemberRoleResponse struct {
 
 func (x *UpdateMemberRoleResponse) Reset() {
 	*x = UpdateMemberRoleResponse{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1213,7 +1357,7 @@ func (x *UpdateMemberRoleResponse) String() string {
 func (*UpdateMemberRoleResponse) ProtoMessage() {}
 
 func (x *UpdateMemberRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1226,7 +1370,7 @@ func (x *UpdateMemberRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMemberRoleResponse.ProtoReflect.Descriptor instead.
 func (*UpdateMemberRoleResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{20}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{22}
 }
 
 type RemoveMemberRequest struct {
@@ -1239,7 +1383,7 @@ type RemoveMemberRequest struct {
 
 func (x *RemoveMemberRequest) Reset() {
 	*x = RemoveMemberRequest{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1251,7 +1395,7 @@ func (x *RemoveMemberRequest) String() string {
 func (*RemoveMemberRequest) ProtoMessage() {}
 
 func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1264,7 +1408,7 @@ func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberRequest.ProtoReflect.Descriptor instead.
 func (*RemoveMemberRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{21}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *RemoveMemberRequest) GetWorkspaceId() string {
@@ -1289,7 +1433,7 @@ type RemoveMemberResponse struct {
 
 func (x *RemoveMemberResponse) Reset() {
 	*x = RemoveMemberResponse{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1301,7 +1445,7 @@ func (x *RemoveMemberResponse) String() string {
 func (*RemoveMemberResponse) ProtoMessage() {}
 
 func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1314,14 +1458,14 @@ func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberResponse.ProtoReflect.Descriptor instead.
 func (*RemoveMemberResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{22}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{24}
 }
 
 var File_chat_v1_workspace_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1fchat/v1/workspace_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf1\x02\n" +
+	"\x1fchat/v1/workspace_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xca\x03\n" +
 	"\tWorkspace\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -1334,7 +1478,10 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtB\x0e\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12%\n" +
+	"\x0esignup_enabled\x18\n" +
+	" \x01(\bR\rsignupEnabled\x120\n" +
+	"\x14email_signup_enabled\x18\v \x01(\bR\x12emailSignupEnabledB\x0e\n" +
 	"\f_descriptionB\v\n" +
 	"\t_icon_url\"\xb9\x03\n" +
 	"\x0fWorkspaceMember\x12\x17\n" +
@@ -1383,18 +1530,22 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\x13GetWorkspaceRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"H\n" +
 	"\x14GetWorkspaceResponse\x120\n" +
-	"\tworkspace\x18\x01 \x01(\v2\x12.chat.v1.WorkspaceR\tworkspace\"\x9c\x02\n" +
+	"\tworkspace\x18\x01 \x01(\v2\x12.chat.v1.WorkspaceR\tworkspace\"\xab\x03\n" +
 	"\x16UpdateWorkspaceRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\"\n" +
 	"\x04name\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18dH\x00R\x04name\x88\x01\x01\x12/\n" +
 	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03H\x01R\vdescription\x88\x01\x01\x12+\n" +
 	"\bicon_url\x18\x04 \x01(\tB\v\xbaH\br\x06\x18\x80\x10\x88\x01\x01H\x02R\aiconUrl\x88\x01\x01\x12 \n" +
-	"\tis_public\x18\x05 \x01(\bH\x03R\bisPublic\x88\x01\x01B\a\n" +
+	"\tis_public\x18\x05 \x01(\bH\x03R\bisPublic\x88\x01\x01\x12*\n" +
+	"\x0esignup_enabled\x18\x06 \x01(\bH\x04R\rsignupEnabled\x88\x01\x01\x125\n" +
+	"\x14email_signup_enabled\x18\a \x01(\bH\x05R\x12emailSignupEnabled\x88\x01\x01B\a\n" +
 	"\x05_nameB\x0e\n" +
 	"\f_descriptionB\v\n" +
 	"\t_icon_urlB\f\n" +
 	"\n" +
-	"_is_public\"K\n" +
+	"_is_publicB\x11\n" +
+	"\x0f_signup_enabledB\x17\n" +
+	"\x15_email_signup_enabled\"K\n" +
 	"\x17UpdateWorkspaceResponse\x120\n" +
 	"\tworkspace\x18\x01 \x01(\v2\x12.chat.v1.WorkspaceR\tworkspace\"D\n" +
 	"\x16DeleteWorkspaceRequest\x12*\n" +
@@ -1407,7 +1558,15 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"workspaces\"H\n" +
 	"\x1aJoinPublicWorkspaceRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"\x1d\n" +
-	"\x1bJoinPublicWorkspaceResponse\"@\n" +
+	"\x1bJoinPublicWorkspaceResponse\"K\n" +
+	"\x1dGetWorkspaceSignupInfoRequest\x12*\n" +
+	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"\xa3\x01\n" +
+	"\x1eGetWorkspaceSignupInfoResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1e\n" +
+	"\bicon_url\x18\x03 \x01(\tH\x00R\aiconUrl\x88\x01\x01\x120\n" +
+	"\x14email_signup_enabled\x18\x04 \x01(\bR\x12emailSignupEnabledB\v\n" +
+	"\t_icon_url\"@\n" +
 	"\x12ListMembersRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"I\n" +
 	"\x13ListMembersResponse\x122\n" +
@@ -1426,7 +1585,7 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\x14WORKSPACE_ROLE_OWNER\x10\x01\x12\x18\n" +
 	"\x14WORKSPACE_ROLE_ADMIN\x10\x02\x12\x19\n" +
 	"\x15WORKSPACE_ROLE_MEMBER\x10\x03\x12\x18\n" +
-	"\x14WORKSPACE_ROLE_GUEST\x10\x042\xeb\x06\n" +
+	"\x14WORKSPACE_ROLE_GUEST\x10\x042\xd6\a\n" +
 	"\x10WorkspaceService\x12Q\n" +
 	"\x0eListWorkspaces\x12\x1e.chat.v1.ListWorkspacesRequest\x1a\x1f.chat.v1.ListWorkspacesResponse\x12T\n" +
 	"\x0fCreateWorkspace\x12\x1f.chat.v1.CreateWorkspaceRequest\x1a .chat.v1.CreateWorkspaceResponse\x12K\n" +
@@ -1434,7 +1593,8 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\x0fUpdateWorkspace\x12\x1f.chat.v1.UpdateWorkspaceRequest\x1a .chat.v1.UpdateWorkspaceResponse\x12T\n" +
 	"\x0fDeleteWorkspace\x12\x1f.chat.v1.DeleteWorkspaceRequest\x1a .chat.v1.DeleteWorkspaceResponse\x12c\n" +
 	"\x14ListPublicWorkspaces\x12$.chat.v1.ListPublicWorkspacesRequest\x1a%.chat.v1.ListPublicWorkspacesResponse\x12`\n" +
-	"\x13JoinPublicWorkspace\x12#.chat.v1.JoinPublicWorkspaceRequest\x1a$.chat.v1.JoinPublicWorkspaceResponse\x12H\n" +
+	"\x13JoinPublicWorkspace\x12#.chat.v1.JoinPublicWorkspaceRequest\x1a$.chat.v1.JoinPublicWorkspaceResponse\x12i\n" +
+	"\x16GetWorkspaceSignupInfo\x12&.chat.v1.GetWorkspaceSignupInfoRequest\x1a'.chat.v1.GetWorkspaceSignupInfoResponse\x12H\n" +
 	"\vListMembers\x12\x1b.chat.v1.ListMembersRequest\x1a\x1c.chat.v1.ListMembersResponse\x12W\n" +
 	"\x10UpdateMemberRole\x12 .chat.v1.UpdateMemberRoleRequest\x1a!.chat.v1.UpdateMemberRoleResponse\x12K\n" +
 	"\fRemoveMember\x12\x1c.chat.v1.RemoveMemberRequest\x1a\x1d.chat.v1.RemoveMemberResponseB\x96\x01\n" +
@@ -1453,42 +1613,44 @@ func file_chat_v1_workspace_service_proto_rawDescGZIP() []byte {
 }
 
 var file_chat_v1_workspace_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_chat_v1_workspace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_chat_v1_workspace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_chat_v1_workspace_service_proto_goTypes = []any{
-	(WorkspaceRole)(0),                   // 0: chat.v1.WorkspaceRole
-	(*Workspace)(nil),                    // 1: chat.v1.Workspace
-	(*WorkspaceMember)(nil),              // 2: chat.v1.WorkspaceMember
-	(*PublicWorkspace)(nil),              // 3: chat.v1.PublicWorkspace
-	(*ListWorkspacesRequest)(nil),        // 4: chat.v1.ListWorkspacesRequest
-	(*ListWorkspacesResponse)(nil),       // 5: chat.v1.ListWorkspacesResponse
-	(*CreateWorkspaceRequest)(nil),       // 6: chat.v1.CreateWorkspaceRequest
-	(*CreateWorkspaceResponse)(nil),      // 7: chat.v1.CreateWorkspaceResponse
-	(*GetWorkspaceRequest)(nil),          // 8: chat.v1.GetWorkspaceRequest
-	(*GetWorkspaceResponse)(nil),         // 9: chat.v1.GetWorkspaceResponse
-	(*UpdateWorkspaceRequest)(nil),       // 10: chat.v1.UpdateWorkspaceRequest
-	(*UpdateWorkspaceResponse)(nil),      // 11: chat.v1.UpdateWorkspaceResponse
-	(*DeleteWorkspaceRequest)(nil),       // 12: chat.v1.DeleteWorkspaceRequest
-	(*DeleteWorkspaceResponse)(nil),      // 13: chat.v1.DeleteWorkspaceResponse
-	(*ListPublicWorkspacesRequest)(nil),  // 14: chat.v1.ListPublicWorkspacesRequest
-	(*ListPublicWorkspacesResponse)(nil), // 15: chat.v1.ListPublicWorkspacesResponse
-	(*JoinPublicWorkspaceRequest)(nil),   // 16: chat.v1.JoinPublicWorkspaceRequest
-	(*JoinPublicWorkspaceResponse)(nil),  // 17: chat.v1.JoinPublicWorkspaceResponse
-	(*ListMembersRequest)(nil),           // 18: chat.v1.ListMembersRequest
-	(*ListMembersResponse)(nil),          // 19: chat.v1.ListMembersResponse
-	(*UpdateMemberRoleRequest)(nil),      // 20: chat.v1.UpdateMemberRoleRequest
-	(*UpdateMemberRoleResponse)(nil),     // 21: chat.v1.UpdateMemberRoleResponse
-	(*RemoveMemberRequest)(nil),          // 22: chat.v1.RemoveMemberRequest
-	(*RemoveMemberResponse)(nil),         // 23: chat.v1.RemoveMemberResponse
-	(*timestamppb.Timestamp)(nil),        // 24: google.protobuf.Timestamp
+	(WorkspaceRole)(0),                     // 0: chat.v1.WorkspaceRole
+	(*Workspace)(nil),                      // 1: chat.v1.Workspace
+	(*WorkspaceMember)(nil),                // 2: chat.v1.WorkspaceMember
+	(*PublicWorkspace)(nil),                // 3: chat.v1.PublicWorkspace
+	(*ListWorkspacesRequest)(nil),          // 4: chat.v1.ListWorkspacesRequest
+	(*ListWorkspacesResponse)(nil),         // 5: chat.v1.ListWorkspacesResponse
+	(*CreateWorkspaceRequest)(nil),         // 6: chat.v1.CreateWorkspaceRequest
+	(*CreateWorkspaceResponse)(nil),        // 7: chat.v1.CreateWorkspaceResponse
+	(*GetWorkspaceRequest)(nil),            // 8: chat.v1.GetWorkspaceRequest
+	(*GetWorkspaceResponse)(nil),           // 9: chat.v1.GetWorkspaceResponse
+	(*UpdateWorkspaceRequest)(nil),         // 10: chat.v1.UpdateWorkspaceRequest
+	(*UpdateWorkspaceResponse)(nil),        // 11: chat.v1.UpdateWorkspaceResponse
+	(*DeleteWorkspaceRequest)(nil),         // 12: chat.v1.DeleteWorkspaceRequest
+	(*DeleteWorkspaceResponse)(nil),        // 13: chat.v1.DeleteWorkspaceResponse
+	(*ListPublicWorkspacesRequest)(nil),    // 14: chat.v1.ListPublicWorkspacesRequest
+	(*ListPublicWorkspacesResponse)(nil),   // 15: chat.v1.ListPublicWorkspacesResponse
+	(*JoinPublicWorkspaceRequest)(nil),     // 16: chat.v1.JoinPublicWorkspaceRequest
+	(*JoinPublicWorkspaceResponse)(nil),    // 17: chat.v1.JoinPublicWorkspaceResponse
+	(*GetWorkspaceSignupInfoRequest)(nil),  // 18: chat.v1.GetWorkspaceSignupInfoRequest
+	(*GetWorkspaceSignupInfoResponse)(nil), // 19: chat.v1.GetWorkspaceSignupInfoResponse
+	(*ListMembersRequest)(nil),             // 20: chat.v1.ListMembersRequest
+	(*ListMembersResponse)(nil),            // 21: chat.v1.ListMembersResponse
+	(*UpdateMemberRoleRequest)(nil),        // 22: chat.v1.UpdateMemberRoleRequest
+	(*UpdateMemberRoleResponse)(nil),       // 23: chat.v1.UpdateMemberRoleResponse
+	(*RemoveMemberRequest)(nil),            // 24: chat.v1.RemoveMemberRequest
+	(*RemoveMemberResponse)(nil),           // 25: chat.v1.RemoveMemberResponse
+	(*timestamppb.Timestamp)(nil),          // 26: google.protobuf.Timestamp
 }
 var file_chat_v1_workspace_service_proto_depIdxs = []int32{
 	0,  // 0: chat.v1.Workspace.role:type_name -> chat.v1.WorkspaceRole
-	24, // 1: chat.v1.Workspace.created_at:type_name -> google.protobuf.Timestamp
-	24, // 2: chat.v1.Workspace.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 1: chat.v1.Workspace.created_at:type_name -> google.protobuf.Timestamp
+	26, // 2: chat.v1.Workspace.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: chat.v1.WorkspaceMember.role:type_name -> chat.v1.WorkspaceRole
-	24, // 4: chat.v1.WorkspaceMember.joined_at:type_name -> google.protobuf.Timestamp
-	24, // 5: chat.v1.WorkspaceMember.suspended_at:type_name -> google.protobuf.Timestamp
-	24, // 6: chat.v1.PublicWorkspace.created_at:type_name -> google.protobuf.Timestamp
+	26, // 4: chat.v1.WorkspaceMember.joined_at:type_name -> google.protobuf.Timestamp
+	26, // 5: chat.v1.WorkspaceMember.suspended_at:type_name -> google.protobuf.Timestamp
+	26, // 6: chat.v1.PublicWorkspace.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 7: chat.v1.ListWorkspacesResponse.workspaces:type_name -> chat.v1.Workspace
 	1,  // 8: chat.v1.CreateWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
 	1,  // 9: chat.v1.GetWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
@@ -1503,21 +1665,23 @@ var file_chat_v1_workspace_service_proto_depIdxs = []int32{
 	12, // 18: chat.v1.WorkspaceService.DeleteWorkspace:input_type -> chat.v1.DeleteWorkspaceRequest
 	14, // 19: chat.v1.WorkspaceService.ListPublicWorkspaces:input_type -> chat.v1.ListPublicWorkspacesRequest
 	16, // 20: chat.v1.WorkspaceService.JoinPublicWorkspace:input_type -> chat.v1.JoinPublicWorkspaceRequest
-	18, // 21: chat.v1.WorkspaceService.ListMembers:input_type -> chat.v1.ListMembersRequest
-	20, // 22: chat.v1.WorkspaceService.UpdateMemberRole:input_type -> chat.v1.UpdateMemberRoleRequest
-	22, // 23: chat.v1.WorkspaceService.RemoveMember:input_type -> chat.v1.RemoveMemberRequest
-	5,  // 24: chat.v1.WorkspaceService.ListWorkspaces:output_type -> chat.v1.ListWorkspacesResponse
-	7,  // 25: chat.v1.WorkspaceService.CreateWorkspace:output_type -> chat.v1.CreateWorkspaceResponse
-	9,  // 26: chat.v1.WorkspaceService.GetWorkspace:output_type -> chat.v1.GetWorkspaceResponse
-	11, // 27: chat.v1.WorkspaceService.UpdateWorkspace:output_type -> chat.v1.UpdateWorkspaceResponse
-	13, // 28: chat.v1.WorkspaceService.DeleteWorkspace:output_type -> chat.v1.DeleteWorkspaceResponse
-	15, // 29: chat.v1.WorkspaceService.ListPublicWorkspaces:output_type -> chat.v1.ListPublicWorkspacesResponse
-	17, // 30: chat.v1.WorkspaceService.JoinPublicWorkspace:output_type -> chat.v1.JoinPublicWorkspaceResponse
-	19, // 31: chat.v1.WorkspaceService.ListMembers:output_type -> chat.v1.ListMembersResponse
-	21, // 32: chat.v1.WorkspaceService.UpdateMemberRole:output_type -> chat.v1.UpdateMemberRoleResponse
-	23, // 33: chat.v1.WorkspaceService.RemoveMember:output_type -> chat.v1.RemoveMemberResponse
-	24, // [24:34] is the sub-list for method output_type
-	14, // [14:24] is the sub-list for method input_type
+	18, // 21: chat.v1.WorkspaceService.GetWorkspaceSignupInfo:input_type -> chat.v1.GetWorkspaceSignupInfoRequest
+	20, // 22: chat.v1.WorkspaceService.ListMembers:input_type -> chat.v1.ListMembersRequest
+	22, // 23: chat.v1.WorkspaceService.UpdateMemberRole:input_type -> chat.v1.UpdateMemberRoleRequest
+	24, // 24: chat.v1.WorkspaceService.RemoveMember:input_type -> chat.v1.RemoveMemberRequest
+	5,  // 25: chat.v1.WorkspaceService.ListWorkspaces:output_type -> chat.v1.ListWorkspacesResponse
+	7,  // 26: chat.v1.WorkspaceService.CreateWorkspace:output_type -> chat.v1.CreateWorkspaceResponse
+	9,  // 27: chat.v1.WorkspaceService.GetWorkspace:output_type -> chat.v1.GetWorkspaceResponse
+	11, // 28: chat.v1.WorkspaceService.UpdateWorkspace:output_type -> chat.v1.UpdateWorkspaceResponse
+	13, // 29: chat.v1.WorkspaceService.DeleteWorkspace:output_type -> chat.v1.DeleteWorkspaceResponse
+	15, // 30: chat.v1.WorkspaceService.ListPublicWorkspaces:output_type -> chat.v1.ListPublicWorkspacesResponse
+	17, // 31: chat.v1.WorkspaceService.JoinPublicWorkspace:output_type -> chat.v1.JoinPublicWorkspaceResponse
+	19, // 32: chat.v1.WorkspaceService.GetWorkspaceSignupInfo:output_type -> chat.v1.GetWorkspaceSignupInfoResponse
+	21, // 33: chat.v1.WorkspaceService.ListMembers:output_type -> chat.v1.ListMembersResponse
+	23, // 34: chat.v1.WorkspaceService.UpdateMemberRole:output_type -> chat.v1.UpdateMemberRoleResponse
+	25, // 35: chat.v1.WorkspaceService.RemoveMember:output_type -> chat.v1.RemoveMemberResponse
+	25, // [25:36] is the sub-list for method output_type
+	14, // [14:25] is the sub-list for method input_type
 	14, // [14:14] is the sub-list for extension type_name
 	14, // [14:14] is the sub-list for extension extendee
 	0,  // [0:14] is the sub-list for field type_name
@@ -1533,13 +1697,14 @@ func file_chat_v1_workspace_service_proto_init() {
 	file_chat_v1_workspace_service_proto_msgTypes[2].OneofWrappers = []any{}
 	file_chat_v1_workspace_service_proto_msgTypes[5].OneofWrappers = []any{}
 	file_chat_v1_workspace_service_proto_msgTypes[9].OneofWrappers = []any{}
+	file_chat_v1_workspace_service_proto_msgTypes[18].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_workspace_service_proto_rawDesc), len(file_chat_v1_workspace_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   23,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

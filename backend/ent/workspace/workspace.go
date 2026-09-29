@@ -22,6 +22,10 @@ const (
 	FieldIconURL = "icon_url"
 	// FieldIsPublic holds the string denoting the is_public field in the database.
 	FieldIsPublic = "is_public"
+	// FieldSignupEnabled holds the string denoting the signup_enabled field in the database.
+	FieldSignupEnabled = "signup_enabled"
+	// FieldEmailSignupEnabled holds the string denoting the email_signup_enabled field in the database.
+	FieldEmailSignupEnabled = "email_signup_enabled"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -73,6 +77,8 @@ var Columns = []string{
 	FieldDescription,
 	FieldIconURL,
 	FieldIsPublic,
+	FieldSignupEnabled,
+	FieldEmailSignupEnabled,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -103,6 +109,10 @@ var (
 	NameValidator func(string) error
 	// DefaultIsPublic holds the default value on creation for the "is_public" field.
 	DefaultIsPublic bool
+	// DefaultSignupEnabled holds the default value on creation for the "signup_enabled" field.
+	DefaultSignupEnabled bool
+	// DefaultEmailSignupEnabled holds the default value on creation for the "email_signup_enabled" field.
+	DefaultEmailSignupEnabled bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -139,6 +149,16 @@ func ByIconURL(opts ...sql.OrderTermOption) OrderOption {
 // ByIsPublic orders the results by the is_public field.
 func ByIsPublic(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsPublic, opts...).ToFunc()
+}
+
+// BySignupEnabled orders the results by the signup_enabled field.
+func BySignupEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSignupEnabled, opts...).ToFunc()
+}
+
+// ByEmailSignupEnabled orders the results by the email_signup_enabled field.
+func ByEmailSignupEnabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmailSignupEnabled, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

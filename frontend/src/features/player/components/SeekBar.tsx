@@ -1,7 +1,7 @@
 import { Slider, SliderThumb, SliderTrack } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 
 import { Waveform } from "./Waveform";
 

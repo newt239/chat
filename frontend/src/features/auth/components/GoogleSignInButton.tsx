@@ -4,18 +4,20 @@ import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useLoginWithGoogle } from "#/features/auth/hooks/useLoginWithGoogle";
-import { loadGoogleIdentity } from "#/lib/googleIdentity";
+import { loadGoogleIdentity } from "#/features/auth/utils/googleIdentity";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 type GoogleSignInButtonProps = {
   clientId: string;
+  // 参加リンクから来たときのワークスペース
+  workspaceId: string | null;
 };
 
 // Google Identity Services が描画するボタン。受け取った ID トークンをサーバーで検証してログインする
-export const GoogleSignInButton = ({ clientId }: GoogleSignInButtonProps) => {
+export const GoogleSignInButton = ({ clientId, workspaceId }: GoogleSignInButtonProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
-  const loginWithGoogle = useLoginWithGoogle();
+  const loginWithGoogle = useLoginWithGoogle(workspaceId);
   const { mutate } = loginWithGoogle;
   const containerRef = useRef<HTMLDivElement>(null);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -30,7 +32,7 @@ export const GoogleSignInButton = ({ clientId }: GoogleSignInButtonProps) => {
         }
         globalThis.google.accounts.id.initialize({
           callback: ({ credential }) => {
-            mutate({ idToken: credential });
+            mutate({ idToken: credential, workspaceId: workspaceId ?? undefined });
           },
           client_id: clientId,
         });
@@ -52,7 +54,7 @@ export const GoogleSignInButton = ({ clientId }: GoogleSignInButtonProps) => {
     return () => {
       active = false;
     };
-  }, [clientId, locale, mutate]);
+  }, [clientId, locale, mutate, workspaceId]);
 
   return (
     <div className="flex flex-col items-center gap-2">

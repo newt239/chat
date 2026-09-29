@@ -3,12 +3,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { ContextMenu } from "#/components/ui/ContextMenu";
-import { IconButton } from "#/components/ui/IconButton";
-import { MenuItem } from "#/components/ui/MenuItem";
-import { MenuItemLink } from "#/components/ui/MenuItemLink";
-import { focusRing } from "#/components/ui/styles";
-import { toast } from "#/components/ui/toast";
+import { ContextMenu } from "#/components/ui/ContextMenu/ContextMenu";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
+import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
+import { focusRing } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 
 import { useChannelLinkActions, useChannelLinks } from "../hooks/useChannelLinks";

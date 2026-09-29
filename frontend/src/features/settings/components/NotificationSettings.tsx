@@ -1,9 +1,9 @@
 import { useAtom, useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { SegmentedControl } from "#/components/ui/SegmentedControl";
-import { Switch } from "#/components/ui/Switch";
-import { toast } from "#/components/ui/toast";
+import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
+import { Switch } from "#/components/ui/Switch/Switch";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { logger } from "#/lib/logger";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { notificationLevels, preferencesAtom } from "#/providers/store/preferences";

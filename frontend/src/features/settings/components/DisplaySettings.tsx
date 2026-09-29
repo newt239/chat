@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { SegmentedControl } from "#/components/ui/SegmentedControl";
+import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useUpdatePreferences } from "../hooks/usePreferences";

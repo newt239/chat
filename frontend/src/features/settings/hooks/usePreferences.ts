@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSetAtom, useStore } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { preferencesAtom } from "#/providers/store/preferences";
 

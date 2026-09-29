@@ -1,8 +1,8 @@
 import { IconClock, IconSend } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState } from "#/components/ui/EmptyState";
-import { Skeleton } from "#/components/ui/Skeleton";
+import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { useConversationLabel } from "#/features/channel/hooks/useConversationLabel";
 import { ScheduledMessageStatus } from "#/gen/chat/v1/scheduled_message_service_pb";
 

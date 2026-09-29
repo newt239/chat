@@ -124,8 +124,9 @@ chat/
 ├── frontend/         # React frontend
 │   ├── src/
 │   │   ├── routes/   # TanStack Router のファイルベースルート定義
-│   │   ├── pages/    # ルートから参照するページコンポーネント
+│   │   ├── components/ # 汎用コンポーネント（ui/・block/）
 │   │   ├── features/ # Feature-based modules
+│   │   ├── hooks/    # 複数の機能で使う hooks
 │   │   ├── providers/ # Jotai ストア・TanStack Query・WebSocket の Provider
 │   │   └── lib/      # API client, WS client, router など
 │   ├── tests/        # Vitest のセットアップ
@@ -252,12 +253,9 @@ xdg-open backend/ent/schema-viz.html
 
 ## デプロイ
 
-現在、自動デプロイの基盤（GitHub Actions のデプロイワークフローと Ansible の構成）はリポジトリから削除されています。本番環境向けの成果物は次の方法で用意できます。
+Google Cloud の dev 環境へは GitHub Actions の「Deploy dev」（`.github/workflows/deploy-dev.yml`）でデプロイします。Terraform は `infra/terraform/`、Kubernetes のマニフェストは `infra/k8s/` にあります。初回セットアップの未実施の手順は `docs/infrastructure.md` にまとめています。
 
-```bash
-# フロントエンド: nginx で静的配信するイメージをビルド
-docker build -f frontend/Dockerfile -t chat-frontend .
-
-# バックエンド: server / migrate / reset / seed のバイナリを含むイメージをビルド
-docker build -f backend/Dockerfile -t chat-backend ./backend
+```sh
+# backend だけ feat/foo に差し替える（空にした方はクラスタで動いているイメージを使う）
+gh workflow run deploy-dev.yml -R newt239/chat -f backend_ref=feat/foo
 ```

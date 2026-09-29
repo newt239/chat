@@ -16,15 +16,22 @@
     "clean": "./scripts/clean.sh",
     "claude": "claude --setting-sources project,local",
     "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",
-    "generate:proto": "buf generate",
-    "proto:format": "buf format -w",
-    "proto:lint": "buf lint"
+    "generate:proto": "buf generate proto --template proto/buf.gen.yaml",
+    "proto:format": "buf format -w proto",
+    "proto:lint": "buf lint proto"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.73.0",
     "@bufbuild/protoc-gen-es": "2.15.0",
     "lefthook": "2.1.14",
-    "turbo": "2.10.12"
+    "turbo": "2.11.2"
   },
-  "packageManager": "pnpm@12.5.1"
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "26.10.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.8.1"
 }

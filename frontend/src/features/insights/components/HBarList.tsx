@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 import { motion } from "motion/react";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 import { transitions } from "#/lib/motion";
 
 type HBarRow = {

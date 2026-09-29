@@ -1,8 +1,8 @@
 import { IconDownload, IconLoader2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { toast } from "#/components/ui/toast";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { toast } from "#/components/ui/ToastRegion/toast";
 
 import { useDownloadUrl } from "../api/client";
 import { formatFileSize } from "../utils/validator";

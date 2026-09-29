@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, focusRing } from "#/components/ui/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { transitions } from "#/lib/motion";
 import { collapsedChannelsAtom } from "#/providers/store/ui";
 

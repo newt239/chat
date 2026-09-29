@@ -13,6 +13,8 @@ service WorkspaceService {
   rpc DeleteWorkspace(DeleteWorkspaceRequest) returns (DeleteWorkspaceResponse);
   rpc ListPublicWorkspaces(ListPublicWorkspacesRequest) returns (ListPublicWorkspacesResponse);
   rpc JoinPublicWorkspace(JoinPublicWorkspaceRequest) returns (JoinPublicWorkspaceResponse);
+  // 参加リンクの画面用。登録を許可していなければ NOT_FOUND
+  rpc GetWorkspaceSignupInfo(GetWorkspaceSignupInfoRequest) returns (GetWorkspaceSignupInfoResponse);
   rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
   rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse);
   rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse);
@@ -36,6 +38,8 @@ message Workspace {
   string created_by = 7;
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp updated_at = 9;
+  bool signup_enabled = 10;
+  bool email_signup_enabled = 11;
 }
 
 message WorkspaceMember {
@@ -106,6 +110,8 @@ message UpdateWorkspaceRequest {
     max_len: 2048
   }];
   optional bool is_public = 5;
+  optional bool signup_enabled = 6;
+  optional bool email_signup_enabled = 7;
 }
 
 message UpdateWorkspaceResponse {
@@ -129,6 +135,17 @@ message JoinPublicWorkspaceRequest {
 }
 
 message JoinPublicWorkspaceResponse {}
+
+message GetWorkspaceSignupInfoRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetWorkspaceSignupInfoResponse {
+  string id = 1;
+  string name = 2;
+  optional string icon_url = 3;
+  bool email_signup_enabled = 4;
+}
 
 message ListMembersRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];

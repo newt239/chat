@@ -3,16 +3,16 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { AlertDialog } from "#/components/ui/AlertDialog";
-import { Button } from "#/components/ui/Button";
-import { Checkbox } from "#/components/ui/Checkbox";
-import { Dialog } from "#/components/ui/Dialog";
-import { TextArea } from "#/components/ui/TextArea";
-import { TextField } from "#/components/ui/TextField";
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
+import { Button } from "#/components/ui/Button/Button";
+import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { TextArea } from "#/components/ui/TextArea/TextArea";
+import { TextField } from "#/components/ui/TextField/TextField";
 import { WorkspaceMemberManager } from "#/features/workspace/components/WorkspaceMemberManager";
 import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActions";
 
-import type { WorkspaceSummary } from "#/features/workspace/types";
+import type { Workspace as WorkspaceSummary } from "#/gen/chat/v1/workspace_service_pb";
 
 type WorkspaceSettingsModalProps = {
   isOpen: boolean;

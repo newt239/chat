@@ -4,8 +4,8 @@ import { create } from "@bufbuild/protobuf";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { TextField } from "#/components/ui/TextField";
+import { Button } from "#/components/ui/Button/Button";
+import { TextField } from "#/components/ui/TextField/TextField";
 import { MessageLocationSchema } from "#/gen/chat/v1/message_pb";
 
 import { useCurrentPosition } from "../hooks/useCurrentPosition";

@@ -1217,6 +1217,8 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "icon_url", Type: field.TypeString, Nullable: true},
 		{Name: "is_public", Type: field.TypeBool, Default: false},
+		{Name: "signup_enabled", Type: field.TypeBool, Default: false},
+		{Name: "email_signup_enabled", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "workspace_created_by", Type: field.TypeUUID},
@@ -1229,7 +1231,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "workspaces_users_created_by",
-				Columns:    []*schema.Column{WorkspacesColumns[7]},
+				Columns:    []*schema.Column{WorkspacesColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

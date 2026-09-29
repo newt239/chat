@@ -2,7 +2,7 @@ import { IconPlayerPlayFilled } from "@tabler/icons-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { focusRing } from "#/components/ui/styles";
+import { focusRing } from "#/components/ui/styles/styles";
 import { PlayPauseButton } from "#/features/player/components/PlayPauseButton";
 import { SeekBar } from "#/features/player/components/SeekBar";
 import { SpeedButton } from "#/features/player/components/SpeedButton";

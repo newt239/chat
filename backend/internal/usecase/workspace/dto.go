@@ -14,12 +14,14 @@ type CreateWorkspaceInput struct {
 }
 
 type UpdateWorkspaceInput struct {
-	ID          string
-	Name        *string
-	Description *string
-	IconURL     *string
-	IsPublic    *bool
-	UserID      string // For authorization check
+	ID                 string
+	Name               *string
+	Description        *string
+	IconURL            *string
+	IsPublic           *bool
+	SignupEnabled      *bool
+	EmailSignupEnabled *bool
+	UserID             string // For authorization check
 }
 
 type DeleteWorkspaceInput struct {
@@ -54,15 +56,17 @@ type ListMembersInput struct {
 
 // WorkspaceOutput represents a workspace in the response
 type WorkspaceOutput struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
-	IconURL     *string   `json:"iconUrl"`
-	IsPublic    bool      `json:"isPublic"`
-	Role        string    `json:"role"`
-	CreatedBy   string    `json:"createdBy"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID                 string    `json:"id"`
+	Name               string    `json:"name"`
+	Description        *string   `json:"description"`
+	IconURL            *string   `json:"iconUrl"`
+	IsPublic           bool      `json:"isPublic"`
+	SignupEnabled      bool      `json:"signupEnabled"`
+	EmailSignupEnabled bool      `json:"emailSignupEnabled"`
+	Role               string    `json:"role"`
+	CreatedBy          string    `json:"createdBy"`
+	CreatedAt          time.Time `json:"createdAt"`
+	UpdatedAt          time.Time `json:"updatedAt"`
 }
 
 // GetWorkspacesOutput represents the output of getting workspaces
@@ -126,4 +130,11 @@ type ListPublicWorkspacesOutput struct {
 type JoinPublicWorkspaceInput struct {
 	WorkspaceID string
 	UserID      string
+}
+
+type SignupInfoOutput struct {
+	ID                 string
+	Name               string
+	IconURL            *string
+	EmailSignupEnabled bool
 }

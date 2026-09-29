@@ -3,8 +3,8 @@ import { createConnectTransport } from "@connectrpc/connect-web";
 
 import { AuthService } from "#/gen/chat/v1/auth_service_pb";
 import { navigateTo } from "#/lib/navigation";
-import { store } from "#/providers/store";
 import { accessTokenAtom, authAtom, clearAuthAtom } from "#/providers/store/auth";
+import { store } from "#/providers/store/store";
 
 import { apiBaseUrl as baseUrl } from "./baseUrl";
 

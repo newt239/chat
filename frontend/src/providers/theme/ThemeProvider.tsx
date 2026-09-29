@@ -5,12 +5,12 @@ import { useAtomValue } from "jotai";
 import { MotionConfig } from "motion/react";
 import { I18nProvider } from "react-aria-components";
 
+import { useMediaQuery } from "#/hooks/useMediaQuery";
 import { i18n } from "#/lib/i18n";
-import { themeVariables } from "#/lib/theme";
-import { useMediaQuery } from "#/lib/useMediaQuery";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { ColorModeContext } from "./colorMode";
+import { themeVariables } from "./theme";
 
 type ThemeProviderProps = {
   children: ReactNode;

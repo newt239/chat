@@ -13,6 +13,7 @@ var (
 	ErrEmailNotVerified     = errors.New("メールアドレスが確認されていない Google アカウントです")
 	ErrPasswordAuthDisabled = errors.New("パスワードによるログインは無効です")
 	ErrGoogleAuthDisabled   = errors.New("このサーバーでは Google ログインが設定されていません")
+	ErrSignupDisabled       = errors.New("このワークスペースでは新規登録を受け付けていません")
 	ErrNotFound             = errors.New("指定されたリソースが見つかりません")
 	ErrMessageNotFound      = errors.New("メッセージが見つかりません")
 	ErrChannelNotFound      = errors.New("チャンネルが見つかりません")

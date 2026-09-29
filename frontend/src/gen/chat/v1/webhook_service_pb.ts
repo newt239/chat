@@ -270,7 +270,7 @@ export const DeleteWebhookResponseSchema: GenMessage<DeleteWebhookResponse> = /*
 
 /**
  * チャンネルの着信 Webhook。チャンネルを閲覧できるメンバーなら誰でも発行でき、編集・削除は発行者とワークスペースの管理者だけができる。
- * 投稿は POST /webhooks/{webhook_id}/{token} に JSON を送る（docs/webhooks.md）
+ * 投稿は POST /webhooks/{webhook_id}/{token} に JSON を送る
  *
  * @generated from service chat.v1.WebhookService
  */

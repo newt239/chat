@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 
 import { waveformBars } from "../utils/waveformBars";
 

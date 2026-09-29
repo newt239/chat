@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { DateTimeField } from "#/components/ui/DateTimeField";
-import { Dialog } from "#/components/ui/Dialog";
+import { Button } from "#/components/ui/Button/Button";
+import { DateTimeField } from "#/components/ui/DateTimeField/DateTimeField";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
 
 type ScheduleDialogProps = {
   isOpen: boolean;

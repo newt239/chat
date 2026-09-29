@@ -7,11 +7,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { Button, Dialog, Modal, ModalOverlay } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { cn, focusRing } from "#/components/ui/styles";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { cn, focusRing } from "#/components/ui/styles/styles";
+import { useIsMobile } from "#/hooks/useMediaQuery";
 import { transitions } from "#/lib/motion";
 import { toDate } from "#/lib/timestamp";
-import { useIsMobile } from "#/lib/useMediaQuery";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useAttachmentUrl } from "../api/client";

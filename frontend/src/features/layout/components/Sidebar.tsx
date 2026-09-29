@@ -1,12 +1,12 @@
 import { IconSearch } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
+import { NavLink } from "#/components/block/NavLink/NavLink";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 
 import { sidebarNavTone } from "../utils/navTone";
 import { MiniPlayerSlot } from "./MiniPlayerSlot";
 import { NavigationList } from "./NavigationList";
-import { NavLink } from "./NavLink";
 import { SidebarFooter } from "./SidebarFooter";
 
 type SidebarProps = {

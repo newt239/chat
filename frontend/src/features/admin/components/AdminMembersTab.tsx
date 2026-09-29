@@ -6,10 +6,10 @@ import { useAtomValue } from "jotai";
 import { Input, SearchField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Select } from "#/components/ui/Select";
-import { cn } from "#/components/ui/styles";
-import { toast } from "#/components/ui/toast";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Select } from "#/components/ui/Select/Select";
+import { cn } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { summarizeUserAgent } from "#/features/admin/utils/userAgent";

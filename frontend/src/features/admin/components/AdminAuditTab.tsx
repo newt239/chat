@@ -7,11 +7,11 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Select } from "#/components/ui/Select";
-import { cn } from "#/components/ui/styles";
-import { TextField } from "#/components/ui/TextField";
-import { toast } from "#/components/ui/toast";
+import { Button } from "#/components/ui/Button/Button";
+import { Select } from "#/components/ui/Select/Select";
+import { cn } from "#/components/ui/styles/styles";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { useAuditLogPages } from "#/features/admin/hooks/useAdminQueries";
 import { auditActionKeyValues, auditPeriodValues } from "#/features/admin/schemas";

@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Button } from "#/components/ui/Button";
-import { TextArea } from "#/components/ui/TextArea";
-import { TextField } from "#/components/ui/TextField";
-import { toast } from "#/components/ui/toast";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Button } from "#/components/ui/Button/Button";
+import { TextArea } from "#/components/ui/TextArea/TextArea";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
 
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 

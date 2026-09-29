@@ -6,9 +6,9 @@ import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { useTranslation } from "react-i18next";
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 
-import { Button } from "#/components/ui/Button";
-import { cn } from "#/components/ui/styles";
-import { toast } from "#/components/ui/toast";
+import { Button } from "#/components/ui/Button/Button";
+import { cn } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { highlightCode } from "#/features/message/utils/highlight";
 
 // これより長いコードは折りたたみ、「すべて表示」で広げる

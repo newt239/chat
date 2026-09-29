@@ -1,8 +1,8 @@
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { ComboBox } from "#/components/ui/ComboBox";
-import { Switch } from "#/components/ui/Switch";
+import { ComboBox } from "#/components/ui/ComboBox/ComboBox";
+import { Switch } from "#/components/ui/Switch/Switch";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useUpdatePreferences } from "../hooks/usePreferences";

@@ -33,6 +33,7 @@ type WorkspaceUseCase interface {
 	// 新規
 	ListPublicWorkspaces(ctx context.Context, userID string) (*ListPublicWorkspacesOutput, error)
 	JoinPublicWorkspace(ctx context.Context, input JoinPublicWorkspaceInput) (*MemberActionOutput, error)
+	GetSignupInfo(ctx context.Context, workspaceID string) (*SignupInfoOutput, error)
 }
 
 type workspaceInteractor struct {
@@ -78,17 +79,7 @@ func (i *workspaceInteractor) GetWorkspacesByUserID(ctx context.Context, userID 
 			continue
 		}
 
-		output.Workspaces = append(output.Workspaces, WorkspaceOutput{
-			ID:          ws.ID,
-			Name:        ws.Name,
-			Description: ws.Description,
-			IconURL:     ws.IconURL,
-			IsPublic:    ws.IsPublic,
-			Role:        string(member.Role),
-			CreatedBy:   ws.CreatedBy,
-			CreatedAt:   ws.CreatedAt,
-			UpdatedAt:   ws.UpdatedAt,
-		})
+		output.Workspaces = append(output.Workspaces, newWorkspaceOutput(ws, member.Role))
 	}
 
 	return output, nil
@@ -112,17 +103,7 @@ func (i *workspaceInteractor) GetWorkspace(ctx context.Context, input GetWorkspa
 	}
 
 	return &GetWorkspaceOutput{
-		Workspace: WorkspaceOutput{
-			ID:          ws.ID,
-			Name:        ws.Name,
-			Description: ws.Description,
-			IconURL:     ws.IconURL,
-			IsPublic:    ws.IsPublic,
-			Role:        string(member.Role),
-			CreatedBy:   ws.CreatedBy,
-			CreatedAt:   ws.CreatedAt,
-			UpdatedAt:   ws.UpdatedAt,
-		},
+		Workspace: newWorkspaceOutput(ws, member.Role),
 	}, nil
 }
 
@@ -168,17 +149,7 @@ func (i *workspaceInteractor) CreateWorkspace(ctx context.Context, input CreateW
 	}
 
 	return &CreateWorkspaceOutput{
-		Workspace: WorkspaceOutput{
-			ID:          workspace.ID,
-			Name:        workspace.Name,
-			Description: workspace.Description,
-			IconURL:     workspace.IconURL,
-			IsPublic:    workspace.IsPublic,
-			Role:        string(entity.WorkspaceRoleOwner),
-			CreatedBy:   workspace.CreatedBy,
-			CreatedAt:   workspace.CreatedAt,
-			UpdatedAt:   workspace.UpdatedAt,
-		},
+		Workspace: newWorkspaceOutput(workspace, entity.WorkspaceRoleOwner),
 	}, nil
 }
 
@@ -211,6 +182,12 @@ func (i *workspaceInteractor) UpdateWorkspace(ctx context.Context, input UpdateW
 	if input.IsPublic != nil {
 		ws.IsPublic = *input.IsPublic
 	}
+	if input.SignupEnabled != nil {
+		ws.SignupEnabled = *input.SignupEnabled
+	}
+	if input.EmailSignupEnabled != nil {
+		ws.EmailSignupEnabled = *input.EmailSignupEnabled
+	}
 	ws.UpdatedAt = time.Now()
 
 	if err := i.workspaceRepo.Update(ctx, ws); err != nil {
@@ -218,17 +195,7 @@ func (i *workspaceInteractor) UpdateWorkspace(ctx context.Context, input UpdateW
 	}
 
 	return &UpdateWorkspaceOutput{
-		Workspace: WorkspaceOutput{
-			ID:          ws.ID,
-			Name:        ws.Name,
-			Description: ws.Description,
-			IconURL:     ws.IconURL,
-			IsPublic:    ws.IsPublic,
-			Role:        string(member.Role),
-			CreatedBy:   ws.CreatedBy,
-			CreatedAt:   ws.CreatedAt,
-			UpdatedAt:   ws.UpdatedAt,
-		},
+		Workspace: newWorkspaceOutput(ws, member.Role),
 	}, nil
 }
 
@@ -441,7 +408,7 @@ func (i *workspaceInteractor) JoinPublicWorkspace(ctx context.Context, input Joi
 	if ws == nil {
 		return nil, ErrWorkspaceNotFound
 	}
-	if !ws.IsPublic {
+	if !ws.IsPublic && !ws.SignupEnabled {
 		return nil, errors.New("このワークスペースは公開されていません")
 	}
 
@@ -463,4 +430,32 @@ func (i *workspaceInteractor) JoinPublicWorkspace(ctx context.Context, input Joi
 		return nil, fmt.Errorf("failed to join workspace: %w", err)
 	}
 	return &MemberActionOutput{Success: true}, nil
+}
+
+func newWorkspaceOutput(ws *entity.Workspace, role entity.WorkspaceRole) WorkspaceOutput {
+	return WorkspaceOutput{
+		ID:                 ws.ID,
+		Name:               ws.Name,
+		Description:        ws.Description,
+		IconURL:            ws.IconURL,
+		IsPublic:           ws.IsPublic,
+		SignupEnabled:      ws.SignupEnabled,
+		EmailSignupEnabled: ws.EmailSignupEnabled,
+		Role:               string(role),
+		CreatedBy:          ws.CreatedBy,
+		CreatedAt:          ws.CreatedAt,
+		UpdatedAt:          ws.UpdatedAt,
+	}
+}
+
+// GetSignupInfo は参加リンクの画面に出す情報を返します。登録を許可していなければ存在しないものとして扱います
+func (i *workspaceInteractor) GetSignupInfo(ctx context.Context, workspaceID string) (*SignupInfoOutput, error) {
+	ws, err := i.workspaceRepo.FindByID(ctx, workspaceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workspace: %w", err)
+	}
+	if ws == nil || !ws.SignupEnabled {
+		return nil, ErrWorkspaceNotFound
+	}
+	return &SignupInfoOutput{ID: ws.ID, Name: ws.Name, IconURL: ws.IconURL, EmailSignupEnabled: ws.EmailSignupEnabled}, nil
 }
