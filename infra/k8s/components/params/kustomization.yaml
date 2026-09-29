@@ -1,0 +1,39 @@
+# overlay の params.yaml（ConfigMap params）の値を base のプレースホルダに埋め込む
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+replacements:
+  - source: { kind: ConfigMap, name: params, fieldPath: data.PROJECT_ID }
+    targets:
+      - select: { kind: SecretStore, name: gcp-secret-manager }
+        fieldPaths:
+          - spec.provider.gcpsm.projectID
+          - spec.provider.gcpsm.auth.workloadIdentity.clusterProjectID
+  - source: { kind: ConfigMap, name: params, fieldPath: data.CLUSTER_NAME }
+    targets:
+      - select: { kind: SecretStore, name: gcp-secret-manager }
+        fieldPaths:
+          - spec.provider.gcpsm.auth.workloadIdentity.clusterName
+  - source: { kind: ConfigMap, name: params, fieldPath: data.CLUSTER_LOCATION }
+    targets:
+      - select: { kind: SecretStore, name: gcp-secret-manager }
+        fieldPaths:
+          - spec.provider.gcpsm.auth.workloadIdentity.clusterLocation
+  - source: { kind: ConfigMap, name: params, fieldPath: data.BACKEND_SERVICE_ACCOUNT }
+    targets:
+      - select: { kind: ServiceAccount, name: chat-backend }
+        fieldPaths:
+          - metadata.annotations.[iam.gke.io/gcp-service-account]
+  - source: { kind: ConfigMap, name: params, fieldPath: data.CLOUDSQL_CONNECTION_NAME }
+    targets:
+      - select: { kind: Deployment, name: backend }
+        fieldPaths:
+          - spec.template.spec.initContainers.[name=cloud-sql-proxy].args.5
+  - source: { kind: ConfigMap, name: params, fieldPath: data.ENV }
+    targets:
+      - select: { kind: ExternalSecret }
+        fieldPaths:
+          - spec.data.*.remoteRef.key
+        options:
+          delimiter: "-"
+          index: 0

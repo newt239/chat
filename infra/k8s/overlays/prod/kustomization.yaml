@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: chat-dev
+namespace: chat-prod
 
 resources:
   - ../../base
@@ -23,8 +23,8 @@ configMapGenerator:
   - name: backend-env
     behavior: merge
     literals:
-      - CORS_ALLOWED_ORIGINS=https://chat-dev.example.com
-      - WASABI_BUCKET=example-chat-dev-attachments
+      - CORS_ALLOWED_ORIGINS=https://chat.example.com
+      - WASABI_BUCKET=example-chat-prod-attachments
       - GOOGLE_OAUTH_CLIENT_ID=
       - FIREBASE_PROJECT_ID=your-gcp-project-id
-      - PASSWORD_AUTH_ENABLED=true
+      - PASSWORD_AUTH_ENABLED=false

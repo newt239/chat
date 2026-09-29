@@ -3,10 +3,13 @@ kind: Deployment
 metadata:
   name: backend
 spec:
-  # WebSocket のハブがプロセス内メモリにあるため 1 台に限る。更新時も 2 台並ばないよう Recreate にする
-  replicas: 1
+  # WebSocket の配信は Redis で共有するため、Spot の回収に備えて 2 台を別ノードに置く
+  replicas: 2
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: backend
@@ -16,7 +19,15 @@ spec:
         app.kubernetes.io/name: backend
     spec:
       serviceAccountName: chat-backend
-      terminationGracePeriodSeconds: 40
+      # 停止時は readiness を落として 5 秒待ち、WebSocket を閉じ終えるまで最大 40 秒待つ
+      terminationGracePeriodSeconds: 60
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: backend
       initContainers:
         # restartPolicy: Always でネイティブサイドカーとして動かし、backend より先に起動させる
         - name: cloud-sql-proxy
@@ -44,7 +55,9 @@ spec:
             allowPrivilegeEscalation: false
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
+              memory: 64Mi
+            limits:
               memory: 128Mi
       containers:
         - name: backend
@@ -59,25 +72,27 @@ spec:
                 name: backend-secrets
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /readyz
               port: http
+            periodSeconds: 2
+            failureThreshold: 1
           livenessProbe:
             httpGet:
               path: /healthz
               port: http
             initialDelaySeconds: 30
+          # CPU は制限せず、メモリだけ上限を付けてノードを守る
           resources:
             requests:
-              cpu: 250m
+              cpu: 100m
+              memory: 192Mi
+            limits:
               memory: 512Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  annotations:
-    cloud.google.com/neg: '{"ingress": true}'
-    cloud.google.com/backend-config: '{"default": "backend"}'
 spec:
   type: ClusterIP
   selector:
@@ -87,16 +102,12 @@ spec:
       port: 8080
       targetPort: http
 ---
-apiVersion: cloud.google.com/v1
-kind: BackendConfig
+apiVersion: policy/v1
+kind: PodDisruptionBudget
 metadata:
   name: backend
 spec:
-  # 既定の 30 秒だと WebSocket が切れるため延ばす
-  timeoutSec: 3600
-  connectionDraining:
-    drainingTimeoutSec: 30
-  healthCheck:
-    type: HTTP
-    requestPath: /healthz
-    port: 8080
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend

@@ -7,7 +7,8 @@ resources:
   - backend.yaml
   - frontend.yaml
   - meilisearch.yaml
-  - ingress.yaml
+  - redis.yaml
+  - cloudflared.yaml
 
 configMapGenerator:
   - name: backend-env
@@ -15,7 +16,7 @@ configMapGenerator:
       - ENV=production
       - PORT=8080
       - STORAGE_DRIVER=wasabi
-      # GCS の S3 互換 (XML) API
-      - WASABI_ENDPOINT=https://storage.googleapis.com
-      - WASABI_REGION=auto
+      - WASABI_ENDPOINT=https://s3.ap-northeast-1.wasabisys.com
+      - WASABI_REGION=ap-northeast-1
       - MEILISEARCH_URL=http://meilisearch:7700
+      - REDIS_URL=redis://redis:6379
