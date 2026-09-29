@@ -55,3 +55,6 @@ ansible/inventory.ini
 # Claude Code
 .claude/settings.local.json
 .claude/worktrees/
+
+# mini 構成のシークレット（infra/k8s/overlays/mini/*.env.example を参照）
+infra/k8s/overlays/mini/*.env

@@ -1,0 +1,68 @@
+# k3s は gcloud の認証ヘルパーを使えないため、VM の SA のアクセストークン（有効期限 1 時間）で imagePullSecret を作り直し続ける
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: artifact-registry-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: artifact-registry-token
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["artifact-registry"]
+    verbs: ["get", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: artifact-registry-token
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: artifact-registry-token
+subjects:
+  - kind: ServiceAccount
+    name: artifact-registry-token
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: artifact-registry-token
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          serviceAccountName: artifact-registry-token
+          restartPolicy: OnFailure
+          containers:
+            - name: refresh
+              image: alpine/k8s:1.36.5
+              command:
+                - /bin/sh
+                - -euc
+                - |
+                  token="$(curl -sf --max-time 10 -H 'Metadata-Flavor: Google' \
+                    http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token | jq -r .access_token)"
+                  kubectl create secret docker-registry artifact-registry \
+                    --docker-server=asia-northeast1-docker.pkg.dev \
+                    --docker-username=oauth2accesstoken \
+                    --docker-password="$token" \
+                    --dry-run=client -o yaml | kubectl apply -f -
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
