@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import { IconButton } from "#/components/ui/IconButton";
 import { cn } from "#/components/ui/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { ScheduleSendMenu } from "#/features/schedule/components/ScheduleSendMenu";
 
 import type { FormatKey } from "../utils/format";
 
@@ -39,6 +40,7 @@ type MessageInputToolbarProps = {
   onFileSelect: (files: File[]) => void;
   onShareLocation: () => void;
   onRecord: () => void;
+  onSchedule: (scheduledAt: Date) => void;
 };
 
 const formatButtons: { key: FormatKey; icon: Icon }[] = [
@@ -67,6 +69,7 @@ export const MessageInputToolbar = ({
   onFileSelect,
   onShareLocation,
   onRecord,
+  onSchedule,
 }: MessageInputToolbarProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -129,6 +132,7 @@ export const MessageInputToolbar = ({
       >
         <IconEye />
       </IconButton>
+      <ScheduleSendMenu isDisabled={isSendDisabled} onSchedule={onSchedule} />
       <IconButton
         label={t("message.composer.send")}
         isDisabled={isSendDisabled}

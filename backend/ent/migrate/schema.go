@@ -801,6 +801,72 @@ var (
 			},
 		},
 	}
+	// ScheduledMessageColumns holds the columns for the "scheduled_message" table.
+	ScheduledMessageColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "body", Type: field.TypeString, Size: 2147483647},
+		{Name: "attachment_ids", Type: field.TypeJSON, Nullable: true},
+		{Name: "location_latitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_label", Type: field.TypeString, Nullable: true},
+		{Name: "scheduled_at", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"scheduled", "sending", "sent", "failed"}, Default: "scheduled"},
+		{Name: "failure_reason", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "sent_message_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// ScheduledMessageTable holds the schema information for the "scheduled_message" table.
+	ScheduledMessageTable = &schema.Table{
+		Name:       "scheduled_message",
+		Columns:    ScheduledMessageColumns,
+		PrimaryKey: []*schema.Column{ScheduledMessageColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "scheduled_message_users_user",
+				Columns:    []*schema.Column{ScheduledMessageColumns[12]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "scheduled_message_channels_channel",
+				Columns:    []*schema.Column{ScheduledMessageColumns[13]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "scheduled_message_messages_parent",
+				Columns:    []*schema.Column{ScheduledMessageColumns[14]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "scheduled_message_messages_sent_message",
+				Columns:    []*schema.Column{ScheduledMessageColumns[15]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "scheduledmessage_scheduled_at",
+				Unique:  false,
+				Columns: []*schema.Column{ScheduledMessageColumns[7]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status = 'scheduled'",
+				},
+			},
+			{
+				Name:    "scheduledmessage_user_id_scheduled_at",
+				Unique:  false,
+				Columns: []*schema.Column{ScheduledMessageColumns[12], ScheduledMessageColumns[7]},
+			},
+		},
+	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1257,6 +1323,7 @@ var (
 		MessageReactionsTable,
 		MessageUserMentionsTable,
 		PushTokenTable,
+		ScheduledMessageTable,
 		SessionsTable,
 		SystemMessagesTable,
 		ThreadReadStatesTable,
@@ -1330,6 +1397,13 @@ func init() {
 	PushTokenTable.ForeignKeys[0].RefTable = UsersTable
 	PushTokenTable.Annotation = &entsql.Annotation{
 		Table: "push_token",
+	}
+	ScheduledMessageTable.ForeignKeys[0].RefTable = UsersTable
+	ScheduledMessageTable.ForeignKeys[1].RefTable = ChannelsTable
+	ScheduledMessageTable.ForeignKeys[2].RefTable = MessagesTable
+	ScheduledMessageTable.ForeignKeys[3].RefTable = MessagesTable
+	ScheduledMessageTable.Annotation = &entsql.Annotation{
+		Table: "scheduled_message",
 	}
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	SystemMessagesTable.ForeignKeys[0].RefTable = ChannelsTable

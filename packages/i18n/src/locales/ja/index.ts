@@ -19,6 +19,7 @@ import { preferences } from "./preferences";
 import { pwa } from "./pwa";
 import { reaction } from "./reaction";
 import { recorder } from "./recorder";
+import { schedule } from "./schedule";
 import { search } from "./search";
 import { settings } from "./settings";
 import { shell } from "./shell";
@@ -48,6 +49,7 @@ export const ja = {
   pwa,
   reaction,
   recorder,
+  schedule,
   search,
   settings,
   shell,

@@ -24,6 +24,7 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/pushtoken"
+	"github.com/newt239/chat/ent/scheduledmessage"
 	"github.com/newt239/chat/ent/schema"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
@@ -345,6 +346,22 @@ func init() {
 	pushtokenDescID := pushtokenFields[0].Descriptor()
 	// pushtoken.DefaultID holds the default value on creation for the id field.
 	pushtoken.DefaultID = pushtokenDescID.Default.(func() uuid.UUID)
+	scheduledmessageFields := schema.ScheduledMessage{}.Fields()
+	_ = scheduledmessageFields
+	// scheduledmessageDescCreatedAt is the schema descriptor for created_at field.
+	scheduledmessageDescCreatedAt := scheduledmessageFields[14].Descriptor()
+	// scheduledmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
+	scheduledmessage.DefaultCreatedAt = scheduledmessageDescCreatedAt.Default.(func() time.Time)
+	// scheduledmessageDescUpdatedAt is the schema descriptor for updated_at field.
+	scheduledmessageDescUpdatedAt := scheduledmessageFields[15].Descriptor()
+	// scheduledmessage.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	scheduledmessage.DefaultUpdatedAt = scheduledmessageDescUpdatedAt.Default.(func() time.Time)
+	// scheduledmessage.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	scheduledmessage.UpdateDefaultUpdatedAt = scheduledmessageDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// scheduledmessageDescID is the schema descriptor for id field.
+	scheduledmessageDescID := scheduledmessageFields[0].Descriptor()
+	// scheduledmessage.DefaultID holds the default value on creation for the id field.
+	scheduledmessage.DefaultID = scheduledmessageDescID.Default.(func() uuid.UUID)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescRefreshTokenHash is the schema descriptor for refresh_token_hash field.

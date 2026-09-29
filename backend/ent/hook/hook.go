@@ -225,6 +225,18 @@ func (f PushTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PushTokenMutation", m)
 }
 
+// The ScheduledMessageFunc type is an adapter to allow the use of ordinary
+// function as ScheduledMessage mutator.
+type ScheduledMessageFunc func(context.Context, *ent.ScheduledMessageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ScheduledMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ScheduledMessageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScheduledMessageMutation", m)
+}
+
 // The SessionFunc type is an adapter to allow the use of ordinary
 // function as Session mutator.
 type SessionFunc func(context.Context, *ent.SessionMutation) (ent.Value, error)

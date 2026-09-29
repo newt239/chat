@@ -13,6 +13,7 @@ import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
 import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
 import { PendingLocation } from "#/features/location/components/PendingLocation";
 import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
+import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
 import { useIsMobile } from "#/lib/useMediaQuery";
 
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
@@ -73,6 +74,7 @@ export const BaseMessageInput = ({
     save: saveDraft,
   } = useDraftAutosave(channelId, parentId);
   const isRestoredRef = useRef(false);
+  const scheduleMessage = useScheduleMessage();
 
   // 開き直したときに書きかけを戻す。読み込み前に打ち始めていたら上書きしない
   useEffect(() => {
@@ -122,15 +124,19 @@ export const BaseMessageInput = ({
   const hasContent =
     body.trim().length > 0 || pendingAttachments.length > 0 || location !== undefined;
 
-  const handleSubmit = () => {
+  const collectContent = () => {
     if (!hasContent) {
-      return;
+      return null;
     }
     if (isUploading) {
       toast(t("message.composer.uploading"));
-      return;
+      return null;
     }
-    onSubmit({ attachmentIds: getCompletedAttachmentIds(), body: body.trim(), location });
+    return { attachmentIds: getCompletedAttachmentIds(), body: body.trim(), location };
+  };
+
+  // 送信・予約した後は書きかけも消す
+  const resetComposer = () => {
     notifyStopTyping();
     discardDraft();
     setBody("");
@@ -138,6 +144,25 @@ export const BaseMessageInput = ({
     setIsPreview(false);
     clearPreviews();
     clearAttachments();
+  };
+
+  const handleSubmit = () => {
+    const content = collectContent();
+    if (content !== null) {
+      onSubmit(content);
+      resetComposer();
+    }
+  };
+
+  const handleSchedule = (scheduledAt: Date) => {
+    const content = collectContent();
+    if (content !== null) {
+      scheduleMessage(
+        { ...content, channelId, parentId: parentId ?? undefined },
+        scheduledAt,
+        resetComposer,
+      );
+    }
   };
 
   return (
@@ -239,6 +264,7 @@ export const BaseMessageInput = ({
           onRecord={() => {
             setIsRecorderOpen(true);
           }}
+          onSchedule={handleSchedule}
         />
       </div>
       <LocationShareDialog

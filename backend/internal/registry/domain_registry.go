@@ -124,6 +124,10 @@ func (r *DomainRegistry) NewDraftRepository() domainrepository.DraftRepository {
 	return repository.NewDraftRepository(r.client)
 }
 
+func (r *DomainRegistry) NewScheduledMessageRepository() domainrepository.ScheduledMessageRepository {
+	return repository.NewScheduledMessageRepository(r.client)
+}
+
 func (r *DomainRegistry) NewWebhookRepository() domainrepository.WebhookRepository {
 	return repository.NewWebhookRepository(r.client)
 }

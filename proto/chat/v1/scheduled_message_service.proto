@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+import "google/protobuf/timestamp.proto";
+
+// 指定した日時にサーバーが代わりに投稿するメッセージ
+service ScheduledMessageService {
+  rpc CreateScheduledMessage(CreateScheduledMessageRequest) returns (CreateScheduledMessageResponse);
+  // ワークスペース内の自分の予約を予約日時の順に返す（送信済み・失敗も含む）
+  rpc ListScheduledMessages(ListScheduledMessagesRequest) returns (ListScheduledMessagesResponse);
+  // 本文と日時を変える。失敗した予約は予約中に戻る
+  rpc UpdateScheduledMessage(UpdateScheduledMessageRequest) returns (UpdateScheduledMessageResponse);
+  rpc DeleteScheduledMessage(DeleteScheduledMessageRequest) returns (DeleteScheduledMessageResponse);
+  // 予約日時を待たずに投稿する
+  rpc SendScheduledMessageNow(SendScheduledMessageNowRequest) returns (SendScheduledMessageNowResponse);
+}
+
+enum ScheduledMessageStatus {
+  SCHEDULED_MESSAGE_STATUS_UNSPECIFIED = 0;
+  SCHEDULED_MESSAGE_STATUS_SCHEDULED = 1;
+  // サーバーが投稿している最中
+  SCHEDULED_MESSAGE_STATUS_SENDING = 2;
+  SCHEDULED_MESSAGE_STATUS_SENT = 3;
+  SCHEDULED_MESSAGE_STATUS_FAILED = 4;
+}
+
+message ScheduledMessage {
+  string id = 1;
+  string channel_id = 2;
+  optional string parent_id = 3;
+  string body = 4;
+  repeated string attachment_ids = 5;
+  MessageLocation location = 6;
+  google.protobuf.Timestamp scheduled_at = 7;
+  ScheduledMessageStatus status = 8;
+  // 送信済みのときに設定される
+  optional string sent_message_id = 9;
+  // 失敗したときに設定される
+  optional string failure_reason = 10;
+}
+
+message CreateScheduledMessageRequest {
+  option (buf.validate.message).cel = {
+    id: "create_scheduled_message.content"
+    message: "本文・添付・位置情報のいずれかが必要です"
+    expression: "this.body != '' || size(this.attachment_ids) > 0 || has(this.location)"
+  };
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  optional string parent_id = 2 [(buf.validate.field).string.uuid = true];
+  string body = 3 [(buf.validate.field).string.max_len = 10000];
+  repeated string attachment_ids = 4 [(buf.validate.field).repeated.items.string.uuid = true];
+  MessageLocation location = 5;
+  google.protobuf.Timestamp scheduled_at = 6 [(buf.validate.field).required = true];
+}
+
+message CreateScheduledMessageResponse {
+  ScheduledMessage scheduled_message = 1;
+}
+
+message ListScheduledMessagesRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListScheduledMessagesResponse {
+  repeated ScheduledMessage scheduled_messages = 1;
+}
+
+message UpdateScheduledMessageRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  string body = 2 [(buf.validate.field).string.max_len = 10000];
+  google.protobuf.Timestamp scheduled_at = 3 [(buf.validate.field).required = true];
+}
+
+message UpdateScheduledMessageResponse {
+  ScheduledMessage scheduled_message = 1;
+}
+
+message DeleteScheduledMessageRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteScheduledMessageResponse {}
+
+message SendScheduledMessageNowRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message SendScheduledMessageNowResponse {
+  ScheduledMessage scheduled_message = 1;
+}

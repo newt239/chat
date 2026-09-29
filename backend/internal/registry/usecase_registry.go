@@ -20,6 +20,7 @@ import (
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
+	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	"github.com/newt239/chat/internal/usecase/searchindex"
 	systemmsguc "github.com/newt239/chat/internal/usecase/systemmessage"
@@ -220,6 +221,17 @@ func (r *UseCaseRegistry) NewDraftUseCase() *draftuc.Interactor {
 		r.domainRegistry.NewDraftRepository(),
 		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewChannelAccessService(),
+	)
+}
+
+func (r *UseCaseRegistry) NewScheduledMessageUseCase() *scheduledmessageuc.Interactor {
+	return scheduledmessageuc.NewInteractor(
+		r.domainRegistry.NewScheduledMessageRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewMessageUseCase(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 

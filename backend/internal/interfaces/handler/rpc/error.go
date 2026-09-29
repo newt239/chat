@@ -23,6 +23,7 @@ import (
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
+	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
@@ -43,6 +44,7 @@ var errorCodes = []struct {
 		channellinkuc.ErrLinkNotFound,
 		channelmemberuc.ErrChannelNotFound, channelmemberuc.ErrUserNotFound,
 		draftuc.ErrParentMessageNotFound,
+		scheduledmessageuc.ErrScheduledMessageNotFound,
 		messageuc.ErrChannelNotFound, messageuc.ErrParentMessageNotFound, messageuc.ErrMessageNotFound, messageuc.ErrAttachmentNotFound,
 		pinuc.ErrMessageNotFound,
 		reactionuc.ErrMessageNotFound,
@@ -93,6 +95,7 @@ var errorCodes = []struct {
 		channeluc.ErrMemberNotInWorkspace,
 		channelmemberuc.ErrInvalidRole,
 		messageuc.ErrEmptyMessage,
+		scheduledmessageuc.ErrScheduleInPast,
 		searchuc.ErrInvalidQuery, searchuc.ErrInvalidDateRange,
 		workspaceuc.ErrInvalidRole,
 	}},
@@ -103,6 +106,7 @@ var errorCodes = []struct {
 		channeluc.ErrChannelHasChildren,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,
+		scheduledmessageuc.ErrNotEditable,
 		usergroupuc.ErrUserNotInGroup,
 		webhookuc.ErrUnsupportedChannel,
 		workspaceuc.ErrCannotRemoveOwner, workspaceuc.ErrCannotChangeOwnerRole,
