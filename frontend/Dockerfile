@@ -1,10 +1,10 @@
 # ビルドステージ
-FROM node:26.10-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
-# Node 25 以降 corepack は同梱されない
-RUN npm install -g pnpm@12.5.1
+# pnpm は packageManager、Node は devEngines の版へ自動で切り替わる
+RUN npm install -g pnpm@12
 
 # ワークスペース設定をコピー
 COPY pnpm-workspace.yaml package.json ./
