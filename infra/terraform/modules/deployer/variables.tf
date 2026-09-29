@@ -22,3 +22,9 @@ variable "artifact_registry_location" {
 variable "artifact_registry_repository" {
   type = string
 }
+
+# デプロイ先を操作するための権限。GKE なら container.developer
+variable "project_roles" {
+  type    = list(string)
+  default = ["roles/container.developer"]
+}
