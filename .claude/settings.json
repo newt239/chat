@@ -2,13 +2,6 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "enabledMcpjsonServers": [
-    "chrome-devtools",
-    "context7",
-    "deepwiki",
-    "playwright",
-    "serena"
-  ],
   "model": "opus[1m]",
   "language": "日本語",
   "attribution": {
@@ -70,7 +63,6 @@
     "web-perf": "off",
     "commit": "off"
   },
-  "enableAllProjectMcpServers": true,
   "agentPushNotifEnabled": true,
   "skipWorkflowUsageWarning": true,
   "skipDangerousModePermissionPrompt": true
