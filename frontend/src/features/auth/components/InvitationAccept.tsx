@@ -49,6 +49,7 @@ export const InvitationAccept = ({ token }: InvitationAcceptProps) => {
     <AuthCard title={t("auth.invite.title", { workspace: workspaceName })} footer={footer}>
       <p className="m-0 text-caption text-muted">{t("auth.invite.lead", { email })}</p>
       <AuthMethods
+        workspaceId={null}
         passwordForm={
           <Form
             className="flex flex-col gap-4"

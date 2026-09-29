@@ -101,7 +101,7 @@ var errorCodes = []struct {
 		workspaceuc.ErrInvalidRole,
 	}},
 	{connect.CodeFailedPrecondition, []error{
-		domerr.ErrChannelArchived, domerr.ErrPasswordAuthDisabled, domerr.ErrGoogleAuthDisabled,
+		domerr.ErrChannelArchived, domerr.ErrPasswordAuthDisabled, domerr.ErrGoogleAuthDisabled, domerr.ErrSignupDisabled,
 		adminuc.ErrCannotSuspendOwner, adminuc.ErrCannotSuspendSelf,
 		channeluc.ErrCannotArchiveDM,
 		channeluc.ErrChannelHasChildren,

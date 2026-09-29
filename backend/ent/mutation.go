@@ -23598,30 +23598,32 @@ func (m *WebhookMutation) ResetEdge(name string) error {
 // WorkspaceMutation represents an operation that mutates the Workspace nodes in the graph.
 type WorkspaceMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *string
-	name               *string
-	description        *string
-	icon_url           *string
-	is_public          *bool
-	created_at         *time.Time
-	updated_at         *time.Time
-	clearedFields      map[string]struct{}
-	created_by         *uuid.UUID
-	clearedcreated_by  bool
-	members            map[uuid.UUID]struct{}
-	removedmembers     map[uuid.UUID]struct{}
-	clearedmembers     bool
-	channels           map[uuid.UUID]struct{}
-	removedchannels    map[uuid.UUID]struct{}
-	clearedchannels    bool
-	user_groups        map[uuid.UUID]struct{}
-	removeduser_groups map[uuid.UUID]struct{}
-	cleareduser_groups bool
-	done               bool
-	oldValue           func(context.Context) (*Workspace, error)
-	predicates         []predicate.Workspace
+	op                   Op
+	typ                  string
+	id                   *string
+	name                 *string
+	description          *string
+	icon_url             *string
+	is_public            *bool
+	signup_enabled       *bool
+	email_signup_enabled *bool
+	created_at           *time.Time
+	updated_at           *time.Time
+	clearedFields        map[string]struct{}
+	created_by           *uuid.UUID
+	clearedcreated_by    bool
+	members              map[uuid.UUID]struct{}
+	removedmembers       map[uuid.UUID]struct{}
+	clearedmembers       bool
+	channels             map[uuid.UUID]struct{}
+	removedchannels      map[uuid.UUID]struct{}
+	clearedchannels      bool
+	user_groups          map[uuid.UUID]struct{}
+	removeduser_groups   map[uuid.UUID]struct{}
+	cleareduser_groups   bool
+	done                 bool
+	oldValue             func(context.Context) (*Workspace, error)
+	predicates           []predicate.Workspace
 }
 
 var _ ent.Mutation = (*WorkspaceMutation)(nil)
@@ -23896,6 +23898,78 @@ func (m *WorkspaceMutation) OldIsPublic(ctx context.Context) (v bool, err error)
 // ResetIsPublic resets all changes to the "is_public" field.
 func (m *WorkspaceMutation) ResetIsPublic() {
 	m.is_public = nil
+}
+
+// SetSignupEnabled sets the "signup_enabled" field.
+func (m *WorkspaceMutation) SetSignupEnabled(b bool) {
+	m.signup_enabled = &b
+}
+
+// SignupEnabled returns the value of the "signup_enabled" field in the mutation.
+func (m *WorkspaceMutation) SignupEnabled() (r bool, exists bool) {
+	v := m.signup_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSignupEnabled returns the old "signup_enabled" field's value of the Workspace entity.
+// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceMutation) OldSignupEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSignupEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSignupEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSignupEnabled: %w", err)
+	}
+	return oldValue.SignupEnabled, nil
+}
+
+// ResetSignupEnabled resets all changes to the "signup_enabled" field.
+func (m *WorkspaceMutation) ResetSignupEnabled() {
+	m.signup_enabled = nil
+}
+
+// SetEmailSignupEnabled sets the "email_signup_enabled" field.
+func (m *WorkspaceMutation) SetEmailSignupEnabled(b bool) {
+	m.email_signup_enabled = &b
+}
+
+// EmailSignupEnabled returns the value of the "email_signup_enabled" field in the mutation.
+func (m *WorkspaceMutation) EmailSignupEnabled() (r bool, exists bool) {
+	v := m.email_signup_enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmailSignupEnabled returns the old "email_signup_enabled" field's value of the Workspace entity.
+// If the Workspace object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WorkspaceMutation) OldEmailSignupEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmailSignupEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmailSignupEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmailSignupEnabled: %w", err)
+	}
+	return oldValue.EmailSignupEnabled, nil
+}
+
+// ResetEmailSignupEnabled resets all changes to the "email_signup_enabled" field.
+func (m *WorkspaceMutation) ResetEmailSignupEnabled() {
+	m.email_signup_enabled = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -24205,7 +24279,7 @@ func (m *WorkspaceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WorkspaceMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, workspace.FieldName)
 	}
@@ -24217,6 +24291,12 @@ func (m *WorkspaceMutation) Fields() []string {
 	}
 	if m.is_public != nil {
 		fields = append(fields, workspace.FieldIsPublic)
+	}
+	if m.signup_enabled != nil {
+		fields = append(fields, workspace.FieldSignupEnabled)
+	}
+	if m.email_signup_enabled != nil {
+		fields = append(fields, workspace.FieldEmailSignupEnabled)
 	}
 	if m.created_at != nil {
 		fields = append(fields, workspace.FieldCreatedAt)
@@ -24240,6 +24320,10 @@ func (m *WorkspaceMutation) Field(name string) (ent.Value, bool) {
 		return m.IconURL()
 	case workspace.FieldIsPublic:
 		return m.IsPublic()
+	case workspace.FieldSignupEnabled:
+		return m.SignupEnabled()
+	case workspace.FieldEmailSignupEnabled:
+		return m.EmailSignupEnabled()
 	case workspace.FieldCreatedAt:
 		return m.CreatedAt()
 	case workspace.FieldUpdatedAt:
@@ -24261,6 +24345,10 @@ func (m *WorkspaceMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldIconURL(ctx)
 	case workspace.FieldIsPublic:
 		return m.OldIsPublic(ctx)
+	case workspace.FieldSignupEnabled:
+		return m.OldSignupEnabled(ctx)
+	case workspace.FieldEmailSignupEnabled:
+		return m.OldEmailSignupEnabled(ctx)
 	case workspace.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case workspace.FieldUpdatedAt:
@@ -24301,6 +24389,20 @@ func (m *WorkspaceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsPublic(v)
+		return nil
+	case workspace.FieldSignupEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSignupEnabled(v)
+		return nil
+	case workspace.FieldEmailSignupEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmailSignupEnabled(v)
 		return nil
 	case workspace.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -24391,6 +24493,12 @@ func (m *WorkspaceMutation) ResetField(name string) error {
 		return nil
 	case workspace.FieldIsPublic:
 		m.ResetIsPublic()
+		return nil
+	case workspace.FieldSignupEnabled:
+		m.ResetSignupEnabled()
+		return nil
+	case workspace.FieldEmailSignupEnabled:
+		m.ResetEmailSignupEnabled()
 		return nil
 	case workspace.FieldCreatedAt:
 		m.ResetCreatedAt()

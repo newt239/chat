@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-import { IconCopy } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
+import { CopyableUrl } from "#/components/block/CopyableUrl/CopyableUrl";
 import { Button } from "#/components/ui/Button/Button";
 import { Select } from "#/components/ui/Select/Select";
 import { TextField } from "#/components/ui/TextField/TextField";
@@ -60,17 +60,6 @@ export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
     );
   };
 
-  const copy = (url: string) => {
-    navigator.clipboard.writeText(url).then(
-      () => {
-        toast(t("workspace.invite.copied"));
-      },
-      () => {
-        toast(t("workspace.invite.copyFailed"));
-      },
-    );
-  };
-
   return (
     <div className="flex flex-col gap-3">
       <Form
@@ -108,21 +97,7 @@ export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
           <span className="text-xs font-semibold text-muted">
             {t("workspace.invite.link", { email: issued.email })}
           </span>
-          <div className="flex items-center gap-2">
-            <code className="min-w-0 flex-1 rounded-md border border-border bg-sunken px-2 py-1.5 font-mono text-xs break-all select-all">
-              {issued.url}
-            </code>
-            <Button
-              size="sm"
-              variant="secondary"
-              onPress={() => {
-                copy(issued.url);
-              }}
-            >
-              <IconCopy aria-hidden />
-              {t("workspace.invite.copy")}
-            </Button>
-          </div>
+          <CopyableUrl url={issued.url} />
         </div>
       )}
     </div>

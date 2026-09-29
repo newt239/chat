@@ -56,6 +56,16 @@ export const admin: Messages["admin"] = {
     unknownActor: "Unknown",
   },
   invitations: {
+    signup: {
+      email: "Allow sign-up with email and password",
+      emailDisabled:
+        "Password authentication is disabled on this server, so email sign-up isn't available",
+      enabled: "Allow sign-up from the join link",
+      link: "Join link",
+      note: "When allowed, anyone with the join link can create an account and join as a member without an invitation.",
+      title: "Sign-up",
+      updated: "Updated the sign-up settings",
+    },
     columns: {
       email: "Email",
       expiresAt: "Expires",

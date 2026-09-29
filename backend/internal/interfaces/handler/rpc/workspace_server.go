@@ -45,12 +45,14 @@ func (s *WorkspaceServer) GetWorkspace(ctx context.Context, req *chatv1.GetWorks
 
 func (s *WorkspaceServer) UpdateWorkspace(ctx context.Context, req *chatv1.UpdateWorkspaceRequest) (*chatv1.UpdateWorkspaceResponse, error) {
 	out, err := s.UC.UpdateWorkspace(ctx, workspaceuc.UpdateWorkspaceInput{
-		ID:          req.WorkspaceId,
-		Name:        req.Name,
-		Description: req.Description,
-		IconURL:     req.IconUrl,
-		IsPublic:    req.IsPublic,
-		UserID:      userIDFrom(ctx),
+		ID:                 req.WorkspaceId,
+		Name:               req.Name,
+		Description:        req.Description,
+		IconURL:            req.IconUrl,
+		IsPublic:           req.IsPublic,
+		SignupEnabled:      req.SignupEnabled,
+		EmailSignupEnabled: req.EmailSignupEnabled,
+		UserID:             userIDFrom(ctx),
 	})
 	if err != nil {
 		return nil, err
@@ -107,4 +109,12 @@ func (s *WorkspaceServer) RemoveMember(ctx context.Context, req *chatv1.RemoveMe
 		return nil, err
 	}
 	return &chatv1.RemoveMemberResponse{}, nil
+}
+
+func (s *WorkspaceServer) GetWorkspaceSignupInfo(ctx context.Context, req *chatv1.GetWorkspaceSignupInfoRequest) (*chatv1.GetWorkspaceSignupInfoResponse, error) {
+	out, err := s.UC.GetSignupInfo(ctx, req.WorkspaceId)
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.GetWorkspaceSignupInfoResponse{Id: out.ID, Name: out.Name, IconUrl: out.IconURL, EmailSignupEnabled: out.EmailSignupEnabled}, nil
 }

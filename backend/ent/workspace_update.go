@@ -101,6 +101,34 @@ func (_u *WorkspaceUpdate) SetNillableIsPublic(v *bool) *WorkspaceUpdate {
 	return _u
 }
 
+// SetSignupEnabled sets the "signup_enabled" field.
+func (_u *WorkspaceUpdate) SetSignupEnabled(v bool) *WorkspaceUpdate {
+	_u.mutation.SetSignupEnabled(v)
+	return _u
+}
+
+// SetNillableSignupEnabled sets the "signup_enabled" field if the given value is not nil.
+func (_u *WorkspaceUpdate) SetNillableSignupEnabled(v *bool) *WorkspaceUpdate {
+	if v != nil {
+		_u.SetSignupEnabled(*v)
+	}
+	return _u
+}
+
+// SetEmailSignupEnabled sets the "email_signup_enabled" field.
+func (_u *WorkspaceUpdate) SetEmailSignupEnabled(v bool) *WorkspaceUpdate {
+	_u.mutation.SetEmailSignupEnabled(v)
+	return _u
+}
+
+// SetNillableEmailSignupEnabled sets the "email_signup_enabled" field if the given value is not nil.
+func (_u *WorkspaceUpdate) SetNillableEmailSignupEnabled(v *bool) *WorkspaceUpdate {
+	if v != nil {
+		_u.SetEmailSignupEnabled(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WorkspaceUpdate) SetUpdatedAt(v time.Time) *WorkspaceUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -315,6 +343,12 @@ func (_u *WorkspaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.IsPublic(); ok {
 		_spec.SetField(workspace.FieldIsPublic, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SignupEnabled(); ok {
+		_spec.SetField(workspace.FieldSignupEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.EmailSignupEnabled(); ok {
+		_spec.SetField(workspace.FieldEmailSignupEnabled, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(workspace.FieldUpdatedAt, field.TypeTime, value)
@@ -571,6 +605,34 @@ func (_u *WorkspaceUpdateOne) SetNillableIsPublic(v *bool) *WorkspaceUpdateOne {
 	return _u
 }
 
+// SetSignupEnabled sets the "signup_enabled" field.
+func (_u *WorkspaceUpdateOne) SetSignupEnabled(v bool) *WorkspaceUpdateOne {
+	_u.mutation.SetSignupEnabled(v)
+	return _u
+}
+
+// SetNillableSignupEnabled sets the "signup_enabled" field if the given value is not nil.
+func (_u *WorkspaceUpdateOne) SetNillableSignupEnabled(v *bool) *WorkspaceUpdateOne {
+	if v != nil {
+		_u.SetSignupEnabled(*v)
+	}
+	return _u
+}
+
+// SetEmailSignupEnabled sets the "email_signup_enabled" field.
+func (_u *WorkspaceUpdateOne) SetEmailSignupEnabled(v bool) *WorkspaceUpdateOne {
+	_u.mutation.SetEmailSignupEnabled(v)
+	return _u
+}
+
+// SetNillableEmailSignupEnabled sets the "email_signup_enabled" field if the given value is not nil.
+func (_u *WorkspaceUpdateOne) SetNillableEmailSignupEnabled(v *bool) *WorkspaceUpdateOne {
+	if v != nil {
+		_u.SetEmailSignupEnabled(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WorkspaceUpdateOne) SetUpdatedAt(v time.Time) *WorkspaceUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -815,6 +877,12 @@ func (_u *WorkspaceUpdateOne) sqlSave(ctx context.Context) (_node *Workspace, er
 	}
 	if value, ok := _u.mutation.IsPublic(); ok {
 		_spec.SetField(workspace.FieldIsPublic, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SignupEnabled(); ok {
+		_spec.SetField(workspace.FieldSignupEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.EmailSignupEnabled(); ok {
+		_spec.SetField(workspace.FieldEmailSignupEnabled, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(workspace.FieldUpdatedAt, field.TypeTime, value)

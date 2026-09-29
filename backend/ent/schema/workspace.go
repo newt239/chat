@@ -33,6 +33,10 @@ func (Workspace) Fields() []ent.Field {
 			Optional(),
 		field.Bool("is_public").
 			Default(false),
+		field.Bool("signup_enabled").
+			Default(false),
+		field.Bool("email_signup_enabled").
+			Default(false),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

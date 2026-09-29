@@ -10,6 +10,11 @@ export const ui = {
     empty: "候補がありません",
     showSuggestions: "候補を表示",
   },
+  copyableUrl: {
+    copied: "リンクをコピーしました",
+    copy: "コピー",
+    copyFailed: "コピーできませんでした",
+  },
   toast: {
     dismiss: "通知を閉じる",
     region: "通知",

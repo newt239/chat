@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/Button/Button";
 import { cn } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { AdminSignupSettings } from "#/features/admin/components/AdminSignupSettings";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { InviteMemberForm } from "#/features/workspace/components/InviteMemberForm";
@@ -32,6 +33,7 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
 
   return (
     <div className="flex flex-col gap-5">
+      <AdminSignupSettings workspaceId={workspaceId} />
       <section className="flex flex-col gap-2">
         <p className="m-0 text-caption text-muted">{t("admin.invitations.note")}</p>
         <InviteMemberForm workspaceId={workspaceId} />

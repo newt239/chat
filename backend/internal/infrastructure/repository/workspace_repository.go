@@ -76,7 +76,9 @@ func (r *workspaceRepository) Create(ctx context.Context, w *entity.Workspace) e
 		SetID(w.ID).
 		SetCreatedByID(cid).
 		SetName(w.Name).
-		SetIsPublic(w.IsPublic)
+		SetIsPublic(w.IsPublic).
+		SetSignupEnabled(w.SignupEnabled).
+		SetEmailSignupEnabled(w.EmailSignupEnabled)
 
 	if w.Description != nil {
 		builder = builder.SetDescription(*w.Description)
@@ -122,7 +124,9 @@ func (r *workspaceRepository) Update(ctx context.Context, w *entity.Workspace) e
 		builder = builder.ClearIconURL()
 	}
 
-	builder = builder.SetIsPublic(w.IsPublic)
+	builder = builder.SetIsPublic(w.IsPublic).
+		SetSignupEnabled(w.SignupEnabled).
+		SetEmailSignupEnabled(w.EmailSignupEnabled)
 
 	ws, err := builder.Save(ctx)
 	if err != nil {

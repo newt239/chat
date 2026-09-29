@@ -73,14 +73,16 @@ func WorkspaceToEntity(w *ent.Workspace) *entity.Workspace {
 		createdBy = w.Edges.CreatedBy.ID.String()
 	}
 	return &entity.Workspace{
-		ID:          w.ID,
-		Name:        w.Name,
-		Description: StringPtrFromNullable(w.Description),
-		IconURL:     StringPtrFromNullable(w.IconURL),
-		IsPublic:    w.IsPublic,
-		CreatedBy:   createdBy,
-		CreatedAt:   w.CreatedAt,
-		UpdatedAt:   w.UpdatedAt,
+		ID:                 w.ID,
+		Name:               w.Name,
+		Description:        StringPtrFromNullable(w.Description),
+		IconURL:            StringPtrFromNullable(w.IconURL),
+		IsPublic:           w.IsPublic,
+		SignupEnabled:      w.SignupEnabled,
+		EmailSignupEnabled: w.EmailSignupEnabled,
+		CreatedBy:          createdBy,
+		CreatedAt:          w.CreatedAt,
+		UpdatedAt:          w.UpdatedAt,
 	}
 }
 

@@ -556,12 +556,20 @@ func init() {
 	workspaceDescIsPublic := workspaceFields[4].Descriptor()
 	// workspace.DefaultIsPublic holds the default value on creation for the is_public field.
 	workspace.DefaultIsPublic = workspaceDescIsPublic.Default.(bool)
+	// workspaceDescSignupEnabled is the schema descriptor for signup_enabled field.
+	workspaceDescSignupEnabled := workspaceFields[5].Descriptor()
+	// workspace.DefaultSignupEnabled holds the default value on creation for the signup_enabled field.
+	workspace.DefaultSignupEnabled = workspaceDescSignupEnabled.Default.(bool)
+	// workspaceDescEmailSignupEnabled is the schema descriptor for email_signup_enabled field.
+	workspaceDescEmailSignupEnabled := workspaceFields[6].Descriptor()
+	// workspace.DefaultEmailSignupEnabled holds the default value on creation for the email_signup_enabled field.
+	workspace.DefaultEmailSignupEnabled = workspaceDescEmailSignupEnabled.Default.(bool)
 	// workspaceDescCreatedAt is the schema descriptor for created_at field.
-	workspaceDescCreatedAt := workspaceFields[5].Descriptor()
+	workspaceDescCreatedAt := workspaceFields[7].Descriptor()
 	// workspace.DefaultCreatedAt holds the default value on creation for the created_at field.
 	workspace.DefaultCreatedAt = workspaceDescCreatedAt.Default.(func() time.Time)
 	// workspaceDescUpdatedAt is the schema descriptor for updated_at field.
-	workspaceDescUpdatedAt := workspaceFields[6].Descriptor()
+	workspaceDescUpdatedAt := workspaceFields[8].Descriptor()
 	// workspace.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	workspace.DefaultUpdatedAt = workspaceDescUpdatedAt.Default.(func() time.Time)
 	// workspace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

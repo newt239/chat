@@ -76,6 +76,34 @@ func (_c *WorkspaceCreate) SetNillableIsPublic(v *bool) *WorkspaceCreate {
 	return _c
 }
 
+// SetSignupEnabled sets the "signup_enabled" field.
+func (_c *WorkspaceCreate) SetSignupEnabled(v bool) *WorkspaceCreate {
+	_c.mutation.SetSignupEnabled(v)
+	return _c
+}
+
+// SetNillableSignupEnabled sets the "signup_enabled" field if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableSignupEnabled(v *bool) *WorkspaceCreate {
+	if v != nil {
+		_c.SetSignupEnabled(*v)
+	}
+	return _c
+}
+
+// SetEmailSignupEnabled sets the "email_signup_enabled" field.
+func (_c *WorkspaceCreate) SetEmailSignupEnabled(v bool) *WorkspaceCreate {
+	_c.mutation.SetEmailSignupEnabled(v)
+	return _c
+}
+
+// SetNillableEmailSignupEnabled sets the "email_signup_enabled" field if the given value is not nil.
+func (_c *WorkspaceCreate) SetNillableEmailSignupEnabled(v *bool) *WorkspaceCreate {
+	if v != nil {
+		_c.SetEmailSignupEnabled(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *WorkspaceCreate) SetCreatedAt(v time.Time) *WorkspaceCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -205,6 +233,14 @@ func (_c *WorkspaceCreate) defaults() {
 		v := workspace.DefaultIsPublic
 		_c.mutation.SetIsPublic(v)
 	}
+	if _, ok := _c.mutation.SignupEnabled(); !ok {
+		v := workspace.DefaultSignupEnabled
+		_c.mutation.SetSignupEnabled(v)
+	}
+	if _, ok := _c.mutation.EmailSignupEnabled(); !ok {
+		v := workspace.DefaultEmailSignupEnabled
+		_c.mutation.SetEmailSignupEnabled(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := workspace.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -227,6 +263,12 @@ func (_c *WorkspaceCreate) check() error {
 	}
 	if _, ok := _c.mutation.IsPublic(); !ok {
 		return &ValidationError{Name: "is_public", err: errors.New(`ent: missing required field "Workspace.is_public"`)}
+	}
+	if _, ok := _c.mutation.SignupEnabled(); !ok {
+		return &ValidationError{Name: "signup_enabled", err: errors.New(`ent: missing required field "Workspace.signup_enabled"`)}
+	}
+	if _, ok := _c.mutation.EmailSignupEnabled(); !ok {
+		return &ValidationError{Name: "email_signup_enabled", err: errors.New(`ent: missing required field "Workspace.email_signup_enabled"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Workspace.created_at"`)}
@@ -293,6 +335,14 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsPublic(); ok {
 		_spec.SetField(workspace.FieldIsPublic, field.TypeBool, value)
 		_node.IsPublic = value
+	}
+	if value, ok := _c.mutation.SignupEnabled(); ok {
+		_spec.SetField(workspace.FieldSignupEnabled, field.TypeBool, value)
+		_node.SignupEnabled = value
+	}
+	if value, ok := _c.mutation.EmailSignupEnabled(); ok {
+		_spec.SetField(workspace.FieldEmailSignupEnabled, field.TypeBool, value)
+		_node.EmailSignupEnabled = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(workspace.FieldCreatedAt, field.TypeTime, value)
@@ -479,6 +529,30 @@ func (u *WorkspaceUpsert) UpdateIsPublic() *WorkspaceUpsert {
 	return u
 }
 
+// SetSignupEnabled sets the "signup_enabled" field.
+func (u *WorkspaceUpsert) SetSignupEnabled(v bool) *WorkspaceUpsert {
+	u.Set(workspace.FieldSignupEnabled, v)
+	return u
+}
+
+// UpdateSignupEnabled sets the "signup_enabled" field to the value that was provided on create.
+func (u *WorkspaceUpsert) UpdateSignupEnabled() *WorkspaceUpsert {
+	u.SetExcluded(workspace.FieldSignupEnabled)
+	return u
+}
+
+// SetEmailSignupEnabled sets the "email_signup_enabled" field.
+func (u *WorkspaceUpsert) SetEmailSignupEnabled(v bool) *WorkspaceUpsert {
+	u.Set(workspace.FieldEmailSignupEnabled, v)
+	return u
+}
+
+// UpdateEmailSignupEnabled sets the "email_signup_enabled" field to the value that was provided on create.
+func (u *WorkspaceUpsert) UpdateEmailSignupEnabled() *WorkspaceUpsert {
+	u.SetExcluded(workspace.FieldEmailSignupEnabled)
+	return u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (u *WorkspaceUpsert) SetUpdatedAt(v time.Time) *WorkspaceUpsert {
 	u.Set(workspace.FieldUpdatedAt, v)
@@ -609,6 +683,34 @@ func (u *WorkspaceUpsertOne) SetIsPublic(v bool) *WorkspaceUpsertOne {
 func (u *WorkspaceUpsertOne) UpdateIsPublic() *WorkspaceUpsertOne {
 	return u.Update(func(s *WorkspaceUpsert) {
 		s.UpdateIsPublic()
+	})
+}
+
+// SetSignupEnabled sets the "signup_enabled" field.
+func (u *WorkspaceUpsertOne) SetSignupEnabled(v bool) *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetSignupEnabled(v)
+	})
+}
+
+// UpdateSignupEnabled sets the "signup_enabled" field to the value that was provided on create.
+func (u *WorkspaceUpsertOne) UpdateSignupEnabled() *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateSignupEnabled()
+	})
+}
+
+// SetEmailSignupEnabled sets the "email_signup_enabled" field.
+func (u *WorkspaceUpsertOne) SetEmailSignupEnabled(v bool) *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetEmailSignupEnabled(v)
+	})
+}
+
+// UpdateEmailSignupEnabled sets the "email_signup_enabled" field to the value that was provided on create.
+func (u *WorkspaceUpsertOne) UpdateEmailSignupEnabled() *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateEmailSignupEnabled()
 	})
 }
 
@@ -911,6 +1013,34 @@ func (u *WorkspaceUpsertBulk) SetIsPublic(v bool) *WorkspaceUpsertBulk {
 func (u *WorkspaceUpsertBulk) UpdateIsPublic() *WorkspaceUpsertBulk {
 	return u.Update(func(s *WorkspaceUpsert) {
 		s.UpdateIsPublic()
+	})
+}
+
+// SetSignupEnabled sets the "signup_enabled" field.
+func (u *WorkspaceUpsertBulk) SetSignupEnabled(v bool) *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetSignupEnabled(v)
+	})
+}
+
+// UpdateSignupEnabled sets the "signup_enabled" field to the value that was provided on create.
+func (u *WorkspaceUpsertBulk) UpdateSignupEnabled() *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateSignupEnabled()
+	})
+}
+
+// SetEmailSignupEnabled sets the "email_signup_enabled" field.
+func (u *WorkspaceUpsertBulk) SetEmailSignupEnabled(v bool) *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetEmailSignupEnabled(v)
+	})
+}
+
+// UpdateEmailSignupEnabled sets the "email_signup_enabled" field to the value that was provided on create.
+func (u *WorkspaceUpsertBulk) UpdateEmailSignupEnabled() *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateEmailSignupEnabled()
 	})
 }
 

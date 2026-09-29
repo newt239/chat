@@ -44,6 +44,8 @@ const (
 	// AuthServiceSignUpWithInvitationProcedure is the fully-qualified name of the AuthService's
 	// SignUpWithInvitation RPC.
 	AuthServiceSignUpWithInvitationProcedure = "/chat.v1.AuthService/SignUpWithInvitation"
+	// AuthServiceSignUpProcedure is the fully-qualified name of the AuthService's SignUp RPC.
+	AuthServiceSignUpProcedure = "/chat.v1.AuthService/SignUp"
 	// AuthServiceRefreshProcedure is the fully-qualified name of the AuthService's Refresh RPC.
 	AuthServiceRefreshProcedure = "/chat.v1.AuthService/Refresh"
 	// AuthServiceLogoutProcedure is the fully-qualified name of the AuthService's Logout RPC.
@@ -54,10 +56,12 @@ const (
 type AuthServiceClient interface {
 	GetAuthConfig(context.Context, *v1.GetAuthConfigRequest) (*v1.GetAuthConfigResponse, error)
 	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
-	// 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+	// 未登録のメールアドレスは有効な招待があるか、登録を許可したワークスペースの参加リンクから来たときだけアカウントを作る
 	LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error)
 	// 招待リンクからパスワードを設定してアカウントを作る
 	SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error)
+	// 登録とメールでの登録を許可したワークスペースの参加リンクからアカウントを作る
+	SignUp(context.Context, *v1.SignUpRequest) (*v1.SignUpResponse, error)
 	Refresh(context.Context, *v1.RefreshRequest) (*v1.RefreshResponse, error)
 	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
 }
@@ -97,6 +101,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("SignUpWithInvitation")),
 			connect.WithClientOptions(opts...),
 		),
+		signUp: connect.NewClient[v1.SignUpRequest, v1.SignUpResponse](
+			httpClient,
+			baseURL+AuthServiceSignUpProcedure,
+			connect.WithSchema(authServiceMethods.ByName("SignUp")),
+			connect.WithClientOptions(opts...),
+		),
 		refresh: connect.NewClient[v1.RefreshRequest, v1.RefreshResponse](
 			httpClient,
 			baseURL+AuthServiceRefreshProcedure,
@@ -118,6 +128,7 @@ type authServiceClient struct {
 	login                *connect.Client[v1.LoginRequest, v1.LoginResponse]
 	loginWithGoogle      *connect.Client[v1.LoginWithGoogleRequest, v1.LoginWithGoogleResponse]
 	signUpWithInvitation *connect.Client[v1.SignUpWithInvitationRequest, v1.SignUpWithInvitationResponse]
+	signUp               *connect.Client[v1.SignUpRequest, v1.SignUpResponse]
 	refresh              *connect.Client[v1.RefreshRequest, v1.RefreshResponse]
 	logout               *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
 }
@@ -158,6 +169,15 @@ func (c *authServiceClient) SignUpWithInvitation(ctx context.Context, req *v1.Si
 	return nil, err
 }
 
+// SignUp calls chat.v1.AuthService.SignUp.
+func (c *authServiceClient) SignUp(ctx context.Context, req *v1.SignUpRequest) (*v1.SignUpResponse, error) {
+	response, err := c.signUp.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // Refresh calls chat.v1.AuthService.Refresh.
 func (c *authServiceClient) Refresh(ctx context.Context, req *v1.RefreshRequest) (*v1.RefreshResponse, error) {
 	response, err := c.refresh.CallUnary(ctx, connect.NewRequest(req))
@@ -180,10 +200,12 @@ func (c *authServiceClient) Logout(ctx context.Context, req *v1.LogoutRequest) (
 type AuthServiceHandler interface {
 	GetAuthConfig(context.Context, *v1.GetAuthConfigRequest) (*v1.GetAuthConfigResponse, error)
 	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
-	// 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+	// 未登録のメールアドレスは有効な招待があるか、登録を許可したワークスペースの参加リンクから来たときだけアカウントを作る
 	LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error)
 	// 招待リンクからパスワードを設定してアカウントを作る
 	SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error)
+	// 登録とメールでの登録を許可したワークスペースの参加リンクからアカウントを作る
+	SignUp(context.Context, *v1.SignUpRequest) (*v1.SignUpResponse, error)
 	Refresh(context.Context, *v1.RefreshRequest) (*v1.RefreshResponse, error)
 	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
 }
@@ -219,6 +241,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("SignUpWithInvitation")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceSignUpHandler := connect.NewUnaryHandlerSimple(
+		AuthServiceSignUpProcedure,
+		svc.SignUp,
+		connect.WithSchema(authServiceMethods.ByName("SignUp")),
+		connect.WithHandlerOptions(opts...),
+	)
 	authServiceRefreshHandler := connect.NewUnaryHandlerSimple(
 		AuthServiceRefreshProcedure,
 		svc.Refresh,
@@ -241,6 +269,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceLoginWithGoogleHandler.ServeHTTP(w, r)
 		case AuthServiceSignUpWithInvitationProcedure:
 			authServiceSignUpWithInvitationHandler.ServeHTTP(w, r)
+		case AuthServiceSignUpProcedure:
+			authServiceSignUpHandler.ServeHTTP(w, r)
 		case AuthServiceRefreshProcedure:
 			authServiceRefreshHandler.ServeHTTP(w, r)
 		case AuthServiceLogoutProcedure:
@@ -268,6 +298,10 @@ func (UnimplementedAuthServiceHandler) LoginWithGoogle(context.Context, *v1.Logi
 
 func (UnimplementedAuthServiceHandler) SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.SignUpWithInvitation is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) SignUp(context.Context, *v1.SignUpRequest) (*v1.SignUpResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.SignUp is not implemented"))
 }
 
 func (UnimplementedAuthServiceHandler) Refresh(context.Context, *v1.RefreshRequest) (*v1.RefreshResponse, error) {

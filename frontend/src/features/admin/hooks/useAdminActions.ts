@@ -33,5 +33,6 @@ export const useAdminActions = () => {
     suspend: useMutation(AdminService.method.suspendMember, options),
     updatePermission: useMutation(PermissionService.method.updatePermission, options),
     updateRole: useMutation(WorkspaceService.method.updateMemberRole, options),
+    updateWorkspace: useMutation(WorkspaceService.method.updateWorkspace, options),
   };
 };

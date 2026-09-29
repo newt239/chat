@@ -7,19 +7,20 @@ import { usePasswordAuthEnabled } from "#/features/auth/hooks/usePasswordAuthEna
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
 type AuthMethodsProps = {
-  // パスワード認証が有効なときだけ表示する
+  // パスワード認証が有効なときだけ表示する。null なら Google だけにする
   passwordForm: ReactNode;
+  workspaceId: string | null;
 };
 
 // Google ログインを主に置き、パスワードのフォームは補助として下に並べる
-export const AuthMethods = ({ passwordForm }: AuthMethodsProps) => {
+export const AuthMethods = ({ passwordForm, workspaceId }: AuthMethodsProps) => {
   const { t } = useTranslation();
-  const passwordAuthEnabled = usePasswordAuthEnabled();
+  const passwordAuthEnabled = usePasswordAuthEnabled() && passwordForm !== null;
   const googleClientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
   return (
     <>
-      {googleClientId && <GoogleSignInButton clientId={googleClientId} />}
+      {googleClientId && <GoogleSignInButton clientId={googleClientId} workspaceId={workspaceId} />}
       {googleClientId && passwordAuthEnabled && (
         <div className="flex items-center gap-3 text-caption text-muted">
           <hr className="m-0 flex-1 border-border" />

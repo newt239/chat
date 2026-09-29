@@ -14,12 +14,14 @@ import (
 )
 
 var publicProcedures = map[string]struct{}{
-	chatv1connect.AuthServiceGetAuthConfigProcedure:        {},
-	chatv1connect.AuthServiceLoginProcedure:                {},
-	chatv1connect.AuthServiceLoginWithGoogleProcedure:      {},
-	chatv1connect.AuthServiceSignUpWithInvitationProcedure: {},
-	chatv1connect.AuthServiceRefreshProcedure:              {},
-	chatv1connect.InvitationServiceGetInvitationProcedure:  {},
+	chatv1connect.AuthServiceGetAuthConfigProcedure:               {},
+	chatv1connect.AuthServiceLoginProcedure:                       {},
+	chatv1connect.AuthServiceLoginWithGoogleProcedure:             {},
+	chatv1connect.AuthServiceSignUpProcedure:                      {},
+	chatv1connect.AuthServiceSignUpWithInvitationProcedure:        {},
+	chatv1connect.AuthServiceRefreshProcedure:                     {},
+	chatv1connect.InvitationServiceGetInvitationProcedure:         {},
+	chatv1connect.WorkspaceServiceGetWorkspaceSignupInfoProcedure: {},
 }
 
 func newAuthInterceptor(jwtService authuc.JWTService) connect.UnaryInterceptorFunc {

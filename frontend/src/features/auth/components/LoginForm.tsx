@@ -19,6 +19,7 @@ export const LoginForm = () => {
   return (
     <AuthCard title={t("auth.login.title")} footer={t("auth.login.invitationOnly")}>
       <AuthMethods
+        workspaceId={null}
         passwordForm={
           <Form
             className="flex flex-col gap-4"

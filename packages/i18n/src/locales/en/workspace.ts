@@ -20,9 +20,6 @@ export const workspace: Messages["workspace"] = {
   },
   invite: {
     addedDirectly: "Added {{email}} to the workspace",
-    copied: "Copied the invitation link",
-    copy: "Copy",
-    copyFailed: "Couldn't copy",
     email: "Invite by email",
     failed: "Couldn't invite",
     link: "Invitation link for {{email}}",

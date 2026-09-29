@@ -15,12 +15,17 @@ import (
 type stubWorkspaceRepo struct {
 	domainrepository.WorkspaceRepository
 	members    map[string]*entity.WorkspaceMember
+	workspace  *entity.Workspace
 	updatedTo  entity.WorkspaceRole
 	updateCall int
 }
 
 func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
 	return r.members[userID], nil
+}
+
+func (r *stubWorkspaceRepo) FindByID(context.Context, string) (*entity.Workspace, error) {
+	return r.workspace, nil
 }
 
 func (r *stubWorkspaceRepo) AddMember(_ context.Context, m *entity.WorkspaceMember) error {
@@ -169,5 +174,37 @@ func TestUpdateMemberRoleRecordsAuditLog(t *testing.T) {
 	}
 	if log.Metadata["from"] != "member" || log.Metadata["to"] != "admin" {
 		t.Errorf("変更前後のロールが記録されていません: %+v", log.Metadata)
+	}
+}
+
+func TestSignupEnabledWorkspace(t *testing.T) {
+	tests := []struct {
+		name      string
+		workspace *entity.Workspace
+		wantErr   bool
+	}{
+		{name: "登録を許可していれば非公開でも参加リンクの情報を返し参加できる", workspace: &entity.Workspace{ID: "ws", Name: "WS", SignupEnabled: true, EmailSignupEnabled: true}},
+		{name: "登録を許可していなければ存在しないものとして扱い参加できない", workspace: &entity.Workspace{ID: "ws"}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(map[string]*entity.WorkspaceMember{})
+			f.repo.workspace = tt.workspace
+
+			info, err := f.uc.GetSignupInfo(context.Background(), "ws")
+			_, joinErr := f.uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "u1"})
+			if tt.wantErr {
+				if !errors.Is(err, ErrWorkspaceNotFound) || joinErr == nil || len(f.repo.members) != 0 {
+					t.Errorf("登録を許可していないのに情報を返したか参加できました: err=%v joinErr=%v", err, joinErr)
+				}
+				return
+			}
+			if err != nil || joinErr != nil {
+				t.Fatalf("予期しないエラー: %v %v", err, joinErr)
+			}
+			if info.Name != "WS" || !info.EmailSignupEnabled || f.repo.members["u1"].Role != entity.WorkspaceRoleMember {
+				t.Errorf("返した情報か参加したロールが期待と異なります: %+v %+v", info, f.repo.members["u1"])
+			}
+		})
 	}
 }

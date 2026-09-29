@@ -12,6 +12,11 @@ export const ui: Messages["ui"] = {
     empty: "No suggestions",
     showSuggestions: "Show suggestions",
   },
+  copyableUrl: {
+    copied: "Copied the link",
+    copy: "Copy",
+    copyFailed: "Couldn't copy",
+  },
   toast: {
     dismiss: "Dismiss notification",
     region: "Notifications",

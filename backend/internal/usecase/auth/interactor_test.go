@@ -84,6 +84,28 @@ func (stubWorkspaceRepo) FindByUserID(context.Context, string) ([]*entity.Worksp
 	return []*entity.Workspace{{ID: "ws1"}, {ID: "ws2"}}, nil
 }
 
+func (stubWorkspaceRepo) FindByID(_ context.Context, id string) (*entity.Workspace, error) {
+	for _, ws := range []*entity.Workspace{
+		{ID: "open", SignupEnabled: true, EmailSignupEnabled: true},
+		{ID: "google-only", SignupEnabled: true},
+		{ID: "closed"},
+	} {
+		if ws.ID == id {
+			return ws, nil
+		}
+	}
+	return nil, nil
+}
+
+func (r *stubWorkspaceRepo) FindMember(_ context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
+	for _, m := range r.added {
+		if m.WorkspaceID == workspaceID && m.UserID == userID {
+			return m, nil
+		}
+	}
+	return nil, nil
+}
+
 func (r *stubWorkspaceRepo) AddMember(_ context.Context, m *entity.WorkspaceMember) error {
 	r.added = append(r.added, m)
 	return nil
@@ -273,7 +295,7 @@ func TestLoginWithGoogle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f := newFixture(false)
-			out, err := f.uc.LoginWithGoogle(context.Background(), tt.token)
+			out, err := f.uc.LoginWithGoogle(context.Background(), LoginWithGoogleInput{IDToken: tt.token})
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
 			}
@@ -292,7 +314,7 @@ func TestLoginWithGoogle(t *testing.T) {
 
 func TestLoginWithGoogleLinksSubToExistingUser(t *testing.T) {
 	f := newFixture(false)
-	if _, err := f.uc.LoginWithGoogle(context.Background(), "alice"); err != nil {
+	if _, err := f.uc.LoginWithGoogle(context.Background(), LoginWithGoogleInput{IDToken: "alice"}); err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
 	alice, _ := f.users.FindByID(context.Background(), "alice")
@@ -304,7 +326,7 @@ func TestLoginWithGoogleLinksSubToExistingUser(t *testing.T) {
 func TestLoginWithGoogleCreatesInvitedUser(t *testing.T) {
 	f := newFixture(false)
 
-	out, err := f.uc.LoginWithGoogle(context.Background(), "invited")
+	out, err := f.uc.LoginWithGoogle(context.Background(), LoginWithGoogleInput{IDToken: "invited"})
 	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
@@ -348,5 +370,92 @@ func assertJoinedInvitedWorkspaces(t *testing.T, f fixture) {
 	}
 	if !slices.Equal(f.invitations.accepted, []string{"inv1", "inv2"}) {
 		t.Errorf("招待が受諾済みになっていません: %v", f.invitations.accepted)
+	}
+}
+
+func TestLoginWithGoogleCreatesUserFromSignupWorkspace(t *testing.T) {
+	tests := []struct {
+		name        string
+		workspaceID string
+		wantErr     error
+	}{
+		{name: "登録を許可したワークスペースなら招待がなくても作る", workspaceID: "google-only"},
+		{name: "登録を許可していないワークスペースは拒否する", workspaceID: "closed", wantErr: ErrSignupDisabled},
+		{name: "存在しないワークスペースは拒否する", workspaceID: "missing", wantErr: ErrSignupDisabled},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(false)
+			_, err := f.uc.LoginWithGoogle(context.Background(), LoginWithGoogleInput{IDToken: "stranger", WorkspaceID: &tt.workspaceID})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if tt.wantErr != nil {
+				if len(f.users.created) != 0 || len(f.workspaces.added) != 0 {
+					t.Errorf("拒否したのにユーザーかメンバーが作られました")
+				}
+				return
+			}
+			assertJoinedAsMember(t, f, tt.workspaceID)
+		})
+	}
+}
+
+func TestSignUp(t *testing.T) {
+	tests := []struct {
+		name                string
+		passwordAuthEnabled bool
+		workspaceID         string
+		email               string
+		wantErr             error
+	}{
+		{name: "登録とメールでの登録を許可したワークスペースなら作る", passwordAuthEnabled: true, workspaceID: "open", email: "New@Example.com"},
+		{name: "メールでの登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "google-only", email: "new@example.com", wantErr: ErrSignupDisabled},
+		{name: "登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "closed", email: "new@example.com", wantErr: ErrSignupDisabled},
+		{name: "パスワード認証が無効なら拒否する", passwordAuthEnabled: false, workspaceID: "open", email: "new@example.com", wantErr: ErrPasswordAuthDisabled},
+		{name: "登録済みのメールアドレスは拒否する", passwordAuthEnabled: true, workspaceID: "open", email: "alice@example.com", wantErr: ErrUserAlreadyExists},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(tt.passwordAuthEnabled)
+			_, err := f.uc.SignUp(context.Background(), SignUpInput{WorkspaceID: tt.workspaceID, Email: tt.email, DisplayName: "New", Password: "password123"})
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if tt.wantErr != nil {
+				if len(f.users.created) != 0 || len(f.workspaces.added) != 0 || len(f.sessions.created) != 0 {
+					t.Errorf("拒否したのにユーザーかメンバーかセッションが作られました")
+				}
+				return
+			}
+			if f.users.created[0].Email != "new@example.com" || f.users.created[0].PasswordHash != "password123" {
+				t.Errorf("作られたユーザーが期待と異なります: %+v", f.users.created[0])
+			}
+			assertJoinedAsMember(t, f, tt.workspaceID)
+		})
+	}
+}
+
+func assertJoinedAsMember(t *testing.T, f fixture, workspaceID string) {
+	t.Helper()
+	if len(f.users.created) != 1 || len(f.sessions.created) != 1 {
+		t.Fatalf("ユーザーが作られていないかログインしていません")
+	}
+	if len(f.workspaces.added) != 1 || f.workspaces.added[0].WorkspaceID != workspaceID || f.workspaces.added[0].Role != entity.WorkspaceRoleMember {
+		t.Errorf("ワークスペースにメンバーとして参加していません: %+v", f.workspaces.added)
+	}
+}
+
+func TestLoginWithGoogleJoinsExistingUserToSignupWorkspace(t *testing.T) {
+	f := newFixture(false)
+	workspaceID := "google-only"
+
+	for range 2 {
+		if _, err := f.uc.LoginWithGoogle(context.Background(), LoginWithGoogleInput{IDToken: "alice", WorkspaceID: &workspaceID}); err != nil {
+			t.Fatalf("予期しないエラー: %v", err)
+		}
+	}
+	if len(f.users.created) != 0 || len(f.workspaces.added) != 1 || f.workspaces.added[0].UserID != "alice" || f.workspaces.added[0].WorkspaceID != workspaceID {
+		t.Errorf("既存ユーザーが一度だけメンバーとして参加するはず: %+v", f.workspaces.added)
 	}
 }
