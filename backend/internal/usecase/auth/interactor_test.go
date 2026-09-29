@@ -169,6 +169,18 @@ func (g stubGoogle) Verify(_ context.Context, token string) (*GoogleIdentity, er
 	return nil, ErrInvalidToken
 }
 
+// "コード:code_verifier" に対応する ID トークンを返す
+type stubGoogleCode map[string]string
+
+func (g stubGoogleCode) Exchange(_ context.Context, code, codeVerifier string) (string, error) {
+	if token, ok := g[code+":"+codeVerifier]; ok {
+		return token, nil
+	}
+	return "", ErrInvalidToken
+}
+
+var googleCode = stubGoogleCode{"code-alice:verifier": "alice-nonce"}
+
 type stubTx struct{}
 
 func (stubTx) Do(ctx context.Context, fn func(ctx context.Context) error) error { return fn(ctx) }
@@ -188,6 +200,8 @@ var google = stubGoogle{
 	"invited":  {Sub: "sub-new", Email: "New@Example.com", EmailVerified: true, Name: "New User"},
 	"stranger": {Sub: "sub-stranger", Email: "stranger@example.com", EmailVerified: true},
 	"bob":      {Sub: "sub-bob", Email: "bob@example.com", EmailVerified: false},
+	// 認可コードフローで発行された ID トークンには nonce が入る
+	"alice-nonce": {Sub: "sub-alice", Email: "alice@example.com", EmailVerified: true, Nonce: "nonce-1"},
 }
 
 func newFixture(passwordAuthEnabled bool) fixture {
@@ -207,7 +221,7 @@ func newFixture(passwordAuthEnabled bool) fixture {
 		recorder: &audittest.Recorder{},
 	}
 	settings := Settings{AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour, PasswordAuthEnabled: passwordAuthEnabled}
-	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, stubTx{}, f.recorder, settings)
+	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, settings)
 	return f
 }
 
@@ -306,6 +320,37 @@ func TestLoginWithGoogle(t *testing.T) {
 				return
 			}
 			if out.User.ID != tt.wantUser || len(f.users.created) != 0 {
+				t.Errorf("ログインしたユーザーが期待と異なります: %+v", out.User)
+			}
+		})
+	}
+}
+
+func TestLoginWithGoogleCode(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    LoginWithGoogleCodeInput
+		wantUser string
+		wantErr  error
+	}{
+		{name: "交換した ID トークンの nonce が一致すればログインできる", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "nonce-1"}, wantUser: "alice"},
+		{name: "nonce が一致しなければ拒否する", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "other"}, wantErr: ErrInvalidToken},
+		{name: "code_verifier が違えば交換できない", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "wrong", Nonce: "nonce-1"}, wantErr: ErrInvalidToken},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(false)
+			out, err := f.uc.LoginWithGoogleCode(context.Background(), tt.input)
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if tt.wantErr != nil {
+				if len(f.sessions.created) != 0 {
+					t.Errorf("拒否したのにセッションが作られました")
+				}
+				return
+			}
+			if out.User.ID != tt.wantUser {
 				t.Errorf("ログインしたユーザーが期待と異なります: %+v", out.User)
 			}
 		})

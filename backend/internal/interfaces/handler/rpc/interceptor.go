@@ -17,6 +17,7 @@ var publicProcedures = map[string]struct{}{
 	chatv1connect.AuthServiceGetAuthConfigProcedure:               {},
 	chatv1connect.AuthServiceLoginProcedure:                       {},
 	chatv1connect.AuthServiceLoginWithGoogleProcedure:             {},
+	chatv1connect.AuthServiceLoginWithGoogleCodeProcedure:         {},
 	chatv1connect.AuthServiceSignUpProcedure:                      {},
 	chatv1connect.AuthServiceSignUpWithInvitationProcedure:        {},
 	chatv1connect.AuthServiceRefreshProcedure:                     {},

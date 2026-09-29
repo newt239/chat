@@ -113,6 +113,11 @@ func (r *InfrastructureRegistry) NewGoogleVerifier() authuc.GoogleVerifier {
 	return auth.NewGoogleVerifier(r.config.Auth.GoogleOAuthClientID)
 }
 
+func (r *InfrastructureRegistry) NewGoogleOAuth() *auth.GoogleOAuth {
+	a := r.config.Auth
+	return auth.NewGoogleOAuth(a.GoogleOAuthClientID, a.GoogleOAuthClientSecret, a.GoogleOAuthRedirectURL, a.NativeAppRedirectURL)
+}
+
 func (r *InfrastructureRegistry) NewInvitationSender() invitationuc.Sender {
 	return mail.NoopInvitationSender{}
 }

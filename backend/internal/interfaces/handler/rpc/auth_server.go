@@ -32,6 +32,14 @@ func (s *AuthServer) LoginWithGoogle(ctx context.Context, req *chatv1.LoginWithG
 	return &chatv1.LoginWithGoogleResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
+func (s *AuthServer) LoginWithGoogleCode(ctx context.Context, req *chatv1.LoginWithGoogleCodeRequest) (*chatv1.LoginWithGoogleCodeResponse, error) {
+	out, err := s.UC.LoginWithGoogleCode(ctx, authuc.LoginWithGoogleCodeInput{Code: req.Code, CodeVerifier: req.CodeVerifier, Nonce: req.Nonce, WorkspaceID: req.WorkspaceId})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.LoginWithGoogleCodeResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+}
+
 func (s *AuthServer) SignUp(ctx context.Context, req *chatv1.SignUpRequest) (*chatv1.SignUpResponse, error) {
 	out, err := s.UC.SignUp(ctx, authuc.SignUpInput{WorkspaceID: req.WorkspaceId, Email: req.Email, DisplayName: req.DisplayName, Password: req.Password})
 	if err != nil {

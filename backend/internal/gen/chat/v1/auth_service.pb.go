@@ -328,6 +328,135 @@ func (x *LoginWithGoogleResponse) GetUser() *User {
 	return nil
 }
 
+type LoginWithGoogleCodeRequest struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Code         string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	CodeVerifier string                 `protobuf:"bytes,2,opt,name=code_verifier,json=codeVerifier,proto3" json:"code_verifier,omitempty"`
+	// 認可リクエストに付けた nonce。ID トークンの nonce と一致しなければ拒否する
+	Nonce         string  `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	WorkspaceId   *string `protobuf:"bytes,4,opt,name=workspace_id,json=workspaceId,proto3,oneof" json:"workspace_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginWithGoogleCodeRequest) Reset() {
+	*x = LoginWithGoogleCodeRequest{}
+	mi := &file_chat_v1_auth_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginWithGoogleCodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginWithGoogleCodeRequest) ProtoMessage() {}
+
+func (x *LoginWithGoogleCodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_auth_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginWithGoogleCodeRequest.ProtoReflect.Descriptor instead.
+func (*LoginWithGoogleCodeRequest) Descriptor() ([]byte, []int) {
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *LoginWithGoogleCodeRequest) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *LoginWithGoogleCodeRequest) GetCodeVerifier() string {
+	if x != nil {
+		return x.CodeVerifier
+	}
+	return ""
+}
+
+func (x *LoginWithGoogleCodeRequest) GetNonce() string {
+	if x != nil {
+		return x.Nonce
+	}
+	return ""
+}
+
+func (x *LoginWithGoogleCodeRequest) GetWorkspaceId() string {
+	if x != nil && x.WorkspaceId != nil {
+		return *x.WorkspaceId
+	}
+	return ""
+}
+
+type LoginWithGoogleCodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginWithGoogleCodeResponse) Reset() {
+	*x = LoginWithGoogleCodeResponse{}
+	mi := &file_chat_v1_auth_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginWithGoogleCodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginWithGoogleCodeResponse) ProtoMessage() {}
+
+func (x *LoginWithGoogleCodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_auth_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginWithGoogleCodeResponse.ProtoReflect.Descriptor instead.
+func (*LoginWithGoogleCodeResponse) Descriptor() ([]byte, []int) {
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *LoginWithGoogleCodeResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *LoginWithGoogleCodeResponse) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
+}
+
+func (x *LoginWithGoogleCodeResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 type SignUpWithInvitationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
@@ -339,7 +468,7 @@ type SignUpWithInvitationRequest struct {
 
 func (x *SignUpWithInvitationRequest) Reset() {
 	*x = SignUpWithInvitationRequest{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[6]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -351,7 +480,7 @@ func (x *SignUpWithInvitationRequest) String() string {
 func (*SignUpWithInvitationRequest) ProtoMessage() {}
 
 func (x *SignUpWithInvitationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[6]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,7 +493,7 @@ func (x *SignUpWithInvitationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SignUpWithInvitationRequest.ProtoReflect.Descriptor instead.
 func (*SignUpWithInvitationRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{6}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SignUpWithInvitationRequest) GetToken() string {
@@ -399,7 +528,7 @@ type SignUpWithInvitationResponse struct {
 
 func (x *SignUpWithInvitationResponse) Reset() {
 	*x = SignUpWithInvitationResponse{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[7]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -411,7 +540,7 @@ func (x *SignUpWithInvitationResponse) String() string {
 func (*SignUpWithInvitationResponse) ProtoMessage() {}
 
 func (x *SignUpWithInvitationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[7]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -424,7 +553,7 @@ func (x *SignUpWithInvitationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SignUpWithInvitationResponse.ProtoReflect.Descriptor instead.
 func (*SignUpWithInvitationResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{7}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SignUpWithInvitationResponse) GetAccessToken() string {
@@ -460,7 +589,7 @@ type SignUpRequest struct {
 
 func (x *SignUpRequest) Reset() {
 	*x = SignUpRequest{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[8]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -472,7 +601,7 @@ func (x *SignUpRequest) String() string {
 func (*SignUpRequest) ProtoMessage() {}
 
 func (x *SignUpRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[8]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -485,7 +614,7 @@ func (x *SignUpRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SignUpRequest.ProtoReflect.Descriptor instead.
 func (*SignUpRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{8}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SignUpRequest) GetWorkspaceId() string {
@@ -527,7 +656,7 @@ type SignUpResponse struct {
 
 func (x *SignUpResponse) Reset() {
 	*x = SignUpResponse{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[9]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -539,7 +668,7 @@ func (x *SignUpResponse) String() string {
 func (*SignUpResponse) ProtoMessage() {}
 
 func (x *SignUpResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[9]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -552,7 +681,7 @@ func (x *SignUpResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SignUpResponse.ProtoReflect.Descriptor instead.
 func (*SignUpResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{9}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SignUpResponse) GetAccessToken() string {
@@ -585,7 +714,7 @@ type RefreshRequest struct {
 
 func (x *RefreshRequest) Reset() {
 	*x = RefreshRequest{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[10]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -597,7 +726,7 @@ func (x *RefreshRequest) String() string {
 func (*RefreshRequest) ProtoMessage() {}
 
 func (x *RefreshRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[10]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -610,7 +739,7 @@ func (x *RefreshRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefreshRequest.ProtoReflect.Descriptor instead.
 func (*RefreshRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{10}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *RefreshRequest) GetRefreshToken() string {
@@ -631,7 +760,7 @@ type RefreshResponse struct {
 
 func (x *RefreshResponse) Reset() {
 	*x = RefreshResponse{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[11]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -643,7 +772,7 @@ func (x *RefreshResponse) String() string {
 func (*RefreshResponse) ProtoMessage() {}
 
 func (x *RefreshResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[11]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -656,7 +785,7 @@ func (x *RefreshResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefreshResponse.ProtoReflect.Descriptor instead.
 func (*RefreshResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{11}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *RefreshResponse) GetAccessToken() string {
@@ -688,7 +817,7 @@ type LogoutRequest struct {
 
 func (x *LogoutRequest) Reset() {
 	*x = LogoutRequest{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[12]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -700,7 +829,7 @@ func (x *LogoutRequest) String() string {
 func (*LogoutRequest) ProtoMessage() {}
 
 func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[12]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -713,7 +842,7 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{12}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{14}
 }
 
 type LogoutResponse struct {
@@ -724,7 +853,7 @@ type LogoutResponse struct {
 
 func (x *LogoutResponse) Reset() {
 	*x = LogoutResponse{}
-	mi := &file_chat_v1_auth_service_proto_msgTypes[13]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -736,7 +865,7 @@ func (x *LogoutResponse) String() string {
 func (*LogoutResponse) ProtoMessage() {}
 
 func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_auth_service_proto_msgTypes[13]
+	mi := &file_chat_v1_auth_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -749,7 +878,7 @@ func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
 func (*LogoutResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{13}
+	return file_chat_v1_auth_service_proto_rawDescGZIP(), []int{15}
 }
 
 var File_chat_v1_auth_service_proto protoreflect.FileDescriptor
@@ -772,6 +901,17 @@ const file_chat_v1_auth_service_proto_rawDesc = "" +
 	"\fworkspace_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vworkspaceId\x88\x01\x01B\x0f\n" +
 	"\r_workspace_id\"\x84\x01\n" +
 	"\x17LoginWithGoogleResponse\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
+	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
+	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"\xcb\x01\n" +
+	"\x1aLoginWithGoogleCodeRequest\x12\x1b\n" +
+	"\x04code\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04code\x12/\n" +
+	"\rcode_verifier\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10+\x18\x80\x01R\fcodeVerifier\x12\x1d\n" +
+	"\x05nonce\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05nonce\x12/\n" +
+	"\fworkspace_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vworkspaceId\x88\x01\x01B\x0f\n" +
+	"\r_workspace_id\"\x88\x01\n" +
+	"\x1bLoginWithGoogleCodeResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
 	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"\x8f\x01\n" +
@@ -799,11 +939,12 @@ const file_chat_v1_auth_service_proto_rawDesc = "" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
 	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"\x0f\n" +
 	"\rLogoutRequest\"\x10\n" +
-	"\x0eLogoutResponse2\x84\x04\n" +
+	"\x0eLogoutResponse2\xe6\x04\n" +
 	"\vAuthService\x12N\n" +
 	"\rGetAuthConfig\x12\x1d.chat.v1.GetAuthConfigRequest\x1a\x1e.chat.v1.GetAuthConfigResponse\x126\n" +
 	"\x05Login\x12\x15.chat.v1.LoginRequest\x1a\x16.chat.v1.LoginResponse\x12T\n" +
-	"\x0fLoginWithGoogle\x12\x1f.chat.v1.LoginWithGoogleRequest\x1a .chat.v1.LoginWithGoogleResponse\x12c\n" +
+	"\x0fLoginWithGoogle\x12\x1f.chat.v1.LoginWithGoogleRequest\x1a .chat.v1.LoginWithGoogleResponse\x12`\n" +
+	"\x13LoginWithGoogleCode\x12#.chat.v1.LoginWithGoogleCodeRequest\x1a$.chat.v1.LoginWithGoogleCodeResponse\x12c\n" +
 	"\x14SignUpWithInvitation\x12$.chat.v1.SignUpWithInvitationRequest\x1a%.chat.v1.SignUpWithInvitationResponse\x129\n" +
 	"\x06SignUp\x12\x16.chat.v1.SignUpRequest\x1a\x17.chat.v1.SignUpResponse\x12<\n" +
 	"\aRefresh\x12\x17.chat.v1.RefreshRequest\x1a\x18.chat.v1.RefreshResponse\x129\n" +
@@ -822,7 +963,7 @@ func file_chat_v1_auth_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_auth_service_proto_rawDescData
 }
 
-var file_chat_v1_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_chat_v1_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_chat_v1_auth_service_proto_goTypes = []any{
 	(*GetAuthConfigRequest)(nil),         // 0: chat.v1.GetAuthConfigRequest
 	(*GetAuthConfigResponse)(nil),        // 1: chat.v1.GetAuthConfigResponse
@@ -830,41 +971,46 @@ var file_chat_v1_auth_service_proto_goTypes = []any{
 	(*LoginResponse)(nil),                // 3: chat.v1.LoginResponse
 	(*LoginWithGoogleRequest)(nil),       // 4: chat.v1.LoginWithGoogleRequest
 	(*LoginWithGoogleResponse)(nil),      // 5: chat.v1.LoginWithGoogleResponse
-	(*SignUpWithInvitationRequest)(nil),  // 6: chat.v1.SignUpWithInvitationRequest
-	(*SignUpWithInvitationResponse)(nil), // 7: chat.v1.SignUpWithInvitationResponse
-	(*SignUpRequest)(nil),                // 8: chat.v1.SignUpRequest
-	(*SignUpResponse)(nil),               // 9: chat.v1.SignUpResponse
-	(*RefreshRequest)(nil),               // 10: chat.v1.RefreshRequest
-	(*RefreshResponse)(nil),              // 11: chat.v1.RefreshResponse
-	(*LogoutRequest)(nil),                // 12: chat.v1.LogoutRequest
-	(*LogoutResponse)(nil),               // 13: chat.v1.LogoutResponse
-	(*User)(nil),                         // 14: chat.v1.User
+	(*LoginWithGoogleCodeRequest)(nil),   // 6: chat.v1.LoginWithGoogleCodeRequest
+	(*LoginWithGoogleCodeResponse)(nil),  // 7: chat.v1.LoginWithGoogleCodeResponse
+	(*SignUpWithInvitationRequest)(nil),  // 8: chat.v1.SignUpWithInvitationRequest
+	(*SignUpWithInvitationResponse)(nil), // 9: chat.v1.SignUpWithInvitationResponse
+	(*SignUpRequest)(nil),                // 10: chat.v1.SignUpRequest
+	(*SignUpResponse)(nil),               // 11: chat.v1.SignUpResponse
+	(*RefreshRequest)(nil),               // 12: chat.v1.RefreshRequest
+	(*RefreshResponse)(nil),              // 13: chat.v1.RefreshResponse
+	(*LogoutRequest)(nil),                // 14: chat.v1.LogoutRequest
+	(*LogoutResponse)(nil),               // 15: chat.v1.LogoutResponse
+	(*User)(nil),                         // 16: chat.v1.User
 }
 var file_chat_v1_auth_service_proto_depIdxs = []int32{
-	14, // 0: chat.v1.LoginResponse.user:type_name -> chat.v1.User
-	14, // 1: chat.v1.LoginWithGoogleResponse.user:type_name -> chat.v1.User
-	14, // 2: chat.v1.SignUpWithInvitationResponse.user:type_name -> chat.v1.User
-	14, // 3: chat.v1.SignUpResponse.user:type_name -> chat.v1.User
-	14, // 4: chat.v1.RefreshResponse.user:type_name -> chat.v1.User
-	0,  // 5: chat.v1.AuthService.GetAuthConfig:input_type -> chat.v1.GetAuthConfigRequest
-	2,  // 6: chat.v1.AuthService.Login:input_type -> chat.v1.LoginRequest
-	4,  // 7: chat.v1.AuthService.LoginWithGoogle:input_type -> chat.v1.LoginWithGoogleRequest
-	6,  // 8: chat.v1.AuthService.SignUpWithInvitation:input_type -> chat.v1.SignUpWithInvitationRequest
-	8,  // 9: chat.v1.AuthService.SignUp:input_type -> chat.v1.SignUpRequest
-	10, // 10: chat.v1.AuthService.Refresh:input_type -> chat.v1.RefreshRequest
-	12, // 11: chat.v1.AuthService.Logout:input_type -> chat.v1.LogoutRequest
-	1,  // 12: chat.v1.AuthService.GetAuthConfig:output_type -> chat.v1.GetAuthConfigResponse
-	3,  // 13: chat.v1.AuthService.Login:output_type -> chat.v1.LoginResponse
-	5,  // 14: chat.v1.AuthService.LoginWithGoogle:output_type -> chat.v1.LoginWithGoogleResponse
-	7,  // 15: chat.v1.AuthService.SignUpWithInvitation:output_type -> chat.v1.SignUpWithInvitationResponse
-	9,  // 16: chat.v1.AuthService.SignUp:output_type -> chat.v1.SignUpResponse
-	11, // 17: chat.v1.AuthService.Refresh:output_type -> chat.v1.RefreshResponse
-	13, // 18: chat.v1.AuthService.Logout:output_type -> chat.v1.LogoutResponse
-	12, // [12:19] is the sub-list for method output_type
-	5,  // [5:12] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	16, // 0: chat.v1.LoginResponse.user:type_name -> chat.v1.User
+	16, // 1: chat.v1.LoginWithGoogleResponse.user:type_name -> chat.v1.User
+	16, // 2: chat.v1.LoginWithGoogleCodeResponse.user:type_name -> chat.v1.User
+	16, // 3: chat.v1.SignUpWithInvitationResponse.user:type_name -> chat.v1.User
+	16, // 4: chat.v1.SignUpResponse.user:type_name -> chat.v1.User
+	16, // 5: chat.v1.RefreshResponse.user:type_name -> chat.v1.User
+	0,  // 6: chat.v1.AuthService.GetAuthConfig:input_type -> chat.v1.GetAuthConfigRequest
+	2,  // 7: chat.v1.AuthService.Login:input_type -> chat.v1.LoginRequest
+	4,  // 8: chat.v1.AuthService.LoginWithGoogle:input_type -> chat.v1.LoginWithGoogleRequest
+	6,  // 9: chat.v1.AuthService.LoginWithGoogleCode:input_type -> chat.v1.LoginWithGoogleCodeRequest
+	8,  // 10: chat.v1.AuthService.SignUpWithInvitation:input_type -> chat.v1.SignUpWithInvitationRequest
+	10, // 11: chat.v1.AuthService.SignUp:input_type -> chat.v1.SignUpRequest
+	12, // 12: chat.v1.AuthService.Refresh:input_type -> chat.v1.RefreshRequest
+	14, // 13: chat.v1.AuthService.Logout:input_type -> chat.v1.LogoutRequest
+	1,  // 14: chat.v1.AuthService.GetAuthConfig:output_type -> chat.v1.GetAuthConfigResponse
+	3,  // 15: chat.v1.AuthService.Login:output_type -> chat.v1.LoginResponse
+	5,  // 16: chat.v1.AuthService.LoginWithGoogle:output_type -> chat.v1.LoginWithGoogleResponse
+	7,  // 17: chat.v1.AuthService.LoginWithGoogleCode:output_type -> chat.v1.LoginWithGoogleCodeResponse
+	9,  // 18: chat.v1.AuthService.SignUpWithInvitation:output_type -> chat.v1.SignUpWithInvitationResponse
+	11, // 19: chat.v1.AuthService.SignUp:output_type -> chat.v1.SignUpResponse
+	13, // 20: chat.v1.AuthService.Refresh:output_type -> chat.v1.RefreshResponse
+	15, // 21: chat.v1.AuthService.Logout:output_type -> chat.v1.LogoutResponse
+	14, // [14:22] is the sub-list for method output_type
+	6,  // [6:14] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_auth_service_proto_init() }
@@ -874,13 +1020,14 @@ func file_chat_v1_auth_service_proto_init() {
 	}
 	file_chat_v1_user_proto_init()
 	file_chat_v1_auth_service_proto_msgTypes[4].OneofWrappers = []any{}
+	file_chat_v1_auth_service_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_auth_service_proto_rawDesc), len(file_chat_v1_auth_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

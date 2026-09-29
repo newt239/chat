@@ -26,6 +26,8 @@ type RouterConfig struct {
 	WebhookRateLimiter RateLimiter
 	// false を返す間は readiness probe に 503 を返し、停止前に新しい接続を受けないようにする
 	Ready func() bool
+	// 未設定ならネイティブアプリの Google ログインの経路を作らない
+	GoogleOAuth GoogleOAuthFlow
 	// 開発用のローカルストレージを使うときだけ設定する
 	StorageHandler http.Handler
 }
@@ -64,6 +66,11 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 		limiter = newRateLimiter(WebhookRatePerSecond, WebhookBurst)
 	}
 	e.POST("/webhooks/:id/:token", webhookHandler(cfg.WebhookPoster, limiter))
+
+	if cfg.GoogleOAuth != nil {
+		e.GET("/oauth/google/start", googleOAuthStartHandler(cfg.GoogleOAuth))
+		e.GET("/oauth/google/callback", googleOAuthCallbackHandler(cfg.GoogleOAuth))
+	}
 
 	if cfg.StorageHandler != nil {
 		e.Any("/storage/*", echo.WrapHandler(cfg.StorageHandler))

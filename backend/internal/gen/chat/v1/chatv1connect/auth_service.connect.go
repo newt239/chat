@@ -41,6 +41,9 @@ const (
 	// AuthServiceLoginWithGoogleProcedure is the fully-qualified name of the AuthService's
 	// LoginWithGoogle RPC.
 	AuthServiceLoginWithGoogleProcedure = "/chat.v1.AuthService/LoginWithGoogle"
+	// AuthServiceLoginWithGoogleCodeProcedure is the fully-qualified name of the AuthService's
+	// LoginWithGoogleCode RPC.
+	AuthServiceLoginWithGoogleCodeProcedure = "/chat.v1.AuthService/LoginWithGoogleCode"
 	// AuthServiceSignUpWithInvitationProcedure is the fully-qualified name of the AuthService's
 	// SignUpWithInvitation RPC.
 	AuthServiceSignUpWithInvitationProcedure = "/chat.v1.AuthService/SignUpWithInvitation"
@@ -58,6 +61,8 @@ type AuthServiceClient interface {
 	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
 	// 未登録のメールアドレスは有効な招待があるか、登録を許可したワークスペースの参加リンクから来たときだけアカウントを作る
 	LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error)
+	// ネイティブアプリがブラウザで受け取った認可コードを PKCE で交換してログインする。アカウントの扱いは LoginWithGoogle と同じ
+	LoginWithGoogleCode(context.Context, *v1.LoginWithGoogleCodeRequest) (*v1.LoginWithGoogleCodeResponse, error)
 	// 招待リンクからパスワードを設定してアカウントを作る
 	SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error)
 	// 登録とメールでの登録を許可したワークスペースの参加リンクからアカウントを作る
@@ -95,6 +100,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("LoginWithGoogle")),
 			connect.WithClientOptions(opts...),
 		),
+		loginWithGoogleCode: connect.NewClient[v1.LoginWithGoogleCodeRequest, v1.LoginWithGoogleCodeResponse](
+			httpClient,
+			baseURL+AuthServiceLoginWithGoogleCodeProcedure,
+			connect.WithSchema(authServiceMethods.ByName("LoginWithGoogleCode")),
+			connect.WithClientOptions(opts...),
+		),
 		signUpWithInvitation: connect.NewClient[v1.SignUpWithInvitationRequest, v1.SignUpWithInvitationResponse](
 			httpClient,
 			baseURL+AuthServiceSignUpWithInvitationProcedure,
@@ -127,6 +138,7 @@ type authServiceClient struct {
 	getAuthConfig        *connect.Client[v1.GetAuthConfigRequest, v1.GetAuthConfigResponse]
 	login                *connect.Client[v1.LoginRequest, v1.LoginResponse]
 	loginWithGoogle      *connect.Client[v1.LoginWithGoogleRequest, v1.LoginWithGoogleResponse]
+	loginWithGoogleCode  *connect.Client[v1.LoginWithGoogleCodeRequest, v1.LoginWithGoogleCodeResponse]
 	signUpWithInvitation *connect.Client[v1.SignUpWithInvitationRequest, v1.SignUpWithInvitationResponse]
 	signUp               *connect.Client[v1.SignUpRequest, v1.SignUpResponse]
 	refresh              *connect.Client[v1.RefreshRequest, v1.RefreshResponse]
@@ -154,6 +166,15 @@ func (c *authServiceClient) Login(ctx context.Context, req *v1.LoginRequest) (*v
 // LoginWithGoogle calls chat.v1.AuthService.LoginWithGoogle.
 func (c *authServiceClient) LoginWithGoogle(ctx context.Context, req *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error) {
 	response, err := c.loginWithGoogle.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// LoginWithGoogleCode calls chat.v1.AuthService.LoginWithGoogleCode.
+func (c *authServiceClient) LoginWithGoogleCode(ctx context.Context, req *v1.LoginWithGoogleCodeRequest) (*v1.LoginWithGoogleCodeResponse, error) {
+	response, err := c.loginWithGoogleCode.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -202,6 +223,8 @@ type AuthServiceHandler interface {
 	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
 	// 未登録のメールアドレスは有効な招待があるか、登録を許可したワークスペースの参加リンクから来たときだけアカウントを作る
 	LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error)
+	// ネイティブアプリがブラウザで受け取った認可コードを PKCE で交換してログインする。アカウントの扱いは LoginWithGoogle と同じ
+	LoginWithGoogleCode(context.Context, *v1.LoginWithGoogleCodeRequest) (*v1.LoginWithGoogleCodeResponse, error)
 	// 招待リンクからパスワードを設定してアカウントを作る
 	SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error)
 	// 登録とメールでの登録を許可したワークスペースの参加リンクからアカウントを作る
@@ -233,6 +256,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		AuthServiceLoginWithGoogleProcedure,
 		svc.LoginWithGoogle,
 		connect.WithSchema(authServiceMethods.ByName("LoginWithGoogle")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceLoginWithGoogleCodeHandler := connect.NewUnaryHandlerSimple(
+		AuthServiceLoginWithGoogleCodeProcedure,
+		svc.LoginWithGoogleCode,
+		connect.WithSchema(authServiceMethods.ByName("LoginWithGoogleCode")),
 		connect.WithHandlerOptions(opts...),
 	)
 	authServiceSignUpWithInvitationHandler := connect.NewUnaryHandlerSimple(
@@ -267,6 +296,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceLoginHandler.ServeHTTP(w, r)
 		case AuthServiceLoginWithGoogleProcedure:
 			authServiceLoginWithGoogleHandler.ServeHTTP(w, r)
+		case AuthServiceLoginWithGoogleCodeProcedure:
+			authServiceLoginWithGoogleCodeHandler.ServeHTTP(w, r)
 		case AuthServiceSignUpWithInvitationProcedure:
 			authServiceSignUpWithInvitationHandler.ServeHTTP(w, r)
 		case AuthServiceSignUpProcedure:
@@ -294,6 +325,10 @@ func (UnimplementedAuthServiceHandler) Login(context.Context, *v1.LoginRequest) 
 
 func (UnimplementedAuthServiceHandler) LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.LoginWithGoogle is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) LoginWithGoogleCode(context.Context, *v1.LoginWithGoogleCodeRequest) (*v1.LoginWithGoogleCodeResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.LoginWithGoogleCode is not implemented"))
 }
 
 func (UnimplementedAuthServiceHandler) SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error) {
