@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { Avatar } from "#/components/ui/Avatar";
 import { cn, focusRing } from "#/components/ui/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
+import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
 import { NavLink } from "#/features/layout/components/NavLink";
 import { PageHeader } from "#/features/layout/components/PageHeader";
 import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
@@ -88,6 +89,7 @@ export const MePage = () => {
             <IconChevronRight aria-hidden />
           </NavLink>
         ))}
+        <InstallAppRow />
         <Button
           className={cn(rowClassName, "mt-3 text-danger [&_svg]:text-danger")}
           onPress={() => {

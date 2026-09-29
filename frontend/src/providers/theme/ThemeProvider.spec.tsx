@@ -50,12 +50,15 @@ describe("ThemeProvider", () => {
   });
 
   test("ダークモードを反映し、子にも解決後のモードを渡す", () => {
+    const themeColor = document.createElement("meta");
+    themeColor.name = "theme-color";
+    document.head.append(themeColor);
     renderWithPreferences({ locale: "ja", mode: "dark", theme: themePresets.jade });
 
+    const { surface } = buildTokens(themePresets.jade, "dark");
     expect(root.dataset.mode).toBe("dark");
-    expect(root.style.getPropertyValue("--c-surface")).toBe(
-      buildTokens(themePresets.jade, "dark").surface,
-    );
+    expect(root.style.getPropertyValue("--c-surface")).toBe(surface);
+    expect(themeColor.content).toBe(surface);
     expect(screen.getByText(/dark/)).toBeInTheDocument();
   });
 

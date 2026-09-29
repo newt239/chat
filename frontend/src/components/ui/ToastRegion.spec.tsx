@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, test } from "vite-plus/test";
+import { describe, expect, test, vi } from "vite-plus/test";
 
 import { toast } from "./toast";
 import { ToastRegion } from "./ToastRegion";
@@ -20,5 +20,19 @@ describe("ToastRegion", () => {
     await userEvent.click(screen.getByRole("button", { name: "通知を閉じる" }));
 
     expect(screen.queryByText("保存しました")).not.toBeInTheDocument();
+  });
+
+  test("操作を押すと実行してトーストを閉じる", async () => {
+    const onAction = vi.fn<() => void>();
+    render(<ToastRegion />);
+
+    act(() => {
+      toast("新しいバージョンがあります", { action: { label: "再読み込み", onAction } });
+    });
+
+    await userEvent.click(await screen.findByRole("button", { name: "再読み込み" }));
+
+    expect(onAction).toHaveBeenCalledOnce();
+    expect(screen.queryByText("新しいバージョンがあります")).not.toBeInTheDocument();
   });
 });

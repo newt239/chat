@@ -6,6 +6,7 @@ import { useDMRealtimeSync } from "#/features/dm/hooks/useDMRealtimeSync";
 import { useDesktopNotifications } from "#/features/settings/hooks/useDesktopNotifications";
 import { useIsMobile } from "#/lib/useMediaQuery";
 
+import { useAppBadge } from "../hooks/useAppBadge";
 import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
 import { MobileShell } from "./MobileShell";
 import { RightSidePanel } from "./RightSidePanel";
@@ -28,6 +29,7 @@ export const AppShell = ({ workspaceId }: AppShellProps) => {
   useDesktopNotifications(workspaceId, currentChannelId);
   useGlobalShortcuts(workspaceId);
   useChannelViewersSync();
+  useAppBadge(workspaceId);
 
   return (
     <>

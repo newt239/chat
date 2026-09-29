@@ -14,6 +14,7 @@ import { member } from "./member";
 import { message } from "./message";
 import { pin } from "./pin";
 import { preferences } from "./preferences";
+import { pwa } from "./pwa";
 import { reaction } from "./reaction";
 import { search } from "./search";
 import { settings } from "./settings";
@@ -39,6 +40,7 @@ export const en: Messages = {
   message,
   pin,
   preferences,
+  pwa,
   reaction,
   search,
   settings,

@@ -344,6 +344,21 @@ importers:
       vite-plus:
         specifier: 0.3.1
         version: 0.3.1(@types/node@26.5.1)(jiti@2.7.0)(jsdom@30.0.1)(terser@5.51.2)(typescript@7.0.2)(yaml@2.9.1)
+      workbox-expiration:
+        specifier: 7.4.1
+        version: 7.4.1
+      workbox-precaching:
+        specifier: 7.4.1
+        version: 7.4.1
+      workbox-routing:
+        specifier: 7.4.1
+        version: 7.4.1
+      workbox-strategies:
+        specifier: 7.4.1
+        version: 7.4.1
+      workbox-window:
+        specifier: 7.4.1
+        version: 7.4.1
 
   packages/design-tokens:
     devDependencies:

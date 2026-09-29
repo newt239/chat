@@ -1,0 +1,34 @@
+import { IconDownload } from "@tabler/icons-react";
+import { Button } from "react-aria-components";
+import { useTranslation } from "react-i18next";
+
+import { cn, focusRing } from "#/components/ui/styles";
+import { toast } from "#/components/ui/toast";
+import { promptInstall, useInstallPrompt } from "#/lib/installPrompt";
+
+import { navItemClassName } from "../utils/navTone";
+
+// 「自分」タブの行。インストールできるときだけ出し、iOS では追加の手順を案内する
+export const InstallAppRow = () => {
+  const { t } = useTranslation();
+  const install = useInstallPrompt();
+  if (install === null) {
+    return null;
+  }
+
+  return (
+    <Button
+      className={cn(navItemClassName, focusRing)}
+      onPress={() => {
+        if (install === "ios") {
+          toast(t("pwa.install.iosTitle"), { description: t("pwa.install.iosDescription") });
+          return;
+        }
+        void promptInstall(install);
+      }}
+    >
+      <IconDownload aria-hidden />
+      {t("pwa.install.action")}
+    </Button>
+  );
+};

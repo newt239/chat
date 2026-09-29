@@ -8,6 +8,8 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { ToastRegion } from "./components/ui/ToastRegion";
 import { transport } from "./lib/api/transport";
+import { listenInstallPrompt } from "./lib/installPrompt";
+import { registerServiceWorker } from "./lib/registerServiceWorker";
 import { queryClient } from "./providers/query/query";
 import { store } from "./providers/store";
 import { ThemeProvider } from "./providers/theme/ThemeProvider";
@@ -19,6 +21,9 @@ import "@fontsource/ibm-plex-sans-jp/600.css";
 import "@fontsource/ibm-plex-sans-jp/700.css";
 
 import "./styles/globals.css";
+
+listenInstallPrompt();
+registerServiceWorker();
 
 const rootEl = document.querySelector("#root");
 if (rootEl) {

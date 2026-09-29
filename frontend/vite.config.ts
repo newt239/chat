@@ -5,6 +5,8 @@ import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite-plus";
 
+import { pwaColors } from "./src/lib/pwaColors";
+
 const generatedFiles = ["src/gen/", "src/routeTree.gen.ts"];
 
 export default defineConfig({
@@ -218,42 +220,34 @@ export default defineConfig({
     tailwindcss(),
     react(),
     VitePWA({
+      // 通知の受信・クリックを扱うため Service Worker は自前で書く
+      filename: "sw.ts",
+      injectRegister: false,
       manifest: {
-        background_color: "#0b7285",
+        background_color: pwaColors.background,
+        description: "Chat",
         display: "standalone",
+        display_override: ["standalone", "minimal-ui"],
+        id: "/",
         lang: "ja",
         name: "Chat",
         short_name: "Chat",
-        start_url: "/",
-        theme_color: "#0b7285",
+        shortcuts: [
+          { name: "DM", url: "/app/?open=dms" },
+          { name: "通知", url: "/app/?open=activity" },
+          { name: "検索", url: "/app/?open=search" },
+        ],
+        start_url: "/app/",
+        theme_color: pwaColors.theme,
       },
       pwaAssets: {
         image: "public/logo.svg",
+        // 表示中のテーマに合わせて ThemeProvider が書き換えるため index.html に置く
+        injectThemeColor: false,
       },
-      registerType: "autoUpdate",
-      workbox: {
-        runtimeCaching: [
-          {
-            handler: "CacheFirst",
-            options: {
-              cacheName: "font-cache",
-              expiration: { maxEntries: 500 },
-            },
-            urlPattern: /\.woff2$/,
-          },
-          {
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: {
-                maxAgeSeconds: 60 * 60 * 24, // 24 hours
-                maxEntries: 100,
-              },
-            },
-            urlPattern: /^https:\/\/api\..*/i,
-          },
-        ],
-      },
+      registerType: "prompt",
+      srcDir: "sw",
+      strategies: "injectManifest",
     }),
   ],
   resolve: {

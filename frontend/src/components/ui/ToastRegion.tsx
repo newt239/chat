@@ -41,6 +41,17 @@ export const ToastRegion = () => {
               </Text>
             )}
           </ToastContent>
+          {toast.content.action && (
+            <Button
+              onPress={() => {
+                toast.content.action?.onAction();
+                toastQueue.close(toast.key);
+              }}
+              className={`shrink-0 cursor-pointer rounded-sm px-2 py-1 font-semibold text-accent-soft data-hovered:underline ${focusRing}`}
+            >
+              {toast.content.action.label}
+            </Button>
+          )}
           <Button
             slot="close"
             aria-label={t("ui.toast.dismiss")}
