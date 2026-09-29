@@ -12,6 +12,7 @@ import { Tab } from "#/components/ui/Tab";
 import { TabList } from "#/components/ui/TabList";
 import { TabPanel } from "#/components/ui/TabPanel";
 import { Tabs } from "#/components/ui/Tabs";
+import { PageHeader } from "#/features/layout/components/PageHeader";
 import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearch";
 import { searchFilterValues, searchSortValues } from "#/features/search/schemas";
 
@@ -177,10 +178,7 @@ export const SearchPage = () => {
 
   return (
     <section className="flex h-full min-h-0 flex-col bg-surface font-sans text-text">
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-4 text-[15px] font-bold">
-        <IconSearch aria-hidden className="size-[18px] text-muted" />
-        <h1 className="m-0 text-[15px] font-bold">{t("search.title")}</h1>
-      </header>
+      <PageHeader icon={<IconSearch aria-hidden />} title={t("search.title")} />
       <Form
         role="search"
         className="flex shrink-0 flex-col gap-2 px-[18px] pt-3 pb-2.5"

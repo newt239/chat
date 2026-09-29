@@ -25,7 +25,8 @@ export const settings: Messages["settings"] = {
       mentions: "Mentions and DMs",
       none: "Nothing",
     },
-    muteHint: "Muted channels and DMs never notify you. Right-click a sidebar item to mute it.",
+    muteHint:
+      "Muted channels and DMs never notify you. Mute from the “More” menu in the channel header.",
   },
   profile: {
     avatarUrl: "Avatar URL",

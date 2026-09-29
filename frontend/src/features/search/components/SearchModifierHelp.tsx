@@ -19,11 +19,11 @@ type SearchModifierHelpProps = {
   onInsert: (modifier: string) => void;
 };
 
-// 入力欄の下に並べる修飾子の見本。押すと入力欄に挿入する
+// 入力欄の下に並べる修飾子の見本。押すと入力欄に挿入する。モバイルでは条件のチップで足りるため出さない
 export const SearchModifierHelp = ({ onInsert }: SearchModifierHelpProps) => {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11.5px] text-subtle">
+    <div className="flex flex-wrap items-center max-md:hidden gap-x-2.5 gap-y-1 text-[11.5px] text-subtle">
       {modifiers.map(([modifier, key]) => (
         <Tooltip key={modifier} content={t(`search.help.${key}`)}>
           <Button

@@ -4,7 +4,6 @@ import {
   IconChartBar,
   IconChevronRight,
   IconKey,
-  IconKeyboard,
   IconLanguage,
   IconLogout,
   IconMessages,
@@ -34,12 +33,11 @@ const settingRows: [SettingsSection, typeof IconKey][] = [
   ["notifications", IconBell],
   ["theme", IconPalette],
   ["display", IconLanguage],
-  ["shortcuts", IconKeyboard],
 ];
 
 const rowClassName = cn(navItemClassName, focusRing);
 
-// モバイルの「自分」タブ。プロフィール・よく使う一覧・設定の入口をまとめる
+// モバイルの「自分」タブ。プロフィール・よく使う一覧・設定の入口をまとめる。ショートカットはキーボード前提なので出さない
 export const MePage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
