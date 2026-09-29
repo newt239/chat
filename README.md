@@ -255,11 +255,14 @@ xdg-open backend/ent/schema-viz.html
 
 ## デプロイ
 
-Google Cloud の GKE に dev と prod を namespace で分けて載せ、GitHub Actions の「Deploy」（`.github/workflows/deploy.yml`）でデプロイします。Terraform は `infra/terraform/`、Kubernetes のマニフェストは `infra/k8s/` にあります。構成と初回セットアップの手順は `docs/infrastructure.md` にまとめています。
+Google Cloud の GKE に dev と prod を namespace で分けて載せ、GitHub Actions の「Deploy」（`.github/workflows/deploy.yml`）でデプロイします。Terraform は `infra/terraform/`、Kubernetes のマニフェストは `infra/k8s/` にあります。GKE の前に安く検証するための mini 構成（GCE の Spot VM 1 台に k3s、DB は Neon）もあります。構成と初回セットアップの手順は `docs/infrastructure.md` にまとめています。
 
 ```sh
 # dev の backend だけ feat/foo に差し替える（空にした方はクラスタで動いているイメージを使う）
 gh workflow run deploy.yml -R newt239/chat -f environment=dev -f backend_ref=feat/foo
+
+# mini 構成（k3s の VM 1 台）の frontend を feat/bar にする
+gh workflow run deploy.yml -R newt239/chat -f environment=mini -f frontend_ref=feat/bar
 
 # dev で動いている版を prod に出す（prod は承認が必要）
 gh workflow run deploy.yml -R newt239/chat -f environment=prod -f promote_from_dev=true

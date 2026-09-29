@@ -171,7 +171,7 @@ Autopilot の構成を作っていた場合は、動作確認のあとで旧 Aut
 
 ## デプロイ
 
-GitHub Actions の「Deploy」（`.github/workflows/deploy.yml`）で行う。ref を空にした方はクラスタで動いているイメージをそのまま使う。
+GitHub Actions の「Deploy」（`.github/workflows/deploy.yml`）で行う。`environment` は `dev`・`prod`・`mini`（[mini 構成](#mini-構成k3s-の-vm-1-台)）から選ぶ。ref を空にした方はクラスタで動いているイメージをそのまま使う。
 
 ```sh
 # dev の backend だけ feat/foo に差し替える
@@ -181,9 +181,126 @@ gh workflow run deploy.yml -R newt239/chat -f environment=dev -f backend_ref=fea
 gh workflow run deploy.yml -R newt239/chat -f environment=prod -f promote_from_dev=true
 ```
 
+## mini 構成（k3s の VM 1 台）
+
+GKE を作る前に、同じマニフェストとアプリを安く確かめるための構成（月 $21 程度）。GCE の Spot VM（e2-medium）1 台に k3s を入れ、DB は Neon の無料枠を使う。shared には依存せず、`infra/terraform/envs/mini` だけで完結する（同じプロジェクトに shared を作っても名前が衝突しないよう、リソース名に `mini` を付けている）。
+
+```mermaid
+flowchart LR
+  user[ブラウザ] -->|HTTPS / WSS| cf[Cloudflare<br/>DNS + Tunnel]
+  user -->|署名付き URL| wasabi[(Wasabi 東京<br/>mini 用バケット)]
+
+  subgraph vm[GCE VM e2-medium Spot / k3s]
+    cfd[cloudflared] --> fe[frontend]
+    cfd --> be[backend ×2]
+    be --> redis[Redis]
+    be --> meili[Meilisearch<br/>local-path PVC]
+  end
+
+  cf --- cfd
+  be -->|TLS| neon[(Neon 無料枠<br/>AWS 東京)]
+  be --> wasabi
+  be -->|VM の SA で ADC| fcm[FCM]
+```
+
+| GKE との違い | mini |
+| --- | --- |
+| DB | Neon に TLS で直接つなぐ（Cloud SQL Auth Proxy なし） |
+| シークレット | gitignore した `overlays/mini/*.env` から `secretGenerator` で作る（External Secrets なし） |
+| GCP の権限 | Pod はメタデータサーバー経由で VM の SA を使う（Workload Identity なし） |
+| イメージの取得 | CronJob が 30 分ごとに VM の SA のトークンで imagePullSecret を作り直す |
+| デプロイ | k3s の API は公開せず、IAP 経由の SSH で VM に入って `sudo k3s kubectl` を実行する |
+| 予約投稿 | Neon を止められるよう 15 分ごとにしか確かめないので、最大 15 分遅れる（「今すぐ送信」はすぐ送られる） |
+
+mini で確かめられないのは Cloud SQL Auth Proxy・External Secrets・Workload Identity で、これらは GKE の構成で確かめる。
+
+### 1. 準備
+
+- 初回セットアップの手順 1（state バケット）と手順 2（Cloudflare・Wasabi）を済ませる。Wasabi のサブユーザーは mini のバケットだけを読み書きできるようにする
+- Neon でプロジェクトを作る。リージョンは AWS 東京（`aws-ap-northeast-1`）、PostgreSQL のバージョンはローカルと同じ 18 にする。接続文字列は **Connection pooling をオフにした直接のエンドポイント**（ホスト名に `-pooler` が付かないほう）を使い、`sslmode=require` を付ける。`lib/pq` とトランザクションモードのプーラーを組み合わせたときの問題を避けるため
+
+Neon の無料枠はストレージと稼働時間に上限がある。アクセスがないと 5 分ほどで停止し、最初のアクセスで数百ミリ秒〜数秒かけて起動する。mini の backend はアイドルの接続を 1 分で閉じる（`DB_CONN_MAX_IDLE_TIME`）。
+
+### 2. Terraform
+
+```sh
+cd infra/terraform/envs/mini
+cp terraform.tfvars.example terraform.tfvars   # ドメイン、バケット名、Cloudflare の ID を書く
+export CLOUDFLARE_API_TOKEN=... AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=...
+terraform init -backend-config="bucket=PROJECT_ID-tfstate"
+terraform apply
+terraform output
+```
+
+VM は起動スクリプトで k3s（Traefik なし）を入れる。数分後に次で確かめられる。
+
+```sh
+gcloud compute ssh chat-mini --zone asia-northeast1-b --tunnel-through-iap --command 'sudo k3s kubectl get nodes'
+```
+
+### 3. マニフェストとシークレット
+
+- `infra/k8s/overlays/mini/kustomization.yaml` の `images` の `newName`（`artifact_registry_url` + `/backend`・`/frontend`）と `backend-env` の値を書き換えてコミットする
+- `overlays/mini` の `*.env.example` をコピーして `backend-secrets.env` と `cloudflared.env` を作る（gitignore 済み）
+  - `DATABASE_URL`: 手順 1 の Neon の接続文字列
+  - `JWT_SECRET`・`MEILISEARCH_API_KEY`: `openssl rand -hex 32` などで作る
+  - `WASABI_*`: 手順 1 のサブユーザーのキー
+  - `TUNNEL_TOKEN`: `terraform output -raw tunnel_token`
+
+### 4. GitHub の Environment
+
+Settings → Environments で `mini` を作り、次を登録する。
+
+| 種類 | 名前 | 値 |
+| --- | --- | --- |
+| 変数 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | `workload_identity_provider` |
+| 変数 | `GCP_DEPLOY_SERVICE_ACCOUNT` | `deployer_service_account_email` |
+| 変数 | `GCP_REGION` | `asia-northeast1` |
+| 変数 | `MINI_VM` / `MINI_ZONE` | `vm_name` / `vm_zone` |
+| 変数 | `ARTIFACT_REGISTRY` | `artifact_registry_url` |
+| 変数 | `API_DOMAIN`、`VITE_*` | 初回セットアップの手順 8 と同じ |
+| シークレット | `BACKEND_SECRETS_ENV` | `backend-secrets.env` の中身 |
+| シークレット | `CLOUDFLARED_ENV` | `cloudflared.env` の中身 |
+
+Google ログインを使うなら、OAuth クライアントの承認済み JavaScript 生成元に mini の `https://FRONTEND_DOMAIN` を足す。
+
+### 5. デプロイ
+
+```sh
+gh workflow run deploy.yml -R newt239/chat -f environment=mini -f backend_ref=main -f frontend_ref=main
+```
+
+初回は両方の ref を指定する。ワークフローは apply のあとに imagePullSecret を作る Job を動かすので、Pod が一時的に `ImagePullBackOff` になっても数分で起動する。シークレットを変えたときは Environment の Secrets を更新してデプロイし直す（`secretGenerator` が名前を変えるので Pod が作り直される）。
+
+テスト用データが必要なら次を実行する。
+
+```sh
+gcloud compute ssh chat-mini --zone asia-northeast1-b --tunnel-through-iap \
+  --command 'sudo k3s kubectl -n chat-mini exec deploy/backend -- ./seed'
+```
+
+### 6. 運用
+
+- **Spot で回収されたら**、VM は停止する。`gcloud compute instances start chat-mini --zone asia-northeast1-b` で起動すると k3s と Pod も戻る
+- **k3s の更新**は手で行う（起動スクリプトは k3s がないときだけ入れる）: VM に入って `curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.xx.x+k3s1 sh -s - server --disable traefik`
+- **kubectl を手元から使う**ときも `gcloud compute ssh ... --command 'sudo k3s kubectl ...'` を使う。ワークフローの `Connect to k3s` と同じ方法
+
+### 7. 動作確認
+
+- [ ] ログイン（パスワードと Google）
+- [ ] 投稿が backend のレプリカをまたいで届く（2 つのブラウザで、別々の Pod につながっていることをログで見る）
+- [ ] 閲覧者一覧、既読と未読数
+- [ ] 添付ファイルのアップロードとダウンロード（Wasabi への署名付き URL）
+- [ ] 検索（Meilisearch）と、Meilisearch の PVC を消したあとのインデックスの作り直し
+- [ ] 予約投稿が一度だけ送られる（最大 15 分遅れる）
+- [ ] プッシュ通知（VM の SA の ADC で FCM に送る）
+- [ ] Webhook
+- [ ] backend の Pod を 1 つ削除したときに、クライアントがつなぎ直して配信が続く
+- [ ] Neon が停止した状態から最初にアクセスしたときの遅延が許容範囲か
+
 ## CI で terraform plan する（任意）
 
-`terraform.yml` の `plan` ジョブはリポジトリ変数 `GCP_TERRAFORM_SERVICE_ACCOUNT` があるときだけ動き、`shared`・`envs/dev`・`envs/prod` を plan する。plan 用の GSA を作って閲覧権限と state バケット・シークレットの読み取り権限を与え、GitHub のリポジトリから借用できるようにする。
+`terraform.yml` の `plan` ジョブはリポジトリ変数 `GCP_TERRAFORM_SERVICE_ACCOUNT` があるときだけ動き、`shared`・`envs/dev`・`envs/prod`・`envs/mini` を plan する。plan 用の GSA を作って閲覧権限と state バケット・シークレットの読み取り権限を与え、GitHub のリポジトリから借用できるようにする。
 
 ```sh
 gcloud iam service-accounts create chat-terraform-plan
@@ -198,5 +315,5 @@ gcloud iam service-accounts add-iam-policy-binding "$SA" --role=roles/iam.worklo
 
 リポジトリに次を登録する。
 
-- 変数: `GCP_WORKLOAD_IDENTITY_PROVIDER`、`GCP_TERRAFORM_SERVICE_ACCOUNT`、`TF_STATE_BUCKET`、`TFVARS_SHARED`・`TFVARS_DEV`・`TFVARS_PROD`（各ディレクトリの `terraform.tfvars` の中身）
+- 変数: `GCP_WORKLOAD_IDENTITY_PROVIDER`、`GCP_TERRAFORM_SERVICE_ACCOUNT`、`TF_STATE_BUCKET`、`TFVARS_SHARED`・`TFVARS_DEV`・`TFVARS_PROD`・`TFVARS_MINI`（各ディレクトリの `terraform.tfvars` の中身）
 - シークレット: `CLOUDFLARE_API_TOKEN`、`WASABI_TERRAFORM_ACCESS_KEY_ID`、`WASABI_TERRAFORM_SECRET_ACCESS_KEY`（読み取りだけのキーでよい）。ないときは envs の plan を省く
