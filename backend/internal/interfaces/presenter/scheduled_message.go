@@ -26,5 +26,6 @@ func ScheduledMessage(m *entity.ScheduledMessage) *chatv1.ScheduledMessage {
 		Status:        scheduledMessageStatuses[m.Status],
 		SentMessageId: m.SentMessageID,
 		FailureReason: m.FailureReason,
+		UpdatedAt:     timestamppb.New(m.UpdatedAt),
 	}
 }

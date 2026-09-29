@@ -54,6 +54,7 @@ export const renderWithProviders = async (
     validateSearch: adminSearchSchema,
   });
   const insightsRoute = createRoute({ getParentRoute: () => workspaceRoute, path: "/insights" });
+  const draftsRoute = createRoute({ getParentRoute: () => workspaceRoute, path: "/drafts" });
   const channelRoute = createRoute({
     getParentRoute: () => workspaceRoute,
     path: "/$channelId",
@@ -62,7 +63,13 @@ export const renderWithProviders = async (
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: [url] }),
     routeTree: rootRoute.addChildren([
-      workspaceRoute.addChildren([searchRoute, adminRoute, insightsRoute, channelRoute]),
+      workspaceRoute.addChildren([
+        searchRoute,
+        adminRoute,
+        insightsRoute,
+        draftsRoute,
+        channelRoute,
+      ]),
     ]),
   });
   await router.load();

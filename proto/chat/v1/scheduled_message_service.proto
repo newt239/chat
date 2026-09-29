@@ -40,6 +40,8 @@ message ScheduledMessage {
   optional string sent_message_id = 9;
   // 失敗したときに設定される
   optional string failure_reason = 10;
+  // 送信済み・失敗では結果が決まった日時
+  google.protobuf.Timestamp updated_at = 11;
 }
 
 message CreateScheduledMessageRequest {

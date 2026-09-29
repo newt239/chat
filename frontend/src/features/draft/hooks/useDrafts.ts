@@ -1,7 +1,10 @@
-import { createConnectQueryKey, useQuery } from "@connectrpc/connect-query";
+import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { DraftService } from "#/gen/chat/v1/draft_service_pb";
+
+export const useDrafts = (workspaceId: string) =>
+  useQuery(DraftService.method.listDrafts, { workspaceId }, { select: (res) => res.drafts });
 
 // サイドバーの印に使う。スレッドの下書きもチャンネルの下書きとして数える
 export const useHasDraft = (workspaceId: string, channelId: string) =>
@@ -19,3 +22,6 @@ export const useInvalidateDrafts = () => {
       queryKey: createConnectQueryKey({ cardinality: "finite", schema: DraftService }),
     });
 };
+
+export const useDeleteDraft = () =>
+  useMutation(DraftService.method.deleteDraft, { onSuccess: useInvalidateDrafts() });

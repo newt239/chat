@@ -1,6 +1,6 @@
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { formatDateTime } from "@chat/i18n";
-import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
+import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,13 @@ import { ScheduledMessageService } from "#/gen/chat/v1/scheduled_message_service
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { ComposerContent } from "#/features/message/utils/composerContent";
+
+export const useScheduledMessages = (workspaceId: string) =>
+  useQuery(
+    ScheduledMessageService.method.listScheduledMessages,
+    { workspaceId },
+    { select: (res) => res.scheduledMessages },
+  );
 
 const useInvalidateScheduledMessages = () => {
   const queryClient = useQueryClient();
@@ -44,5 +51,36 @@ export const useScheduleMessage = () => {
         },
       },
     );
+  };
+};
+
+// 一覧からの編集・今すぐ送信・削除。成功したら一覧を取り直し、結果をトーストで伝える
+export const useScheduledMessageActions = () => {
+  const { t } = useTranslation();
+  const invalidate = useInvalidateScheduledMessages();
+  const options = (
+    done: "schedule.list.deleted" | "schedule.list.sent" | "schedule.list.updated",
+  ) => ({
+    onError: (error: Error) => {
+      toast(t("schedule.list.actionFailed"), { description: error.message, tone: "danger" });
+    },
+    onSuccess: () => {
+      toast(t(done), { tone: "success" });
+      void invalidate();
+    },
+  });
+  return {
+    remove: useMutation(
+      ScheduledMessageService.method.deleteScheduledMessage,
+      options("schedule.list.deleted"),
+    ),
+    sendNow: useMutation(
+      ScheduledMessageService.method.sendScheduledMessageNow,
+      options("schedule.list.sent"),
+    ),
+    update: useMutation(
+      ScheduledMessageService.method.updateScheduledMessage,
+      options("schedule.list.updated"),
+    ),
   };
 };
