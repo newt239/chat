@@ -21,6 +21,12 @@ type Config struct {
 	Search   SearchConfig
 	Firebase FirebaseConfig
 	Redis    RedisConfig
+	// ScheduledMessage は予約投稿の送信処理。間隔を空けると DB にアクセスしない時間ができ、Neon などが停止できる
+	ScheduledMessage ScheduledMessageConfig
+}
+
+type ScheduledMessageConfig struct {
+	DispatchInterval time.Duration
 }
 
 // RedisConfig はレプリカ間で WebSocket の配信・閲覧者一覧・レート制限を共有する Redis。未設定ならプロセス内で完結する
@@ -133,6 +139,9 @@ func Load() (*Config, error) {
 		},
 		Redis: RedisConfig{
 			URL: getEnv("REDIS_URL", ""),
+		},
+		ScheduledMessage: ScheduledMessageConfig{
+			DispatchInterval: getEnvDuration("SCHEDULED_MESSAGE_DISPATCH_INTERVAL", 10*time.Second),
 		},
 	}
 
