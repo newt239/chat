@@ -22,6 +22,10 @@ type RouterConfig struct {
 	ChannelAccess       service.ChannelAccessService
 	RPCHandler          http.Handler
 	WebhookPoster       WebhookPoster
+	// 未設定ならプロセス内で数える
+	WebhookRateLimiter RateLimiter
+	// false を返す間は readiness probe に 503 を返し、停止前に新しい接続を受けないようにする
+	Ready func() bool
 	// 開発用のローカルストレージを使うときだけ設定する
 	StorageHandler http.Handler
 }
@@ -44,13 +48,22 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 	e.GET("/healthz", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})
+	e.GET("/readyz", func(c echo.Context) error {
+		if cfg.Ready != nil && !cfg.Ready() {
+			return c.JSON(http.StatusServiceUnavailable, map[string]string{"status": "shutting_down"})
+		}
+		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+	})
 
 	e.GET("/ws", websocket.Handler(cfg.WebSocketHub, cfg.JWTService, cfg.WorkspaceRepository, cfg.ChannelAccess, cfg.AllowedOrigins))
 
 	e.Any("/chat.v1.*", echo.WrapHandler(cfg.RPCHandler))
 
-	// Webhook ごとに毎秒 1 回、瞬間的には 10 回まで受け付ける
-	e.POST("/webhooks/:id/:token", webhookHandler(cfg.WebhookPoster, newRateLimiter(1, 10)))
+	limiter := cfg.WebhookRateLimiter
+	if limiter == nil {
+		limiter = newRateLimiter(WebhookRatePerSecond, WebhookBurst)
+	}
+	e.POST("/webhooks/:id/:token", webhookHandler(cfg.WebhookPoster, limiter))
 
 	if cfg.StorageHandler != nil {
 		e.Any("/storage/*", echo.WrapHandler(cfg.StorageHandler))

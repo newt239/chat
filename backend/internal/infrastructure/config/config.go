@@ -20,6 +20,12 @@ type Config struct {
 	CORS     CORSConfig
 	Search   SearchConfig
 	Firebase FirebaseConfig
+	Redis    RedisConfig
+}
+
+// RedisConfig はレプリカ間で WebSocket の配信・閲覧者一覧・レート制限を共有する Redis。未設定ならプロセス内で完結する
+type RedisConfig struct {
+	URL string
 }
 
 // FirebaseConfig はプッシュ通知 (FCM) の送信先プロジェクト。未設定なら通知を送らない。認証は ADC を使う
@@ -125,6 +131,9 @@ func Load() (*Config, error) {
 		Firebase: FirebaseConfig{
 			ProjectID: getEnv("FIREBASE_PROJECT_ID", ""),
 		},
+		Redis: RedisConfig{
+			URL: getEnv("REDIS_URL", ""),
+		},
 	}
 
 	return cfg, nil
@@ -187,6 +196,10 @@ func (c *Config) Validate() error {
 	}
 	if c.Server.Env == "production" && os.Getenv("DATABASE_URL") == "" {
 		return fmt.Errorf("DATABASE_URL must be set in production")
+	}
+	// 本番は複数レプリカで動かすため、配信などを Redis で共有しないと他のレプリカの接続に届かない
+	if c.Server.Env == "production" && c.Redis.URL == "" {
+		return fmt.Errorf("REDIS_URL must be set in production")
 	}
 	return nil
 }

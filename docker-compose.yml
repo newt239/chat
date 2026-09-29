@@ -42,6 +42,22 @@ services:
       - chat-network
     restart: unless-stopped
 
+  redis:
+    image: redis:8-alpine
+    container_name: chat-redis
+    # WebSocket の配信などに使うだけなので永続化しない
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - chat-network
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
@@ -54,6 +70,7 @@ services:
       - CORS_ALLOWED_ORIGINS=http://localhost:5173
       - MEILISEARCH_URL=http://meilisearch:7700
       - MEILISEARCH_API_KEY=development-master-key
+      - REDIS_URL=redis://redis:6379
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
     ports:
       - "8080:8080"
@@ -64,6 +81,8 @@ services:
       db:
         condition: service_healthy
       meilisearch:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - chat-network

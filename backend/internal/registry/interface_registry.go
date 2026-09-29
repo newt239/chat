@@ -70,6 +70,8 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		ChannelAccess:       r.domainRegistry.NewChannelAccessService(),
 		RPCHandler:          r.NewRPCHandler(),
 		WebhookPoster:       r.usecaseRegistry.NewWebhookUseCase(),
+		WebhookRateLimiter:  r.infrastructureRegistry.NewWebhookRateLimiter(),
+		Ready:               r.infrastructureRegistry.Ready,
 	}
 	if r.infrastructureRegistry.config.Storage.Driver == "local" {
 		routerConfig.StorageHandler = r.infrastructureRegistry.NewLocalStorage()

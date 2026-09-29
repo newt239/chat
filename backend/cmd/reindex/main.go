@@ -24,7 +24,7 @@ func main() {
 	defer func() { _ = client.Close() }()
 
 	ctx := context.Background()
-	reg := registry.NewRegistry(client, cfg)
+	reg := registry.NewRegistry(client, cfg, nil)
 	if err := reg.Infrastructure().MessageSearchIndex().EnsureSettings(ctx); err != nil {
 		log.Fatalf("検索インデックスの設定に失敗しました: %v", err)
 	}

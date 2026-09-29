@@ -42,10 +42,10 @@ var webhookErrorStatuses = []struct {
 	{http.StatusForbidden, []error{webhookuc.ErrInactive, domerr.ErrChannelArchived}},
 }
 
-func webhookHandler(poster WebhookPoster, limiter *rateLimiter) echo.HandlerFunc {
+func webhookHandler(poster WebhookPoster, limiter RateLimiter) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		webhookID := c.Param("id")
-		if ok, wait := limiter.allow(webhookID); !ok {
+		if ok, wait := limiter.Allow(c.Request().Context(), webhookID); !ok {
 			c.Response().Header().Set("Retry-After", strconv.Itoa(int(math.Ceil(wait.Seconds()))))
 			return c.String(http.StatusTooManyRequests, "rate_limited")
 		}

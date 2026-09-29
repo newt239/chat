@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 
@@ -93,6 +94,7 @@ func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.Wo
 		client := &Client{
 			hub:                hub,
 			conn:               conn,
+			id:                 uuid.NewString(),
 			send:               make(chan []byte, 256),
 			userID:             claims.UserID,
 			workspaceID:        workspaceID,

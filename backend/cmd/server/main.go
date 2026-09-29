@@ -7,16 +7,23 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 	_ "time/tzdata" // インサイトでクライアントのタイムゾーンを扱うため、tzdata のないイメージでも読み込めるよう埋め込む
+
+	goredis "github.com/redis/go-redis/v9"
 
 	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
 	"github.com/newt239/chat/internal/infrastructure/logger"
+	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/infrastructure/seed"
 	"github.com/newt239/chat/internal/registry"
 )
+
+// shutdownDrainDelay は readiness probe の失敗が kube-proxy と cloudflared に伝わるまで待つ時間
+const shutdownDrainDelay = 5 * time.Second
 
 func main() {
 	cfg, err := config.Load()
@@ -66,12 +73,23 @@ func main() {
 		log.Fatalf("failed to auto-seed database: %v", err)
 	}
 
-	reg := registry.NewRegistry(client, cfg)
+	var rdb *goredis.Client
+	if cfg.Redis.URL != "" {
+		if rdb, err = redis.NewClient(cfg.Redis.URL); err != nil {
+			log.Fatalf("failed to connect to redis: %v", err)
+		}
+	} else {
+		log.Println("REDIS_URL is not set: WebSocket events and rate limits are not shared between replicas")
+	}
+
+	reg := registry.NewRegistry(client, cfg, rdb)
 	go prepareSearchIndex(reg)
-	go reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(ctx, 10*time.Second)
+
+	runCtx, stopRun := context.WithCancel(context.Background())
+	go reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, 10*time.Second)
 
 	hub := reg.NewWebSocketHub()
-	go hub.Run()
+	go hub.Run(runCtx)
 
 	e := reg.NewRouter()
 
@@ -84,18 +102,28 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
+	sigCtx, stopSignal := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	<-sigCtx.Done()
+	stopSignal()
 
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	// readiness を落としてから Service の宛先から外れるまで待ち、新しい接続を他のレプリカへ向ける
+	reg.Infrastructure().SetReady(false)
+	time.Sleep(shutdownDrainDelay)
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
 
-	if err := e.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
+	hub.Shutdown(shutdownCtx)
+	if err := e.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
 	}
+	stopRun()
+	if rdb != nil {
+		_ = rdb.Close()
+	}
+	_ = client.Close()
 
 	log.Println("Server exited")
 }

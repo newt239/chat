@@ -46,3 +46,23 @@ func TestDatabasePoolFromEnv(t *testing.T) {
 		t.Errorf("未設定の項目が既定値になっていません: %+v", cfg.Database)
 	}
 }
+
+func TestValidateRequiresRedisInProduction(t *testing.T) {
+	t.Setenv("ENV", "production")
+	t.Setenv("JWT_SECRET", "secret")
+	t.Setenv("DATABASE_URL", "postgres://localhost/chat")
+	t.Setenv("STORAGE_DRIVER", "local")
+	t.Setenv("PASSWORD_AUTH_ENABLED", "true")
+	t.Setenv("REDIS_URL", "")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("本番で REDIS_URL が空なら検証に失敗するはず")
+	}
+	cfg.Redis.URL = "redis://localhost:6379"
+	if err := cfg.Validate(); err != nil {
+		t.Fatalf("REDIS_URL があれば通るはず: %v", err)
+	}
+}

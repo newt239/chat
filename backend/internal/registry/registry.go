@@ -2,9 +2,11 @@ package registry
 
 import (
 	"github.com/labstack/echo/v4"
+	goredis "github.com/redis/go-redis/v9"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
@@ -16,16 +18,20 @@ type Registry struct {
 	interfaceRegistry      *InterfaceRegistry
 }
 
-// NewRegistry は新しいRegistryを作成します
-func NewRegistry(client *ent.Client, cfg *config.Config) *Registry {
+// NewRegistry は新しいRegistryを作成します。rdb が nil なら WebSocket の配信などをプロセス内で完結させます
+func NewRegistry(client *ent.Client, cfg *config.Config, rdb *goredis.Client) *Registry {
 	// ドメイン層のRegistryを作成
 	domainRegistry := NewDomainRegistry(client)
 
 	// WebSocketハブを作成
-	hub := websocket.NewHub()
+	var hubOpts []websocket.HubOption
+	if rdb != nil {
+		hubOpts = append(hubOpts, websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
+	}
+	hub := websocket.NewHub(hubOpts...)
 
 	// インフラストラクチャ層のRegistryを作成
-	infrastructureRegistry := NewInfrastructureRegistry(client, cfg, hub, domainRegistry)
+	infrastructureRegistry := NewInfrastructureRegistry(client, cfg, hub, rdb, domainRegistry)
 
 	// ユースケース層のRegistryを作成
 	usecaseRegistry := NewUseCaseRegistry(domainRegistry, infrastructureRegistry)
