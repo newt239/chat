@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 
-import { cn, focusRing } from "#/components/ui/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { userAtom } from "#/providers/store/auth";

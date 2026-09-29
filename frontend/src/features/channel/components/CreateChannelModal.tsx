@@ -5,11 +5,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Dialog } from "#/components/ui/Dialog";
-import { Switch } from "#/components/ui/Switch";
-import { TextArea } from "#/components/ui/TextArea";
-import { toast } from "#/components/ui/toast";
+import { Button } from "#/components/ui/Button/Button";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { Switch } from "#/components/ui/Switch/Switch";
+import { TextArea } from "#/components/ui/TextArea/TextArea";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannels, useCreateChannel } from "#/features/channel/hooks/useChannel";
 import {
   ancestorPaths,

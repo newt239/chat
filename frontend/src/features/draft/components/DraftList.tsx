@@ -1,9 +1,9 @@
 import { IconPencil } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState } from "#/components/ui/EmptyState";
-import { Skeleton } from "#/components/ui/Skeleton";
-import { toast } from "#/components/ui/toast";
+import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useConversationLabel } from "#/features/channel/hooks/useConversationLabel";
 
 import { useDeleteDraft, useDrafts } from "../hooks/useDrafts";

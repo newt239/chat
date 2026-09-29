@@ -1,6 +1,6 @@
 import { FieldError, Group, Input, Label, Text, TextField } from "react-aria-components";
 
-import { cn, fieldStyles } from "#/components/ui/styles";
+import { cn, fieldStyles } from "#/components/ui/styles/styles";
 
 type ChannelNameFieldProps = {
   label: string;

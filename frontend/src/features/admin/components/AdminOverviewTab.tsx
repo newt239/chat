@@ -2,8 +2,8 @@ import { formatBytes, formatNumber } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Link } from "#/components/ui/Link";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Link } from "#/components/ui/Link/Link";
 import { useAuditLogs } from "#/features/admin/hooks/useAdminQueries";
 import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { ChartCard } from "#/features/insights/components/ChartCard";

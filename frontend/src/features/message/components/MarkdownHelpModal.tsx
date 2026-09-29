@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Dialog } from "#/components/ui/Dialog";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
 
 type MarkdownHelpModalProps = {
   isOpen: boolean;

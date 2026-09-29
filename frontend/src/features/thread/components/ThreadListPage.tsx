@@ -2,12 +2,12 @@ import { IconMessages } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState } from "#/components/ui/EmptyState";
-import { Skeleton } from "#/components/ui/Skeleton";
-import { PageHeader } from "#/features/layout/components/PageHeader";
+import { PageHeader } from "#/components/block/PageHeader/PageHeader";
+import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { ThreadCard } from "#/features/thread/components/ThreadCard";
 import { useParticipatingThreads } from "#/features/thread/hooks/useParticipatingThreads";
-import { useLoadMoreRef } from "#/lib/useLoadMoreRef";
+import { useLoadMoreRef } from "#/hooks/useLoadMoreRef";
 
 export const ThreadListPage = () => {
   const { t } = useTranslation();

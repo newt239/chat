@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
 import { MemberRow } from "#/features/member/components/MemberRow";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";

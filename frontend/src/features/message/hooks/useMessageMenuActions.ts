@@ -13,7 +13,7 @@ import {
 import { useParams, useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import {
   useAddBookmark,
   useIsBookmarked,

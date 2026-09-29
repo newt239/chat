@@ -1,8 +1,8 @@
 import { formatDateTime } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Link } from "#/components/ui/Link";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Link } from "#/components/ui/Link/Link";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";

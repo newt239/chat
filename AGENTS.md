@@ -36,21 +36,26 @@
   - 状態によるスタイルは React Aria の data 属性（`data-hovered:`、`data-pressed:`、`data-selected:`、`data-focus-visible:`など）で書いてください。
   - 画面の文言は直接書かず、`useTranslation()`の`t("機能.文脈.項目")`で`packages/i18n`の辞書から取ってください。日本語と英語の両方の辞書に追加します。日時は`@chat/i18n`のフォーマッタを使ってください。
   - アニメーションは`motion/react`を使い、値は`#/lib/motion`の`transitions`から選んでください。
-  - 通知は`#/components/ui/toast`の`toast()`を使ってください。
+  - 通知は`#/components/ui/ToastRegion/toast`の`toast()`を使ってください。
 - DOM に依存しない共有ロジック（トークン・テーマ生成・i18n 辞書など）は`packages/`に置きます。変更したら`pnpm --filter "./packages/*" run codecheck`を実行してください。
 - 型定義に`interface`を使用せず、必ず`type`を使用してください（ライブラリの型拡張で`interface`が必須な`src/tanstack-router.d.ts`のような`.d.ts`は例外です）。
 - 関数は関数宣言ではなくアロー関数式で定義してください（lint ルール `func-style` で強制されます）。
 - 安易に`window`オブジェクトを使用しないでください。
   - ページ遷移には TanStack Router の`Link`や`useNavigate`を使い、`to`にはルート ID（`"/app/$workspaceId/$channelId"`など）、パラメータは`params` / `search`で渡してください。URL 文字列を手で組み立てないでください。
-  - リンクは`#/components/ui/Link`（見た目がボタンなら`#/components/ui/LinkButton`）を使ってください。TanStack Router の`createLink`で React Aria の`Link`を包んだもので、`to` / `params`が型検査されます。`@tanstack/react-router`の`Link`に見た目のクラスを直接書かないでください。
+  - リンクは`#/components/ui/Link/Link`（見た目がボタンなら`#/components/ui/LinkButton/LinkButton`）を使ってください。TanStack Router の`createLink`で React Aria の`Link`を包んだもので、`to` / `params`が型検査されます。`@tanstack/react-router`の`Link`に見た目のクラスを直接書かないでください。
   - React のツリー外（fetch インターセプタや WebSocket クライアント）から遷移する場合は`src/lib/navigation.ts`の`navigateTo`を使ってください。
   - ルートパラメータは`useParams({ from: "/app/$workspaceId" })`のように`from`を指定して取得してください。ルートの外からも使うコンポーネントでは`useParams({ strict: false })`を使います。
 - ルーティングは TanStack Router のファイルベースルーティングです。
-  - `src/routes/`はルート定義専用です。`createFileRoute`で`Route`をエクスポートするだけにし、コンポーネントは`src/pages/`や`src/features/`に定義してください（ルートファイルは 1 ファイル 1 コンポーネント規約の対象外です）。
+  - `src/routes/`はルート定義専用です。`createFileRoute`で`Route`をエクスポートするだけにし、画面コンポーネントは`src/features/<機能>/components/`に定義してください（ルートファイルは 1 ファイル 1 コンポーネント規約の対象外です）。
   - search params は各ルートの`validateSearch`に zod スキーマを渡して検証し、`getRouteApi(...).useSearch()`などで読んでください。
   - `src/routeTree.gen.ts`は Vite プラグインが自動生成します。手で編集しないでください。
 - 使用しない引数は削除してください。また、極力引数は Optional にしないようにしてください。
 - インポート文は原則として絶対パスで書いてください。パスエイリアスは`#/`です（`#/lib/router`のように書きます）。ただし、同階層や一つ上の階層に限って相対パスでの記述を許可します。
+- ディレクトリの置き場所は次のとおりです。
+  - 機能に閉じるコンポーネント・hooks・ユーティリティは`src/features/<機能>/`の`components/`・`hooks/`・`utils/`に置きます。1 つの機能でしか使わないものを`src/lib/`や`src/hooks/`に置かないでください。
+  - ドメインを持たない汎用コンポーネントは`src/components/<グループ>/<コンポーネント名>/<コンポーネント名>.tsx`に置きます。グループは基本部品の`ui/`と、それを組み合わせた`block/`です。spec や付属のヘルパーも同じディレクトリに置きます。
+  - 複数の機能で使う hooks は`src/hooks/`、それ以外の横断的な処理は`src/lib/`に置きます。
+- バレルファイル（`index.ts`や、他のモジュールを再エクスポートするだけのファイル）は作らないでください。`export ... from`での再エクスポートも禁止です。import は定義元のファイルから直接行ってください（`export *`は lint ルール`oxc/no-barrel-file`で検出されます）。
 - 1 つのファイルにつき 1 つのコンポーネントを定義してください。コンポーネント名とファイル名は一致させ、Named Export でコンポーネントをエクスポートしてください。
   - ファイル名はコンポーネントを PascalCase、それ以外（hooks・ユーティリティ）を camelCase にしてください。
 - 関数の返り値の型は明示しないでください。

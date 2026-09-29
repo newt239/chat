@@ -3,10 +3,10 @@ import { useState } from "react";
 import { IconCalendarEvent, IconChevronDown, IconClock } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { Menu } from "#/components/ui/Menu";
-import { MenuItem } from "#/components/ui/MenuItem";
-import { MenuSeparator } from "#/components/ui/MenuSeparator";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Menu } from "#/components/ui/Menu/Menu";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
+import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 
 import { defaultScheduleDate, schedulePresets } from "../utils/schedulePresets";
 import { ScheduleDialog } from "./ScheduleDialog";

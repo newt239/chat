@@ -3,9 +3,9 @@ import { useQuery } from "@connectrpc/connect-query";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { cn } from "#/components/ui/styles";
-import { toast } from "#/components/ui/toast";
+import { Button } from "#/components/ui/Button/Button";
+import { cn } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { InviteMemberForm } from "#/features/workspace/components/InviteMemberForm";

@@ -1,4 +1,4 @@
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 
 type ChartTooltipProps = {
   // プロット領域に対する位置（%）

@@ -4,7 +4,7 @@ import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useLoginWithGoogle } from "#/features/auth/hooks/useLoginWithGoogle";
-import { loadGoogleIdentity } from "#/lib/googleIdentity";
+import { loadGoogleIdentity } from "#/features/auth/utils/googleIdentity";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 type GoogleSignInButtonProps = {

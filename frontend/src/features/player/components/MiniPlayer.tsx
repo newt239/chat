@@ -4,11 +4,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, focusRing } from "#/components/ui/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { lastSegment } from "#/features/channel/utils/channelPath";
+import { useIsMobile } from "#/hooks/useMediaQuery";
 import { transitions } from "#/lib/motion";
-import { useIsMobile } from "#/lib/useMediaQuery";
 
 import { usePlayerState } from "../hooks/usePlayerState";
 import { mediaPlayer } from "../mediaPlayer";

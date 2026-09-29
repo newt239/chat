@@ -1,13 +1,13 @@
 import { screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
+import { loadGoogleIdentity } from "#/features/auth/utils/googleIdentity";
 import { AuthService } from "#/gen/chat/v1/auth_service_pb";
-import { loadGoogleIdentity } from "#/lib/googleIdentity";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
-vi.mock("#/lib/googleIdentity", () => ({ loadGoogleIdentity: vi.fn() }));
+vi.mock("#/features/auth/utils/googleIdentity", () => ({ loadGoogleIdentity: vi.fn() }));
 
 const setupGoogle = () => {
   const configs: google.accounts.id.IdConfiguration[] = [];

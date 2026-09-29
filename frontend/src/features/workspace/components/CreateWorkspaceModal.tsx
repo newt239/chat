@@ -4,10 +4,10 @@ import { useNavigate } from "@tanstack/react-router";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Dialog } from "#/components/ui/Dialog";
-import { TextArea } from "#/components/ui/TextArea";
-import { TextField } from "#/components/ui/TextField";
+import { Button } from "#/components/ui/Button/Button";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { TextArea } from "#/components/ui/TextArea/TextArea";
+import { TextField } from "#/components/ui/TextField/TextField";
 
 import { useCreateWorkspace } from "../hooks/useWorkspace";
 

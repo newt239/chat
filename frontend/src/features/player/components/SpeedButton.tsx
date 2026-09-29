@@ -1,7 +1,7 @@
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { focusRing } from "#/components/ui/styles";
+import { focusRing } from "#/components/ui/styles/styles";
 
 type SpeedButtonProps = {
   rate: number;

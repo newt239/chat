@@ -4,8 +4,8 @@ import { useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Link } from "#/components/ui/Link";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Link } from "#/components/ui/Link/Link";
 import { lastSegment } from "#/features/channel/utils/channelPath";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { toPlainText } from "#/features/message/utils/markdown/plainText";

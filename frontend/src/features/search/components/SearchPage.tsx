@@ -5,14 +5,14 @@ import { getRouteApi } from "@tanstack/react-router";
 import { Form, Input, SearchField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { Select } from "#/components/ui/Select";
-import { Skeleton } from "#/components/ui/Skeleton";
-import { Tab } from "#/components/ui/Tab";
-import { TabList } from "#/components/ui/TabList";
-import { TabPanel } from "#/components/ui/TabPanel";
-import { Tabs } from "#/components/ui/Tabs";
-import { PageHeader } from "#/features/layout/components/PageHeader";
+import { PageHeader } from "#/components/block/PageHeader/PageHeader";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Select } from "#/components/ui/Select/Select";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { Tab } from "#/components/ui/Tab/Tab";
+import { TabList } from "#/components/ui/TabList/TabList";
+import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
+import { Tabs } from "#/components/ui/Tabs/Tabs";
 import { useWorkspaceSearch } from "#/features/search/hooks/useWorkspaceSearch";
 import { searchFilterValues, searchSortValues } from "#/features/search/schemas";
 

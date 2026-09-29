@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { storage } from "#/lib/storage";
+import { storage } from "./storage";
 
 import type { User as UserMessage } from "#/gen/chat/v1/user_pb";
 

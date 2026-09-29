@@ -4,11 +4,11 @@ import { useAtomValue } from "jotai";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { AlertDialog } from "#/components/ui/AlertDialog";
-import { Button } from "#/components/ui/Button";
-import { LinkButton } from "#/components/ui/LinkButton";
-import { TextField } from "#/components/ui/TextField";
-import { toast } from "#/components/ui/toast";
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
+import { Button } from "#/components/ui/Button/Button";
+import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { userAtom } from "#/providers/store/auth";

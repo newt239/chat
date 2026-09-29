@@ -1,8 +1,8 @@
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
 import { beforeEach, describe, expect, test } from "vite-plus/test";
 
-import { store } from "#/providers/store";
 import { clearAuthAtom } from "#/providers/store/auth";
+import { store } from "#/providers/store/store";
 import { routeTree } from "#/routeTree.gen";
 
 const createTestRouter = (path: string) =>

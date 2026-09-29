@@ -1,4 +1,4 @@
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 
 import { useMe } from "../hooks/useMe";
 import { ProfileForm } from "./ProfileForm";

@@ -1,9 +1,9 @@
 import { IconShieldCheck } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "#/components/ui/styles";
-import { Switch } from "#/components/ui/Switch";
-import { toast } from "#/components/ui/toast";
+import { cn } from "#/components/ui/styles/styles";
+import { Switch } from "#/components/ui/Switch/Switch";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { permissionKeys } from "#/features/admin/utils/labels";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";

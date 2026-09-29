@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import { IconBellOff } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { Badge } from "#/components/ui/Badge";
-import { ContextMenu } from "#/components/ui/ContextMenu";
-import { cn } from "#/components/ui/styles";
+import { NavLink } from "#/components/block/NavLink/NavLink";
+import { Badge } from "#/components/ui/Badge/Badge";
+import { ContextMenu } from "#/components/ui/ContextMenu/ContextMenu";
+import { cn } from "#/components/ui/styles/styles";
 import { DraftIndicator } from "#/features/draft/components/DraftIndicator";
-import { NavLink } from "#/features/layout/components/NavLink";
 
 import { ChannelMenuItems } from "./ChannelMenuItems";
 

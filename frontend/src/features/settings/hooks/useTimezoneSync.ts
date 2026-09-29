@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { useQuery } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 
 import { useUpdatePreferences } from "./usePreferences";

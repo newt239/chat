@@ -4,7 +4,7 @@ import type { ReactElement } from "react";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Popover } from "#/components/ui/Popover";
+import { Popover } from "#/components/ui/Popover/Popover";
 
 import { EmojiPicker } from "./EmojiPicker";
 

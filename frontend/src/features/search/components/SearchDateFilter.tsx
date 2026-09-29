@@ -2,9 +2,9 @@ import { IconChevronDown } from "@tabler/icons-react";
 import { Button as AriaButton, DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Popover } from "#/components/ui/Popover";
-import { TextField } from "#/components/ui/TextField";
+import { Button } from "#/components/ui/Button/Button";
+import { Popover } from "#/components/ui/Popover/Popover";
+import { TextField } from "#/components/ui/TextField/TextField";
 import { chipClassName } from "#/features/search/utils/chipClassName";
 
 type DateRange = { after: string | null; before: string | null };

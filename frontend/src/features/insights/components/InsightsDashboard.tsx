@@ -3,8 +3,8 @@ import { IconHash, IconLock, IconShieldCheck } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Link } from "#/components/ui/Link";
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Link } from "#/components/ui/Link/Link";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { useMyWorkspaceRole } from "#/features/admin/hooks/useMyWorkspaceRole";
 import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { useInsights } from "#/features/insights/hooks/useInsights";

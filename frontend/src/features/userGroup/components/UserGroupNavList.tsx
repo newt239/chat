@@ -1,7 +1,7 @@
 import { IconSettings, IconUsers } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { NavLink } from "#/features/layout/components/NavLink";
+import { NavLink } from "#/components/block/NavLink/NavLink";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 
 import { useUserGroups } from "../hooks/useUserGroups";

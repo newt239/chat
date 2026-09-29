@@ -2,8 +2,8 @@ import { formatFullDateTime, formatTime } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { Focusable } from "react-aria-components";
 
-import { focusRing } from "#/components/ui/styles";
-import { Tooltip } from "#/components/ui/Tooltip";
+import { focusRing } from "#/components/ui/styles/styles";
+import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 type MessageTimeProps = {

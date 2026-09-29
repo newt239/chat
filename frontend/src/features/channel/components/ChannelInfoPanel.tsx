@@ -1,8 +1,8 @@
 import { IconHash, IconLock } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "#/components/ui/Skeleton";
-import { Switch } from "#/components/ui/Switch";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { Switch } from "#/components/ui/Switch/Switch";
 import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { useChannels } from "#/features/channel/hooks/useChannel";

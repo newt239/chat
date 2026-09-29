@@ -5,7 +5,7 @@ import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, focusRing } from "#/components/ui/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { userAtom } from "#/providers/store/auth";
 
 import { useToggleReaction } from "../hooks/useReactions";

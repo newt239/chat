@@ -12,10 +12,10 @@ import {
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, fieldStyles, overlayStyles } from "#/components/ui/styles";
+import { cn, fieldStyles, overlayStyles } from "#/components/ui/styles/styles";
 import { chipClassName } from "#/features/search/utils/chipClassName";
 
-import type { Option } from "#/components/ui/option";
+import type { Option } from "#/components/ui/option/option";
 
 type SearchFilterPickerProps<T extends string> = {
   label: string;

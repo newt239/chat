@@ -15,7 +15,7 @@ import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 
 const push = vi.hoisted(() => ({ supported: false }));
 
-vi.mock("#/lib/pushMessaging", () => ({
+vi.mock("#/features/settings/utils/pushMessaging", () => ({
   isPushSupported: () => push.supported,
   registerPush: vi.fn(() => Promise.resolve("token-1")),
   unregisterPush: vi.fn(() => Promise.resolve()),

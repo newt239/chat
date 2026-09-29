@@ -1,10 +1,10 @@
 import { IconAt } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState } from "#/components/ui/EmptyState";
-import { Skeleton } from "#/components/ui/Skeleton";
+import { EmptyState } from "#/components/ui/EmptyState/EmptyState";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { useMentions } from "#/features/mention/hooks/useMentions";
-import { useLoadMoreRef } from "#/lib/useLoadMoreRef";
+import { useLoadMoreRef } from "#/hooks/useLoadMoreRef";
 
 import { MentionCard } from "./MentionCard";
 

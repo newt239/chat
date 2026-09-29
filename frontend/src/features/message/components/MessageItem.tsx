@@ -7,10 +7,10 @@ import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { AlertDialog } from "#/components/ui/AlertDialog";
-import { Avatar } from "#/components/ui/Avatar";
-import { Badge } from "#/components/ui/Badge";
-import { cn, focusRing } from "#/components/ui/styles";
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Badge } from "#/components/ui/Badge/Badge";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
 import { closeDialog, openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
 import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
@@ -20,8 +20,8 @@ import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
 import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/reactionTabs";
+import { useIsMobile } from "#/hooks/useMediaQuery";
 import { toDate } from "#/lib/timestamp";
-import { useIsMobile } from "#/lib/useMediaQuery";
 import { userAtom } from "#/providers/store/auth";
 
 import { useLongPress } from "../hooks/useLongPress";

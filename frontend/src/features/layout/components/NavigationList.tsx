@@ -9,13 +9,13 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { NavLink } from "#/components/block/NavLink/NavLink";
 import { ChannelList } from "#/features/channel/components/ChannelList";
 import { DMList } from "#/features/dm/components/DMList";
 import { UserGroupNavList } from "#/features/userGroup/components/UserGroupNavList";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
 
 import { openDialog } from "../utils/overlaySearch";
-import { NavLink } from "./NavLink";
 import { SidebarSection } from "./SidebarSection";
 import { StarredSection } from "./StarredSection";
 

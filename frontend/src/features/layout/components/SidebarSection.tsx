@@ -5,8 +5,8 @@ import { useAtom } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "react-aria-components";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { focusRing } from "#/components/ui/styles";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { focusRing } from "#/components/ui/styles/styles";
 import { transitions } from "#/lib/motion";
 import { collapsedSidebarSectionsAtom } from "#/providers/store/ui";
 

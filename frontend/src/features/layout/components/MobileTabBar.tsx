@@ -2,7 +2,7 @@ import { IconBell, IconHome, IconMessageCircle, IconUser } from "@tabler/icons-r
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Link } from "#/components/ui/Link";
+import { Link } from "#/components/ui/Link/Link";
 import { mobileTabAtom } from "#/providers/store/ui";
 
 import { useUnreadSummary } from "../hooks/useUnreadSummary";

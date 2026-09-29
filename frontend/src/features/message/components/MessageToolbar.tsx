@@ -8,9 +8,9 @@ import {
 import { Separator, Toolbar } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { Menu } from "#/components/ui/Menu";
-import { MenuItem } from "#/components/ui/MenuItem";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Menu } from "#/components/ui/Menu/Menu";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { EmojiPickerPopover } from "#/features/reaction/components/EmojiPickerPopover";
 
 import { quickReactions } from "../utils/quickReactions";

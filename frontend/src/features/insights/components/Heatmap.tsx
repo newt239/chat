@@ -4,7 +4,7 @@ import { formatNumber } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 import { isoWeekdayLabel } from "#/features/insights/utils/chart";
 import { preferencesAtom } from "#/providers/store/preferences";
 

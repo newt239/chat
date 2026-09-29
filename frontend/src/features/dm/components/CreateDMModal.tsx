@@ -15,11 +15,11 @@ import {
 } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Button } from "#/components/ui/Button";
-import { Dialog } from "#/components/ui/Dialog";
-import { cn, fieldStyles, focusRing } from "#/components/ui/styles";
-import { toast } from "#/components/ui/toast";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Button } from "#/components/ui/Button/Button";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { cn, fieldStyles, focusRing } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { ChannelNameField } from "#/features/channel/components/ChannelNameField";
 import { useChannels, useCreateChannel } from "#/features/channel/hooks/useChannel";
 import { channelPathErrorKeys, validateChannelPath } from "#/features/channel/utils/channelPath";

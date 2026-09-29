@@ -2,7 +2,7 @@ import { IconBookmark } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { MessageLinkCard } from "#/features/message/components/MessageLinkCard";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 

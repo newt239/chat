@@ -2,9 +2,9 @@ import { IconDownload } from "@tabler/icons-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, focusRing } from "#/components/ui/styles";
-import { toast } from "#/components/ui/toast";
-import { promptInstall, useInstallPrompt } from "#/lib/installPrompt";
+import { cn, focusRing } from "#/components/ui/styles/styles";
+import { toast } from "#/components/ui/ToastRegion/toast";
+import { promptInstall, useInstallPrompt } from "#/features/layout/utils/installPrompt";
 
 import { navItemClassName } from "../utils/navTone";
 

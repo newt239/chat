@@ -7,12 +7,12 @@ import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Calendar } from "#/components/ui/Calendar";
-import { Menu } from "#/components/ui/Menu";
-import { MenuItem } from "#/components/ui/MenuItem";
-import { MenuSeparator } from "#/components/ui/MenuSeparator";
-import { Popover } from "#/components/ui/Popover";
-import { focusRing } from "#/components/ui/styles";
+import { Calendar } from "#/components/ui/Calendar/Calendar";
+import { Menu } from "#/components/ui/Menu/Menu";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
+import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
+import { Popover } from "#/components/ui/Popover/Popover";
+import { focusRing } from "#/components/ui/styles/styles";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { FIRST_MESSAGE, jumpPresets, startOfDateKey } from "../utils/dateJump";

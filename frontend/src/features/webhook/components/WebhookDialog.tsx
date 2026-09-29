@@ -2,11 +2,11 @@ import { useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { AlertDialog } from "#/components/ui/AlertDialog";
-import { Button } from "#/components/ui/Button";
-import { Dialog } from "#/components/ui/Dialog";
-import { TextField } from "#/components/ui/TextField";
-import { toast } from "#/components/ui/toast";
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
+import { Button } from "#/components/ui/Button/Button";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
 
 import { useWebhookActions } from "../hooks/useWebhooks";
 import { isHttpUrl, webhookUrl } from "../utils/webhookUrl";

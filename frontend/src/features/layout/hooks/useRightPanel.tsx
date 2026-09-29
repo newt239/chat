@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { LinkButton } from "#/components/ui/LinkButton";
-import { Tooltip } from "#/components/ui/Tooltip";
+import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { ChannelInfoPanel } from "#/features/channel/components/ChannelInfoPanel";
 import { ChannelMemberPanel } from "#/features/channel/components/ChannelMemberPanel";
 import { UserProfilePanel } from "#/features/member/components/UserProfilePanel";

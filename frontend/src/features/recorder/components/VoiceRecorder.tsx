@@ -1,8 +1,8 @@
 import { IconLoader2, IconPlayerStopFilled, IconX } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { IconButton } from "#/components/ui/IconButton";
+import { Button } from "#/components/ui/Button/Button";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { formatDuration } from "#/features/player/utils/formatDuration";
 
 import { useVoiceRecorder } from "../hooks/useVoiceRecorder";

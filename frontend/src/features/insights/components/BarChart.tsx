@@ -4,7 +4,7 @@ import { formatNumber } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { motion } from "motion/react";
 
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 import { niceMax } from "#/features/insights/utils/chart";
 import { transitions } from "#/lib/motion";
 import { preferencesAtom } from "#/providers/store/preferences";

@@ -2,14 +2,14 @@ import { IconSearch } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Link } from "#/components/ui/Link";
+import { NavLink } from "#/components/block/NavLink/NavLink";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Link } from "#/components/ui/Link/Link";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 import { userAtom } from "#/providers/store/auth";
 
 import { mobileNavTone } from "../utils/navTone";
 import { NavigationList } from "./NavigationList";
-import { NavLink } from "./NavLink";
 
 type MobileHomeProps = {
   workspaceId: string;

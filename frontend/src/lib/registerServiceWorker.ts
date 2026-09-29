@@ -1,6 +1,6 @@
 import { registerSW } from "virtual:pwa-register";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { i18n } from "#/lib/i18n";
 import { navigateTo } from "#/lib/navigation";
 import { notificationClickSchema } from "#/lib/serviceWorkerMessage";

@@ -124,8 +124,9 @@ chat/
 ├── frontend/         # React frontend
 │   ├── src/
 │   │   ├── routes/   # TanStack Router のファイルベースルート定義
-│   │   ├── pages/    # ルートから参照するページコンポーネント
+│   │   ├── components/ # 汎用コンポーネント（ui/・block/）
 │   │   ├── features/ # Feature-based modules
+│   │   ├── hooks/    # 複数の機能で使う hooks
 │   │   ├── providers/ # Jotai ストア・TanStack Query・WebSocket の Provider
 │   │   └── lib/      # API client, WS client, router など
 │   ├── tests/        # Vitest のセットアップ

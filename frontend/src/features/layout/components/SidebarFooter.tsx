@@ -4,14 +4,14 @@ import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { IconButton } from "#/components/ui/IconButton";
-import { Menu } from "#/components/ui/Menu";
-import { MenuItem } from "#/components/ui/MenuItem";
-import { MenuItemLink } from "#/components/ui/MenuItemLink";
-import { MenuSection } from "#/components/ui/MenuSection";
-import { MenuSeparator } from "#/components/ui/MenuSeparator";
-import { focusRing } from "#/components/ui/styles";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Menu } from "#/components/ui/Menu/Menu";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
+import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
+import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
+import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
+import { focusRing } from "#/components/ui/styles/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { userAtom } from "#/providers/store/auth";
 

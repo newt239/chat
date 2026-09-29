@@ -1,9 +1,9 @@
 import { IconUserMinus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { IconButton } from "#/components/ui/IconButton";
-import { Select } from "#/components/ui/Select";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Select } from "#/components/ui/Select/Select";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspaceMemberActions";

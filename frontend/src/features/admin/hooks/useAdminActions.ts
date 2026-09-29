@@ -2,7 +2,7 @@ import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "#/components/ui/toast";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { AdminService } from "#/gen/chat/v1/admin_service_pb";
 import { PermissionService } from "#/gen/chat/v1/permission_service_pb";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";

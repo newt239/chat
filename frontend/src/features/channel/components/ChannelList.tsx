@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Skeleton } from "#/components/ui/Skeleton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 
 import { useChannels } from "../hooks/useChannel";
 import { buildChannelTree } from "../utils/channelTree";

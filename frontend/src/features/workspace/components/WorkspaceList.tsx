@@ -1,8 +1,8 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { LinkButton } from "#/components/ui/LinkButton";
-import { Skeleton } from "#/components/ui/Skeleton";
+import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";

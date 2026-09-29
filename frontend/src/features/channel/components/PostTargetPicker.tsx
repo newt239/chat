@@ -2,9 +2,9 @@ import { IconCheck, IconChevronDown, IconHash, IconLock } from "@tabler/icons-re
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Menu } from "#/components/ui/Menu";
-import { MenuItem } from "#/components/ui/MenuItem";
-import { focusRing } from "#/components/ui/styles";
+import { Menu } from "#/components/ui/Menu/Menu";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
+import { focusRing } from "#/components/ui/styles/styles";
 
 import { lastSegment } from "../utils/channelPath";
 import { relativePath } from "../utils/channelTree";

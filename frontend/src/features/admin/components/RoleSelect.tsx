@@ -2,7 +2,7 @@ import { IconCheck, IconChevronDown } from "@tabler/icons-react";
 import { Button, ListBox, ListBoxItem, Popover, Select, SelectValue } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { cn, focusRing, overlayStyles } from "#/components/ui/styles";
+import { cn, focusRing, overlayStyles } from "#/components/ui/styles/styles";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
 const roles = [

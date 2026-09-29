@@ -8,11 +8,11 @@ import {
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Menu } from "#/components/ui/Menu";
-import { MenuItemLink } from "#/components/ui/MenuItemLink";
-import { MenuSection } from "#/components/ui/MenuSection";
-import { MenuSeparator } from "#/components/ui/MenuSeparator";
-import { focusRing } from "#/components/ui/styles";
+import { Menu } from "#/components/ui/Menu/Menu";
+import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
+import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
+import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
+import { focusRing } from "#/components/ui/styles/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 
 import { useIsWorkspaceAdmin } from "../hooks/useIsWorkspaceAdmin";

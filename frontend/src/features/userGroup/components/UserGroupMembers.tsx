@@ -5,10 +5,10 @@ import { useAtomValue } from "jotai";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar";
-import { Button } from "#/components/ui/Button";
-import { ComboBox } from "#/components/ui/ComboBox";
-import { IconButton } from "#/components/ui/IconButton";
+import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { Button } from "#/components/ui/Button/Button";
+import { ComboBox } from "#/components/ui/ComboBox/ComboBox";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import {

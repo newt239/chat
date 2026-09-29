@@ -1,4 +1,4 @@
-import { cn } from "#/components/ui/styles";
+import { cn } from "#/components/ui/styles/styles";
 import { LinkPreviewEmbed } from "#/features/link/components/LinkPreviewEmbed";
 
 import { isJumboEmoji } from "../utils/isJumboEmoji";

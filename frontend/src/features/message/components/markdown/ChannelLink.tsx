@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 
 import { useParams } from "@tanstack/react-router";
 
-import { Link } from "#/components/ui/Link";
-import { cn } from "#/components/ui/styles";
+import { Link } from "#/components/ui/Link/Link";
+import { cn } from "#/components/ui/styles/styles";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 
 import { chipClassName } from "./chipClassName";

@@ -5,10 +5,10 @@ import { useRouter } from "@tanstack/react-router";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "#/components/ui/Button";
-import { Select } from "#/components/ui/Select";
-import { TextField } from "#/components/ui/TextField";
-import { toast } from "#/components/ui/toast";
+import { Button } from "#/components/ui/Button/Button";
+import { Select } from "#/components/ui/Select/Select";
+import { TextField } from "#/components/ui/TextField/TextField";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 

@@ -1,8 +1,8 @@
 import { IconX } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
-import { IconButton } from "#/components/ui/IconButton";
-import { Skeleton } from "#/components/ui/Skeleton";
+import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 
 import { OgpCard } from "./OgpCard";
 

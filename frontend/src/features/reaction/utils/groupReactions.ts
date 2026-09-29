@@ -1,5 +1,4 @@
-import type { ReactionGroup } from "../types";
-
+import type { ReactionGroup } from "#/features/reaction/types/reactionGroup";
 import type { Reaction } from "#/gen/chat/v1/message_pb";
 
 // 絵文字ごとにまとめる。並びは最初に付いた順

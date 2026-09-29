@@ -4,10 +4,10 @@ import { IconAt, IconEdit, IconTrash } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { AlertDialog } from "#/components/ui/AlertDialog";
-import { Button } from "#/components/ui/Button";
-import { LinkButton } from "#/components/ui/LinkButton";
-import { toast } from "#/components/ui/toast";
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
+import { Button } from "#/components/ui/Button/Button";
+import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { closePanel, openDialog } from "#/features/layout/utils/overlaySearch";
 
 import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
