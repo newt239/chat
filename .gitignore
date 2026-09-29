@@ -35,7 +35,7 @@ frontend/dist/
 frontend/build/
 frontend/.vite/
 frontend/dev-dist/
-frontend/*.tsbuildinfo
+frontend/**/*.tsbuildinfo
 
 # Docker
 docker/data/
