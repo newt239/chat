@@ -55,6 +55,20 @@ export const admin: Messages["admin"] = {
     until: "To",
     unknownActor: "Unknown",
   },
+  invitations: {
+    columns: {
+      email: "Email",
+      expiresAt: "Expires",
+      invitedBy: "Invited by",
+      role: "Role",
+    },
+    empty: "No pending invitations",
+    note: "Registered addresses are added as members right away. Otherwise an invitation link is issued.",
+    pending: "Pending invitations",
+    revoke: "Revoke",
+    revokeLabel: "Revoke the invitation for {{email}}",
+    revoked: "Revoked the invitation",
+  },
   loadFailed: "Couldn't load",
   members: {
     actionFailed: "Couldn't complete the action",
@@ -117,6 +131,7 @@ export const admin: Messages["admin"] = {
   },
   tabs: {
     audit: "Audit log",
+    invitations: "Invitations",
     label: "Admin tabs",
     members: "Members",
     overview: "Overview",

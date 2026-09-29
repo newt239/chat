@@ -53,6 +53,20 @@ export const admin = {
     until: "終了",
     unknownActor: "不明",
   },
+  invitations: {
+    columns: {
+      email: "メールアドレス",
+      expiresAt: "有効期限",
+      invitedBy: "招待した人",
+      role: "ロール",
+    },
+    empty: "保留中の招待はありません",
+    note: "登録済みのメールアドレスはすぐにメンバーに追加されます。未登録の場合は招待リンクを発行します。",
+    pending: "保留中の招待",
+    revoke: "取り消す",
+    revokeLabel: "{{email}} への招待を取り消す",
+    revoked: "招待を取り消しました",
+  },
   loadFailed: "読み込めませんでした",
   members: {
     actionFailed: "操作できませんでした",
@@ -115,6 +129,7 @@ export const admin = {
   },
   tabs: {
     audit: "監査ログ",
+    invitations: "招待",
     label: "管理画面のタブ",
     members: "メンバー",
     overview: "概要",

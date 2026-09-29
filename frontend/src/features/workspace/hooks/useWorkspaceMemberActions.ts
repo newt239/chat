@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 
-/** ワークスペースメンバーの招待・削除・ロール変更をまとめて提供する */
+/** ワークスペースメンバーの削除・ロール変更をまとめて提供する */
 export const useWorkspaceMemberActions = () => {
   const queryClient = useQueryClient();
   const onSuccess = async (_: unknown, { workspaceId }: { workspaceId?: string }) => {
@@ -16,9 +16,8 @@ export const useWorkspaceMemberActions = () => {
     });
   };
 
-  const invite = useMutation(WorkspaceService.method.addMemberByEmail, { onSuccess });
   const remove = useMutation(WorkspaceService.method.removeMember, { onSuccess });
   const updateRole = useMutation(WorkspaceService.method.updateMemberRole, { onSuccess });
 
-  return { invite, remove, updateRole };
+  return { remove, updateRole };
 };

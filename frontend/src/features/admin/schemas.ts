@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const adminTabValues = ["overview", "members", "permissions", "audit"] as const;
+export const adminTabValues = [
+  "overview",
+  "members",
+  "invitations",
+  "permissions",
+  "audit",
+] as const;
 
 export const auditPeriodValues = ["day", "week", "month", "quarter", "all", "custom"] as const;
 
