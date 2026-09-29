@@ -11,10 +11,10 @@ module "environment" {
   source = "../../modules/environment"
 
   project_id            = var.project_id
-  environment           = "dev"
+  environment           = "prod"
   frontend_domain       = var.frontend_domain
   api_domain            = var.api_domain
-  protect_database      = false
+  protect_database      = true
   wasabi_bucket_name    = var.wasabi_bucket_name
   cloudflare_account_id = var.cloudflare_account_id
   cloudflare_zone_id    = var.cloudflare_zone_id

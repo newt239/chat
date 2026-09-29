@@ -1,7 +1,7 @@
 resource "google_service_account" "backend" {
   project      = var.project_id
   account_id   = var.service_account_id
-  display_name = "chat backend"
+  display_name = "chat backend (${var.environment})"
 }
 
 # k8s の ServiceAccount がこの GSA として振る舞う（Cloud SQL Auth Proxy / FCM / External Secrets）
@@ -19,12 +19,16 @@ resource "google_project_iam_member" "backend" {
   member  = google_service_account.backend.member
 }
 
-# シークレット ID は環境変数名と同じにする（環境ごとにプロジェクトを分ける前提）
+locals {
+  secret_names = setunion(nonsensitive(keys(var.secrets)), var.manual_secrets)
+}
+
+# dev と prod が同じプロジェクトにあるため、シークレット ID の先頭に環境名を付ける
 resource "google_secret_manager_secret" "this" {
-  for_each = toset(nonsensitive(keys(var.secrets)))
+  for_each = local.secret_names
 
   project   = var.project_id
-  secret_id = each.value
+  secret_id = "${var.environment}-${each.value}"
 
   replication {
     auto {}
@@ -32,12 +36,13 @@ resource "google_secret_manager_secret" "this" {
 }
 
 resource "google_secret_manager_secret_version" "this" {
-  for_each = google_secret_manager_secret.this
+  for_each = toset(nonsensitive(keys(var.secrets)))
 
-  secret      = each.value.id
-  secret_data = var.secrets[each.key]
+  secret      = google_secret_manager_secret.this[each.value].id
+  secret_data = var.secrets[each.value]
 }
 
+# 権限はシークレットごとに付けるので、他の環境のシークレットは読めない
 resource "google_secret_manager_secret_iam_member" "backend" {
   for_each = google_secret_manager_secret.this
 

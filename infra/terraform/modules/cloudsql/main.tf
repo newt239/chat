@@ -1,3 +1,4 @@
+# dev と prod で共有し、DB とユーザーは環境ごとに cloudsql_database で作る
 resource "google_sql_database_instance" "this" {
   project             = var.project_id
   name                = var.name
@@ -22,22 +23,4 @@ resource "google_sql_database_instance" "this" {
       point_in_time_recovery_enabled = var.point_in_time_recovery
     }
   }
-}
-
-resource "google_sql_database" "app" {
-  project  = var.project_id
-  instance = google_sql_database_instance.this.name
-  name     = var.database_name
-}
-
-resource "random_password" "app" {
-  length  = 32
-  special = false
-}
-
-resource "google_sql_user" "app" {
-  project  = var.project_id
-  instance = google_sql_database_instance.this.name
-  name     = var.database_user
-  password = random_password.app.result
 }

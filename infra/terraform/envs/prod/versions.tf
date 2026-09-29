@@ -22,7 +22,7 @@ terraform {
 
   # bucket は -backend-config で渡す
   backend "gcs" {
-    prefix = "envs/dev"
+    prefix = "envs/prod"
   }
 }
 
