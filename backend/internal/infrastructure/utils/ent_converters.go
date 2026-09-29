@@ -18,6 +18,7 @@ func UserToEntity(u *ent.User) *entity.User {
 		ID:           u.ID.String(),
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
+		GoogleSub:    u.GoogleSub,
 		DisplayName:  u.DisplayName,
 		Bio:          StringPtrFromNullable(u.Bio),
 		AvatarURL:    StringPtrFromNullable(u.AvatarURL),

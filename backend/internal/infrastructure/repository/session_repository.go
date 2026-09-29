@@ -42,33 +42,22 @@ func (r *sessionRepository) FindByID(ctx context.Context, id string) (*entity.Se
 	return utils.SessionToEntity(s), nil
 }
 
-func (r *sessionRepository) FindActiveByUserID(ctx context.Context, userID string) ([]*entity.Session, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return nil, err
-	}
-
-	now := time.Now()
-	client := transaction.ResolveClient(ctx, r.client)
-
-	sessions, err := client.Session.Query().
+func (r *sessionRepository) FindActiveByTokenHash(ctx context.Context, refreshTokenHash string) (*entity.Session, error) {
+	s, err := transaction.ResolveClient(ctx, r.client).Session.Query().
 		Where(
-			session.HasUserWith(user.ID(uid)),
-			session.ExpiresAtGT(now),
+			session.RefreshTokenHash(refreshTokenHash),
+			session.ExpiresAtGT(time.Now()),
 			session.RevokedAtIsNil(),
 		).
 		WithUser().
-		All(ctx)
+		Only(ctx)
+	if ent.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.Session, 0, len(sessions))
-	for _, s := range sessions {
-		result = append(result, utils.SessionToEntity(s))
-	}
-
-	return result, nil
+	return utils.SessionToEntity(s), nil
 }
 
 func (r *sessionRepository) Create(ctx context.Context, sess *entity.Session) error {

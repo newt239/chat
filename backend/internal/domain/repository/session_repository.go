@@ -9,7 +9,8 @@ import (
 
 type SessionRepository interface {
 	FindByID(ctx context.Context, id string) (*entity.Session, error)
-	FindActiveByUserID(ctx context.Context, userID string) ([]*entity.Session, error)
+	// FindActiveByTokenHash は失効・期限切れでないセッションだけを返します
+	FindActiveByTokenHash(ctx context.Context, refreshTokenHash string) (*entity.Session, error)
 	Create(ctx context.Context, session *entity.Session) error
 	Revoke(ctx context.Context, id string) error
 	// Rotate はリフレッシュ時にセッションを作り直さずトークンだけ差し替えます

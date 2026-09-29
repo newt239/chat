@@ -13,19 +13,41 @@ import (
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
 )
 
-var alice = &entity.User{ID: "alice", Email: "alice@example.com", PasswordHash: "password123"}
-
 type stubUserRepo struct {
 	domainrepository.UserRepository
+	users   []*entity.User
+	created []*entity.User
 }
 
-func (stubUserRepo) FindByEmail(context.Context, string) (*entity.User, error) {
-	return alice, nil
+func (r *stubUserRepo) find(match func(*entity.User) bool) (*entity.User, error) {
+	for _, u := range r.users {
+		if match(u) {
+			return u, nil
+		}
+	}
+	return nil, nil
 }
 
-func (stubUserRepo) FindByID(context.Context, string) (*entity.User, error) {
-	return alice, nil
+func (r *stubUserRepo) FindByEmail(_ context.Context, email string) (*entity.User, error) {
+	return r.find(func(u *entity.User) bool { return u.Email == email })
 }
+
+func (r *stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error) {
+	return r.find(func(u *entity.User) bool { return u.ID == id })
+}
+
+func (r *stubUserRepo) FindByGoogleSub(_ context.Context, sub string) (*entity.User, error) {
+	return r.find(func(u *entity.User) bool { return u.GoogleSub != nil && *u.GoogleSub == sub })
+}
+
+func (r *stubUserRepo) Create(_ context.Context, u *entity.User) error {
+	u.ID = "new-user"
+	r.users = append(r.users, u)
+	r.created = append(r.created, u)
+	return nil
+}
+
+func (r *stubUserRepo) Update(context.Context, *entity.User) error { return nil }
 
 type stubSessionRepo struct {
 	domainrepository.SessionRepository
@@ -39,8 +61,13 @@ func (r *stubSessionRepo) Create(_ context.Context, s *entity.Session) error {
 	return nil
 }
 
-func (r *stubSessionRepo) FindActiveByUserID(context.Context, string) ([]*entity.Session, error) {
-	return r.active, nil
+func (r *stubSessionRepo) FindActiveByTokenHash(_ context.Context, hash string) (*entity.Session, error) {
+	for _, s := range r.active {
+		if s.RefreshTokenHash == hash {
+			return s, nil
+		}
+	}
+	return nil, nil
 }
 
 func (r *stubSessionRepo) Rotate(_ context.Context, id string, _ string, _ time.Time) error {
@@ -50,10 +77,46 @@ func (r *stubSessionRepo) Rotate(_ context.Context, id string, _ string, _ time.
 
 type stubWorkspaceRepo struct {
 	domainrepository.WorkspaceRepository
+	added []*entity.WorkspaceMember
 }
 
 func (stubWorkspaceRepo) FindByUserID(context.Context, string) ([]*entity.Workspace, error) {
 	return []*entity.Workspace{{ID: "ws1"}, {ID: "ws2"}}, nil
+}
+
+func (r *stubWorkspaceRepo) AddMember(_ context.Context, m *entity.WorkspaceMember) error {
+	r.added = append(r.added, m)
+	return nil
+}
+
+type stubInvitationRepo struct {
+	domainrepository.InvitationRepository
+	invitations []*entity.Invitation
+	accepted    []string
+}
+
+func (r *stubInvitationRepo) FindByTokenHash(_ context.Context, hash string) (*entity.Invitation, error) {
+	for _, inv := range r.invitations {
+		if inv.TokenHash == hash {
+			return inv, nil
+		}
+	}
+	return nil, nil
+}
+
+func (r *stubInvitationRepo) FindPendingByEmail(_ context.Context, email string, now time.Time) ([]*entity.Invitation, error) {
+	var result []*entity.Invitation
+	for _, inv := range r.invitations {
+		if inv.Email == email && inv.IsPending(now) {
+			result = append(result, inv)
+		}
+	}
+	return result, nil
+}
+
+func (r *stubInvitationRepo) MarkAccepted(_ context.Context, id string, _ time.Time) error {
+	r.accepted = append(r.accepted, id)
+	return nil
 }
 
 type stubJWT struct{}
@@ -74,55 +137,216 @@ func (stubPassword) VerifyPassword(p, hash string) error {
 	return nil
 }
 
-func newInteractor() (AuthUseCase, *stubSessionRepo, *audittest.Recorder) {
-	sessions := &stubSessionRepo{}
-	recorder := &audittest.Recorder{}
-	return NewAuthInteractor(stubUserRepo{}, sessions, stubWorkspaceRepo{}, stubJWT{}, stubPassword{}, recorder), sessions, recorder
+// ID トークンの文字列をそのまま本人情報として扱う
+type stubGoogle map[string]*GoogleIdentity
+
+func (g stubGoogle) Verify(_ context.Context, token string) (*GoogleIdentity, error) {
+	if identity, ok := g[token]; ok {
+		return identity, nil
+	}
+	return nil, ErrInvalidToken
+}
+
+type stubTx struct{}
+
+func (stubTx) Do(ctx context.Context, fn func(ctx context.Context) error) error { return fn(ctx) }
+
+type fixture struct {
+	uc          AuthUseCase
+	users       *stubUserRepo
+	sessions    *stubSessionRepo
+	workspaces  *stubWorkspaceRepo
+	invitations *stubInvitationRepo
+	recorder    *audittest.Recorder
+}
+
+var google = stubGoogle{
+	"alice":    {Sub: "sub-alice", Email: "alice@example.com", EmailVerified: true},
+	"linked":   {Sub: "sub-linked", Email: "someone@example.com", EmailVerified: true},
+	"invited":  {Sub: "sub-new", Email: "New@Example.com", EmailVerified: true, Name: "New User"},
+	"stranger": {Sub: "sub-stranger", Email: "stranger@example.com", EmailVerified: true},
+	"bob":      {Sub: "sub-bob", Email: "bob@example.com", EmailVerified: false},
+}
+
+func newFixture(passwordAuthEnabled bool) fixture {
+	linkedSub := "sub-linked"
+	f := fixture{
+		users: &stubUserRepo{users: []*entity.User{
+			{ID: "alice", Email: "alice@example.com", PasswordHash: "password123"},
+			{ID: "linked", Email: "changed@example.com", PasswordHash: entity.UnusablePasswordHash, GoogleSub: &linkedSub},
+		}},
+		sessions:   &stubSessionRepo{},
+		workspaces: &stubWorkspaceRepo{},
+		invitations: &stubInvitationRepo{invitations: []*entity.Invitation{
+			{ID: "inv1", WorkspaceID: "ws1", Email: "new@example.com", Role: entity.WorkspaceRoleMember, TokenHash: entity.HashSecretToken("invite-token"), ExpiresAt: time.Now().Add(time.Hour)},
+			{ID: "inv2", WorkspaceID: "ws2", Email: "new@example.com", Role: entity.WorkspaceRoleGuest, TokenHash: entity.HashSecretToken("other-token"), ExpiresAt: time.Now().Add(time.Hour)},
+			{ID: "expired", WorkspaceID: "ws3", Email: "new@example.com", Role: entity.WorkspaceRoleMember, TokenHash: entity.HashSecretToken("expired-token"), ExpiresAt: time.Now().Add(-time.Hour)},
+		}},
+		recorder: &audittest.Recorder{},
+	}
+	settings := Settings{AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour, PasswordAuthEnabled: passwordAuthEnabled}
+	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, stubTx{}, f.recorder, settings)
+	return f
 }
 
 func TestLoginRecordsAuditLogInEveryWorkspace(t *testing.T) {
-	uc, sessions, recorder := newInteractor()
+	f := newFixture(true)
 	ctx := audit.WithClientInfo(context.Background(), audit.ClientInfo{IPAddress: "203.0.113.1", UserAgent: "Firefox"})
 
-	if _, err := uc.Login(ctx, LoginInput{Email: alice.Email, Password: "password123"}); err != nil {
+	if _, err := f.uc.Login(ctx, LoginInput{Email: "alice@example.com", Password: "password123"}); err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
-	if len(sessions.created) != 1 || sessions.created[0].IPAddress != "203.0.113.1" || sessions.created[0].UserAgent != "Firefox" {
-		t.Errorf("セッションにログイン元の端末が保存されていません: %+v", sessions.created)
+	if len(f.sessions.created) != 1 || f.sessions.created[0].IPAddress != "203.0.113.1" || f.sessions.created[0].UserAgent != "Firefox" {
+		t.Errorf("セッションにログイン元の端末が保存されていません: %+v", f.sessions.created)
 	}
-	if !slices.Equal(recorder.Actions(), []entity.AuditAction{entity.AuditActionLogin, entity.AuditActionLogin}) {
-		t.Fatalf("参加している全ワークスペースに記録されていません: %v", recorder.Actions())
+	if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionLogin, entity.AuditActionLogin}) {
+		t.Fatalf("参加している全ワークスペースに記録されていません: %v", f.recorder.Actions())
 	}
-	if recorder.Logs[0].WorkspaceID != "ws1" || *recorder.Logs[0].ActorID != "alice" {
-		t.Errorf("監査ログの内容が期待と異なります: %+v", recorder.Logs[0])
+	if f.recorder.Logs[0].WorkspaceID != "ws1" || *f.recorder.Logs[0].ActorID != "alice" {
+		t.Errorf("監査ログの内容が期待と異なります: %+v", f.recorder.Logs[0])
 	}
 }
 
 func TestLoginFailureRecordsAuditLogWithoutActor(t *testing.T) {
-	uc, sessions, recorder := newInteractor()
+	f := newFixture(true)
 
-	if _, err := uc.Login(context.Background(), LoginInput{Email: alice.Email, Password: "wrong"}); !errors.Is(err, ErrInvalidCredentials) {
+	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "wrong"}); !errors.Is(err, ErrInvalidCredentials) {
 		t.Fatalf("エラーが期待と異なります: %v", err)
 	}
-	if len(sessions.created) != 0 {
+	if len(f.sessions.created) != 0 {
 		t.Errorf("失敗したログインでセッションが作られました")
 	}
-	if !slices.Equal(recorder.Actions(), []entity.AuditAction{entity.AuditActionLoginFailed, entity.AuditActionLoginFailed}) {
-		t.Fatalf("ログインの失敗が記録されていません: %v", recorder.Actions())
+	if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionLoginFailed, entity.AuditActionLoginFailed}) {
+		t.Fatalf("ログインの失敗が記録されていません: %v", f.recorder.Actions())
 	}
-	if recorder.Logs[0].ActorID != nil || recorder.Logs[0].TargetID != "alice" {
-		t.Errorf("失敗したログインは実行者を空にし対象ユーザーを残すはず: %+v", recorder.Logs[0])
+	if f.recorder.Logs[0].ActorID != nil || f.recorder.Logs[0].TargetID != "alice" {
+		t.Errorf("失敗したログインは実行者を空にし対象ユーザーを残すはず: %+v", f.recorder.Logs[0])
 	}
 }
 
-func TestRefreshRotatesExistingSession(t *testing.T) {
-	uc, sessions, _ := newInteractor()
-	sessions.active = []*entity.Session{{ID: "s1", RefreshTokenHash: "other"}, {ID: "s2", RefreshTokenHash: "refresh"}}
+func TestPasswordAuthCanBeDisabled(t *testing.T) {
+	f := newFixture(false)
 
-	if _, err := uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "refresh"}); err != nil {
+	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "password123"}); !errors.Is(err, ErrPasswordAuthDisabled) {
+		t.Errorf("パスワード認証が無効なのにログインできました: %v", err)
+	}
+	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, ErrPasswordAuthDisabled) {
+		t.Errorf("パスワード認証が無効なのに招待からパスワードで登録できました: %v", err)
+	}
+	if len(f.sessions.created) != 0 || len(f.users.created) != 0 {
+		t.Errorf("セッションやユーザーが作られました")
+	}
+}
+
+func TestRefreshRotatesSessionFoundByTokenHash(t *testing.T) {
+	f := newFixture(true)
+	f.sessions.active = []*entity.Session{
+		{ID: "s1", UserID: "alice", RefreshTokenHash: entity.HashSecretToken("other")},
+		{ID: "s2", UserID: "alice", RefreshTokenHash: entity.HashSecretToken("refresh")},
+	}
+
+	out, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "refresh"})
+	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
-	if !slices.Equal(sessions.rotated, []string{"s2"}) || len(sessions.created) != 0 {
-		t.Errorf("一致したセッションのトークンだけを差し替えるはず: rotated=%v created=%d", sessions.rotated, len(sessions.created))
+	if out.User.ID != "alice" || !slices.Equal(f.sessions.rotated, []string{"s2"}) || len(f.sessions.created) != 0 {
+		t.Errorf("一致したセッションのトークンだけを差し替えるはず: rotated=%v created=%d", f.sessions.rotated, len(f.sessions.created))
+	}
+	if _, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "unknown"}); !errors.Is(err, ErrInvalidToken) {
+		t.Errorf("未知のトークンは拒否するはず: %v", err)
+	}
+}
+
+func TestLoginWithGoogle(t *testing.T) {
+	tests := []struct {
+		name     string
+		token    string
+		wantUser string
+		wantErr  error
+	}{
+		{name: "sub が紐付いたユーザーはメールアドレスが変わってもログインできる", token: "linked", wantUser: "linked"},
+		{name: "未紐付けの既存ユーザーはメールアドレスで紐付く", token: "alice", wantUser: "alice"},
+		{name: "招待のない未登録のメールアドレスは拒否する", token: "stranger", wantErr: ErrInvitationRequired},
+		{name: "確認されていないメールアドレスは拒否する", token: "bob", wantErr: ErrEmailNotVerified},
+		{name: "不正な ID トークンは拒否する", token: "forged", wantErr: ErrInvalidToken},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(false)
+			out, err := f.uc.LoginWithGoogle(context.Background(), tt.token)
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
+			}
+			if tt.wantErr != nil {
+				if len(f.users.created) != 0 || len(f.sessions.created) != 0 {
+					t.Errorf("拒否したのにユーザーかセッションが作られました")
+				}
+				return
+			}
+			if out.User.ID != tt.wantUser || len(f.users.created) != 0 {
+				t.Errorf("ログインしたユーザーが期待と異なります: %+v", out.User)
+			}
+		})
+	}
+}
+
+func TestLoginWithGoogleLinksSubToExistingUser(t *testing.T) {
+	f := newFixture(false)
+	if _, err := f.uc.LoginWithGoogle(context.Background(), "alice"); err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	alice, _ := f.users.FindByID(context.Background(), "alice")
+	if alice.GoogleSub == nil || *alice.GoogleSub != "sub-alice" {
+		t.Errorf("Google アカウントが紐付いていません: %+v", alice)
+	}
+}
+
+func TestLoginWithGoogleCreatesInvitedUser(t *testing.T) {
+	f := newFixture(false)
+
+	out, err := f.uc.LoginWithGoogle(context.Background(), "invited")
+	if err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(f.users.created) != 1 {
+		t.Fatalf("ユーザーが作られていません")
+	}
+	user := f.users.created[0]
+	if user.Email != "new@example.com" || user.DisplayName != "New User" || *user.GoogleSub != "sub-new" || user.PasswordHash != entity.UnusablePasswordHash {
+		t.Errorf("作られたユーザーが期待と異なります: %+v", user)
+	}
+	assertJoinedInvitedWorkspaces(t, f)
+	if out.User.ID != user.ID || len(f.sessions.created) != 1 {
+		t.Errorf("作ったユーザーでログインしていません: %+v", out.User)
+	}
+}
+
+func TestSignUpWithInvitation(t *testing.T) {
+	f := newFixture(true)
+
+	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "expired-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, ErrInvitationNotFound) {
+		t.Fatalf("期限切れの招待は拒否するはず: %v", err)
+	}
+	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); err != nil {
+		t.Fatalf("予期しないエラー: %v", err)
+	}
+	if len(f.users.created) != 1 || f.users.created[0].PasswordHash != "password123" || f.users.created[0].Email != "new@example.com" {
+		t.Fatalf("パスワードを設定したユーザーが作られていません: %+v", f.users.created)
+	}
+	assertJoinedInvitedWorkspaces(t, f)
+}
+
+// 同じメールアドレスへの期限内の招待はすべて受諾し、期限切れの招待は使わない
+func assertJoinedInvitedWorkspaces(t *testing.T, f fixture) {
+	t.Helper()
+	joined := make([]string, 0, len(f.workspaces.added))
+	for _, m := range f.workspaces.added {
+		joined = append(joined, string(m.Role)+"@"+m.WorkspaceID)
+	}
+	if !slices.Equal(joined, []string{"member@ws1", "guest@ws2"}) {
+		t.Errorf("招待されたワークスペースに参加していません: %v", joined)
+	}
+	if !slices.Equal(f.invitations.accepted, []string{"inv1", "inv2"}) {
+		t.Errorf("招待が受諾済みになっていません: %v", f.invitations.accepted)
 	}
 }

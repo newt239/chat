@@ -33,7 +33,6 @@ type WorkspaceUseCase interface {
 	// 新規
 	ListPublicWorkspaces(ctx context.Context, userID string) (*ListPublicWorkspacesOutput, error)
 	JoinPublicWorkspace(ctx context.Context, input JoinPublicWorkspaceInput) (*MemberActionOutput, error)
-	AddMemberByEmail(ctx context.Context, input AddMemberByEmailInput) (*MemberActionOutput, error)
 }
 
 type workspaceInteractor struct {
@@ -461,46 +460,6 @@ func (i *workspaceInteractor) JoinPublicWorkspace(ctx context.Context, input Joi
 	}
 	if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
 		return nil, fmt.Errorf("failed to join workspace: %w", err)
-	}
-	return &MemberActionOutput{Success: true}, nil
-}
-
-// AddMemberByEmail はメンバーの招待が許可されたロールだけが実行でき、管理者として追加できるのは管理者だけです
-func (i *workspaceInteractor) AddMemberByEmail(ctx context.Context, input AddMemberByEmailInput) (*MemberActionOutput, error) {
-	requester, err := i.permissionSvc.Ensure(ctx, input.WorkspaceID, input.RequestedBy, entity.PermissionInviteMembers)
-	if err != nil {
-		return nil, err
-	}
-	if entity.WorkspaceRole(input.Role) == entity.WorkspaceRoleAdmin && !requester.IsAdmin() {
-		return nil, ErrUnauthorized
-	}
-
-	user, err := i.userRepo.FindByEmail(ctx, input.Email)
-	if err != nil || user == nil {
-		return nil, errors.New("指定されたメールアドレスのユーザーが見つかりません")
-	}
-
-	existing, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, user.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check existing membership: %w", err)
-	}
-	if existing != nil {
-		return nil, errors.New("このユーザーは既にワークスペースに参加しています")
-	}
-
-	role := entity.WorkspaceRole(input.Role)
-	if err := validateWorkspaceRole(string(role)); err != nil {
-		return nil, err
-	}
-
-	member := &entity.WorkspaceMember{
-		WorkspaceID: input.WorkspaceID,
-		UserID:      user.ID,
-		Role:        role,
-		JoinedAt:    time.Now(),
-	}
-	if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
-		return nil, fmt.Errorf("failed to add member by email: %w", err)
 	}
 	return &MemberActionOutput{Success: true}, nil
 }

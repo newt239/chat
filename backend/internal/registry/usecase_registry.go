@@ -11,6 +11,7 @@ import (
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
+	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -48,9 +49,23 @@ func (r *UseCaseRegistry) NewAuthUseCase() authuc.AuthUseCase {
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewSessionRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewInvitationRepository(),
 		r.infrastructureRegistry.NewJWTService(),
 		r.infrastructureRegistry.NewPasswordService(),
+		r.infrastructureRegistry.NewGoogleVerifier(),
+		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewAuthSettings(),
+	)
+}
+
+func (r *UseCaseRegistry) NewInvitationUseCase() *invitationuc.Interactor {
+	return invitationuc.NewInteractor(
+		r.domainRegistry.NewInvitationRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewPermissionService(),
+		r.infrastructureRegistry.NewInvitationSender(),
 	)
 }
 
