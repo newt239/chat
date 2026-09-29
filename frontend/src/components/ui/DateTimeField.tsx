@@ -35,7 +35,7 @@ export const DateTimeField = ({ label, value, onChange, errorMessage }: DateTime
       {(segment) => (
         <DateSegment
           segment={segment}
-          className="rounded-sm px-px tabular-nums outline-none data-focused:bg-accent data-focused:text-accent-fg data-placeholder:text-subtle data-[type=literal]:px-0"
+          className="rounded-sm px-px whitespace-pre tabular-nums outline-none data-focused:bg-accent data-focused:text-accent-fg data-placeholder:text-subtle data-[type=literal]:px-0"
         />
       )}
     </DateInput>
