@@ -4,6 +4,7 @@ import {
   formatBytes,
   formatDate,
   formatDateTime,
+  formatDateWithWeekday,
   formatFullDateTime,
   formatMonthDay,
   formatNumber,
@@ -29,6 +30,11 @@ describe("日付・時刻のフォーマット", () => {
   it("日時を言語に合わせて表示する", () => {
     expect(formatDateTime(date, "ja")).toBe("2026年9月28日 10:16");
     expect(formatDateTime(date, "en")).toBe("Sep 28, 2026, 10:16 AM");
+  });
+
+  it("曜日付きの日付を言語に合わせて表示する", () => {
+    expect(formatDateWithWeekday(date, "ja")).toBe("2026年9月28日(月)");
+    expect(formatDateWithWeekday(date, "en")).toBe("Mon, Sep 28, 2026");
   });
 
   it("曜日と秒を含む日時を言語に合わせて表示する", () => {

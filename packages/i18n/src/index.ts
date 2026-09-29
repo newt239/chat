@@ -2,6 +2,7 @@ export {
   formatBytes,
   formatDate,
   formatDateTime,
+  formatDateWithWeekday,
   formatFullDateTime,
   formatMonthDay,
   formatNumber,

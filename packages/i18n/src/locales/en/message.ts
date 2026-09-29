@@ -35,6 +35,16 @@ export const message: Messages["message"] = {
     strikethrough: "Strikethrough",
     uploading: "Wait for the upload to finish",
   },
+  date: {
+    calendar: "Choose a date",
+    first: "The very beginning",
+    jumpTo: "Jump to date",
+    lastMonth: "Last month",
+    lastWeek: "Last week",
+    pick: "Jump to a specific date",
+    today: "Today",
+    yesterday: "Yesterday",
+  },
   delete: {
     body: "This can't be undone.",
     confirm: "Delete",
@@ -76,6 +86,8 @@ export const message: Messages["message"] = {
   panel: {
     empty: "No messages yet",
     emptyHint: "Send the first message",
+    jumpToLatest: "Jump to latest messages",
+    loadNewer: "Load later messages",
     loadOlder: "Load earlier messages",
     selectChannel: "Pick a channel to see its messages",
     selectWorkspace: "Pick a workspace",

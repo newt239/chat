@@ -33,6 +33,16 @@ export const message = {
     strikethrough: "取り消し線",
     uploading: "アップロードが終わるまでお待ちください",
   },
+  date: {
+    calendar: "日付を選ぶ",
+    first: "最初",
+    jumpTo: "日付へ移動",
+    lastMonth: "先月",
+    lastWeek: "先週",
+    pick: "日付を指定",
+    today: "今日",
+    yesterday: "昨日",
+  },
   delete: {
     body: "元に戻せません。",
     confirm: "削除する",
@@ -74,6 +84,8 @@ export const message = {
   panel: {
     empty: "まだメッセージがありません",
     emptyHint: "最初のメッセージを送ってみましょう",
+    jumpToLatest: "最新のメッセージへ移動",
+    loadNewer: "さらに後のメッセージを読み込む",
     loadOlder: "さらに前のメッセージを読み込む",
     selectChannel: "チャンネルを選ぶとメッセージが表示されます",
     selectWorkspace: "ワークスペースを選んでください",

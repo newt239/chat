@@ -3,7 +3,9 @@ package message
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -65,25 +67,57 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 		}
 	}
 
-	messages, err := l.messageRepo.FindByChannelIDs(ctx, channelIDs, limit+1, input.Since, input.Until)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch messages: %w", err)
+	if input.Around != nil {
+		older, hasMore, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, nil, input.Around, false)
+		if err != nil {
+			return nil, err
+		}
+		// 指定日時ちょうどの投稿も後ろ側に含める。created_at はマイクロ秒精度
+		since := input.Around.Add(-time.Microsecond)
+		newer, hasNewer, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, &since, nil, true)
+		if err != nil {
+			return nil, err
+		}
+		slices.Reverse(newer)
+		return &ListMessagesOutput{Messages: append(newer, older...), HasMore: hasMore, HasNewer: hasNewer}, nil
 	}
 
-	// システムメッセージ取得
-	systemMessages, err := l.systemMsgRepo.FindByChannelIDs(ctx, channelIDs, limit+1, input.Since, input.Until)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch system messages: %w", err)
+	// since だけの指定は続きの読み込みなので、since の直後から古い順に取る
+	if input.Since != nil && input.Until == nil {
+		newer, hasNewer, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, nil, true)
+		if err != nil {
+			return nil, err
+		}
+		slices.Reverse(newer)
+		return &ListMessagesOutput{Messages: newer, HasNewer: hasNewer}, nil
 	}
 
-	// ユーザーメッセージの出力へ変換
-	messages, hasMoreUser := l.prepareMessageList(messages, limit)
-	userOutputs, err := l.outputBuilder.Build(ctx, input.UserID, messages)
+	timeline, hasMore, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, input.Until, false)
 	if err != nil {
 		return nil, err
 	}
+	return &ListMessagesOutput{Messages: timeline, HasMore: hasMore}, nil
+}
 
-	// タイムラインへマージ
+// fetchTimeline はユーザー・システムメッセージを合わせて limit 件取り、取得した向きに続きがあるかを返します
+func (l *MessageLister) fetchTimeline(ctx context.Context, userID string, channelIDs []string, limit int, since, until *time.Time, ascending bool) ([]TimelineItem, bool, error) {
+	messages, err := l.messageRepo.FindByChannelIDs(ctx, channelIDs, limit+1, since, until, ascending)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to fetch messages: %w", err)
+	}
+	systemMessages, err := l.systemMsgRepo.FindByChannelIDs(ctx, channelIDs, limit+1, since, until, ascending)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to fetch system messages: %w", err)
+	}
+	hasMore := len(messages) > limit
+	if hasMore {
+		messages = messages[:limit]
+	}
+	userOutputs, err := l.outputBuilder.Build(ctx, userID, messages)
+	if err != nil {
+		return nil, false, err
+	}
+
 	timeline := make([]TimelineItem, 0, len(userOutputs)+len(systemMessages))
 	for _, m := range userOutputs {
 		timeline = append(timeline, TimelineItem{Type: "user", UserMessage: &m, CreatedAt: m.CreatedAt})
@@ -98,14 +132,17 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 			CreatedAt: sm.CreatedAt,
 		}, CreatedAt: sm.CreatedAt})
 	}
-	sort.Slice(timeline, func(i, j int) bool { return timeline[i].CreatedAt.After(timeline[j].CreatedAt) })
-	hasMore := false
+	sort.SliceStable(timeline, func(i, j int) bool {
+		if ascending {
+			return timeline[i].CreatedAt.Before(timeline[j].CreatedAt)
+		}
+		return timeline[i].CreatedAt.After(timeline[j].CreatedAt)
+	})
 	if len(timeline) > limit {
 		hasMore = true
 		timeline = timeline[:limit]
 	}
-
-	return &ListMessagesOutput{Messages: timeline, HasMore: hasMore || hasMoreUser}, nil
+	return timeline, hasMore, nil
 }
 
 // ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
@@ -276,24 +313,4 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 		LastReplyUser:      lastReplyUser,
 		ParticipantUserIDs: metadata.ParticipantUserIDs,
 	}, nil
-}
-
-// ensureChannelAccess はチャンネルアクセス権限を確認します
-// ensureChannelAccess は ChannelAccessService に委譲済み
-
-// prepareMessageList はメッセージリストを準備し、リミット処理を行います
-func (l *MessageLister) prepareMessageList(messages []*entity.Message, limit int) ([]*entity.Message, bool) {
-	if limit <= 0 {
-		limit = defaultMessageLimit
-	} else if limit > maxMessageLimit {
-		limit = maxMessageLimit
-	}
-
-	hasMore := false
-	if len(messages) > limit {
-		hasMore = true
-		messages = messages[:limit]
-	}
-
-	return messages, hasMore
 }

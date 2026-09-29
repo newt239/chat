@@ -2,6 +2,10 @@ export const ui = {
   avatar: {
     groupMembers: "{{count}} 人のグループ",
   },
+  calendar: {
+    next: "次の月",
+    previous: "前の月",
+  },
   comboBox: {
     empty: "候補がありません",
     showSuggestions: "候補を表示",

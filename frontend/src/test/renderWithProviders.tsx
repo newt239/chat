@@ -16,6 +16,7 @@ import { z } from "zod";
 
 import { adminSearchSchema } from "#/features/admin/schemas";
 import { workspaceSearchSchema } from "#/features/layout/schemas";
+import { jumpDateSchema } from "#/features/message/utils/dateJump";
 import { searchQuerySchema } from "#/features/search/schemas";
 import { authAtom } from "#/providers/store/auth";
 
@@ -58,7 +59,10 @@ export const renderWithProviders = async (
   const channelRoute = createRoute({
     getParentRoute: () => workspaceRoute,
     path: "/$channelId",
-    validateSearch: z.object({ message: z.string().optional() }),
+    validateSearch: z.object({
+      date: jumpDateSchema.optional(),
+      message: z.string().optional(),
+    }),
   });
   const router = createRouter({
     history: createMemoryHistory({ initialEntries: [url] }),

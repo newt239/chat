@@ -26,6 +26,10 @@ export const formatFullDateTime = (date: Date, locale: Locale) =>
     weekday: "short",
   }).format(date);
 
+// 2026年9月28日(月) / Mon, Sep 28, 2026
+export const formatDateWithWeekday = (date: Date, locale: Locale) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, weekday: "short" }).format(date);
+
 // 9/28（グラフの軸など幅の狭い場所に使う）
 export const formatMonthDay = (date: Date, locale: Locale) =>
   new Intl.DateTimeFormat(toBcp47(locale), { day: "numeric", month: "numeric" }).format(date);

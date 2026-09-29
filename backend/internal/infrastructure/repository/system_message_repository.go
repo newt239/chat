@@ -46,7 +46,7 @@ func (r *systemMessageRepository) Create(ctx context.Context, msg *entity.System
 	return nil
 }
 
-func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.SystemMessage, error) {
+func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.SystemMessage, error) {
 	chIDs, err := parseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
@@ -66,10 +66,14 @@ func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelI
 		q = q.Limit(limit)
 	}
 
+	order := ent.Desc(systemmessage.FieldCreatedAt)
+	if ascending {
+		order = ent.Asc(systemmessage.FieldCreatedAt)
+	}
 	rows, err := q.
 		WithChannel().
 		WithActor().
-		Order(ent.Desc(systemmessage.FieldCreatedAt)).
+		Order(order).
 		All(ctx)
 	if err != nil {
 		return nil, err
