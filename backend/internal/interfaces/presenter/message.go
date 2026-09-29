@@ -55,7 +55,15 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 	if m.Pin != nil {
 		msg.Pin = &chatv1.MessagePin{PinnedBy: UserSummary(m.Pin.PinnedBy), PinnedAt: timestamppb.New(m.Pin.PinnedAt)}
 	}
+	msg.Location = MessageLocation(m.Location)
 	return msg
+}
+
+func MessageLocation(l *entity.MessageLocation) *chatv1.MessageLocation {
+	if l == nil {
+		return nil
+	}
+	return &chatv1.MessageLocation{Latitude: l.Latitude, Longitude: l.Longitude, AccuracyMeters: l.AccuracyMeters, Label: l.Label}
 }
 
 func OGPData(o entity.OGPData) *chatv1.OgpData {

@@ -40,7 +40,8 @@ const searchDocumentSQL = `
 		m.body ~ $1,
 		EXISTS (SELECT 1 FROM message_links l WHERE l.message_link_message = m.id),
 		EXISTS (SELECT 1 FROM message_pins p WHERE p.message_pin_message = m.id),
-		EXISTS (SELECT 1 FROM messages r WHERE r.message_parent = m.id AND r.deleted_at IS NULL)
+		EXISTS (SELECT 1 FROM messages r WHERE r.message_parent = m.id AND r.deleted_at IS NULL),
+		m.location_latitude IS NOT NULL
 	FROM messages m JOIN channels c ON c.id = m.message_channel
 	WHERE m.deleted_at IS NULL AND `
 
@@ -113,9 +114,10 @@ func (r *messageRepository) querySearchDocuments(ctx context.Context, where stri
 			createdAt                               time.Time
 			fileNames, mimeTypes, userIDs, groupIDs pq.StringArray
 			mentionsChannel, hasLink, pinned, reply bool
+			hasLocation                             bool
 		)
 		if err := rows.Scan(&id, &workspaceID, &channelID, &senderID, &parentID, &body, &createdAt,
-			&fileNames, &mimeTypes, &userIDs, &groupIDs, &mentionsChannel, &hasLink, &pinned, &reply); err != nil {
+			&fileNames, &mimeTypes, &userIDs, &groupIDs, &mentionsChannel, &hasLink, &pinned, &reply, &hasLocation); err != nil {
 			return nil, err
 		}
 		doc := domainrepository.MessageSearchDocument{
@@ -125,7 +127,7 @@ func (r *messageRepository) querySearchDocuments(ctx context.Context, where stri
 			SenderID:          senderID.String(),
 			Body:              body,
 			AttachmentNames:   fileNames,
-			Has:               contentKinds(body, mimeTypes, hasLink),
+			Has:               contentKinds(body, mimeTypes, hasLink, hasLocation),
 			MentionedUserIDs:  userIDs,
 			MentionedGroupIDs: groupIDs,
 			MentionsChannel:   mentionsChannel,
@@ -142,8 +144,8 @@ func (r *messageRepository) querySearchDocuments(ctx context.Context, where stri
 	return docs, rows.Err()
 }
 
-// contentKinds は添付の種類と、リンクを含むかどうかから絞り込み用の種類を求めます
-func contentKinds(body string, mimeTypes []string, hasLink bool) []domainrepository.MessageContentKind {
+// contentKinds は添付の種類と、リンク・位置情報を含むかどうかから絞り込み用の種類を求めます
+func contentKinds(body string, mimeTypes []string, hasLink, hasLocation bool) []domainrepository.MessageContentKind {
 	seen := map[domainrepository.MessageContentKind]bool{}
 	for _, mimeType := range mimeTypes {
 		switch {
@@ -158,10 +160,12 @@ func contentKinds(body string, mimeTypes []string, hasLink bool) []domainreposit
 	if hasLink || strings.Contains(body, "http://") || strings.Contains(body, "https://") {
 		seen[domainrepository.MessageContentLink] = true
 	}
+	seen[domainrepository.MessageContentLocation] = hasLocation
 	kinds := []domainrepository.MessageContentKind{}
 	for _, kind := range []domainrepository.MessageContentKind{
 		domainrepository.MessageContentImage, domainrepository.MessageContentVideo,
 		domainrepository.MessageContentFile, domainrepository.MessageContentLink,
+		domainrepository.MessageContentLocation,
 	} {
 		if seen[kind] {
 			kinds = append(kinds, kind)

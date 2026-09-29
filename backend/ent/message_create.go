@@ -151,6 +151,62 @@ func (_c *MessageCreate) SetNillableSenderAvatarURL(v *string) *MessageCreate {
 	return _c
 }
 
+// SetLocationLatitude sets the "location_latitude" field.
+func (_c *MessageCreate) SetLocationLatitude(v float64) *MessageCreate {
+	_c.mutation.SetLocationLatitude(v)
+	return _c
+}
+
+// SetNillableLocationLatitude sets the "location_latitude" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableLocationLatitude(v *float64) *MessageCreate {
+	if v != nil {
+		_c.SetLocationLatitude(*v)
+	}
+	return _c
+}
+
+// SetLocationLongitude sets the "location_longitude" field.
+func (_c *MessageCreate) SetLocationLongitude(v float64) *MessageCreate {
+	_c.mutation.SetLocationLongitude(v)
+	return _c
+}
+
+// SetNillableLocationLongitude sets the "location_longitude" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableLocationLongitude(v *float64) *MessageCreate {
+	if v != nil {
+		_c.SetLocationLongitude(*v)
+	}
+	return _c
+}
+
+// SetLocationAccuracy sets the "location_accuracy" field.
+func (_c *MessageCreate) SetLocationAccuracy(v float64) *MessageCreate {
+	_c.mutation.SetLocationAccuracy(v)
+	return _c
+}
+
+// SetNillableLocationAccuracy sets the "location_accuracy" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableLocationAccuracy(v *float64) *MessageCreate {
+	if v != nil {
+		_c.SetLocationAccuracy(*v)
+	}
+	return _c
+}
+
+// SetLocationLabel sets the "location_label" field.
+func (_c *MessageCreate) SetLocationLabel(v string) *MessageCreate {
+	_c.mutation.SetLocationLabel(v)
+	return _c
+}
+
+// SetNillableLocationLabel sets the "location_label" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableLocationLabel(v *string) *MessageCreate {
+	if v != nil {
+		_c.SetLocationLabel(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *MessageCreate) SetID(v uuid.UUID) *MessageCreate {
 	_c.mutation.SetID(v)
@@ -386,11 +442,6 @@ func (_c *MessageCreate) check() error {
 	if _, ok := _c.mutation.Body(); !ok {
 		return &ValidationError{Name: "body", err: errors.New(`ent: missing required field "Message.body"`)}
 	}
-	if v, ok := _c.mutation.Body(); ok {
-		if err := message.BodyValidator(v); err != nil {
-			return &ValidationError{Name: "body", err: fmt.Errorf(`ent: validator failed for field "Message.body": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Message.created_at"`)}
 	}
@@ -463,6 +514,22 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.SenderAvatarURL(); ok {
 		_spec.SetField(message.FieldSenderAvatarURL, field.TypeString, value)
 		_node.SenderAvatarURL = &value
+	}
+	if value, ok := _c.mutation.LocationLatitude(); ok {
+		_spec.SetField(message.FieldLocationLatitude, field.TypeFloat64, value)
+		_node.LocationLatitude = &value
+	}
+	if value, ok := _c.mutation.LocationLongitude(); ok {
+		_spec.SetField(message.FieldLocationLongitude, field.TypeFloat64, value)
+		_node.LocationLongitude = &value
+	}
+	if value, ok := _c.mutation.LocationAccuracy(); ok {
+		_spec.SetField(message.FieldLocationAccuracy, field.TypeFloat64, value)
+		_node.LocationAccuracy = &value
+	}
+	if value, ok := _c.mutation.LocationLabel(); ok {
+		_spec.SetField(message.FieldLocationLabel, field.TypeString, value)
+		_node.LocationLabel = &value
 	}
 	if nodes := _c.mutation.ChannelIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -829,6 +896,96 @@ func (u *MessageUpsert) ClearSenderAvatarURL() *MessageUpsert {
 	return u
 }
 
+// SetLocationLatitude sets the "location_latitude" field.
+func (u *MessageUpsert) SetLocationLatitude(v float64) *MessageUpsert {
+	u.Set(message.FieldLocationLatitude, v)
+	return u
+}
+
+// UpdateLocationLatitude sets the "location_latitude" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateLocationLatitude() *MessageUpsert {
+	u.SetExcluded(message.FieldLocationLatitude)
+	return u
+}
+
+// AddLocationLatitude adds v to the "location_latitude" field.
+func (u *MessageUpsert) AddLocationLatitude(v float64) *MessageUpsert {
+	u.Add(message.FieldLocationLatitude, v)
+	return u
+}
+
+// ClearLocationLatitude clears the value of the "location_latitude" field.
+func (u *MessageUpsert) ClearLocationLatitude() *MessageUpsert {
+	u.SetNull(message.FieldLocationLatitude)
+	return u
+}
+
+// SetLocationLongitude sets the "location_longitude" field.
+func (u *MessageUpsert) SetLocationLongitude(v float64) *MessageUpsert {
+	u.Set(message.FieldLocationLongitude, v)
+	return u
+}
+
+// UpdateLocationLongitude sets the "location_longitude" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateLocationLongitude() *MessageUpsert {
+	u.SetExcluded(message.FieldLocationLongitude)
+	return u
+}
+
+// AddLocationLongitude adds v to the "location_longitude" field.
+func (u *MessageUpsert) AddLocationLongitude(v float64) *MessageUpsert {
+	u.Add(message.FieldLocationLongitude, v)
+	return u
+}
+
+// ClearLocationLongitude clears the value of the "location_longitude" field.
+func (u *MessageUpsert) ClearLocationLongitude() *MessageUpsert {
+	u.SetNull(message.FieldLocationLongitude)
+	return u
+}
+
+// SetLocationAccuracy sets the "location_accuracy" field.
+func (u *MessageUpsert) SetLocationAccuracy(v float64) *MessageUpsert {
+	u.Set(message.FieldLocationAccuracy, v)
+	return u
+}
+
+// UpdateLocationAccuracy sets the "location_accuracy" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateLocationAccuracy() *MessageUpsert {
+	u.SetExcluded(message.FieldLocationAccuracy)
+	return u
+}
+
+// AddLocationAccuracy adds v to the "location_accuracy" field.
+func (u *MessageUpsert) AddLocationAccuracy(v float64) *MessageUpsert {
+	u.Add(message.FieldLocationAccuracy, v)
+	return u
+}
+
+// ClearLocationAccuracy clears the value of the "location_accuracy" field.
+func (u *MessageUpsert) ClearLocationAccuracy() *MessageUpsert {
+	u.SetNull(message.FieldLocationAccuracy)
+	return u
+}
+
+// SetLocationLabel sets the "location_label" field.
+func (u *MessageUpsert) SetLocationLabel(v string) *MessageUpsert {
+	u.Set(message.FieldLocationLabel, v)
+	return u
+}
+
+// UpdateLocationLabel sets the "location_label" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateLocationLabel() *MessageUpsert {
+	u.SetExcluded(message.FieldLocationLabel)
+	return u
+}
+
+// ClearLocationLabel clears the value of the "location_label" field.
+func (u *MessageUpsert) ClearLocationLabel() *MessageUpsert {
+	u.SetNull(message.FieldLocationLabel)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1005,6 +1162,111 @@ func (u *MessageUpsertOne) UpdateSenderAvatarURL() *MessageUpsertOne {
 func (u *MessageUpsertOne) ClearSenderAvatarURL() *MessageUpsertOne {
 	return u.Update(func(s *MessageUpsert) {
 		s.ClearSenderAvatarURL()
+	})
+}
+
+// SetLocationLatitude sets the "location_latitude" field.
+func (u *MessageUpsertOne) SetLocationLatitude(v float64) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationLatitude(v)
+	})
+}
+
+// AddLocationLatitude adds v to the "location_latitude" field.
+func (u *MessageUpsertOne) AddLocationLatitude(v float64) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.AddLocationLatitude(v)
+	})
+}
+
+// UpdateLocationLatitude sets the "location_latitude" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateLocationLatitude() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationLatitude()
+	})
+}
+
+// ClearLocationLatitude clears the value of the "location_latitude" field.
+func (u *MessageUpsertOne) ClearLocationLatitude() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationLatitude()
+	})
+}
+
+// SetLocationLongitude sets the "location_longitude" field.
+func (u *MessageUpsertOne) SetLocationLongitude(v float64) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationLongitude(v)
+	})
+}
+
+// AddLocationLongitude adds v to the "location_longitude" field.
+func (u *MessageUpsertOne) AddLocationLongitude(v float64) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.AddLocationLongitude(v)
+	})
+}
+
+// UpdateLocationLongitude sets the "location_longitude" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateLocationLongitude() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationLongitude()
+	})
+}
+
+// ClearLocationLongitude clears the value of the "location_longitude" field.
+func (u *MessageUpsertOne) ClearLocationLongitude() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationLongitude()
+	})
+}
+
+// SetLocationAccuracy sets the "location_accuracy" field.
+func (u *MessageUpsertOne) SetLocationAccuracy(v float64) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationAccuracy(v)
+	})
+}
+
+// AddLocationAccuracy adds v to the "location_accuracy" field.
+func (u *MessageUpsertOne) AddLocationAccuracy(v float64) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.AddLocationAccuracy(v)
+	})
+}
+
+// UpdateLocationAccuracy sets the "location_accuracy" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateLocationAccuracy() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationAccuracy()
+	})
+}
+
+// ClearLocationAccuracy clears the value of the "location_accuracy" field.
+func (u *MessageUpsertOne) ClearLocationAccuracy() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationAccuracy()
+	})
+}
+
+// SetLocationLabel sets the "location_label" field.
+func (u *MessageUpsertOne) SetLocationLabel(v string) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationLabel(v)
+	})
+}
+
+// UpdateLocationLabel sets the "location_label" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateLocationLabel() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationLabel()
+	})
+}
+
+// ClearLocationLabel clears the value of the "location_label" field.
+func (u *MessageUpsertOne) ClearLocationLabel() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationLabel()
 	})
 }
 
@@ -1351,6 +1613,111 @@ func (u *MessageUpsertBulk) UpdateSenderAvatarURL() *MessageUpsertBulk {
 func (u *MessageUpsertBulk) ClearSenderAvatarURL() *MessageUpsertBulk {
 	return u.Update(func(s *MessageUpsert) {
 		s.ClearSenderAvatarURL()
+	})
+}
+
+// SetLocationLatitude sets the "location_latitude" field.
+func (u *MessageUpsertBulk) SetLocationLatitude(v float64) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationLatitude(v)
+	})
+}
+
+// AddLocationLatitude adds v to the "location_latitude" field.
+func (u *MessageUpsertBulk) AddLocationLatitude(v float64) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.AddLocationLatitude(v)
+	})
+}
+
+// UpdateLocationLatitude sets the "location_latitude" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateLocationLatitude() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationLatitude()
+	})
+}
+
+// ClearLocationLatitude clears the value of the "location_latitude" field.
+func (u *MessageUpsertBulk) ClearLocationLatitude() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationLatitude()
+	})
+}
+
+// SetLocationLongitude sets the "location_longitude" field.
+func (u *MessageUpsertBulk) SetLocationLongitude(v float64) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationLongitude(v)
+	})
+}
+
+// AddLocationLongitude adds v to the "location_longitude" field.
+func (u *MessageUpsertBulk) AddLocationLongitude(v float64) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.AddLocationLongitude(v)
+	})
+}
+
+// UpdateLocationLongitude sets the "location_longitude" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateLocationLongitude() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationLongitude()
+	})
+}
+
+// ClearLocationLongitude clears the value of the "location_longitude" field.
+func (u *MessageUpsertBulk) ClearLocationLongitude() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationLongitude()
+	})
+}
+
+// SetLocationAccuracy sets the "location_accuracy" field.
+func (u *MessageUpsertBulk) SetLocationAccuracy(v float64) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationAccuracy(v)
+	})
+}
+
+// AddLocationAccuracy adds v to the "location_accuracy" field.
+func (u *MessageUpsertBulk) AddLocationAccuracy(v float64) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.AddLocationAccuracy(v)
+	})
+}
+
+// UpdateLocationAccuracy sets the "location_accuracy" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateLocationAccuracy() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationAccuracy()
+	})
+}
+
+// ClearLocationAccuracy clears the value of the "location_accuracy" field.
+func (u *MessageUpsertBulk) ClearLocationAccuracy() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationAccuracy()
+	})
+}
+
+// SetLocationLabel sets the "location_label" field.
+func (u *MessageUpsertBulk) SetLocationLabel(v string) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetLocationLabel(v)
+	})
+}
+
+// UpdateLocationLabel sets the "location_label" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateLocationLabel() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateLocationLabel()
+	})
+}
+
+// ClearLocationLabel clears the value of the "location_label" field.
+func (u *MessageUpsertBulk) ClearLocationLabel() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.ClearLocationLabel()
 	})
 }
 

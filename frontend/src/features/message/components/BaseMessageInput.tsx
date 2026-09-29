@@ -9,6 +9,8 @@ import { AttachmentList } from "#/features/attachment/components/AttachmentList"
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
+import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
+import { PendingLocation } from "#/features/location/components/PendingLocation";
 import { useIsMobile } from "#/lib/useMediaQuery";
 
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
@@ -16,10 +18,13 @@ import { applyFormat, detectActiveFormats } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 
+import type { ComposerContent } from "../utils/composerContent";
 import type { FormatKey } from "../utils/format";
 
+import type { MessageLocation } from "#/gen/chat/v1/message_pb";
+
 type BaseMessageInputProps = {
-  onSubmit: (body: string, attachmentIds: string[]) => void;
+  onSubmit: (content: ComposerContent) => void;
   placeholder: string;
   isPending: boolean;
   error?: string;
@@ -43,6 +48,8 @@ export const BaseMessageInput = ({
   const [body, setBody] = useState("");
   const [selection, setSelection] = useState({ end: 0, start: 0 });
   const [isPreview, setIsPreview] = useState(false);
+  const [location, setLocation] = useState<MessageLocation | undefined>(undefined);
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { previews, addPreview, removePreview, clearPreviews } = useLinkPreview();
   const {
@@ -90,7 +97,8 @@ export const BaseMessageInput = ({
     }
   };
 
-  const hasContent = body.trim().length > 0 || pendingAttachments.length > 0;
+  const hasContent =
+    body.trim().length > 0 || pendingAttachments.length > 0 || location !== undefined;
 
   const handleSubmit = () => {
     if (!hasContent) {
@@ -100,9 +108,10 @@ export const BaseMessageInput = ({
       toast(t("message.composer.uploading"));
       return;
     }
-    onSubmit(body.trim(), getCompletedAttachmentIds());
+    onSubmit({ attachmentIds: getCompletedAttachmentIds(), body: body.trim(), location });
     notifyStopTyping();
     setBody("");
+    setLocation(undefined);
     setIsPreview(false);
     clearPreviews();
     clearAttachments();
@@ -120,6 +129,14 @@ export const BaseMessageInput = ({
       <div className="rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
         {pendingAttachments.length > 0 && (
           <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
+        )}
+        {location && (
+          <PendingLocation
+            location={location}
+            onRemove={() => {
+              setLocation(undefined);
+            }}
+          />
         )}
         {isPreview ? (
           <MessagePreview content={body} />
@@ -182,8 +199,16 @@ export const BaseMessageInput = ({
           onFileSelect={(files) => {
             void handleFileSelect(files);
           }}
+          onShareLocation={() => {
+            setIsLocationOpen(true);
+          }}
         />
       </div>
+      <LocationShareDialog
+        isOpen={isLocationOpen}
+        onOpenChange={setIsLocationOpen}
+        onConfirm={setLocation}
+      />
       {error && <p className="m-0 mt-1.5 text-caption text-danger">{error}</p>}
     </Form>
   );

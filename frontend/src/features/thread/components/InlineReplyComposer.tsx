@@ -50,8 +50,8 @@ export const InlineReplyComposer = ({
       placeholder={placeholder}
       isPending={send.isPending}
       error={send.isError ? t("message.thread.sendFailed") : undefined}
-      onSubmit={(body, attachmentIds) => {
-        send.mutate({ attachmentIds, body, channelId, parentId });
+      onSubmit={(content) => {
+        send.mutate({ ...content, channelId, parentId });
       }}
     />
   );

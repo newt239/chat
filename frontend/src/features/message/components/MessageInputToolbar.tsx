@@ -10,6 +10,7 @@ import {
   IconList,
   IconListNumbers,
   IconLoader2,
+  IconMapPin,
   IconPaperclip,
   IconQuote,
   IconStrikethrough,
@@ -35,6 +36,7 @@ type MessageInputToolbarProps = {
   activeFormats: Record<FormatKey, boolean>;
   onFormat: (key: FormatKey) => void;
   onFileSelect: (files: File[]) => void;
+  onShareLocation: () => void;
 };
 
 const formatButtons: { key: FormatKey; icon: Icon }[] = [
@@ -61,6 +63,7 @@ export const MessageInputToolbar = ({
   activeFormats,
   onFormat,
   onFileSelect,
+  onShareLocation,
 }: MessageInputToolbarProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -96,6 +99,13 @@ export const MessageInputToolbar = ({
           <IconPaperclip />
         </IconButton>
       </FileTrigger>
+      <IconButton
+        label={t("location.composer.share")}
+        className={buttonClassName}
+        onPress={onShareLocation}
+      >
+        <IconMapPin />
+      </IconButton>
       <IconButton
         label={t("message.composer.help")}
         className={cn(buttonClassName, "hidden @lg:inline-grid")}

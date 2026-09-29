@@ -7241,6 +7241,13 @@ type MessageMutation struct {
 	deleted_by                 *uuid.UUID
 	sender_name                *string
 	sender_avatar_url          *string
+	location_latitude          *float64
+	addlocation_latitude       *float64
+	location_longitude         *float64
+	addlocation_longitude      *float64
+	location_accuracy          *float64
+	addlocation_accuracy       *float64
+	location_label             *string
 	clearedFields              map[string]struct{}
 	channel                    *uuid.UUID
 	clearedchannel             bool
@@ -7823,6 +7830,265 @@ func (m *MessageMutation) SenderAvatarURLCleared() bool {
 func (m *MessageMutation) ResetSenderAvatarURL() {
 	m.sender_avatar_url = nil
 	delete(m.clearedFields, message.FieldSenderAvatarURL)
+}
+
+// SetLocationLatitude sets the "location_latitude" field.
+func (m *MessageMutation) SetLocationLatitude(f float64) {
+	m.location_latitude = &f
+	m.addlocation_latitude = nil
+}
+
+// LocationLatitude returns the value of the "location_latitude" field in the mutation.
+func (m *MessageMutation) LocationLatitude() (r float64, exists bool) {
+	v := m.location_latitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocationLatitude returns the old "location_latitude" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldLocationLatitude(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocationLatitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocationLatitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocationLatitude: %w", err)
+	}
+	return oldValue.LocationLatitude, nil
+}
+
+// AddLocationLatitude adds f to the "location_latitude" field.
+func (m *MessageMutation) AddLocationLatitude(f float64) {
+	if m.addlocation_latitude != nil {
+		*m.addlocation_latitude += f
+	} else {
+		m.addlocation_latitude = &f
+	}
+}
+
+// AddedLocationLatitude returns the value that was added to the "location_latitude" field in this mutation.
+func (m *MessageMutation) AddedLocationLatitude() (r float64, exists bool) {
+	v := m.addlocation_latitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLocationLatitude clears the value of the "location_latitude" field.
+func (m *MessageMutation) ClearLocationLatitude() {
+	m.location_latitude = nil
+	m.addlocation_latitude = nil
+	m.clearedFields[message.FieldLocationLatitude] = struct{}{}
+}
+
+// LocationLatitudeCleared returns if the "location_latitude" field was cleared in this mutation.
+func (m *MessageMutation) LocationLatitudeCleared() bool {
+	_, ok := m.clearedFields[message.FieldLocationLatitude]
+	return ok
+}
+
+// ResetLocationLatitude resets all changes to the "location_latitude" field.
+func (m *MessageMutation) ResetLocationLatitude() {
+	m.location_latitude = nil
+	m.addlocation_latitude = nil
+	delete(m.clearedFields, message.FieldLocationLatitude)
+}
+
+// SetLocationLongitude sets the "location_longitude" field.
+func (m *MessageMutation) SetLocationLongitude(f float64) {
+	m.location_longitude = &f
+	m.addlocation_longitude = nil
+}
+
+// LocationLongitude returns the value of the "location_longitude" field in the mutation.
+func (m *MessageMutation) LocationLongitude() (r float64, exists bool) {
+	v := m.location_longitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocationLongitude returns the old "location_longitude" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldLocationLongitude(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocationLongitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocationLongitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocationLongitude: %w", err)
+	}
+	return oldValue.LocationLongitude, nil
+}
+
+// AddLocationLongitude adds f to the "location_longitude" field.
+func (m *MessageMutation) AddLocationLongitude(f float64) {
+	if m.addlocation_longitude != nil {
+		*m.addlocation_longitude += f
+	} else {
+		m.addlocation_longitude = &f
+	}
+}
+
+// AddedLocationLongitude returns the value that was added to the "location_longitude" field in this mutation.
+func (m *MessageMutation) AddedLocationLongitude() (r float64, exists bool) {
+	v := m.addlocation_longitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLocationLongitude clears the value of the "location_longitude" field.
+func (m *MessageMutation) ClearLocationLongitude() {
+	m.location_longitude = nil
+	m.addlocation_longitude = nil
+	m.clearedFields[message.FieldLocationLongitude] = struct{}{}
+}
+
+// LocationLongitudeCleared returns if the "location_longitude" field was cleared in this mutation.
+func (m *MessageMutation) LocationLongitudeCleared() bool {
+	_, ok := m.clearedFields[message.FieldLocationLongitude]
+	return ok
+}
+
+// ResetLocationLongitude resets all changes to the "location_longitude" field.
+func (m *MessageMutation) ResetLocationLongitude() {
+	m.location_longitude = nil
+	m.addlocation_longitude = nil
+	delete(m.clearedFields, message.FieldLocationLongitude)
+}
+
+// SetLocationAccuracy sets the "location_accuracy" field.
+func (m *MessageMutation) SetLocationAccuracy(f float64) {
+	m.location_accuracy = &f
+	m.addlocation_accuracy = nil
+}
+
+// LocationAccuracy returns the value of the "location_accuracy" field in the mutation.
+func (m *MessageMutation) LocationAccuracy() (r float64, exists bool) {
+	v := m.location_accuracy
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocationAccuracy returns the old "location_accuracy" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldLocationAccuracy(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocationAccuracy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocationAccuracy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocationAccuracy: %w", err)
+	}
+	return oldValue.LocationAccuracy, nil
+}
+
+// AddLocationAccuracy adds f to the "location_accuracy" field.
+func (m *MessageMutation) AddLocationAccuracy(f float64) {
+	if m.addlocation_accuracy != nil {
+		*m.addlocation_accuracy += f
+	} else {
+		m.addlocation_accuracy = &f
+	}
+}
+
+// AddedLocationAccuracy returns the value that was added to the "location_accuracy" field in this mutation.
+func (m *MessageMutation) AddedLocationAccuracy() (r float64, exists bool) {
+	v := m.addlocation_accuracy
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLocationAccuracy clears the value of the "location_accuracy" field.
+func (m *MessageMutation) ClearLocationAccuracy() {
+	m.location_accuracy = nil
+	m.addlocation_accuracy = nil
+	m.clearedFields[message.FieldLocationAccuracy] = struct{}{}
+}
+
+// LocationAccuracyCleared returns if the "location_accuracy" field was cleared in this mutation.
+func (m *MessageMutation) LocationAccuracyCleared() bool {
+	_, ok := m.clearedFields[message.FieldLocationAccuracy]
+	return ok
+}
+
+// ResetLocationAccuracy resets all changes to the "location_accuracy" field.
+func (m *MessageMutation) ResetLocationAccuracy() {
+	m.location_accuracy = nil
+	m.addlocation_accuracy = nil
+	delete(m.clearedFields, message.FieldLocationAccuracy)
+}
+
+// SetLocationLabel sets the "location_label" field.
+func (m *MessageMutation) SetLocationLabel(s string) {
+	m.location_label = &s
+}
+
+// LocationLabel returns the value of the "location_label" field in the mutation.
+func (m *MessageMutation) LocationLabel() (r string, exists bool) {
+	v := m.location_label
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocationLabel returns the old "location_label" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldLocationLabel(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocationLabel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocationLabel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocationLabel: %w", err)
+	}
+	return oldValue.LocationLabel, nil
+}
+
+// ClearLocationLabel clears the value of the "location_label" field.
+func (m *MessageMutation) ClearLocationLabel() {
+	m.location_label = nil
+	m.clearedFields[message.FieldLocationLabel] = struct{}{}
+}
+
+// LocationLabelCleared returns if the "location_label" field was cleared in this mutation.
+func (m *MessageMutation) LocationLabelCleared() bool {
+	_, ok := m.clearedFields[message.FieldLocationLabel]
+	return ok
+}
+
+// ResetLocationLabel resets all changes to the "location_label" field.
+func (m *MessageMutation) ResetLocationLabel() {
+	m.location_label = nil
+	delete(m.clearedFields, message.FieldLocationLabel)
 }
 
 // ClearChannel clears the "channel" edge to the Channel entity.
@@ -8480,7 +8746,7 @@ func (m *MessageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 14)
 	if m.channel != nil {
 		fields = append(fields, message.FieldChannelID)
 	}
@@ -8511,6 +8777,18 @@ func (m *MessageMutation) Fields() []string {
 	if m.sender_avatar_url != nil {
 		fields = append(fields, message.FieldSenderAvatarURL)
 	}
+	if m.location_latitude != nil {
+		fields = append(fields, message.FieldLocationLatitude)
+	}
+	if m.location_longitude != nil {
+		fields = append(fields, message.FieldLocationLongitude)
+	}
+	if m.location_accuracy != nil {
+		fields = append(fields, message.FieldLocationAccuracy)
+	}
+	if m.location_label != nil {
+		fields = append(fields, message.FieldLocationLabel)
+	}
 	return fields
 }
 
@@ -8539,6 +8817,14 @@ func (m *MessageMutation) Field(name string) (ent.Value, bool) {
 		return m.SenderName()
 	case message.FieldSenderAvatarURL:
 		return m.SenderAvatarURL()
+	case message.FieldLocationLatitude:
+		return m.LocationLatitude()
+	case message.FieldLocationLongitude:
+		return m.LocationLongitude()
+	case message.FieldLocationAccuracy:
+		return m.LocationAccuracy()
+	case message.FieldLocationLabel:
+		return m.LocationLabel()
 	}
 	return nil, false
 }
@@ -8568,6 +8854,14 @@ func (m *MessageMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldSenderName(ctx)
 	case message.FieldSenderAvatarURL:
 		return m.OldSenderAvatarURL(ctx)
+	case message.FieldLocationLatitude:
+		return m.OldLocationLatitude(ctx)
+	case message.FieldLocationLongitude:
+		return m.OldLocationLongitude(ctx)
+	case message.FieldLocationAccuracy:
+		return m.OldLocationAccuracy(ctx)
+	case message.FieldLocationLabel:
+		return m.OldLocationLabel(ctx)
 	}
 	return nil, fmt.Errorf("unknown Message field %s", name)
 }
@@ -8647,6 +8941,34 @@ func (m *MessageMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSenderAvatarURL(v)
 		return nil
+	case message.FieldLocationLatitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocationLatitude(v)
+		return nil
+	case message.FieldLocationLongitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocationLongitude(v)
+		return nil
+	case message.FieldLocationAccuracy:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocationAccuracy(v)
+		return nil
+	case message.FieldLocationLabel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocationLabel(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Message field %s", name)
 }
@@ -8654,13 +8976,31 @@ func (m *MessageMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *MessageMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addlocation_latitude != nil {
+		fields = append(fields, message.FieldLocationLatitude)
+	}
+	if m.addlocation_longitude != nil {
+		fields = append(fields, message.FieldLocationLongitude)
+	}
+	if m.addlocation_accuracy != nil {
+		fields = append(fields, message.FieldLocationAccuracy)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *MessageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case message.FieldLocationLatitude:
+		return m.AddedLocationLatitude()
+	case message.FieldLocationLongitude:
+		return m.AddedLocationLongitude()
+	case message.FieldLocationAccuracy:
+		return m.AddedLocationAccuracy()
+	}
 	return nil, false
 }
 
@@ -8669,6 +9009,27 @@ func (m *MessageMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *MessageMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case message.FieldLocationLatitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLocationLatitude(v)
+		return nil
+	case message.FieldLocationLongitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLocationLongitude(v)
+		return nil
+	case message.FieldLocationAccuracy:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLocationAccuracy(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Message numeric field %s", name)
 }
@@ -8694,6 +9055,18 @@ func (m *MessageMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(message.FieldSenderAvatarURL) {
 		fields = append(fields, message.FieldSenderAvatarURL)
+	}
+	if m.FieldCleared(message.FieldLocationLatitude) {
+		fields = append(fields, message.FieldLocationLatitude)
+	}
+	if m.FieldCleared(message.FieldLocationLongitude) {
+		fields = append(fields, message.FieldLocationLongitude)
+	}
+	if m.FieldCleared(message.FieldLocationAccuracy) {
+		fields = append(fields, message.FieldLocationAccuracy)
+	}
+	if m.FieldCleared(message.FieldLocationLabel) {
+		fields = append(fields, message.FieldLocationLabel)
 	}
 	return fields
 }
@@ -8726,6 +9099,18 @@ func (m *MessageMutation) ClearField(name string) error {
 		return nil
 	case message.FieldSenderAvatarURL:
 		m.ClearSenderAvatarURL()
+		return nil
+	case message.FieldLocationLatitude:
+		m.ClearLocationLatitude()
+		return nil
+	case message.FieldLocationLongitude:
+		m.ClearLocationLongitude()
+		return nil
+	case message.FieldLocationAccuracy:
+		m.ClearLocationAccuracy()
+		return nil
+	case message.FieldLocationLabel:
+		m.ClearLocationLabel()
 		return nil
 	}
 	return fmt.Errorf("unknown Message nullable field %s", name)
@@ -8764,6 +9149,18 @@ func (m *MessageMutation) ResetField(name string) error {
 		return nil
 	case message.FieldSenderAvatarURL:
 		m.ResetSenderAvatarURL()
+		return nil
+	case message.FieldLocationLatitude:
+		m.ResetLocationLatitude()
+		return nil
+	case message.FieldLocationLongitude:
+		m.ResetLocationLongitude()
+		return nil
+	case message.FieldLocationAccuracy:
+		m.ResetLocationAccuracy()
+		return nil
+	case message.FieldLocationLabel:
+		m.ResetLocationLabel()
 		return nil
 	}
 	return fmt.Errorf("unknown Message field %s", name)

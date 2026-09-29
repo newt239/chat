@@ -95,13 +95,8 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
         {data?.parentMessage && (
           <ThreadReplyInput
             channelId={threadChannelId}
-            onSubmit={(body, attachmentIds) => {
-              sendReply.mutate({
-                attachmentIds,
-                body,
-                channelId: threadChannelId,
-                parentId: threadId,
-              });
+            onSubmit={(content) => {
+              sendReply.mutate({ ...content, channelId: threadChannelId, parentId: threadId });
             }}
             isPending={sendReply.isPending}
             isError={sendReply.isError}

@@ -36,6 +36,7 @@ enum SearchHas {
   SEARCH_HAS_FILE = 2;
   SEARCH_HAS_LINK = 3;
   SEARCH_HAS_VIDEO = 4;
+  SEARCH_HAS_LOCATION = 5;
 }
 
 // メッセージ検索の絞り込み条件。指定した条件はすべて AND で結合する

@@ -100,6 +100,8 @@ func newSearchFixture(t *testing.T, client *ent.Client) *searchFixture {
 		SetCreatedAt(base.Add(8 * time.Minute)).SetDeletedAt(base.Add(9 * time.Minute)).SaveX(ctx)
 	newMessage("not-broadcast", 9, "general", f.bob, "@channelx はメンションではない")
 	newMessage("reverse", 10, "general", f.bob, "review of the design")
+	f.messages["location"] = client.Message.Create().SetChannel(f.channels["secret"]).SetUser(f.bob).SetBody("").
+		SetLocationLatitude(35.68).SetLocationLongitude(139.76).SetCreatedAt(base.Add(11 * time.Minute)).SaveX(ctx)
 	return f
 }
 
@@ -185,6 +187,9 @@ func TestFindSearchDocuments(t *testing.T) {
 	}
 	if link := byKey["link"]; !reflect.DeepEqual(link.Has, []domainrepository.MessageContentKind{domainrepository.MessageContentLink}) {
 		t.Errorf("リンクが期待と異なります: %+v", link.Has)
+	}
+	if location := byKey["location"]; !reflect.DeepEqual(location.Has, []domainrepository.MessageContentKind{domainrepository.MessageContentLocation}) {
+		t.Errorf("位置情報が期待と異なります: %+v", location.Has)
 	}
 	if group := byKey["group"]; !reflect.DeepEqual(group.MentionedGroupIDs, []string{f.group.ID.String()}) {
 		t.Errorf("グループメンションが期待と異なります: %+v", group.MentionedGroupIDs)

@@ -234,10 +234,6 @@ func init() {
 	invitation.DefaultID = invitationDescID.Default.(func() uuid.UUID)
 	messageFields := schema.Message{}.Fields()
 	_ = messageFields
-	// messageDescBody is the schema descriptor for body field.
-	messageDescBody := messageFields[4].Descriptor()
-	// message.BodyValidator is a validator for the "body" field. It is called by the builders before save.
-	message.BodyValidator = messageDescBody.Validators[0].(func(string) error)
 	// messageDescCreatedAt is the schema descriptor for created_at field.
 	messageDescCreatedAt := messageFields[5].Descriptor()
 	// message.DefaultCreatedAt holds the default value on creation for the created_at field.

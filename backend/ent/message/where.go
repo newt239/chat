@@ -106,6 +106,26 @@ func SenderAvatarURL(v string) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldSenderAvatarURL, v))
 }
 
+// LocationLatitude applies equality check predicate on the "location_latitude" field. It's identical to LocationLatitudeEQ.
+func LocationLatitude(v float64) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationLatitude, v))
+}
+
+// LocationLongitude applies equality check predicate on the "location_longitude" field. It's identical to LocationLongitudeEQ.
+func LocationLongitude(v float64) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationLongitude, v))
+}
+
+// LocationAccuracy applies equality check predicate on the "location_accuracy" field. It's identical to LocationAccuracyEQ.
+func LocationAccuracy(v float64) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationAccuracy, v))
+}
+
+// LocationLabel applies equality check predicate on the "location_label" field. It's identical to LocationLabelEQ.
+func LocationLabel(v string) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationLabel, v))
+}
+
 // ChannelIDEQ applies the EQ predicate on the "channel_id" field.
 func ChannelIDEQ(v uuid.UUID) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldChannelID, v))
@@ -579,6 +599,231 @@ func SenderAvatarURLEqualFold(v string) predicate.Message {
 // SenderAvatarURLContainsFold applies the ContainsFold predicate on the "sender_avatar_url" field.
 func SenderAvatarURLContainsFold(v string) predicate.Message {
 	return predicate.Message(sql.FieldContainsFold(FieldSenderAvatarURL, v))
+}
+
+// LocationLatitudeEQ applies the EQ predicate on the "location_latitude" field.
+func LocationLatitudeEQ(v float64) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationLatitude, v))
+}
+
+// LocationLatitudeNEQ applies the NEQ predicate on the "location_latitude" field.
+func LocationLatitudeNEQ(v float64) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldLocationLatitude, v))
+}
+
+// LocationLatitudeIn applies the In predicate on the "location_latitude" field.
+func LocationLatitudeIn(vs ...float64) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldLocationLatitude, vs...))
+}
+
+// LocationLatitudeNotIn applies the NotIn predicate on the "location_latitude" field.
+func LocationLatitudeNotIn(vs ...float64) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldLocationLatitude, vs...))
+}
+
+// LocationLatitudeGT applies the GT predicate on the "location_latitude" field.
+func LocationLatitudeGT(v float64) predicate.Message {
+	return predicate.Message(sql.FieldGT(FieldLocationLatitude, v))
+}
+
+// LocationLatitudeGTE applies the GTE predicate on the "location_latitude" field.
+func LocationLatitudeGTE(v float64) predicate.Message {
+	return predicate.Message(sql.FieldGTE(FieldLocationLatitude, v))
+}
+
+// LocationLatitudeLT applies the LT predicate on the "location_latitude" field.
+func LocationLatitudeLT(v float64) predicate.Message {
+	return predicate.Message(sql.FieldLT(FieldLocationLatitude, v))
+}
+
+// LocationLatitudeLTE applies the LTE predicate on the "location_latitude" field.
+func LocationLatitudeLTE(v float64) predicate.Message {
+	return predicate.Message(sql.FieldLTE(FieldLocationLatitude, v))
+}
+
+// LocationLatitudeIsNil applies the IsNil predicate on the "location_latitude" field.
+func LocationLatitudeIsNil() predicate.Message {
+	return predicate.Message(sql.FieldIsNull(FieldLocationLatitude))
+}
+
+// LocationLatitudeNotNil applies the NotNil predicate on the "location_latitude" field.
+func LocationLatitudeNotNil() predicate.Message {
+	return predicate.Message(sql.FieldNotNull(FieldLocationLatitude))
+}
+
+// LocationLongitudeEQ applies the EQ predicate on the "location_longitude" field.
+func LocationLongitudeEQ(v float64) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationLongitude, v))
+}
+
+// LocationLongitudeNEQ applies the NEQ predicate on the "location_longitude" field.
+func LocationLongitudeNEQ(v float64) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldLocationLongitude, v))
+}
+
+// LocationLongitudeIn applies the In predicate on the "location_longitude" field.
+func LocationLongitudeIn(vs ...float64) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldLocationLongitude, vs...))
+}
+
+// LocationLongitudeNotIn applies the NotIn predicate on the "location_longitude" field.
+func LocationLongitudeNotIn(vs ...float64) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldLocationLongitude, vs...))
+}
+
+// LocationLongitudeGT applies the GT predicate on the "location_longitude" field.
+func LocationLongitudeGT(v float64) predicate.Message {
+	return predicate.Message(sql.FieldGT(FieldLocationLongitude, v))
+}
+
+// LocationLongitudeGTE applies the GTE predicate on the "location_longitude" field.
+func LocationLongitudeGTE(v float64) predicate.Message {
+	return predicate.Message(sql.FieldGTE(FieldLocationLongitude, v))
+}
+
+// LocationLongitudeLT applies the LT predicate on the "location_longitude" field.
+func LocationLongitudeLT(v float64) predicate.Message {
+	return predicate.Message(sql.FieldLT(FieldLocationLongitude, v))
+}
+
+// LocationLongitudeLTE applies the LTE predicate on the "location_longitude" field.
+func LocationLongitudeLTE(v float64) predicate.Message {
+	return predicate.Message(sql.FieldLTE(FieldLocationLongitude, v))
+}
+
+// LocationLongitudeIsNil applies the IsNil predicate on the "location_longitude" field.
+func LocationLongitudeIsNil() predicate.Message {
+	return predicate.Message(sql.FieldIsNull(FieldLocationLongitude))
+}
+
+// LocationLongitudeNotNil applies the NotNil predicate on the "location_longitude" field.
+func LocationLongitudeNotNil() predicate.Message {
+	return predicate.Message(sql.FieldNotNull(FieldLocationLongitude))
+}
+
+// LocationAccuracyEQ applies the EQ predicate on the "location_accuracy" field.
+func LocationAccuracyEQ(v float64) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationAccuracy, v))
+}
+
+// LocationAccuracyNEQ applies the NEQ predicate on the "location_accuracy" field.
+func LocationAccuracyNEQ(v float64) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldLocationAccuracy, v))
+}
+
+// LocationAccuracyIn applies the In predicate on the "location_accuracy" field.
+func LocationAccuracyIn(vs ...float64) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldLocationAccuracy, vs...))
+}
+
+// LocationAccuracyNotIn applies the NotIn predicate on the "location_accuracy" field.
+func LocationAccuracyNotIn(vs ...float64) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldLocationAccuracy, vs...))
+}
+
+// LocationAccuracyGT applies the GT predicate on the "location_accuracy" field.
+func LocationAccuracyGT(v float64) predicate.Message {
+	return predicate.Message(sql.FieldGT(FieldLocationAccuracy, v))
+}
+
+// LocationAccuracyGTE applies the GTE predicate on the "location_accuracy" field.
+func LocationAccuracyGTE(v float64) predicate.Message {
+	return predicate.Message(sql.FieldGTE(FieldLocationAccuracy, v))
+}
+
+// LocationAccuracyLT applies the LT predicate on the "location_accuracy" field.
+func LocationAccuracyLT(v float64) predicate.Message {
+	return predicate.Message(sql.FieldLT(FieldLocationAccuracy, v))
+}
+
+// LocationAccuracyLTE applies the LTE predicate on the "location_accuracy" field.
+func LocationAccuracyLTE(v float64) predicate.Message {
+	return predicate.Message(sql.FieldLTE(FieldLocationAccuracy, v))
+}
+
+// LocationAccuracyIsNil applies the IsNil predicate on the "location_accuracy" field.
+func LocationAccuracyIsNil() predicate.Message {
+	return predicate.Message(sql.FieldIsNull(FieldLocationAccuracy))
+}
+
+// LocationAccuracyNotNil applies the NotNil predicate on the "location_accuracy" field.
+func LocationAccuracyNotNil() predicate.Message {
+	return predicate.Message(sql.FieldNotNull(FieldLocationAccuracy))
+}
+
+// LocationLabelEQ applies the EQ predicate on the "location_label" field.
+func LocationLabelEQ(v string) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldLocationLabel, v))
+}
+
+// LocationLabelNEQ applies the NEQ predicate on the "location_label" field.
+func LocationLabelNEQ(v string) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldLocationLabel, v))
+}
+
+// LocationLabelIn applies the In predicate on the "location_label" field.
+func LocationLabelIn(vs ...string) predicate.Message {
+	return predicate.Message(sql.FieldIn(FieldLocationLabel, vs...))
+}
+
+// LocationLabelNotIn applies the NotIn predicate on the "location_label" field.
+func LocationLabelNotIn(vs ...string) predicate.Message {
+	return predicate.Message(sql.FieldNotIn(FieldLocationLabel, vs...))
+}
+
+// LocationLabelGT applies the GT predicate on the "location_label" field.
+func LocationLabelGT(v string) predicate.Message {
+	return predicate.Message(sql.FieldGT(FieldLocationLabel, v))
+}
+
+// LocationLabelGTE applies the GTE predicate on the "location_label" field.
+func LocationLabelGTE(v string) predicate.Message {
+	return predicate.Message(sql.FieldGTE(FieldLocationLabel, v))
+}
+
+// LocationLabelLT applies the LT predicate on the "location_label" field.
+func LocationLabelLT(v string) predicate.Message {
+	return predicate.Message(sql.FieldLT(FieldLocationLabel, v))
+}
+
+// LocationLabelLTE applies the LTE predicate on the "location_label" field.
+func LocationLabelLTE(v string) predicate.Message {
+	return predicate.Message(sql.FieldLTE(FieldLocationLabel, v))
+}
+
+// LocationLabelContains applies the Contains predicate on the "location_label" field.
+func LocationLabelContains(v string) predicate.Message {
+	return predicate.Message(sql.FieldContains(FieldLocationLabel, v))
+}
+
+// LocationLabelHasPrefix applies the HasPrefix predicate on the "location_label" field.
+func LocationLabelHasPrefix(v string) predicate.Message {
+	return predicate.Message(sql.FieldHasPrefix(FieldLocationLabel, v))
+}
+
+// LocationLabelHasSuffix applies the HasSuffix predicate on the "location_label" field.
+func LocationLabelHasSuffix(v string) predicate.Message {
+	return predicate.Message(sql.FieldHasSuffix(FieldLocationLabel, v))
+}
+
+// LocationLabelIsNil applies the IsNil predicate on the "location_label" field.
+func LocationLabelIsNil() predicate.Message {
+	return predicate.Message(sql.FieldIsNull(FieldLocationLabel))
+}
+
+// LocationLabelNotNil applies the NotNil predicate on the "location_label" field.
+func LocationLabelNotNil() predicate.Message {
+	return predicate.Message(sql.FieldNotNull(FieldLocationLabel))
+}
+
+// LocationLabelEqualFold applies the EqualFold predicate on the "location_label" field.
+func LocationLabelEqualFold(v string) predicate.Message {
+	return predicate.Message(sql.FieldEqualFold(FieldLocationLabel, v))
+}
+
+// LocationLabelContainsFold applies the ContainsFold predicate on the "location_label" field.
+func LocationLabelContainsFold(v string) predicate.Message {
+	return predicate.Message(sql.FieldContainsFold(FieldLocationLabel, v))
 }
 
 // HasChannel applies the HasEdge predicate on the "channel" edge.

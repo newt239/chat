@@ -10,6 +10,7 @@ import { dm } from "./dm";
 import { inbox } from "./inbox";
 import { insights } from "./insights";
 import { link } from "./link";
+import { location } from "./location";
 import { member } from "./member";
 import { message } from "./message";
 import { pin } from "./pin";
@@ -36,6 +37,7 @@ export const ja = {
   inbox,
   insights,
   link,
+  location,
   member,
   message,
   pin,

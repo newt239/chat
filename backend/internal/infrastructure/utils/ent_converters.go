@@ -197,7 +197,16 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 
 		SenderName:      m.SenderName,
 		SenderAvatarURL: m.SenderAvatarURL,
+		Location:        LocationToEntity(m.LocationLatitude, m.LocationLongitude, m.LocationAccuracy, m.LocationLabel),
 	}
+}
+
+// LocationToEntity は位置情報の列をまとめます。緯度・経度がなければ nil を返します
+func LocationToEntity(latitude, longitude, accuracy *float64, label *string) *entity.MessageLocation {
+	if latitude == nil || longitude == nil {
+		return nil
+	}
+	return &entity.MessageLocation{Latitude: *latitude, Longitude: *longitude, AccuracyMeters: accuracy, Label: label}
 }
 
 // MessageReaction converters

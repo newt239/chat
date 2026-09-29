@@ -8,10 +8,11 @@ import (
 type MessageContentKind string
 
 const (
-	MessageContentImage MessageContentKind = "image"
-	MessageContentFile  MessageContentKind = "file"
-	MessageContentLink  MessageContentKind = "link"
-	MessageContentVideo MessageContentKind = "video"
+	MessageContentImage    MessageContentKind = "image"
+	MessageContentFile     MessageContentKind = "file"
+	MessageContentLink     MessageContentKind = "link"
+	MessageContentVideo    MessageContentKind = "video"
+	MessageContentLocation MessageContentKind = "location"
 )
 
 type MessageSearchSort string

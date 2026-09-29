@@ -2,9 +2,11 @@ import { useTranslation } from "react-i18next";
 
 import { BaseMessageInput } from "./BaseMessageInput";
 
+import type { ComposerContent } from "../utils/composerContent";
+
 type ThreadReplyInputProps = {
   channelId: string;
-  onSubmit: (body: string, attachmentIds: string[]) => void;
+  onSubmit: (content: ComposerContent) => void;
   isPending: boolean;
   isError: boolean;
   errorMessage?: string;

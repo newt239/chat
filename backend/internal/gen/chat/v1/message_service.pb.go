@@ -289,6 +289,7 @@ type CreateMessageRequest struct {
 	Body          string                 `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
 	ParentId      *string                `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3,oneof" json:"parent_id,omitempty"`
 	AttachmentIds []string               `protobuf:"bytes,4,rep,name=attachment_ids,json=attachmentIds,proto3" json:"attachment_ids,omitempty"`
+	Location      *MessageLocation       `protobuf:"bytes,5,opt,name=location,proto3" json:"location,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -347,6 +348,13 @@ func (x *CreateMessageRequest) GetParentId() string {
 func (x *CreateMessageRequest) GetAttachmentIds() []string {
 	if x != nil {
 		return x.AttachmentIds
+	}
+	return nil
+}
+
+func (x *CreateMessageRequest) GetLocation() *MessageLocation {
+	if x != nil {
+		return x.Location
 	}
 	return nil
 }
@@ -683,14 +691,16 @@ const file_chat_v1_message_service_proto_rawDesc = "" +
 	"\x13include_descendants\x18\x05 \x01(\bR\x12includeDescendants\"i\n" +
 	"\x1eListMessagesWithThreadResponse\x12,\n" +
 	"\bmessages\x18\x01 \x03(\v2\x10.chat.v1.MessageR\bmessages\x12\x19\n" +
-	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\xcc\x01\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\xab\x03\n" +
 	"\x14CreateMessageRequest\x12'\n" +
 	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x1b\n" +
-	"\x04body\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04body\x12*\n" +
+	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x1c\n" +
+	"\x04body\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\x90NR\x04body\x12*\n" +
 	"\tparent_id\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\bparentId\x88\x01\x01\x124\n" +
 	"\x0eattachment_ids\x18\x04 \x03(\tB\r\xbaH\n" +
-	"\x92\x01\a\"\x05r\x03\xb0\x01\x01R\rattachmentIdsB\f\n" +
+	"\x92\x01\a\"\x05r\x03\xb0\x01\x01R\rattachmentIds\x124\n" +
+	"\blocation\x18\x05 \x01(\v2\x18.chat.v1.MessageLocationR\blocation:\xa5\x01\xbaH\xa1\x01\x1a\x9e\x01\n" +
+	"\x16create_message.content\x12<本文・添付・位置情報のいずれかが必要です\x1aFthis.body != '' || size(this.attachment_ids) > 0 || has(this.location)B\f\n" +
 	"\n" +
 	"_parent_id\"C\n" +
 	"\x15CreateMessageResponse\x12*\n" +
@@ -749,7 +759,8 @@ var file_chat_v1_message_service_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil),          // 12: google.protobuf.Timestamp
 	(*TimelineItem)(nil),                   // 13: chat.v1.TimelineItem
 	(*Message)(nil),                        // 14: chat.v1.Message
-	(*MessagePreview)(nil),                 // 15: chat.v1.MessagePreview
+	(*MessageLocation)(nil),                // 15: chat.v1.MessageLocation
+	(*MessagePreview)(nil),                 // 16: chat.v1.MessagePreview
 }
 var file_chat_v1_message_service_proto_depIdxs = []int32{
 	12, // 0: chat.v1.ListMessagesRequest.since:type_name -> google.protobuf.Timestamp
@@ -758,26 +769,27 @@ var file_chat_v1_message_service_proto_depIdxs = []int32{
 	12, // 3: chat.v1.ListMessagesWithThreadRequest.since:type_name -> google.protobuf.Timestamp
 	12, // 4: chat.v1.ListMessagesWithThreadRequest.until:type_name -> google.protobuf.Timestamp
 	14, // 5: chat.v1.ListMessagesWithThreadResponse.messages:type_name -> chat.v1.Message
-	14, // 6: chat.v1.CreateMessageResponse.message:type_name -> chat.v1.Message
-	14, // 7: chat.v1.UpdateMessageResponse.message:type_name -> chat.v1.Message
-	15, // 8: chat.v1.GetMessagePreviewResponse.preview:type_name -> chat.v1.MessagePreview
-	0,  // 9: chat.v1.MessageService.ListMessages:input_type -> chat.v1.ListMessagesRequest
-	2,  // 10: chat.v1.MessageService.ListMessagesWithThread:input_type -> chat.v1.ListMessagesWithThreadRequest
-	4,  // 11: chat.v1.MessageService.CreateMessage:input_type -> chat.v1.CreateMessageRequest
-	6,  // 12: chat.v1.MessageService.UpdateMessage:input_type -> chat.v1.UpdateMessageRequest
-	8,  // 13: chat.v1.MessageService.DeleteMessage:input_type -> chat.v1.DeleteMessageRequest
-	10, // 14: chat.v1.MessageService.GetMessagePreview:input_type -> chat.v1.GetMessagePreviewRequest
-	1,  // 15: chat.v1.MessageService.ListMessages:output_type -> chat.v1.ListMessagesResponse
-	3,  // 16: chat.v1.MessageService.ListMessagesWithThread:output_type -> chat.v1.ListMessagesWithThreadResponse
-	5,  // 17: chat.v1.MessageService.CreateMessage:output_type -> chat.v1.CreateMessageResponse
-	7,  // 18: chat.v1.MessageService.UpdateMessage:output_type -> chat.v1.UpdateMessageResponse
-	9,  // 19: chat.v1.MessageService.DeleteMessage:output_type -> chat.v1.DeleteMessageResponse
-	11, // 20: chat.v1.MessageService.GetMessagePreview:output_type -> chat.v1.GetMessagePreviewResponse
-	15, // [15:21] is the sub-list for method output_type
-	9,  // [9:15] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	15, // 6: chat.v1.CreateMessageRequest.location:type_name -> chat.v1.MessageLocation
+	14, // 7: chat.v1.CreateMessageResponse.message:type_name -> chat.v1.Message
+	14, // 8: chat.v1.UpdateMessageResponse.message:type_name -> chat.v1.Message
+	16, // 9: chat.v1.GetMessagePreviewResponse.preview:type_name -> chat.v1.MessagePreview
+	0,  // 10: chat.v1.MessageService.ListMessages:input_type -> chat.v1.ListMessagesRequest
+	2,  // 11: chat.v1.MessageService.ListMessagesWithThread:input_type -> chat.v1.ListMessagesWithThreadRequest
+	4,  // 12: chat.v1.MessageService.CreateMessage:input_type -> chat.v1.CreateMessageRequest
+	6,  // 13: chat.v1.MessageService.UpdateMessage:input_type -> chat.v1.UpdateMessageRequest
+	8,  // 14: chat.v1.MessageService.DeleteMessage:input_type -> chat.v1.DeleteMessageRequest
+	10, // 15: chat.v1.MessageService.GetMessagePreview:input_type -> chat.v1.GetMessagePreviewRequest
+	1,  // 16: chat.v1.MessageService.ListMessages:output_type -> chat.v1.ListMessagesResponse
+	3,  // 17: chat.v1.MessageService.ListMessagesWithThread:output_type -> chat.v1.ListMessagesWithThreadResponse
+	5,  // 18: chat.v1.MessageService.CreateMessage:output_type -> chat.v1.CreateMessageResponse
+	7,  // 19: chat.v1.MessageService.UpdateMessage:output_type -> chat.v1.UpdateMessageResponse
+	9,  // 20: chat.v1.MessageService.DeleteMessage:output_type -> chat.v1.DeleteMessageResponse
+	11, // 21: chat.v1.MessageService.GetMessagePreview:output_type -> chat.v1.GetMessagePreviewResponse
+	16, // [16:22] is the sub-list for method output_type
+	10, // [10:16] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_message_service_proto_init() }

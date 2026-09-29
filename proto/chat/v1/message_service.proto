@@ -53,10 +53,16 @@ message ListMessagesWithThreadResponse {
 }
 
 message CreateMessageRequest {
+  option (buf.validate.message).cel = {
+    id: "create_message.content"
+    message: "本文・添付・位置情報のいずれかが必要です"
+    expression: "this.body != '' || size(this.attachment_ids) > 0 || has(this.location)"
+  };
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
-  string body = 2 [(buf.validate.field).string.min_len = 1];
+  string body = 2 [(buf.validate.field).string.max_len = 10000];
   optional string parent_id = 3 [(buf.validate.field).string.uuid = true];
   repeated string attachment_ids = 4 [(buf.validate.field).repeated.items.string.uuid = true];
+  MessageLocation location = 5;
 }
 
 message CreateMessageResponse {

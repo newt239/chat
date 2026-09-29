@@ -57,3 +57,11 @@ func TestVerifyAttachments(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateMessageRejectsEmptyContent(t *testing.T) {
+	_, err := (&MessageCreator{}).CreateMessage(context.Background(), CreateMessageInput{ChannelID: "ch1", UserID: "u1", Body: " \n "})
+
+	if !errors.Is(err, ErrEmptyMessage) {
+		t.Fatalf("空のメッセージを拒否していません: %v", err)
+	}
+}

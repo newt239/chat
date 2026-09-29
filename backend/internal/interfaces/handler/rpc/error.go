@@ -90,6 +90,7 @@ var errorCodes = []struct {
 		entity.ErrGroupDMMaxMembers,
 		channeluc.ErrMemberNotInWorkspace,
 		channelmemberuc.ErrInvalidRole,
+		messageuc.ErrEmptyMessage,
 		searchuc.ErrInvalidQuery, searchuc.ErrInvalidDateRange,
 		workspaceuc.ErrInvalidRole,
 	}},

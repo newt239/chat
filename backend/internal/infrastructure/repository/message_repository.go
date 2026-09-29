@@ -132,6 +132,13 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 		SetBody(msg.Body).
 		SetNillableSenderName(msg.SenderName).
 		SetNillableSenderAvatarURL(msg.SenderAvatarURL)
+	if loc := msg.Location; loc != nil {
+		builder = builder.
+			SetLocationLatitude(loc.Latitude).
+			SetLocationLongitude(loc.Longitude).
+			SetNillableLocationAccuracy(loc.AccuracyMeters).
+			SetNillableLocationLabel(loc.Label)
+	}
 
 	if msg.ID != "" {
 		messageID, err := utils.ParseUUID(msg.ID, "message ID")

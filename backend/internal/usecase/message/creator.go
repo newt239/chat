@@ -3,6 +3,7 @@ package message
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -64,6 +65,9 @@ func NewMessageCreator(
 }
 
 func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageInput) (*MessageOutput, error) {
+	if strings.TrimSpace(input.Body) == "" && len(input.AttachmentIDs) == 0 && input.Location == nil {
+		return nil, ErrEmptyMessage
+	}
 	channel, err := c.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
@@ -87,6 +91,7 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 		UserID:    input.UserID,
 		ParentID:  input.ParentID,
 		Body:      input.Body,
+		Location:  input.Location,
 		CreatedAt: time.Now(),
 	}
 	return c.publish(ctx, channel, message, func(txCtx context.Context) error {

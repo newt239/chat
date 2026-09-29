@@ -406,6 +406,10 @@ var (
 		{Name: "deleted_by", Type: field.TypeUUID, Nullable: true},
 		{Name: "sender_name", Type: field.TypeString, Nullable: true},
 		{Name: "sender_avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "location_latitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_label", Type: field.TypeString, Nullable: true},
 		{Name: "message_channel", Type: field.TypeUUID},
 		{Name: "message_user", Type: field.TypeUUID},
 		{Name: "message_parent", Type: field.TypeUUID, Nullable: true},
@@ -418,19 +422,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "messages_channels_channel",
-				Columns:    []*schema.Column{MessagesColumns[8]},
+				Columns:    []*schema.Column{MessagesColumns[12]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_users_user",
-				Columns:    []*schema.Column{MessagesColumns[9]},
+				Columns:    []*schema.Column{MessagesColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_messages_parent",
-				Columns:    []*schema.Column{MessagesColumns[10]},
+				Columns:    []*schema.Column{MessagesColumns[14]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -444,7 +448,7 @@ var (
 			{
 				Name:    "message_message_channel_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[8], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[12], MessagesColumns[2]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "deleted_at IS NULL",
 				},
@@ -452,12 +456,12 @@ var (
 			{
 				Name:    "message_message_parent_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[10], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[14], MessagesColumns[2]},
 			},
 			{
 				Name:    "message_message_user",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[9]},
+				Columns: []*schema.Column{MessagesColumns[13]},
 			},
 		},
 	}
