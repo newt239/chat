@@ -120,6 +120,10 @@ func (r *DomainRegistry) NewUserNoteRepository() domainrepository.UserNoteReposi
 	return repository.NewUserNoteRepository(r.client)
 }
 
+func (r *DomainRegistry) NewDraftRepository() domainrepository.DraftRepository {
+	return repository.NewDraftRepository(r.client)
+}
+
 func (r *DomainRegistry) NewWebhookRepository() domainrepository.WebhookRepository {
 	return repository.NewWebhookRepository(r.client)
 }

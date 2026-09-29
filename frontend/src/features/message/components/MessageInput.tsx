@@ -57,6 +57,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
       isPending={sendMessage.isPending}
       error={sendMessage.isError ? sendMessage.error.message : undefined}
       channelId={targetId}
+      parentId={null}
       targetPicker={
         target &&
         channel && (

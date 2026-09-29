@@ -14,6 +14,7 @@ import (
 	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
+	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
@@ -210,6 +211,18 @@ func init() {
 	channelstarDescID := channelstarFields[0].Descriptor()
 	// channelstar.DefaultID holds the default value on creation for the id field.
 	channelstar.DefaultID = channelstarDescID.Default.(func() uuid.UUID)
+	draftFields := schema.Draft{}.Fields()
+	_ = draftFields
+	// draftDescUpdatedAt is the schema descriptor for updated_at field.
+	draftDescUpdatedAt := draftFields[5].Descriptor()
+	// draft.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	draft.DefaultUpdatedAt = draftDescUpdatedAt.Default.(func() time.Time)
+	// draft.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	draft.UpdateDefaultUpdatedAt = draftDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// draftDescID is the schema descriptor for id field.
+	draftDescID := draftFields[0].Descriptor()
+	// draft.DefaultID holds the default value on creation for the id field.
+	draft.DefaultID = draftDescID.Default.(func() uuid.UUID)
 	invitationFields := schema.Invitation{}.Fields()
 	_ = invitationFields
 	// invitationDescEmail is the schema descriptor for email field.

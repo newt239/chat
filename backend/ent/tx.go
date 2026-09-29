@@ -30,6 +30,8 @@ type Tx struct {
 	ChannelReadState *ChannelReadStateClient
 	// ChannelStar is the client for interacting with the ChannelStar builders.
 	ChannelStar *ChannelStarClient
+	// Draft is the client for interacting with the Draft builders.
+	Draft *DraftClient
 	// Invitation is the client for interacting with the Invitation builders.
 	Invitation *InvitationClient
 	// Message is the client for interacting with the Message builders.
@@ -211,6 +213,7 @@ func (tx *Tx) init() {
 	tx.ChannelMute = NewChannelMuteClient(tx.config)
 	tx.ChannelReadState = NewChannelReadStateClient(tx.config)
 	tx.ChannelStar = NewChannelStarClient(tx.config)
+	tx.Draft = NewDraftClient(tx.config)
 	tx.Invitation = NewInvitationClient(tx.config)
 	tx.Message = NewMessageClient(tx.config)
 	tx.MessageBookmark = NewMessageBookmarkClient(tx.config)

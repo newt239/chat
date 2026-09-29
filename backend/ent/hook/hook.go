@@ -105,6 +105,18 @@ func (f ChannelStarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelStarMutation", m)
 }
 
+// The DraftFunc type is an adapter to allow the use of ordinary
+// function as Draft mutator.
+type DraftFunc func(context.Context, *ent.DraftMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DraftFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DraftMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DraftMutation", m)
+}
+
 // The InvitationFunc type is an adapter to allow the use of ordinary
 // function as Invitation mutator.
 type InvitationFunc func(context.Context, *ent.InvitationMutation) (ent.Value, error)

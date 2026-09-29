@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+// 入力途中のメッセージをチャンネル・スレッドごとにサーバーへ保存する
+service DraftService {
+  // 本文が空白だけなら下書きを削除する
+  rpc SaveDraft(SaveDraftRequest) returns (SaveDraftResponse);
+  rpc GetDraft(GetDraftRequest) returns (GetDraftResponse);
+  rpc DeleteDraft(DeleteDraftRequest) returns (DeleteDraftResponse);
+  // ワークスペース内の自分の下書きを新しい順に返す
+  rpc ListDrafts(ListDraftsRequest) returns (ListDraftsResponse);
+}
+
+message Draft {
+  string id = 1;
+  string channel_id = 2;
+  // スレッドへの返信の下書きのときだけ設定される
+  optional string parent_id = 3;
+  string body = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message SaveDraftRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  optional string parent_id = 2 [(buf.validate.field).string.uuid = true];
+  string body = 3 [(buf.validate.field).string.max_len = 10000];
+}
+
+message SaveDraftResponse {
+  // 削除した場合は空
+  Draft draft = 1;
+}
+
+message GetDraftRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  optional string parent_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message GetDraftResponse {
+  // 下書きがなければ空
+  Draft draft = 1;
+}
+
+message DeleteDraftRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  optional string parent_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteDraftResponse {}
+
+message ListDraftsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListDraftsResponse {
+  repeated Draft drafts = 1;
+}

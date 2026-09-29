@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Form, TextArea, TextField } from "react-aria-components";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "#/components/ui/toast";
 import { AttachmentList } from "#/features/attachment/components/AttachmentList";
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
+import { useDraftAutosave } from "#/features/draft/hooks/useDraftAutosave";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
 import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
@@ -30,6 +31,8 @@ type BaseMessageInputProps = {
   isPending: boolean;
   error?: string;
   channelId: string;
+  // スレッドへの返信の欄のときの親メッセージ。下書きの置き場所に使う
+  parentId: string | null;
   // 集約表示中の投稿先の切り替え。入力欄の上に出す
   targetPicker?: ReactNode;
 };
@@ -42,6 +45,7 @@ export const BaseMessageInput = ({
   isPending,
   error,
   channelId,
+  parentId,
   targetPicker = null,
 }: BaseMessageInputProps) => {
   const { t } = useTranslation();
@@ -63,11 +67,27 @@ export const BaseMessageInput = ({
     isUploading,
   } = useFileUpload();
   const { notifyTyping, notifyStopTyping } = useTypingNotifier(channelId);
+  const {
+    discard: discardDraft,
+    initialBody: draftBody,
+    save: saveDraft,
+  } = useDraftAutosave(channelId, parentId);
+  const isRestoredRef = useRef(false);
+
+  // 開き直したときに書きかけを戻す。読み込み前に打ち始めていたら上書きしない
+  useEffect(() => {
+    if (draftBody === null || isRestoredRef.current) {
+      return;
+    }
+    isRestoredRef.current = true;
+    setBody((current) => (current === "" ? draftBody : current));
+  }, [draftBody]);
 
   const handleBodyChange = useCallback(
     (next: string) => {
       setBody(next);
       notifyTyping();
+      saveDraft(next);
 
       const urls: string[] = next.match(urlPattern) ?? [];
       for (const url of urls) {
@@ -79,7 +99,7 @@ export const BaseMessageInput = ({
         }
       }
     },
-    [addPreview, previews, removePreview, notifyTyping],
+    [addPreview, previews, removePreview, notifyTyping, saveDraft],
   );
 
   const handleFormat = (key: FormatKey) => {
@@ -112,6 +132,7 @@ export const BaseMessageInput = ({
     }
     onSubmit({ attachmentIds: getCompletedAttachmentIds(), body: body.trim(), location });
     notifyStopTyping();
+    discardDraft();
     setBody("");
     setLocation(undefined);
     setIsPreview(false);

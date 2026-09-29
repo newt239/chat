@@ -357,6 +357,59 @@ var (
 			},
 		},
 	}
+	// DraftColumns holds the columns for the "draft" table.
+	DraftColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "body", Type: field.TypeString, Size: 2147483647},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// DraftTable holds the schema information for the "draft" table.
+	DraftTable = &schema.Table{
+		Name:       "draft",
+		Columns:    DraftColumns,
+		PrimaryKey: []*schema.Column{DraftColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "draft_users_user",
+				Columns:    []*schema.Column{DraftColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "draft_channels_channel",
+				Columns:    []*schema.Column{DraftColumns[4]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "draft_messages_parent",
+				Columns:    []*schema.Column{DraftColumns[5]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "draft_user_id_channel_id",
+				Unique:  true,
+				Columns: []*schema.Column{DraftColumns[3], DraftColumns[4]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "parent_id IS NULL",
+				},
+			},
+			{
+				Name:    "draft_user_id_channel_id_parent_id",
+				Unique:  true,
+				Columns: []*schema.Column{DraftColumns[3], DraftColumns[4], DraftColumns[5]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "parent_id IS NOT NULL",
+				},
+			},
+		},
+	}
 	// InvitationColumns holds the columns for the "invitation" table.
 	InvitationColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1194,6 +1247,7 @@ var (
 		ChannelMuteTable,
 		ChannelReadStatesTable,
 		ChannelStarTable,
+		DraftTable,
 		InvitationTable,
 		MessagesTable,
 		MessageBookmarksTable,
@@ -1246,6 +1300,12 @@ func init() {
 	ChannelStarTable.ForeignKeys[1].RefTable = ChannelsTable
 	ChannelStarTable.Annotation = &entsql.Annotation{
 		Table: "channel_star",
+	}
+	DraftTable.ForeignKeys[0].RefTable = UsersTable
+	DraftTable.ForeignKeys[1].RefTable = ChannelsTable
+	DraftTable.ForeignKeys[2].RefTable = MessagesTable
+	DraftTable.Annotation = &entsql.Annotation{
+		Table: "draft",
 	}
 	InvitationTable.ForeignKeys[0].RefTable = WorkspacesTable
 	InvitationTable.ForeignKeys[1].RefTable = UsersTable

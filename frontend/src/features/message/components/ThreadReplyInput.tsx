@@ -6,6 +6,7 @@ import type { ComposerContent } from "../utils/composerContent";
 
 type ThreadReplyInputProps = {
   channelId: string;
+  parentId: string;
   onSubmit: (content: ComposerContent) => void;
   isPending: boolean;
   isError: boolean;
@@ -14,6 +15,7 @@ type ThreadReplyInputProps = {
 
 export const ThreadReplyInput = ({
   channelId,
+  parentId,
   onSubmit,
   isPending,
   isError,
@@ -24,6 +26,7 @@ export const ThreadReplyInput = ({
   return (
     <BaseMessageInput
       channelId={channelId}
+      parentId={parentId}
       onSubmit={onSubmit}
       placeholder={t("message.thread.replyPlaceholder")}
       isPending={isPending}

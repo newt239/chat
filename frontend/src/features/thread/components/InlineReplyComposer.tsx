@@ -47,6 +47,7 @@ export const InlineReplyComposer = ({
   return (
     <BaseMessageInput
       channelId={channelId}
+      parentId={parentId}
       placeholder={placeholder}
       isPending={send.isPending}
       error={send.isError ? t("message.thread.sendFailed") : undefined}

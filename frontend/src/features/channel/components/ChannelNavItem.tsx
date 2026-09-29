@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "#/components/ui/Badge";
 import { ContextMenu } from "#/components/ui/ContextMenu";
 import { cn } from "#/components/ui/styles";
+import { DraftIndicator } from "#/features/draft/components/DraftIndicator";
 import { NavLink } from "#/features/layout/components/NavLink";
 
 import { ChannelMenuItems } from "./ChannelMenuItems";
@@ -56,6 +57,7 @@ export const ChannelNavItem = ({
         )}
       >
         {children}
+        <DraftIndicator workspaceId={workspaceId} channelId={channelId} />
         {isMuted && <IconBellOff aria-label={t("shell.channel.muted")} role="img" />}
         {hasUnread && showsBadge && <Badge>{unreadCount > 99 ? "99+" : unreadCount}</Badge>}
       </NavLink>

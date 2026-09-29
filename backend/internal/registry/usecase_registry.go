@@ -10,6 +10,7 @@ import (
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	draftuc "github.com/newt239/chat/internal/usecase/draft"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
@@ -212,6 +213,14 @@ func (r *UseCaseRegistry) NewPushDispatcher() *notificationuc.Dispatcher {
 
 func (r *UseCaseRegistry) NewNotificationUseCase() notificationuc.UseCase {
 	return notificationuc.NewInteractor(r.domainRegistry.NewPushTokenRepository())
+}
+
+func (r *UseCaseRegistry) NewDraftUseCase() *draftuc.Interactor {
+	return draftuc.NewInteractor(
+		r.domainRegistry.NewDraftRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+	)
 }
 
 func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {

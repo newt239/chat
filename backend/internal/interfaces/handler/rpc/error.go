@@ -15,6 +15,7 @@ import (
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	draftuc "github.com/newt239/chat/internal/usecase/draft"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 	mentionuc "github.com/newt239/chat/internal/usecase/mention"
@@ -41,6 +42,7 @@ var errorCodes = []struct {
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
 		channellinkuc.ErrLinkNotFound,
 		channelmemberuc.ErrChannelNotFound, channelmemberuc.ErrUserNotFound,
+		draftuc.ErrParentMessageNotFound,
 		messageuc.ErrChannelNotFound, messageuc.ErrParentMessageNotFound, messageuc.ErrMessageNotFound, messageuc.ErrAttachmentNotFound,
 		pinuc.ErrMessageNotFound,
 		reactionuc.ErrMessageNotFound,

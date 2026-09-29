@@ -7,6 +7,7 @@ import { channel } from "./channel";
 import { codeBlock } from "./codeBlock";
 import { common } from "./common";
 import { dm } from "./dm";
+import { draft } from "./draft";
 import { inbox } from "./inbox";
 import { insights } from "./insights";
 import { link } from "./link";
@@ -35,6 +36,7 @@ export const ja = {
   codeBlock,
   common,
   dm,
+  draft,
   inbox,
   insights,
   link,

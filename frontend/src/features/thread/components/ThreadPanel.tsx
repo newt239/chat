@@ -95,6 +95,7 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
         {data?.parentMessage && (
           <ThreadReplyInput
             channelId={threadChannelId}
+            parentId={threadId}
             onSubmit={(content) => {
               sendReply.mutate({ ...content, channelId: threadChannelId, parentId: threadId });
             }}
