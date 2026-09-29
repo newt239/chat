@@ -4,6 +4,8 @@ export const auth: Messages["auth"] = {
   displayName: "Display name",
   email: "Email",
   google: {
+    browserFailed: "Couldn't finish signing in with Google. Please try again.",
+    continueInBrowser: "Sign in with Google in your browser",
     loadFailed: "Couldn't load Google sign-in",
   },
   invite: {

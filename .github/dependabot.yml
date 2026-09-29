@@ -43,3 +43,31 @@ updates:
       interval: "monthly"
       timezone: "Asia/Tokyo"
       time: "08:00"
+
+  - package-ecosystem: "cargo"
+    directory: "/frontend/src-tauri"
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Tokyo"
+      time: "08:00"
+    cooldown:
+      default-days: 7
+    target-branch: "main"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gradle"
+    directory: "/frontend/src-tauri/gen/android"
+    schedule:
+      interval: "monthly"
+      timezone: "Asia/Tokyo"
+      time: "08:00"
+    cooldown:
+      default-days: 7
+    target-branch: "main"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"

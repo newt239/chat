@@ -12,6 +12,7 @@ import { PinnedPanel } from "#/features/pin/components/PinnedPanel";
 import { ProfileEditor } from "#/features/settings/components/ProfileEditor";
 import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
 import { UserGroupPanel } from "#/features/userGroup/components/UserGroupPanel";
+import { isTauri } from "#/lib/platform/platform";
 import { userAtom } from "#/providers/store/auth";
 
 import { closePanel } from "../utils/overlaySearch";
@@ -90,7 +91,7 @@ export const useRightPanel = (workspaceId: string) => {
     if (isThreadOpen) {
       return {
         body: <ThreadPanel workspaceId={workspaceId} channelId={channelId} threadId={messageId} />,
-        extra: (
+        extra: isTauri ? null : (
           <Tooltip content={t("shell.openInNewTab")}>
             <LinkButton
               variant="ghost"

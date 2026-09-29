@@ -4,6 +4,8 @@
 
 // グローバル宣言のマージには interface が必要
 interface ImportMetaEnv {
+  // 共有用リンクに使う Web 版の URL。未設定なら表示中の origin
+  readonly VITE_PUBLIC_APP_URL?: string;
   readonly VITE_API_BASE_URL?: string;
   readonly VITE_WS_URL?: string;
   // 未設定なら Google ログインのボタンを出さない

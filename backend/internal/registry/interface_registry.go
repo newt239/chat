@@ -72,6 +72,7 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		WebhookPoster:       r.usecaseRegistry.NewWebhookUseCase(),
 		WebhookRateLimiter:  r.infrastructureRegistry.NewWebhookRateLimiter(),
 		Ready:               r.infrastructureRegistry.Ready,
+		GoogleOAuth:         r.infrastructureRegistry.NewGoogleOAuth(),
 	}
 	if r.infrastructureRegistry.config.Storage.Driver == "local" {
 		routerConfig.StorageHandler = r.infrastructureRegistry.NewLocalStorage()

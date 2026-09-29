@@ -25,6 +25,7 @@ import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
 import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
 import { openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
+import { isTauri } from "#/lib/platform/platform";
 import { userAtom } from "#/providers/store/auth";
 
 import type { SettingsSection } from "#/features/layout/schemas";
@@ -89,7 +90,7 @@ export const MePage = () => {
             <IconChevronRight aria-hidden />
           </NavLink>
         ))}
-        <InstallAppRow />
+        {!isTauri && <InstallAppRow />}
         <Button
           className={cn(rowClassName, "mt-3 text-danger [&_svg]:text-danger")}
           onPress={() => {

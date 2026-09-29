@@ -25,6 +25,11 @@ const getWsUrl = (token: string, workspaceId: string): string => {
   return `${base}/ws?token=${encodeURIComponent(token)}&workspaceId=${encodeURIComponent(workspaceId)}`;
 };
 
+type WsClientOptions = {
+  // 隠れている間も切断しない。プッシュ通知の代わりに新着を OS の通知で出すデスクトップアプリ向け
+  keepAliveWhenHidden?: boolean;
+};
+
 const parseServerEvent = (data: string) => {
   try {
     return fromJsonString(ServerEventSchema, data, { ignoreUnknownFields: true });
@@ -44,6 +49,7 @@ export class WsClient {
   private readonly token: string;
   private readonly workspaceId: string;
   private readonly bc: BroadcastChannel;
+  private readonly keepAliveWhenHidden: boolean;
   private isActiveLeader = false;
   // 同じチャンネルを複数の画面が購読するため参照数で持ち、再接続時に送り直す
   private readonly joinedChannels = new Map<string, number>();
@@ -71,9 +77,14 @@ export class WsClient {
     unreadCount: new Set(),
   };
 
-  public constructor(token: string, workspaceId: string) {
+  public constructor(
+    token: string,
+    workspaceId: string,
+    { keepAliveWhenHidden = false }: WsClientOptions = {},
+  ) {
     this.token = token;
     this.workspaceId = workspaceId;
+    this.keepAliveWhenHidden = keepAliveWhenHidden;
     this.bc = new BroadcastChannel(WS_BC_NAME);
     this.listenBroadcast();
     this.initTabActivityControl();
@@ -402,7 +413,10 @@ export class WsClient {
     window.addEventListener("focus", this.handleFocus, false);
     window.addEventListener("beforeunload", this.handleUnload, false);
     // 初回ロード時、ページが可視状態であれば接続
-    if (document.visibilityState === "visible" && document.hasFocus()) {
+    if (
+      this.keepAliveWhenHidden ||
+      (document.visibilityState === "visible" && document.hasFocus())
+    ) {
       this.becomeLeaderAndConnect();
     }
   }
@@ -410,7 +424,7 @@ export class WsClient {
   private readonly handleVisibility = () => {
     if (document.visibilityState === "visible") {
       this.becomeLeaderAndConnect();
-    } else {
+    } else if (!this.keepAliveWhenHidden) {
       this.disconnect();
     }
   };

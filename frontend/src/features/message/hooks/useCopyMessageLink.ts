@@ -4,6 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { toShareUrl } from "#/lib/platform/appOrigin";
 
 export const useCopyMessageLink = (workspaceId: string | null, channelId: string | null) => {
   const router = useRouter();
@@ -19,8 +20,7 @@ export const useCopyMessageLink = (workspaceId: string | null, channelId: string
         search: { message: messageId },
         to: "/app/$workspaceId/$channelId",
       });
-      // 共有用のリンクなので origin を含む絶対 URL にする
-      navigator.clipboard.writeText(`${window.location.origin}${href}`).then(
+      navigator.clipboard.writeText(toShareUrl(href)).then(
         () => toast(t("message.link.copied"), { tone: "success" }),
         () => toast(t("message.link.copyFailed"), { tone: "danger" }),
       );

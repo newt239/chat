@@ -9,275 +9,283 @@ import { pwaColors } from "./src/lib/pwaColors";
 
 const generatedFiles = ["src/gen/", "src/routeTree.gen.ts"];
 
-export default defineConfig({
-  fmt: {
-    ignorePatterns: ["dist/", "dev-dist/", ...generatedFiles],
-    jsdoc: true,
-    sortImports: {
-      customGroups: [
-        {
-          elementNamePattern: ["react", "react-dom"],
-          groupName: "react",
-        },
-      ],
-      groups: [
-        "react",
-        ["value-builtin", "value-external"],
-        "value-internal",
-        ["value-parent", "value-sibling", "value-index"],
-        ["type-parent", "type-sibling", "type-index"],
-        "type-internal",
-        "type-import",
-        "unknown",
-      ],
-      ignoreCase: true,
-      internalPattern: ["#/"],
-      newlinesBetween: true,
-      order: "asc",
-    },
-    sortPackageJson: {
-      sortScripts: true,
-    },
-  },
-  lint: {
-    categories: {
-      nursery: "warn",
-      pedantic: "warn",
-      perf: "warn",
-      restriction: "warn",
-      style: "warn",
-      suspicious: "warn",
-    },
-    env: {
-      browser: true,
-      node: true,
-    },
-    ignorePatterns: ["dist/", "dev-dist/", ...generatedFiles],
-    jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
-    options: {
-      typeAware: true,
-      typeCheck: true,
-    },
-    overrides: [
-      {
-        files: ["tests/**", "*.config.ts"],
-        rules: {
-          "import/no-nodejs-modules": "off",
-          "new-cap": "off",
-        },
-      },
-      {
-        files: ["src/lib/logger.ts"],
-        rules: {
-          "no-console": "off",
-        },
-      },
-      {
-        // beforeLoad では redirect() の戻り値を throw して遷移させる
-        files: ["src/routes/**"],
-        rules: {
-          "typescript/only-throw-error": "off",
-        },
-      },
-      {
-        // unified の use() チェーンの型を tsgolint が解決できず error 型になるため
-        files: ["src/features/message/utils/markdown/renderer.tsx"],
-        rules: {
-          "typescript/no-unsafe-assignment": "off",
-          "typescript/no-unsafe-call": "off",
-          "typescript/no-unsafe-member-access": "off",
-          "typescript/no-unsafe-return": "off",
-        },
-      },
-      {
-        files: ["**/*.d.ts"],
-        rules: {
-          "import/unambiguous": "off",
-          "typescript/consistent-type-definitions": "off",
-        },
-      },
-    ],
-    plugins: [
-      "eslint",
-      "typescript",
-      "unicorn",
-      "react",
-      "react-perf",
-      "oxc",
-      "import",
-      "jsx-a11y",
-    ],
-    rules: {
-      // 先頭が大文字化されるとファイルパスの意味が変わるため
-      "capitalized-comments": "off",
-      // logger のようなインスタンス API を static 化すると設計が歪むため
-      "class-methods-use-this": "off",
-      complexity: "off",
-      "func-style": ["error", "expression"],
-      "id-length": "off",
-      "import/consistent-type-specifier-style": "off",
-      "import/exports-last": "off",
-      "import/group-exports": "off",
-      "import/max-dependencies": "off",
-      "import/no-default-export": "off",
-      "import/no-named-export": "off",
-      "import/no-namespace": "off",
-      // 一つ上の階層までの相対インポートは規約で許可している
-      "import/no-relative-parent-imports": "off",
-      "import/no-unassigned-import": "off",
-      "import/prefer-default-export": "off",
-      "jsx-a11y/prefer-tag-over-role": "off",
-      "max-lines": ["warn", { max: 500, skipBlankLines: true, skipComments: true }],
-      "max-lines-per-function": "off",
-      "max-statements": "off",
-      "new-cap": ["warn", { properties: false }],
-      "no-alert": "off",
-      // 添付ファイルの逐次アップロードなど順序を保ちたい処理があるため
-      "no-await-in-loop": "off",
-      "no-console": ["warn", { allow: ["warn", "error"] }],
-      // ガード節で continue を使う方がネストが浅く読みやすいため
-      "no-continue": "off",
-      // 型インポートを別行に分ける方針のため
-      "no-duplicate-imports": ["warn", { allowSeparateTypeImports: true }],
-      "no-empty-function": "off",
-      "no-inline-comments": "off",
-      "no-magic-numbers": "off",
-      "no-nested-ternary": "off",
-      "no-plusplus": "off",
-      "no-ternary": "off",
-      "no-undefined": "off",
-      // Promise を意図的に捨てる `void promise` を許可する
-      "no-void": ["warn", { allowAsStatement: true }],
-      // TODO コメントは実装予定の記録として残す
-      "no-warning-comments": "off",
-      "one-var": "off",
-      "oxc/no-async-await": "off",
-      "oxc/no-barrel-file": ["error", { threshold: 0 }],
-      "oxc/no-optional-chaining": "off",
-      "oxc/no-rest-spread-properties": "off",
-      "react-perf/jsx-no-jsx-as-prop": "off",
-      "react-perf/jsx-no-new-array-as-prop": "off",
-      "react-perf/jsx-no-new-function-as-prop": "off",
-      "react-perf/jsx-no-new-object-as-prop": "off",
-      // 値の変化をトリガーにする effect で本体未参照の依存を意図的に指定しているため
-      "react/exhaustive-effect-dependencies": "off",
-      "react/forbid-component-props": "off",
-      "react/function-component-definition": ["warn", { namedComponents: "arrow-function" }],
-      "react/jsx-filename-extension": ["warn", { extensions: [".tsx"] }],
-      "react/jsx-max-depth": "off",
-      "react/jsx-no-literals": "off",
-      "react/jsx-no-useless-fragment": "off",
-      "react/jsx-props-no-spreading": "off",
-      "react/no-object-type-as-default-prop": "off",
-      "react/react-in-jsx-scope": "off",
-      // React Compiler が未対応の構文を報告するだけでコード自体は正しいため
-      // 外部値とフォーム状態を同期する用途で使っているため
-      "react/set-state-in-effect": "off",
-      "react/todo": "off",
-      "require-unicode-regexp": "off",
-      "sort-imports": "off",
-      "typescript/consistent-type-definitions": ["error", "type"],
-      "typescript/explicit-function-return-type": "off",
-      "typescript/explicit-module-boundary-types": "off",
-      "typescript/no-empty-interface": "off",
-      "typescript/no-non-null-assertion": "error",
-      "typescript/no-unsafe-type-assertion": "error",
-      // 空文字や false もフォールバックさせたい箇所が多いため
-      "typescript/prefer-nullish-coalescing": [
-        "warn",
-        { ignorePrimitives: { boolean: true, string: true } },
-      ],
-      "typescript/prefer-readonly-parameter-types": "off",
-      // Promise を直接返す関数に async を強制すると require-await と衝突するため
-      "typescript/promise-function-async": "off",
-      "typescript/strict-boolean-expressions": "off",
-      // コンポーネントは PascalCase、それ以外は camelCase と種類で使い分けるため
-      "unicorn/filename-case": "off",
-      // zod のスキーマ定義では呼び出しのネストが自然なため
-      "unicorn/max-nested-calls": "off",
-      "unicorn/no-nested-ternary": "off",
-      "unicorn/no-null": "off",
-      // consistent-return を満たすための `return undefined` と衝突するため
-      "unicorn/no-useless-undefined": "off",
-      "unicorn/numeric-separators-style": "off",
-      "unicorn/prefer-export-from": "off",
-      "unicorn/prefer-global-this": "off",
-      "unicorn/prefer-top-level-await": "off",
-      // BroadcastChannel.postMessage には targetOrigin がないため誤検出になる
-      "unicorn/require-post-message-target-origin": "off",
-      "vite-plus/prefer-vite-plus-imports": "error",
-    },
-  },
-  plugins: [
-    tanstackRouter({
-      autoCodeSplitting: true,
-      generatedRouteTree: "./src/routeTree.gen.ts",
-      quoteStyle: "double",
-      routesDirectory: "./src/routes",
-      semicolons: true,
-      target: "react",
-    }),
-    tailwindcss(),
-    react(),
-    VitePWA({
-      // 通知の受信・クリックを扱うため Service Worker は自前で書く
-      filename: "sw.ts",
-      injectRegister: false,
-      manifest: {
-        background_color: pwaColors.background,
-        description: "Chat",
-        display: "standalone",
-        display_override: ["standalone", "minimal-ui"],
-        id: "/",
-        lang: "ja",
-        name: "Chat",
-        short_name: "Chat",
-        shortcuts: [
-          { name: "DM", url: "/app/?open=dms" },
-          { name: "通知", url: "/app/?open=activity" },
-          { name: "検索", url: "/app/?open=search" },
+export default defineConfig(({ mode }) => {
+  // Tauri のアプリでは Service Worker を使わず、通知もネイティブで出す
+  const isTauri = mode === "tauri";
+
+  return {
+    fmt: {
+      ignorePatterns: ["dist/", "dev-dist/", "src-tauri/", ...generatedFiles],
+      jsdoc: true,
+      sortImports: {
+        customGroups: [
+          {
+            elementNamePattern: ["react", "react-dom"],
+            groupName: "react",
+          },
         ],
-        start_url: "/app/",
-        theme_color: pwaColors.theme,
+        groups: [
+          "react",
+          ["value-builtin", "value-external"],
+          "value-internal",
+          ["value-parent", "value-sibling", "value-index"],
+          ["type-parent", "type-sibling", "type-index"],
+          "type-internal",
+          "type-import",
+          "unknown",
+        ],
+        ignoreCase: true,
+        internalPattern: ["#/"],
+        newlinesBetween: true,
+        order: "asc",
       },
-      pwaAssets: {
-        image: "public/logo.svg",
-        // 表示中のテーマに合わせて ThemeProvider が書き換えるため index.html に置く
-        injectThemeColor: false,
-      },
-      registerType: "prompt",
-      srcDir: "sw",
-      strategies: "injectManifest",
-    }),
-  ],
-  resolve: {
-    alias: {
-      "#": path.resolve(import.meta.dirname, "src"),
-    },
-  },
-  server: {
-    host: true,
-    proxy: {
-      "/api": {
-        changeOrigin: true,
-        target: "http://localhost:8080",
-      },
-      "/ws": {
-        target: "ws://localhost:8080",
-        ws: true,
-      },
-      "^/chat\\.v1\\.": {
-        changeOrigin: true,
-        target: "http://localhost:8080",
+      sortPackageJson: {
+        sortScripts: true,
       },
     },
-  },
-  test: {
-    // theme.spec.ts が @theme の定義漏れを検査するため globals.css だけは中身を読み込む
-    css: { include: [/globals\.css/] },
-    environment: "jsdom",
-    globals: false,
-    include: ["src/**/*.{spec,test}.{ts,tsx}"],
-    setupFiles: ["./tests/vitest.setup.ts"],
-  },
+    lint: {
+      categories: {
+        nursery: "warn",
+        pedantic: "warn",
+        perf: "warn",
+        restriction: "warn",
+        style: "warn",
+        suspicious: "warn",
+      },
+      env: {
+        browser: true,
+        node: true,
+      },
+      ignorePatterns: ["dist/", "dev-dist/", "src-tauri/", ...generatedFiles],
+      jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
+      options: {
+        typeAware: true,
+        typeCheck: true,
+      },
+      overrides: [
+        {
+          files: ["tests/**", "*.config.ts"],
+          rules: {
+            "import/no-nodejs-modules": "off",
+            "new-cap": "off",
+          },
+        },
+        {
+          files: ["src/lib/logger.ts"],
+          rules: {
+            "no-console": "off",
+          },
+        },
+        {
+          // beforeLoad では redirect() の戻り値を throw して遷移させる
+          files: ["src/routes/**"],
+          rules: {
+            "typescript/only-throw-error": "off",
+          },
+        },
+        {
+          // unified の use() チェーンの型を tsgolint が解決できず error 型になるため
+          files: ["src/features/message/utils/markdown/renderer.tsx"],
+          rules: {
+            "typescript/no-unsafe-assignment": "off",
+            "typescript/no-unsafe-call": "off",
+            "typescript/no-unsafe-member-access": "off",
+            "typescript/no-unsafe-return": "off",
+          },
+        },
+        {
+          files: ["**/*.d.ts"],
+          rules: {
+            "import/unambiguous": "off",
+            "typescript/consistent-type-definitions": "off",
+          },
+        },
+      ],
+      plugins: [
+        "eslint",
+        "typescript",
+        "unicorn",
+        "react",
+        "react-perf",
+        "oxc",
+        "import",
+        "jsx-a11y",
+      ],
+      rules: {
+        // 先頭が大文字化されるとファイルパスの意味が変わるため
+        "capitalized-comments": "off",
+        // logger のようなインスタンス API を static 化すると設計が歪むため
+        "class-methods-use-this": "off",
+        complexity: "off",
+        "func-style": ["error", "expression"],
+        "id-length": "off",
+        "import/consistent-type-specifier-style": "off",
+        "import/exports-last": "off",
+        "import/group-exports": "off",
+        "import/max-dependencies": "off",
+        "import/no-default-export": "off",
+        "import/no-named-export": "off",
+        "import/no-namespace": "off",
+        // 一つ上の階層までの相対インポートは規約で許可している
+        "import/no-relative-parent-imports": "off",
+        "import/no-unassigned-import": "off",
+        "import/prefer-default-export": "off",
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "max-lines": ["warn", { max: 500, skipBlankLines: true, skipComments: true }],
+        "max-lines-per-function": "off",
+        "max-statements": "off",
+        "new-cap": ["warn", { properties: false }],
+        "no-alert": "off",
+        // 添付ファイルの逐次アップロードなど順序を保ちたい処理があるため
+        "no-await-in-loop": "off",
+        "no-console": ["warn", { allow: ["warn", "error"] }],
+        // ガード節で continue を使う方がネストが浅く読みやすいため
+        "no-continue": "off",
+        // 型インポートを別行に分ける方針のため
+        "no-duplicate-imports": ["warn", { allowSeparateTypeImports: true }],
+        "no-empty-function": "off",
+        "no-inline-comments": "off",
+        "no-magic-numbers": "off",
+        "no-nested-ternary": "off",
+        "no-plusplus": "off",
+        "no-ternary": "off",
+        "no-undefined": "off",
+        // Promise を意図的に捨てる `void promise` を許可する
+        "no-void": ["warn", { allowAsStatement: true }],
+        // TODO コメントは実装予定の記録として残す
+        "no-warning-comments": "off",
+        "one-var": "off",
+        "oxc/no-async-await": "off",
+        "oxc/no-barrel-file": ["error", { threshold: 0 }],
+        "oxc/no-optional-chaining": "off",
+        "oxc/no-rest-spread-properties": "off",
+        "react-perf/jsx-no-jsx-as-prop": "off",
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        // 値の変化をトリガーにする effect で本体未参照の依存を意図的に指定しているため
+        "react/exhaustive-effect-dependencies": "off",
+        "react/forbid-component-props": "off",
+        "react/function-component-definition": ["warn", { namedComponents: "arrow-function" }],
+        "react/jsx-filename-extension": ["warn", { extensions: [".tsx"] }],
+        "react/jsx-max-depth": "off",
+        "react/jsx-no-literals": "off",
+        "react/jsx-no-useless-fragment": "off",
+        "react/jsx-props-no-spreading": "off",
+        "react/no-object-type-as-default-prop": "off",
+        "react/react-in-jsx-scope": "off",
+        // React Compiler が未対応の構文を報告するだけでコード自体は正しいため
+        // 外部値とフォーム状態を同期する用途で使っているため
+        "react/set-state-in-effect": "off",
+        "react/todo": "off",
+        "require-unicode-regexp": "off",
+        "sort-imports": "off",
+        "typescript/consistent-type-definitions": ["error", "type"],
+        "typescript/explicit-function-return-type": "off",
+        "typescript/explicit-module-boundary-types": "off",
+        "typescript/no-empty-interface": "off",
+        "typescript/no-non-null-assertion": "error",
+        "typescript/no-unsafe-type-assertion": "error",
+        // 空文字や false もフォールバックさせたい箇所が多いため
+        "typescript/prefer-nullish-coalescing": [
+          "warn",
+          { ignorePrimitives: { boolean: true, string: true } },
+        ],
+        "typescript/prefer-readonly-parameter-types": "off",
+        // Promise を直接返す関数に async を強制すると require-await と衝突するため
+        "typescript/promise-function-async": "off",
+        "typescript/strict-boolean-expressions": "off",
+        // コンポーネントは PascalCase、それ以外は camelCase と種類で使い分けるため
+        "unicorn/filename-case": "off",
+        // zod のスキーマ定義では呼び出しのネストが自然なため
+        "unicorn/max-nested-calls": "off",
+        "unicorn/no-nested-ternary": "off",
+        "unicorn/no-null": "off",
+        // consistent-return を満たすための `return undefined` と衝突するため
+        "unicorn/no-useless-undefined": "off",
+        "unicorn/numeric-separators-style": "off",
+        "unicorn/prefer-export-from": "off",
+        "unicorn/prefer-global-this": "off",
+        "unicorn/prefer-top-level-await": "off",
+        // BroadcastChannel.postMessage には targetOrigin がないため誤検出になる
+        "unicorn/require-post-message-target-origin": "off",
+        "vite-plus/prefer-vite-plus-imports": "error",
+      },
+    },
+    plugins: [
+      tanstackRouter({
+        autoCodeSplitting: true,
+        generatedRouteTree: "./src/routeTree.gen.ts",
+        quoteStyle: "double",
+        routesDirectory: "./src/routes",
+        semicolons: true,
+        target: "react",
+      }),
+      tailwindcss(),
+      react(),
+      VitePWA({
+        // 通知の受信・クリックを扱うため Service Worker は自前で書く
+        disable: isTauri,
+        filename: "sw.ts",
+        injectRegister: false,
+        manifest: {
+          background_color: pwaColors.background,
+          description: "Chat",
+          display: "standalone",
+          display_override: ["standalone", "minimal-ui"],
+          id: "/",
+          lang: "ja",
+          name: "Chat",
+          short_name: "Chat",
+          shortcuts: [
+            { name: "DM", url: "/app/?open=dms" },
+            { name: "通知", url: "/app/?open=activity" },
+            { name: "検索", url: "/app/?open=search" },
+          ],
+          start_url: "/app/",
+          theme_color: pwaColors.theme,
+        },
+        pwaAssets: {
+          image: "public/logo.svg",
+          // 表示中のテーマに合わせて ThemeProvider が書き換えるため index.html に置く
+          injectThemeColor: false,
+        },
+        registerType: "prompt",
+        srcDir: "sw",
+        strategies: "injectManifest",
+      }),
+    ],
+    resolve: {
+      alias: {
+        "#": path.resolve(import.meta.dirname, "src"),
+      },
+    },
+    server: {
+      // 実機やエミュレータから開発サーバーに届くよう、Tauri が渡すホストで待ち受ける
+      host: process.env.TAURI_DEV_HOST || true,
+      proxy: {
+        "/api": {
+          changeOrigin: true,
+          target: "http://localhost:8080",
+        },
+        "/ws": {
+          target: "ws://localhost:8080",
+          ws: true,
+        },
+        "^/chat\\.v1\\.": {
+          changeOrigin: true,
+          target: "http://localhost:8080",
+        },
+      },
+      strictPort: isTauri,
+    },
+    test: {
+      // theme.spec.ts が @theme の定義漏れを検査するため globals.css だけは中身を読み込む
+      css: { include: [/globals\.css/] },
+      environment: "jsdom",
+      globals: false,
+      include: ["src/**/*.{spec,test}.{ts,tsx}"],
+      setupFiles: ["./tests/vitest.setup.ts"],
+    },
+  };
 });

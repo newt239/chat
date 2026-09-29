@@ -22,6 +22,13 @@ type LoginWithGoogleInput struct {
 	WorkspaceID *string
 }
 
+type LoginWithGoogleCodeInput struct {
+	Code         string
+	CodeVerifier string
+	Nonce        string
+	WorkspaceID  *string
+}
+
 type SignUpInput struct {
 	WorkspaceID string
 	Email       string
@@ -50,6 +57,8 @@ type GoogleIdentity struct {
 	EmailVerified bool
 	Name          string
 	Picture       string
+	// 認可コードフローで認可リクエストに付けた値。ID トークンだけを受け取るフローでは空
+	Nonce string
 }
 
 // Output DTOs

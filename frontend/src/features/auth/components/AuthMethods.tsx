@@ -3,8 +3,10 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePasswordAuthEnabled } from "#/features/auth/hooks/usePasswordAuthEnabled";
+import { isTauri } from "#/lib/platform/platform";
 
 import { GoogleSignInButton } from "./GoogleSignInButton";
+import { GoogleSignInButtonNative } from "./GoogleSignInButtonNative";
 
 type AuthMethodsProps = {
   // パスワード認証が有効なときだけ表示する。null なら Google だけにする
@@ -20,7 +22,12 @@ export const AuthMethods = ({ passwordForm, workspaceId }: AuthMethodsProps) => 
 
   return (
     <>
-      {googleClientId && <GoogleSignInButton clientId={googleClientId} workspaceId={workspaceId} />}
+      {googleClientId &&
+        (isTauri ? (
+          <GoogleSignInButtonNative workspaceId={workspaceId} />
+        ) : (
+          <GoogleSignInButton clientId={googleClientId} workspaceId={workspaceId} />
+        ))}
       {googleClientId && passwordAuthEnabled && (
         <div className="flex items-center gap-3 text-caption text-muted">
           <hr className="m-0 flex-1 border-border" />

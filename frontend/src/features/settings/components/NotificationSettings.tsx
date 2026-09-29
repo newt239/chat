@@ -5,6 +5,7 @@ import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedCont
 import { Switch } from "#/components/ui/Switch/Switch";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { logger } from "#/lib/logger";
+import { requestNotificationPermission } from "#/lib/platform/notify";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { notificationLevels, preferencesAtom } from "#/providers/store/preferences";
 
@@ -50,8 +51,8 @@ export const NotificationSettings = () => {
               return;
             }
             // 許可を求められるのはユーザー操作の中だけなので、ここで尋ねる
-            void Notification.requestPermission().then((permission) => {
-              if (permission === "granted") {
+            void requestNotificationPermission().then((granted) => {
+              if (granted) {
                 setDevice((prev) => ({ ...prev, desktop }));
               } else {
                 toast(t("settings.notifications.denied"), { tone: "danger" });

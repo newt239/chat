@@ -39,5 +39,6 @@ func identityFromClaims(sub string, claims map[string]any) *authuc.GoogleIdentit
 	verified, _ := claims["email_verified"].(bool)
 	name, _ := claims["name"].(string)
 	picture, _ := claims["picture"].(string)
-	return &authuc.GoogleIdentity{Sub: sub, Email: email, EmailVerified: verified, Name: name, Picture: picture}
+	nonce, _ := claims["nonce"].(string)
+	return &authuc.GoogleIdentity{Sub: sub, Email: email, EmailVerified: verified, Name: name, Picture: picture, Nonce: nonce}
 }

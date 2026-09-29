@@ -56,6 +56,7 @@ func (r *UseCaseRegistry) NewAuthUseCase() authuc.AuthUseCase {
 		r.infrastructureRegistry.NewJWTService(),
 		r.infrastructureRegistry.NewPasswordService(),
 		r.infrastructureRegistry.NewGoogleVerifier(),
+		r.infrastructureRegistry.NewGoogleOAuth(),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
 		r.infrastructureRegistry.NewAuthSettings(),

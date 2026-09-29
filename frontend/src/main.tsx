@@ -6,12 +6,11 @@ import { Provider as JotaiProvider } from "jotai";
 import { createRoot } from "react-dom/client";
 
 import { ToastRegion } from "#/components/ui/ToastRegion/ToastRegion";
-import { listenInstallPrompt } from "#/features/layout/utils/installPrompt";
+import { setupPlatform } from "#/lib/platform/platform";
 import { store } from "#/providers/store/store";
 
 import { App } from "./App";
 import { transport } from "./lib/api/transport";
-import { registerServiceWorker } from "./lib/registerServiceWorker";
 import { queryClient } from "./providers/query/query";
 import { ThemeProvider } from "./providers/theme/ThemeProvider";
 import "@fontsource/ibm-plex-mono/400.css";
@@ -23,8 +22,7 @@ import "@fontsource/ibm-plex-sans-jp/700.css";
 
 import "./styles/globals.css";
 
-listenInstallPrompt();
-registerServiceWorker();
+await setupPlatform();
 
 const rootEl = document.querySelector("#root");
 if (rootEl) {

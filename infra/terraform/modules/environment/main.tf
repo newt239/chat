@@ -27,8 +27,9 @@ module "deployer" {
 module "attachments" {
   source = "../wasabi_bucket"
 
-  bucket_name  = var.wasabi_bucket_name
-  cors_origins = ["https://${var.frontend_domain}"]
+  bucket_name = var.wasabi_bucket_name
+  # Tauri のアプリは macOS/iOS と Windows/Android で origin が異なる
+  cors_origins = ["https://${var.frontend_domain}", "tauri://localhost", "https://tauri.localhost"]
 }
 
 module "tunnel" {

@@ -70,6 +70,10 @@ type JWTConfig struct {
 type AuthConfig struct {
 	GoogleOAuthClientID string
 	PasswordAuthEnabled bool
+	// ネイティブアプリの Google ログイン用。ClientSecret と RedirectURL が空ならネイティブアプリでは Google ログインを使えない
+	GoogleOAuthClientSecret string
+	GoogleOAuthRedirectURL  string
+	NativeAppRedirectURL    string
 }
 
 type WasabiConfig struct {
@@ -108,6 +112,10 @@ func Load() (*Config, error) {
 		Auth: AuthConfig{
 			GoogleOAuthClientID: getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
 			PasswordAuthEnabled: getEnvBool("PASSWORD_AUTH_ENABLED", env != "production"),
+
+			GoogleOAuthClientSecret: getEnv("GOOGLE_OAUTH_CLIENT_SECRET", ""),
+			GoogleOAuthRedirectURL:  getEnv("GOOGLE_OAUTH_REDIRECT_URL", ""),
+			NativeAppRedirectURL:    getEnv("NATIVE_APP_REDIRECT_URL", "dev.newt239.chat://auth/callback"),
 		},
 		Storage: StorageConfig{
 			Driver:        getEnv("STORAGE_DRIVER", "wasabi"),

@@ -10,6 +10,7 @@ import {
 } from "#/features/settings/utils/pushMessaging";
 import { NotificationService, PushPlatform } from "#/gen/chat/v1/notification_service_pb";
 import { logger } from "#/lib/logger";
+import { isNotificationGranted, requestNotificationPermission } from "#/lib/platform/notify";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 
 /** この端末へのプッシュ通知の登録と解除。トークンはサーバーと端末の両方に持つ */
@@ -24,7 +25,7 @@ export const usePushNotifications = () => {
 
   // 許可を求められるのはユーザー操作の中だけなので、スイッチを押したときに呼ぶ
   const enable = async () => {
-    if ((await Notification.requestPermission()) !== "granted") {
+    if (!(await requestNotificationPermission())) {
       return false;
     }
     const token = await registerPush();
@@ -47,7 +48,7 @@ export const usePushNotifications = () => {
     if (previous === null) {
       return;
     }
-    if (Notification.permission !== "granted") {
+    if (!(await isNotificationGranted())) {
       await disable();
       return;
     }

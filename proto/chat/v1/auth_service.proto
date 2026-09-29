@@ -11,6 +11,8 @@ service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   // 未登録のメールアドレスは有効な招待があるか、登録を許可したワークスペースの参加リンクから来たときだけアカウントを作る
   rpc LoginWithGoogle(LoginWithGoogleRequest) returns (LoginWithGoogleResponse);
+  // ネイティブアプリがブラウザで受け取った認可コードを PKCE で交換してログインする。アカウントの扱いは LoginWithGoogle と同じ
+  rpc LoginWithGoogleCode(LoginWithGoogleCodeRequest) returns (LoginWithGoogleCodeResponse);
   // 招待リンクからパスワードを設定してアカウントを作る
   rpc SignUpWithInvitation(SignUpWithInvitationRequest) returns (SignUpWithInvitationResponse);
   // 登録とメールでの登録を許可したワークスペースの参加リンクからアカウントを作る
@@ -44,6 +46,23 @@ message LoginWithGoogleRequest {
 }
 
 message LoginWithGoogleResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  User user = 3;
+}
+
+message LoginWithGoogleCodeRequest {
+  string code = 1 [(buf.validate.field).string.min_len = 1];
+  string code_verifier = 2 [(buf.validate.field).string = {
+    min_len: 43
+    max_len: 128
+  }];
+  // 認可リクエストに付けた nonce。ID トークンの nonce と一致しなければ拒否する
+  string nonce = 3 [(buf.validate.field).string.min_len = 1];
+  optional string workspace_id = 4 [(buf.validate.field).string.min_len = 1];
+}
+
+message LoginWithGoogleCodeResponse {
   string access_token = 1;
   string refresh_token = 2;
   User user = 3;

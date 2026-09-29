@@ -174,6 +174,19 @@ describe("WsClient の再接続", () => {
     client.close();
   });
 
+  test("keepAliveWhenHidden なら隠れても切断しない", () => {
+    const { state } = stubWebSocket();
+    const client = new WsClient("token", "ws1", { keepAliveWhenHidden: true });
+    expect(state.created).toBe(1);
+
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    globalThis.dispatchEvent(new Event("visibilitychange"));
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+    globalThis.dispatchEvent(new Event("visibilitychange"));
+    expect(state.created).toBe(1);
+    client.close();
+  });
+
   test("サーバーの停止で閉じられたら 1 秒以内につなぎ直す", () => {
     vi.useFakeTimers();
     const { fire, state } = stubWebSocket();

@@ -32,6 +32,11 @@ type GoogleVerifier interface {
 	Verify(ctx context.Context, idToken string) (*GoogleIdentity, error)
 }
 
+// GoogleCodeExchanger は認可コードと PKCE の code_verifier を Google の ID トークンと交換します
+type GoogleCodeExchanger interface {
+	Exchange(ctx context.Context, code, codeVerifier string) (idToken string, err error)
+}
+
 var (
 	ErrInvalidCredentials   = domainerrors.ErrInvalidCredentials
 	ErrUserAlreadyExists    = domainerrors.ErrUserAlreadyExists
@@ -48,6 +53,7 @@ type AuthUseCase interface {
 	PasswordAuthEnabled() bool
 	Login(ctx context.Context, input LoginInput) (*AuthOutput, error)
 	LoginWithGoogle(ctx context.Context, input LoginWithGoogleInput) (*AuthOutput, error)
+	LoginWithGoogleCode(ctx context.Context, input LoginWithGoogleCodeInput) (*AuthOutput, error)
 	SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error)
 	SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error)
 	RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error)
@@ -62,6 +68,7 @@ type authInteractor struct {
 	jwtService     JWTService
 	passwordSvc    PasswordService
 	googleVerifier GoogleVerifier
+	googleCode     GoogleCodeExchanger
 	txManager      domaintransaction.Manager
 	recorder       audit.Recorder
 	settings       Settings
@@ -75,6 +82,7 @@ func NewAuthInteractor(
 	jwtService JWTService,
 	passwordSvc PasswordService,
 	googleVerifier GoogleVerifier,
+	googleCode GoogleCodeExchanger,
 	txManager domaintransaction.Manager,
 	recorder audit.Recorder,
 	settings Settings,
@@ -87,6 +95,7 @@ func NewAuthInteractor(
 		jwtService:     jwtService,
 		passwordSvc:    passwordSvc,
 		googleVerifier: googleVerifier,
+		googleCode:     googleCode,
 		txManager:      txManager,
 		recorder:       recorder,
 		settings:       settings,
@@ -122,6 +131,27 @@ func (i *authInteractor) LoginWithGoogle(ctx context.Context, input LoginWithGoo
 	if err != nil {
 		return nil, err
 	}
+	return i.loginWithGoogleIdentity(ctx, identity, input.WorkspaceID)
+}
+
+// LoginWithGoogleCode はネイティブアプリがブラウザで受け取った認可コードを交換し、LoginWithGoogle と同じ扱いでログインさせます
+func (i *authInteractor) LoginWithGoogleCode(ctx context.Context, input LoginWithGoogleCodeInput) (*AuthOutput, error) {
+	idToken, err := i.googleCode.Exchange(ctx, input.Code, input.CodeVerifier)
+	if err != nil {
+		return nil, err
+	}
+	identity, err := i.googleVerifier.Verify(ctx, idToken)
+	if err != nil {
+		return nil, err
+	}
+	// 別の認可リクエストで発行されたトークンを使い回させない
+	if identity.Nonce == "" || identity.Nonce != input.Nonce {
+		return nil, ErrInvalidToken
+	}
+	return i.loginWithGoogleIdentity(ctx, identity, input.WorkspaceID)
+}
+
+func (i *authInteractor) loginWithGoogleIdentity(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*AuthOutput, error) {
 	if !identity.EmailVerified {
 		return nil, ErrEmailNotVerified
 	}
@@ -137,9 +167,9 @@ func (i *authInteractor) LoginWithGoogle(ctx context.Context, input LoginWithGoo
 		}
 	}
 	if user == nil {
-		user, err = i.createGoogleUser(ctx, identity, input.WorkspaceID)
-	} else if input.WorkspaceID != nil {
-		err = i.joinSignupWorkspace(ctx, user.ID, *input.WorkspaceID)
+		user, err = i.createGoogleUser(ctx, identity, workspaceID)
+	} else if workspaceID != nil {
+		err = i.joinSignupWorkspace(ctx, user.ID, *workspaceID)
 	}
 	if err != nil {
 		return nil, err

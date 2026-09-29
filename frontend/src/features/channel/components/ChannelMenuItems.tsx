@@ -14,6 +14,8 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannelListActions } from "#/features/channel/hooks/useChannelListActions";
+import { toShareUrl } from "#/lib/platform/appOrigin";
+import { isTauri } from "#/lib/platform/platform";
 
 type ChannelMenuItemsProps = {
   workspaceId: string;
@@ -66,17 +68,18 @@ export const ChannelMenuItems = ({
       <MenuItem
         icon={<IconLink />}
         onAction={() => {
-          // 共有用のリンクなので origin を含む絶対 URL にする
           const { href } = router.buildLocation(location);
-          void navigator.clipboard.writeText(new URL(href, globalThis.location.origin).href);
+          void navigator.clipboard.writeText(toShareUrl(href));
           toast(t("shell.channelMenu.linkCopied"));
         }}
       >
         {t("shell.channelMenu.copyLink")}
       </MenuItem>
-      <MenuItemLink {...location} target="_blank" icon={<IconExternalLink />}>
-        {t("shell.openInNewTab")}
-      </MenuItemLink>
+      {!isTauri && (
+        <MenuItemLink {...location} target="_blank" icon={<IconExternalLink />}>
+          {t("shell.openInNewTab")}
+        </MenuItemLink>
+      )}
     </>
   );
 };

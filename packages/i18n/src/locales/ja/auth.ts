@@ -2,6 +2,8 @@ export const auth = {
   displayName: "表示名",
   email: "メールアドレス",
   google: {
+    browserFailed: "Google ログインを完了できませんでした。もう一度お試しください",
+    continueInBrowser: "ブラウザで Google にログイン",
     loadFailed: "Google ログインを読み込めませんでした",
   },
   invite: {

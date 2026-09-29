@@ -2,6 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**", "build/**", "bin/**"] },
+    "build:tauri": { "cache": false },
     "dev": { "cache": false, "persistent": true },
     "preview": { "cache": false, "persistent": true },
     "test": {},
