@@ -11,6 +11,7 @@ import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
+import { toShareUrl } from "#/lib/platform/appOrigin";
 
 const roles = {
   admin: WorkspaceRole.ADMIN,
@@ -54,7 +55,7 @@ export const InviteMemberForm = ({ workspaceId }: InviteMemberFormProps) => {
             return;
           }
           const { href } = router.buildLocation({ params: { token }, to: "/invite/$token" });
-          setIssued({ email: target, url: new URL(href, globalThis.location.origin).href });
+          setIssued({ email: target, url: toShareUrl(href) });
         },
       },
     );

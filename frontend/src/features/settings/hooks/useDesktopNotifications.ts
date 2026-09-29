@@ -6,12 +6,13 @@ import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { navigateTo } from "#/lib/navigation";
+import { isNotificationSupported, showNotification } from "#/lib/platform/notify";
 import { userAtom } from "#/providers/store/auth";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { preferencesAtom } from "#/providers/store/preferences";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
-/** 設定に従って新着メッセージをブラウザの通知で知らせる。ミュート中と表示中のチャンネルは除く。プッシュ通知と同じ tag で出し、二重にならないようにする */
+/** 設定に従って新着メッセージを OS の通知で知らせる。ミュート中と表示中のチャンネルは除く。プッシュ通知と同じ tag で出し、二重にならないようにする */
 export const useDesktopNotifications = (workspaceId: string, currentChannelId: string | null) => {
   const { wsClient } = useWsClient();
   const { desktop, pushToken } = useAtomValue(notificationPreferencesAtom);
@@ -22,7 +23,7 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
   const displayName = useDisplayName();
 
   useEffect(() => {
-    if (!wsClient || !desktop || level === "none" || !("Notification" in globalThis)) {
+    if (!wsClient || !desktop || level === "none" || !isNotificationSupported()) {
       return undefined;
     }
     return wsClient.on("newMessage", ({ channelId, message }) => {
@@ -31,8 +32,7 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
         message.userId === myId ||
         (channelId === currentChannelId && document.visibilityState === "visible") ||
         // 裏にいる間はプッシュ通知が届くので、そちらに任せる
-        (pushToken !== null && document.visibilityState !== "visible") ||
-        Notification.permission !== "granted"
+        (pushToken !== null && document.visibilityState !== "visible")
       ) {
         return;
       }
@@ -46,16 +46,17 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
         return;
       }
       const author = displayName(message.userId, message.user?.displayName ?? "");
-      const notification = new Notification(channel ? `${author} · #${channel.name}` : author, {
+      void showNotification({
         body: message.body,
+        onClick: () => {
+          navigateTo({
+            params: { channelId, workspaceId },
+            search: { message: message.id },
+            to: "/app/$workspaceId/$channelId",
+          });
+        },
         tag: message.id,
-      });
-      notification.addEventListener("click", () => {
-        navigateTo({
-          params: { channelId, workspaceId },
-          search: { message: message.id },
-          to: "/app/$workspaceId/$channelId",
-        });
+        title: channel ? `${author} · #${channel.name}` : author,
       });
     });
   }, [

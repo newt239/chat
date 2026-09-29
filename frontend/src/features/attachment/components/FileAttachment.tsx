@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { openExternal } from "#/lib/platform/openExternal";
 
 import { useDownloadUrl } from "../api/client";
 import { formatFileSize } from "../utils/validator";
@@ -22,7 +23,7 @@ export const FileAttachment = ({ attachment }: FileAttachmentProps) => {
     try {
       const { url } = await downloadMutation.mutateAsync({ attachmentId: attachment.id });
       // 署名付き URL は押すたびに発行するため、リンクではなく新しいタブで開く
-      window.open(url, "_blank", "noopener,noreferrer");
+      openExternal(url);
     } catch {
       toast(t("attachment.downloadFailed"), { tone: "danger" });
     }

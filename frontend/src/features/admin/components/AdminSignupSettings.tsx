@@ -8,6 +8,7 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { useAdminActions } from "#/features/admin/hooks/useAdminActions";
 import { usePasswordAuthEnabled } from "#/features/auth/hooks/usePasswordAuthEnabled";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
+import { toShareUrl } from "#/lib/platform/appOrigin";
 
 type AdminSignupSettingsProps = {
   workspaceId: string;
@@ -79,7 +80,7 @@ export const AdminSignupSettings = ({ workspaceId }: AdminSignupSettingsProps) =
           <span className="text-xs font-semibold text-muted">
             {t("admin.invitations.signup.link")}
           </span>
-          <CopyableUrl url={new URL(href, globalThis.location.origin).href} />
+          <CopyableUrl url={toShareUrl(href)} />
         </div>
       )}
     </section>
