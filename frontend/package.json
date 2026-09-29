@@ -40,6 +40,8 @@
     "@tabler/icons-react": "3.47.0",
     "@tanstack/react-query": "5.103.2",
     "@tanstack/react-router": "1.170.38",
+    "@tauri-apps/api": "2.11.1",
+    "@tauri-apps/plugin-notification": "2.4.0",
     "@tauri-apps/plugin-opener": "2.5.5",
     "@tauri-apps/plugin-os": "2.3.2",
     "firebase": "12.19.0",
