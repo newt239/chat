@@ -5,8 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "vp build",
+    "build:tauri": "tauri build",
+    "build:tauri-web": "vp build --mode tauri",
     "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run knip && pnpm run test",
     "dev": "vp dev",
+    "dev:tauri": "tauri dev",
+    "dev:tauri-web": "vp dev --mode tauri",
     "format": "vp fmt --check",
     "format:fix": "vp fmt",
     "generate:pwa-assets": "pwa-assets-generator",
@@ -15,6 +19,7 @@
     "lint:fix": "vp lint --fix",
     "preinstall": "npx only-allow pnpm",
     "preview": "vp preview",
+    "tauri": "tauri",
     "test": "vp test run",
     "test:watch": "vp test watch",
     "typecheck": "tsc --noEmit && tsc --noEmit -p sw/tsconfig.json"
@@ -35,6 +40,8 @@
     "@tabler/icons-react": "3.47.0",
     "@tanstack/react-query": "5.103.2",
     "@tanstack/react-router": "1.170.38",
+    "@tauri-apps/plugin-opener": "2.5.5",
+    "@tauri-apps/plugin-os": "2.3.2",
     "firebase": "12.19.0",
     "hast-util-to-jsx-runtime": "2.3.6",
     "i18next": "26.4.2",
@@ -60,6 +67,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/router-plugin": "1.168.40",
+    "@tauri-apps/cli": "2.11.5",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",

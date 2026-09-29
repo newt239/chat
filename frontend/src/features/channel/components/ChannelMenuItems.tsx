@@ -15,6 +15,7 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannelListActions } from "#/features/channel/hooks/useChannelListActions";
 import { toShareUrl } from "#/lib/platform/appOrigin";
+import { isTauri } from "#/lib/platform/platform";
 
 type ChannelMenuItemsProps = {
   workspaceId: string;
@@ -74,9 +75,11 @@ export const ChannelMenuItems = ({
       >
         {t("shell.channelMenu.copyLink")}
       </MenuItem>
-      <MenuItemLink {...location} target="_blank" icon={<IconExternalLink />}>
-        {t("shell.openInNewTab")}
-      </MenuItemLink>
+      {!isTauri && (
+        <MenuItemLink {...location} target="_blank" icon={<IconExternalLink />}>
+          {t("shell.openInNewTab")}
+        </MenuItemLink>
+      )}
     </>
   );
 };

@@ -23,7 +23,7 @@ export const FileAttachment = ({ attachment }: FileAttachmentProps) => {
     try {
       const { url } = await downloadMutation.mutateAsync({ attachmentId: attachment.id });
       // 署名付き URL は押すたびに発行するため、リンクではなく新しいタブで開く
-      openExternal(url);
+      await openExternal(url);
     } catch {
       toast(t("attachment.downloadFailed"), { tone: "danger" });
     }
