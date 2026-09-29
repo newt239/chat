@@ -48,5 +48,22 @@
     "android": {
       "debugApplicationIdSuffix": ".debug"
     }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": [
+          "dev.newt239.chat"
+        ]
+      },
+      "mobile": [
+        {
+          "scheme": [
+            "dev.newt239.chat"
+          ],
+          "appLink": false
+        }
+      ]
+    }
   }
 }
