@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - identity.yaml
+  - serviceaccount.yaml
   - backend.yaml
   - frontend.yaml
   - meilisearch.yaml

@@ -28,37 +28,6 @@ spec:
           labelSelector:
             matchLabels:
               app.kubernetes.io/name: backend
-      initContainers:
-        # restartPolicy: Always でネイティブサイドカーとして動かし、backend より先に起動させる
-        - name: cloud-sql-proxy
-          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.26.0
-          restartPolicy: Always
-          args:
-            - --private-ip
-            - --structured-logs
-            - --health-check
-            - --http-address=0.0.0.0
-            - --port=5432
-            - CLOUDSQL_CONNECTION_NAME
-          startupProbe:
-            httpGet:
-              path: /startup
-              port: 9090
-            periodSeconds: 2
-            failureThreshold: 30
-          livenessProbe:
-            httpGet:
-              path: /liveness
-              port: 9090
-          securityContext:
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              memory: 128Mi
       containers:
         - name: backend
           image: backend

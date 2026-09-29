@@ -8,7 +8,7 @@ resources:
   - params.yaml
 
 components:
-  - ../../components/params
+  - ../../components/gke
 
 # deploy ワークフローが kustomize edit set image でタグを書き換える
 images:

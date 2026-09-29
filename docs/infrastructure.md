@@ -29,7 +29,7 @@ flowchart LR
 | --- | --- | --- |
 | 共有 | `infra/terraform/shared` | API の有効化、VPC と Cloud NAT、GKE（`asia-northeast1-b`、Spot の e2-medium を 2〜4 台）、Cloud SQL のインスタンス、Artifact Registry、GitHub Actions 用の Workload Identity Federation のプール |
 | 環境ごと | `infra/terraform/envs/{dev,prod}`（中身は `modules/environment`） | DB とユーザー、backend の GSA と Workload Identity、Secret Manager のシークレット（ID は `<環境>-<変数名>`）、デプロイ用の GSA、Cloudflare Tunnel と DNS レコード、Wasabi のバケット |
-| マニフェスト | `infra/k8s/base` と `overlays/{dev,prod}` | backend・frontend・cloudflared は 2 レプリカ、Redis と Meilisearch は 1 つ。環境ごとの値は `overlays/<環境>/params.yaml` と `components/params` で埋め込む |
+| マニフェスト | `infra/k8s/base` と `overlays/{dev,prod}` | backend・frontend・cloudflared は 2 レプリカ、Redis と Meilisearch は 1 つ。環境ごとの値は `overlays/<環境>/params.yaml` と `components/gke`（Cloud SQL Auth Proxy・External Secrets・Workload Identity も持つ）で埋め込む |
 
 知っておくこと:
 
