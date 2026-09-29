@@ -256,6 +256,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		EditedAt:    msg.EditedAt,
 		DeletedAt:   msg.DeletedAt,
 		IsDeleted:   msg.DeletedAt != nil,
+		Location:    msg.Location,
 	}
 
 	for _, mention := range related.userMentions[msg.ID] {

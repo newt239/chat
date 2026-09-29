@@ -66,6 +66,7 @@ func main() {
 
 	reg := registry.NewRegistry(client, cfg)
 	go prepareSearchIndex(reg)
+	go reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(ctx, 10*time.Second)
 
 	hub := reg.NewWebSocketHub()
 	go hub.Run()

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Form, TextArea, TextField } from "react-aria-components";
@@ -7,8 +7,13 @@ import { useTranslation } from "react-i18next";
 import { toast } from "#/components/ui/toast";
 import { AttachmentList } from "#/features/attachment/components/AttachmentList";
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
+import { useDraftAutosave } from "#/features/draft/hooks/useDraftAutosave";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
+import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
+import { PendingLocation } from "#/features/location/components/PendingLocation";
+import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
+import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
 import { useIsMobile } from "#/lib/useMediaQuery";
 
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
@@ -16,14 +21,19 @@ import { applyFormat, detectActiveFormats } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 
+import type { ComposerContent } from "../utils/composerContent";
 import type { FormatKey } from "../utils/format";
 
+import type { MessageLocation } from "#/gen/chat/v1/message_pb";
+
 type BaseMessageInputProps = {
-  onSubmit: (body: string, attachmentIds: string[]) => void;
+  onSubmit: (content: ComposerContent) => void;
   placeholder: string;
   isPending: boolean;
   error?: string;
   channelId: string;
+  // スレッドへの返信の欄のときの親メッセージ。下書きの置き場所に使う
+  parentId: string | null;
   // 集約表示中の投稿先の切り替え。入力欄の上に出す
   targetPicker?: ReactNode;
 };
@@ -36,6 +46,7 @@ export const BaseMessageInput = ({
   isPending,
   error,
   channelId,
+  parentId,
   targetPicker = null,
 }: BaseMessageInputProps) => {
   const { t } = useTranslation();
@@ -43,6 +54,9 @@ export const BaseMessageInput = ({
   const [body, setBody] = useState("");
   const [selection, setSelection] = useState({ end: 0, start: 0 });
   const [isPreview, setIsPreview] = useState(false);
+  const [location, setLocation] = useState<MessageLocation | undefined>(undefined);
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isRecorderOpen, setIsRecorderOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { previews, addPreview, removePreview, clearPreviews } = useLinkPreview();
   const {
@@ -54,11 +68,28 @@ export const BaseMessageInput = ({
     isUploading,
   } = useFileUpload();
   const { notifyTyping, notifyStopTyping } = useTypingNotifier(channelId);
+  const {
+    discard: discardDraft,
+    initialBody: draftBody,
+    save: saveDraft,
+  } = useDraftAutosave(channelId, parentId);
+  const isRestoredRef = useRef(false);
+  const scheduleMessage = useScheduleMessage();
+
+  // 開き直したときに書きかけを戻す。読み込み前に打ち始めていたら上書きしない
+  useEffect(() => {
+    if (draftBody === null || isRestoredRef.current) {
+      return;
+    }
+    isRestoredRef.current = true;
+    setBody((current) => (current === "" ? draftBody : current));
+  }, [draftBody]);
 
   const handleBodyChange = useCallback(
     (next: string) => {
       setBody(next);
       notifyTyping();
+      saveDraft(next);
 
       const urls: string[] = next.match(urlPattern) ?? [];
       for (const url of urls) {
@@ -70,7 +101,7 @@ export const BaseMessageInput = ({
         }
       }
     },
-    [addPreview, previews, removePreview, notifyTyping],
+    [addPreview, previews, removePreview, notifyTyping, saveDraft],
   );
 
   const handleFormat = (key: FormatKey) => {
@@ -86,26 +117,52 @@ export const BaseMessageInput = ({
 
   const handleFileSelect = async (files: File[]) => {
     for (const file of files) {
-      await uploadFile(file, { channelId });
+      await uploadFile(file, { channelId, durationSeconds: undefined });
     }
   };
 
-  const hasContent = body.trim().length > 0 || pendingAttachments.length > 0;
+  const hasContent =
+    body.trim().length > 0 || pendingAttachments.length > 0 || location !== undefined;
 
-  const handleSubmit = () => {
+  const collectContent = () => {
     if (!hasContent) {
-      return;
+      return null;
     }
     if (isUploading) {
       toast(t("message.composer.uploading"));
-      return;
+      return null;
     }
-    onSubmit(body.trim(), getCompletedAttachmentIds());
+    return { attachmentIds: getCompletedAttachmentIds(), body: body.trim(), location };
+  };
+
+  // 送信・予約した後は書きかけも消す
+  const resetComposer = () => {
     notifyStopTyping();
+    discardDraft();
     setBody("");
+    setLocation(undefined);
     setIsPreview(false);
     clearPreviews();
     clearAttachments();
+  };
+
+  const handleSubmit = () => {
+    const content = collectContent();
+    if (content !== null) {
+      onSubmit(content);
+      resetComposer();
+    }
+  };
+
+  const handleSchedule = (scheduledAt: Date) => {
+    const content = collectContent();
+    if (content !== null) {
+      scheduleMessage(
+        { ...content, channelId, parentId: parentId ?? undefined },
+        scheduledAt,
+        resetComposer,
+      );
+    }
   };
 
   return (
@@ -120,6 +177,25 @@ export const BaseMessageInput = ({
       <div className="rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
         {pendingAttachments.length > 0 && (
           <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
+        )}
+        {isRecorderOpen && (
+          <VoiceRecorder
+            onAttach={(file, durationSeconds) => {
+              setIsRecorderOpen(false);
+              void uploadFile(file, { channelId, durationSeconds });
+            }}
+            onDiscard={() => {
+              setIsRecorderOpen(false);
+            }}
+          />
+        )}
+        {location && (
+          <PendingLocation
+            location={location}
+            onRemove={() => {
+              setLocation(undefined);
+            }}
+          />
         )}
         {isPreview ? (
           <MessagePreview content={body} />
@@ -182,8 +258,20 @@ export const BaseMessageInput = ({
           onFileSelect={(files) => {
             void handleFileSelect(files);
           }}
+          onShareLocation={() => {
+            setIsLocationOpen(true);
+          }}
+          onRecord={() => {
+            setIsRecorderOpen(true);
+          }}
+          onSchedule={handleSchedule}
         />
       </div>
+      <LocationShareDialog
+        isOpen={isLocationOpen}
+        onOpenChange={setIsLocationOpen}
+        onConfirm={setLocation}
+      />
       {error && <p className="m-0 mt-1.5 text-caption text-danger">{error}</p>}
     </Form>
   );

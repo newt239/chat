@@ -10,6 +10,8 @@ import type { PendingAttachment } from "../api/types";
 
 type UploadOptions = {
   channelId: string;
+  // 録音のように、ファイルから再生時間を読めないときに計測済みの値を渡す
+  durationSeconds: number | undefined;
 };
 
 // 進捗の通知と、失敗したときの文言（辞書から取ったもの）
@@ -90,7 +92,11 @@ export const useFileUpload = () => {
 
       try {
         // 表示時にレイアウトを予約できるよう、寸法と再生時間を送る。動画はサムネイルも一緒に上げる
-        const { thumbnail, ...media } = await measureMedia(file);
+        const { thumbnail, ...measured } = await measureMedia(file);
+        const media = {
+          ...measured,
+          durationSeconds: options.durationSeconds ?? measured.durationSeconds,
+        };
         const presignData = await presignMutation.mutateAsync({
           ...media,
           channelId: options.channelId,

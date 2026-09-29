@@ -35,6 +35,14 @@ const (
 	FieldSenderName = "sender_name"
 	// FieldSenderAvatarURL holds the string denoting the sender_avatar_url field in the database.
 	FieldSenderAvatarURL = "sender_avatar_url"
+	// FieldLocationLatitude holds the string denoting the location_latitude field in the database.
+	FieldLocationLatitude = "location_latitude"
+	// FieldLocationLongitude holds the string denoting the location_longitude field in the database.
+	FieldLocationLongitude = "location_longitude"
+	// FieldLocationAccuracy holds the string denoting the location_accuracy field in the database.
+	FieldLocationAccuracy = "location_accuracy"
+	// FieldLocationLabel holds the string denoting the location_label field in the database.
+	FieldLocationLabel = "location_label"
 	// EdgeChannel holds the string denoting the channel edge name in mutations.
 	EdgeChannel = "channel"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -163,6 +171,10 @@ var Columns = []string{
 	FieldDeletedBy,
 	FieldSenderName,
 	FieldSenderAvatarURL,
+	FieldLocationLatitude,
+	FieldLocationLongitude,
+	FieldLocationAccuracy,
+	FieldLocationLabel,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -176,8 +188,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// BodyValidator is a validator for the "body" field. It is called by the builders before save.
-	BodyValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -240,6 +250,26 @@ func BySenderName(opts ...sql.OrderTermOption) OrderOption {
 // BySenderAvatarURL orders the results by the sender_avatar_url field.
 func BySenderAvatarURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSenderAvatarURL, opts...).ToFunc()
+}
+
+// ByLocationLatitude orders the results by the location_latitude field.
+func ByLocationLatitude(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocationLatitude, opts...).ToFunc()
+}
+
+// ByLocationLongitude orders the results by the location_longitude field.
+func ByLocationLongitude(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocationLongitude, opts...).ToFunc()
+}
+
+// ByLocationAccuracy orders the results by the location_accuracy field.
+func ByLocationAccuracy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocationAccuracy, opts...).ToFunc()
+}
+
+// ByLocationLabel orders the results by the location_label field.
+func ByLocationLabel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocationLabel, opts...).ToFunc()
 }
 
 // ByChannelField orders the results by channel field.

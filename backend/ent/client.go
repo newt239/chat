@@ -24,6 +24,7 @@ import (
 	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
+	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
@@ -33,6 +34,7 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/pushtoken"
+	"github.com/newt239/chat/ent/scheduledmessage"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
 	"github.com/newt239/chat/ent/threadreadstate"
@@ -70,6 +72,8 @@ type Client struct {
 	ChannelReadState *ChannelReadStateClient
 	// ChannelStar is the client for interacting with the ChannelStar builders.
 	ChannelStar *ChannelStarClient
+	// Draft is the client for interacting with the Draft builders.
+	Draft *DraftClient
 	// Invitation is the client for interacting with the Invitation builders.
 	Invitation *InvitationClient
 	// Message is the client for interacting with the Message builders.
@@ -88,6 +92,8 @@ type Client struct {
 	MessageUserMention *MessageUserMentionClient
 	// PushToken is the client for interacting with the PushToken builders.
 	PushToken *PushTokenClient
+	// ScheduledMessage is the client for interacting with the ScheduledMessage builders.
+	ScheduledMessage *ScheduledMessageClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// SystemMessage is the client for interacting with the SystemMessage builders.
@@ -131,6 +137,7 @@ func (c *Client) init() {
 	c.ChannelMute = NewChannelMuteClient(c.config)
 	c.ChannelReadState = NewChannelReadStateClient(c.config)
 	c.ChannelStar = NewChannelStarClient(c.config)
+	c.Draft = NewDraftClient(c.config)
 	c.Invitation = NewInvitationClient(c.config)
 	c.Message = NewMessageClient(c.config)
 	c.MessageBookmark = NewMessageBookmarkClient(c.config)
@@ -140,6 +147,7 @@ func (c *Client) init() {
 	c.MessageReaction = NewMessageReactionClient(c.config)
 	c.MessageUserMention = NewMessageUserMentionClient(c.config)
 	c.PushToken = NewPushTokenClient(c.config)
+	c.ScheduledMessage = NewScheduledMessageClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.SystemMessage = NewSystemMessageClient(c.config)
 	c.ThreadReadState = NewThreadReadStateClient(c.config)
@@ -252,6 +260,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
+		Draft:               NewDraftClient(cfg),
 		Invitation:          NewInvitationClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
@@ -261,6 +270,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		PushToken:           NewPushTokenClient(cfg),
+		ScheduledMessage:    NewScheduledMessageClient(cfg),
 		Session:             NewSessionClient(cfg),
 		SystemMessage:       NewSystemMessageClient(cfg),
 		ThreadReadState:     NewThreadReadStateClient(cfg),
@@ -300,6 +310,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
+		Draft:               NewDraftClient(cfg),
 		Invitation:          NewInvitationClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
@@ -309,6 +320,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		PushToken:           NewPushTokenClient(cfg),
+		ScheduledMessage:    NewScheduledMessageClient(cfg),
 		Session:             NewSessionClient(cfg),
 		SystemMessage:       NewSystemMessageClient(cfg),
 		ThreadReadState:     NewThreadReadStateClient(cfg),
@@ -351,12 +363,12 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Invitation, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.PushToken, c.Session,
-		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
-		c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
-		c.WorkspacePermission,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Draft, c.Invitation,
+		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
+		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
+		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook,
+		c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
 	}
@@ -367,12 +379,12 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Invitation, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.PushToken, c.Session,
-		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
-		c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
-		c.WorkspacePermission,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Draft, c.Invitation,
+		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
+		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
+		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook,
+		c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -397,6 +409,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ChannelReadState.mutate(ctx, m)
 	case *ChannelStarMutation:
 		return c.ChannelStar.mutate(ctx, m)
+	case *DraftMutation:
+		return c.Draft.mutate(ctx, m)
 	case *InvitationMutation:
 		return c.Invitation.mutate(ctx, m)
 	case *MessageMutation:
@@ -415,6 +429,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MessageUserMention.mutate(ctx, m)
 	case *PushTokenMutation:
 		return c.PushToken.mutate(ctx, m)
+	case *ScheduledMessageMutation:
+		return c.ScheduledMessage.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
 	case *SystemMessageMutation:
@@ -1841,6 +1857,187 @@ func (c *ChannelStarClient) mutate(ctx context.Context, m *ChannelStarMutation) 
 		return (&ChannelStarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ChannelStar mutation op: %q", m.Op())
+	}
+}
+
+// DraftClient is a client for the Draft schema.
+type DraftClient struct {
+	config
+}
+
+// NewDraftClient returns a client for the Draft from the given config.
+func NewDraftClient(c config) *DraftClient {
+	return &DraftClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `draft.Hooks(f(g(h())))`.
+func (c *DraftClient) Use(hooks ...Hook) {
+	c.hooks.Draft = append(c.hooks.Draft, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `draft.Intercept(f(g(h())))`.
+func (c *DraftClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Draft = append(c.inters.Draft, interceptors...)
+}
+
+// Create returns a builder for creating a Draft entity.
+func (c *DraftClient) Create() *DraftCreate {
+	mutation := newDraftMutation(c.config, OpCreate)
+	return &DraftCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Draft entities.
+func (c *DraftClient) CreateBulk(builders ...*DraftCreate) *DraftCreateBulk {
+	return &DraftCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DraftClient) MapCreateBulk(slice any, setFunc func(*DraftCreate, int)) *DraftCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DraftCreateBulk{err: fmt.Errorf("calling to DraftClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DraftCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DraftCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Draft.
+func (c *DraftClient) Update() *DraftUpdate {
+	mutation := newDraftMutation(c.config, OpUpdate)
+	return &DraftUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DraftClient) UpdateOne(_m *Draft) *DraftUpdateOne {
+	mutation := newDraftMutation(c.config, OpUpdateOne, withDraft(_m))
+	return &DraftUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DraftClient) UpdateOneID(id uuid.UUID) *DraftUpdateOne {
+	mutation := newDraftMutation(c.config, OpUpdateOne, withDraftID(id))
+	return &DraftUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Draft.
+func (c *DraftClient) Delete() *DraftDelete {
+	mutation := newDraftMutation(c.config, OpDelete)
+	return &DraftDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DraftClient) DeleteOne(_m *Draft) *DraftDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DraftClient) DeleteOneID(id uuid.UUID) *DraftDeleteOne {
+	builder := c.Delete().Where(draft.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DraftDeleteOne{builder}
+}
+
+// Query returns a query builder for Draft.
+func (c *DraftClient) Query() *DraftQuery {
+	return &DraftQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDraft},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Draft entity by its id.
+func (c *DraftClient) Get(ctx context.Context, id uuid.UUID) (*Draft, error) {
+	return c.Query().Where(draft.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DraftClient) GetX(ctx context.Context, id uuid.UUID) *Draft {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Draft.
+func (c *DraftClient) QueryUser(_m *Draft) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(draft.Table, draft.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, draft.UserTable, draft.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannel queries the channel edge of a Draft.
+func (c *DraftClient) QueryChannel(_m *Draft) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(draft.Table, draft.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, draft.ChannelTable, draft.ChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a Draft.
+func (c *DraftClient) QueryParent(_m *Draft) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(draft.Table, draft.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, draft.ParentTable, draft.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DraftClient) Hooks() []Hook {
+	return c.hooks.Draft
+}
+
+// Interceptors returns the client interceptors.
+func (c *DraftClient) Interceptors() []Interceptor {
+	return c.inters.Draft
+}
+
+func (c *DraftClient) mutate(ctx context.Context, m *DraftMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DraftCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DraftUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DraftUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DraftDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Draft mutation op: %q", m.Op())
 	}
 }
 
@@ -3486,6 +3683,203 @@ func (c *PushTokenClient) mutate(ctx context.Context, m *PushTokenMutation) (Val
 		return (&PushTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown PushToken mutation op: %q", m.Op())
+	}
+}
+
+// ScheduledMessageClient is a client for the ScheduledMessage schema.
+type ScheduledMessageClient struct {
+	config
+}
+
+// NewScheduledMessageClient returns a client for the ScheduledMessage from the given config.
+func NewScheduledMessageClient(c config) *ScheduledMessageClient {
+	return &ScheduledMessageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `scheduledmessage.Hooks(f(g(h())))`.
+func (c *ScheduledMessageClient) Use(hooks ...Hook) {
+	c.hooks.ScheduledMessage = append(c.hooks.ScheduledMessage, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `scheduledmessage.Intercept(f(g(h())))`.
+func (c *ScheduledMessageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ScheduledMessage = append(c.inters.ScheduledMessage, interceptors...)
+}
+
+// Create returns a builder for creating a ScheduledMessage entity.
+func (c *ScheduledMessageClient) Create() *ScheduledMessageCreate {
+	mutation := newScheduledMessageMutation(c.config, OpCreate)
+	return &ScheduledMessageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ScheduledMessage entities.
+func (c *ScheduledMessageClient) CreateBulk(builders ...*ScheduledMessageCreate) *ScheduledMessageCreateBulk {
+	return &ScheduledMessageCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ScheduledMessageClient) MapCreateBulk(slice any, setFunc func(*ScheduledMessageCreate, int)) *ScheduledMessageCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ScheduledMessageCreateBulk{err: fmt.Errorf("calling to ScheduledMessageClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ScheduledMessageCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ScheduledMessageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ScheduledMessage.
+func (c *ScheduledMessageClient) Update() *ScheduledMessageUpdate {
+	mutation := newScheduledMessageMutation(c.config, OpUpdate)
+	return &ScheduledMessageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ScheduledMessageClient) UpdateOne(_m *ScheduledMessage) *ScheduledMessageUpdateOne {
+	mutation := newScheduledMessageMutation(c.config, OpUpdateOne, withScheduledMessage(_m))
+	return &ScheduledMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ScheduledMessageClient) UpdateOneID(id uuid.UUID) *ScheduledMessageUpdateOne {
+	mutation := newScheduledMessageMutation(c.config, OpUpdateOne, withScheduledMessageID(id))
+	return &ScheduledMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ScheduledMessage.
+func (c *ScheduledMessageClient) Delete() *ScheduledMessageDelete {
+	mutation := newScheduledMessageMutation(c.config, OpDelete)
+	return &ScheduledMessageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ScheduledMessageClient) DeleteOne(_m *ScheduledMessage) *ScheduledMessageDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ScheduledMessageClient) DeleteOneID(id uuid.UUID) *ScheduledMessageDeleteOne {
+	builder := c.Delete().Where(scheduledmessage.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ScheduledMessageDeleteOne{builder}
+}
+
+// Query returns a query builder for ScheduledMessage.
+func (c *ScheduledMessageClient) Query() *ScheduledMessageQuery {
+	return &ScheduledMessageQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeScheduledMessage},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ScheduledMessage entity by its id.
+func (c *ScheduledMessageClient) Get(ctx context.Context, id uuid.UUID) (*ScheduledMessage, error) {
+	return c.Query().Where(scheduledmessage.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ScheduledMessageClient) GetX(ctx context.Context, id uuid.UUID) *ScheduledMessage {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a ScheduledMessage.
+func (c *ScheduledMessageClient) QueryUser(_m *ScheduledMessage) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scheduledmessage.Table, scheduledmessage.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, scheduledmessage.UserTable, scheduledmessage.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannel queries the channel edge of a ScheduledMessage.
+func (c *ScheduledMessageClient) QueryChannel(_m *ScheduledMessage) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scheduledmessage.Table, scheduledmessage.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, scheduledmessage.ChannelTable, scheduledmessage.ChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a ScheduledMessage.
+func (c *ScheduledMessageClient) QueryParent(_m *ScheduledMessage) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scheduledmessage.Table, scheduledmessage.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, scheduledmessage.ParentTable, scheduledmessage.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySentMessage queries the sent_message edge of a ScheduledMessage.
+func (c *ScheduledMessageClient) QuerySentMessage(_m *ScheduledMessage) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(scheduledmessage.Table, scheduledmessage.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, scheduledmessage.SentMessageTable, scheduledmessage.SentMessageColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ScheduledMessageClient) Hooks() []Hook {
+	return c.hooks.ScheduledMessage
+}
+
+// Interceptors returns the client interceptors.
+func (c *ScheduledMessageClient) Interceptors() []Interceptor {
+	return c.inters.ScheduledMessage
+}
+
+func (c *ScheduledMessageClient) mutate(ctx context.Context, m *ScheduledMessageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ScheduledMessageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ScheduledMessageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ScheduledMessageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ScheduledMessageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ScheduledMessage mutation op: %q", m.Op())
 	}
 }
 
@@ -5681,19 +6075,19 @@ func (c *WorkspacePermissionClient) mutate(ctx context.Context, m *WorkspacePerm
 type (
 	hooks struct {
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, Invitation, Message, MessageBookmark,
+		ChannelReadState, ChannelStar, Draft, Invitation, Message, MessageBookmark,
 		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, PushToken, Session, SystemMessage, ThreadReadState, User,
-		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
-		WorkspaceMember, WorkspacePermission []ent.Hook
+		MessageUserMention, PushToken, ScheduledMessage, Session, SystemMessage,
+		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
+		Webhook, Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, Invitation, Message, MessageBookmark,
+		ChannelReadState, ChannelStar, Draft, Invitation, Message, MessageBookmark,
 		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, PushToken, Session, SystemMessage, ThreadReadState, User,
-		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
-		WorkspaceMember, WorkspacePermission []ent.Interceptor
+		MessageUserMention, PushToken, ScheduledMessage, Session, SystemMessage,
+		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
+		Webhook, Workspace, WorkspaceMember, WorkspacePermission []ent.Interceptor
 	}
 )
 

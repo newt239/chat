@@ -10,6 +10,8 @@ import {
   IconList,
   IconListNumbers,
   IconLoader2,
+  IconMapPin,
+  IconMicrophone,
   IconPaperclip,
   IconQuote,
   IconStrikethrough,
@@ -21,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import { IconButton } from "#/components/ui/IconButton";
 import { cn } from "#/components/ui/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { ScheduleSendMenu } from "#/features/schedule/components/ScheduleSendMenu";
 
 import type { FormatKey } from "../utils/format";
 
@@ -35,6 +38,9 @@ type MessageInputToolbarProps = {
   activeFormats: Record<FormatKey, boolean>;
   onFormat: (key: FormatKey) => void;
   onFileSelect: (files: File[]) => void;
+  onShareLocation: () => void;
+  onRecord: () => void;
+  onSchedule: (scheduledAt: Date) => void;
 };
 
 const formatButtons: { key: FormatKey; icon: Icon }[] = [
@@ -61,6 +67,9 @@ export const MessageInputToolbar = ({
   activeFormats,
   onFormat,
   onFileSelect,
+  onShareLocation,
+  onRecord,
+  onSchedule,
 }: MessageInputToolbarProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -97,6 +106,16 @@ export const MessageInputToolbar = ({
         </IconButton>
       </FileTrigger>
       <IconButton
+        label={t("location.composer.share")}
+        className={buttonClassName}
+        onPress={onShareLocation}
+      >
+        <IconMapPin />
+      </IconButton>
+      <IconButton label={t("recorder.start")} className={buttonClassName} onPress={onRecord}>
+        <IconMicrophone />
+      </IconButton>
+      <IconButton
         label={t("message.composer.help")}
         className={cn(buttonClassName, "hidden @lg:inline-grid")}
         onPress={() => {
@@ -113,6 +132,7 @@ export const MessageInputToolbar = ({
       >
         <IconEye />
       </IconButton>
+      <ScheduleSendMenu isDisabled={isSendDisabled} onSchedule={onSchedule} />
       <IconButton
         label={t("message.composer.send")}
         isDisabled={isSendDisabled}

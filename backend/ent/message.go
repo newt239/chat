@@ -40,6 +40,14 @@ type Message struct {
 	SenderName *string `json:"sender_name,omitempty"`
 	// SenderAvatarURL holds the value of the "sender_avatar_url" field.
 	SenderAvatarURL *string `json:"sender_avatar_url,omitempty"`
+	// LocationLatitude holds the value of the "location_latitude" field.
+	LocationLatitude *float64 `json:"location_latitude,omitempty"`
+	// LocationLongitude holds the value of the "location_longitude" field.
+	LocationLongitude *float64 `json:"location_longitude,omitempty"`
+	// LocationAccuracy holds the value of the "location_accuracy" field.
+	LocationAccuracy *float64 `json:"location_accuracy,omitempty"`
+	// LocationLabel holds the value of the "location_label" field.
+	LocationLabel *string `json:"location_label,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageQuery when eager-loading is set.
 	Edges        MessageEdges `json:"edges"`
@@ -209,7 +217,9 @@ func (*Message) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case message.FieldParentID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case message.FieldBody, message.FieldSenderName, message.FieldSenderAvatarURL:
+		case message.FieldLocationLatitude, message.FieldLocationLongitude, message.FieldLocationAccuracy:
+			values[i] = new(sql.NullFloat64)
+		case message.FieldBody, message.FieldSenderName, message.FieldSenderAvatarURL, message.FieldLocationLabel:
 			values[i] = new(sql.NullString)
 		case message.FieldCreatedAt, message.FieldEditedAt, message.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -298,6 +308,34 @@ func (_m *Message) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.SenderAvatarURL = new(string)
 				*_m.SenderAvatarURL = value.String
+			}
+		case message.FieldLocationLatitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field location_latitude", values[i])
+			} else if value.Valid {
+				_m.LocationLatitude = new(float64)
+				*_m.LocationLatitude = value.Float64
+			}
+		case message.FieldLocationLongitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field location_longitude", values[i])
+			} else if value.Valid {
+				_m.LocationLongitude = new(float64)
+				*_m.LocationLongitude = value.Float64
+			}
+		case message.FieldLocationAccuracy:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field location_accuracy", values[i])
+			} else if value.Valid {
+				_m.LocationAccuracy = new(float64)
+				*_m.LocationAccuracy = value.Float64
+			}
+		case message.FieldLocationLabel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field location_label", values[i])
+			} else if value.Valid {
+				_m.LocationLabel = new(string)
+				*_m.LocationLabel = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -433,6 +471,26 @@ func (_m *Message) String() string {
 	builder.WriteString(", ")
 	if v := _m.SenderAvatarURL; v != nil {
 		builder.WriteString("sender_avatar_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.LocationLatitude; v != nil {
+		builder.WriteString("location_latitude=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.LocationLongitude; v != nil {
+		builder.WriteString("location_longitude=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.LocationAccuracy; v != nil {
+		builder.WriteString("location_accuracy=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.LocationLabel; v != nil {
+		builder.WriteString("location_label=")
 		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')

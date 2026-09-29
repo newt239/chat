@@ -5,10 +5,7 @@ import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Link } from "#/components/ui/Link";
-import { useChannels } from "#/features/channel/hooks/useChannel";
-import { useDMs } from "#/features/dm/hooks/useDM";
-import { dmName } from "#/features/dm/utils/dmName";
-import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { useConversationLabel } from "#/features/channel/hooks/useConversationLabel";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";
 
@@ -27,12 +24,7 @@ const linkClassName =
 export const MessageListCard = ({ workspaceId, message, children }: MessageListCardProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
-  const { data: channels } = useChannels(workspaceId);
-  const { data: dms } = useDMs(workspaceId);
-  const displayName = useDisplayName();
-  const channel = channels?.find((item) => item.id === message.channelId);
-  const dm = dms?.find((item) => item.id === message.channelId);
-  const label = channel ? `#${channel.name}` : dm ? dmName(dm, displayName) : "";
+  const label = useConversationLabel(workspaceId)(message.channelId);
   const { parentId } = message;
 
   return (

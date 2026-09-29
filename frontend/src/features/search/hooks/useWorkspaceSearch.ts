@@ -23,6 +23,7 @@ const hasMessages: Record<SearchHasValue, SearchHas> = {
   file: SearchHas.FILE,
   image: SearchHas.IMAGE,
   link: SearchHas.LINK,
+  location: SearchHas.LOCATION,
   video: SearchHas.VIDEO,
 };
 

@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
@@ -78,6 +79,7 @@ func (s *MessageServer) CreateMessage(ctx context.Context, req *chatv1.CreateMes
 		Body:          req.Body,
 		ParentID:      req.ParentId,
 		AttachmentIDs: req.AttachmentIds,
+		Location:      locationInput(req.Location),
 	})
 	if err != nil {
 		return nil, err
@@ -106,4 +108,11 @@ func (s *MessageServer) GetMessagePreview(ctx context.Context, req *chatv1.GetMe
 		return nil, err
 	}
 	return &chatv1.GetMessagePreviewResponse{Preview: presenter.MessagePreview(*out)}, nil
+}
+
+func locationInput(l *chatv1.MessageLocation) *entity.MessageLocation {
+	if l == nil {
+		return nil
+	}
+	return &entity.MessageLocation{Latitude: l.Latitude, Longitude: l.Longitude, AccuracyMeters: l.AccuracyMeters, Label: l.Label}
 }

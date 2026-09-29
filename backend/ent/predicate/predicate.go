@@ -30,6 +30,9 @@ type ChannelReadState func(*sql.Selector)
 // ChannelStar is the predicate function for channelstar builders.
 type ChannelStar func(*sql.Selector)
 
+// Draft is the predicate function for draft builders.
+type Draft func(*sql.Selector)
+
 // Invitation is the predicate function for invitation builders.
 type Invitation func(*sql.Selector)
 
@@ -56,6 +59,9 @@ type MessageUserMention func(*sql.Selector)
 
 // PushToken is the predicate function for pushtoken builders.
 type PushToken func(*sql.Selector)
+
+// ScheduledMessage is the predicate function for scheduledmessage builders.
+type ScheduledMessage func(*sql.Selector)
 
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)

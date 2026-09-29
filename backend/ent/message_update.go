@@ -152,6 +152,107 @@ func (_u *MessageUpdate) ClearSenderAvatarURL() *MessageUpdate {
 	return _u
 }
 
+// SetLocationLatitude sets the "location_latitude" field.
+func (_u *MessageUpdate) SetLocationLatitude(v float64) *MessageUpdate {
+	_u.mutation.ResetLocationLatitude()
+	_u.mutation.SetLocationLatitude(v)
+	return _u
+}
+
+// SetNillableLocationLatitude sets the "location_latitude" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableLocationLatitude(v *float64) *MessageUpdate {
+	if v != nil {
+		_u.SetLocationLatitude(*v)
+	}
+	return _u
+}
+
+// AddLocationLatitude adds value to the "location_latitude" field.
+func (_u *MessageUpdate) AddLocationLatitude(v float64) *MessageUpdate {
+	_u.mutation.AddLocationLatitude(v)
+	return _u
+}
+
+// ClearLocationLatitude clears the value of the "location_latitude" field.
+func (_u *MessageUpdate) ClearLocationLatitude() *MessageUpdate {
+	_u.mutation.ClearLocationLatitude()
+	return _u
+}
+
+// SetLocationLongitude sets the "location_longitude" field.
+func (_u *MessageUpdate) SetLocationLongitude(v float64) *MessageUpdate {
+	_u.mutation.ResetLocationLongitude()
+	_u.mutation.SetLocationLongitude(v)
+	return _u
+}
+
+// SetNillableLocationLongitude sets the "location_longitude" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableLocationLongitude(v *float64) *MessageUpdate {
+	if v != nil {
+		_u.SetLocationLongitude(*v)
+	}
+	return _u
+}
+
+// AddLocationLongitude adds value to the "location_longitude" field.
+func (_u *MessageUpdate) AddLocationLongitude(v float64) *MessageUpdate {
+	_u.mutation.AddLocationLongitude(v)
+	return _u
+}
+
+// ClearLocationLongitude clears the value of the "location_longitude" field.
+func (_u *MessageUpdate) ClearLocationLongitude() *MessageUpdate {
+	_u.mutation.ClearLocationLongitude()
+	return _u
+}
+
+// SetLocationAccuracy sets the "location_accuracy" field.
+func (_u *MessageUpdate) SetLocationAccuracy(v float64) *MessageUpdate {
+	_u.mutation.ResetLocationAccuracy()
+	_u.mutation.SetLocationAccuracy(v)
+	return _u
+}
+
+// SetNillableLocationAccuracy sets the "location_accuracy" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableLocationAccuracy(v *float64) *MessageUpdate {
+	if v != nil {
+		_u.SetLocationAccuracy(*v)
+	}
+	return _u
+}
+
+// AddLocationAccuracy adds value to the "location_accuracy" field.
+func (_u *MessageUpdate) AddLocationAccuracy(v float64) *MessageUpdate {
+	_u.mutation.AddLocationAccuracy(v)
+	return _u
+}
+
+// ClearLocationAccuracy clears the value of the "location_accuracy" field.
+func (_u *MessageUpdate) ClearLocationAccuracy() *MessageUpdate {
+	_u.mutation.ClearLocationAccuracy()
+	return _u
+}
+
+// SetLocationLabel sets the "location_label" field.
+func (_u *MessageUpdate) SetLocationLabel(v string) *MessageUpdate {
+	_u.mutation.SetLocationLabel(v)
+	return _u
+}
+
+// SetNillableLocationLabel sets the "location_label" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableLocationLabel(v *string) *MessageUpdate {
+	if v != nil {
+		_u.SetLocationLabel(*v)
+	}
+	return _u
+}
+
+// ClearLocationLabel clears the value of the "location_label" field.
+func (_u *MessageUpdate) ClearLocationLabel() *MessageUpdate {
+	_u.mutation.ClearLocationLabel()
+	return _u
+}
+
 // AddReplyIDs adds the "replies" edge to the Message entity by IDs.
 func (_u *MessageUpdate) AddReplyIDs(ids ...uuid.UUID) *MessageUpdate {
 	_u.mutation.AddReplyIDs(ids...)
@@ -546,11 +647,6 @@ func (_u *MessageUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *MessageUpdate) check() error {
-	if v, ok := _u.mutation.Body(); ok {
-		if err := message.BodyValidator(v); err != nil {
-			return &ValidationError{Name: "body", err: fmt.Errorf(`ent: validator failed for field "Message.body": %w`, err)}
-		}
-	}
 	if _u.mutation.ChannelCleared() && len(_u.mutation.ChannelIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Message.channel"`)
 	}
@@ -604,6 +700,39 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.SenderAvatarURLCleared() {
 		_spec.ClearField(message.FieldSenderAvatarURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.LocationLatitude(); ok {
+		_spec.SetField(message.FieldLocationLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLocationLatitude(); ok {
+		_spec.AddField(message.FieldLocationLatitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LocationLatitudeCleared() {
+		_spec.ClearField(message.FieldLocationLatitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.LocationLongitude(); ok {
+		_spec.SetField(message.FieldLocationLongitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLocationLongitude(); ok {
+		_spec.AddField(message.FieldLocationLongitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LocationLongitudeCleared() {
+		_spec.ClearField(message.FieldLocationLongitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.LocationAccuracy(); ok {
+		_spec.SetField(message.FieldLocationAccuracy, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLocationAccuracy(); ok {
+		_spec.AddField(message.FieldLocationAccuracy, field.TypeFloat64, value)
+	}
+	if _u.mutation.LocationAccuracyCleared() {
+		_spec.ClearField(message.FieldLocationAccuracy, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.LocationLabel(); ok {
+		_spec.SetField(message.FieldLocationLabel, field.TypeString, value)
+	}
+	if _u.mutation.LocationLabelCleared() {
+		_spec.ClearField(message.FieldLocationLabel, field.TypeString)
 	}
 	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1189,6 +1318,107 @@ func (_u *MessageUpdateOne) ClearSenderAvatarURL() *MessageUpdateOne {
 	return _u
 }
 
+// SetLocationLatitude sets the "location_latitude" field.
+func (_u *MessageUpdateOne) SetLocationLatitude(v float64) *MessageUpdateOne {
+	_u.mutation.ResetLocationLatitude()
+	_u.mutation.SetLocationLatitude(v)
+	return _u
+}
+
+// SetNillableLocationLatitude sets the "location_latitude" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableLocationLatitude(v *float64) *MessageUpdateOne {
+	if v != nil {
+		_u.SetLocationLatitude(*v)
+	}
+	return _u
+}
+
+// AddLocationLatitude adds value to the "location_latitude" field.
+func (_u *MessageUpdateOne) AddLocationLatitude(v float64) *MessageUpdateOne {
+	_u.mutation.AddLocationLatitude(v)
+	return _u
+}
+
+// ClearLocationLatitude clears the value of the "location_latitude" field.
+func (_u *MessageUpdateOne) ClearLocationLatitude() *MessageUpdateOne {
+	_u.mutation.ClearLocationLatitude()
+	return _u
+}
+
+// SetLocationLongitude sets the "location_longitude" field.
+func (_u *MessageUpdateOne) SetLocationLongitude(v float64) *MessageUpdateOne {
+	_u.mutation.ResetLocationLongitude()
+	_u.mutation.SetLocationLongitude(v)
+	return _u
+}
+
+// SetNillableLocationLongitude sets the "location_longitude" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableLocationLongitude(v *float64) *MessageUpdateOne {
+	if v != nil {
+		_u.SetLocationLongitude(*v)
+	}
+	return _u
+}
+
+// AddLocationLongitude adds value to the "location_longitude" field.
+func (_u *MessageUpdateOne) AddLocationLongitude(v float64) *MessageUpdateOne {
+	_u.mutation.AddLocationLongitude(v)
+	return _u
+}
+
+// ClearLocationLongitude clears the value of the "location_longitude" field.
+func (_u *MessageUpdateOne) ClearLocationLongitude() *MessageUpdateOne {
+	_u.mutation.ClearLocationLongitude()
+	return _u
+}
+
+// SetLocationAccuracy sets the "location_accuracy" field.
+func (_u *MessageUpdateOne) SetLocationAccuracy(v float64) *MessageUpdateOne {
+	_u.mutation.ResetLocationAccuracy()
+	_u.mutation.SetLocationAccuracy(v)
+	return _u
+}
+
+// SetNillableLocationAccuracy sets the "location_accuracy" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableLocationAccuracy(v *float64) *MessageUpdateOne {
+	if v != nil {
+		_u.SetLocationAccuracy(*v)
+	}
+	return _u
+}
+
+// AddLocationAccuracy adds value to the "location_accuracy" field.
+func (_u *MessageUpdateOne) AddLocationAccuracy(v float64) *MessageUpdateOne {
+	_u.mutation.AddLocationAccuracy(v)
+	return _u
+}
+
+// ClearLocationAccuracy clears the value of the "location_accuracy" field.
+func (_u *MessageUpdateOne) ClearLocationAccuracy() *MessageUpdateOne {
+	_u.mutation.ClearLocationAccuracy()
+	return _u
+}
+
+// SetLocationLabel sets the "location_label" field.
+func (_u *MessageUpdateOne) SetLocationLabel(v string) *MessageUpdateOne {
+	_u.mutation.SetLocationLabel(v)
+	return _u
+}
+
+// SetNillableLocationLabel sets the "location_label" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableLocationLabel(v *string) *MessageUpdateOne {
+	if v != nil {
+		_u.SetLocationLabel(*v)
+	}
+	return _u
+}
+
+// ClearLocationLabel clears the value of the "location_label" field.
+func (_u *MessageUpdateOne) ClearLocationLabel() *MessageUpdateOne {
+	_u.mutation.ClearLocationLabel()
+	return _u
+}
+
 // AddReplyIDs adds the "replies" edge to the Message entity by IDs.
 func (_u *MessageUpdateOne) AddReplyIDs(ids ...uuid.UUID) *MessageUpdateOne {
 	_u.mutation.AddReplyIDs(ids...)
@@ -1596,11 +1826,6 @@ func (_u *MessageUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *MessageUpdateOne) check() error {
-	if v, ok := _u.mutation.Body(); ok {
-		if err := message.BodyValidator(v); err != nil {
-			return &ValidationError{Name: "body", err: fmt.Errorf(`ent: validator failed for field "Message.body": %w`, err)}
-		}
-	}
 	if _u.mutation.ChannelCleared() && len(_u.mutation.ChannelIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Message.channel"`)
 	}
@@ -1671,6 +1896,39 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 	}
 	if _u.mutation.SenderAvatarURLCleared() {
 		_spec.ClearField(message.FieldSenderAvatarURL, field.TypeString)
+	}
+	if value, ok := _u.mutation.LocationLatitude(); ok {
+		_spec.SetField(message.FieldLocationLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLocationLatitude(); ok {
+		_spec.AddField(message.FieldLocationLatitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LocationLatitudeCleared() {
+		_spec.ClearField(message.FieldLocationLatitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.LocationLongitude(); ok {
+		_spec.SetField(message.FieldLocationLongitude, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLocationLongitude(); ok {
+		_spec.AddField(message.FieldLocationLongitude, field.TypeFloat64, value)
+	}
+	if _u.mutation.LocationLongitudeCleared() {
+		_spec.ClearField(message.FieldLocationLongitude, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.LocationAccuracy(); ok {
+		_spec.SetField(message.FieldLocationAccuracy, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedLocationAccuracy(); ok {
+		_spec.AddField(message.FieldLocationAccuracy, field.TypeFloat64, value)
+	}
+	if _u.mutation.LocationAccuracyCleared() {
+		_spec.ClearField(message.FieldLocationAccuracy, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.LocationLabel(); ok {
+		_spec.SetField(message.FieldLocationLabel, field.TypeString, value)
+	}
+	if _u.mutation.LocationLabelCleared() {
+		_spec.ClearField(message.FieldLocationLabel, field.TypeString)
 	}
 	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{

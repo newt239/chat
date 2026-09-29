@@ -15,6 +15,7 @@ var (
 	ErrMessageAlreadyDeleted = errors.New("メッセージは既に削除されています")
 	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
 	ErrAttachmentNotFound    = errors.New("添付ファイルが見つかりません")
+	ErrEmptyMessage          = errors.New("本文・添付・位置情報のいずれかが必要です")
 )
 
 const (
@@ -37,6 +38,7 @@ type CreateMessageInput struct {
 	Body          string
 	ParentID      *string
 	AttachmentIDs []string
+	Location      *entity.MessageLocation
 }
 
 type UpdateMessageInput struct {
@@ -109,23 +111,24 @@ type AttachmentInfo struct {
 }
 
 type MessageOutput struct {
-	ID          string           `json:"id"`
-	ChannelID   string           `json:"channelId"`
-	UserID      string           `json:"userId"`
-	User        UserInfo         `json:"user"`
-	ParentID    *string          `json:"parentId"`
-	Body        string           `json:"body"`
-	Mentions    []UserMention    `json:"mentions"`
-	Groups      []GroupMention   `json:"groups"`
-	Links       []LinkInfo       `json:"links"`
-	Reactions   []ReactionInfo   `json:"reactions"`
-	Attachments []AttachmentInfo `json:"attachments"`
-	CreatedAt   time.Time        `json:"createdAt"`
-	EditedAt    *time.Time       `json:"editedAt"`
-	DeletedAt   *time.Time       `json:"deletedAt"`
-	IsDeleted   bool             `json:"isDeleted"`
-	DeletedBy   *UserInfo        `json:"deletedBy,omitempty"`
-	Pin         *PinInfo         `json:"pin,omitempty"`
+	ID          string                  `json:"id"`
+	ChannelID   string                  `json:"channelId"`
+	UserID      string                  `json:"userId"`
+	User        UserInfo                `json:"user"`
+	ParentID    *string                 `json:"parentId"`
+	Body        string                  `json:"body"`
+	Mentions    []UserMention           `json:"mentions"`
+	Groups      []GroupMention          `json:"groups"`
+	Links       []LinkInfo              `json:"links"`
+	Reactions   []ReactionInfo          `json:"reactions"`
+	Attachments []AttachmentInfo        `json:"attachments"`
+	CreatedAt   time.Time               `json:"createdAt"`
+	EditedAt    *time.Time              `json:"editedAt"`
+	DeletedAt   *time.Time              `json:"deletedAt"`
+	IsDeleted   bool                    `json:"isDeleted"`
+	DeletedBy   *UserInfo               `json:"deletedBy,omitempty"`
+	Pin         *PinInfo                `json:"pin,omitempty"`
+	Location    *entity.MessageLocation `json:"location,omitempty"`
 }
 
 // WithoutMessagePreviews は引用カードを除いたコピーを返します。

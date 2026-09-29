@@ -10,6 +10,8 @@ import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 import { useSendMessage } from "../hooks/useMessage";
 import { BaseMessageInput } from "./BaseMessageInput";
 
+import type { ComposerContent } from "../utils/composerContent";
+
 type MessageInputProps = {
   channelId: string | null;
 };
@@ -31,9 +33,9 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
   const targetId = target?.id ?? channelId;
 
   const handleSubmit = useCallback(
-    (body: string, attachmentIds: string[]) => {
+    (content: ComposerContent) => {
       if (targetId !== null) {
-        sendMessage.mutate({ attachmentIds, body, channelId: targetId });
+        sendMessage.mutate({ ...content, channelId: targetId });
       }
     },
     [sendMessage, targetId],
@@ -55,6 +57,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
       isPending={sendMessage.isPending}
       error={sendMessage.isError ? sendMessage.error.message : undefined}
       channelId={targetId}
+      parentId={null}
       targetPicker={
         target &&
         channel && (

@@ -15,6 +15,16 @@ type Message struct {
 	// Webhook が投稿ごとに指定した表示名とアイコン
 	SenderName      *string
 	SenderAvatarURL *string
+	Location        *MessageLocation
+}
+
+// MessageLocation はメッセージで共有された位置情報です
+type MessageLocation struct {
+	Latitude  float64
+	Longitude float64
+	// 測位の誤差（メートル）
+	AccuracyMeters *float64
+	Label          *string
 }
 
 type MessageReaction struct {

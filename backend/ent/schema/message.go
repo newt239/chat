@@ -32,8 +32,8 @@ func (Message) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Immutable(),
-		field.Text("body").
-			NotEmpty(),
+		// 添付や位置情報だけのメッセージは本文が空になる
+		field.Text("body"),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -48,6 +48,19 @@ func (Message) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.String("sender_avatar_url").
+			Optional().
+			Nillable(),
+		// 共有された位置情報。緯度と経度は両方そろって設定される
+		field.Float("location_latitude").
+			Optional().
+			Nillable(),
+		field.Float("location_longitude").
+			Optional().
+			Nillable(),
+		field.Float("location_accuracy").
+			Optional().
+			Nillable(),
+		field.String("location_label").
 			Optional().
 			Nillable(),
 	}

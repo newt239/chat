@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package chat.v1;
 
+import "buf/validate/validate.proto";
 import "chat/v1/user.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
@@ -27,6 +28,25 @@ message Message {
   ThreadMetadata thread_metadata = 17;
   // ピン留めされている場合のみ設定される
   MessagePin pin = 18;
+  // 位置情報を共有したメッセージのみ設定される
+  MessageLocation location = 19;
+}
+
+message MessageLocation {
+  double latitude = 1 [(buf.validate.field).double = {
+    gte: -90
+    lte: 90
+  }];
+  double longitude = 2 [(buf.validate.field).double = {
+    gte: -180
+    lte: 180
+  }];
+  // 測位の誤差（メートル）
+  optional double accuracy_meters = 3 [(buf.validate.field).double = {
+    gte: 0
+    lte: 100000
+  }];
+  optional string label = 4 [(buf.validate.field).string.max_len = 100];
 }
 
 message MessagePin {

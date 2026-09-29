@@ -10,6 +10,7 @@ import (
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
+	draftuc "github.com/newt239/chat/internal/usecase/draft"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
@@ -19,6 +20,7 @@ import (
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
+	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	"github.com/newt239/chat/internal/usecase/searchindex"
 	systemmsguc "github.com/newt239/chat/internal/usecase/systemmessage"
@@ -212,6 +214,25 @@ func (r *UseCaseRegistry) NewPushDispatcher() *notificationuc.Dispatcher {
 
 func (r *UseCaseRegistry) NewNotificationUseCase() notificationuc.UseCase {
 	return notificationuc.NewInteractor(r.domainRegistry.NewPushTokenRepository())
+}
+
+func (r *UseCaseRegistry) NewDraftUseCase() *draftuc.Interactor {
+	return draftuc.NewInteractor(
+		r.domainRegistry.NewDraftRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+	)
+}
+
+func (r *UseCaseRegistry) NewScheduledMessageUseCase() *scheduledmessageuc.Interactor {
+	return scheduledmessageuc.NewInteractor(
+		r.domainRegistry.NewScheduledMessageRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewMessageUseCase(),
+		r.infrastructureRegistry.NewLogger(),
+	)
 }
 
 func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {

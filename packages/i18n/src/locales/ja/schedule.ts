@@ -1,0 +1,43 @@
+export const schedule = {
+  dialog: {
+    confirm: "予約する",
+    field: "送信日時",
+    past: "現在より後の日時を指定してください",
+    title: "送信日時を指定",
+  },
+  failed: "予約できませんでした",
+  list: {
+    actionFailed: "操作できませんでした",
+    actions: "予約の操作",
+    attachments: "添付 {{count}} 件",
+    body: "本文",
+    delete: "削除",
+    deleted: "予約を削除しました",
+    edit: "編集",
+    editTitle: "予約を編集",
+    empty: "予約中のメッセージはありません",
+    emptyHint: "送信ボタンの横のメニューから日時を指定して予約できます",
+    scheduledFor: "{{time}} に送信予定",
+    sendNow: "今すぐ送信",
+    sent: "送信しました",
+    sentAt: "{{time}} に送信",
+    sentEmpty: "予約から送信したメッセージはまだありません",
+    sentEmptyHint: "予約した日時になると自動で送信され、ここに並びます",
+    showMessage: "メッセージを表示",
+    status: {
+      failed: "送信失敗",
+      sending: "送信中",
+    },
+    updated: "予約を更新しました",
+  },
+  menu: {
+    custom: "日時を指定…",
+    label: "送信を予約",
+  },
+  presets: {
+    inOneHour: "1 時間後",
+    nextMonday: "次の月曜 9:00",
+    tomorrowMorning: "明日の朝 9:00",
+  },
+  scheduled: "{{time}} に送信を予約しました",
+} as const;

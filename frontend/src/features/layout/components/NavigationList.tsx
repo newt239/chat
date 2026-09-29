@@ -2,6 +2,7 @@ import {
   IconAt,
   IconBookmark,
   IconChartBar,
+  IconFilePencil,
   IconMessages,
   IconShieldCheck,
 } from "@tabler/icons-react";
@@ -44,6 +45,10 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
           <NavLink to="/app/$workspaceId/bookmarks" params={params}>
             <IconBookmark aria-hidden />
             {t("shell.nav.bookmarks")}
+          </NavLink>
+          <NavLink to="/app/$workspaceId/drafts" params={params}>
+            <IconFilePencil aria-hidden />
+            {t("draft.page.title")}
           </NavLink>
         </div>
         <StarredSection workspaceId={workspaceId} />

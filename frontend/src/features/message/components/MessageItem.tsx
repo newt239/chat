@@ -15,6 +15,7 @@ import { cn, focusRing } from "#/components/ui/styles";
 import { MessageAttachments } from "#/features/attachment/components/MessageAttachments";
 import { closeDialog, openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
 import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
+import { MessageLocationCard } from "#/features/location/components/MessageLocationCard";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
@@ -246,6 +247,9 @@ export const MessageItem = ({
           <MessageContent message={message} />
         )}
 
+        {!message.isDeleted && message.location && (
+          <MessageLocationCard location={message.location} />
+        )}
         {!message.isDeleted && <MessageAttachments message={message} />}
 
         <ReactionList

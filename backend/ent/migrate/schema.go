@@ -357,6 +357,59 @@ var (
 			},
 		},
 	}
+	// DraftColumns holds the columns for the "draft" table.
+	DraftColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "body", Type: field.TypeString, Size: 2147483647},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// DraftTable holds the schema information for the "draft" table.
+	DraftTable = &schema.Table{
+		Name:       "draft",
+		Columns:    DraftColumns,
+		PrimaryKey: []*schema.Column{DraftColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "draft_users_user",
+				Columns:    []*schema.Column{DraftColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "draft_channels_channel",
+				Columns:    []*schema.Column{DraftColumns[4]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "draft_messages_parent",
+				Columns:    []*schema.Column{DraftColumns[5]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "draft_user_id_channel_id",
+				Unique:  true,
+				Columns: []*schema.Column{DraftColumns[3], DraftColumns[4]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "parent_id IS NULL",
+				},
+			},
+			{
+				Name:    "draft_user_id_channel_id_parent_id",
+				Unique:  true,
+				Columns: []*schema.Column{DraftColumns[3], DraftColumns[4], DraftColumns[5]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "parent_id IS NOT NULL",
+				},
+			},
+		},
+	}
 	// InvitationColumns holds the columns for the "invitation" table.
 	InvitationColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -406,6 +459,10 @@ var (
 		{Name: "deleted_by", Type: field.TypeUUID, Nullable: true},
 		{Name: "sender_name", Type: field.TypeString, Nullable: true},
 		{Name: "sender_avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "location_latitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_label", Type: field.TypeString, Nullable: true},
 		{Name: "message_channel", Type: field.TypeUUID},
 		{Name: "message_user", Type: field.TypeUUID},
 		{Name: "message_parent", Type: field.TypeUUID, Nullable: true},
@@ -418,19 +475,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "messages_channels_channel",
-				Columns:    []*schema.Column{MessagesColumns[8]},
+				Columns:    []*schema.Column{MessagesColumns[12]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_users_user",
-				Columns:    []*schema.Column{MessagesColumns[9]},
+				Columns:    []*schema.Column{MessagesColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_messages_parent",
-				Columns:    []*schema.Column{MessagesColumns[10]},
+				Columns:    []*schema.Column{MessagesColumns[14]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -444,7 +501,7 @@ var (
 			{
 				Name:    "message_message_channel_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[8], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[12], MessagesColumns[2]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "deleted_at IS NULL",
 				},
@@ -452,12 +509,12 @@ var (
 			{
 				Name:    "message_message_parent_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[10], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[14], MessagesColumns[2]},
 			},
 			{
 				Name:    "message_message_user",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[9]},
+				Columns: []*schema.Column{MessagesColumns[13]},
 			},
 		},
 	}
@@ -741,6 +798,72 @@ var (
 				Name:    "pushtoken_push_token_user",
 				Unique:  false,
 				Columns: []*schema.Column{PushTokenColumns[6]},
+			},
+		},
+	}
+	// ScheduledMessageColumns holds the columns for the "scheduled_message" table.
+	ScheduledMessageColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "body", Type: field.TypeString, Size: 2147483647},
+		{Name: "attachment_ids", Type: field.TypeJSON, Nullable: true},
+		{Name: "location_latitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_label", Type: field.TypeString, Nullable: true},
+		{Name: "scheduled_at", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"scheduled", "sending", "sent", "failed"}, Default: "scheduled"},
+		{Name: "failure_reason", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "sent_message_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// ScheduledMessageTable holds the schema information for the "scheduled_message" table.
+	ScheduledMessageTable = &schema.Table{
+		Name:       "scheduled_message",
+		Columns:    ScheduledMessageColumns,
+		PrimaryKey: []*schema.Column{ScheduledMessageColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "scheduled_message_users_user",
+				Columns:    []*schema.Column{ScheduledMessageColumns[12]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "scheduled_message_channels_channel",
+				Columns:    []*schema.Column{ScheduledMessageColumns[13]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "scheduled_message_messages_parent",
+				Columns:    []*schema.Column{ScheduledMessageColumns[14]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "scheduled_message_messages_sent_message",
+				Columns:    []*schema.Column{ScheduledMessageColumns[15]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "scheduledmessage_scheduled_at",
+				Unique:  false,
+				Columns: []*schema.Column{ScheduledMessageColumns[7]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status = 'scheduled'",
+				},
+			},
+			{
+				Name:    "scheduledmessage_user_id_scheduled_at",
+				Unique:  false,
+				Columns: []*schema.Column{ScheduledMessageColumns[12], ScheduledMessageColumns[7]},
 			},
 		},
 	}
@@ -1190,6 +1313,7 @@ var (
 		ChannelMuteTable,
 		ChannelReadStatesTable,
 		ChannelStarTable,
+		DraftTable,
 		InvitationTable,
 		MessagesTable,
 		MessageBookmarksTable,
@@ -1199,6 +1323,7 @@ var (
 		MessageReactionsTable,
 		MessageUserMentionsTable,
 		PushTokenTable,
+		ScheduledMessageTable,
 		SessionsTable,
 		SystemMessagesTable,
 		ThreadReadStatesTable,
@@ -1243,6 +1368,12 @@ func init() {
 	ChannelStarTable.Annotation = &entsql.Annotation{
 		Table: "channel_star",
 	}
+	DraftTable.ForeignKeys[0].RefTable = UsersTable
+	DraftTable.ForeignKeys[1].RefTable = ChannelsTable
+	DraftTable.ForeignKeys[2].RefTable = MessagesTable
+	DraftTable.Annotation = &entsql.Annotation{
+		Table: "draft",
+	}
 	InvitationTable.ForeignKeys[0].RefTable = WorkspacesTable
 	InvitationTable.ForeignKeys[1].RefTable = UsersTable
 	InvitationTable.Annotation = &entsql.Annotation{
@@ -1266,6 +1397,13 @@ func init() {
 	PushTokenTable.ForeignKeys[0].RefTable = UsersTable
 	PushTokenTable.Annotation = &entsql.Annotation{
 		Table: "push_token",
+	}
+	ScheduledMessageTable.ForeignKeys[0].RefTable = UsersTable
+	ScheduledMessageTable.ForeignKeys[1].RefTable = ChannelsTable
+	ScheduledMessageTable.ForeignKeys[2].RefTable = MessagesTable
+	ScheduledMessageTable.ForeignKeys[3].RefTable = MessagesTable
+	ScheduledMessageTable.Annotation = &entsql.Annotation{
+		Table: "scheduled_message",
 	}
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	SystemMessagesTable.ForeignKeys[0].RefTable = ChannelsTable

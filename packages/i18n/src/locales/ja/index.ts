@@ -7,15 +7,19 @@ import { channel } from "./channel";
 import { codeBlock } from "./codeBlock";
 import { common } from "./common";
 import { dm } from "./dm";
+import { draft } from "./draft";
 import { inbox } from "./inbox";
 import { insights } from "./insights";
 import { link } from "./link";
+import { location } from "./location";
 import { member } from "./member";
 import { message } from "./message";
 import { pin } from "./pin";
 import { preferences } from "./preferences";
 import { pwa } from "./pwa";
 import { reaction } from "./reaction";
+import { recorder } from "./recorder";
+import { schedule } from "./schedule";
 import { search } from "./search";
 import { settings } from "./settings";
 import { shell } from "./shell";
@@ -33,15 +37,19 @@ export const ja = {
   codeBlock,
   common,
   dm,
+  draft,
   inbox,
   insights,
   link,
+  location,
   member,
   message,
   pin,
   preferences,
   pwa,
   reaction,
+  recorder,
+  schedule,
   search,
   settings,
   shell,

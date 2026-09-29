@@ -32,6 +32,13 @@ describe("parseSearchQuery", () => {
     });
   });
 
+  it("has:location で位置情報を共有したメッセージに絞り込む", () => {
+    expect(parseSearchQuery("集合 has:location")).toMatchObject({
+      has: ["location"],
+      keywords: ["集合"],
+    });
+  });
+
   it("同じ条件は重ねず、日付は後のものを使う", () => {
     expect(
       parseSearchQuery("has:file has:file is:thread is:mention after:2026-09-01 after:2026-09-05"),

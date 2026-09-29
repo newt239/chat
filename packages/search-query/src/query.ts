@@ -1,4 +1,4 @@
-export const searchHasValues = ["image", "file", "link", "video"] as const;
+export const searchHasValues = ["image", "file", "link", "video", "location"] as const;
 export type SearchHas = (typeof searchHasValues)[number];
 
 export const searchIsValues = ["pinned", "thread", "mention"] as const;

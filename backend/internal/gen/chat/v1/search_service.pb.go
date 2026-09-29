@@ -137,9 +137,10 @@ const (
 	SearchHas_SEARCH_HAS_UNSPECIFIED SearchHas = 0
 	SearchHas_SEARCH_HAS_IMAGE       SearchHas = 1
 	// 画像・動画以外の添付ファイル
-	SearchHas_SEARCH_HAS_FILE  SearchHas = 2
-	SearchHas_SEARCH_HAS_LINK  SearchHas = 3
-	SearchHas_SEARCH_HAS_VIDEO SearchHas = 4
+	SearchHas_SEARCH_HAS_FILE     SearchHas = 2
+	SearchHas_SEARCH_HAS_LINK     SearchHas = 3
+	SearchHas_SEARCH_HAS_VIDEO    SearchHas = 4
+	SearchHas_SEARCH_HAS_LOCATION SearchHas = 5
 )
 
 // Enum value maps for SearchHas.
@@ -150,6 +151,7 @@ var (
 		2: "SEARCH_HAS_FILE",
 		3: "SEARCH_HAS_LINK",
 		4: "SEARCH_HAS_VIDEO",
+		5: "SEARCH_HAS_LOCATION",
 	}
 	SearchHas_value = map[string]int32{
 		"SEARCH_HAS_UNSPECIFIED": 0,
@@ -157,6 +159,7 @@ var (
 		"SEARCH_HAS_FILE":        2,
 		"SEARCH_HAS_LINK":        3,
 		"SEARCH_HAS_VIDEO":       4,
+		"SEARCH_HAS_LOCATION":    5,
 	}
 )
 
@@ -963,13 +966,14 @@ const file_chat_v1_search_service_proto_rawDesc = "" +
 	"SearchSort\x12\x1b\n" +
 	"\x17SEARCH_SORT_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12SEARCH_SORT_NEWEST\x10\x01\x12\x19\n" +
-	"\x15SEARCH_SORT_RELEVANCE\x10\x02*}\n" +
+	"\x15SEARCH_SORT_RELEVANCE\x10\x02*\x96\x01\n" +
 	"\tSearchHas\x12\x1a\n" +
 	"\x16SEARCH_HAS_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10SEARCH_HAS_IMAGE\x10\x01\x12\x13\n" +
 	"\x0fSEARCH_HAS_FILE\x10\x02\x12\x13\n" +
 	"\x0fSEARCH_HAS_LINK\x10\x03\x12\x14\n" +
-	"\x10SEARCH_HAS_VIDEO\x10\x042e\n" +
+	"\x10SEARCH_HAS_VIDEO\x10\x04\x12\x17\n" +
+	"\x13SEARCH_HAS_LOCATION\x10\x052e\n" +
 	"\rSearchService\x12T\n" +
 	"\x0fSearchWorkspace\x12\x1f.chat.v1.SearchWorkspaceRequest\x1a .chat.v1.SearchWorkspaceResponseB\x93\x01\n" +
 	"\vcom.chat.v1B\x12SearchServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"

@@ -105,6 +105,18 @@ func (f ChannelStarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelStarMutation", m)
 }
 
+// The DraftFunc type is an adapter to allow the use of ordinary
+// function as Draft mutator.
+type DraftFunc func(context.Context, *ent.DraftMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DraftFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DraftMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DraftMutation", m)
+}
+
 // The InvitationFunc type is an adapter to allow the use of ordinary
 // function as Invitation mutator.
 type InvitationFunc func(context.Context, *ent.InvitationMutation) (ent.Value, error)
@@ -211,6 +223,18 @@ func (f PushTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PushTokenMutation", m)
+}
+
+// The ScheduledMessageFunc type is an adapter to allow the use of ordinary
+// function as ScheduledMessage mutator.
+type ScheduledMessageFunc func(context.Context, *ent.ScheduledMessageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ScheduledMessageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ScheduledMessageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ScheduledMessageMutation", m)
 }
 
 // The SessionFunc type is an adapter to allow the use of ordinary
