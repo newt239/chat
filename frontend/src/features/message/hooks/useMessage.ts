@@ -1,3 +1,4 @@
+import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { createConnectQueryKey, skipToken, useMutation, useQuery } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -5,10 +6,22 @@ import { MessageService } from "#/gen/chat/v1/message_service_pb";
 
 export const MESSAGES_PAGE_SIZE = 50;
 
-export const useMessages = (channelId: string | null, includeDescendants: boolean) =>
+// around を渡すとその日時の前後を取得する
+export const useMessages = (
+  channelId: string | null,
+  includeDescendants: boolean,
+  around: Date | null,
+) =>
   useQuery(
     MessageService.method.listMessages,
-    channelId === null ? skipToken : { channelId, includeDescendants, limit: MESSAGES_PAGE_SIZE },
+    channelId === null
+      ? skipToken
+      : {
+          around: around === null ? undefined : timestampFromDate(around),
+          channelId,
+          includeDescendants,
+          limit: MESSAGES_PAGE_SIZE,
+        },
   );
 
 /** スレッド付きの一覧も含め、メッセージ一覧を再取得する */

@@ -20,6 +20,8 @@ describe("preferencesAtom", () => {
       mode: "dark",
       notificationLevel: "all",
       theme: { chroma: 0.2, hue: 100, sidebar: "light" },
+      timezone: "Asia/Tokyo",
+      timezoneAutoUpdate: true,
     };
 
     const { preferences } = await loadPreferences(saved);
@@ -27,7 +29,7 @@ describe("preferencesAtom", () => {
     expect(preferences).toStrictEqual(saved);
   });
 
-  test("通知の範囲がない以前の保存値は既定の範囲で補う", async () => {
+  test("通知の範囲やタイムゾーンがない以前の保存値は既定値で補う", async () => {
     const saved = {
       locale: "en",
       mode: "dark",
@@ -36,7 +38,12 @@ describe("preferencesAtom", () => {
 
     const { preferences } = await loadPreferences(saved);
 
-    expect(preferences).toStrictEqual({ ...saved, notificationLevel: "mentions" });
+    expect(preferences).toStrictEqual({
+      ...saved,
+      notificationLevel: "mentions",
+      timezone: "",
+      timezoneAutoUpdate: false,
+    });
   });
 
   test("壊れた値は既定値に置き換える", async () => {

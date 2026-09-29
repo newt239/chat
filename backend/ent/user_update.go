@@ -256,6 +256,34 @@ func (_u *UserUpdate) SetNillableNotificationLevel(v *user.NotificationLevel) *U
 	return _u
 }
 
+// SetTimezone sets the "timezone" field.
+func (_u *UserUpdate) SetTimezone(v string) *UserUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableTimezone(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
+func (_u *UserUpdate) SetTimezoneAutoUpdate(v bool) *UserUpdate {
+	_u.mutation.SetTimezoneAutoUpdate(v)
+	return _u
+}
+
+// SetNillableTimezoneAutoUpdate sets the "timezone_auto_update" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableTimezoneAutoUpdate(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetTimezoneAutoUpdate(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdate) SetUpdatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -871,6 +899,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.NotificationLevel(); ok {
 		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(user.FieldTimezone, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.TimezoneAutoUpdate(); ok {
+		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -1694,6 +1728,34 @@ func (_u *UserUpdateOne) SetNillableNotificationLevel(v *user.NotificationLevel)
 	return _u
 }
 
+// SetTimezone sets the "timezone" field.
+func (_u *UserUpdateOne) SetTimezone(v string) *UserUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableTimezone(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
+	}
+	return _u
+}
+
+// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
+func (_u *UserUpdateOne) SetTimezoneAutoUpdate(v bool) *UserUpdateOne {
+	_u.mutation.SetTimezoneAutoUpdate(v)
+	return _u
+}
+
+// SetNillableTimezoneAutoUpdate sets the "timezone_auto_update" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableTimezoneAutoUpdate(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetTimezoneAutoUpdate(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdateOne) SetUpdatedAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2339,6 +2401,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.NotificationLevel(); ok {
 		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.Timezone(); ok {
+		_spec.SetField(user.FieldTimezone, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.TimezoneAutoUpdate(); ok {
+		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

@@ -145,7 +145,9 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 		SetThemeSidebar(user.ThemeSidebar(usr.Preferences.ThemeSidebar)).
 		SetColorMode(user.ColorMode(usr.Preferences.ColorMode)).
 		SetLocale(usr.Preferences.Locale).
-		SetNotificationLevel(user.NotificationLevel(usr.Preferences.NotificationLevel))
+		SetNotificationLevel(user.NotificationLevel(usr.Preferences.NotificationLevel)).
+		SetTimezone(usr.Preferences.Timezone).
+		SetTimezoneAutoUpdate(usr.Preferences.TimezoneAutoUpdate)
 
 	if usr.AvatarURL != nil {
 		builder = builder.SetAvatarURL(*usr.AvatarURL)

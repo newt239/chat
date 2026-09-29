@@ -97,6 +97,7 @@ type MemberInfo struct {
 	SuspendedAt *time.Time `json:"suspendedAt,omitempty"`
 	// 取得したユーザーだけに見えるニックネーム
 	Nickname *string `json:"nickname,omitempty"`
+	Timezone string  `json:"timezone"`
 }
 
 type ListMembersOutput struct {

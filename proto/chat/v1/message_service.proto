@@ -27,11 +27,16 @@ message ListMessagesRequest {
   google.protobuf.Timestamp until = 4;
   // 閲覧できる子孫チャンネルのメッセージもまとめて返す
   bool include_descendants = 5;
+  // 指定した日時より前の limit 件と、以降の limit 件をまとめて返す。since / until より優先する
+  google.protobuf.Timestamp around = 6;
 }
 
 message ListMessagesResponse {
   repeated TimelineItem messages = 1;
+  // 返した範囲より前にメッセージがある
   bool has_more = 2;
+  // 返した範囲より後にメッセージがある。around または since だけを指定したときに求める
+  bool has_newer = 3;
 }
 
 message ListMessagesWithThreadRequest {

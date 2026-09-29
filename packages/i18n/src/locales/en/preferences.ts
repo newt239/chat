@@ -33,4 +33,14 @@ export const preferences: Messages["preferences"] = {
     },
     title: "Theme",
   },
+  timezone: {
+    autoUpdate: "Update time zone automatically",
+    autoUpdateDescription: "Update without asking when this device's time zone changes",
+    changed: "This device is set to {{timezone}}",
+    changedDescription: "Update your account's time zone ({{current}})?",
+    description: "Shown to others as your local time on your profile",
+    placeholder: "Not set",
+    title: "Time zone",
+    update: "Update",
+  },
 };

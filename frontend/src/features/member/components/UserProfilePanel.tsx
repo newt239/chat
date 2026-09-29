@@ -1,3 +1,4 @@
+import { formatTimeInZone } from "@chat/i18n";
 import { IconMessage, IconTag } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -10,6 +11,7 @@ import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { userAtom } from "#/providers/store/auth";
+import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useUserNote } from "../hooks/useUserNote";
 import { UserNoteEditor } from "./UserNoteEditor";
@@ -23,6 +25,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
   const { t } = useTranslation();
   const { data: members, isLoading, isError } = useMembers(workspaceId);
   const currentUser = useAtomValue(userAtom);
+  const { locale } = useAtomValue(preferencesAtom);
   const createDM = useCreateDM();
   const navigate = useNavigate();
   const member = members?.find((candidate) => candidate.userId === userId);
@@ -82,6 +85,15 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
           <dd className="m-0">{t(workspaceRoleKeys[member.role])}</dd>
           <dt className="text-muted">{t("member.profile.email")}</dt>
           <dd className="m-0 truncate">{member.email}</dd>
+          {member.timezone !== "" && (
+            <>
+              <dt className="text-muted">{t("member.profile.localTime")}</dt>
+              <dd className="m-0 truncate">
+                {formatTimeInZone(new Date(), locale, member.timezone)}
+                <span className="ml-1.5 text-muted">{member.timezone}</span>
+              </dd>
+            </>
+          )}
         </dl>
         {!isMe && (
           <div className="flex gap-1.5">

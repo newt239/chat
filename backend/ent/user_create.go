@@ -195,6 +195,34 @@ func (_c *UserCreate) SetNillableNotificationLevel(v *user.NotificationLevel) *U
 	return _c
 }
 
+// SetTimezone sets the "timezone" field.
+func (_c *UserCreate) SetTimezone(v string) *UserCreate {
+	_c.mutation.SetTimezone(v)
+	return _c
+}
+
+// SetNillableTimezone sets the "timezone" field if the given value is not nil.
+func (_c *UserCreate) SetNillableTimezone(v *string) *UserCreate {
+	if v != nil {
+		_c.SetTimezone(*v)
+	}
+	return _c
+}
+
+// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
+func (_c *UserCreate) SetTimezoneAutoUpdate(v bool) *UserCreate {
+	_c.mutation.SetTimezoneAutoUpdate(v)
+	return _c
+}
+
+// SetNillableTimezoneAutoUpdate sets the "timezone_auto_update" field if the given value is not nil.
+func (_c *UserCreate) SetNillableTimezoneAutoUpdate(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetTimezoneAutoUpdate(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -495,6 +523,14 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultNotificationLevel
 		_c.mutation.SetNotificationLevel(v)
 	}
+	if _, ok := _c.mutation.Timezone(); !ok {
+		v := user.DefaultTimezone
+		_c.mutation.SetTimezone(v)
+	}
+	if _, ok := _c.mutation.TimezoneAutoUpdate(); !ok {
+		v := user.DefaultTimezoneAutoUpdate
+		_c.mutation.SetTimezoneAutoUpdate(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -570,6 +606,12 @@ func (_c *UserCreate) check() error {
 		if err := user.NotificationLevelValidator(v); err != nil {
 			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.Timezone(); !ok {
+		return &ValidationError{Name: "timezone", err: errors.New(`ent: missing required field "User.timezone"`)}
+	}
+	if _, ok := _c.mutation.TimezoneAutoUpdate(); !ok {
+		return &ValidationError{Name: "timezone_auto_update", err: errors.New(`ent: missing required field "User.timezone_auto_update"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -664,6 +706,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.NotificationLevel(); ok {
 		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
 		_node.NotificationLevel = value
+	}
+	if value, ok := _c.mutation.Timezone(); ok {
+		_spec.SetField(user.FieldTimezone, field.TypeString, value)
+		_node.Timezone = value
+	}
+	if value, ok := _c.mutation.TimezoneAutoUpdate(); ok {
+		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
+		_node.TimezoneAutoUpdate = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -1119,6 +1169,30 @@ func (u *UserUpsert) UpdateNotificationLevel() *UserUpsert {
 	return u
 }
 
+// SetTimezone sets the "timezone" field.
+func (u *UserUpsert) SetTimezone(v string) *UserUpsert {
+	u.Set(user.FieldTimezone, v)
+	return u
+}
+
+// UpdateTimezone sets the "timezone" field to the value that was provided on create.
+func (u *UserUpsert) UpdateTimezone() *UserUpsert {
+	u.SetExcluded(user.FieldTimezone)
+	return u
+}
+
+// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
+func (u *UserUpsert) SetTimezoneAutoUpdate(v bool) *UserUpsert {
+	u.Set(user.FieldTimezoneAutoUpdate, v)
+	return u
+}
+
+// UpdateTimezoneAutoUpdate sets the "timezone_auto_update" field to the value that was provided on create.
+func (u *UserUpsert) UpdateTimezoneAutoUpdate() *UserUpsert {
+	u.SetExcluded(user.FieldTimezoneAutoUpdate)
+	return u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (u *UserUpsert) SetUpdatedAt(v time.Time) *UserUpsert {
 	u.Set(user.FieldUpdatedAt, v)
@@ -1396,6 +1470,34 @@ func (u *UserUpsertOne) SetNotificationLevel(v user.NotificationLevel) *UserUpse
 func (u *UserUpsertOne) UpdateNotificationLevel() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateNotificationLevel()
+	})
+}
+
+// SetTimezone sets the "timezone" field.
+func (u *UserUpsertOne) SetTimezone(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTimezone(v)
+	})
+}
+
+// UpdateTimezone sets the "timezone" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateTimezone() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTimezone()
+	})
+}
+
+// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
+func (u *UserUpsertOne) SetTimezoneAutoUpdate(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTimezoneAutoUpdate(v)
+	})
+}
+
+// UpdateTimezoneAutoUpdate sets the "timezone_auto_update" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateTimezoneAutoUpdate() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTimezoneAutoUpdate()
 	})
 }
 
@@ -1845,6 +1947,34 @@ func (u *UserUpsertBulk) SetNotificationLevel(v user.NotificationLevel) *UserUps
 func (u *UserUpsertBulk) UpdateNotificationLevel() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateNotificationLevel()
+	})
+}
+
+// SetTimezone sets the "timezone" field.
+func (u *UserUpsertBulk) SetTimezone(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTimezone(v)
+	})
+}
+
+// UpdateTimezone sets the "timezone" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateTimezone() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTimezone()
+	})
+}
+
+// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
+func (u *UserUpsertBulk) SetTimezoneAutoUpdate(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetTimezoneAutoUpdate(v)
+	})
+}
+
+// UpdateTimezoneAutoUpdate sets the "timezone_auto_update" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateTimezoneAutoUpdate() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateTimezoneAutoUpdate()
 	})
 }
 

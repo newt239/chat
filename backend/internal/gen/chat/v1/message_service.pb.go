@@ -32,8 +32,10 @@ type ListMessagesRequest struct {
 	Until *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
 	// 閲覧できる子孫チャンネルのメッセージもまとめて返す
 	IncludeDescendants bool `protobuf:"varint,5,opt,name=include_descendants,json=includeDescendants,proto3" json:"include_descendants,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// 指定した日時より前の limit 件と、以降の limit 件をまとめて返す。since / until より優先する
+	Around        *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=around,proto3" json:"around,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListMessagesRequest) Reset() {
@@ -101,10 +103,20 @@ func (x *ListMessagesRequest) GetIncludeDescendants() bool {
 	return false
 }
 
+func (x *ListMessagesRequest) GetAround() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Around
+	}
+	return nil
+}
+
 type ListMessagesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Messages      []*TimelineItem        `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
-	HasMore       bool                   `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Messages []*TimelineItem        `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+	// 返した範囲より前にメッセージがある
+	HasMore bool `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	// 返した範囲より後にメッセージがある。around または since だけを指定したときに求める
+	HasNewer      bool `protobuf:"varint,3,opt,name=has_newer,json=hasNewer,proto3" json:"has_newer,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -149,6 +161,13 @@ func (x *ListMessagesResponse) GetMessages() []*TimelineItem {
 func (x *ListMessagesResponse) GetHasMore() bool {
 	if x != nil {
 		return x.HasMore
+	}
+	return false
+}
+
+func (x *ListMessagesResponse) GetHasNewer() bool {
+	if x != nil {
+		return x.HasNewer
 	}
 	return false
 }
@@ -671,17 +690,19 @@ var File_chat_v1_message_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_message_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dchat/v1/message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf4\x01\n" +
+	"\x1dchat/v1/message_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa8\x02\n" +
 	"\x13ListMessagesRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x1f\n" +
 	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\x120\n" +
 	"\x05since\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
 	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12/\n" +
-	"\x13include_descendants\x18\x05 \x01(\bR\x12includeDescendants\"d\n" +
+	"\x13include_descendants\x18\x05 \x01(\bR\x12includeDescendants\x122\n" +
+	"\x06around\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x06around\"\x81\x01\n" +
 	"\x14ListMessagesResponse\x121\n" +
 	"\bmessages\x18\x01 \x03(\v2\x15.chat.v1.TimelineItemR\bmessages\x12\x19\n" +
-	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\xfe\x01\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\x12\x1b\n" +
+	"\thas_newer\x18\x03 \x01(\bR\bhasNewer\"\xfe\x01\n" +
 	"\x1dListMessagesWithThreadRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x1f\n" +
@@ -765,31 +786,32 @@ var file_chat_v1_message_service_proto_goTypes = []any{
 var file_chat_v1_message_service_proto_depIdxs = []int32{
 	12, // 0: chat.v1.ListMessagesRequest.since:type_name -> google.protobuf.Timestamp
 	12, // 1: chat.v1.ListMessagesRequest.until:type_name -> google.protobuf.Timestamp
-	13, // 2: chat.v1.ListMessagesResponse.messages:type_name -> chat.v1.TimelineItem
-	12, // 3: chat.v1.ListMessagesWithThreadRequest.since:type_name -> google.protobuf.Timestamp
-	12, // 4: chat.v1.ListMessagesWithThreadRequest.until:type_name -> google.protobuf.Timestamp
-	14, // 5: chat.v1.ListMessagesWithThreadResponse.messages:type_name -> chat.v1.Message
-	15, // 6: chat.v1.CreateMessageRequest.location:type_name -> chat.v1.MessageLocation
-	14, // 7: chat.v1.CreateMessageResponse.message:type_name -> chat.v1.Message
-	14, // 8: chat.v1.UpdateMessageResponse.message:type_name -> chat.v1.Message
-	16, // 9: chat.v1.GetMessagePreviewResponse.preview:type_name -> chat.v1.MessagePreview
-	0,  // 10: chat.v1.MessageService.ListMessages:input_type -> chat.v1.ListMessagesRequest
-	2,  // 11: chat.v1.MessageService.ListMessagesWithThread:input_type -> chat.v1.ListMessagesWithThreadRequest
-	4,  // 12: chat.v1.MessageService.CreateMessage:input_type -> chat.v1.CreateMessageRequest
-	6,  // 13: chat.v1.MessageService.UpdateMessage:input_type -> chat.v1.UpdateMessageRequest
-	8,  // 14: chat.v1.MessageService.DeleteMessage:input_type -> chat.v1.DeleteMessageRequest
-	10, // 15: chat.v1.MessageService.GetMessagePreview:input_type -> chat.v1.GetMessagePreviewRequest
-	1,  // 16: chat.v1.MessageService.ListMessages:output_type -> chat.v1.ListMessagesResponse
-	3,  // 17: chat.v1.MessageService.ListMessagesWithThread:output_type -> chat.v1.ListMessagesWithThreadResponse
-	5,  // 18: chat.v1.MessageService.CreateMessage:output_type -> chat.v1.CreateMessageResponse
-	7,  // 19: chat.v1.MessageService.UpdateMessage:output_type -> chat.v1.UpdateMessageResponse
-	9,  // 20: chat.v1.MessageService.DeleteMessage:output_type -> chat.v1.DeleteMessageResponse
-	11, // 21: chat.v1.MessageService.GetMessagePreview:output_type -> chat.v1.GetMessagePreviewResponse
-	16, // [16:22] is the sub-list for method output_type
-	10, // [10:16] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	12, // 2: chat.v1.ListMessagesRequest.around:type_name -> google.protobuf.Timestamp
+	13, // 3: chat.v1.ListMessagesResponse.messages:type_name -> chat.v1.TimelineItem
+	12, // 4: chat.v1.ListMessagesWithThreadRequest.since:type_name -> google.protobuf.Timestamp
+	12, // 5: chat.v1.ListMessagesWithThreadRequest.until:type_name -> google.protobuf.Timestamp
+	14, // 6: chat.v1.ListMessagesWithThreadResponse.messages:type_name -> chat.v1.Message
+	15, // 7: chat.v1.CreateMessageRequest.location:type_name -> chat.v1.MessageLocation
+	14, // 8: chat.v1.CreateMessageResponse.message:type_name -> chat.v1.Message
+	14, // 9: chat.v1.UpdateMessageResponse.message:type_name -> chat.v1.Message
+	16, // 10: chat.v1.GetMessagePreviewResponse.preview:type_name -> chat.v1.MessagePreview
+	0,  // 11: chat.v1.MessageService.ListMessages:input_type -> chat.v1.ListMessagesRequest
+	2,  // 12: chat.v1.MessageService.ListMessagesWithThread:input_type -> chat.v1.ListMessagesWithThreadRequest
+	4,  // 13: chat.v1.MessageService.CreateMessage:input_type -> chat.v1.CreateMessageRequest
+	6,  // 14: chat.v1.MessageService.UpdateMessage:input_type -> chat.v1.UpdateMessageRequest
+	8,  // 15: chat.v1.MessageService.DeleteMessage:input_type -> chat.v1.DeleteMessageRequest
+	10, // 16: chat.v1.MessageService.GetMessagePreview:input_type -> chat.v1.GetMessagePreviewRequest
+	1,  // 17: chat.v1.MessageService.ListMessages:output_type -> chat.v1.ListMessagesResponse
+	3,  // 18: chat.v1.MessageService.ListMessagesWithThread:output_type -> chat.v1.ListMessagesWithThreadResponse
+	5,  // 19: chat.v1.MessageService.CreateMessage:output_type -> chat.v1.CreateMessageResponse
+	7,  // 20: chat.v1.MessageService.UpdateMessage:output_type -> chat.v1.UpdateMessageResponse
+	9,  // 21: chat.v1.MessageService.DeleteMessage:output_type -> chat.v1.DeleteMessageResponse
+	11, // 22: chat.v1.MessageService.GetMessagePreview:output_type -> chat.v1.GetMessagePreviewResponse
+	17, // [17:23] is the sub-list for method output_type
+	11, // [11:17] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_message_service_proto_init() }

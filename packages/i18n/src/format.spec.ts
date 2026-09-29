@@ -4,10 +4,13 @@ import {
   formatBytes,
   formatDate,
   formatDateTime,
+  formatDateWithWeekday,
+  formatFullDateTime,
   formatMonthDay,
   formatNumber,
   formatRelativeTime,
   formatTime,
+  formatTimeInZone,
   formatWeekday,
 } from "./format";
 
@@ -25,9 +28,26 @@ describe("日付・時刻のフォーマット", () => {
     expect(formatTime(date, "en")).toBe("10:16 AM");
   });
 
+  it("指定したタイムゾーンの時刻を表示する", () => {
+    const utc = new Date(Date.UTC(2026, 8, 28, 1, 16));
+    expect(formatTimeInZone(utc, "ja", "Asia/Tokyo")).toBe("10:16");
+    expect(formatTimeInZone(utc, "en", "America/New_York")).toBe("9:16 PM");
+  });
+
   it("日時を言語に合わせて表示する", () => {
     expect(formatDateTime(date, "ja")).toBe("2026年9月28日 10:16");
     expect(formatDateTime(date, "en")).toBe("Sep 28, 2026, 10:16 AM");
+  });
+
+  it("曜日付きの日付を言語に合わせて表示する", () => {
+    expect(formatDateWithWeekday(date, "ja")).toBe("2026年9月28日(月)");
+    expect(formatDateWithWeekday(date, "en")).toBe("Mon, Sep 28, 2026");
+  });
+
+  it("曜日と秒を含む日時を言語に合わせて表示する", () => {
+    const withSeconds = new Date(2026, 8, 28, 10, 16, 5);
+    expect(formatFullDateTime(withSeconds, "ja")).toBe("2026年9月28日(月) 10:16:05");
+    expect(formatFullDateTime(withSeconds, "en")).toBe("Mon, Sep 28, 2026, 10:16:05 AM");
   });
 
   it("曜日を言語に合わせて表示する", () => {

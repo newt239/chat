@@ -44,6 +44,10 @@ type User struct {
 	Locale string `json:"locale,omitempty"`
 	// NotificationLevel holds the value of the "notification_level" field.
 	NotificationLevel user.NotificationLevel `json:"notification_level,omitempty"`
+	// Timezone holds the value of the "timezone" field.
+	Timezone string `json:"timezone,omitempty"`
+	// TimezoneAutoUpdate holds the value of the "timezone_auto_update" field.
+	TimezoneAutoUpdate bool `json:"timezone_auto_update,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -209,13 +213,13 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsBot:
+		case user.FieldIsBot, user.FieldTimezoneAutoUpdate:
 			values[i] = new(sql.NullBool)
 		case user.FieldThemeChroma:
 			values[i] = new(sql.NullFloat64)
 		case user.FieldThemeHue:
 			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale, user.FieldNotificationLevel:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale, user.FieldNotificationLevel, user.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -320,6 +324,18 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field notification_level", values[i])
 			} else if value.Valid {
 				_m.NotificationLevel = user.NotificationLevel(value.String)
+			}
+		case user.FieldTimezone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone", values[i])
+			} else if value.Valid {
+				_m.Timezone = value.String
+			}
+		case user.FieldTimezoneAutoUpdate:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone_auto_update", values[i])
+			} else if value.Valid {
+				_m.TimezoneAutoUpdate = value.Bool
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -474,6 +490,12 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("notification_level=")
 	builder.WriteString(fmt.Sprintf("%v", _m.NotificationLevel))
+	builder.WriteString(", ")
+	builder.WriteString("timezone=")
+	builder.WriteString(_m.Timezone)
+	builder.WriteString(", ")
+	builder.WriteString("timezone_auto_update=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TimezoneAutoUpdate))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

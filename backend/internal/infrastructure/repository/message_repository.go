@@ -42,7 +42,7 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 	return utils.MessageToEntity(m), nil
 }
 
-func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
+func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.Message, error) {
 	chIDs, err := parseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
@@ -68,9 +68,11 @@ func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []s
 		query = query.Limit(limit)
 	}
 
-	messages, err := query.
-		Order(ent.Desc(message.FieldCreatedAt)).
-		All(ctx)
+	order := ent.Desc(message.FieldCreatedAt)
+	if ascending {
+		order = ent.Asc(message.FieldCreatedAt)
+	}
+	messages, err := query.Order(order).All(ctx)
 	if err != nil {
 		return nil, err
 	}

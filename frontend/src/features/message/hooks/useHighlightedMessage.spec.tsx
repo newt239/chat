@@ -28,7 +28,7 @@ const renderWithChannelRoute = async (url: string) => {
   });
   await router.load();
 
-  const view = renderHook(() => useHighlightedMessage(true), {
+  const view = renderHook(() => useHighlightedMessage(true, null), {
     wrapper: ({ children }: { children: ReactNode }) => {
       hookContent = children;
       return <RouterProvider router={router} />;

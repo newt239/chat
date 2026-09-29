@@ -54,6 +54,12 @@ func (User) Fields() []ent.Field {
 		field.Enum("notification_level").
 			Values("all", "mentions", "none").
 			Default("mentions"),
+		// IANA のタイムゾーン名。空は未設定
+		field.String("timezone").
+			Default(""),
+		// 端末のタイムゾーンが変わったら尋ねずに更新する
+		field.Bool("timezone_auto_update").
+			Default(false),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

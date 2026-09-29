@@ -997,6 +997,8 @@ var (
 		{Name: "color_mode", Type: field.TypeEnum, Enums: []string{"light", "dark", "system"}, Default: "system"},
 		{Name: "locale", Type: field.TypeString, Default: "ja"},
 		{Name: "notification_level", Type: field.TypeEnum, Enums: []string{"all", "mentions", "none"}, Default: "mentions"},
+		{Name: "timezone", Type: field.TypeString, Default: ""},
+		{Name: "timezone_auto_update", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

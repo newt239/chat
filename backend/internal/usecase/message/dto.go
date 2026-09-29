@@ -24,11 +24,13 @@ const (
 )
 
 type ListMessagesInput struct {
-	ChannelID          string
-	UserID             string
-	Limit              int
-	Since              *time.Time
-	Until              *time.Time
+	ChannelID string
+	UserID    string
+	Limit     int
+	Since     *time.Time
+	Until     *time.Time
+	// 指定すると since / until より優先し、前後 limit 件ずつ取る
+	Around             *time.Time
 	IncludeDescendants bool
 }
 
@@ -146,6 +148,7 @@ func (m MessageOutput) WithoutMessagePreviews() MessageOutput {
 type ListMessagesOutput struct {
 	Messages []TimelineItem `json:"messages"`
 	HasMore  bool           `json:"hasMore"`
+	HasNewer bool           `json:"hasNewer"`
 }
 
 type ThreadMetadataOutput struct {

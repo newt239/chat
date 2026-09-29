@@ -16,6 +16,9 @@ const preferencesSchema = z.object({
     hue: z.number().min(0).max(360),
     sidebar: z.enum(sidebarStyles),
   }),
+  // IANA のタイムゾーン名。空は未設定
+  timezone: z.string().default(""),
+  timezoneAutoUpdate: z.boolean().default(false),
 });
 
 export type Preferences = z.infer<typeof preferencesSchema>;
@@ -25,6 +28,8 @@ export const defaultPreferences: Preferences = {
   mode: "system",
   notificationLevel: "mentions",
   theme: defaultTheme,
+  timezone: "",
+  timezoneAutoUpdate: false,
 };
 
 // ログイン前や GetMe の応答前も前回の設定で描画できるよう端末にも保持する

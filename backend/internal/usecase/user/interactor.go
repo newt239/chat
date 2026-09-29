@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
@@ -11,7 +13,8 @@ import (
 )
 
 var (
-	ErrUnauthorized = errors.New("この操作を行う権限がありません")
+	ErrUnauthorized    = errors.New("この操作を行う権限がありません")
+	ErrInvalidTimeZone = errors.New("タイムゾーンの指定が正しくありません")
 )
 
 type UseCase interface {
@@ -111,6 +114,13 @@ func (i *interactor) UpdatePreferences(ctx context.Context, input UpdatePreferen
 	u, err := i.findMe(ctx, input.UserID)
 	if err != nil {
 		return nil, err
+	}
+
+	if tz := input.Preferences.Timezone; tz != "" {
+		// "Local" はサーバーのタイムゾーンを指すため受け付けない
+		if _, err := time.LoadLocation(tz); err != nil || tz == "Local" {
+			return nil, fmt.Errorf("%w: %s", ErrInvalidTimeZone, tz)
+		}
 	}
 
 	u.Preferences = input.Preferences

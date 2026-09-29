@@ -448,12 +448,20 @@ func init() {
 	userDescLocale := userFields[12].Descriptor()
 	// user.DefaultLocale holds the default value on creation for the locale field.
 	user.DefaultLocale = userDescLocale.Default.(string)
+	// userDescTimezone is the schema descriptor for timezone field.
+	userDescTimezone := userFields[14].Descriptor()
+	// user.DefaultTimezone holds the default value on creation for the timezone field.
+	user.DefaultTimezone = userDescTimezone.Default.(string)
+	// userDescTimezoneAutoUpdate is the schema descriptor for timezone_auto_update field.
+	userDescTimezoneAutoUpdate := userFields[15].Descriptor()
+	// user.DefaultTimezoneAutoUpdate holds the default value on creation for the timezone_auto_update field.
+	user.DefaultTimezoneAutoUpdate = userDescTimezoneAutoUpdate.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[14].Descriptor()
+	userDescCreatedAt := userFields[16].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[15].Descriptor()
+	userDescUpdatedAt := userFields[17].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

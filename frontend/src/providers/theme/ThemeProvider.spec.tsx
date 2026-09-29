@@ -45,6 +45,8 @@ describe("ThemeProvider", () => {
       mode: "light",
       notificationLevel: "mentions",
       theme: themePresets.cobalt,
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
 
     const tokens = buildTokens(themePresets.cobalt, "light");
@@ -63,6 +65,8 @@ describe("ThemeProvider", () => {
       mode: "dark",
       notificationLevel: "mentions",
       theme: themePresets.jade,
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
 
     const { surface } = buildTokens(themePresets.jade, "dark");
@@ -78,6 +82,8 @@ describe("ThemeProvider", () => {
       mode: "system",
       notificationLevel: "mentions",
       theme: themePresets.jade,
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
 
     expect(root.dataset.mode).toBe("light");
@@ -89,6 +95,8 @@ describe("ThemeProvider", () => {
       mode: "light",
       notificationLevel: "mentions",
       theme: themePresets.jade,
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
 
     expect(root.lang).toBe("en");

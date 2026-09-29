@@ -51,11 +51,13 @@ func optionalTime(t *timestamppb.Timestamp) *time.Time {
 }
 
 func (s *MessageServer) ListMessages(ctx context.Context, req *chatv1.ListMessagesRequest) (*chatv1.ListMessagesResponse, error) {
-	out, err := s.UC.ListMessages(ctx, listMessagesInput(ctx, req))
+	input := listMessagesInput(ctx, req)
+	input.Around = optionalTime(req.GetAround())
+	out, err := s.UC.ListMessages(ctx, input)
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListMessagesResponse{Messages: presenter.ConvertAll(out.Messages, presenter.TimelineItem), HasMore: out.HasMore}, nil
+	return &chatv1.ListMessagesResponse{Messages: presenter.ConvertAll(out.Messages, presenter.TimelineItem), HasMore: out.HasMore, HasNewer: out.HasNewer}, nil
 }
 
 func (s *MessageServer) ListMessagesWithThread(ctx context.Context, req *chatv1.ListMessagesWithThreadRequest) (*chatv1.ListMessagesWithThreadResponse, error) {

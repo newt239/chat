@@ -42,18 +42,22 @@ func Preferences(p entity.UserPreferences) *chatv1.UserPreferences {
 			Chroma:  p.ThemeChroma,
 			Sidebar: sidebarStyles[p.ThemeSidebar],
 		},
-		ColorMode:         colorModes[p.ColorMode],
-		Locale:            p.Locale,
-		NotificationLevel: notificationLevels[p.NotificationLevel],
+		ColorMode:          colorModes[p.ColorMode],
+		Locale:             p.Locale,
+		NotificationLevel:  notificationLevels[p.NotificationLevel],
+		Timezone:           p.Timezone,
+		TimezoneAutoUpdate: p.TimezoneAutoUpdate,
 	}
 }
 
 // PreferencesFromProto は protovalidate で検証済みの入力をエンティティに変換します
 func PreferencesFromProto(p *chatv1.UserPreferences) entity.UserPreferences {
 	out := entity.UserPreferences{
-		ThemeHue:    int(p.GetTheme().GetHue()),
-		ThemeChroma: p.GetTheme().GetChroma(),
-		Locale:      p.GetLocale(),
+		ThemeHue:           int(p.GetTheme().GetHue()),
+		ThemeChroma:        p.GetTheme().GetChroma(),
+		Locale:             p.GetLocale(),
+		Timezone:           p.GetTimezone(),
+		TimezoneAutoUpdate: p.GetTimezoneAutoUpdate(),
 	}
 	for k, v := range sidebarStyles {
 		if v == p.GetTheme().GetSidebar() {

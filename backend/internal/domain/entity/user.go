@@ -58,4 +58,7 @@ type UserPreferences struct {
 	ColorMode         ColorMode
 	Locale            string
 	NotificationLevel NotificationLevel
+	// IANA のタイムゾーン名。空は未設定
+	Timezone           string
+	TimezoneAutoUpdate bool
 }

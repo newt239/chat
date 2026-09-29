@@ -13,9 +13,26 @@ export const formatDate = (date: Date, locale: Locale) =>
 export const formatTime = (date: Date, locale: Locale) =>
   new Intl.DateTimeFormat(toBcp47(locale), timeOptions).format(date);
 
+// 相手の現地時刻など、端末と別のタイムゾーンの時刻
+export const formatTimeInZone = (date: Date, locale: Locale, timeZone: string) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { ...timeOptions, timeZone }).format(date);
+
 // 2026年9月28日 10:16 / Sep 28, 2026, 10:16 AM
 export const formatDateTime = (date: Date, locale: Locale) =>
   new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, ...timeOptions }).format(date);
+
+// 2026年9月28日(月) 10:16:05 / Mon, Sep 28, 2026, 10:16:05 AM
+export const formatFullDateTime = (date: Date, locale: Locale) =>
+  new Intl.DateTimeFormat(toBcp47(locale), {
+    ...dateOptions,
+    ...timeOptions,
+    second: "2-digit",
+    weekday: "short",
+  }).format(date);
+
+// 2026年9月28日(月) / Mon, Sep 28, 2026
+export const formatDateWithWeekday = (date: Date, locale: Locale) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, weekday: "short" }).format(date);
 
 // 9/28（グラフの軸など幅の狭い場所に使う）
 export const formatMonthDay = (date: Date, locale: Locale) =>
