@@ -22,6 +22,7 @@ import (
 	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/pushtoken"
 	"github.com/newt239/chat/ent/schema"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
@@ -313,6 +314,28 @@ func init() {
 	messageusermentionDescID := messageusermentionFields[0].Descriptor()
 	// messageusermention.DefaultID holds the default value on creation for the id field.
 	messageusermention.DefaultID = messageusermentionDescID.Default.(func() uuid.UUID)
+	pushtokenFields := schema.PushToken{}.Fields()
+	_ = pushtokenFields
+	// pushtokenDescToken is the schema descriptor for token field.
+	pushtokenDescToken := pushtokenFields[1].Descriptor()
+	// pushtoken.TokenValidator is a validator for the "token" field. It is called by the builders before save.
+	pushtoken.TokenValidator = pushtokenDescToken.Validators[0].(func(string) error)
+	// pushtokenDescUserAgent is the schema descriptor for user_agent field.
+	pushtokenDescUserAgent := pushtokenFields[3].Descriptor()
+	// pushtoken.DefaultUserAgent holds the default value on creation for the user_agent field.
+	pushtoken.DefaultUserAgent = pushtokenDescUserAgent.Default.(string)
+	// pushtokenDescLastSeenAt is the schema descriptor for last_seen_at field.
+	pushtokenDescLastSeenAt := pushtokenFields[4].Descriptor()
+	// pushtoken.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
+	pushtoken.DefaultLastSeenAt = pushtokenDescLastSeenAt.Default.(func() time.Time)
+	// pushtokenDescCreatedAt is the schema descriptor for created_at field.
+	pushtokenDescCreatedAt := pushtokenFields[5].Descriptor()
+	// pushtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	pushtoken.DefaultCreatedAt = pushtokenDescCreatedAt.Default.(func() time.Time)
+	// pushtokenDescID is the schema descriptor for id field.
+	pushtokenDescID := pushtokenFields[0].Descriptor()
+	// pushtoken.DefaultID holds the default value on creation for the id field.
+	pushtoken.DefaultID = pushtokenDescID.Default.(func() uuid.UUID)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescRefreshTokenHash is the schema descriptor for refresh_token_hash field.
@@ -400,11 +423,11 @@ func init() {
 	// user.DefaultLocale holds the default value on creation for the locale field.
 	user.DefaultLocale = userDescLocale.Default.(string)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[13].Descriptor()
+	userDescCreatedAt := userFields[14].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[14].Descriptor()
+	userDescUpdatedAt := userFields[15].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

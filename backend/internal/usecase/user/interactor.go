@@ -106,7 +106,7 @@ func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutp
 	return toMeOutput(u), nil
 }
 
-// UpdatePreferences はテーマ・表示モード・言語の設定を丸ごと置き換えます
+// UpdatePreferences はテーマ・表示モード・言語・通知の設定を丸ごと置き換えます
 func (i *interactor) UpdatePreferences(ctx context.Context, input UpdatePreferencesInput) (*entity.UserPreferences, error) {
 	u, err := i.findMe(ctx, input.UserID)
 	if err != nil {

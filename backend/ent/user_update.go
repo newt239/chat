@@ -242,6 +242,20 @@ func (_u *UserUpdate) SetNillableLocale(v *string) *UserUpdate {
 	return _u
 }
 
+// SetNotificationLevel sets the "notification_level" field.
+func (_u *UserUpdate) SetNotificationLevel(v user.NotificationLevel) *UserUpdate {
+	_u.mutation.SetNotificationLevel(v)
+	return _u
+}
+
+// SetNillableNotificationLevel sets the "notification_level" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableNotificationLevel(v *user.NotificationLevel) *UserUpdate {
+	if v != nil {
+		_u.SetNotificationLevel(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdate) SetUpdatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -784,6 +798,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.NotificationLevel(); ok {
+		if err := user.NotificationLevelValidator(v); err != nil {
+			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -849,6 +868,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Locale(); ok {
 		_spec.SetField(user.FieldLocale, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.NotificationLevel(); ok {
+		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -1658,6 +1680,20 @@ func (_u *UserUpdateOne) SetNillableLocale(v *string) *UserUpdateOne {
 	return _u
 }
 
+// SetNotificationLevel sets the "notification_level" field.
+func (_u *UserUpdateOne) SetNotificationLevel(v user.NotificationLevel) *UserUpdateOne {
+	_u.mutation.SetNotificationLevel(v)
+	return _u
+}
+
+// SetNillableNotificationLevel sets the "notification_level" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableNotificationLevel(v *user.NotificationLevel) *UserUpdateOne {
+	if v != nil {
+		_u.SetNotificationLevel(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdateOne) SetUpdatedAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2213,6 +2249,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.NotificationLevel(); ok {
+		if err := user.NotificationLevelValidator(v); err != nil {
+			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -2295,6 +2336,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Locale(); ok {
 		_spec.SetField(user.FieldLocale, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.NotificationLevel(); ok {
+		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

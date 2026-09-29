@@ -713,6 +713,37 @@ var (
 			},
 		},
 	}
+	// PushTokenColumns holds the columns for the "push_token" table.
+	PushTokenColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "token", Type: field.TypeString, Unique: true, Size: 2147483647},
+		{Name: "platform", Type: field.TypeEnum, Enums: []string{"web", "ios", "android"}},
+		{Name: "user_agent", Type: field.TypeString, Default: ""},
+		{Name: "last_seen_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "push_token_user", Type: field.TypeUUID},
+	}
+	// PushTokenTable holds the schema information for the "push_token" table.
+	PushTokenTable = &schema.Table{
+		Name:       "push_token",
+		Columns:    PushTokenColumns,
+		PrimaryKey: []*schema.Column{PushTokenColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "push_token_users_user",
+				Columns:    []*schema.Column{PushTokenColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "pushtoken_push_token_user",
+				Unique:  false,
+				Columns: []*schema.Column{PushTokenColumns[6]},
+			},
+		},
+	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -842,6 +873,7 @@ var (
 		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}, Default: "tinted"},
 		{Name: "color_mode", Type: field.TypeEnum, Enums: []string{"light", "dark", "system"}, Default: "system"},
 		{Name: "locale", Type: field.TypeString, Default: "ja"},
+		{Name: "notification_level", Type: field.TypeEnum, Enums: []string{"all", "mentions", "none"}, Default: "mentions"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -1166,6 +1198,7 @@ var (
 		MessagePinsTable,
 		MessageReactionsTable,
 		MessageUserMentionsTable,
+		PushTokenTable,
 		SessionsTable,
 		SystemMessagesTable,
 		ThreadReadStatesTable,
@@ -1230,6 +1263,10 @@ func init() {
 	MessageReactionsTable.ForeignKeys[1].RefTable = UsersTable
 	MessageUserMentionsTable.ForeignKeys[0].RefTable = MessagesTable
 	MessageUserMentionsTable.ForeignKeys[1].RefTable = UsersTable
+	PushTokenTable.ForeignKeys[0].RefTable = UsersTable
+	PushTokenTable.Annotation = &entsql.Annotation{
+		Table: "push_token",
+	}
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 	SystemMessagesTable.ForeignKeys[0].RefTable = ChannelsTable
 	SystemMessagesTable.ForeignKeys[1].RefTable = UsersTable

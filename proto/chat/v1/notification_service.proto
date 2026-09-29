@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+
+// プッシュ通知の宛先となる端末のトークンを登録する。ウェブ（FCM）と将来のネイティブアプリで共通
+service NotificationService {
+  rpc RegisterPushToken(RegisterPushTokenRequest) returns (RegisterPushTokenResponse);
+  rpc UnregisterPushToken(UnregisterPushTokenRequest) returns (UnregisterPushTokenResponse);
+}
+
+enum PushPlatform {
+  PUSH_PLATFORM_UNSPECIFIED = 0;
+  PUSH_PLATFORM_WEB = 1;
+  PUSH_PLATFORM_IOS = 2;
+  PUSH_PLATFORM_ANDROID = 3;
+}
+
+message RegisterPushTokenRequest {
+  // FCM の登録トークン
+  string token = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 4096
+  }];
+  PushPlatform platform = 2 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+}
+
+message RegisterPushTokenResponse {}
+
+message UnregisterPushTokenRequest {
+  string token = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 4096
+  }];
+}
+
+message UnregisterPushTokenResponse {}

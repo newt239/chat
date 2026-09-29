@@ -43,6 +43,15 @@ func ParseMessagePermalink(rawURL string) (MessagePermalink, bool) {
 	return MessagePermalink{WorkspaceID: segments[1], ChannelID: segments[2], MessageID: messageID}, true
 }
 
+// MessagePermalinkPath はメッセージを開くフロントエンドのパスを返します。スレッドの返信はスレッドの中で開きます
+func MessagePermalinkPath(workspaceID, channelID, messageID string, parentID *string) string {
+	base := "/app/" + url.PathEscape(workspaceID) + "/" + channelID
+	if parentID != nil {
+		base += "/thread/" + *parentID
+	}
+	return base + "?message=" + messageID
+}
+
 func isUUID(s string) bool {
 	_, err := uuid.Parse(s)
 	return err == nil

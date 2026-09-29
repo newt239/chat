@@ -49,3 +49,20 @@ func TestParseMessagePermalink(t *testing.T) {
 		})
 	}
 }
+
+func TestMessagePermalinkPathRoundTrip(t *testing.T) {
+	const (
+		channelID = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+		parentID  = "f1111111-1111-1111-1111-111111111111"
+		replyID   = "f2222222-2222-2222-2222-222222222222"
+	)
+	parent := parentID
+	for _, p := range []*string{nil, &parent} {
+		path := MessagePermalinkPath("general", channelID, replyID, p)
+		got, ok := ParseMessagePermalink(path)
+		want := MessagePermalink{WorkspaceID: "general", ChannelID: channelID, MessageID: replyID}
+		if !ok || got != want {
+			t.Errorf("%s を解釈できません: %+v", path, got)
+		}
+	}
+}

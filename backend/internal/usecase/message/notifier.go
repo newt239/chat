@@ -3,11 +3,18 @@ package message
 import (
 	"context"
 	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
 )
 
 // SearchIndexer はメッセージの変更を全文検索インデックスへ反映します。失敗しても呼び出し元へは返さない
 type SearchIndexer interface {
 	Sync(ctx context.Context, messageIDs ...string)
+}
+
+// PushNotifier は新着メッセージの宛先の端末へプッシュ通知を送ります。失敗しても呼び出し元へは返さない
+type PushNotifier interface {
+	NotifyNewMessage(ctx context.Context, channel *entity.Channel, message MessageOutput)
 }
 
 // Notifier はメッセージの変更をチャンネルの参加者へ配信します

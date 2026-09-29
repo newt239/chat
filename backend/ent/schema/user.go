@@ -51,6 +51,9 @@ func (User) Fields() []ent.Field {
 			Default("system"),
 		field.String("locale").
 			Default("ja"),
+		field.Enum("notification_level").
+			Values("all", "mentions", "none").
+			Default("mentions"),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

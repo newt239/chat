@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/user.proto.
  */
 export const file_chat_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEiqAEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ihwEKD1RoZW1lUHJlZmVyZW5jZRIXCgNodWUYASABKAVCCrpIBxoFEOgCKAASJwoGY2hyb21hGAIgASgBQhe6SBQSEhmuR+F6FK7XPykAAAAAAAAAABIyCgdzaWRlYmFyGAMgASgOMhUuY2hhdC52MS5TaWRlYmFyU3R5bGVCCrpIB4IBBBABIAAilQEKD1VzZXJQcmVmZXJlbmNlcxIvCgV0aGVtZRgBIAEoCzIYLmNoYXQudjEuVGhlbWVQcmVmZXJlbmNlQga6SAPIAQESMgoKY29sb3JfbW9kZRgCIAEoDjISLmNoYXQudjEuQ29sb3JNb2RlQgq6SAeCAQQQASAAEh0KBmxvY2FsZRgDIAEoCUINukgKcghSAmphUgJlbiJnCgtVc2VyU3VtbWFyeRIKCgJpZBgBIAEoCRIUCgxkaXNwbGF5X25hbWUYAiABKAkSFwoKYXZhdGFyX3VybBgDIAEoCUgAiAEBEg4KBmlzX2JvdBgEIAEoCEINCgtfYXZhdGFyX3VybCpgCgxTaWRlYmFyU3R5bGUSHQoZU0lERUJBUl9TVFlMRV9VTlNQRUNJRklFRBAAEhgKFFNJREVCQVJfU1RZTEVfVElOVEVEEAESFwoTU0lERUJBUl9TVFlMRV9MSUdIVBACKmkKCUNvbG9yTW9kZRIaChZDT0xPUl9NT0RFX1VOU1BFQ0lGSUVEEAASFAoQQ09MT1JfTU9ERV9MSUdIVBABEhMKD0NPTE9SX01PREVfREFSSxACEhUKEUNPTE9SX01PREVfU1lTVEVNEANCigEKC2NvbS5jaGF0LnYxQglVc2VyUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate]);
+  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEiqAEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ihwEKD1RoZW1lUHJlZmVyZW5jZRIXCgNodWUYASABKAVCCrpIBxoFEOgCKAASJwoGY2hyb21hGAIgASgBQhe6SBQSEhmuR+F6FK7XPykAAAAAAAAAABIyCgdzaWRlYmFyGAMgASgOMhUuY2hhdC52MS5TaWRlYmFyU3R5bGVCCrpIB4IBBBABIAAi2QEKD1VzZXJQcmVmZXJlbmNlcxIvCgV0aGVtZRgBIAEoCzIYLmNoYXQudjEuVGhlbWVQcmVmZXJlbmNlQga6SAPIAQESMgoKY29sb3JfbW9kZRgCIAEoDjISLmNoYXQudjEuQ29sb3JNb2RlQgq6SAeCAQQQASAAEh0KBmxvY2FsZRgDIAEoCUINukgKcghSAmphUgJlbhJCChJub3RpZmljYXRpb25fbGV2ZWwYBCABKA4yGi5jaGF0LnYxLk5vdGlmaWNhdGlvbkxldmVsQgq6SAeCAQQQASAAImcKC1VzZXJTdW1tYXJ5EgoKAmlkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIXCgphdmF0YXJfdXJsGAMgASgJSACIAQESDgoGaXNfYm90GAQgASgIQg0KC19hdmF0YXJfdXJsKmAKDFNpZGViYXJTdHlsZRIdChlTSURFQkFSX1NUWUxFX1VOU1BFQ0lGSUVEEAASGAoUU0lERUJBUl9TVFlMRV9USU5URUQQARIXChNTSURFQkFSX1NUWUxFX0xJR0hUEAIqaQoJQ29sb3JNb2RlEhoKFkNPTE9SX01PREVfVU5TUEVDSUZJRUQQABIUChBDT0xPUl9NT0RFX0xJR0hUEAESEwoPQ09MT1JfTU9ERV9EQVJLEAISFQoRQ09MT1JfTU9ERV9TWVNURU0QAyqRAQoRTm90aWZpY2F0aW9uTGV2ZWwSIgoeTk9USUZJQ0FUSU9OX0xFVkVMX1VOU1BFQ0lGSUVEEAASGgoWTk9USUZJQ0FUSU9OX0xFVkVMX0FMTBABEh8KG05PVElGSUNBVElPTl9MRVZFTF9NRU5USU9OUxACEhsKF05PVElGSUNBVElPTl9MRVZFTF9OT05FEANCigEKC2NvbS5jaGF0LnYxQglVc2VyUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate]);
 
 /**
  * ログイン中のユーザー自身の情報
@@ -87,7 +87,7 @@ export const ThemePreferenceSchema: GenMessage<ThemePreference> = /*@__PURE__*/
   messageDesc(file_chat_v1_user, 1);
 
 /**
- * 端末をまたいで共有する表示設定
+ * 端末をまたいで共有する表示・通知の設定
  *
  * @generated from message chat.v1.UserPreferences
  */
@@ -106,6 +106,11 @@ export type UserPreferences = Message<"chat.v1.UserPreferences"> & {
    * @generated from field: string locale = 3;
    */
   locale: string;
+
+  /**
+   * @generated from field: chat.v1.NotificationLevel notification_level = 4;
+   */
+  notificationLevel: NotificationLevel;
 };
 
 /**
@@ -207,4 +212,37 @@ export enum ColorMode {
  */
 export const ColorModeSchema: GenEnum<ColorMode> = /*@__PURE__*/
   enumDesc(file_chat_v1_user, 1);
+
+/**
+ * 通知を受け取る範囲。すべて / メンションと DM のみ / なし
+ *
+ * @generated from enum chat.v1.NotificationLevel
+ */
+export enum NotificationLevel {
+  /**
+   * @generated from enum value: NOTIFICATION_LEVEL_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: NOTIFICATION_LEVEL_ALL = 1;
+   */
+  ALL = 1,
+
+  /**
+   * @generated from enum value: NOTIFICATION_LEVEL_MENTIONS = 2;
+   */
+  MENTIONS = 2,
+
+  /**
+   * @generated from enum value: NOTIFICATION_LEVEL_NONE = 3;
+   */
+  NONE = 3,
+}
+
+/**
+ * Describes the enum chat.v1.NotificationLevel.
+ */
+export const NotificationLevelSchema: GenEnum<NotificationLevel> = /*@__PURE__*/
+  enumDesc(file_chat_v1_user, 2);
 

@@ -32,6 +32,7 @@ import (
 	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/pushtoken"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
 	"github.com/newt239/chat/ent/threadreadstate"
@@ -85,6 +86,8 @@ type Client struct {
 	MessageReaction *MessageReactionClient
 	// MessageUserMention is the client for interacting with the MessageUserMention builders.
 	MessageUserMention *MessageUserMentionClient
+	// PushToken is the client for interacting with the PushToken builders.
+	PushToken *PushTokenClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// SystemMessage is the client for interacting with the SystemMessage builders.
@@ -136,6 +139,7 @@ func (c *Client) init() {
 	c.MessagePin = NewMessagePinClient(c.config)
 	c.MessageReaction = NewMessageReactionClient(c.config)
 	c.MessageUserMention = NewMessageUserMentionClient(c.config)
+	c.PushToken = NewPushTokenClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.SystemMessage = NewSystemMessageClient(c.config)
 	c.ThreadReadState = NewThreadReadStateClient(c.config)
@@ -256,6 +260,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MessagePin:          NewMessagePinClient(cfg),
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
+		PushToken:           NewPushTokenClient(cfg),
 		Session:             NewSessionClient(cfg),
 		SystemMessage:       NewSystemMessageClient(cfg),
 		ThreadReadState:     NewThreadReadStateClient(cfg),
@@ -303,6 +308,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MessagePin:          NewMessagePinClient(cfg),
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
+		PushToken:           NewPushTokenClient(cfg),
 		Session:             NewSessionClient(cfg),
 		SystemMessage:       NewSystemMessageClient(cfg),
 		ThreadReadState:     NewThreadReadStateClient(cfg),
@@ -347,9 +353,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
 		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Invitation, c.Message,
 		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
-		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserNote,
-		c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
+		c.MessageReaction, c.MessageUserMention, c.PushToken, c.Session,
+		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
+		c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
 		c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
@@ -363,9 +369,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
 		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Invitation, c.Message,
 		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
-		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserNote,
-		c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
+		c.MessageReaction, c.MessageUserMention, c.PushToken, c.Session,
+		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
+		c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
 		c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
@@ -407,6 +413,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MessageReaction.mutate(ctx, m)
 	case *MessageUserMentionMutation:
 		return c.MessageUserMention.mutate(ctx, m)
+	case *PushTokenMutation:
+		return c.PushToken.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
 	case *SystemMessageMutation:
@@ -3332,6 +3340,155 @@ func (c *MessageUserMentionClient) mutate(ctx context.Context, m *MessageUserMen
 	}
 }
 
+// PushTokenClient is a client for the PushToken schema.
+type PushTokenClient struct {
+	config
+}
+
+// NewPushTokenClient returns a client for the PushToken from the given config.
+func NewPushTokenClient(c config) *PushTokenClient {
+	return &PushTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `pushtoken.Hooks(f(g(h())))`.
+func (c *PushTokenClient) Use(hooks ...Hook) {
+	c.hooks.PushToken = append(c.hooks.PushToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `pushtoken.Intercept(f(g(h())))`.
+func (c *PushTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PushToken = append(c.inters.PushToken, interceptors...)
+}
+
+// Create returns a builder for creating a PushToken entity.
+func (c *PushTokenClient) Create() *PushTokenCreate {
+	mutation := newPushTokenMutation(c.config, OpCreate)
+	return &PushTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PushToken entities.
+func (c *PushTokenClient) CreateBulk(builders ...*PushTokenCreate) *PushTokenCreateBulk {
+	return &PushTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PushTokenClient) MapCreateBulk(slice any, setFunc func(*PushTokenCreate, int)) *PushTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PushTokenCreateBulk{err: fmt.Errorf("calling to PushTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PushTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PushTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PushToken.
+func (c *PushTokenClient) Update() *PushTokenUpdate {
+	mutation := newPushTokenMutation(c.config, OpUpdate)
+	return &PushTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PushTokenClient) UpdateOne(_m *PushToken) *PushTokenUpdateOne {
+	mutation := newPushTokenMutation(c.config, OpUpdateOne, withPushToken(_m))
+	return &PushTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PushTokenClient) UpdateOneID(id uuid.UUID) *PushTokenUpdateOne {
+	mutation := newPushTokenMutation(c.config, OpUpdateOne, withPushTokenID(id))
+	return &PushTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PushToken.
+func (c *PushTokenClient) Delete() *PushTokenDelete {
+	mutation := newPushTokenMutation(c.config, OpDelete)
+	return &PushTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PushTokenClient) DeleteOne(_m *PushToken) *PushTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PushTokenClient) DeleteOneID(id uuid.UUID) *PushTokenDeleteOne {
+	builder := c.Delete().Where(pushtoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PushTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for PushToken.
+func (c *PushTokenClient) Query() *PushTokenQuery {
+	return &PushTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePushToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PushToken entity by its id.
+func (c *PushTokenClient) Get(ctx context.Context, id uuid.UUID) (*PushToken, error) {
+	return c.Query().Where(pushtoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PushTokenClient) GetX(ctx context.Context, id uuid.UUID) *PushToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a PushToken.
+func (c *PushTokenClient) QueryUser(_m *PushToken) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(pushtoken.Table, pushtoken.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, pushtoken.UserTable, pushtoken.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PushTokenClient) Hooks() []Hook {
+	return c.hooks.PushToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *PushTokenClient) Interceptors() []Interceptor {
+	return c.inters.PushToken
+}
+
+func (c *PushTokenClient) mutate(ctx context.Context, m *PushTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PushTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PushTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PushTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PushTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PushToken mutation op: %q", m.Op())
+	}
+}
+
 // SessionClient is a client for the Session schema.
 type SessionClient struct {
 	config
@@ -5526,16 +5683,16 @@ type (
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
 		ChannelReadState, ChannelStar, Invitation, Message, MessageBookmark,
 		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
+		MessageUserMention, PushToken, Session, SystemMessage, ThreadReadState, User,
+		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
 		WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
 		ChannelReadState, ChannelStar, Invitation, Message, MessageBookmark,
 		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
+		MessageUserMention, PushToken, Session, SystemMessage, ThreadReadState, User,
+		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
 		WorkspaceMember, WorkspacePermission []ent.Interceptor
 	}
 )

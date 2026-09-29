@@ -9,6 +9,7 @@ import (
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
+	"github.com/newt239/chat/internal/infrastructure/fcm"
 	"github.com/newt239/chat/internal/infrastructure/link"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/infrastructure/mail"
@@ -21,6 +22,7 @@ import (
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
+	notificationuc "github.com/newt239/chat/internal/usecase/notification"
 )
 
 // InfrastructureRegistry はインフラストラクチャ層の依存関係を管理します
@@ -30,6 +32,7 @@ type InfrastructureRegistry struct {
 	hub            *websocket.Hub
 	domainRegistry *DomainRegistry
 	messageIndex   *meilisearch.MessageIndex
+	pushSender     notificationuc.Sender
 }
 
 // NewInfrastructureRegistry は新しいInfrastructureRegistryを作成します
@@ -40,7 +43,26 @@ func NewInfrastructureRegistry(client *ent.Client, cfg *config.Config, hub *webs
 		hub:            hub,
 		domainRegistry: domainRegistry,
 		messageIndex:   meilisearch.NewMessageIndex(cfg.Search.MeilisearchURL, cfg.Search.MeilisearchAPIKey),
+		pushSender:     newPushSender(cfg.Firebase.ProjectID),
 	}
+}
+
+// newPushSender は FIREBASE_PROJECT_ID が未設定か初期化に失敗したら nil を返し、通知を送らない
+func newPushSender(projectID string) notificationuc.Sender {
+	if projectID == "" {
+		return nil
+	}
+	sender, err := fcm.NewSender(context.Background(), projectID)
+	if err != nil {
+		logger.NewLogger().Warn("FCM を初期化できないためプッシュ通知を送りません", service.LogField{Key: "error", Value: err.Error()})
+		return nil
+	}
+	return sender
+}
+
+// PushSender はプッシュ通知の送信役です。nil なら送らない
+func (r *InfrastructureRegistry) PushSender() notificationuc.Sender {
+	return r.pushSender
 }
 
 // Infrastructure Services

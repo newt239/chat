@@ -731,6 +731,26 @@ func LocaleContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldLocale, v))
 }
 
+// NotificationLevelEQ applies the EQ predicate on the "notification_level" field.
+func NotificationLevelEQ(v NotificationLevel) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldNotificationLevel, v))
+}
+
+// NotificationLevelNEQ applies the NEQ predicate on the "notification_level" field.
+func NotificationLevelNEQ(v NotificationLevel) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldNotificationLevel, v))
+}
+
+// NotificationLevelIn applies the In predicate on the "notification_level" field.
+func NotificationLevelIn(vs ...NotificationLevel) predicate.User {
+	return predicate.User(sql.FieldIn(FieldNotificationLevel, vs...))
+}
+
+// NotificationLevelNotIn applies the NotIn predicate on the "notification_level" field.
+func NotificationLevelNotIn(vs ...NotificationLevel) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldNotificationLevel, vs...))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))

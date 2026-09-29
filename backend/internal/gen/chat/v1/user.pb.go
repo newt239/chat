@@ -123,6 +123,59 @@ func (ColorMode) EnumDescriptor() ([]byte, []int) {
 	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
 }
 
+// 通知を受け取る範囲。すべて / メンションと DM のみ / なし
+type NotificationLevel int32
+
+const (
+	NotificationLevel_NOTIFICATION_LEVEL_UNSPECIFIED NotificationLevel = 0
+	NotificationLevel_NOTIFICATION_LEVEL_ALL         NotificationLevel = 1
+	NotificationLevel_NOTIFICATION_LEVEL_MENTIONS    NotificationLevel = 2
+	NotificationLevel_NOTIFICATION_LEVEL_NONE        NotificationLevel = 3
+)
+
+// Enum value maps for NotificationLevel.
+var (
+	NotificationLevel_name = map[int32]string{
+		0: "NOTIFICATION_LEVEL_UNSPECIFIED",
+		1: "NOTIFICATION_LEVEL_ALL",
+		2: "NOTIFICATION_LEVEL_MENTIONS",
+		3: "NOTIFICATION_LEVEL_NONE",
+	}
+	NotificationLevel_value = map[string]int32{
+		"NOTIFICATION_LEVEL_UNSPECIFIED": 0,
+		"NOTIFICATION_LEVEL_ALL":         1,
+		"NOTIFICATION_LEVEL_MENTIONS":    2,
+		"NOTIFICATION_LEVEL_NONE":        3,
+	}
+)
+
+func (x NotificationLevel) Enum() *NotificationLevel {
+	p := new(NotificationLevel)
+	*p = x
+	return p
+}
+
+func (x NotificationLevel) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (NotificationLevel) Descriptor() protoreflect.EnumDescriptor {
+	return file_chat_v1_user_proto_enumTypes[2].Descriptor()
+}
+
+func (NotificationLevel) Type() protoreflect.EnumType {
+	return &file_chat_v1_user_proto_enumTypes[2]
+}
+
+func (x NotificationLevel) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use NotificationLevel.Descriptor instead.
+func (NotificationLevel) EnumDescriptor() ([]byte, []int) {
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
+}
+
 // ログイン中のユーザー自身の情報
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -269,14 +322,15 @@ func (x *ThemePreference) GetSidebar() SidebarStyle {
 	return SidebarStyle_SIDEBAR_STYLE_UNSPECIFIED
 }
 
-// 端末をまたいで共有する表示設定
+// 端末をまたいで共有する表示・通知の設定
 type UserPreferences struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Theme         *ThemePreference       `protobuf:"bytes,1,opt,name=theme,proto3" json:"theme,omitempty"`
-	ColorMode     ColorMode              `protobuf:"varint,2,opt,name=color_mode,json=colorMode,proto3,enum=chat.v1.ColorMode" json:"color_mode,omitempty"`
-	Locale        string                 `protobuf:"bytes,3,opt,name=locale,proto3" json:"locale,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Theme             *ThemePreference       `protobuf:"bytes,1,opt,name=theme,proto3" json:"theme,omitempty"`
+	ColorMode         ColorMode              `protobuf:"varint,2,opt,name=color_mode,json=colorMode,proto3,enum=chat.v1.ColorMode" json:"color_mode,omitempty"`
+	Locale            string                 `protobuf:"bytes,3,opt,name=locale,proto3" json:"locale,omitempty"`
+	NotificationLevel NotificationLevel      `protobuf:"varint,4,opt,name=notification_level,json=notificationLevel,proto3,enum=chat.v1.NotificationLevel" json:"notification_level,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *UserPreferences) Reset() {
@@ -328,6 +382,13 @@ func (x *UserPreferences) GetLocale() string {
 		return x.Locale
 	}
 	return ""
+}
+
+func (x *UserPreferences) GetNotificationLevel() NotificationLevel {
+	if x != nil {
+		return x.NotificationLevel
+	}
+	return NotificationLevel_NOTIFICATION_LEVEL_UNSPECIFIED
 }
 
 // メッセージの投稿者などに埋め込む最小限のユーザー情報
@@ -420,14 +481,16 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\xbaH\a\x1a\x05\x10\xe8\x02(\x00R\x03hue\x12/\n" +
 	"\x06chroma\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\xaeG\xe1z\x14\xae\xd7?)\x00\x00\x00\x00\x00\x00\x00\x00R\x06chroma\x12;\n" +
 	"\asidebar\x18\x03 \x01(\x0e2\x15.chat.v1.SidebarStyleB\n" +
-	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\xaf\x01\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\x86\x02\n" +
 	"\x0fUserPreferences\x126\n" +
 	"\x05theme\x18\x01 \x01(\v2\x18.chat.v1.ThemePreferenceB\x06\xbaH\x03\xc8\x01\x01R\x05theme\x12=\n" +
 	"\n" +
 	"color_mode\x18\x02 \x01(\x0e2\x12.chat.v1.ColorModeB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\tcolorMode\x12%\n" +
 	"\x06locale\x18\x03 \x01(\tB\r\xbaH\n" +
-	"r\bR\x02jaR\x02enR\x06locale\"\x8a\x01\n" +
+	"r\bR\x02jaR\x02enR\x06locale\x12U\n" +
+	"\x12notification_level\x18\x04 \x01(\x0e2\x1a.chat.v1.NotificationLevelB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x11notificationLevel\"\x8a\x01\n" +
 	"\vUserSummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +
@@ -443,7 +506,12 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\x16COLOR_MODE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10COLOR_MODE_LIGHT\x10\x01\x12\x13\n" +
 	"\x0fCOLOR_MODE_DARK\x10\x02\x12\x15\n" +
-	"\x11COLOR_MODE_SYSTEM\x10\x03B\x8a\x01\n" +
+	"\x11COLOR_MODE_SYSTEM\x10\x03*\x91\x01\n" +
+	"\x11NotificationLevel\x12\"\n" +
+	"\x1eNOTIFICATION_LEVEL_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16NOTIFICATION_LEVEL_ALL\x10\x01\x12\x1f\n" +
+	"\x1bNOTIFICATION_LEVEL_MENTIONS\x10\x02\x12\x1b\n" +
+	"\x17NOTIFICATION_LEVEL_NONE\x10\x03B\x8a\x01\n" +
 	"\vcom.chat.v1B\tUserProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
 
 var (
@@ -458,26 +526,28 @@ func file_chat_v1_user_proto_rawDescGZIP() []byte {
 	return file_chat_v1_user_proto_rawDescData
 }
 
-var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_chat_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_chat_v1_user_proto_goTypes = []any{
 	(SidebarStyle)(0),       // 0: chat.v1.SidebarStyle
 	(ColorMode)(0),          // 1: chat.v1.ColorMode
-	(*User)(nil),            // 2: chat.v1.User
-	(*ThemePreference)(nil), // 3: chat.v1.ThemePreference
-	(*UserPreferences)(nil), // 4: chat.v1.UserPreferences
-	(*UserSummary)(nil),     // 5: chat.v1.UserSummary
+	(NotificationLevel)(0),  // 2: chat.v1.NotificationLevel
+	(*User)(nil),            // 3: chat.v1.User
+	(*ThemePreference)(nil), // 4: chat.v1.ThemePreference
+	(*UserPreferences)(nil), // 5: chat.v1.UserPreferences
+	(*UserSummary)(nil),     // 6: chat.v1.UserSummary
 }
 var file_chat_v1_user_proto_depIdxs = []int32{
-	4, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
+	5, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
 	0, // 1: chat.v1.ThemePreference.sidebar:type_name -> chat.v1.SidebarStyle
-	3, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
+	4, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
 	1, // 3: chat.v1.UserPreferences.color_mode:type_name -> chat.v1.ColorMode
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // 4: chat.v1.UserPreferences.notification_level:type_name -> chat.v1.NotificationLevel
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_proto_init() }
@@ -492,7 +562,7 @@ func file_chat_v1_user_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_proto_rawDesc), len(file_chat_v1_user_proto_rawDesc)),
-			NumEnums:      2,
+			NumEnums:      3,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,

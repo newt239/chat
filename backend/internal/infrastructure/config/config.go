@@ -18,6 +18,12 @@ type Config struct {
 	Wasabi   WasabiConfig
 	CORS     CORSConfig
 	Search   SearchConfig
+	Firebase FirebaseConfig
+}
+
+// FirebaseConfig はプッシュ通知 (FCM) の送信先プロジェクト。未設定なら通知を送らない。認証は ADC を使う
+type FirebaseConfig struct {
+	ProjectID string
 }
 
 // SearchConfig はメッセージの全文検索に使う Meilisearch への接続先です
@@ -106,6 +112,9 @@ func Load() (*Config, error) {
 		Search: SearchConfig{
 			MeilisearchURL:    getEnv("MEILISEARCH_URL", "http://localhost:7700"),
 			MeilisearchAPIKey: getEnv("MEILISEARCH_API_KEY", ""),
+		},
+		Firebase: FirebaseConfig{
+			ProjectID: getEnv("FIREBASE_PROJECT_ID", ""),
 		},
 	}
 

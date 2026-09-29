@@ -31,6 +31,7 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&rpc.AuthServer{UC: uc.NewAuthUseCase()})),
 		rpc.Register(chatv1connect.NewInvitationServiceHandler, chatv1connect.InvitationServiceHandler(&rpc.InvitationServer{UC: uc.NewInvitationUseCase()})),
 		rpc.Register(chatv1connect.NewUserServiceHandler, chatv1connect.UserServiceHandler(&rpc.UserServer{UC: uc.NewUserUseCase(), NoteUC: uc.NewUserNoteUseCase()})),
+		rpc.Register(chatv1connect.NewNotificationServiceHandler, chatv1connect.NotificationServiceHandler(&rpc.NotificationServer{UC: uc.NewNotificationUseCase()})),
 		rpc.Register(chatv1connect.NewWorkspaceServiceHandler, chatv1connect.WorkspaceServiceHandler(&rpc.WorkspaceServer{UC: uc.NewWorkspaceUseCase()})),
 		rpc.Register(chatv1connect.NewChannelServiceHandler, chatv1connect.ChannelServiceHandler(&rpc.ChannelServer{UC: uc.NewChannelUseCase()})),
 		rpc.Register(chatv1connect.NewChannelLinkServiceHandler, chatv1connect.ChannelLinkServiceHandler(&rpc.ChannelLinkServer{UC: uc.NewChannelLinkUseCase()})),

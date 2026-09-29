@@ -26,6 +26,7 @@ type MessageCreator struct {
 	outputBuilder         *MessageOutputBuilder
 	channelAccessSvc      service.ChannelAccessService
 	searchIndexer         SearchIndexer
+	pushNotifier          PushNotifier
 }
 
 func NewMessageCreator(
@@ -42,6 +43,7 @@ func NewMessageCreator(
 	outputBuilder *MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
 	searchIndexer SearchIndexer,
+	pushNotifier PushNotifier,
 ) *MessageCreator {
 	return &MessageCreator{
 		messageRepo:           messageRepo,
@@ -57,6 +59,7 @@ func NewMessageCreator(
 		outputBuilder:         outputBuilder,
 		channelAccessSvc:      channelAccessSvc,
 		searchIndexer:         searchIndexer,
+		pushNotifier:          pushNotifier,
 	}
 }
 
@@ -146,6 +149,7 @@ func (c *MessageCreator) publish(ctx context.Context, channel *entity.Channel, m
 	if c.notificationSvc != nil {
 		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, result.WithoutMessagePreviews())
 	}
+	c.pushNotifier.NotifyNewMessage(ctx, channel, *result)
 
 	return result, nil
 }

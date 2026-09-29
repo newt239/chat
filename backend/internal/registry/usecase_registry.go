@@ -15,6 +15,7 @@ import (
 	linkuc "github.com/newt239/chat/internal/usecase/link"
 	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
+	notificationuc "github.com/newt239/chat/internal/usecase/notification"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
@@ -162,6 +163,7 @@ func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
 			r.NewMessageOutputBuilder(),
 			r.domainRegistry.NewChannelAccessService(),
 			r.NewSearchIndexer(),
+			r.NewPushDispatcher(),
 		),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
@@ -190,7 +192,26 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.domainRegistry.NewPermissionService(),
 		r.infrastructureRegistry.NewLogger(),
 		r.NewSearchIndexer(),
+		r.NewPushDispatcher(),
 	)
+}
+
+func (r *UseCaseRegistry) NewPushDispatcher() *notificationuc.Dispatcher {
+	return notificationuc.NewDispatcher(
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewChannelMuteRepository(),
+		r.domainRegistry.NewThreadRepository(),
+		r.domainRegistry.NewUserGroupRepository(),
+		r.domainRegistry.NewPushTokenRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.infrastructureRegistry.PushSender(),
+		r.infrastructureRegistry.NewLogger(),
+	)
+}
+
+func (r *UseCaseRegistry) NewNotificationUseCase() notificationuc.UseCase {
+	return notificationuc.NewInteractor(r.domainRegistry.NewPushTokenRepository())
 }
 
 func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {

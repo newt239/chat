@@ -46,6 +46,8 @@ type Tx struct {
 	MessageReaction *MessageReactionClient
 	// MessageUserMention is the client for interacting with the MessageUserMention builders.
 	MessageUserMention *MessageUserMentionClient
+	// PushToken is the client for interacting with the PushToken builders.
+	PushToken *PushTokenClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// SystemMessage is the client for interacting with the SystemMessage builders.
@@ -217,6 +219,7 @@ func (tx *Tx) init() {
 	tx.MessagePin = NewMessagePinClient(tx.config)
 	tx.MessageReaction = NewMessageReactionClient(tx.config)
 	tx.MessageUserMention = NewMessageUserMentionClient(tx.config)
+	tx.PushToken = NewPushTokenClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.SystemMessage = NewSystemMessageClient(tx.config)
 	tx.ThreadReadState = NewThreadReadStateClient(tx.config)
