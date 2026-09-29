@@ -18,7 +18,7 @@ export const file_chat_v1_notification_service: GenFile = /*@__PURE__*/
  */
 export type RegisterPushTokenRequest = Message<"chat.v1.RegisterPushTokenRequest"> & {
   /**
-   * FCM の登録トークン
+   * FCM の送信先 ID（Firebase Installation ID）
    *
    * @generated from field: string token = 1;
    */

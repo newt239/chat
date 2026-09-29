@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// PushToken はプッシュ通知を送る端末の FCM 登録トークンです
+// PushToken はプッシュ通知を送る端末の FCM の送信先 ID（Firebase Installation ID）です
 type PushToken struct {
 	ent.Schema
 }

@@ -62,7 +62,7 @@ func (s *Sender) Send(ctx context.Context, messages []notificationuc.PushMessage
 
 // toFCMMessage はウェブにはデータだけを送る。表示は Service Worker が決め、前面にいるときは出さないため
 func toFCMMessage(m notificationuc.PushMessage) *messaging.Message {
-	msg := &messaging.Message{Token: m.Token, Data: m.Data}
+	msg := &messaging.Message{Fid: m.Token, Data: m.Data}
 	switch m.Platform {
 	case entity.PushPlatformWeb:
 		data := maps.Clone(m.Data)

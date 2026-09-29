@@ -76,7 +76,7 @@ func (PushPlatform) EnumDescriptor() ([]byte, []int) {
 
 type RegisterPushTokenRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// FCM の登録トークン
+	// FCM の送信先 ID（Firebase Installation ID）
 	Token         string       `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	Platform      PushPlatform `protobuf:"varint,2,opt,name=platform,proto3,enum=chat.v1.PushPlatform" json:"platform,omitempty"`
 	unknownFields protoimpl.UnknownFields

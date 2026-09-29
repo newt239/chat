@@ -10,7 +10,7 @@ const (
 	PushPlatformAndroid PushPlatform = "android"
 )
 
-// PushToken はプッシュ通知を送る端末の FCM 登録トークンです
+// PushToken はプッシュ通知を送る端末の FCM の送信先 ID（Firebase Installation ID）です
 type PushToken struct {
 	UserID     string
 	Token      string

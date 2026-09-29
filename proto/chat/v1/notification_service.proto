@@ -18,7 +18,7 @@ enum PushPlatform {
 }
 
 message RegisterPushTokenRequest {
-  // FCM の登録トークン
+  // FCM の送信先 ID（Firebase Installation ID）
   string token = 1 [(buf.validate.field).string = {
     min_len: 1
     max_len: 4096
