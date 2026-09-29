@@ -49,5 +49,6 @@ func (MessagePin) Indexes() []ent.Index {
 		// channel + message のユニーク制約
 		index.Edges("channel", "message").
 			Unique(),
+		index.Edges("message"),
 	}
 }

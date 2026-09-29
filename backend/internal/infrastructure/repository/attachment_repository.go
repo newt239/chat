@@ -274,15 +274,9 @@ func (r *attachmentRepository) FindByMessageIDs(ctx context.Context, messageIDs 
 	client := transaction.ResolveClient(ctx, r.client)
 	attachments, err := client.Attachment.Query().
 		Where(attachment.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUploader().
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
+		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
+		WithUploader(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
+		WithChannel(func(q *ent.ChannelQuery) { q.Select(channel.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err

@@ -211,11 +211,11 @@ func init() {
 	messageFields := schema.Message{}.Fields()
 	_ = messageFields
 	// messageDescBody is the schema descriptor for body field.
-	messageDescBody := messageFields[1].Descriptor()
+	messageDescBody := messageFields[4].Descriptor()
 	// message.BodyValidator is a validator for the "body" field. It is called by the builders before save.
 	message.BodyValidator = messageDescBody.Validators[0].(func(string) error)
 	// messageDescCreatedAt is the schema descriptor for created_at field.
-	messageDescCreatedAt := messageFields[2].Descriptor()
+	messageDescCreatedAt := messageFields[5].Descriptor()
 	// message.DefaultCreatedAt holds the default value on creation for the created_at field.
 	message.DefaultCreatedAt = messageDescCreatedAt.Default.(func() time.Time)
 	// messageDescID is the schema descriptor for id field.

@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/attachment"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -23,7 +22,6 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/threadreadstate"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
 )
 
@@ -152,47 +150,6 @@ func (_u *MessageUpdate) SetNillableSenderAvatarURL(v *string) *MessageUpdate {
 func (_u *MessageUpdate) ClearSenderAvatarURL() *MessageUpdate {
 	_u.mutation.ClearSenderAvatarURL()
 	return _u
-}
-
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *MessageUpdate) SetChannelID(id uuid.UUID) *MessageUpdate {
-	_u.mutation.SetChannelID(id)
-	return _u
-}
-
-// SetChannel sets the "channel" edge to the Channel entity.
-func (_u *MessageUpdate) SetChannel(v *Channel) *MessageUpdate {
-	return _u.SetChannelID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageUpdate) SetUserID(id uuid.UUID) *MessageUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (_u *MessageUpdate) SetUser(v *User) *MessageUpdate {
-	return _u.SetUserID(v.ID)
-}
-
-// SetParentID sets the "parent" edge to the Message entity by ID.
-func (_u *MessageUpdate) SetParentID(id uuid.UUID) *MessageUpdate {
-	_u.mutation.SetParentID(id)
-	return _u
-}
-
-// SetNillableParentID sets the "parent" edge to the Message entity by ID if the given value is not nil.
-func (_u *MessageUpdate) SetNillableParentID(id *uuid.UUID) *MessageUpdate {
-	if id != nil {
-		_u = _u.SetParentID(*id)
-	}
-	return _u
-}
-
-// SetParent sets the "parent" edge to the Message entity.
-func (_u *MessageUpdate) SetParent(v *Message) *MessageUpdate {
-	return _u.SetParentID(v.ID)
 }
 
 // AddReplyIDs adds the "replies" edge to the Message entity by IDs.
@@ -348,24 +305,6 @@ func (_u *MessageUpdate) AddThreadReadStates(v ...*ThreadReadState) *MessageUpda
 // Mutation returns the MessageMutation object of the builder.
 func (_u *MessageUpdate) Mutation() *MessageMutation {
 	return _u.mutation
-}
-
-// ClearChannel clears the "channel" edge to the Channel entity.
-func (_u *MessageUpdate) ClearChannel() *MessageUpdate {
-	_u.mutation.ClearChannel()
-	return _u
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (_u *MessageUpdate) ClearUser() *MessageUpdate {
-	_u.mutation.ClearUser()
-	return _u
-}
-
-// ClearParent clears the "parent" edge to the Message entity.
-func (_u *MessageUpdate) ClearParent() *MessageUpdate {
-	_u.mutation.ClearParent()
-	return _u
 }
 
 // ClearReplies clears all "replies" edges to the Message entity.
@@ -665,93 +604,6 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.SenderAvatarURLCleared() {
 		_spec.ClearField(message.FieldSenderAvatarURL, field.TypeString)
-	}
-	if _u.mutation.ChannelCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ChannelTable,
-			Columns: []string{message.ChannelColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ChannelIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ChannelTable,
-			Columns: []string{message.ChannelColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.UserTable,
-			Columns: []string{message.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.UserTable,
-			Columns: []string{message.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ParentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ParentTable,
-			Columns: []string{message.ParentColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ParentTable,
-			Columns: []string{message.ParentColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1337,47 +1189,6 @@ func (_u *MessageUpdateOne) ClearSenderAvatarURL() *MessageUpdateOne {
 	return _u
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *MessageUpdateOne) SetChannelID(id uuid.UUID) *MessageUpdateOne {
-	_u.mutation.SetChannelID(id)
-	return _u
-}
-
-// SetChannel sets the "channel" edge to the Channel entity.
-func (_u *MessageUpdateOne) SetChannel(v *Channel) *MessageUpdateOne {
-	return _u.SetChannelID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageUpdateOne) SetUserID(id uuid.UUID) *MessageUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
-// SetUser sets the "user" edge to the User entity.
-func (_u *MessageUpdateOne) SetUser(v *User) *MessageUpdateOne {
-	return _u.SetUserID(v.ID)
-}
-
-// SetParentID sets the "parent" edge to the Message entity by ID.
-func (_u *MessageUpdateOne) SetParentID(id uuid.UUID) *MessageUpdateOne {
-	_u.mutation.SetParentID(id)
-	return _u
-}
-
-// SetNillableParentID sets the "parent" edge to the Message entity by ID if the given value is not nil.
-func (_u *MessageUpdateOne) SetNillableParentID(id *uuid.UUID) *MessageUpdateOne {
-	if id != nil {
-		_u = _u.SetParentID(*id)
-	}
-	return _u
-}
-
-// SetParent sets the "parent" edge to the Message entity.
-func (_u *MessageUpdateOne) SetParent(v *Message) *MessageUpdateOne {
-	return _u.SetParentID(v.ID)
-}
-
 // AddReplyIDs adds the "replies" edge to the Message entity by IDs.
 func (_u *MessageUpdateOne) AddReplyIDs(ids ...uuid.UUID) *MessageUpdateOne {
 	_u.mutation.AddReplyIDs(ids...)
@@ -1531,24 +1342,6 @@ func (_u *MessageUpdateOne) AddThreadReadStates(v ...*ThreadReadState) *MessageU
 // Mutation returns the MessageMutation object of the builder.
 func (_u *MessageUpdateOne) Mutation() *MessageMutation {
 	return _u.mutation
-}
-
-// ClearChannel clears the "channel" edge to the Channel entity.
-func (_u *MessageUpdateOne) ClearChannel() *MessageUpdateOne {
-	_u.mutation.ClearChannel()
-	return _u
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (_u *MessageUpdateOne) ClearUser() *MessageUpdateOne {
-	_u.mutation.ClearUser()
-	return _u
-}
-
-// ClearParent clears the "parent" edge to the Message entity.
-func (_u *MessageUpdateOne) ClearParent() *MessageUpdateOne {
-	_u.mutation.ClearParent()
-	return _u
 }
 
 // ClearReplies clears all "replies" edges to the Message entity.
@@ -1878,93 +1671,6 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 	}
 	if _u.mutation.SenderAvatarURLCleared() {
 		_spec.ClearField(message.FieldSenderAvatarURL, field.TypeString)
-	}
-	if _u.mutation.ChannelCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ChannelTable,
-			Columns: []string{message.ChannelColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ChannelIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ChannelTable,
-			Columns: []string{message.ChannelColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channel.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.UserCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.UserTable,
-			Columns: []string{message.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.UserTable,
-			Columns: []string{message.UserColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ParentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ParentTable,
-			Columns: []string{message.ParentColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   message.ParentTable,
-			Columns: []string{message.ParentColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{

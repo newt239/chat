@@ -48,18 +48,32 @@ func (r *stubChannelRepo) SearchAccessibleChannels(_ context.Context, _ string, 
 
 type stubMessageRepo struct {
 	domainrepository.MessageRepository
+	scope    domainrepository.MessageSearchScope
+	messages []*entity.Message
+}
+
+func (r *stubMessageRepo) FindSearchScope(_ context.Context, _ string, _ string) (*domainrepository.MessageSearchScope, error) {
+	return &r.scope, nil
+}
+
+func (r *stubMessageRepo) FindByIDs(_ context.Context, _ []string) ([]*entity.Message, error) {
+	return r.messages, nil
+}
+
+type stubSearchIndex struct {
+	domainrepository.MessageSearchIndex
 	criteria *domainrepository.MessageSearchCriteria
 }
 
-func (r *stubMessageRepo) SearchMessages(_ context.Context, c domainrepository.MessageSearchCriteria) ([]*entity.Message, int, error) {
-	r.criteria = &c
-	return []*entity.Message{}, 0, nil
+func (i *stubSearchIndex) Search(_ context.Context, c domainrepository.MessageSearchCriteria) (*domainrepository.MessageSearchResult, error) {
+	i.criteria = &c
+	return &domainrepository.MessageSearchResult{MessageIDs: []string{}}, nil
 }
 
-func newSearcher(channels []*entity.Channel) (*WorkspaceSearcher, *stubChannelRepo, *stubMessageRepo) {
+func newSearcher(channels []*entity.Channel, scope domainrepository.MessageSearchScope) (*WorkspaceSearcher, *stubChannelRepo, *stubSearchIndex) {
 	channelRepo := &stubChannelRepo{channels: channels}
-	messageRepo := &stubMessageRepo{}
-	return NewWorkspaceSearcher(&stubWorkspaceRepo{isMember: true}, channelRepo, messageRepo, nil, nil, nil), channelRepo, messageRepo
+	index := &stubSearchIndex{}
+	return NewWorkspaceSearcher(&stubWorkspaceRepo{isMember: true}, channelRepo, &stubMessageRepo{scope: scope}, index, nil, nil, nil), channelRepo, index
 }
 
 func TestSearchWorkspaceValidation(t *testing.T) {
@@ -77,7 +91,7 @@ func TestSearchWorkspaceValidation(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			searcher, _, _ := newSearcher(nil)
+			searcher, _, _ := newSearcher(nil, domainrepository.MessageSearchScope{ViewableChannelIDs: []string{"c"}})
 			_, err := searcher.SearchWorkspace(context.Background(), tt.input)
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
@@ -87,7 +101,7 @@ func TestSearchWorkspaceValidation(t *testing.T) {
 }
 
 func TestSearchWorkspaceRequiresMembership(t *testing.T) {
-	searcher := NewWorkspaceSearcher(&stubWorkspaceRepo{}, &stubChannelRepo{}, &stubMessageRepo{}, nil, nil, nil)
+	searcher := NewWorkspaceSearcher(&stubWorkspaceRepo{}, &stubChannelRepo{}, &stubMessageRepo{}, &stubSearchIndex{}, nil, nil, nil)
 	_, err := searcher.SearchWorkspace(context.Background(), WorkspaceSearchInput{Query: "a"})
 	if !errors.Is(err, ErrUnauthorized) {
 		t.Fatalf("メンバー以外の検索が拒否されていません: %v", err)
@@ -95,12 +109,18 @@ func TestSearchWorkspaceRequiresMembership(t *testing.T) {
 }
 
 func TestSearchWorkspaceBuildsCriteria(t *testing.T) {
-	searcher, _, messageRepo := newSearcher([]*entity.Channel{
+	scope := domainrepository.MessageSearchScope{
+		UserID:             "u1",
+		ViewableChannelIDs: []string{"dev", "dev-web", "devops", "general"},
+		JoinedChannelIDs:   []string{"dev"},
+		GroupIDs:           []string{"g1"},
+	}
+	searcher, _, index := newSearcher([]*entity.Channel{
 		{ID: "dev", Name: "dev"},
 		{ID: "dev-web", Name: "dev/web"},
 		{ID: "dev-web-a", Name: "dev/web/a"},
 		{ID: "devops", Name: "devops"},
-	})
+	}, scope)
 	after := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
 
 	_, err := searcher.SearchWorkspace(context.Background(), WorkspaceSearchInput{
@@ -124,36 +144,70 @@ func TestSearchWorkspaceBuildsCriteria(t *testing.T) {
 		t.Fatalf("検索に失敗しました: %v", err)
 	}
 
-	got := messageRepo.criteria
 	want := domainrepository.MessageSearchCriteria{
-		WorkspaceID:    "ws",
-		ViewerID:       "u1",
-		Terms:          []string{"設計", "Review"},
-		ChannelIDs:     []string{"dev", "dev-web", "dev-web-a"},
-		AuthorIDs:      []string{"u2"},
-		Has:            []domainrepository.MessageContentKind{domainrepository.MessageContentImage},
-		MentionsViewer: true,
-		After:          &after,
-		Sort:           domainrepository.MessageSearchSortRelevance,
-		Limit:          maxPerPage,
-		Offset:         maxPerPage,
+		WorkspaceID: "ws",
+		Terms:       []string{"設計", "Review"},
+		// 下階層のうち閲覧できない dev/web/a は除く
+		ChannelIDs: []string{"dev", "dev-web"},
+		AuthorIDs:  []string{"u2"},
+		Has:        []domainrepository.MessageContentKind{domainrepository.MessageContentImage},
+		Mention:    &scope,
+		After:      &after,
+		Sort:       domainrepository.MessageSearchSortRelevance,
+		Page:       2,
+		PerPage:    maxPerPage,
 	}
-	if !reflect.DeepEqual(*got, want) {
-		t.Errorf("検索条件が期待と異なります:\n got=%+v\nwant=%+v", *got, want)
+	if !reflect.DeepEqual(*index.criteria, want) {
+		t.Errorf("検索条件が期待と異なります:\n got=%+v\nwant=%+v", *index.criteria, want)
 	}
 }
 
-func TestSearchWorkspaceSkipsKeywordTargetsWithoutKeyword(t *testing.T) {
-	searcher, channelRepo, messageRepo := newSearcher(nil)
+func TestSearchWorkspaceWithoutKeywordSortsByNewest(t *testing.T) {
+	searcher, channelRepo, index := newSearcher(nil, domainrepository.MessageSearchScope{ViewableChannelIDs: []string{"c"}})
 
-	if _, err := searcher.SearchWorkspace(context.Background(), WorkspaceSearchInput{Filter: MessageFilter{ThreadOnly: true}}); err != nil {
+	_, err := searcher.SearchWorkspace(context.Background(), WorkspaceSearchInput{
+		Filter: MessageFilter{ThreadOnly: true},
+		Sort:   domainrepository.MessageSearchSortRelevance,
+	})
+	if err != nil {
 		t.Fatalf("検索に失敗しました: %v", err)
 	}
-	if messageRepo.criteria == nil {
-		t.Error("メッセージが検索されていません")
+	if index.criteria == nil || index.criteria.Sort != domainrepository.MessageSearchSortNewest {
+		t.Errorf("キーワードなしの検索が新しい順になっていません: %+v", index.criteria)
 	}
 	if channelRepo.searchedQuery != nil {
 		t.Error("キーワードなしでチャンネルが検索されました")
+	}
+}
+
+func TestSearchWorkspaceSkipsIndexWithoutViewableChannels(t *testing.T) {
+	searcher, _, index := newSearcher(nil, domainrepository.MessageSearchScope{ViewableChannelIDs: []string{"general"}})
+
+	out, err := searcher.SearchWorkspace(context.Background(), WorkspaceSearchInput{Filter: MessageFilter{ChannelIDs: []string{"secret"}}})
+	if err != nil {
+		t.Fatalf("検索に失敗しました: %v", err)
+	}
+	if index.criteria != nil || out.Messages.Total != 0 {
+		t.Errorf("閲覧できないチャンネルだけを指定したのに検索されました: %+v", index.criteria)
+	}
+}
+
+func TestFindLiveMessagesKeepsIndexOrder(t *testing.T) {
+	deletedAt := time.Now()
+	searcher := NewWorkspaceSearcher(nil, nil, &stubMessageRepo{messages: []*entity.Message{
+		{ID: "a"}, {ID: "b", DeletedAt: &deletedAt}, {ID: "c"},
+	}}, nil, nil, nil, nil)
+
+	messages, err := searcher.findLiveMessages(context.Background(), []string{"c", "missing", "b", "a"})
+	if err != nil {
+		t.Fatalf("取得に失敗しました: %v", err)
+	}
+	got := []string{}
+	for _, m := range messages {
+		got = append(got, m.ID)
+	}
+	if !reflect.DeepEqual(got, []string{"c", "a"}) {
+		t.Errorf("インデックスの順序で削除済み・存在しないものを除けていません: %v", got)
 	}
 }
 

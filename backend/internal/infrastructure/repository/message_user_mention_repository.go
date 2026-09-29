@@ -70,12 +70,8 @@ func (r *messageUserMentionRepository) FindByMessageIDs(ctx context.Context, mes
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageUserMention.Query().
 		Where(messageusermention.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUser().
+		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
+		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err

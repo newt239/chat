@@ -49,6 +49,7 @@ func NewMessageUseCase(
 	channelAccessSvc service.ChannelAccessService,
 	permissionSvc service.PermissionService,
 	logger service.Logger,
+	searchIndexer SearchIndexer,
 ) MessageUseCase {
 	return &messageInteractor{
 		creator: NewMessageCreator(
@@ -64,6 +65,7 @@ func NewMessageUseCase(
 			transactionManager,
 			outputBuilder,
 			channelAccessSvc,
+			searchIndexer,
 		),
 		updater: NewMessageUpdater(
 			messageRepo,
@@ -77,6 +79,7 @@ func NewMessageUseCase(
 			transactionManager,
 			outputBuilder,
 			channelAccessSvc,
+			searchIndexer,
 		),
 		deleter: NewMessageDeleter(
 			messageRepo,
@@ -87,6 +90,7 @@ func NewMessageUseCase(
 			channelAccessSvc,
 			permissionSvc,
 			logger,
+			searchIndexer,
 		),
 		lister: NewMessageLister(
 			messageRepo,

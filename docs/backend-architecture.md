@@ -324,7 +324,7 @@ func (r *InterfaceRegistry) NewRPCHandler() http.Handler {
 
 ### 12. 検索機能
 
-- メッセージの全文検索
+- メッセージの全文検索（Meilisearch。設計は `docs/search-and-mentions.md`）
 - チャンネル検索
 - ユーザー検索
 - ユーザーグループ検索
@@ -440,7 +440,7 @@ type Config struct {
     JWT      JWTConfig
     Wasabi   WasabiConfig
     CORS     CORSConfig
-    Logger   LoggerConfig
+    Search   SearchConfig // MEILISEARCH_URL / MEILISEARCH_API_KEY
 }
 ```
 
@@ -584,18 +584,15 @@ func (r *channelRepository) FindByID(ctx context.Context, id string) (*entity.Ch
 
 ### N+1 問題の回避
 
-```go
-// 一括取得メソッドの実装
-func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error)
-func (r *reactionRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) ([]*entity.MessageReaction, error)
+- 一覧で使う関連は `FindByMessageIDs` のような一括取得メソッドで読み、1 件ずつ問い合わせない。
+- `message` の外部キー（`channel_id` / `user_id` / `parent_id`）は ent のフィールドとして公開している（列名は `message_channel` などのまま）。ID を得るためだけに `WithChannel()` などで関連を読み込まない。他のエンティティから ID だけが要る関連は `WithX(func(q) { q.Select(x.FieldID) })` で ID だけを読む。
+- チャンネルごとの未読数・未読メンション数やスレッドの返信数のような集計は、ent で書くとチャンネル数・スレッド数に比例した問い合わせになるため、生 SQL（`ExecQuery`）で 1 本にまとめる。
 
-// Ent の Eager Loading
-messages, err := client.Message.Query().
-    WithUser().           // ユーザー情報を一括取得
-    WithAttachments().    // 添付ファイルを一括取得
-    Where(...).
-    All(ctx)
-```
+### インデックス
+
+- ent は外部キー列にインデックスを作らないため、スキーマの `Indexes()` で明示する。メッセージは `(message_channel, created_at) WHERE deleted_at IS NULL`（タイムラインと未読数）、`(message_parent, created_at)`（スレッド）、`message_user` を持つ。
+- 性能の確認には `go run ./cmd/seed -channels 100 -messages 3000` で大量のメッセージを投入し、`EXPLAIN ANALYZE` で確かめる。
+- マイグレーションは起動時の auto migrate のまま。インデックスの追加は既存データを変更しない。
 
 ### ページネーション
 

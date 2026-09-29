@@ -22,6 +22,26 @@ services:
       - chat-network
     restart: unless-stopped
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.54
+    container_name: chat-meilisearch
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: development-master-key
+      MEILI_NO_ANALYTICS: "true"
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - chat-network
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
@@ -32,6 +52,8 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
       - JWT_SECRET=development-secret-key
       - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - MEILISEARCH_URL=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=development-master-key
     ports:
       - "8080:8080"
     volumes:
@@ -39,6 +61,8 @@ services:
       - backend_cache:/go/pkg/mod
     depends_on:
       db:
+        condition: service_healthy
+      meilisearch:
         condition: service_healthy
     networks:
       - chat-network
@@ -88,6 +112,7 @@ services:
 
 volumes:
   postgres_data:
+  meilisearch_data:
   backend_cache:
   frontend_node_modules:
 

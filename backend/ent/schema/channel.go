@@ -69,6 +69,7 @@ func (Channel) Edges() []ent.Edge {
 func (Channel) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("is_private"),
+		index.Edges("workspace"),
 		index.Fields("name").
 			Edges("workspace").
 			Unique(),

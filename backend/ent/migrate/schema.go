@@ -61,6 +61,16 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{AttachmentsColumns[11]},
 			},
+			{
+				Name:    "attachment_attachment_message",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[15]},
+			},
+			{
+				Name:    "attachment_attachment_channel",
+				Unique:  false,
+				Columns: []*schema.Column{AttachmentsColumns[17]},
+			},
 		},
 	}
 	// AuditLogColumns holds the columns for the "audit_log" table.
@@ -146,6 +156,11 @@ var (
 				Columns: []*schema.Column{ChannelsColumns[3]},
 			},
 			{
+				Name:    "channel_channel_workspace",
+				Unique:  false,
+				Columns: []*schema.Column{ChannelsColumns[8]},
+			},
+			{
 				Name:    "channel_name_channel_workspace",
 				Unique:  true,
 				Columns: []*schema.Column{ChannelsColumns[1], ChannelsColumns[8]},
@@ -222,6 +237,16 @@ var (
 				Name:    "channelmember_role",
 				Unique:  false,
 				Columns: []*schema.Column{ChannelMembersColumns[1]},
+			},
+			{
+				Name:    "channelmember_channel_member_channel_channel_member_user",
+				Unique:  false,
+				Columns: []*schema.Column{ChannelMembersColumns[3], ChannelMembersColumns[4]},
+			},
+			{
+				Name:    "channelmember_channel_member_user",
+				Unique:  false,
+				Columns: []*schema.Column{ChannelMembersColumns[4]},
 			},
 		},
 	}
@@ -377,6 +402,24 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{MessagesColumns[2]},
 			},
+			{
+				Name:    "message_message_channel_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessagesColumns[8], MessagesColumns[2]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "deleted_at IS NULL",
+				},
+			},
+			{
+				Name:    "message_message_parent_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessagesColumns[10], MessagesColumns[2]},
+			},
+			{
+				Name:    "message_message_user",
+				Unique:  false,
+				Columns: []*schema.Column{MessagesColumns[9]},
+			},
 		},
 	}
 	// MessageBookmarksColumns holds the columns for the "message_bookmarks" table.
@@ -444,6 +487,18 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "messagegroupmention_message_group_mention_message",
+				Unique:  false,
+				Columns: []*schema.Column{MessageGroupMentionsColumns[2]},
+			},
+			{
+				Name:    "messagegroupmention_message_group_mention_group",
+				Unique:  false,
+				Columns: []*schema.Column{MessageGroupMentionsColumns[3]},
+			},
+		},
 	}
 	// MessageLinksColumns holds the columns for the "message_links" table.
 	MessageLinksColumns = []*schema.Column{
@@ -481,6 +536,11 @@ var (
 				Name:    "messagelink_url_message_link_message",
 				Unique:  true,
 				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[14]},
+			},
+			{
+				Name:    "messagelink_message_link_message",
+				Unique:  false,
+				Columns: []*schema.Column{MessageLinksColumns[14]},
 			},
 		},
 	}
@@ -528,6 +588,11 @@ var (
 				Unique:  true,
 				Columns: []*schema.Column{MessagePinsColumns[2], MessagePinsColumns[3]},
 			},
+			{
+				Name:    "messagepin_message_pin_message",
+				Unique:  false,
+				Columns: []*schema.Column{MessagePinsColumns[3]},
+			},
 		},
 	}
 	// MessageReactionsColumns holds the columns for the "message_reactions" table.
@@ -563,6 +628,11 @@ var (
 				Unique:  true,
 				Columns: []*schema.Column{MessageReactionsColumns[1], MessageReactionsColumns[3], MessageReactionsColumns[4]},
 			},
+			{
+				Name:    "messagereaction_message_reaction_message",
+				Unique:  false,
+				Columns: []*schema.Column{MessageReactionsColumns[3]},
+			},
 		},
 	}
 	// MessageUserMentionsColumns holds the columns for the "message_user_mentions" table.
@@ -589,6 +659,18 @@ var (
 				Columns:    []*schema.Column{MessageUserMentionsColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "messageusermention_message_user_mention_message",
+				Unique:  false,
+				Columns: []*schema.Column{MessageUserMentionsColumns[2]},
+			},
+			{
+				Name:    "messageusermention_message_user_mention_user",
+				Unique:  false,
+				Columns: []*schema.Column{MessageUserMentionsColumns[3]},
 			},
 		},
 	}
@@ -794,6 +876,18 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "usergroupmember_user_group_member_group",
+				Unique:  false,
+				Columns: []*schema.Column{UserGroupMembersColumns[2]},
+			},
+			{
+				Name:    "usergroupmember_user_group_member_user",
+				Unique:  false,
+				Columns: []*schema.Column{UserGroupMembersColumns[3]},
+			},
+		},
 	}
 	// UserNoteColumns holds the columns for the "user_note" table.
 	UserNoteColumns = []*schema.Column{
@@ -867,6 +961,11 @@ var (
 				Name:    "userthreadfollow_user_thread_follow_user_user_thread_follow_thread",
 				Unique:  true,
 				Columns: []*schema.Column{UserThreadFollowsColumns[2], UserThreadFollowsColumns[3]},
+			},
+			{
+				Name:    "userthreadfollow_user_thread_follow_thread",
+				Unique:  false,
+				Columns: []*schema.Column{UserThreadFollowsColumns[3]},
 			},
 		},
 	}

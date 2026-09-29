@@ -45,5 +45,6 @@ func (UserThreadFollow) Indexes() []ent.Index {
 		index.Fields("created_at"),
 		index.Edges("user", "thread").
 			Unique(),
+		index.Edges("thread"),
 	}
 }

@@ -72,5 +72,6 @@ func (MessageLink) Indexes() []ent.Index {
 		index.Fields("url").
 			Edges("message").
 			Unique(),
+		index.Edges("message"),
 	}
 }

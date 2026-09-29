@@ -1,6 +1,14 @@
 package message
 
-import "time"
+import (
+	"context"
+	"time"
+)
+
+// SearchIndexer はメッセージの変更を全文検索インデックスへ反映します。失敗しても呼び出し元へは返さない
+type SearchIndexer interface {
+	Sync(ctx context.Context, messageIDs ...string)
+}
 
 // Notifier はメッセージの変更をチャンネルの参加者へ配信します
 type Notifier interface {

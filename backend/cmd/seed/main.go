@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
 	"log"
 
@@ -10,6 +12,10 @@ import (
 )
 
 func main() {
+	messages := flag.Int("messages", 0, "性能検証用に各チャンネルへ追加するメッセージ数")
+	channels := flag.Int("channels", 0, "性能検証用に追加するチャンネル数（-messages と併用）")
+	flag.Parse()
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("設定の読み込みに失敗しました: %v", err)
@@ -25,8 +31,12 @@ func main() {
 		log.Printf("自動シード: %v", err)
 	}
 
-	// 明示的投入は重複の原因となるためデフォルトでは実行しない
-	// 必要なら手動で AutoSeed を実行せずに CreateSeedData を呼ぶ専用コマンドを用意してください
+	if *messages > 0 {
+		if err := seed.BulkMessages(context.Background(), client, *channels, *messages); err != nil {
+			log.Fatalf("大量データの投入に失敗しました: %v", err)
+		}
+		fmt.Printf("✅ 各チャンネルに %d 件のメッセージを追加しました\n", *messages)
+	}
 
 	fmt.Println("✅ Seed process finished!")
 }

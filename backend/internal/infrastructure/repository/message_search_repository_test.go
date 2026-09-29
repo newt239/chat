@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"reflect"
+	"slices"
 	"testing"
 	"time"
 
@@ -38,6 +39,7 @@ type searchFixture struct {
 	workspaceID string
 	alice, bob  *ent.User
 	channels    map[string]*ent.Channel
+	group       *ent.UserGroup
 	messages    map[string]*ent.Message
 }
 
@@ -68,8 +70,8 @@ func newSearchFixture(t *testing.T, client *ent.Client) *searchFixture {
 	newChannel("dev/web", false, f.bob)
 	newChannel("secret", true, f.bob)
 
-	group := client.UserGroup.Create().SetName("designers").SetWorkspaceID(f.workspaceID).SetCreatedBy(f.bob).SaveX(ctx)
-	client.UserGroupMember.Create().SetGroup(group).SetUser(f.alice).SaveX(ctx)
+	f.group = client.UserGroup.Create().SetName("designers").SetWorkspaceID(f.workspaceID).SetCreatedBy(f.bob).SaveX(ctx)
+	client.UserGroupMember.Create().SetGroup(f.group).SetUser(f.alice).SaveX(ctx)
 
 	base := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
 	newMessage := func(key string, minute int, channel string, author *ent.User, body string) *ent.Message {
@@ -84,7 +86,7 @@ func newSearchFixture(t *testing.T, client *ent.Client) *searchFixture {
 	newMessage("secret", 2, "secret", f.bob, "設計 secret")
 	newMessage("broadcast", 3, "dev", f.bob, "@channel 設計の締め切りと設計書")
 	m5 := newMessage("group", 4, "general", f.bob, "group ping")
-	client.MessageGroupMention.Create().SetMessage(m5).SetGroup(group).SaveX(ctx)
+	client.MessageGroupMention.Create().SetMessage(m5).SetGroup(f.group).SaveX(ctx)
 	reply := client.Message.Create().SetChannel(f.channels["general"]).SetUser(f.alice).SetParent(m1).SetBody("了解 設計").
 		SetCreatedAt(base.Add(5 * time.Minute)).SaveX(ctx)
 	f.messages["reply"] = reply
@@ -94,7 +96,7 @@ func newSearchFixture(t *testing.T, client *ent.Client) *searchFixture {
 	client.MessagePin.Create().SetChannel(f.channels["dev"]).SetMessage(m7).SetPinnedBy(f.bob).SaveX(ctx)
 	m8 := newMessage("self", 7, "general", f.alice, "@alice self")
 	client.MessageUserMention.Create().SetMessage(m8).SetUser(f.alice).SaveX(ctx)
-	client.Message.Create().SetChannel(f.channels["general"]).SetUser(f.bob).SetBody("設計 deleted").
+	f.messages["deleted"] = client.Message.Create().SetChannel(f.channels["general"]).SetUser(f.bob).SetBody("設計 deleted").
 		SetCreatedAt(base.Add(8 * time.Minute)).SetDeletedAt(base.Add(9 * time.Minute)).SaveX(ctx)
 	newMessage("not-broadcast", 9, "general", f.bob, "@channelx はメンションではない")
 	newMessage("reverse", 10, "general", f.bob, "review of the design")
@@ -114,58 +116,111 @@ func (f *searchFixture) keys(t *testing.T, messages []*entity.Message) []string 
 	return keys
 }
 
-func TestSearchMessages(t *testing.T) {
+func TestFindSearchScope(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+
+	scope, err := NewMessageRepository(client).FindSearchScope(context.Background(), f.workspaceID, f.alice.ID.String())
+	if err != nil {
+		t.Fatalf("取得に失敗しました: %v", err)
+	}
+	ids := func(names ...string) []string {
+		result := []string{}
+		for _, name := range names {
+			result = append(result, f.channels[name].ID.String())
+		}
+		slices.Sort(result)
+		return result
+	}
+	slices.Sort(scope.ViewableChannelIDs)
+	slices.Sort(scope.JoinedChannelIDs)
+	if !reflect.DeepEqual(scope.ViewableChannelIDs, ids("general", "dev", "dev/web")) {
+		t.Errorf("閲覧できるチャンネルが期待と異なります: %v", scope.ViewableChannelIDs)
+	}
+	if !reflect.DeepEqual(scope.JoinedChannelIDs, ids("general", "dev")) {
+		t.Errorf("参加しているチャンネルが期待と異なります: %v", scope.JoinedChannelIDs)
+	}
+	if !reflect.DeepEqual(scope.GroupIDs, []string{f.group.ID.String()}) {
+		t.Errorf("所属グループが期待と異なります: %v", scope.GroupIDs)
+	}
+}
+
+func TestFindSearchDocuments(t *testing.T) {
 	client := openTestClient(t)
 	f := newSearchFixture(t, client)
 	repo := NewMessageRepository(client)
-	after := time.Date(2026, 9, 1, 0, 3, 0, 0, time.UTC)
-	before := time.Date(2026, 9, 1, 0, 6, 0, 0, time.UTC)
-
-	tests := []struct {
-		name      string
-		criteria  domainrepository.MessageSearchCriteria
-		want      []string
-		wantTotal int
-	}{
-		{name: "閲覧できない・削除済みを除いて新しい順", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"設計"}}, want: []string{"reply", "broadcast", "mention"}},
-		{name: "関連度順は出現回数の多いものが先", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"設計"}, Sort: domainrepository.MessageSearchSortRelevance}, want: []string{"broadcast", "reply", "mention"}},
-		{name: "句として含むものが先", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"design", "review"}, Sort: domainrepository.MessageSearchSortRelevance}, want: []string{"link", "reverse"}},
-		{name: "引用符やバックスラッシュを含む語でも関連度順にできる", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"it's", `a\b'`}, Sort: domainrepository.MessageSearchSortRelevance}, want: []string{}},
-		{name: "複数の語は AND", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"設計", "締め切り"}}, want: []string{"broadcast"}},
-		{name: "添付ファイル名にも一致する", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"SCREENSHOT"}}, want: []string{"image"}},
-		{name: "チャンネルとリンク", criteria: domainrepository.MessageSearchCriteria{ChannelIDs: []string{f.channels["dev"].ID.String(), f.channels["dev/web"].ID.String()}, Has: []domainrepository.MessageContentKind{domainrepository.MessageContentLink}}, want: []string{"link"}},
-		{name: "画像", criteria: domainrepository.MessageSearchCriteria{Has: []domainrepository.MessageContentKind{domainrepository.MessageContentImage}}, want: []string{"image"}},
-		{name: "画像以外のファイルはない", criteria: domainrepository.MessageSearchCriteria{Has: []domainrepository.MessageContentKind{domainrepository.MessageContentFile}}, want: []string{}},
-		{name: "ピン留め", criteria: domainrepository.MessageSearchCriteria{PinnedOnly: true}, want: []string{"image"}},
-		{name: "スレッド", criteria: domainrepository.MessageSearchCriteria{ThreadOnly: true}, want: []string{"reply", "mention"}},
-		{name: "返信を除く", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"設計"}, ExcludeReplies: true}, want: []string{"broadcast", "mention"}},
-		{name: "自分宛て", criteria: domainrepository.MessageSearchCriteria{MentionsViewer: true}, want: []string{"self", "group", "broadcast", "mention"}},
-		{name: "投稿者", criteria: domainrepository.MessageSearchCriteria{AuthorIDs: []string{f.alice.ID.String()}}, want: []string{"self", "reply"}},
-		{name: "期間", criteria: domainrepository.MessageSearchCriteria{After: &after, Before: &before}, want: []string{"reply", "group", "broadcast"}},
-		{name: "ページング", criteria: domainrepository.MessageSearchCriteria{Terms: []string{"設計"}, Limit: 1, Offset: 1}, want: []string{"broadcast"}, wantTotal: 3},
+	ids := []string{}
+	for _, m := range f.messages {
+		ids = append(ids, m.ID.String())
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := tt.criteria
-			c.WorkspaceID, c.ViewerID = f.workspaceID, f.alice.ID.String()
-			if c.Limit == 0 {
-				c.Limit = 20
+
+	docs, err := repo.FindSearchDocuments(context.Background(), ids)
+	if err != nil {
+		t.Fatalf("取得に失敗しました: %v", err)
+	}
+	byKey := map[string]domainrepository.MessageSearchDocument{}
+	for _, d := range docs {
+		for key, m := range f.messages {
+			if m.ID.String() == d.ID {
+				byKey[key] = d
 			}
-			messages, total, err := repo.SearchMessages(context.Background(), c)
-			if err != nil {
-				t.Fatalf("検索に失敗しました: %v", err)
+		}
+	}
+	if _, ok := byKey["deleted"]; ok || len(docs) != len(f.messages)-1 {
+		t.Fatalf("削除済みを除いた文書になっていません: %d 件", len(docs))
+	}
+
+	mention := byKey["mention"]
+	if mention.WorkspaceID != f.workspaceID || mention.SenderID != f.bob.ID.String() || !mention.HasReplies ||
+		!reflect.DeepEqual(mention.MentionedUserIDs, []string{f.alice.ID.String()}) {
+		t.Errorf("メンションとスレッドが期待と異なります: %+v", mention)
+	}
+	if reply := byKey["reply"]; reply.ParentID == nil || *reply.ParentID != f.messages["mention"].ID.String() || reply.HasReplies {
+		t.Errorf("返信の親が期待と異なります: %+v", reply)
+	}
+	image := byKey["image"]
+	if !image.Pinned || !reflect.DeepEqual(image.AttachmentNames, []string{"screenshot.png"}) ||
+		!reflect.DeepEqual(image.Has, []domainrepository.MessageContentKind{domainrepository.MessageContentImage}) {
+		t.Errorf("添付とピン留めが期待と異なります: %+v", image)
+	}
+	if link := byKey["link"]; !reflect.DeepEqual(link.Has, []domainrepository.MessageContentKind{domainrepository.MessageContentLink}) {
+		t.Errorf("リンクが期待と異なります: %+v", link.Has)
+	}
+	if group := byKey["group"]; !reflect.DeepEqual(group.MentionedGroupIDs, []string{f.group.ID.String()}) {
+		t.Errorf("グループメンションが期待と異なります: %+v", group.MentionedGroupIDs)
+	}
+	if !byKey["broadcast"].MentionsChannel || byKey["not-broadcast"].MentionsChannel {
+		t.Error("@channel の判定が期待と異なります")
+	}
+}
+
+func TestFindSearchDocumentsAfterPagesByID(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	repo := NewMessageRepository(client)
+
+	seen := map[string]bool{}
+	after := ""
+	for {
+		docs, err := repo.FindSearchDocumentsAfter(context.Background(), after, 3)
+		if err != nil {
+			t.Fatalf("取得に失敗しました: %v", err)
+		}
+		if len(docs) == 0 {
+			break
+		}
+		for _, d := range docs {
+			if d.ID <= after || seen[d.ID] {
+				t.Fatalf("ID 順に重複なく返っていません: after=%s id=%s", after, d.ID)
 			}
-			if got := f.keys(t, messages); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("結果が期待と異なります: got=%v want=%v", got, tt.want)
-			}
-			wantTotal := tt.wantTotal
-			if wantTotal == 0 {
-				wantTotal = len(tt.want)
-			}
-			if total != wantTotal {
-				t.Errorf("件数が期待と異なります: got=%d want=%d", total, wantTotal)
-			}
-		})
+			seen[d.ID] = true
+		}
+		after = docs[len(docs)-1].ID
+	}
+	for key, m := range f.messages {
+		if seen[m.ID.String()] != (key != "deleted") {
+			t.Errorf("%s の扱いが期待と異なります", key)
+		}
 	}
 }
 

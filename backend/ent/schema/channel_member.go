@@ -45,5 +45,7 @@ func (ChannelMember) Edges() []ent.Edge {
 func (ChannelMember) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("role"),
+		index.Edges("channel", "user"),
+		index.Edges("user"),
 	}
 }

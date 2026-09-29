@@ -20,6 +20,7 @@ type MessageDeleter struct {
 	channelAccessSvc  service.ChannelAccessService
 	permissionSvc     service.PermissionService
 	logger            service.Logger
+	searchIndexer     SearchIndexer
 }
 
 // NewMessageDeleter は新しいMessageDeleterを作成します
@@ -32,6 +33,7 @@ func NewMessageDeleter(
 	channelAccessSvc service.ChannelAccessService,
 	permissionSvc service.PermissionService,
 	logger service.Logger,
+	searchIndexer SearchIndexer,
 ) *MessageDeleter {
 	return &MessageDeleter{
 		messageRepo:       messageRepo,
@@ -42,6 +44,7 @@ func NewMessageDeleter(
 		channelAccessSvc:  channelAccessSvc,
 		permissionSvc:     permissionSvc,
 		logger:            logger,
+		searchIndexer:     searchIndexer,
 	}
 }
 
@@ -92,6 +95,13 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	if err := d.messageRepo.SoftDeleteByIDs(ctx, deleteIDs, input.ExecutorID); err != nil {
 		return fmt.Errorf("メッセージの削除に失敗しました: %w", err)
 	}
+
+	// 返信が消えると親メッセージの「スレッドあり」も変わる
+	indexIDs := deleteIDs
+	if message.ParentID != nil {
+		indexIDs = append(indexIDs, *message.ParentID)
+	}
+	d.searchIndexer.Sync(ctx, indexIDs...)
 
 	// WebSocket通知を送信
 	if d.notificationSvc != nil {

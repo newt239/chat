@@ -2,19 +2,14 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelreadstate"
-	"github.com/newt239/chat/ent/message"
-	"github.com/newt239/chat/ent/messagegroupmention"
-	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/usergroup"
-	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -29,6 +24,33 @@ func NewReadStateRepository(client *ent.Client) domainrepository.ReadStateReposi
 	return &readStateRepository{client: client}
 }
 
+// 未読数はチャンネルごとに既読位置が異なるため、チャンネルごとの範囲検索を 1 本の SQL にまとめる
+// $1: チャンネル ID の配列, $2: ユーザー ID
+const unreadCountSQL = `
+	SELECT c.id, (
+		SELECT COUNT(*) FROM messages m
+		WHERE m.message_channel = c.id AND m.deleted_at IS NULL
+			AND m.created_at > COALESCE(rs.last_read_at, '-infinity')
+	)
+	FROM unnest($1::uuid[]) AS c(id)
+	LEFT JOIN channel_read_states rs ON rs.channel_read_state_channel = c.id AND rs.channel_read_state_user = $2`
+
+// 本人か所属グループへのメンションを含む未読メッセージをチャンネルごとに数える
+const unreadMentionCountSQL = `
+	WITH mentioned AS (
+		SELECT message_user_mention_message AS id FROM message_user_mentions WHERE message_user_mention_user = $2
+		UNION
+		SELECT gm.message_group_mention_message FROM message_group_mentions gm
+		JOIN user_group_members ugm ON ugm.user_group_member_group = gm.message_group_mention_group
+		WHERE ugm.user_group_member_user = $2
+	)
+	SELECT m.message_channel, COUNT(*)
+	FROM mentioned JOIN messages m ON m.id = mentioned.id
+	LEFT JOIN channel_read_states rs ON rs.channel_read_state_channel = m.message_channel AND rs.channel_read_state_user = $2
+	WHERE m.message_channel = ANY($1::uuid[]) AND m.deleted_at IS NULL
+		AND m.created_at > COALESCE(rs.last_read_at, '-infinity')
+	GROUP BY m.message_channel`
+
 func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.ChannelReadState) error {
 	cid, err := utils.ParseUUID(readState.ChannelID, "channel ID")
 	if err != nil {
@@ -40,74 +62,13 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-
-	// Try to find existing
-	existing, err := client.ChannelReadState.Query().
-		Where(
-			channelreadstate.HasChannelWith(channel.ID(cid)),
-			channelreadstate.HasUserWith(user.ID(uid)),
-		).
-		Only(ctx)
-
-	if err != nil {
-		if ent.IsNotFound(err) {
-			// Create new
-			_, err := client.ChannelReadState.Create().
-				SetChannelID(cid).
-				SetUserID(uid).
-				SetLastReadAt(readState.LastReadAt).
-				Save(ctx)
-			if err != nil {
-				return err
-			}
-
-			// Load edges
-			crs, err := client.ChannelReadState.Query().
-				Where(
-					channelreadstate.HasChannelWith(channel.ID(cid)),
-					channelreadstate.HasUserWith(user.ID(uid)),
-				).
-				WithChannel(func(q *ent.ChannelQuery) {
-					q.WithWorkspace().WithCreatedBy()
-				}).
-				WithUser().
-				Only(ctx)
-			if err != nil {
-				return err
-			}
-
-			*readState = *utils.ChannelReadStateToEntity(crs)
-			return nil
-		}
-		return err
-	}
-
-	// Update existing
-	_, err = client.ChannelReadState.UpdateOne(existing).
+	return transaction.ResolveClient(ctx, r.client).ChannelReadState.Create().
+		SetChannelID(cid).
+		SetUserID(uid).
 		SetLastReadAt(readState.LastReadAt).
-		Save(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Load edges
-	crs, err := client.ChannelReadState.Query().
-		Where(
-			channelreadstate.HasChannelWith(channel.ID(cid)),
-			channelreadstate.HasUserWith(user.ID(uid)),
-		).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*readState = *utils.ChannelReadStateToEntity(crs)
-	return nil
+		OnConflictColumns(channelreadstate.ChannelColumn, channelreadstate.UserColumn).
+		UpdateLastReadAt().
+		Exec(ctx)
 }
 
 func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelID, userID string) (*entity.ChannelReadState, error) {
@@ -127,10 +88,6 @@ func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelI
 			channelreadstate.HasChannelWith(channel.ID(cid)),
 			channelreadstate.HasUserWith(user.ID(uid)),
 		).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -139,217 +96,53 @@ func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelI
 		return nil, err
 	}
 
-	return utils.ChannelReadStateToEntity(crs), nil
-}
-
-func (r *readStateRepository) UpdateLastReadAt(ctx context.Context, channelID, userID string, lastReadAt time.Time) error {
-	readState := &entity.ChannelReadState{
-		ChannelID:  channelID,
-		UserID:     userID,
-		LastReadAt: lastReadAt,
-	}
-	return r.Upsert(ctx, readState)
-}
-
-// getLastReadAt は指定されたチャネルとユーザーの既読時刻を取得します
-func (r *readStateRepository) getLastReadAt(ctx context.Context, client *ent.Client, cid, uid uuid.UUID) (time.Time, error) {
-	readState, err := client.ChannelReadState.Query().
-		Where(
-			channelreadstate.HasChannelWith(channel.ID(cid)),
-			channelreadstate.HasUserWith(user.ID(uid)),
-		).
-		Only(ctx)
-
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return time.Time{}, nil
-		}
-		return time.Time{}, err
-	}
-
-	return readState.LastReadAt, nil
+	return &entity.ChannelReadState{ChannelID: channelID, UserID: userID, LastReadAt: crs.LastReadAt}, nil
 }
 
 func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID, userID string) (int, error) {
-	cid, err := utils.ParseUUID(channelID, "channel ID")
+	counts, err := r.GetUnreadCountBatch(ctx, []string{channelID}, userID)
 	if err != nil {
 		return 0, err
 	}
-
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return 0, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	lastReadAt, err := r.getLastReadAt(ctx, client, cid, uid)
-	if err != nil {
-		return 0, err
-	}
-
-	// Count messages created after the last read time
-	count, err := client.Message.Query().
-		Where(
-			message.HasChannelWith(channel.ID(cid)),
-			message.CreatedAtGT(lastReadAt),
-			message.DeletedAtIsNil(),
-		).
-		Count(ctx)
-
-	return count, err
+	return counts[channelID], nil
 }
 
 func (r *readStateRepository) GetUnreadCountBatch(ctx context.Context, channelIDs []string, userID string) (map[string]int, error) {
+	return r.countByChannel(ctx, unreadCountSQL, channelIDs, userID)
+}
+
+func (r *readStateRepository) GetUnreadMentionCountBatch(ctx context.Context, channelIDs []string, userID string) (map[string]int, error) {
+	return r.countByChannel(ctx, unreadMentionCountSQL, channelIDs, userID)
+}
+
+// countByChannel は (チャンネル ID, 件数) を返す SQL を実行し、件数が 0 より大きいものだけを返します
+func (r *readStateRepository) countByChannel(ctx context.Context, query string, channelIDs []string, userID string) (map[string]int, error) {
 	result := make(map[string]int, len(channelIDs))
 	if len(channelIDs) == 0 {
 		return result, nil
 	}
-
+	if _, err := parseUUIDs(channelIDs, "channel ID"); err != nil {
+		return nil, err
+	}
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-
-	for _, channelID := range channelIDs {
-		cid, err := utils.ParseUUID(channelID, "channel ID")
-		if err != nil {
-			return nil, err
-		}
-
-		lastReadAt, err := r.getLastReadAt(ctx, client, cid, uid)
-		if err != nil {
-			return nil, err
-		}
-
-		count, err := client.Message.Query().
-			Where(
-				message.HasChannelWith(channel.ID(cid)),
-				message.CreatedAtGT(lastReadAt),
-				message.DeletedAtIsNil(),
-			).
-			Count(ctx)
-		if err != nil {
-			return nil, err
-		}
-		if count > 0 {
-			result[channelID] = count
-		}
-	}
-
-	return result, nil
-}
-
-func (r *readStateRepository) GetUnreadMentionCountBatch(ctx context.Context, channelIDs []string, userID string) (map[string]int, error) {
-	if len(channelIDs) == 0 {
-		return make(map[string]int), nil
-	}
-
-	uid, err := utils.ParseUUID(userID, "user ID")
+	rows, err := transaction.ResolveClient(ctx, r.client).QueryContext(ctx, query, pq.Array(channelIDs), uid)
 	if err != nil {
 		return nil, err
 	}
-
-	cids := make([]uuid.UUID, 0, len(channelIDs))
-	for _, cid := range channelIDs {
-		parsed, err := utils.ParseUUID(cid, "channel ID")
-		if err != nil {
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var cid uuid.UUID
+		var count int
+		if err := rows.Scan(&cid, &count); err != nil {
 			return nil, err
 		}
-		cids = append(cids, parsed)
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	// Get all read states for these channels
-	readStates, err := client.ChannelReadState.Query().
-		Where(
-			channelreadstate.HasChannelWith(channel.IDIn(cids...)),
-			channelreadstate.HasUserWith(user.ID(uid)),
-		).
-		WithChannel().
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Map channelID -> lastReadAt
-	lastReadAtMap := make(map[uuid.UUID]time.Time)
-	for _, rs := range readStates {
-		if rs.Edges.Channel != nil {
-			lastReadAtMap[rs.Edges.Channel.ID] = rs.LastReadAt
-		}
-	}
-
-	// Get user's group IDs
-	userGroups, err := client.UserGroup.Query().
-		Where(usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(uid)))).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	groupIDs := make([]uuid.UUID, len(userGroups))
-	for i, g := range userGroups {
-		groupIDs[i] = g.ID
-	}
-
-	result := make(map[string]int)
-
-	for _, cid := range cids {
-		lastReadAt := lastReadAtMap[cid] // Zero value if not found
-
-		// User mentions
-		userMentionMessages, err := client.MessageUserMention.Query().
-			Where(
-				messageusermention.HasUserWith(user.ID(uid)),
-				messageusermention.HasMessageWith(
-					message.HasChannelWith(channel.ID(cid)),
-					message.CreatedAtGT(lastReadAt),
-					message.DeletedAtIsNil(),
-				),
-			).
-			QueryMessage().
-			IDs(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		// Group mentions
-		var groupMentionMessages []uuid.UUID
-		if len(groupIDs) > 0 {
-			groupMentionMessages, err = client.MessageGroupMention.Query().
-				Where(
-					messagegroupmention.HasGroupWith(usergroup.IDIn(groupIDs...)),
-					messagegroupmention.HasMessageWith(
-						message.HasChannelWith(channel.ID(cid)),
-						message.CreatedAtGT(lastReadAt),
-						message.DeletedAtIsNil(),
-					),
-				).
-				QueryMessage().
-				IDs(ctx)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// Deduplicate
-		messageIDSet := make(map[uuid.UUID]bool)
-		for _, id := range userMentionMessages {
-			messageIDSet[id] = true
-		}
-		for _, id := range groupMentionMessages {
-			messageIDSet[id] = true
-		}
-
-		count := len(messageIDSet)
 		if count > 0 {
 			result[cid.String()] = count
 		}
 	}
-
-	return result, nil
+	return result, rows.Err()
 }

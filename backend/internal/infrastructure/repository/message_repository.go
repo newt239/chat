@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/user"
@@ -32,14 +31,7 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	m, err := client.Message.Query().
-		Where(message.ID(messageID)).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
-		Only(ctx)
+	m, err := client.Message.Get(ctx, messageID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil
@@ -51,7 +43,7 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 }
 
 func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
-	chIDs, err := parseChannelIDs(channelIDs)
+	chIDs, err := parseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +51,8 @@ func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []s
 	client := transaction.ResolveClient(ctx, r.client)
 	query := client.Message.Query().
 		Where(
-			message.HasChannelWith(channel.IDIn(chIDs...)),
-			message.Not(message.HasParent()),
+			message.ChannelIDIn(chIDs...),
+			message.ParentIDIsNil(),
 			message.DeletedAtIsNil(),
 		)
 
@@ -77,96 +69,28 @@ func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []s
 	}
 
 	messages, err := query.
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
 		Order(ent.Desc(message.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-
-	return result, nil
-}
-
-func (r *messageRepository) FindByChannelIDIncludingDeleted(ctx context.Context, channelID string, limit int, since *time.Time, until *time.Time) ([]*entity.Message, error) {
-	chID, err := utils.ParseUUID(channelID, "channel ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	query := client.Message.Query().
-		Where(
-			message.HasChannelWith(channel.ID(chID)),
-			message.Not(message.HasParent()),
-		)
-
-	if since != nil {
-		query = query.Where(message.CreatedAtGT(*since))
-	}
-
-	if until != nil {
-		query = query.Where(message.CreatedAtLT(*until))
-	}
-
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-
-	messages, err := query.
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
-		Order(ent.Desc(message.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-
-	return result, nil
+	return toMessageEntities(messages), nil
 }
 
 func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error) {
-	parsedIDs := make([]uuid.UUID, 0, len(ids))
-	for _, id := range ids {
-		parsedID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
+	parsedIDs, err := parseUUIDs(ids, "message ID")
+	if err != nil {
+		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
 	messages, err := client.Message.Query().
 		Where(message.IDIn(parsedIDs...)).
-		WithChannel().
-		WithUser().
-		WithParent().
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-	return result, nil
+	return toMessageEntities(messages), nil
 }
 
 func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID string) ([]*entity.Message, error) {
@@ -178,54 +102,15 @@ func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID stri
 	client := transaction.ResolveClient(ctx, r.client)
 	messages, err := client.Message.Query().
 		Where(
-			message.HasParentWith(message.ID(pID)),
+			message.ParentID(pID),
 			message.DeletedAtIsNil(),
 		).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
 		Order(ent.Asc(message.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-
-	return result, nil
-}
-
-func (r *messageRepository) FindThreadRepliesIncludingDeleted(ctx context.Context, parentID string) ([]*entity.Message, error) {
-	pID, err := utils.ParseUUID(parentID, "parent ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	messages, err := client.Message.Query().
-		Where(message.HasParentWith(message.ID(pID))).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
-		Order(ent.Asc(message.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.Message, 0, len(messages))
-	for _, m := range messages {
-		result = append(result, utils.MessageToEntity(m))
-	}
-
-	return result, nil
+	return toMessageEntities(messages), nil
 }
 
 func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) error {
@@ -285,20 +170,7 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 		return err
 	}
 
-	// Load edges
-	m, err := client.Message.Query().
-		Where(message.ID(saved.ID)).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*msg = *utils.MessageToEntity(m)
+	*msg = *utils.MessageToEntity(saved)
 	return nil
 }
 
@@ -322,33 +194,10 @@ func (r *messageRepository) Update(ctx context.Context, msg *entity.Message) err
 		return err
 	}
 
-	// Load edges
-	m, err := client.Message.Query().
-		Where(message.ID(saved.ID)).
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		WithUser().
-		WithParent().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	if !m.EditedAt.IsZero() {
-		msg.EditedAt = &m.EditedAt
+	if !saved.EditedAt.IsZero() {
+		msg.EditedAt = &saved.EditedAt
 	}
 	return nil
-}
-
-func (r *messageRepository) Delete(ctx context.Context, id string) error {
-	messageID, err := utils.ParseUUID(id, "message ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	return client.Message.DeleteOneID(messageID).Exec(ctx)
 }
 
 func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, deletedBy string) error {
@@ -356,26 +205,17 @@ func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, d
 	if err != nil {
 		return err
 	}
-
-	now := time.Now()
-	client := transaction.ResolveClient(ctx, r.client)
-
-	for _, id := range ids {
-		messageID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return err
-		}
-
-		err = client.Message.UpdateOneID(messageID).
-			SetDeletedAt(now).
-			SetDeletedBy(deletedByID).
-			Exec(ctx)
-		if err != nil {
-			return err
-		}
+	messageIDs, err := parseUUIDs(ids, "message ID")
+	if err != nil {
+		return err
 	}
 
-	return nil
+	client := transaction.ResolveClient(ctx, r.client)
+	return client.Message.Update().
+		Where(message.IDIn(messageIDs...)).
+		SetDeletedAt(time.Now()).
+		SetDeletedBy(deletedByID).
+		Exec(ctx)
 }
 
 func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.MessageReaction) error {
@@ -391,7 +231,7 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 
 	client := transaction.ResolveClient(ctx, r.client)
 
-	_, err = client.MessageReaction.Create().
+	saved, err := client.MessageReaction.Create().
 		SetMessageID(messageID).
 		SetUserID(userID).
 		SetEmoji(reaction.Emoji).
@@ -400,25 +240,7 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 		return err
 	}
 
-	// Load edges
-	mr, err := client.MessageReaction.Query().
-		Where(
-			messagereaction.HasMessageWith(message.ID(messageID)),
-			messagereaction.HasUserWith(user.ID(userID)),
-			messagereaction.Emoji(reaction.Emoji),
-		).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUser().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*reaction = *utils.MessageReactionToEntity(mr)
+	reaction.CreatedAt = saved.CreatedAt
 	return nil
 }
 
@@ -446,73 +268,39 @@ func (r *messageRepository) RemoveReaction(ctx context.Context, messageID, userI
 }
 
 func (r *messageRepository) FindReactions(ctx context.Context, messageID string) ([]*entity.MessageReaction, error) {
-	mid, err := utils.ParseUUID(messageID, "message ID")
+	reactions, err := r.FindReactionsByMessageIDs(ctx, []string{messageID})
 	if err != nil {
 		return nil, err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	reactions, err := client.MessageReaction.Query().
-		Where(messagereaction.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUser().
-		Order(ent.Asc(messagereaction.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.MessageReaction, 0, len(reactions))
-	for _, mr := range reactions {
-		result = append(result, utils.MessageReactionToEntity(mr))
-	}
-
-	return result, nil
+	return reactions[messageID], nil
 }
 
 func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messageIDs []string) (map[string][]*entity.MessageReaction, error) {
+	result := make(map[string][]*entity.MessageReaction)
 	if len(messageIDs) == 0 {
-		return make(map[string][]*entity.MessageReaction), nil
+		return result, nil
 	}
 
-	// Parse all message IDs
-	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
-	for _, id := range messageIDs {
-		parsedID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
+	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
+	if err != nil {
+		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
 	reactions, err := client.MessageReaction.Query().
 		Where(messagereaction.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUser().
+		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
+		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
 		Order(ent.Asc(messagereaction.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make(map[string][]*entity.MessageReaction)
 	for _, reaction := range reactions {
 		messageID := reaction.Edges.Message.ID.String()
-		if result[messageID] == nil {
-			result[messageID] = make([]*entity.MessageReaction, 0)
-		}
 		result[messageID] = append(result[messageID], utils.MessageReactionToEntity(reaction))
 	}
-
 	return result, nil
 }
 
@@ -558,20 +346,22 @@ func (r *messageRepository) AddGroupMention(ctx context.Context, mention *entity
 	return err
 }
 
-func (r *messageRepository) Search(ctx context.Context, workspaceID, query string, limit int) ([]*entity.Message, error) {
-	// For now, returning empty implementation
-	// This requires full-text search which is better handled with PostgreSQL's full-text search or external search engine
-	return []*entity.Message{}, nil
-}
-
-func parseChannelIDs(channelIDs []string) ([]uuid.UUID, error) {
-	ids := make([]uuid.UUID, 0, len(channelIDs))
-	for _, id := range channelIDs {
-		parsed, err := utils.ParseUUID(id, "channel ID")
+func parseUUIDs(ids []string, label string) ([]uuid.UUID, error) {
+	parsed := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		p, err := utils.ParseUUID(id, label)
 		if err != nil {
 			return nil, err
 		}
-		ids = append(ids, parsed)
+		parsed = append(parsed, p)
 	}
-	return ids, nil
+	return parsed, nil
+}
+
+func toMessageEntities(messages []*ent.Message) []*entity.Message {
+	result := make([]*entity.Message, 0, len(messages))
+	for _, m := range messages {
+		result = append(result, utils.MessageToEntity(m))
+	}
+	return result
 }

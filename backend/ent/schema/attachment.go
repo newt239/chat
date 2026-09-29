@@ -77,5 +77,7 @@ func (Attachment) Edges() []ent.Edge {
 func (Attachment) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("status"),
+		index.Edges("message"),
+		index.Edges("channel"),
 	}
 }

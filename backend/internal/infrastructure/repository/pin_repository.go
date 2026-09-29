@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagepin"
+	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -117,9 +118,9 @@ func (r *pinRepository) FindByMessageIDs(ctx context.Context, messageIDs []strin
 
 	rows, err := transaction.ResolveClient(ctx, r.client).MessagePin.Query().
 		Where(messagepin.HasMessageWith(message.IDIn(ids...))).
-		WithChannel().
-		WithMessage().
-		WithPinnedBy().
+		WithChannel(func(q *ent.ChannelQuery) { q.Select(channel.FieldID) }).
+		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
+		WithPinnedBy(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err

@@ -47,5 +47,6 @@ func (MessageReaction) Indexes() []ent.Index {
 		index.Fields("emoji").
 			Edges("message", "user").
 			Unique(),
+		index.Edges("message"),
 	}
 }
