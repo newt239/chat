@@ -18,6 +18,7 @@
 | `has:image` / `has:video` | MIME タイプが `image/` / `video/` の添付がある |
 | `has:file` | 画像・動画以外の添付がある |
 | `has:link` | OGP を取得したリンクがあるか、本文に `http://` / `https://` を含む |
+| `has:location` | 位置情報を共有している |
 | `is:pinned` | ピン留めされている |
 | `is:thread` | スレッドの返信、または返信のある親 |
 | 自分宛て | 自分へのメンション、所属グループへのメンション、参加しているチャンネルでの `@channel` / `@here` |
@@ -70,7 +71,7 @@
 ### 修飾子のパーサー（`@chat/search-query`）
 
 - `packages/search-query` に DOM に依存しない純粋関数として置く（React Native と共有するため）。`parseSearchQuery` / `formatSearchQuery` / `searchDateRange`。
-- 対応する修飾子は `from:@名前` `in:#チャンネル` `has:image|file|link|video` `is:pinned|thread|mention` `after:YYYY-MM-DD` `before:YYYY-MM-DD`。空白を含む名前は `from:@"Alice Smith"` のようにクォートする。
+- 対応する修飾子は `from:@名前` `in:#チャンネル` `has:image|file|link|video|location` `is:pinned|thread|mention` `after:YYYY-MM-DD` `before:YYYY-MM-DD`。空白を含む名前は `from:@"Alice Smith"` のようにクォートする。
   - `is:mention` は North Star に合わせて追加した（「自分宛て」チップを入力欄と同期させるため）。
 - 解釈できない修飾子（値が空・未知の値）は語として残す。入力途中の `from:@` を黙って消さないため。
 - 相対的な期間（`during:`）は持たない。期間は `after:` / `before:` の `YYYY-MM-DD` だけで指定する（ユーザー決定）。形式が不正・存在しない日付は語にせず `invalidDates` に分け、画面は検索せずにエラーを出し、期間チップを警告表示にする。
