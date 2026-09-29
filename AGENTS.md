@@ -30,7 +30,7 @@
 - 新しいコンポーネントを実装した際は必ず Vitest でテストを書いてください。
   - ユニットテストは対象のファイルと同階層に`filename.spec.{ts,tsx}`という名前で実装してください。
   - テストユーティリティは`vitest`ではなく`vite-plus/test`からインポートしてください（lint ルールで強制されます）。
-- UI は Tailwind CSS v4 + React Aria Components で作ります。設計は`docs/ui-foundation.md`を参照してください。
+- UI は Tailwind CSS v4 + React Aria Components で作ります。
   - 基本部品は`src/components/ui/`にあります。まずここの部品を使い、足りなければ React Aria Components で部品を追加してください。
   - 色・角丸・文字・影はトークンのユーティリティ（`bg-surface`、`text-muted`、`border-border`、`rounded-md`、`text-caption`、`shadow-lg`など）だけを使い、`bg-white`や`gray-*`、`#fff`などの色を直書きしないでください。
   - 状態によるスタイルは React Aria の data 属性（`data-hovered:`、`data-pressed:`、`data-selected:`、`data-focus-visible:`など）で書いてください。

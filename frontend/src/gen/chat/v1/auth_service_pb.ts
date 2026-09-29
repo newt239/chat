@@ -331,7 +331,7 @@ export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
   messageDesc(file_chat_v1_auth_service, 13);
 
 /**
- * Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える（docs/auth.md）
+ * Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える
  *
  * @generated from service chat.v1.AuthService
  */

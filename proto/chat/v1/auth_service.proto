@@ -5,7 +5,7 @@ package chat.v1;
 import "buf/validate/validate.proto";
 import "chat/v1/user.proto";
 
-// Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える（docs/auth.md）
+// Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える
 service AuthService {
   rpc GetAuthConfig(GetAuthConfigRequest) returns (GetAuthConfigResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
