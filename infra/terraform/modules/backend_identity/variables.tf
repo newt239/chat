@@ -2,6 +2,10 @@ variable "project_id" {
   type = string
 }
 
+variable "environment" {
+  type = string
+}
+
 variable "service_account_id" {
   type = string
 }
@@ -22,4 +26,10 @@ variable "kubernetes_service_account" {
 variable "secrets" {
   type      = map(string)
   sensitive = true
+}
+
+# 値を Terraform に持たせず、コンソールか gcloud で手で登録するシークレットの環境変数名
+variable "manual_secrets" {
+  type    = set(string)
+  default = []
 }

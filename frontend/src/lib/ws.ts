@@ -16,6 +16,8 @@ const WS_BC_NAME = "ws-control";
 const WS_RECONNECT_DELAY = 2_000; // 初期遅延: 2秒
 const WS_MAX_RECONNECT_DELAY = 30_000; // 最大遅延: 30秒
 const WS_MAX_RECONNECT_ATTEMPTS = 5; // 最大再接続試行回数
+// サーバーの停止（1001 Going Away）では他のレプリカへすぐつなぎ直す。一斉に来ないよう散らす
+const WS_GOING_AWAY_DELAY_MAX = 1_000;
 
 /** サーバWebSocketエンドポイント取得 例: ws://localhost:8080/ws?token=xxxx&workspaceId=xxxx */
 const getWsUrl = (token: string, workspaceId: string): string => {
@@ -46,6 +48,9 @@ export class WsClient {
   // 同じチャンネルを複数の画面が購読するため参照数で持ち、再接続時に送り直す
   private readonly joinedChannels = new Map<string, number>();
   private viewingChannelId = "";
+  // 2 回目以降の接続で、切断中に届かなかったイベントを取り直させる
+  private hasOpened = false;
+  private readonly reconnectHandlers = new Set<() => void>();
 
   private readonly handlers: {
     [K in WsEventType]: Set<(payload: WsEventPayload<K>) => void>;
@@ -163,6 +168,14 @@ export class WsClient {
     };
   }
 
+  /** 切断を挟んで再びつながったときに呼ぶ。戻り値を呼ぶと解除する */
+  public onReconnect(cb: () => void) {
+    this.reconnectHandlers.add(cb);
+    return () => {
+      this.reconnectHandlers.delete(cb);
+    };
+  }
+
   /** サーバーイベントの購読を解除する */
   public off<T extends WsEventType>(type: T, cb: (payload: WsEventPayload<T>) => void) {
     this.handlers[type].delete(cb);
@@ -200,6 +213,12 @@ export class WsClient {
     if (this.viewingChannelId !== "") {
       this.send({ case: "viewChannel", value: { channelId: this.viewingChannelId } });
     }
+    if (this.hasOpened) {
+      for (const handler of this.reconnectHandlers) {
+        handler();
+      }
+    }
+    this.hasOpened = true;
   };
 
   private readonly onClose = (event: CloseEvent) => {
@@ -221,6 +240,9 @@ export class WsClient {
         logger.error("WebSocket認証エラーのため再接続を停止します", this.workspaceId);
         this.shouldStopReconnecting = true;
         return;
+      }
+      if (event.code === 1001) {
+        this.reconnectDelay = Math.random() * WS_GOING_AWAY_DELAY_MAX;
       }
       this.handleConnectionFailure("接続が閉じられました", event);
     }
@@ -340,9 +362,9 @@ export class WsClient {
     }
   }
 
-  public close() {
+  /** 接続を閉じる。タブが見えるようになればまたつなぎ直せるよう、イベントの監視は続ける */
+  private disconnect() {
     this.isActiveLeader = false;
-    this.shouldStopReconnecting = true;
     if (this.ws) {
       this.ws.removeEventListener("open", this.onOpen);
       this.ws.removeEventListener("close", this.onClose);
@@ -355,20 +377,23 @@ export class WsClient {
       clearTimeout(this.reconnectTimeoutId);
       this.reconnectTimeoutId = null;
     }
+    this.reconnectAttempts = 0;
+    this.reconnectDelay = WS_RECONNECT_DELAY;
+  }
+
+  public close() {
+    this.shouldStopReconnecting = true;
+    this.disconnect();
     window.removeEventListener("visibilitychange", this.handleVisibility, false);
     window.removeEventListener("focus", this.handleFocus, false);
     window.removeEventListener("beforeunload", this.handleUnload, false);
     this.bc.close();
-    // 再接続状態をリセット
-    this.reconnectAttempts = 0;
-    this.reconnectDelay = WS_RECONNECT_DELAY;
   }
 
   private listenBroadcast() {
     // 他タブが接続を開始したら自分はリーダー権を放棄
     this.bc.addEventListener("message", () => {
-      this.isActiveLeader = false;
-      this.close();
+      this.disconnect();
     });
   }
 
@@ -386,8 +411,7 @@ export class WsClient {
     if (document.visibilityState === "visible") {
       this.becomeLeaderAndConnect();
     } else {
-      this.isActiveLeader = false;
-      this.close();
+      this.disconnect();
     }
   };
 
@@ -398,9 +422,7 @@ export class WsClient {
   };
 
   private readonly handleUnload = () => {
-    this.isActiveLeader = false;
     this.close();
-    this.bc.close();
   };
 
   private becomeLeaderAndConnect() {

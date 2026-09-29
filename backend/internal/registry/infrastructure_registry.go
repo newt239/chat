@@ -2,7 +2,10 @@ package registry
 
 import (
 	"context"
+	"sync/atomic"
 	"time"
+
+	goredis "github.com/redis/go-redis/v9"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/service"
@@ -16,9 +19,11 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/meilisearch"
 	"github.com/newt239/chat/internal/infrastructure/mention"
 	"github.com/newt239/chat/internal/infrastructure/ogp"
+	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/infrastructure/storage/local"
 	"github.com/newt239/chat/internal/infrastructure/storage/wasabi"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
+	httphandler "github.com/newt239/chat/internal/interfaces/handler/http"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
@@ -30,21 +35,43 @@ type InfrastructureRegistry struct {
 	client         *ent.Client
 	config         *config.Config
 	hub            *websocket.Hub
+	redis          *goredis.Client
+	ready          atomic.Bool
 	domainRegistry *DomainRegistry
 	messageIndex   *meilisearch.MessageIndex
 	pushSender     notificationuc.Sender
 }
 
 // NewInfrastructureRegistry は新しいInfrastructureRegistryを作成します
-func NewInfrastructureRegistry(client *ent.Client, cfg *config.Config, hub *websocket.Hub, domainRegistry *DomainRegistry) *InfrastructureRegistry {
-	return &InfrastructureRegistry{
+func NewInfrastructureRegistry(client *ent.Client, cfg *config.Config, hub *websocket.Hub, rdb *goredis.Client, domainRegistry *DomainRegistry) *InfrastructureRegistry {
+	r := &InfrastructureRegistry{
 		client:         client,
 		config:         cfg,
 		hub:            hub,
+		redis:          rdb,
 		domainRegistry: domainRegistry,
 		messageIndex:   meilisearch.NewMessageIndex(cfg.Search.MeilisearchURL, cfg.Search.MeilisearchAPIKey),
 		pushSender:     newPushSender(cfg.Firebase.ProjectID),
 	}
+	r.ready.Store(true)
+	return r
+}
+
+// Ready はリクエストを受け付けてよいかを返します。停止を始めたら false にする
+func (r *InfrastructureRegistry) Ready() bool {
+	return r.ready.Load()
+}
+
+func (r *InfrastructureRegistry) SetReady(ready bool) {
+	r.ready.Store(ready)
+}
+
+// NewWebhookRateLimiter は Redis があれば全レプリカで共有して数えます。nil ならルーターがプロセス内で数える
+func (r *InfrastructureRegistry) NewWebhookRateLimiter() httphandler.RateLimiter {
+	if r.redis == nil {
+		return nil
+	}
+	return redis.NewRateLimiter(r.redis, "webhook", httphandler.WebhookRatePerSecond, httphandler.WebhookBurst)
 }
 
 // newPushSender は FIREBASE_PROJECT_ID が未設定か初期化に失敗したら nil を返し、通知を送らない

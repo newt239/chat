@@ -1,8 +1,15 @@
-name: Deploy dev
+name: Deploy
 
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: "デプロイ先"
+        type: choice
+        options:
+          - dev
+          - prod
+        default: dev
       backend_ref:
         description: "backend のブランチ・タグ・SHA（空なら現状維持）"
         type: string
@@ -11,40 +18,42 @@ on:
         description: "frontend のブランチ・タグ・SHA（空なら現状維持）"
         type: string
         default: ""
+      promote_from_dev:
+        description: "prod のみ: dev で動いている版をそのまま出す（ref は空にする）"
+        type: boolean
+        default: false
 
 concurrency:
-  group: deploy-dev
+  group: deploy-${{ inputs.environment }}
   cancel-in-progress: false
 
 env:
   KUSTOMIZE_VERSION: "5.8.1"
-  OVERLAY_DIR: infra/k8s/overlays/dev
+  OVERLAY_DIR: infra/k8s/overlays/${{ inputs.environment }}
+  NAMESPACE: chat-${{ inputs.environment }}
+  BACKEND_REF: ${{ inputs.backend_ref }}
+  FRONTEND_REF: ${{ inputs.frontend_ref }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: dev
+    # prod は GitHub Environment の承認を経てから動く
+    environment: ${{ inputs.environment }}
     permissions:
       contents: read
       id-token: write
     steps:
+      - name: Check inputs
+        if: inputs.promote_from_dev
+        run: |
+          if [ "${{ inputs.environment }}" != "prod" ] || [ -n "$BACKEND_REF" ] || [ -n "$FRONTEND_REF" ]; then
+            echo "::error::promote_from_dev は environment=prod で ref を空にしたときだけ使えます"
+            exit 1
+          fi
+
       # マニフェストはワークフローを起動したブランチのものを使う
       - name: Checkout manifests
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Checkout backend
-        if: inputs.backend_ref != ''
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.backend_ref }}
-          path: src-backend
-
-      - name: Checkout frontend
-        if: inputs.frontend_ref != ''
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.frontend_ref }}
-          path: src-frontend
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
@@ -59,7 +68,37 @@ jobs:
         uses: google-github-actions/get-gke-credentials@3da1e46a907576cefaa90c484278bb5b259dd395 # v3.0.0
         with:
           cluster_name: ${{ vars.GKE_CLUSTER }}
-          location: ${{ vars.GCP_REGION }}
+          location: ${{ vars.GKE_LOCATION }}
+
+      # backend は dev のイメージをそのまま使う。frontend は API の URL を埋め込んでビルドするため、同じコミットから prod 用に作り直す
+      - name: Resolve images from dev
+        if: inputs.promote_from_dev
+        run: |
+          image() {
+            kubectl -n chat-dev get deployment "$1" -o jsonpath="{.spec.template.spec.containers[?(@.name==\"$1\")].image}"
+          }
+          backend="$(image backend)"
+          frontend="$(image frontend)"
+          if [ -z "$backend" ] || [ -z "$frontend" ]; then
+            echo "::error::dev にデプロイされていないため昇格できません"
+            exit 1
+          fi
+          echo "BACKEND_IMAGE=$backend" >> "$GITHUB_ENV"
+          echo "FRONTEND_REF=${frontend##*:dev-}" >> "$GITHUB_ENV"
+
+      - name: Checkout backend
+        if: env.BACKEND_REF != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.BACKEND_REF }}
+          path: src-backend
+
+      - name: Checkout frontend
+        if: env.FRONTEND_REF != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.FRONTEND_REF }}
+          path: src-frontend
 
       - name: Setup kustomize
         run: |
@@ -70,17 +109,18 @@ jobs:
         run: gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
 
       - name: Build and push backend
-        if: inputs.backend_ref != ''
+        if: env.BACKEND_REF != ''
         run: |
           image="${{ vars.ARTIFACT_REGISTRY }}/backend:$(git -C src-backend rev-parse --short=12 HEAD)"
           docker build -t "$image" src-backend/backend
           docker push "$image"
           echo "BACKEND_IMAGE=$image" >> "$GITHUB_ENV"
 
+      # タグの先頭に環境名を付け、昇格のときにコミットを読み取れるようにする
       - name: Build and push frontend
-        if: inputs.frontend_ref != ''
+        if: env.FRONTEND_REF != ''
         run: |
-          image="${{ vars.ARTIFACT_REGISTRY }}/frontend:$(git -C src-frontend rev-parse --short=12 HEAD)"
+          image="${{ vars.ARTIFACT_REGISTRY }}/frontend:${{ inputs.environment }}-$(git -C src-frontend rev-parse --short=12 HEAD)"
           docker build -t "$image" -f src-frontend/frontend/Dockerfile \
             --build-arg VITE_API_BASE_URL="https://${{ vars.API_DOMAIN }}" \
             --build-arg VITE_WS_URL="wss://${{ vars.API_DOMAIN }}" \
@@ -98,7 +138,7 @@ jobs:
       - name: Resolve current images
         run: |
           current() {
-            kubectl -n chat get deployment "$1" -o jsonpath="{.spec.template.spec.containers[?(@.name==\"$1\")].image}" 2>/dev/null || true
+            kubectl -n "$NAMESPACE" get deployment "$1" -o jsonpath="{.spec.template.spec.containers[?(@.name==\"$1\")].image}" 2>/dev/null || true
           }
           for app in backend frontend; do
             var="${app^^}_IMAGE"
@@ -116,14 +156,15 @@ jobs:
         run: |
           (cd "$OVERLAY_DIR" && kustomize edit set image "backend=$BACKEND_IMAGE" "frontend=$FRONTEND_IMAGE")
           kustomize build "$OVERLAY_DIR" | kubectl apply -f -
-          kubectl -n chat rollout status deployment/backend --timeout=10m
-          kubectl -n chat rollout status deployment/frontend --timeout=10m
+          for app in backend frontend cloudflared redis; do
+            kubectl -n "$NAMESPACE" rollout status "deployment/$app" --timeout=10m
+          done
 
       - name: Summary
         run: |
           {
-            echo "| app | image |"
-            echo "| --- | --- |"
-            echo "| backend | \`$BACKEND_IMAGE\` |"
-            echo "| frontend | \`$FRONTEND_IMAGE\` |"
+            echo "| environment | app | image |"
+            echo "| --- | --- | --- |"
+            echo "| ${{ inputs.environment }} | backend | \`$BACKEND_IMAGE\` |"
+            echo "| ${{ inputs.environment }} | frontend | \`$FRONTEND_IMAGE\` |"
           } >> "$GITHUB_STEP_SUMMARY"

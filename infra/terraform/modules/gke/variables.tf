@@ -2,7 +2,7 @@ variable "project_id" {
   type = string
 }
 
-variable "region" {
+variable "zone" {
   type = string
 }
 
@@ -28,4 +28,19 @@ variable "services_range_name" {
 
 variable "deletion_protection" {
   type = bool
+}
+
+variable "machine_type" {
+  type    = string
+  default = "e2-medium"
+}
+
+variable "min_node_count" {
+  type    = number
+  default = 2
+}
+
+variable "max_node_count" {
+  type    = number
+  default = 4
 }

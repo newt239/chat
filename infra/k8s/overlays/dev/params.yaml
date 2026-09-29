@@ -1,0 +1,14 @@
+# terraform output の値。components/params が各マニフェストに埋め込み、この ConfigMap 自体は出力しない
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: params
+  annotations:
+    config.kubernetes.io/local-config: "true"
+data:
+  ENV: dev
+  PROJECT_ID: your-gcp-project-id
+  CLUSTER_NAME: chat
+  CLUSTER_LOCATION: asia-northeast1-b
+  BACKEND_SERVICE_ACCOUNT: chat-dev-backend@your-gcp-project-id.iam.gserviceaccount.com
+  CLOUDSQL_CONNECTION_NAME: your-gcp-project-id:asia-northeast1:chat

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -19,6 +20,12 @@ type Config struct {
 	CORS     CORSConfig
 	Search   SearchConfig
 	Firebase FirebaseConfig
+	Redis    RedisConfig
+}
+
+// RedisConfig はレプリカ間で WebSocket の配信・閲覧者一覧・レート制限を共有する Redis。未設定ならプロセス内で完結する
+type RedisConfig struct {
+	URL string
 }
 
 // FirebaseConfig はプッシュ通知 (FCM) の送信先プロジェクト。未設定なら通知を送らない。認証は ADC を使う
@@ -46,7 +53,11 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	URL string
+	URL             string
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime time.Duration
+	ConnMaxIdleTime time.Duration
 }
 
 type JWTConfig struct {
@@ -83,7 +94,11 @@ func Load() (*Config, error) {
 			Env:  env,
 		},
 		Database: DatabaseConfig{
-			URL: getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
+			URL:             getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
+			MaxOpenConns:    getEnvInt("DB_MAX_OPEN_CONNS", 10),
+			MaxIdleConns:    getEnvInt("DB_MAX_IDLE_CONNS", 5),
+			ConnMaxLifetime: getEnvDuration("DB_CONN_MAX_LIFETIME", 30*time.Minute),
+			ConnMaxIdleTime: getEnvDuration("DB_CONN_MAX_IDLE_TIME", 5*time.Minute),
 		},
 		JWT: JWTConfig{
 			Secret:          getEnv("JWT_SECRET", "change-me-in-production"),
@@ -115,6 +130,9 @@ func Load() (*Config, error) {
 		},
 		Firebase: FirebaseConfig{
 			ProjectID: getEnv("FIREBASE_PROJECT_ID", ""),
+		},
+		Redis: RedisConfig{
+			URL: getEnv("REDIS_URL", ""),
 		},
 	}
 
@@ -149,6 +167,13 @@ func getEnvInt(key string, defaultVal int) int {
 	return defaultVal
 }
 
+func getEnvDuration(key string, defaultVal time.Duration) time.Duration {
+	if d, err := time.ParseDuration(os.Getenv(key)); err == nil {
+		return d
+	}
+	return defaultVal
+}
+
 func getEnvBool(key string, defaultVal bool) bool {
 	if b, err := strconv.ParseBool(os.Getenv(key)); err == nil {
 		return b
@@ -171,6 +196,10 @@ func (c *Config) Validate() error {
 	}
 	if c.Server.Env == "production" && os.Getenv("DATABASE_URL") == "" {
 		return fmt.Errorf("DATABASE_URL must be set in production")
+	}
+	// 本番は複数レプリカで動かすため、配信などを Redis で共有しないと他のレプリカの接続に届かない
+	if c.Server.Env == "production" && c.Redis.URL == "" {
+		return fmt.Errorf("REDIS_URL must be set in production")
 	}
 	return nil
 }

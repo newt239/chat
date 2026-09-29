@@ -1,0 +1,24 @@
+# External Secrets Operator の Helm の values。クラスタに 1 つだけ入れ、dev と prod の namespace で共有する
+# helm upgrade --install external-secrets external-secrets/external-secrets -n external-secrets --create-namespace -f infra/k8s/external-secrets/values.yaml
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+webhook:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+certController:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi

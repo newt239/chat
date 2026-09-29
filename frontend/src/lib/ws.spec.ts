@@ -67,36 +67,47 @@ describe("WsClient のイベント購読", () => {
   });
 });
 
-const setupSocket = () => {
-  const sent: string[] = [];
-  const openListeners: (() => void)[] = [];
+type Listener = (event: CloseEvent) => void;
+
+/** 生成数・送信内容・イベントリスナーを記録する WebSocket に差し替える */
+const stubWebSocket = () => {
+  const state = { created: 0, listeners: new Map<string, Listener[]>(), sent: [] as string[] };
   vi.stubGlobal(
     "WebSocket",
     class {
       public static readonly OPEN = 1;
       public readonly readyState = 1;
-      public addEventListener(type: string, listener: () => void) {
-        if (type === "open") {
-          openListeners.push(listener);
-        }
+      public constructor() {
+        state.created += 1;
+      }
+      public addEventListener(type: string, listener: Listener) {
+        state.listeners.set(type, [...(state.listeners.get(type) ?? []), listener]);
       }
       public removeEventListener() {}
       public send(data: string) {
-        sent.push(data);
+        state.sent.push(data);
       }
       public close() {}
     },
   );
+  const fire = (type: string, event: CloseEvent) => {
+    for (const listener of state.listeners.get(type) ?? []) {
+      listener(event);
+    }
+  };
+  return { fire, state };
+};
+
+const setupSocket = () => {
+  const { fire, state } = stubWebSocket();
   const client = new WsClient("token", "ws1");
   globalThis.dispatchEvent(new Event("focus"));
   return {
     client,
     open: () => {
-      for (const listener of openListeners) {
-        listener();
-      }
+      fire("open", new CloseEvent("open"));
     },
-    sent,
+    sent: state.sent,
   };
 };
 
@@ -126,6 +137,51 @@ describe("WsClient の購読と閲覧の送信", () => {
       '{"joinChannel":{"channelId":"ch1"}}',
       '{"viewChannel":{"channelId":"ch1"}}',
     ]);
+    client.close();
+  });
+});
+
+describe("WsClient の再接続", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  test("最初の接続では呼ばず、つなぎ直したときだけ onReconnect を呼ぶ", () => {
+    const { client, open } = setupSocket();
+    let reconnected = 0;
+    client.onReconnect(() => {
+      reconnected += 1;
+    });
+    open();
+    expect(reconnected).toBe(0);
+    open();
+    expect(reconnected).toBe(1);
+    client.close();
+  });
+
+  test("タブを隠して戻すとつなぎ直す", () => {
+    const { state } = stubWebSocket();
+    const client = new WsClient("token", "ws1");
+    globalThis.dispatchEvent(new Event("focus"));
+    expect(state.created).toBe(1);
+
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    globalThis.dispatchEvent(new Event("visibilitychange"));
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+    globalThis.dispatchEvent(new Event("visibilitychange"));
+    expect(state.created).toBe(2);
+    client.close();
+  });
+
+  test("サーバーの停止で閉じられたら 1 秒以内につなぎ直す", () => {
+    vi.useFakeTimers();
+    const { fire, state } = stubWebSocket();
+    const client = new WsClient("token", "ws1");
+    globalThis.dispatchEvent(new Event("focus"));
+    fire("close", new CloseEvent("close", { code: 1001 }));
+    vi.advanceTimersByTime(1_000);
+    expect(state.created).toBe(2);
     client.close();
   });
 });

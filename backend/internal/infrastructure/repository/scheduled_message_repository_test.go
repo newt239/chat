@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -68,5 +69,56 @@ func TestScheduledMessageClaimDueSkipsLockedRows(t *testing.T) {
 	rescheduled, _ := repo.FindByID(ctx, future.ID)
 	if rescheduled.Status != entity.ScheduledMessageScheduled || rescheduled.FailureReason != nil || rescheduled.Body != "直した" {
 		t.Errorf("失敗した予約が予約中に戻っていません: %+v", rescheduled)
+	}
+}
+
+// 複数のレプリカの dispatcher が同時に動いても、同じ予約を二重に取り出さない
+func TestScheduledMessageClaimDueIsExclusiveAcrossWorkers(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	repo := NewScheduledMessageRepository(client)
+	ctx := context.Background()
+	now := time.Now()
+
+	const total = 20
+	for range total {
+		m := &entity.ScheduledMessage{UserID: f.alice.ID.String(), ChannelID: f.channels["general"].ID.String(), Body: "予約", ScheduledAt: now.Add(-time.Minute)}
+		if err := repo.Create(ctx, m); err != nil {
+			t.Fatalf("予約を作れません: %v", err)
+		}
+	}
+
+	const workers = 4
+	results := make(chan []*entity.ScheduledMessage, workers*total)
+	var wg sync.WaitGroup
+	for range workers {
+		wg.Go(func() {
+			for {
+				claimed, err := repo.ClaimDue(ctx, now, 3)
+				if err != nil {
+					t.Errorf("取り出しに失敗しました: %v", err)
+					return
+				}
+				if len(claimed) == 0 {
+					return
+				}
+				results <- claimed
+			}
+		})
+	}
+	wg.Wait()
+	close(results)
+
+	seen := map[string]bool{}
+	for claimed := range results {
+		for _, m := range claimed {
+			if seen[m.ID] {
+				t.Fatalf("同じ予約を二重に取り出しています: %s", m.ID)
+			}
+			seen[m.ID] = true
+		}
+	}
+	if len(seen) != total {
+		t.Fatalf("取り出した予約の数が合いません: %d / %d", len(seen), total)
 	}
 }

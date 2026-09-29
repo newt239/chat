@@ -1,13 +1,20 @@
 package database
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/internal/infrastructure/config"
 )
+
+// migrationLockKey はスキーマ移行を 1 レプリカずつ行うための advisory lock のキー
+const migrationLockKey = 0x63686174
 
 // NewConnection creates a new ent client connection
 func NewConnection(dsn string) (*ent.Client, error) {
@@ -20,30 +27,47 @@ func NewConnection(dsn string) (*ent.Client, error) {
 	return client, nil
 }
 
-// InitDB initializes the database connection with default settings
-func InitDB(dsn string) (*ent.Client, error) {
-	var client *ent.Client
-	var err error
+// InitDB は接続プールを設定し、DB が応答するまで待ってから接続を返します
+func InitDB(cfg config.DatabaseConfig) (*ent.Client, *sql.DB, error) {
+	drv, err := entsql.Open("postgres", cfg.URL)
+	if err != nil {
+		return nil, nil, err
+	}
+	db := drv.DB()
+	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.MaxIdleConns)
+	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
+	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
 
-	// Retry connection with exponential backoff
-	maxRetries := 10
-	for i := 0; i < maxRetries; i++ {
-		client, err = NewConnection(dsn)
+	const maxRetries = 10
+	for i := range maxRetries {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		err = db.PingContext(ctx)
+		cancel()
 		if err == nil {
-			break
+			return ent.NewClient(ent.Driver(drv)), db, nil
 		}
-
 		if i < maxRetries-1 {
 			time.Sleep(time.Duration(i+1) * time.Second)
 		}
 	}
+	_ = db.Close()
+	return nil, nil, fmt.Errorf("database is not reachable: %w", err)
+}
 
+// WithMigrationLock は複数のレプリカが同時に起動してもスキーマ移行が重ならないよう、advisory lock を取って fn を実行します
+func WithMigrationLock(ctx context.Context, db *sql.DB, fn func(context.Context) error) error {
+	conn, err := db.Conn(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	defer func() { _ = conn.Close() }()
 
-	// Configure connection pool
-	// Note: ent client doesn't expose DB directly, connection pool is managed by the driver
-
-	return client, nil
+	if _, err := conn.ExecContext(ctx, "SELECT pg_advisory_lock($1)", migrationLockKey); err != nil {
+		return fmt.Errorf("acquire migration lock: %w", err)
+	}
+	defer func() {
+		_, _ = conn.ExecContext(context.Background(), "SELECT pg_advisory_unlock($1)", migrationLockKey)
+	}()
+	return fn(ctx)
 }

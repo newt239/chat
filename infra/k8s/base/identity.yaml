@@ -22,6 +22,7 @@ spec:
           serviceAccountRef:
             name: chat-backend
 ---
+# remoteRef.key の先頭の ENV は overlay で環境名に置き換える（Secret Manager の ID は <環境>-<変数名>）
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
@@ -36,16 +37,32 @@ spec:
   data:
     - secretKey: DATABASE_URL
       remoteRef:
-        key: DATABASE_URL
+        key: ENV-DATABASE_URL
     - secretKey: JWT_SECRET
       remoteRef:
-        key: JWT_SECRET
+        key: ENV-JWT_SECRET
     - secretKey: MEILISEARCH_API_KEY
       remoteRef:
-        key: MEILISEARCH_API_KEY
+        key: ENV-MEILISEARCH_API_KEY
     - secretKey: WASABI_ACCESS_KEY_ID
       remoteRef:
-        key: WASABI_ACCESS_KEY_ID
+        key: ENV-WASABI_ACCESS_KEY_ID
     - secretKey: WASABI_SECRET_ACCESS_KEY
       remoteRef:
-        key: WASABI_SECRET_ACCESS_KEY
+        key: ENV-WASABI_SECRET_ACCESS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: cloudflared-token
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-secret-manager
+  target:
+    name: cloudflared-token
+  data:
+    - secretKey: TUNNEL_TOKEN
+      remoteRef:
+        key: ENV-CLOUDFLARE_TUNNEL_TOKEN

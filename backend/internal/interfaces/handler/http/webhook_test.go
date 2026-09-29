@@ -69,19 +69,19 @@ func TestRateLimiter(t *testing.T) {
 	limiter.now = func() time.Time { return now }
 
 	for i := range 2 {
-		if ok, _ := limiter.allow("a"); !ok {
+		if ok, _ := limiter.Allow(t.Context(), "a"); !ok {
 			t.Fatalf("%d 回目が拒否されました", i+1)
 		}
 	}
-	ok, wait := limiter.allow("a")
+	ok, wait := limiter.Allow(t.Context(), "a")
 	if ok || wait != time.Second {
 		t.Fatalf("上限を超えたら 1 秒待たせるはず: ok=%v wait=%v", ok, wait)
 	}
-	if ok, _ := limiter.allow("b"); !ok {
+	if ok, _ := limiter.Allow(t.Context(), "b"); !ok {
 		t.Fatal("別の Webhook は制限されないはず")
 	}
 	now = now.Add(time.Second)
-	if ok, _ := limiter.allow("a"); !ok {
+	if ok, _ := limiter.Allow(t.Context(), "a"); !ok {
 		t.Fatal("時間が経てば再び受け付けるはず")
 	}
 }

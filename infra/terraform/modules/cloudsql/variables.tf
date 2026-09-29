@@ -29,13 +29,3 @@ variable "point_in_time_recovery" {
 variable "deletion_protection" {
   type = bool
 }
-
-variable "database_name" {
-  type    = string
-  default = "chat"
-}
-
-variable "database_user" {
-  type    = string
-  default = "chat"
-}

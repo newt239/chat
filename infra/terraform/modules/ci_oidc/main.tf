@@ -21,22 +21,3 @@ resource "google_iam_workload_identity_pool_provider" "github" {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
 }
-
-resource "google_service_account" "deployer" {
-  project      = var.project_id
-  account_id   = var.service_account_id
-  display_name = "GitHub Actions deployer"
-}
-
-resource "google_project_iam_member" "deployer" {
-  project = var.project_id
-  role    = "roles/container.developer"
-  member  = google_service_account.deployer.member
-}
-
-# 指定した GitHub Environment のジョブだけがデプロイ用のサービスアカウントになれる
-resource "google_service_account_iam_member" "deployer" {
-  service_account_id = google_service_account.deployer.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.environment/${var.environment}"
-}

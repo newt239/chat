@@ -26,10 +26,12 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
       - name: Format
         run: terraform fmt -check -recursive -diff
-      - name: Init
-        run: terraform -chdir=envs/dev init -backend=false -input=false
       - name: Validate
-        run: terraform -chdir=envs/dev validate
+        run: |
+          for dir in shared envs/dev envs/prod; do
+            terraform -chdir="$dir" init -backend=false -input=false
+            terraform -chdir="$dir" validate
+          done
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@1cf010d3c7aef302051ccdb68c14c5dc2efa34ef # v6.3.1
       - name: TFLint
@@ -40,15 +42,26 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
   # 認証情報（リポジトリ変数）が設定されているときだけ plan する
+  # 各ディレクトリの tfvars はリポジトリ変数 TFVARS_SHARED / TFVARS_DEV / TFVARS_PROD に中身を入れておく
   plan:
     runs-on: ubuntu-latest
     if: vars.GCP_TERRAFORM_SERVICE_ACCOUNT != ''
     permissions:
       contents: read
       id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dir: shared
+            tfvars: TFVARS_SHARED
+          - dir: envs/dev
+            tfvars: TFVARS_DEV
+          - dir: envs/prod
+            tfvars: TFVARS_PROD
     defaults:
       run:
-        working-directory: infra/terraform/envs/dev
+        working-directory: infra/terraform/${{ matrix.dir }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -61,14 +74,24 @@ jobs:
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
+      - name: Write tfvars
+        env:
+          TFVARS: ${{ vars[matrix.tfvars] }}
+        run: printf '%s\n' "$TFVARS" > terraform.tfvars
       - name: Init
         run: terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+      # envs は Cloudflare と Wasabi の資格情報も使う
       - name: Plan
-        run: >-
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.WASABI_TERRAFORM_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.WASABI_TERRAFORM_SECRET_ACCESS_KEY }}
+        run: |
+          if [ "${{ matrix.dir }}" != "shared" ] && { [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$AWS_ACCESS_KEY_ID" ]; }; then
+            echo "::notice::Cloudflare または Wasabi の資格情報がないため ${{ matrix.dir }} の plan を省きます"
+            exit 0
+          fi
           terraform plan -input=false -lock=false
-          -var="project_id=${{ vars.GCP_PROJECT_ID }}"
-          -var="frontend_domain=${{ vars.FRONTEND_DOMAIN }}"
-          -var="api_domain=${{ vars.API_DOMAIN }}"
 
   kustomize:
     runs-on: ubuntu-latest
@@ -79,5 +102,8 @@ jobs:
         run: |
           curl -sSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" | tar xz -C "$RUNNER_TEMP" kustomize
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
-      - name: Build overlays/dev
-        run: kustomize build infra/k8s/overlays/dev
+      - name: Build overlays
+        run: |
+          for env in dev prod; do
+            kustomize build "infra/k8s/overlays/$env" > /dev/null
+          done

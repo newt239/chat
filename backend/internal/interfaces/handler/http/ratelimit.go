@@ -1,14 +1,26 @@
 package http
 
 import (
+	"context"
 	"sync"
 	"time"
 )
 
+// Webhook ごとに毎秒 1 回、瞬間的には 10 回まで受け付ける
+const (
+	WebhookRatePerSecond = 1
+	WebhookBurst         = 10
+)
+
+// RateLimiter はキーごとに受け付けてよいかを判定し、拒否するときは次に受け付けられるまでの時間を返します
+type RateLimiter interface {
+	Allow(ctx context.Context, key string) (bool, time.Duration)
+}
+
 // maxBuckets を超えたら満タンに戻ったバケットを捨ててメモリの増加を抑える
 const maxBuckets = 10000
 
-// rateLimiter はキーごとのトークンバケットです。プロセス内で完結するため、複数台構成では台数分まで許容されます
+// rateLimiter はプロセス内で完結するトークンバケットです。複数台構成では台数分まで許容されるため、Redis の実装を使います
 type rateLimiter struct {
 	mu      sync.Mutex
 	rate    float64
@@ -26,8 +38,7 @@ func newRateLimiter(perSecond float64, burst int) *rateLimiter {
 	return &rateLimiter{rate: perSecond, burst: float64(burst), buckets: map[string]*bucket{}, now: time.Now}
 }
 
-// allow は 1 回分を消費できれば true を、できなければ次に消費できるまでの時間を返します
-func (l *rateLimiter) allow(key string) (bool, time.Duration) {
+func (l *rateLimiter) Allow(_ context.Context, key string) (bool, time.Duration) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 

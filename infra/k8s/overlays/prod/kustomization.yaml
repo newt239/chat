@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chat-prod
+
+resources:
+  - ../../base
+  - params.yaml
+
+components:
+  - ../../components/params
+
+# deploy ワークフローが kustomize edit set image でタグを書き換える
+images:
+  - name: backend
+    newName: asia-northeast1-docker.pkg.dev/your-gcp-project-id/chat/backend
+    newTag: latest
+  - name: frontend
+    newName: asia-northeast1-docker.pkg.dev/your-gcp-project-id/chat/frontend
+    newTag: latest
+
+configMapGenerator:
+  - name: backend-env
+    behavior: merge
+    literals:
+      - CORS_ALLOWED_ORIGINS=https://chat.example.com
+      - WASABI_BUCKET=example-chat-prod-attachments
+      - GOOGLE_OAUTH_CLIENT_ID=
+      - FIREBASE_PROJECT_ID=your-gcp-project-id
+      - PASSWORD_AUTH_ENABLED=false

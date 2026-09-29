@@ -10,7 +10,7 @@ import (
 )
 
 func newTestClient(h *Hub, userID string) *Client {
-	c := &Client{hub: h, send: make(chan []byte, 8), userID: userID, workspaceID: "ws"}
+	c := &Client{hub: h, id: userID + "-conn", send: make(chan []byte, 8), userID: userID, workspaceID: "ws"}
 	if h.workspaces["ws"] == nil {
 		h.workspaces["ws"] = map[string][]*Client{}
 	}
@@ -73,7 +73,8 @@ func TestClearViewingChannelOnDisconnect(t *testing.T) {
 	lastViewers(t, alice)
 
 	h.workspaces["ws"]["bob"] = nil
-	h.clearViewingChannel(bob)
+	bob.viewingChannel = ""
+	h.leaveViewing(bob, "general")
 
 	if got := lastViewers(t, alice); !slices.Equal(got.UserIds, []string{"alice"}) {
 		t.Fatalf("切断したユーザーが閲覧者に残っています: %v", got.UserIds)
