@@ -72,6 +72,7 @@ pnpm run proto:format && pnpm run proto:lint && pnpm run generate:proto
 - WebSocket (gorilla/websocket)
 - ent (ORM)
 - PostgreSQL 18
+- Redis（WebSocket の配信などをレプリカ間で共有）
 - Wasabi
 
 ### フロントエンド
@@ -117,6 +118,7 @@ chat/
 │   │       ├── config/     # Configuration management
 │   │       ├── database/   # ent client connection
 │   │       ├── logger/     # Zap logger setup
+│   │       ├── redis/      # Redis Pub/Sub・閲覧者・レート制限
 │   │       ├── repository/ # Repository implementation
 │   │       ├── storage/    # Wasabi S3 client
 │   │       └── utils/      # Utility functions
@@ -253,9 +255,12 @@ xdg-open backend/ent/schema-viz.html
 
 ## デプロイ
 
-Google Cloud の dev 環境へは GitHub Actions の「Deploy dev」（`.github/workflows/deploy-dev.yml`）でデプロイします。Terraform は `infra/terraform/`、Kubernetes のマニフェストは `infra/k8s/` にあります。初回セットアップの未実施の手順は `docs/infrastructure.md` にまとめています。
+Google Cloud の GKE に dev と prod を namespace で分けて載せ、GitHub Actions の「Deploy」（`.github/workflows/deploy.yml`）でデプロイします。Terraform は `infra/terraform/`、Kubernetes のマニフェストは `infra/k8s/` にあります。構成と初回セットアップの手順は `docs/infrastructure.md` にまとめています。
 
 ```sh
-# backend だけ feat/foo に差し替える（空にした方はクラスタで動いているイメージを使う）
-gh workflow run deploy-dev.yml -R newt239/chat -f backend_ref=feat/foo
+# dev の backend だけ feat/foo に差し替える（空にした方はクラスタで動いているイメージを使う）
+gh workflow run deploy.yml -R newt239/chat -f environment=dev -f backend_ref=feat/foo
+
+# dev で動いている版を prod に出す（prod は承認が必要）
+gh workflow run deploy.yml -R newt239/chat -f environment=prod -f promote_from_dev=true
 ```
