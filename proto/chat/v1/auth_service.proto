@@ -5,23 +5,22 @@ package chat.v1;
 import "buf/validate/validate.proto";
 import "chat/v1/user.proto";
 
+// Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える（docs/auth.md）
 service AuthService {
-  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc GetAuthConfig(GetAuthConfigRequest) returns (GetAuthConfigResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
+  // 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+  rpc LoginWithGoogle(LoginWithGoogleRequest) returns (LoginWithGoogleResponse);
+  // 招待リンクからパスワードを設定してアカウントを作る
+  rpc SignUpWithInvitation(SignUpWithInvitationRequest) returns (SignUpWithInvitationResponse);
   rpc Refresh(RefreshRequest) returns (RefreshResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
 }
 
-message RegisterRequest {
-  string email = 1 [(buf.validate.field).string.email = true];
-  string password = 2 [(buf.validate.field).string.min_len = 8];
-  string display_name = 3 [(buf.validate.field).string.min_len = 1];
-}
+message GetAuthConfigRequest {}
 
-message RegisterResponse {
-  string access_token = 1;
-  string refresh_token = 2;
-  User user = 3;
+message GetAuthConfigResponse {
+  bool password_auth_enabled = 1;
 }
 
 message LoginRequest {
@@ -30,6 +29,32 @@ message LoginRequest {
 }
 
 message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  User user = 3;
+}
+
+message LoginWithGoogleRequest {
+  // Google Identity Services が発行した ID トークン
+  string id_token = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message LoginWithGoogleResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  User user = 3;
+}
+
+message SignUpWithInvitationRequest {
+  string token = 1 [(buf.validate.field).string.min_len = 1];
+  string display_name = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 100
+  }];
+  string password = 3 [(buf.validate.field).string.min_len = 8];
+}
+
+message SignUpWithInvitationResponse {
   string access_token = 1;
   string refresh_token = 2;
   User user = 3;

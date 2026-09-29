@@ -165,8 +165,8 @@ type UserRepository interface {
 
 ```go
 type AuthUseCase interface {
-    Register(ctx context.Context, input RegisterInput) (*AuthOutput, error)
     Login(ctx context.Context, input LoginInput) (*AuthOutput, error)
+    LoginWithGoogle(ctx context.Context, idToken string) (*AuthOutput, error)
     RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error)
     Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error)
 }
@@ -341,18 +341,19 @@ func (r *InterfaceRegistry) NewRPCHandler() http.Handler {
 
 ### Connect RPC
 
-API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/chat.v1.<Service>/<Method>` で、すべて POST です (Connect プロトコル、JSON)。`AuthService` の `Register` / `Login` / `Refresh` 以外は `Authorization: Bearer <アクセストークン>` が必要です。
+API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/chat.v1.<Service>/<Method>` で、すべて POST です (Connect プロトコル、JSON)。`AuthService` の `GetAuthConfig` / `Login` / `LoginWithGoogle` / `SignUpWithInvitation` / `Refresh` と `InvitationService` の `GetInvitation` 以外は `Authorization: Bearer <アクセストークン>` が必要です。
 
 | サービス | RPC | 定義 |
 | --- | --- | --- |
 | `AdminService` | ListAuditLogs / ExportAuditLogs / ListAdminMembers / SuspendMember / ResumeMember | `admin_service.proto` |
 | `AttachmentService` | PresignUpload / GetAttachment / GetDownloadUrl / DeleteAttachment | `attachment_service.proto` |
-| `AuthService` | Register / Login / Refresh / Logout | `auth_service.proto` |
+| `AuthService` | GetAuthConfig / Login / LoginWithGoogle / SignUpWithInvitation / Refresh / Logout | `auth_service.proto` |
 | `BookmarkService` | ListBookmarks / AddBookmark / RemoveBookmark | `bookmark_service.proto` |
 | `ChannelMemberService` | ListChannelMembers / InviteChannelMember / JoinChannel / LeaveChannel / RemoveChannelMember / UpdateChannelMemberRole | `channel_member_service.proto` |
 | `ChannelService` | ListChannels / CreateChannel / GetChannel / UpdateChannel / DeleteChannel / ArchiveChannel / UnarchiveChannel | `channel_service.proto` |
 | `DirectMessageService` | ListDirectMessages / CreateDirectMessage / CreateGroupDirectMessage | `direct_message_service.proto` |
 | `InsightService` | GetInsights | `insight_service.proto` |
+| `InvitationService` | CreateInvitation / ListInvitations / RevokeInvitation / GetInvitation | `invitation_service.proto` |
 | `LinkService` | FetchOgp | `link_service.proto` |
 | `MentionService` | ListMentions | `mention_service.proto` |
 | `MessageService` | ListMessages / ListMessagesWithThread / CreateMessage / UpdateMessage / DeleteMessage | `message_service.proto` |
@@ -364,7 +365,7 @@ API は `proto/chat/v1/*_service.proto` で定義しています。パスは `/c
 | `ThreadService` | GetThreadReplies / GetThreadMetadata / ListParticipatingThreads / MarkThreadRead / FollowThread / UnfollowThread | `thread_service.proto` |
 | `UserGroupService` | CreateUserGroup / ListUserGroups / GetUserGroup / UpdateUserGroup / DeleteUserGroup / ListUserGroupMembers / AddUserGroupMember / RemoveUserGroupMember | `user_group_service.proto` |
 | `UserService` | GetMe / UpdateMe / UpdatePassword / DeleteMe | `user_service.proto` |
-| `WorkspaceService` | ListWorkspaces / CreateWorkspace / GetWorkspace / UpdateWorkspace / DeleteWorkspace / ListPublicWorkspaces / JoinPublicWorkspace / ListMembers / AddMemberByEmail / UpdateMemberRole / RemoveMember | `workspace_service.proto` |
+| `WorkspaceService` | ListWorkspaces / CreateWorkspace / GetWorkspace / UpdateWorkspace / DeleteWorkspace / ListPublicWorkspaces / JoinPublicWorkspace / ListMembers / UpdateMemberRole / RemoveMember | `workspace_service.proto` |
 
 ヘルスチェックのみ `GET /healthz` で提供しています。
 

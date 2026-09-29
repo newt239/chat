@@ -17,9 +17,20 @@ export const workspace = {
     public: "参加できる公開ワークスペース",
     title: "ワークスペース",
   },
+  invite: {
+    addedDirectly: "{{email}} をワークスペースに追加しました",
+    copied: "招待リンクをコピーしました",
+    copy: "コピー",
+    copyFailed: "コピーできませんでした",
+    email: "メールアドレスで招待",
+    failed: "招待できませんでした",
+    link: "{{email}} への招待リンク",
+    linkOnce:
+      "このリンクは今だけ表示されます。コピーして招待する人に共有してください（7 日間有効）。",
+    role: "招待するロール",
+    submit: "招待",
+  },
   members: {
-    invite: "メールアドレスで招待",
-    inviteSubmit: "招待",
     remove: "{{name}} をワークスペースから外す",
     role: "ロール",
     title: "メンバー（{{count}} 人）",

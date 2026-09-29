@@ -2,13 +2,12 @@ package auth
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
+	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/usecase/audit"
 )
 
@@ -28,58 +27,179 @@ type PasswordService interface {
 	VerifyPassword(password, hash string) error
 }
 
+// GoogleVerifier は ID トークンの署名・audience・有効期限を検証します
+type GoogleVerifier interface {
+	Verify(ctx context.Context, idToken string) (*GoogleIdentity, error)
+}
+
 var (
-	ErrInvalidCredentials = domainerrors.ErrInvalidCredentials
-	ErrUserAlreadyExists  = domainerrors.ErrUserAlreadyExists
-	ErrInvalidToken       = domainerrors.ErrInvalidToken
-	ErrSessionNotFound    = domainerrors.ErrSessionNotFound
+	ErrInvalidCredentials   = domainerrors.ErrInvalidCredentials
+	ErrUserAlreadyExists    = domainerrors.ErrUserAlreadyExists
+	ErrInvalidToken         = domainerrors.ErrInvalidToken
+	ErrSessionNotFound      = domainerrors.ErrSessionNotFound
+	ErrInvitationRequired   = domainerrors.ErrInvitationRequired
+	ErrInvitationNotFound   = domainerrors.ErrInvitationNotFound
+	ErrEmailNotVerified     = domainerrors.ErrEmailNotVerified
+	ErrPasswordAuthDisabled = domainerrors.ErrPasswordAuthDisabled
 )
 
-// AuthUseCase defines the interface for authentication use cases
 type AuthUseCase interface {
-	Register(ctx context.Context, input RegisterInput) (*AuthOutput, error)
+	PasswordAuthEnabled() bool
 	Login(ctx context.Context, input LoginInput) (*AuthOutput, error)
+	LoginWithGoogle(ctx context.Context, idToken string) (*AuthOutput, error)
+	SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error)
 	RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error)
 	Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error)
 }
 
 type authInteractor struct {
-	userRepo      domainrepository.UserRepository
-	sessionRepo   domainrepository.SessionRepository
-	workspaceRepo domainrepository.WorkspaceRepository
-	jwtService    JWTService
-	passwordSvc   PasswordService
-	recorder      audit.Recorder
-
-	// Configuration
-	accessTokenDuration  time.Duration
-	refreshTokenDuration time.Duration
+	userRepo       domainrepository.UserRepository
+	sessionRepo    domainrepository.SessionRepository
+	workspaceRepo  domainrepository.WorkspaceRepository
+	invitationRepo domainrepository.InvitationRepository
+	jwtService     JWTService
+	passwordSvc    PasswordService
+	googleVerifier GoogleVerifier
+	txManager      domaintransaction.Manager
+	recorder       audit.Recorder
+	settings       Settings
 }
 
-// NewAuthInteractor creates a new auth interactor
 func NewAuthInteractor(
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
+	invitationRepo domainrepository.InvitationRepository,
 	jwtService JWTService,
 	passwordSvc PasswordService,
+	googleVerifier GoogleVerifier,
+	txManager domaintransaction.Manager,
 	recorder audit.Recorder,
+	settings Settings,
 ) AuthUseCase {
 	return &authInteractor{
-		userRepo:             userRepo,
-		sessionRepo:          sessionRepo,
-		workspaceRepo:        workspaceRepo,
-		jwtService:           jwtService,
-		passwordSvc:          passwordSvc,
-		recorder:             recorder,
-		accessTokenDuration:  15 * time.Minute,
-		refreshTokenDuration: 7 * 24 * time.Hour, // 7 days
+		userRepo:       userRepo,
+		sessionRepo:    sessionRepo,
+		workspaceRepo:  workspaceRepo,
+		invitationRepo: invitationRepo,
+		jwtService:     jwtService,
+		passwordSvc:    passwordSvc,
+		googleVerifier: googleVerifier,
+		txManager:      txManager,
+		recorder:       recorder,
+		settings:       settings,
 	}
 }
 
-func (i *authInteractor) Register(ctx context.Context, input RegisterInput) (*AuthOutput, error) {
-	// Check if user already exists
-	existing, err := i.userRepo.FindByEmail(ctx, input.Email)
+func (i *authInteractor) PasswordAuthEnabled() bool {
+	return i.settings.PasswordAuthEnabled
+}
+
+func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
+	if !i.settings.PasswordAuthEnabled {
+		return nil, ErrPasswordAuthDisabled
+	}
+	user, err := i.userRepo.FindByEmail(ctx, input.Email)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil || user.IsBot {
+		return nil, ErrInvalidCredentials
+	}
+
+	if err := i.passwordSvc.VerifyPassword(input.Password, user.PasswordHash); err != nil {
+		i.recordLogin(ctx, user, entity.AuditActionLoginFailed)
+		return nil, ErrInvalidCredentials
+	}
+	return i.login(ctx, user)
+}
+
+// LoginWithGoogle は sub で照合し、未紐付けならメールアドレスで既存ユーザーに紐付け、どちらもなければ招待がある場合だけユーザーを作ります
+func (i *authInteractor) LoginWithGoogle(ctx context.Context, idToken string) (*AuthOutput, error) {
+	identity, err := i.googleVerifier.Verify(ctx, idToken)
+	if err != nil {
+		return nil, err
+	}
+	if !identity.EmailVerified {
+		return nil, ErrEmailNotVerified
+	}
+
+	user, err := i.userRepo.FindByGoogleSub(ctx, identity.Sub)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		user, err = i.linkGoogleAccount(ctx, identity)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user == nil {
+		user, err = i.createGoogleUser(ctx, identity)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return i.login(ctx, user)
+}
+
+func (i *authInteractor) linkGoogleAccount(ctx context.Context, identity *GoogleIdentity) (*entity.User, error) {
+	user, err := i.userRepo.FindByEmail(ctx, entity.NormalizeEmail(identity.Email))
+	if err != nil || user == nil {
+		return nil, err
+	}
+	// 別の Google アカウントに紐付いたユーザーやボットは乗っ取れないようにする
+	if user.IsBot || user.GoogleSub != nil {
+		return nil, ErrInvalidCredentials
+	}
+	user.GoogleSub = &identity.Sub
+	if err := i.userRepo.Update(ctx, user); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleIdentity) (*entity.User, error) {
+	email := entity.NormalizeEmail(identity.Email)
+	invitations, err := i.invitationRepo.FindPendingByEmail(ctx, email, time.Now())
+	if err != nil {
+		return nil, err
+	}
+	if len(invitations) == 0 {
+		return nil, ErrInvitationRequired
+	}
+
+	user := &entity.User{
+		Email:        email,
+		PasswordHash: entity.UnusablePasswordHash,
+		GoogleSub:    &identity.Sub,
+		DisplayName:  identity.Name,
+	}
+	if user.DisplayName == "" {
+		user.DisplayName = email
+	}
+	if identity.Picture != "" {
+		user.AvatarURL = &identity.Picture
+	}
+	if err := i.createInvitedUser(ctx, user, invitations); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error) {
+	if !i.settings.PasswordAuthEnabled {
+		return nil, ErrPasswordAuthDisabled
+	}
+	now := time.Now()
+	invitation, err := i.invitationRepo.FindByTokenHash(ctx, entity.HashSecretToken(input.Token))
+	if err != nil {
+		return nil, err
+	}
+	if invitation == nil || !invitation.IsPending(now) {
+		return nil, ErrInvitationNotFound
+	}
+	existing, err := i.userRepo.FindByEmail(ctx, invitation.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -87,42 +207,48 @@ func (i *authInteractor) Register(ctx context.Context, input RegisterInput) (*Au
 		return nil, ErrUserAlreadyExists
 	}
 
-	// Hash password
-	hashedPassword, err := i.passwordSvc.HashPassword(input.Password)
+	hashed, err := i.passwordSvc.HashPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
-
-	// Create user
-	user := &entity.User{
-		Email:        input.Email,
-		PasswordHash: hashedPassword,
-		DisplayName:  input.DisplayName,
-	}
-
-	if err := i.userRepo.Create(ctx, user); err != nil {
+	// 同じメールアドレスへの他のワークスペースからの招待もまとめて受諾する
+	invitations, err := i.invitationRepo.FindPendingByEmail(ctx, invitation.Email, now)
+	if err != nil {
 		return nil, err
 	}
-
-	return i.createSession(ctx, user)
+	user := &entity.User{Email: invitation.Email, PasswordHash: hashed, DisplayName: input.DisplayName}
+	if err := i.createInvitedUser(ctx, user, invitations); err != nil {
+		return nil, err
+	}
+	return i.login(ctx, user)
 }
 
-func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
-	// Find user by email
-	user, err := i.userRepo.FindByEmail(ctx, input.Email)
-	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, ErrInvalidCredentials
-	}
+// createInvitedUser はユーザーを作り、招待されたワークスペースに参加させます
+func (i *authInteractor) createInvitedUser(ctx context.Context, user *entity.User, invitations []*entity.Invitation) error {
+	return i.txManager.Do(ctx, func(ctx context.Context) error {
+		if err := i.userRepo.Create(ctx, user); err != nil {
+			return err
+		}
+		now := time.Now()
+		joined := make(map[string]bool, len(invitations))
+		// 同じワークスペースへの招待が複数あれば、新しい順に並んでいるため最新のロールで参加する
+		for _, inv := range invitations {
+			if !joined[inv.WorkspaceID] {
+				member := &entity.WorkspaceMember{WorkspaceID: inv.WorkspaceID, UserID: user.ID, Role: inv.Role, JoinedAt: now}
+				if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
+					return err
+				}
+				joined[inv.WorkspaceID] = true
+			}
+			if err := i.invitationRepo.MarkAccepted(ctx, inv.ID, now); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
 
-	// Verify password
-	if err := i.passwordSvc.VerifyPassword(input.Password, user.PasswordHash); err != nil {
-		i.recordLogin(ctx, user, entity.AuditActionLoginFailed)
-		return nil, ErrInvalidCredentials
-	}
-
+func (i *authInteractor) login(ctx context.Context, user *entity.User) (*AuthOutput, error) {
 	out, err := i.createSession(ctx, user)
 	if err != nil {
 		return nil, err
@@ -155,14 +281,14 @@ func (i *authInteractor) recordLogin(ctx context.Context, user *entity.User, act
 }
 
 func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error) {
-	// Verify refresh token
-	claims, err := i.jwtService.VerifyToken(input.RefreshToken)
+	session, err := i.sessionRepo.FindActiveByTokenHash(ctx, entity.HashSecretToken(input.RefreshToken))
 	if err != nil {
+		return nil, err
+	}
+	if session == nil {
 		return nil, ErrInvalidToken
 	}
-
-	// Find user
-	user, err := i.userRepo.FindByID(ctx, claims.UserID)
+	user, err := i.userRepo.FindByID(ctx, session.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -170,28 +296,15 @@ func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInp
 		return nil, ErrInvalidToken
 	}
 
-	// Find active sessions for this user
-	sessions, err := i.sessionRepo.FindActiveByUserID(ctx, user.ID)
+	// セッションはログイン単位で保持し、リフレッシュではトークンだけを差し替える
+	tokens, err := i.issueTokens(user)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, session := range sessions {
-		if err := i.passwordSvc.VerifyPassword(input.RefreshToken, session.RefreshTokenHash); err != nil {
-			continue
-		}
-		// セッションはログイン単位で保持し、リフレッシュではトークンだけを差し替える
-		tokens, err := i.issueTokens(user)
-		if err != nil {
-			return nil, err
-		}
-		if err := i.sessionRepo.Rotate(ctx, session.ID, tokens.refreshTokenHash, tokens.output.ExpiresAt); err != nil {
-			return nil, err
-		}
-		return tokens.output, nil
+	if err := i.sessionRepo.Rotate(ctx, session.ID, tokens.refreshTokenHash, tokens.output.ExpiresAt); err != nil {
+		return nil, err
 	}
-
-	return nil, ErrInvalidToken
+	return tokens.output, nil
 }
 
 func (i *authInteractor) Logout(ctx context.Context, input LogoutInput) (*LogoutOutput, error) {
@@ -208,17 +321,13 @@ type issuedTokens struct {
 }
 
 func (i *authInteractor) issueTokens(user *entity.User) (*issuedTokens, error) {
-	accessToken, err := i.jwtService.GenerateToken(user.ID, i.accessTokenDuration)
+	accessToken, err := i.jwtService.GenerateToken(user.ID, i.settings.AccessTokenTTL)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := generateSecureToken()
-	if err != nil {
-		return nil, err
-	}
-
-	refreshTokenHash, err := i.passwordSvc.HashPassword(refreshToken)
+	// リフレッシュトークンは JWT ではなく乱数で、セッションを引けるよう SHA-256 で保存する
+	refreshToken, refreshTokenHash, err := entity.NewSecretToken()
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +336,7 @@ func (i *authInteractor) issueTokens(user *entity.User) (*issuedTokens, error) {
 		output: &AuthOutput{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
-			ExpiresAt:    time.Now().Add(i.refreshTokenDuration),
+			ExpiresAt:    time.Now().Add(i.settings.RefreshTokenTTL),
 			User: UserInfo{
 				ID:          user.ID,
 				Email:       user.Email,
@@ -258,13 +367,4 @@ func (i *authInteractor) createSession(ctx context.Context, user *entity.User) (
 		return nil, err
 	}
 	return tokens.output, nil
-}
-
-// generateSecureToken generates a cryptographically secure random token
-func generateSecureToken() (string, error) {
-	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return base64.URLEncoding.EncodeToString(bytes), nil
 }

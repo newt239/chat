@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
@@ -41,10 +40,6 @@ type stubUserRepo struct {
 
 func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error) {
 	return &entity.User{ID: id, DisplayName: "name-" + id}, nil
-}
-
-func (stubUserRepo) FindByEmail(_ context.Context, email string) (*entity.User, error) {
-	return &entity.User{ID: email, Email: email}, nil
 }
 
 type stubPermissionRepo struct {
@@ -174,28 +169,5 @@ func TestUpdateMemberRoleRecordsAuditLog(t *testing.T) {
 	}
 	if log.Metadata["from"] != "member" || log.Metadata["to"] != "admin" {
 		t.Errorf("変更前後のロールが記録されていません: %+v", log.Metadata)
-	}
-}
-
-func TestAddMemberByEmailPermission(t *testing.T) {
-	allowMemberInvite := entity.PermissionOverride{Role: entity.WorkspaceRoleMember, Permission: entity.PermissionInviteMembers, Allowed: true}
-	tests := []struct {
-		name      string
-		overrides []entity.PermissionOverride
-		role      string
-		wantErr   error
-	}{
-		{name: "既定ではメンバーは招待できない", role: "member", wantErr: domerr.ErrUnauthorized},
-		{name: "権限を許可するとメンバーも招待できる", overrides: []entity.PermissionOverride{allowMemberInvite}, role: "member"},
-		{name: "招待を許可されたメンバーでも管理者としては招待できない", overrides: []entity.PermissionOverride{allowMemberInvite}, role: "admin", wantErr: ErrUnauthorized},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			f := newFixture(map[string]*entity.WorkspaceMember{"user": member(entity.WorkspaceRoleMember)}, tt.overrides...)
-			_, err := f.uc.AddMemberByEmail(context.Background(), AddMemberByEmailInput{WorkspaceID: "ws", Email: "new@example.com", Role: tt.role, RequestedBy: "user"})
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
-			}
-		})
 	}
 }

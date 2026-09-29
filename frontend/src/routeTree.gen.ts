@@ -12,10 +12,10 @@ import { Route as rootRouteImport } from "./routes/__root";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as AppRouteRouteImport } from "./routes/app/route";
 import { Route as LoginRouteImport } from "./routes/login";
-import { Route as RegisterRouteImport } from "./routes/register";
 import { Route as AppIndexRouteImport } from "./routes/app/index";
 import { Route as AppWorkspaceIdRouteRouteImport } from "./routes/app/$workspaceId/route";
 import { Route as DevUiRouteImport } from "./routes/dev/ui";
+import { Route as InviteTokenRouteImport } from "./routes/invite.$token";
 import { Route as AppWorkspaceIdIndexRouteImport } from "./routes/app/$workspaceId/index";
 import { Route as AppWorkspaceIdChannelIdRouteImport } from "./routes/app/$workspaceId/$channelId";
 import { Route as AppWorkspaceIdActivityRouteImport } from "./routes/app/$workspaceId/activity";
@@ -45,11 +45,6 @@ const LoginRoute = LoginRouteImport.update({
   path: "/login",
   getParentRoute: () => rootRouteImport,
 } as any);
-const RegisterRoute = RegisterRouteImport.update({
-  id: "/register",
-  path: "/register",
-  getParentRoute: () => rootRouteImport,
-} as any);
 const AppIndexRoute = AppIndexRouteImport.update({
   id: "/",
   path: "/",
@@ -63,6 +58,11 @@ const AppWorkspaceIdRouteRoute = AppWorkspaceIdRouteRouteImport.update({
 const DevUiRoute = DevUiRouteImport.update({
   id: "/dev/ui",
   path: "/dev/ui",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: "/invite/$token",
+  path: "/invite/$token",
   getParentRoute: () => rootRouteImport,
 } as any);
 const AppWorkspaceIdIndexRoute = AppWorkspaceIdIndexRouteImport.update({
@@ -136,9 +136,9 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/app": typeof AppRouteRouteWithChildren;
   "/login": typeof LoginRoute;
-  "/register": typeof RegisterRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
   "/dev/ui": typeof DevUiRoute;
+  "/invite/$token": typeof InviteTokenRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
@@ -157,8 +157,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/login": typeof LoginRoute;
-  "/register": typeof RegisterRoute;
   "/dev/ui": typeof DevUiRoute;
+  "/invite/$token": typeof InviteTokenRoute;
   "/app": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
@@ -179,9 +179,9 @@ export interface FileRoutesById {
   "/": typeof IndexRoute;
   "/app": typeof AppRouteRouteWithChildren;
   "/login": typeof LoginRoute;
-  "/register": typeof RegisterRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdRouteRouteWithChildren;
   "/dev/ui": typeof DevUiRoute;
+  "/invite/$token": typeof InviteTokenRoute;
   "/app/": typeof AppIndexRoute;
   "/app/$workspaceId/$channelId": typeof AppWorkspaceIdChannelIdRouteWithChildren;
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
@@ -203,9 +203,9 @@ export interface FileRouteTypes {
     | "/"
     | "/app"
     | "/login"
-    | "/register"
     | "/app/$workspaceId"
     | "/dev/ui"
+    | "/invite/$token"
     | "/app/"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/activity"
@@ -224,8 +224,8 @@ export interface FileRouteTypes {
   to:
     | "/"
     | "/login"
-    | "/register"
     | "/dev/ui"
+    | "/invite/$token"
     | "/app"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/activity"
@@ -245,9 +245,9 @@ export interface FileRouteTypes {
     | "/"
     | "/app"
     | "/login"
-    | "/register"
     | "/app/$workspaceId"
     | "/dev/ui"
+    | "/invite/$token"
     | "/app/"
     | "/app/$workspaceId/$channelId"
     | "/app/$workspaceId/activity"
@@ -268,8 +268,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   AppRouteRoute: typeof AppRouteRouteWithChildren;
   LoginRoute: typeof LoginRoute;
-  RegisterRoute: typeof RegisterRoute;
   DevUiRoute: typeof DevUiRoute;
+  InviteTokenRoute: typeof InviteTokenRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -295,13 +295,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof LoginRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/register": {
-      id: "/register";
-      path: "/register";
-      fullPath: "/register";
-      preLoaderRoute: typeof RegisterRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
     "/app/": {
       id: "/app/";
       path: "/";
@@ -321,6 +314,13 @@ declare module "@tanstack/react-router" {
       path: "/dev/ui";
       fullPath: "/dev/ui";
       preLoaderRoute: typeof DevUiRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/invite/$token": {
+      id: "/invite/$token";
+      path: "/invite/$token";
+      fullPath: "/invite/$token";
+      preLoaderRoute: typeof InviteTokenRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/app/$workspaceId/": {
@@ -483,8 +483,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  RegisterRoute: RegisterRoute,
   DevUiRoute: DevUiRoute,
+  InviteTokenRoute: InviteTokenRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

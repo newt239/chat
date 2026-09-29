@@ -126,10 +126,3 @@ type JoinPublicWorkspaceInput struct {
 	WorkspaceID string
 	UserID      string
 }
-
-type AddMemberByEmailInput struct {
-	WorkspaceID string
-	Email       string
-	Role        string
-	RequestedBy string
-}

@@ -28,6 +28,10 @@ func (r *DomainRegistry) NewSessionRepository() domainrepository.SessionReposito
 	return repository.NewSessionRepository(r.client)
 }
 
+func (r *DomainRegistry) NewInvitationRepository() domainrepository.InvitationRepository {
+	return repository.NewInvitationRepository(r.client)
+}
+
 func (r *DomainRegistry) NewWorkspaceRepository() domainrepository.WorkspaceRepository {
 	return repository.NewWorkspaceRepository(r.client)
 }

@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	"time"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/service"
@@ -10,6 +11,7 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/link"
 	"github.com/newt239/chat/internal/infrastructure/logger"
+	"github.com/newt239/chat/internal/infrastructure/mail"
 	"github.com/newt239/chat/internal/infrastructure/meilisearch"
 	"github.com/newt239/chat/internal/infrastructure/mention"
 	"github.com/newt239/chat/internal/infrastructure/ogp"
@@ -18,6 +20,7 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
+	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 )
 
 // InfrastructureRegistry はインフラストラクチャ層の依存関係を管理します
@@ -47,6 +50,22 @@ func (r *InfrastructureRegistry) NewJWTService() authuc.JWTService {
 
 func (r *InfrastructureRegistry) NewPasswordService() authuc.PasswordService {
 	return auth.NewPasswordService()
+}
+
+func (r *InfrastructureRegistry) NewAuthSettings() authuc.Settings {
+	return authuc.Settings{
+		AccessTokenTTL:      time.Duration(r.config.JWT.AccessTokenTTL) * time.Minute,
+		RefreshTokenTTL:     time.Duration(r.config.JWT.RefreshTokenTTL) * 24 * time.Hour,
+		PasswordAuthEnabled: r.config.Auth.PasswordAuthEnabled,
+	}
+}
+
+func (r *InfrastructureRegistry) NewGoogleVerifier() authuc.GoogleVerifier {
+	return auth.NewGoogleVerifier(r.config.Auth.GoogleOAuthClientID)
+}
+
+func (r *InfrastructureRegistry) NewInvitationSender() invitationuc.Sender {
+	return mail.NoopInvitationSender{}
 }
 
 func (r *InfrastructureRegistry) NewNotificationService() *websocket.Notifier {

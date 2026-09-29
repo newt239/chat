@@ -1,18 +1,15 @@
-import { useState } from "react";
-
 import { IconUserMinus } from "@tabler/icons-react";
-import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar";
-import { Button } from "#/components/ui/Button";
 import { IconButton } from "#/components/ui/IconButton";
 import { Select } from "#/components/ui/Select";
-import { TextField } from "#/components/ui/TextField";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspaceMemberActions";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
+
+import { InviteMemberForm } from "./InviteMemberForm";
 
 const ROLES = [WorkspaceRole.MEMBER, WorkspaceRole.ADMIN];
 
@@ -23,8 +20,7 @@ type WorkspaceMemberManagerProps = {
 export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerProps) => {
   const { t } = useTranslation();
   const { data: members = [] } = useMembers(workspaceId);
-  const { invite, remove, updateRole } = useWorkspaceMemberActions();
-  const [email, setEmail] = useState("");
+  const { remove, updateRole } = useWorkspaceMemberActions();
   const roleOptions = ROLES.map((role) => ({
     label: t(workspaceRoleKeys[role]),
     value: String(role),
@@ -72,29 +68,7 @@ export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerPr
           </li>
         ))}
       </ul>
-      <Form
-        className="flex items-end gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (email.trim().length > 0) {
-            invite.mutate({ email: email.trim(), role: WorkspaceRole.MEMBER, workspaceId });
-            setEmail("");
-          }
-        }}
-      >
-        <TextField
-          className="flex-1"
-          type="email"
-          label={t("workspace.members.invite")}
-          placeholder="email@example.com"
-          value={email}
-          onChange={setEmail}
-          errorMessage={invite.isError ? invite.error.message : undefined}
-        />
-        <Button type="submit" isDisabled={email.trim().length === 0} isPending={invite.isPending}>
-          {t("workspace.members.inviteSubmit")}
-        </Button>
-      </Form>
+      <InviteMemberForm workspaceId={workspaceId} />
     </section>
   );
 };

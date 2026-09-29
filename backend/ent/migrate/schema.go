@@ -357,6 +357,45 @@ var (
 			},
 		},
 	}
+	// InvitationColumns holds the columns for the "invitation" table.
+	InvitationColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "email", Type: field.TypeString},
+		{Name: "role", Type: field.TypeString},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "invitation_workspace", Type: field.TypeString, Size: 12},
+		{Name: "invitation_invited_by", Type: field.TypeUUID},
+	}
+	// InvitationTable holds the schema information for the "invitation" table.
+	InvitationTable = &schema.Table{
+		Name:       "invitation",
+		Columns:    InvitationColumns,
+		PrimaryKey: []*schema.Column{InvitationColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "invitation_workspaces_workspace",
+				Columns:    []*schema.Column{InvitationColumns[7]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "invitation_users_invited_by",
+				Columns:    []*schema.Column{InvitationColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "invitation_email",
+				Unique:  false,
+				Columns: []*schema.Column{InvitationColumns[1]},
+			},
+		},
+	}
 	// MessagesColumns holds the columns for the "messages" table.
 	MessagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -704,6 +743,11 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{SessionsColumns[2]},
 			},
+			{
+				Name:    "session_refresh_token_hash",
+				Unique:  true,
+				Columns: []*schema.Column{SessionsColumns[1]},
+			},
 		},
 	}
 	// SystemMessagesColumns holds the columns for the "system_messages" table.
@@ -788,6 +832,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString},
+		{Name: "google_sub", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "bio", Type: field.TypeString, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
@@ -1113,6 +1158,7 @@ var (
 		ChannelMuteTable,
 		ChannelReadStatesTable,
 		ChannelStarTable,
+		InvitationTable,
 		MessagesTable,
 		MessageBookmarksTable,
 		MessageGroupMentionsTable,
@@ -1163,6 +1209,11 @@ func init() {
 	ChannelStarTable.ForeignKeys[1].RefTable = ChannelsTable
 	ChannelStarTable.Annotation = &entsql.Annotation{
 		Table: "channel_star",
+	}
+	InvitationTable.ForeignKeys[0].RefTable = WorkspacesTable
+	InvitationTable.ForeignKeys[1].RefTable = UsersTable
+	InvitationTable.Annotation = &entsql.Annotation{
+		Table: "invitation",
 	}
 	MessagesTable.ForeignKeys[0].RefTable = ChannelsTable
 	MessagesTable.ForeignKeys[1].RefTable = UsersTable

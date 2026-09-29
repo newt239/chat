@@ -49,5 +49,6 @@ func (Session) Edges() []ent.Edge {
 func (Session) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("expires_at"),
+		index.Fields("refresh_token_hash").Unique(),
 	}
 }

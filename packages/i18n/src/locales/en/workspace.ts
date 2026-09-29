@@ -18,9 +18,20 @@ export const workspace: Messages["workspace"] = {
     public: "Public workspaces you can join",
     title: "Workspaces",
   },
+  invite: {
+    addedDirectly: "Added {{email}} to the workspace",
+    copied: "Copied the invitation link",
+    copy: "Copy",
+    copyFailed: "Couldn't copy",
+    email: "Invite by email",
+    failed: "Couldn't invite",
+    link: "Invitation link for {{email}}",
+    linkOnce:
+      "This link is shown only now. Copy it and share it with the person you invited (valid for 7 days).",
+    role: "Role to invite as",
+    submit: "Invite",
+  },
   members: {
-    invite: "Invite by email",
-    inviteSubmit: "Invite",
     remove: "Remove {{name}} from the workspace",
     role: "Role",
     title: "Members ({{count}})",

@@ -8,6 +8,7 @@ import { TabList } from "#/components/ui/TabList";
 import { TabPanel } from "#/components/ui/TabPanel";
 import { Tabs } from "#/components/ui/Tabs";
 import { AdminAuditTab } from "#/features/admin/components/AdminAuditTab";
+import { AdminInvitationsTab } from "#/features/admin/components/AdminInvitationsTab";
 import { AdminMembersTab } from "#/features/admin/components/AdminMembersTab";
 import { AdminOverviewTab } from "#/features/admin/components/AdminOverviewTab";
 import { AdminPermissionsTab } from "#/features/admin/components/AdminPermissionsTab";
@@ -50,6 +51,9 @@ export const AdminPage = () => {
       }
       case "members": {
         return <AdminMembersTab workspaceId={workspaceId} members={members} />;
+      }
+      case "invitations": {
+        return <AdminInvitationsTab workspaceId={workspaceId} />;
       }
       case "permissions": {
         return permissions === undefined ? (

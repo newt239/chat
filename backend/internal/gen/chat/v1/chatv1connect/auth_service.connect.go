@@ -33,10 +33,17 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// AuthServiceRegisterProcedure is the fully-qualified name of the AuthService's Register RPC.
-	AuthServiceRegisterProcedure = "/chat.v1.AuthService/Register"
+	// AuthServiceGetAuthConfigProcedure is the fully-qualified name of the AuthService's GetAuthConfig
+	// RPC.
+	AuthServiceGetAuthConfigProcedure = "/chat.v1.AuthService/GetAuthConfig"
 	// AuthServiceLoginProcedure is the fully-qualified name of the AuthService's Login RPC.
 	AuthServiceLoginProcedure = "/chat.v1.AuthService/Login"
+	// AuthServiceLoginWithGoogleProcedure is the fully-qualified name of the AuthService's
+	// LoginWithGoogle RPC.
+	AuthServiceLoginWithGoogleProcedure = "/chat.v1.AuthService/LoginWithGoogle"
+	// AuthServiceSignUpWithInvitationProcedure is the fully-qualified name of the AuthService's
+	// SignUpWithInvitation RPC.
+	AuthServiceSignUpWithInvitationProcedure = "/chat.v1.AuthService/SignUpWithInvitation"
 	// AuthServiceRefreshProcedure is the fully-qualified name of the AuthService's Refresh RPC.
 	AuthServiceRefreshProcedure = "/chat.v1.AuthService/Refresh"
 	// AuthServiceLogoutProcedure is the fully-qualified name of the AuthService's Logout RPC.
@@ -45,8 +52,12 @@ const (
 
 // AuthServiceClient is a client for the chat.v1.AuthService service.
 type AuthServiceClient interface {
-	Register(context.Context, *v1.RegisterRequest) (*v1.RegisterResponse, error)
+	GetAuthConfig(context.Context, *v1.GetAuthConfigRequest) (*v1.GetAuthConfigResponse, error)
 	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
+	// 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+	LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error)
+	// 招待リンクからパスワードを設定してアカウントを作る
+	SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error)
 	Refresh(context.Context, *v1.RefreshRequest) (*v1.RefreshResponse, error)
 	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
 }
@@ -62,16 +73,28 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	authServiceMethods := v1.File_chat_v1_auth_service_proto.Services().ByName("AuthService").Methods()
 	return &authServiceClient{
-		register: connect.NewClient[v1.RegisterRequest, v1.RegisterResponse](
+		getAuthConfig: connect.NewClient[v1.GetAuthConfigRequest, v1.GetAuthConfigResponse](
 			httpClient,
-			baseURL+AuthServiceRegisterProcedure,
-			connect.WithSchema(authServiceMethods.ByName("Register")),
+			baseURL+AuthServiceGetAuthConfigProcedure,
+			connect.WithSchema(authServiceMethods.ByName("GetAuthConfig")),
 			connect.WithClientOptions(opts...),
 		),
 		login: connect.NewClient[v1.LoginRequest, v1.LoginResponse](
 			httpClient,
 			baseURL+AuthServiceLoginProcedure,
 			connect.WithSchema(authServiceMethods.ByName("Login")),
+			connect.WithClientOptions(opts...),
+		),
+		loginWithGoogle: connect.NewClient[v1.LoginWithGoogleRequest, v1.LoginWithGoogleResponse](
+			httpClient,
+			baseURL+AuthServiceLoginWithGoogleProcedure,
+			connect.WithSchema(authServiceMethods.ByName("LoginWithGoogle")),
+			connect.WithClientOptions(opts...),
+		),
+		signUpWithInvitation: connect.NewClient[v1.SignUpWithInvitationRequest, v1.SignUpWithInvitationResponse](
+			httpClient,
+			baseURL+AuthServiceSignUpWithInvitationProcedure,
+			connect.WithSchema(authServiceMethods.ByName("SignUpWithInvitation")),
 			connect.WithClientOptions(opts...),
 		),
 		refresh: connect.NewClient[v1.RefreshRequest, v1.RefreshResponse](
@@ -91,15 +114,17 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
-	register *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
-	login    *connect.Client[v1.LoginRequest, v1.LoginResponse]
-	refresh  *connect.Client[v1.RefreshRequest, v1.RefreshResponse]
-	logout   *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
+	getAuthConfig        *connect.Client[v1.GetAuthConfigRequest, v1.GetAuthConfigResponse]
+	login                *connect.Client[v1.LoginRequest, v1.LoginResponse]
+	loginWithGoogle      *connect.Client[v1.LoginWithGoogleRequest, v1.LoginWithGoogleResponse]
+	signUpWithInvitation *connect.Client[v1.SignUpWithInvitationRequest, v1.SignUpWithInvitationResponse]
+	refresh              *connect.Client[v1.RefreshRequest, v1.RefreshResponse]
+	logout               *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
 }
 
-// Register calls chat.v1.AuthService.Register.
-func (c *authServiceClient) Register(ctx context.Context, req *v1.RegisterRequest) (*v1.RegisterResponse, error) {
-	response, err := c.register.CallUnary(ctx, connect.NewRequest(req))
+// GetAuthConfig calls chat.v1.AuthService.GetAuthConfig.
+func (c *authServiceClient) GetAuthConfig(ctx context.Context, req *v1.GetAuthConfigRequest) (*v1.GetAuthConfigResponse, error) {
+	response, err := c.getAuthConfig.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -109,6 +134,24 @@ func (c *authServiceClient) Register(ctx context.Context, req *v1.RegisterReques
 // Login calls chat.v1.AuthService.Login.
 func (c *authServiceClient) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginResponse, error) {
 	response, err := c.login.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// LoginWithGoogle calls chat.v1.AuthService.LoginWithGoogle.
+func (c *authServiceClient) LoginWithGoogle(ctx context.Context, req *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error) {
+	response, err := c.loginWithGoogle.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// SignUpWithInvitation calls chat.v1.AuthService.SignUpWithInvitation.
+func (c *authServiceClient) SignUpWithInvitation(ctx context.Context, req *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error) {
+	response, err := c.signUpWithInvitation.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -135,8 +178,12 @@ func (c *authServiceClient) Logout(ctx context.Context, req *v1.LogoutRequest) (
 
 // AuthServiceHandler is an implementation of the chat.v1.AuthService service.
 type AuthServiceHandler interface {
-	Register(context.Context, *v1.RegisterRequest) (*v1.RegisterResponse, error)
+	GetAuthConfig(context.Context, *v1.GetAuthConfigRequest) (*v1.GetAuthConfigResponse, error)
 	Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error)
+	// 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+	LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error)
+	// 招待リンクからパスワードを設定してアカウントを作る
+	SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error)
 	Refresh(context.Context, *v1.RefreshRequest) (*v1.RefreshResponse, error)
 	Logout(context.Context, *v1.LogoutRequest) (*v1.LogoutResponse, error)
 }
@@ -148,16 +195,28 @@ type AuthServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	authServiceMethods := v1.File_chat_v1_auth_service_proto.Services().ByName("AuthService").Methods()
-	authServiceRegisterHandler := connect.NewUnaryHandlerSimple(
-		AuthServiceRegisterProcedure,
-		svc.Register,
-		connect.WithSchema(authServiceMethods.ByName("Register")),
+	authServiceGetAuthConfigHandler := connect.NewUnaryHandlerSimple(
+		AuthServiceGetAuthConfigProcedure,
+		svc.GetAuthConfig,
+		connect.WithSchema(authServiceMethods.ByName("GetAuthConfig")),
 		connect.WithHandlerOptions(opts...),
 	)
 	authServiceLoginHandler := connect.NewUnaryHandlerSimple(
 		AuthServiceLoginProcedure,
 		svc.Login,
 		connect.WithSchema(authServiceMethods.ByName("Login")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceLoginWithGoogleHandler := connect.NewUnaryHandlerSimple(
+		AuthServiceLoginWithGoogleProcedure,
+		svc.LoginWithGoogle,
+		connect.WithSchema(authServiceMethods.ByName("LoginWithGoogle")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceSignUpWithInvitationHandler := connect.NewUnaryHandlerSimple(
+		AuthServiceSignUpWithInvitationProcedure,
+		svc.SignUpWithInvitation,
+		connect.WithSchema(authServiceMethods.ByName("SignUpWithInvitation")),
 		connect.WithHandlerOptions(opts...),
 	)
 	authServiceRefreshHandler := connect.NewUnaryHandlerSimple(
@@ -174,10 +233,14 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/chat.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case AuthServiceRegisterProcedure:
-			authServiceRegisterHandler.ServeHTTP(w, r)
+		case AuthServiceGetAuthConfigProcedure:
+			authServiceGetAuthConfigHandler.ServeHTTP(w, r)
 		case AuthServiceLoginProcedure:
 			authServiceLoginHandler.ServeHTTP(w, r)
+		case AuthServiceLoginWithGoogleProcedure:
+			authServiceLoginWithGoogleHandler.ServeHTTP(w, r)
+		case AuthServiceSignUpWithInvitationProcedure:
+			authServiceSignUpWithInvitationHandler.ServeHTTP(w, r)
 		case AuthServiceRefreshProcedure:
 			authServiceRefreshHandler.ServeHTTP(w, r)
 		case AuthServiceLogoutProcedure:
@@ -191,12 +254,20 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 // UnimplementedAuthServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAuthServiceHandler struct{}
 
-func (UnimplementedAuthServiceHandler) Register(context.Context, *v1.RegisterRequest) (*v1.RegisterResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.Register is not implemented"))
+func (UnimplementedAuthServiceHandler) GetAuthConfig(context.Context, *v1.GetAuthConfigRequest) (*v1.GetAuthConfigResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.GetAuthConfig is not implemented"))
 }
 
 func (UnimplementedAuthServiceHandler) Login(context.Context, *v1.LoginRequest) (*v1.LoginResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.Login is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) LoginWithGoogle(context.Context, *v1.LoginWithGoogleRequest) (*v1.LoginWithGoogleResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.LoginWithGoogle is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) SignUpWithInvitation(context.Context, *v1.SignUpWithInvitationRequest) (*v1.SignUpWithInvitationResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.AuthService.SignUpWithInvitation is not implemented"))
 }
 
 func (UnimplementedAuthServiceHandler) Refresh(context.Context, *v1.RefreshRequest) (*v1.RefreshResponse, error) {

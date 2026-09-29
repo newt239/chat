@@ -9,10 +9,14 @@ var (
 	ErrUserNotFound = errors.New("ユーザーが見つかりません")
 )
 
+// UnusablePasswordHash はパスワードでログインできないユーザー（Google アカウントのみ・ボット）に設定します
+const UnusablePasswordHash = "!"
+
 type User struct {
 	ID           string
 	Email        string
 	PasswordHash string
+	GoogleSub    *string
 	DisplayName  string
 	Bio          *string
 	AvatarURL    *string

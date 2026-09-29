@@ -12,12 +12,8 @@ type AuthServer struct {
 	UC authuc.AuthUseCase
 }
 
-func (s *AuthServer) Register(ctx context.Context, req *chatv1.RegisterRequest) (*chatv1.RegisterResponse, error) {
-	out, err := s.UC.Register(ctx, authuc.RegisterInput{Email: req.Email, Password: req.Password, DisplayName: req.DisplayName})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.RegisterResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+func (s *AuthServer) GetAuthConfig(context.Context, *chatv1.GetAuthConfigRequest) (*chatv1.GetAuthConfigResponse, error) {
+	return &chatv1.GetAuthConfigResponse{PasswordAuthEnabled: s.UC.PasswordAuthEnabled()}, nil
 }
 
 func (s *AuthServer) Login(ctx context.Context, req *chatv1.LoginRequest) (*chatv1.LoginResponse, error) {
@@ -26,6 +22,22 @@ func (s *AuthServer) Login(ctx context.Context, req *chatv1.LoginRequest) (*chat
 		return nil, err
 	}
 	return &chatv1.LoginResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+}
+
+func (s *AuthServer) LoginWithGoogle(ctx context.Context, req *chatv1.LoginWithGoogleRequest) (*chatv1.LoginWithGoogleResponse, error) {
+	out, err := s.UC.LoginWithGoogle(ctx, req.IdToken)
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.LoginWithGoogleResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+}
+
+func (s *AuthServer) SignUpWithInvitation(ctx context.Context, req *chatv1.SignUpWithInvitationRequest) (*chatv1.SignUpWithInvitationResponse, error) {
+	out, err := s.UC.SignUpWithInvitation(ctx, authuc.SignUpWithInvitationInput{Token: req.Token, DisplayName: req.DisplayName, Password: req.Password})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.SignUpWithInvitationResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) Refresh(ctx context.Context, req *chatv1.RefreshRequest) (*chatv1.RefreshResponse, error) {

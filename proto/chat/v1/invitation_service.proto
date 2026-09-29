@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/workspace_service.proto";
+import "google/protobuf/timestamp.proto";
+
+// メールアドレス宛てのワークスペースへの招待。作成・一覧・取り消しには invite_members 権限が要る
+service InvitationService {
+  // 既存ユーザーのメールアドレスなら招待を作らず、直ちにワークスペースへ追加する
+  rpc CreateInvitation(CreateInvitationRequest) returns (CreateInvitationResponse);
+  // 未受諾で期限内の招待を作成日時の降順で返す
+  rpc ListInvitations(ListInvitationsRequest) returns (ListInvitationsResponse);
+  rpc RevokeInvitation(RevokeInvitationRequest) returns (RevokeInvitationResponse);
+  // 招待リンクの表示用。ログインせずに呼べる
+  rpc GetInvitation(GetInvitationRequest) returns (GetInvitationResponse);
+}
+
+message Invitation {
+  string id = 1;
+  string email = 2;
+  WorkspaceRole role = 3;
+  string invited_by_name = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message CreateInvitationRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string email = 2 [(buf.validate.field).string.email = true];
+  // 未指定の場合はメンバーとして招待する
+  WorkspaceRole role = 3 [(buf.validate.field).enum = {
+    in: [
+      0,
+      2,
+      3,
+      4
+    ]
+  }];
+}
+
+message CreateInvitationResponse {
+  // 既存ユーザーを直ちに追加した場合は true で、invitation と token は空
+  bool added_directly = 1;
+  optional Invitation invitation = 2;
+  // 招待リンク /invite/{token} に使う。サーバーはハッシュしか保存しないため、この応答でしか取得できない
+  string token = 3;
+}
+
+message ListInvitationsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListInvitationsResponse {
+  repeated Invitation invitations = 1;
+}
+
+message RevokeInvitationRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string invitation_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message RevokeInvitationResponse {}
+
+message GetInvitationRequest {
+  string token = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetInvitationResponse {
+  string workspace_name = 1;
+  string email = 2;
+}

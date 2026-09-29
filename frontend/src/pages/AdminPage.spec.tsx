@@ -11,7 +11,7 @@ import { renderWithProviders } from "#/test/renderWithProviders";
 import { AdminPage } from "./AdminPage";
 
 describe("AdminPage", () => {
-  test("4 つのタブを URL の tab で切り替える", async () => {
+  test("5 つのタブを URL の tab で切り替える", async () => {
     const { router } = await renderWithProviders(<AdminPage />, "/app/ws1/admin", (routes) => {
       routes.rpc(AdminService.method.listAdminMembers, () => ({
         members: [create(AdminMemberSchema, { displayName: "Bob", userId: "u2" })],
@@ -27,6 +27,7 @@ describe("AdminPage", () => {
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toStrictEqual([
       "概要",
       "メンバー",
+      "招待",
       "権限",
       "監査ログ",
     ]);

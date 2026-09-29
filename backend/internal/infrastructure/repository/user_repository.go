@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -72,9 +73,17 @@ func (r *userRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity
 }
 
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
+	return r.findOne(ctx, user.Email(email))
+}
+
+func (r *userRepository) FindByGoogleSub(ctx context.Context, sub string) (*entity.User, error) {
+	return r.findOne(ctx, user.GoogleSub(sub))
+}
+
+func (r *userRepository) findOne(ctx context.Context, where predicate.User) (*entity.User, error) {
 	client := transaction.ResolveClient(ctx, r.client)
 	u, err := client.User.Query().
-		Where(user.Email(email)).
+		Where(where).
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -92,6 +101,7 @@ func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 	builder := client.User.Create().
 		SetEmail(usr.Email).
 		SetPasswordHash(usr.PasswordHash).
+		SetNillableGoogleSub(usr.GoogleSub).
 		SetDisplayName(usr.DisplayName).
 		SetIsBot(usr.IsBot)
 
@@ -127,6 +137,7 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 	builder := client.User.UpdateOneID(userID).
 		SetEmail(usr.Email).
 		SetPasswordHash(usr.PasswordHash).
+		SetNillableGoogleSub(usr.GoogleSub).
 		SetDisplayName(usr.DisplayName).
 		SetNillableBio(usr.Bio).
 		SetThemeHue(usr.Preferences.ThemeHue).

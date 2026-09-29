@@ -96,7 +96,7 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*CreateOutp
 	if ch.ArchivedAt != nil {
 		return nil, domerr.ErrChannelArchived
 	}
-	token, hash, err := entity.NewWebhookToken()
+	token, hash, err := entity.NewSecretToken()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate token: %w", err)
 	}
@@ -112,7 +112,7 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*CreateOutp
 		// パスワードは照合できない値にし、メールアドレスは配送されない .invalid ドメインにする
 		bot := &entity.User{
 			Email:        fmt.Sprintf("webhook-%s@webhook.invalid", uuid.NewString()),
-			PasswordHash: "!",
+			PasswordHash: entity.UnusablePasswordHash,
 			DisplayName:  webhook.Name,
 			AvatarURL:    webhook.AvatarURL,
 			IsBot:        true,
@@ -181,7 +181,7 @@ func (i *Interactor) RegenerateToken(ctx context.Context, input TargetInput) (st
 	if err != nil {
 		return "", err
 	}
-	token, hash, err := entity.NewWebhookToken()
+	token, hash, err := entity.NewSecretToken()
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %w", err)
 	}

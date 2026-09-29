@@ -88,23 +88,6 @@ func (s *WorkspaceServer) ListMembers(ctx context.Context, req *chatv1.ListMembe
 	return &chatv1.ListMembersResponse{Members: presenter.ConvertAll(out.Members, presenter.WorkspaceMember)}, nil
 }
 
-func (s *WorkspaceServer) AddMemberByEmail(ctx context.Context, req *chatv1.AddMemberByEmailRequest) (*chatv1.AddMemberByEmailResponse, error) {
-	role := chatv1.WorkspaceRole_WORKSPACE_ROLE_MEMBER
-	if req.Role != chatv1.WorkspaceRole_WORKSPACE_ROLE_UNSPECIFIED {
-		role = req.Role
-	}
-	_, err := s.UC.AddMemberByEmail(ctx, workspaceuc.AddMemberByEmailInput{
-		WorkspaceID: req.WorkspaceId,
-		Email:       req.Email,
-		Role:        presenter.WorkspaceRoleName(role),
-		RequestedBy: userIDFrom(ctx),
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.AddMemberByEmailResponse{}, nil
-}
-
 func (s *WorkspaceServer) UpdateMemberRole(ctx context.Context, req *chatv1.UpdateMemberRoleRequest) (*chatv1.UpdateMemberRoleResponse, error) {
 	_, err := s.UC.UpdateMemberRole(ctx, workspaceuc.UpdateMemberRoleInput{
 		WorkspaceID: req.WorkspaceId,

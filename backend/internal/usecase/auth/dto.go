@@ -2,17 +2,24 @@ package auth
 
 import "time"
 
-// Input DTOs
-
-type RegisterInput struct {
-	Email       string
-	Password    string
-	DisplayName string
+// Settings は設定ファイルから渡す認証の挙動です
+type Settings struct {
+	AccessTokenTTL      time.Duration
+	RefreshTokenTTL     time.Duration
+	PasswordAuthEnabled bool
 }
+
+// Input DTOs
 
 type LoginInput struct {
 	Email    string
 	Password string
+}
+
+type SignUpWithInvitationInput struct {
+	Token       string
+	DisplayName string
+	Password    string
 }
 
 type RefreshTokenInput struct {
@@ -21,6 +28,15 @@ type RefreshTokenInput struct {
 
 type LogoutInput struct {
 	UserID string
+}
+
+// GoogleIdentity は検証済みの Google ID トークンから取り出した本人情報です
+type GoogleIdentity struct {
+	Sub           string
+	Email         string
+	EmailVerified bool
+	Name          string
+	Picture       string
 }
 
 // Output DTOs

@@ -13,6 +13,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	Auth     AuthConfig
 	Storage  StorageConfig
 	Wasabi   WasabiConfig
 	CORS     CORSConfig
@@ -48,6 +49,12 @@ type JWTConfig struct {
 	RefreshTokenTTL int // days
 }
 
+// AuthConfig は Google ログインとパスワード認証の設定。パスワード認証は production では既定で無効
+type AuthConfig struct {
+	GoogleOAuthClientID string
+	PasswordAuthEnabled bool
+}
+
 type WasabiConfig struct {
 	Endpoint        string
 	Region          string
@@ -63,10 +70,11 @@ type CORSConfig struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
+	env := getEnv("ENV", "development")
 	cfg := &Config{
 		Server: ServerConfig{
 			Port: getEnv("PORT", "8080"),
-			Env:  getEnv("ENV", "development"),
+			Env:  env,
 		},
 		Database: DatabaseConfig{
 			URL: getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
@@ -75,6 +83,10 @@ func Load() (*Config, error) {
 			Secret:          getEnv("JWT_SECRET", "change-me-in-production"),
 			AccessTokenTTL:  getEnvInt("JWT_ACCESS_TOKEN_TTL", 15),
 			RefreshTokenTTL: getEnvInt("JWT_REFRESH_TOKEN_TTL", 30),
+		},
+		Auth: AuthConfig{
+			GoogleOAuthClientID: getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
+			PasswordAuthEnabled: getEnvBool("PASSWORD_AUTH_ENABLED", env != "production"),
 		},
 		Storage: StorageConfig{
 			Driver:        getEnv("STORAGE_DRIVER", "wasabi"),
@@ -128,6 +140,13 @@ func getEnvInt(key string, defaultVal int) int {
 	return defaultVal
 }
 
+func getEnvBool(key string, defaultVal bool) bool {
+	if b, err := strconv.ParseBool(os.Getenv(key)); err == nil {
+		return b
+	}
+	return defaultVal
+}
+
 func (c *Config) Validate() error {
 	if c.JWT.Secret == "change-me-in-production" && c.Server.Env == "production" {
 		return fmt.Errorf("JWT_SECRET must be set in production")
@@ -137,6 +156,9 @@ func (c *Config) Validate() error {
 	}
 	if c.Server.Env == "production" && c.Storage.Driver == "wasabi" && (c.Wasabi.AccessKeyID == "" || c.Wasabi.SecretAccessKey == "") {
 		return fmt.Errorf("wasabi credentials must be set in production")
+	}
+	if c.Auth.GoogleOAuthClientID == "" && !c.Auth.PasswordAuthEnabled {
+		return fmt.Errorf("GOOGLE_OAUTH_CLIENT_ID or PASSWORD_AUTH_ENABLED must be set to allow login")
 	}
 	if c.Server.Env == "production" && os.Getenv("DATABASE_URL") == "" {
 		return fmt.Errorf("DATABASE_URL must be set in production")

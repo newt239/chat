@@ -14,7 +14,6 @@ service WorkspaceService {
   rpc ListPublicWorkspaces(ListPublicWorkspacesRequest) returns (ListPublicWorkspacesResponse);
   rpc JoinPublicWorkspace(JoinPublicWorkspaceRequest) returns (JoinPublicWorkspaceResponse);
   rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
-  rpc AddMemberByEmail(AddMemberByEmailRequest) returns (AddMemberByEmailResponse);
   rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse);
   rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse);
 }
@@ -136,21 +135,6 @@ message ListMembersRequest {
 message ListMembersResponse {
   repeated WorkspaceMember members = 1;
 }
-
-message AddMemberByEmailRequest {
-  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
-  string email = 2 [(buf.validate.field).string.email = true];
-  // 未指定の場合はメンバーとして追加する
-  WorkspaceRole role = 3 [(buf.validate.field).enum = {
-    in: [
-      0,
-      2,
-      3
-    ]
-  }];
-}
-
-message AddMemberByEmailResponse {}
 
 message UpdateMemberRoleRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
