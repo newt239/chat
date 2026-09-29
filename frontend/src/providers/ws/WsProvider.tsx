@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAtomValue } from "jotai";
 
+import { getIsMobileApp, isTauri } from "#/lib/platform/platform";
 import { WsClient } from "#/lib/ws";
 import { accessTokenAtom } from "#/providers/store/auth";
 import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
@@ -22,7 +23,9 @@ export const WsProvider = ({ children }: { children: React.ReactNode }) => {
       return undefined;
     }
 
-    const instance = new WsClient(accessToken, workspaceId);
+    const instance = new WsClient(accessToken, workspaceId, {
+      keepAliveWhenHidden: isTauri && !getIsMobileApp(),
+    });
     setWsClient(instance);
 
     return () => {

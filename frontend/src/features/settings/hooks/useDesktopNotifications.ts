@@ -30,7 +30,7 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
       if (
         message === undefined ||
         message.userId === myId ||
-        (channelId === currentChannelId && document.visibilityState === "visible") ||
+        (channelId === currentChannelId && document.hasFocus()) ||
         // 裏にいる間はプッシュ通知が届くので、そちらに任せる
         (pushToken !== null && document.visibilityState !== "visible")
       ) {
