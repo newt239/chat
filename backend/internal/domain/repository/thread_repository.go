@@ -32,6 +32,7 @@ type ThreadRepository interface {
 	FollowThread(ctx context.Context, userID, threadID string) error
 	UnfollowThread(ctx context.Context, userID, threadID string) error
 	IsFollowing(ctx context.Context, userID, threadID string) (bool, error)
+	FindFollowerIDs(ctx context.Context, threadID string) ([]string, error)
 }
 
 type FindParticipatingThreadsInput struct {

@@ -396,3 +396,25 @@ func (r *threadRepository) IsFollowing(ctx context.Context, userID, threadID str
 		).
 		Exist(ctx)
 }
+
+func (r *threadRepository) FindFollowerIDs(ctx context.Context, threadID string) ([]string, error) {
+	tid, err := utils.ParseUUID(threadID, "thread ID")
+	if err != nil {
+		return nil, err
+	}
+
+	client := transaction.ResolveClient(ctx, r.client)
+	ids, err := client.UserThreadFollow.Query().
+		Where(userthreadfollow.HasThreadWith(message.ID(tid))).
+		QueryUser().
+		IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]string, 0, len(ids))
+	for _, id := range ids {
+		result = append(result, id.String())
+	}
+	return result, nil
+}

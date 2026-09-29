@@ -4,6 +4,7 @@ import { Outlet, useCanGoBack, useMatches, useNavigate, useRouter } from "@tanst
 import { useAtom } from "jotai";
 
 import { MiniPlayer } from "#/features/player/components/MiniPlayer";
+import { useVisualViewport } from "#/lib/useVisualViewport";
 import { ActivityPage } from "#/pages/ActivityPage";
 import { DMsPage } from "#/pages/DMsPage";
 import { MePage } from "#/pages/MePage";
@@ -44,6 +45,8 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
   const routeTab = tabRoutes[leafRouteId];
   const tab = routeTab ?? lastTab;
   const { close, content } = useRightPanel(workspaceId);
+  const viewport = useVisualViewport();
+  const showTabBar = routeTab !== undefined && !content && !viewport?.keyboardOpen;
 
   useEffect(() => {
     if (routeTab !== undefined) {
@@ -60,7 +63,11 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
   };
 
   return (
-    <div className="flex h-full flex-col bg-surface pt-[env(safe-area-inset-top)] font-sans text-text [word-break:auto-phrase]">
+    <div
+      data-keyboard={viewport?.keyboardOpen || undefined}
+      style={{ height: viewport?.height }}
+      className="group/shell flex h-full flex-col bg-surface pt-[env(safe-area-inset-top)] font-sans text-text [word-break:auto-phrase]"
+    >
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {tab === "home" && <MobileHome workspaceId={workspaceId} />}
         {tab === "dms" && <DMsPage />}
@@ -84,8 +91,8 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
         )}
       </div>
       {/* タブの画面ではボトムタブの上に出す。チャンネルの画面では入力欄の上（ChannelPage） */}
-      {routeTab !== undefined && !content && <MiniPlayer variant="mobile" />}
-      {routeTab !== undefined && !content && <MobileTabBar workspaceId={workspaceId} />}
+      {showTabBar && <MiniPlayer variant="mobile" />}
+      {showTabBar && <MobileTabBar workspaceId={workspaceId} />}
     </div>
   );
 };

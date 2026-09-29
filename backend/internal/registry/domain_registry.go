@@ -24,6 +24,10 @@ func (r *DomainRegistry) NewUserRepository() domainrepository.UserRepository {
 	return repository.NewUserRepository(r.client)
 }
 
+func (r *DomainRegistry) NewPushTokenRepository() domainrepository.PushTokenRepository {
+	return repository.NewPushTokenRepository(r.client)
+}
+
 func (r *DomainRegistry) NewSessionRepository() domainrepository.SessionRepository {
 	return repository.NewSessionRepository(r.client)
 }

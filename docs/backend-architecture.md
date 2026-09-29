@@ -315,6 +315,7 @@ func (r *InterfaceRegistry) NewRPCHandler() http.Handler {
 
 ### 11. 通知システム
 
+- プッシュ通知（FCM）は `usecase/notification` が宛先を決めて送る（`docs/notifications.md`）。
 - WebSocket ベースのリアルタイム通知。各ユースケースが必要な通知だけを `Notifier` インターフェースとして定義し、`interfaces/handler/websocket` の `Notifier` がまとめて実装する
 - 新規メッセージの即時配信
 - 未読メッセージカウント更新

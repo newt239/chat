@@ -18,14 +18,20 @@ export const settings: Messages["settings"] = {
   notifications: {
     denied: "Notifications are blocked in this browser",
     desktop: "Desktop notifications",
-    desktopDescription: "Show notifications in this browser",
+    desktopDescription: "Show notifications in this browser while the app is open",
     level: "Notify me about",
+    levelDescription: "Shared across all your devices",
     levels: {
       all: "All messages",
       mentions: "Mentions and DMs",
       none: "Nothing",
     },
-    muteHint: "Muted channels and DMs never notify you. Right-click a sidebar item to mute it.",
+    muteHint:
+      "Muted channels and DMs never notify you. Mute from the “More” menu in the channel header.",
+    push: "Push notifications",
+    pushDescription:
+      "Notify this device about mentions, DMs and replies in threads you follow, even when the app is closed",
+    pushFailed: "Couldn't turn on push notifications",
   },
   profile: {
     avatarUrl: "Avatar URL",

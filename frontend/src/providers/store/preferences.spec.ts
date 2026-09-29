@@ -18,12 +18,25 @@ describe("preferencesAtom", () => {
     const saved = {
       locale: "en",
       mode: "dark",
+      notificationLevel: "all",
       theme: { chroma: 0.2, hue: 100, sidebar: "light" },
     };
 
     const { preferences } = await loadPreferences(saved);
 
     expect(preferences).toStrictEqual(saved);
+  });
+
+  test("通知の範囲がない以前の保存値は既定の範囲で補う", async () => {
+    const saved = {
+      locale: "en",
+      mode: "dark",
+      theme: { chroma: 0.2, hue: 100, sidebar: "light" },
+    };
+
+    const { preferences } = await loadPreferences(saved);
+
+    expect(preferences).toStrictEqual({ ...saved, notificationLevel: "mentions" });
   });
 
   test("壊れた値は既定値に置き換える", async () => {

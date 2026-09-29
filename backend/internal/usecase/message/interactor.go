@@ -50,6 +50,7 @@ func NewMessageUseCase(
 	permissionSvc service.PermissionService,
 	logger service.Logger,
 	searchIndexer SearchIndexer,
+	pushNotifier PushNotifier,
 ) MessageUseCase {
 	return &messageInteractor{
 		creator: NewMessageCreator(
@@ -66,6 +67,7 @@ func NewMessageUseCase(
 			outputBuilder,
 			channelAccessSvc,
 			searchIndexer,
+			pushNotifier,
 		),
 		updater: NewMessageUpdater(
 			messageRepo,

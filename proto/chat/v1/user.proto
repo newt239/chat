@@ -27,6 +27,14 @@ enum ColorMode {
   COLOR_MODE_SYSTEM = 3;
 }
 
+// 通知を受け取る範囲。すべて / メンションと DM のみ / なし
+enum NotificationLevel {
+  NOTIFICATION_LEVEL_UNSPECIFIED = 0;
+  NOTIFICATION_LEVEL_ALL = 1;
+  NOTIFICATION_LEVEL_MENTIONS = 2;
+  NOTIFICATION_LEVEL_NONE = 3;
+}
+
 // テーマ入力。色は OKLCH の色相と彩度から計算する
 message ThemePreference {
   int32 hue = 1 [(buf.validate.field).int32 = {
@@ -43,7 +51,7 @@ message ThemePreference {
   }];
 }
 
-// 端末をまたいで共有する表示設定
+// 端末をまたいで共有する表示・通知の設定
 message UserPreferences {
   ThemePreference theme = 1 [(buf.validate.field).required = true];
   ColorMode color_mode = 2 [(buf.validate.field).enum = {
@@ -55,6 +63,10 @@ message UserPreferences {
       "ja",
       "en"
     ]
+  }];
+  NotificationLevel notification_level = 4 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
   }];
 }
 

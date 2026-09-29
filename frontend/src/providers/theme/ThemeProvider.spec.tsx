@@ -40,7 +40,12 @@ describe("ThemeProvider", () => {
   });
 
   test("テーマのトークンを CSS 変数として書き込む", () => {
-    renderWithPreferences({ locale: "ja", mode: "light", theme: themePresets.cobalt });
+    renderWithPreferences({
+      locale: "ja",
+      mode: "light",
+      notificationLevel: "mentions",
+      theme: themePresets.cobalt,
+    });
 
     const tokens = buildTokens(themePresets.cobalt, "light");
     expect(root.style.getPropertyValue("--c-accent")).toBe(tokens.accent);
@@ -50,23 +55,41 @@ describe("ThemeProvider", () => {
   });
 
   test("ダークモードを反映し、子にも解決後のモードを渡す", () => {
-    renderWithPreferences({ locale: "ja", mode: "dark", theme: themePresets.jade });
+    const themeColor = document.createElement("meta");
+    themeColor.name = "theme-color";
+    document.head.append(themeColor);
+    renderWithPreferences({
+      locale: "ja",
+      mode: "dark",
+      notificationLevel: "mentions",
+      theme: themePresets.jade,
+    });
 
+    const { surface } = buildTokens(themePresets.jade, "dark");
     expect(root.dataset.mode).toBe("dark");
-    expect(root.style.getPropertyValue("--c-surface")).toBe(
-      buildTokens(themePresets.jade, "dark").surface,
-    );
+    expect(root.style.getPropertyValue("--c-surface")).toBe(surface);
+    expect(themeColor.content).toBe(surface);
     expect(screen.getByText(/dark/)).toBeInTheDocument();
   });
 
   test("system はOSの設定に従う（テストではライト）", () => {
-    renderWithPreferences({ locale: "ja", mode: "system", theme: themePresets.jade });
+    renderWithPreferences({
+      locale: "ja",
+      mode: "system",
+      notificationLevel: "mentions",
+      theme: themePresets.jade,
+    });
 
     expect(root.dataset.mode).toBe("light");
   });
 
   test("言語を切り替える", () => {
-    renderWithPreferences({ locale: "en", mode: "light", theme: themePresets.jade });
+    renderWithPreferences({
+      locale: "en",
+      mode: "light",
+      notificationLevel: "mentions",
+      theme: themePresets.jade,
+    });
 
     expect(root.lang).toBe("en");
     expect(screen.getByText(/Cancel/)).toBeInTheDocument();

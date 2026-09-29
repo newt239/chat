@@ -40,6 +40,8 @@ const (
 	FieldColorMode = "color_mode"
 	// FieldLocale holds the string denoting the locale field in the database.
 	FieldLocale = "locale"
+	// FieldNotificationLevel holds the string denoting the notification_level field in the database.
+	FieldNotificationLevel = "notification_level"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -180,6 +182,7 @@ var Columns = []string{
 	FieldThemeSidebar,
 	FieldColorMode,
 	FieldLocale,
+	FieldNotificationLevel,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -272,6 +275,33 @@ func ColorModeValidator(cm ColorMode) error {
 	}
 }
 
+// NotificationLevel defines the type for the "notification_level" enum field.
+type NotificationLevel string
+
+// NotificationLevelMentions is the default value of the NotificationLevel enum.
+const DefaultNotificationLevel = NotificationLevelMentions
+
+// NotificationLevel values.
+const (
+	NotificationLevelAll      NotificationLevel = "all"
+	NotificationLevelMentions NotificationLevel = "mentions"
+	NotificationLevelNone     NotificationLevel = "none"
+)
+
+func (nl NotificationLevel) String() string {
+	return string(nl)
+}
+
+// NotificationLevelValidator is a validator for the "notification_level" field enum values. It is called by the builders before save.
+func NotificationLevelValidator(nl NotificationLevel) error {
+	switch nl {
+	case NotificationLevelAll, NotificationLevelMentions, NotificationLevelNone:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for notification_level field: %q", nl)
+	}
+}
+
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
 
@@ -338,6 +368,11 @@ func ByColorMode(opts ...sql.OrderTermOption) OrderOption {
 // ByLocale orders the results by the locale field.
 func ByLocale(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLocale, opts...).ToFunc()
+}
+
+// ByNotificationLevel orders the results by the notification_level field.
+func ByNotificationLevel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotificationLevel, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

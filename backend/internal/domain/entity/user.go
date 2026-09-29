@@ -41,11 +41,21 @@ const (
 	ColorModeSystem ColorMode = "system"
 )
 
-// UserPreferences は端末をまたいで共有する表示設定です
+// NotificationLevel は通知を受け取る範囲です
+type NotificationLevel string
+
+const (
+	NotificationLevelAll      NotificationLevel = "all"
+	NotificationLevelMentions NotificationLevel = "mentions"
+	NotificationLevelNone     NotificationLevel = "none"
+)
+
+// UserPreferences は端末をまたいで共有する表示・通知の設定です
 type UserPreferences struct {
-	ThemeHue     int
-	ThemeChroma  float64
-	ThemeSidebar SidebarStyle
-	ColorMode    ColorMode
-	Locale       string
+	ThemeHue          int
+	ThemeChroma       float64
+	ThemeSidebar      SidebarStyle
+	ColorMode         ColorMode
+	Locale            string
+	NotificationLevel NotificationLevel
 }

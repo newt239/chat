@@ -8,12 +8,14 @@ import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { navigateTo } from "#/lib/navigation";
 import { userAtom } from "#/providers/store/auth";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
+import { preferencesAtom } from "#/providers/store/preferences";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
-/** 設定に従って新着メッセージをブラウザの通知で知らせる。ミュート中と表示中のチャンネルは除く */
+/** 設定に従って新着メッセージをブラウザの通知で知らせる。ミュート中と表示中のチャンネルは除く。プッシュ通知と同じ tag で出し、二重にならないようにする */
 export const useDesktopNotifications = (workspaceId: string, currentChannelId: string | null) => {
   const { wsClient } = useWsClient();
-  const { desktop, level } = useAtomValue(notificationPreferencesAtom);
+  const { desktop, pushToken } = useAtomValue(notificationPreferencesAtom);
+  const level = useAtomValue(preferencesAtom).notificationLevel;
   const myId = useAtomValue(userAtom)?.id;
   const { data: channels } = useChannels(workspaceId);
   const { data: dms } = useDMs(workspaceId);
@@ -28,6 +30,8 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
         message === undefined ||
         message.userId === myId ||
         (channelId === currentChannelId && document.visibilityState === "visible") ||
+        // 裏にいる間はプッシュ通知が届くので、そちらに任せる
+        (pushToken !== null && document.visibilityState !== "visible") ||
         Notification.permission !== "granted"
       ) {
         return;
@@ -54,5 +58,16 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
         });
       });
     });
-  }, [wsClient, desktop, level, myId, channels, dms, currentChannelId, workspaceId, displayName]);
+  }, [
+    wsClient,
+    desktop,
+    pushToken,
+    level,
+    myId,
+    channels,
+    dms,
+    currentChannelId,
+    workspaceId,
+    displayName,
+  ]);
 };

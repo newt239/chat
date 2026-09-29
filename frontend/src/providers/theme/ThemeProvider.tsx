@@ -29,6 +29,10 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       root.style.setProperty(name, value);
     }
     root.dataset.mode = colorMode;
+    // ホーム画面から開いたときのステータスバーを見出しの色に合わせる
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", variables["--c-surface"] ?? "");
   }, [variables, colorMode]);
 
   useLayoutEffect(() => {

@@ -2,7 +2,13 @@ import { create } from "@bufbuild/protobuf";
 import { colorModePreferences, defaultTheme, sidebarStyles } from "@chat/design-tokens";
 import { resolveLocale } from "@chat/i18n";
 
-import { ColorMode, SidebarStyle, UserPreferencesSchema } from "#/gen/chat/v1/user_pb";
+import {
+  ColorMode,
+  NotificationLevel,
+  SidebarStyle,
+  UserPreferencesSchema,
+} from "#/gen/chat/v1/user_pb";
+import { notificationLevels } from "#/providers/store/preferences";
 
 import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 import type { Preferences } from "#/providers/store/preferences";
@@ -20,10 +26,17 @@ const colorModeValues: Record<ColorModePreference, ColorMode> = {
   system: ColorMode.SYSTEM,
 };
 
-export const preferencesToProto = ({ locale, mode, theme }: Preferences) =>
+const notificationLevelValues: Record<Preferences["notificationLevel"], NotificationLevel> = {
+  all: NotificationLevel.ALL,
+  mentions: NotificationLevel.MENTIONS,
+  none: NotificationLevel.NONE,
+};
+
+export const preferencesToProto = ({ locale, mode, notificationLevel, theme }: Preferences) =>
   create(UserPreferencesSchema, {
     colorMode: colorModeValues[mode],
     locale,
+    notificationLevel: notificationLevelValues[notificationLevel],
     theme: {
       chroma: theme.chroma,
       hue: Math.round(theme.hue) % 360,
@@ -31,9 +44,17 @@ export const preferencesToProto = ({ locale, mode, theme }: Preferences) =>
     },
   });
 
-export const preferencesFromProto = ({ colorMode, locale, theme }: UserPreferences) => ({
+export const preferencesFromProto = ({
+  colorMode,
+  locale,
+  notificationLevel,
+  theme,
+}: UserPreferences) => ({
   locale: resolveLocale(locale),
   mode: colorModePreferences.find((mode) => colorModeValues[mode] === colorMode) ?? "system",
+  notificationLevel:
+    notificationLevels.find((level) => notificationLevelValues[level] === notificationLevel) ??
+    "mentions",
   theme: theme
     ? {
         chroma: theme.chroma,

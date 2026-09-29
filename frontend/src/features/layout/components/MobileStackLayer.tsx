@@ -47,7 +47,8 @@ export const MobileStackLayer = ({ onBack, children }: MobileStackLayerProps) =>
             back();
           }
         }}
-        className="absolute inset-0 flex flex-col bg-surface shadow-xl"
+        // 入力欄をホームインジケーターから離す。キーボードが出ている間は不要
+        className="absolute inset-0 flex flex-col bg-surface pb-[env(safe-area-inset-bottom)] shadow-xl group-data-keyboard/shell:pb-0"
       >
         <div
           aria-hidden

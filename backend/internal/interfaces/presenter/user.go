@@ -29,6 +29,12 @@ var colorModes = map[entity.ColorMode]chatv1.ColorMode{
 	entity.ColorModeSystem: chatv1.ColorMode_COLOR_MODE_SYSTEM,
 }
 
+var notificationLevels = map[entity.NotificationLevel]chatv1.NotificationLevel{
+	entity.NotificationLevelAll:      chatv1.NotificationLevel_NOTIFICATION_LEVEL_ALL,
+	entity.NotificationLevelMentions: chatv1.NotificationLevel_NOTIFICATION_LEVEL_MENTIONS,
+	entity.NotificationLevelNone:     chatv1.NotificationLevel_NOTIFICATION_LEVEL_NONE,
+}
+
 func Preferences(p entity.UserPreferences) *chatv1.UserPreferences {
 	return &chatv1.UserPreferences{
 		Theme: &chatv1.ThemePreference{
@@ -36,8 +42,9 @@ func Preferences(p entity.UserPreferences) *chatv1.UserPreferences {
 			Chroma:  p.ThemeChroma,
 			Sidebar: sidebarStyles[p.ThemeSidebar],
 		},
-		ColorMode: colorModes[p.ColorMode],
-		Locale:    p.Locale,
+		ColorMode:         colorModes[p.ColorMode],
+		Locale:            p.Locale,
+		NotificationLevel: notificationLevels[p.NotificationLevel],
 	}
 }
 
@@ -56,6 +63,11 @@ func PreferencesFromProto(p *chatv1.UserPreferences) entity.UserPreferences {
 	for k, v := range colorModes {
 		if v == p.GetColorMode() {
 			out.ColorMode = k
+		}
+	}
+	for k, v := range notificationLevels {
+		if v == p.GetNotificationLevel() {
+			out.NotificationLevel = k
 		}
 	}
 	return out

@@ -23,12 +23,12 @@ export const ToastRegion = () => {
     <AriaToastRegion
       queue={toastQueue}
       aria-label={t("ui.toast.region")}
-      className="fixed bottom-5 left-1/2 z-[400] flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
+      className="fixed bottom-5 left-1/2 max-md:bottom-[calc(72px+env(safe-area-inset-bottom))] z-[400] flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
     >
       {({ toast }) => (
         <Toast
           toast={toast}
-          className={`flex max-w-[min(480px,calc(100vw-32px))] animate-pop-in items-center gap-2 rounded-md bg-text py-[7px] pr-1.5 pl-3.5 font-sans text-[13px] text-surface shadow-lg motion-reduce:animate-none ${focusRing}`}
+          className={`flex w-max max-w-[min(480px,calc(100vw-32px))] animate-pop-in items-center gap-2 rounded-md bg-text py-[7px] pr-1.5 pl-3.5 font-sans text-[13px] text-surface shadow-lg motion-reduce:animate-none ${focusRing}`}
         >
           {toneIcons[toast.content.tone]}
           <ToastContent className="flex min-w-0 flex-1 flex-col">
@@ -41,6 +41,17 @@ export const ToastRegion = () => {
               </Text>
             )}
           </ToastContent>
+          {toast.content.action && (
+            <Button
+              onPress={() => {
+                toast.content.action?.onAction();
+                toastQueue.close(toast.key);
+              }}
+              className={`shrink-0 cursor-pointer rounded-sm px-2 py-1 whitespace-nowrap font-semibold text-accent-soft data-hovered:underline ${focusRing}`}
+            >
+              {toast.content.action.label}
+            </Button>
+          )}
           <Button
             slot="close"
             aria-label={t("ui.toast.dismiss")}

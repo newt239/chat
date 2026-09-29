@@ -4,8 +4,10 @@ import { useChannelRealtimeSync } from "#/features/channel/hooks/useChannelRealt
 import { useChannelViewersSync } from "#/features/channel/hooks/useChannelViewers";
 import { useDMRealtimeSync } from "#/features/dm/hooks/useDMRealtimeSync";
 import { useDesktopNotifications } from "#/features/settings/hooks/useDesktopNotifications";
+import { useSyncPushToken } from "#/features/settings/hooks/usePushNotifications";
 import { useIsMobile } from "#/lib/useMediaQuery";
 
+import { useAppBadge } from "../hooks/useAppBadge";
 import { useGlobalShortcuts } from "../hooks/useGlobalShortcuts";
 import { MobileShell } from "./MobileShell";
 import { RightSidePanel } from "./RightSidePanel";
@@ -28,6 +30,8 @@ export const AppShell = ({ workspaceId }: AppShellProps) => {
   useDesktopNotifications(workspaceId, currentChannelId);
   useGlobalShortcuts(workspaceId);
   useChannelViewersSync();
+  useAppBadge(workspaceId);
+  useSyncPushToken();
 
   return (
     <>

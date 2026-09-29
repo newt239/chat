@@ -25,3 +25,5 @@ allowBuilds:
   unrs-resolver: true
   lefthook: true
   sharp: true
+  # 自動初期化用の設定を生成するだけで、設定は VITE_FIREBASE_* から渡すため不要
+  "@firebase/util": false

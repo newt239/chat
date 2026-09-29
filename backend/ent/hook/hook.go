@@ -201,6 +201,18 @@ func (f MessageUserMentionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MessageUserMentionMutation", m)
 }
 
+// The PushTokenFunc type is an adapter to allow the use of ordinary
+// function as PushToken mutator.
+type PushTokenFunc func(context.Context, *ent.PushTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PushTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PushTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PushTokenMutation", m)
+}
+
 // The SessionFunc type is an adapter to allow the use of ordinary
 // function as Session mutator.
 type SessionFunc func(context.Context, *ent.SessionMutation) (ent.Value, error)
