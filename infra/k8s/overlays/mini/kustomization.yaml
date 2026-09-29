@@ -1,0 +1,65 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chat-mini
+
+resources:
+  - ../../base
+  - artifact-registry-token.yaml
+
+# deploy ワークフローが kustomize edit set image でタグを書き換える
+images:
+  - name: backend
+    newName: asia-northeast1-docker.pkg.dev/your-gcp-project-id/chat-mini/backend
+    newTag: latest
+  - name: frontend
+    newName: asia-northeast1-docker.pkg.dev/your-gcp-project-id/chat-mini/frontend
+    newTag: latest
+
+configMapGenerator:
+  - name: backend-env
+    behavior: merge
+    literals:
+      - CORS_ALLOWED_ORIGINS=https://chat-mini.example.com
+      - WASABI_BUCKET=example-chat-mini-attachments
+      - GOOGLE_OAUTH_CLIENT_ID=
+      - FIREBASE_PROJECT_ID=your-gcp-project-id
+      - PASSWORD_AUTH_ENABLED=true
+      # Neon はアクセスがないと停止するので、アイドルの接続を早く閉じ、予約投稿の確認も間を空ける
+      - DB_MAX_OPEN_CONNS=5
+      - DB_MAX_IDLE_CONNS=2
+      - DB_CONN_MAX_IDLE_TIME=1m
+      - SCHEDULED_MESSAGE_DISPATCH_INTERVAL=15m
+
+# gitignore した env ファイルから作る（*.env.example を参照）
+secretGenerator:
+  - name: backend-secrets
+    envs:
+      - backend-secrets.env
+  - name: cloudflared-token
+    envs:
+      - cloudflared.env
+
+patches:
+  - target: { kind: Deployment, name: "frontend|cloudflared" }
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target: { kind: Deployment, name: "backend|frontend" }
+    patch: |-
+      - op: add
+        path: /spec/template/spec/imagePullSecrets
+        value:
+          - name: artifact-registry
+  # e2-medium（メモリ 4GB）1 台に収める
+  - target: { kind: Deployment, name: backend }
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 128Mi
+  - target: { kind: StatefulSet, name: meilisearch }
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 256Mi
