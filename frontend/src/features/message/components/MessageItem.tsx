@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 
-import { formatDateTime, formatTime } from "@chat/i18n";
 import { IconBookmarkFilled, IconPin } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -24,7 +23,6 @@ import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/reactionTabs";
 import { toDate } from "#/lib/timestamp";
 import { useIsMobile } from "#/lib/useMediaQuery";
 import { userAtom } from "#/providers/store/auth";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useLongPress } from "../hooks/useLongPress";
 import { useMessageActions } from "../hooks/useMessageActions";
@@ -33,6 +31,7 @@ import { useOwnsMessageOverlay } from "../hooks/useOwnsMessageOverlay";
 import { MessageActionSheet } from "./MessageActionSheet";
 import { MessageContent } from "./MessageContent";
 import { MessageEditor } from "./MessageEditor";
+import { MessageTime } from "./MessageTime";
 import { MessageToolbar } from "./MessageToolbar";
 import { ThreadMetadataPreview } from "./ThreadMetadataPreview";
 
@@ -61,7 +60,6 @@ export const MessageItem = ({
   channelChip = null,
 }: MessageItemProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
   const currentUser = useAtomValue(userAtom);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -210,13 +208,7 @@ export const MessageItem = ({
               {displayName}
             </Button>
           )}
-          <time
-            dateTime={createdAt.toISOString()}
-            title={formatDateTime(createdAt, locale)}
-            className="font-mono text-[11.5px] text-subtle tabular-nums"
-          >
-            {formatTime(createdAt, locale)}
-          </time>
+          <MessageTime date={createdAt} />
           {channelChip}
           {message.editedAt && !message.isDeleted && (
             <span className="text-[11px] text-subtle">{t("message.edited")}</span>

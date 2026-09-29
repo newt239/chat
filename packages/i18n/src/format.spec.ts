@@ -4,6 +4,7 @@ import {
   formatBytes,
   formatDate,
   formatDateTime,
+  formatFullDateTime,
   formatMonthDay,
   formatNumber,
   formatRelativeTime,
@@ -28,6 +29,12 @@ describe("日付・時刻のフォーマット", () => {
   it("日時を言語に合わせて表示する", () => {
     expect(formatDateTime(date, "ja")).toBe("2026年9月28日 10:16");
     expect(formatDateTime(date, "en")).toBe("Sep 28, 2026, 10:16 AM");
+  });
+
+  it("曜日と秒を含む日時を言語に合わせて表示する", () => {
+    const withSeconds = new Date(2026, 8, 28, 10, 16, 5);
+    expect(formatFullDateTime(withSeconds, "ja")).toBe("2026年9月28日(月) 10:16:05");
+    expect(formatFullDateTime(withSeconds, "en")).toBe("Mon, Sep 28, 2026, 10:16:05 AM");
   });
 
   it("曜日を言語に合わせて表示する", () => {

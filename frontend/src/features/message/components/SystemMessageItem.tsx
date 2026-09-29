@@ -1,14 +1,13 @@
-import { formatDateTime, formatTime } from "@chat/i18n";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { SystemMessageKind } from "#/gen/chat/v1/message_pb";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
+
+import { MessageTime } from "./MessageTime";
 
 import type { SystemMessage } from "#/gen/chat/v1/message_pb";
 
@@ -22,7 +21,6 @@ const textOf = (value: JsonValue | undefined) => (typeof value === "string" ? va
 
 export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
   const { workspaceId } = useParams({ strict: false });
   const { data: members } = useMembers(workspaceId ?? null);
   const displayName = useDisplayName();
@@ -62,13 +60,7 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
         <IconInfoCircle aria-hidden />
       </span>
       <span className="min-w-0">{texts[message.kind]()}</span>
-      <time
-        dateTime={createdAt.toISOString()}
-        title={formatDateTime(createdAt, locale)}
-        className="shrink-0 font-mono text-[11.5px] text-subtle tabular-nums"
-      >
-        {formatTime(createdAt, locale)}
-      </time>
+      <MessageTime date={createdAt} />
     </div>
   );
 };
