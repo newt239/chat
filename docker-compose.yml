@@ -67,7 +67,7 @@ services:
       - PORT=8080
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
       - JWT_SECRET=development-secret-key
-      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,tauri://localhost,https://tauri.localhost
       - MEILISEARCH_URL=http://meilisearch:7700
       - MEILISEARCH_API_KEY=development-master-key
       - REDIS_URL=redis://redis:6379
