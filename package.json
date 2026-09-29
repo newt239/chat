@@ -26,5 +26,12 @@
     "lefthook": "2.1.14",
     "turbo": "2.10.12"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "26.10.0",
+      "onFail": "download"
+    }
+  },
   "packageManager": "pnpm@12.5.1"
 }
