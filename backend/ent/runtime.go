@@ -14,6 +14,7 @@ import (
 	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
+	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -208,6 +209,28 @@ func init() {
 	channelstarDescID := channelstarFields[0].Descriptor()
 	// channelstar.DefaultID holds the default value on creation for the id field.
 	channelstar.DefaultID = channelstarDescID.Default.(func() uuid.UUID)
+	invitationFields := schema.Invitation{}.Fields()
+	_ = invitationFields
+	// invitationDescEmail is the schema descriptor for email field.
+	invitationDescEmail := invitationFields[1].Descriptor()
+	// invitation.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	invitation.EmailValidator = invitationDescEmail.Validators[0].(func(string) error)
+	// invitationDescRole is the schema descriptor for role field.
+	invitationDescRole := invitationFields[2].Descriptor()
+	// invitation.RoleValidator is a validator for the "role" field. It is called by the builders before save.
+	invitation.RoleValidator = invitationDescRole.Validators[0].(func(string) error)
+	// invitationDescTokenHash is the schema descriptor for token_hash field.
+	invitationDescTokenHash := invitationFields[3].Descriptor()
+	// invitation.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
+	invitation.TokenHashValidator = invitationDescTokenHash.Validators[0].(func(string) error)
+	// invitationDescCreatedAt is the schema descriptor for created_at field.
+	invitationDescCreatedAt := invitationFields[6].Descriptor()
+	// invitation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	invitation.DefaultCreatedAt = invitationDescCreatedAt.Default.(func() time.Time)
+	// invitationDescID is the schema descriptor for id field.
+	invitationDescID := invitationFields[0].Descriptor()
+	// invitation.DefaultID holds the default value on creation for the id field.
+	invitation.DefaultID = invitationDescID.Default.(func() uuid.UUID)
 	messageFields := schema.Message{}.Fields()
 	_ = messageFields
 	// messageDescBody is the schema descriptor for body field.
@@ -357,31 +380,31 @@ func init() {
 	// user.PasswordHashValidator is a validator for the "password_hash" field. It is called by the builders before save.
 	user.PasswordHashValidator = userDescPasswordHash.Validators[0].(func(string) error)
 	// userDescDisplayName is the schema descriptor for display_name field.
-	userDescDisplayName := userFields[3].Descriptor()
+	userDescDisplayName := userFields[4].Descriptor()
 	// user.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
 	// userDescIsBot is the schema descriptor for is_bot field.
-	userDescIsBot := userFields[6].Descriptor()
+	userDescIsBot := userFields[7].Descriptor()
 	// user.DefaultIsBot holds the default value on creation for the is_bot field.
 	user.DefaultIsBot = userDescIsBot.Default.(bool)
 	// userDescThemeHue is the schema descriptor for theme_hue field.
-	userDescThemeHue := userFields[7].Descriptor()
+	userDescThemeHue := userFields[8].Descriptor()
 	// user.DefaultThemeHue holds the default value on creation for the theme_hue field.
 	user.DefaultThemeHue = userDescThemeHue.Default.(int)
 	// userDescThemeChroma is the schema descriptor for theme_chroma field.
-	userDescThemeChroma := userFields[8].Descriptor()
+	userDescThemeChroma := userFields[9].Descriptor()
 	// user.DefaultThemeChroma holds the default value on creation for the theme_chroma field.
 	user.DefaultThemeChroma = userDescThemeChroma.Default.(float64)
 	// userDescLocale is the schema descriptor for locale field.
-	userDescLocale := userFields[11].Descriptor()
+	userDescLocale := userFields[12].Descriptor()
 	// user.DefaultLocale holds the default value on creation for the locale field.
 	user.DefaultLocale = userDescLocale.Default.(string)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[12].Descriptor()
+	userDescCreatedAt := userFields[13].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[13].Descriptor()
+	userDescUpdatedAt := userFields[14].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

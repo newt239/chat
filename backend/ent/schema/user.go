@@ -24,6 +24,11 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("password_hash").
 			NotEmpty(),
+		// 初回の Google ログインで紐付ける
+		field.String("google_sub").
+			Optional().
+			Nillable().
+			Unique(),
 		field.String("display_name").
 			NotEmpty(),
 		field.String("bio").

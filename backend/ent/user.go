@@ -22,6 +22,8 @@ type User struct {
 	Email string `json:"email,omitempty"`
 	// PasswordHash holds the value of the "password_hash" field.
 	PasswordHash string `json:"password_hash,omitempty"`
+	// GoogleSub holds the value of the "google_sub" field.
+	GoogleSub *string `json:"google_sub,omitempty"`
 	// DisplayName holds the value of the "display_name" field.
 	DisplayName string `json:"display_name,omitempty"`
 	// Bio holds the value of the "bio" field.
@@ -211,7 +213,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case user.FieldThemeHue:
 			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -249,6 +251,13 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field password_hash", values[i])
 			} else if value.Valid {
 				_m.PasswordHash = value.String
+			}
+		case user.FieldGoogleSub:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field google_sub", values[i])
+			} else if value.Valid {
+				_m.GoogleSub = new(string)
+				*_m.GoogleSub = value.String
 			}
 		case user.FieldDisplayName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -422,6 +431,11 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("password_hash=")
 	builder.WriteString(_m.PasswordHash)
+	builder.WriteString(", ")
+	if v := _m.GoogleSub; v != nil {
+		builder.WriteString("google_sub=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("display_name=")
 	builder.WriteString(_m.DisplayName)

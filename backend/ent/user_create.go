@@ -49,6 +49,20 @@ func (_c *UserCreate) SetPasswordHash(v string) *UserCreate {
 	return _c
 }
 
+// SetGoogleSub sets the "google_sub" field.
+func (_c *UserCreate) SetGoogleSub(v string) *UserCreate {
+	_c.mutation.SetGoogleSub(v)
+	return _c
+}
+
+// SetNillableGoogleSub sets the "google_sub" field if the given value is not nil.
+func (_c *UserCreate) SetNillableGoogleSub(v *string) *UserCreate {
+	if v != nil {
+		_c.SetGoogleSub(*v)
+	}
+	return _c
+}
+
 // SetDisplayName sets the "display_name" field.
 func (_c *UserCreate) SetDisplayName(v string) *UserCreate {
 	_c.mutation.SetDisplayName(v)
@@ -581,6 +595,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
 		_node.PasswordHash = value
 	}
+	if value, ok := _c.mutation.GoogleSub(); ok {
+		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)
+		_node.GoogleSub = &value
+	}
 	if value, ok := _c.mutation.DisplayName(); ok {
 		_spec.SetField(user.FieldDisplayName, field.TypeString, value)
 		_node.DisplayName = value
@@ -909,6 +927,24 @@ func (u *UserUpsert) UpdatePasswordHash() *UserUpsert {
 	return u
 }
 
+// SetGoogleSub sets the "google_sub" field.
+func (u *UserUpsert) SetGoogleSub(v string) *UserUpsert {
+	u.Set(user.FieldGoogleSub, v)
+	return u
+}
+
+// UpdateGoogleSub sets the "google_sub" field to the value that was provided on create.
+func (u *UserUpsert) UpdateGoogleSub() *UserUpsert {
+	u.SetExcluded(user.FieldGoogleSub)
+	return u
+}
+
+// ClearGoogleSub clears the value of the "google_sub" field.
+func (u *UserUpsert) ClearGoogleSub() *UserUpsert {
+	u.SetNull(user.FieldGoogleSub)
+	return u
+}
+
 // SetDisplayName sets the "display_name" field.
 func (u *UserUpsert) SetDisplayName(v string) *UserUpsert {
 	u.Set(user.FieldDisplayName, v)
@@ -1129,6 +1165,27 @@ func (u *UserUpsertOne) SetPasswordHash(v string) *UserUpsertOne {
 func (u *UserUpsertOne) UpdatePasswordHash() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdatePasswordHash()
+	})
+}
+
+// SetGoogleSub sets the "google_sub" field.
+func (u *UserUpsertOne) SetGoogleSub(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGoogleSub(v)
+	})
+}
+
+// UpdateGoogleSub sets the "google_sub" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateGoogleSub() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGoogleSub()
+	})
+}
+
+// ClearGoogleSub clears the value of the "google_sub" field.
+func (u *UserUpsertOne) ClearGoogleSub() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGoogleSub()
 	})
 }
 
@@ -1543,6 +1600,27 @@ func (u *UserUpsertBulk) SetPasswordHash(v string) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdatePasswordHash() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdatePasswordHash()
+	})
+}
+
+// SetGoogleSub sets the "google_sub" field.
+func (u *UserUpsertBulk) SetGoogleSub(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetGoogleSub(v)
+	})
+}
+
+// UpdateGoogleSub sets the "google_sub" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateGoogleSub() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateGoogleSub()
+	})
+}
+
+// ClearGoogleSub clears the value of the "google_sub" field.
+func (u *UserUpsertBulk) ClearGoogleSub() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearGoogleSub()
 	})
 }
 

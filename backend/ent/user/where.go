@@ -66,6 +66,11 @@ func PasswordHash(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldPasswordHash, v))
 }
 
+// GoogleSub applies equality check predicate on the "google_sub" field. It's identical to GoogleSubEQ.
+func GoogleSub(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldGoogleSub, v))
+}
+
 // DisplayName applies equality check predicate on the "display_name" field. It's identical to DisplayNameEQ.
 func DisplayName(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldDisplayName, v))
@@ -239,6 +244,81 @@ func PasswordHashEqualFold(v string) predicate.User {
 // PasswordHashContainsFold applies the ContainsFold predicate on the "password_hash" field.
 func PasswordHashContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldPasswordHash, v))
+}
+
+// GoogleSubEQ applies the EQ predicate on the "google_sub" field.
+func GoogleSubEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldGoogleSub, v))
+}
+
+// GoogleSubNEQ applies the NEQ predicate on the "google_sub" field.
+func GoogleSubNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldGoogleSub, v))
+}
+
+// GoogleSubIn applies the In predicate on the "google_sub" field.
+func GoogleSubIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldGoogleSub, vs...))
+}
+
+// GoogleSubNotIn applies the NotIn predicate on the "google_sub" field.
+func GoogleSubNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldGoogleSub, vs...))
+}
+
+// GoogleSubGT applies the GT predicate on the "google_sub" field.
+func GoogleSubGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldGoogleSub, v))
+}
+
+// GoogleSubGTE applies the GTE predicate on the "google_sub" field.
+func GoogleSubGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldGoogleSub, v))
+}
+
+// GoogleSubLT applies the LT predicate on the "google_sub" field.
+func GoogleSubLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldGoogleSub, v))
+}
+
+// GoogleSubLTE applies the LTE predicate on the "google_sub" field.
+func GoogleSubLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldGoogleSub, v))
+}
+
+// GoogleSubContains applies the Contains predicate on the "google_sub" field.
+func GoogleSubContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldGoogleSub, v))
+}
+
+// GoogleSubHasPrefix applies the HasPrefix predicate on the "google_sub" field.
+func GoogleSubHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldGoogleSub, v))
+}
+
+// GoogleSubHasSuffix applies the HasSuffix predicate on the "google_sub" field.
+func GoogleSubHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldGoogleSub, v))
+}
+
+// GoogleSubIsNil applies the IsNil predicate on the "google_sub" field.
+func GoogleSubIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldGoogleSub))
+}
+
+// GoogleSubNotNil applies the NotNil predicate on the "google_sub" field.
+func GoogleSubNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldGoogleSub))
+}
+
+// GoogleSubEqualFold applies the EqualFold predicate on the "google_sub" field.
+func GoogleSubEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldGoogleSub, v))
+}
+
+// GoogleSubContainsFold applies the ContainsFold predicate on the "google_sub" field.
+func GoogleSubContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldGoogleSub, v))
 }
 
 // DisplayNameEQ applies the EQ predicate on the "display_name" field.

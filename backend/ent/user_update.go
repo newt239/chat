@@ -70,6 +70,26 @@ func (_u *UserUpdate) SetNillablePasswordHash(v *string) *UserUpdate {
 	return _u
 }
 
+// SetGoogleSub sets the "google_sub" field.
+func (_u *UserUpdate) SetGoogleSub(v string) *UserUpdate {
+	_u.mutation.SetGoogleSub(v)
+	return _u
+}
+
+// SetNillableGoogleSub sets the "google_sub" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableGoogleSub(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetGoogleSub(*v)
+	}
+	return _u
+}
+
+// ClearGoogleSub clears the value of the "google_sub" field.
+func (_u *UserUpdate) ClearGoogleSub() *UserUpdate {
+	_u.mutation.ClearGoogleSub()
+	return _u
+}
+
 // SetDisplayName sets the "display_name" field.
 func (_u *UserUpdate) SetDisplayName(v string) *UserUpdate {
 	_u.mutation.SetDisplayName(v)
@@ -785,6 +805,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.GoogleSub(); ok {
+		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)
+	}
+	if _u.mutation.GoogleSubCleared() {
+		_spec.ClearField(user.FieldGoogleSub, field.TypeString)
+	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(user.FieldDisplayName, field.TypeString, value)
 	}
@@ -1457,6 +1483,26 @@ func (_u *UserUpdateOne) SetNillablePasswordHash(v *string) *UserUpdateOne {
 	if v != nil {
 		_u.SetPasswordHash(*v)
 	}
+	return _u
+}
+
+// SetGoogleSub sets the "google_sub" field.
+func (_u *UserUpdateOne) SetGoogleSub(v string) *UserUpdateOne {
+	_u.mutation.SetGoogleSub(v)
+	return _u
+}
+
+// SetNillableGoogleSub sets the "google_sub" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableGoogleSub(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetGoogleSub(*v)
+	}
+	return _u
+}
+
+// ClearGoogleSub clears the value of the "google_sub" field.
+func (_u *UserUpdateOne) ClearGoogleSub() *UserUpdateOne {
+	_u.mutation.ClearGoogleSub()
 	return _u
 }
 
@@ -2204,6 +2250,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.PasswordHash(); ok {
 		_spec.SetField(user.FieldPasswordHash, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.GoogleSub(); ok {
+		_spec.SetField(user.FieldGoogleSub, field.TypeString, value)
+	}
+	if _u.mutation.GoogleSubCleared() {
+		_spec.ClearField(user.FieldGoogleSub, field.TypeString)
 	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(user.FieldDisplayName, field.TypeString, value)

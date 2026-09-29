@@ -24,6 +24,7 @@ import (
 	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
+	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -68,6 +69,8 @@ type Client struct {
 	ChannelReadState *ChannelReadStateClient
 	// ChannelStar is the client for interacting with the ChannelStar builders.
 	ChannelStar *ChannelStarClient
+	// Invitation is the client for interacting with the Invitation builders.
+	Invitation *InvitationClient
 	// Message is the client for interacting with the Message builders.
 	Message *MessageClient
 	// MessageBookmark is the client for interacting with the MessageBookmark builders.
@@ -125,6 +128,7 @@ func (c *Client) init() {
 	c.ChannelMute = NewChannelMuteClient(c.config)
 	c.ChannelReadState = NewChannelReadStateClient(c.config)
 	c.ChannelStar = NewChannelStarClient(c.config)
+	c.Invitation = NewInvitationClient(c.config)
 	c.Message = NewMessageClient(c.config)
 	c.MessageBookmark = NewMessageBookmarkClient(c.config)
 	c.MessageGroupMention = NewMessageGroupMentionClient(c.config)
@@ -244,6 +248,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
+		Invitation:          NewInvitationClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
@@ -290,6 +295,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
+		Invitation:          NewInvitationClient(cfg),
 		Message:             NewMessageClient(cfg),
 		MessageBookmark:     NewMessageBookmarkClient(cfg),
 		MessageGroupMention: NewMessageGroupMentionClient(cfg),
@@ -339,11 +345,12 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Message, c.MessageBookmark,
-		c.MessageGroupMention, c.MessageLink, c.MessagePin, c.MessageReaction,
-		c.MessageUserMention, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook,
-		c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Invitation, c.Message,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
+		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserNote,
+		c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
+		c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
 	}
@@ -354,11 +361,12 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Message, c.MessageBookmark,
-		c.MessageGroupMention, c.MessageLink, c.MessagePin, c.MessageReaction,
-		c.MessageUserMention, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook,
-		c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Invitation, c.Message,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.Session, c.SystemMessage,
+		c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember, c.UserNote,
+		c.UserThreadFollow, c.Webhook, c.Workspace, c.WorkspaceMember,
+		c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -383,6 +391,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ChannelReadState.mutate(ctx, m)
 	case *ChannelStarMutation:
 		return c.ChannelStar.mutate(ctx, m)
+	case *InvitationMutation:
+		return c.Invitation.mutate(ctx, m)
 	case *MessageMutation:
 		return c.Message.mutate(ctx, m)
 	case *MessageBookmarkMutation:
@@ -1823,6 +1833,171 @@ func (c *ChannelStarClient) mutate(ctx context.Context, m *ChannelStarMutation) 
 		return (&ChannelStarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ChannelStar mutation op: %q", m.Op())
+	}
+}
+
+// InvitationClient is a client for the Invitation schema.
+type InvitationClient struct {
+	config
+}
+
+// NewInvitationClient returns a client for the Invitation from the given config.
+func NewInvitationClient(c config) *InvitationClient {
+	return &InvitationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `invitation.Hooks(f(g(h())))`.
+func (c *InvitationClient) Use(hooks ...Hook) {
+	c.hooks.Invitation = append(c.hooks.Invitation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `invitation.Intercept(f(g(h())))`.
+func (c *InvitationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Invitation = append(c.inters.Invitation, interceptors...)
+}
+
+// Create returns a builder for creating a Invitation entity.
+func (c *InvitationClient) Create() *InvitationCreate {
+	mutation := newInvitationMutation(c.config, OpCreate)
+	return &InvitationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Invitation entities.
+func (c *InvitationClient) CreateBulk(builders ...*InvitationCreate) *InvitationCreateBulk {
+	return &InvitationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvitationClient) MapCreateBulk(slice any, setFunc func(*InvitationCreate, int)) *InvitationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvitationCreateBulk{err: fmt.Errorf("calling to InvitationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvitationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvitationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Invitation.
+func (c *InvitationClient) Update() *InvitationUpdate {
+	mutation := newInvitationMutation(c.config, OpUpdate)
+	return &InvitationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvitationClient) UpdateOne(_m *Invitation) *InvitationUpdateOne {
+	mutation := newInvitationMutation(c.config, OpUpdateOne, withInvitation(_m))
+	return &InvitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvitationClient) UpdateOneID(id uuid.UUID) *InvitationUpdateOne {
+	mutation := newInvitationMutation(c.config, OpUpdateOne, withInvitationID(id))
+	return &InvitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Invitation.
+func (c *InvitationClient) Delete() *InvitationDelete {
+	mutation := newInvitationMutation(c.config, OpDelete)
+	return &InvitationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvitationClient) DeleteOne(_m *Invitation) *InvitationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvitationClient) DeleteOneID(id uuid.UUID) *InvitationDeleteOne {
+	builder := c.Delete().Where(invitation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvitationDeleteOne{builder}
+}
+
+// Query returns a query builder for Invitation.
+func (c *InvitationClient) Query() *InvitationQuery {
+	return &InvitationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvitation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Invitation entity by its id.
+func (c *InvitationClient) Get(ctx context.Context, id uuid.UUID) (*Invitation, error) {
+	return c.Query().Where(invitation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvitationClient) GetX(ctx context.Context, id uuid.UUID) *Invitation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkspace queries the workspace edge of a Invitation.
+func (c *InvitationClient) QueryWorkspace(_m *Invitation) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invitation.Table, invitation.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, invitation.WorkspaceTable, invitation.WorkspaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInvitedBy queries the invited_by edge of a Invitation.
+func (c *InvitationClient) QueryInvitedBy(_m *Invitation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invitation.Table, invitation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, invitation.InvitedByTable, invitation.InvitedByColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvitationClient) Hooks() []Hook {
+	return c.hooks.Invitation
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvitationClient) Interceptors() []Interceptor {
+	return c.inters.Invitation
+}
+
+func (c *InvitationClient) mutate(ctx context.Context, m *InvitationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvitationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvitationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvitationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Invitation mutation op: %q", m.Op())
 	}
 }
 
@@ -5349,19 +5524,19 @@ func (c *WorkspacePermissionClient) mutate(ctx context.Context, m *WorkspacePerm
 type (
 	hooks struct {
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, Message, MessageBookmark, MessageGroupMention,
-		MessageLink, MessagePin, MessageReaction, MessageUserMention, Session,
-		SystemMessage, ThreadReadState, User, UserGroup, UserGroupMember, UserNote,
-		UserThreadFollow, Webhook, Workspace, WorkspaceMember,
-		WorkspacePermission []ent.Hook
+		ChannelReadState, ChannelStar, Invitation, Message, MessageBookmark,
+		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
+		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
+		WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, Message, MessageBookmark, MessageGroupMention,
-		MessageLink, MessagePin, MessageReaction, MessageUserMention, Session,
-		SystemMessage, ThreadReadState, User, UserGroup, UserGroupMember, UserNote,
-		UserThreadFollow, Webhook, Workspace, WorkspaceMember,
-		WorkspacePermission []ent.Interceptor
+		ChannelReadState, ChannelStar, Invitation, Message, MessageBookmark,
+		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		MessageUserMention, Session, SystemMessage, ThreadReadState, User, UserGroup,
+		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
+		WorkspaceMember, WorkspacePermission []ent.Interceptor
 	}
 )
 
