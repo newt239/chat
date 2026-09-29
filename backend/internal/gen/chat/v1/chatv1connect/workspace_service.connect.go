@@ -57,9 +57,6 @@ const (
 	// WorkspaceServiceListMembersProcedure is the fully-qualified name of the WorkspaceService's
 	// ListMembers RPC.
 	WorkspaceServiceListMembersProcedure = "/chat.v1.WorkspaceService/ListMembers"
-	// WorkspaceServiceAddMemberByEmailProcedure is the fully-qualified name of the WorkspaceService's
-	// AddMemberByEmail RPC.
-	WorkspaceServiceAddMemberByEmailProcedure = "/chat.v1.WorkspaceService/AddMemberByEmail"
 	// WorkspaceServiceUpdateMemberRoleProcedure is the fully-qualified name of the WorkspaceService's
 	// UpdateMemberRole RPC.
 	WorkspaceServiceUpdateMemberRoleProcedure = "/chat.v1.WorkspaceService/UpdateMemberRole"
@@ -78,7 +75,6 @@ type WorkspaceServiceClient interface {
 	ListPublicWorkspaces(context.Context, *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error)
 	JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error)
 	ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error)
-	AddMemberByEmail(context.Context, *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
 	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
 }
@@ -142,12 +138,6 @@ func NewWorkspaceServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(workspaceServiceMethods.ByName("ListMembers")),
 			connect.WithClientOptions(opts...),
 		),
-		addMemberByEmail: connect.NewClient[v1.AddMemberByEmailRequest, v1.AddMemberByEmailResponse](
-			httpClient,
-			baseURL+WorkspaceServiceAddMemberByEmailProcedure,
-			connect.WithSchema(workspaceServiceMethods.ByName("AddMemberByEmail")),
-			connect.WithClientOptions(opts...),
-		),
 		updateMemberRole: connect.NewClient[v1.UpdateMemberRoleRequest, v1.UpdateMemberRoleResponse](
 			httpClient,
 			baseURL+WorkspaceServiceUpdateMemberRoleProcedure,
@@ -173,7 +163,6 @@ type workspaceServiceClient struct {
 	listPublicWorkspaces *connect.Client[v1.ListPublicWorkspacesRequest, v1.ListPublicWorkspacesResponse]
 	joinPublicWorkspace  *connect.Client[v1.JoinPublicWorkspaceRequest, v1.JoinPublicWorkspaceResponse]
 	listMembers          *connect.Client[v1.ListMembersRequest, v1.ListMembersResponse]
-	addMemberByEmail     *connect.Client[v1.AddMemberByEmailRequest, v1.AddMemberByEmailResponse]
 	updateMemberRole     *connect.Client[v1.UpdateMemberRoleRequest, v1.UpdateMemberRoleResponse]
 	removeMember         *connect.Client[v1.RemoveMemberRequest, v1.RemoveMemberResponse]
 }
@@ -250,15 +239,6 @@ func (c *workspaceServiceClient) ListMembers(ctx context.Context, req *v1.ListMe
 	return nil, err
 }
 
-// AddMemberByEmail calls chat.v1.WorkspaceService.AddMemberByEmail.
-func (c *workspaceServiceClient) AddMemberByEmail(ctx context.Context, req *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error) {
-	response, err := c.addMemberByEmail.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
 // UpdateMemberRole calls chat.v1.WorkspaceService.UpdateMemberRole.
 func (c *workspaceServiceClient) UpdateMemberRole(ctx context.Context, req *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error) {
 	response, err := c.updateMemberRole.CallUnary(ctx, connect.NewRequest(req))
@@ -287,7 +267,6 @@ type WorkspaceServiceHandler interface {
 	ListPublicWorkspaces(context.Context, *v1.ListPublicWorkspacesRequest) (*v1.ListPublicWorkspacesResponse, error)
 	JoinPublicWorkspace(context.Context, *v1.JoinPublicWorkspaceRequest) (*v1.JoinPublicWorkspaceResponse, error)
 	ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error)
-	AddMemberByEmail(context.Context, *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
 	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
 }
@@ -347,12 +326,6 @@ func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.Han
 		connect.WithSchema(workspaceServiceMethods.ByName("ListMembers")),
 		connect.WithHandlerOptions(opts...),
 	)
-	workspaceServiceAddMemberByEmailHandler := connect.NewUnaryHandlerSimple(
-		WorkspaceServiceAddMemberByEmailProcedure,
-		svc.AddMemberByEmail,
-		connect.WithSchema(workspaceServiceMethods.ByName("AddMemberByEmail")),
-		connect.WithHandlerOptions(opts...),
-	)
 	workspaceServiceUpdateMemberRoleHandler := connect.NewUnaryHandlerSimple(
 		WorkspaceServiceUpdateMemberRoleProcedure,
 		svc.UpdateMemberRole,
@@ -383,8 +356,6 @@ func NewWorkspaceServiceHandler(svc WorkspaceServiceHandler, opts ...connect.Han
 			workspaceServiceJoinPublicWorkspaceHandler.ServeHTTP(w, r)
 		case WorkspaceServiceListMembersProcedure:
 			workspaceServiceListMembersHandler.ServeHTTP(w, r)
-		case WorkspaceServiceAddMemberByEmailProcedure:
-			workspaceServiceAddMemberByEmailHandler.ServeHTTP(w, r)
 		case WorkspaceServiceUpdateMemberRoleProcedure:
 			workspaceServiceUpdateMemberRoleHandler.ServeHTTP(w, r)
 		case WorkspaceServiceRemoveMemberProcedure:
@@ -428,10 +399,6 @@ func (UnimplementedWorkspaceServiceHandler) JoinPublicWorkspace(context.Context,
 
 func (UnimplementedWorkspaceServiceHandler) ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.ListMembers is not implemented"))
-}
-
-func (UnimplementedWorkspaceServiceHandler) AddMemberByEmail(context.Context, *v1.AddMemberByEmailRequest) (*v1.AddMemberByEmailResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.WorkspaceService.AddMemberByEmail is not implemented"))
 }
 
 func (UnimplementedWorkspaceServiceHandler) UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error) {

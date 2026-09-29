@@ -1124,103 +1124,6 @@ func (x *ListMembersResponse) GetMembers() []*WorkspaceMember {
 	return nil
 }
 
-type AddMemberByEmailRequest struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	Email       string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	// 未指定の場合はメンバーとして追加する
-	Role          WorkspaceRole `protobuf:"varint,3,opt,name=role,proto3,enum=chat.v1.WorkspaceRole" json:"role,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AddMemberByEmailRequest) Reset() {
-	*x = AddMemberByEmailRequest{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AddMemberByEmailRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddMemberByEmailRequest) ProtoMessage() {}
-
-func (x *AddMemberByEmailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddMemberByEmailRequest.ProtoReflect.Descriptor instead.
-func (*AddMemberByEmailRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *AddMemberByEmailRequest) GetWorkspaceId() string {
-	if x != nil {
-		return x.WorkspaceId
-	}
-	return ""
-}
-
-func (x *AddMemberByEmailRequest) GetEmail() string {
-	if x != nil {
-		return x.Email
-	}
-	return ""
-}
-
-func (x *AddMemberByEmailRequest) GetRole() WorkspaceRole {
-	if x != nil {
-		return x.Role
-	}
-	return WorkspaceRole_WORKSPACE_ROLE_UNSPECIFIED
-}
-
-type AddMemberByEmailResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AddMemberByEmailResponse) Reset() {
-	*x = AddMemberByEmailResponse{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AddMemberByEmailResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddMemberByEmailResponse) ProtoMessage() {}
-
-func (x *AddMemberByEmailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddMemberByEmailResponse.ProtoReflect.Descriptor instead.
-func (*AddMemberByEmailResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{20}
-}
-
 type UpdateMemberRoleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
@@ -1232,7 +1135,7 @@ type UpdateMemberRoleRequest struct {
 
 func (x *UpdateMemberRoleRequest) Reset() {
 	*x = UpdateMemberRoleRequest{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1244,7 +1147,7 @@ func (x *UpdateMemberRoleRequest) String() string {
 func (*UpdateMemberRoleRequest) ProtoMessage() {}
 
 func (x *UpdateMemberRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1257,7 +1160,7 @@ func (x *UpdateMemberRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMemberRoleRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMemberRoleRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{21}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UpdateMemberRoleRequest) GetWorkspaceId() string {
@@ -1289,7 +1192,7 @@ type UpdateMemberRoleResponse struct {
 
 func (x *UpdateMemberRoleResponse) Reset() {
 	*x = UpdateMemberRoleResponse{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1301,7 +1204,7 @@ func (x *UpdateMemberRoleResponse) String() string {
 func (*UpdateMemberRoleResponse) ProtoMessage() {}
 
 func (x *UpdateMemberRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1314,7 +1217,7 @@ func (x *UpdateMemberRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMemberRoleResponse.ProtoReflect.Descriptor instead.
 func (*UpdateMemberRoleResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{22}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{20}
 }
 
 type RemoveMemberRequest struct {
@@ -1327,7 +1230,7 @@ type RemoveMemberRequest struct {
 
 func (x *RemoveMemberRequest) Reset() {
 	*x = RemoveMemberRequest{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[23]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1339,7 +1242,7 @@ func (x *RemoveMemberRequest) String() string {
 func (*RemoveMemberRequest) ProtoMessage() {}
 
 func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[23]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1352,7 +1255,7 @@ func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberRequest.ProtoReflect.Descriptor instead.
 func (*RemoveMemberRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{23}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *RemoveMemberRequest) GetWorkspaceId() string {
@@ -1377,7 +1280,7 @@ type RemoveMemberResponse struct {
 
 func (x *RemoveMemberResponse) Reset() {
 	*x = RemoveMemberResponse{}
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[24]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1389,7 +1292,7 @@ func (x *RemoveMemberResponse) String() string {
 func (*RemoveMemberResponse) ProtoMessage() {}
 
 func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_workspace_service_proto_msgTypes[24]
+	mi := &file_chat_v1_workspace_service_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1402,7 +1305,7 @@ func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberResponse.ProtoReflect.Descriptor instead.
 func (*RemoveMemberResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{24}
+	return file_chat_v1_workspace_service_proto_rawDescGZIP(), []int{22}
 }
 
 var File_chat_v1_workspace_service_proto protoreflect.FileDescriptor
@@ -1497,12 +1400,7 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\x12ListMembersRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"I\n" +
 	"\x13ListMembersResponse\x122\n" +
-	"\amembers\x18\x01 \x03(\v2\x18.chat.v1.WorkspaceMemberR\amembers\"\x9e\x01\n" +
-	"\x17AddMemberByEmailRequest\x12*\n" +
-	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1d\n" +
-	"\x05email\x18\x02 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x128\n" +
-	"\x04role\x18\x03 \x01(\x0e2\x16.chat.v1.WorkspaceRoleB\f\xbaH\t\x82\x01\x06\x18\x00\x18\x02\x18\x03R\x04role\"\x1a\n" +
-	"\x18AddMemberByEmailResponse\"\xa2\x01\n" +
+	"\amembers\x18\x01 \x03(\v2\x18.chat.v1.WorkspaceMemberR\amembers\"\xa2\x01\n" +
 	"\x17UpdateMemberRoleRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x128\n" +
@@ -1517,7 +1415,7 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\x14WORKSPACE_ROLE_OWNER\x10\x01\x12\x18\n" +
 	"\x14WORKSPACE_ROLE_ADMIN\x10\x02\x12\x19\n" +
 	"\x15WORKSPACE_ROLE_MEMBER\x10\x03\x12\x18\n" +
-	"\x14WORKSPACE_ROLE_GUEST\x10\x042\xc4\a\n" +
+	"\x14WORKSPACE_ROLE_GUEST\x10\x042\xeb\x06\n" +
 	"\x10WorkspaceService\x12Q\n" +
 	"\x0eListWorkspaces\x12\x1e.chat.v1.ListWorkspacesRequest\x1a\x1f.chat.v1.ListWorkspacesResponse\x12T\n" +
 	"\x0fCreateWorkspace\x12\x1f.chat.v1.CreateWorkspaceRequest\x1a .chat.v1.CreateWorkspaceResponse\x12K\n" +
@@ -1527,7 +1425,6 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\x14ListPublicWorkspaces\x12$.chat.v1.ListPublicWorkspacesRequest\x1a%.chat.v1.ListPublicWorkspacesResponse\x12`\n" +
 	"\x13JoinPublicWorkspace\x12#.chat.v1.JoinPublicWorkspaceRequest\x1a$.chat.v1.JoinPublicWorkspaceResponse\x12H\n" +
 	"\vListMembers\x12\x1b.chat.v1.ListMembersRequest\x1a\x1c.chat.v1.ListMembersResponse\x12W\n" +
-	"\x10AddMemberByEmail\x12 .chat.v1.AddMemberByEmailRequest\x1a!.chat.v1.AddMemberByEmailResponse\x12W\n" +
 	"\x10UpdateMemberRole\x12 .chat.v1.UpdateMemberRoleRequest\x1a!.chat.v1.UpdateMemberRoleResponse\x12K\n" +
 	"\fRemoveMember\x12\x1c.chat.v1.RemoveMemberRequest\x1a\x1d.chat.v1.RemoveMemberResponseB\x96\x01\n" +
 	"\vcom.chat.v1B\x15WorkspaceServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
@@ -1545,7 +1442,7 @@ func file_chat_v1_workspace_service_proto_rawDescGZIP() []byte {
 }
 
 var file_chat_v1_workspace_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_chat_v1_workspace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_chat_v1_workspace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_chat_v1_workspace_service_proto_goTypes = []any{
 	(WorkspaceRole)(0),                   // 0: chat.v1.WorkspaceRole
 	(*Workspace)(nil),                    // 1: chat.v1.Workspace
@@ -1567,57 +1464,52 @@ var file_chat_v1_workspace_service_proto_goTypes = []any{
 	(*JoinPublicWorkspaceResponse)(nil),  // 17: chat.v1.JoinPublicWorkspaceResponse
 	(*ListMembersRequest)(nil),           // 18: chat.v1.ListMembersRequest
 	(*ListMembersResponse)(nil),          // 19: chat.v1.ListMembersResponse
-	(*AddMemberByEmailRequest)(nil),      // 20: chat.v1.AddMemberByEmailRequest
-	(*AddMemberByEmailResponse)(nil),     // 21: chat.v1.AddMemberByEmailResponse
-	(*UpdateMemberRoleRequest)(nil),      // 22: chat.v1.UpdateMemberRoleRequest
-	(*UpdateMemberRoleResponse)(nil),     // 23: chat.v1.UpdateMemberRoleResponse
-	(*RemoveMemberRequest)(nil),          // 24: chat.v1.RemoveMemberRequest
-	(*RemoveMemberResponse)(nil),         // 25: chat.v1.RemoveMemberResponse
-	(*timestamppb.Timestamp)(nil),        // 26: google.protobuf.Timestamp
+	(*UpdateMemberRoleRequest)(nil),      // 20: chat.v1.UpdateMemberRoleRequest
+	(*UpdateMemberRoleResponse)(nil),     // 21: chat.v1.UpdateMemberRoleResponse
+	(*RemoveMemberRequest)(nil),          // 22: chat.v1.RemoveMemberRequest
+	(*RemoveMemberResponse)(nil),         // 23: chat.v1.RemoveMemberResponse
+	(*timestamppb.Timestamp)(nil),        // 24: google.protobuf.Timestamp
 }
 var file_chat_v1_workspace_service_proto_depIdxs = []int32{
 	0,  // 0: chat.v1.Workspace.role:type_name -> chat.v1.WorkspaceRole
-	26, // 1: chat.v1.Workspace.created_at:type_name -> google.protobuf.Timestamp
-	26, // 2: chat.v1.Workspace.updated_at:type_name -> google.protobuf.Timestamp
+	24, // 1: chat.v1.Workspace.created_at:type_name -> google.protobuf.Timestamp
+	24, // 2: chat.v1.Workspace.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: chat.v1.WorkspaceMember.role:type_name -> chat.v1.WorkspaceRole
-	26, // 4: chat.v1.WorkspaceMember.joined_at:type_name -> google.protobuf.Timestamp
-	26, // 5: chat.v1.WorkspaceMember.suspended_at:type_name -> google.protobuf.Timestamp
-	26, // 6: chat.v1.PublicWorkspace.created_at:type_name -> google.protobuf.Timestamp
+	24, // 4: chat.v1.WorkspaceMember.joined_at:type_name -> google.protobuf.Timestamp
+	24, // 5: chat.v1.WorkspaceMember.suspended_at:type_name -> google.protobuf.Timestamp
+	24, // 6: chat.v1.PublicWorkspace.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 7: chat.v1.ListWorkspacesResponse.workspaces:type_name -> chat.v1.Workspace
 	1,  // 8: chat.v1.CreateWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
 	1,  // 9: chat.v1.GetWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
 	1,  // 10: chat.v1.UpdateWorkspaceResponse.workspace:type_name -> chat.v1.Workspace
 	3,  // 11: chat.v1.ListPublicWorkspacesResponse.workspaces:type_name -> chat.v1.PublicWorkspace
 	2,  // 12: chat.v1.ListMembersResponse.members:type_name -> chat.v1.WorkspaceMember
-	0,  // 13: chat.v1.AddMemberByEmailRequest.role:type_name -> chat.v1.WorkspaceRole
-	0,  // 14: chat.v1.UpdateMemberRoleRequest.role:type_name -> chat.v1.WorkspaceRole
-	4,  // 15: chat.v1.WorkspaceService.ListWorkspaces:input_type -> chat.v1.ListWorkspacesRequest
-	6,  // 16: chat.v1.WorkspaceService.CreateWorkspace:input_type -> chat.v1.CreateWorkspaceRequest
-	8,  // 17: chat.v1.WorkspaceService.GetWorkspace:input_type -> chat.v1.GetWorkspaceRequest
-	10, // 18: chat.v1.WorkspaceService.UpdateWorkspace:input_type -> chat.v1.UpdateWorkspaceRequest
-	12, // 19: chat.v1.WorkspaceService.DeleteWorkspace:input_type -> chat.v1.DeleteWorkspaceRequest
-	14, // 20: chat.v1.WorkspaceService.ListPublicWorkspaces:input_type -> chat.v1.ListPublicWorkspacesRequest
-	16, // 21: chat.v1.WorkspaceService.JoinPublicWorkspace:input_type -> chat.v1.JoinPublicWorkspaceRequest
-	18, // 22: chat.v1.WorkspaceService.ListMembers:input_type -> chat.v1.ListMembersRequest
-	20, // 23: chat.v1.WorkspaceService.AddMemberByEmail:input_type -> chat.v1.AddMemberByEmailRequest
-	22, // 24: chat.v1.WorkspaceService.UpdateMemberRole:input_type -> chat.v1.UpdateMemberRoleRequest
-	24, // 25: chat.v1.WorkspaceService.RemoveMember:input_type -> chat.v1.RemoveMemberRequest
-	5,  // 26: chat.v1.WorkspaceService.ListWorkspaces:output_type -> chat.v1.ListWorkspacesResponse
-	7,  // 27: chat.v1.WorkspaceService.CreateWorkspace:output_type -> chat.v1.CreateWorkspaceResponse
-	9,  // 28: chat.v1.WorkspaceService.GetWorkspace:output_type -> chat.v1.GetWorkspaceResponse
-	11, // 29: chat.v1.WorkspaceService.UpdateWorkspace:output_type -> chat.v1.UpdateWorkspaceResponse
-	13, // 30: chat.v1.WorkspaceService.DeleteWorkspace:output_type -> chat.v1.DeleteWorkspaceResponse
-	15, // 31: chat.v1.WorkspaceService.ListPublicWorkspaces:output_type -> chat.v1.ListPublicWorkspacesResponse
-	17, // 32: chat.v1.WorkspaceService.JoinPublicWorkspace:output_type -> chat.v1.JoinPublicWorkspaceResponse
-	19, // 33: chat.v1.WorkspaceService.ListMembers:output_type -> chat.v1.ListMembersResponse
-	21, // 34: chat.v1.WorkspaceService.AddMemberByEmail:output_type -> chat.v1.AddMemberByEmailResponse
-	23, // 35: chat.v1.WorkspaceService.UpdateMemberRole:output_type -> chat.v1.UpdateMemberRoleResponse
-	25, // 36: chat.v1.WorkspaceService.RemoveMember:output_type -> chat.v1.RemoveMemberResponse
-	26, // [26:37] is the sub-list for method output_type
-	15, // [15:26] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	0,  // 13: chat.v1.UpdateMemberRoleRequest.role:type_name -> chat.v1.WorkspaceRole
+	4,  // 14: chat.v1.WorkspaceService.ListWorkspaces:input_type -> chat.v1.ListWorkspacesRequest
+	6,  // 15: chat.v1.WorkspaceService.CreateWorkspace:input_type -> chat.v1.CreateWorkspaceRequest
+	8,  // 16: chat.v1.WorkspaceService.GetWorkspace:input_type -> chat.v1.GetWorkspaceRequest
+	10, // 17: chat.v1.WorkspaceService.UpdateWorkspace:input_type -> chat.v1.UpdateWorkspaceRequest
+	12, // 18: chat.v1.WorkspaceService.DeleteWorkspace:input_type -> chat.v1.DeleteWorkspaceRequest
+	14, // 19: chat.v1.WorkspaceService.ListPublicWorkspaces:input_type -> chat.v1.ListPublicWorkspacesRequest
+	16, // 20: chat.v1.WorkspaceService.JoinPublicWorkspace:input_type -> chat.v1.JoinPublicWorkspaceRequest
+	18, // 21: chat.v1.WorkspaceService.ListMembers:input_type -> chat.v1.ListMembersRequest
+	20, // 22: chat.v1.WorkspaceService.UpdateMemberRole:input_type -> chat.v1.UpdateMemberRoleRequest
+	22, // 23: chat.v1.WorkspaceService.RemoveMember:input_type -> chat.v1.RemoveMemberRequest
+	5,  // 24: chat.v1.WorkspaceService.ListWorkspaces:output_type -> chat.v1.ListWorkspacesResponse
+	7,  // 25: chat.v1.WorkspaceService.CreateWorkspace:output_type -> chat.v1.CreateWorkspaceResponse
+	9,  // 26: chat.v1.WorkspaceService.GetWorkspace:output_type -> chat.v1.GetWorkspaceResponse
+	11, // 27: chat.v1.WorkspaceService.UpdateWorkspace:output_type -> chat.v1.UpdateWorkspaceResponse
+	13, // 28: chat.v1.WorkspaceService.DeleteWorkspace:output_type -> chat.v1.DeleteWorkspaceResponse
+	15, // 29: chat.v1.WorkspaceService.ListPublicWorkspaces:output_type -> chat.v1.ListPublicWorkspacesResponse
+	17, // 30: chat.v1.WorkspaceService.JoinPublicWorkspace:output_type -> chat.v1.JoinPublicWorkspaceResponse
+	19, // 31: chat.v1.WorkspaceService.ListMembers:output_type -> chat.v1.ListMembersResponse
+	21, // 32: chat.v1.WorkspaceService.UpdateMemberRole:output_type -> chat.v1.UpdateMemberRoleResponse
+	23, // 33: chat.v1.WorkspaceService.RemoveMember:output_type -> chat.v1.RemoveMemberResponse
+	24, // [24:34] is the sub-list for method output_type
+	14, // [14:24] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_workspace_service_proto_init() }
@@ -1636,7 +1528,7 @@ func file_chat_v1_workspace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_workspace_service_proto_rawDesc), len(file_chat_v1_workspace_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   25,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

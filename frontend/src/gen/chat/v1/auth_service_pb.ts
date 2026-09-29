@@ -13,60 +13,36 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/auth_service.proto.
  */
 export const file_chat_v1_auth_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpjaGF0L3YxL2F1dGhfc2VydmljZS5wcm90bxIHY2hhdC52MSJjCg9SZWdpc3RlclJlcXVlc3QSFgoFZW1haWwYASABKAlCB7pIBHICYAESGQoIcGFzc3dvcmQYAiABKAlCB7pIBHICEAgSHQoMZGlzcGxheV9uYW1lGAMgASgJQge6SARyAhABIlwKEFJlZ2lzdGVyUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlciJBCgxMb2dpblJlcXVlc3QSFgoFZW1haWwYASABKAlCB7pIBHICYAESGQoIcGFzc3dvcmQYAiABKAlCB7pIBHICEAEiWQoNTG9naW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyIjAKDlJlZnJlc2hSZXF1ZXN0Eh4KDXJlZnJlc2hfdG9rZW4YASABKAlCB7pIBHICEAEiWwoPUmVmcmVzaFJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiDwoNTG9nb3V0UmVxdWVzdCIQCg5Mb2dvdXRSZXNwb25zZTL/AQoLQXV0aFNlcnZpY2USPwoIUmVnaXN0ZXISGC5jaGF0LnYxLlJlZ2lzdGVyUmVxdWVzdBoZLmNoYXQudjEuUmVnaXN0ZXJSZXNwb25zZRI2CgVMb2dpbhIVLmNoYXQudjEuTG9naW5SZXF1ZXN0GhYuY2hhdC52MS5Mb2dpblJlc3BvbnNlEjwKB1JlZnJlc2gSFy5jaGF0LnYxLlJlZnJlc2hSZXF1ZXN0GhguY2hhdC52MS5SZWZyZXNoUmVzcG9uc2USOQoGTG9nb3V0EhYuY2hhdC52MS5Mb2dvdXRSZXF1ZXN0GhcuY2hhdC52MS5Mb2dvdXRSZXNwb25zZUKRAQoLY29tLmNoYXQudjFCEEF1dGhTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_user]);
+  fileDesc("ChpjaGF0L3YxL2F1dGhfc2VydmljZS5wcm90bxIHY2hhdC52MSIWChRHZXRBdXRoQ29uZmlnUmVxdWVzdCI2ChVHZXRBdXRoQ29uZmlnUmVzcG9uc2USHQoVcGFzc3dvcmRfYXV0aF9lbmFibGVkGAEgASgIIkEKDExvZ2luUmVxdWVzdBIWCgVlbWFpbBgBIAEoCUIHukgEcgJgARIZCghwYXNzd29yZBgCIAEoCUIHukgEcgIQASJZCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiMwoWTG9naW5XaXRoR29vZ2xlUmVxdWVzdBIZCghpZF90b2tlbhgBIAEoCUIHukgEcgIQASJjChdMb2dpbldpdGhHb29nbGVSZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRIbCgR1c2VyGAMgASgLMg0uY2hhdC52MS5Vc2VyInEKG1NpZ25VcFdpdGhJbnZpdGF0aW9uUmVxdWVzdBIWCgV0b2tlbhgBIAEoCUIHukgEcgIQARIfCgxkaXNwbGF5X25hbWUYAiABKAlCCbpIBnIEEAEYZBIZCghwYXNzd29yZBgDIAEoCUIHukgEcgIQCCJoChxTaWduVXBXaXRoSW52aXRhdGlvblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhsKBHVzZXIYAyABKAsyDS5jaGF0LnYxLlVzZXIiMAoOUmVmcmVzaFJlcXVlc3QSHgoNcmVmcmVzaF90b2tlbhgBIAEoCUIHukgEcgIQASJbCg9SZWZyZXNoUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSGwoEdXNlchgDIAEoCzINLmNoYXQudjEuVXNlciIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlMskDCgtBdXRoU2VydmljZRJOCg1HZXRBdXRoQ29uZmlnEh0uY2hhdC52MS5HZXRBdXRoQ29uZmlnUmVxdWVzdBoeLmNoYXQudjEuR2V0QXV0aENvbmZpZ1Jlc3BvbnNlEjYKBUxvZ2luEhUuY2hhdC52MS5Mb2dpblJlcXVlc3QaFi5jaGF0LnYxLkxvZ2luUmVzcG9uc2USVAoPTG9naW5XaXRoR29vZ2xlEh8uY2hhdC52MS5Mb2dpbldpdGhHb29nbGVSZXF1ZXN0GiAuY2hhdC52MS5Mb2dpbldpdGhHb29nbGVSZXNwb25zZRJjChRTaWduVXBXaXRoSW52aXRhdGlvbhIkLmNoYXQudjEuU2lnblVwV2l0aEludml0YXRpb25SZXF1ZXN0GiUuY2hhdC52MS5TaWduVXBXaXRoSW52aXRhdGlvblJlc3BvbnNlEjwKB1JlZnJlc2gSFy5jaGF0LnYxLlJlZnJlc2hSZXF1ZXN0GhguY2hhdC52MS5SZWZyZXNoUmVzcG9uc2USOQoGTG9nb3V0EhYuY2hhdC52MS5Mb2dvdXRSZXF1ZXN0GhcuY2hhdC52MS5Mb2dvdXRSZXNwb25zZUKRAQoLY29tLmNoYXQudjFCEEF1dGhTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_chat_v1_user]);
 
 /**
- * @generated from message chat.v1.RegisterRequest
+ * @generated from message chat.v1.GetAuthConfigRequest
  */
-export type RegisterRequest = Message<"chat.v1.RegisterRequest"> & {
-  /**
-   * @generated from field: string email = 1;
-   */
-  email: string;
-
-  /**
-   * @generated from field: string password = 2;
-   */
-  password: string;
-
-  /**
-   * @generated from field: string display_name = 3;
-   */
-  displayName: string;
+export type GetAuthConfigRequest = Message<"chat.v1.GetAuthConfigRequest"> & {
 };
 
 /**
- * Describes the message chat.v1.RegisterRequest.
- * Use `create(RegisterRequestSchema)` to create a new message.
+ * Describes the message chat.v1.GetAuthConfigRequest.
+ * Use `create(GetAuthConfigRequestSchema)` to create a new message.
  */
-export const RegisterRequestSchema: GenMessage<RegisterRequest> = /*@__PURE__*/
+export const GetAuthConfigRequestSchema: GenMessage<GetAuthConfigRequest> = /*@__PURE__*/
   messageDesc(file_chat_v1_auth_service, 0);
 
 /**
- * @generated from message chat.v1.RegisterResponse
+ * @generated from message chat.v1.GetAuthConfigResponse
  */
-export type RegisterResponse = Message<"chat.v1.RegisterResponse"> & {
+export type GetAuthConfigResponse = Message<"chat.v1.GetAuthConfigResponse"> & {
   /**
-   * @generated from field: string access_token = 1;
+   * @generated from field: bool password_auth_enabled = 1;
    */
-  accessToken: string;
-
-  /**
-   * @generated from field: string refresh_token = 2;
-   */
-  refreshToken: string;
-
-  /**
-   * @generated from field: chat.v1.User user = 3;
-   */
-  user?: User | undefined;
+  passwordAuthEnabled: boolean;
 };
 
 /**
- * Describes the message chat.v1.RegisterResponse.
- * Use `create(RegisterResponseSchema)` to create a new message.
+ * Describes the message chat.v1.GetAuthConfigResponse.
+ * Use `create(GetAuthConfigResponseSchema)` to create a new message.
  */
-export const RegisterResponseSchema: GenMessage<RegisterResponse> = /*@__PURE__*/
+export const GetAuthConfigResponseSchema: GenMessage<GetAuthConfigResponse> = /*@__PURE__*/
   messageDesc(file_chat_v1_auth_service, 1);
 
 /**
@@ -119,6 +95,106 @@ export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
   messageDesc(file_chat_v1_auth_service, 3);
 
 /**
+ * @generated from message chat.v1.LoginWithGoogleRequest
+ */
+export type LoginWithGoogleRequest = Message<"chat.v1.LoginWithGoogleRequest"> & {
+  /**
+   * Google Identity Services が発行した ID トークン
+   *
+   * @generated from field: string id_token = 1;
+   */
+  idToken: string;
+};
+
+/**
+ * Describes the message chat.v1.LoginWithGoogleRequest.
+ * Use `create(LoginWithGoogleRequestSchema)` to create a new message.
+ */
+export const LoginWithGoogleRequestSchema: GenMessage<LoginWithGoogleRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_auth_service, 4);
+
+/**
+ * @generated from message chat.v1.LoginWithGoogleResponse
+ */
+export type LoginWithGoogleResponse = Message<"chat.v1.LoginWithGoogleResponse"> & {
+  /**
+   * @generated from field: string access_token = 1;
+   */
+  accessToken: string;
+
+  /**
+   * @generated from field: string refresh_token = 2;
+   */
+  refreshToken: string;
+
+  /**
+   * @generated from field: chat.v1.User user = 3;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message chat.v1.LoginWithGoogleResponse.
+ * Use `create(LoginWithGoogleResponseSchema)` to create a new message.
+ */
+export const LoginWithGoogleResponseSchema: GenMessage<LoginWithGoogleResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_auth_service, 5);
+
+/**
+ * @generated from message chat.v1.SignUpWithInvitationRequest
+ */
+export type SignUpWithInvitationRequest = Message<"chat.v1.SignUpWithInvitationRequest"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+
+  /**
+   * @generated from field: string display_name = 2;
+   */
+  displayName: string;
+
+  /**
+   * @generated from field: string password = 3;
+   */
+  password: string;
+};
+
+/**
+ * Describes the message chat.v1.SignUpWithInvitationRequest.
+ * Use `create(SignUpWithInvitationRequestSchema)` to create a new message.
+ */
+export const SignUpWithInvitationRequestSchema: GenMessage<SignUpWithInvitationRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_auth_service, 6);
+
+/**
+ * @generated from message chat.v1.SignUpWithInvitationResponse
+ */
+export type SignUpWithInvitationResponse = Message<"chat.v1.SignUpWithInvitationResponse"> & {
+  /**
+   * @generated from field: string access_token = 1;
+   */
+  accessToken: string;
+
+  /**
+   * @generated from field: string refresh_token = 2;
+   */
+  refreshToken: string;
+
+  /**
+   * @generated from field: chat.v1.User user = 3;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message chat.v1.SignUpWithInvitationResponse.
+ * Use `create(SignUpWithInvitationResponseSchema)` to create a new message.
+ */
+export const SignUpWithInvitationResponseSchema: GenMessage<SignUpWithInvitationResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_auth_service, 7);
+
+/**
  * @generated from message chat.v1.RefreshRequest
  */
 export type RefreshRequest = Message<"chat.v1.RefreshRequest"> & {
@@ -133,7 +209,7 @@ export type RefreshRequest = Message<"chat.v1.RefreshRequest"> & {
  * Use `create(RefreshRequestSchema)` to create a new message.
  */
 export const RefreshRequestSchema: GenMessage<RefreshRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 4);
+  messageDesc(file_chat_v1_auth_service, 8);
 
 /**
  * @generated from message chat.v1.RefreshResponse
@@ -160,7 +236,7 @@ export type RefreshResponse = Message<"chat.v1.RefreshResponse"> & {
  * Use `create(RefreshResponseSchema)` to create a new message.
  */
 export const RefreshResponseSchema: GenMessage<RefreshResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 5);
+  messageDesc(file_chat_v1_auth_service, 9);
 
 /**
  * @generated from message chat.v1.LogoutRequest
@@ -173,7 +249,7 @@ export type LogoutRequest = Message<"chat.v1.LogoutRequest"> & {
  * Use `create(LogoutRequestSchema)` to create a new message.
  */
 export const LogoutRequestSchema: GenMessage<LogoutRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 6);
+  messageDesc(file_chat_v1_auth_service, 10);
 
 /**
  * @generated from message chat.v1.LogoutResponse
@@ -186,19 +262,21 @@ export type LogoutResponse = Message<"chat.v1.LogoutResponse"> & {
  * Use `create(LogoutResponseSchema)` to create a new message.
  */
 export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_auth_service, 7);
+  messageDesc(file_chat_v1_auth_service, 11);
 
 /**
+ * Google ログインを主とし、パスワード認証は PASSWORD_AUTH_ENABLED のときだけ使える（docs/auth.md）
+ *
  * @generated from service chat.v1.AuthService
  */
 export const AuthService: GenService<{
   /**
-   * @generated from rpc chat.v1.AuthService.Register
+   * @generated from rpc chat.v1.AuthService.GetAuthConfig
    */
-  register: {
+  getAuthConfig: {
     methodKind: "unary";
-    input: typeof RegisterRequestSchema;
-    output: typeof RegisterResponseSchema;
+    input: typeof GetAuthConfigRequestSchema;
+    output: typeof GetAuthConfigResponseSchema;
   },
   /**
    * @generated from rpc chat.v1.AuthService.Login
@@ -207,6 +285,26 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof LoginRequestSchema;
     output: typeof LoginResponseSchema;
+  },
+  /**
+   * 未登録のメールアドレスは有効な招待があるときだけアカウントを作る
+   *
+   * @generated from rpc chat.v1.AuthService.LoginWithGoogle
+   */
+  loginWithGoogle: {
+    methodKind: "unary";
+    input: typeof LoginWithGoogleRequestSchema;
+    output: typeof LoginWithGoogleResponseSchema;
+  },
+  /**
+   * 招待リンクからパスワードを設定してアカウントを作る
+   *
+   * @generated from rpc chat.v1.AuthService.SignUpWithInvitation
+   */
+  signUpWithInvitation: {
+    methodKind: "unary";
+    input: typeof SignUpWithInvitationRequestSchema;
+    output: typeof SignUpWithInvitationResponseSchema;
   },
   /**
    * @generated from rpc chat.v1.AuthService.Refresh
