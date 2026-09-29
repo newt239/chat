@@ -32,7 +32,14 @@ const notificationLevelValues: Record<Preferences["notificationLevel"], Notifica
   none: NotificationLevel.NONE,
 };
 
-export const preferencesToProto = ({ locale, mode, notificationLevel, theme }: Preferences) =>
+export const preferencesToProto = ({
+  locale,
+  mode,
+  notificationLevel,
+  theme,
+  timezone,
+  timezoneAutoUpdate,
+}: Preferences) =>
   create(UserPreferencesSchema, {
     colorMode: colorModeValues[mode],
     locale,
@@ -42,6 +49,8 @@ export const preferencesToProto = ({ locale, mode, notificationLevel, theme }: P
       hue: Math.round(theme.hue) % 360,
       sidebar: sidebarStyleValues[theme.sidebar],
     },
+    timezone,
+    timezoneAutoUpdate,
   });
 
 export const preferencesFromProto = ({
@@ -49,6 +58,8 @@ export const preferencesFromProto = ({
   locale,
   notificationLevel,
   theme,
+  timezone,
+  timezoneAutoUpdate,
 }: UserPreferences) => ({
   locale: resolveLocale(locale),
   mode: colorModePreferences.find((mode) => colorModeValues[mode] === colorMode) ?? "system",
@@ -64,4 +75,6 @@ export const preferencesFromProto = ({
           defaultTheme.sidebar,
       }
     : defaultTheme,
+  timezone,
+  timezoneAutoUpdate,
 });

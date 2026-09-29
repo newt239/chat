@@ -12,6 +12,7 @@ export const member = {
     bio: "自己紹介",
     email: "メール",
     loadFailed: "プロフィールを読み込めませんでした",
+    localTime: "現地時刻",
     message: "メッセージ",
     notFound: "ユーザーが見つかりませんでした",
     role: "ロール",

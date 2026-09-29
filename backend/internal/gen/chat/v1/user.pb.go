@@ -329,8 +329,12 @@ type UserPreferences struct {
 	ColorMode         ColorMode              `protobuf:"varint,2,opt,name=color_mode,json=colorMode,proto3,enum=chat.v1.ColorMode" json:"color_mode,omitempty"`
 	Locale            string                 `protobuf:"bytes,3,opt,name=locale,proto3" json:"locale,omitempty"`
 	NotificationLevel NotificationLevel      `protobuf:"varint,4,opt,name=notification_level,json=notificationLevel,proto3,enum=chat.v1.NotificationLevel" json:"notification_level,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// IANA のタイムゾーン名（例: Asia/Tokyo）。空は未設定。名前の正しさはサーバーで確かめる
+	Timezone string `protobuf:"bytes,5,opt,name=timezone,proto3" json:"timezone,omitempty"`
+	// 端末のタイムゾーンが保存値と違うとき、尋ねずに更新する
+	TimezoneAutoUpdate bool `protobuf:"varint,6,opt,name=timezone_auto_update,json=timezoneAutoUpdate,proto3" json:"timezone_auto_update,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *UserPreferences) Reset() {
@@ -389,6 +393,20 @@ func (x *UserPreferences) GetNotificationLevel() NotificationLevel {
 		return x.NotificationLevel
 	}
 	return NotificationLevel_NOTIFICATION_LEVEL_UNSPECIFIED
+}
+
+func (x *UserPreferences) GetTimezone() string {
+	if x != nil {
+		return x.Timezone
+	}
+	return ""
+}
+
+func (x *UserPreferences) GetTimezoneAutoUpdate() bool {
+	if x != nil {
+		return x.TimezoneAutoUpdate
+	}
+	return false
 }
 
 // メッセージの投稿者などに埋め込む最小限のユーザー情報
@@ -481,7 +499,7 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\xbaH\a\x1a\x05\x10\xe8\x02(\x00R\x03hue\x12/\n" +
 	"\x06chroma\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\xaeG\xe1z\x14\xae\xd7?)\x00\x00\x00\x00\x00\x00\x00\x00R\x06chroma\x12;\n" +
 	"\asidebar\x18\x03 \x01(\x0e2\x15.chat.v1.SidebarStyleB\n" +
-	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\x86\x02\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\xdd\x02\n" +
 	"\x0fUserPreferences\x126\n" +
 	"\x05theme\x18\x01 \x01(\v2\x18.chat.v1.ThemePreferenceB\x06\xbaH\x03\xc8\x01\x01R\x05theme\x12=\n" +
 	"\n" +
@@ -490,7 +508,9 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\x06locale\x18\x03 \x01(\tB\r\xbaH\n" +
 	"r\bR\x02jaR\x02enR\x06locale\x12U\n" +
 	"\x12notification_level\x18\x04 \x01(\x0e2\x1a.chat.v1.NotificationLevelB\n" +
-	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x11notificationLevel\"\x8a\x01\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x11notificationLevel\x12#\n" +
+	"\btimezone\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x18@R\btimezone\x120\n" +
+	"\x14timezone_auto_update\x18\x06 \x01(\bR\x12timezoneAutoUpdate\"\x8a\x01\n" +
 	"\vUserSummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +

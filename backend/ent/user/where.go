@@ -106,6 +106,16 @@ func Locale(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldLocale, v))
 }
 
+// Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
+func Timezone(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TimezoneAutoUpdate applies equality check predicate on the "timezone_auto_update" field. It's identical to TimezoneAutoUpdateEQ.
+func TimezoneAutoUpdate(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTimezoneAutoUpdate, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -749,6 +759,81 @@ func NotificationLevelIn(vs ...NotificationLevel) predicate.User {
 // NotificationLevelNotIn applies the NotIn predicate on the "notification_level" field.
 func NotificationLevelNotIn(vs ...NotificationLevel) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldNotificationLevel, vs...))
+}
+
+// TimezoneEQ applies the EQ predicate on the "timezone" field.
+func TimezoneEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TimezoneNEQ applies the NEQ predicate on the "timezone" field.
+func TimezoneNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldTimezone, v))
+}
+
+// TimezoneIn applies the In predicate on the "timezone" field.
+func TimezoneIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldTimezone, vs...))
+}
+
+// TimezoneNotIn applies the NotIn predicate on the "timezone" field.
+func TimezoneNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldTimezone, vs...))
+}
+
+// TimezoneGT applies the GT predicate on the "timezone" field.
+func TimezoneGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldTimezone, v))
+}
+
+// TimezoneGTE applies the GTE predicate on the "timezone" field.
+func TimezoneGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldTimezone, v))
+}
+
+// TimezoneLT applies the LT predicate on the "timezone" field.
+func TimezoneLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldTimezone, v))
+}
+
+// TimezoneLTE applies the LTE predicate on the "timezone" field.
+func TimezoneLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldTimezone, v))
+}
+
+// TimezoneContains applies the Contains predicate on the "timezone" field.
+func TimezoneContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldTimezone, v))
+}
+
+// TimezoneHasPrefix applies the HasPrefix predicate on the "timezone" field.
+func TimezoneHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldTimezone, v))
+}
+
+// TimezoneHasSuffix applies the HasSuffix predicate on the "timezone" field.
+func TimezoneHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldTimezone, v))
+}
+
+// TimezoneEqualFold applies the EqualFold predicate on the "timezone" field.
+func TimezoneEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldTimezone, v))
+}
+
+// TimezoneContainsFold applies the ContainsFold predicate on the "timezone" field.
+func TimezoneContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldTimezone, v))
+}
+
+// TimezoneAutoUpdateEQ applies the EQ predicate on the "timezone_auto_update" field.
+func TimezoneAutoUpdateEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldTimezoneAutoUpdate, v))
+}
+
+// TimezoneAutoUpdateNEQ applies the NEQ predicate on the "timezone_auto_update" field.
+func TimezoneAutoUpdateNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldTimezoneAutoUpdate, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

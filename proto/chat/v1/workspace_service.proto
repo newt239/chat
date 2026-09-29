@@ -50,6 +50,8 @@ message WorkspaceMember {
   optional string nickname = 8;
   // 停止中の場合だけ設定される
   optional google.protobuf.Timestamp suspended_at = 9;
+  // IANA のタイムゾーン名。空は未設定
+  string timezone = 10;
 }
 
 message PublicWorkspace {

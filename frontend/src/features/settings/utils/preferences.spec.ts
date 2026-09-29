@@ -20,6 +20,8 @@ describe("preferences と proto の変換", () => {
       mode: "dark",
       notificationLevel: "all",
       theme: themePresets.plum,
+      timezone: "Asia/Tokyo",
+      timezoneAutoUpdate: true,
     };
 
     expect(preferencesFromProto(preferencesToProto(preferences))).toStrictEqual(preferences);
@@ -31,6 +33,8 @@ describe("preferences と proto の変換", () => {
       mode: "system",
       notificationLevel: "none",
       theme: themePresets.jade,
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
 
     expect(proto.colorMode).toBe(ColorMode.SYSTEM);
@@ -44,6 +48,8 @@ describe("preferences と proto の変換", () => {
       mode: "light",
       notificationLevel: "mentions",
       theme: { chroma: 0.1, hue: 359.6, sidebar: "light" },
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
 
     expect(proto.theme?.hue).toBe(0);
@@ -57,6 +63,8 @@ describe("preferences と proto の変換", () => {
       mode: "system",
       notificationLevel: "mentions",
       theme: themePresets.jade,
+      timezone: "",
+      timezoneAutoUpdate: false,
     });
   });
 });

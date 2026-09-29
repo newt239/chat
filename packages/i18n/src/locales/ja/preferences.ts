@@ -31,4 +31,14 @@ export const preferences = {
     },
     title: "テーマ",
   },
+  timezone: {
+    autoUpdate: "タイムゾーンを自動で更新する",
+    autoUpdateDescription: "端末のタイムゾーンが変わったとき、確認せずに更新します",
+    changed: "端末のタイムゾーンが {{timezone}} になっています",
+    changedDescription: "アカウントのタイムゾーン（{{current}}）を更新しますか？",
+    description: "プロフィールに現地時刻として表示されます",
+    placeholder: "未設定",
+    title: "タイムゾーン",
+    update: "更新する",
+  },
 } as const;

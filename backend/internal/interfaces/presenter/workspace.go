@@ -49,6 +49,7 @@ func WorkspaceMember(m workspaceuc.MemberInfo) *chatv1.WorkspaceMember {
 		JoinedAt:    timestamppb.New(m.JoinedAt),
 		SuspendedAt: optionalTimestamp(m.SuspendedAt),
 		Nickname:    m.Nickname,
+		Timezone:    m.Timezone,
 	}
 }
 

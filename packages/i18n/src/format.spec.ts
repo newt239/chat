@@ -10,6 +10,7 @@ import {
   formatNumber,
   formatRelativeTime,
   formatTime,
+  formatTimeInZone,
   formatWeekday,
 } from "./format";
 
@@ -25,6 +26,12 @@ describe("日付・時刻のフォーマット", () => {
   it("時刻を言語に合わせて表示する", () => {
     expect(formatTime(date, "ja")).toBe("10:16");
     expect(formatTime(date, "en")).toBe("10:16 AM");
+  });
+
+  it("指定したタイムゾーンの時刻を表示する", () => {
+    const utc = new Date(Date.UTC(2026, 8, 28, 1, 16));
+    expect(formatTimeInZone(utc, "ja", "Asia/Tokyo")).toBe("10:16");
+    expect(formatTimeInZone(utc, "en", "America/New_York")).toBe("9:16 PM");
   });
 
   it("日時を言語に合わせて表示する", () => {

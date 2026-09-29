@@ -14,6 +14,7 @@ export const member: Messages["member"] = {
     bio: "About",
     email: "Email",
     loadFailed: "Couldn't load the profile",
+    localTime: "Local time",
     message: "Message",
     notFound: "User not found",
     role: "Role",

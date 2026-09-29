@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAtom, useSetAtom } from "jotai";
+import { useSetAtom, useStore } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/toast";
@@ -34,11 +34,13 @@ export const useSyncPreferences = () => {
 export const useUpdatePreferences = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const [preferences, setPreferences] = useAtom(preferencesAtom);
+  const store = useStore();
+  const setPreferences = useSetAtom(preferencesAtom);
   const { mutate } = useMutation(UserService.method.updatePreferences);
 
   return (patch: Partial<Preferences>) => {
-    const previous = preferences;
+    // 同じコミットで読み込んだアカウントの設定も含めるため、呼ばれた時点の値を読む
+    const previous = store.get(preferencesAtom);
     const next = { ...previous, ...patch };
     setPreferences(next);
     mutate(

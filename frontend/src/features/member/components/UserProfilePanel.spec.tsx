@@ -36,6 +36,7 @@ const render = (userId: string) =>
             displayName: "Bob",
             email: "bob@example.com",
             role: WorkspaceRole.ADMIN,
+            timezone: "America/New_York",
             userId: "u-bob",
           }),
         ],
@@ -54,6 +55,20 @@ const render = (userId: string) =>
   );
 
 describe("UserProfilePanel", () => {
+  test("タイムゾーンを設定した相手には現地時刻を表示する", async () => {
+    await render("u-bob");
+    expect(await screen.findByText("America/New_York")).toBeInTheDocument();
+    expect(screen.getByText("現地時刻")).toBeInTheDocument();
+  });
+
+  test("タイムゾーンが未設定なら現地時刻を表示しない", async () => {
+    await render(currentUser.id);
+    expect(
+      await screen.findByRole("heading", { name: currentUser.displayName }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("現地時刻")).not.toBeInTheDocument();
+  });
+
   test("プロフィールを表示し、メッセージボタンで DM を開く", async () => {
     const { router } = await render("u-bob");
     expect(await screen.findByRole("heading", { name: "Bob" })).toBeInTheDocument();

@@ -68,6 +68,10 @@ message UserPreferences {
     defined_only: true
     not_in: [0]
   }];
+  // IANA のタイムゾーン名（例: Asia/Tokyo）。空は未設定。名前の正しさはサーバーで確かめる
+  string timezone = 5 [(buf.validate.field).string.max_len = 64];
+  // 端末のタイムゾーンが保存値と違うとき、尋ねずに更新する
+  bool timezone_auto_update = 6;
 }
 
 // メッセージの投稿者などに埋め込む最小限のユーザー情報

@@ -18041,6 +18041,8 @@ type UserMutation struct {
 	color_mode                 *user.ColorMode
 	locale                     *string
 	notification_level         *user.NotificationLevel
+	timezone                   *string
+	timezone_auto_update       *bool
 	created_at                 *time.Time
 	updated_at                 *time.Time
 	clearedFields              map[string]struct{}
@@ -18737,6 +18739,78 @@ func (m *UserMutation) OldNotificationLevel(ctx context.Context) (v user.Notific
 // ResetNotificationLevel resets all changes to the "notification_level" field.
 func (m *UserMutation) ResetNotificationLevel() {
 	m.notification_level = nil
+}
+
+// SetTimezone sets the "timezone" field.
+func (m *UserMutation) SetTimezone(s string) {
+	m.timezone = &s
+}
+
+// Timezone returns the value of the "timezone" field in the mutation.
+func (m *UserMutation) Timezone() (r string, exists bool) {
+	v := m.timezone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezone returns the old "timezone" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldTimezone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezone: %w", err)
+	}
+	return oldValue.Timezone, nil
+}
+
+// ResetTimezone resets all changes to the "timezone" field.
+func (m *UserMutation) ResetTimezone() {
+	m.timezone = nil
+}
+
+// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
+func (m *UserMutation) SetTimezoneAutoUpdate(b bool) {
+	m.timezone_auto_update = &b
+}
+
+// TimezoneAutoUpdate returns the value of the "timezone_auto_update" field in the mutation.
+func (m *UserMutation) TimezoneAutoUpdate() (r bool, exists bool) {
+	v := m.timezone_auto_update
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneAutoUpdate returns the old "timezone_auto_update" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldTimezoneAutoUpdate(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneAutoUpdate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneAutoUpdate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneAutoUpdate: %w", err)
+	}
+	return oldValue.TimezoneAutoUpdate, nil
+}
+
+// ResetTimezoneAutoUpdate resets all changes to the "timezone_auto_update" field.
+func (m *UserMutation) ResetTimezoneAutoUpdate() {
+	m.timezone_auto_update = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -19547,7 +19621,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 17)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -19586,6 +19660,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.notification_level != nil {
 		fields = append(fields, user.FieldNotificationLevel)
+	}
+	if m.timezone != nil {
+		fields = append(fields, user.FieldTimezone)
+	}
+	if m.timezone_auto_update != nil {
+		fields = append(fields, user.FieldTimezoneAutoUpdate)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -19627,6 +19707,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Locale()
 	case user.FieldNotificationLevel:
 		return m.NotificationLevel()
+	case user.FieldTimezone:
+		return m.Timezone()
+	case user.FieldTimezoneAutoUpdate:
+		return m.TimezoneAutoUpdate()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
@@ -19666,6 +19750,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldLocale(ctx)
 	case user.FieldNotificationLevel:
 		return m.OldNotificationLevel(ctx)
+	case user.FieldTimezone:
+		return m.OldTimezone(ctx)
+	case user.FieldTimezoneAutoUpdate:
+		return m.OldTimezoneAutoUpdate(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
@@ -19769,6 +19857,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetNotificationLevel(v)
+		return nil
+	case user.FieldTimezone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezone(v)
+		return nil
+	case user.FieldTimezoneAutoUpdate:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneAutoUpdate(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -19919,6 +20021,12 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldNotificationLevel:
 		m.ResetNotificationLevel()
+		return nil
+	case user.FieldTimezone:
+		m.ResetTimezone()
+		return nil
+	case user.FieldTimezoneAutoUpdate:
+		m.ResetTimezoneAutoUpdate()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

@@ -76,3 +76,28 @@ func TestUpdatePreferencesRequiresLogin(t *testing.T) {
 		t.Fatalf("未ログインでの設定更新が拒否されていません: %v", err)
 	}
 }
+
+func TestUpdatePreferencesValidatesTimezone(t *testing.T) {
+	tests := []struct {
+		name     string
+		timezone string
+		wantErr  bool
+	}{
+		{name: "IANA 名は保存する", timezone: "Asia/Tokyo"},
+		{name: "空は未設定として保存する", timezone: ""},
+		{name: "存在しない名前は拒否する", timezone: "Mars/Olympus", wantErr: true},
+		{name: "サーバーのタイムゾーンを指す Local は拒否する", timezone: "Local", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{"alice": {ID: "alice"}}}, nil, nil)
+			prefs := cobalt
+			prefs.Timezone = tt.timezone
+
+			_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "alice", Preferences: prefs})
+			if errors.Is(err, ErrInvalidTimeZone) != tt.wantErr {
+				t.Fatalf("タイムゾーン %q の検証結果が期待と異なります: %v", tt.timezone, err)
+			}
+		})
+	}
+}

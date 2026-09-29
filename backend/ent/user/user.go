@@ -42,6 +42,10 @@ const (
 	FieldLocale = "locale"
 	// FieldNotificationLevel holds the string denoting the notification_level field in the database.
 	FieldNotificationLevel = "notification_level"
+	// FieldTimezone holds the string denoting the timezone field in the database.
+	FieldTimezone = "timezone"
+	// FieldTimezoneAutoUpdate holds the string denoting the timezone_auto_update field in the database.
+	FieldTimezoneAutoUpdate = "timezone_auto_update"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -183,6 +187,8 @@ var Columns = []string{
 	FieldColorMode,
 	FieldLocale,
 	FieldNotificationLevel,
+	FieldTimezone,
+	FieldTimezoneAutoUpdate,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -212,6 +218,10 @@ var (
 	DefaultThemeChroma float64
 	// DefaultLocale holds the default value on creation for the "locale" field.
 	DefaultLocale string
+	// DefaultTimezone holds the default value on creation for the "timezone" field.
+	DefaultTimezone string
+	// DefaultTimezoneAutoUpdate holds the default value on creation for the "timezone_auto_update" field.
+	DefaultTimezoneAutoUpdate bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -373,6 +383,16 @@ func ByLocale(opts ...sql.OrderTermOption) OrderOption {
 // ByNotificationLevel orders the results by the notification_level field.
 func ByNotificationLevel(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNotificationLevel, opts...).ToFunc()
+}
+
+// ByTimezone orders the results by the timezone field.
+func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
+}
+
+// ByTimezoneAutoUpdate orders the results by the timezone_auto_update field.
+func ByTimezoneAutoUpdate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezoneAutoUpdate, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

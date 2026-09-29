@@ -8,6 +8,7 @@ export {
   formatNumber,
   formatRelativeTime,
   formatTime,
+  formatTimeInZone,
   formatWeekday,
 } from "./format";
 export { createI18n, defaultLocale, locales, resolveLocale, resources } from "./i18n";
