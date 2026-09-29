@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -46,7 +47,11 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	URL string
+	URL             string
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime time.Duration
+	ConnMaxIdleTime time.Duration
 }
 
 type JWTConfig struct {
@@ -83,7 +88,11 @@ func Load() (*Config, error) {
 			Env:  env,
 		},
 		Database: DatabaseConfig{
-			URL: getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
+			URL:             getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
+			MaxOpenConns:    getEnvInt("DB_MAX_OPEN_CONNS", 10),
+			MaxIdleConns:    getEnvInt("DB_MAX_IDLE_CONNS", 5),
+			ConnMaxLifetime: getEnvDuration("DB_CONN_MAX_LIFETIME", 30*time.Minute),
+			ConnMaxIdleTime: getEnvDuration("DB_CONN_MAX_IDLE_TIME", 5*time.Minute),
 		},
 		JWT: JWTConfig{
 			Secret:          getEnv("JWT_SECRET", "change-me-in-production"),
@@ -145,6 +154,13 @@ func getEnvInt(key string, defaultVal int) int {
 		if i, err := strconv.Atoi(val); err == nil {
 			return i
 		}
+	}
+	return defaultVal
+}
+
+func getEnvDuration(key string, defaultVal time.Duration) time.Duration {
+	if d, err := time.ParseDuration(os.Getenv(key)); err == nil {
+		return d
 	}
 	return defaultVal
 }

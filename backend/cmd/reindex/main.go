@@ -17,7 +17,7 @@ func main() {
 		log.Fatalf("設定の読み込みに失敗しました: %v", err)
 	}
 
-	client, err := database.InitDB(cfg.Database.URL)
+	client, _, err := database.InitDB(cfg.Database)
 	if err != nil {
 		log.Fatalf("DB初期化に失敗しました: %v", err)
 	}

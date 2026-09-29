@@ -33,17 +33,19 @@ func main() {
 	}
 	defer logger.Sync()
 
-	client, err := database.InitDB(cfg.Database.URL)
+	client, db, err := database.InitDB(cfg.Database)
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
 	ctx := context.Background()
-	if err := client.Schema.Create(
-		ctx,
-		migrate.WithGlobalUniqueID(true),
-		migrate.WithForeignKeys(true),
-	); err != nil {
+	if err := database.WithMigrationLock(ctx, db, func(ctx context.Context) error {
+		return client.Schema.Create(
+			ctx,
+			migrate.WithGlobalUniqueID(true),
+			migrate.WithForeignKeys(true),
+		)
+	}); err != nil {
 		log.Fatalf("failed to migrate database schema: %v", err)
 	}
 

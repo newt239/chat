@@ -1,6 +1,9 @@
 package config
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestPasswordAuthEnabledDefault(t *testing.T) {
 	tests := []struct {
@@ -26,5 +29,20 @@ func TestPasswordAuthEnabledDefault(t *testing.T) {
 				t.Errorf("PasswordAuthEnabled = %v, want %v", cfg.Auth.PasswordAuthEnabled, tt.want)
 			}
 		})
+	}
+}
+
+func TestDatabasePoolFromEnv(t *testing.T) {
+	t.Setenv("DB_MAX_OPEN_CONNS", "4")
+	t.Setenv("DB_CONN_MAX_IDLE_TIME", "30s")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Database.MaxOpenConns != 4 || cfg.Database.ConnMaxIdleTime != 30*time.Second {
+		t.Errorf("環境変数が反映されていません: %+v", cfg.Database)
+	}
+	if cfg.Database.MaxIdleConns != 5 || cfg.Database.ConnMaxLifetime != 30*time.Minute {
+		t.Errorf("未設定の項目が既定値になっていません: %+v", cfg.Database)
 	}
 }
