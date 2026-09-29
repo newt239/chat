@@ -17,6 +17,7 @@ import { pin } from "./pin";
 import { preferences } from "./preferences";
 import { pwa } from "./pwa";
 import { reaction } from "./reaction";
+import { recorder } from "./recorder";
 import { search } from "./search";
 import { settings } from "./settings";
 import { shell } from "./shell";
@@ -44,6 +45,7 @@ export const en: Messages = {
   preferences,
   pwa,
   reaction,
+  recorder,
   search,
   settings,
   shell,

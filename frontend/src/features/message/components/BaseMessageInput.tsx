@@ -11,6 +11,7 @@ import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
 import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
 import { PendingLocation } from "#/features/location/components/PendingLocation";
+import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
 import { useIsMobile } from "#/lib/useMediaQuery";
 
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
@@ -50,6 +51,7 @@ export const BaseMessageInput = ({
   const [isPreview, setIsPreview] = useState(false);
   const [location, setLocation] = useState<MessageLocation | undefined>(undefined);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isRecorderOpen, setIsRecorderOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { previews, addPreview, removePreview, clearPreviews } = useLinkPreview();
   const {
@@ -93,7 +95,7 @@ export const BaseMessageInput = ({
 
   const handleFileSelect = async (files: File[]) => {
     for (const file of files) {
-      await uploadFile(file, { channelId });
+      await uploadFile(file, { channelId, durationSeconds: undefined });
     }
   };
 
@@ -129,6 +131,17 @@ export const BaseMessageInput = ({
       <div className="rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
         {pendingAttachments.length > 0 && (
           <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
+        )}
+        {isRecorderOpen && (
+          <VoiceRecorder
+            onAttach={(file, durationSeconds) => {
+              setIsRecorderOpen(false);
+              void uploadFile(file, { channelId, durationSeconds });
+            }}
+            onDiscard={() => {
+              setIsRecorderOpen(false);
+            }}
+          />
         )}
         {location && (
           <PendingLocation
@@ -201,6 +214,9 @@ export const BaseMessageInput = ({
           }}
           onShareLocation={() => {
             setIsLocationOpen(true);
+          }}
+          onRecord={() => {
+            setIsRecorderOpen(true);
           }}
         />
       </div>

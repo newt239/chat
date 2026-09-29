@@ -11,6 +11,7 @@ import {
   IconListNumbers,
   IconLoader2,
   IconMapPin,
+  IconMicrophone,
   IconPaperclip,
   IconQuote,
   IconStrikethrough,
@@ -37,6 +38,7 @@ type MessageInputToolbarProps = {
   onFormat: (key: FormatKey) => void;
   onFileSelect: (files: File[]) => void;
   onShareLocation: () => void;
+  onRecord: () => void;
 };
 
 const formatButtons: { key: FormatKey; icon: Icon }[] = [
@@ -64,6 +66,7 @@ export const MessageInputToolbar = ({
   onFormat,
   onFileSelect,
   onShareLocation,
+  onRecord,
 }: MessageInputToolbarProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -105,6 +108,9 @@ export const MessageInputToolbar = ({
         onPress={onShareLocation}
       >
         <IconMapPin />
+      </IconButton>
+      <IconButton label={t("recorder.start")} className={buttonClassName} onPress={onRecord}>
+        <IconMicrophone />
       </IconButton>
       <IconButton
         label={t("message.composer.help")}
