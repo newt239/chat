@@ -24,7 +24,7 @@
     "@bufbuild/buf": "1.73.0",
     "@bufbuild/protoc-gen-es": "2.15.0",
     "lefthook": "2.1.14",
-    "turbo": "2.11.2"
+    "turbo": "2.11.3"
   },
   "devEngines": {
     "runtime": {
