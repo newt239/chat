@@ -67,6 +67,12 @@ updates:
     cooldown:
       default-days: 7
     target-branch: "main"
+    # Tauri のテンプレートと crate は Gradle 9 と Kotlin 2 で使えない API に依存するため、Tauri が対応するまでメジャー更新を止める
+    ignore:
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jetbrains.kotlin:kotlin-gradle-plugin"
+        update-types: ["version-update:semver-major"]
     groups:
       all-dependencies:
         patterns:
