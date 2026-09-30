@@ -90,7 +90,17 @@ export const CustomEmojiForm = ({ workspaceId }: CustomEmojiFormProps) => {
       }}
     >
       <h3 className="m-0 text-body-strong">{t("workspace.emoji.add")}</h3>
-      <div className="flex items-end gap-3 max-md:flex-col max-md:items-stretch">
+      <TextField
+        label={t("workspace.emoji.name")}
+        value={name}
+        onChange={(value) => {
+          setName(value.toLowerCase());
+        }}
+        description={t("workspace.emoji.nameDescription")}
+        errorMessage={name !== "" && !isNameValid ? t("workspace.emoji.errors.name") : undefined}
+        className="min-w-0"
+      />
+      <div className="flex flex-wrap items-center gap-3">
         <FileTrigger
           acceptedFileTypes={EMOJI_IMAGE_TYPES}
           onSelect={(files) => {
@@ -109,23 +119,9 @@ export const CustomEmojiForm = ({ workspaceId }: CustomEmojiFormProps) => {
             {file === null ? t("workspace.emoji.selectImage") : t("workspace.emoji.changeImage")}
           </Button>
         </FileTrigger>
-        <TextField
-          label={t("workspace.emoji.name")}
-          value={name}
-          onChange={(value) => {
-            setName(value.toLowerCase());
-          }}
-          description={t("workspace.emoji.nameDescription")}
-          errorMessage={name !== "" && !isNameValid ? t("workspace.emoji.errors.name") : undefined}
-          className="min-w-0 flex-1"
-        />
-      </div>
-      <div className="flex items-center justify-end gap-3">
-        {errorMessage !== null && (
-          <p role="alert" className="m-0 flex-1 text-caption text-danger">
-            {errorMessage}
-          </p>
-        )}
+        <p role="alert" className="m-0 flex-1 text-caption text-danger">
+          {errorMessage}
+        </p>
         <Button
           type="submit"
           isDisabled={file === null || !isNameValid}
