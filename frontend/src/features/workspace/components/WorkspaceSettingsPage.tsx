@@ -1,9 +1,10 @@
-import { IconAdjustments, IconBuilding, IconUsers } from "@tabler/icons-react";
+import { IconAdjustments, IconBuilding, IconMoodSmile, IconUsers } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { isAdminRole } from "#/features/admin/utils/isAdminRole";
+import { CustomEmojiSettings } from "#/features/customEmoji/components/CustomEmojiSettings";
 import { SettingsLayout } from "#/features/settings/components/SettingsLayout";
 import { SettingsNavLink } from "#/features/settings/components/SettingsNavLink";
 
@@ -15,6 +16,7 @@ import { WorkspaceMemberManager } from "./WorkspaceMemberManager";
 import type { WorkspaceSettingsSection } from "../schemas";
 
 const sectionIcons: Record<WorkspaceSettingsSection, typeof IconUsers> = {
+  emoji: IconMoodSmile,
   general: IconAdjustments,
   members: IconUsers,
 };
@@ -44,6 +46,9 @@ export const WorkspaceSettingsPage = () => {
             canManage={isAdminRole(workspace.role)}
           />
         );
+      }
+      case "emoji": {
+        return <CustomEmojiSettings workspaceId={workspaceId} />;
       }
       default: {
         return null;
