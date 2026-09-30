@@ -35,6 +35,7 @@ import { useIsMobile } from "#/hooks/useMediaQuery";
 import { pinsCountByChannelAtom } from "#/providers/store/ui";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
+import { useChannelById } from "../hooks/useChannelById";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { useChannelMembers } from "../hooks/useChannelMembers";
 import { ChannelLinkBar } from "./ChannelLinkBar";
@@ -54,9 +55,16 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const pinsCount = useAtomValue(pinsCountByChannelAtom)[channelId] ?? 0;
-  const { channel, descendants, includesDescendants, setIncludesDescendants } =
-    useChannelAggregation(workspaceId, channelId);
+  const { descendants, includesDescendants, setIncludesDescendants } = useChannelAggregation(
+    workspaceId,
+    channelId,
+  );
   const { data: dms } = useDMs(workspaceId);
+  // 未参加のチャンネルをプレビューしているときは一覧にないため個別に取得する
+  const channel = useChannelById(
+    workspaceId,
+    dms === undefined || dms.some((candidate) => candidate.id === channelId) ? null : channelId,
+  );
   const { data: members = [] } = useChannelMembers(channelId);
   const { setStarred } = useChannelListActions(workspaceId);
   const displayName = useDisplayName();
