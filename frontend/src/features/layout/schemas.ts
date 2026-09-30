@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-export const settingsSections = [
-  "account",
-  "notifications",
-  "theme",
-  "display",
-  "shortcuts",
-] as const;
-export type SettingsSection = (typeof settingsSections)[number];
-
 const optionalId = z.string().min(1).optional().catch(undefined);
 
 // ワークスペース内のどの画面にも重ねられる右パネルとダイアログ。子のルートはこれを継承する
@@ -43,7 +34,6 @@ export const workspaceSearchSchema = z.object({
   profile: optionalId,
   // リアクション一覧を開いているメッセージ
   reactions: optionalId,
-  settings: z.enum(settingsSections).optional().catch(undefined),
   // edit-webhook で編集する Webhook
   webhook: optionalId,
   // モバイルで長押ししたメッセージの操作シート

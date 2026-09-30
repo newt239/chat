@@ -1,16 +1,14 @@
 import { useEffect } from "react";
 
-import { useNavigate } from "@tanstack/react-router";
+import { useCanGoBack, useMatch, useNavigate, useRouter } from "@tanstack/react-router";
 
-import { closeDialog, openDialog } from "../utils/overlaySearch";
-import { workspaceRoute } from "../utils/workspaceRoute";
-
-/** ⌘K（Ctrl+K）で検索、⌘,（Ctrl+,）で設定を開く */
+/** ⌘K（Ctrl+K）で検索、⌘,（Ctrl+,）で設定を開く。設定ページで押すと元の画面へ戻る */
 export const useGlobalShortcuts = (workspaceId: string) => {
   const navigate = useNavigate();
-  const isSettingsOpen = workspaceRoute.useSearch({
-    select: (search) => search.settings !== undefined,
-  });
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
+  const isSettingsOpen =
+    useMatch({ from: "/app/$workspaceId/settings/$section", shouldThrow: false }) !== undefined;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -23,15 +21,21 @@ export const useGlobalShortcuts = (workspaceId: string) => {
       }
       if (event.key === ",") {
         event.preventDefault();
-        void navigate({
-          search: isSettingsOpen ? closeDialog : openDialog({ settings: "theme" }),
-          to: ".",
-        });
+        if (!isSettingsOpen) {
+          void navigate({
+            params: { section: "theme", workspaceId },
+            to: "/app/$workspaceId/settings/$section",
+          });
+        } else if (canGoBack) {
+          router.history.back();
+        } else {
+          void navigate({ params: { workspaceId }, to: "/app/$workspaceId" });
+        }
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [navigate, isSettingsOpen, workspaceId]);
+  }, [navigate, router, canGoBack, isSettingsOpen, workspaceId]);
 };

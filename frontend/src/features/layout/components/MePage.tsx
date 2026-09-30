@@ -23,12 +23,12 @@ import { cn, focusRing } from "#/components/ui/styles/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
 import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
-import { openDialog, openPanel } from "#/features/layout/utils/overlaySearch";
+import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
 import { isTauri } from "#/lib/platform/platform";
 import { userAtom } from "#/providers/store/auth";
 
-import type { SettingsSection } from "#/features/layout/schemas";
+import type { SettingsSection } from "#/features/settings/schemas";
 
 const settingRows: [SettingsSection, typeof IconKey][] = [
   ["account", IconKey],
@@ -84,7 +84,11 @@ export const MePage = () => {
           {t("settings.title")}
         </h2>
         {settingRows.map(([section, Icon]) => (
-          <NavLink key={section} to="." search={openDialog({ settings: section })}>
+          <NavLink
+            key={section}
+            to="/app/$workspaceId/settings/$section"
+            params={{ section, workspaceId }}
+          >
             <Icon aria-hidden />
             <span className="flex-1">{t(`settings.sections.${section}`)}</span>
             <IconChevronRight aria-hidden />

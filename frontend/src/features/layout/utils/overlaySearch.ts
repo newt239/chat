@@ -13,7 +13,6 @@ const noDialog = {
   image: undefined,
   link: undefined,
   reactions: undefined,
-  settings: undefined,
   sheet: undefined,
   webhook: undefined,
 } satisfies Record<keyof DialogSearch, undefined>;

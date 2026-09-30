@@ -30,6 +30,8 @@ import { Route as AppWorkspaceIdMeRouteImport } from "./routes/app/$workspaceId/
 import { Route as AppWorkspaceIdMentionsRouteImport } from "./routes/app/$workspaceId/mentions";
 import { Route as AppWorkspaceIdSearchRouteImport } from "./routes/app/$workspaceId/search";
 import { Route as AppWorkspaceIdThreadsRouteImport } from "./routes/app/$workspaceId/threads";
+import { Route as AppWorkspaceIdSettingsIndexRouteImport } from "./routes/app/$workspaceId/settings/index";
+import { Route as AppWorkspaceIdSettingsSectionRouteImport } from "./routes/app/$workspaceId/settings/$section";
 import { Route as AppWorkspaceIdChannelIdThreadMessageIdRouteImport } from "./routes/app/$workspaceId/$channelId/thread/$messageId";
 
 const IndexRoute = IndexRouteImport.update({
@@ -137,6 +139,18 @@ const AppWorkspaceIdThreadsRoute = AppWorkspaceIdThreadsRouteImport.update({
   path: "/threads",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
+const AppWorkspaceIdSettingsIndexRoute =
+  AppWorkspaceIdSettingsIndexRouteImport.update({
+    id: "/settings/",
+    path: "/settings/",
+    getParentRoute: () => AppWorkspaceIdRouteRoute,
+  } as any);
+const AppWorkspaceIdSettingsSectionRoute =
+  AppWorkspaceIdSettingsSectionRouteImport.update({
+    id: "/settings/$section",
+    path: "/settings/$section",
+    getParentRoute: () => AppWorkspaceIdRouteRoute,
+  } as any);
 const AppWorkspaceIdChannelIdThreadMessageIdRoute =
   AppWorkspaceIdChannelIdThreadMessageIdRouteImport.update({
     id: "/thread/$messageId",
@@ -166,6 +180,8 @@ export interface FileRoutesByFullPath {
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
+  "/app/$workspaceId/settings/$section": typeof AppWorkspaceIdSettingsSectionRoute;
+  "/app/$workspaceId/settings/": typeof AppWorkspaceIdSettingsIndexRoute;
   "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRoutesByTo {
@@ -188,6 +204,8 @@ export interface FileRoutesByTo {
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId": typeof AppWorkspaceIdIndexRoute;
+  "/app/$workspaceId/settings/$section": typeof AppWorkspaceIdSettingsSectionRoute;
+  "/app/$workspaceId/settings": typeof AppWorkspaceIdSettingsIndexRoute;
   "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRoutesById {
@@ -213,6 +231,8 @@ export interface FileRoutesById {
   "/app/$workspaceId/search": typeof AppWorkspaceIdSearchRoute;
   "/app/$workspaceId/threads": typeof AppWorkspaceIdThreadsRoute;
   "/app/$workspaceId/": typeof AppWorkspaceIdIndexRoute;
+  "/app/$workspaceId/settings/$section": typeof AppWorkspaceIdSettingsSectionRoute;
+  "/app/$workspaceId/settings/": typeof AppWorkspaceIdSettingsIndexRoute;
   "/app/$workspaceId/$channelId/thread/$messageId": typeof AppWorkspaceIdChannelIdThreadMessageIdRoute;
 }
 export interface FileRouteTypes {
@@ -239,6 +259,8 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId/"
+    | "/app/$workspaceId/settings/$section"
+    | "/app/$workspaceId/settings/"
     | "/app/$workspaceId/$channelId/thread/$messageId";
   fileRoutesByTo: FileRoutesByTo;
   to:
@@ -261,6 +283,8 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId"
+    | "/app/$workspaceId/settings/$section"
+    | "/app/$workspaceId/settings"
     | "/app/$workspaceId/$channelId/thread/$messageId";
   id:
     | "__root__"
@@ -285,6 +309,8 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/search"
     | "/app/$workspaceId/threads"
     | "/app/$workspaceId/"
+    | "/app/$workspaceId/settings/$section"
+    | "/app/$workspaceId/settings/"
     | "/app/$workspaceId/$channelId/thread/$messageId";
   fileRoutesById: FileRoutesById;
 }
@@ -446,6 +472,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdThreadsRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
+    "/app/$workspaceId/settings/": {
+      id: "/app/$workspaceId/settings/";
+      path: "/settings";
+      fullPath: "/app/$workspaceId/settings/";
+      preLoaderRoute: typeof AppWorkspaceIdSettingsIndexRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
+    "/app/$workspaceId/settings/$section": {
+      id: "/app/$workspaceId/settings/$section";
+      path: "/settings/$section";
+      fullPath: "/app/$workspaceId/settings/$section";
+      preLoaderRoute: typeof AppWorkspaceIdSettingsSectionRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
     "/app/$workspaceId/$channelId/thread/$messageId": {
       id: "/app/$workspaceId/$channelId/thread/$messageId";
       path: "/thread/$messageId";
@@ -485,6 +525,8 @@ interface AppWorkspaceIdRouteRouteChildren {
   AppWorkspaceIdSearchRoute: typeof AppWorkspaceIdSearchRoute;
   AppWorkspaceIdThreadsRoute: typeof AppWorkspaceIdThreadsRoute;
   AppWorkspaceIdIndexRoute: typeof AppWorkspaceIdIndexRoute;
+  AppWorkspaceIdSettingsSectionRoute: typeof AppWorkspaceIdSettingsSectionRoute;
+  AppWorkspaceIdSettingsIndexRoute: typeof AppWorkspaceIdSettingsIndexRoute;
 }
 
 const AppWorkspaceIdRouteRouteChildren: AppWorkspaceIdRouteRouteChildren = {
@@ -501,6 +543,8 @@ const AppWorkspaceIdRouteRouteChildren: AppWorkspaceIdRouteRouteChildren = {
   AppWorkspaceIdSearchRoute: AppWorkspaceIdSearchRoute,
   AppWorkspaceIdThreadsRoute: AppWorkspaceIdThreadsRoute,
   AppWorkspaceIdIndexRoute: AppWorkspaceIdIndexRoute,
+  AppWorkspaceIdSettingsSectionRoute: AppWorkspaceIdSettingsSectionRoute,
+  AppWorkspaceIdSettingsIndexRoute: AppWorkspaceIdSettingsIndexRoute,
 };
 
 const AppWorkspaceIdRouteRouteWithChildren =

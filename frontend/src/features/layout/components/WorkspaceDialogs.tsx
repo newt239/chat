@@ -4,7 +4,6 @@ import { ChannelLinkDialogLoader } from "#/features/channel/components/ChannelLi
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
 import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
 import { MarkdownHelpModal } from "#/features/message/components/MarkdownHelpModal";
-import { SettingsDialog } from "#/features/settings/components/SettingsDialog";
 import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog";
 import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
@@ -57,7 +56,6 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
         />
       )}
       <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={onOpenChange} />
-      <SettingsDialog />
       {canManageGroups &&
         (dialog === "create-group" || (dialog === "edit-group" && editingGroup)) && (
           <UserGroupDialog

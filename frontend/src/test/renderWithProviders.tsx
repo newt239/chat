@@ -56,6 +56,10 @@ export const renderWithProviders = async (
   });
   const insightsRoute = createRoute({ getParentRoute: () => workspaceRoute, path: "/insights" });
   const draftsRoute = createRoute({ getParentRoute: () => workspaceRoute, path: "/drafts" });
+  const settingsRoute = createRoute({
+    getParentRoute: () => workspaceRoute,
+    path: "/settings/$section",
+  });
   const channelRoute = createRoute({
     getParentRoute: () => workspaceRoute,
     path: "/$channelId",
@@ -72,6 +76,7 @@ export const renderWithProviders = async (
         adminRoute,
         insightsRoute,
         draftsRoute,
+        settingsRoute,
         channelRoute,
       ]),
     ]),
