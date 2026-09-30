@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { applyFormat, detectActiveFormats } from "./format";
+import { applyFormat, detectActiveFormats, insertEmoji } from "./format";
 
 describe("applyFormat", () => {
   test("選択範囲を記号で囲み、カーソルを内側の末尾に置く", () => {
@@ -28,5 +28,20 @@ describe("detectActiveFormats", () => {
       heading: false,
       list: true,
     });
+  });
+});
+
+describe("insertEmoji", () => {
+  test("選択範囲を絵文字で置き換え、カーソルを直後に置く", () => {
+    expect(insertEmoji("いいね！", { end: 4, start: 3 }, "🎉")).toEqual({
+      cursor: 5,
+      text: "いいね🎉",
+    });
+  });
+
+  test("カスタム絵文字は英数字と接するときだけ空白を挟む", () => {
+    expect(insertEmoji("ok", { end: 2, start: 2 }, ":party:").text).toBe("ok :party:");
+    expect(insertEmoji("abc", { end: 1, start: 1 }, ":party:").text).toBe("a :party: bc");
+    expect(insertEmoji("了解", { end: 2, start: 2 }, ":party:").text).toBe("了解:party:");
   });
 });

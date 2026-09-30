@@ -1,3 +1,5 @@
+import { useRef } from "react";
+
 import {
   IconArrowUp,
   IconBold,
@@ -12,6 +14,7 @@ import {
   IconLoader2,
   IconMapPin,
   IconMicrophone,
+  IconMoodSmile,
   IconPaperclip,
   IconQuote,
   IconStrikethrough,
@@ -23,6 +26,7 @@ import { useTranslation } from "react-i18next";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { cn } from "#/components/ui/styles/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { EmojiPickerPopover } from "#/features/reaction/components/EmojiPickerPopover";
 import { ScheduleSendMenu } from "#/features/schedule/components/ScheduleSendMenu";
 
 import type { FormatKey } from "../utils/format";
@@ -37,6 +41,9 @@ type MessageInputToolbarProps = {
   isSending: boolean;
   activeFormats: Record<FormatKey, boolean>;
   onFormat: (key: FormatKey) => void;
+  onInsertEmoji: (emoji: string) => void;
+  // 絵文字を選んだあと、閉じたピッカーからフォーカスを入力欄へ戻す
+  onFocusInput: () => void;
   onFileSelect: (files: File[]) => void;
   onShareLocation: () => void;
   onRecord: () => void;
@@ -66,6 +73,8 @@ export const MessageInputToolbar = ({
   isSending,
   activeFormats,
   onFormat,
+  onInsertEmoji,
+  onFocusInput,
   onFileSelect,
   onShareLocation,
   onRecord,
@@ -73,6 +82,8 @@ export const MessageInputToolbar = ({
 }: MessageInputToolbarProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // ピッカーは閉じたあとでフォーカスを開いたボタンへ戻すため、そのときに入力欄へ移す
+  const hasPickedEmojiRef = useRef(false);
 
   return (
     <div className="@container flex items-center gap-px px-[5px] pb-[5px]">
@@ -93,6 +104,29 @@ export const MessageInputToolbar = ({
         ))}
         <span className="mx-1 h-4 w-px bg-border" />
       </div>
+      <EmojiPickerPopover
+        label={t("message.composer.emoji")}
+        placement="top start"
+        onSelect={(emoji) => {
+          hasPickedEmojiRef.current = true;
+          onInsertEmoji(emoji);
+        }}
+        trigger={
+          <IconButton
+            label={t("message.composer.emoji")}
+            isDisabled={isPreview}
+            className={buttonClassName}
+            onFocus={() => {
+              if (hasPickedEmojiRef.current) {
+                hasPickedEmojiRef.current = false;
+                onFocusInput();
+              }
+            }}
+          >
+            <IconMoodSmile />
+          </IconButton>
+        }
+      />
       <FileTrigger
         allowsMultiple
         onSelect={(files) => {

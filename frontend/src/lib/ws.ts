@@ -63,6 +63,8 @@ export class WsClient {
   } = {
     ack: new Set(),
     channelViewers: new Set(),
+    customEmojiCreated: new Set(),
+    customEmojiDeleted: new Set(),
     error: new Set(),
     messageDeleted: new Set(),
     messageUpdated: new Set(),
@@ -144,6 +146,14 @@ export class WsClient {
         break;
       }
       case "channelViewers": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "customEmojiCreated": {
+        this.emit(oneof.case, oneof.value);
+        break;
+      }
+      case "customEmojiDeleted": {
         this.emit(oneof.case, oneof.value);
         break;
       }

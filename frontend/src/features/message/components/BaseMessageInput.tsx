@@ -17,7 +17,7 @@ import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessag
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
-import { applyFormat, detectActiveFormats } from "../utils/format";
+import { applyFormat, detectActiveFormats, insertEmoji } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 
@@ -104,8 +104,7 @@ export const BaseMessageInput = ({
     [addPreview, previews, removePreview, notifyTyping, saveDraft],
   );
 
-  const handleFormat = (key: FormatKey) => {
-    const next = applyFormat(body, selection, key);
+  const replaceSelection = (next: { text: string; cursor: number }) => {
     handleBodyChange(next.text);
     setSelection({ end: next.cursor, start: next.cursor });
     // 値が反映されてからカーソルを動かす
@@ -113,6 +112,27 @@ export const BaseMessageInput = ({
       textareaRef.current?.focus();
       textareaRef.current?.setSelectionRange(next.cursor, next.cursor);
     });
+  };
+
+  const handleFormat = (key: FormatKey) => {
+    replaceSelection(applyFormat(body, selection, key));
+  };
+
+  const handleInsertEmoji = (emoji: string) => {
+    // select イベントはカーソルの移動では届かないため、挿入時の位置を textarea から読む
+    const textarea = textareaRef.current;
+    const current =
+      textarea === null
+        ? selection
+        : { end: textarea.selectionEnd, start: textarea.selectionStart };
+    const next = insertEmoji(body, current, emoji);
+    handleBodyChange(next.text);
+    setSelection({ end: next.cursor, start: next.cursor });
+  };
+
+  const focusInput = () => {
+    textareaRef.current?.focus();
+    textareaRef.current?.setSelectionRange(selection.start, selection.end);
   };
 
   const handleFileSelect = async (files: File[]) => {
@@ -255,6 +275,8 @@ export const BaseMessageInput = ({
           isSending={isPending}
           activeFormats={detectActiveFormats(body, selection)}
           onFormat={handleFormat}
+          onInsertEmoji={handleInsertEmoji}
+          onFocusInput={focusInput}
           onFileSelect={(files) => {
             void handleFileSelect(files);
           }}

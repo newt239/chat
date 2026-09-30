@@ -9,6 +9,9 @@ export const reaction = {
   },
   more: "+{{count}}",
   moreLabel: "ほかのリアクションを表示",
+  picker: {
+    custom: "カスタム",
+  },
   names: {
     others: "{{names}} ほか {{count}} 人",
     you: "あなた",

@@ -30,6 +30,8 @@ type Tx struct {
 	ChannelReadState *ChannelReadStateClient
 	// ChannelStar is the client for interacting with the ChannelStar builders.
 	ChannelStar *ChannelStarClient
+	// CustomEmoji is the client for interacting with the CustomEmoji builders.
+	CustomEmoji *CustomEmojiClient
 	// Draft is the client for interacting with the Draft builders.
 	Draft *DraftClient
 	// Invitation is the client for interacting with the Invitation builders.
@@ -215,6 +217,7 @@ func (tx *Tx) init() {
 	tx.ChannelMute = NewChannelMuteClient(tx.config)
 	tx.ChannelReadState = NewChannelReadStateClient(tx.config)
 	tx.ChannelStar = NewChannelStarClient(tx.config)
+	tx.CustomEmoji = NewCustomEmojiClient(tx.config)
 	tx.Draft = NewDraftClient(tx.config)
 	tx.Invitation = NewInvitationClient(tx.config)
 	tx.Message = NewMessageClient(tx.config)

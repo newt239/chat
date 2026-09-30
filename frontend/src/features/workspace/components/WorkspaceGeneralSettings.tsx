@@ -6,28 +6,24 @@ import { useTranslation } from "react-i18next";
 import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
-import { Dialog } from "#/components/ui/Dialog/Dialog";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { TextField } from "#/components/ui/TextField/TextField";
-import { WorkspaceMemberManager } from "#/features/workspace/components/WorkspaceMemberManager";
 import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActions";
+import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
 import type { Workspace as WorkspaceSummary } from "#/gen/chat/v1/workspace_service_pb";
 
-type WorkspaceSettingsModalProps = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+type WorkspaceGeneralSettingsProps = {
   workspace: WorkspaceSummary;
 };
 
-export const WorkspaceSettingsModal = ({
-  isOpen,
-  onOpenChange,
-  workspace,
-}: WorkspaceSettingsModalProps) => {
+// 名前・説明・公開設定。編集は管理者以上、削除はオーナーだけ（API 側でも同じ制限）
+export const WorkspaceGeneralSettings = ({ workspace }: WorkspaceGeneralSettingsProps) => {
   const { t } = useTranslation();
   const { update, remove } = useWorkspaceActions();
   const navigate = useNavigate();
+  const isOwner = workspace.role === WorkspaceRole.OWNER;
+  const canEdit = isOwner || workspace.role === WorkspaceRole.ADMIN;
 
   const [name, setName] = useState(workspace.name);
   const [description, setDescription] = useState(workspace.description ?? "");
@@ -35,63 +31,62 @@ export const WorkspaceSettingsModal = ({
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
 
   return (
-    <Dialog
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      title={t("workspace.settings.title")}
-      size="lg"
-    >
+    <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-3">
         <TextField
           label={t("workspace.settings.name")}
           value={name}
           onChange={setName}
           isRequired
+          isDisabled={!canEdit}
         />
         <TextArea
           label={t("workspace.settings.description")}
           value={description}
           onChange={setDescription}
           rows={2}
+          isDisabled={!canEdit}
         />
-        <Checkbox isSelected={isPublic} onChange={setIsPublic}>
+        <Checkbox isSelected={isPublic} onChange={setIsPublic} isDisabled={!canEdit}>
           {t("workspace.settings.isPublic")}
         </Checkbox>
-        <div className="flex items-center justify-end gap-3">
-          {update.isError && (
-            <p className="m-0 flex-1 text-caption text-danger">{update.error.message}</p>
-          )}
+        {canEdit ? (
+          <div className="flex items-center justify-end gap-3">
+            {update.isError && (
+              <p className="m-0 flex-1 text-caption text-danger">{update.error.message}</p>
+            )}
+            <Button
+              isPending={update.isPending}
+              onPress={() => {
+                update.mutate({ description, isPublic, name, workspaceId: workspace.id });
+              }}
+            >
+              {t("common.save")}
+            </Button>
+          </div>
+        ) : (
+          <p className="m-0 text-caption text-muted">{t("workspace.settings.adminOnly")}</p>
+        )}
+      </section>
+
+      {isOwner && (
+        <section className="flex flex-wrap items-center gap-3 rounded-lg border border-danger p-3">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <b className="text-body-strong text-danger">{t("workspace.settings.delete")}</b>
+            <span className="text-caption text-muted">
+              {t("workspace.settings.deleteDescription")}
+            </span>
+          </div>
           <Button
-            isPending={update.isPending}
+            variant="danger"
             onPress={() => {
-              update.mutate({ description, isPublic, name, workspaceId: workspace.id });
+              setIsDeleteConfirming(true);
             }}
           >
-            {t("common.save")}
+            {t("common.delete")}
           </Button>
-        </div>
-      </section>
-
-      <hr className="my-1 h-px border-0 bg-border" />
-      <WorkspaceMemberManager workspaceId={workspace.id} />
-      <hr className="my-1 h-px border-0 bg-border" />
-
-      <section className="flex flex-wrap items-center gap-3 rounded-lg border border-danger p-3">
-        <div className="flex min-w-0 flex-1 flex-col">
-          <b className="text-body-strong text-danger">{t("workspace.settings.delete")}</b>
-          <span className="text-caption text-muted">
-            {t("workspace.settings.deleteDescription")}
-          </span>
-        </div>
-        <Button
-          variant="danger"
-          onPress={() => {
-            setIsDeleteConfirming(true);
-          }}
-        >
-          {t("common.delete")}
-        </Button>
-      </section>
+        </section>
+      )}
 
       <AlertDialog
         isOpen={isDeleteConfirming}
@@ -106,7 +101,6 @@ export const WorkspaceSettingsModal = ({
             {
               onSuccess: () => {
                 setIsDeleteConfirming(false);
-                onOpenChange(false);
                 void navigate({ to: "/app" });
               },
             },
@@ -115,6 +109,6 @@ export const WorkspaceSettingsModal = ({
       >
         {t("workspace.settings.deleteDescription")}
       </AlertDialog>
-    </Dialog>
+    </div>
   );
 };

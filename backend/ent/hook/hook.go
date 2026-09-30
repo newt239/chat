@@ -105,6 +105,18 @@ func (f ChannelStarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelStarMutation", m)
 }
 
+// The CustomEmojiFunc type is an adapter to allow the use of ordinary
+// function as CustomEmoji mutator.
+type CustomEmojiFunc func(context.Context, *ent.CustomEmojiMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CustomEmojiFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CustomEmojiMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CustomEmojiMutation", m)
+}
+
 // The DraftFunc type is an adapter to allow the use of ordinary
 // function as Draft mutator.
 type DraftFunc func(context.Context, *ent.DraftMutation) (ent.Value, error)

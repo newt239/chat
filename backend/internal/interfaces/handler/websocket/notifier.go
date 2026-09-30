@@ -9,6 +9,7 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
+	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
@@ -134,4 +135,24 @@ func (n *Notifier) NotifySystemMessageCreated(workspaceID, channelID string, mes
 			}),
 		},
 	}})
+}
+
+// 絵文字はどのチャンネルでも使うため、ワークスペースの全員に送る
+
+func (n *Notifier) NotifyCustomEmojiCreated(workspaceID string, emoji customemojiuc.Notification) {
+	n.broadcastToWorkspace(workspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiCreated{
+		CustomEmojiCreated: &chatv1.CustomEmojiEvent{WorkspaceId: workspaceID, EmojiId: emoji.ID, Name: emoji.Name},
+	}})
+}
+
+func (n *Notifier) NotifyCustomEmojiDeleted(workspaceID string, emoji customemojiuc.Notification) {
+	n.broadcastToWorkspace(workspaceID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_CustomEmojiDeleted{
+		CustomEmojiDeleted: &chatv1.CustomEmojiEvent{WorkspaceId: workspaceID, EmojiId: emoji.ID, Name: emoji.Name},
+	}})
+}
+
+func (n *Notifier) broadcastToWorkspace(workspaceID string, event *chatv1.ServerEvent) {
+	if data := encodeServerEvent(event); data != nil {
+		n.hub.BroadcastToWorkspace(workspaceID, data)
+	}
 }

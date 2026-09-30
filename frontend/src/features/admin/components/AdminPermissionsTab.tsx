@@ -26,6 +26,7 @@ const permissions = [
   Permission.EDIT_CHANNEL_LINKS,
   Permission.PIN_MESSAGES,
   Permission.DELETE_OTHERS_MESSAGES,
+  Permission.CREATE_CUSTOM_EMOJI,
 ];
 
 type AdminPermissionsTabProps = {

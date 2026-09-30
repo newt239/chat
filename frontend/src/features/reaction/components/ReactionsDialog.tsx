@@ -17,6 +17,7 @@ import { preferencesAtom } from "#/providers/store/preferences";
 import { useToggleReaction } from "../hooks/useReactions";
 import { groupReactions } from "../utils/groupReactions";
 import { ALL_REACTIONS_TAB } from "../utils/reactionTabs";
+import { ReactionEmoji } from "./ReactionEmoji";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -69,7 +70,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
           {tabs.map(({ id, count }) => (
             <Tab key={id} id={id}>
               <span className={id === ALL_REACTIONS_TAB ? "text-[13px]" : "text-base leading-none"}>
-                {id === ALL_REACTIONS_TAB ? t("reaction.list.all") : id}
+                {id === ALL_REACTIONS_TAB ? t("reaction.list.all") : <ReactionEmoji emoji={id} />}
               </span>
               <small className="font-mono text-[11px] text-subtle tabular-nums">{count}</small>
             </Tab>
@@ -102,7 +103,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
                       </span>
                       {id === ALL_REACTIONS_TAB && (
                         <span aria-hidden className="text-lg leading-none">
-                          {row.emoji}
+                          <ReactionEmoji emoji={row.emoji} />
                         </span>
                       )}
                       {isMine && (

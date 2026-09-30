@@ -11,6 +11,9 @@ export const reaction: Messages["reaction"] = {
   },
   more: "+{{count}}",
   moreLabel: "Show more reactions",
+  picker: {
+    custom: "Custom",
+  },
   names: {
     others: "{{names}} and {{count}} others",
     you: "You",

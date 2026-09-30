@@ -7,6 +7,8 @@ export const admin = {
       channelCreated: "チャンネルを作成",
       channelDeleted: "チャンネルを削除",
       channelUnarchived: "チャンネルのアーカイブを解除",
+      customEmojiCreated: "カスタム絵文字を登録",
+      customEmojiDeleted: "カスタム絵文字を削除",
       login: "ログイン",
       loginFailed: "ログインに失敗",
       memberResumed: "メンバーを再開",
@@ -123,6 +125,7 @@ export const admin = {
   },
   permissions: {
     names: {
+      createCustomEmoji: "カスタム絵文字の登録",
       createPrivateChannel: "非公開チャンネルの作成",
       createPublicChannel: "公開チャンネルの作成",
       deleteOthersMessages: "他人のメッセージの削除",

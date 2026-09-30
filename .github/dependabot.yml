@@ -67,6 +67,10 @@ updates:
     cooldown:
       default-days: 7
     target-branch: "main"
+    # Tauri のテンプレートと crate は Gradle 8・Kotlin 1.9 前提で、AndroidX のマイナー更新でも Kotlin 2 系が要求されて壊れるため、パッチ更新だけにする
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       all-dependencies:
         patterns:

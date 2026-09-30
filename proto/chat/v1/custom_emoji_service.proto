@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/user.proto";
+import "google/protobuf/timestamp.proto";
+
+// ワークスペースのカスタム絵文字。メンバー全員が参照でき、登録は権限の設定に従う。削除は登録者と管理者だけができる。
+// 登録は PresignCustomEmojiUpload で得た URL に画像を PUT してから CreateCustomEmoji を呼ぶ
+service CustomEmojiService {
+  rpc ListCustomEmojis(ListCustomEmojisRequest) returns (ListCustomEmojisResponse);
+  rpc PresignCustomEmojiUpload(PresignCustomEmojiUploadRequest) returns (PresignCustomEmojiUploadResponse);
+  rpc CreateCustomEmoji(CreateCustomEmojiRequest) returns (CreateCustomEmojiResponse);
+  rpc DeleteCustomEmoji(DeleteCustomEmojiRequest) returns (DeleteCustomEmojiResponse);
+}
+
+message CustomEmoji {
+  string id = 1;
+  // 本文やリアクションでは :name: と書く
+  string name = 2;
+  // 有効期限付きの URL。期限は ListCustomEmojisResponse.expires_at
+  string image_url = 3;
+  UserSummary created_by = 4;
+  google.protobuf.Timestamp created_at = 5;
+  // 閲覧者が削除できるか
+  bool can_delete = 6;
+}
+
+message ListCustomEmojisRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListCustomEmojisResponse {
+  // 名前の昇順
+  repeated CustomEmoji emojis = 1;
+  google.protobuf.Timestamp expires_at = 2;
+}
+
+message PresignCustomEmojiUploadRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string content_type = 2 [(buf.validate.field).string = {
+    in: [
+      "image/png",
+      "image/gif",
+      "image/jpeg",
+      "image/webp"
+    ]
+  }];
+  int64 size_bytes = 3 [(buf.validate.field).int64 = {
+    gt: 0
+    lte: 262144
+  }];
+}
+
+message PresignCustomEmojiUploadResponse {
+  string upload_id = 1;
+  string upload_url = 2;
+}
+
+message CreateCustomEmojiRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [(buf.validate.field).string.pattern = "^[a-z0-9_-]{1,32}$"];
+  string upload_id = 3 [(buf.validate.field).string.uuid = true];
+}
+
+message CreateCustomEmojiResponse {
+  CustomEmoji emoji = 1;
+}
+
+message DeleteCustomEmojiRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string emoji_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteCustomEmojiResponse {}

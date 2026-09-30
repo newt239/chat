@@ -15,9 +15,11 @@ const ROLES = [WorkspaceRole.MEMBER, WorkspaceRole.ADMIN];
 
 type WorkspaceMemberManagerProps = {
   workspaceId: string;
+  // ロールの変更と削除は管理者以上だけ
+  canManage: boolean;
 };
 
-export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerProps) => {
+export const WorkspaceMemberManager = ({ workspaceId, canManage }: WorkspaceMemberManagerProps) => {
   const { t } = useTranslation();
   const { data: members = [] } = useMembers(workspaceId);
   const { remove, updateRole } = useWorkspaceMemberActions();
@@ -39,7 +41,7 @@ export const WorkspaceMemberManager = ({ workspaceId }: WorkspaceMemberManagerPr
               <span className="truncate text-body">{member.displayName}</span>
               <span className="truncate text-caption text-muted">{member.email}</span>
             </span>
-            {member.role === WorkspaceRole.OWNER ? (
+            {member.role === WorkspaceRole.OWNER || !canManage ? (
               <span className="text-caption text-muted">{t(workspaceRoleKeys[member.role])}</span>
             ) : (
               <>

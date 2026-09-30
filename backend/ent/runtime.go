@@ -14,6 +14,7 @@ import (
 	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
+	"github.com/newt239/chat/ent/customemoji"
 	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/message"
@@ -212,6 +213,28 @@ func init() {
 	channelstarDescID := channelstarFields[0].Descriptor()
 	// channelstar.DefaultID holds the default value on creation for the id field.
 	channelstar.DefaultID = channelstarDescID.Default.(func() uuid.UUID)
+	customemojiFields := schema.CustomEmoji{}.Fields()
+	_ = customemojiFields
+	// customemojiDescWorkspaceID is the schema descriptor for workspace_id field.
+	customemojiDescWorkspaceID := customemojiFields[1].Descriptor()
+	// customemoji.WorkspaceIDValidator is a validator for the "workspace_id" field. It is called by the builders before save.
+	customemoji.WorkspaceIDValidator = customemojiDescWorkspaceID.Validators[0].(func(string) error)
+	// customemojiDescName is the schema descriptor for name field.
+	customemojiDescName := customemojiFields[2].Descriptor()
+	// customemoji.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	customemoji.NameValidator = customemojiDescName.Validators[0].(func(string) error)
+	// customemojiDescStorageKey is the schema descriptor for storage_key field.
+	customemojiDescStorageKey := customemojiFields[3].Descriptor()
+	// customemoji.StorageKeyValidator is a validator for the "storage_key" field. It is called by the builders before save.
+	customemoji.StorageKeyValidator = customemojiDescStorageKey.Validators[0].(func(string) error)
+	// customemojiDescCreatedAt is the schema descriptor for created_at field.
+	customemojiDescCreatedAt := customemojiFields[5].Descriptor()
+	// customemoji.DefaultCreatedAt holds the default value on creation for the created_at field.
+	customemoji.DefaultCreatedAt = customemojiDescCreatedAt.Default.(func() time.Time)
+	// customemojiDescID is the schema descriptor for id field.
+	customemojiDescID := customemojiFields[0].Descriptor()
+	// customemoji.DefaultID holds the default value on creation for the id field.
+	customemoji.DefaultID = customemojiDescID.Default.(func() uuid.UUID)
 	draftFields := schema.Draft{}.Fields()
 	_ = draftFields
 	// draftDescUpdatedAt is the schema descriptor for updated_at field.

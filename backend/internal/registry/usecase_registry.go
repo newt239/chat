@@ -9,6 +9,7 @@ import (
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
+	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	draftuc "github.com/newt239/chat/internal/usecase/draft"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
@@ -391,5 +392,19 @@ func (r *UseCaseRegistry) NewUserNoteUseCase() usernoteuc.UseCase {
 	return usernoteuc.NewInteractor(
 		r.domainRegistry.NewUserNoteRepository(),
 		r.domainRegistry.NewUserRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewCustomEmojiUseCase() *customemojiuc.Interactor {
+	return customemojiuc.NewInteractor(
+		r.domainRegistry.NewCustomEmojiRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewPermissionService(),
+		r.infrastructureRegistry.NewStorageService(),
+		r.infrastructureRegistry.NewStorageConfig(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }

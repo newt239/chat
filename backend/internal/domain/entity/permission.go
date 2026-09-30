@@ -9,6 +9,7 @@ const (
 	PermissionEditChannelLinks     Permission = "edit_channel_links"
 	PermissionPinMessages          Permission = "pin_messages"
 	PermissionDeleteOthersMessages Permission = "delete_others_messages"
+	PermissionCreateCustomEmoji    Permission = "create_custom_emoji"
 )
 
 // AllPermissions は権限の一覧を表示順に並べたものです
@@ -19,6 +20,7 @@ var AllPermissions = []Permission{
 	PermissionEditChannelLinks,
 	PermissionPinMessages,
 	PermissionDeleteOthersMessages,
+	PermissionCreateCustomEmoji,
 }
 
 // ConfigurableRoles は権限を設定できるロールです。オーナーは常にすべての操作ができます
@@ -58,6 +60,7 @@ func DefaultPermissionMatrix() PermissionMatrix {
 			PermissionCreatePrivateChannel: true,
 			PermissionEditChannelLinks:     true,
 			PermissionPinMessages:          true,
+			PermissionCreateCustomEmoji:    true,
 		},
 		WorkspaceRoleGuest: {},
 	}

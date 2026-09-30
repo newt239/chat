@@ -9,6 +9,8 @@ export const admin: Messages["admin"] = {
       channelCreated: "Created a channel",
       channelDeleted: "Deleted a channel",
       channelUnarchived: "Unarchived a channel",
+      customEmojiCreated: "Added a custom emoji",
+      customEmojiDeleted: "Deleted a custom emoji",
       login: "Signed in",
       loginFailed: "Failed sign-in",
       memberResumed: "Resumed a member",
@@ -126,6 +128,7 @@ export const admin: Messages["admin"] = {
   },
   permissions: {
     names: {
+      createCustomEmoji: "Add custom emoji",
       createPrivateChannel: "Create private channels",
       createPublicChannel: "Create public channels",
       deleteOthersMessages: "Delete others' messages",

@@ -14,6 +14,7 @@ import (
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
+	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	draftuc "github.com/newt239/chat/internal/usecase/draft"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
@@ -43,6 +44,7 @@ var errorCodes = []struct {
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
 		channellinkuc.ErrLinkNotFound,
 		channelmemberuc.ErrChannelNotFound, channelmemberuc.ErrUserNotFound,
+		customemojiuc.ErrEmojiNotFound,
 		draftuc.ErrParentMessageNotFound,
 		scheduledmessageuc.ErrScheduledMessageNotFound,
 		messageuc.ErrChannelNotFound, messageuc.ErrParentMessageNotFound, messageuc.ErrMessageNotFound, messageuc.ErrAttachmentNotFound,
@@ -64,6 +66,7 @@ var errorCodes = []struct {
 		channeluc.ErrUnauthorized,
 		channellinkuc.ErrUnauthorized,
 		channelmemberuc.ErrUnauthorized, channelmemberuc.ErrChannelNotPublic,
+		customemojiuc.ErrUnauthorized,
 		dmuc.ErrNotWorkspaceMember,
 		mentionuc.ErrUnauthorized,
 		messageuc.ErrUnauthorized,
@@ -81,6 +84,7 @@ var errorCodes = []struct {
 		bookmarkuc.ErrBookmarkExists,
 		channeluc.ErrChannelNameExists,
 		channelmemberuc.ErrAlreadyMember,
+		customemojiuc.ErrNameExists,
 		invitationuc.ErrAlreadyMember,
 		pinuc.ErrPinExists,
 		reactionuc.ErrReactionExists,

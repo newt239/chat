@@ -1,5 +1,5 @@
 import { IconLogout, IconSettings, IconUser } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -15,13 +15,14 @@ import { focusRing } from "#/components/ui/styles/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { userAtom } from "#/providers/store/auth";
 
-import { openDialog, openPanel } from "../utils/overlaySearch";
+import { openPanel } from "../utils/overlaySearch";
 
 // サイドバー下部の自分の名前。プロフィール・設定・ログアウトを出す
 export const SidebarFooter = () => {
   const { t } = useTranslation();
   const user = useAtomValue(userAtom);
   const navigate = useNavigate();
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const logout = useLogout();
 
   if (user === null) {
@@ -47,7 +48,11 @@ export const SidebarFooter = () => {
           <MenuItemLink icon={<IconUser />} to="." search={openPanel({ profile: user.id })}>
             {t("shell.me.profile")}
           </MenuItemLink>
-          <MenuItemLink icon={<IconSettings />} to="." search={openDialog({ settings: "theme" })}>
+          <MenuItemLink
+            icon={<IconSettings />}
+            to="/app/$workspaceId/settings/$section"
+            params={{ section: "theme", workspaceId }}
+          >
             {t("shell.me.settings")}
           </MenuItemLink>
         </MenuSection>
@@ -65,7 +70,10 @@ export const SidebarFooter = () => {
         label={t("shell.me.settings")}
         className="text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong)"
         onPress={() => {
-          void navigate({ search: openDialog({ settings: "theme" }), to: "." });
+          void navigate({
+            params: { section: "theme", workspaceId },
+            to: "/app/$workspaceId/settings/$section",
+          });
         }}
       >
         <IconSettings />

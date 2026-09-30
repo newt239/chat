@@ -10,8 +10,8 @@ describe("overlaySearch", () => {
   });
 
   test("ダイアログを開いても右パネルは残す", () => {
-    expect(openDialog({ dialog: "edit-group" })({ group: "g1", settings: "theme" })).toEqual(
-      expect.objectContaining({ dialog: "edit-group", group: "g1", settings: undefined }),
+    expect(openDialog({ dialog: "edit-group" })({ emoji: "👍", group: "g1" })).toEqual(
+      expect.objectContaining({ dialog: "edit-group", emoji: undefined, group: "g1" }),
     );
   });
 

@@ -9,19 +9,21 @@ import (
 )
 
 var auditActions = map[entity.AuditAction]chatv1.AuditAction{
-	entity.AuditActionLogin:             chatv1.AuditAction_AUDIT_ACTION_LOGIN,
-	entity.AuditActionLoginFailed:       chatv1.AuditAction_AUDIT_ACTION_LOGIN_FAILED,
-	entity.AuditActionMemberRoleChanged: chatv1.AuditAction_AUDIT_ACTION_MEMBER_ROLE_CHANGED,
-	entity.AuditActionMemberSuspended:   chatv1.AuditAction_AUDIT_ACTION_MEMBER_SUSPENDED,
-	entity.AuditActionMemberResumed:     chatv1.AuditAction_AUDIT_ACTION_MEMBER_RESUMED,
-	entity.AuditActionChannelCreated:    chatv1.AuditAction_AUDIT_ACTION_CHANNEL_CREATED,
-	entity.AuditActionChannelDeleted:    chatv1.AuditAction_AUDIT_ACTION_CHANNEL_DELETED,
-	entity.AuditActionChannelArchived:   chatv1.AuditAction_AUDIT_ACTION_CHANNEL_ARCHIVED,
-	entity.AuditActionChannelUnarchived: chatv1.AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED,
-	entity.AuditActionPermissionChanged: chatv1.AuditAction_AUDIT_ACTION_PERMISSION_CHANGED,
-	entity.AuditActionAuditLogExported:  chatv1.AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED,
-	entity.AuditActionWebhookCreated:    chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_CREATED,
-	entity.AuditActionWebhookDeleted:    chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_DELETED,
+	entity.AuditActionLogin:              chatv1.AuditAction_AUDIT_ACTION_LOGIN,
+	entity.AuditActionLoginFailed:        chatv1.AuditAction_AUDIT_ACTION_LOGIN_FAILED,
+	entity.AuditActionMemberRoleChanged:  chatv1.AuditAction_AUDIT_ACTION_MEMBER_ROLE_CHANGED,
+	entity.AuditActionMemberSuspended:    chatv1.AuditAction_AUDIT_ACTION_MEMBER_SUSPENDED,
+	entity.AuditActionMemberResumed:      chatv1.AuditAction_AUDIT_ACTION_MEMBER_RESUMED,
+	entity.AuditActionChannelCreated:     chatv1.AuditAction_AUDIT_ACTION_CHANNEL_CREATED,
+	entity.AuditActionChannelDeleted:     chatv1.AuditAction_AUDIT_ACTION_CHANNEL_DELETED,
+	entity.AuditActionChannelArchived:    chatv1.AuditAction_AUDIT_ACTION_CHANNEL_ARCHIVED,
+	entity.AuditActionChannelUnarchived:  chatv1.AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED,
+	entity.AuditActionPermissionChanged:  chatv1.AuditAction_AUDIT_ACTION_PERMISSION_CHANGED,
+	entity.AuditActionAuditLogExported:   chatv1.AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED,
+	entity.AuditActionWebhookCreated:     chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_CREATED,
+	entity.AuditActionWebhookDeleted:     chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_DELETED,
+	entity.AuditActionCustomEmojiCreated: chatv1.AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_CREATED,
+	entity.AuditActionCustomEmojiDeleted: chatv1.AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_DELETED,
 }
 
 var permissions = map[entity.Permission]chatv1.Permission{
@@ -31,6 +33,7 @@ var permissions = map[entity.Permission]chatv1.Permission{
 	entity.PermissionEditChannelLinks:     chatv1.Permission_PERMISSION_EDIT_CHANNEL_LINKS,
 	entity.PermissionPinMessages:          chatv1.Permission_PERMISSION_PIN_MESSAGES,
 	entity.PermissionDeleteOthersMessages: chatv1.Permission_PERMISSION_DELETE_OTHERS_MESSAGES,
+	entity.PermissionCreateCustomEmoji:    chatv1.Permission_PERMISSION_CREATE_CUSTOM_EMOJI,
 }
 
 // AuditActionNames はリクエストの操作の種類をユースケースが扱う値に変換します

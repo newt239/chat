@@ -16,4 +16,11 @@ describe("isJumboEmoji", () => {
       expect(isJumboEmoji(body)).toBe(false);
     },
   );
+
+  test("登録済みのカスタム絵文字だけなら大きく表示する", () => {
+    const names = new Map([["party", {}]]);
+    expect(isJumboEmoji(":party: 🎉", names)).toBe(true);
+    expect(isJumboEmoji(":unknown:", names)).toBe(false);
+    expect(isJumboEmoji("ok :party:", names)).toBe(false);
+  });
 });

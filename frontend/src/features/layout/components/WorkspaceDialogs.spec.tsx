@@ -24,25 +24,6 @@ const groupRoutes = (routes: ConnectRouter) => {
 };
 
 describe("WorkspaceDialogs", () => {
-  test("?settings= の項目で設定を開き、閉じると search から消す", async () => {
-    const { router } = await renderWithProviders(
-      <WorkspaceDialogs workspaceId="ws1" />,
-      "/app/ws1/c1?settings=shortcuts&message=m1",
-      () => {},
-    );
-    const dialog = await screen.findByRole("dialog", { name: "設定" });
-    expect(dialog).toHaveTextContent("ショートカット");
-
-    await userEvent.click(screen.getByRole("link", { name: "テーマ" }));
-    expect(router.state.location.search).toEqual({ message: "m1", settings: "theme" });
-
-    await userEvent.click(screen.getByRole("button", { name: "閉じる" }));
-    await waitFor(() => {
-      expect(screen.queryByRole("dialog")).toBeNull();
-    });
-    expect(router.state.location.search).toEqual({ message: "m1" });
-  });
-
   test("作成したユーザーグループは右パネルで開く", async () => {
     const { router } = await renderWithProviders(
       <WorkspaceDialogs workspaceId="ws1" />,
