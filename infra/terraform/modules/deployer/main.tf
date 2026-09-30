@@ -5,8 +5,10 @@ resource "google_service_account" "this" {
 }
 
 resource "google_project_iam_member" "this" {
+  for_each = toset(var.project_roles)
+
   project = var.project_id
-  role    = "roles/container.developer"
+  role    = each.value
   member  = google_service_account.this.member
 }
 

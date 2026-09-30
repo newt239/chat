@@ -28,7 +28,7 @@ jobs:
         run: terraform fmt -check -recursive -diff
       - name: Validate
         run: |
-          for dir in shared envs/dev envs/prod; do
+          for dir in shared envs/dev envs/prod envs/mini; do
             terraform -chdir="$dir" init -backend=false -input=false
             terraform -chdir="$dir" validate
           done
@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
   # 認証情報（リポジトリ変数）が設定されているときだけ plan する
-  # 各ディレクトリの tfvars はリポジトリ変数 TFVARS_SHARED / TFVARS_DEV / TFVARS_PROD に中身を入れておく
+  # 各ディレクトリの tfvars はリポジトリ変数 TFVARS_SHARED / TFVARS_DEV / TFVARS_PROD / TFVARS_MINI に中身を入れておく
   plan:
     runs-on: ubuntu-latest
     if: vars.GCP_TERRAFORM_SERVICE_ACCOUNT != ''
@@ -59,6 +59,8 @@ jobs:
             tfvars: TFVARS_DEV
           - dir: envs/prod
             tfvars: TFVARS_PROD
+          - dir: envs/mini
+            tfvars: TFVARS_MINI
     defaults:
       run:
         working-directory: infra/terraform/${{ matrix.dir }}
@@ -102,8 +104,10 @@ jobs:
         run: |
           curl -sSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" | tar xz -C "$RUNNER_TEMP" kustomize
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      # mini のシークレットは gitignore した env ファイルから作るので、例のファイルで代用する
       - name: Build overlays
         run: |
-          for env in dev prod; do
+          for f in infra/k8s/overlays/mini/*.env.example; do cp "$f" "${f%.example}"; done
+          for env in dev prod mini; do
             kustomize build "infra/k8s/overlays/$env" > /dev/null
           done

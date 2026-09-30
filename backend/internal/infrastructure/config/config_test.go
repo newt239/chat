@@ -47,6 +47,20 @@ func TestDatabasePoolFromEnv(t *testing.T) {
 	}
 }
 
+func TestScheduledMessageDispatchInterval(t *testing.T) {
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.ScheduledMessage.DispatchInterval != 10*time.Second {
+		t.Errorf("既定値が 10 秒になっていません: %v", cfg.ScheduledMessage.DispatchInterval)
+	}
+	t.Setenv("SCHEDULED_MESSAGE_DISPATCH_INTERVAL", "15m")
+	if cfg, _ = Load(); cfg.ScheduledMessage.DispatchInterval != 15*time.Minute {
+		t.Errorf("環境変数が反映されていません: %v", cfg.ScheduledMessage.DispatchInterval)
+	}
+}
+
 func TestValidateRequiresRedisInProduction(t *testing.T) {
 	t.Setenv("ENV", "production")
 	t.Setenv("JWT_SECRET", "secret")

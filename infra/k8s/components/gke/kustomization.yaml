@@ -1,6 +1,19 @@
-# overlay の params.yaml（ConfigMap params）の値を base のプレースホルダに埋め込む
+# GKE でだけ使う部分（Cloud SQL Auth Proxy・External Secrets・Workload Identity）
+# overlay の params.yaml（ConfigMap params）の値をプレースホルダに埋め込む
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
+
+resources:
+  - external-secrets.yaml
+
+patches:
+  - path: cloud-sql-proxy.yaml
+  - target: { kind: ServiceAccount, name: chat-backend }
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          iam.gke.io/gcp-service-account: BACKEND_SERVICE_ACCOUNT
 
 replacements:
   - source: { kind: ConfigMap, name: params, fieldPath: data.PROJECT_ID }

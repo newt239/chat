@@ -1,4 +1,4 @@
-# terraform output の値。components/params が各マニフェストに埋め込み、この ConfigMap 自体は出力しない
+# terraform output の値。components/gke が各マニフェストに埋め込み、この ConfigMap 自体は出力しない
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -9,6 +9,7 @@ on:
         options:
           - dev
           - prod
+          - mini
         default: dev
       backend_ref:
         description: "backend のブランチ・タグ・SHA（空なら現状維持）"
@@ -65,10 +66,27 @@ jobs:
         uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
 
       - name: Get GKE credentials
+        if: inputs.environment != 'mini'
         uses: google-github-actions/get-gke-credentials@3da1e46a907576cefaa90c484278bb5b259dd395 # v3.0.0
         with:
           cluster_name: ${{ vars.GKE_CLUSTER }}
           location: ${{ vars.GKE_LOCATION }}
+
+      # mini の k3s は API を公開していないので、IAP 経由の SSH で VM に入って kubectl を実行する
+      - name: Connect to k3s
+        if: inputs.environment == 'mini'
+        env:
+          MINI_VM: ${{ vars.MINI_VM }}
+          MINI_ZONE: ${{ vars.MINI_ZONE }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          cat > "$RUNNER_TEMP/bin/kubectl" <<EOF
+          #!/usr/bin/env bash
+          exec gcloud compute ssh "$MINI_VM" --zone "$MINI_ZONE" --tunnel-through-iap --quiet \\
+            --strict-host-key-checking=no --command "sudo k3s kubectl \$(printf '%q ' "\$@")"
+          EOF
+          chmod +x "$RUNNER_TEMP/bin/kubectl"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       # backend は dev のイメージをそのまま使う。frontend は API の URL を埋め込んでビルドするため、同じコミットから prod 用に作り直す
       - name: Resolve images from dev
@@ -152,10 +170,26 @@ jobs:
             fi
           done
 
+      # mini はシークレットを secretGenerator で作るので、Environment の Secrets から env ファイルを書き出す
+      - name: Write mini secrets
+        if: inputs.environment == 'mini'
+        env:
+          BACKEND_SECRETS_ENV: ${{ secrets.BACKEND_SECRETS_ENV }}
+          CLOUDFLARED_ENV: ${{ secrets.CLOUDFLARED_ENV }}
+        run: |
+          printf '%s\n' "$BACKEND_SECRETS_ENV" > "$OVERLAY_DIR/backend-secrets.env"
+          printf '%s\n' "$CLOUDFLARED_ENV" > "$OVERLAY_DIR/cloudflared.env"
+
       - name: Apply manifests
         run: |
           (cd "$OVERLAY_DIR" && kustomize edit set image "backend=$BACKEND_IMAGE" "frontend=$FRONTEND_IMAGE")
           kustomize build "$OVERLAY_DIR" | kubectl apply -f -
+          # 初回は imagePullSecret がまだないので、CronJob を待たずに作る
+          if [ "${{ inputs.environment }}" = "mini" ]; then
+            job="artifact-registry-token-${{ github.run_id }}"
+            kubectl -n "$NAMESPACE" create job "$job" --from=cronjob/artifact-registry-token
+            kubectl -n "$NAMESPACE" wait --for=condition=complete --timeout=5m "job/$job"
+          fi
           for app in backend frontend cloudflared redis; do
             kubectl -n "$NAMESPACE" rollout status "deployment/$app" --timeout=10m
           done
