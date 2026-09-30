@@ -357,6 +357,36 @@ var (
 			},
 		},
 	}
+	// CustomEmojiColumns holds the columns for the "custom_emoji" table.
+	CustomEmojiColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "storage_key", Type: field.TypeString},
+		{Name: "created_by", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+	}
+	// CustomEmojiTable holds the schema information for the "custom_emoji" table.
+	CustomEmojiTable = &schema.Table{
+		Name:       "custom_emoji",
+		Columns:    CustomEmojiColumns,
+		PrimaryKey: []*schema.Column{CustomEmojiColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "custom_emoji_workspaces_workspace",
+				Columns:    []*schema.Column{CustomEmojiColumns[5]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "customemoji_workspace_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{CustomEmojiColumns[5], CustomEmojiColumns[1]},
+			},
+		},
+	}
 	// DraftColumns holds the columns for the "draft" table.
 	DraftColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1317,6 +1347,7 @@ var (
 		ChannelMuteTable,
 		ChannelReadStatesTable,
 		ChannelStarTable,
+		CustomEmojiTable,
 		DraftTable,
 		InvitationTable,
 		MessagesTable,
@@ -1371,6 +1402,10 @@ func init() {
 	ChannelStarTable.ForeignKeys[1].RefTable = ChannelsTable
 	ChannelStarTable.Annotation = &entsql.Annotation{
 		Table: "channel_star",
+	}
+	CustomEmojiTable.ForeignKeys[0].RefTable = WorkspacesTable
+	CustomEmojiTable.Annotation = &entsql.Annotation{
+		Table: "custom_emoji",
 	}
 	DraftTable.ForeignKeys[0].RefTable = UsersTable
 	DraftTable.ForeignKeys[1].RefTable = ChannelsTable

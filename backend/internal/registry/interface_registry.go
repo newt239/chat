@@ -58,6 +58,7 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewPermissionServiceHandler, chatv1connect.PermissionServiceHandler(&rpc.PermissionServer{UC: uc.NewAdminUseCase()})),
 		rpc.Register(chatv1connect.NewInsightServiceHandler, chatv1connect.InsightServiceHandler(&rpc.InsightServer{UC: uc.NewInsightUseCase()})),
 		rpc.Register(chatv1connect.NewWebhookServiceHandler, chatv1connect.WebhookServiceHandler(&rpc.WebhookServer{UC: uc.NewWebhookUseCase()})),
+		rpc.Register(chatv1connect.NewCustomEmojiServiceHandler, chatv1connect.CustomEmojiServiceHandler(&rpc.CustomEmojiServer{UC: uc.NewCustomEmojiUseCase()})),
 	)
 }
 

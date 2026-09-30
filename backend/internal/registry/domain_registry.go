@@ -132,6 +132,10 @@ func (r *DomainRegistry) NewWebhookRepository() domainrepository.WebhookReposito
 	return repository.NewWebhookRepository(r.client)
 }
 
+func (r *DomainRegistry) NewCustomEmojiRepository() domainrepository.CustomEmojiRepository {
+	return repository.NewCustomEmojiRepository(r.client)
+}
+
 // Domain Services
 func (r *DomainRegistry) NewChannelAccessService() domainservice.ChannelAccessService {
 	return domainservice.NewChannelAccessService(

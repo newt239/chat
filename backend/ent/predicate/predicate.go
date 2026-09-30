@@ -30,6 +30,9 @@ type ChannelReadState func(*sql.Selector)
 // ChannelStar is the predicate function for channelstar builders.
 type ChannelStar func(*sql.Selector)
 
+// CustomEmoji is the predicate function for customemoji builders.
+type CustomEmoji func(*sql.Selector)
+
 // Draft is the predicate function for draft builders.
 type Draft func(*sql.Selector)
 

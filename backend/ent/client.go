@@ -24,6 +24,7 @@ import (
 	"github.com/newt239/chat/ent/channelmute"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/channelstar"
+	"github.com/newt239/chat/ent/customemoji"
 	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/message"
@@ -72,6 +73,8 @@ type Client struct {
 	ChannelReadState *ChannelReadStateClient
 	// ChannelStar is the client for interacting with the ChannelStar builders.
 	ChannelStar *ChannelStarClient
+	// CustomEmoji is the client for interacting with the CustomEmoji builders.
+	CustomEmoji *CustomEmojiClient
 	// Draft is the client for interacting with the Draft builders.
 	Draft *DraftClient
 	// Invitation is the client for interacting with the Invitation builders.
@@ -137,6 +140,7 @@ func (c *Client) init() {
 	c.ChannelMute = NewChannelMuteClient(c.config)
 	c.ChannelReadState = NewChannelReadStateClient(c.config)
 	c.ChannelStar = NewChannelStarClient(c.config)
+	c.CustomEmoji = NewCustomEmojiClient(c.config)
 	c.Draft = NewDraftClient(c.config)
 	c.Invitation = NewInvitationClient(c.config)
 	c.Message = NewMessageClient(c.config)
@@ -260,6 +264,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
+		CustomEmoji:         NewCustomEmojiClient(cfg),
 		Draft:               NewDraftClient(cfg),
 		Invitation:          NewInvitationClient(cfg),
 		Message:             NewMessageClient(cfg),
@@ -310,6 +315,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ChannelMute:         NewChannelMuteClient(cfg),
 		ChannelReadState:    NewChannelReadStateClient(cfg),
 		ChannelStar:         NewChannelStarClient(cfg),
+		CustomEmoji:         NewCustomEmojiClient(cfg),
 		Draft:               NewDraftClient(cfg),
 		Invitation:          NewInvitationClient(cfg),
 		Message:             NewMessageClient(cfg),
@@ -363,12 +369,12 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Draft, c.Invitation,
-		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
-		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook,
-		c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft,
+		c.Invitation, c.Message, c.MessageBookmark, c.MessageGroupMention,
+		c.MessageLink, c.MessagePin, c.MessageReaction, c.MessageUserMention,
+		c.PushToken, c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState,
+		c.User, c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow,
+		c.Webhook, c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
 	}
@@ -379,12 +385,12 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.Draft, c.Invitation,
-		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
-		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook,
-		c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
+		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft,
+		c.Invitation, c.Message, c.MessageBookmark, c.MessageGroupMention,
+		c.MessageLink, c.MessagePin, c.MessageReaction, c.MessageUserMention,
+		c.PushToken, c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState,
+		c.User, c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow,
+		c.Webhook, c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -409,6 +415,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ChannelReadState.mutate(ctx, m)
 	case *ChannelStarMutation:
 		return c.ChannelStar.mutate(ctx, m)
+	case *CustomEmojiMutation:
+		return c.CustomEmoji.mutate(ctx, m)
 	case *DraftMutation:
 		return c.Draft.mutate(ctx, m)
 	case *InvitationMutation:
@@ -1857,6 +1865,155 @@ func (c *ChannelStarClient) mutate(ctx context.Context, m *ChannelStarMutation) 
 		return (&ChannelStarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ChannelStar mutation op: %q", m.Op())
+	}
+}
+
+// CustomEmojiClient is a client for the CustomEmoji schema.
+type CustomEmojiClient struct {
+	config
+}
+
+// NewCustomEmojiClient returns a client for the CustomEmoji from the given config.
+func NewCustomEmojiClient(c config) *CustomEmojiClient {
+	return &CustomEmojiClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `customemoji.Hooks(f(g(h())))`.
+func (c *CustomEmojiClient) Use(hooks ...Hook) {
+	c.hooks.CustomEmoji = append(c.hooks.CustomEmoji, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `customemoji.Intercept(f(g(h())))`.
+func (c *CustomEmojiClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CustomEmoji = append(c.inters.CustomEmoji, interceptors...)
+}
+
+// Create returns a builder for creating a CustomEmoji entity.
+func (c *CustomEmojiClient) Create() *CustomEmojiCreate {
+	mutation := newCustomEmojiMutation(c.config, OpCreate)
+	return &CustomEmojiCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CustomEmoji entities.
+func (c *CustomEmojiClient) CreateBulk(builders ...*CustomEmojiCreate) *CustomEmojiCreateBulk {
+	return &CustomEmojiCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CustomEmojiClient) MapCreateBulk(slice any, setFunc func(*CustomEmojiCreate, int)) *CustomEmojiCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CustomEmojiCreateBulk{err: fmt.Errorf("calling to CustomEmojiClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CustomEmojiCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CustomEmojiCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CustomEmoji.
+func (c *CustomEmojiClient) Update() *CustomEmojiUpdate {
+	mutation := newCustomEmojiMutation(c.config, OpUpdate)
+	return &CustomEmojiUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CustomEmojiClient) UpdateOne(_m *CustomEmoji) *CustomEmojiUpdateOne {
+	mutation := newCustomEmojiMutation(c.config, OpUpdateOne, withCustomEmoji(_m))
+	return &CustomEmojiUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CustomEmojiClient) UpdateOneID(id uuid.UUID) *CustomEmojiUpdateOne {
+	mutation := newCustomEmojiMutation(c.config, OpUpdateOne, withCustomEmojiID(id))
+	return &CustomEmojiUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CustomEmoji.
+func (c *CustomEmojiClient) Delete() *CustomEmojiDelete {
+	mutation := newCustomEmojiMutation(c.config, OpDelete)
+	return &CustomEmojiDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CustomEmojiClient) DeleteOne(_m *CustomEmoji) *CustomEmojiDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CustomEmojiClient) DeleteOneID(id uuid.UUID) *CustomEmojiDeleteOne {
+	builder := c.Delete().Where(customemoji.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CustomEmojiDeleteOne{builder}
+}
+
+// Query returns a query builder for CustomEmoji.
+func (c *CustomEmojiClient) Query() *CustomEmojiQuery {
+	return &CustomEmojiQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCustomEmoji},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CustomEmoji entity by its id.
+func (c *CustomEmojiClient) Get(ctx context.Context, id uuid.UUID) (*CustomEmoji, error) {
+	return c.Query().Where(customemoji.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CustomEmojiClient) GetX(ctx context.Context, id uuid.UUID) *CustomEmoji {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkspace queries the workspace edge of a CustomEmoji.
+func (c *CustomEmojiClient) QueryWorkspace(_m *CustomEmoji) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(customemoji.Table, customemoji.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, customemoji.WorkspaceTable, customemoji.WorkspaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CustomEmojiClient) Hooks() []Hook {
+	return c.hooks.CustomEmoji
+}
+
+// Interceptors returns the client interceptors.
+func (c *CustomEmojiClient) Interceptors() []Interceptor {
+	return c.inters.CustomEmoji
+}
+
+func (c *CustomEmojiClient) mutate(ctx context.Context, m *CustomEmojiMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CustomEmojiCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CustomEmojiUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CustomEmojiUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CustomEmojiDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CustomEmoji mutation op: %q", m.Op())
 	}
 }
 
@@ -6075,16 +6232,16 @@ func (c *WorkspacePermissionClient) mutate(ctx context.Context, m *WorkspacePerm
 type (
 	hooks struct {
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, Draft, Invitation, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		ChannelReadState, ChannelStar, CustomEmoji, Draft, Invitation, Message,
+		MessageBookmark, MessageGroupMention, MessageLink, MessagePin, MessageReaction,
 		MessageUserMention, PushToken, ScheduledMessage, Session, SystemMessage,
 		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
 		Webhook, Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
 		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, Draft, Invitation, Message, MessageBookmark,
-		MessageGroupMention, MessageLink, MessagePin, MessageReaction,
+		ChannelReadState, ChannelStar, CustomEmoji, Draft, Invitation, Message,
+		MessageBookmark, MessageGroupMention, MessageLink, MessagePin, MessageReaction,
 		MessageUserMention, PushToken, ScheduledMessage, Session, SystemMessage,
 		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
 		Webhook, Workspace, WorkspaceMember, WorkspacePermission []ent.Interceptor
