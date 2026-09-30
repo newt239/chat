@@ -13,12 +13,16 @@ type EmojiPickerPopoverProps = {
   trigger: ReactElement;
   onSelect: (emoji: string) => void;
   onOpenChange?: (isOpen: boolean) => void;
+  label?: string;
+  placement?: "bottom end" | "top start";
 };
 
 export const EmojiPickerPopover = ({
   trigger,
   onSelect,
   onOpenChange,
+  label,
+  placement = "bottom end",
 }: EmojiPickerPopoverProps) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -30,7 +34,11 @@ export const EmojiPickerPopover = ({
   return (
     <DialogTrigger isOpen={isOpen} onOpenChange={changeOpen}>
       {trigger}
-      <Popover aria-label={t("reaction.add")} placement="bottom end" className="overflow-hidden">
+      <Popover
+        aria-label={label ?? t("reaction.add")}
+        placement={placement}
+        className="overflow-hidden"
+      >
         <EmojiPicker
           onEmojiSelect={(emoji) => {
             onSelect(emoji);

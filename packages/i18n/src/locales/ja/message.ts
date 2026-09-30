@@ -19,6 +19,7 @@ export const message = {
     attach: "ファイルを添付",
     bold: "太字",
     code: "コード",
+    emoji: "絵文字を挿入",
     heading: "見出し",
     help: "書式のヘルプ",
     italic: "斜体",

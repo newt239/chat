@@ -21,6 +21,7 @@ export const message: Messages["message"] = {
     attach: "Attach files",
     bold: "Bold",
     code: "Code",
+    emoji: "Insert emoji",
     heading: "Heading",
     help: "Formatting help",
     italic: "Italic",
