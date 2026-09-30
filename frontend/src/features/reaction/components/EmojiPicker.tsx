@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 
 import data from "@emoji-mart/data";
+import en from "@emoji-mart/data/i18n/en.json";
+import ja from "@emoji-mart/data/i18n/ja.json";
 import Picker from "@emoji-mart/react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
@@ -19,6 +21,9 @@ type EmojiSelectEvent = {
   native?: string;
   name: string;
 };
+
+// 翻訳を同期的に渡す。取得を待つ間に初期化が重なると、カスタムの分類が二重に追加される
+const i18n = { en, ja };
 
 // 標準の絵文字と ID が重ならないよう接頭辞を付ける
 const CUSTOM_ID_PREFIX = "custom-";
@@ -53,6 +58,7 @@ export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => {
       }}
       theme={colorMode}
       locale={locale}
+      i18n={i18n[locale]}
       previewPosition="none"
     />
   );
