@@ -27,6 +27,13 @@ enum ColorMode {
   COLOR_MODE_SYSTEM = 3;
 }
 
+// サイドバーのチャンネルの並べ方。既定はツリーの名前順、最近は最新メッセージの新しい順でフラットに並べる
+enum ChannelSortOrder {
+  CHANNEL_SORT_ORDER_UNSPECIFIED = 0;
+  CHANNEL_SORT_ORDER_DEFAULT = 1;
+  CHANNEL_SORT_ORDER_RECENT_ACTIVITY = 2;
+}
+
 // 通知を受け取る範囲。すべて / メンションと DM のみ / なし
 enum NotificationLevel {
   NOTIFICATION_LEVEL_UNSPECIFIED = 0;
@@ -72,6 +79,12 @@ message UserPreferences {
   string timezone = 5 [(buf.validate.field).string.max_len = 64];
   // 端末のタイムゾーンが保存値と違うとき、尋ねずに更新する
   bool timezone_auto_update = 6;
+  ChannelSortOrder channel_sort_order = 7 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  // チャンネルへの参加・追加のシステムメッセージを隠す
+  bool hide_join_messages = 8;
 }
 
 // メッセージの投稿者などに埋め込む最小限のユーザー情報

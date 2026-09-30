@@ -68,7 +68,7 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 	if strings.TrimSpace(input.Body) == "" && len(input.AttachmentIDs) == 0 && input.Location == nil {
 		return nil, ErrEmptyMessage
 	}
-	channel, err := c.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+	channel, err := c.channelAccessSvc.EnsureChannelMember(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}

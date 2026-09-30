@@ -284,6 +284,34 @@ func (_u *UserUpdate) SetNillableTimezoneAutoUpdate(v *bool) *UserUpdate {
 	return _u
 }
 
+// SetChannelSortOrder sets the "channel_sort_order" field.
+func (_u *UserUpdate) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpdate {
+	_u.mutation.SetChannelSortOrder(v)
+	return _u
+}
+
+// SetNillableChannelSortOrder sets the "channel_sort_order" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableChannelSortOrder(v *user.ChannelSortOrder) *UserUpdate {
+	if v != nil {
+		_u.SetChannelSortOrder(*v)
+	}
+	return _u
+}
+
+// SetHideJoinMessages sets the "hide_join_messages" field.
+func (_u *UserUpdate) SetHideJoinMessages(v bool) *UserUpdate {
+	_u.mutation.SetHideJoinMessages(v)
+	return _u
+}
+
+// SetNillableHideJoinMessages sets the "hide_join_messages" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableHideJoinMessages(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetHideJoinMessages(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdate) SetUpdatedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -831,6 +859,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ChannelSortOrder(); ok {
+		if err := user.ChannelSortOrderValidator(v); err != nil {
+			return &ValidationError{Name: "channel_sort_order", err: fmt.Errorf(`ent: validator failed for field "User.channel_sort_order": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -905,6 +938,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.TimezoneAutoUpdate(); ok {
 		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.ChannelSortOrder(); ok {
+		_spec.SetField(user.FieldChannelSortOrder, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.HideJoinMessages(); ok {
+		_spec.SetField(user.FieldHideJoinMessages, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -1756,6 +1795,34 @@ func (_u *UserUpdateOne) SetNillableTimezoneAutoUpdate(v *bool) *UserUpdateOne {
 	return _u
 }
 
+// SetChannelSortOrder sets the "channel_sort_order" field.
+func (_u *UserUpdateOne) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpdateOne {
+	_u.mutation.SetChannelSortOrder(v)
+	return _u
+}
+
+// SetNillableChannelSortOrder sets the "channel_sort_order" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableChannelSortOrder(v *user.ChannelSortOrder) *UserUpdateOne {
+	if v != nil {
+		_u.SetChannelSortOrder(*v)
+	}
+	return _u
+}
+
+// SetHideJoinMessages sets the "hide_join_messages" field.
+func (_u *UserUpdateOne) SetHideJoinMessages(v bool) *UserUpdateOne {
+	_u.mutation.SetHideJoinMessages(v)
+	return _u
+}
+
+// SetNillableHideJoinMessages sets the "hide_join_messages" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableHideJoinMessages(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetHideJoinMessages(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *UserUpdateOne) SetUpdatedAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -2316,6 +2383,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ChannelSortOrder(); ok {
+		if err := user.ChannelSortOrderValidator(v); err != nil {
+			return &ValidationError{Name: "channel_sort_order", err: fmt.Errorf(`ent: validator failed for field "User.channel_sort_order": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -2407,6 +2479,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.TimezoneAutoUpdate(); ok {
 		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.ChannelSortOrder(); ok {
+		_spec.SetField(user.FieldChannelSortOrder, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.HideJoinMessages(); ok {
+		_spec.SetField(user.FieldHideJoinMessages, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

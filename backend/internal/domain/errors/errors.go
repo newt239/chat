@@ -18,6 +18,7 @@ var (
 	ErrMessageNotFound      = errors.New("メッセージが見つかりません")
 	ErrChannelNotFound      = errors.New("チャンネルが見つかりません")
 	ErrChannelArchived      = errors.New("アーカイブされたチャンネルには投稿できません")
+	ErrNotChannelMember     = errors.New("チャンネルに参加すると投稿できます")
 	ErrUnauthorized         = errors.New("操作を実行する権限がありません")
 	ErrForbidden            = errors.New("アクセスが禁止されています")
 	ErrInvalidInput         = errors.New("入力内容が不正です")

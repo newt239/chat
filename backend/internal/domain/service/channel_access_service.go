@@ -11,6 +11,8 @@ import (
 
 type ChannelAccessService interface {
 	EnsureChannelAccess(ctx context.Context, channelID string, userID string) (*entity.Channel, error)
+	// EnsureChannelMember は閲覧権限に加えて、チャンネルに参加していることを確かめます
+	EnsureChannelMember(ctx context.Context, channelID string, userID string) (*entity.Channel, error)
 	// FilterAccessible は公開チャンネルと参加中の非公開チャンネルだけを残します
 	FilterAccessible(ctx context.Context, channels []*entity.Channel, userID string) ([]*entity.Channel, error)
 	// AccessibleDescendants は閲覧できる子孫チャンネルを返します
@@ -63,6 +65,21 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 		}
 	}
 
+	return ch, nil
+}
+
+func (s *channelAccessService) EnsureChannelMember(ctx context.Context, channelID string, userID string) (*entity.Channel, error) {
+	ch, err := s.EnsureChannelAccess(ctx, channelID, userID)
+	if err != nil {
+		return nil, err
+	}
+	isMember, err := s.channelMemberRepo.IsMember(ctx, ch.ID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify channel membership: %w", err)
+	}
+	if !isMember {
+		return nil, domainerrors.ErrNotChannelMember
+	}
 	return ch, nil
 }
 

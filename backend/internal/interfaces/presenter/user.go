@@ -35,6 +35,11 @@ var notificationLevels = map[entity.NotificationLevel]chatv1.NotificationLevel{
 	entity.NotificationLevelNone:     chatv1.NotificationLevel_NOTIFICATION_LEVEL_NONE,
 }
 
+var channelSortOrders = map[entity.ChannelSortOrder]chatv1.ChannelSortOrder{
+	entity.ChannelSortOrderDefault:        chatv1.ChannelSortOrder_CHANNEL_SORT_ORDER_DEFAULT,
+	entity.ChannelSortOrderRecentActivity: chatv1.ChannelSortOrder_CHANNEL_SORT_ORDER_RECENT_ACTIVITY,
+}
+
 func Preferences(p entity.UserPreferences) *chatv1.UserPreferences {
 	return &chatv1.UserPreferences{
 		Theme: &chatv1.ThemePreference{
@@ -47,6 +52,8 @@ func Preferences(p entity.UserPreferences) *chatv1.UserPreferences {
 		NotificationLevel:  notificationLevels[p.NotificationLevel],
 		Timezone:           p.Timezone,
 		TimezoneAutoUpdate: p.TimezoneAutoUpdate,
+		ChannelSortOrder:   channelSortOrders[p.ChannelSortOrder],
+		HideJoinMessages:   p.HideJoinMessages,
 	}
 }
 
@@ -58,6 +65,7 @@ func PreferencesFromProto(p *chatv1.UserPreferences) entity.UserPreferences {
 		Locale:             p.GetLocale(),
 		Timezone:           p.GetTimezone(),
 		TimezoneAutoUpdate: p.GetTimezoneAutoUpdate(),
+		HideJoinMessages:   p.GetHideJoinMessages(),
 	}
 	for k, v := range sidebarStyles {
 		if v == p.GetTheme().GetSidebar() {
@@ -67,6 +75,11 @@ func PreferencesFromProto(p *chatv1.UserPreferences) entity.UserPreferences {
 	for k, v := range colorModes {
 		if v == p.GetColorMode() {
 			out.ColorMode = k
+		}
+	}
+	for k, v := range channelSortOrders {
+		if v == p.GetChannelSortOrder() {
+			out.ChannelSortOrder = k
 		}
 	}
 	for k, v := range notificationLevels {

@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -25,8 +26,31 @@ const (
 
 type fakeChannelRepo struct {
 	domainrepository.ChannelRepository
-	channels map[string]*entity.Channel
-	members  *fakeMemberRepo
+	channels      map[string]*entity.Channel
+	members       *fakeMemberRepo
+	lastMessageAt map[string]time.Time
+}
+
+func (r *fakeChannelRepo) FindLastMessageAtBatch(_ context.Context, _ []string) (map[string]time.Time, error) {
+	return r.lastMessageAt, nil
+}
+
+func (r *fakeChannelRepo) FindBrowsableChannels(ctx context.Context, _ string, userID string) ([]*entity.Channel, error) {
+	var result []*entity.Channel
+	for _, ch := range r.channels {
+		if !ch.IsPrivate || r.members.joined[ch.ID][userID] {
+			result = append(result, ch)
+		}
+	}
+	return result, nil
+}
+
+func (r *fakeChannelRepo) CountMembersBatch(_ context.Context, ids []string) (map[string]int, error) {
+	result := map[string]int{}
+	for _, id := range ids {
+		result[id] = len(r.members.joined[id])
+	}
+	return result, nil
 }
 
 func (r *fakeChannelRepo) FindByID(_ context.Context, id string) (*entity.Channel, error) {
@@ -200,7 +224,7 @@ type fixture struct {
 
 func newFixture() *fixture {
 	members := &fakeMemberRepo{joined: map[string]map[string]bool{}}
-	channels := &fakeChannelRepo{channels: map[string]*entity.Channel{}, members: members}
+	channels := &fakeChannelRepo{channels: map[string]*entity.Channel{}, members: members, lastMessageAt: map[string]time.Time{}}
 	stars := &fakeStarRepo{starred: map[string]bool{}}
 	mutes := &fakeMuteRepo{muted: map[string]bool{}}
 	workspaces := stubWorkspaceRepo{}
@@ -383,6 +407,7 @@ func TestListChannelsIncludesAncestorsAndStars(t *testing.T) {
 	// 一般メンバーは子チャンネルにだけ参加している
 	f.members.joined[web.ID][memberID] = true
 	f.stars.starred[dev.ID] = true
+	f.channels.lastMessageAt[web.ID] = time.Unix(100, 0)
 
 	out, err := f.uc.ListChannels(context.Background(), ListChannelsInput{WorkspaceID: workspaceID, UserID: memberID})
 	if err != nil {
@@ -398,6 +423,23 @@ func TestListChannelsIncludesAncestorsAndStars(t *testing.T) {
 	}
 	if out[0].IsMember || !out[0].IsStarred || !out[2].IsMember {
 		t.Fatalf("参加状態またはスターが正しくありません: %+v", out)
+	}
+	if out[0].LastMessageAt != nil || out[2].LastMessageAt == nil || !out[2].LastMessageAt.Equal(time.Unix(100, 0)) {
+		t.Fatalf("最後のメッセージの日時が正しくありません: %+v", out)
+	}
+}
+
+func TestListBrowsableChannels(t *testing.T) {
+	f := newFixture()
+	public := f.create(t, adminID, "public", false)
+	f.create(t, adminID, "secret", true)
+
+	out, err := f.uc.ListBrowsableChannels(context.Background(), ListChannelsInput{WorkspaceID: workspaceID, UserID: memberID})
+	if err != nil {
+		t.Fatalf("一覧を取得できません: %v", err)
+	}
+	if len(out) != 1 || out[0].Channel.ID != public.ID || out[0].Channel.IsMember || out[0].MemberCount != 1 {
+		t.Fatalf("未参加の公開チャンネルだけが返っていません: %+v", out)
 	}
 }
 

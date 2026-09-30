@@ -60,6 +60,12 @@ func (User) Fields() []ent.Field {
 		// 端末のタイムゾーンが変わったら尋ねずに更新する
 		field.Bool("timezone_auto_update").
 			Default(false),
+		field.Enum("channel_sort_order").
+			Values("default", "recent_activity").
+			Default("default"),
+		// チャンネルへの参加・追加のシステムメッセージを隠す
+		field.Bool("hide_join_messages").
+			Default(false),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

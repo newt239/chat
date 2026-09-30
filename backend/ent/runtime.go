@@ -9,6 +9,8 @@ import (
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channelcategory"
+	"github.com/newt239/chat/ent/channelcategoryitem"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelmute"
@@ -141,6 +143,30 @@ func init() {
 	channelDescID := channelFields[0].Descriptor()
 	// channel.DefaultID holds the default value on creation for the id field.
 	channel.DefaultID = channelDescID.Default.(func() uuid.UUID)
+	channelcategoryFields := schema.ChannelCategory{}.Fields()
+	_ = channelcategoryFields
+	// channelcategoryDescName is the schema descriptor for name field.
+	channelcategoryDescName := channelcategoryFields[1].Descriptor()
+	// channelcategory.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	channelcategory.NameValidator = channelcategoryDescName.Validators[0].(func(string) error)
+	// channelcategoryDescPosition is the schema descriptor for position field.
+	channelcategoryDescPosition := channelcategoryFields[2].Descriptor()
+	// channelcategory.DefaultPosition holds the default value on creation for the position field.
+	channelcategory.DefaultPosition = channelcategoryDescPosition.Default.(int)
+	// channelcategoryDescCreatedAt is the schema descriptor for created_at field.
+	channelcategoryDescCreatedAt := channelcategoryFields[3].Descriptor()
+	// channelcategory.DefaultCreatedAt holds the default value on creation for the created_at field.
+	channelcategory.DefaultCreatedAt = channelcategoryDescCreatedAt.Default.(func() time.Time)
+	// channelcategoryDescID is the schema descriptor for id field.
+	channelcategoryDescID := channelcategoryFields[0].Descriptor()
+	// channelcategory.DefaultID holds the default value on creation for the id field.
+	channelcategory.DefaultID = channelcategoryDescID.Default.(func() uuid.UUID)
+	channelcategoryitemFields := schema.ChannelCategoryItem{}.Fields()
+	_ = channelcategoryitemFields
+	// channelcategoryitemDescID is the schema descriptor for id field.
+	channelcategoryitemDescID := channelcategoryitemFields[0].Descriptor()
+	// channelcategoryitem.DefaultID holds the default value on creation for the id field.
+	channelcategoryitem.DefaultID = channelcategoryitemDescID.Default.(func() uuid.UUID)
 	channellinkFields := schema.ChannelLink{}.Fields()
 	_ = channellinkFields
 	// channellinkDescTitle is the schema descriptor for title field.
@@ -479,12 +505,16 @@ func init() {
 	userDescTimezoneAutoUpdate := userFields[15].Descriptor()
 	// user.DefaultTimezoneAutoUpdate holds the default value on creation for the timezone_auto_update field.
 	user.DefaultTimezoneAutoUpdate = userDescTimezoneAutoUpdate.Default.(bool)
+	// userDescHideJoinMessages is the schema descriptor for hide_join_messages field.
+	userDescHideJoinMessages := userFields[17].Descriptor()
+	// user.DefaultHideJoinMessages holds the default value on creation for the hide_join_messages field.
+	user.DefaultHideJoinMessages = userDescHideJoinMessages.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[16].Descriptor()
+	userDescCreatedAt := userFields[18].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[17].Descriptor()
+	userDescUpdatedAt := userFields[19].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

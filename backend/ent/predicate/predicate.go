@@ -15,6 +15,12 @@ type AuditLog func(*sql.Selector)
 // Channel is the predicate function for channel builders.
 type Channel func(*sql.Selector)
 
+// ChannelCategory is the predicate function for channelcategory builders.
+type ChannelCategory func(*sql.Selector)
+
+// ChannelCategoryItem is the predicate function for channelcategoryitem builders.
+type ChannelCategoryItem func(*sql.Selector)
+
 // ChannelLink is the predicate function for channellink builders.
 type ChannelLink func(*sql.Selector)
 

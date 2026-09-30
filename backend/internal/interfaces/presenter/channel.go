@@ -25,22 +25,27 @@ func ChannelRoleName(role chatv1.ChannelRole) string {
 
 func Channel(c channeluc.ChannelOutput) *chatv1.Channel {
 	return &chatv1.Channel{
-		Id:          c.ID,
-		WorkspaceId: c.WorkspaceID,
-		Name:        c.Name,
-		Description: c.Description,
-		IsPrivate:   c.IsPrivate,
-		CreatedBy:   c.CreatedBy,
-		CreatedAt:   timestamppb.New(c.CreatedAt),
-		UpdatedAt:   timestamppb.New(c.UpdatedAt),
-		UnreadCount: int32(c.UnreadCount),
-		HasMention:  c.HasMention,
-		ArchivedAt:  optionalTimestamp(c.ArchivedAt),
-		ParentId:    c.ParentID,
-		IsStarred:   c.IsStarred,
-		IsMuted:     c.IsMuted,
-		IsMember:    c.IsMember,
+		Id:            c.ID,
+		WorkspaceId:   c.WorkspaceID,
+		Name:          c.Name,
+		Description:   c.Description,
+		IsPrivate:     c.IsPrivate,
+		CreatedBy:     c.CreatedBy,
+		CreatedAt:     timestamppb.New(c.CreatedAt),
+		UpdatedAt:     timestamppb.New(c.UpdatedAt),
+		UnreadCount:   int32(c.UnreadCount),
+		HasMention:    c.HasMention,
+		ArchivedAt:    optionalTimestamp(c.ArchivedAt),
+		ParentId:      c.ParentID,
+		IsStarred:     c.IsStarred,
+		IsMuted:       c.IsMuted,
+		IsMember:      c.IsMember,
+		LastMessageAt: optionalTimestamp(c.LastMessageAt),
 	}
+}
+
+func BrowsableChannel(c channeluc.BrowsableChannelOutput) *chatv1.BrowsableChannel {
+	return &chatv1.BrowsableChannel{Channel: Channel(c.Channel), MemberCount: int32(c.MemberCount)}
 }
 
 func ChannelMember(m channelmemberuc.MemberInfo) *chatv1.ChannelMember {
