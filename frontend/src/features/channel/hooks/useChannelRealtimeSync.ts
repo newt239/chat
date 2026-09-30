@@ -13,7 +13,10 @@ import { useWsClient } from "#/providers/ws/useWsClient";
 
 import type { Channel, ListChannelsResponse } from "#/gen/chat/v1/channel_service_pb";
 
-/** WebSocket イベントからチャンネル一覧の未読バッジとピン件数を更新する。 表示中のチャンネルは既読として扱うため未読を加算しない。 再接続したら切断中に届かなかった分を取り直す。 */
+/**
+ * WebSocket イベントからチャンネル一覧の未読バッジ・最新メッセージの日時とピン件数を更新する。 表示中のチャンネルは既読として扱うため未読を加算しない。
+ * 再接続したら切断中に届かなかった分を取り直す。
+ */
 export const useChannelRealtimeSync = (
   workspaceId: string | null,
   currentChannelId: string | null,
@@ -50,13 +53,13 @@ export const useChannelRealtimeSync = (
         });
       }),
 
-      wsClient.on("newMessage", ({ channelId }) => {
-        if (channelId === currentChannelId) {
-          return;
-        }
+      wsClient.on("newMessage", ({ channelId, message }) => {
+        // 新しいメッセージ順の並びに使う。スレッドの返信は数えない
+        const lastMessageAt = message?.parentId === undefined ? message?.createdAt : undefined;
         updateChannel(channelId, (channel) => ({
           ...channel,
-          unreadCount: channel.unreadCount + 1,
+          lastMessageAt: lastMessageAt ?? channel.lastMessageAt,
+          unreadCount: channel.unreadCount + (channelId === currentChannelId ? 0 : 1),
         }));
       }),
 

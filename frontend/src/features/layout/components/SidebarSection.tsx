@@ -15,10 +15,12 @@ type SidebarSectionProps = {
   title: string;
   // 見出しの右に出す追加ボタン。null なら出さない
   onAdd: { label: string; onPress: () => void } | null;
+  // 見出しの右に出すメニュー。null なら出さない
+  menu: ReactNode;
   children: ReactNode;
 };
 
-export const SidebarSection = ({ id, title, onAdd, children }: SidebarSectionProps) => {
+export const SidebarSection = ({ id, title, onAdd, menu, children }: SidebarSectionProps) => {
   const [collapsed, setCollapsed] = useAtom(collapsedSidebarSectionsAtom);
   const isCollapsed = collapsed[id] ?? false;
   const handleAdd = onAdd?.onPress;
@@ -40,6 +42,7 @@ export const SidebarSection = ({ id, title, onAdd, children }: SidebarSectionPro
           />
           <span className="truncate">{title}</span>
         </Button>
+        {menu}
         {onAdd && (
           <IconButton
             label={onAdd.label}

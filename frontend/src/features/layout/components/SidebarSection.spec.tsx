@@ -9,7 +9,12 @@ test("見出しで折りたたみ、追加ボタンで onAdd を呼ぶ", async (
   const onAdd = vi.fn<() => void>();
   render(
     <Provider store={createStore()}>
-      <SidebarSection id="channels" title="チャンネル" onAdd={{ label: "作成", onPress: onAdd }}>
+      <SidebarSection
+        id="channels"
+        title="チャンネル"
+        onAdd={{ label: "作成", onPress: onAdd }}
+        menu={null}
+      >
         <p>general</p>
       </SidebarSection>
     </Provider>,

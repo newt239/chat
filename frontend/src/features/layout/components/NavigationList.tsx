@@ -3,6 +3,7 @@ import {
   IconBookmark,
   IconChartBar,
   IconFilePencil,
+  IconHash,
   IconMessages,
   IconShieldCheck,
 } from "@tabler/icons-react";
@@ -10,7 +11,10 @@ import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { NavLink } from "#/components/block/NavLink/NavLink";
+import { ChannelCategoryMenu } from "#/features/channel/components/ChannelCategoryMenu";
 import { ChannelList } from "#/features/channel/components/ChannelList";
+import { ChannelSectionMenu } from "#/features/channel/components/ChannelSectionMenu";
+import { useChannelCategories } from "#/features/channel/hooks/useChannelCategories";
 import { DMList } from "#/features/dm/components/DMList";
 import { UserGroupNavList } from "#/features/userGroup/components/UserGroupNavList";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
@@ -28,6 +32,8 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
   const { t } = useTranslation();
   const isAdmin = useIsWorkspaceAdmin(workspaceId);
   const navigate = useNavigate();
+  const { data: categories = [] } = useChannelCategories(workspaceId);
+  const categoryIds = categories.map((category) => category.id);
   const params = { workspaceId };
 
   return (
@@ -50,11 +56,33 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
             <IconFilePencil aria-hidden />
             {t("draft.page.title")}
           </NavLink>
+          <NavLink to="/app/$workspaceId/browse-channels" params={params}>
+            <IconHash aria-hidden />
+            {t("shell.nav.browseChannels")}
+          </NavLink>
         </div>
         <StarredSection workspaceId={workspaceId} />
+        {categories.map((category) => (
+          <SidebarSection
+            key={category.id}
+            id={`category:${category.id}`}
+            title={category.name}
+            onAdd={null}
+            menu={
+              <ChannelCategoryMenu
+                workspaceId={workspaceId}
+                category={category}
+                categoryIds={categoryIds}
+              />
+            }
+          >
+            <ChannelList workspaceId={workspaceId} categoryId={category.id} />
+          </SidebarSection>
+        ))}
         <SidebarSection
           id="channels"
           title={t("shell.sidebar.channels")}
+          menu={<ChannelSectionMenu workspaceId={workspaceId} />}
           onAdd={{
             label: t("shell.sidebar.createChannel"),
             onPress: () => {
@@ -62,11 +90,12 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
             },
           }}
         >
-          <ChannelList workspaceId={workspaceId} />
+          <ChannelList workspaceId={workspaceId} categoryId={null} />
         </SidebarSection>
         <SidebarSection
           id="dms"
           title={t("shell.sidebar.dms")}
+          menu={null}
           onAdd={{
             label: t("shell.sidebar.createDM"),
             onPress: () => {
@@ -76,10 +105,15 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
         >
           <DMList workspaceId={workspaceId} />
         </SidebarSection>
-        <SidebarSection id="groups" title={t("userGroup.pageTitle")} onAdd={null}>
+        <SidebarSection id="groups" title={t("userGroup.pageTitle")} onAdd={null} menu={null}>
           <UserGroupNavList workspaceId={workspaceId} />
         </SidebarSection>
-        <SidebarSection id="workspace" title={t("shell.sidebar.workspace")} onAdd={null}>
+        <SidebarSection
+          id="workspace"
+          title={t("shell.sidebar.workspace")}
+          onAdd={null}
+          menu={null}
+        >
           <NavLink to="/app/$workspaceId/insights" params={params}>
             <IconChartBar aria-hidden />
             {t("shell.nav.insights")}

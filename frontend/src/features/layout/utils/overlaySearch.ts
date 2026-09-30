@@ -8,6 +8,8 @@ const noPanel = { group: undefined, panel: undefined, profile: undefined } satis
   undefined
 >;
 const noDialog = {
+  assign: undefined,
+  category: undefined,
   dialog: undefined,
   emoji: undefined,
   image: undefined,

@@ -16,6 +16,8 @@ import type { Preferences } from "#/providers/store/preferences";
 describe("preferences と proto の変換", () => {
   test("往復しても値が変わらない", () => {
     const preferences: Preferences = {
+      channelSortOrder: "recentActivity",
+      hideJoinMessages: true,
       locale: "en",
       mode: "dark",
       notificationLevel: "all",
@@ -29,6 +31,8 @@ describe("preferences と proto の変換", () => {
 
   test("proto の列挙値に変換する", () => {
     const proto = preferencesToProto({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       locale: "ja",
       mode: "system",
       notificationLevel: "none",
@@ -44,6 +48,8 @@ describe("preferences と proto の変換", () => {
 
   test("色相は整数に丸めて 0〜359 に収める", () => {
     const proto = preferencesToProto({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       locale: "ja",
       mode: "light",
       notificationLevel: "mentions",
@@ -59,6 +65,8 @@ describe("preferences と proto の変換", () => {
     const preferences = preferencesFromProto(create(UserPreferencesSchema, { locale: "fr" }));
 
     expect(preferences).toStrictEqual({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       locale: "ja",
       mode: "system",
       notificationLevel: "mentions",

@@ -41,6 +41,8 @@ describe("ThemeProvider", () => {
 
   test("テーマのトークンを CSS 変数として書き込む", () => {
     renderWithPreferences({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       locale: "ja",
       mode: "light",
       notificationLevel: "mentions",
@@ -61,6 +63,8 @@ describe("ThemeProvider", () => {
     themeColor.name = "theme-color";
     document.head.append(themeColor);
     renderWithPreferences({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       locale: "ja",
       mode: "dark",
       notificationLevel: "mentions",
@@ -78,6 +82,8 @@ describe("ThemeProvider", () => {
 
   test("system はOSの設定に従う（テストではライト）", () => {
     renderWithPreferences({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       locale: "ja",
       mode: "system",
       notificationLevel: "mentions",
@@ -91,6 +97,8 @@ describe("ThemeProvider", () => {
 
   test("言語を切り替える", () => {
     renderWithPreferences({
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       locale: "en",
       mode: "light",
       notificationLevel: "mentions",

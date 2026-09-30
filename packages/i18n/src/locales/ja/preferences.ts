@@ -1,4 +1,12 @@
 export const preferences = {
+  channelSort: {
+    description: "サイドバーのチャンネルの並べ方。新しいメッセージ順では階層を分けて表示します",
+    title: "チャンネルの並び順",
+  },
+  joinMessages: {
+    description: "メンバーがチャンネルに参加したときのお知らせをタイムラインに表示します",
+    title: "参加のお知らせを表示する",
+  },
   locale: {
     en: "English",
     ja: "日本語",

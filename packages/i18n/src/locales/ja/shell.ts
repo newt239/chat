@@ -36,6 +36,7 @@ export const shell = {
     activity: "通知",
     admin: "管理画面",
     bookmarks: "ブックマーク",
+    browseChannels: "チャンネルに参加",
     insights: "インサイト",
     mentions: "メンション",
     search: "検索",

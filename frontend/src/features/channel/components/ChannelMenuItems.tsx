@@ -13,9 +13,12 @@ import { useTranslation } from "react-i18next";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useChannelListActions } from "#/features/channel/hooks/useChannelListActions";
 import { toShareUrl } from "#/lib/platform/appOrigin";
 import { isTauri } from "#/lib/platform/platform";
+
+import { MoveToCategoryMenu } from "./MoveToCategoryMenu";
 
 type ChannelMenuItemsProps = {
   workspaceId: string;
@@ -34,6 +37,9 @@ export const ChannelMenuItems = ({
   const { t } = useTranslation();
   const router = useRouter();
   const { markAsRead, setMuted, setStarred } = useChannelListActions(workspaceId);
+  const { data: channels = [] } = useChannels(workspaceId);
+  // DM は一覧にないためカテゴリに入れられない
+  const channel = channels.find((candidate) => candidate.id === channelId);
   const location = {
     params: { channelId, workspaceId },
     to: "/app/$workspaceId/$channelId",
@@ -57,6 +63,9 @@ export const ChannelMenuItems = ({
       >
         {isMuted ? t("shell.channelMenu.unmute") : t("shell.channelMenu.mute")}
       </MenuItem>
+      {channel && (
+        <MoveToCategoryMenu workspaceId={workspaceId} channel={channel} channels={channels} />
+      )}
       <MenuItem
         icon={<IconChecks />}
         onAction={() => {

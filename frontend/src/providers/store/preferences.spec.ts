@@ -16,6 +16,8 @@ describe("preferencesAtom", () => {
 
   test("端末に保存した設定を読み込む", async () => {
     const saved = {
+      channelSortOrder: "recentActivity",
+      hideJoinMessages: true,
       locale: "en",
       mode: "dark",
       notificationLevel: "all",
@@ -29,7 +31,7 @@ describe("preferencesAtom", () => {
     expect(preferences).toStrictEqual(saved);
   });
 
-  test("通知の範囲やタイムゾーンがない以前の保存値は既定値で補う", async () => {
+  test("通知の範囲やタイムゾーン・並び順がない以前の保存値は既定値で補う", async () => {
     const saved = {
       locale: "en",
       mode: "dark",
@@ -40,6 +42,8 @@ describe("preferencesAtom", () => {
 
     expect(preferences).toStrictEqual({
       ...saved,
+      channelSortOrder: "default",
+      hideJoinMessages: false,
       notificationLevel: "mentions",
       timezone: "",
       timezoneAutoUpdate: false,

@@ -3,12 +3,13 @@ import { colorModePreferences, defaultTheme, sidebarStyles } from "@chat/design-
 import { resolveLocale } from "@chat/i18n";
 
 import {
+  ChannelSortOrder,
   ColorMode,
   NotificationLevel,
   SidebarStyle,
   UserPreferencesSchema,
 } from "#/gen/chat/v1/user_pb";
-import { notificationLevels } from "#/providers/store/preferences";
+import { channelSortOrders, notificationLevels } from "#/providers/store/preferences";
 
 import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 import type { Preferences } from "#/providers/store/preferences";
@@ -32,16 +33,25 @@ const notificationLevelValues: Record<Preferences["notificationLevel"], Notifica
   none: NotificationLevel.NONE,
 };
 
+const channelSortOrderValues: Record<Preferences["channelSortOrder"], ChannelSortOrder> = {
+  default: ChannelSortOrder.DEFAULT,
+  recentActivity: ChannelSortOrder.RECENT_ACTIVITY,
+};
+
 export const preferencesToProto = ({
+  channelSortOrder,
   locale,
   mode,
   notificationLevel,
+  hideJoinMessages,
   theme,
   timezone,
   timezoneAutoUpdate,
 }: Preferences) =>
   create(UserPreferencesSchema, {
+    channelSortOrder: channelSortOrderValues[channelSortOrder],
     colorMode: colorModeValues[mode],
+    hideJoinMessages,
     locale,
     notificationLevel: notificationLevelValues[notificationLevel],
     theme: {
@@ -54,13 +64,19 @@ export const preferencesToProto = ({
   });
 
 export const preferencesFromProto = ({
+  channelSortOrder,
   colorMode,
   locale,
   notificationLevel,
+  hideJoinMessages,
   theme,
   timezone,
   timezoneAutoUpdate,
 }: UserPreferences) => ({
+  channelSortOrder:
+    channelSortOrders.find((order) => channelSortOrderValues[order] === channelSortOrder) ??
+    "default",
+  hideJoinMessages,
   locale: resolveLocale(locale),
   mode: colorModePreferences.find((mode) => colorModeValues[mode] === colorMode) ?? "system",
   notificationLevel:
