@@ -468,8 +468,6 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 		return fmt.Errorf("failed to remove member: %w", err)
 	}
 
-	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberRemoved, input.OperatorID, input.TargetUserID)
-
 	return nil
 }
 
@@ -520,8 +518,6 @@ func (i *channelMemberInteractor) LeaveChannel(ctx context.Context, input LeaveC
 	if err := i.channelMemberRepo.RemoveMember(ctx, input.ChannelID, input.UserID); err != nil {
 		return fmt.Errorf("failed to remove member: %w", err)
 	}
-
-	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberLeft, input.UserID, input.UserID)
 
 	return nil
 }

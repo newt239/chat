@@ -54,7 +54,11 @@ func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelI
 
 	client := transaction.ResolveClient(ctx, r.client)
 	q := client.SystemMessage.Query().
-		Where(systemmessage.HasChannelWith(channel.IDIn(chIDs...)))
+		Where(
+			systemmessage.HasChannelWith(channel.IDIn(chIDs...)),
+			// 退出・削除は以前は記録していたがタイムラインには出さない
+			systemmessage.KindNotIn(string(entity.SystemMessageKindMemberLeft), string(entity.SystemMessageKindMemberRemoved)),
+		)
 
 	if since != nil {
 		q = q.Where(systemmessage.CreatedAtGT(*since))
