@@ -230,7 +230,8 @@ export default defineConfig(({ mode }) => {
         injectRegister: false,
         manifest: {
           background_color: pwaColors.background,
-          description: "Chat",
+          categories: ["social", "productivity"],
+          description: "チャンネルと DM で会話するチームチャット",
           display: "standalone",
           display_override: ["standalone", "minimal-ui"],
           id: "/",

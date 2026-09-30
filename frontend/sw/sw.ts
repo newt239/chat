@@ -7,7 +7,7 @@ import {
   precacheAndRoute,
 } from "workbox-precaching";
 import { NavigationRoute, registerRoute } from "workbox-routing";
-import { CacheFirst, NetworkFirst } from "workbox-strategies";
+import { CacheFirst } from "workbox-strategies";
 import { z } from "zod";
 
 import { firebaseConfig } from "../src/lib/firebaseConfig";
@@ -26,13 +26,6 @@ registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));
 registerRoute(
   /\.woff2$/,
   new CacheFirst({ cacheName: "font-cache", plugins: [new ExpirationPlugin({ maxEntries: 500 })] }),
-);
-registerRoute(
-  /^https:\/\/api\..*/i,
-  new NetworkFirst({
-    cacheName: "api-cache",
-    plugins: [new ExpirationPlugin({ maxAgeSeconds: 60 * 60 * 24, maxEntries: 100 })],
-  }),
 );
 
 // 更新のトーストで「再読み込み」が押されたら新しい版に切り替える

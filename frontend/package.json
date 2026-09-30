@@ -13,7 +13,6 @@
     "dev:tauri-web": "vp dev --mode tauri",
     "format": "vp fmt --check",
     "format:fix": "vp fmt",
-    "generate:pwa-assets": "pwa-assets-generator",
     "knip": "knip",
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
