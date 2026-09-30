@@ -2,7 +2,8 @@ import { visit } from "unist-util-visit";
 
 import type { Root, RootContent, Text } from "mdast";
 
-const CHANNEL_REGEX = /#(?<channelName>[\w-]+)/g;
+// 階層は dev/frontend のようにスラッシュでつなぐ
+const CHANNEL_REGEX = /#(?<channelName>[\w-]+(?:\/[\w-]+)*)/g;
 
 export const remarkChannel = () => (tree: Root) => {
   visit(tree, "text", (node: Text, index, parent) => {
