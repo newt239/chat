@@ -44,9 +44,9 @@ const setup = async (myRole: WorkspaceRole) => {
 };
 
 describe("AdminPermissionsTab", () => {
-  test("6 つの操作を並べ、オーナー列は常にオンで変更できない", async () => {
+  test("7 つの操作を並べ、オーナー列は常にオンで変更できない", async () => {
     await setup(WorkspaceRole.ADMIN);
-    expect(screen.getAllByRole("rowheader")).toHaveLength(6);
+    expect(screen.getAllByRole("rowheader")).toHaveLength(7);
     const owner = screen.getByRole("switch", { name: "オーナー: 他人のメッセージの削除" });
     expect(owner).toBeChecked();
     expect(owner).toBeDisabled();

@@ -22,6 +22,8 @@ export const auditActionKeyValues = [
   "channelUnarchived",
   "permissionChanged",
   "auditLogExported",
+  "customEmojiCreated",
+  "customEmojiDeleted",
 ] as const;
 
 // <input type="datetime-local"> の値（ブラウザのタイムゾーンでの日時）

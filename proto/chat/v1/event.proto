@@ -39,6 +39,9 @@ message ServerEvent {
     AckEvent ack = 12;
     ErrorEvent error = 13;
     ChannelViewersEvent channel_viewers = 14;
+    // ワークスペースの全員に送る。一覧を取り直すきっかけにする
+    CustomEmojiEvent custom_emoji_created = 15;
+    CustomEmojiEvent custom_emoji_deleted = 16;
   }
 }
 
@@ -106,4 +109,11 @@ message ErrorEvent {
 message ChannelViewersEvent {
   string channel_id = 1;
   repeated string user_ids = 2;
+}
+
+// カスタム絵文字の登録・削除
+message CustomEmojiEvent {
+  string workspace_id = 1;
+  string emoji_id = 2;
+  string name = 3;
 }

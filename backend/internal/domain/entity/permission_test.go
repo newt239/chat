@@ -20,6 +20,7 @@ func TestPermissionMatrixAllows(t *testing.T) {
 		{name: "既定でメンバーはチャンネルを作れる", role: WorkspaceRoleMember, permission: PermissionCreatePublicChannel, want: true},
 		{name: "既定でメンバーは他人のメッセージを削除できない", role: WorkspaceRoleMember, permission: PermissionDeleteOthersMessages, want: false},
 		{name: "上書きでメンバーに招待を許可できる", role: WorkspaceRoleMember, permission: PermissionInviteMembers, want: true},
+		{name: "既定でメンバーはカスタム絵文字を登録できる", role: WorkspaceRoleMember, permission: PermissionCreateCustomEmoji, want: true},
 		{name: "既定でゲストは何もできない", role: WorkspaceRoleGuest, permission: PermissionPinMessages, want: false},
 	}
 	for _, tt := range tests {

@@ -32,18 +32,20 @@ const (
 	Permission_PERMISSION_EDIT_CHANNEL_LINKS     Permission = 5
 	Permission_PERMISSION_PIN_MESSAGES           Permission = 6
 	Permission_PERMISSION_DELETE_OTHERS_MESSAGES Permission = 7
+	Permission_PERMISSION_CREATE_CUSTOM_EMOJI    Permission = 10
 )
 
 // Enum value maps for Permission.
 var (
 	Permission_name = map[int32]string{
-		0: "PERMISSION_UNSPECIFIED",
-		1: "PERMISSION_CREATE_PUBLIC_CHANNEL",
-		2: "PERMISSION_CREATE_PRIVATE_CHANNEL",
-		3: "PERMISSION_INVITE_MEMBERS",
-		5: "PERMISSION_EDIT_CHANNEL_LINKS",
-		6: "PERMISSION_PIN_MESSAGES",
-		7: "PERMISSION_DELETE_OTHERS_MESSAGES",
+		0:  "PERMISSION_UNSPECIFIED",
+		1:  "PERMISSION_CREATE_PUBLIC_CHANNEL",
+		2:  "PERMISSION_CREATE_PRIVATE_CHANNEL",
+		3:  "PERMISSION_INVITE_MEMBERS",
+		5:  "PERMISSION_EDIT_CHANNEL_LINKS",
+		6:  "PERMISSION_PIN_MESSAGES",
+		7:  "PERMISSION_DELETE_OTHERS_MESSAGES",
+		10: "PERMISSION_CREATE_CUSTOM_EMOJI",
 	}
 	Permission_value = map[string]int32{
 		"PERMISSION_UNSPECIFIED":            0,
@@ -53,6 +55,7 @@ var (
 		"PERMISSION_EDIT_CHANNEL_LINKS":     5,
 		"PERMISSION_PIN_MESSAGES":           6,
 		"PERMISSION_DELETE_OTHERS_MESSAGES": 7,
+		"PERMISSION_CREATE_CUSTOM_EMOJI":    10,
 	}
 )
 
@@ -369,7 +372,7 @@ const file_chat_v1_permission_service_proto_rawDesc = "" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\n" +
 	"permission\x12\x18\n" +
 	"\aallowed\x18\x04 \x01(\bR\aallowed\"\x1a\n" +
-	"\x18UpdatePermissionResponse*\xe0\x02\n" +
+	"\x18UpdatePermissionResponse*\x84\x03\n" +
 	"\n" +
 	"Permission\x12\x1a\n" +
 	"\x16PERMISSION_UNSPECIFIED\x10\x00\x12$\n" +
@@ -378,7 +381,9 @@ const file_chat_v1_permission_service_proto_rawDesc = "" +
 	"\x19PERMISSION_INVITE_MEMBERS\x10\x03\x12!\n" +
 	"\x1dPERMISSION_EDIT_CHANNEL_LINKS\x10\x05\x12\x1b\n" +
 	"\x17PERMISSION_PIN_MESSAGES\x10\x06\x12%\n" +
-	"!PERMISSION_DELETE_OTHERS_MESSAGES\x10\a\"\x04\b\x04\x10\x04\"\x04\b\b\x10\b\"\x04\b\t\x10\t*\x1bPERMISSION_EDIT_USER_GROUPS*\x16PERMISSION_EXPORT_DATA*\x1cPERMISSION_ADD_EXTERNAL_APPS2\xbf\x01\n" +
+	"!PERMISSION_DELETE_OTHERS_MESSAGES\x10\a\x12\"\n" +
+	"\x1ePERMISSION_CREATE_CUSTOM_EMOJI\x10\n" +
+	"\"\x04\b\x04\x10\x04\"\x04\b\b\x10\b\"\x04\b\t\x10\t*\x1bPERMISSION_EDIT_USER_GROUPS*\x16PERMISSION_EXPORT_DATA*\x1cPERMISSION_ADD_EXTERNAL_APPS2\xbf\x01\n" +
 	"\x11PermissionService\x12Q\n" +
 	"\x0eGetPermissions\x12\x1e.chat.v1.GetPermissionsRequest\x1a\x1f.chat.v1.GetPermissionsResponse\x12W\n" +
 	"\x10UpdatePermission\x12 .chat.v1.UpdatePermissionRequest\x1a!.chat.v1.UpdatePermissionResponseB\x97\x01\n" +
