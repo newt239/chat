@@ -8,12 +8,14 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 
+import { CustomEmoji } from "#/features/customEmoji/components/CustomEmoji";
 import { ChannelLink } from "#/features/message/components/markdown/ChannelLink";
 import { CodeBlock } from "#/features/message/components/markdown/CodeBlock";
 import { LinkComponent } from "#/features/message/components/markdown/LinkComponent";
 import { Mention } from "#/features/message/components/markdown/Mention";
 
 import { remarkChannel } from "./plugins/channel";
+import { remarkCustomEmoji } from "./plugins/customEmoji";
 import { remarkMention } from "./plugins/mention";
 
 const customSchema = {
@@ -23,9 +25,10 @@ const customSchema = {
     code: [...(defaultSchema.attributes?.code ?? []), "className"],
     span: [
       ...(defaultSchema.attributes?.span ?? []),
-      ["className", "mention", "channel-link"],
+      ["className", "mention", "channel-link", "custom-emoji"],
       "dataMention",
       "dataChannel",
+      "dataEmoji",
     ],
   },
 };
@@ -36,6 +39,7 @@ export const renderMarkdown = (content: string): ReactNode => {
     .use(remarkGfm)
     .use(remarkMention)
     .use(remarkChannel)
+    .use(remarkCustomEmoji)
     .use(remarkRehype)
     .use(rehypeSanitize, customSchema)
     .use(rehypeReact, {
@@ -47,6 +51,7 @@ export const renderMarkdown = (content: string): ReactNode => {
           className?: string;
           "data-mention"?: string;
           "data-channel"?: string;
+          "data-emoji"?: string;
           children?: ReactNode;
         }) => {
           const classNames = props.className?.split(" ") ?? [];
@@ -55,6 +60,9 @@ export const renderMarkdown = (content: string): ReactNode => {
           }
           if (classNames.includes("channel-link")) {
             return <ChannelLink {...props} data-channel={props["data-channel"] || ""} />;
+          }
+          if (classNames.includes("custom-emoji") && props["data-emoji"]) {
+            return <CustomEmoji name={props["data-emoji"]} />;
           }
           return <span {...props} />;
         },

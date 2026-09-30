@@ -1,3 +1,5 @@
+import { CUSTOM_EMOJI_IN_TEXT } from "#/features/customEmoji/utils/customEmoji";
+
 const MAX_EMOJI = 8;
 // 絵文字・肌の色・国旗・異体字セレクタ・ZWJ・キーキャップと空白だけの文字列
 const EMOJI_ONLY =
@@ -5,8 +7,14 @@ const EMOJI_ONLY =
 
 const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
-// 絵文字だけの短い投稿は大きく表示する
-export const isJumboEmoji = (body: string) => {
-  const text = body.replaceAll(/\s/g, "");
+// 絵文字だけの短い投稿は大きく表示する。登録済みのカスタム絵文字も 1 文字の絵文字として数える
+export const isJumboEmoji = (body: string, customEmojiNames?: ReadonlyMap<string, unknown>) => {
+  const replaced =
+    customEmojiNames === undefined
+      ? body
+      : body.replaceAll(CUSTOM_EMOJI_IN_TEXT, (token, name: string) =>
+          customEmojiNames.has(name) ? "😀" : token,
+        );
+  const text = replaced.replaceAll(/\s/g, "");
   return text !== "" && EMOJI_ONLY.test(text) && [...segmenter.segment(text)].length <= MAX_EMOJI;
 };
