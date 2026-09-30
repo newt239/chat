@@ -10,6 +10,7 @@ import { transitions } from "#/lib/motion";
 
 import { useFormatReactors } from "../hooks/useFormatReactors";
 import { reactionPillClassName } from "../styles";
+import { ReactionEmoji } from "./ReactionEmoji";
 
 import type { ReactionGroup } from "#/features/reaction/types/reactionGroup";
 
@@ -33,7 +34,9 @@ export const ReactionButton = ({ group, onPress, onOpenList }: ReactionButtonPro
     <Tooltip
       content={
         <span className="flex flex-col items-center px-1 py-0.5 text-center leading-normal">
-          <span className="text-[28px] leading-[1.2]">{group.emoji}</span>
+          <span className="text-[28px] leading-[1.2]">
+            <ReactionEmoji emoji={group.emoji} />
+          </span>
           {t("reaction.tooltip.reacted", { names })}
           <small className="mt-0.5 text-[11px] opacity-60">{t("reaction.tooltip.hint")}</small>
         </span>
@@ -60,7 +63,7 @@ export const ReactionButton = ({ group, onPress, onOpenList }: ReactionButtonPro
           transition={transitions.spring}
           className="text-sm leading-none"
         >
-          {group.emoji}
+          <ReactionEmoji emoji={group.emoji} />
         </motion.span>
         <span className="text-xs">{group.count}</span>
       </Button>
