@@ -1,6 +1,7 @@
 import {
   IconBookmark,
   IconBookmarkOff,
+  IconCopy,
   IconExternalLink,
   IconLink,
   IconList,
@@ -76,6 +77,13 @@ export const useMessageMenuActions = ({
     );
   };
 
+  const copyText = () => {
+    navigator.clipboard.writeText(message.body).then(
+      () => toast(t("message.link.textCopied"), { tone: "success" }),
+      () => toast(t("message.link.textCopyFailed"), { tone: "danger" }),
+    );
+  };
+
   const togglePin = () => {
     (isPinned ? unpin : pin).mutate(
       { channelId: message.channelId, messageId: message.id },
@@ -147,6 +155,14 @@ export const useMessageMenuActions = ({
       onAction: onCopyLink,
       tone: "default",
     },
+    !message.isDeleted &&
+      message.body.trim() !== "" && {
+        icon: IconCopy,
+        id: "copyText",
+        label: t("message.actions.copyText"),
+        onAction: copyText,
+        tone: "default",
+      },
     canModify && {
       icon: IconTrash,
       id: "delete",
