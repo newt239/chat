@@ -57,6 +57,8 @@ export const MessageList = ({
 }: MessageListProps) => {
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
+  // TanStack Virtual は React Compiler と併用できないため、このコンポーネントはメモ化されない
+  // oxlint-disable-next-line react/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
     estimateSize: (index) => (rows[index]?.kind === "date" ? 40 : 64),
