@@ -45,6 +45,30 @@ func (f ChannelFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelMutation", m)
 }
 
+// The ChannelCategoryFunc type is an adapter to allow the use of ordinary
+// function as ChannelCategory mutator.
+type ChannelCategoryFunc func(context.Context, *ent.ChannelCategoryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChannelCategoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChannelCategoryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelCategoryMutation", m)
+}
+
+// The ChannelCategoryItemFunc type is an adapter to allow the use of ordinary
+// function as ChannelCategoryItem mutator.
+type ChannelCategoryItemFunc func(context.Context, *ent.ChannelCategoryItemMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ChannelCategoryItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ChannelCategoryItemMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ChannelCategoryItemMutation", m)
+}
+
 // The ChannelLinkFunc type is an adapter to allow the use of ordinary
 // function as ChannelLink mutator.
 type ChannelLinkFunc func(context.Context, *ent.ChannelLinkMutation) (ent.Value, error)

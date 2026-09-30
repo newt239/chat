@@ -35,6 +35,7 @@ import { useIsMobile } from "#/hooks/useMediaQuery";
 import { pinsCountByChannelAtom } from "#/providers/store/ui";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
+import { useChannelById } from "../hooks/useChannelById";
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { useChannelMembers } from "../hooks/useChannelMembers";
 import { ChannelLinkBar } from "./ChannelLinkBar";
@@ -54,9 +55,16 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const pinsCount = useAtomValue(pinsCountByChannelAtom)[channelId] ?? 0;
-  const { channel, descendants, includesDescendants, setIncludesDescendants } =
-    useChannelAggregation(workspaceId, channelId);
+  const { descendants, includesDescendants, setIncludesDescendants } = useChannelAggregation(
+    workspaceId,
+    channelId,
+  );
   const { data: dms } = useDMs(workspaceId);
+  // 未参加のチャンネルをプレビューしているときは一覧にないため個別に取得する
+  const channel = useChannelById(
+    workspaceId,
+    dms === undefined || dms.some((candidate) => candidate.id === channelId) ? null : channelId,
+  );
   const { data: members = [] } = useChannelMembers(channelId);
   const { setStarred } = useChannelListActions(workspaceId);
   const displayName = useDisplayName();
@@ -95,11 +103,21 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
     <>
       <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-[18px] max-md:pl-3">
         <BackButton />
+        <IconButton
+          label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
+          aria-pressed={isStarred}
+          className={isStarred ? "text-mention-bar data-hovered:text-mention-bar" : undefined}
+          onPress={() => {
+            setStarred(channelId, !isStarred);
+          }}
+        >
+          {isStarred ? <IconStarFilled /> : <IconStar />}
+        </IconButton>
         <Button
           onPress={() => {
             openRightPanel(infoPanel);
           }}
-          className={`-ml-1 flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
+          className={`flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
         >
           {channel ? (
             <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
@@ -113,16 +131,6 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           )}
           <IconChevronDown aria-hidden className="size-3!" />
         </Button>
-        <IconButton
-          label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
-          aria-pressed={isStarred}
-          className={isStarred ? "text-mention-bar data-hovered:text-mention-bar" : undefined}
-          onPress={() => {
-            setStarred(channelId, !isStarred);
-          }}
-        >
-          {isStarred ? <IconStarFilled /> : <IconStar />}
-        </IconButton>
         {isMuted && (
           <Tooltip content={t("shell.channel.muted")}>
             <Button

@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/user.proto.
  */
 export const file_chat_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEiqAEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ihwEKD1RoZW1lUHJlZmVyZW5jZRIXCgNodWUYASABKAVCCrpIBxoFEOgCKAASJwoGY2hyb21hGAIgASgBQhe6SBQSEhmuR+F6FK7XPykAAAAAAAAAABIyCgdzaWRlYmFyGAMgASgOMhUuY2hhdC52MS5TaWRlYmFyU3R5bGVCCrpIB4IBBBABIAAikgIKD1VzZXJQcmVmZXJlbmNlcxIvCgV0aGVtZRgBIAEoCzIYLmNoYXQudjEuVGhlbWVQcmVmZXJlbmNlQga6SAPIAQESMgoKY29sb3JfbW9kZRgCIAEoDjISLmNoYXQudjEuQ29sb3JNb2RlQgq6SAeCAQQQASAAEh0KBmxvY2FsZRgDIAEoCUINukgKcghSAmphUgJlbhJCChJub3RpZmljYXRpb25fbGV2ZWwYBCABKA4yGi5jaGF0LnYxLk5vdGlmaWNhdGlvbkxldmVsQgq6SAeCAQQQASAAEhkKCHRpbWV6b25lGAUgASgJQge6SARyAhhAEhwKFHRpbWV6b25lX2F1dG9fdXBkYXRlGAYgASgIImcKC1VzZXJTdW1tYXJ5EgoKAmlkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIXCgphdmF0YXJfdXJsGAMgASgJSACIAQESDgoGaXNfYm90GAQgASgIQg0KC19hdmF0YXJfdXJsKmAKDFNpZGViYXJTdHlsZRIdChlTSURFQkFSX1NUWUxFX1VOU1BFQ0lGSUVEEAASGAoUU0lERUJBUl9TVFlMRV9USU5URUQQARIXChNTSURFQkFSX1NUWUxFX0xJR0hUEAIqaQoJQ29sb3JNb2RlEhoKFkNPTE9SX01PREVfVU5TUEVDSUZJRUQQABIUChBDT0xPUl9NT0RFX0xJR0hUEAESEwoPQ09MT1JfTU9ERV9EQVJLEAISFQoRQ09MT1JfTU9ERV9TWVNURU0QAyqRAQoRTm90aWZpY2F0aW9uTGV2ZWwSIgoeTk9USUZJQ0FUSU9OX0xFVkVMX1VOU1BFQ0lGSUVEEAASGgoWTk9USUZJQ0FUSU9OX0xFVkVMX0FMTBABEh8KG05PVElGSUNBVElPTl9MRVZFTF9NRU5USU9OUxACEhsKF05PVElGSUNBVElPTl9MRVZFTF9OT05FEANCigEKC2NvbS5jaGF0LnYxQglVc2VyUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate]);
+  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEiqAEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ihwEKD1RoZW1lUHJlZmVyZW5jZRIXCgNodWUYASABKAVCCrpIBxoFEOgCKAASJwoGY2hyb21hGAIgASgBQhe6SBQSEhmuR+F6FK7XPykAAAAAAAAAABIyCgdzaWRlYmFyGAMgASgOMhUuY2hhdC52MS5TaWRlYmFyU3R5bGVCCrpIB4IBBBABIAAi8QIKD1VzZXJQcmVmZXJlbmNlcxIvCgV0aGVtZRgBIAEoCzIYLmNoYXQudjEuVGhlbWVQcmVmZXJlbmNlQga6SAPIAQESMgoKY29sb3JfbW9kZRgCIAEoDjISLmNoYXQudjEuQ29sb3JNb2RlQgq6SAeCAQQQASAAEh0KBmxvY2FsZRgDIAEoCUINukgKcghSAmphUgJlbhJCChJub3RpZmljYXRpb25fbGV2ZWwYBCABKA4yGi5jaGF0LnYxLk5vdGlmaWNhdGlvbkxldmVsQgq6SAeCAQQQASAAEhkKCHRpbWV6b25lGAUgASgJQge6SARyAhhAEhwKFHRpbWV6b25lX2F1dG9fdXBkYXRlGAYgASgIEkEKEmNoYW5uZWxfc29ydF9vcmRlchgHIAEoDjIZLmNoYXQudjEuQ2hhbm5lbFNvcnRPcmRlckIKukgHggEEEAEgABIaChJoaWRlX2pvaW5fbWVzc2FnZXMYCCABKAgiZwoLVXNlclN1bW1hcnkSCgoCaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhcKCmF2YXRhcl91cmwYAyABKAlIAIgBARIOCgZpc19ib3QYBCABKAhCDQoLX2F2YXRhcl91cmwqYAoMU2lkZWJhclN0eWxlEh0KGVNJREVCQVJfU1RZTEVfVU5TUEVDSUZJRUQQABIYChRTSURFQkFSX1NUWUxFX1RJTlRFRBABEhcKE1NJREVCQVJfU1RZTEVfTElHSFQQAippCglDb2xvck1vZGUSGgoWQ09MT1JfTU9ERV9VTlNQRUNJRklFRBAAEhQKEENPTE9SX01PREVfTElHSFQQARITCg9DT0xPUl9NT0RFX0RBUksQAhIVChFDT0xPUl9NT0RFX1NZU1RFTRADKn4KEENoYW5uZWxTb3J0T3JkZXISIgoeQ0hBTk5FTF9TT1JUX09SREVSX1VOU1BFQ0lGSUVEEAASHgoaQ0hBTk5FTF9TT1JUX09SREVSX0RFRkFVTFQQARImCiJDSEFOTkVMX1NPUlRfT1JERVJfUkVDRU5UX0FDVElWSVRZEAIqkQEKEU5vdGlmaWNhdGlvbkxldmVsEiIKHk5PVElGSUNBVElPTl9MRVZFTF9VTlNQRUNJRklFRBAAEhoKFk5PVElGSUNBVElPTl9MRVZFTF9BTEwQARIfChtOT1RJRklDQVRJT05fTEVWRUxfTUVOVElPTlMQAhIbChdOT1RJRklDQVRJT05fTEVWRUxfTk9ORRADQooBCgtjb20uY2hhdC52MUIJVXNlclByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate]);
 
 /**
  * ログイン中のユーザー自身の情報
@@ -125,6 +125,18 @@ export type UserPreferences = Message<"chat.v1.UserPreferences"> & {
    * @generated from field: bool timezone_auto_update = 6;
    */
   timezoneAutoUpdate: boolean;
+
+  /**
+   * @generated from field: chat.v1.ChannelSortOrder channel_sort_order = 7;
+   */
+  channelSortOrder: ChannelSortOrder;
+
+  /**
+   * チャンネルへの参加・追加のシステムメッセージを隠す
+   *
+   * @generated from field: bool hide_join_messages = 8;
+   */
+  hideJoinMessages: boolean;
 };
 
 /**
@@ -228,6 +240,34 @@ export const ColorModeSchema: GenEnum<ColorMode> = /*@__PURE__*/
   enumDesc(file_chat_v1_user, 1);
 
 /**
+ * サイドバーのチャンネルの並べ方。既定はツリーの名前順、最近は最新メッセージの新しい順でフラットに並べる
+ *
+ * @generated from enum chat.v1.ChannelSortOrder
+ */
+export enum ChannelSortOrder {
+  /**
+   * @generated from enum value: CHANNEL_SORT_ORDER_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: CHANNEL_SORT_ORDER_DEFAULT = 1;
+   */
+  DEFAULT = 1,
+
+  /**
+   * @generated from enum value: CHANNEL_SORT_ORDER_RECENT_ACTIVITY = 2;
+   */
+  RECENT_ACTIVITY = 2,
+}
+
+/**
+ * Describes the enum chat.v1.ChannelSortOrder.
+ */
+export const ChannelSortOrderSchema: GenEnum<ChannelSortOrder> = /*@__PURE__*/
+  enumDesc(file_chat_v1_user, 2);
+
+/**
  * 通知を受け取る範囲。すべて / メンションと DM のみ / なし
  *
  * @generated from enum chat.v1.NotificationLevel
@@ -258,5 +298,5 @@ export enum NotificationLevel {
  * Describes the enum chat.v1.NotificationLevel.
  */
 export const NotificationLevelSchema: GenEnum<NotificationLevel> = /*@__PURE__*/
-  enumDesc(file_chat_v1_user, 2);
+  enumDesc(file_chat_v1_user, 3);
 

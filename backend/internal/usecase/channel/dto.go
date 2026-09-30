@@ -68,4 +68,11 @@ type ChannelOutput struct {
 	IsMuted     bool       `json:"isMuted"`
 	IsMember    bool       `json:"isMember"`
 	ArchivedAt  *time.Time `json:"archivedAt,omitempty"`
+	// ListChannels でだけ設定する
+	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
+}
+
+type BrowsableChannelOutput struct {
+	Channel     ChannelOutput
+	MemberCount int
 }

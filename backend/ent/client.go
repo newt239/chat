@@ -19,6 +19,8 @@ import (
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channelcategory"
+	"github.com/newt239/chat/ent/channelcategoryitem"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelmute"
@@ -63,6 +65,10 @@ type Client struct {
 	AuditLog *AuditLogClient
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
+	// ChannelCategory is the client for interacting with the ChannelCategory builders.
+	ChannelCategory *ChannelCategoryClient
+	// ChannelCategoryItem is the client for interacting with the ChannelCategoryItem builders.
+	ChannelCategoryItem *ChannelCategoryItemClient
 	// ChannelLink is the client for interacting with the ChannelLink builders.
 	ChannelLink *ChannelLinkClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
@@ -135,6 +141,8 @@ func (c *Client) init() {
 	c.Attachment = NewAttachmentClient(c.config)
 	c.AuditLog = NewAuditLogClient(c.config)
 	c.Channel = NewChannelClient(c.config)
+	c.ChannelCategory = NewChannelCategoryClient(c.config)
+	c.ChannelCategoryItem = NewChannelCategoryItemClient(c.config)
 	c.ChannelLink = NewChannelLinkClient(c.config)
 	c.ChannelMember = NewChannelMemberClient(c.config)
 	c.ChannelMute = NewChannelMuteClient(c.config)
@@ -259,6 +267,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Attachment:          NewAttachmentClient(cfg),
 		AuditLog:            NewAuditLogClient(cfg),
 		Channel:             NewChannelClient(cfg),
+		ChannelCategory:     NewChannelCategoryClient(cfg),
+		ChannelCategoryItem: NewChannelCategoryItemClient(cfg),
 		ChannelLink:         NewChannelLinkClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
 		ChannelMute:         NewChannelMuteClient(cfg),
@@ -310,6 +320,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Attachment:          NewAttachmentClient(cfg),
 		AuditLog:            NewAuditLogClient(cfg),
 		Channel:             NewChannelClient(cfg),
+		ChannelCategory:     NewChannelCategoryClient(cfg),
+		ChannelCategoryItem: NewChannelCategoryItemClient(cfg),
 		ChannelLink:         NewChannelLinkClient(cfg),
 		ChannelMember:       NewChannelMemberClient(cfg),
 		ChannelMute:         NewChannelMuteClient(cfg),
@@ -368,13 +380,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft,
-		c.Invitation, c.Message, c.MessageBookmark, c.MessageGroupMention,
-		c.MessageLink, c.MessagePin, c.MessageReaction, c.MessageUserMention,
-		c.PushToken, c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState,
-		c.User, c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow,
-		c.Webhook, c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
+		c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory, c.ChannelCategoryItem,
+		c.ChannelLink, c.ChannelMember, c.ChannelMute, c.ChannelReadState,
+		c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation, c.Message,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.PushToken, c.ScheduledMessage,
+		c.Session, c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup,
+		c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace,
+		c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
 	}
@@ -384,13 +397,14 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Attachment, c.AuditLog, c.Channel, c.ChannelLink, c.ChannelMember,
-		c.ChannelMute, c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft,
-		c.Invitation, c.Message, c.MessageBookmark, c.MessageGroupMention,
-		c.MessageLink, c.MessagePin, c.MessageReaction, c.MessageUserMention,
-		c.PushToken, c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState,
-		c.User, c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow,
-		c.Webhook, c.Workspace, c.WorkspaceMember, c.WorkspacePermission,
+		c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory, c.ChannelCategoryItem,
+		c.ChannelLink, c.ChannelMember, c.ChannelMute, c.ChannelReadState,
+		c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation, c.Message,
+		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
+		c.MessageReaction, c.MessageUserMention, c.PushToken, c.ScheduledMessage,
+		c.Session, c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup,
+		c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace,
+		c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -405,6 +419,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AuditLog.mutate(ctx, m)
 	case *ChannelMutation:
 		return c.Channel.mutate(ctx, m)
+	case *ChannelCategoryMutation:
+		return c.ChannelCategory.mutate(ctx, m)
+	case *ChannelCategoryItemMutation:
+		return c.ChannelCategoryItem.mutate(ctx, m)
 	case *ChannelLinkMutation:
 		return c.ChannelLink.mutate(ctx, m)
 	case *ChannelMemberMutation:
@@ -1040,6 +1058,368 @@ func (c *ChannelClient) mutate(ctx context.Context, m *ChannelMutation) (Value, 
 		return (&ChannelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Channel mutation op: %q", m.Op())
+	}
+}
+
+// ChannelCategoryClient is a client for the ChannelCategory schema.
+type ChannelCategoryClient struct {
+	config
+}
+
+// NewChannelCategoryClient returns a client for the ChannelCategory from the given config.
+func NewChannelCategoryClient(c config) *ChannelCategoryClient {
+	return &ChannelCategoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `channelcategory.Hooks(f(g(h())))`.
+func (c *ChannelCategoryClient) Use(hooks ...Hook) {
+	c.hooks.ChannelCategory = append(c.hooks.ChannelCategory, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `channelcategory.Intercept(f(g(h())))`.
+func (c *ChannelCategoryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChannelCategory = append(c.inters.ChannelCategory, interceptors...)
+}
+
+// Create returns a builder for creating a ChannelCategory entity.
+func (c *ChannelCategoryClient) Create() *ChannelCategoryCreate {
+	mutation := newChannelCategoryMutation(c.config, OpCreate)
+	return &ChannelCategoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChannelCategory entities.
+func (c *ChannelCategoryClient) CreateBulk(builders ...*ChannelCategoryCreate) *ChannelCategoryCreateBulk {
+	return &ChannelCategoryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ChannelCategoryClient) MapCreateBulk(slice any, setFunc func(*ChannelCategoryCreate, int)) *ChannelCategoryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ChannelCategoryCreateBulk{err: fmt.Errorf("calling to ChannelCategoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ChannelCategoryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ChannelCategoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChannelCategory.
+func (c *ChannelCategoryClient) Update() *ChannelCategoryUpdate {
+	mutation := newChannelCategoryMutation(c.config, OpUpdate)
+	return &ChannelCategoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChannelCategoryClient) UpdateOne(_m *ChannelCategory) *ChannelCategoryUpdateOne {
+	mutation := newChannelCategoryMutation(c.config, OpUpdateOne, withChannelCategory(_m))
+	return &ChannelCategoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChannelCategoryClient) UpdateOneID(id uuid.UUID) *ChannelCategoryUpdateOne {
+	mutation := newChannelCategoryMutation(c.config, OpUpdateOne, withChannelCategoryID(id))
+	return &ChannelCategoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChannelCategory.
+func (c *ChannelCategoryClient) Delete() *ChannelCategoryDelete {
+	mutation := newChannelCategoryMutation(c.config, OpDelete)
+	return &ChannelCategoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChannelCategoryClient) DeleteOne(_m *ChannelCategory) *ChannelCategoryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChannelCategoryClient) DeleteOneID(id uuid.UUID) *ChannelCategoryDeleteOne {
+	builder := c.Delete().Where(channelcategory.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChannelCategoryDeleteOne{builder}
+}
+
+// Query returns a query builder for ChannelCategory.
+func (c *ChannelCategoryClient) Query() *ChannelCategoryQuery {
+	return &ChannelCategoryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChannelCategory},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChannelCategory entity by its id.
+func (c *ChannelCategoryClient) Get(ctx context.Context, id uuid.UUID) (*ChannelCategory, error) {
+	return c.Query().Where(channelcategory.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChannelCategoryClient) GetX(ctx context.Context, id uuid.UUID) *ChannelCategory {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a ChannelCategory.
+func (c *ChannelCategoryClient) QueryUser(_m *ChannelCategory) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelcategory.Table, channelcategory.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelcategory.UserTable, channelcategory.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWorkspace queries the workspace edge of a ChannelCategory.
+func (c *ChannelCategoryClient) QueryWorkspace(_m *ChannelCategory) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelcategory.Table, channelcategory.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelcategory.WorkspaceTable, channelcategory.WorkspaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryItems queries the items edge of a ChannelCategory.
+func (c *ChannelCategoryClient) QueryItems(_m *ChannelCategory) *ChannelCategoryItemQuery {
+	query := (&ChannelCategoryItemClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelcategory.Table, channelcategory.FieldID, id),
+			sqlgraph.To(channelcategoryitem.Table, channelcategoryitem.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, channelcategory.ItemsTable, channelcategory.ItemsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ChannelCategoryClient) Hooks() []Hook {
+	return c.hooks.ChannelCategory
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChannelCategoryClient) Interceptors() []Interceptor {
+	return c.inters.ChannelCategory
+}
+
+func (c *ChannelCategoryClient) mutate(ctx context.Context, m *ChannelCategoryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChannelCategoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChannelCategoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChannelCategoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChannelCategoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChannelCategory mutation op: %q", m.Op())
+	}
+}
+
+// ChannelCategoryItemClient is a client for the ChannelCategoryItem schema.
+type ChannelCategoryItemClient struct {
+	config
+}
+
+// NewChannelCategoryItemClient returns a client for the ChannelCategoryItem from the given config.
+func NewChannelCategoryItemClient(c config) *ChannelCategoryItemClient {
+	return &ChannelCategoryItemClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `channelcategoryitem.Hooks(f(g(h())))`.
+func (c *ChannelCategoryItemClient) Use(hooks ...Hook) {
+	c.hooks.ChannelCategoryItem = append(c.hooks.ChannelCategoryItem, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `channelcategoryitem.Intercept(f(g(h())))`.
+func (c *ChannelCategoryItemClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ChannelCategoryItem = append(c.inters.ChannelCategoryItem, interceptors...)
+}
+
+// Create returns a builder for creating a ChannelCategoryItem entity.
+func (c *ChannelCategoryItemClient) Create() *ChannelCategoryItemCreate {
+	mutation := newChannelCategoryItemMutation(c.config, OpCreate)
+	return &ChannelCategoryItemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChannelCategoryItem entities.
+func (c *ChannelCategoryItemClient) CreateBulk(builders ...*ChannelCategoryItemCreate) *ChannelCategoryItemCreateBulk {
+	return &ChannelCategoryItemCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ChannelCategoryItemClient) MapCreateBulk(slice any, setFunc func(*ChannelCategoryItemCreate, int)) *ChannelCategoryItemCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ChannelCategoryItemCreateBulk{err: fmt.Errorf("calling to ChannelCategoryItemClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ChannelCategoryItemCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ChannelCategoryItemCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChannelCategoryItem.
+func (c *ChannelCategoryItemClient) Update() *ChannelCategoryItemUpdate {
+	mutation := newChannelCategoryItemMutation(c.config, OpUpdate)
+	return &ChannelCategoryItemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChannelCategoryItemClient) UpdateOne(_m *ChannelCategoryItem) *ChannelCategoryItemUpdateOne {
+	mutation := newChannelCategoryItemMutation(c.config, OpUpdateOne, withChannelCategoryItem(_m))
+	return &ChannelCategoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChannelCategoryItemClient) UpdateOneID(id uuid.UUID) *ChannelCategoryItemUpdateOne {
+	mutation := newChannelCategoryItemMutation(c.config, OpUpdateOne, withChannelCategoryItemID(id))
+	return &ChannelCategoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChannelCategoryItem.
+func (c *ChannelCategoryItemClient) Delete() *ChannelCategoryItemDelete {
+	mutation := newChannelCategoryItemMutation(c.config, OpDelete)
+	return &ChannelCategoryItemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChannelCategoryItemClient) DeleteOne(_m *ChannelCategoryItem) *ChannelCategoryItemDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ChannelCategoryItemClient) DeleteOneID(id uuid.UUID) *ChannelCategoryItemDeleteOne {
+	builder := c.Delete().Where(channelcategoryitem.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChannelCategoryItemDeleteOne{builder}
+}
+
+// Query returns a query builder for ChannelCategoryItem.
+func (c *ChannelCategoryItemClient) Query() *ChannelCategoryItemQuery {
+	return &ChannelCategoryItemQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeChannelCategoryItem},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ChannelCategoryItem entity by its id.
+func (c *ChannelCategoryItemClient) Get(ctx context.Context, id uuid.UUID) (*ChannelCategoryItem, error) {
+	return c.Query().Where(channelcategoryitem.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChannelCategoryItemClient) GetX(ctx context.Context, id uuid.UUID) *ChannelCategoryItem {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCategory queries the category edge of a ChannelCategoryItem.
+func (c *ChannelCategoryItemClient) QueryCategory(_m *ChannelCategoryItem) *ChannelCategoryQuery {
+	query := (&ChannelCategoryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelcategoryitem.Table, channelcategoryitem.FieldID, id),
+			sqlgraph.To(channelcategory.Table, channelcategory.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, channelcategoryitem.CategoryTable, channelcategoryitem.CategoryColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a ChannelCategoryItem.
+func (c *ChannelCategoryItemClient) QueryUser(_m *ChannelCategoryItem) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelcategoryitem.Table, channelcategoryitem.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelcategoryitem.UserTable, channelcategoryitem.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChannel queries the channel edge of a ChannelCategoryItem.
+func (c *ChannelCategoryItemClient) QueryChannel(_m *ChannelCategoryItem) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(channelcategoryitem.Table, channelcategoryitem.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, channelcategoryitem.ChannelTable, channelcategoryitem.ChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ChannelCategoryItemClient) Hooks() []Hook {
+	return c.hooks.ChannelCategoryItem
+}
+
+// Interceptors returns the client interceptors.
+func (c *ChannelCategoryItemClient) Interceptors() []Interceptor {
+	return c.inters.ChannelCategoryItem
+}
+
+func (c *ChannelCategoryItemClient) mutate(ctx context.Context, m *ChannelCategoryItemMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ChannelCategoryItemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ChannelCategoryItemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ChannelCategoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ChannelCategoryItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ChannelCategoryItem mutation op: %q", m.Op())
 	}
 }
 
@@ -6231,20 +6611,22 @@ func (c *WorkspacePermissionClient) mutate(ctx context.Context, m *WorkspacePerm
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, CustomEmoji, Draft, Invitation, Message,
-		MessageBookmark, MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, PushToken, ScheduledMessage, Session, SystemMessage,
-		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
-		Webhook, Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
+		Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
+		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
+		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
+		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
+		ScheduledMessage, Session, SystemMessage, ThreadReadState, User, UserGroup,
+		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
+		WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
-		Attachment, AuditLog, Channel, ChannelLink, ChannelMember, ChannelMute,
-		ChannelReadState, ChannelStar, CustomEmoji, Draft, Invitation, Message,
-		MessageBookmark, MessageGroupMention, MessageLink, MessagePin, MessageReaction,
-		MessageUserMention, PushToken, ScheduledMessage, Session, SystemMessage,
-		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
-		Webhook, Workspace, WorkspaceMember, WorkspacePermission []ent.Interceptor
+		Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
+		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
+		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
+		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
+		ScheduledMessage, Session, SystemMessage, ThreadReadState, User, UserGroup,
+		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
+		WorkspaceMember, WorkspacePermission []ent.Interceptor
 	}
 )
 

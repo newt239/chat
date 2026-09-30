@@ -167,6 +167,82 @@ var (
 			},
 		},
 	}
+	// ChannelCategoryColumns holds the columns for the "channel_category" table.
+	ChannelCategoryColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "position", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "channel_category_user", Type: field.TypeUUID},
+		{Name: "channel_category_workspace", Type: field.TypeString, Size: 12},
+	}
+	// ChannelCategoryTable holds the schema information for the "channel_category" table.
+	ChannelCategoryTable = &schema.Table{
+		Name:       "channel_category",
+		Columns:    ChannelCategoryColumns,
+		PrimaryKey: []*schema.Column{ChannelCategoryColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "channel_category_users_user",
+				Columns:    []*schema.Column{ChannelCategoryColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "channel_category_workspaces_workspace",
+				Columns:    []*schema.Column{ChannelCategoryColumns[5]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "channelcategory_position_channel_category_user_channel_category_workspace",
+				Unique:  false,
+				Columns: []*schema.Column{ChannelCategoryColumns[2], ChannelCategoryColumns[4], ChannelCategoryColumns[5]},
+			},
+		},
+	}
+	// ChannelCategoryItemColumns holds the columns for the "channel_category_item" table.
+	ChannelCategoryItemColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "channel_category_items", Type: field.TypeUUID},
+		{Name: "channel_category_item_user", Type: field.TypeUUID},
+		{Name: "channel_category_item_channel", Type: field.TypeUUID},
+	}
+	// ChannelCategoryItemTable holds the schema information for the "channel_category_item" table.
+	ChannelCategoryItemTable = &schema.Table{
+		Name:       "channel_category_item",
+		Columns:    ChannelCategoryItemColumns,
+		PrimaryKey: []*schema.Column{ChannelCategoryItemColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "channel_category_item_channel_category_items",
+				Columns:    []*schema.Column{ChannelCategoryItemColumns[1]},
+				RefColumns: []*schema.Column{ChannelCategoryColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "channel_category_item_users_user",
+				Columns:    []*schema.Column{ChannelCategoryItemColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "channel_category_item_channels_channel",
+				Columns:    []*schema.Column{ChannelCategoryItemColumns[3]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "channelcategoryitem_channel_category_item_user_channel_category_item_channel",
+				Unique:  true,
+				Columns: []*schema.Column{ChannelCategoryItemColumns[2], ChannelCategoryItemColumns[3]},
+			},
+		},
+	}
 	// ChannelLinkColumns holds the columns for the "channel_link" table.
 	ChannelLinkColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1029,6 +1105,8 @@ var (
 		{Name: "notification_level", Type: field.TypeEnum, Enums: []string{"all", "mentions", "none"}, Default: "mentions"},
 		{Name: "timezone", Type: field.TypeString, Default: ""},
 		{Name: "timezone_auto_update", Type: field.TypeBool, Default: false},
+		{Name: "channel_sort_order", Type: field.TypeEnum, Enums: []string{"default", "recent_activity"}, Default: "default"},
+		{Name: "hide_join_messages", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -1342,6 +1420,8 @@ var (
 		AttachmentsTable,
 		AuditLogTable,
 		ChannelsTable,
+		ChannelCategoryTable,
+		ChannelCategoryItemTable,
 		ChannelLinkTable,
 		ChannelMembersTable,
 		ChannelMuteTable,
@@ -1384,6 +1464,17 @@ func init() {
 	ChannelsTable.ForeignKeys[0].RefTable = WorkspacesTable
 	ChannelsTable.ForeignKeys[1].RefTable = UsersTable
 	ChannelsTable.ForeignKeys[2].RefTable = ChannelsTable
+	ChannelCategoryTable.ForeignKeys[0].RefTable = UsersTable
+	ChannelCategoryTable.ForeignKeys[1].RefTable = WorkspacesTable
+	ChannelCategoryTable.Annotation = &entsql.Annotation{
+		Table: "channel_category",
+	}
+	ChannelCategoryItemTable.ForeignKeys[0].RefTable = ChannelCategoryTable
+	ChannelCategoryItemTable.ForeignKeys[1].RefTable = UsersTable
+	ChannelCategoryItemTable.ForeignKeys[2].RefTable = ChannelsTable
+	ChannelCategoryItemTable.Annotation = &entsql.Annotation{
+		Table: "channel_category_item",
+	}
 	ChannelLinkTable.ForeignKeys[0].RefTable = ChannelsTable
 	ChannelLinkTable.ForeignKeys[1].RefTable = UsersTable
 	ChannelLinkTable.Annotation = &entsql.Annotation{

@@ -12,6 +12,7 @@ import (
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
+	channelcategoryuc "github.com/newt239/chat/internal/usecase/channelcategory"
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
@@ -42,6 +43,7 @@ var errorCodes = []struct {
 		bookmarkuc.ErrMessageNotFound,
 		entity.ErrUserNotFound,
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
+		channelcategoryuc.ErrCategoryNotFound,
 		channellinkuc.ErrLinkNotFound,
 		channelmemberuc.ErrChannelNotFound, channelmemberuc.ErrUserNotFound,
 		customemojiuc.ErrEmojiNotFound,
@@ -60,10 +62,11 @@ var errorCodes = []struct {
 		domerr.ErrInvalidCredentials, domerr.ErrInvalidToken, domerr.ErrSessionNotFound,
 	}},
 	{connect.CodePermissionDenied, []error{
-		domerr.ErrUnauthorized, domerr.ErrForbidden, domerr.ErrInvitationRequired, domerr.ErrEmailNotVerified,
+		domerr.ErrUnauthorized, domerr.ErrForbidden, domerr.ErrNotChannelMember, domerr.ErrInvitationRequired, domerr.ErrEmailNotVerified,
 		adminuc.ErrOwnerOnlyPermissions,
 		bookmarkuc.ErrUnauthorized,
 		channeluc.ErrUnauthorized,
+		channelcategoryuc.ErrUnauthorized,
 		channellinkuc.ErrUnauthorized,
 		channelmemberuc.ErrUnauthorized, channelmemberuc.ErrChannelNotPublic,
 		customemojiuc.ErrUnauthorized,

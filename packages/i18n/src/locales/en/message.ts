@@ -5,6 +5,7 @@ export const message: Messages["message"] = {
     addReaction: "Add reaction",
     bookmark: "Bookmark",
     copyLink: "Copy link",
+    copyText: "Copy text",
     delete: "Delete message",
     edit: "Edit message",
     more: "More",
@@ -83,6 +84,8 @@ export const message: Messages["message"] = {
   link: {
     copied: "Link copied",
     copyFailed: "Couldn't copy the link",
+    textCopied: "Text copied",
+    textCopyFailed: "Couldn't copy the text",
   },
   panel: {
     empty: "No messages yet",
@@ -96,6 +99,10 @@ export const message: Messages["message"] = {
   sheet: {
     attachmentOnly: "(attachment)",
     title: "Message actions",
+  },
+  suggestion: {
+    groups: "User groups",
+    label: "Suggestions",
   },
   system: {
     descriptionChanged: "The channel description was updated",

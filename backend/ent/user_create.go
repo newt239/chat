@@ -223,6 +223,34 @@ func (_c *UserCreate) SetNillableTimezoneAutoUpdate(v *bool) *UserCreate {
 	return _c
 }
 
+// SetChannelSortOrder sets the "channel_sort_order" field.
+func (_c *UserCreate) SetChannelSortOrder(v user.ChannelSortOrder) *UserCreate {
+	_c.mutation.SetChannelSortOrder(v)
+	return _c
+}
+
+// SetNillableChannelSortOrder sets the "channel_sort_order" field if the given value is not nil.
+func (_c *UserCreate) SetNillableChannelSortOrder(v *user.ChannelSortOrder) *UserCreate {
+	if v != nil {
+		_c.SetChannelSortOrder(*v)
+	}
+	return _c
+}
+
+// SetHideJoinMessages sets the "hide_join_messages" field.
+func (_c *UserCreate) SetHideJoinMessages(v bool) *UserCreate {
+	_c.mutation.SetHideJoinMessages(v)
+	return _c
+}
+
+// SetNillableHideJoinMessages sets the "hide_join_messages" field if the given value is not nil.
+func (_c *UserCreate) SetNillableHideJoinMessages(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetHideJoinMessages(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserCreate) SetCreatedAt(v time.Time) *UserCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -531,6 +559,14 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultTimezoneAutoUpdate
 		_c.mutation.SetTimezoneAutoUpdate(v)
 	}
+	if _, ok := _c.mutation.ChannelSortOrder(); !ok {
+		v := user.DefaultChannelSortOrder
+		_c.mutation.SetChannelSortOrder(v)
+	}
+	if _, ok := _c.mutation.HideJoinMessages(); !ok {
+		v := user.DefaultHideJoinMessages
+		_c.mutation.SetHideJoinMessages(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -612,6 +648,17 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.TimezoneAutoUpdate(); !ok {
 		return &ValidationError{Name: "timezone_auto_update", err: errors.New(`ent: missing required field "User.timezone_auto_update"`)}
+	}
+	if _, ok := _c.mutation.ChannelSortOrder(); !ok {
+		return &ValidationError{Name: "channel_sort_order", err: errors.New(`ent: missing required field "User.channel_sort_order"`)}
+	}
+	if v, ok := _c.mutation.ChannelSortOrder(); ok {
+		if err := user.ChannelSortOrderValidator(v); err != nil {
+			return &ValidationError{Name: "channel_sort_order", err: fmt.Errorf(`ent: validator failed for field "User.channel_sort_order": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.HideJoinMessages(); !ok {
+		return &ValidationError{Name: "hide_join_messages", err: errors.New(`ent: missing required field "User.hide_join_messages"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -714,6 +761,14 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TimezoneAutoUpdate(); ok {
 		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
 		_node.TimezoneAutoUpdate = value
+	}
+	if value, ok := _c.mutation.ChannelSortOrder(); ok {
+		_spec.SetField(user.FieldChannelSortOrder, field.TypeEnum, value)
+		_node.ChannelSortOrder = value
+	}
+	if value, ok := _c.mutation.HideJoinMessages(); ok {
+		_spec.SetField(user.FieldHideJoinMessages, field.TypeBool, value)
+		_node.HideJoinMessages = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -1193,6 +1248,30 @@ func (u *UserUpsert) UpdateTimezoneAutoUpdate() *UserUpsert {
 	return u
 }
 
+// SetChannelSortOrder sets the "channel_sort_order" field.
+func (u *UserUpsert) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpsert {
+	u.Set(user.FieldChannelSortOrder, v)
+	return u
+}
+
+// UpdateChannelSortOrder sets the "channel_sort_order" field to the value that was provided on create.
+func (u *UserUpsert) UpdateChannelSortOrder() *UserUpsert {
+	u.SetExcluded(user.FieldChannelSortOrder)
+	return u
+}
+
+// SetHideJoinMessages sets the "hide_join_messages" field.
+func (u *UserUpsert) SetHideJoinMessages(v bool) *UserUpsert {
+	u.Set(user.FieldHideJoinMessages, v)
+	return u
+}
+
+// UpdateHideJoinMessages sets the "hide_join_messages" field to the value that was provided on create.
+func (u *UserUpsert) UpdateHideJoinMessages() *UserUpsert {
+	u.SetExcluded(user.FieldHideJoinMessages)
+	return u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (u *UserUpsert) SetUpdatedAt(v time.Time) *UserUpsert {
 	u.Set(user.FieldUpdatedAt, v)
@@ -1498,6 +1577,34 @@ func (u *UserUpsertOne) SetTimezoneAutoUpdate(v bool) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateTimezoneAutoUpdate() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTimezoneAutoUpdate()
+	})
+}
+
+// SetChannelSortOrder sets the "channel_sort_order" field.
+func (u *UserUpsertOne) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetChannelSortOrder(v)
+	})
+}
+
+// UpdateChannelSortOrder sets the "channel_sort_order" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateChannelSortOrder() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateChannelSortOrder()
+	})
+}
+
+// SetHideJoinMessages sets the "hide_join_messages" field.
+func (u *UserUpsertOne) SetHideJoinMessages(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetHideJoinMessages(v)
+	})
+}
+
+// UpdateHideJoinMessages sets the "hide_join_messages" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateHideJoinMessages() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateHideJoinMessages()
 	})
 }
 
@@ -1975,6 +2082,34 @@ func (u *UserUpsertBulk) SetTimezoneAutoUpdate(v bool) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateTimezoneAutoUpdate() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateTimezoneAutoUpdate()
+	})
+}
+
+// SetChannelSortOrder sets the "channel_sort_order" field.
+func (u *UserUpsertBulk) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetChannelSortOrder(v)
+	})
+}
+
+// UpdateChannelSortOrder sets the "channel_sort_order" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateChannelSortOrder() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateChannelSortOrder()
+	})
+}
+
+// SetHideJoinMessages sets the "hide_join_messages" field.
+func (u *UserUpsertBulk) SetHideJoinMessages(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetHideJoinMessages(v)
+	})
+}
+
+// UpdateHideJoinMessages sets the "hide_join_messages" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateHideJoinMessages() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateHideJoinMessages()
 	})
 }
 

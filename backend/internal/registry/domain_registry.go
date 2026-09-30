@@ -116,6 +116,10 @@ func (r *DomainRegistry) NewChannelLinkRepository() domainrepository.ChannelLink
 	return repository.NewChannelLinkRepository(r.client)
 }
 
+func (r *DomainRegistry) NewChannelCategoryRepository() domainrepository.ChannelCategoryRepository {
+	return repository.NewChannelCategoryRepository(r.client)
+}
+
 func (r *DomainRegistry) NewUserNoteRepository() domainrepository.UserNoteRepository {
 	return repository.NewUserNoteRepository(r.client)
 }

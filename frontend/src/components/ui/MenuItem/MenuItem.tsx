@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { IconChevronRight } from "@tabler/icons-react";
 import { MenuItem as AriaMenuItem, Keyboard } from "react-aria-components";
 
 import { cn, overlayStyles } from "#/components/ui/styles/styles";
@@ -31,8 +32,13 @@ export const MenuItem = ({
         "text-danger data-focused:bg-danger data-focused:text-danger-fg [&_svg]:text-danger data-focused:[&_svg]:text-danger-fg",
     )}
   >
-    {icon}
-    <span className="flex-1 truncate">{children}</span>
-    {shortcut && <Keyboard className="font-mono text-xs opacity-55">{shortcut}</Keyboard>}
+    {({ hasSubmenu }) => (
+      <>
+        {icon}
+        <span className="flex-1 truncate">{children}</span>
+        {shortcut && <Keyboard className="font-mono text-xs opacity-55">{shortcut}</Keyboard>}
+        {hasSubmenu && <IconChevronRight aria-hidden className="size-3.5" />}
+      </>
+    )}
   </AriaMenuItem>
 );

@@ -15,6 +15,8 @@ import (
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/channelcategory"
+	"github.com/newt239/chat/ent/channelcategoryitem"
 	"github.com/newt239/chat/ent/channellink"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/channelmute"
@@ -59,6 +61,8 @@ const (
 	TypeAttachment          = "Attachment"
 	TypeAuditLog            = "AuditLog"
 	TypeChannel             = "Channel"
+	TypeChannelCategory     = "ChannelCategory"
+	TypeChannelCategoryItem = "ChannelCategoryItem"
 	TypeChannelLink         = "ChannelLink"
 	TypeChannelMember       = "ChannelMember"
 	TypeChannelMute         = "ChannelMute"
@@ -3886,6 +3890,1148 @@ func (m *ChannelMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Channel edge %s", name)
+}
+
+// ChannelCategoryMutation represents an operation that mutates the ChannelCategory nodes in the graph.
+type ChannelCategoryMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	name             *string
+	position         *int
+	addposition      *int
+	created_at       *time.Time
+	clearedFields    map[string]struct{}
+	user             *uuid.UUID
+	cleareduser      bool
+	workspace        *string
+	clearedworkspace bool
+	items            map[uuid.UUID]struct{}
+	removeditems     map[uuid.UUID]struct{}
+	cleareditems     bool
+	done             bool
+	oldValue         func(context.Context) (*ChannelCategory, error)
+	predicates       []predicate.ChannelCategory
+}
+
+var _ ent.Mutation = (*ChannelCategoryMutation)(nil)
+
+// channelcategoryOption allows management of the mutation configuration using functional options.
+type channelcategoryOption func(*ChannelCategoryMutation)
+
+// newChannelCategoryMutation creates new mutation for the ChannelCategory entity.
+func newChannelCategoryMutation(c config, op Op, opts ...channelcategoryOption) *ChannelCategoryMutation {
+	m := &ChannelCategoryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeChannelCategory,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withChannelCategoryID sets the ID field of the mutation.
+func withChannelCategoryID(id uuid.UUID) channelcategoryOption {
+	return func(m *ChannelCategoryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ChannelCategory
+		)
+		m.oldValue = func(ctx context.Context) (*ChannelCategory, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ChannelCategory.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withChannelCategory sets the old ChannelCategory of the mutation.
+func withChannelCategory(node *ChannelCategory) channelcategoryOption {
+	return func(m *ChannelCategoryMutation) {
+		m.oldValue = func(context.Context) (*ChannelCategory, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ChannelCategoryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ChannelCategoryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ChannelCategory entities.
+func (m *ChannelCategoryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ChannelCategoryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ChannelCategoryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ChannelCategory.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *ChannelCategoryMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ChannelCategoryMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the ChannelCategory entity.
+// If the ChannelCategory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ChannelCategoryMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ChannelCategoryMutation) ResetName() {
+	m.name = nil
+}
+
+// SetPosition sets the "position" field.
+func (m *ChannelCategoryMutation) SetPosition(i int) {
+	m.position = &i
+	m.addposition = nil
+}
+
+// Position returns the value of the "position" field in the mutation.
+func (m *ChannelCategoryMutation) Position() (r int, exists bool) {
+	v := m.position
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPosition returns the old "position" field's value of the ChannelCategory entity.
+// If the ChannelCategory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ChannelCategoryMutation) OldPosition(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPosition is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPosition requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPosition: %w", err)
+	}
+	return oldValue.Position, nil
+}
+
+// AddPosition adds i to the "position" field.
+func (m *ChannelCategoryMutation) AddPosition(i int) {
+	if m.addposition != nil {
+		*m.addposition += i
+	} else {
+		m.addposition = &i
+	}
+}
+
+// AddedPosition returns the value that was added to the "position" field in this mutation.
+func (m *ChannelCategoryMutation) AddedPosition() (r int, exists bool) {
+	v := m.addposition
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPosition resets all changes to the "position" field.
+func (m *ChannelCategoryMutation) ResetPosition() {
+	m.position = nil
+	m.addposition = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ChannelCategoryMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ChannelCategoryMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ChannelCategory entity.
+// If the ChannelCategory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ChannelCategoryMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ChannelCategoryMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *ChannelCategoryMutation) SetUserID(id uuid.UUID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *ChannelCategoryMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *ChannelCategoryMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *ChannelCategoryMutation) UserID() (id uuid.UUID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *ChannelCategoryMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *ChannelCategoryMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// SetWorkspaceID sets the "workspace" edge to the Workspace entity by id.
+func (m *ChannelCategoryMutation) SetWorkspaceID(id string) {
+	m.workspace = &id
+}
+
+// ClearWorkspace clears the "workspace" edge to the Workspace entity.
+func (m *ChannelCategoryMutation) ClearWorkspace() {
+	m.clearedworkspace = true
+}
+
+// WorkspaceCleared reports if the "workspace" edge to the Workspace entity was cleared.
+func (m *ChannelCategoryMutation) WorkspaceCleared() bool {
+	return m.clearedworkspace
+}
+
+// WorkspaceID returns the "workspace" edge ID in the mutation.
+func (m *ChannelCategoryMutation) WorkspaceID() (id string, exists bool) {
+	if m.workspace != nil {
+		return *m.workspace, true
+	}
+	return
+}
+
+// WorkspaceIDs returns the "workspace" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// WorkspaceID instead. It exists only for internal usage by the builders.
+func (m *ChannelCategoryMutation) WorkspaceIDs() (ids []string) {
+	if id := m.workspace; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetWorkspace resets all changes to the "workspace" edge.
+func (m *ChannelCategoryMutation) ResetWorkspace() {
+	m.workspace = nil
+	m.clearedworkspace = false
+}
+
+// AddItemIDs adds the "items" edge to the ChannelCategoryItem entity by ids.
+func (m *ChannelCategoryMutation) AddItemIDs(ids ...uuid.UUID) {
+	if m.items == nil {
+		m.items = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.items[ids[i]] = struct{}{}
+	}
+}
+
+// ClearItems clears the "items" edge to the ChannelCategoryItem entity.
+func (m *ChannelCategoryMutation) ClearItems() {
+	m.cleareditems = true
+}
+
+// ItemsCleared reports if the "items" edge to the ChannelCategoryItem entity was cleared.
+func (m *ChannelCategoryMutation) ItemsCleared() bool {
+	return m.cleareditems
+}
+
+// RemoveItemIDs removes the "items" edge to the ChannelCategoryItem entity by IDs.
+func (m *ChannelCategoryMutation) RemoveItemIDs(ids ...uuid.UUID) {
+	if m.removeditems == nil {
+		m.removeditems = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.items, ids[i])
+		m.removeditems[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedItems returns the removed IDs of the "items" edge to the ChannelCategoryItem entity.
+func (m *ChannelCategoryMutation) RemovedItemsIDs() (ids []uuid.UUID) {
+	for id := range m.removeditems {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ItemsIDs returns the "items" edge IDs in the mutation.
+func (m *ChannelCategoryMutation) ItemsIDs() (ids []uuid.UUID) {
+	for id := range m.items {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetItems resets all changes to the "items" edge.
+func (m *ChannelCategoryMutation) ResetItems() {
+	m.items = nil
+	m.cleareditems = false
+	m.removeditems = nil
+}
+
+// Where appends a list predicates to the ChannelCategoryMutation builder.
+func (m *ChannelCategoryMutation) Where(ps ...predicate.ChannelCategory) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ChannelCategoryMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ChannelCategoryMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ChannelCategory, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ChannelCategoryMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ChannelCategoryMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ChannelCategory).
+func (m *ChannelCategoryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ChannelCategoryMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.name != nil {
+		fields = append(fields, channelcategory.FieldName)
+	}
+	if m.position != nil {
+		fields = append(fields, channelcategory.FieldPosition)
+	}
+	if m.created_at != nil {
+		fields = append(fields, channelcategory.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ChannelCategoryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case channelcategory.FieldName:
+		return m.Name()
+	case channelcategory.FieldPosition:
+		return m.Position()
+	case channelcategory.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ChannelCategoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case channelcategory.FieldName:
+		return m.OldName(ctx)
+	case channelcategory.FieldPosition:
+		return m.OldPosition(ctx)
+	case channelcategory.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown ChannelCategory field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ChannelCategoryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case channelcategory.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case channelcategory.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPosition(v)
+		return nil
+	case channelcategory.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ChannelCategory field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ChannelCategoryMutation) AddedFields() []string {
+	var fields []string
+	if m.addposition != nil {
+		fields = append(fields, channelcategory.FieldPosition)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ChannelCategoryMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case channelcategory.FieldPosition:
+		return m.AddedPosition()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ChannelCategoryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case channelcategory.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPosition(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ChannelCategory numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ChannelCategoryMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ChannelCategoryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ChannelCategoryMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ChannelCategory nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ChannelCategoryMutation) ResetField(name string) error {
+	switch name {
+	case channelcategory.FieldName:
+		m.ResetName()
+		return nil
+	case channelcategory.FieldPosition:
+		m.ResetPosition()
+		return nil
+	case channelcategory.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ChannelCategory field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ChannelCategoryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.user != nil {
+		edges = append(edges, channelcategory.EdgeUser)
+	}
+	if m.workspace != nil {
+		edges = append(edges, channelcategory.EdgeWorkspace)
+	}
+	if m.items != nil {
+		edges = append(edges, channelcategory.EdgeItems)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ChannelCategoryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case channelcategory.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case channelcategory.EdgeWorkspace:
+		if id := m.workspace; id != nil {
+			return []ent.Value{*id}
+		}
+	case channelcategory.EdgeItems:
+		ids := make([]ent.Value, 0, len(m.items))
+		for id := range m.items {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ChannelCategoryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removeditems != nil {
+		edges = append(edges, channelcategory.EdgeItems)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ChannelCategoryMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case channelcategory.EdgeItems:
+		ids := make([]ent.Value, 0, len(m.removeditems))
+		for id := range m.removeditems {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ChannelCategoryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.cleareduser {
+		edges = append(edges, channelcategory.EdgeUser)
+	}
+	if m.clearedworkspace {
+		edges = append(edges, channelcategory.EdgeWorkspace)
+	}
+	if m.cleareditems {
+		edges = append(edges, channelcategory.EdgeItems)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ChannelCategoryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case channelcategory.EdgeUser:
+		return m.cleareduser
+	case channelcategory.EdgeWorkspace:
+		return m.clearedworkspace
+	case channelcategory.EdgeItems:
+		return m.cleareditems
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ChannelCategoryMutation) ClearEdge(name string) error {
+	switch name {
+	case channelcategory.EdgeUser:
+		m.ClearUser()
+		return nil
+	case channelcategory.EdgeWorkspace:
+		m.ClearWorkspace()
+		return nil
+	}
+	return fmt.Errorf("unknown ChannelCategory unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ChannelCategoryMutation) ResetEdge(name string) error {
+	switch name {
+	case channelcategory.EdgeUser:
+		m.ResetUser()
+		return nil
+	case channelcategory.EdgeWorkspace:
+		m.ResetWorkspace()
+		return nil
+	case channelcategory.EdgeItems:
+		m.ResetItems()
+		return nil
+	}
+	return fmt.Errorf("unknown ChannelCategory edge %s", name)
+}
+
+// ChannelCategoryItemMutation represents an operation that mutates the ChannelCategoryItem nodes in the graph.
+type ChannelCategoryItemMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	clearedFields   map[string]struct{}
+	category        *uuid.UUID
+	clearedcategory bool
+	user            *uuid.UUID
+	cleareduser     bool
+	channel         *uuid.UUID
+	clearedchannel  bool
+	done            bool
+	oldValue        func(context.Context) (*ChannelCategoryItem, error)
+	predicates      []predicate.ChannelCategoryItem
+}
+
+var _ ent.Mutation = (*ChannelCategoryItemMutation)(nil)
+
+// channelcategoryitemOption allows management of the mutation configuration using functional options.
+type channelcategoryitemOption func(*ChannelCategoryItemMutation)
+
+// newChannelCategoryItemMutation creates new mutation for the ChannelCategoryItem entity.
+func newChannelCategoryItemMutation(c config, op Op, opts ...channelcategoryitemOption) *ChannelCategoryItemMutation {
+	m := &ChannelCategoryItemMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeChannelCategoryItem,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withChannelCategoryItemID sets the ID field of the mutation.
+func withChannelCategoryItemID(id uuid.UUID) channelcategoryitemOption {
+	return func(m *ChannelCategoryItemMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ChannelCategoryItem
+		)
+		m.oldValue = func(ctx context.Context) (*ChannelCategoryItem, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ChannelCategoryItem.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withChannelCategoryItem sets the old ChannelCategoryItem of the mutation.
+func withChannelCategoryItem(node *ChannelCategoryItem) channelcategoryitemOption {
+	return func(m *ChannelCategoryItemMutation) {
+		m.oldValue = func(context.Context) (*ChannelCategoryItem, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ChannelCategoryItemMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ChannelCategoryItemMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ChannelCategoryItem entities.
+func (m *ChannelCategoryItemMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ChannelCategoryItemMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ChannelCategoryItemMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ChannelCategoryItem.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCategoryID sets the "category" edge to the ChannelCategory entity by id.
+func (m *ChannelCategoryItemMutation) SetCategoryID(id uuid.UUID) {
+	m.category = &id
+}
+
+// ClearCategory clears the "category" edge to the ChannelCategory entity.
+func (m *ChannelCategoryItemMutation) ClearCategory() {
+	m.clearedcategory = true
+}
+
+// CategoryCleared reports if the "category" edge to the ChannelCategory entity was cleared.
+func (m *ChannelCategoryItemMutation) CategoryCleared() bool {
+	return m.clearedcategory
+}
+
+// CategoryID returns the "category" edge ID in the mutation.
+func (m *ChannelCategoryItemMutation) CategoryID() (id uuid.UUID, exists bool) {
+	if m.category != nil {
+		return *m.category, true
+	}
+	return
+}
+
+// CategoryIDs returns the "category" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CategoryID instead. It exists only for internal usage by the builders.
+func (m *ChannelCategoryItemMutation) CategoryIDs() (ids []uuid.UUID) {
+	if id := m.category; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCategory resets all changes to the "category" edge.
+func (m *ChannelCategoryItemMutation) ResetCategory() {
+	m.category = nil
+	m.clearedcategory = false
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *ChannelCategoryItemMutation) SetUserID(id uuid.UUID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *ChannelCategoryItemMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *ChannelCategoryItemMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *ChannelCategoryItemMutation) UserID() (id uuid.UUID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *ChannelCategoryItemMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *ChannelCategoryItemMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// SetChannelID sets the "channel" edge to the Channel entity by id.
+func (m *ChannelCategoryItemMutation) SetChannelID(id uuid.UUID) {
+	m.channel = &id
+}
+
+// ClearChannel clears the "channel" edge to the Channel entity.
+func (m *ChannelCategoryItemMutation) ClearChannel() {
+	m.clearedchannel = true
+}
+
+// ChannelCleared reports if the "channel" edge to the Channel entity was cleared.
+func (m *ChannelCategoryItemMutation) ChannelCleared() bool {
+	return m.clearedchannel
+}
+
+// ChannelID returns the "channel" edge ID in the mutation.
+func (m *ChannelCategoryItemMutation) ChannelID() (id uuid.UUID, exists bool) {
+	if m.channel != nil {
+		return *m.channel, true
+	}
+	return
+}
+
+// ChannelIDs returns the "channel" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChannelID instead. It exists only for internal usage by the builders.
+func (m *ChannelCategoryItemMutation) ChannelIDs() (ids []uuid.UUID) {
+	if id := m.channel; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChannel resets all changes to the "channel" edge.
+func (m *ChannelCategoryItemMutation) ResetChannel() {
+	m.channel = nil
+	m.clearedchannel = false
+}
+
+// Where appends a list predicates to the ChannelCategoryItemMutation builder.
+func (m *ChannelCategoryItemMutation) Where(ps ...predicate.ChannelCategoryItem) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ChannelCategoryItemMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ChannelCategoryItemMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ChannelCategoryItem, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ChannelCategoryItemMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ChannelCategoryItemMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ChannelCategoryItem).
+func (m *ChannelCategoryItemMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ChannelCategoryItemMutation) Fields() []string {
+	fields := make([]string, 0, 0)
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ChannelCategoryItemMutation) Field(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ChannelCategoryItemMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	return nil, fmt.Errorf("unknown ChannelCategoryItem field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ChannelCategoryItemMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ChannelCategoryItem field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ChannelCategoryItemMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ChannelCategoryItemMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ChannelCategoryItemMutation) AddField(name string, value ent.Value) error {
+	return fmt.Errorf("unknown ChannelCategoryItem numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ChannelCategoryItemMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ChannelCategoryItemMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ChannelCategoryItemMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ChannelCategoryItem nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ChannelCategoryItemMutation) ResetField(name string) error {
+	return fmt.Errorf("unknown ChannelCategoryItem field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ChannelCategoryItemMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.category != nil {
+		edges = append(edges, channelcategoryitem.EdgeCategory)
+	}
+	if m.user != nil {
+		edges = append(edges, channelcategoryitem.EdgeUser)
+	}
+	if m.channel != nil {
+		edges = append(edges, channelcategoryitem.EdgeChannel)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ChannelCategoryItemMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case channelcategoryitem.EdgeCategory:
+		if id := m.category; id != nil {
+			return []ent.Value{*id}
+		}
+	case channelcategoryitem.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case channelcategoryitem.EdgeChannel:
+		if id := m.channel; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ChannelCategoryItemMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ChannelCategoryItemMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ChannelCategoryItemMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedcategory {
+		edges = append(edges, channelcategoryitem.EdgeCategory)
+	}
+	if m.cleareduser {
+		edges = append(edges, channelcategoryitem.EdgeUser)
+	}
+	if m.clearedchannel {
+		edges = append(edges, channelcategoryitem.EdgeChannel)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ChannelCategoryItemMutation) EdgeCleared(name string) bool {
+	switch name {
+	case channelcategoryitem.EdgeCategory:
+		return m.clearedcategory
+	case channelcategoryitem.EdgeUser:
+		return m.cleareduser
+	case channelcategoryitem.EdgeChannel:
+		return m.clearedchannel
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ChannelCategoryItemMutation) ClearEdge(name string) error {
+	switch name {
+	case channelcategoryitem.EdgeCategory:
+		m.ClearCategory()
+		return nil
+	case channelcategoryitem.EdgeUser:
+		m.ClearUser()
+		return nil
+	case channelcategoryitem.EdgeChannel:
+		m.ClearChannel()
+		return nil
+	}
+	return fmt.Errorf("unknown ChannelCategoryItem unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ChannelCategoryItemMutation) ResetEdge(name string) error {
+	switch name {
+	case channelcategoryitem.EdgeCategory:
+		m.ResetCategory()
+		return nil
+	case channelcategoryitem.EdgeUser:
+		m.ResetUser()
+		return nil
+	case channelcategoryitem.EdgeChannel:
+		m.ResetChannel()
+		return nil
+	}
+	return fmt.Errorf("unknown ChannelCategoryItem edge %s", name)
 }
 
 // ChannelLinkMutation represents an operation that mutates the ChannelLink nodes in the graph.
@@ -18647,6 +19793,8 @@ type UserMutation struct {
 	notification_level         *user.NotificationLevel
 	timezone                   *string
 	timezone_auto_update       *bool
+	channel_sort_order         *user.ChannelSortOrder
+	hide_join_messages         *bool
 	created_at                 *time.Time
 	updated_at                 *time.Time
 	clearedFields              map[string]struct{}
@@ -19415,6 +20563,78 @@ func (m *UserMutation) OldTimezoneAutoUpdate(ctx context.Context) (v bool, err e
 // ResetTimezoneAutoUpdate resets all changes to the "timezone_auto_update" field.
 func (m *UserMutation) ResetTimezoneAutoUpdate() {
 	m.timezone_auto_update = nil
+}
+
+// SetChannelSortOrder sets the "channel_sort_order" field.
+func (m *UserMutation) SetChannelSortOrder(uso user.ChannelSortOrder) {
+	m.channel_sort_order = &uso
+}
+
+// ChannelSortOrder returns the value of the "channel_sort_order" field in the mutation.
+func (m *UserMutation) ChannelSortOrder() (r user.ChannelSortOrder, exists bool) {
+	v := m.channel_sort_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelSortOrder returns the old "channel_sort_order" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldChannelSortOrder(ctx context.Context) (v user.ChannelSortOrder, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelSortOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelSortOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelSortOrder: %w", err)
+	}
+	return oldValue.ChannelSortOrder, nil
+}
+
+// ResetChannelSortOrder resets all changes to the "channel_sort_order" field.
+func (m *UserMutation) ResetChannelSortOrder() {
+	m.channel_sort_order = nil
+}
+
+// SetHideJoinMessages sets the "hide_join_messages" field.
+func (m *UserMutation) SetHideJoinMessages(b bool) {
+	m.hide_join_messages = &b
+}
+
+// HideJoinMessages returns the value of the "hide_join_messages" field in the mutation.
+func (m *UserMutation) HideJoinMessages() (r bool, exists bool) {
+	v := m.hide_join_messages
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHideJoinMessages returns the old "hide_join_messages" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldHideJoinMessages(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHideJoinMessages is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHideJoinMessages requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHideJoinMessages: %w", err)
+	}
+	return oldValue.HideJoinMessages, nil
+}
+
+// ResetHideJoinMessages resets all changes to the "hide_join_messages" field.
+func (m *UserMutation) ResetHideJoinMessages() {
+	m.hide_join_messages = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -20225,7 +21445,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 19)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -20271,6 +21491,12 @@ func (m *UserMutation) Fields() []string {
 	if m.timezone_auto_update != nil {
 		fields = append(fields, user.FieldTimezoneAutoUpdate)
 	}
+	if m.channel_sort_order != nil {
+		fields = append(fields, user.FieldChannelSortOrder)
+	}
+	if m.hide_join_messages != nil {
+		fields = append(fields, user.FieldHideJoinMessages)
+	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -20315,6 +21541,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Timezone()
 	case user.FieldTimezoneAutoUpdate:
 		return m.TimezoneAutoUpdate()
+	case user.FieldChannelSortOrder:
+		return m.ChannelSortOrder()
+	case user.FieldHideJoinMessages:
+		return m.HideJoinMessages()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
@@ -20358,6 +21588,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldTimezone(ctx)
 	case user.FieldTimezoneAutoUpdate:
 		return m.OldTimezoneAutoUpdate(ctx)
+	case user.FieldChannelSortOrder:
+		return m.OldChannelSortOrder(ctx)
+	case user.FieldHideJoinMessages:
+		return m.OldHideJoinMessages(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
@@ -20475,6 +21709,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTimezoneAutoUpdate(v)
+		return nil
+	case user.FieldChannelSortOrder:
+		v, ok := value.(user.ChannelSortOrder)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelSortOrder(v)
+		return nil
+	case user.FieldHideJoinMessages:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHideJoinMessages(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -20631,6 +21879,12 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldTimezoneAutoUpdate:
 		m.ResetTimezoneAutoUpdate()
+		return nil
+	case user.FieldChannelSortOrder:
+		m.ResetChannelSortOrder()
+		return nil
+	case user.FieldHideJoinMessages:
+		m.ResetHideJoinMessages()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

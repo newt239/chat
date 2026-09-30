@@ -574,7 +574,10 @@ func createSeedData(
 		return fmt.Errorf("failed to create bookmark: %w", err)
 	}
 
-	return createDisplaySamples(ctx, client, messageRepo, users, channels, messages, baseTime.Add(time.Duration(len(messages)+len(mentionMessages))*30*time.Minute))
+	if err := createDisplaySamples(ctx, client, messageRepo, users, channels, messages, baseTime.Add(time.Duration(len(messages)+len(mentionMessages))*30*time.Minute)); err != nil {
+		return err
+	}
+	return createRichSamples(ctx, client, passwordService, users, channels, messages)
 }
 
 // createDisplaySamples はメッセージ表示のバリエーション（YouTube・メッセージリンク・ピン・多数のリアクション）を作ります。

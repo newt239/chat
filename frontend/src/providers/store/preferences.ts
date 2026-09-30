@@ -5,8 +5,11 @@ import { atomWithStorage } from "jotai/utils";
 import { z } from "zod";
 
 export const notificationLevels = ["all", "mentions", "none"] as const;
+export const channelSortOrders = ["default", "recentActivity"] as const;
 
 const preferencesSchema = z.object({
+  channelSortOrder: z.enum(channelSortOrders).default("default"),
+  hideJoinMessages: z.boolean().default(false),
   locale: z.enum(locales),
   mode: z.enum(colorModePreferences),
   // 以前は端末ごとに持っていたため、端末の保存値にないことがある
@@ -24,6 +27,8 @@ const preferencesSchema = z.object({
 export type Preferences = z.infer<typeof preferencesSchema>;
 
 export const defaultPreferences: Preferences = {
+  channelSortOrder: "default",
+  hideJoinMessages: false,
   locale: defaultLocale,
   mode: "system",
   notificationLevel: "mentions",

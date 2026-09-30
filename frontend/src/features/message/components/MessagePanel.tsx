@@ -17,6 +17,7 @@ import { startOfDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
+import { preferencesAtom } from "#/providers/store/preferences";
 import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
@@ -86,7 +87,11 @@ export const MessagePanel = () => {
     wsClient: wsClient ?? null,
   });
 
-  const rows = useMemo(() => buildTimelineRows(orderedItems), [orderedItems]);
+  const { hideJoinMessages } = useAtomValue(preferencesAtom);
+  const rows = useMemo(
+    () => buildTimelineRows(orderedItems, hideJoinMessages),
+    [orderedItems, hideJoinMessages],
+  );
   const navigate = useNavigate();
 
   // 最新メッセージのIDを取得（ユーザーメッセージのみ）

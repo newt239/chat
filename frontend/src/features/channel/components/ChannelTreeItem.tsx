@@ -69,7 +69,11 @@ export const ChannelTreeItem = ({ workspaceId, node, depth, isLast }: ChannelTre
           unreadCount={unread.unreadCount}
           showsBadge={unread.hasMention}
         >
-          <ChannelName name={lastSegment(channel.name)} isPrivate={channel.isPrivate} />
+          {/* 親が別のカテゴリにあると最上位に来るため、フルパスで出す */}
+          <ChannelName
+            name={depth === 0 ? channel.name : lastSegment(channel.name)}
+            isPrivate={channel.isPrivate}
+          />
           {isCollapsed && (
             <span
               aria-label={t("channel.tree.childCount", { count: children.length })}

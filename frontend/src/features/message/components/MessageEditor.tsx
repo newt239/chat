@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
+
+import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
+import { SuggestionList } from "./SuggestionList";
 
 type MessageEditorProps = {
   initialBody: string;
@@ -17,6 +20,22 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
   const [draft, setDraft] = useState(initialBody);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cursor, setCursor] = useState(initialBody.length);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const suggestion = useComposerSuggestion({
+    body: draft,
+    cursor,
+    onApply: (next) => {
+      setDraft(next.text);
+      setCursor(next.cursor);
+      requestAnimationFrame(() => {
+        textareaRef.current?.setSelectionRange(next.cursor, next.cursor);
+      });
+    },
+  });
+  const syncCursor = () => {
+    setCursor(textareaRef.current?.selectionStart ?? 0);
+  };
 
   const save = async () => {
     const trimmed = draft.trim();
@@ -38,16 +57,23 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="relative flex flex-col gap-1.5">
+      {suggestion.isOpen && <SuggestionList {...suggestion.listProps} />}
       <TextField
         aria-label={t("message.actions.edit")}
         value={draft}
-        onChange={setDraft}
+        onChange={(next) => {
+          setDraft(next);
+          syncCursor();
+        }}
         isDisabled={isSaving}
         isInvalid={error !== null}
         // oxlint-disable-next-line jsx-a11y/no-autofocus -- 編集を始めた直後に入力できるようにする
         autoFocus
         onKeyDown={(event) => {
+          if (suggestion.handleKeyDown(event)) {
+            return;
+          }
           if (event.key === "Escape") {
             onClose();
           }
@@ -57,7 +83,12 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
           }
         }}
       >
-        <TextArea className="min-h-[60px] w-full resize-y rounded-md border border-accent bg-surface px-2.5 py-1.5 font-sans text-body text-text ring-3 ring-accent-soft outline-none" />
+        <TextArea
+          {...suggestion.inputProps}
+          ref={textareaRef}
+          onSelect={syncCursor}
+          className="min-h-[60px] w-full resize-y rounded-md border border-accent bg-surface px-2.5 py-1.5 font-sans text-body text-text ring-3 ring-accent-soft outline-none"
+        />
       </TextField>
       {error && <p className="m-0 text-caption text-danger">{error}</p>}
       <div className="flex items-center justify-end gap-1.5 text-[11.5px] text-subtle">

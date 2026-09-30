@@ -116,6 +116,11 @@ func TimezoneAutoUpdate(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldTimezoneAutoUpdate, v))
 }
 
+// HideJoinMessages applies equality check predicate on the "hide_join_messages" field. It's identical to HideJoinMessagesEQ.
+func HideJoinMessages(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldHideJoinMessages, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -834,6 +839,36 @@ func TimezoneAutoUpdateEQ(v bool) predicate.User {
 // TimezoneAutoUpdateNEQ applies the NEQ predicate on the "timezone_auto_update" field.
 func TimezoneAutoUpdateNEQ(v bool) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldTimezoneAutoUpdate, v))
+}
+
+// ChannelSortOrderEQ applies the EQ predicate on the "channel_sort_order" field.
+func ChannelSortOrderEQ(v ChannelSortOrder) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldChannelSortOrder, v))
+}
+
+// ChannelSortOrderNEQ applies the NEQ predicate on the "channel_sort_order" field.
+func ChannelSortOrderNEQ(v ChannelSortOrder) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldChannelSortOrder, v))
+}
+
+// ChannelSortOrderIn applies the In predicate on the "channel_sort_order" field.
+func ChannelSortOrderIn(vs ...ChannelSortOrder) predicate.User {
+	return predicate.User(sql.FieldIn(FieldChannelSortOrder, vs...))
+}
+
+// ChannelSortOrderNotIn applies the NotIn predicate on the "channel_sort_order" field.
+func ChannelSortOrderNotIn(vs ...ChannelSortOrder) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldChannelSortOrder, vs...))
+}
+
+// HideJoinMessagesEQ applies the EQ predicate on the "hide_join_messages" field.
+func HideJoinMessagesEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldHideJoinMessages, v))
+}
+
+// HideJoinMessagesNEQ applies the NEQ predicate on the "hide_join_messages" field.
+func HideJoinMessagesNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldHideJoinMessages, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

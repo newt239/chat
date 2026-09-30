@@ -38,6 +38,7 @@ export const shell: Messages["shell"] = {
     activity: "Activity",
     admin: "Admin",
     bookmarks: "Bookmarks",
+    browseChannels: "Browse channels",
     insights: "Insights",
     mentions: "Mentions",
     search: "Search",

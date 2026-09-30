@@ -1,10 +1,8 @@
-import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
 import { Link } from "#/components/ui/Link/Link";
-import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
-import { useChannels } from "../hooks/useChannel";
+import { useChannelById } from "../hooks/useChannelById";
 import { relativePath } from "../utils/channelTree";
 
 type ChannelChipProps = {
@@ -17,15 +15,7 @@ type ChannelChipProps = {
 // 集約表示でメッセージの投稿先を示すチップ。押すとそのチャンネルを開く
 export const ChannelChip = ({ workspaceId, parentName, channelId }: ChannelChipProps) => {
   const { t } = useTranslation();
-  const { data: channels } = useChannels(workspaceId);
-  const listed = channels?.find((channel) => channel.id === channelId);
-  // 未参加の公開チャンネルは一覧にないため個別に取得する
-  const { data: fetched } = useQuery(
-    ChannelService.method.getChannel,
-    channels !== undefined && listed === undefined ? { channelId } : skipToken,
-    { select: (res) => res.channel },
-  );
-  const name = (listed ?? fetched)?.name;
+  const name = useChannelById(workspaceId, channelId)?.name;
   if (name === undefined) {
     return null;
   }

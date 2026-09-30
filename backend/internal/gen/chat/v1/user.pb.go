@@ -123,6 +123,56 @@ func (ColorMode) EnumDescriptor() ([]byte, []int) {
 	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
 }
 
+// サイドバーのチャンネルの並べ方。既定はツリーの名前順、最近は最新メッセージの新しい順でフラットに並べる
+type ChannelSortOrder int32
+
+const (
+	ChannelSortOrder_CHANNEL_SORT_ORDER_UNSPECIFIED     ChannelSortOrder = 0
+	ChannelSortOrder_CHANNEL_SORT_ORDER_DEFAULT         ChannelSortOrder = 1
+	ChannelSortOrder_CHANNEL_SORT_ORDER_RECENT_ACTIVITY ChannelSortOrder = 2
+)
+
+// Enum value maps for ChannelSortOrder.
+var (
+	ChannelSortOrder_name = map[int32]string{
+		0: "CHANNEL_SORT_ORDER_UNSPECIFIED",
+		1: "CHANNEL_SORT_ORDER_DEFAULT",
+		2: "CHANNEL_SORT_ORDER_RECENT_ACTIVITY",
+	}
+	ChannelSortOrder_value = map[string]int32{
+		"CHANNEL_SORT_ORDER_UNSPECIFIED":     0,
+		"CHANNEL_SORT_ORDER_DEFAULT":         1,
+		"CHANNEL_SORT_ORDER_RECENT_ACTIVITY": 2,
+	}
+)
+
+func (x ChannelSortOrder) Enum() *ChannelSortOrder {
+	p := new(ChannelSortOrder)
+	*p = x
+	return p
+}
+
+func (x ChannelSortOrder) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ChannelSortOrder) Descriptor() protoreflect.EnumDescriptor {
+	return file_chat_v1_user_proto_enumTypes[2].Descriptor()
+}
+
+func (ChannelSortOrder) Type() protoreflect.EnumType {
+	return &file_chat_v1_user_proto_enumTypes[2]
+}
+
+func (x ChannelSortOrder) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ChannelSortOrder.Descriptor instead.
+func (ChannelSortOrder) EnumDescriptor() ([]byte, []int) {
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
+}
+
 // 通知を受け取る範囲。すべて / メンションと DM のみ / なし
 type NotificationLevel int32
 
@@ -160,11 +210,11 @@ func (x NotificationLevel) String() string {
 }
 
 func (NotificationLevel) Descriptor() protoreflect.EnumDescriptor {
-	return file_chat_v1_user_proto_enumTypes[2].Descriptor()
+	return file_chat_v1_user_proto_enumTypes[3].Descriptor()
 }
 
 func (NotificationLevel) Type() protoreflect.EnumType {
-	return &file_chat_v1_user_proto_enumTypes[2]
+	return &file_chat_v1_user_proto_enumTypes[3]
 }
 
 func (x NotificationLevel) Number() protoreflect.EnumNumber {
@@ -173,7 +223,7 @@ func (x NotificationLevel) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NotificationLevel.Descriptor instead.
 func (NotificationLevel) EnumDescriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{3}
 }
 
 // ログイン中のユーザー自身の情報
@@ -332,9 +382,12 @@ type UserPreferences struct {
 	// IANA のタイムゾーン名（例: Asia/Tokyo）。空は未設定。名前の正しさはサーバーで確かめる
 	Timezone string `protobuf:"bytes,5,opt,name=timezone,proto3" json:"timezone,omitempty"`
 	// 端末のタイムゾーンが保存値と違うとき、尋ねずに更新する
-	TimezoneAutoUpdate bool `protobuf:"varint,6,opt,name=timezone_auto_update,json=timezoneAutoUpdate,proto3" json:"timezone_auto_update,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	TimezoneAutoUpdate bool             `protobuf:"varint,6,opt,name=timezone_auto_update,json=timezoneAutoUpdate,proto3" json:"timezone_auto_update,omitempty"`
+	ChannelSortOrder   ChannelSortOrder `protobuf:"varint,7,opt,name=channel_sort_order,json=channelSortOrder,proto3,enum=chat.v1.ChannelSortOrder" json:"channel_sort_order,omitempty"`
+	// チャンネルへの参加・追加のシステムメッセージを隠す
+	HideJoinMessages bool `protobuf:"varint,8,opt,name=hide_join_messages,json=hideJoinMessages,proto3" json:"hide_join_messages,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *UserPreferences) Reset() {
@@ -405,6 +458,20 @@ func (x *UserPreferences) GetTimezone() string {
 func (x *UserPreferences) GetTimezoneAutoUpdate() bool {
 	if x != nil {
 		return x.TimezoneAutoUpdate
+	}
+	return false
+}
+
+func (x *UserPreferences) GetChannelSortOrder() ChannelSortOrder {
+	if x != nil {
+		return x.ChannelSortOrder
+	}
+	return ChannelSortOrder_CHANNEL_SORT_ORDER_UNSPECIFIED
+}
+
+func (x *UserPreferences) GetHideJoinMessages() bool {
+	if x != nil {
+		return x.HideJoinMessages
 	}
 	return false
 }
@@ -499,7 +566,7 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\xbaH\a\x1a\x05\x10\xe8\x02(\x00R\x03hue\x12/\n" +
 	"\x06chroma\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\xaeG\xe1z\x14\xae\xd7?)\x00\x00\x00\x00\x00\x00\x00\x00R\x06chroma\x12;\n" +
 	"\asidebar\x18\x03 \x01(\x0e2\x15.chat.v1.SidebarStyleB\n" +
-	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\xdd\x02\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\asidebar\"\xe0\x03\n" +
 	"\x0fUserPreferences\x126\n" +
 	"\x05theme\x18\x01 \x01(\v2\x18.chat.v1.ThemePreferenceB\x06\xbaH\x03\xc8\x01\x01R\x05theme\x12=\n" +
 	"\n" +
@@ -510,7 +577,10 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\x12notification_level\x18\x04 \x01(\x0e2\x1a.chat.v1.NotificationLevelB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x11notificationLevel\x12#\n" +
 	"\btimezone\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x18@R\btimezone\x120\n" +
-	"\x14timezone_auto_update\x18\x06 \x01(\bR\x12timezoneAutoUpdate\"\x8a\x01\n" +
+	"\x14timezone_auto_update\x18\x06 \x01(\bR\x12timezoneAutoUpdate\x12S\n" +
+	"\x12channel_sort_order\x18\a \x01(\x0e2\x19.chat.v1.ChannelSortOrderB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x10channelSortOrder\x12,\n" +
+	"\x12hide_join_messages\x18\b \x01(\bR\x10hideJoinMessages\"\x8a\x01\n" +
 	"\vUserSummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\"\n" +
@@ -526,7 +596,11 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\x16COLOR_MODE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10COLOR_MODE_LIGHT\x10\x01\x12\x13\n" +
 	"\x0fCOLOR_MODE_DARK\x10\x02\x12\x15\n" +
-	"\x11COLOR_MODE_SYSTEM\x10\x03*\x91\x01\n" +
+	"\x11COLOR_MODE_SYSTEM\x10\x03*~\n" +
+	"\x10ChannelSortOrder\x12\"\n" +
+	"\x1eCHANNEL_SORT_ORDER_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aCHANNEL_SORT_ORDER_DEFAULT\x10\x01\x12&\n" +
+	"\"CHANNEL_SORT_ORDER_RECENT_ACTIVITY\x10\x02*\x91\x01\n" +
 	"\x11NotificationLevel\x12\"\n" +
 	"\x1eNOTIFICATION_LEVEL_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16NOTIFICATION_LEVEL_ALL\x10\x01\x12\x1f\n" +
@@ -546,28 +620,30 @@ func file_chat_v1_user_proto_rawDescGZIP() []byte {
 	return file_chat_v1_user_proto_rawDescData
 }
 
-var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_chat_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_chat_v1_user_proto_goTypes = []any{
 	(SidebarStyle)(0),       // 0: chat.v1.SidebarStyle
 	(ColorMode)(0),          // 1: chat.v1.ColorMode
-	(NotificationLevel)(0),  // 2: chat.v1.NotificationLevel
-	(*User)(nil),            // 3: chat.v1.User
-	(*ThemePreference)(nil), // 4: chat.v1.ThemePreference
-	(*UserPreferences)(nil), // 5: chat.v1.UserPreferences
-	(*UserSummary)(nil),     // 6: chat.v1.UserSummary
+	(ChannelSortOrder)(0),   // 2: chat.v1.ChannelSortOrder
+	(NotificationLevel)(0),  // 3: chat.v1.NotificationLevel
+	(*User)(nil),            // 4: chat.v1.User
+	(*ThemePreference)(nil), // 5: chat.v1.ThemePreference
+	(*UserPreferences)(nil), // 6: chat.v1.UserPreferences
+	(*UserSummary)(nil),     // 7: chat.v1.UserSummary
 }
 var file_chat_v1_user_proto_depIdxs = []int32{
-	5, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
+	6, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
 	0, // 1: chat.v1.ThemePreference.sidebar:type_name -> chat.v1.SidebarStyle
-	4, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
+	5, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
 	1, // 3: chat.v1.UserPreferences.color_mode:type_name -> chat.v1.ColorMode
-	2, // 4: chat.v1.UserPreferences.notification_level:type_name -> chat.v1.NotificationLevel
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	3, // 4: chat.v1.UserPreferences.notification_level:type_name -> chat.v1.NotificationLevel
+	2, // 5: chat.v1.UserPreferences.channel_sort_order:type_name -> chat.v1.ChannelSortOrder
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_proto_init() }
@@ -582,7 +658,7 @@ func file_chat_v1_user_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_proto_rawDesc), len(file_chat_v1_user_proto_rawDesc)),
-			NumEnums:      3,
+			NumEnums:      4,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,

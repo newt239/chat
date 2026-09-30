@@ -32,6 +32,8 @@ func UserToEntity(u *ent.User) *entity.User {
 			NotificationLevel:  entity.NotificationLevel(u.NotificationLevel),
 			Timezone:           u.Timezone,
 			TimezoneAutoUpdate: u.TimezoneAutoUpdate,
+			ChannelSortOrder:   entity.ChannelSortOrder(u.ChannelSortOrder),
+			HideJoinMessages:   u.HideJoinMessages,
 		},
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,

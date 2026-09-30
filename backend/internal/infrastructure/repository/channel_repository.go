@@ -3,6 +3,10 @@ package repository
 import (
 	"context"
 	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
@@ -65,31 +69,26 @@ func (r *channelRepository) FindByWorkspaceID(ctx context.Context, workspaceID s
 	return result, nil
 }
 
-func (r *channelRepository) FindByWorkspaceIDAndUserID(ctx context.Context, workspaceID, userID string, includePrivate bool) ([]*entity.Channel, error) {
+func (r *channelRepository) FindBrowsableChannels(ctx context.Context, workspaceID, userID string) ([]*entity.Channel, error) {
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	query := client.Channel.Query().
-		Where(channel.HasWorkspaceWith(workspace.ID(workspaceID)))
-
-	if includePrivate {
-		query = query.Where(
+	channels, err := client.Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+			channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate)),
+			channel.ArchivedAtIsNil(),
 			channel.Or(
 				channel.IsPrivate(false),
 				channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid))),
 			),
-		)
-	} else {
-		query = query.Where(channel.IsPrivate(false))
-	}
-
-	channels, err := query.
+		).
 		WithWorkspace().
 		WithCreatedBy().
-		Order(ent.Asc(channel.FieldCreatedAt)).
+		Order(ent.Asc(channel.FieldName)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -99,8 +98,60 @@ func (r *channelRepository) FindByWorkspaceIDAndUserID(ctx context.Context, work
 	for _, c := range channels {
 		result = append(result, utils.ChannelToEntity(c))
 	}
-
 	return result, nil
+}
+
+// スレッドの返信と削除済みを除いた最後のメッセージの投稿日時
+const lastMessageAtSQL = `
+	SELECT message_channel, MAX(created_at) FROM messages
+	WHERE message_channel = ANY($1::uuid[]) AND message_parent IS NULL AND deleted_at IS NULL
+	GROUP BY message_channel`
+
+func (r *channelRepository) FindLastMessageAtBatch(ctx context.Context, channelIDs []string) (map[string]time.Time, error) {
+	result := make(map[string]time.Time, len(channelIDs))
+	if len(channelIDs) == 0 {
+		return result, nil
+	}
+	rows, err := transaction.ResolveClient(ctx, r.client).QueryContext(ctx, lastMessageAtSQL, pq.Array(channelIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var cid uuid.UUID
+		var at time.Time
+		if err := rows.Scan(&cid, &at); err != nil {
+			return nil, err
+		}
+		result[cid.String()] = at
+	}
+	return result, rows.Err()
+}
+
+const memberCountSQL = `
+	SELECT channel_member_channel, COUNT(*) FROM channel_members
+	WHERE channel_member_channel = ANY($1::uuid[])
+	GROUP BY channel_member_channel`
+
+func (r *channelRepository) CountMembersBatch(ctx context.Context, channelIDs []string) (map[string]int, error) {
+	result := make(map[string]int, len(channelIDs))
+	if len(channelIDs) == 0 {
+		return result, nil
+	}
+	rows, err := transaction.ResolveClient(ctx, r.client).QueryContext(ctx, memberCountSQL, pq.Array(channelIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var cid uuid.UUID
+		var count int
+		if err := rows.Scan(&cid, &count); err != nil {
+			return nil, err
+		}
+		result[cid.String()] = count
+	}
+	return result, rows.Err()
 }
 
 func (r *channelRepository) Create(ctx context.Context, ch *entity.Channel) error {

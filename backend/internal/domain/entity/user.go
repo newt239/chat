@@ -50,6 +50,13 @@ const (
 	NotificationLevelNone     NotificationLevel = "none"
 )
 
+type ChannelSortOrder string
+
+const (
+	ChannelSortOrderDefault        ChannelSortOrder = "default"
+	ChannelSortOrderRecentActivity ChannelSortOrder = "recent_activity"
+)
+
 // UserPreferences は端末をまたいで共有する表示・通知の設定です
 type UserPreferences struct {
 	ThemeHue          int
@@ -61,4 +68,6 @@ type UserPreferences struct {
 	// IANA のタイムゾーン名。空は未設定
 	Timezone           string
 	TimezoneAutoUpdate bool
+	ChannelSortOrder   ChannelSortOrder
+	HideJoinMessages   bool
 }

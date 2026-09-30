@@ -38,6 +38,7 @@ type ChannelUseCase interface {
 	SetArchived(ctx context.Context, input SetArchivedInput) (*ChannelOutput, error)
 	SetChannelStarred(ctx context.Context, input SetChannelStarredInput) error
 	SetChannelMuted(ctx context.Context, input SetChannelMutedInput) error
+	ListBrowsableChannels(ctx context.Context, input ListChannelsInput) ([]BrowsableChannelOutput, error)
 }
 
 type channelInteractor struct {
@@ -146,23 +147,69 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch muted channels: %w", err)
 	}
+	lastMessageAt, err := i.channelRepo.FindLastMessageAtBatch(ctx, allIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch last message times: %w", err)
+	}
 
 	output := make([]ChannelOutput, 0, len(all))
 	for _, ch := range joined {
 		out := toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID] > 0)
 		out.IsMember = true
-		out.IsStarred = starred[ch.ID]
-		out.IsMuted = muted[ch.ID]
 		output = append(output, out)
 	}
 	for _, ch := range ancestors {
-		out := toChannelOutput(ch)
-		out.IsStarred = starred[ch.ID]
-		out.IsMuted = muted[ch.ID]
-		output = append(output, out)
+		output = append(output, toChannelOutput(ch))
+	}
+	for idx := range output {
+		out := &output[idx]
+		out.IsStarred = starred[out.ID]
+		out.IsMuted = muted[out.ID]
+		if at, ok := lastMessageAt[out.ID]; ok {
+			out.LastMessageAt = &at
+		}
 	}
 	slices.SortFunc(output, func(a, b ChannelOutput) int { return strings.Compare(a.Name, b.Name) })
 
+	return output, nil
+}
+
+func (i *channelInteractor) ListBrowsableChannels(ctx context.Context, input ListChannelsInput) ([]BrowsableChannelOutput, error) {
+	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify membership: %w", err)
+	}
+	if member == nil {
+		return nil, ErrUnauthorized
+	}
+
+	channels, err := i.channelRepo.FindBrowsableChannels(ctx, input.WorkspaceID, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch channels: %w", err)
+	}
+	ids := make([]string, len(channels))
+	for idx, ch := range channels {
+		ids[idx] = ch.ID
+	}
+	memberCounts, err := i.channelRepo.CountMembersBatch(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count members: %w", err)
+	}
+	joined, err := i.channelRepo.FindAccessibleChannels(ctx, input.WorkspaceID, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch joined channels: %w", err)
+	}
+	joinedIDs := make(map[string]bool, len(joined))
+	for _, ch := range joined {
+		joinedIDs[ch.ID] = true
+	}
+
+	output := make([]BrowsableChannelOutput, 0, len(channels))
+	for _, ch := range channels {
+		out := toChannelOutput(ch)
+		out.IsMember = joinedIDs[ch.ID]
+		output = append(output, BrowsableChannelOutput{Channel: out, MemberCount: memberCounts[ch.ID]})
+	}
 	return output, nil
 }
 

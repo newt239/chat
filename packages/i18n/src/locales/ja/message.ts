@@ -3,6 +3,7 @@ export const message = {
     addReaction: "リアクションを追加",
     bookmark: "ブックマーク",
     copyLink: "リンクをコピー",
+    copyText: "テキストをコピー",
     delete: "メッセージを削除",
     edit: "メッセージを編集",
     more: "その他",
@@ -81,6 +82,8 @@ export const message = {
   link: {
     copied: "リンクをコピーしました",
     copyFailed: "リンクをコピーできませんでした",
+    textCopied: "テキストをコピーしました",
+    textCopyFailed: "テキストをコピーできませんでした",
   },
   panel: {
     empty: "まだメッセージがありません",
@@ -94,6 +97,10 @@ export const message = {
   sheet: {
     attachmentOnly: "（添付ファイル）",
     title: "メッセージの操作",
+  },
+  suggestion: {
+    groups: "ユーザーグループ",
+    label: "候補",
   },
   system: {
     descriptionChanged: "チャンネルの説明が更新されました",

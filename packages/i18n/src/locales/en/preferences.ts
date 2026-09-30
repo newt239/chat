@@ -1,6 +1,15 @@
 import type { Messages } from "../../messages";
 
 export const preferences: Messages["preferences"] = {
+  channelSort: {
+    description:
+      "How channels are ordered in the sidebar. Recent activity lists nested channels separately",
+    title: "Channel order",
+  },
+  joinMessages: {
+    description: "Show a notice in the timeline when someone joins a channel",
+    title: "Show join messages",
+  },
   locale: {
     en: "English",
     ja: "日本語",

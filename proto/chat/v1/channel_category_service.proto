@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+
+// サイドバーで自分だけに見えるチャンネルのカテゴリ
+service ChannelCategoryService {
+  rpc ListChannelCategories(ListChannelCategoriesRequest) returns (ListChannelCategoriesResponse);
+  rpc CreateChannelCategory(CreateChannelCategoryRequest) returns (CreateChannelCategoryResponse);
+  rpc UpdateChannelCategory(UpdateChannelCategoryRequest) returns (UpdateChannelCategoryResponse);
+  rpc DeleteChannelCategory(DeleteChannelCategoryRequest) returns (DeleteChannelCategoryResponse);
+  rpc ReorderChannelCategories(ReorderChannelCategoriesRequest) returns (ReorderChannelCategoriesResponse);
+  // category_id を省略すると既定のカテゴリに戻す
+  rpc SetChannelCategory(SetChannelCategoryRequest) returns (SetChannelCategoryResponse);
+}
+
+message ChannelCategory {
+  string id = 1;
+  string name = 2;
+  int32 position = 3;
+  repeated string channel_ids = 4;
+}
+
+message ListChannelCategoriesRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListChannelCategoriesResponse {
+  // position の昇順
+  repeated ChannelCategory categories = 1;
+}
+
+message CreateChannelCategoryRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
+}
+
+message CreateChannelCategoryResponse {
+  ChannelCategory category = 1;
+}
+
+message UpdateChannelCategoryRequest {
+  string category_id = 1 [(buf.validate.field).string.uuid = true];
+  string name = 2 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 50
+  }];
+}
+
+message UpdateChannelCategoryResponse {
+  ChannelCategory category = 1;
+}
+
+message DeleteChannelCategoryRequest {
+  string category_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteChannelCategoryResponse {}
+
+message ReorderChannelCategoriesRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  // ワークスペースの全カテゴリの ID を新しい並び順で指定する
+  repeated string category_ids = 2 [(buf.validate.field).repeated = {
+    unique: true
+    items: {
+      string: {uuid: true}
+    }
+  }];
+}
+
+message ReorderChannelCategoriesResponse {
+  repeated ChannelCategory categories = 1;
+}
+
+message SetChannelCategoryRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  optional string category_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message SetChannelCategoryResponse {}

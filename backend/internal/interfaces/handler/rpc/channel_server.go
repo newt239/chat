@@ -20,6 +20,14 @@ func (s *ChannelServer) ListChannels(ctx context.Context, req *chatv1.ListChanne
 	return &chatv1.ListChannelsResponse{Channels: presenter.ConvertAll(out, presenter.Channel)}, nil
 }
 
+func (s *ChannelServer) ListBrowsableChannels(ctx context.Context, req *chatv1.ListBrowsableChannelsRequest) (*chatv1.ListBrowsableChannelsResponse, error) {
+	out, err := s.UC.ListBrowsableChannels(ctx, channeluc.ListChannelsInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx)})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.ListBrowsableChannelsResponse{Channels: presenter.ConvertAll(out, presenter.BrowsableChannel)}, nil
+}
+
 func (s *ChannelServer) CreateChannel(ctx context.Context, req *chatv1.CreateChannelRequest) (*chatv1.CreateChannelResponse, error) {
 	out, err := s.UC.CreateChannel(ctx, channeluc.CreateChannelInput{
 		WorkspaceID: req.WorkspaceId,

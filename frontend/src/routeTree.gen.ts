@@ -22,6 +22,7 @@ import { Route as AppWorkspaceIdChannelIdRouteImport } from "./routes/app/$works
 import { Route as AppWorkspaceIdActivityRouteImport } from "./routes/app/$workspaceId/activity";
 import { Route as AppWorkspaceIdAdminRouteImport } from "./routes/app/$workspaceId/admin";
 import { Route as AppWorkspaceIdBookmarksRouteImport } from "./routes/app/$workspaceId/bookmarks";
+import { Route as AppWorkspaceIdBrowseChannelsRouteImport } from "./routes/app/$workspaceId/browse-channels";
 import { Route as AppWorkspaceIdDmsRouteImport } from "./routes/app/$workspaceId/dms";
 import { Route as AppWorkspaceIdDraftsRouteImport } from "./routes/app/$workspaceId/drafts";
 import { Route as AppWorkspaceIdGroupsRouteImport } from "./routes/app/$workspaceId/groups";
@@ -101,6 +102,12 @@ const AppWorkspaceIdBookmarksRoute = AppWorkspaceIdBookmarksRouteImport.update({
   path: "/bookmarks",
   getParentRoute: () => AppWorkspaceIdRouteRoute,
 } as any);
+const AppWorkspaceIdBrowseChannelsRoute =
+  AppWorkspaceIdBrowseChannelsRouteImport.update({
+    id: "/browse-channels",
+    path: "/browse-channels",
+    getParentRoute: () => AppWorkspaceIdRouteRoute,
+  } as any);
 const AppWorkspaceIdDmsRoute = AppWorkspaceIdDmsRouteImport.update({
   id: "/dms",
   path: "/dms",
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
+  "/app/$workspaceId/browse-channels": typeof AppWorkspaceIdBrowseChannelsRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/drafts": typeof AppWorkspaceIdDraftsRoute;
   "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
@@ -211,6 +219,7 @@ export interface FileRoutesByTo {
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
+  "/app/$workspaceId/browse-channels": typeof AppWorkspaceIdBrowseChannelsRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/drafts": typeof AppWorkspaceIdDraftsRoute;
   "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
@@ -240,6 +249,7 @@ export interface FileRoutesById {
   "/app/$workspaceId/activity": typeof AppWorkspaceIdActivityRoute;
   "/app/$workspaceId/admin": typeof AppWorkspaceIdAdminRoute;
   "/app/$workspaceId/bookmarks": typeof AppWorkspaceIdBookmarksRoute;
+  "/app/$workspaceId/browse-channels": typeof AppWorkspaceIdBrowseChannelsRoute;
   "/app/$workspaceId/dms": typeof AppWorkspaceIdDmsRoute;
   "/app/$workspaceId/drafts": typeof AppWorkspaceIdDraftsRoute;
   "/app/$workspaceId/groups": typeof AppWorkspaceIdGroupsRoute;
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
+    | "/app/$workspaceId/browse-channels"
     | "/app/$workspaceId/dms"
     | "/app/$workspaceId/drafts"
     | "/app/$workspaceId/groups"
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
+    | "/app/$workspaceId/browse-channels"
     | "/app/$workspaceId/dms"
     | "/app/$workspaceId/drafts"
     | "/app/$workspaceId/groups"
@@ -324,6 +336,7 @@ export interface FileRouteTypes {
     | "/app/$workspaceId/activity"
     | "/app/$workspaceId/admin"
     | "/app/$workspaceId/bookmarks"
+    | "/app/$workspaceId/browse-channels"
     | "/app/$workspaceId/dms"
     | "/app/$workspaceId/drafts"
     | "/app/$workspaceId/groups"
@@ -442,6 +455,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AppWorkspaceIdBookmarksRouteImport;
       parentRoute: typeof AppWorkspaceIdRouteRoute;
     };
+    "/app/$workspaceId/browse-channels": {
+      id: "/app/$workspaceId/browse-channels";
+      path: "/browse-channels";
+      fullPath: "/app/$workspaceId/browse-channels";
+      preLoaderRoute: typeof AppWorkspaceIdBrowseChannelsRouteImport;
+      parentRoute: typeof AppWorkspaceIdRouteRoute;
+    };
     "/app/$workspaceId/dms": {
       id: "/app/$workspaceId/dms";
       path: "/dms";
@@ -556,6 +576,7 @@ interface AppWorkspaceIdRouteRouteChildren {
   AppWorkspaceIdActivityRoute: typeof AppWorkspaceIdActivityRoute;
   AppWorkspaceIdAdminRoute: typeof AppWorkspaceIdAdminRoute;
   AppWorkspaceIdBookmarksRoute: typeof AppWorkspaceIdBookmarksRoute;
+  AppWorkspaceIdBrowseChannelsRoute: typeof AppWorkspaceIdBrowseChannelsRoute;
   AppWorkspaceIdDmsRoute: typeof AppWorkspaceIdDmsRoute;
   AppWorkspaceIdDraftsRoute: typeof AppWorkspaceIdDraftsRoute;
   AppWorkspaceIdGroupsRoute: typeof AppWorkspaceIdGroupsRoute;
@@ -576,6 +597,7 @@ const AppWorkspaceIdRouteRouteChildren: AppWorkspaceIdRouteRouteChildren = {
   AppWorkspaceIdActivityRoute: AppWorkspaceIdActivityRoute,
   AppWorkspaceIdAdminRoute: AppWorkspaceIdAdminRoute,
   AppWorkspaceIdBookmarksRoute: AppWorkspaceIdBookmarksRoute,
+  AppWorkspaceIdBrowseChannelsRoute: AppWorkspaceIdBrowseChannelsRoute,
   AppWorkspaceIdDmsRoute: AppWorkspaceIdDmsRoute,
   AppWorkspaceIdDraftsRoute: AppWorkspaceIdDraftsRoute,
   AppWorkspaceIdGroupsRoute: AppWorkspaceIdGroupsRoute,

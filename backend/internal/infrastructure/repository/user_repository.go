@@ -147,7 +147,9 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 		SetLocale(usr.Preferences.Locale).
 		SetNotificationLevel(user.NotificationLevel(usr.Preferences.NotificationLevel)).
 		SetTimezone(usr.Preferences.Timezone).
-		SetTimezoneAutoUpdate(usr.Preferences.TimezoneAutoUpdate)
+		SetTimezoneAutoUpdate(usr.Preferences.TimezoneAutoUpdate).
+		SetChannelSortOrder(user.ChannelSortOrder(usr.Preferences.ChannelSortOrder)).
+		SetHideJoinMessages(usr.Preferences.HideJoinMessages)
 
 	if usr.AvatarURL != nil {
 		builder = builder.SetAvatarURL(*usr.AvatarURL)

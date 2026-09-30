@@ -48,6 +48,10 @@ type User struct {
 	Timezone string `json:"timezone,omitempty"`
 	// TimezoneAutoUpdate holds the value of the "timezone_auto_update" field.
 	TimezoneAutoUpdate bool `json:"timezone_auto_update,omitempty"`
+	// ChannelSortOrder holds the value of the "channel_sort_order" field.
+	ChannelSortOrder user.ChannelSortOrder `json:"channel_sort_order,omitempty"`
+	// HideJoinMessages holds the value of the "hide_join_messages" field.
+	HideJoinMessages bool `json:"hide_join_messages,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -213,13 +217,13 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsBot, user.FieldTimezoneAutoUpdate:
+		case user.FieldIsBot, user.FieldTimezoneAutoUpdate, user.FieldHideJoinMessages:
 			values[i] = new(sql.NullBool)
 		case user.FieldThemeChroma:
 			values[i] = new(sql.NullFloat64)
 		case user.FieldThemeHue:
 			values[i] = new(sql.NullInt64)
-		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale, user.FieldNotificationLevel, user.FieldTimezone:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldGoogleSub, user.FieldDisplayName, user.FieldBio, user.FieldAvatarURL, user.FieldThemeSidebar, user.FieldColorMode, user.FieldLocale, user.FieldNotificationLevel, user.FieldTimezone, user.FieldChannelSortOrder:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -336,6 +340,18 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field timezone_auto_update", values[i])
 			} else if value.Valid {
 				_m.TimezoneAutoUpdate = value.Bool
+			}
+		case user.FieldChannelSortOrder:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_sort_order", values[i])
+			} else if value.Valid {
+				_m.ChannelSortOrder = user.ChannelSortOrder(value.String)
+			}
+		case user.FieldHideJoinMessages:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field hide_join_messages", values[i])
+			} else if value.Valid {
+				_m.HideJoinMessages = value.Bool
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -496,6 +512,12 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("timezone_auto_update=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TimezoneAutoUpdate))
+	builder.WriteString(", ")
+	builder.WriteString("channel_sort_order=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelSortOrder))
+	builder.WriteString(", ")
+	builder.WriteString("hide_join_messages=")
+	builder.WriteString(fmt.Sprintf("%v", _m.HideJoinMessages))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

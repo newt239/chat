@@ -4,9 +4,15 @@ const optionalId = z.string().min(1).optional().catch(undefined);
 
 // ワークスペース内のどの画面にも重ねられる右パネルとダイアログ。子のルートはこれを継承する
 export const workspaceSearchSchema = z.object({
+  // create-category で作成後にそのカテゴリへ移すチャンネル
+  assign: optionalId,
+  // edit-category で名前を変えるカテゴリ
+  category: optionalId,
   dialog: z
     .enum([
       "create-channel",
+      "create-category",
+      "edit-category",
       "create-dm",
       "create-group",
       "edit-group",

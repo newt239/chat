@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { channelListKey } from "#/features/channel/hooks/useChannel";
 import { ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
+import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
 /** チャンネルメンバーの招待・追放・退出・ロール変更をまとめて提供する */
 export const useChannelMemberActions = (workspaceId: string) => {
@@ -18,6 +19,20 @@ export const useChannelMemberActions = (workspaceId: string) => {
         }),
       }),
       queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) }),
+      // 参加状態はブラウズ一覧とプレビュー中のチャンネルにも出ている
+      queryClient.invalidateQueries({
+        queryKey: createConnectQueryKey({
+          cardinality: "finite",
+          schema: ChannelService.method.listBrowsableChannels,
+        }),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: createConnectQueryKey({
+          cardinality: "finite",
+          input: { channelId },
+          schema: ChannelService.method.getChannel,
+        }),
+      }),
     ]);
   };
 

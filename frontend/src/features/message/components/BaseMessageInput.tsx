@@ -16,10 +16,12 @@ import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
 import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
+import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { applyFormat, detectActiveFormats, insertEmoji } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
+import { SuggestionList } from "./SuggestionList";
 
 import type { ComposerContent } from "../utils/composerContent";
 import type { FormatKey } from "../utils/format";
@@ -114,6 +116,12 @@ export const BaseMessageInput = ({
     });
   };
 
+  const suggestion = useComposerSuggestion({
+    body,
+    cursor: selection.start,
+    onApply: replaceSelection,
+  });
+
   const handleFormat = (key: FormatKey) => {
     replaceSelection(applyFormat(body, selection, key));
   };
@@ -194,7 +202,7 @@ export const BaseMessageInput = ({
       className="shrink-0 px-[18px] pb-3 font-sans max-md:px-2.5 max-md:pb-2"
     >
       {targetPicker}
-      <div className="rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
+      <div className="relative rounded-lg border border-border-strong bg-surface focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
         {pendingAttachments.length > 0 && (
           <AttachmentList attachments={pendingAttachments} onRemove={removeAttachment} />
         )}
@@ -217,15 +225,26 @@ export const BaseMessageInput = ({
             }}
           />
         )}
+        {!isPreview && suggestion.isOpen && <SuggestionList {...suggestion.listProps} />}
         {isPreview ? (
           <MessagePreview content={body} />
         ) : (
           <TextField
             aria-label={placeholder}
             value={body}
-            onChange={handleBodyChange}
+            onChange={(next) => {
+              handleBodyChange(next);
+              // 候補の検索語はカーソルの位置で決まるため、入力のたびに読み直す
+              const textarea = textareaRef.current;
+              if (textarea !== null) {
+                setSelection({ end: textarea.selectionEnd, start: textarea.selectionStart });
+              }
+            }}
             isDisabled={isPending}
             onKeyDown={(event) => {
+              if (suggestion.handleKeyDown(event)) {
+                return;
+              }
               // モバイルの Enter は改行にする
               if (
                 event.key === "Enter" &&
@@ -239,6 +258,7 @@ export const BaseMessageInput = ({
             }}
           >
             <TextArea
+              {...suggestion.inputProps}
               ref={textareaRef}
               rows={1}
               placeholder={placeholder}

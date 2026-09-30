@@ -24,7 +24,7 @@ export const StarredSection = ({ workspaceId }: StarredSectionProps) => {
   }
 
   return (
-    <SidebarSection id="starred" title={t("shell.sidebar.starred")} onAdd={null}>
+    <SidebarSection id="starred" title={t("shell.sidebar.starred")} onAdd={null} menu={null}>
       {starredChannels.map((channel) => (
         <ChannelRow key={channel.id} workspaceId={workspaceId} channel={channel} />
       ))}

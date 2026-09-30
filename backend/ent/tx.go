@@ -20,6 +20,10 @@ type Tx struct {
 	AuditLog *AuditLogClient
 	// Channel is the client for interacting with the Channel builders.
 	Channel *ChannelClient
+	// ChannelCategory is the client for interacting with the ChannelCategory builders.
+	ChannelCategory *ChannelCategoryClient
+	// ChannelCategoryItem is the client for interacting with the ChannelCategoryItem builders.
+	ChannelCategoryItem *ChannelCategoryItemClient
 	// ChannelLink is the client for interacting with the ChannelLink builders.
 	ChannelLink *ChannelLinkClient
 	// ChannelMember is the client for interacting with the ChannelMember builders.
@@ -212,6 +216,8 @@ func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.AuditLog = NewAuditLogClient(tx.config)
 	tx.Channel = NewChannelClient(tx.config)
+	tx.ChannelCategory = NewChannelCategoryClient(tx.config)
+	tx.ChannelCategoryItem = NewChannelCategoryItemClient(tx.config)
 	tx.ChannelLink = NewChannelLinkClient(tx.config)
 	tx.ChannelMember = NewChannelMemberClient(tx.config)
 	tx.ChannelMute = NewChannelMuteClient(tx.config)

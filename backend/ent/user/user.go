@@ -46,6 +46,10 @@ const (
 	FieldTimezone = "timezone"
 	// FieldTimezoneAutoUpdate holds the string denoting the timezone_auto_update field in the database.
 	FieldTimezoneAutoUpdate = "timezone_auto_update"
+	// FieldChannelSortOrder holds the string denoting the channel_sort_order field in the database.
+	FieldChannelSortOrder = "channel_sort_order"
+	// FieldHideJoinMessages holds the string denoting the hide_join_messages field in the database.
+	FieldHideJoinMessages = "hide_join_messages"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -189,6 +193,8 @@ var Columns = []string{
 	FieldNotificationLevel,
 	FieldTimezone,
 	FieldTimezoneAutoUpdate,
+	FieldChannelSortOrder,
+	FieldHideJoinMessages,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -222,6 +228,8 @@ var (
 	DefaultTimezone string
 	// DefaultTimezoneAutoUpdate holds the default value on creation for the "timezone_auto_update" field.
 	DefaultTimezoneAutoUpdate bool
+	// DefaultHideJoinMessages holds the default value on creation for the "hide_join_messages" field.
+	DefaultHideJoinMessages bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -312,6 +320,32 @@ func NotificationLevelValidator(nl NotificationLevel) error {
 	}
 }
 
+// ChannelSortOrder defines the type for the "channel_sort_order" enum field.
+type ChannelSortOrder string
+
+// ChannelSortOrderDefault is the default value of the ChannelSortOrder enum.
+const DefaultChannelSortOrder = ChannelSortOrderDefault
+
+// ChannelSortOrder values.
+const (
+	ChannelSortOrderDefault        ChannelSortOrder = "default"
+	ChannelSortOrderRecentActivity ChannelSortOrder = "recent_activity"
+)
+
+func (cso ChannelSortOrder) String() string {
+	return string(cso)
+}
+
+// ChannelSortOrderValidator is a validator for the "channel_sort_order" field enum values. It is called by the builders before save.
+func ChannelSortOrderValidator(cso ChannelSortOrder) error {
+	switch cso {
+	case ChannelSortOrderDefault, ChannelSortOrderRecentActivity:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for channel_sort_order field: %q", cso)
+	}
+}
+
 // OrderOption defines the ordering options for the User queries.
 type OrderOption func(*sql.Selector)
 
@@ -393,6 +427,16 @@ func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
 // ByTimezoneAutoUpdate orders the results by the timezone_auto_update field.
 func ByTimezoneAutoUpdate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimezoneAutoUpdate, opts...).ToFunc()
+}
+
+// ByChannelSortOrder orders the results by the channel_sort_order field.
+func ByChannelSortOrder(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelSortOrder, opts...).ToFunc()
+}
+
+// ByHideJoinMessages orders the results by the hide_join_messages field.
+func ByHideJoinMessages(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHideJoinMessages, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

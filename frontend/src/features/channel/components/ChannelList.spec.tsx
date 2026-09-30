@@ -1,9 +1,15 @@
 import { create } from "@bufbuild/protobuf";
+import { timestampFromMs } from "@bufbuild/protobuf/wkt";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
 
+import {
+  ChannelCategorySchema,
+  ChannelCategoryService,
+} from "#/gen/chat/v1/channel_category_service_pb";
 import { ChannelSchema, ChannelService } from "#/gen/chat/v1/channel_service_pb";
+import { preferencesAtom, defaultPreferences } from "#/providers/store/preferences";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { ChannelList } from "./ChannelList";
@@ -25,13 +31,31 @@ const channels = [
     parentId: "fe",
     unreadCount: 3,
   }),
-  create(ChannelSchema, { id: "g", isMember: true, name: "general" }),
+  create(ChannelSchema, {
+    id: "g",
+    isMember: true,
+    lastMessageAt: timestampFromMs(1000),
+    name: "general",
+  }),
 ];
 
-const render = () =>
-  renderWithProviders(<ChannelList workspaceId="ws1" />, "/app/ws1", (routes) => {
-    routes.rpc(ChannelService.method.listChannels, () => ({ channels }));
-  });
+const workCategory = create(ChannelCategorySchema, {
+  channelIds: ["fe"],
+  id: "work",
+  name: "仕事",
+});
+
+const render = (categoryId: string | null = null) =>
+  renderWithProviders(
+    <ChannelList workspaceId="ws1" categoryId={categoryId} />,
+    "/app/ws1",
+    (routes) => {
+      routes.rpc(ChannelService.method.listChannels, () => ({ channels }));
+      routes.rpc(ChannelCategoryService.method.listChannelCategories, () => ({
+        categories: categoryId === null ? [] : [workCategory],
+      }));
+    },
+  );
 
 describe("ChannelList", () => {
   test("階層をツリーで並べ、行には末尾の名前だけを出す", async () => {
@@ -56,5 +80,24 @@ describe("ChannelList", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "dev の下階層を展開" }));
     expect(await screen.findByRole("link", { name: /frontend/ })).toBeInTheDocument();
+  });
+
+  test("自分のカテゴリに入れたチャンネルは子孫ごとそのカテゴリに出し、フルパスで表示する", async () => {
+    await render("work");
+    const links = await screen.findAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual(["dev / frontend2", "web"]);
+  });
+
+  test("新しいメッセージ順では階層を分けてフルパスで並べる", async () => {
+    const { store } = await render();
+    store.set(preferencesAtom, { ...defaultPreferences, channelSortOrder: "recentActivity" });
+    const links = await screen.findAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual([
+      "general",
+      "dev",
+      // メンションを含む未読の件数
+      "dev / frontend2",
+      "dev / frontend / web",
+    ]);
   });
 });

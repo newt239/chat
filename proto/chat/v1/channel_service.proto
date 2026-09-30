@@ -17,6 +17,8 @@ service ChannelService {
   // チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
   rpc ArchiveChannel(ArchiveChannelRequest) returns (ArchiveChannelResponse);
   rpc UnarchiveChannel(UnarchiveChannelRequest) returns (UnarchiveChannelResponse);
+  // 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
+  rpc ListBrowsableChannels(ListBrowsableChannelsRequest) returns (ListBrowsableChannelsResponse);
 }
 
 message Channel {
@@ -38,6 +40,8 @@ message Channel {
   // アーカイブ中の場合だけ設定される
   optional google.protobuf.Timestamp archived_at = 14;
   bool is_muted = 15;
+  // 最後のメッセージ（スレッドの返信を除く）の投稿日時。ListChannels でだけ設定する
+  optional google.protobuf.Timestamp last_message_at = 16;
 }
 
 message ListChannelsRequest {
@@ -122,4 +126,17 @@ message UnarchiveChannelRequest {
 
 message UnarchiveChannelResponse {
   Channel channel = 1;
+}
+
+message ListBrowsableChannelsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message BrowsableChannel {
+  Channel channel = 1;
+  int32 member_count = 2;
+}
+
+message ListBrowsableChannelsResponse {
+  repeated BrowsableChannel channels = 1;
 }

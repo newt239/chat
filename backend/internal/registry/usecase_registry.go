@@ -7,6 +7,7 @@ import (
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
+	channelcategoryuc "github.com/newt239/chat/internal/usecase/channelcategory"
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
 	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
@@ -384,6 +385,15 @@ func (r *UseCaseRegistry) NewChannelLinkUseCase() channellinkuc.UseCase {
 		r.domainRegistry.NewChannelLinkRepository(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.domainRegistry.NewPermissionService(),
+		r.infrastructureRegistry.NewTransactionManager(),
+	)
+}
+
+func (r *UseCaseRegistry) NewChannelCategoryUseCase() channelcategoryuc.UseCase {
+	return channelcategoryuc.NewInteractor(
+		r.domainRegistry.NewChannelCategoryRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelAccessService(),
 		r.infrastructureRegistry.NewTransactionManager(),
 	)
 }
