@@ -1,3 +1,5 @@
+import { SystemMessageKind } from "#/gen/chat/v1/message_pb";
+
 import { groupByDate } from "./dateJump";
 
 import type { Message, SystemMessage, TimelineItem } from "#/gen/chat/v1/message_pb";
@@ -7,10 +9,18 @@ export type TimelineRow =
   | { kind: "user"; key: string; dateKey: string; message: Message }
   | { kind: "system"; key: string; dateKey: string; message: SystemMessage };
 
+const joinKinds = new Set([SystemMessageKind.MEMBER_JOINED, SystemMessageKind.MEMBER_ADDED]);
+
 // 古い順の項目を、日付の区切りとメッセージを 1 行ずつ並べた仮想リストの行にする
-export const buildTimelineRows = (items: readonly TimelineItem[]) => {
+// 参加のお知らせを隠すときは、それしかない日の区切りも出さない
+export const buildTimelineRows = (items: readonly TimelineItem[], hideJoinMessages: boolean) => {
+  const visible = hideJoinMessages
+    ? items.filter(
+        ({ content }) => content.case !== "systemMessage" || !joinKinds.has(content.value.kind),
+      )
+    : items;
   const rows: TimelineRow[] = [];
-  for (const { dateKey, items: dayItems } of groupByDate(items)) {
+  for (const { dateKey, items: dayItems } of groupByDate(visible)) {
     rows.push({ dateKey, key: `d-${dateKey}`, kind: "date" });
     for (const item of dayItems) {
       if (item.content.case === "userMessage") {
