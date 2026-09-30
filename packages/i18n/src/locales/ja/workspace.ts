@@ -33,12 +33,17 @@ export const workspace = {
     title: "メンバー（{{count}} 人）",
   },
   settings: {
+    adminOnly: "変更できるのは管理者とオーナーだけです",
     delete: "ワークスペースを削除",
     deleteConfirm: "{{name}} を削除しますか？",
     deleteDescription: "チャンネルとメッセージもすべて削除されます。取り消せません。",
     description: "説明",
     isPublic: "公開ワークスペースにする（誰でも参加できます）",
     name: "名前",
+    sections: {
+      general: "一般",
+      members: "メンバー",
+    },
     title: "ワークスペースの設定",
   },
 } as const;

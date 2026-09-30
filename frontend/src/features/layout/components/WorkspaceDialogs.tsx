@@ -9,8 +9,6 @@ import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageU
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { WebhookDialogLoader } from "#/features/webhook/components/WebhookDialogLoader";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
-import { WorkspaceSettingsModal } from "#/features/workspace/components/WorkspaceSettingsModal";
-import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
 
 import { closeDialog, openPanel } from "../utils/overlaySearch";
 import { workspaceRoute } from "../utils/workspaceRoute";
@@ -24,10 +22,8 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const navigate = useNavigate();
   const { dialog, group, link, webhook } = workspaceRoute.useSearch();
   const channelId = useParams({ select: (params) => params.channelId, strict: false });
-  const { data: workspaces } = useWorkspaces();
   const { data: groups } = useUserGroups(workspaceId);
   const canManageGroups = useCanManageUserGroups(workspaceId);
-  const workspace = workspaces?.find((candidate) => candidate.id === workspaceId);
   const editingGroup = groups?.find((candidate) => candidate.id === group);
 
   const close = () => {
@@ -48,13 +44,6 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
       />
       <CreateDMModal workspaceId={workspaceId} opened={dialog === "create-dm"} onClose={close} />
       <CreateWorkspaceModal isOpen={dialog === "create-workspace"} onOpenChange={onOpenChange} />
-      {workspace && (
-        <WorkspaceSettingsModal
-          isOpen={dialog === "workspace-settings"}
-          onOpenChange={onOpenChange}
-          workspace={workspace}
-        />
-      )}
       <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={onOpenChange} />
       {canManageGroups &&
         (dialog === "create-group" || (dialog === "edit-group" && editingGroup)) && (

@@ -34,12 +34,17 @@ export const workspace: Messages["workspace"] = {
     title: "Members ({{count}})",
   },
   settings: {
+    adminOnly: "Only admins and the owner can change these settings",
     delete: "Delete workspace",
     deleteConfirm: "Delete {{name}}?",
     deleteDescription: "All channels and messages are deleted too. This can't be undone.",
     description: "Description",
     isPublic: "Make this workspace public (anyone can join)",
     name: "Name",
+    sections: {
+      general: "General",
+      members: "Members",
+    },
     title: "Workspace settings",
   },
 };

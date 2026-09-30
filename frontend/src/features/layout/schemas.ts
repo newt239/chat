@@ -11,7 +11,6 @@ export const workspaceSearchSchema = z.object({
       "create-group",
       "edit-group",
       "create-workspace",
-      "workspace-settings",
       "markdown-help",
       "add-link",
       "edit-link",
