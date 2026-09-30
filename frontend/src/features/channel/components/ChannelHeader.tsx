@@ -95,11 +95,21 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
     <>
       <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-[18px] max-md:pl-3">
         <BackButton />
+        <IconButton
+          label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
+          aria-pressed={isStarred}
+          className={isStarred ? "text-mention-bar data-hovered:text-mention-bar" : undefined}
+          onPress={() => {
+            setStarred(channelId, !isStarred);
+          }}
+        >
+          {isStarred ? <IconStarFilled /> : <IconStar />}
+        </IconButton>
         <Button
           onPress={() => {
             openRightPanel(infoPanel);
           }}
-          className={`-ml-1 flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
+          className={`flex min-w-0 shrink cursor-pointer items-center gap-1 rounded-[6px] px-1 py-0.5 text-[15px] font-bold whitespace-nowrap data-hovered:bg-hover [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted ${focusRing}`}
         >
           {channel ? (
             <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
@@ -113,16 +123,6 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
           )}
           <IconChevronDown aria-hidden className="size-3!" />
         </Button>
-        <IconButton
-          label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
-          aria-pressed={isStarred}
-          className={isStarred ? "text-mention-bar data-hovered:text-mention-bar" : undefined}
-          onPress={() => {
-            setStarred(channelId, !isStarred);
-          }}
-        >
-          {isStarred ? <IconStarFilled /> : <IconStar />}
-        </IconButton>
         {isMuted && (
           <Tooltip content={t("shell.channel.muted")}>
             <Button
