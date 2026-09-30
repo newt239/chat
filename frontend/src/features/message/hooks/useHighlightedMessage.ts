@@ -1,14 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useParams, useSearch } from "@tanstack/react-router";
 
 const HIGHLIGHT_DURATION_MS = 3_000;
 
 /**
- * ?message=<id> で指定されたメッセージ（無ければ jumpTargetId）へスクロールし、一定時間ハイライトする。 対象が描画された時点で ref が渡るため、ref
- * コールバックでスクロールする。
+ * ?message=<id> で指定されたメッセージ（無ければ jumpTargetId）へスクロールし、一定時間ハイライトする。 scrollToMessage は対象がまだ一覧にないとき
+ * false を返し、一覧が変わって作り直されたときに再び試す。
  */
-export const useHighlightedMessage = (isReady: boolean, jumpTargetId: string | null) => {
+export const useHighlightedMessage = (
+  isReady: boolean,
+  jumpTargetId: string | null,
+  scrollToMessage: (messageId: string) => boolean,
+) => {
   // スレッドを開いているときの ?message= はスレッドの返信を指すため、チャンネルでは扱わない
   const isThreadOpen = useParams({
     select: (params) => params.messageId !== undefined,
@@ -34,24 +38,21 @@ export const useHighlightedMessage = (isReady: boolean, jumpTargetId: string | n
     };
   }, [targetMessageId]);
 
-  const highlightedMessageRef = useCallback(
-    (element: HTMLDivElement | null) => {
-      if (element === null || !isReady || targetMessageId === null) {
-        return;
-      }
-      // 再レンダリングのたびにスクロールし直さない
-      if (scrolledMessageIdRef.current === targetMessageId) {
-        return;
-      }
+  useEffect(() => {
+    if (!isReady || targetMessageId === null) {
+      return;
+    }
+    // 再レンダリングのたびにスクロールし直さない
+    if (scrolledMessageIdRef.current === targetMessageId) {
+      return;
+    }
+    if (scrollToMessage(targetMessageId)) {
       scrolledMessageIdRef.current = targetMessageId;
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    },
-    [isReady, targetMessageId],
-  );
+    }
+  }, [isReady, targetMessageId, scrollToMessage]);
 
   return {
     highlightedId: isHighlightExpired ? null : targetMessageId,
-    highlightedMessageRef,
     targetMessageId,
   };
 };

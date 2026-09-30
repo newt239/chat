@@ -40,6 +40,7 @@
     "@tabler/icons-react": "3.47.0",
     "@tanstack/react-query": "5.103.2",
     "@tanstack/react-router": "1.170.38",
+    "@tanstack/react-virtual": "3.14.13",
     "@tauri-apps/api": "2.11.1",
     "@tauri-apps/plugin-deep-link": "2.4.10",
     "@tauri-apps/plugin-notification": "2.4.0",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { callUnaryMethod } from "@connectrpc/connect-query";
 
@@ -20,7 +20,7 @@ type UseMessagePagesArgs = {
 };
 type Direction = "older" | "newer";
 
-/** 最初に取得した範囲の前後を「さらに読み込む」で足していく。項目はどれも新しい順に並べる */
+/** 最初に取得した範囲の前後をスクロールに合わせて足していく。項目はどれも新しい順に並べる */
 export const useMessagePages = ({
   channelId,
   includeDescendants,
@@ -30,8 +30,14 @@ export const useMessagePages = ({
   const [older, setOlder] = useState<Page | null>(null);
   const [newer, setNewer] = useState<Page | null>(null);
   const [loading, setLoading] = useState<Direction | null>(null);
+  // スクロールのたびに呼ばれるため、読み込み中は重ねて取得しない
+  const loadingRef = useRef(false);
+  // 切り替える前のチャンネルの応答を捨てる
+  const generationRef = useRef(0);
 
   useEffect(() => {
+    generationRef.current += 1;
+    loadingRef.current = false;
     setOlder(null);
     setNewer(null);
     setLoading(null);
@@ -46,10 +52,12 @@ export const useMessagePages = ({
       direction === "older"
         ? [...baseItems, ...olderItems].at(-1)?.createdAt
         : [...newerItems, ...baseItems].at(0)?.createdAt;
-    if (channelId === null || boundary === undefined) {
+    if (channelId === null || boundary === undefined || loadingRef.current) {
       return;
     }
 
+    const generation = generationRef.current;
+    loadingRef.current = true;
     setLoading(direction);
     try {
       const response = await callUnaryMethod(transport, MessageService.method.listMessages, {
@@ -58,13 +66,19 @@ export const useMessagePages = ({
         limit: MESSAGES_PAGE_SIZE,
         ...(direction === "older" ? { until: boundary } : { since: boundary }),
       });
+      if (generation !== generationRef.current) {
+        return;
+      }
       if (direction === "older") {
         setOlder({ hasNext: response.hasMore, items: [...olderItems, ...response.messages] });
       } else {
         setNewer({ hasNext: response.hasNewer, items: [...response.messages, ...newerItems] });
       }
     } finally {
-      setLoading(null);
+      if (generation === generationRef.current) {
+        loadingRef.current = false;
+        setLoading(null);
+      }
     }
   };
 

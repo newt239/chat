@@ -13,7 +13,10 @@ import { z } from "zod";
 
 import { useHighlightedMessage } from "#/features/message/hooks/useHighlightedMessage";
 
-const renderWithChannelRoute = async (url: string) => {
+const renderWithChannelRoute = async (
+  url: string,
+  scrollToMessage: (messageId: string) => boolean = () => true,
+) => {
   let hookContent: ReactNode = null;
   const rootRoute = createRootRoute();
   const channelRoute = createRoute({
@@ -28,7 +31,7 @@ const renderWithChannelRoute = async (url: string) => {
   });
   await router.load();
 
-  const view = renderHook(() => useHighlightedMessage(true, null), {
+  const view = renderHook(() => useHighlightedMessage(true, null, scrollToMessage), {
     wrapper: ({ children }: { children: ReactNode }) => {
       hookContent = children;
       return <RouterProvider router={router} />;
@@ -53,5 +56,14 @@ describe("useHighlightedMessage", () => {
 
     expect(result.current.targetMessageId).toBe("m1");
     expect(result.current.highlightedId).toBe("m1");
+  });
+
+  test("対象のメッセージへスクロールする", async () => {
+    const calls: string[] = [];
+    await renderWithChannelRoute("/app/ws1/ch1?message=m1", (id: string) => {
+      calls.push(id);
+      return true;
+    });
+    expect(calls).toEqual(["m1"]);
   });
 });

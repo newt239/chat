@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { timestampNow } from "@bufbuild/protobuf/wkt";
 
@@ -12,13 +12,14 @@ type UseMessageViewportDetectionArgs = {
   includeDescendants: boolean;
 };
 
+/** 最新のメッセージが画面に入ったら既読にする。仮想リストでは行が出入りするため、要素は ref コールバックで受け取る */
 export const useMessageViewportDetection = ({
   channelId,
   workspaceId,
   latestMessageId,
   includeDescendants,
 }: UseMessageViewportDetectionArgs) => {
-  const latestMessageRef = useRef<HTMLDivElement | null>(null);
+  const [element, setElement] = useState<HTMLElement | null>(null);
   const updateReadState = useUpdateReadState(workspaceId);
   const updateReadStateRef = useRef(updateReadState);
   const hasMarkedAsRead = useRef(false);
@@ -29,8 +30,10 @@ export const useMessageViewportDetection = ({
 
   useEffect(() => {
     hasMarkedAsRead.current = false;
+  }, [channelId, latestMessageId, includeDescendants]);
 
-    if (latestMessageRef.current === null || channelId === null || latestMessageId === null) {
+  useEffect(() => {
+    if (element === null || channelId === null || latestMessageId === null) {
       return undefined;
     }
 
@@ -52,12 +55,12 @@ export const useMessageViewportDetection = ({
       },
     );
 
-    observer.observe(latestMessageRef.current);
+    observer.observe(element);
 
     return () => {
       observer.disconnect();
     };
-  }, [channelId, latestMessageId, includeDescendants]);
+  }, [element, channelId, latestMessageId, includeDescendants]);
 
-  return { latestMessageRef };
+  return { latestMessageRef: setElement };
 };

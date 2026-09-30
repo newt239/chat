@@ -19,10 +19,12 @@ import { FIRST_MESSAGE, jumpPresets, startOfDateKey } from "../utils/dateJump";
 
 type DateDividerProps = {
   dateKey: string;
+  // 一覧の上端に重ねて、表示中の日付を示す。線は出さない
+  floating?: boolean;
 };
 
-// その日の投稿の上に固定表示する区切り。押すと別の日へ移動できる
-export const DateDivider = ({ dateKey }: DateDividerProps) => {
+// その日の投稿の上に置く区切り。押すと別の日へ移動できる
+export const DateDivider = ({ dateKey, floating = false }: DateDividerProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
   const navigate = useNavigate();
@@ -41,69 +43,79 @@ export const DateDivider = ({ dateKey }: DateDividerProps) => {
         ? t("message.date.yesterday")
         : formatDateWithWeekday(startOfDateKey(dateKey), locale);
 
-  // 線はその場に残し、日付だけをスクロール中も上部に固定する
+  const pill = (
+    <div
+      ref={anchorRef}
+      className={
+        floating
+          ? "pointer-events-none absolute inset-x-0 top-1.5 z-10 flex justify-center font-sans"
+          : "pointer-events-none relative z-10 -mt-[11px] mb-1 flex justify-center font-sans"
+      }
+    >
+      <Menu
+        placement="bottom"
+        trigger={
+          <Button
+            aria-label={`${label} · ${t("message.date.jumpTo")}`}
+            className={`pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full border border-border bg-surface py-0.5 pr-2 pl-3 text-caption font-semibold text-text shadow-sm data-hovered:bg-hover data-pressed:bg-hover [&_svg]:size-3.5 [&_svg]:text-muted ${focusRing}`}
+          >
+            {label}
+            <IconChevronDown aria-hidden />
+          </Button>
+        }
+      >
+        {(["today", "yesterday", "lastWeek", "lastMonth"] as const).map((preset) => (
+          <MenuItem
+            key={preset}
+            onAction={() => {
+              jump(presets[preset]);
+            }}
+          >
+            {t(`message.date.${preset}`)}
+          </MenuItem>
+        ))}
+        <MenuItem
+          onAction={() => {
+            jump(FIRST_MESSAGE);
+          }}
+        >
+          {t("message.date.first")}
+        </MenuItem>
+        <MenuSeparator />
+        <MenuItem
+          onAction={() => {
+            setIsPickerOpen(true);
+          }}
+        >
+          {t("message.date.pick")}
+        </MenuItem>
+      </Menu>
+      <Popover
+        aria-label={t("message.date.calendar")}
+        triggerRef={anchorRef}
+        isOpen={isPickerOpen}
+        onOpenChange={setIsPickerOpen}
+        placement="bottom"
+      >
+        <Calendar
+          aria-label={t("message.date.calendar")}
+          maxDate={presets.today}
+          onChange={(date) => {
+            setIsPickerOpen(false);
+            jump(date);
+          }}
+        />
+      </Popover>
+    </div>
+  );
+
+  if (floating) {
+    return pill;
+  }
   return (
     <>
       <div aria-hidden className="mt-3 border-t border-border" />
-      <div
-        ref={anchorRef}
-        className="pointer-events-none sticky top-1.5 z-10 -mt-[11px] mb-1 flex justify-center font-sans"
-      >
-        <Menu
-          placement="bottom"
-          trigger={
-            <Button
-              aria-label={`${label} · ${t("message.date.jumpTo")}`}
-              className={`pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full border border-border bg-surface py-0.5 pr-2 pl-3 text-caption font-semibold text-text shadow-sm data-hovered:bg-hover data-pressed:bg-hover [&_svg]:size-3.5 [&_svg]:text-muted ${focusRing}`}
-            >
-              {label}
-              <IconChevronDown aria-hidden />
-            </Button>
-          }
-        >
-          {(["today", "yesterday", "lastWeek", "lastMonth"] as const).map((preset) => (
-            <MenuItem
-              key={preset}
-              onAction={() => {
-                jump(presets[preset]);
-              }}
-            >
-              {t(`message.date.${preset}`)}
-            </MenuItem>
-          ))}
-          <MenuItem
-            onAction={() => {
-              jump(FIRST_MESSAGE);
-            }}
-          >
-            {t("message.date.first")}
-          </MenuItem>
-          <MenuSeparator />
-          <MenuItem
-            onAction={() => {
-              setIsPickerOpen(true);
-            }}
-          >
-            {t("message.date.pick")}
-          </MenuItem>
-        </Menu>
-        <Popover
-          aria-label={t("message.date.calendar")}
-          triggerRef={anchorRef}
-          isOpen={isPickerOpen}
-          onOpenChange={setIsPickerOpen}
-          placement="bottom"
-        >
-          <Calendar
-            aria-label={t("message.date.calendar")}
-            maxDate={presets.today}
-            onChange={(date) => {
-              setIsPickerOpen(false);
-              jump(date);
-            }}
-          />
-        </Popover>
-      </div>
+      {pill}
     </>
   );
 };
