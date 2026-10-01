@@ -3,11 +3,11 @@ FROM node:26-alpine AS builder
 
 WORKDIR /app
 
-# pnpm は packageManager、Node は devEngines の版へ自動で切り替わる
-RUN npm install -g pnpm@12
-
 # ワークスペース設定をコピー
 COPY pnpm-workspace.yaml package.json ./
+
+# packageManager と同じ版を入れる。pnpm が自分で切り替えると minimumReleaseAge に阻まれる。Node は devEngines の版へ自動で切り替わる
+RUN npm install -g "$(node -p "require('./package.json').packageManager")"
 COPY pnpm-lock.yaml ./
 
 # 全ワークスペースのpackage.jsonをコピー
