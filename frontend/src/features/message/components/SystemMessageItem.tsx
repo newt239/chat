@@ -57,21 +57,24 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
       />
     );
 
-  const texts: Record<SystemMessageKind, () => ReactNode> = {
-    [SystemMessageKind.UNSPECIFIED]: () => t("message.system.unspecified"),
-    [SystemMessageKind.MEMBER_JOINED]: () =>
-      t("message.system.memberJoined", { user: nameOf("userId") }),
-    [SystemMessageKind.MEMBER_ADDED]: () =>
-      t("message.system.memberAdded", { by: nameOf("addedBy"), user: nameOf("userId") }),
-    [SystemMessageKind.MEMBER_REMOVED]: () =>
-      t("message.system.memberRemoved", { user: nameOf("userId") }),
-    [SystemMessageKind.MEMBER_LEFT]: () =>
-      t("message.system.memberLeft", { user: nameOf("userId") }),
-    [SystemMessageKind.CHANNEL_PRIVACY_CHANGED]: () =>
-      t("message.system.privacyChanged", { from: from || "public", to: to || "public" }),
-    [SystemMessageKind.CHANNEL_NAME_CHANGED]: () => t("message.system.nameChanged", { from, to }),
-    [SystemMessageKind.CHANNEL_DESCRIPTION_CHANGED]: () => t("message.system.descriptionChanged"),
-    [SystemMessageKind.MESSAGE_PINNED]: () => (
+  const texts: Record<SystemMessageKind, ReactNode> = {
+    [SystemMessageKind.UNSPECIFIED]: t("message.system.unspecified"),
+    [SystemMessageKind.MEMBER_JOINED]: t("message.system.memberJoined", { user: nameOf("userId") }),
+    [SystemMessageKind.MEMBER_ADDED]: t("message.system.memberAdded", {
+      by: nameOf("addedBy"),
+      user: nameOf("userId"),
+    }),
+    [SystemMessageKind.MEMBER_REMOVED]: t("message.system.memberRemoved", {
+      user: nameOf("userId"),
+    }),
+    [SystemMessageKind.MEMBER_LEFT]: t("message.system.memberLeft", { user: nameOf("userId") }),
+    [SystemMessageKind.CHANNEL_PRIVACY_CHANGED]: t("message.system.privacyChanged", {
+      from: from || "public",
+      to: to || "public",
+    }),
+    [SystemMessageKind.CHANNEL_NAME_CHANGED]: t("message.system.nameChanged", { from, to }),
+    [SystemMessageKind.CHANNEL_DESCRIPTION_CHANGED]: t("message.system.descriptionChanged"),
+    [SystemMessageKind.MESSAGE_PINNED]: (
       <Trans
         i18nKey="message.system.messagePinned"
         values={{ user: nameOf("pinnedBy") }}
@@ -86,7 +89,7 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
       <span className="grid w-8 shrink-0 place-items-center text-subtle [&_svg]:size-3.5">
         <IconInfoCircle aria-hidden />
       </span>
-      <span className="min-w-0">{texts[message.kind]()}</span>
+      <span className="min-w-0">{texts[message.kind]}</span>
       <MessageTime date={createdAt} />
     </div>
   );

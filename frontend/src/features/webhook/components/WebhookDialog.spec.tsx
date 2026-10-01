@@ -42,9 +42,9 @@ const setup = async () => {
 };
 
 describe("WebhookDialog", () => {
-  test("アイコンを空にして保存するとアイコンを外す", async () => {
+  test("アイコンをリセットして保存するとアイコンを外す", async () => {
     const { onClose, update } = await setup();
-    await userEvent.clear(screen.getByRole("textbox", { name: "アイコン画像の URL（任意）" }));
+    await userEvent.click(screen.getByRole("button", { name: "リセット" }));
     await userEvent.click(screen.getByRole("button", { name: "保存" }));
     await waitFor(() => {
       expect(update).toHaveBeenCalledWith(
@@ -53,18 +53,6 @@ describe("WebhookDialog", () => {
     });
     expect(update.mock.calls[0]?.[0].avatarUrl).toBeUndefined();
     expect(onClose).toHaveBeenCalled();
-  });
-
-  test("アイコンが http(s) の URL でなければ保存しない", async () => {
-    const { update } = await setup();
-    const avatar = screen.getByRole("textbox", { name: "アイコン画像の URL（任意）" });
-    await userEvent.clear(avatar);
-    await userEvent.type(avatar, "ftp://example.com/a.png");
-    await userEvent.click(screen.getByRole("button", { name: "保存" }));
-    expect(
-      await screen.findByText("https:// から始まる URL を入力してください"),
-    ).toBeInTheDocument();
-    expect(update).not.toHaveBeenCalled();
   });
 
   test("URL を再発行すると新しい URL を表示する", async () => {

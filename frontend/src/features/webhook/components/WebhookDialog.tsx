@@ -1,15 +1,18 @@
 import { useState } from "react";
 
+import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { IconImageField } from "#/components/block/IconImageField/IconImageField";
 import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 
 import { useWebhookActions } from "../hooks/useWebhooks";
-import { isHttpUrl, webhookUrl } from "../utils/webhookUrl";
+import { webhookUrl } from "../utils/webhookUrl";
 import { WebhookUrlPanel } from "./WebhookUrlPanel";
 
 import type { Webhook } from "#/gen/chat/v1/webhook_service_pb";
@@ -23,6 +26,7 @@ type WebhookDialogProps = {
 
 export const WebhookDialog = ({ channelId, webhook, onClose }: WebhookDialogProps) => {
   const { t } = useTranslation();
+  const { workspaceId } = useParams({ strict: false });
   const [name, setName] = useState(webhook?.name ?? "");
   const [avatarUrl, setAvatarUrl] = useState(webhook?.avatarUrl ?? "");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -31,16 +35,14 @@ export const WebhookDialog = ({ channelId, webhook, onClose }: WebhookDialogProp
   const [revealedUrl, setRevealedUrl] = useState<string | null>(null);
   const { create, regenerate, remove, update } = useWebhookActions(channelId);
   const trimmedName = name.trim();
-  const trimmedAvatarUrl = avatarUrl.trim();
-  const isAvatarUrlValid = trimmedAvatarUrl === "" || isHttpUrl(trimmedAvatarUrl);
   const failed = [create, update, regenerate, remove].find((mutation) => mutation.isError);
 
   const save = () => {
     setIsSubmitted(true);
-    if (trimmedName === "" || !isAvatarUrlValid) {
+    if (trimmedName === "") {
       return;
     }
-    const input = { avatarUrl: trimmedAvatarUrl || undefined, name: trimmedName };
+    const input = { avatarUrl: avatarUrl || undefined, name: trimmedName };
     if (webhook) {
       update.mutate(
         { ...input, webhookId: webhook.id },
@@ -121,13 +123,13 @@ export const WebhookDialog = ({ channelId, webhook, onClose }: WebhookDialogProp
         maxLength={80}
         errorMessage={isSubmitted && trimmedName === "" ? t("webhook.nameRequired") : undefined}
       />
-      <TextField
-        label={t("webhook.avatarUrl")}
-        type="url"
+      <IconImageField
+        label={t("webhook.avatar")}
+        name={trimmedName || t("webhook.namePlaceholder")}
         value={avatarUrl}
         onChange={setAvatarUrl}
-        maxLength={2048}
-        errorMessage={isSubmitted && !isAvatarUrlValid ? t("webhook.invalidAvatarUrl") : undefined}
+        purpose={ImagePurpose.WEBHOOK_ICON}
+        workspaceId={workspaceId ?? null}
       />
       {webhook && (
         <Button

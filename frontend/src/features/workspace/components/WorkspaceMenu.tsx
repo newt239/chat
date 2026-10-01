@@ -38,7 +38,7 @@ export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
         <Button
           className={`flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left text-(--nav-strong) data-hovered:bg-(--nav-hover) ${focusRing}`}
         >
-          <WorkspaceLogo name={name} />
+          <WorkspaceLogo name={name} iconUrl={current?.iconUrl} />
           <span className="min-w-0 truncate text-[15px] font-bold">{name}</span>
           <IconChevronDown aria-hidden className="size-3.5 shrink-0 text-(--nav-muted)" />
         </Button>
@@ -50,7 +50,7 @@ export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
             key={workspace.id}
             to="/app/$workspaceId"
             params={{ workspaceId: workspace.id }}
-            icon={<WorkspaceLogo name={workspace.name} />}
+            icon={<WorkspaceLogo name={workspace.name} iconUrl={workspace.iconUrl} />}
             shortcut={workspace.id === workspaceId ? "✓" : undefined}
           >
             {workspace.name}

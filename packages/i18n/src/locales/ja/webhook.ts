@@ -1,7 +1,7 @@
 export const webhook = {
   add: "追加",
   appTag: "アプリ",
-  avatarUrl: "アイコン画像の URL（任意）",
+  avatar: "アイコン画像（任意）",
   copied: "URL をコピーしました",
   copy: "コピー",
   copyFailed: "コピーできませんでした。URL を選択してコピーしてください",
@@ -21,7 +21,6 @@ export const webhook = {
   example: "送信例",
   heading: "Webhook",
   hint: "チャンネルを閲覧できる人なら誰でも追加できます。編集と削除は作成者と管理者だけができます。",
-  invalidAvatarUrl: "https:// から始まる URL を入力してください",
   lastUsed: "最終使用 {{time}}",
   name: "名前",
   namePlaceholder: "例: デプロイ通知",

@@ -11,7 +11,10 @@ import { EmojiPickerPopover } from "./EmojiPickerPopover";
 
 const setup = (myPermissions: Permission[]) =>
   renderWithProviders(
-    <EmojiPickerPopover trigger={<Button>絵文字</Button>} onSelect={vi.fn()} />,
+    <EmojiPickerPopover
+      trigger={<Button>絵文字</Button>}
+      onSelect={vi.fn<(emoji: string) => void>()}
+    />,
     "/app/ws1",
     (routes) => {
       routes.rpc(PermissionService.method.getPermissions, () => ({ myPermissions }));

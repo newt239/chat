@@ -3,12 +3,14 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { IconImageField } from "#/components/block/IconImageField/IconImageField";
 import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { Checkbox } from "#/components/ui/Checkbox/Checkbox";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { useWorkspaceActions } from "#/features/workspace/hooks/useWorkspaceActions";
+import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
 import type { Workspace as WorkspaceSummary } from "#/gen/chat/v1/workspace_service_pb";
@@ -28,11 +30,22 @@ export const WorkspaceGeneralSettings = ({ workspace }: WorkspaceGeneralSettings
   const [name, setName] = useState(workspace.name);
   const [description, setDescription] = useState(workspace.description ?? "");
   const [isPublic, setIsPublic] = useState(workspace.isPublic);
+  const [iconUrl, setIconUrl] = useState(workspace.iconUrl ?? "");
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-3">
+        {canEdit && (
+          <IconImageField
+            label={t("workspace.settings.icon")}
+            name={name || workspace.name}
+            value={iconUrl}
+            onChange={setIconUrl}
+            purpose={ImagePurpose.WORKSPACE_ICON}
+            workspaceId={workspace.id}
+          />
+        )}
         <TextField
           label={t("workspace.settings.name")}
           value={name}
@@ -58,7 +71,7 @@ export const WorkspaceGeneralSettings = ({ workspace }: WorkspaceGeneralSettings
             <Button
               isPending={update.isPending}
               onPress={() => {
-                update.mutate({ description, isPublic, name, workspaceId: workspace.id });
+                update.mutate({ description, iconUrl, isPublic, name, workspaceId: workspace.id });
               }}
             >
               {t("common.save")}

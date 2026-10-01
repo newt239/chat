@@ -3,11 +3,12 @@ import { useState } from "react";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { IconImageField } from "#/components/block/IconImageField/IconImageField";
 import { Button } from "#/components/ui/Button/Button";
 import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
+import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 
@@ -32,7 +33,7 @@ export const ProfileForm = ({ me }: ProfileFormProps) => {
       onSubmit={(event) => {
         event.preventDefault();
         mutation.mutate(
-          { avatarUrl: avatarUrl || undefined, bio, displayName },
+          { avatarUrl, bio, displayName },
           {
             onSuccess: () => {
               toast(t("settings.profile.saved"), { tone: "success" });
@@ -41,13 +42,18 @@ export const ProfileForm = ({ me }: ProfileFormProps) => {
         );
       }}
     >
-      <div className="flex items-center gap-3">
-        <Avatar name={displayName || me.displayName} src={avatarUrl || null} size={64} />
-        <div className="flex min-w-0 flex-col">
-          <b className="truncate text-body-strong">{displayName || me.displayName}</b>
-          <span className="truncate text-caption text-muted">{me.email}</span>
-        </div>
+      <div className="flex min-w-0 flex-col">
+        <b className="truncate text-body-strong">{displayName || me.displayName}</b>
+        <span className="truncate text-caption text-muted">{me.email}</span>
       </div>
+      <IconImageField
+        label={t("settings.profile.avatar")}
+        name={displayName || me.displayName}
+        value={avatarUrl}
+        onChange={setAvatarUrl}
+        purpose={ImagePurpose.AVATAR}
+        workspaceId={null}
+      />
       <TextField
         label={t("auth.displayName")}
         description={t("settings.profile.displayNameDescription")}
@@ -56,14 +62,11 @@ export const ProfileForm = ({ me }: ProfileFormProps) => {
         isRequired
       />
       <TextArea label={t("settings.profile.bio")} value={bio} onChange={setBio} />
-      <TextField
-        label={t("settings.profile.avatarUrl")}
-        type="url"
-        placeholder="https://"
-        value={avatarUrl}
-        onChange={setAvatarUrl}
-        errorMessage={mutation.isError ? mutation.error.message : undefined}
-      />
+      {mutation.isError && (
+        <p role="alert" className="m-0 text-caption text-danger">
+          {mutation.error.message}
+        </p>
+      )}
       <Button
         type="submit"
         className="self-start"
