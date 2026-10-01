@@ -44,4 +44,4 @@ export const linkIconOf = (url: string) => {
 
 // 表示用に、スキーム・www.・末尾のスラッシュを除いた URL
 export const displayUrl = (url: string) =>
-  url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  url.replace(/^https?:\/\/(?:www\.)?/, "").replace(/\/$/, "");

@@ -37,7 +37,6 @@ export const settings = {
     bio: "自己紹介",
     displayNameDescription: "メッセージやメンションで表示される名前です",
     links: "リンク",
-    linksDescription: "{{max}} 件まで。X・Instagram・YouTube・GitHub などはアイコンで表示します",
     linkUrl: "リンク {{number}}",
     removeLink: "リンク {{number}} を削除",
     saved: "プロフィールを保存しました",
