@@ -64,6 +64,8 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
       - JWT_SECRET=development-secret-key
       - CORS_ALLOWED_ORIGINS=${CHAT_CORS_ORIGINS:-http://localhost:5173},tauri://localhost,https://tauri.localhost
+      # 添付ファイルや絵文字は Wasabi ではなく backend/tmp/storage に保存し、backend の /storage から配信する
+      - STORAGE_DRIVER=local
       - PUBLIC_BASE_URL=${CHAT_API_URL:-http://localhost:8080}
       - MEILISEARCH_URL=http://meilisearch:7700
       - MEILISEARCH_API_KEY=development-master-key
