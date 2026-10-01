@@ -54,6 +54,7 @@ export const channel = {
     title: "チャンネルを作成",
   },
   info: {
+    createChild: "子チャンネルを作成",
     description: "説明",
     descendants: "下階層のチャンネル {{count}}",
     descendantsHint: "開くと下階層の投稿もまとめて表示します",

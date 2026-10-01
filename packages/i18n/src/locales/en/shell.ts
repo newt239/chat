@@ -12,6 +12,7 @@ export const shell: Messages["shell"] = {
     public: "Public channel",
   },
   channelMenu: {
+    createChild: "Create sub-channel",
     copyLink: "Copy link",
     label: "Channel actions",
     linkCopied: "Link copied",

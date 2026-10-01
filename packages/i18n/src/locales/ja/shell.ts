@@ -10,6 +10,7 @@ export const shell = {
     public: "公開チャンネル",
   },
   channelMenu: {
+    createChild: "子チャンネルを作成",
     copyLink: "リンクをコピー",
     label: "チャンネルの操作",
     linkCopied: "リンクをコピーしました",

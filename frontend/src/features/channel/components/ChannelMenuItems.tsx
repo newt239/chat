@@ -4,10 +4,11 @@ import {
   IconChecks,
   IconExternalLink,
   IconLink,
+  IconSquarePlus,
   IconStar,
   IconStarOff,
 } from "@tabler/icons-react";
-import { useRouter } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
@@ -15,6 +16,8 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useChannelListActions } from "#/features/channel/hooks/useChannelListActions";
+import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
+import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { toShareUrl } from "#/lib/platform/appOrigin";
 import { isTauri } from "#/lib/platform/platform";
 
@@ -36,6 +39,7 @@ export const ChannelMenuItems = ({
 }: ChannelMenuItemsProps) => {
   const { t } = useTranslation();
   const router = useRouter();
+  const navigate = useNavigate();
   const { markAsRead, setMuted, setStarred } = useChannelListActions(workspaceId);
   const { data: channels = [] } = useChannels(workspaceId);
   // DM は一覧にないためカテゴリに入れられない
@@ -65,6 +69,19 @@ export const ChannelMenuItems = ({
       </MenuItem>
       {channel && (
         <MoveToCategoryMenu workspaceId={workspaceId} channel={channel} channels={channels} />
+      )}
+      {channel?.isMember && canHaveChildChannel(channel.name) && (
+        <MenuItem
+          icon={<IconSquarePlus />}
+          onAction={() => {
+            void navigate({
+              search: openDialog({ dialog: "create-channel", parent: channelId }),
+              to: ".",
+            });
+          }}
+        >
+          {t("shell.channelMenu.createChild")}
+        </MenuItem>
       )}
       <MenuItem
         icon={<IconChecks />}

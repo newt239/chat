@@ -22,7 +22,7 @@ type WorkspaceDialogsProps = {
 // ?dialog= で開くダイアログ。開くボタンが複数の画面にあっても、ここで一度だけ描く
 export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const navigate = useNavigate();
-  const { assign, category, dialog, group, link, webhook } = workspaceRoute.useSearch();
+  const { assign, category, dialog, group, link, parent, webhook } = workspaceRoute.useSearch();
   const channelId = useParams({ select: (params) => params.channelId, strict: false });
   const { data: groups } = useUserGroups(workspaceId);
   const canManageGroups = useCanManageUserGroups(workspaceId);
@@ -43,6 +43,7 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
     <>
       <CreateChannelModal
         workspaceId={workspaceId}
+        parentId={parent ?? null}
         opened={dialog === "create-channel"}
         onClose={close}
       />

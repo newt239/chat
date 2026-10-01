@@ -10,15 +10,18 @@ import { CreateChannelModal } from "./CreateChannelModal";
 
 import type { CreateChannelRequest } from "#/gen/chat/v1/channel_service_pb";
 
-const setup = async () => {
+const setup = async (parentId: string | null = null) => {
   const createChannel = vi.fn<(req: CreateChannelRequest) => void>();
   const onClose = vi.fn<() => void>();
   const { router } = await renderWithProviders(
-    <CreateChannelModal workspaceId="ws1" opened onClose={onClose} />,
+    <CreateChannelModal workspaceId="ws1" parentId={parentId} opened onClose={onClose} />,
     "/app/ws1",
     (routes) => {
       routes.rpc(ChannelService.method.listChannels, () => ({
-        channels: [create(ChannelSchema, { id: "c1", name: "dev" })],
+        channels: [
+          create(ChannelSchema, { id: "c1", name: "dev" }),
+          create(ChannelSchema, { id: "c3", isPrivate: true, name: "secret" }),
+        ],
       }));
       routes.rpc(ChannelService.method.createChannel, (req) => {
         createChannel(req);
@@ -31,6 +34,14 @@ const setup = async () => {
 };
 
 describe("CreateChannelModal", () => {
+  test("親を指定して開くと親のパスと公開範囲を初期値にする", async () => {
+    const { nameField } = await setup("c3");
+    await waitFor(() => {
+      expect(nameField).toHaveValue("secret/");
+    });
+    expect(screen.getByRole("switch", { name: /非公開/ })).toBeChecked();
+  });
+
   test("スラッシュ区切りの名前から作成される階層と、新しく作られる親を表示する", async () => {
     const { nameField } = await setup();
     await userEvent.type(nameField, "Dev/Frontend/Web");

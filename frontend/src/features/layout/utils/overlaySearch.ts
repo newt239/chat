@@ -14,6 +14,7 @@ const noDialog = {
   emoji: undefined,
   image: undefined,
   link: undefined,
+  parent: undefined,
   reactions: undefined,
   sheet: undefined,
   webhook: undefined,

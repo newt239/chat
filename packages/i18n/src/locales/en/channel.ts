@@ -56,6 +56,7 @@ export const channel: Messages["channel"] = {
     title: "Create a channel",
   },
   info: {
+    createChild: "Create sub-channel",
     description: "Description",
     descendants: "Nested channels: {{count}}",
     descendantsHint: "Opening this channel also shows posts from nested channels",

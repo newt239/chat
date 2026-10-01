@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 import { IconChevronRight } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -21,11 +21,18 @@ import { ChannelNameField } from "./ChannelNameField";
 
 type CreateChannelModalProps = {
   workspaceId: string | null;
+  // 子チャンネルとして作るときの親
+  parentId: string | null;
   opened: boolean;
   onClose: () => void;
 };
 
-export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChannelModalProps) => {
+export const CreateChannelModal = ({
+  workspaceId,
+  parentId,
+  opened,
+  onClose,
+}: CreateChannelModalProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const formId = useId();
@@ -35,6 +42,17 @@ export const CreateChannelModal = ({ workspaceId, opened, onClose }: CreateChann
   const [isTouched, setIsTouched] = useState(false);
   const { data: channels } = useChannels(opened ? workspaceId : null);
   const createChannel = useCreateChannel();
+  const parent = channels?.find((channel) => channel.id === parentId);
+  const parentName = parent?.name;
+  const isParentPrivate = parent?.isPrivate ?? false;
+
+  // 親を指定して開いたら、親のパスと公開範囲を初期値にする
+  useEffect(() => {
+    if (opened && parentName !== undefined) {
+      setName(`${parentName}/`);
+      setIsPrivate(isParentPrivate);
+    }
+  }, [opened, parentName, isParentPrivate]);
 
   const existingNames = (channels ?? []).map((channel) => channel.name);
   const error = validateChannelPath(name, existingNames);
