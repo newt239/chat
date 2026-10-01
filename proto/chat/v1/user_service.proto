@@ -25,7 +25,15 @@ message GetMeResponse {
 message UpdateMeRequest {
   optional string display_name = 1 [(buf.validate.field).string.min_len = 1];
   optional string bio = 2;
-  optional string avatar_url = 3;
+  // 空文字はアバターを外す
+  optional string avatar_url = 3 [
+    (buf.validate.field).string.max_len = 2048,
+    (buf.validate.field).cel = {
+      id: "uri_or_empty"
+      message: "URL か空文字を指定してください"
+      expression: "this == '' || this.isUri()"
+    }
+  ];
 }
 
 message UpdateMeResponse {

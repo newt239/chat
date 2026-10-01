@@ -104,10 +104,11 @@ func (x *GetMeResponse) GetUser() *User {
 }
 
 type UpdateMeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DisplayName   *string                `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3,oneof" json:"display_name,omitempty"`
-	Bio           *string                `protobuf:"bytes,2,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
-	AvatarUrl     *string                `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	DisplayName *string                `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3,oneof" json:"display_name,omitempty"`
+	Bio         *string                `protobuf:"bytes,2,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	// 空文字はアバターを外す
+	AvatarUrl     *string `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -725,12 +726,13 @@ const file_chat_v1_user_service_proto_rawDesc = "" +
 	"\x1achat/v1/user_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x0e\n" +
 	"\fGetMeRequest\"2\n" +
 	"\rGetMeResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.chat.v1.UserR\x04user\"\xa5\x01\n" +
+	"\x04user\x18\x01 \x01(\v2\r.chat.v1.UserR\x04user\"\x8a\x02\n" +
 	"\x0fUpdateMeRequest\x12/\n" +
 	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vdisplayName\x88\x01\x01\x12\x15\n" +
-	"\x03bio\x18\x02 \x01(\tH\x01R\x03bio\x88\x01\x01\x12\"\n" +
+	"\x03bio\x18\x02 \x01(\tH\x01R\x03bio\x88\x01\x01\x12\x86\x01\n" +
 	"\n" +
-	"avatar_url\x18\x03 \x01(\tH\x02R\tavatarUrl\x88\x01\x01B\x0f\n" +
+	"avatar_url\x18\x03 \x01(\tBb\xbaH_\xba\x01W\n" +
+	"\furi_or_empty\x12+URL か空文字を指定してください\x1a\x1athis == '' || this.isUri()r\x03\x18\x80\x10H\x02R\tavatarUrl\x88\x01\x01B\x0f\n" +
 	"\r_display_nameB\x06\n" +
 	"\x04_bioB\r\n" +
 	"\v_avatar_url\"5\n" +

@@ -30,6 +30,9 @@ type RouterConfig struct {
 	GoogleOAuth GoogleOAuthFlow
 	// 開発用のローカルストレージを使うときだけ設定する
 	StorageHandler http.Handler
+	// アイコン画像の配信に使う
+	Storage       service.StorageService
+	StorageConfig service.StorageConfig
 }
 
 func NewRouter(cfg RouterConfig) *echo.Echo {
@@ -71,6 +74,8 @@ func NewRouter(cfg RouterConfig) *echo.Echo {
 		e.GET("/oauth/google/start", googleOAuthStartHandler(cfg.GoogleOAuth))
 		e.GET("/oauth/google/callback", googleOAuthCallbackHandler(cfg.GoogleOAuth))
 	}
+
+	e.GET("/images/*", imageHandler(cfg.Storage, cfg.StorageConfig))
 
 	if cfg.StorageHandler != nil {
 		e.Any("/storage/*", echo.WrapHandler(cfg.StorageHandler))

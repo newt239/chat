@@ -702,14 +702,15 @@ func (x *GetWorkspaceResponse) GetWorkspace() *Workspace {
 }
 
 type UpdateWorkspaceRequest struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	WorkspaceId        string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	Name               *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Description        *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	IconUrl            *string                `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
-	IsPublic           *bool                  `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
-	SignupEnabled      *bool                  `protobuf:"varint,6,opt,name=signup_enabled,json=signupEnabled,proto3,oneof" json:"signup_enabled,omitempty"`
-	EmailSignupEnabled *bool                  `protobuf:"varint,7,opt,name=email_signup_enabled,json=emailSignupEnabled,proto3,oneof" json:"email_signup_enabled,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	WorkspaceId string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	Name        *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Description *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	// 空文字はアイコンを外す
+	IconUrl            *string `protobuf:"bytes,4,opt,name=icon_url,json=iconUrl,proto3,oneof" json:"icon_url,omitempty"`
+	IsPublic           *bool   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3,oneof" json:"is_public,omitempty"`
+	SignupEnabled      *bool   `protobuf:"varint,6,opt,name=signup_enabled,json=signupEnabled,proto3,oneof" json:"signup_enabled,omitempty"`
+	EmailSignupEnabled *bool   `protobuf:"varint,7,opt,name=email_signup_enabled,json=emailSignupEnabled,proto3,oneof" json:"email_signup_enabled,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -1530,12 +1531,13 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\x13GetWorkspaceRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"H\n" +
 	"\x14GetWorkspaceResponse\x120\n" +
-	"\tworkspace\x18\x01 \x01(\v2\x12.chat.v1.WorkspaceR\tworkspace\"\xab\x03\n" +
+	"\tworkspace\x18\x01 \x01(\v2\x12.chat.v1.WorkspaceR\tworkspace\"\x83\x04\n" +
 	"\x16UpdateWorkspaceRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\"\n" +
 	"\x04name\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18dH\x00R\x04name\x88\x01\x01\x12/\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03H\x01R\vdescription\x88\x01\x01\x12+\n" +
-	"\bicon_url\x18\x04 \x01(\tB\v\xbaH\br\x06\x18\x80\x10\x88\x01\x01H\x02R\aiconUrl\x88\x01\x01\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03H\x01R\vdescription\x88\x01\x01\x12\x82\x01\n" +
+	"\bicon_url\x18\x04 \x01(\tBb\xbaH_\xba\x01W\n" +
+	"\furi_or_empty\x12+URL か空文字を指定してください\x1a\x1athis == '' || this.isUri()r\x03\x18\x80\x10H\x02R\aiconUrl\x88\x01\x01\x12 \n" +
 	"\tis_public\x18\x05 \x01(\bH\x03R\bisPublic\x88\x01\x01\x12*\n" +
 	"\x0esignup_enabled\x18\x06 \x01(\bH\x04R\rsignupEnabled\x88\x01\x01\x125\n" +
 	"\x14email_signup_enabled\x18\a \x01(\bH\x05R\x12emailSignupEnabled\x88\x01\x01B\a\n" +

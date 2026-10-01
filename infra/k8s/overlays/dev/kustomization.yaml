@@ -23,6 +23,8 @@ configMapGenerator:
   - name: backend-env
     behavior: merge
     literals:
+      # アイコン画像の配信 URL に使う backend の公開 URL
+      - PUBLIC_BASE_URL=https://api-chat-dev.example.com
       - CORS_ALLOWED_ORIGINS=https://chat-dev.example.com,tauri://localhost,https://tauri.localhost
       - WASABI_BUCKET=example-chat-dev-attachments
       - GOOGLE_OAUTH_CLIENT_ID=

@@ -98,8 +98,12 @@ func (i *interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*MeOutp
 	if input.Bio != nil {
 		u.Bio = input.Bio
 	}
+	// 空文字はアバターを外す
 	if input.AvatarURL != nil {
 		u.AvatarURL = input.AvatarURL
+		if *input.AvatarURL == "" {
+			u.AvatarURL = nil
+		}
 	}
 
 	if err := i.userRepo.Update(ctx, u); err != nil {
