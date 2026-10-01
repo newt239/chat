@@ -1,5 +1,5 @@
 export type SuggestionQuery = {
-  trigger: "@" | "#";
+  trigger: "@" | "#" | "/";
   query: string;
   // トリガー文字の位置
   start: number;
@@ -7,7 +7,7 @@ export type SuggestionQuery = {
 
 export type SuggestionItem = {
   id: string;
-  kind: "user" | "group" | "channel" | "broadcast";
+  kind: "user" | "group" | "channel" | "broadcast" | "command";
   label: string;
   // 入力欄に挿入する文字列（トリガー文字を含む）
   value: string;
@@ -19,7 +19,18 @@ export type SuggestionItem = {
 // 行頭か空白の直後に打った @ / # から、カーソルまでを検索語にする。日本語の名前も探せるよう空白以外を受け付ける
 const tokenPattern = /(?:^|\s)(?<trigger>[@#])(?<query>[^\s@#]*)$/;
 
-export const findSuggestionQuery = (text: string, cursor: number): SuggestionQuery | null => {
+// コマンドは入力欄の先頭で打ったものだけ
+const commandPattern = /^\/(?<query>[a-z]*)$/;
+
+export const findSuggestionQuery = (
+  text: string,
+  cursor: number,
+  allowsCommands: boolean,
+): SuggestionQuery | null => {
+  const command = allowsCommands ? commandPattern.exec(text.slice(0, cursor)) : null;
+  if (command !== null) {
+    return { query: command.groups?.query ?? "", start: 0, trigger: "/" };
+  }
   const match = tokenPattern.exec(text.slice(0, cursor));
   if (match === null) {
     return null;

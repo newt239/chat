@@ -28,6 +28,7 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/pushtoken"
+	"github.com/newt239/chat/ent/reminder"
 	"github.com/newt239/chat/ent/scheduledmessage"
 	"github.com/newt239/chat/ent/schema"
 	"github.com/newt239/chat/ent/session"
@@ -431,6 +432,26 @@ func init() {
 	pushtokenDescID := pushtokenFields[0].Descriptor()
 	// pushtoken.DefaultID holds the default value on creation for the id field.
 	pushtoken.DefaultID = pushtokenDescID.Default.(func() uuid.UUID)
+	reminderFields := schema.Reminder{}.Fields()
+	_ = reminderFields
+	// reminderDescText is the schema descriptor for text field.
+	reminderDescText := reminderFields[5].Descriptor()
+	// reminder.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	reminder.TextValidator = reminderDescText.Validators[0].(func(string) error)
+	// reminderDescCreatedAt is the schema descriptor for created_at field.
+	reminderDescCreatedAt := reminderFields[8].Descriptor()
+	// reminder.DefaultCreatedAt holds the default value on creation for the created_at field.
+	reminder.DefaultCreatedAt = reminderDescCreatedAt.Default.(func() time.Time)
+	// reminderDescUpdatedAt is the schema descriptor for updated_at field.
+	reminderDescUpdatedAt := reminderFields[9].Descriptor()
+	// reminder.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	reminder.DefaultUpdatedAt = reminderDescUpdatedAt.Default.(func() time.Time)
+	// reminder.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	reminder.UpdateDefaultUpdatedAt = reminderDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// reminderDescID is the schema descriptor for id field.
+	reminderDescID := reminderFields[0].Descriptor()
+	// reminder.DefaultID holds the default value on creation for the id field.
+	reminder.DefaultID = reminderDescID.Default.(func() uuid.UUID)
 	scheduledmessageFields := schema.ScheduledMessage{}.Fields()
 	_ = scheduledmessageFields
 	// scheduledmessageDescCreatedAt is the schema descriptor for created_at field.

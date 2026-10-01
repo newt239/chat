@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+
+// 入力欄の「/」から始まるコマンド。応答は公式アプリがチャンネル全員に見える形で投稿し、誰も削除できない。
+// /remind [me|<@ユーザーID>|<#チャンネルID>] 内容 日時 … 指定した日時に公式アプリが届ける
+service CommandService {
+  rpc ExecuteCommand(ExecuteCommandRequest) returns (ExecuteCommandResponse);
+}
+
+message ExecuteCommandRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+  // スレッドの入力欄から実行したときの親メッセージ。応答をスレッドに返す
+  optional string parent_id = 2 [(buf.validate.field).string.uuid = true];
+  string text = 3 [(buf.validate.field).string = {
+    pattern: "^/"
+    max_len: 4000
+  }];
+}
+
+message ExecuteCommandResponse {
+  // 公式アプリの応答
+  Message message = 1;
+}

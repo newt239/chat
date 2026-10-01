@@ -3,6 +3,7 @@ package registry
 import (
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	appuc "github.com/newt239/chat/internal/usecase/app"
+	commanduc "github.com/newt239/chat/internal/usecase/command"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
 	"github.com/newt239/chat/internal/usecase/audit"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
@@ -176,6 +177,18 @@ func (r *UseCaseRegistry) NewAppUseCase() *appuc.Interactor {
 		),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
+	)
+}
+
+func (r *UseCaseRegistry) NewCommandUseCase() *commanduc.Interactor {
+	return commanduc.NewInteractor(
+		r.domainRegistry.NewReminderRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewAppUseCase(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 

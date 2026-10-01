@@ -72,6 +72,9 @@ type MessageUserMention func(*sql.Selector)
 // PushToken is the predicate function for pushtoken builders.
 type PushToken func(*sql.Selector)
 
+// Reminder is the predicate function for reminder builders.
+type Reminder func(*sql.Selector)
+
 // ScheduledMessage is the predicate function for scheduledmessage builders.
 type ScheduledMessage func(*sql.Selector)
 

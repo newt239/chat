@@ -38,6 +38,7 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/pushtoken"
+	"github.com/newt239/chat/ent/reminder"
 	"github.com/newt239/chat/ent/scheduledmessage"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
@@ -103,6 +104,8 @@ type Client struct {
 	MessageUserMention *MessageUserMentionClient
 	// PushToken is the client for interacting with the PushToken builders.
 	PushToken *PushTokenClient
+	// Reminder is the client for interacting with the Reminder builders.
+	Reminder *ReminderClient
 	// ScheduledMessage is the client for interacting with the ScheduledMessage builders.
 	ScheduledMessage *ScheduledMessageClient
 	// Session is the client for interacting with the Session builders.
@@ -160,6 +163,7 @@ func (c *Client) init() {
 	c.MessageReaction = NewMessageReactionClient(c.config)
 	c.MessageUserMention = NewMessageUserMentionClient(c.config)
 	c.PushToken = NewPushTokenClient(c.config)
+	c.Reminder = NewReminderClient(c.config)
 	c.ScheduledMessage = NewScheduledMessageClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.SystemMessage = NewSystemMessageClient(c.config)
@@ -286,6 +290,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		PushToken:           NewPushTokenClient(cfg),
+		Reminder:            NewReminderClient(cfg),
 		ScheduledMessage:    NewScheduledMessageClient(cfg),
 		Session:             NewSessionClient(cfg),
 		SystemMessage:       NewSystemMessageClient(cfg),
@@ -339,6 +344,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
 		PushToken:           NewPushTokenClient(cfg),
+		Reminder:            NewReminderClient(cfg),
 		ScheduledMessage:    NewScheduledMessageClient(cfg),
 		Session:             NewSessionClient(cfg),
 		SystemMessage:       NewSystemMessageClient(cfg),
@@ -384,7 +390,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
 		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
 		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken, c.Reminder,
 		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
 		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
 		c.WorkspaceMember, c.WorkspacePermission,
@@ -401,7 +407,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
 		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
 		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken, c.Reminder,
 		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
 		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
 		c.WorkspaceMember, c.WorkspacePermission,
@@ -457,6 +463,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MessageUserMention.mutate(ctx, m)
 	case *PushTokenMutation:
 		return c.PushToken.mutate(ctx, m)
+	case *ReminderMutation:
+		return c.Reminder.mutate(ctx, m)
 	case *ScheduledMessageMutation:
 		return c.ScheduledMessage.mutate(ctx, m)
 	case *SessionMutation:
@@ -4420,6 +4428,171 @@ func (c *PushTokenClient) mutate(ctx context.Context, m *PushTokenMutation) (Val
 	}
 }
 
+// ReminderClient is a client for the Reminder schema.
+type ReminderClient struct {
+	config
+}
+
+// NewReminderClient returns a client for the Reminder from the given config.
+func NewReminderClient(c config) *ReminderClient {
+	return &ReminderClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `reminder.Hooks(f(g(h())))`.
+func (c *ReminderClient) Use(hooks ...Hook) {
+	c.hooks.Reminder = append(c.hooks.Reminder, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `reminder.Intercept(f(g(h())))`.
+func (c *ReminderClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Reminder = append(c.inters.Reminder, interceptors...)
+}
+
+// Create returns a builder for creating a Reminder entity.
+func (c *ReminderClient) Create() *ReminderCreate {
+	mutation := newReminderMutation(c.config, OpCreate)
+	return &ReminderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Reminder entities.
+func (c *ReminderClient) CreateBulk(builders ...*ReminderCreate) *ReminderCreateBulk {
+	return &ReminderCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ReminderClient) MapCreateBulk(slice any, setFunc func(*ReminderCreate, int)) *ReminderCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ReminderCreateBulk{err: fmt.Errorf("calling to ReminderClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ReminderCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ReminderCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Reminder.
+func (c *ReminderClient) Update() *ReminderUpdate {
+	mutation := newReminderMutation(c.config, OpUpdate)
+	return &ReminderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReminderClient) UpdateOne(_m *Reminder) *ReminderUpdateOne {
+	mutation := newReminderMutation(c.config, OpUpdateOne, withReminder(_m))
+	return &ReminderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReminderClient) UpdateOneID(id uuid.UUID) *ReminderUpdateOne {
+	mutation := newReminderMutation(c.config, OpUpdateOne, withReminderID(id))
+	return &ReminderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Reminder.
+func (c *ReminderClient) Delete() *ReminderDelete {
+	mutation := newReminderMutation(c.config, OpDelete)
+	return &ReminderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReminderClient) DeleteOne(_m *Reminder) *ReminderDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReminderClient) DeleteOneID(id uuid.UUID) *ReminderDeleteOne {
+	builder := c.Delete().Where(reminder.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReminderDeleteOne{builder}
+}
+
+// Query returns a query builder for Reminder.
+func (c *ReminderClient) Query() *ReminderQuery {
+	return &ReminderQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReminder},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Reminder entity by its id.
+func (c *ReminderClient) Get(ctx context.Context, id uuid.UUID) (*Reminder, error) {
+	return c.Query().Where(reminder.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReminderClient) GetX(ctx context.Context, id uuid.UUID) *Reminder {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkspace queries the workspace edge of a Reminder.
+func (c *ReminderClient) QueryWorkspace(_m *Reminder) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reminder.Table, reminder.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, reminder.WorkspaceTable, reminder.WorkspaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreator queries the creator edge of a Reminder.
+func (c *ReminderClient) QueryCreator(_m *Reminder) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reminder.Table, reminder.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, reminder.CreatorTable, reminder.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ReminderClient) Hooks() []Hook {
+	return c.hooks.Reminder
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReminderClient) Interceptors() []Interceptor {
+	return c.inters.Reminder
+}
+
+func (c *ReminderClient) mutate(ctx context.Context, m *ReminderMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReminderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReminderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReminderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReminderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Reminder mutation op: %q", m.Op())
+	}
+}
+
 // ScheduledMessageClient is a client for the ScheduledMessage schema.
 type ScheduledMessageClient struct {
 	config
@@ -6631,18 +6804,18 @@ type (
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
 		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
 		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
-		ScheduledMessage, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserNote, UserThreadFollow, Workspace, WorkspaceMember,
-		WorkspacePermission []ent.Hook
+		Reminder, ScheduledMessage, Session, SystemMessage, ThreadReadState, User,
+		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Workspace,
+		WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
 		App, Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
 		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
 		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
-		ScheduledMessage, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserNote, UserThreadFollow, Workspace, WorkspaceMember,
-		WorkspacePermission []ent.Interceptor
+		Reminder, ScheduledMessage, Session, SystemMessage, ThreadReadState, User,
+		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Workspace,
+		WorkspaceMember, WorkspacePermission []ent.Interceptor
 	}
 )
 

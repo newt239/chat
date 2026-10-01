@@ -978,6 +978,49 @@ var (
 			},
 		},
 	}
+	// ReminderColumns holds the columns for the "reminder" table.
+	ReminderColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "target_user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "target_channel_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
+		{Name: "remind_at", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"scheduled", "sending", "sent", "failed"}, Default: "scheduled"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "creator_id", Type: field.TypeUUID},
+	}
+	// ReminderTable holds the schema information for the "reminder" table.
+	ReminderTable = &schema.Table{
+		Name:       "reminder",
+		Columns:    ReminderColumns,
+		PrimaryKey: []*schema.Column{ReminderColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "reminder_workspaces_workspace",
+				Columns:    []*schema.Column{ReminderColumns[8]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "reminder_users_creator",
+				Columns:    []*schema.Column{ReminderColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "reminder_remind_at",
+				Unique:  false,
+				Columns: []*schema.Column{ReminderColumns[4]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status = 'scheduled'",
+				},
+			},
+		},
+	}
 	// ScheduledMessageColumns holds the columns for the "scheduled_message" table.
 	ScheduledMessageColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1472,6 +1515,7 @@ var (
 		MessageReactionsTable,
 		MessageUserMentionsTable,
 		PushTokenTable,
+		ReminderTable,
 		ScheduledMessageTable,
 		SessionsTable,
 		SystemMessagesTable,
@@ -1567,6 +1611,11 @@ func init() {
 	PushTokenTable.ForeignKeys[0].RefTable = UsersTable
 	PushTokenTable.Annotation = &entsql.Annotation{
 		Table: "push_token",
+	}
+	ReminderTable.ForeignKeys[0].RefTable = WorkspacesTable
+	ReminderTable.ForeignKeys[1].RefTable = UsersTable
+	ReminderTable.Annotation = &entsql.Annotation{
+		Table: "reminder",
 	}
 	ScheduledMessageTable.ForeignKeys[0].RefTable = UsersTable
 	ScheduledMessageTable.ForeignKeys[1].RefTable = ChannelsTable

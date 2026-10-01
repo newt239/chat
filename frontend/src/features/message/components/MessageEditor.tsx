@@ -32,6 +32,7 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
   const [cursor, setCursor] = useState(draft.length);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const suggestion = useComposerSuggestion({
+    allowsCommands: false,
     body: draft,
     cursor,
     onApply: (next, item) => {

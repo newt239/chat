@@ -91,6 +91,8 @@ func main() {
 
 	runCtx, stopRun := context.WithCancel(context.Background())
 	go reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	// リマインダーも予約メッセージと同じ間隔で確かめる
+	go reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
 
 	hub := reg.NewWebSocketHub()
 	go hub.Run(runCtx)

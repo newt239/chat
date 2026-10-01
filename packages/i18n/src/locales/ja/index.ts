@@ -6,6 +6,7 @@ import { auth } from "./auth";
 import { bookmark } from "./bookmark";
 import { channel } from "./channel";
 import { codeBlock } from "./codeBlock";
+import { command } from "./command";
 import { common } from "./common";
 import { dm } from "./dm";
 import { draft } from "./draft";
@@ -36,6 +37,7 @@ export const ja = {
   bookmark,
   channel,
   codeBlock,
+  command,
   common,
   dm,
   draft,

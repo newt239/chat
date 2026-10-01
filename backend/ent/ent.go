@@ -34,6 +34,7 @@ import (
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/pushtoken"
+	"github.com/newt239/chat/ent/reminder"
 	"github.com/newt239/chat/ent/scheduledmessage"
 	"github.com/newt239/chat/ent/session"
 	"github.com/newt239/chat/ent/systemmessage"
@@ -128,6 +129,7 @@ func checkColumn(t, c string) error {
 			messagereaction.Table:     messagereaction.ValidColumn,
 			messageusermention.Table:  messageusermention.ValidColumn,
 			pushtoken.Table:           pushtoken.ValidColumn,
+			reminder.Table:            reminder.ValidColumn,
 			scheduledmessage.Table:    scheduledmessage.ValidColumn,
 			session.Table:             session.ValidColumn,
 			systemmessage.Table:       systemmessage.ValidColumn,

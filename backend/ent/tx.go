@@ -58,6 +58,8 @@ type Tx struct {
 	MessageUserMention *MessageUserMentionClient
 	// PushToken is the client for interacting with the PushToken builders.
 	PushToken *PushTokenClient
+	// Reminder is the client for interacting with the Reminder builders.
+	Reminder *ReminderClient
 	// ScheduledMessage is the client for interacting with the ScheduledMessage builders.
 	ScheduledMessage *ScheduledMessageClient
 	// Session is the client for interacting with the Session builders.
@@ -235,6 +237,7 @@ func (tx *Tx) init() {
 	tx.MessageReaction = NewMessageReactionClient(tx.config)
 	tx.MessageUserMention = NewMessageUserMentionClient(tx.config)
 	tx.PushToken = NewPushTokenClient(tx.config)
+	tx.Reminder = NewReminderClient(tx.config)
 	tx.ScheduledMessage = NewScheduledMessageClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.SystemMessage = NewSystemMessageClient(tx.config)

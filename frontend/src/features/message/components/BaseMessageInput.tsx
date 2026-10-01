@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { AttachmentList } from "#/features/attachment/components/AttachmentList";
 import { useFileUpload } from "#/features/attachment/hooks/useFileUpload";
+import { useExecuteCommand } from "#/features/command/hooks/useExecuteCommand";
+import { findCommand, unescapeCommand } from "#/features/command/utils/commands";
 import { useDraftAutosave } from "#/features/draft/hooks/useDraftAutosave";
 import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
@@ -79,6 +81,8 @@ export const BaseMessageInput = ({
   const isRestoredRef = useRef(false);
   const scheduleMessage = useScheduleMessage();
   const mentionCodec = useMentionCodec();
+  const executeCommand = useExecuteCommand();
+  const isBusy = isPending || executeCommand.isPending;
   const { decode, encode, isReady: isCodecReady } = mentionCodec;
 
   // 開き直したときに書きかけを戻す。読み込み前に打ち始めていたら上書きしない。名前に戻せるようメンバーを読んでから戻す
@@ -120,6 +124,7 @@ export const BaseMessageInput = ({
   };
 
   const suggestion = useComposerSuggestion({
+    allowsCommands: true,
     body,
     cursor: selection.start,
     onApply: (next, item) => {
@@ -182,10 +187,28 @@ export const BaseMessageInput = ({
 
   const handleSubmit = () => {
     const content = collectContent();
-    if (content !== null) {
-      onSubmit(content);
-      resetComposer();
+    if (content === null) {
+      return;
     }
+    // 添付や位置情報のない「/コマンド」は投稿せずに実行する
+    if (
+      findCommand(content.body) !== null &&
+      content.attachmentIds.length === 0 &&
+      content.location === undefined
+    ) {
+      executeCommand.mutate(
+        { channelId, parentId: parentId ?? undefined, text: content.body },
+        {
+          onError: (commandError) => {
+            toast(commandError.rawMessage || t("command.failed"), { tone: "danger" });
+          },
+          onSuccess: resetComposer,
+        },
+      );
+      return;
+    }
+    onSubmit({ ...content, body: unescapeCommand(content.body) });
+    resetComposer();
   };
 
   const handleSchedule = (scheduledAt: Date) => {
@@ -246,7 +269,7 @@ export const BaseMessageInput = ({
                 setSelection({ end: textarea.selectionEnd, start: textarea.selectionStart });
               }
             }}
-            isDisabled={isPending}
+            isDisabled={isBusy}
             onKeyDown={(event) => {
               if (suggestion.handleKeyDown(event)) {
                 return;
@@ -297,8 +320,8 @@ export const BaseMessageInput = ({
             setIsPreview((current) => !current);
           }}
           onSubmit={handleSubmit}
-          isSendDisabled={isPending || !hasContent || isUploading}
-          isSending={isPending}
+          isSendDisabled={isBusy || !hasContent || isUploading}
+          isSending={isBusy}
           activeFormats={detectActiveFormats(body, selection)}
           onFormat={handleFormat}
           onInsertEmoji={handleInsertEmoji}
