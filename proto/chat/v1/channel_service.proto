@@ -42,6 +42,8 @@ message Channel {
   bool is_muted = 15;
   // 最後のメッセージ（スレッドの返信を除く）の投稿日時。ListChannels でだけ設定する
   optional google.protobuf.Timestamp last_message_at = 16;
+  // 未読のうち自分宛てのメンションの数。ミュート中でも数える
+  int32 mention_count = 17;
 }
 
 message ListChannelsRequest {

@@ -53,21 +53,21 @@ type SetChannelMutedInput struct {
 }
 
 type ChannelOutput struct {
-	ID          string     `json:"id"`
-	WorkspaceID string     `json:"workspaceId"`
-	Name        string     `json:"name"`
-	Description *string    `json:"description"`
-	IsPrivate   bool       `json:"isPrivate"`
-	CreatedBy   string     `json:"createdBy"`
-	CreatedAt   time.Time  `json:"createdAt"`
-	UpdatedAt   time.Time  `json:"updatedAt"`
-	UnreadCount int        `json:"unreadCount"`
-	HasMention  bool       `json:"hasMention"`
-	ParentID    *string    `json:"parentId"`
-	IsStarred   bool       `json:"isStarred"`
-	IsMuted     bool       `json:"isMuted"`
-	IsMember    bool       `json:"isMember"`
-	ArchivedAt  *time.Time `json:"archivedAt,omitempty"`
+	ID           string     `json:"id"`
+	WorkspaceID  string     `json:"workspaceId"`
+	Name         string     `json:"name"`
+	Description  *string    `json:"description"`
+	IsPrivate    bool       `json:"isPrivate"`
+	CreatedBy    string     `json:"createdBy"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
+	UnreadCount  int        `json:"unreadCount"`
+	MentionCount int        `json:"mentionCount"`
+	ParentID     *string    `json:"parentId"`
+	IsStarred    bool       `json:"isStarred"`
+	IsMuted      bool       `json:"isMuted"`
+	IsMember     bool       `json:"isMember"`
+	ArchivedAt   *time.Time `json:"archivedAt,omitempty"`
 	// ListChannels でだけ設定する
 	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
 }

@@ -17,8 +17,8 @@ type ChannelNavItemProps = {
   isStarred: boolean;
   isMuted: boolean;
   unreadCount: number;
-  // メンションを含む未読（DM はすべて）なら件数のバッジを出す。それ以外は太字にするだけ
-  showsBadge: boolean;
+  // バッジに出す件数（チャンネルはメンション数、DM は未読数）。0 なら出さない
+  badgeCount: number;
   // アイコンと名前
   children: ReactNode;
 };
@@ -30,7 +30,7 @@ export const ChannelNavItem = ({
   isStarred,
   isMuted,
   unreadCount,
-  showsBadge,
+  badgeCount,
   children,
 }: ChannelNavItemProps) => {
   const { t } = useTranslation();
@@ -59,7 +59,7 @@ export const ChannelNavItem = ({
         {children}
         <DraftIndicator workspaceId={workspaceId} channelId={channelId} />
         {isMuted && <IconBellOff aria-label={t("shell.channel.muted")} role="img" />}
-        {hasUnread && showsBadge && <Badge>{unreadCount > 99 ? "99+" : unreadCount}</Badge>}
+        {badgeCount > 0 && <Badge>{badgeCount > 99 ? "99+" : badgeCount}</Badge>}
       </NavLink>
     </ContextMenu>
   );

@@ -16,13 +16,16 @@ const dev = create(ChannelSchema, { id: "dev", name: "dev", unreadCount: 1 });
 const frontend = create(ChannelSchema, {
   hasMention: true,
   id: "fe",
+  mentionCount: 1,
   name: "dev/frontend",
   parentId: "dev",
   unreadCount: 2,
 });
 const backend = create(ChannelSchema, {
+  hasMention: true,
   id: "be",
   isMuted: true,
+  mentionCount: 2,
   name: "dev/backend",
   parentId: "dev",
   unreadCount: 5,
@@ -84,9 +87,9 @@ describe("categoryOfChannel", () => {
 });
 
 describe("sumUnread", () => {
-  test("自分と子孫の未読を合計し、ミュート中のチャンネルは数えない", () => {
+  test("自分と子孫の未読を合計し、未読はミュート中のチャンネルを数えないがメンションは数える", () => {
     const [root] = buildChannelTree([dev, frontend, backend]);
-    expect(root && sumUnread(root)).toEqual({ hasMention: true, unreadCount: 3 });
+    expect(root && sumUnread(root)).toEqual({ mentionCount: 3, unreadCount: 3 });
   });
 });
 

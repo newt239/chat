@@ -89,7 +89,7 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
                 isStarred={descendant.isStarred}
                 isMuted={descendant.isMuted}
                 unreadCount={descendant.unreadCount}
-                showsBadge={descendant.hasMention}
+                badgeCount={descendant.mentionCount}
               >
                 {descendant.isPrivate ? <IconLock aria-hidden /> : <IconHash aria-hidden />}
                 <span className="min-w-0 flex-1 truncate">

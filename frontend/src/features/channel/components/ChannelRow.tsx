@@ -15,7 +15,7 @@ export const ChannelRow = ({ workspaceId, channel }: ChannelRowProps) => (
     isStarred={channel.isStarred}
     isMuted={channel.isMuted}
     unreadCount={channel.unreadCount}
-    showsBadge={channel.hasMention}
+    badgeCount={channel.mentionCount}
   >
     <ChannelName name={channel.name} isPrivate={channel.isPrivate} />
   </ChannelNavItem>

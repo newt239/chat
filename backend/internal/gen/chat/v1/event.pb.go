@@ -632,6 +632,7 @@ type UnreadCountEvent struct {
 	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	UnreadCount   int32                  `protobuf:"varint,2,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
 	HasMention    bool                   `protobuf:"varint,3,opt,name=has_mention,json=hasMention,proto3" json:"has_mention,omitempty"`
+	MentionCount  int32                  `protobuf:"varint,4,opt,name=mention_count,json=mentionCount,proto3" json:"mention_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -685,6 +686,13 @@ func (x *UnreadCountEvent) GetHasMention() bool {
 		return x.HasMention
 	}
 	return false
+}
+
+func (x *UnreadCountEvent) GetMentionCount() int32 {
+	if x != nil {
+		return x.MentionCount
+	}
+	return 0
 }
 
 type PinEvent struct {
@@ -1230,13 +1238,14 @@ const file_chat_v1_event_proto_rawDesc = "" +
 	"message_id\x18\x02 \x01(\tR\tmessageId\x12.\n" +
 	"\x13deleted_message_ids\x18\x03 \x03(\tR\x11deletedMessageIds\x129\n" +
 	"\n" +
-	"deleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\"u\n" +
+	"deleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\"\x9a\x01\n" +
 	"\x10UnreadCountEvent\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x12!\n" +
 	"\funread_count\x18\x02 \x01(\x05R\vunreadCount\x12\x1f\n" +
 	"\vhas_mention\x18\x03 \x01(\bR\n" +
-	"hasMention\"\xda\x01\n" +
+	"hasMention\x12#\n" +
+	"\rmention_count\x18\x04 \x01(\x05R\fmentionCount\"\xda\x01\n" +
 	"\bPinEvent\x12\x1d\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tR\tchannelId\x12\x1d\n" +

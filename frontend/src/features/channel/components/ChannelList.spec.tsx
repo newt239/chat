@@ -20,6 +20,7 @@ const channels = [
     hasMention: true,
     id: "fe",
     isMember: true,
+    mentionCount: 2,
     name: "dev/frontend",
     parentId: "dev",
     unreadCount: 2,
@@ -66,13 +67,13 @@ describe("ChannelList", () => {
     expect(screen.getByRole("link", { name: /^公開チャンネル\s?general$/ })).toBeInTheDocument();
   });
 
-  test("折りたたむと子の数と子孫の未読の合計を親に出す", async () => {
+  test("折りたたむと子の数と子孫のメンション数の合計を親に出す", async () => {
     await render();
     await userEvent.click(await screen.findByRole("button", { name: "dev の下階層を折りたたむ" }));
 
     const parent = await screen.findByRole("link", { name: /^公開チャンネル\s?dev/ });
     expect(parent).toHaveTextContent("1");
-    expect(parent).toHaveTextContent("5");
+    expect(parent).toHaveTextContent("2");
     // 折りたたみのアニメーションが終わってから消える
     await waitFor(() => {
       expect(screen.queryByRole("link", { name: /frontend/ })).not.toBeInTheDocument();

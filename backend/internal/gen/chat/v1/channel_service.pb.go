@@ -45,6 +45,8 @@ type Channel struct {
 	IsMuted    bool                   `protobuf:"varint,15,opt,name=is_muted,json=isMuted,proto3" json:"is_muted,omitempty"`
 	// 最後のメッセージ（スレッドの返信を除く）の投稿日時。ListChannels でだけ設定する
 	LastMessageAt *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=last_message_at,json=lastMessageAt,proto3,oneof" json:"last_message_at,omitempty"`
+	// 未読のうち自分宛てのメンションの数。ミュート中でも数える
+	MentionCount  int32 `protobuf:"varint,17,opt,name=mention_count,json=mentionCount,proto3" json:"mention_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -189,6 +191,13 @@ func (x *Channel) GetLastMessageAt() *timestamppb.Timestamp {
 		return x.LastMessageAt
 	}
 	return nil
+}
+
+func (x *Channel) GetMentionCount() int32 {
+	if x != nil {
+		return x.MentionCount
+	}
+	return 0
 }
 
 type ListChannelsRequest struct {
@@ -1178,7 +1187,7 @@ var File_chat_v1_channel_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb5\x05\n" +
+	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x05\n" +
 	"\aChannel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -1203,7 +1212,8 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\varchived_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampH\x02R\n" +
 	"archivedAt\x88\x01\x01\x12\x19\n" +
 	"\bis_muted\x18\x0f \x01(\bR\aisMuted\x12G\n" +
-	"\x0flast_message_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampH\x03R\rlastMessageAt\x88\x01\x01B\x0e\n" +
+	"\x0flast_message_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampH\x03R\rlastMessageAt\x88\x01\x01\x12#\n" +
+	"\rmention_count\x18\x11 \x01(\x05R\fmentionCountB\x0e\n" +
 	"\f_descriptionB\f\n" +
 	"\n" +
 	"_parent_idB\x0e\n" +

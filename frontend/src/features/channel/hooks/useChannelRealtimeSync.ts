@@ -63,10 +63,11 @@ export const useChannelRealtimeSync = (
         }));
       }),
 
-      wsClient.on("unreadCount", ({ channelId, hasMention, unreadCount }) => {
+      wsClient.on("unreadCount", ({ channelId, hasMention, mentionCount, unreadCount }) => {
         updateChannel(channelId, (channel) => ({
           ...channel,
           hasMention,
+          mentionCount,
           unreadCount,
         }));
       }),

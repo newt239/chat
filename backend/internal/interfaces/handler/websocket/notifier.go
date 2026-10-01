@@ -84,9 +84,9 @@ func reactionEvent(channelID string, reaction reactionuc.ReactionNotification) *
 	return event
 }
 
-func (n *Notifier) NotifyUnreadCount(workspaceID, userID, channelID string, unreadCount int, hasMention bool) {
+func (n *Notifier) NotifyUnreadCount(workspaceID, userID, channelID string, unreadCount, mentionCount int) {
 	event := &chatv1.ServerEvent{Event: &chatv1.ServerEvent_UnreadCount{
-		UnreadCount: &chatv1.UnreadCountEvent{ChannelId: channelID, UnreadCount: int32(unreadCount), HasMention: hasMention},
+		UnreadCount: &chatv1.UnreadCountEvent{ChannelId: channelID, UnreadCount: int32(unreadCount), HasMention: mentionCount > 0, MentionCount: int32(mentionCount)},
 	}}
 	if data := encodeServerEvent(event); data != nil {
 		n.hub.BroadcastToUser(workspaceID, userID, data)

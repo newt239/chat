@@ -154,7 +154,7 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 
 	output := make([]ChannelOutput, 0, len(all))
 	for _, ch := range joined {
-		out := toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID] > 0)
+		out := toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID])
 		out.IsMember = true
 		output = append(output, out)
 	}
@@ -667,23 +667,23 @@ func (i *channelInteractor) renameDescendants(ctx context.Context, ch *entity.Ch
 }
 
 func toChannelOutput(channel *entity.Channel) ChannelOutput {
-	return toChannelOutputWithUnread(channel, 0, false)
+	return toChannelOutputWithUnread(channel, 0, 0)
 }
 
-func toChannelOutputWithUnread(channel *entity.Channel, unreadCount int, hasMention bool) ChannelOutput {
+func toChannelOutputWithUnread(channel *entity.Channel, unreadCount, mentionCount int) ChannelOutput {
 	return ChannelOutput{
-		ID:          channel.ID,
-		WorkspaceID: channel.WorkspaceID,
-		Name:        channel.Name,
-		Description: channel.Description,
-		IsPrivate:   channel.IsPrivate,
-		CreatedBy:   channel.CreatedBy,
-		CreatedAt:   channel.CreatedAt,
-		UpdatedAt:   channel.UpdatedAt,
-		UnreadCount: unreadCount,
-		HasMention:  hasMention,
-		ParentID:    channel.ParentID,
-		ArchivedAt:  channel.ArchivedAt,
+		ID:           channel.ID,
+		WorkspaceID:  channel.WorkspaceID,
+		Name:         channel.Name,
+		Description:  channel.Description,
+		IsPrivate:    channel.IsPrivate,
+		CreatedBy:    channel.CreatedBy,
+		CreatedAt:    channel.CreatedAt,
+		UpdatedAt:    channel.UpdatedAt,
+		UnreadCount:  unreadCount,
+		MentionCount: mentionCount,
+		ParentID:     channel.ParentID,
+		ArchivedAt:   channel.ArchivedAt,
 	}
 }
 
