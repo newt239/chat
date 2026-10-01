@@ -14,6 +14,9 @@ type MessageContentProps = {
 
 export const MessageContent = ({ message }: MessageContentProps) => {
   const customEmojis = useCustomEmojiMap();
+  const quotedUrls = message.links.flatMap((link) =>
+    link.linkedMessageId === undefined ? [] : [link.url],
+  );
   return (
     <>
       {message.body !== "" && (
@@ -23,7 +26,7 @@ export const MessageContent = ({ message }: MessageContentProps) => {
             isJumboEmoji(message.body, customEmojis) && jumboClassName,
           )}
         >
-          {renderMarkdown(message.body)}
+          {renderMarkdown(message.body, quotedUrls)}
         </div>
       )}
       {message.links.map((link) => (

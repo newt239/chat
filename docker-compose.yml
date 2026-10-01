@@ -67,6 +67,8 @@ services:
       # 添付ファイルや絵文字は Wasabi ではなく backend/tmp/storage に保存し、backend の /storage から配信する
       - STORAGE_DRIVER=local
       - PUBLIC_BASE_URL=${CHAT_API_URL:-http://localhost:8080}
+      # seed のメッセージリンクに使うフロントの URL
+      - APP_URL=${CHAT_APP_URL:-https://chat.localhost}
       - MEILISEARCH_URL=http://meilisearch:7700
       - MEILISEARCH_API_KEY=development-master-key
       - REDIS_URL=redis://redis:6379

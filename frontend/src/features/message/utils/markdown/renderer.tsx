@@ -16,6 +16,7 @@ import { Mention } from "#/features/message/components/markdown/Mention";
 
 import { remarkChannel } from "./plugins/channel";
 import { remarkCustomEmoji } from "./plugins/customEmoji";
+import { remarkHideLinks } from "./plugins/hideLinks";
 import { remarkMention } from "./plugins/mention";
 
 const customSchema = {
@@ -33,10 +34,12 @@ const customSchema = {
   },
 };
 
-export const renderMarkdown = (content: string): ReactNode => {
+// hiddenUrls のリンクは本文に出さない（引用カードで表示するメッセージへのリンクなど）
+export const renderMarkdown = (content: string, hiddenUrls: readonly string[]): ReactNode => {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkHideLinks, hiddenUrls)
     .use(remarkMention)
     .use(remarkChannel)
     .use(remarkCustomEmoji)
