@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/user.proto.
  */
 export const file_chat_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEiqAEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8ihwEKD1RoZW1lUHJlZmVyZW5jZRIXCgNodWUYASABKAVCCrpIBxoFEOgCKAASJwoGY2hyb21hGAIgASgBQhe6SBQSEhmuR+F6FK7XPykAAAAAAAAAABIyCgdzaWRlYmFyGAMgASgOMhUuY2hhdC52MS5TaWRlYmFyU3R5bGVCCrpIB4IBBBABIAAi8QIKD1VzZXJQcmVmZXJlbmNlcxIvCgV0aGVtZRgBIAEoCzIYLmNoYXQudjEuVGhlbWVQcmVmZXJlbmNlQga6SAPIAQESMgoKY29sb3JfbW9kZRgCIAEoDjISLmNoYXQudjEuQ29sb3JNb2RlQgq6SAeCAQQQASAAEh0KBmxvY2FsZRgDIAEoCUINukgKcghSAmphUgJlbhJCChJub3RpZmljYXRpb25fbGV2ZWwYBCABKA4yGi5jaGF0LnYxLk5vdGlmaWNhdGlvbkxldmVsQgq6SAeCAQQQASAAEhkKCHRpbWV6b25lGAUgASgJQge6SARyAhhAEhwKFHRpbWV6b25lX2F1dG9fdXBkYXRlGAYgASgIEkEKEmNoYW5uZWxfc29ydF9vcmRlchgHIAEoDjIZLmNoYXQudjEuQ2hhbm5lbFNvcnRPcmRlckIKukgHggEEEAEgABIaChJoaWRlX2pvaW5fbWVzc2FnZXMYCCABKAgiZwoLVXNlclN1bW1hcnkSCgoCaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhcKCmF2YXRhcl91cmwYAyABKAlIAIgBARIOCgZpc19ib3QYBCABKAhCDQoLX2F2YXRhcl91cmwqYAoMU2lkZWJhclN0eWxlEh0KGVNJREVCQVJfU1RZTEVfVU5TUEVDSUZJRUQQABIYChRTSURFQkFSX1NUWUxFX1RJTlRFRBABEhcKE1NJREVCQVJfU1RZTEVfTElHSFQQAippCglDb2xvck1vZGUSGgoWQ09MT1JfTU9ERV9VTlNQRUNJRklFRBAAEhQKEENPTE9SX01PREVfTElHSFQQARITCg9DT0xPUl9NT0RFX0RBUksQAhIVChFDT0xPUl9NT0RFX1NZU1RFTRADKn4KEENoYW5uZWxTb3J0T3JkZXISIgoeQ0hBTk5FTF9TT1JUX09SREVSX1VOU1BFQ0lGSUVEEAASHgoaQ0hBTk5FTF9TT1JUX09SREVSX0RFRkFVTFQQARImCiJDSEFOTkVMX1NPUlRfT1JERVJfUkVDRU5UX0FDVElWSVRZEAIqkQEKEU5vdGlmaWNhdGlvbkxldmVsEiIKHk5PVElGSUNBVElPTl9MRVZFTF9VTlNQRUNJRklFRBAAEhoKFk5PVElGSUNBVElPTl9MRVZFTF9BTEwQARIfChtOT1RJRklDQVRJT05fTEVWRUxfTUVOVElPTlMQAhIbChdOT1RJRklDQVRJT05fTEVWRUxfTk9ORRADQooBCgtjb20uY2hhdC52MUIJVXNlclByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate]);
+  fileDesc("ChJjaGF0L3YxL3VzZXIucHJvdG8SB2NoYXQudjEitwEKBFVzZXISCgoCaWQYASABKAkSDQoFZW1haWwYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhcKCmF2YXRhcl91cmwYBCABKAlIAIgBARIQCgNiaW8YBSABKAlIAYgBARItCgtwcmVmZXJlbmNlcxgGIAEoCzIYLmNoYXQudjEuVXNlclByZWZlcmVuY2VzEg0KBWxpbmtzGAcgAygJQg0KC19hdmF0YXJfdXJsQgYKBF9iaW8iqQEKDFByb2ZpbGVMaW5rcxKYAQoEdXJscxgBIAMoCUKJAbpIhQGSAYEBEAUifboBcgoIaHR0cF91cmwSK2h0dHAocykg44GuIFVSTCDjgpLmjIflrprjgZfjgabjgY/jgaDjgZXjgYQaOXRoaXMuc3RhcnRzV2l0aCgnaHR0cDovLycpIHx8IHRoaXMuc3RhcnRzV2l0aCgnaHR0cHM6Ly8nKXIGGIAQiAEBIocBCg9UaGVtZVByZWZlcmVuY2USFwoDaHVlGAEgASgFQgq6SAcaBRDoAigAEicKBmNocm9tYRgCIAEoAUIXukgUEhIZrkfhehSu1z8pAAAAAAAAAAASMgoHc2lkZWJhchgDIAEoDjIVLmNoYXQudjEuU2lkZWJhclN0eWxlQgq6SAeCAQQQASAAIvECCg9Vc2VyUHJlZmVyZW5jZXMSLwoFdGhlbWUYASABKAsyGC5jaGF0LnYxLlRoZW1lUHJlZmVyZW5jZUIGukgDyAEBEjIKCmNvbG9yX21vZGUYAiABKA4yEi5jaGF0LnYxLkNvbG9yTW9kZUIKukgHggEEEAEgABIdCgZsb2NhbGUYAyABKAlCDbpICnIIUgJqYVICZW4SQgoSbm90aWZpY2F0aW9uX2xldmVsGAQgASgOMhouY2hhdC52MS5Ob3RpZmljYXRpb25MZXZlbEIKukgHggEEEAEgABIZCgh0aW1lem9uZRgFIAEoCUIHukgEcgIYQBIcChR0aW1lem9uZV9hdXRvX3VwZGF0ZRgGIAEoCBJBChJjaGFubmVsX3NvcnRfb3JkZXIYByABKA4yGS5jaGF0LnYxLkNoYW5uZWxTb3J0T3JkZXJCCrpIB4IBBBABIAASGgoSaGlkZV9qb2luX21lc3NhZ2VzGAggASgIImcKC1VzZXJTdW1tYXJ5EgoKAmlkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIXCgphdmF0YXJfdXJsGAMgASgJSACIAQESDgoGaXNfYm90GAQgASgIQg0KC19hdmF0YXJfdXJsKmAKDFNpZGViYXJTdHlsZRIdChlTSURFQkFSX1NUWUxFX1VOU1BFQ0lGSUVEEAASGAoUU0lERUJBUl9TVFlMRV9USU5URUQQARIXChNTSURFQkFSX1NUWUxFX0xJR0hUEAIqaQoJQ29sb3JNb2RlEhoKFkNPTE9SX01PREVfVU5TUEVDSUZJRUQQABIUChBDT0xPUl9NT0RFX0xJR0hUEAESEwoPQ09MT1JfTU9ERV9EQVJLEAISFQoRQ09MT1JfTU9ERV9TWVNURU0QAyp+ChBDaGFubmVsU29ydE9yZGVyEiIKHkNIQU5ORUxfU09SVF9PUkRFUl9VTlNQRUNJRklFRBAAEh4KGkNIQU5ORUxfU09SVF9PUkRFUl9ERUZBVUxUEAESJgoiQ0hBTk5FTF9TT1JUX09SREVSX1JFQ0VOVF9BQ1RJVklUWRACKpEBChFOb3RpZmljYXRpb25MZXZlbBIiCh5OT1RJRklDQVRJT05fTEVWRUxfVU5TUEVDSUZJRUQQABIaChZOT1RJRklDQVRJT05fTEVWRUxfQUxMEAESHwobTk9USUZJQ0FUSU9OX0xFVkVMX01FTlRJT05TEAISGwoXTk9USUZJQ0FUSU9OX0xFVkVMX05PTkUQA0KKAQoLY29tLmNoYXQudjFCCVVzZXJQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate]);
 
 /**
  * ログイン中のユーザー自身の情報
@@ -48,6 +48,13 @@ export type User = Message<"chat.v1.User"> & {
    * @generated from field: chat.v1.UserPreferences preferences = 6;
    */
   preferences?: UserPreferences | undefined;
+
+  /**
+   * プロフィールに載せるリンクの URL
+   *
+   * @generated from field: repeated string links = 7;
+   */
+  links: string[];
 };
 
 /**
@@ -56,6 +63,25 @@ export type User = Message<"chat.v1.User"> & {
  */
 export const UserSchema: GenMessage<User> = /*@__PURE__*/
   messageDesc(file_chat_v1_user, 0);
+
+/**
+ * プロフィールに載せるリンク。表示名は持たず、主要なサイトはアイコンで見分ける
+ *
+ * @generated from message chat.v1.ProfileLinks
+ */
+export type ProfileLinks = Message<"chat.v1.ProfileLinks"> & {
+  /**
+   * @generated from field: repeated string urls = 1;
+   */
+  urls: string[];
+};
+
+/**
+ * Describes the message chat.v1.ProfileLinks.
+ * Use `create(ProfileLinksSchema)` to create a new message.
+ */
+export const ProfileLinksSchema: GenMessage<ProfileLinks> = /*@__PURE__*/
+  messageDesc(file_chat_v1_user, 1);
 
 /**
  * テーマ入力。色は OKLCH の色相と彩度から計算する
@@ -84,7 +110,7 @@ export type ThemePreference = Message<"chat.v1.ThemePreference"> & {
  * Use `create(ThemePreferenceSchema)` to create a new message.
  */
 export const ThemePreferenceSchema: GenMessage<ThemePreference> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user, 1);
+  messageDesc(file_chat_v1_user, 2);
 
 /**
  * 端末をまたいで共有する表示・通知の設定
@@ -144,7 +170,7 @@ export type UserPreferences = Message<"chat.v1.UserPreferences"> & {
  * Use `create(UserPreferencesSchema)` to create a new message.
  */
 export const UserPreferencesSchema: GenMessage<UserPreferences> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user, 2);
+  messageDesc(file_chat_v1_user, 3);
 
 /**
  * メッセージの投稿者などに埋め込む最小限のユーザー情報
@@ -168,7 +194,7 @@ export type UserSummary = Message<"chat.v1.UserSummary"> & {
   avatarUrl?: string | undefined;
 
   /**
-   * Webhook の投稿名義のボットユーザー。プロフィールを持たない
+   * アプリの投稿名義のボットユーザー。プロフィールを持たない
    *
    * @generated from field: bool is_bot = 4;
    */
@@ -180,7 +206,7 @@ export type UserSummary = Message<"chat.v1.UserSummary"> & {
  * Use `create(UserSummarySchema)` to create a new message.
  */
 export const UserSummarySchema: GenMessage<UserSummary> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user, 3);
+  messageDesc(file_chat_v1_user, 4);
 
 /**
  * @generated from enum chat.v1.SidebarStyle

@@ -228,13 +228,15 @@ func (NotificationLevel) EnumDescriptor() ([]byte, []int) {
 
 // ログイン中のユーザー自身の情報
 type User struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	AvatarUrl     *string                `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
-	Bio           *string                `protobuf:"bytes,5,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
-	Preferences   *UserPreferences       `protobuf:"bytes,6,opt,name=preferences,proto3" json:"preferences,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Email       string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	DisplayName string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	AvatarUrl   *string                `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	Bio         *string                `protobuf:"bytes,5,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
+	Preferences *UserPreferences       `protobuf:"bytes,6,opt,name=preferences,proto3" json:"preferences,omitempty"`
+	// プロフィールに載せるリンクの URL
+	Links         []string `protobuf:"bytes,7,rep,name=links,proto3" json:"links,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -311,6 +313,58 @@ func (x *User) GetPreferences() *UserPreferences {
 	return nil
 }
 
+func (x *User) GetLinks() []string {
+	if x != nil {
+		return x.Links
+	}
+	return nil
+}
+
+// プロフィールに載せるリンク。表示名は持たず、主要なサイトはアイコンで見分ける
+type ProfileLinks struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Urls          []string               `protobuf:"bytes,1,rep,name=urls,proto3" json:"urls,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProfileLinks) Reset() {
+	*x = ProfileLinks{}
+	mi := &file_chat_v1_user_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProfileLinks) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProfileLinks) ProtoMessage() {}
+
+func (x *ProfileLinks) ProtoReflect() protoreflect.Message {
+	mi := &file_chat_v1_user_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProfileLinks.ProtoReflect.Descriptor instead.
+func (*ProfileLinks) Descriptor() ([]byte, []int) {
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ProfileLinks) GetUrls() []string {
+	if x != nil {
+		return x.Urls
+	}
+	return nil
+}
+
 // テーマ入力。色は OKLCH の色相と彩度から計算する
 type ThemePreference struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -323,7 +377,7 @@ type ThemePreference struct {
 
 func (x *ThemePreference) Reset() {
 	*x = ThemePreference{}
-	mi := &file_chat_v1_user_proto_msgTypes[1]
+	mi := &file_chat_v1_user_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -335,7 +389,7 @@ func (x *ThemePreference) String() string {
 func (*ThemePreference) ProtoMessage() {}
 
 func (x *ThemePreference) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_proto_msgTypes[1]
+	mi := &file_chat_v1_user_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -348,7 +402,7 @@ func (x *ThemePreference) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ThemePreference.ProtoReflect.Descriptor instead.
 func (*ThemePreference) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{1}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ThemePreference) GetHue() int32 {
@@ -392,7 +446,7 @@ type UserPreferences struct {
 
 func (x *UserPreferences) Reset() {
 	*x = UserPreferences{}
-	mi := &file_chat_v1_user_proto_msgTypes[2]
+	mi := &file_chat_v1_user_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -404,7 +458,7 @@ func (x *UserPreferences) String() string {
 func (*UserPreferences) ProtoMessage() {}
 
 func (x *UserPreferences) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_proto_msgTypes[2]
+	mi := &file_chat_v1_user_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -417,7 +471,7 @@ func (x *UserPreferences) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserPreferences.ProtoReflect.Descriptor instead.
 func (*UserPreferences) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *UserPreferences) GetTheme() *ThemePreference {
@@ -482,7 +536,7 @@ type UserSummary struct {
 	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	DisplayName string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl   *string                `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
-	// Webhook の投稿名義のボットユーザー。プロフィールを持たない
+	// アプリの投稿名義のボットユーザー。プロフィールを持たない
 	IsBot         bool `protobuf:"varint,4,opt,name=is_bot,json=isBot,proto3" json:"is_bot,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -490,7 +544,7 @@ type UserSummary struct {
 
 func (x *UserSummary) Reset() {
 	*x = UserSummary{}
-	mi := &file_chat_v1_user_proto_msgTypes[3]
+	mi := &file_chat_v1_user_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -502,7 +556,7 @@ func (x *UserSummary) String() string {
 func (*UserSummary) ProtoMessage() {}
 
 func (x *UserSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_user_proto_msgTypes[3]
+	mi := &file_chat_v1_user_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -515,7 +569,7 @@ func (x *UserSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserSummary.ProtoReflect.Descriptor instead.
 func (*UserSummary) Descriptor() ([]byte, []int) {
-	return file_chat_v1_user_proto_rawDescGZIP(), []int{3}
+	return file_chat_v1_user_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UserSummary) GetId() string {
@@ -550,7 +604,7 @@ var File_chat_v1_user_proto protoreflect.FileDescriptor
 
 const file_chat_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12chat/v1/user.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\xdd\x01\n" +
+	"\x12chat/v1/user.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\xf3\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -558,9 +612,13 @@ const file_chat_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"avatar_url\x18\x04 \x01(\tH\x00R\tavatarUrl\x88\x01\x01\x12\x15\n" +
 	"\x03bio\x18\x05 \x01(\tH\x01R\x03bio\x88\x01\x01\x12:\n" +
-	"\vpreferences\x18\x06 \x01(\v2\x18.chat.v1.UserPreferencesR\vpreferencesB\r\n" +
+	"\vpreferences\x18\x06 \x01(\v2\x18.chat.v1.UserPreferencesR\vpreferences\x12\x14\n" +
+	"\x05links\x18\a \x03(\tR\x05linksB\r\n" +
 	"\v_avatar_urlB\x06\n" +
-	"\x04_bio\"\x9d\x01\n" +
+	"\x04_bio\"\xaf\x01\n" +
+	"\fProfileLinks\x12\x9e\x01\n" +
+	"\x04urls\x18\x01 \x03(\tB\x89\x01\xbaH\x85\x01\x92\x01\x81\x01\x10\x05\"}\xba\x01r\n" +
+	"\bhttp_url\x12+http(s) の URL を指定してください\x1a9this.startsWith('http://') || this.startsWith('https://')r\x06\x18\x80\x10\x88\x01\x01R\x04urls\"\x9d\x01\n" +
 	"\x0fThemePreference\x12\x1c\n" +
 	"\x03hue\x18\x01 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x10\xe8\x02(\x00R\x03hue\x12/\n" +
@@ -621,21 +679,22 @@ func file_chat_v1_user_proto_rawDescGZIP() []byte {
 }
 
 var file_chat_v1_user_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_chat_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_chat_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_chat_v1_user_proto_goTypes = []any{
 	(SidebarStyle)(0),       // 0: chat.v1.SidebarStyle
 	(ColorMode)(0),          // 1: chat.v1.ColorMode
 	(ChannelSortOrder)(0),   // 2: chat.v1.ChannelSortOrder
 	(NotificationLevel)(0),  // 3: chat.v1.NotificationLevel
 	(*User)(nil),            // 4: chat.v1.User
-	(*ThemePreference)(nil), // 5: chat.v1.ThemePreference
-	(*UserPreferences)(nil), // 6: chat.v1.UserPreferences
-	(*UserSummary)(nil),     // 7: chat.v1.UserSummary
+	(*ProfileLinks)(nil),    // 5: chat.v1.ProfileLinks
+	(*ThemePreference)(nil), // 6: chat.v1.ThemePreference
+	(*UserPreferences)(nil), // 7: chat.v1.UserPreferences
+	(*UserSummary)(nil),     // 8: chat.v1.UserSummary
 }
 var file_chat_v1_user_proto_depIdxs = []int32{
-	6, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
+	7, // 0: chat.v1.User.preferences:type_name -> chat.v1.UserPreferences
 	0, // 1: chat.v1.ThemePreference.sidebar:type_name -> chat.v1.SidebarStyle
-	5, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
+	6, // 2: chat.v1.UserPreferences.theme:type_name -> chat.v1.ThemePreference
 	1, // 3: chat.v1.UserPreferences.color_mode:type_name -> chat.v1.ColorMode
 	3, // 4: chat.v1.UserPreferences.notification_level:type_name -> chat.v1.NotificationLevel
 	2, // 5: chat.v1.UserPreferences.channel_sort_order:type_name -> chat.v1.ChannelSortOrder
@@ -652,14 +711,14 @@ func file_chat_v1_user_proto_init() {
 		return
 	}
 	file_chat_v1_user_proto_msgTypes[0].OneofWrappers = []any{}
-	file_chat_v1_user_proto_msgTypes[3].OneofWrappers = []any{}
+	file_chat_v1_user_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_user_proto_rawDesc), len(file_chat_v1_user_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

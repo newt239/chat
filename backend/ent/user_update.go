@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/attachment"
@@ -121,6 +122,24 @@ func (_u *UserUpdate) SetNillableBio(v *string) *UserUpdate {
 // ClearBio clears the value of the "bio" field.
 func (_u *UserUpdate) ClearBio() *UserUpdate {
 	_u.mutation.ClearBio()
+	return _u
+}
+
+// SetLinks sets the "links" field.
+func (_u *UserUpdate) SetLinks(v []string) *UserUpdate {
+	_u.mutation.SetLinks(v)
+	return _u
+}
+
+// AppendLinks appends value to the "links" field.
+func (_u *UserUpdate) AppendLinks(v []string) *UserUpdate {
+	_u.mutation.AppendLinks(v)
+	return _u
+}
+
+// ClearLinks clears the value of the "links" field.
+func (_u *UserUpdate) ClearLinks() *UserUpdate {
+	_u.mutation.ClearLinks()
 	return _u
 }
 
@@ -914,6 +933,17 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.BioCleared() {
 		_spec.ClearField(user.FieldBio, field.TypeString)
 	}
+	if value, ok := _u.mutation.Links(); ok {
+		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedLinks(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, user.FieldLinks, value)
+		})
+	}
+	if _u.mutation.LinksCleared() {
+		_spec.ClearField(user.FieldLinks, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 	}
@@ -1649,6 +1679,24 @@ func (_u *UserUpdateOne) SetNillableBio(v *string) *UserUpdateOne {
 // ClearBio clears the value of the "bio" field.
 func (_u *UserUpdateOne) ClearBio() *UserUpdateOne {
 	_u.mutation.ClearBio()
+	return _u
+}
+
+// SetLinks sets the "links" field.
+func (_u *UserUpdateOne) SetLinks(v []string) *UserUpdateOne {
+	_u.mutation.SetLinks(v)
+	return _u
+}
+
+// AppendLinks appends value to the "links" field.
+func (_u *UserUpdateOne) AppendLinks(v []string) *UserUpdateOne {
+	_u.mutation.AppendLinks(v)
+	return _u
+}
+
+// ClearLinks clears the value of the "links" field.
+func (_u *UserUpdateOne) ClearLinks() *UserUpdateOne {
+	_u.mutation.ClearLinks()
 	return _u
 }
 
@@ -2471,6 +2519,17 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.BioCleared() {
 		_spec.ClearField(user.FieldBio, field.TypeString)
+	}
+	if value, ok := _u.mutation.Links(); ok {
+		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedLinks(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, user.FieldLinks, value)
+		})
+	}
+	if _u.mutation.LinksCleared() {
+		_spec.ClearField(user.FieldLinks, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)

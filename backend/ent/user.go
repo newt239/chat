@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -28,6 +29,8 @@ type User struct {
 	DisplayName string `json:"display_name,omitempty"`
 	// Bio holds the value of the "bio" field.
 	Bio string `json:"bio,omitempty"`
+	// Links holds the value of the "links" field.
+	Links []string `json:"links,omitempty"`
 	// AvatarURL holds the value of the "avatar_url" field.
 	AvatarURL string `json:"avatar_url,omitempty"`
 	// IsBot holds the value of the "is_bot" field.
@@ -219,6 +222,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldLinks:
+			values[i] = new([]byte)
 		case user.FieldIsBot, user.FieldIsOfficial, user.FieldTimezoneAutoUpdate, user.FieldHideJoinMessages:
 			values[i] = new(sql.NullBool)
 		case user.FieldThemeChroma:
@@ -282,6 +287,14 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field bio", values[i])
 			} else if value.Valid {
 				_m.Bio = value.String
+			}
+		case user.FieldLinks:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field links", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Links); err != nil {
+					return fmt.Errorf("unmarshal field links: %w", err)
+				}
 			}
 		case user.FieldAvatarURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -490,6 +503,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("bio=")
 	builder.WriteString(_m.Bio)
+	builder.WriteString(", ")
+	builder.WriteString("links=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Links))
 	builder.WriteString(", ")
 	builder.WriteString("avatar_url=")
 	builder.WriteString(_m.AvatarURL)

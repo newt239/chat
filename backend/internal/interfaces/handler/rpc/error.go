@@ -107,7 +107,7 @@ var errorCodes = []struct {
 		messageuc.ErrEmptyMessage,
 		scheduledmessageuc.ErrScheduleInPast,
 		searchuc.ErrInvalidQuery, searchuc.ErrInvalidDateRange,
-		useruc.ErrInvalidTimeZone,
+		useruc.ErrInvalidTimeZone, useruc.ErrInvalidLink,
 		workspaceuc.ErrInvalidRole,
 	}},
 	{connect.CodeFailedPrecondition, []error{

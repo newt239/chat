@@ -580,43 +580,43 @@ func init() {
 	// user.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
 	// userDescIsBot is the schema descriptor for is_bot field.
-	userDescIsBot := userFields[7].Descriptor()
+	userDescIsBot := userFields[8].Descriptor()
 	// user.DefaultIsBot holds the default value on creation for the is_bot field.
 	user.DefaultIsBot = userDescIsBot.Default.(bool)
 	// userDescIsOfficial is the schema descriptor for is_official field.
-	userDescIsOfficial := userFields[8].Descriptor()
+	userDescIsOfficial := userFields[9].Descriptor()
 	// user.DefaultIsOfficial holds the default value on creation for the is_official field.
 	user.DefaultIsOfficial = userDescIsOfficial.Default.(bool)
 	// userDescThemeHue is the schema descriptor for theme_hue field.
-	userDescThemeHue := userFields[9].Descriptor()
+	userDescThemeHue := userFields[10].Descriptor()
 	// user.DefaultThemeHue holds the default value on creation for the theme_hue field.
 	user.DefaultThemeHue = userDescThemeHue.Default.(int)
 	// userDescThemeChroma is the schema descriptor for theme_chroma field.
-	userDescThemeChroma := userFields[10].Descriptor()
+	userDescThemeChroma := userFields[11].Descriptor()
 	// user.DefaultThemeChroma holds the default value on creation for the theme_chroma field.
 	user.DefaultThemeChroma = userDescThemeChroma.Default.(float64)
 	// userDescLocale is the schema descriptor for locale field.
-	userDescLocale := userFields[13].Descriptor()
+	userDescLocale := userFields[14].Descriptor()
 	// user.DefaultLocale holds the default value on creation for the locale field.
 	user.DefaultLocale = userDescLocale.Default.(string)
 	// userDescTimezone is the schema descriptor for timezone field.
-	userDescTimezone := userFields[15].Descriptor()
+	userDescTimezone := userFields[16].Descriptor()
 	// user.DefaultTimezone holds the default value on creation for the timezone field.
 	user.DefaultTimezone = userDescTimezone.Default.(string)
 	// userDescTimezoneAutoUpdate is the schema descriptor for timezone_auto_update field.
-	userDescTimezoneAutoUpdate := userFields[16].Descriptor()
+	userDescTimezoneAutoUpdate := userFields[17].Descriptor()
 	// user.DefaultTimezoneAutoUpdate holds the default value on creation for the timezone_auto_update field.
 	user.DefaultTimezoneAutoUpdate = userDescTimezoneAutoUpdate.Default.(bool)
 	// userDescHideJoinMessages is the schema descriptor for hide_join_messages field.
-	userDescHideJoinMessages := userFields[18].Descriptor()
+	userDescHideJoinMessages := userFields[19].Descriptor()
 	// user.DefaultHideJoinMessages holds the default value on creation for the hide_join_messages field.
 	user.DefaultHideJoinMessages = userDescHideJoinMessages.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[19].Descriptor()
+	userDescCreatedAt := userFields[20].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[20].Descriptor()
+	userDescUpdatedAt := userFields[21].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

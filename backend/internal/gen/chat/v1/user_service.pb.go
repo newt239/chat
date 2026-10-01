@@ -108,7 +108,9 @@ type UpdateMeRequest struct {
 	DisplayName *string                `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3,oneof" json:"display_name,omitempty"`
 	Bio         *string                `protobuf:"bytes,2,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
 	// 空文字はアバターを外す
-	AvatarUrl     *string `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	AvatarUrl *string `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3,oneof" json:"avatar_url,omitempty"`
+	// 指定したときだけ丸ごと置き換える。空の urls はリンクをすべて外す
+	Links         *ProfileLinks `protobuf:"bytes,4,opt,name=links,proto3" json:"links,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -162,6 +164,13 @@ func (x *UpdateMeRequest) GetAvatarUrl() string {
 		return *x.AvatarUrl
 	}
 	return ""
+}
+
+func (x *UpdateMeRequest) GetLinks() *ProfileLinks {
+	if x != nil {
+		return x.Links
+	}
+	return nil
 }
 
 type UpdateMeResponse struct {
@@ -726,13 +735,14 @@ const file_chat_v1_user_service_proto_rawDesc = "" +
 	"\x1achat/v1/user_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x0e\n" +
 	"\fGetMeRequest\"2\n" +
 	"\rGetMeResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.chat.v1.UserR\x04user\"\x8a\x02\n" +
+	"\x04user\x18\x01 \x01(\v2\r.chat.v1.UserR\x04user\"\xb7\x02\n" +
 	"\x0fUpdateMeRequest\x12/\n" +
 	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vdisplayName\x88\x01\x01\x12\x15\n" +
 	"\x03bio\x18\x02 \x01(\tH\x01R\x03bio\x88\x01\x01\x12\x86\x01\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tBb\xbaH_\xba\x01W\n" +
-	"\furi_or_empty\x12+URL か空文字を指定してください\x1a\x1athis == '' || this.isUri()r\x03\x18\x80\x10H\x02R\tavatarUrl\x88\x01\x01B\x0f\n" +
+	"\furi_or_empty\x12+URL か空文字を指定してください\x1a\x1athis == '' || this.isUri()r\x03\x18\x80\x10H\x02R\tavatarUrl\x88\x01\x01\x12+\n" +
+	"\x05links\x18\x04 \x01(\v2\x15.chat.v1.ProfileLinksR\x05linksB\x0f\n" +
 	"\r_display_nameB\x06\n" +
 	"\x04_bioB\r\n" +
 	"\v_avatar_url\"5\n" +
@@ -806,36 +816,38 @@ var file_chat_v1_user_service_proto_goTypes = []any{
 	(*UpdateUserNoteRequest)(nil),     // 13: chat.v1.UpdateUserNoteRequest
 	(*UpdateUserNoteResponse)(nil),    // 14: chat.v1.UpdateUserNoteResponse
 	(*User)(nil),                      // 15: chat.v1.User
-	(*UserPreferences)(nil),           // 16: chat.v1.UserPreferences
-	(*timestamppb.Timestamp)(nil),     // 17: google.protobuf.Timestamp
+	(*ProfileLinks)(nil),              // 16: chat.v1.ProfileLinks
+	(*UserPreferences)(nil),           // 17: chat.v1.UserPreferences
+	(*timestamppb.Timestamp)(nil),     // 18: google.protobuf.Timestamp
 }
 var file_chat_v1_user_service_proto_depIdxs = []int32{
 	15, // 0: chat.v1.GetMeResponse.user:type_name -> chat.v1.User
-	15, // 1: chat.v1.UpdateMeResponse.user:type_name -> chat.v1.User
-	16, // 2: chat.v1.UpdatePreferencesRequest.preferences:type_name -> chat.v1.UserPreferences
-	16, // 3: chat.v1.UpdatePreferencesResponse.preferences:type_name -> chat.v1.UserPreferences
-	17, // 4: chat.v1.UserNote.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 5: chat.v1.GetUserNoteResponse.note:type_name -> chat.v1.UserNote
-	10, // 6: chat.v1.UpdateUserNoteResponse.note:type_name -> chat.v1.UserNote
-	0,  // 7: chat.v1.UserService.GetMe:input_type -> chat.v1.GetMeRequest
-	2,  // 8: chat.v1.UserService.UpdateMe:input_type -> chat.v1.UpdateMeRequest
-	4,  // 9: chat.v1.UserService.UpdatePreferences:input_type -> chat.v1.UpdatePreferencesRequest
-	6,  // 10: chat.v1.UserService.UpdatePassword:input_type -> chat.v1.UpdatePasswordRequest
-	8,  // 11: chat.v1.UserService.DeleteMe:input_type -> chat.v1.DeleteMeRequest
-	11, // 12: chat.v1.UserService.GetUserNote:input_type -> chat.v1.GetUserNoteRequest
-	13, // 13: chat.v1.UserService.UpdateUserNote:input_type -> chat.v1.UpdateUserNoteRequest
-	1,  // 14: chat.v1.UserService.GetMe:output_type -> chat.v1.GetMeResponse
-	3,  // 15: chat.v1.UserService.UpdateMe:output_type -> chat.v1.UpdateMeResponse
-	5,  // 16: chat.v1.UserService.UpdatePreferences:output_type -> chat.v1.UpdatePreferencesResponse
-	7,  // 17: chat.v1.UserService.UpdatePassword:output_type -> chat.v1.UpdatePasswordResponse
-	9,  // 18: chat.v1.UserService.DeleteMe:output_type -> chat.v1.DeleteMeResponse
-	12, // 19: chat.v1.UserService.GetUserNote:output_type -> chat.v1.GetUserNoteResponse
-	14, // 20: chat.v1.UserService.UpdateUserNote:output_type -> chat.v1.UpdateUserNoteResponse
-	14, // [14:21] is the sub-list for method output_type
-	7,  // [7:14] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	16, // 1: chat.v1.UpdateMeRequest.links:type_name -> chat.v1.ProfileLinks
+	15, // 2: chat.v1.UpdateMeResponse.user:type_name -> chat.v1.User
+	17, // 3: chat.v1.UpdatePreferencesRequest.preferences:type_name -> chat.v1.UserPreferences
+	17, // 4: chat.v1.UpdatePreferencesResponse.preferences:type_name -> chat.v1.UserPreferences
+	18, // 5: chat.v1.UserNote.updated_at:type_name -> google.protobuf.Timestamp
+	10, // 6: chat.v1.GetUserNoteResponse.note:type_name -> chat.v1.UserNote
+	10, // 7: chat.v1.UpdateUserNoteResponse.note:type_name -> chat.v1.UserNote
+	0,  // 8: chat.v1.UserService.GetMe:input_type -> chat.v1.GetMeRequest
+	2,  // 9: chat.v1.UserService.UpdateMe:input_type -> chat.v1.UpdateMeRequest
+	4,  // 10: chat.v1.UserService.UpdatePreferences:input_type -> chat.v1.UpdatePreferencesRequest
+	6,  // 11: chat.v1.UserService.UpdatePassword:input_type -> chat.v1.UpdatePasswordRequest
+	8,  // 12: chat.v1.UserService.DeleteMe:input_type -> chat.v1.DeleteMeRequest
+	11, // 13: chat.v1.UserService.GetUserNote:input_type -> chat.v1.GetUserNoteRequest
+	13, // 14: chat.v1.UserService.UpdateUserNote:input_type -> chat.v1.UpdateUserNoteRequest
+	1,  // 15: chat.v1.UserService.GetMe:output_type -> chat.v1.GetMeResponse
+	3,  // 16: chat.v1.UserService.UpdateMe:output_type -> chat.v1.UpdateMeResponse
+	5,  // 17: chat.v1.UserService.UpdatePreferences:output_type -> chat.v1.UpdatePreferencesResponse
+	7,  // 18: chat.v1.UserService.UpdatePassword:output_type -> chat.v1.UpdatePasswordResponse
+	9,  // 19: chat.v1.UserService.DeleteMe:output_type -> chat.v1.DeleteMeResponse
+	12, // 20: chat.v1.UserService.GetUserNote:output_type -> chat.v1.GetUserNoteResponse
+	14, // 21: chat.v1.UserService.UpdateUserNote:output_type -> chat.v1.UpdateUserNoteResponse
+	15, // [15:22] is the sub-list for method output_type
+	8,  // [8:15] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_user_service_proto_init() }

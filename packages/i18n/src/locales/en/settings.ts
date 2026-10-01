@@ -34,9 +34,14 @@ export const settings: Messages["settings"] = {
     pushFailed: "Couldn't turn on push notifications",
   },
   profile: {
+    addLink: "Add link",
     avatar: "Avatar",
     bio: "About",
     displayNameDescription: "Shown on your messages and mentions",
+    links: "Links",
+    linksDescription: "Up to {{max}} URLs. X, Instagram, YouTube, GitHub and more show their icons",
+    linkUrl: "Link {{number}}",
+    removeLink: "Remove link {{number}}",
     saved: "Profile saved",
   },
   sections: {

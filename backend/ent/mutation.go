@@ -24489,6 +24489,8 @@ type UserMutation struct {
 	google_sub                 *string
 	display_name               *string
 	bio                        *string
+	links                      *[]string
+	appendlinks                []string
 	avatar_url                 *string
 	is_bot                     *bool
 	is_official                *bool
@@ -24859,6 +24861,71 @@ func (m *UserMutation) BioCleared() bool {
 func (m *UserMutation) ResetBio() {
 	m.bio = nil
 	delete(m.clearedFields, user.FieldBio)
+}
+
+// SetLinks sets the "links" field.
+func (m *UserMutation) SetLinks(s []string) {
+	m.links = &s
+	m.appendlinks = nil
+}
+
+// Links returns the value of the "links" field in the mutation.
+func (m *UserMutation) Links() (r []string, exists bool) {
+	v := m.links
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLinks returns the old "links" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldLinks(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLinks is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLinks requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLinks: %w", err)
+	}
+	return oldValue.Links, nil
+}
+
+// AppendLinks adds s to the "links" field.
+func (m *UserMutation) AppendLinks(s []string) {
+	m.appendlinks = append(m.appendlinks, s...)
+}
+
+// AppendedLinks returns the list of values that were appended to the "links" field in this mutation.
+func (m *UserMutation) AppendedLinks() ([]string, bool) {
+	if len(m.appendlinks) == 0 {
+		return nil, false
+	}
+	return m.appendlinks, true
+}
+
+// ClearLinks clears the value of the "links" field.
+func (m *UserMutation) ClearLinks() {
+	m.links = nil
+	m.appendlinks = nil
+	m.clearedFields[user.FieldLinks] = struct{}{}
+}
+
+// LinksCleared returns if the "links" field was cleared in this mutation.
+func (m *UserMutation) LinksCleared() bool {
+	_, ok := m.clearedFields[user.FieldLinks]
+	return ok
+}
+
+// ResetLinks resets all changes to the "links" field.
+func (m *UserMutation) ResetLinks() {
+	m.links = nil
+	m.appendlinks = nil
+	delete(m.clearedFields, user.FieldLinks)
 }
 
 // SetAvatarURL sets the "avatar_url" field.
@@ -26190,7 +26257,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 20)
+	fields := make([]string, 0, 21)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -26205,6 +26272,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.bio != nil {
 		fields = append(fields, user.FieldBio)
+	}
+	if m.links != nil {
+		fields = append(fields, user.FieldLinks)
 	}
 	if m.avatar_url != nil {
 		fields = append(fields, user.FieldAvatarURL)
@@ -26269,6 +26339,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.DisplayName()
 	case user.FieldBio:
 		return m.Bio()
+	case user.FieldLinks:
+		return m.Links()
 	case user.FieldAvatarURL:
 		return m.AvatarURL()
 	case user.FieldIsBot:
@@ -26318,6 +26390,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDisplayName(ctx)
 	case user.FieldBio:
 		return m.OldBio(ctx)
+	case user.FieldLinks:
+		return m.OldLinks(ctx)
 	case user.FieldAvatarURL:
 		return m.OldAvatarURL(ctx)
 	case user.FieldIsBot:
@@ -26391,6 +26465,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBio(v)
+		return nil
+	case user.FieldLinks:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLinks(v)
 		return nil
 	case user.FieldAvatarURL:
 		v, ok := value.(string)
@@ -26560,6 +26641,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldBio) {
 		fields = append(fields, user.FieldBio)
 	}
+	if m.FieldCleared(user.FieldLinks) {
+		fields = append(fields, user.FieldLinks)
+	}
 	if m.FieldCleared(user.FieldAvatarURL) {
 		fields = append(fields, user.FieldAvatarURL)
 	}
@@ -26582,6 +26666,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldBio:
 		m.ClearBio()
+		return nil
+	case user.FieldLinks:
+		m.ClearLinks()
 		return nil
 	case user.FieldAvatarURL:
 		m.ClearAvatarURL()
@@ -26608,6 +26695,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldBio:
 		m.ResetBio()
+		return nil
+	case user.FieldLinks:
+		m.ResetLinks()
 		return nil
 	case user.FieldAvatarURL:
 		m.ResetAvatarURL()

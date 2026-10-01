@@ -52,6 +52,7 @@ func WorkspaceMember(m workspaceuc.MemberInfo) *chatv1.WorkspaceMember {
 		SuspendedAt: optionalTimestamp(m.SuspendedAt),
 		Nickname:    m.Nickname,
 		Timezone:    m.Timezone,
+		Links:       m.Links,
 	}
 }
 

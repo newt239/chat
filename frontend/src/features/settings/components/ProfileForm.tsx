@@ -11,6 +11,7 @@ import { toast } from "#/components/ui/ToastRegion/toast";
 import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
+import { ProfileLinksField } from "./ProfileLinksField";
 
 import type { User } from "#/gen/chat/v1/user_pb";
 
@@ -24,8 +25,14 @@ export const ProfileForm = ({ me }: ProfileFormProps) => {
   const [displayName, setDisplayName] = useState(me.displayName);
   const [bio, setBio] = useState(me.bio ?? "");
   const [avatarUrl, setAvatarUrl] = useState(me.avatarUrl ?? "");
+  const [links, setLinks] = useState(me.links);
+  // 空の行は保存しない
+  const filledLinks = links.map((link) => link.trim()).filter((link) => link !== "");
   const isDirty =
-    displayName !== me.displayName || bio !== (me.bio ?? "") || avatarUrl !== (me.avatarUrl ?? "");
+    displayName !== me.displayName ||
+    bio !== (me.bio ?? "") ||
+    avatarUrl !== (me.avatarUrl ?? "") ||
+    filledLinks.join("\n") !== me.links.join("\n");
 
   return (
     <Form
@@ -33,7 +40,7 @@ export const ProfileForm = ({ me }: ProfileFormProps) => {
       onSubmit={(event) => {
         event.preventDefault();
         mutation.mutate(
-          { avatarUrl, bio, displayName },
+          { avatarUrl, bio, displayName, links: { urls: filledLinks } },
           {
             onSuccess: () => {
               toast(t("settings.profile.saved"), { tone: "success" });
@@ -62,6 +69,7 @@ export const ProfileForm = ({ me }: ProfileFormProps) => {
         isRequired
       />
       <TextArea label={t("settings.profile.bio")} value={bio} onChange={setBio} />
+      <ProfileLinksField value={links} onChange={setLinks} />
       {mutation.isError && (
         <p role="alert" className="m-0 text-caption text-danger">
           {mutation.error.message}

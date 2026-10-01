@@ -481,6 +481,16 @@ func BioContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldBio, v))
 }
 
+// LinksIsNil applies the IsNil predicate on the "links" field.
+func LinksIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldLinks))
+}
+
+// LinksNotNil applies the NotNil predicate on the "links" field.
+func LinksNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldLinks))
+}
+
 // AvatarURLEQ applies the EQ predicate on the "avatar_url" field.
 func AvatarURLEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAvatarURL, v))

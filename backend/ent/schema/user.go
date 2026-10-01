@@ -33,6 +33,9 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("bio").
 			Optional(),
+		// プロフィールに載せるリンクの URL。並び順のまま保存する
+		field.Strings("links").
+			Optional(),
 		field.String("avatar_url").
 			Optional(),
 		// アプリの投稿名義。ログインできず、ワークスペースのメンバーにもならない

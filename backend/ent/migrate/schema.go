@@ -1304,6 +1304,7 @@ var (
 		{Name: "google_sub", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "bio", Type: field.TypeString, Nullable: true},
+		{Name: "links", Type: field.TypeJSON, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "is_bot", Type: field.TypeBool, Default: false},
 		{Name: "is_official", Type: field.TypeBool, Default: false},

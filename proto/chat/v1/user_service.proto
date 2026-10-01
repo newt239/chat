@@ -34,6 +34,8 @@ message UpdateMeRequest {
       expression: "this == '' || this.isUri()"
     }
   ];
+  // 指定したときだけ丸ごと置き換える。空の urls はリンクをすべて外す
+  ProfileLinks links = 4;
 }
 
 message UpdateMeResponse {

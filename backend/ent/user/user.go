@@ -26,6 +26,8 @@ const (
 	FieldDisplayName = "display_name"
 	// FieldBio holds the string denoting the bio field in the database.
 	FieldBio = "bio"
+	// FieldLinks holds the string denoting the links field in the database.
+	FieldLinks = "links"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
 	// FieldIsBot holds the string denoting the is_bot field in the database.
@@ -185,6 +187,7 @@ var Columns = []string{
 	FieldGoogleSub,
 	FieldDisplayName,
 	FieldBio,
+	FieldLinks,
 	FieldAvatarURL,
 	FieldIsBot,
 	FieldIsOfficial,

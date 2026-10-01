@@ -274,6 +274,7 @@ func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembers
 			memberInfo.AvatarURL = user.AvatarURL
 			memberInfo.Bio = user.Bio
 			memberInfo.Timezone = user.Preferences.Timezone
+			memberInfo.Links = user.Links
 		}
 		output.Members = append(output.Members, memberInfo)
 	}

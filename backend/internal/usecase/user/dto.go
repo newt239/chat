@@ -7,6 +7,8 @@ type UpdateMeInput struct {
 	DisplayName *string
 	Bio         *string
 	AvatarURL   *string
+	// nil なら変えない。空ならすべて外す
+	Links *[]string
 }
 
 // MeOutput は自分のプロフィールの出力です
@@ -16,6 +18,7 @@ type MeOutput struct {
 	DisplayName string                 `json:"displayName"`
 	Bio         *string                `json:"bio"`
 	AvatarURL   *string                `json:"avatarUrl"`
+	Links       []string               `json:"links"`
 	Preferences entity.UserPreferences `json:"preferences"`
 }
 

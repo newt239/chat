@@ -83,6 +83,12 @@ func (_c *UserCreate) SetNillableBio(v *string) *UserCreate {
 	return _c
 }
 
+// SetLinks sets the "links" field.
+func (_c *UserCreate) SetLinks(v []string) *UserCreate {
+	_c.mutation.SetLinks(v)
+	return _c
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (_c *UserCreate) SetAvatarURL(v string) *UserCreate {
 	_c.mutation.SetAvatarURL(v)
@@ -743,6 +749,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldBio, field.TypeString, value)
 		_node.Bio = value
 	}
+	if value, ok := _c.mutation.Links(); ok {
+		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
+		_node.Links = value
+	}
 	if value, ok := _c.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 		_node.AvatarURL = value
@@ -1135,6 +1145,24 @@ func (u *UserUpsert) ClearBio() *UserUpsert {
 	return u
 }
 
+// SetLinks sets the "links" field.
+func (u *UserUpsert) SetLinks(v []string) *UserUpsert {
+	u.Set(user.FieldLinks, v)
+	return u
+}
+
+// UpdateLinks sets the "links" field to the value that was provided on create.
+func (u *UserUpsert) UpdateLinks() *UserUpsert {
+	u.SetExcluded(user.FieldLinks)
+	return u
+}
+
+// ClearLinks clears the value of the "links" field.
+func (u *UserUpsert) ClearLinks() *UserUpsert {
+	u.SetNull(user.FieldLinks)
+	return u
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (u *UserUpsert) SetAvatarURL(v string) *UserUpsert {
 	u.Set(user.FieldAvatarURL, v)
@@ -1453,6 +1481,27 @@ func (u *UserUpsertOne) UpdateBio() *UserUpsertOne {
 func (u *UserUpsertOne) ClearBio() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearBio()
+	})
+}
+
+// SetLinks sets the "links" field.
+func (u *UserUpsertOne) SetLinks(v []string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLinks(v)
+	})
+}
+
+// UpdateLinks sets the "links" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateLinks() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLinks()
+	})
+}
+
+// ClearLinks clears the value of the "links" field.
+func (u *UserUpsertOne) ClearLinks() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLinks()
 	})
 }
 
@@ -1972,6 +2021,27 @@ func (u *UserUpsertBulk) UpdateBio() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearBio() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearBio()
+	})
+}
+
+// SetLinks sets the "links" field.
+func (u *UserUpsertBulk) SetLinks(v []string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLinks(v)
+	})
+}
+
+// UpdateLinks sets the "links" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateLinks() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLinks()
+	})
+}
+
+// ClearLinks clears the value of the "links" field.
+func (u *UserUpsertBulk) ClearLinks() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLinks()
 	})
 }
 

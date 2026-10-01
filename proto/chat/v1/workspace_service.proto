@@ -56,6 +56,8 @@ message WorkspaceMember {
   optional google.protobuf.Timestamp suspended_at = 9;
   // IANA のタイムゾーン名。空は未設定
   string timezone = 10;
+  // プロフィールに載せるリンクの URL
+  repeated string links = 11;
 }
 
 message PublicWorkspace {

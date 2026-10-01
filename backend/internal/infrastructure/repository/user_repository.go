@@ -141,6 +141,7 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 		SetNillableGoogleSub(usr.GoogleSub).
 		SetDisplayName(usr.DisplayName).
 		SetNillableBio(usr.Bio).
+		SetLinks(usr.Links).
 		SetThemeHue(usr.Preferences.ThemeHue).
 		SetThemeChroma(usr.Preferences.ThemeChroma).
 		SetThemeSidebar(user.ThemeSidebar(usr.Preferences.ThemeSidebar)).

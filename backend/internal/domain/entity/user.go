@@ -20,13 +20,18 @@ type User struct {
 	DisplayName  string
 	Bio          *string
 	AvatarURL    *string
-	IsBot        bool
+	// プロフィールに載せるリンクの URL
+	Links []string
+	IsBot bool
 	// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
 	IsOfficial  bool
 	Preferences UserPreferences
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
+
+// MaxProfileLinks はプロフィールに載せられるリンクの数です
+const MaxProfileLinks = 5
 
 type SidebarStyle string
 
