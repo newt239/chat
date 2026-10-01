@@ -58,3 +58,6 @@ ansible/inventory.ini
 
 # mini 構成のシークレット（infra/k8s/overlays/mini/*.env.example を参照）
 infra/k8s/overlays/mini/*.env
+
+# ローカル公開の状態 (scripts/tunnel.sh)
+.tunnel-public

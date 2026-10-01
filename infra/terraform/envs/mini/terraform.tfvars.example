@@ -1,6 +1,6 @@
 project_id            = "your-gcp-project-id"
 frontend_domain       = "chat-mini.example.com"
-api_domain            = "api.chat-mini.example.com"
+api_domain            = "api-chat-mini.example.com"
 wasabi_bucket_name    = "example-chat-mini-attachments"
 cloudflare_account_id = "your-cloudflare-account-id"
 cloudflare_zone_id    = "your-cloudflare-zone-id"
