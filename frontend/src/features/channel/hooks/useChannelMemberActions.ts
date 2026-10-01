@@ -29,6 +29,12 @@ export const useChannelMemberActions = (workspaceId: string) => {
       queryClient.invalidateQueries({
         queryKey: createConnectQueryKey({
           cardinality: "finite",
+          schema: ChannelService.method.searchBrowsableChannels,
+        }),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: createConnectQueryKey({
+          cardinality: "finite",
           input: { channelId },
           schema: ChannelService.method.getChannel,
         }),

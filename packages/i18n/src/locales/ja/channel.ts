@@ -10,6 +10,21 @@ export const channel = {
     toggle: "下階層を含む",
   },
   browse: {
+    count: "{{count}} 件",
+    membership: {
+      all: "すべて",
+      joined: "参加中",
+      label: "参加状態",
+      notJoined: "未参加",
+    },
+    next: "次のページ",
+    page: "{{page}} / {{total}} ページ",
+    prev: "前のページ",
+    sort: {
+      label: "並び順",
+      members: "メンバーの多い順",
+      name: "名前順",
+    },
     empty: "該当するチャンネルはありません",
     join: "参加",
     joined: "参加中",

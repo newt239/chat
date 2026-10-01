@@ -37,7 +37,6 @@ export const shell = {
     activity: "通知",
     admin: "管理画面",
     bookmarks: "ブックマーク",
-    browseChannels: "チャンネルに参加",
     insights: "インサイト",
     mentions: "メンション",
     search: "検索",
@@ -54,6 +53,7 @@ export const shell = {
     userGroup: "ユーザーグループ",
   },
   sidebar: {
+    browseChannels: "チャンネルに参加",
     channels: "チャンネル",
     createChannel: "チャンネルを作成",
     createDM: "DM を開始",

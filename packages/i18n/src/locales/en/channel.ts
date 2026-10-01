@@ -12,6 +12,21 @@ export const channel: Messages["channel"] = {
     toggle: "Include nested",
   },
   browse: {
+    count: "{{count}} channels",
+    membership: {
+      all: "All",
+      joined: "Joined",
+      label: "Membership",
+      notJoined: "Not joined",
+    },
+    next: "Next page",
+    page: "Page {{page}} of {{total}}",
+    prev: "Previous page",
+    sort: {
+      label: "Sort",
+      members: "Most members",
+      name: "Name",
+    },
     empty: "No channels found",
     join: "Join",
     joined: "Joined",

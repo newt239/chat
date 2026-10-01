@@ -39,7 +39,6 @@ export const shell: Messages["shell"] = {
     activity: "Activity",
     admin: "Admin",
     bookmarks: "Bookmarks",
-    browseChannels: "Browse channels",
     insights: "Insights",
     mentions: "Mentions",
     search: "Search",
@@ -56,6 +55,7 @@ export const shell: Messages["shell"] = {
     userGroup: "User group",
   },
   sidebar: {
+    browseChannels: "Browse channels",
     channels: "Channels",
     createChannel: "Create channel",
     createDM: "New message",
