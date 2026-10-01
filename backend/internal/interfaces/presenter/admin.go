@@ -24,6 +24,8 @@ var auditActions = map[entity.AuditAction]chatv1.AuditAction{
 	entity.AuditActionWebhookDeleted:     chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_DELETED,
 	entity.AuditActionCustomEmojiCreated: chatv1.AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_CREATED,
 	entity.AuditActionCustomEmojiDeleted: chatv1.AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_DELETED,
+	entity.AuditActionAppCreated:         chatv1.AuditAction_AUDIT_ACTION_APP_CREATED,
+	entity.AuditActionAppDeleted:         chatv1.AuditAction_AUDIT_ACTION_APP_DELETED,
 }
 
 var permissions = map[entity.Permission]chatv1.Permission{

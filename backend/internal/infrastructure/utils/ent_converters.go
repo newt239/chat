@@ -23,6 +23,7 @@ func UserToEntity(u *ent.User) *entity.User {
 		Bio:          StringPtrFromNullable(u.Bio),
 		AvatarURL:    StringPtrFromNullable(u.AvatarURL),
 		IsBot:        u.IsBot,
+		IsOfficial:   u.IsOfficial,
 		Preferences: entity.UserPreferences{
 			ThemeHue:           u.ThemeHue,
 			ThemeChroma:        u.ThemeChroma,

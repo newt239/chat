@@ -1,5 +1,6 @@
 import type { Messages } from "../../messages";
 import { admin } from "./admin";
+import { app } from "./app";
 import { attachment } from "./attachment";
 import { auth } from "./auth";
 import { bookmark } from "./bookmark";
@@ -25,11 +26,11 @@ import { settings } from "./settings";
 import { shell } from "./shell";
 import { ui } from "./ui";
 import { userGroup } from "./userGroup";
-import { webhook } from "./webhook";
 import { workspace } from "./workspace";
 
 export const en: Messages = {
   admin,
+  app,
   attachment,
   auth,
   bookmark,
@@ -55,6 +56,5 @@ export const en: Messages = {
   shell,
   ui,
   userGroup,
-  webhook,
   workspace,
 };

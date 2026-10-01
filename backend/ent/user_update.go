@@ -158,6 +158,20 @@ func (_u *UserUpdate) SetNillableIsBot(v *bool) *UserUpdate {
 	return _u
 }
 
+// SetIsOfficial sets the "is_official" field.
+func (_u *UserUpdate) SetIsOfficial(v bool) *UserUpdate {
+	_u.mutation.SetIsOfficial(v)
+	return _u
+}
+
+// SetNillableIsOfficial sets the "is_official" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableIsOfficial(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetIsOfficial(*v)
+	}
+	return _u
+}
+
 // SetThemeHue sets the "theme_hue" field.
 func (_u *UserUpdate) SetThemeHue(v int) *UserUpdate {
 	_u.mutation.ResetThemeHue()
@@ -908,6 +922,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.IsBot(); ok {
 		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsOfficial(); ok {
+		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
@@ -1665,6 +1682,20 @@ func (_u *UserUpdateOne) SetIsBot(v bool) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillableIsBot(v *bool) *UserUpdateOne {
 	if v != nil {
 		_u.SetIsBot(*v)
+	}
+	return _u
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (_u *UserUpdateOne) SetIsOfficial(v bool) *UserUpdateOne {
+	_u.mutation.SetIsOfficial(v)
+	return _u
+}
+
+// SetNillableIsOfficial sets the "is_official" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableIsOfficial(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetIsOfficial(*v)
 	}
 	return _u
 }
@@ -2449,6 +2480,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.IsBot(); ok {
 		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsOfficial(); ok {
+		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)

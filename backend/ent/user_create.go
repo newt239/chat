@@ -111,6 +111,20 @@ func (_c *UserCreate) SetNillableIsBot(v *bool) *UserCreate {
 	return _c
 }
 
+// SetIsOfficial sets the "is_official" field.
+func (_c *UserCreate) SetIsOfficial(v bool) *UserCreate {
+	_c.mutation.SetIsOfficial(v)
+	return _c
+}
+
+// SetNillableIsOfficial sets the "is_official" field if the given value is not nil.
+func (_c *UserCreate) SetNillableIsOfficial(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetIsOfficial(*v)
+	}
+	return _c
+}
+
 // SetThemeHue sets the "theme_hue" field.
 func (_c *UserCreate) SetThemeHue(v int) *UserCreate {
 	_c.mutation.SetThemeHue(v)
@@ -527,6 +541,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultIsBot
 		_c.mutation.SetIsBot(v)
 	}
+	if _, ok := _c.mutation.IsOfficial(); !ok {
+		v := user.DefaultIsOfficial
+		_c.mutation.SetIsOfficial(v)
+	}
 	if _, ok := _c.mutation.ThemeHue(); !ok {
 		v := user.DefaultThemeHue
 		_c.mutation.SetThemeHue(v)
@@ -609,6 +627,9 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.IsBot(); !ok {
 		return &ValidationError{Name: "is_bot", err: errors.New(`ent: missing required field "User.is_bot"`)}
+	}
+	if _, ok := _c.mutation.IsOfficial(); !ok {
+		return &ValidationError{Name: "is_official", err: errors.New(`ent: missing required field "User.is_official"`)}
 	}
 	if _, ok := _c.mutation.ThemeHue(); !ok {
 		return &ValidationError{Name: "theme_hue", err: errors.New(`ent: missing required field "User.theme_hue"`)}
@@ -729,6 +750,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsBot(); ok {
 		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
 		_node.IsBot = value
+	}
+	if value, ok := _c.mutation.IsOfficial(); ok {
+		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
+		_node.IsOfficial = value
 	}
 	if value, ok := _c.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
@@ -1140,6 +1165,18 @@ func (u *UserUpsert) UpdateIsBot() *UserUpsert {
 	return u
 }
 
+// SetIsOfficial sets the "is_official" field.
+func (u *UserUpsert) SetIsOfficial(v bool) *UserUpsert {
+	u.Set(user.FieldIsOfficial, v)
+	return u
+}
+
+// UpdateIsOfficial sets the "is_official" field to the value that was provided on create.
+func (u *UserUpsert) UpdateIsOfficial() *UserUpsert {
+	u.SetExcluded(user.FieldIsOfficial)
+	return u
+}
+
 // SetThemeHue sets the "theme_hue" field.
 func (u *UserUpsert) SetThemeHue(v int) *UserUpsert {
 	u.Set(user.FieldThemeHue, v)
@@ -1451,6 +1488,20 @@ func (u *UserUpsertOne) SetIsBot(v bool) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateIsBot() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateIsBot()
+	})
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (u *UserUpsertOne) SetIsOfficial(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsOfficial(v)
+	})
+}
+
+// UpdateIsOfficial sets the "is_official" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateIsOfficial() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsOfficial()
 	})
 }
 
@@ -1956,6 +2007,20 @@ func (u *UserUpsertBulk) SetIsBot(v bool) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateIsBot() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateIsBot()
+	})
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (u *UserUpsertBulk) SetIsOfficial(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsOfficial(v)
+	})
+}
+
+// UpdateIsOfficial sets the "is_official" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateIsOfficial() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsOfficial()
 	})
 }
 

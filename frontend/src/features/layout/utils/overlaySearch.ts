@@ -8,6 +8,7 @@ const noPanel = { group: undefined, panel: undefined, profile: undefined } satis
   undefined
 >;
 const noDialog = {
+  app: undefined,
   assign: undefined,
   category: undefined,
   dialog: undefined,
@@ -17,7 +18,6 @@ const noDialog = {
   parent: undefined,
   reactions: undefined,
   sheet: undefined,
-  webhook: undefined,
 } satisfies Record<keyof DialogSearch, undefined>;
 
 // Link / navigate の search に渡す。今のルートの search（?message= など）は残す

@@ -2,6 +2,8 @@ export const admin = {
   audit: {
     actionFilter: "操作の種類",
     actions: {
+      appCreated: "アプリを作成",
+      appDeleted: "アプリを削除",
       auditLogExported: "監査ログを書き出し",
       channelArchived: "チャンネルをアーカイブ",
       channelCreated: "チャンネルを作成",
@@ -140,6 +142,7 @@ export const admin = {
     updated: "権限を変更しました",
   },
   tabs: {
+    apps: "アプリ",
     audit: "監査ログ",
     invitations: "招待",
     label: "管理画面のタブ",

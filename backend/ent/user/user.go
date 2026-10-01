@@ -30,6 +30,8 @@ const (
 	FieldAvatarURL = "avatar_url"
 	// FieldIsBot holds the string denoting the is_bot field in the database.
 	FieldIsBot = "is_bot"
+	// FieldIsOfficial holds the string denoting the is_official field in the database.
+	FieldIsOfficial = "is_official"
 	// FieldThemeHue holds the string denoting the theme_hue field in the database.
 	FieldThemeHue = "theme_hue"
 	// FieldThemeChroma holds the string denoting the theme_chroma field in the database.
@@ -185,6 +187,7 @@ var Columns = []string{
 	FieldBio,
 	FieldAvatarURL,
 	FieldIsBot,
+	FieldIsOfficial,
 	FieldThemeHue,
 	FieldThemeChroma,
 	FieldThemeSidebar,
@@ -218,6 +221,8 @@ var (
 	DisplayNameValidator func(string) error
 	// DefaultIsBot holds the default value on creation for the "is_bot" field.
 	DefaultIsBot bool
+	// DefaultIsOfficial holds the default value on creation for the "is_official" field.
+	DefaultIsOfficial bool
 	// DefaultThemeHue holds the default value on creation for the "theme_hue" field.
 	DefaultThemeHue int
 	// DefaultThemeChroma holds the default value on creation for the "theme_chroma" field.
@@ -387,6 +392,11 @@ func ByAvatarURL(opts ...sql.OrderTermOption) OrderOption {
 // ByIsBot orders the results by the is_bot field.
 func ByIsBot(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsBot, opts...).ToFunc()
+}
+
+// ByIsOfficial orders the results by the is_official field.
+func ByIsOfficial(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsOfficial, opts...).ToFunc()
 }
 
 // ByThemeHue orders the results by the theme_hue field.

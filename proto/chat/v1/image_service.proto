@@ -4,7 +4,7 @@ package chat.v1;
 
 import "buf/validate/validate.proto";
 
-// アイコン画像のアップロード。upload_url に PUT してから、image_url をユーザー・ワークスペース・Webhook の更新に渡す
+// アイコン画像のアップロード。upload_url に PUT してから、image_url をユーザー・ワークスペース・アプリの更新に渡す
 service ImageService {
   rpc PresignImageUpload(PresignImageUploadRequest) returns (PresignImageUploadResponse);
 }
@@ -13,7 +13,7 @@ enum ImagePurpose {
   IMAGE_PURPOSE_UNSPECIFIED = 0;
   IMAGE_PURPOSE_AVATAR = 1;
   IMAGE_PURPOSE_WORKSPACE_ICON = 2;
-  IMAGE_PURPOSE_WEBHOOK_ICON = 3;
+  IMAGE_PURPOSE_APP_ICON = 3;
 }
 
 message PresignImageUploadRequest {
@@ -21,7 +21,7 @@ message PresignImageUploadRequest {
     defined_only: true
     not_in: [0]
   }];
-  // WORKSPACE_ICON と WEBHOOK_ICON のときに指定する
+  // WORKSPACE_ICON と APP_ICON のときに指定する
   string workspace_id = 2;
   string content_type = 3 [(buf.validate.field).string = {
     in: [

@@ -8,6 +8,7 @@ import { Tab } from "#/components/ui/Tab/Tab";
 import { TabList } from "#/components/ui/TabList/TabList";
 import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
+import { AdminAppsTab } from "#/features/admin/components/AdminAppsTab";
 import { AdminAuditTab } from "#/features/admin/components/AdminAuditTab";
 import { AdminInvitationsTab } from "#/features/admin/components/AdminInvitationsTab";
 import { AdminMembersTab } from "#/features/admin/components/AdminMembersTab";
@@ -65,6 +66,9 @@ export const AdminPage = () => {
             myRole={myRole}
           />
         );
+      }
+      case "apps": {
+        return <AdminAppsTab workspaceId={workspaceId} />;
       }
       case "audit": {
         return <AdminAuditTab workspaceId={workspaceId} members={members} />;

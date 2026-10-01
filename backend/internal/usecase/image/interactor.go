@@ -20,7 +20,7 @@ type Purpose int
 const (
 	PurposeAvatar Purpose = iota
 	PurposeWorkspaceIcon
-	PurposeWebhookIcon
+	PurposeAppIcon
 )
 
 var ErrWorkspaceRequired = fmt.Errorf("%w: workspace_id を指定してください", domerr.ErrValidation)
@@ -92,5 +92,5 @@ func (i *Interactor) directory(ctx context.Context, input PresignInput) (string,
 	if input.Purpose == PurposeWorkspaceIcon {
 		return "workspaces/" + input.WorkspaceID, nil
 	}
-	return "webhooks/" + input.WorkspaceID, nil
+	return "apps/" + input.WorkspaceID, nil
 }

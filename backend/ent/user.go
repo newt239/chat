@@ -32,6 +32,8 @@ type User struct {
 	AvatarURL string `json:"avatar_url,omitempty"`
 	// IsBot holds the value of the "is_bot" field.
 	IsBot bool `json:"is_bot,omitempty"`
+	// IsOfficial holds the value of the "is_official" field.
+	IsOfficial bool `json:"is_official,omitempty"`
 	// ThemeHue holds the value of the "theme_hue" field.
 	ThemeHue int `json:"theme_hue,omitempty"`
 	// ThemeChroma holds the value of the "theme_chroma" field.
@@ -217,7 +219,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsBot, user.FieldTimezoneAutoUpdate, user.FieldHideJoinMessages:
+		case user.FieldIsBot, user.FieldIsOfficial, user.FieldTimezoneAutoUpdate, user.FieldHideJoinMessages:
 			values[i] = new(sql.NullBool)
 		case user.FieldThemeChroma:
 			values[i] = new(sql.NullFloat64)
@@ -292,6 +294,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_bot", values[i])
 			} else if value.Valid {
 				_m.IsBot = value.Bool
+			}
+		case user.FieldIsOfficial:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_official", values[i])
+			} else if value.Valid {
+				_m.IsOfficial = value.Bool
 			}
 		case user.FieldThemeHue:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -488,6 +496,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_bot=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsBot))
+	builder.WriteString(", ")
+	builder.WriteString("is_official=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsOfficial))
 	builder.WriteString(", ")
 	builder.WriteString("theme_hue=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ThemeHue))

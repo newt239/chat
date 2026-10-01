@@ -18,6 +18,8 @@ export const auditActionKeys = {
   [AuditAction.WEBHOOK_DELETED]: "webhookDeleted",
   [AuditAction.CUSTOM_EMOJI_CREATED]: "customEmojiCreated",
   [AuditAction.CUSTOM_EMOJI_DELETED]: "customEmojiDeleted",
+  [AuditAction.APP_CREATED]: "appCreated",
+  [AuditAction.APP_DELETED]: "appDeleted",
 } as const;
 
 // 権限やセキュリティに関わる操作は目立たせる

@@ -260,6 +260,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 
 		MentionsChannel: msg.MentionsChannel,
 		MentionsHere:    msg.MentionsHere,
+		IsOfficial:      users[msg.UserID] != nil && users[msg.UserID].IsOfficial,
 	}
 
 	for _, mention := range related.userMentions[msg.ID] {
@@ -332,7 +333,7 @@ func toUserInfo(userID string, users map[string]*entity.User) UserInfo {
 	return UserInfo{ID: userID, DisplayName: "Unknown User"}
 }
 
-// authorInfo は投稿者の情報に、Webhook が投稿ごとに指定した表示名とアイコンを反映します
+// authorInfo は投稿者の情報に、アプリが投稿ごとに指定した表示名とアイコンを反映します
 func authorInfo(msg *entity.Message, users map[string]*entity.User) UserInfo {
 	info := toUserInfo(msg.UserID, users)
 	if msg.SenderName != nil {

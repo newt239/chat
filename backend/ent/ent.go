@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/newt239/chat/ent/app"
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
@@ -42,7 +43,6 @@ import (
 	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
-	"github.com/newt239/chat/ent/webhook"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 	"github.com/newt239/chat/ent/workspacepermission"
@@ -106,6 +106,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			app.Table:                 app.ValidColumn,
 			attachment.Table:          attachment.ValidColumn,
 			auditlog.Table:            auditlog.ValidColumn,
 			channel.Table:             channel.ValidColumn,
@@ -136,7 +137,6 @@ func checkColumn(t, c string) error {
 			usergroupmember.Table:     usergroupmember.ValidColumn,
 			usernote.Table:            usernote.ValidColumn,
 			userthreadfollow.Table:    userthreadfollow.ValidColumn,
-			webhook.Table:             webhook.ValidColumn,
 			workspace.Table:           workspace.ValidColumn,
 			workspacemember.Table:     workspacemember.ValidColumn,
 			workspacepermission.Table: workspacepermission.ValidColumn,

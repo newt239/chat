@@ -2,6 +2,7 @@ package registry
 
 import (
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
+	appuc "github.com/newt239/chat/internal/usecase/app"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
 	"github.com/newt239/chat/internal/usecase/audit"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
@@ -31,7 +32,6 @@ import (
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 	usernoteuc "github.com/newt239/chat/internal/usecase/usernote"
-	webhookuc "github.com/newt239/chat/internal/usecase/webhook"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -149,11 +149,14 @@ func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuil
 	)
 }
 
-func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
-	return webhookuc.NewInteractor(
-		r.domainRegistry.NewWebhookRepository(),
+func (r *UseCaseRegistry) NewAppUseCase() *appuc.Interactor {
+	return appuc.NewInteractor(
+		r.domainRegistry.NewAppRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewChannelAccessService(),
 		messageuc.NewMessageCreator(
 			r.domainRegistry.NewMessageRepository(),
@@ -169,11 +172,24 @@ func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
 			r.NewMessageOutputBuilder(),
 			r.domainRegistry.NewChannelAccessService(),
 			r.NewSearchIndexer(),
-			r.NewPushDispatcher(),
+			r.newMessageObservers(),
 		),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
 	)
+}
+
+// newMessageObservers は新着メッセージをプッシュ通知とアプリの送信 Webhook で知らせます
+func (r *UseCaseRegistry) newMessageObservers() []messageuc.NewMessageObserver {
+	return []messageuc.NewMessageObserver{
+		r.NewPushDispatcher(),
+		appuc.NewEventDispatcher(
+			r.domainRegistry.NewAppRepository(),
+			r.infrastructureRegistry.NewMentionService(),
+			r.infrastructureRegistry.NewAppEventSender(),
+			r.infrastructureRegistry.NewLogger(),
+		),
+	}
 }
 
 func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
@@ -198,7 +214,7 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.domainRegistry.NewPermissionService(),
 		r.infrastructureRegistry.NewLogger(),
 		r.NewSearchIndexer(),
-		r.NewPushDispatcher(),
+		r.newMessageObservers(),
 	)
 }
 

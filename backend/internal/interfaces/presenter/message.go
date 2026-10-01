@@ -51,6 +51,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 
 		MentionsChannel: m.MentionsChannel,
 		MentionsHere:    m.MentionsHere,
+		IsOfficial:      m.IsOfficial,
 	}
 	if m.DeletedBy != nil {
 		msg.DeletedBy = UserSummary(*m.DeletedBy)

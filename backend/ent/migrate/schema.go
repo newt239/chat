@@ -9,6 +9,72 @@ import (
 )
 
 var (
+	// AppColumns holds the columns for the "app" table.
+	AppColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "token_hash", Type: field.TypeString, Nullable: true},
+		{Name: "permissions", Type: field.TypeJSON},
+		{Name: "outgoing_url", Type: field.TypeString, Nullable: true},
+		{Name: "outgoing_secret", Type: field.TypeString, Nullable: true},
+		{Name: "is_official", Type: field.TypeBool, Default: false},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "app_created_by", Type: field.TypeUUID},
+		{Name: "app_bot_user", Type: field.TypeUUID},
+		{Name: "app_default_channel", Type: field.TypeUUID, Nullable: true},
+	}
+	// AppTable holds the schema information for the "app" table.
+	AppTable = &schema.Table{
+		Name:       "app",
+		Columns:    AppColumns,
+		PrimaryKey: []*schema.Column{AppColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "app_workspaces_workspace",
+				Columns:    []*schema.Column{AppColumns[12]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "app_users_created_by",
+				Columns:    []*schema.Column{AppColumns[13]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "app_users_bot_user",
+				Columns:    []*schema.Column{AppColumns[14]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "app_channels_default_channel",
+				Columns:    []*schema.Column{AppColumns[15]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "app_workspace_id",
+				Unique:  false,
+				Columns: []*schema.Column{AppColumns[12]},
+			},
+			{
+				Name:    "app_official_workspace_id",
+				Unique:  true,
+				Columns: []*schema.Column{AppColumns[12]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "is_official",
+				},
+			},
+		},
+	}
 	// AttachmentsColumns holds the columns for the "attachments" table.
 	AttachmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1102,6 +1168,7 @@ var (
 		{Name: "bio", Type: field.TypeString, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "is_bot", Type: field.TypeBool, Default: false},
+		{Name: "is_official", Type: field.TypeBool, Default: false},
 		{Name: "theme_hue", Type: field.TypeInt, Default: 168},
 		{Name: "theme_chroma", Type: field.TypeFloat64, Default: 0.12},
 		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}, Default: "tinted"},
@@ -1284,45 +1351,6 @@ var (
 			},
 		},
 	}
-	// WebhookColumns holds the columns for the "webhook" table.
-	WebhookColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
-		{Name: "token_hash", Type: field.TypeString},
-		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "webhook_channel", Type: field.TypeUUID},
-		{Name: "webhook_created_by", Type: field.TypeUUID},
-		{Name: "webhook_bot_user", Type: field.TypeUUID},
-	}
-	// WebhookTable holds the schema information for the "webhook" table.
-	WebhookTable = &schema.Table{
-		Name:       "webhook",
-		Columns:    WebhookColumns,
-		PrimaryKey: []*schema.Column{WebhookColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "webhook_channels_channel",
-				Columns:    []*schema.Column{WebhookColumns[7]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "webhook_users_created_by",
-				Columns:    []*schema.Column{WebhookColumns[8]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "webhook_users_bot_user",
-				Columns:    []*schema.Column{WebhookColumns[9]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// WorkspacesColumns holds the columns for the "workspaces" table.
 	WorkspacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 12},
@@ -1422,6 +1450,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AppTable,
 		AttachmentsTable,
 		AuditLogTable,
 		ChannelsTable,
@@ -1452,7 +1481,6 @@ var (
 		UserGroupMembersTable,
 		UserNoteTable,
 		UserThreadFollowsTable,
-		WebhookTable,
 		WorkspacesTable,
 		WorkspaceMembersTable,
 		WorkspacePermissionTable,
@@ -1460,6 +1488,13 @@ var (
 )
 
 func init() {
+	AppTable.ForeignKeys[0].RefTable = WorkspacesTable
+	AppTable.ForeignKeys[1].RefTable = UsersTable
+	AppTable.ForeignKeys[2].RefTable = UsersTable
+	AppTable.ForeignKeys[3].RefTable = ChannelsTable
+	AppTable.Annotation = &entsql.Annotation{
+		Table: "app",
+	}
 	AttachmentsTable.ForeignKeys[0].RefTable = MessagesTable
 	AttachmentsTable.ForeignKeys[1].RefTable = UsersTable
 	AttachmentsTable.ForeignKeys[2].RefTable = ChannelsTable
@@ -1556,12 +1591,6 @@ func init() {
 	}
 	UserThreadFollowsTable.ForeignKeys[0].RefTable = UsersTable
 	UserThreadFollowsTable.ForeignKeys[1].RefTable = MessagesTable
-	WebhookTable.ForeignKeys[0].RefTable = ChannelsTable
-	WebhookTable.ForeignKeys[1].RefTable = UsersTable
-	WebhookTable.ForeignKeys[2].RefTable = UsersTable
-	WebhookTable.Annotation = &entsql.Annotation{
-		Table: "webhook",
-	}
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[0].RefTable = WorkspacesTable
 	WorkspaceMembersTable.ForeignKeys[1].RefTable = UsersTable

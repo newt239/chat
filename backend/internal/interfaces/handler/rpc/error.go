@@ -10,6 +10,7 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
+	appuc "github.com/newt239/chat/internal/usecase/app"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
 	channelcategoryuc "github.com/newt239/chat/internal/usecase/channelcategory"
@@ -29,7 +30,6 @@ import (
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
-	webhookuc "github.com/newt239/chat/internal/usecase/webhook"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -40,6 +40,7 @@ var errorCodes = []struct {
 	{connect.CodeNotFound, []error{
 		domerr.ErrNotFound, domerr.ErrMessageNotFound, domerr.ErrChannelNotFound, domerr.ErrInvitationNotFound,
 		adminuc.ErrMemberNotFound,
+		appuc.ErrAppNotFound,
 		bookmarkuc.ErrMessageNotFound,
 		entity.ErrUserNotFound,
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
@@ -55,7 +56,6 @@ var errorCodes = []struct {
 		readstateuc.ErrChannelNotFound,
 		searchuc.ErrWorkspaceNotFound,
 		usergroupuc.ErrUserGroupNotFound,
-		webhookuc.ErrWebhookNotFound,
 		workspaceuc.ErrWorkspaceNotFound,
 	}},
 	{connect.CodeUnauthenticated, []error{
@@ -64,6 +64,7 @@ var errorCodes = []struct {
 	{connect.CodePermissionDenied, []error{
 		domerr.ErrUnauthorized, domerr.ErrForbidden, domerr.ErrNotChannelMember, domerr.ErrInvitationRequired, domerr.ErrEmailNotVerified,
 		adminuc.ErrOwnerOnlyPermissions,
+		appuc.ErrUnauthorized, appuc.ErrOfficialApp, appuc.ErrForbiddenChannel, appuc.ErrForbiddenThread,
 		bookmarkuc.ErrUnauthorized,
 		channeluc.ErrUnauthorized,
 		channelcategoryuc.ErrUnauthorized,
@@ -72,14 +73,13 @@ var errorCodes = []struct {
 		customemojiuc.ErrUnauthorized,
 		dmuc.ErrNotWorkspaceMember,
 		mentionuc.ErrUnauthorized,
-		messageuc.ErrUnauthorized,
+		messageuc.ErrUnauthorized, messageuc.ErrOfficialMessage,
 		pinuc.ErrUnauthorized,
 		reactionuc.ErrUnauthorized,
 		readstateuc.ErrUnauthorized,
 		searchuc.ErrUnauthorized,
 		useruc.ErrUnauthorized,
 		usergroupuc.ErrUnauthorized,
-		webhookuc.ErrUnauthorized,
 		workspaceuc.ErrUnauthorized,
 	}},
 	{connect.CodeAlreadyExists, []error{
@@ -110,13 +110,13 @@ var errorCodes = []struct {
 	{connect.CodeFailedPrecondition, []error{
 		domerr.ErrChannelArchived, domerr.ErrPasswordAuthDisabled, domerr.ErrGoogleAuthDisabled, domerr.ErrSignupDisabled,
 		adminuc.ErrCannotSuspendOwner, adminuc.ErrCannotSuspendSelf,
+		appuc.ErrUnsupportedChannel, appuc.ErrInactive,
 		channeluc.ErrCannotArchiveDM,
 		channeluc.ErrChannelHasChildren,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,
 		scheduledmessageuc.ErrNotEditable,
 		usergroupuc.ErrUserNotInGroup,
-		webhookuc.ErrUnsupportedChannel,
 		workspaceuc.ErrCannotRemoveOwner, workspaceuc.ErrCannotChangeOwnerRole,
 	}},
 	{connect.CodeAborted, []error{domerr.ErrConflict}},

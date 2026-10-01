@@ -91,6 +91,11 @@ func IsBot(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldIsBot, v))
 }
 
+// IsOfficial applies equality check predicate on the "is_official" field. It's identical to IsOfficialEQ.
+func IsOfficial(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsOfficial, v))
+}
+
 // ThemeHue applies equality check predicate on the "theme_hue" field. It's identical to ThemeHueEQ.
 func ThemeHue(v int) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldThemeHue, v))
@@ -559,6 +564,16 @@ func IsBotEQ(v bool) predicate.User {
 // IsBotNEQ applies the NEQ predicate on the "is_bot" field.
 func IsBotNEQ(v bool) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldIsBot, v))
+}
+
+// IsOfficialEQ applies the EQ predicate on the "is_official" field.
+func IsOfficialEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsOfficial, v))
+}
+
+// IsOfficialNEQ applies the NEQ predicate on the "is_official" field.
+func IsOfficialNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsOfficial, v))
 }
 
 // ThemeHueEQ applies the EQ predicate on the "theme_hue" field.

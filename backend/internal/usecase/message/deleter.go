@@ -13,6 +13,7 @@ import (
 // MessageDeleter はメッセージ削除を担当するユースケースです
 type MessageDeleter struct {
 	messageRepo       domainrepository.MessageRepository
+	userRepo          domainrepository.UserRepository
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	threadRepo        domainrepository.ThreadRepository
@@ -26,6 +27,7 @@ type MessageDeleter struct {
 // NewMessageDeleter は新しいMessageDeleterを作成します
 func NewMessageDeleter(
 	messageRepo domainrepository.MessageRepository,
+	userRepo domainrepository.UserRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	threadRepo domainrepository.ThreadRepository,
@@ -37,6 +39,7 @@ func NewMessageDeleter(
 ) *MessageDeleter {
 	return &MessageDeleter{
 		messageRepo:       messageRepo,
+		userRepo:          userRepo,
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		threadRepo:        threadRepo,
@@ -68,6 +71,10 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 	// 既に削除済みの場合はエラー
 	if message.DeletedAt != nil {
 		return ErrMessageAlreadyDeleted
+	}
+
+	if err := ensureNotOfficial(ctx, d.userRepo, message); err != nil {
+		return err
 	}
 
 	// 他人のメッセージは権限設定で許可されたロールだけが削除できる

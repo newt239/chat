@@ -1,5 +1,6 @@
 // 名前空間ごとにファイルを分け、ここで束ねる。キーは「機能.文脈.項目」の camelCase。日本語辞書が正
 import { admin } from "./admin";
+import { app } from "./app";
 import { attachment } from "./attachment";
 import { auth } from "./auth";
 import { bookmark } from "./bookmark";
@@ -25,11 +26,11 @@ import { settings } from "./settings";
 import { shell } from "./shell";
 import { ui } from "./ui";
 import { userGroup } from "./userGroup";
-import { webhook } from "./webhook";
 import { workspace } from "./workspace";
 
 export const ja = {
   admin,
+  app,
   attachment,
   auth,
   bookmark,
@@ -55,6 +56,5 @@ export const ja = {
   shell,
   ui,
   userGroup,
-  webhook,
   workspace,
 } as const;

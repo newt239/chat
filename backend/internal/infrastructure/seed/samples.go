@@ -290,7 +290,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		}
 	}
 
-	// Webhook の投稿名義のボット
+	// アプリの投稿名義のボット
 	bot, err := client.User.Create().
 		SetEmail("deploy-bot@example.com").
 		SetPasswordHash("!").
@@ -299,6 +299,20 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		Save(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create bot: %w", err)
+	}
+	if err := client.App.Create().
+		SetWorkspaceID(ch.WorkspaceID).
+		SetName("Deploy Bot").
+		SetDescription("デプロイの結果をお知らせします").
+		SetPermissions([]string{string(entity.AppPermissionPostJoinedChannels), string(entity.AppPermissionPostThreadReplies)}).
+		SetDefaultChannelID(channelID).
+		SetCreatedByID(uuid.MustParse(users[1].ID)).
+		SetBotUser(bot).
+		Exec(ctx); err != nil {
+		return fmt.Errorf("failed to create app: %w", err)
+	}
+	if err := client.ChannelMember.Create().SetChannelID(channelID).SetUser(bot).Exec(ctx); err != nil {
+		return fmt.Errorf("failed to add app to channel: %w", err)
 	}
 	if err := client.Message.Create().
 		SetChannelID(channelID).

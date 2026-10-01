@@ -11,7 +11,7 @@ import { renderWithProviders } from "#/test/renderWithProviders";
 import { AdminPage } from "./AdminPage";
 
 describe("AdminPage", () => {
-  test("5 つのタブを URL の tab で切り替える", async () => {
+  test("6 つのタブを URL の tab で切り替える", async () => {
     const { router } = await renderWithProviders(<AdminPage />, "/app/ws1/admin", (routes) => {
       routes.rpc(AdminService.method.listAdminMembers, () => ({
         members: [create(AdminMemberSchema, { displayName: "Bob", userId: "u2" })],
@@ -29,6 +29,7 @@ describe("AdminPage", () => {
       "メンバー",
       "招待",
       "権限",
+      "アプリ",
       "監査ログ",
     ]);
     expect(await screen.findByText("投稿の多いメンバー")).toBeInTheDocument();

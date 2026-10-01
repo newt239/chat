@@ -14,6 +14,7 @@ import (
 // MessageUpdater はメッセージ更新を担当するユースケースです
 type MessageUpdater struct {
 	messageRepo        domainrepository.MessageRepository
+	userRepo           domainrepository.UserRepository
 	workspaceRepo      domainrepository.WorkspaceRepository
 	notificationSvc    Notifier
 	recorder           *contentRecorder
@@ -26,6 +27,7 @@ type MessageUpdater struct {
 // NewMessageUpdater は新しいMessageUpdaterを作成します
 func NewMessageUpdater(
 	messageRepo domainrepository.MessageRepository,
+	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userMentionRepo domainrepository.MessageUserMentionRepository,
 	groupMentionRepo domainrepository.MessageGroupMentionRepository,
@@ -40,6 +42,7 @@ func NewMessageUpdater(
 ) *MessageUpdater {
 	return &MessageUpdater{
 		messageRepo:     messageRepo,
+		userRepo:        userRepo,
 		workspaceRepo:   workspaceRepo,
 		notificationSvc: notificationSvc,
 		recorder: &contentRecorder{
@@ -76,6 +79,10 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 	// 削除済みメッセージの編集禁止
 	if message.DeletedAt != nil {
 		return nil, ErrCannotEditDeleted
+	}
+
+	if err := ensureNotOfficial(ctx, u.userRepo, message); err != nil {
+		return nil, err
 	}
 
 	// 権限確認: 投稿者本人または管理者

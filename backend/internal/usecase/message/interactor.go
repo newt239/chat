@@ -50,7 +50,7 @@ func NewMessageUseCase(
 	permissionSvc service.PermissionService,
 	logger service.Logger,
 	searchIndexer SearchIndexer,
-	pushNotifier PushNotifier,
+	observers []NewMessageObserver,
 ) MessageUseCase {
 	return &messageInteractor{
 		creator: NewMessageCreator(
@@ -67,10 +67,11 @@ func NewMessageUseCase(
 			outputBuilder,
 			channelAccessSvc,
 			searchIndexer,
-			pushNotifier,
+			observers,
 		),
 		updater: NewMessageUpdater(
 			messageRepo,
+			userRepo,
 			workspaceRepo,
 			userMentionRepo,
 			groupMentionRepo,
@@ -85,6 +86,7 @@ func NewMessageUseCase(
 		),
 		deleter: NewMessageDeleter(
 			messageRepo,
+			userRepo,
 			channelRepo,
 			channelMemberRepo,
 			threadRepo,

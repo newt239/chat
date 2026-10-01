@@ -16,6 +16,7 @@ var (
 	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
 	ErrAttachmentNotFound    = errors.New("添付ファイルが見つかりません")
 	ErrEmptyMessage          = errors.New("本文・添付・位置情報のいずれかが必要です")
+	ErrOfficialMessage       = errors.New("公式アプリの投稿は編集・削除できません")
 )
 
 const (
@@ -133,6 +134,8 @@ type MessageOutput struct {
 	Location        *entity.MessageLocation `json:"location,omitempty"`
 	MentionsChannel bool
 	MentionsHere    bool
+	// 公式アプリの投稿。誰も編集・削除できない
+	IsOfficial bool
 }
 
 // WithoutMessagePreviews は引用カードを除いたコピーを返します。

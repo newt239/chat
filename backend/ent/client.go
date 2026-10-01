@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/newt239/chat/ent/app"
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
@@ -46,7 +47,6 @@ import (
 	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
-	"github.com/newt239/chat/ent/webhook"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 	"github.com/newt239/chat/ent/workspacepermission"
@@ -59,6 +59,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// App is the client for interacting with the App builders.
+	App *AppClient
 	// Attachment is the client for interacting with the Attachment builders.
 	Attachment *AttachmentClient
 	// AuditLog is the client for interacting with the AuditLog builders.
@@ -119,8 +121,6 @@ type Client struct {
 	UserNote *UserNoteClient
 	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
 	UserThreadFollow *UserThreadFollowClient
-	// Webhook is the client for interacting with the Webhook builders.
-	Webhook *WebhookClient
 	// Workspace is the client for interacting with the Workspace builders.
 	Workspace *WorkspaceClient
 	// WorkspaceMember is the client for interacting with the WorkspaceMember builders.
@@ -138,6 +138,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.App = NewAppClient(c.config)
 	c.Attachment = NewAttachmentClient(c.config)
 	c.AuditLog = NewAuditLogClient(c.config)
 	c.Channel = NewChannelClient(c.config)
@@ -168,7 +169,6 @@ func (c *Client) init() {
 	c.UserGroupMember = NewUserGroupMemberClient(c.config)
 	c.UserNote = NewUserNoteClient(c.config)
 	c.UserThreadFollow = NewUserThreadFollowClient(c.config)
-	c.Webhook = NewWebhookClient(c.config)
 	c.Workspace = NewWorkspaceClient(c.config)
 	c.WorkspaceMember = NewWorkspaceMemberClient(c.config)
 	c.WorkspacePermission = NewWorkspacePermissionClient(c.config)
@@ -264,6 +264,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                 ctx,
 		config:              cfg,
+		App:                 NewAppClient(cfg),
 		Attachment:          NewAttachmentClient(cfg),
 		AuditLog:            NewAuditLogClient(cfg),
 		Channel:             NewChannelClient(cfg),
@@ -294,7 +295,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
 		UserNote:            NewUserNoteClient(cfg),
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
-		Webhook:             NewWebhookClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
 		WorkspacePermission: NewWorkspacePermissionClient(cfg),
@@ -317,6 +317,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:                 ctx,
 		config:              cfg,
+		App:                 NewAppClient(cfg),
 		Attachment:          NewAttachmentClient(cfg),
 		AuditLog:            NewAuditLogClient(cfg),
 		Channel:             NewChannelClient(cfg),
@@ -347,7 +348,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		UserGroupMember:     NewUserGroupMemberClient(cfg),
 		UserNote:            NewUserNoteClient(cfg),
 		UserThreadFollow:    NewUserThreadFollowClient(cfg),
-		Webhook:             NewWebhookClient(cfg),
 		Workspace:           NewWorkspaceClient(cfg),
 		WorkspaceMember:     NewWorkspaceMemberClient(cfg),
 		WorkspacePermission: NewWorkspacePermissionClient(cfg),
@@ -357,7 +357,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Attachment.
+//		App.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -380,13 +380,13 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory, c.ChannelCategoryItem,
-		c.ChannelLink, c.ChannelMember, c.ChannelMute, c.ChannelReadState,
-		c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.PushToken, c.ScheduledMessage,
-		c.Session, c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup,
-		c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace,
+		c.App, c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory,
+		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
+		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
+		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
+		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
+		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
 		c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
@@ -397,13 +397,13 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory, c.ChannelCategoryItem,
-		c.ChannelLink, c.ChannelMember, c.ChannelMute, c.ChannelReadState,
-		c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation, c.Message,
-		c.MessageBookmark, c.MessageGroupMention, c.MessageLink, c.MessagePin,
-		c.MessageReaction, c.MessageUserMention, c.PushToken, c.ScheduledMessage,
-		c.Session, c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup,
-		c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Webhook, c.Workspace,
+		c.App, c.Attachment, c.AuditLog, c.Channel, c.ChannelCategory,
+		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
+		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
+		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken,
+		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
+		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
 		c.WorkspaceMember, c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
@@ -413,6 +413,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AppMutation:
+		return c.App.mutate(ctx, m)
 	case *AttachmentMutation:
 		return c.Attachment.mutate(ctx, m)
 	case *AuditLogMutation:
@@ -473,8 +475,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserNote.mutate(ctx, m)
 	case *UserThreadFollowMutation:
 		return c.UserThreadFollow.mutate(ctx, m)
-	case *WebhookMutation:
-		return c.Webhook.mutate(ctx, m)
 	case *WorkspaceMutation:
 		return c.Workspace.mutate(ctx, m)
 	case *WorkspaceMemberMutation:
@@ -483,6 +483,203 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.WorkspacePermission.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AppClient is a client for the App schema.
+type AppClient struct {
+	config
+}
+
+// NewAppClient returns a client for the App from the given config.
+func NewAppClient(c config) *AppClient {
+	return &AppClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `app.Hooks(f(g(h())))`.
+func (c *AppClient) Use(hooks ...Hook) {
+	c.hooks.App = append(c.hooks.App, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `app.Intercept(f(g(h())))`.
+func (c *AppClient) Intercept(interceptors ...Interceptor) {
+	c.inters.App = append(c.inters.App, interceptors...)
+}
+
+// Create returns a builder for creating a App entity.
+func (c *AppClient) Create() *AppCreate {
+	mutation := newAppMutation(c.config, OpCreate)
+	return &AppCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of App entities.
+func (c *AppClient) CreateBulk(builders ...*AppCreate) *AppCreateBulk {
+	return &AppCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AppClient) MapCreateBulk(slice any, setFunc func(*AppCreate, int)) *AppCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AppCreateBulk{err: fmt.Errorf("calling to AppClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AppCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AppCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for App.
+func (c *AppClient) Update() *AppUpdate {
+	mutation := newAppMutation(c.config, OpUpdate)
+	return &AppUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AppClient) UpdateOne(_m *App) *AppUpdateOne {
+	mutation := newAppMutation(c.config, OpUpdateOne, withApp(_m))
+	return &AppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AppClient) UpdateOneID(id uuid.UUID) *AppUpdateOne {
+	mutation := newAppMutation(c.config, OpUpdateOne, withAppID(id))
+	return &AppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for App.
+func (c *AppClient) Delete() *AppDelete {
+	mutation := newAppMutation(c.config, OpDelete)
+	return &AppDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AppClient) DeleteOne(_m *App) *AppDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AppClient) DeleteOneID(id uuid.UUID) *AppDeleteOne {
+	builder := c.Delete().Where(app.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AppDeleteOne{builder}
+}
+
+// Query returns a query builder for App.
+func (c *AppClient) Query() *AppQuery {
+	return &AppQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeApp},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a App entity by its id.
+func (c *AppClient) Get(ctx context.Context, id uuid.UUID) (*App, error) {
+	return c.Query().Where(app.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AppClient) GetX(ctx context.Context, id uuid.UUID) *App {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryWorkspace queries the workspace edge of a App.
+func (c *AppClient) QueryWorkspace(_m *App) *WorkspaceQuery {
+	query := (&WorkspaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(app.Table, app.FieldID, id),
+			sqlgraph.To(workspace.Table, workspace.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, app.WorkspaceTable, app.WorkspaceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreatedBy queries the created_by edge of a App.
+func (c *AppClient) QueryCreatedBy(_m *App) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(app.Table, app.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, app.CreatedByTable, app.CreatedByColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBotUser queries the bot_user edge of a App.
+func (c *AppClient) QueryBotUser(_m *App) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(app.Table, app.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, app.BotUserTable, app.BotUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDefaultChannel queries the default_channel edge of a App.
+func (c *AppClient) QueryDefaultChannel(_m *App) *ChannelQuery {
+	query := (&ChannelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(app.Table, app.FieldID, id),
+			sqlgraph.To(channel.Table, channel.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, app.DefaultChannelTable, app.DefaultChannelColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AppClient) Hooks() []Hook {
+	return c.hooks.App
+}
+
+// Interceptors returns the client interceptors.
+func (c *AppClient) Interceptors() []Interceptor {
+	return c.inters.App
+}
+
+func (c *AppClient) mutate(ctx context.Context, m *AppMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AppCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AppUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AppDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown App mutation op: %q", m.Op())
 	}
 }
 
@@ -5932,187 +6129,6 @@ func (c *UserThreadFollowClient) mutate(ctx context.Context, m *UserThreadFollow
 	}
 }
 
-// WebhookClient is a client for the Webhook schema.
-type WebhookClient struct {
-	config
-}
-
-// NewWebhookClient returns a client for the Webhook from the given config.
-func NewWebhookClient(c config) *WebhookClient {
-	return &WebhookClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `webhook.Hooks(f(g(h())))`.
-func (c *WebhookClient) Use(hooks ...Hook) {
-	c.hooks.Webhook = append(c.hooks.Webhook, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `webhook.Intercept(f(g(h())))`.
-func (c *WebhookClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Webhook = append(c.inters.Webhook, interceptors...)
-}
-
-// Create returns a builder for creating a Webhook entity.
-func (c *WebhookClient) Create() *WebhookCreate {
-	mutation := newWebhookMutation(c.config, OpCreate)
-	return &WebhookCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Webhook entities.
-func (c *WebhookClient) CreateBulk(builders ...*WebhookCreate) *WebhookCreateBulk {
-	return &WebhookCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *WebhookClient) MapCreateBulk(slice any, setFunc func(*WebhookCreate, int)) *WebhookCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &WebhookCreateBulk{err: fmt.Errorf("calling to WebhookClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*WebhookCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &WebhookCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Webhook.
-func (c *WebhookClient) Update() *WebhookUpdate {
-	mutation := newWebhookMutation(c.config, OpUpdate)
-	return &WebhookUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *WebhookClient) UpdateOne(_m *Webhook) *WebhookUpdateOne {
-	mutation := newWebhookMutation(c.config, OpUpdateOne, withWebhook(_m))
-	return &WebhookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *WebhookClient) UpdateOneID(id uuid.UUID) *WebhookUpdateOne {
-	mutation := newWebhookMutation(c.config, OpUpdateOne, withWebhookID(id))
-	return &WebhookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Webhook.
-func (c *WebhookClient) Delete() *WebhookDelete {
-	mutation := newWebhookMutation(c.config, OpDelete)
-	return &WebhookDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *WebhookClient) DeleteOne(_m *Webhook) *WebhookDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *WebhookClient) DeleteOneID(id uuid.UUID) *WebhookDeleteOne {
-	builder := c.Delete().Where(webhook.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &WebhookDeleteOne{builder}
-}
-
-// Query returns a query builder for Webhook.
-func (c *WebhookClient) Query() *WebhookQuery {
-	return &WebhookQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeWebhook},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Webhook entity by its id.
-func (c *WebhookClient) Get(ctx context.Context, id uuid.UUID) (*Webhook, error) {
-	return c.Query().Where(webhook.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *WebhookClient) GetX(ctx context.Context, id uuid.UUID) *Webhook {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryChannel queries the channel edge of a Webhook.
-func (c *WebhookClient) QueryChannel(_m *Webhook) *ChannelQuery {
-	query := (&ChannelClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(webhook.Table, webhook.FieldID, id),
-			sqlgraph.To(channel.Table, channel.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, webhook.ChannelTable, webhook.ChannelColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedBy queries the created_by edge of a Webhook.
-func (c *WebhookClient) QueryCreatedBy(_m *Webhook) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(webhook.Table, webhook.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, webhook.CreatedByTable, webhook.CreatedByColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryBotUser queries the bot_user edge of a Webhook.
-func (c *WebhookClient) QueryBotUser(_m *Webhook) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(webhook.Table, webhook.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, webhook.BotUserTable, webhook.BotUserColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *WebhookClient) Hooks() []Hook {
-	return c.hooks.Webhook
-}
-
-// Interceptors returns the client interceptors.
-func (c *WebhookClient) Interceptors() []Interceptor {
-	return c.inters.Webhook
-}
-
-func (c *WebhookClient) mutate(ctx context.Context, m *WebhookMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&WebhookCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&WebhookUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&WebhookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&WebhookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Webhook mutation op: %q", m.Op())
-	}
-}
-
 // WorkspaceClient is a client for the Workspace schema.
 type WorkspaceClient struct {
 	config
@@ -6611,22 +6627,22 @@ func (c *WorkspacePermissionClient) mutate(ctx context.Context, m *WorkspacePerm
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
+		App, Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
 		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
 		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
 		ScheduledMessage, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
-		WorkspaceMember, WorkspacePermission []ent.Hook
+		UserGroupMember, UserNote, UserThreadFollow, Workspace, WorkspaceMember,
+		WorkspacePermission []ent.Hook
 	}
 	inters struct {
-		Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
+		App, Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
 		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
 		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
 		ScheduledMessage, Session, SystemMessage, ThreadReadState, User, UserGroup,
-		UserGroupMember, UserNote, UserThreadFollow, Webhook, Workspace,
-		WorkspaceMember, WorkspacePermission []ent.Interceptor
+		UserGroupMember, UserNote, UserThreadFollow, Workspace, WorkspaceMember,
+		WorkspacePermission []ent.Interceptor
 	}
 )
 

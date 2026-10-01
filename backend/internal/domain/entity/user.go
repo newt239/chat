@@ -21,9 +21,11 @@ type User struct {
 	Bio          *string
 	AvatarURL    *string
 	IsBot        bool
-	Preferences  UserPreferences
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
+	IsOfficial  bool
+	Preferences UserPreferences
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type SidebarStyle string

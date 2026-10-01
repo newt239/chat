@@ -136,7 +136,7 @@ export const MessageItem = ({
   };
 
   const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
-  // Webhook の投稿はプロフィールを持たないボットユーザー名義なので、プロフィールを開かない
+  // アプリの投稿はプロフィールを持たないボットユーザー名義なので、プロフィールを開かない
   const isBot = message.user?.isBot ?? false;
   const avatar = (
     <Avatar name={displayName} src={message.user?.avatarUrl} size={isMobile ? 34 : 32} />
@@ -207,7 +207,7 @@ export const MessageItem = ({
             <>
               <span className="text-sm font-bold text-text">{displayName}</span>
               <Badge tone="tag" className="self-center">
-                {t("webhook.appTag")}
+                {t(message.isOfficial ? "app.official" : "app.tag")}
               </Badge>
             </>
           ) : (

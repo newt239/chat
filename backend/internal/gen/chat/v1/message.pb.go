@@ -118,8 +118,10 @@ type Message struct {
 	// 本文に <@channel> / <@here> を含む
 	MentionsChannel bool `protobuf:"varint,20,opt,name=mentions_channel,json=mentionsChannel,proto3" json:"mentions_channel,omitempty"`
 	MentionsHere    bool `protobuf:"varint,21,opt,name=mentions_here,json=mentionsHere,proto3" json:"mentions_here,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// 公式アプリの投稿。誰も編集・削除できない
+	IsOfficial    bool `protobuf:"varint,22,opt,name=is_official,json=isOfficial,proto3" json:"is_official,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Message) Reset() {
@@ -295,6 +297,13 @@ func (x *Message) GetMentionsChannel() bool {
 func (x *Message) GetMentionsHere() bool {
 	if x != nil {
 		return x.MentionsHere
+	}
+	return false
+}
+
+func (x *Message) GetIsOfficial() bool {
+	if x != nil {
+		return x.IsOfficial
 	}
 	return false
 }
@@ -1443,7 +1452,7 @@ var File_chat_v1_message_proto protoreflect.FileDescriptor
 
 const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
-	"\x15chat/v1/message.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xad\a\n" +
+	"\x15chat/v1/message.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xce\a\n" +
 	"\aMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1471,7 +1480,9 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\x03pin\x18\x12 \x01(\v2\x13.chat.v1.MessagePinR\x03pin\x124\n" +
 	"\blocation\x18\x13 \x01(\v2\x18.chat.v1.MessageLocationR\blocation\x12)\n" +
 	"\x10mentions_channel\x18\x14 \x01(\bR\x0fmentionsChannel\x12#\n" +
-	"\rmentions_here\x18\x15 \x01(\bR\fmentionsHereB\f\n" +
+	"\rmentions_here\x18\x15 \x01(\bR\fmentionsHere\x12\x1f\n" +
+	"\vis_official\x18\x16 \x01(\bR\n" +
+	"isOfficialB\f\n" +
 	"\n" +
 	"_parent_id\"\x86\x02\n" +
 	"\x0fMessageLocation\x123\n" +

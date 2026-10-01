@@ -33,6 +33,8 @@ message Message {
   // 本文に <@channel> / <@here> を含む
   bool mentions_channel = 20;
   bool mentions_here = 21;
+  // 公式アプリの投稿。誰も編集・削除できない
+  bool is_official = 22;
 }
 
 message MessageLocation {

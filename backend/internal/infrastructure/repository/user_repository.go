@@ -103,7 +103,8 @@ func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 		SetPasswordHash(usr.PasswordHash).
 		SetNillableGoogleSub(usr.GoogleSub).
 		SetDisplayName(usr.DisplayName).
-		SetIsBot(usr.IsBot)
+		SetIsBot(usr.IsBot).
+		SetIsOfficial(usr.IsOfficial)
 
 	if usr.ID != "" {
 		userID, err := utils.ParseUUID(usr.ID, "user ID")

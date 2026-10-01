@@ -132,8 +132,8 @@ func (r *DomainRegistry) NewScheduledMessageRepository() domainrepository.Schedu
 	return repository.NewScheduledMessageRepository(r.client)
 }
 
-func (r *DomainRegistry) NewWebhookRepository() domainrepository.WebhookRepository {
-	return repository.NewWebhookRepository(r.client)
+func (r *DomainRegistry) NewAppRepository() domainrepository.AppRepository {
+	return repository.NewAppRepository(r.client)
 }
 
 func (r *DomainRegistry) NewCustomEmojiRepository() domainrepository.CustomEmojiRepository {

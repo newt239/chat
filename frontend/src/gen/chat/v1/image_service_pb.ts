@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/image_service.proto.
  */
 export const file_chat_v1_image_service: GenFile = /*@__PURE__*/
-  fileDesc("ChtjaGF0L3YxL2ltYWdlX3NlcnZpY2UucHJvdG8SB2NoYXQudjEixgEKGVByZXNpZ25JbWFnZVVwbG9hZFJlcXVlc3QSMgoHcHVycG9zZRgBIAEoDjIVLmNoYXQudjEuSW1hZ2VQdXJwb3NlQgq6SAeCAQQQASAAEhQKDHdvcmtzcGFjZV9pZBgCIAEoCRI+Cgxjb250ZW50X3R5cGUYAyABKAlCKLpIJXIjUglpbWFnZS9wbmdSCmltYWdlL2pwZWdSCmltYWdlL3dlYnASHwoKc2l6ZV9ieXRlcxgEIAEoA0ILukgIIgYYgIBAIAAiQwoaUHJlc2lnbkltYWdlVXBsb2FkUmVzcG9uc2USEgoKdXBsb2FkX3VybBgBIAEoCRIRCglpbWFnZV91cmwYAiABKAkqiQEKDEltYWdlUHVycG9zZRIdChlJTUFHRV9QVVJQT1NFX1VOU1BFQ0lGSUVEEAASGAoUSU1BR0VfUFVSUE9TRV9BVkFUQVIQARIgChxJTUFHRV9QVVJQT1NFX1dPUktTUEFDRV9JQ09OEAISHgoaSU1BR0VfUFVSUE9TRV9XRUJIT09LX0lDT04QAzJtCgxJbWFnZVNlcnZpY2USXQoSUHJlc2lnbkltYWdlVXBsb2FkEiIuY2hhdC52MS5QcmVzaWduSW1hZ2VVcGxvYWRSZXF1ZXN0GiMuY2hhdC52MS5QcmVzaWduSW1hZ2VVcGxvYWRSZXNwb25zZUKSAQoLY29tLmNoYXQudjFCEUltYWdlU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate]);
+  fileDesc("ChtjaGF0L3YxL2ltYWdlX3NlcnZpY2UucHJvdG8SB2NoYXQudjEixgEKGVByZXNpZ25JbWFnZVVwbG9hZFJlcXVlc3QSMgoHcHVycG9zZRgBIAEoDjIVLmNoYXQudjEuSW1hZ2VQdXJwb3NlQgq6SAeCAQQQASAAEhQKDHdvcmtzcGFjZV9pZBgCIAEoCRI+Cgxjb250ZW50X3R5cGUYAyABKAlCKLpIJXIjUglpbWFnZS9wbmdSCmltYWdlL2pwZWdSCmltYWdlL3dlYnASHwoKc2l6ZV9ieXRlcxgEIAEoA0ILukgIIgYYgIBAIAAiQwoaUHJlc2lnbkltYWdlVXBsb2FkUmVzcG9uc2USEgoKdXBsb2FkX3VybBgBIAEoCRIRCglpbWFnZV91cmwYAiABKAkqhQEKDEltYWdlUHVycG9zZRIdChlJTUFHRV9QVVJQT1NFX1VOU1BFQ0lGSUVEEAASGAoUSU1BR0VfUFVSUE9TRV9BVkFUQVIQARIgChxJTUFHRV9QVVJQT1NFX1dPUktTUEFDRV9JQ09OEAISGgoWSU1BR0VfUFVSUE9TRV9BUFBfSUNPThADMm0KDEltYWdlU2VydmljZRJdChJQcmVzaWduSW1hZ2VVcGxvYWQSIi5jaGF0LnYxLlByZXNpZ25JbWFnZVVwbG9hZFJlcXVlc3QaIy5jaGF0LnYxLlByZXNpZ25JbWFnZVVwbG9hZFJlc3BvbnNlQpIBCgtjb20uY2hhdC52MUIRSW1hZ2VTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate]);
 
 /**
  * @generated from message chat.v1.PresignImageUploadRequest
@@ -23,7 +23,7 @@ export type PresignImageUploadRequest = Message<"chat.v1.PresignImageUploadReque
   purpose: ImagePurpose;
 
   /**
-   * WORKSPACE_ICON と WEBHOOK_ICON のときに指定する
+   * WORKSPACE_ICON と APP_ICON のときに指定する
    *
    * @generated from field: string workspace_id = 2;
    */
@@ -91,9 +91,9 @@ export enum ImagePurpose {
   WORKSPACE_ICON = 2,
 
   /**
-   * @generated from enum value: IMAGE_PURPOSE_WEBHOOK_ICON = 3;
+   * @generated from enum value: IMAGE_PURPOSE_APP_ICON = 3;
    */
-  WEBHOOK_ICON = 3,
+  APP_ICON = 3,
 }
 
 /**
@@ -103,7 +103,7 @@ export const ImagePurposeSchema: GenEnum<ImagePurpose> = /*@__PURE__*/
   enumDesc(file_chat_v1_image_service, 0);
 
 /**
- * アイコン画像のアップロード。upload_url に PUT してから、image_url をユーザー・ワークスペース・Webhook の更新に渡す
+ * アイコン画像のアップロード。upload_url に PUT してから、image_url をユーザー・ワークスペース・アプリの更新に渡す
  *
  * @generated from service chat.v1.ImageService
  */

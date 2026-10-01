@@ -2,6 +2,7 @@ package registry
 
 import (
 	"context"
+	"github.com/newt239/chat/internal/infrastructure/appwebhook"
 	"sync/atomic"
 	"time"
 
@@ -66,7 +67,7 @@ func (r *InfrastructureRegistry) SetReady(ready bool) {
 	r.ready.Store(ready)
 }
 
-// NewWebhookRateLimiter は Redis があれば全レプリカで共有して数えます。nil ならルーターがプロセス内で数える
+// NewWebhookRateLimiter はアプリの着信 Webhook の回数を、Redis があれば全レプリカで共有して数えます。nil ならルーターがプロセス内で数える
 func (r *InfrastructureRegistry) NewWebhookRateLimiter() httphandler.RateLimiter {
 	if r.redis == nil {
 		return nil
@@ -171,6 +172,10 @@ func (r *InfrastructureRegistry) NewWasabiConfig() *wasabi.Config {
 	cfg.SecretAccessKey = r.config.Wasabi.SecretAccessKey
 	cfg.BucketName = r.config.Wasabi.BucketName
 	return cfg
+}
+
+func (r *InfrastructureRegistry) NewAppEventSender() *appwebhook.Sender {
+	return appwebhook.NewSender()
 }
 
 func (r *InfrastructureRegistry) NewMentionService() service.MentionService {

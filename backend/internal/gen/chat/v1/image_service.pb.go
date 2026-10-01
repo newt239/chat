@@ -28,7 +28,7 @@ const (
 	ImagePurpose_IMAGE_PURPOSE_UNSPECIFIED    ImagePurpose = 0
 	ImagePurpose_IMAGE_PURPOSE_AVATAR         ImagePurpose = 1
 	ImagePurpose_IMAGE_PURPOSE_WORKSPACE_ICON ImagePurpose = 2
-	ImagePurpose_IMAGE_PURPOSE_WEBHOOK_ICON   ImagePurpose = 3
+	ImagePurpose_IMAGE_PURPOSE_APP_ICON       ImagePurpose = 3
 )
 
 // Enum value maps for ImagePurpose.
@@ -37,13 +37,13 @@ var (
 		0: "IMAGE_PURPOSE_UNSPECIFIED",
 		1: "IMAGE_PURPOSE_AVATAR",
 		2: "IMAGE_PURPOSE_WORKSPACE_ICON",
-		3: "IMAGE_PURPOSE_WEBHOOK_ICON",
+		3: "IMAGE_PURPOSE_APP_ICON",
 	}
 	ImagePurpose_value = map[string]int32{
 		"IMAGE_PURPOSE_UNSPECIFIED":    0,
 		"IMAGE_PURPOSE_AVATAR":         1,
 		"IMAGE_PURPOSE_WORKSPACE_ICON": 2,
-		"IMAGE_PURPOSE_WEBHOOK_ICON":   3,
+		"IMAGE_PURPOSE_APP_ICON":       3,
 	}
 )
 
@@ -77,7 +77,7 @@ func (ImagePurpose) EnumDescriptor() ([]byte, []int) {
 type PresignImageUploadRequest struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Purpose ImagePurpose           `protobuf:"varint,1,opt,name=purpose,proto3,enum=chat.v1.ImagePurpose" json:"purpose,omitempty"`
-	// WORKSPACE_ICON と WEBHOOK_ICON のときに指定する
+	// WORKSPACE_ICON と APP_ICON のときに指定する
 	WorkspaceId   string `protobuf:"bytes,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	ContentType   string `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
 	SizeBytes     int64  `protobuf:"varint,4,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
@@ -213,12 +213,12 @@ const file_chat_v1_image_service_proto_rawDesc = "" +
 	"\x1aPresignImageUploadResponse\x12\x1d\n" +
 	"\n" +
 	"upload_url\x18\x01 \x01(\tR\tuploadUrl\x12\x1b\n" +
-	"\timage_url\x18\x02 \x01(\tR\bimageUrl*\x89\x01\n" +
+	"\timage_url\x18\x02 \x01(\tR\bimageUrl*\x85\x01\n" +
 	"\fImagePurpose\x12\x1d\n" +
 	"\x19IMAGE_PURPOSE_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14IMAGE_PURPOSE_AVATAR\x10\x01\x12 \n" +
-	"\x1cIMAGE_PURPOSE_WORKSPACE_ICON\x10\x02\x12\x1e\n" +
-	"\x1aIMAGE_PURPOSE_WEBHOOK_ICON\x10\x032m\n" +
+	"\x1cIMAGE_PURPOSE_WORKSPACE_ICON\x10\x02\x12\x1a\n" +
+	"\x16IMAGE_PURPOSE_APP_ICON\x10\x032m\n" +
 	"\fImageService\x12]\n" +
 	"\x12PresignImageUpload\x12\".chat.v1.PresignImageUploadRequest\x1a#.chat.v1.PresignImageUploadResponseB\x92\x01\n" +
 	"\vcom.chat.v1B\x11ImageServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"

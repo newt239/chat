@@ -14,7 +14,7 @@ type ImageServer struct {
 var imagePurposes = map[chatv1.ImagePurpose]imageuc.Purpose{
 	chatv1.ImagePurpose_IMAGE_PURPOSE_AVATAR:         imageuc.PurposeAvatar,
 	chatv1.ImagePurpose_IMAGE_PURPOSE_WORKSPACE_ICON: imageuc.PurposeWorkspaceIcon,
-	chatv1.ImagePurpose_IMAGE_PURPOSE_WEBHOOK_ICON:   imageuc.PurposeWebhookIcon,
+	chatv1.ImagePurpose_IMAGE_PURPOSE_APP_ICON:       imageuc.PurposeAppIcon,
 }
 
 func (s *ImageServer) PresignImageUpload(ctx context.Context, req *chatv1.PresignImageUploadRequest) (*chatv1.PresignImageUploadResponse, error) {

@@ -15,6 +15,7 @@ type migration struct {
 // migrations は追加した順に実行する。名前は実行済みの記録に使うため変えない
 var migrations = []migration{
 	{name: "mention_id_syntax", run: convertLegacyMentions},
+	{name: "webhook_to_app", run: convertWebhooksToApps},
 }
 
 // Run は未実行のデータ移行を 1 件ずつトランザクションで実行します。スキーマの移行と同じロックの中で呼びます
