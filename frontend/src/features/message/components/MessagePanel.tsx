@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 
 import { IconHash } from "@tabler/icons-react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
@@ -39,6 +39,15 @@ export const MessagePanel = () => {
   const jumpDate = useSearch({
     from: "/app/$workspaceId/$channelId",
     select: (search) => search.date ?? null,
+  });
+  const messageParam = useSearch({
+    from: "/app/$workspaceId/$channelId",
+    select: (search) => search.message ?? null,
+  });
+  // スレッドを開いているときの ?message= はスレッドの返信を指すため、チャンネルでは扱わない
+  const isThreadOpen = useParams({
+    select: (params) => params.messageId !== undefined,
+    strict: false,
   });
   const around = jumpDate === null ? null : startOfDateKey(jumpDate);
   const {
@@ -205,7 +214,7 @@ export const MessagePanel = () => {
         key={`${currentChannelId}:${String(includesDescendants)}:${jumpDate ?? ""}`}
         rows={rows}
         currentUserId={currentUser?.id ?? null}
-        jumpTargetId={jumpTargetId}
+        targetMessageId={isThreadOpen ? null : (messageParam ?? jumpTargetId)}
         hasOlder={hasOlderMessages}
         hasNewer={hasNewerMessages}
         loading={loading}
@@ -218,6 +227,7 @@ export const MessagePanel = () => {
         latestMessageRef={latestMessageRef}
         latestUserMessageId={latestUserMessageId}
         renderMessage={renderMessage}
+        header={null}
       />
     );
   };

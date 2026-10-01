@@ -1,69 +1,37 @@
-import type { ReactNode } from "react";
-
-import {
-  RouterProvider,
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-} from "@tanstack/react-router";
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { describe, expect, test } from "vite-plus/test";
-import { z } from "zod";
 
 import { useHighlightedMessage } from "#/features/message/hooks/useHighlightedMessage";
 
-const renderWithChannelRoute = async (
-  url: string,
-  scrollToMessage: (messageId: string) => boolean = () => true,
-) => {
-  let hookContent: ReactNode = null;
-  const rootRoute = createRootRoute();
-  const channelRoute = createRoute({
-    component: () => hookContent,
-    getParentRoute: () => rootRoute,
-    path: "/app/$workspaceId/$channelId",
-    validateSearch: z.object({ message: z.string().optional() }),
-  });
-  const router = createRouter({
-    history: createMemoryHistory({ initialEntries: [url] }),
-    routeTree: rootRoute.addChildren([channelRoute]),
-  });
-  await router.load();
-
-  const view = renderHook(() => useHighlightedMessage(true, null, scrollToMessage), {
-    wrapper: ({ children }: { children: ReactNode }) => {
-      hookContent = children;
-      return <RouterProvider router={router} />;
-    },
-  });
-  await waitFor(() => {
-    expect(view.result.current).not.toBeNull();
-  });
-  return view.result;
-};
-
 describe("useHighlightedMessage", () => {
-  test("message クエリが無いときは対象を返さない", async () => {
-    const result = await renderWithChannelRoute("/app/ws1/ch1");
+  test("対象が無いときはハイライトしない", () => {
+    const { result } = renderHook(() => useHighlightedMessage(true, null, () => true));
 
-    expect(result.current.targetMessageId).toBeNull();
-    expect(result.current.highlightedId).toBeNull();
+    expect(result.current).toBeNull();
   });
 
-  test("message クエリのメッセージをハイライト対象にする", async () => {
-    const result = await renderWithChannelRoute("/app/ws1/ch1?message=m1");
-
-    expect(result.current.targetMessageId).toBe("m1");
-    expect(result.current.highlightedId).toBe("m1");
-  });
-
-  test("対象のメッセージへスクロールする", async () => {
+  test("対象のメッセージへスクロールしてハイライトする", () => {
     const calls: string[] = [];
-    await renderWithChannelRoute("/app/ws1/ch1?message=m1", (id: string) => {
-      calls.push(id);
-      return true;
-    });
+    const { result } = renderHook(() =>
+      useHighlightedMessage(true, "m1", (id) => {
+        calls.push(id);
+        return true;
+      }),
+    );
+
+    expect(result.current).toBe("m1");
     expect(calls).toEqual(["m1"]);
+  });
+
+  test("一覧が揃うまではスクロールしない", () => {
+    const calls: string[] = [];
+    renderHook(() =>
+      useHighlightedMessage(false, "m1", (id) => {
+        calls.push(id);
+        return true;
+      }),
+    );
+
+    expect(calls).toEqual([]);
   });
 });

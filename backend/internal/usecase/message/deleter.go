@@ -82,7 +82,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 
 	// スレッド親メッセージの場合、子メッセージも削除
 	if message.ParentID == nil {
-		replies, err := d.messageRepo.FindThreadReplies(ctx, message.ID)
+		replies, err := d.messageRepo.FindThreadReplies(ctx, message.ID, 0, nil, nil, true)
 		if err != nil {
 			return fmt.Errorf("返信の取得に失敗しました: %w", err)
 		}

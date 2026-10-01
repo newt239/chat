@@ -236,8 +236,7 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 		return nil, err
 	}
 
-	// スレッド返信を取得
-	replies, err := l.messageRepo.FindThreadReplies(ctx, input.MessageID)
+	replies, hasMore, hasNewer, err := l.fetchThreadReplies(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch thread replies: %w", err)
 	}
@@ -246,12 +245,65 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 	if err != nil {
 		return nil, err
 	}
+	metadata, err := l.threadRepo.CalculateMetadataByMessageID(ctx, input.MessageID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to calculate thread metadata: %w", err)
+	}
+	var replyCount int
+	if metadata != nil {
+		replyCount = metadata.ReplyCount
+	}
 
 	return &GetThreadRepliesOutput{
 		ParentMessage: outputs[0],
 		Replies:       outputs[1:],
-		HasMore:       false,
+		HasMore:       hasMore,
+		HasNewer:      hasNewer,
+		ReplyCount:    replyCount,
 	}, nil
+}
+
+// fetchThreadReplies は返信を古い順に limit 件ずつ取り、前後に続きがあるかを返します。範囲の指定がなければ最新の返信を返します
+func (l *MessageLister) fetchThreadReplies(ctx context.Context, input GetThreadRepliesInput) (replies []*entity.Message, hasMore, hasNewer bool, err error) {
+	limit := input.Limit
+	if limit <= 0 {
+		limit = defaultMessageLimit
+	} else if limit > maxMessageLimit {
+		limit = maxMessageLimit
+	}
+	page := func(since, until *time.Time, ascending bool) ([]*entity.Message, bool, error) {
+		found, err := l.messageRepo.FindThreadReplies(ctx, input.MessageID, limit+1, since, until, ascending)
+		if err != nil || len(found) <= limit {
+			return found, false, err
+		}
+		return found[:limit], true, nil
+	}
+
+	since, until := input.Since, input.Until
+	if input.AroundReplyID != nil {
+		target, err := l.messageRepo.FindByID(ctx, *input.AroundReplyID)
+		if err != nil {
+			return nil, false, false, err
+		}
+		if target != nil && target.ParentID != nil && *target.ParentID == input.MessageID {
+			// 指定した返信そのものも後ろ側に含める。created_at はマイクロ秒精度
+			since, until = new(target.CreatedAt.Add(-time.Microsecond)), new(target.CreatedAt)
+		}
+	}
+
+	var older, newer []*entity.Message
+	if until != nil || since == nil {
+		if older, hasMore, err = page(nil, until, false); err != nil {
+			return nil, false, false, err
+		}
+		slices.Reverse(older)
+	}
+	if since != nil {
+		if newer, hasNewer, err = page(since, nil, true); err != nil {
+			return nil, false, false, err
+		}
+	}
+	return append(older, newer...), hasMore, hasNewer, nil
 }
 
 // GetMessagePreview はメッセージリンクの引用カードを取得します

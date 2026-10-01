@@ -18,7 +18,14 @@ type ThreadServer struct {
 }
 
 func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThreadRepliesRequest) (*chatv1.GetThreadRepliesResponse, error) {
-	out, err := s.MessageUC.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
+	out, err := s.MessageUC.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
+		MessageID:     req.MessageId,
+		UserID:        userIDFrom(ctx),
+		Limit:         int(req.Limit),
+		Since:         optionalTime(req.GetSince()),
+		Until:         optionalTime(req.GetUntil()),
+		AroundReplyID: req.AroundReplyId,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -26,6 +33,8 @@ func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThre
 		ParentMessage: presenter.Message(out.ParentMessage),
 		Replies:       presenter.ConvertAll(out.Replies, presenter.Message),
 		HasMore:       out.HasMore,
+		HasNewer:      out.HasNewer,
+		ReplyCount:    int32(out.ReplyCount),
 	}, nil
 }
 

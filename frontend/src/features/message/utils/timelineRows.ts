@@ -5,6 +5,8 @@ import { groupByDate } from "./dateJump";
 import type { Message, SystemMessage, TimelineItem } from "#/gen/chat/v1/message_pb";
 
 export type TimelineRow =
+  // スレッドの親メッセージなど、一覧の先頭に置く行
+  | { kind: "header"; key: string; dateKey: string }
   | { kind: "date"; key: string; dateKey: string }
   | { kind: "user"; key: string; dateKey: string; message: Message }
   | { kind: "system"; key: string; dateKey: string; message: SystemMessage };
@@ -36,4 +38,6 @@ export const buildTimelineRows = (items: readonly TimelineItem[], hideJoinMessag
 };
 
 export const findRowIndex = (rows: readonly TimelineRow[], messageId: string) =>
-  rows.findIndex((row) => row.kind !== "date" && row.message.id === messageId);
+  rows.findIndex(
+    (row) => (row.kind === "user" || row.kind === "system") && row.message.id === messageId,
+  );

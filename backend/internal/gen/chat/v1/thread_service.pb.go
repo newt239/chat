@@ -169,8 +169,15 @@ func (x *ThreadCursor) GetThreadId() string {
 }
 
 type GetThreadRepliesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	MessageId string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	// 0 の場合はサーバーの既定値を使う
+	Limit int32 `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	// since だけなら直後から、until だけなら直前までを返す。どちらもなければ最新の返信を返す
+	Since *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=since,proto3" json:"since,omitempty"`
+	Until *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=until,proto3" json:"until,omitempty"`
+	// 指定した返信の前後 limit 件ずつをまとめて返す。since / until より優先する
+	AroundReplyId *string `protobuf:"bytes,5,opt,name=around_reply_id,json=aroundReplyId,proto3,oneof" json:"around_reply_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -212,11 +219,44 @@ func (x *GetThreadRepliesRequest) GetMessageId() string {
 	return ""
 }
 
+func (x *GetThreadRepliesRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetThreadRepliesRequest) GetSince() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Since
+	}
+	return nil
+}
+
+func (x *GetThreadRepliesRequest) GetUntil() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Until
+	}
+	return nil
+}
+
+func (x *GetThreadRepliesRequest) GetAroundReplyId() string {
+	if x != nil && x.AroundReplyId != nil {
+		return *x.AroundReplyId
+	}
+	return ""
+}
+
 type GetThreadRepliesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ParentMessage *Message               `protobuf:"bytes,1,opt,name=parent_message,json=parentMessage,proto3" json:"parent_message,omitempty"`
-	Replies       []*Message             `protobuf:"bytes,2,rep,name=replies,proto3" json:"replies,omitempty"`
-	HasMore       bool                   `protobuf:"varint,3,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	// 古い順
+	Replies []*Message `protobuf:"bytes,2,rep,name=replies,proto3" json:"replies,omitempty"`
+	// 返した範囲より前に返信がある
+	HasMore bool `protobuf:"varint,3,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	// 返した範囲より後に返信がある
+	HasNewer      bool  `protobuf:"varint,4,opt,name=has_newer,json=hasNewer,proto3" json:"has_newer,omitempty"`
+	ReplyCount    int32 `protobuf:"varint,5,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -270,6 +310,20 @@ func (x *GetThreadRepliesResponse) GetHasMore() bool {
 		return x.HasMore
 	}
 	return false
+}
+
+func (x *GetThreadRepliesResponse) GetHasNewer() bool {
+	if x != nil {
+		return x.HasNewer
+	}
+	return false
+}
+
+func (x *GetThreadRepliesResponse) GetReplyCount() int32 {
+	if x != nil {
+		return x.ReplyCount
+	}
+	return 0
 }
 
 type GetThreadMetadataRequest struct {
@@ -732,14 +786,22 @@ const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\v_channel_id\"q\n" +
 	"\fThreadCursor\x12D\n" +
 	"\x10last_activity_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12\x1b\n" +
-	"\tthread_id\x18\x02 \x01(\tR\bthreadId\"B\n" +
+	"\tthread_id\x18\x02 \x01(\tR\bthreadId\"\x92\x02\n" +
 	"\x17GetThreadRepliesRequest\x12'\n" +
 	"\n" +
-	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\"\x9a\x01\n" +
+	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\x12\x1f\n" +
+	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\x120\n" +
+	"\x05since\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
+	"\x05until\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x125\n" +
+	"\x0faround_reply_id\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\raroundReplyId\x88\x01\x01B\x12\n" +
+	"\x10_around_reply_id\"\xd8\x01\n" +
 	"\x18GetThreadRepliesResponse\x127\n" +
 	"\x0eparent_message\x18\x01 \x01(\v2\x10.chat.v1.MessageR\rparentMessage\x12*\n" +
 	"\areplies\x18\x02 \x03(\v2\x10.chat.v1.MessageR\areplies\x12\x19\n" +
-	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"C\n" +
+	"\bhas_more\x18\x03 \x01(\bR\ahasMore\x12\x1b\n" +
+	"\thas_newer\x18\x04 \x01(\bR\bhasNewer\x12\x1f\n" +
+	"\vreply_count\x18\x05 \x01(\x05R\n" +
+	"replyCount\"C\n" +
 	"\x18GetThreadMetadataRequest\x12'\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\"P\n" +
@@ -810,29 +872,31 @@ var file_chat_v1_thread_service_proto_depIdxs = []int32{
 	15, // 1: chat.v1.ParticipatingThread.last_activity_at:type_name -> google.protobuf.Timestamp
 	14, // 2: chat.v1.ParticipatingThread.latest_replies:type_name -> chat.v1.Message
 	15, // 3: chat.v1.ThreadCursor.last_activity_at:type_name -> google.protobuf.Timestamp
-	14, // 4: chat.v1.GetThreadRepliesResponse.parent_message:type_name -> chat.v1.Message
-	14, // 5: chat.v1.GetThreadRepliesResponse.replies:type_name -> chat.v1.Message
-	16, // 6: chat.v1.GetThreadMetadataResponse.metadata:type_name -> chat.v1.ThreadMetadata
-	1,  // 7: chat.v1.ListParticipatingThreadsRequest.cursor:type_name -> chat.v1.ThreadCursor
-	0,  // 8: chat.v1.ListParticipatingThreadsResponse.threads:type_name -> chat.v1.ParticipatingThread
-	1,  // 9: chat.v1.ListParticipatingThreadsResponse.next_cursor:type_name -> chat.v1.ThreadCursor
-	2,  // 10: chat.v1.ThreadService.GetThreadReplies:input_type -> chat.v1.GetThreadRepliesRequest
-	4,  // 11: chat.v1.ThreadService.GetThreadMetadata:input_type -> chat.v1.GetThreadMetadataRequest
-	6,  // 12: chat.v1.ThreadService.ListParticipatingThreads:input_type -> chat.v1.ListParticipatingThreadsRequest
-	8,  // 13: chat.v1.ThreadService.MarkThreadRead:input_type -> chat.v1.MarkThreadReadRequest
-	10, // 14: chat.v1.ThreadService.FollowThread:input_type -> chat.v1.FollowThreadRequest
-	12, // 15: chat.v1.ThreadService.UnfollowThread:input_type -> chat.v1.UnfollowThreadRequest
-	3,  // 16: chat.v1.ThreadService.GetThreadReplies:output_type -> chat.v1.GetThreadRepliesResponse
-	5,  // 17: chat.v1.ThreadService.GetThreadMetadata:output_type -> chat.v1.GetThreadMetadataResponse
-	7,  // 18: chat.v1.ThreadService.ListParticipatingThreads:output_type -> chat.v1.ListParticipatingThreadsResponse
-	9,  // 19: chat.v1.ThreadService.MarkThreadRead:output_type -> chat.v1.MarkThreadReadResponse
-	11, // 20: chat.v1.ThreadService.FollowThread:output_type -> chat.v1.FollowThreadResponse
-	13, // 21: chat.v1.ThreadService.UnfollowThread:output_type -> chat.v1.UnfollowThreadResponse
-	16, // [16:22] is the sub-list for method output_type
-	10, // [10:16] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	15, // 4: chat.v1.GetThreadRepliesRequest.since:type_name -> google.protobuf.Timestamp
+	15, // 5: chat.v1.GetThreadRepliesRequest.until:type_name -> google.protobuf.Timestamp
+	14, // 6: chat.v1.GetThreadRepliesResponse.parent_message:type_name -> chat.v1.Message
+	14, // 7: chat.v1.GetThreadRepliesResponse.replies:type_name -> chat.v1.Message
+	16, // 8: chat.v1.GetThreadMetadataResponse.metadata:type_name -> chat.v1.ThreadMetadata
+	1,  // 9: chat.v1.ListParticipatingThreadsRequest.cursor:type_name -> chat.v1.ThreadCursor
+	0,  // 10: chat.v1.ListParticipatingThreadsResponse.threads:type_name -> chat.v1.ParticipatingThread
+	1,  // 11: chat.v1.ListParticipatingThreadsResponse.next_cursor:type_name -> chat.v1.ThreadCursor
+	2,  // 12: chat.v1.ThreadService.GetThreadReplies:input_type -> chat.v1.GetThreadRepliesRequest
+	4,  // 13: chat.v1.ThreadService.GetThreadMetadata:input_type -> chat.v1.GetThreadMetadataRequest
+	6,  // 14: chat.v1.ThreadService.ListParticipatingThreads:input_type -> chat.v1.ListParticipatingThreadsRequest
+	8,  // 15: chat.v1.ThreadService.MarkThreadRead:input_type -> chat.v1.MarkThreadReadRequest
+	10, // 16: chat.v1.ThreadService.FollowThread:input_type -> chat.v1.FollowThreadRequest
+	12, // 17: chat.v1.ThreadService.UnfollowThread:input_type -> chat.v1.UnfollowThreadRequest
+	3,  // 18: chat.v1.ThreadService.GetThreadReplies:output_type -> chat.v1.GetThreadRepliesResponse
+	5,  // 19: chat.v1.ThreadService.GetThreadMetadata:output_type -> chat.v1.GetThreadMetadataResponse
+	7,  // 20: chat.v1.ThreadService.ListParticipatingThreads:output_type -> chat.v1.ListParticipatingThreadsResponse
+	9,  // 21: chat.v1.ThreadService.MarkThreadRead:output_type -> chat.v1.MarkThreadReadResponse
+	11, // 22: chat.v1.ThreadService.FollowThread:output_type -> chat.v1.FollowThreadResponse
+	13, // 23: chat.v1.ThreadService.UnfollowThread:output_type -> chat.v1.UnfollowThreadResponse
+	18, // [18:24] is the sub-list for method output_type
+	12, // [12:18] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_thread_service_proto_init() }
@@ -842,6 +906,7 @@ func file_chat_v1_thread_service_proto_init() {
 	}
 	file_chat_v1_message_proto_init()
 	file_chat_v1_thread_service_proto_msgTypes[0].OneofWrappers = []any{}
+	file_chat_v1_thread_service_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

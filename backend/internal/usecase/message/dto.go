@@ -163,12 +163,19 @@ type GetThreadRepliesInput struct {
 	MessageID string
 	UserID    string
 	Limit     int
+	Since     *time.Time
+	Until     *time.Time
+	// 指定した返信の前後をまとめて返す。Since / Until より優先する
+	AroundReplyID *string
 }
 
 type GetThreadRepliesOutput struct {
-	ParentMessage MessageOutput   `json:"parentMessage"`
-	Replies       []MessageOutput `json:"replies"`
-	HasMore       bool            `json:"hasMore"`
+	ParentMessage MessageOutput
+	// 古い順
+	Replies    []MessageOutput
+	HasMore    bool
+	HasNewer   bool
+	ReplyCount int
 }
 
 type GetMessagePreviewInput struct {

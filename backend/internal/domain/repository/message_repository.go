@@ -11,7 +11,8 @@ type MessageRepository interface {
 	FindByID(ctx context.Context, id string) (*entity.Message, error)
 	FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error)
 	FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.Message, error)
-	FindThreadReplies(ctx context.Context, parentID string) ([]*entity.Message, error)
+	// limit が 0 なら全件を返す
+	FindThreadReplies(ctx context.Context, parentID string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.Message, error)
 	SoftDeleteByIDs(ctx context.Context, ids []string, deletedBy string) error
 	Create(ctx context.Context, message *entity.Message) error
 	Update(ctx context.Context, message *entity.Message) error

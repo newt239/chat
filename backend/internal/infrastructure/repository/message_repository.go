@@ -95,20 +95,32 @@ func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*ent
 	return toMessageEntities(messages), nil
 }
 
-func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID string) ([]*entity.Message, error) {
+func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.Message, error) {
 	pID, err := utils.ParseUUID(parentID, "parent ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	messages, err := client.Message.Query().
+	query := client.Message.Query().
 		Where(
 			message.ParentID(pID),
 			message.DeletedAtIsNil(),
-		).
-		Order(ent.Asc(message.FieldCreatedAt)).
-		All(ctx)
+		)
+	if since != nil {
+		query = query.Where(message.CreatedAtGT(*since))
+	}
+	if until != nil {
+		query = query.Where(message.CreatedAtLT(*until))
+	}
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	order := ent.Desc(message.FieldCreatedAt)
+	if ascending {
+		order = ent.Asc(message.FieldCreatedAt)
+	}
+	messages, err := query.Order(order).All(ctx)
 	if err != nil {
 		return nil, err
 	}
