@@ -56,8 +56,15 @@ gcloud storage buckets update gs://PROJECT_ID-tfstate --versioning
 
 ### 2. Cloudflare と Wasabi の準備
 
-- 使うドメインを Cloudflare（Free プラン）に追加し、レジストラのネームサーバーを Cloudflare に向ける。アカウント ID とゾーン ID を控える
-- Cloudflare の API トークンを「Account → Cloudflare Tunnel: 編集」「Zone → DNS: 編集」の権限で作る
+- 使うドメインを Cloudflare（Free プラン）に追加し、レジストラのネームサーバーを Cloudflare に向ける。アカウント ID とゾーン ID を控える（`cf auth whoami`・`cf zones list`）
+- `frontend_domain` と `api_domain` は `chat.example.com` と `api-chat.example.com` のように 1 階層のサブドメインにする。Free プランの証明書は `*.example.com` までしか出ないため、`api.chat.example.com` は HTTPS にならない
+- Cloudflare の API トークンを「Account → Cloudflare Tunnel: 編集」「Zone → DNS: 編集」の権限で作る。[cf](https://developers.cloudflare.com/changelog/post/2026-09-28-cloudflare-cli-beta/) なら次で作れる（トークンは作ったときにしか表示されない）
+
+  ```sh
+  export CLOUDFLARE_API_TOKEN=$(cf -q user tokens create --body "$(jq -n -c --arg account ACCOUNT_ID --arg zone ZONE_ID '{name: "chat-terraform", policies: [
+    {effect: "allow", permission_groups: [{id: "c07321b023e944ff818fec44d8203567"}], resources: {("com.cloudflare.api.account." + $account): "*"}},
+    {effect: "allow", permission_groups: [{id: "4755a26eedb94da69e1066d98aa820be"}], resources: {("com.cloudflare.api.account.zone." + $zone): "*"}}]}')" | jq -r .value)
+  ```
 - Wasabi で Terraform 用のアクセスキー（バケットを作れる権限）を作る
 - アプリ用には、環境ごとのバケットだけを読み書きできるポリシーを付けたサブユーザーを作り、アクセスキーを発行しておく（手順 4 で Secret Manager に入れる）
 
