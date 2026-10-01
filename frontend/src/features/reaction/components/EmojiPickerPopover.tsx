@@ -1,10 +1,18 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
 
+import { IconMoodPlus } from "@tabler/icons-react";
+import { useParams } from "@tanstack/react-router";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
+import { Button } from "#/components/ui/Button/Button";
+import { Dialog } from "#/components/ui/Dialog/Dialog";
 import { Popover } from "#/components/ui/Popover/Popover";
+import { usePermissions } from "#/features/admin/hooks/useAdminQueries";
+import { CustomEmojiForm } from "#/features/customEmoji/components/CustomEmojiForm";
+import { toCustomEmojiValue } from "#/features/customEmoji/utils/customEmoji";
+import { Permission } from "#/gen/chat/v1/permission_service_pb";
 
 import { EmojiPicker } from "./EmojiPicker";
 
@@ -25,27 +33,62 @@ export const EmojiPickerPopover = ({
   placement = "bottom end",
 }: EmojiPickerPopoverProps) => {
   const { t } = useTranslation();
+  const { workspaceId } = useParams({ strict: false });
+  const { data: permissions } = usePermissions(workspaceId ?? null);
+  const canCreateEmoji =
+    permissions?.myPermissions.includes(Permission.CREATE_CUSTOM_EMOJI) ?? false;
   const [isOpen, setIsOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const changeOpen = (next: boolean) => {
     setIsOpen(next);
     onOpenChange?.(next);
   };
 
   return (
-    <DialogTrigger isOpen={isOpen} onOpenChange={changeOpen}>
-      {trigger}
-      <Popover
-        aria-label={label ?? t("reaction.add")}
-        placement={placement}
-        className="overflow-hidden"
-      >
-        <EmojiPicker
-          onEmojiSelect={(emoji) => {
-            onSelect(emoji);
-            changeOpen(false);
-          }}
-        />
-      </Popover>
-    </DialogTrigger>
+    <>
+      <DialogTrigger isOpen={isOpen} onOpenChange={changeOpen}>
+        {trigger}
+        <Popover
+          aria-label={label ?? t("reaction.add")}
+          placement={placement}
+          className="flex flex-col overflow-hidden"
+        >
+          <EmojiPicker
+            onEmojiSelect={(emoji) => {
+              onSelect(emoji);
+              changeOpen(false);
+            }}
+          />
+          {canCreateEmoji && (
+            <div className="border-t border-border p-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start"
+                onPress={() => {
+                  changeOpen(false);
+                  setIsAddOpen(true);
+                }}
+              >
+                <IconMoodPlus aria-hidden className="size-4" />
+                {t("workspace.emoji.add")}
+              </Button>
+            </div>
+          )}
+        </Popover>
+      </DialogTrigger>
+      {workspaceId !== undefined && (
+        <Dialog isOpen={isAddOpen} onOpenChange={setIsAddOpen} title={t("workspace.emoji.add")}>
+          <CustomEmojiForm
+            workspaceId={workspaceId}
+            onAdded={(name) => {
+              setIsAddOpen(false);
+              // 登録した絵文字をそのまま使う
+              onSelect(toCustomEmojiValue(name));
+            }}
+          />
+        </Dialog>
+      )}
+    </>
   );
 };

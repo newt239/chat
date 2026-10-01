@@ -1,11 +1,14 @@
 import { IconLink } from "@tabler/icons-react";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
+import { PermissionService } from "#/gen/chat/v1/permission_service_pb";
+import { renderWithProviders } from "#/test/renderWithProviders";
+
 import { MessageToolbar } from "./MessageToolbar";
 
-const renderToolbar = () => {
+const renderToolbar = async () => {
   const handlers = {
     handleCopyLink: vi.fn<() => void>(),
     handleOverlayOpenChange: vi.fn<(isOpen: boolean) => void>(),
@@ -13,7 +16,7 @@ const renderToolbar = () => {
     handleReplyInThread: vi.fn<() => void>(),
     handleToggleBookmark: vi.fn<() => void>(),
   };
-  render(
+  await renderWithProviders(
     <MessageToolbar
       actions={[
         {
@@ -37,13 +40,17 @@ const renderToolbar = () => {
       onReact={handlers.handleReact}
       onOverlayOpenChange={handlers.handleOverlayOpenChange}
     />,
+    "/app/ws1",
+    (routes) => {
+      routes.rpc(PermissionService.method.getPermissions, () => ({}));
+    },
   );
   return handlers;
 };
 
 describe("MessageToolbar", () => {
   test("よく使うリアクションとスレッド・ブックマークをボタンで操作できる", async () => {
-    const handlers = renderToolbar();
+    const handlers = await renderToolbar();
 
     expect(screen.getByRole("toolbar", { name: "メッセージ操作" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "👍 でリアクション" }));
@@ -56,7 +63,7 @@ describe("MessageToolbar", () => {
   });
 
   test("その他メニューを開いている間はそれを伝え、新しいタブで開く項目はリンクになる", async () => {
-    const handlers = renderToolbar();
+    const handlers = await renderToolbar();
 
     await userEvent.click(screen.getByRole("button", { name: "その他" }));
     expect(handlers.handleOverlayOpenChange).toHaveBeenLastCalledWith(true);

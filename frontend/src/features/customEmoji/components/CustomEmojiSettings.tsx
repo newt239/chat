@@ -39,7 +39,12 @@ export const CustomEmojiSettings = ({ workspaceId }: CustomEmojiSettingsProps) =
   return (
     <div className="flex flex-col gap-5">
       <p className="m-0 text-caption text-muted">{t("workspace.emoji.description")}</p>
-      {canCreate && <CustomEmojiForm workspaceId={workspaceId} />}
+      {canCreate && (
+        <section className="flex flex-col gap-3 rounded-lg border border-border p-3">
+          <h3 className="m-0 text-body-strong">{t("workspace.emoji.add")}</h3>
+          <CustomEmojiForm workspaceId={workspaceId} onAdded={() => {}} />
+        </section>
+      )}
       <section className="flex flex-col gap-2">
         <TextField
           label={t("workspace.emoji.search")}
