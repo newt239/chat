@@ -58,6 +58,7 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewAdminServiceHandler, chatv1connect.AdminServiceHandler(&rpc.AdminServer{UC: uc.NewAdminUseCase()})),
 		rpc.Register(chatv1connect.NewPermissionServiceHandler, chatv1connect.PermissionServiceHandler(&rpc.PermissionServer{UC: uc.NewAdminUseCase()})),
 		rpc.Register(chatv1connect.NewInsightServiceHandler, chatv1connect.InsightServiceHandler(&rpc.InsightServer{UC: uc.NewInsightUseCase()})),
+		rpc.Register(chatv1connect.NewPollServiceHandler, chatv1connect.PollServiceHandler(&rpc.PollServer{UC: uc.NewPollUseCase()})),
 		rpc.Register(chatv1connect.NewCommandServiceHandler, chatv1connect.CommandServiceHandler(&rpc.CommandServer{UC: uc.NewCommandUseCase()})),
 		rpc.Register(chatv1connect.NewAppServiceHandler, chatv1connect.AppServiceHandler(&rpc.AppServer{UC: uc.NewAppUseCase()})),
 		rpc.Register(chatv1connect.NewCustomEmojiServiceHandler, chatv1connect.CustomEmojiServiceHandler(&rpc.CustomEmojiServer{UC: uc.NewCustomEmojiUseCase()})),

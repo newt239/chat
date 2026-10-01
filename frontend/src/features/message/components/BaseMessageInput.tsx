@@ -14,6 +14,7 @@ import { LinkPreviewCard } from "#/features/link/components/LinkPreviewCard";
 import { useLinkPreview } from "#/features/link/hooks/useLinkPreview";
 import { LocationShareDialog } from "#/features/location/components/LocationShareDialog";
 import { PendingLocation } from "#/features/location/components/PendingLocation";
+import { PollComposerDialog } from "#/features/poll/components/PollComposerDialog";
 import { VoiceRecorder } from "#/features/recorder/components/VoiceRecorder";
 import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessages";
 import { useIsMobile } from "#/hooks/useMediaQuery";
@@ -61,6 +62,7 @@ export const BaseMessageInput = ({
   const [isPreview, setIsPreview] = useState(false);
   const [location, setLocation] = useState<MessageLocation | undefined>(undefined);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isPollOpen, setIsPollOpen] = useState(false);
   const [isRecorderOpen, setIsRecorderOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { previews, addPreview, removePreview, clearPreviews } = useLinkPreview();
@@ -171,7 +173,12 @@ export const BaseMessageInput = ({
       toast(t("message.composer.uploading"));
       return null;
     }
-    return { attachmentIds: getCompletedAttachmentIds(), body: encode(body.trim()), location };
+    return {
+      attachmentIds: getCompletedAttachmentIds(),
+      body: encode(body.trim()),
+      location,
+      poll: undefined,
+    };
   };
 
   // 送信・予約した後は書きかけも消す
@@ -335,9 +342,21 @@ export const BaseMessageInput = ({
           onRecord={() => {
             setIsRecorderOpen(true);
           }}
+          onCreatePoll={() => {
+            setIsPollOpen(true);
+          }}
           onSchedule={handleSchedule}
         />
       </div>
+      <PollComposerDialog
+        isOpen={isPollOpen}
+        onOpenChange={setIsPollOpen}
+        onConfirm={(poll) => {
+          // 書きかけの本文は投票の説明として一緒に投稿する
+          onSubmit({ attachmentIds: [], body: encode(body.trim()), location: undefined, poll });
+          resetComposer();
+        }}
+      />
       <LocationShareDialog
         isOpen={isLocationOpen}
         onOpenChange={setIsLocationOpen}

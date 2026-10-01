@@ -140,7 +140,7 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 
 	// WebSocket通知を送信
 	if u.notificationSvc != nil {
-		u.notificationSvc.NotifyUpdatedMessage(channel.WorkspaceID, channel.ID, result.WithoutMessagePreviews())
+		u.notificationSvc.NotifyUpdatedMessage(channel.WorkspaceID, channel.ID, result.ForBroadcast())
 	}
 
 	return result, nil

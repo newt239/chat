@@ -16,6 +16,7 @@ import { closeDialog, openDialog, openPanel } from "#/features/layout/utils/over
 import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { MessageLocationCard } from "#/features/location/components/MessageLocationCard";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { MessagePollCard } from "#/features/poll/components/MessagePollCard";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
@@ -251,6 +252,9 @@ export const MessageItem = ({
 
         {!message.isDeleted && message.location && (
           <MessageLocationCard location={message.location} />
+        )}
+        {!message.isDeleted && message.poll && (
+          <MessagePollCard poll={message.poll} isAuthor={message.userId === currentUserId} />
         )}
         {!message.isDeleted && <MessageAttachments message={message} />}
 

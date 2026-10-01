@@ -261,6 +261,42 @@ func (f MessageUserMentionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MessageUserMentionMutation", m)
 }
 
+// The PollFunc type is an adapter to allow the use of ordinary
+// function as Poll mutator.
+type PollFunc func(context.Context, *ent.PollMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PollFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PollMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PollMutation", m)
+}
+
+// The PollOptionFunc type is an adapter to allow the use of ordinary
+// function as PollOption mutator.
+type PollOptionFunc func(context.Context, *ent.PollOptionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PollOptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PollOptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PollOptionMutation", m)
+}
+
+// The PollVoteFunc type is an adapter to allow the use of ordinary
+// function as PollVote mutator.
+type PollVoteFunc func(context.Context, *ent.PollVoteMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PollVoteFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PollVoteMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PollVoteMutation", m)
+}
+
 // The PushTokenFunc type is an adapter to allow the use of ordinary
 // function as PushToken mutator.
 type PushTokenFunc func(context.Context, *ent.PushTokenMutation) (ent.Value, error)

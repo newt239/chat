@@ -17,6 +17,7 @@ import { location } from "./location";
 import { member } from "./member";
 import { message } from "./message";
 import { pin } from "./pin";
+import { poll } from "./poll";
 import { preferences } from "./preferences";
 import { pwa } from "./pwa";
 import { reaction } from "./reaction";
@@ -48,6 +49,7 @@ export const ja = {
   member,
   message,
   pin,
+  poll,
   preferences,
   pwa,
   reaction,

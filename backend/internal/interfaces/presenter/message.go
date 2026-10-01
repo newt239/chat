@@ -60,6 +60,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		msg.Pin = &chatv1.MessagePin{PinnedBy: UserSummary(m.Pin.PinnedBy), PinnedAt: timestamppb.New(m.Pin.PinnedAt)}
 	}
 	msg.Location = MessageLocation(m.Location)
+	msg.Poll = Poll(m.Poll)
 	return msg
 }
 

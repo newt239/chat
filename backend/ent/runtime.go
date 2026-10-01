@@ -27,6 +27,9 @@ import (
 	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/poll"
+	"github.com/newt239/chat/ent/polloption"
+	"github.com/newt239/chat/ent/pollvote"
 	"github.com/newt239/chat/ent/pushtoken"
 	"github.com/newt239/chat/ent/reminder"
 	"github.com/newt239/chat/ent/scheduledmessage"
@@ -410,6 +413,44 @@ func init() {
 	messageusermentionDescID := messageusermentionFields[0].Descriptor()
 	// messageusermention.DefaultID holds the default value on creation for the id field.
 	messageusermention.DefaultID = messageusermentionDescID.Default.(func() uuid.UUID)
+	pollFields := schema.Poll{}.Fields()
+	_ = pollFields
+	// pollDescQuestion is the schema descriptor for question field.
+	pollDescQuestion := pollFields[2].Descriptor()
+	// poll.QuestionValidator is a validator for the "question" field. It is called by the builders before save.
+	poll.QuestionValidator = pollDescQuestion.Validators[0].(func(string) error)
+	// pollDescCreatedAt is the schema descriptor for created_at field.
+	pollDescCreatedAt := pollFields[8].Descriptor()
+	// poll.DefaultCreatedAt holds the default value on creation for the created_at field.
+	poll.DefaultCreatedAt = pollDescCreatedAt.Default.(func() time.Time)
+	// pollDescID is the schema descriptor for id field.
+	pollDescID := pollFields[0].Descriptor()
+	// poll.DefaultID holds the default value on creation for the id field.
+	poll.DefaultID = pollDescID.Default.(func() uuid.UUID)
+	polloptionFields := schema.PollOption{}.Fields()
+	_ = polloptionFields
+	// polloptionDescLabel is the schema descriptor for label field.
+	polloptionDescLabel := polloptionFields[3].Descriptor()
+	// polloption.DefaultLabel holds the default value on creation for the label field.
+	polloption.DefaultLabel = polloptionDescLabel.Default.(string)
+	// polloptionDescAllDay is the schema descriptor for all_day field.
+	polloptionDescAllDay := polloptionFields[5].Descriptor()
+	// polloption.DefaultAllDay holds the default value on creation for the all_day field.
+	polloption.DefaultAllDay = polloptionDescAllDay.Default.(bool)
+	// polloptionDescID is the schema descriptor for id field.
+	polloptionDescID := polloptionFields[0].Descriptor()
+	// polloption.DefaultID holds the default value on creation for the id field.
+	polloption.DefaultID = polloptionDescID.Default.(func() uuid.UUID)
+	pollvoteFields := schema.PollVote{}.Fields()
+	_ = pollvoteFields
+	// pollvoteDescCreatedAt is the schema descriptor for created_at field.
+	pollvoteDescCreatedAt := pollvoteFields[3].Descriptor()
+	// pollvote.DefaultCreatedAt holds the default value on creation for the created_at field.
+	pollvote.DefaultCreatedAt = pollvoteDescCreatedAt.Default.(func() time.Time)
+	// pollvoteDescID is the schema descriptor for id field.
+	pollvoteDescID := pollvoteFields[0].Descriptor()
+	// pollvote.DefaultID holds the default value on creation for the id field.
+	pollvote.DefaultID = pollvoteDescID.Default.(func() uuid.UUID)
 	pushtokenFields := schema.PushToken{}.Fields()
 	_ = pushtokenFields
 	// pushtokenDescToken is the schema descriptor for token field.

@@ -947,6 +947,101 @@ var (
 			},
 		},
 	}
+	// PollColumns holds the columns for the "poll" table.
+	PollColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "question", Type: field.TypeString, Size: 2147483647},
+		{Name: "mode", Type: field.TypeEnum, Enums: []string{"text", "date"}},
+		{Name: "allow_multiple", Type: field.TypeBool},
+		{Name: "anonymous", Type: field.TypeBool},
+		{Name: "closes_at", Type: field.TypeTime, Nullable: true},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "message_id", Type: field.TypeUUID},
+	}
+	// PollTable holds the schema information for the "poll" table.
+	PollTable = &schema.Table{
+		Name:       "poll",
+		Columns:    PollColumns,
+		PrimaryKey: []*schema.Column{PollColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "poll_messages_message",
+				Columns:    []*schema.Column{PollColumns[8]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// PollOptionColumns holds the columns for the "poll_option" table.
+	PollOptionColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "position", Type: field.TypeInt},
+		{Name: "label", Type: field.TypeString, Default: ""},
+		{Name: "starts_at", Type: field.TypeTime, Nullable: true},
+		{Name: "all_day", Type: field.TypeBool, Default: false},
+		{Name: "poll_id", Type: field.TypeUUID},
+	}
+	// PollOptionTable holds the schema information for the "poll_option" table.
+	PollOptionTable = &schema.Table{
+		Name:       "poll_option",
+		Columns:    PollOptionColumns,
+		PrimaryKey: []*schema.Column{PollOptionColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "poll_option_poll_poll",
+				Columns:    []*schema.Column{PollOptionColumns[5]},
+				RefColumns: []*schema.Column{PollColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "polloption_poll_id_position",
+				Unique:  false,
+				Columns: []*schema.Column{PollOptionColumns[5], PollOptionColumns[1]},
+			},
+		},
+	}
+	// PollVoteColumns holds the columns for the "poll_vote" table.
+	PollVoteColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "option_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// PollVoteTable holds the schema information for the "poll_vote" table.
+	PollVoteTable = &schema.Table{
+		Name:       "poll_vote",
+		Columns:    PollVoteColumns,
+		PrimaryKey: []*schema.Column{PollVoteColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "poll_vote_poll_option_option",
+				Columns:    []*schema.Column{PollVoteColumns[2]},
+				RefColumns: []*schema.Column{PollOptionColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "poll_vote_users_user",
+				Columns:    []*schema.Column{PollVoteColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "pollvote_option_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{PollVoteColumns[2], PollVoteColumns[3]},
+			},
+			{
+				Name:    "pollvote_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{PollVoteColumns[3]},
+			},
+		},
+	}
 	// PushTokenColumns holds the columns for the "push_token" table.
 	PushTokenColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1514,6 +1609,9 @@ var (
 		MessagePinsTable,
 		MessageReactionsTable,
 		MessageUserMentionsTable,
+		PollTable,
+		PollOptionTable,
+		PollVoteTable,
 		PushTokenTable,
 		ReminderTable,
 		ScheduledMessageTable,
@@ -1608,6 +1706,19 @@ func init() {
 	MessageReactionsTable.ForeignKeys[1].RefTable = UsersTable
 	MessageUserMentionsTable.ForeignKeys[0].RefTable = MessagesTable
 	MessageUserMentionsTable.ForeignKeys[1].RefTable = UsersTable
+	PollTable.ForeignKeys[0].RefTable = MessagesTable
+	PollTable.Annotation = &entsql.Annotation{
+		Table: "poll",
+	}
+	PollOptionTable.ForeignKeys[0].RefTable = PollTable
+	PollOptionTable.Annotation = &entsql.Annotation{
+		Table: "poll_option",
+	}
+	PollVoteTable.ForeignKeys[0].RefTable = PollOptionTable
+	PollVoteTable.ForeignKeys[1].RefTable = UsersTable
+	PollVoteTable.Annotation = &entsql.Annotation{
+		Table: "poll_vote",
+	}
 	PushTokenTable.ForeignKeys[0].RefTable = UsersTable
 	PushTokenTable.Annotation = &entsql.Annotation{
 		Table: "push_token",

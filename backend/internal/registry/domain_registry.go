@@ -132,6 +132,10 @@ func (r *DomainRegistry) NewScheduledMessageRepository() domainrepository.Schedu
 	return repository.NewScheduledMessageRepository(r.client)
 }
 
+func (r *DomainRegistry) NewPollRepository() domainrepository.PollRepository {
+	return repository.NewPollRepository(r.client)
+}
+
 func (r *DomainRegistry) NewReminderRepository() domainrepository.ReminderRepository {
 	return repository.NewReminderRepository(r.client)
 }

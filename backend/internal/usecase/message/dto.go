@@ -15,7 +15,7 @@ var (
 	ErrMessageAlreadyDeleted = errors.New("メッセージは既に削除されています")
 	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
 	ErrAttachmentNotFound    = errors.New("添付ファイルが見つかりません")
-	ErrEmptyMessage          = errors.New("本文・添付・位置情報のいずれかが必要です")
+	ErrEmptyMessage          = errors.New("本文・添付・位置情報・投票のいずれかが必要です")
 	ErrOfficialMessage       = errors.New("公式アプリの投稿は編集・削除できません")
 )
 
@@ -42,6 +42,7 @@ type CreateMessageInput struct {
 	ParentID      *string
 	AttachmentIDs []string
 	Location      *entity.MessageLocation
+	Poll          *PollInput
 }
 
 type UpdateMessageInput struct {
@@ -136,17 +137,23 @@ type MessageOutput struct {
 	MentionsHere    bool
 	// 公式アプリの投稿。誰も編集・削除できない
 	IsOfficial bool
+	Poll       *PollOutput
 }
 
-// WithoutMessagePreviews は引用カードを除いたコピーを返します。
-// 投稿者の権限で組み立てた引用を、参照権限の異なる購読者へ配信しないために使います
-func (m MessageOutput) WithoutMessagePreviews() MessageOutput {
+// ForBroadcast は閲覧者ごとに変わる内容（引用カードと自分の投票）を除いたコピーを返します。
+// 投稿者や投票者の権限で組み立てた内容を、ほかの購読者へそのまま配信しないために使います
+func (m MessageOutput) ForBroadcast() MessageOutput {
 	links := make([]LinkInfo, len(m.Links))
 	for i, link := range m.Links {
 		link.MessagePreview = nil
 		links[i] = link
 	}
 	m.Links = links
+	if m.Poll != nil {
+		poll := *m.Poll
+		poll.MyOptionIDs = []string{}
+		m.Poll = &poll
+	}
 	return m
 }
 

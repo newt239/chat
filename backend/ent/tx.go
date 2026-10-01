@@ -56,6 +56,12 @@ type Tx struct {
 	MessageReaction *MessageReactionClient
 	// MessageUserMention is the client for interacting with the MessageUserMention builders.
 	MessageUserMention *MessageUserMentionClient
+	// Poll is the client for interacting with the Poll builders.
+	Poll *PollClient
+	// PollOption is the client for interacting with the PollOption builders.
+	PollOption *PollOptionClient
+	// PollVote is the client for interacting with the PollVote builders.
+	PollVote *PollVoteClient
 	// PushToken is the client for interacting with the PushToken builders.
 	PushToken *PushTokenClient
 	// Reminder is the client for interacting with the Reminder builders.
@@ -236,6 +242,9 @@ func (tx *Tx) init() {
 	tx.MessagePin = NewMessagePinClient(tx.config)
 	tx.MessageReaction = NewMessageReactionClient(tx.config)
 	tx.MessageUserMention = NewMessageUserMentionClient(tx.config)
+	tx.Poll = NewPollClient(tx.config)
+	tx.PollOption = NewPollOptionClient(tx.config)
+	tx.PollVote = NewPollVoteClient(tx.config)
 	tx.PushToken = NewPushTokenClient(tx.config)
 	tx.Reminder = NewReminderClient(tx.config)
 	tx.ScheduledMessage = NewScheduledMessageClient(tx.config)

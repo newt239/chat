@@ -24,6 +24,7 @@ import (
 	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
+	polluc "github.com/newt239/chat/internal/usecase/poll"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
@@ -41,6 +42,7 @@ var errorCodes = []struct {
 		domerr.ErrNotFound, domerr.ErrMessageNotFound, domerr.ErrChannelNotFound, domerr.ErrInvitationNotFound,
 		adminuc.ErrMemberNotFound,
 		appuc.ErrAppNotFound,
+		polluc.ErrPollNotFound,
 		bookmarkuc.ErrMessageNotFound,
 		entity.ErrUserNotFound,
 		channeluc.ErrWorkspaceNotFound, channeluc.ErrChannelNotFound,
@@ -74,6 +76,7 @@ var errorCodes = []struct {
 		dmuc.ErrNotWorkspaceMember,
 		mentionuc.ErrUnauthorized,
 		messageuc.ErrUnauthorized, messageuc.ErrOfficialMessage,
+		polluc.ErrUnauthorized,
 		pinuc.ErrUnauthorized,
 		reactionuc.ErrUnauthorized,
 		readstateuc.ErrUnauthorized,
@@ -111,6 +114,7 @@ var errorCodes = []struct {
 		domerr.ErrChannelArchived, domerr.ErrPasswordAuthDisabled, domerr.ErrGoogleAuthDisabled, domerr.ErrSignupDisabled,
 		adminuc.ErrCannotSuspendOwner, adminuc.ErrCannotSuspendSelf,
 		appuc.ErrUnsupportedChannel, appuc.ErrInactive,
+		polluc.ErrPollClosed,
 		channeluc.ErrCannotArchiveDM,
 		channeluc.ErrChannelHasChildren,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,

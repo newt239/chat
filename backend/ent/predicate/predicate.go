@@ -69,6 +69,15 @@ type MessageReaction func(*sql.Selector)
 // MessageUserMention is the predicate function for messageusermention builders.
 type MessageUserMention func(*sql.Selector)
 
+// Poll is the predicate function for poll builders.
+type Poll func(*sql.Selector)
+
+// PollOption is the predicate function for polloption builders.
+type PollOption func(*sql.Selector)
+
+// PollVote is the predicate function for pollvote builders.
+type PollVote func(*sql.Selector)
+
 // PushToken is the predicate function for pushtoken builders.
 type PushToken func(*sql.Selector)
 

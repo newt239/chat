@@ -17,6 +17,7 @@ type MessageCreator struct {
 	messageRepo        domainrepository.MessageRepository
 	threadRepo         domainrepository.ThreadRepository
 	attachmentRepo     domainrepository.AttachmentRepository
+	pollRepo           domainrepository.PollRepository
 	notificationSvc    Notifier
 	recorder           *contentRecorder
 	transactionManager transaction.Manager
@@ -33,6 +34,7 @@ func NewMessageCreator(
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
+	pollRepo domainrepository.PollRepository,
 	notificationSvc Notifier,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
@@ -46,6 +48,7 @@ func NewMessageCreator(
 		messageRepo:     messageRepo,
 		threadRepo:      threadRepo,
 		attachmentRepo:  attachmentRepo,
+		pollRepo:        pollRepo,
 		notificationSvc: notificationSvc,
 		recorder: &contentRecorder{
 			mentionService:        mentionService,
@@ -63,8 +66,15 @@ func NewMessageCreator(
 }
 
 func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageInput) (*MessageOutput, error) {
-	if strings.TrimSpace(input.Body) == "" && len(input.AttachmentIDs) == 0 && input.Location == nil {
+	if strings.TrimSpace(input.Body) == "" && len(input.AttachmentIDs) == 0 && input.Location == nil && input.Poll == nil {
 		return nil, ErrEmptyMessage
+	}
+	var poll *entity.Poll
+	if input.Poll != nil {
+		var err error
+		if poll, err = newPoll(input.Poll, time.Now()); err != nil {
+			return nil, err
+		}
 	}
 	channel, err := c.channelAccessSvc.EnsureChannelMember(ctx, input.ChannelID, input.UserID)
 	if err != nil {
@@ -97,6 +107,12 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 		if input.ParentID != nil {
 			if err := c.followThread(txCtx, *input.ParentID, input.UserID); err != nil {
 				return err
+			}
+		}
+		if poll != nil {
+			poll.MessageID = message.ID
+			if err := c.pollRepo.Create(txCtx, poll); err != nil {
+				return fmt.Errorf("failed to create poll: %w", err)
 			}
 		}
 		if len(input.AttachmentIDs) > 0 {
@@ -151,7 +167,7 @@ func (c *MessageCreator) publish(ctx context.Context, channel *entity.Channel, m
 	c.searchIndexer.Sync(ctx, indexIDs...)
 
 	if c.notificationSvc != nil {
-		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, result.WithoutMessagePreviews())
+		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, result.ForBroadcast())
 	}
 	for _, observer := range c.observers {
 		observer.NotifyNewMessage(ctx, channel, *result)

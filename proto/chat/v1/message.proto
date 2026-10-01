@@ -35,6 +35,69 @@ message Message {
   bool mentions_here = 21;
   // 公式アプリの投稿。誰も編集・削除できない
   bool is_official = 22;
+  // 投票を付けたメッセージのみ設定される
+  Poll poll = 23;
+}
+
+enum PollMode {
+  POLL_MODE_UNSPECIFIED = 0;
+  POLL_MODE_TEXT = 1;
+  // 日時の候補から選ぶ日程調整
+  POLL_MODE_DATE = 2;
+}
+
+message Poll {
+  string id = 1;
+  string question = 2;
+  PollMode mode = 3;
+  bool allow_multiple = 4;
+  // 誰がどれに投票したかを作成者にも見せない
+  bool anonymous = 5;
+  google.protobuf.Timestamp closes_at = 6;
+  // 締め切ったか、締切を過ぎた
+  bool is_closed = 7;
+  // 並び順
+  repeated PollOption options = 8;
+  // 閲覧者が選んでいる選択肢。WebSocket で配信するメッセージでは空
+  repeated string my_option_ids = 9;
+  int32 voter_count = 10;
+}
+
+message PollOption {
+  string id = 1;
+  string label = 2;
+  // 日程調整の候補。all_day なら日付だけを使う
+  google.protobuf.Timestamp starts_at = 3;
+  bool all_day = 4;
+  int32 vote_count = 5;
+  // 匿名の投票では空
+  repeated string voter_ids = 6;
+}
+
+message PollInput {
+  string question = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 300
+  }];
+  PollMode mode = 2 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  bool allow_multiple = 3;
+  bool anonymous = 4;
+  google.protobuf.Timestamp closes_at = 5;
+  repeated PollOptionInput options = 6 [(buf.validate.field).repeated = {
+    min_items: 2
+    max_items: 20
+  }];
+}
+
+message PollOptionInput {
+  // 文字の選択肢では必須
+  string label = 1 [(buf.validate.field).string.max_len = 100];
+  // 日程調整では必須
+  google.protobuf.Timestamp starts_at = 2;
+  bool all_day = 3;
 }
 
 message MessageLocation {

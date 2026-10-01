@@ -37,6 +37,9 @@ import (
 	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/poll"
+	"github.com/newt239/chat/ent/polloption"
+	"github.com/newt239/chat/ent/pollvote"
 	"github.com/newt239/chat/ent/pushtoken"
 	"github.com/newt239/chat/ent/reminder"
 	"github.com/newt239/chat/ent/scheduledmessage"
@@ -102,6 +105,12 @@ type Client struct {
 	MessageReaction *MessageReactionClient
 	// MessageUserMention is the client for interacting with the MessageUserMention builders.
 	MessageUserMention *MessageUserMentionClient
+	// Poll is the client for interacting with the Poll builders.
+	Poll *PollClient
+	// PollOption is the client for interacting with the PollOption builders.
+	PollOption *PollOptionClient
+	// PollVote is the client for interacting with the PollVote builders.
+	PollVote *PollVoteClient
 	// PushToken is the client for interacting with the PushToken builders.
 	PushToken *PushTokenClient
 	// Reminder is the client for interacting with the Reminder builders.
@@ -162,6 +171,9 @@ func (c *Client) init() {
 	c.MessagePin = NewMessagePinClient(c.config)
 	c.MessageReaction = NewMessageReactionClient(c.config)
 	c.MessageUserMention = NewMessageUserMentionClient(c.config)
+	c.Poll = NewPollClient(c.config)
+	c.PollOption = NewPollOptionClient(c.config)
+	c.PollVote = NewPollVoteClient(c.config)
 	c.PushToken = NewPushTokenClient(c.config)
 	c.Reminder = NewReminderClient(c.config)
 	c.ScheduledMessage = NewScheduledMessageClient(c.config)
@@ -289,6 +301,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MessagePin:          NewMessagePinClient(cfg),
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
+		Poll:                NewPollClient(cfg),
+		PollOption:          NewPollOptionClient(cfg),
+		PollVote:            NewPollVoteClient(cfg),
 		PushToken:           NewPushTokenClient(cfg),
 		Reminder:            NewReminderClient(cfg),
 		ScheduledMessage:    NewScheduledMessageClient(cfg),
@@ -343,6 +358,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MessagePin:          NewMessagePinClient(cfg),
 		MessageReaction:     NewMessageReactionClient(cfg),
 		MessageUserMention:  NewMessageUserMentionClient(cfg),
+		Poll:                NewPollClient(cfg),
+		PollOption:          NewPollOptionClient(cfg),
+		PollVote:            NewPollVoteClient(cfg),
 		PushToken:           NewPushTokenClient(cfg),
 		Reminder:            NewReminderClient(cfg),
 		ScheduledMessage:    NewScheduledMessageClient(cfg),
@@ -390,10 +408,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
 		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
 		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken, c.Reminder,
-		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
-		c.WorkspaceMember, c.WorkspacePermission,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.Poll, c.PollOption,
+		c.PollVote, c.PushToken, c.Reminder, c.ScheduledMessage, c.Session,
+		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
+		c.UserNote, c.UserThreadFollow, c.Workspace, c.WorkspaceMember,
+		c.WorkspacePermission,
 	} {
 		n.Use(hooks...)
 	}
@@ -407,10 +426,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.ChannelCategoryItem, c.ChannelLink, c.ChannelMember, c.ChannelMute,
 		c.ChannelReadState, c.ChannelStar, c.CustomEmoji, c.Draft, c.Invitation,
 		c.Message, c.MessageBookmark, c.MessageGroupMention, c.MessageLink,
-		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.PushToken, c.Reminder,
-		c.ScheduledMessage, c.Session, c.SystemMessage, c.ThreadReadState, c.User,
-		c.UserGroup, c.UserGroupMember, c.UserNote, c.UserThreadFollow, c.Workspace,
-		c.WorkspaceMember, c.WorkspacePermission,
+		c.MessagePin, c.MessageReaction, c.MessageUserMention, c.Poll, c.PollOption,
+		c.PollVote, c.PushToken, c.Reminder, c.ScheduledMessage, c.Session,
+		c.SystemMessage, c.ThreadReadState, c.User, c.UserGroup, c.UserGroupMember,
+		c.UserNote, c.UserThreadFollow, c.Workspace, c.WorkspaceMember,
+		c.WorkspacePermission,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -461,6 +481,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MessageReaction.mutate(ctx, m)
 	case *MessageUserMentionMutation:
 		return c.MessageUserMention.mutate(ctx, m)
+	case *PollMutation:
+		return c.Poll.mutate(ctx, m)
+	case *PollOptionMutation:
+		return c.PollOption.mutate(ctx, m)
+	case *PollVoteMutation:
+		return c.PollVote.mutate(ctx, m)
 	case *PushTokenMutation:
 		return c.PushToken.mutate(ctx, m)
 	case *ReminderMutation:
@@ -4279,6 +4305,501 @@ func (c *MessageUserMentionClient) mutate(ctx context.Context, m *MessageUserMen
 	}
 }
 
+// PollClient is a client for the Poll schema.
+type PollClient struct {
+	config
+}
+
+// NewPollClient returns a client for the Poll from the given config.
+func NewPollClient(c config) *PollClient {
+	return &PollClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `poll.Hooks(f(g(h())))`.
+func (c *PollClient) Use(hooks ...Hook) {
+	c.hooks.Poll = append(c.hooks.Poll, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `poll.Intercept(f(g(h())))`.
+func (c *PollClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Poll = append(c.inters.Poll, interceptors...)
+}
+
+// Create returns a builder for creating a Poll entity.
+func (c *PollClient) Create() *PollCreate {
+	mutation := newPollMutation(c.config, OpCreate)
+	return &PollCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Poll entities.
+func (c *PollClient) CreateBulk(builders ...*PollCreate) *PollCreateBulk {
+	return &PollCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PollClient) MapCreateBulk(slice any, setFunc func(*PollCreate, int)) *PollCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PollCreateBulk{err: fmt.Errorf("calling to PollClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PollCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PollCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Poll.
+func (c *PollClient) Update() *PollUpdate {
+	mutation := newPollMutation(c.config, OpUpdate)
+	return &PollUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PollClient) UpdateOne(_m *Poll) *PollUpdateOne {
+	mutation := newPollMutation(c.config, OpUpdateOne, withPoll(_m))
+	return &PollUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PollClient) UpdateOneID(id uuid.UUID) *PollUpdateOne {
+	mutation := newPollMutation(c.config, OpUpdateOne, withPollID(id))
+	return &PollUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Poll.
+func (c *PollClient) Delete() *PollDelete {
+	mutation := newPollMutation(c.config, OpDelete)
+	return &PollDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PollClient) DeleteOne(_m *Poll) *PollDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PollClient) DeleteOneID(id uuid.UUID) *PollDeleteOne {
+	builder := c.Delete().Where(poll.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PollDeleteOne{builder}
+}
+
+// Query returns a query builder for Poll.
+func (c *PollClient) Query() *PollQuery {
+	return &PollQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePoll},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Poll entity by its id.
+func (c *PollClient) Get(ctx context.Context, id uuid.UUID) (*Poll, error) {
+	return c.Query().Where(poll.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PollClient) GetX(ctx context.Context, id uuid.UUID) *Poll {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryMessage queries the message edge of a Poll.
+func (c *PollClient) QueryMessage(_m *Poll) *MessageQuery {
+	query := (&MessageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(poll.Table, poll.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, poll.MessageTable, poll.MessageColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOptions queries the options edge of a Poll.
+func (c *PollClient) QueryOptions(_m *Poll) *PollOptionQuery {
+	query := (&PollOptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(poll.Table, poll.FieldID, id),
+			sqlgraph.To(polloption.Table, polloption.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, poll.OptionsTable, poll.OptionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PollClient) Hooks() []Hook {
+	return c.hooks.Poll
+}
+
+// Interceptors returns the client interceptors.
+func (c *PollClient) Interceptors() []Interceptor {
+	return c.inters.Poll
+}
+
+func (c *PollClient) mutate(ctx context.Context, m *PollMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PollCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PollUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PollUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PollDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Poll mutation op: %q", m.Op())
+	}
+}
+
+// PollOptionClient is a client for the PollOption schema.
+type PollOptionClient struct {
+	config
+}
+
+// NewPollOptionClient returns a client for the PollOption from the given config.
+func NewPollOptionClient(c config) *PollOptionClient {
+	return &PollOptionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `polloption.Hooks(f(g(h())))`.
+func (c *PollOptionClient) Use(hooks ...Hook) {
+	c.hooks.PollOption = append(c.hooks.PollOption, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `polloption.Intercept(f(g(h())))`.
+func (c *PollOptionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PollOption = append(c.inters.PollOption, interceptors...)
+}
+
+// Create returns a builder for creating a PollOption entity.
+func (c *PollOptionClient) Create() *PollOptionCreate {
+	mutation := newPollOptionMutation(c.config, OpCreate)
+	return &PollOptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PollOption entities.
+func (c *PollOptionClient) CreateBulk(builders ...*PollOptionCreate) *PollOptionCreateBulk {
+	return &PollOptionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PollOptionClient) MapCreateBulk(slice any, setFunc func(*PollOptionCreate, int)) *PollOptionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PollOptionCreateBulk{err: fmt.Errorf("calling to PollOptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PollOptionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PollOptionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PollOption.
+func (c *PollOptionClient) Update() *PollOptionUpdate {
+	mutation := newPollOptionMutation(c.config, OpUpdate)
+	return &PollOptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PollOptionClient) UpdateOne(_m *PollOption) *PollOptionUpdateOne {
+	mutation := newPollOptionMutation(c.config, OpUpdateOne, withPollOption(_m))
+	return &PollOptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PollOptionClient) UpdateOneID(id uuid.UUID) *PollOptionUpdateOne {
+	mutation := newPollOptionMutation(c.config, OpUpdateOne, withPollOptionID(id))
+	return &PollOptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PollOption.
+func (c *PollOptionClient) Delete() *PollOptionDelete {
+	mutation := newPollOptionMutation(c.config, OpDelete)
+	return &PollOptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PollOptionClient) DeleteOne(_m *PollOption) *PollOptionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PollOptionClient) DeleteOneID(id uuid.UUID) *PollOptionDeleteOne {
+	builder := c.Delete().Where(polloption.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PollOptionDeleteOne{builder}
+}
+
+// Query returns a query builder for PollOption.
+func (c *PollOptionClient) Query() *PollOptionQuery {
+	return &PollOptionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePollOption},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PollOption entity by its id.
+func (c *PollOptionClient) Get(ctx context.Context, id uuid.UUID) (*PollOption, error) {
+	return c.Query().Where(polloption.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PollOptionClient) GetX(ctx context.Context, id uuid.UUID) *PollOption {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPoll queries the poll edge of a PollOption.
+func (c *PollOptionClient) QueryPoll(_m *PollOption) *PollQuery {
+	query := (&PollClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(polloption.Table, polloption.FieldID, id),
+			sqlgraph.To(poll.Table, poll.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, polloption.PollTable, polloption.PollColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryVotes queries the votes edge of a PollOption.
+func (c *PollOptionClient) QueryVotes(_m *PollOption) *PollVoteQuery {
+	query := (&PollVoteClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(polloption.Table, polloption.FieldID, id),
+			sqlgraph.To(pollvote.Table, pollvote.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, polloption.VotesTable, polloption.VotesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PollOptionClient) Hooks() []Hook {
+	return c.hooks.PollOption
+}
+
+// Interceptors returns the client interceptors.
+func (c *PollOptionClient) Interceptors() []Interceptor {
+	return c.inters.PollOption
+}
+
+func (c *PollOptionClient) mutate(ctx context.Context, m *PollOptionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PollOptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PollOptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PollOptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PollOptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PollOption mutation op: %q", m.Op())
+	}
+}
+
+// PollVoteClient is a client for the PollVote schema.
+type PollVoteClient struct {
+	config
+}
+
+// NewPollVoteClient returns a client for the PollVote from the given config.
+func NewPollVoteClient(c config) *PollVoteClient {
+	return &PollVoteClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `pollvote.Hooks(f(g(h())))`.
+func (c *PollVoteClient) Use(hooks ...Hook) {
+	c.hooks.PollVote = append(c.hooks.PollVote, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `pollvote.Intercept(f(g(h())))`.
+func (c *PollVoteClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PollVote = append(c.inters.PollVote, interceptors...)
+}
+
+// Create returns a builder for creating a PollVote entity.
+func (c *PollVoteClient) Create() *PollVoteCreate {
+	mutation := newPollVoteMutation(c.config, OpCreate)
+	return &PollVoteCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PollVote entities.
+func (c *PollVoteClient) CreateBulk(builders ...*PollVoteCreate) *PollVoteCreateBulk {
+	return &PollVoteCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PollVoteClient) MapCreateBulk(slice any, setFunc func(*PollVoteCreate, int)) *PollVoteCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PollVoteCreateBulk{err: fmt.Errorf("calling to PollVoteClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PollVoteCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PollVoteCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PollVote.
+func (c *PollVoteClient) Update() *PollVoteUpdate {
+	mutation := newPollVoteMutation(c.config, OpUpdate)
+	return &PollVoteUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PollVoteClient) UpdateOne(_m *PollVote) *PollVoteUpdateOne {
+	mutation := newPollVoteMutation(c.config, OpUpdateOne, withPollVote(_m))
+	return &PollVoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PollVoteClient) UpdateOneID(id uuid.UUID) *PollVoteUpdateOne {
+	mutation := newPollVoteMutation(c.config, OpUpdateOne, withPollVoteID(id))
+	return &PollVoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PollVote.
+func (c *PollVoteClient) Delete() *PollVoteDelete {
+	mutation := newPollVoteMutation(c.config, OpDelete)
+	return &PollVoteDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PollVoteClient) DeleteOne(_m *PollVote) *PollVoteDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PollVoteClient) DeleteOneID(id uuid.UUID) *PollVoteDeleteOne {
+	builder := c.Delete().Where(pollvote.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PollVoteDeleteOne{builder}
+}
+
+// Query returns a query builder for PollVote.
+func (c *PollVoteClient) Query() *PollVoteQuery {
+	return &PollVoteQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePollVote},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PollVote entity by its id.
+func (c *PollVoteClient) Get(ctx context.Context, id uuid.UUID) (*PollVote, error) {
+	return c.Query().Where(pollvote.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PollVoteClient) GetX(ctx context.Context, id uuid.UUID) *PollVote {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOption queries the option edge of a PollVote.
+func (c *PollVoteClient) QueryOption(_m *PollVote) *PollOptionQuery {
+	query := (&PollOptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(pollvote.Table, pollvote.FieldID, id),
+			sqlgraph.To(polloption.Table, polloption.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, pollvote.OptionTable, pollvote.OptionColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a PollVote.
+func (c *PollVoteClient) QueryUser(_m *PollVote) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(pollvote.Table, pollvote.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, pollvote.UserTable, pollvote.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PollVoteClient) Hooks() []Hook {
+	return c.hooks.PollVote
+}
+
+// Interceptors returns the client interceptors.
+func (c *PollVoteClient) Interceptors() []Interceptor {
+	return c.inters.PollVote
+}
+
+func (c *PollVoteClient) mutate(ctx context.Context, m *PollVoteMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PollVoteCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PollVoteUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PollVoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PollVoteDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PollVote mutation op: %q", m.Op())
+	}
+}
+
 // PushTokenClient is a client for the PushToken schema.
 type PushTokenClient struct {
 	config
@@ -6803,19 +7324,19 @@ type (
 		App, Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
 		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
-		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
-		Reminder, ScheduledMessage, Session, SystemMessage, ThreadReadState, User,
-		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Workspace,
-		WorkspaceMember, WorkspacePermission []ent.Hook
+		MessageLink, MessagePin, MessageReaction, MessageUserMention, Poll, PollOption,
+		PollVote, PushToken, Reminder, ScheduledMessage, Session, SystemMessage,
+		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
+		Workspace, WorkspaceMember, WorkspacePermission []ent.Hook
 	}
 	inters struct {
 		App, Attachment, AuditLog, Channel, ChannelCategory, ChannelCategoryItem,
 		ChannelLink, ChannelMember, ChannelMute, ChannelReadState, ChannelStar,
 		CustomEmoji, Draft, Invitation, Message, MessageBookmark, MessageGroupMention,
-		MessageLink, MessagePin, MessageReaction, MessageUserMention, PushToken,
-		Reminder, ScheduledMessage, Session, SystemMessage, ThreadReadState, User,
-		UserGroup, UserGroupMember, UserNote, UserThreadFollow, Workspace,
-		WorkspaceMember, WorkspacePermission []ent.Interceptor
+		MessageLink, MessagePin, MessageReaction, MessageUserMention, Poll, PollOption,
+		PollVote, PushToken, Reminder, ScheduledMessage, Session, SystemMessage,
+		ThreadReadState, User, UserGroup, UserGroupMember, UserNote, UserThreadFollow,
+		Workspace, WorkspaceMember, WorkspacePermission []ent.Interceptor
 	}
 )
 

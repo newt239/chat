@@ -3,6 +3,7 @@ import { useRef } from "react";
 import {
   IconArrowUp,
   IconBold,
+  IconChartBar,
   IconCode,
   IconEye,
   IconH1,
@@ -47,6 +48,7 @@ type MessageInputToolbarProps = {
   onFileSelect: (files: File[]) => void;
   onShareLocation: () => void;
   onRecord: () => void;
+  onCreatePoll: () => void;
   onSchedule: (scheduledAt: Date) => void;
 };
 
@@ -78,6 +80,7 @@ export const MessageInputToolbar = ({
   onFileSelect,
   onShareLocation,
   onRecord,
+  onCreatePoll,
   onSchedule,
 }: MessageInputToolbarProps) => {
   const { t } = useTranslation();
@@ -148,6 +151,9 @@ export const MessageInputToolbar = ({
       </IconButton>
       <IconButton label={t("recorder.start")} className={buttonClassName} onPress={onRecord}>
         <IconMicrophone />
+      </IconButton>
+      <IconButton label={t("poll.create")} className={buttonClassName} onPress={onCreatePoll}>
+        <IconChartBar />
       </IconButton>
       <IconButton
         label={t("message.composer.help")}

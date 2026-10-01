@@ -3,7 +3,6 @@ package registry
 import (
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
 	appuc "github.com/newt239/chat/internal/usecase/app"
-	commanduc "github.com/newt239/chat/internal/usecase/command"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
 	"github.com/newt239/chat/internal/usecase/audit"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
@@ -12,6 +11,7 @@ import (
 	channelcategoryuc "github.com/newt239/chat/internal/usecase/channelcategory"
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
+	commanduc "github.com/newt239/chat/internal/usecase/command"
 	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	draftuc "github.com/newt239/chat/internal/usecase/draft"
@@ -23,6 +23,7 @@ import (
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	notificationuc "github.com/newt239/chat/internal/usecase/notification"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
+	polluc "github.com/newt239/chat/internal/usecase/poll"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
@@ -146,6 +147,7 @@ func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuil
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewPinRepository(),
+		r.domainRegistry.NewPollRepository(),
 		r.domainRegistry.NewChannelAccessService(),
 	)
 }
@@ -166,6 +168,7 @@ func (r *UseCaseRegistry) NewAppUseCase() *appuc.Interactor {
 			r.domainRegistry.NewMessageLinkRepository(),
 			r.domainRegistry.NewThreadRepository(),
 			r.domainRegistry.NewAttachmentRepository(),
+			r.domainRegistry.NewPollRepository(),
 			r.infrastructureRegistry.NewNotificationService(),
 			r.infrastructureRegistry.NewMentionService(),
 			r.infrastructureRegistry.NewLinkProcessingService(),
@@ -177,6 +180,18 @@ func (r *UseCaseRegistry) NewAppUseCase() *appuc.Interactor {
 		),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
+	)
+}
+
+func (r *UseCaseRegistry) NewPollUseCase() *polluc.Interactor {
+	return polluc.NewInteractor(
+		r.domainRegistry.NewPollRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewMessageOutputBuilder(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.infrastructureRegistry.NewTransactionManager(),
 	)
 }
 
@@ -218,6 +233,7 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewThreadRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewPollRepository(),
 		r.NewMessageOutputBuilder(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.infrastructureRegistry.NewMentionService(),
