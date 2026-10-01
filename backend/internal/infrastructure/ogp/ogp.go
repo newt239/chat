@@ -27,7 +27,8 @@ const (
 	maxOGPRedirects = 3
 	// YouTube の動画ページはメタデータが 700KB 付近にあるため余裕を持たせる
 	maxOGPBodyBytes = 2 * 1024 * 1024
-	userAgent       = "Mozilla/5.0 (compatible; ChatApp/1.0; +https://example.com)"
+	// X は User-Agent に bot を含むリクエストにだけ OGP を返す
+	userAgent = "Mozilla/5.0 (compatible; ChatApp-OGP-bot/1.0; +https://example.com)"
 )
 
 func NewOGPService() *OGPService {
@@ -51,7 +52,11 @@ func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*entity.OGPDa
 	if err != nil {
 		return nil, err
 	}
-	return buildOGPData(meta, parsedURL), nil
+	data := buildOGPData(meta, parsedURL)
+	if isXPostURL(parsedURL) {
+		applyXPost(data)
+	}
+	return data, nil
 }
 
 // get は GET リクエストを送り、200 以外や内部ネットワーク宛をエラーにします

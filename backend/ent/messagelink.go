@@ -41,6 +41,10 @@ type MessageLink struct {
 	YoutubeChannelName *string `json:"youtube_channel_name,omitempty"`
 	// YoutubeDurationSeconds holds the value of the "youtube_duration_seconds" field.
 	YoutubeDurationSeconds *int32 `json:"youtube_duration_seconds,omitempty"`
+	// XAuthorName holds the value of the "x_author_name" field.
+	XAuthorName *string `json:"x_author_name,omitempty"`
+	// XAuthorHandle holds the value of the "x_author_handle" field.
+	XAuthorHandle *string `json:"x_author_handle,omitempty"`
 	// LinkedMessageID holds the value of the "linked_message_id" field.
 	LinkedMessageID *uuid.UUID `json:"linked_message_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -81,7 +85,7 @@ func (*MessageLink) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case messagelink.FieldImageWidth, messagelink.FieldImageHeight, messagelink.FieldYoutubeDurationSeconds:
 			values[i] = new(sql.NullInt64)
-		case messagelink.FieldURL, messagelink.FieldTitle, messagelink.FieldDescription, messagelink.FieldImageURL, messagelink.FieldSiteName, messagelink.FieldCardType, messagelink.FieldYoutubeVideoID, messagelink.FieldYoutubeChannelName:
+		case messagelink.FieldURL, messagelink.FieldTitle, messagelink.FieldDescription, messagelink.FieldImageURL, messagelink.FieldSiteName, messagelink.FieldCardType, messagelink.FieldYoutubeVideoID, messagelink.FieldYoutubeChannelName, messagelink.FieldXAuthorName, messagelink.FieldXAuthorHandle:
 			values[i] = new(sql.NullString)
 		case messagelink.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -180,6 +184,20 @@ func (_m *MessageLink) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.YoutubeDurationSeconds = new(int32)
 				*_m.YoutubeDurationSeconds = int32(value.Int64)
+			}
+		case messagelink.FieldXAuthorName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field x_author_name", values[i])
+			} else if value.Valid {
+				_m.XAuthorName = new(string)
+				*_m.XAuthorName = value.String
+			}
+		case messagelink.FieldXAuthorHandle:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field x_author_handle", values[i])
+			} else if value.Valid {
+				_m.XAuthorHandle = new(string)
+				*_m.XAuthorHandle = value.String
 			}
 		case messagelink.FieldLinkedMessageID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -283,6 +301,16 @@ func (_m *MessageLink) String() string {
 	if v := _m.YoutubeDurationSeconds; v != nil {
 		builder.WriteString("youtube_duration_seconds=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.XAuthorName; v != nil {
+		builder.WriteString("x_author_name=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.XAuthorHandle; v != nil {
+		builder.WriteString("x_author_handle=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	if v := _m.LinkedMessageID; v != nil {

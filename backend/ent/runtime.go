@@ -332,7 +332,7 @@ func init() {
 	// messagelink.URLValidator is a validator for the "url" field. It is called by the builders before save.
 	messagelink.URLValidator = messagelinkDescURL.Validators[0].(func(string) error)
 	// messagelinkDescCreatedAt is the schema descriptor for created_at field.
-	messagelinkDescCreatedAt := messagelinkFields[13].Descriptor()
+	messagelinkDescCreatedAt := messagelinkFields[15].Descriptor()
 	// messagelink.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagelink.DefaultCreatedAt = messagelinkDescCreatedAt.Default.(func() time.Time)
 	// messagelinkDescID is the schema descriptor for id field.

@@ -37,6 +37,10 @@ const (
 	FieldYoutubeChannelName = "youtube_channel_name"
 	// FieldYoutubeDurationSeconds holds the string denoting the youtube_duration_seconds field in the database.
 	FieldYoutubeDurationSeconds = "youtube_duration_seconds"
+	// FieldXAuthorName holds the string denoting the x_author_name field in the database.
+	FieldXAuthorName = "x_author_name"
+	// FieldXAuthorHandle holds the string denoting the x_author_handle field in the database.
+	FieldXAuthorHandle = "x_author_handle"
 	// FieldLinkedMessageID holds the string denoting the linked_message_id field in the database.
 	FieldLinkedMessageID = "linked_message_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -68,6 +72,8 @@ var Columns = []string{
 	FieldYoutubeVideoID,
 	FieldYoutubeChannelName,
 	FieldYoutubeDurationSeconds,
+	FieldXAuthorName,
+	FieldXAuthorHandle,
 	FieldLinkedMessageID,
 	FieldCreatedAt,
 }
@@ -163,6 +169,16 @@ func ByYoutubeChannelName(opts ...sql.OrderTermOption) OrderOption {
 // ByYoutubeDurationSeconds orders the results by the youtube_duration_seconds field.
 func ByYoutubeDurationSeconds(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldYoutubeDurationSeconds, opts...).ToFunc()
+}
+
+// ByXAuthorName orders the results by the x_author_name field.
+func ByXAuthorName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldXAuthorName, opts...).ToFunc()
+}
+
+// ByXAuthorHandle orders the results by the x_author_handle field.
+func ByXAuthorHandle(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldXAuthorHandle, opts...).ToFunc()
 }
 
 // ByLinkedMessageID orders the results by the linked_message_id field.

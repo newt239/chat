@@ -5,6 +5,9 @@ export const link = {
     show: "メッセージを表示",
   },
   remove: "プレビューを外す",
+  xPost: {
+    open: "X で開く",
+  },
   youtube: {
     play: "YouTube で再生",
     site: "YouTube",

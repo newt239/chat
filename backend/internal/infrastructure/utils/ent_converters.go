@@ -413,6 +413,10 @@ func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 			DurationSeconds: ml.YoutubeDurationSeconds,
 		}
 	}
+	var xPost *entity.XPost
+	if ml.XAuthorName != nil && ml.XAuthorHandle != nil {
+		xPost = &entity.XPost{AuthorName: *ml.XAuthorName, AuthorHandle: *ml.XAuthorHandle}
+	}
 	return &entity.MessageLink{
 		ID:        ml.ID.String(),
 		MessageID: messageID,
@@ -426,6 +430,7 @@ func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 			ImageWidth:  ml.ImageWidth,
 			ImageHeight: ml.ImageHeight,
 			YouTube:     youtube,
+			XPost:       xPost,
 		},
 		LinkedMessageID: UUIDPtrToStringPtr(ml.LinkedMessageID),
 		CreatedAt:       ml.CreatedAt,

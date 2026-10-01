@@ -79,6 +79,9 @@ func OGPData(o entity.OGPData) *chatv1.OgpData {
 	if o.YouTube != nil {
 		data.Youtube = &chatv1.YouTubeVideo{VideoId: o.YouTube.VideoID, ChannelName: o.YouTube.ChannelName, DurationSeconds: o.YouTube.DurationSeconds}
 	}
+	if o.XPost != nil {
+		data.XPost = &chatv1.XPost{AuthorName: o.XPost.AuthorName, AuthorHandle: o.XPost.AuthorHandle}
+	}
 	return data
 }
 

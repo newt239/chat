@@ -12944,6 +12944,8 @@ type MessageLinkMutation struct {
 	youtube_channel_name        *string
 	youtube_duration_seconds    *int32
 	addyoutube_duration_seconds *int32
+	x_author_name               *string
+	x_author_handle             *string
 	linked_message_id           *uuid.UUID
 	created_at                  *time.Time
 	clearedFields               map[string]struct{}
@@ -13647,6 +13649,104 @@ func (m *MessageLinkMutation) ResetYoutubeDurationSeconds() {
 	delete(m.clearedFields, messagelink.FieldYoutubeDurationSeconds)
 }
 
+// SetXAuthorName sets the "x_author_name" field.
+func (m *MessageLinkMutation) SetXAuthorName(s string) {
+	m.x_author_name = &s
+}
+
+// XAuthorName returns the value of the "x_author_name" field in the mutation.
+func (m *MessageLinkMutation) XAuthorName() (r string, exists bool) {
+	v := m.x_author_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldXAuthorName returns the old "x_author_name" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldXAuthorName(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldXAuthorName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldXAuthorName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldXAuthorName: %w", err)
+	}
+	return oldValue.XAuthorName, nil
+}
+
+// ClearXAuthorName clears the value of the "x_author_name" field.
+func (m *MessageLinkMutation) ClearXAuthorName() {
+	m.x_author_name = nil
+	m.clearedFields[messagelink.FieldXAuthorName] = struct{}{}
+}
+
+// XAuthorNameCleared returns if the "x_author_name" field was cleared in this mutation.
+func (m *MessageLinkMutation) XAuthorNameCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldXAuthorName]
+	return ok
+}
+
+// ResetXAuthorName resets all changes to the "x_author_name" field.
+func (m *MessageLinkMutation) ResetXAuthorName() {
+	m.x_author_name = nil
+	delete(m.clearedFields, messagelink.FieldXAuthorName)
+}
+
+// SetXAuthorHandle sets the "x_author_handle" field.
+func (m *MessageLinkMutation) SetXAuthorHandle(s string) {
+	m.x_author_handle = &s
+}
+
+// XAuthorHandle returns the value of the "x_author_handle" field in the mutation.
+func (m *MessageLinkMutation) XAuthorHandle() (r string, exists bool) {
+	v := m.x_author_handle
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldXAuthorHandle returns the old "x_author_handle" field's value of the MessageLink entity.
+// If the MessageLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageLinkMutation) OldXAuthorHandle(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldXAuthorHandle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldXAuthorHandle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldXAuthorHandle: %w", err)
+	}
+	return oldValue.XAuthorHandle, nil
+}
+
+// ClearXAuthorHandle clears the value of the "x_author_handle" field.
+func (m *MessageLinkMutation) ClearXAuthorHandle() {
+	m.x_author_handle = nil
+	m.clearedFields[messagelink.FieldXAuthorHandle] = struct{}{}
+}
+
+// XAuthorHandleCleared returns if the "x_author_handle" field was cleared in this mutation.
+func (m *MessageLinkMutation) XAuthorHandleCleared() bool {
+	_, ok := m.clearedFields[messagelink.FieldXAuthorHandle]
+	return ok
+}
+
+// ResetXAuthorHandle resets all changes to the "x_author_handle" field.
+func (m *MessageLinkMutation) ResetXAuthorHandle() {
+	m.x_author_handle = nil
+	delete(m.clearedFields, messagelink.FieldXAuthorHandle)
+}
+
 // SetLinkedMessageID sets the "linked_message_id" field.
 func (m *MessageLinkMutation) SetLinkedMessageID(u uuid.UUID) {
 	m.linked_message_id = &u
@@ -13805,7 +13905,7 @@ func (m *MessageLinkMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageLinkMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 15)
 	if m.url != nil {
 		fields = append(fields, messagelink.FieldURL)
 	}
@@ -13838,6 +13938,12 @@ func (m *MessageLinkMutation) Fields() []string {
 	}
 	if m.youtube_duration_seconds != nil {
 		fields = append(fields, messagelink.FieldYoutubeDurationSeconds)
+	}
+	if m.x_author_name != nil {
+		fields = append(fields, messagelink.FieldXAuthorName)
+	}
+	if m.x_author_handle != nil {
+		fields = append(fields, messagelink.FieldXAuthorHandle)
 	}
 	if m.linked_message_id != nil {
 		fields = append(fields, messagelink.FieldLinkedMessageID)
@@ -13875,6 +13981,10 @@ func (m *MessageLinkMutation) Field(name string) (ent.Value, bool) {
 		return m.YoutubeChannelName()
 	case messagelink.FieldYoutubeDurationSeconds:
 		return m.YoutubeDurationSeconds()
+	case messagelink.FieldXAuthorName:
+		return m.XAuthorName()
+	case messagelink.FieldXAuthorHandle:
+		return m.XAuthorHandle()
 	case messagelink.FieldLinkedMessageID:
 		return m.LinkedMessageID()
 	case messagelink.FieldCreatedAt:
@@ -13910,6 +14020,10 @@ func (m *MessageLinkMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldYoutubeChannelName(ctx)
 	case messagelink.FieldYoutubeDurationSeconds:
 		return m.OldYoutubeDurationSeconds(ctx)
+	case messagelink.FieldXAuthorName:
+		return m.OldXAuthorName(ctx)
+	case messagelink.FieldXAuthorHandle:
+		return m.OldXAuthorHandle(ctx)
 	case messagelink.FieldLinkedMessageID:
 		return m.OldLinkedMessageID(ctx)
 	case messagelink.FieldCreatedAt:
@@ -13999,6 +14113,20 @@ func (m *MessageLinkMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetYoutubeDurationSeconds(v)
+		return nil
+	case messagelink.FieldXAuthorName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetXAuthorName(v)
+		return nil
+	case messagelink.FieldXAuthorHandle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetXAuthorHandle(v)
 		return nil
 	case messagelink.FieldLinkedMessageID:
 		v, ok := value.(uuid.UUID)
@@ -14113,6 +14241,12 @@ func (m *MessageLinkMutation) ClearedFields() []string {
 	if m.FieldCleared(messagelink.FieldYoutubeDurationSeconds) {
 		fields = append(fields, messagelink.FieldYoutubeDurationSeconds)
 	}
+	if m.FieldCleared(messagelink.FieldXAuthorName) {
+		fields = append(fields, messagelink.FieldXAuthorName)
+	}
+	if m.FieldCleared(messagelink.FieldXAuthorHandle) {
+		fields = append(fields, messagelink.FieldXAuthorHandle)
+	}
 	if m.FieldCleared(messagelink.FieldLinkedMessageID) {
 		fields = append(fields, messagelink.FieldLinkedMessageID)
 	}
@@ -14160,6 +14294,12 @@ func (m *MessageLinkMutation) ClearField(name string) error {
 	case messagelink.FieldYoutubeDurationSeconds:
 		m.ClearYoutubeDurationSeconds()
 		return nil
+	case messagelink.FieldXAuthorName:
+		m.ClearXAuthorName()
+		return nil
+	case messagelink.FieldXAuthorHandle:
+		m.ClearXAuthorHandle()
+		return nil
 	case messagelink.FieldLinkedMessageID:
 		m.ClearLinkedMessageID()
 		return nil
@@ -14203,6 +14343,12 @@ func (m *MessageLinkMutation) ResetField(name string) error {
 		return nil
 	case messagelink.FieldYoutubeDurationSeconds:
 		m.ResetYoutubeDurationSeconds()
+		return nil
+	case messagelink.FieldXAuthorName:
+		m.ResetXAuthorName()
+		return nil
+	case messagelink.FieldXAuthorHandle:
+		m.ResetXAuthorHandle()
 		return nil
 	case messagelink.FieldLinkedMessageID:
 		m.ResetLinkedMessageID()

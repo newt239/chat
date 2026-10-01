@@ -171,6 +171,34 @@ func (_c *MessageLinkCreate) SetNillableYoutubeDurationSeconds(v *int32) *Messag
 	return _c
 }
 
+// SetXAuthorName sets the "x_author_name" field.
+func (_c *MessageLinkCreate) SetXAuthorName(v string) *MessageLinkCreate {
+	_c.mutation.SetXAuthorName(v)
+	return _c
+}
+
+// SetNillableXAuthorName sets the "x_author_name" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableXAuthorName(v *string) *MessageLinkCreate {
+	if v != nil {
+		_c.SetXAuthorName(*v)
+	}
+	return _c
+}
+
+// SetXAuthorHandle sets the "x_author_handle" field.
+func (_c *MessageLinkCreate) SetXAuthorHandle(v string) *MessageLinkCreate {
+	_c.mutation.SetXAuthorHandle(v)
+	return _c
+}
+
+// SetNillableXAuthorHandle sets the "x_author_handle" field if the given value is not nil.
+func (_c *MessageLinkCreate) SetNillableXAuthorHandle(v *string) *MessageLinkCreate {
+	if v != nil {
+		_c.SetXAuthorHandle(*v)
+	}
+	return _c
+}
+
 // SetLinkedMessageID sets the "linked_message_id" field.
 func (_c *MessageLinkCreate) SetLinkedMessageID(v uuid.UUID) *MessageLinkCreate {
 	_c.mutation.SetLinkedMessageID(v)
@@ -364,6 +392,14 @@ func (_c *MessageLinkCreate) createSpec() (*MessageLink, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.YoutubeDurationSeconds(); ok {
 		_spec.SetField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
 		_node.YoutubeDurationSeconds = &value
+	}
+	if value, ok := _c.mutation.XAuthorName(); ok {
+		_spec.SetField(messagelink.FieldXAuthorName, field.TypeString, value)
+		_node.XAuthorName = &value
+	}
+	if value, ok := _c.mutation.XAuthorHandle(); ok {
+		_spec.SetField(messagelink.FieldXAuthorHandle, field.TypeString, value)
+		_node.XAuthorHandle = &value
 	}
 	if value, ok := _c.mutation.LinkedMessageID(); ok {
 		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
@@ -649,6 +685,42 @@ func (u *MessageLinkUpsert) AddYoutubeDurationSeconds(v int32) *MessageLinkUpser
 // ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
 func (u *MessageLinkUpsert) ClearYoutubeDurationSeconds() *MessageLinkUpsert {
 	u.SetNull(messagelink.FieldYoutubeDurationSeconds)
+	return u
+}
+
+// SetXAuthorName sets the "x_author_name" field.
+func (u *MessageLinkUpsert) SetXAuthorName(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldXAuthorName, v)
+	return u
+}
+
+// UpdateXAuthorName sets the "x_author_name" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateXAuthorName() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldXAuthorName)
+	return u
+}
+
+// ClearXAuthorName clears the value of the "x_author_name" field.
+func (u *MessageLinkUpsert) ClearXAuthorName() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldXAuthorName)
+	return u
+}
+
+// SetXAuthorHandle sets the "x_author_handle" field.
+func (u *MessageLinkUpsert) SetXAuthorHandle(v string) *MessageLinkUpsert {
+	u.Set(messagelink.FieldXAuthorHandle, v)
+	return u
+}
+
+// UpdateXAuthorHandle sets the "x_author_handle" field to the value that was provided on create.
+func (u *MessageLinkUpsert) UpdateXAuthorHandle() *MessageLinkUpsert {
+	u.SetExcluded(messagelink.FieldXAuthorHandle)
+	return u
+}
+
+// ClearXAuthorHandle clears the value of the "x_author_handle" field.
+func (u *MessageLinkUpsert) ClearXAuthorHandle() *MessageLinkUpsert {
+	u.SetNull(messagelink.FieldXAuthorHandle)
 	return u
 }
 
@@ -963,6 +1035,48 @@ func (u *MessageLinkUpsertOne) UpdateYoutubeDurationSeconds() *MessageLinkUpsert
 func (u *MessageLinkUpsertOne) ClearYoutubeDurationSeconds() *MessageLinkUpsertOne {
 	return u.Update(func(s *MessageLinkUpsert) {
 		s.ClearYoutubeDurationSeconds()
+	})
+}
+
+// SetXAuthorName sets the "x_author_name" field.
+func (u *MessageLinkUpsertOne) SetXAuthorName(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetXAuthorName(v)
+	})
+}
+
+// UpdateXAuthorName sets the "x_author_name" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateXAuthorName() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateXAuthorName()
+	})
+}
+
+// ClearXAuthorName clears the value of the "x_author_name" field.
+func (u *MessageLinkUpsertOne) ClearXAuthorName() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearXAuthorName()
+	})
+}
+
+// SetXAuthorHandle sets the "x_author_handle" field.
+func (u *MessageLinkUpsertOne) SetXAuthorHandle(v string) *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetXAuthorHandle(v)
+	})
+}
+
+// UpdateXAuthorHandle sets the "x_author_handle" field to the value that was provided on create.
+func (u *MessageLinkUpsertOne) UpdateXAuthorHandle() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateXAuthorHandle()
+	})
+}
+
+// ClearXAuthorHandle clears the value of the "x_author_handle" field.
+func (u *MessageLinkUpsertOne) ClearXAuthorHandle() *MessageLinkUpsertOne {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearXAuthorHandle()
 	})
 }
 
@@ -1447,6 +1561,48 @@ func (u *MessageLinkUpsertBulk) UpdateYoutubeDurationSeconds() *MessageLinkUpser
 func (u *MessageLinkUpsertBulk) ClearYoutubeDurationSeconds() *MessageLinkUpsertBulk {
 	return u.Update(func(s *MessageLinkUpsert) {
 		s.ClearYoutubeDurationSeconds()
+	})
+}
+
+// SetXAuthorName sets the "x_author_name" field.
+func (u *MessageLinkUpsertBulk) SetXAuthorName(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetXAuthorName(v)
+	})
+}
+
+// UpdateXAuthorName sets the "x_author_name" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateXAuthorName() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateXAuthorName()
+	})
+}
+
+// ClearXAuthorName clears the value of the "x_author_name" field.
+func (u *MessageLinkUpsertBulk) ClearXAuthorName() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearXAuthorName()
+	})
+}
+
+// SetXAuthorHandle sets the "x_author_handle" field.
+func (u *MessageLinkUpsertBulk) SetXAuthorHandle(v string) *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.SetXAuthorHandle(v)
+	})
+}
+
+// UpdateXAuthorHandle sets the "x_author_handle" field to the value that was provided on create.
+func (u *MessageLinkUpsertBulk) UpdateXAuthorHandle() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.UpdateXAuthorHandle()
+	})
+}
+
+// ClearXAuthorHandle clears the value of the "x_author_handle" field.
+func (u *MessageLinkUpsertBulk) ClearXAuthorHandle() *MessageLinkUpsertBulk {
+	return u.Update(func(s *MessageLinkUpsert) {
+		s.ClearXAuthorHandle()
 	})
 }
 

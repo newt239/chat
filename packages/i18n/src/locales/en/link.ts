@@ -7,6 +7,9 @@ export const link: Messages["link"] = {
     show: "View message",
   },
   remove: "Remove preview",
+  xPost: {
+    open: "Open on X",
+  },
   youtube: {
     play: "Play on YouTube",
     site: "YouTube",

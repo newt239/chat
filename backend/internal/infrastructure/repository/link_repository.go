@@ -58,6 +58,11 @@ func (r *linkRepository) Create(ctx context.Context, link *entity.MessageLink) e
 			SetNillableYoutubeChannelName(ogp.YouTube.ChannelName).
 			SetNillableYoutubeDurationSeconds(ogp.YouTube.DurationSeconds)
 	}
+	if ogp.XPost != nil {
+		builder = builder.
+			SetXAuthorName(ogp.XPost.AuthorName).
+			SetXAuthorHandle(ogp.XPost.AuthorHandle)
+	}
 
 	ml, err := builder.Save(ctx)
 	if err != nil {

@@ -85,6 +85,13 @@ message OgpData {
   optional int32 image_height = 7;
   // YouTube の動画 URL のときのみ設定される
   YouTubeVideo youtube = 8;
+  // X(Twitter) の投稿 URL のときのみ設定される
+  XPost x_post = 9;
+}
+
+message XPost {
+  string author_name = 1;
+  string author_handle = 2;
 }
 
 message YouTubeVideo {

@@ -21,6 +21,12 @@ type OGPData struct {
 	ImageWidth  *int32
 	ImageHeight *int32
 	YouTube     *YouTubeVideo
+	XPost       *XPost
+}
+
+type XPost struct {
+	AuthorName   string
+	AuthorHandle string
 }
 
 type YouTubeVideo struct {

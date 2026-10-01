@@ -716,6 +716,8 @@ var (
 		{Name: "youtube_video_id", Type: field.TypeString, Nullable: true},
 		{Name: "youtube_channel_name", Type: field.TypeString, Nullable: true},
 		{Name: "youtube_duration_seconds", Type: field.TypeInt32, Nullable: true},
+		{Name: "x_author_name", Type: field.TypeString, Nullable: true},
+		{Name: "x_author_handle", Type: field.TypeString, Nullable: true},
 		{Name: "linked_message_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_link_message", Type: field.TypeUUID},
@@ -728,7 +730,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "message_links_messages_message",
-				Columns:    []*schema.Column{MessageLinksColumns[14]},
+				Columns:    []*schema.Column{MessageLinksColumns[16]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -737,12 +739,12 @@ var (
 			{
 				Name:    "messagelink_url_message_link_message",
 				Unique:  true,
-				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[14]},
+				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[16]},
 			},
 			{
 				Name:    "messagelink_message_link_message",
 				Unique:  false,
-				Columns: []*schema.Column{MessageLinksColumns[14]},
+				Columns: []*schema.Column{MessageLinksColumns[16]},
 			},
 		},
 	}
