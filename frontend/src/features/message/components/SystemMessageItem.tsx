@@ -1,7 +1,10 @@
+import type { ReactNode } from "react";
+
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
+import { Link } from "#/components/ui/Link/Link";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { SystemMessageKind } from "#/gen/chat/v1/message_pb";
@@ -35,7 +38,26 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
   const from = textOf(payload.from);
   const to = textOf(payload.to);
 
-  const texts: Record<SystemMessageKind, () => string> = {
+  const pinnedMessageId = textOf(payload.messageId);
+  const pinnedParentId = textOf(payload.parentId);
+  const pinnedLink =
+    workspaceId === undefined ? (
+      <span />
+    ) : pinnedParentId === "" ? (
+      <Link
+        to="/app/$workspaceId/$channelId"
+        params={{ channelId: message.channelId, workspaceId }}
+        search={{ message: pinnedMessageId }}
+      />
+    ) : (
+      <Link
+        to="/app/$workspaceId/$channelId/thread/$messageId"
+        params={{ channelId: message.channelId, messageId: pinnedParentId, workspaceId }}
+        search={{ message: pinnedMessageId }}
+      />
+    );
+
+  const texts: Record<SystemMessageKind, () => ReactNode> = {
     [SystemMessageKind.UNSPECIFIED]: () => t("message.system.unspecified"),
     [SystemMessageKind.MEMBER_JOINED]: () =>
       t("message.system.memberJoined", { user: nameOf("userId") }),
@@ -49,8 +71,13 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
       t("message.system.privacyChanged", { from: from || "public", to: to || "public" }),
     [SystemMessageKind.CHANNEL_NAME_CHANGED]: () => t("message.system.nameChanged", { from, to }),
     [SystemMessageKind.CHANNEL_DESCRIPTION_CHANGED]: () => t("message.system.descriptionChanged"),
-    [SystemMessageKind.MESSAGE_PINNED]: () =>
-      t("message.system.messagePinned", { user: nameOf("pinnedBy") }),
+    [SystemMessageKind.MESSAGE_PINNED]: () => (
+      <Trans
+        i18nKey="message.system.messagePinned"
+        values={{ user: nameOf("pinnedBy") }}
+        components={{ target: pinnedLink }}
+      />
+    ),
   };
   const createdAt = toDate(message.createdAt);
 
