@@ -2,7 +2,6 @@ package registry
 
 import (
 	"context"
-	"github.com/newt239/chat/internal/infrastructure/appwebhook"
 	"sync/atomic"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
+	"github.com/newt239/chat/internal/infrastructure/appwebhook"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/fcm"
