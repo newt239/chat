@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 
@@ -99,6 +100,57 @@ func (r *channelRepository) FindBrowsableChannels(ctx context.Context, workspace
 		result = append(result, utils.ChannelToEntity(c))
 	}
 	return result, nil
+}
+
+func (r *channelRepository) SearchBrowsableChannels(ctx context.Context, workspaceID, userID string, filter domainrepository.BrowsableChannelFilter) ([]*entity.Channel, int, error) {
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, 0, err
+	}
+
+	isMember := channel.HasMembersWith(channelmember.HasUserWith(user.ID(uid)))
+	query := transaction.ResolveClient(ctx, r.client).Channel.Query().
+		Where(
+			channel.HasWorkspaceWith(workspace.ID(workspaceID)),
+			channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate)),
+			channel.ArchivedAtIsNil(),
+			channel.Or(channel.IsPrivate(false), isMember),
+		)
+	if keyword := strings.TrimSpace(filter.Query); keyword != "" {
+		query = query.Where(channel.Or(channel.NameContainsFold(keyword), channel.DescriptionContainsFold(keyword)))
+	}
+	switch filter.Membership {
+	case domainrepository.BrowsableChannelMembershipJoined:
+		query = query.Where(isMember)
+	case domainrepository.BrowsableChannelMembershipNotJoined:
+		query = query.Where(channel.Not(isMember))
+	}
+
+	total, err := query.Clone().Count(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	order := []channel.OrderOption{channel.ByName()}
+	if filter.Sort == domainrepository.BrowsableChannelSortMemberCount {
+		order = append([]channel.OrderOption{channel.ByMembersCount(sql.OrderDesc())}, order...)
+	}
+	channels, err := query.
+		WithWorkspace().
+		WithCreatedBy().
+		Order(order...).
+		Limit(filter.Limit).
+		Offset(filter.Offset).
+		All(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result := make([]*entity.Channel, 0, len(channels))
+	for _, c := range channels {
+		result = append(result, utils.ChannelToEntity(c))
+	}
+	return result, total, nil
 }
 
 // スレッドの返信と削除済みを除いた最後のメッセージの投稿日時

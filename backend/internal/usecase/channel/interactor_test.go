@@ -29,6 +29,13 @@ type fakeChannelRepo struct {
 	channels      map[string]*entity.Channel
 	members       *fakeMemberRepo
 	lastMessageAt map[string]time.Time
+	lastFilter    domainrepository.BrowsableChannelFilter
+}
+
+func (r *fakeChannelRepo) SearchBrowsableChannels(ctx context.Context, workspaceID, userID string, filter domainrepository.BrowsableChannelFilter) ([]*entity.Channel, int, error) {
+	r.lastFilter = filter
+	channels, err := r.FindBrowsableChannels(ctx, workspaceID, userID)
+	return channels, len(channels), err
 }
 
 func (r *fakeChannelRepo) FindLastMessageAtBatch(_ context.Context, _ []string) (map[string]time.Time, error) {
@@ -440,6 +447,29 @@ func TestListBrowsableChannels(t *testing.T) {
 	}
 	if len(out) != 1 || out[0].Channel.ID != public.ID || out[0].Channel.IsMember || out[0].MemberCount != 1 {
 		t.Fatalf("未参加の公開チャンネルだけが返っていません: %+v", out)
+	}
+}
+
+func TestSearchBrowsableChannels(t *testing.T) {
+	f := newFixture()
+	public := f.create(t, adminID, "public", false)
+
+	out, err := f.uc.SearchBrowsableChannels(context.Background(), SearchBrowsableChannelsInput{
+		WorkspaceID: workspaceID, UserID: memberID, Query: "pub", Sort: domainrepository.BrowsableChannelSortMemberCount, Page: 3, PerPage: 20,
+	})
+	if err != nil {
+		t.Fatalf("検索できません: %v", err)
+	}
+	if out.Total != 1 || len(out.Channels) != 1 || out.Channels[0].Channel.ID != public.ID || out.Channels[0].MemberCount != 1 {
+		t.Fatalf("検索結果が正しくありません: %+v", out)
+	}
+	want := domainrepository.BrowsableChannelFilter{Query: "pub", Sort: domainrepository.BrowsableChannelSortMemberCount, Limit: 20, Offset: 40}
+	if f.channels.lastFilter != want {
+		t.Fatalf("ページから求めた条件が正しくありません: %+v", f.channels.lastFilter)
+	}
+
+	if _, err := f.uc.SearchBrowsableChannels(context.Background(), SearchBrowsableChannelsInput{WorkspaceID: workspaceID, UserID: "44444444-4444-4444-4444-444444444444", Page: 1, PerPage: 20}); !errors.Is(err, ErrUnauthorized) {
+		t.Fatalf("ワークスペース外のユーザーが検索できています: %v", err)
 	}
 }
 

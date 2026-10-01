@@ -19,6 +19,8 @@ service ChannelService {
   rpc UnarchiveChannel(UnarchiveChannelRequest) returns (UnarchiveChannelResponse);
   // 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
   rpc ListBrowsableChannels(ListBrowsableChannelsRequest) returns (ListBrowsableChannelsResponse);
+  // 閲覧できるチャンネルを検索・絞り込み・並べ替えしてページ単位で返す
+  rpc SearchBrowsableChannels(SearchBrowsableChannelsRequest) returns (SearchBrowsableChannelsResponse);
 }
 
 message Channel {
@@ -141,4 +143,37 @@ message BrowsableChannel {
 
 message ListBrowsableChannelsResponse {
   repeated BrowsableChannel channels = 1;
+}
+
+enum BrowsableChannelMembership {
+  // 参加の有無を問わない
+  BROWSABLE_CHANNEL_MEMBERSHIP_UNSPECIFIED = 0;
+  BROWSABLE_CHANNEL_MEMBERSHIP_JOINED = 1;
+  BROWSABLE_CHANNEL_MEMBERSHIP_NOT_JOINED = 2;
+}
+
+enum BrowsableChannelSort {
+  // 名前順
+  BROWSABLE_CHANNEL_SORT_UNSPECIFIED = 0;
+  // メンバーの多い順
+  BROWSABLE_CHANNEL_SORT_MEMBER_COUNT = 1;
+}
+
+message SearchBrowsableChannelsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  // 名前と説明の部分一致。空ならすべて
+  string query = 2 [(buf.validate.field).string.max_len = 100];
+  BrowsableChannelMembership membership = 3 [(buf.validate.field).enum.defined_only = true];
+  BrowsableChannelSort sort = 4 [(buf.validate.field).enum.defined_only = true];
+  int32 page = 5 [(buf.validate.field).int32.gte = 1];
+  int32 per_page = 6 [(buf.validate.field).int32 = {
+    gte: 1
+    lte: 100
+  }];
+}
+
+message SearchBrowsableChannelsResponse {
+  repeated BrowsableChannel channels = 1;
+  // 条件に合うチャンネルの総数
+  int32 total = 2;
 }

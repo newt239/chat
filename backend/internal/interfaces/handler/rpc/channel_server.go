@@ -28,6 +28,25 @@ func (s *ChannelServer) ListBrowsableChannels(ctx context.Context, req *chatv1.L
 	return &chatv1.ListBrowsableChannelsResponse{Channels: presenter.ConvertAll(out, presenter.BrowsableChannel)}, nil
 }
 
+func (s *ChannelServer) SearchBrowsableChannels(ctx context.Context, req *chatv1.SearchBrowsableChannelsRequest) (*chatv1.SearchBrowsableChannelsResponse, error) {
+	out, err := s.UC.SearchBrowsableChannels(ctx, channeluc.SearchBrowsableChannelsInput{
+		WorkspaceID: req.WorkspaceId,
+		UserID:      userIDFrom(ctx),
+		Query:       req.Query,
+		Membership:  presenter.BrowsableChannelMembership(req.Membership),
+		Sort:        presenter.BrowsableChannelSort(req.Sort),
+		Page:        int(req.Page),
+		PerPage:     int(req.PerPage),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &chatv1.SearchBrowsableChannelsResponse{
+		Channels: presenter.ConvertAll(out.Channels, presenter.BrowsableChannel),
+		Total:    int32(out.Total),
+	}, nil
+}
+
 func (s *ChannelServer) CreateChannel(ctx context.Context, req *chatv1.CreateChannelRequest) (*chatv1.CreateChannelResponse, error) {
 	out, err := s.UC.CreateChannel(ctx, channeluc.CreateChannelInput{
 		WorkspaceID: req.WorkspaceId,

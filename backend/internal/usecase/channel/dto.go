@@ -1,6 +1,10 @@
 package channel
 
-import "time"
+import (
+	"time"
+
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+)
 
 type ListChannelsInput struct {
 	WorkspaceID string
@@ -75,4 +79,20 @@ type ChannelOutput struct {
 type BrowsableChannelOutput struct {
 	Channel     ChannelOutput
 	MemberCount int
+}
+
+type SearchBrowsableChannelsInput struct {
+	WorkspaceID string
+	UserID      string
+	Query       string
+	Membership  domainrepository.BrowsableChannelMembership
+	Sort        domainrepository.BrowsableChannelSort
+	// 1 始まり
+	Page    int
+	PerPage int
+}
+
+type SearchBrowsableChannelsOutput struct {
+	Channels []BrowsableChannelOutput
+	Total    int
 }
