@@ -1,8 +1,13 @@
 type WorkspaceLogoProps = {
   name: string;
+  // 未設定なら名前の頭文字を出す
+  iconUrl: string | undefined;
 };
 
-export const WorkspaceLogo = ({ name }: WorkspaceLogoProps) => {
+export const WorkspaceLogo = ({ name, iconUrl }: WorkspaceLogoProps) => {
+  if (iconUrl) {
+    return <img src={iconUrl} alt="" className="size-6 shrink-0 rounded-[7px] object-cover" />;
+  }
   const [initial] = new Intl.Segmenter().segment(name);
   return (
     <span

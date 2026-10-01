@@ -17,6 +17,17 @@ export const ui: Messages["ui"] = {
     copy: "Copy",
     copyFailed: "Couldn't copy",
   },
+  iconImage: {
+    change: "Change image",
+    reset: "Reset",
+    select: "Select image",
+    uploadFailed: "Couldn't upload the image. Please try again later",
+  },
+  imageCrop: {
+    apply: "Apply",
+    title: "Crop image",
+    zoom: "Zoom",
+  },
   toast: {
     dismiss: "Dismiss notification",
     region: "Notifications",

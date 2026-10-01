@@ -192,7 +192,7 @@ type sampleMessage struct {
 // createShowcaseMessages は Markdown・コード・メンション・リンク・位置情報・編集・削除・スレッド・ピンなどを 1 つのチャンネルに並べます
 func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*entity.User, ch *entity.Channel, messages []*entity.Message) error {
 	general := messages[0]
-	permalink := fmt.Sprintf("http://localhost:5173/app/general/%s?message=%s", general.ChannelID, general.ID)
+	permalink := samplePermalink(general.ChannelID, general.ID)
 	longText := strings.Repeat("長いメッセージの折り返しと高さの確認用の文章です。仮想スクロールでは行ごとに高さが変わるため、長文が混ざっても位置がずれないことを確かめます。", 6)
 	samples := []sampleMessage{
 		{userIndex: 1, body: "# 見出し 1\n## 見出し 2\n\n**太字**・*斜体*・~~取り消し~~・`インラインコード`\n\n- 箇条書き\n  - 入れ子\n- [ ] タスク\n- [x] 完了したタスク\n\n1. 番号付き\n2. リスト"},

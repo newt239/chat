@@ -60,6 +60,7 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewInsightServiceHandler, chatv1connect.InsightServiceHandler(&rpc.InsightServer{UC: uc.NewInsightUseCase()})),
 		rpc.Register(chatv1connect.NewWebhookServiceHandler, chatv1connect.WebhookServiceHandler(&rpc.WebhookServer{UC: uc.NewWebhookUseCase()})),
 		rpc.Register(chatv1connect.NewCustomEmojiServiceHandler, chatv1connect.CustomEmojiServiceHandler(&rpc.CustomEmojiServer{UC: uc.NewCustomEmojiUseCase()})),
+		rpc.Register(chatv1connect.NewImageServiceHandler, chatv1connect.ImageServiceHandler(&rpc.ImageServer{UC: uc.NewImageUseCase()})),
 	)
 }
 
@@ -75,6 +76,8 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 		WebhookRateLimiter:  r.infrastructureRegistry.NewWebhookRateLimiter(),
 		Ready:               r.infrastructureRegistry.Ready,
 		GoogleOAuth:         r.infrastructureRegistry.NewGoogleOAuth(),
+		Storage:             r.infrastructureRegistry.NewStorageService(),
+		StorageConfig:       r.infrastructureRegistry.NewStorageConfig(),
 	}
 	if r.infrastructureRegistry.config.Storage.Driver == "local" {
 		routerConfig.StorageHandler = r.infrastructureRegistry.NewLocalStorage()

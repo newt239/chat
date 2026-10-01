@@ -52,21 +52,21 @@ export const categoryOfChannel = (
   return null;
 };
 
-// 自分と子孫の未読の合計。ミュート中のチャンネルは数えない
+// 自分と子孫の未読とメンションの合計。未読はミュート中のチャンネルを数えないが、メンションは数える
 export const sumUnread = (node: ChannelTreeNode) => {
   let unreadCount = 0;
-  let hasMention = false;
+  let mentionCount = 0;
   const walk = ({ channel, children }: ChannelTreeNode) => {
     if (!channel.isMuted) {
       unreadCount += channel.unreadCount;
-      hasMention ||= channel.hasMention;
     }
+    mentionCount += channel.mentionCount;
     for (const child of children) {
       walk(child);
     }
   };
   walk(node);
-  return { hasMention, unreadCount };
+  return { mentionCount, unreadCount };
 };
 
 export const isDescendantPath = (ancestor: string, path: string) => path.startsWith(`${ancestor}/`);

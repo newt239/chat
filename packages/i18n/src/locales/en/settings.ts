@@ -34,7 +34,7 @@ export const settings: Messages["settings"] = {
     pushFailed: "Couldn't turn on push notifications",
   },
   profile: {
-    avatarUrl: "Avatar URL",
+    avatar: "Avatar",
     bio: "About",
     displayNameDescription: "Shown on your messages and mentions",
     saved: "Profile saved",

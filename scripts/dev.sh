@@ -12,6 +12,7 @@ if [ -f "$tunnel_marker" ]; then
   api_url="https://$public_api_host"
   origins="$app_url,$origins"
 fi
+export CHAT_APP_URL="$app_url"
 export CHAT_API_URL="$api_url"
 export CHAT_WS_URL="${api_url/https:/wss:}"
 export CHAT_CORS_ORIGINS="$origins"

@@ -143,6 +143,10 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 			"messageId": input.MessageID,
 			"pinnedBy":  input.UserID,
 		}
+		// スレッドの返信はスレッドを開いて表示するため、親メッセージも渡す
+		if msg.ParentID != nil {
+			payload["parentId"] = *msg.ParentID
+		}
 		actorID := input.UserID
 		_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
 			ChannelID: input.ChannelID,

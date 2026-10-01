@@ -176,8 +176,12 @@ func (i *workspaceInteractor) UpdateWorkspace(ctx context.Context, input UpdateW
 	if input.Description != nil {
 		ws.Description = input.Description
 	}
+	// 空文字はアイコンを外す
 	if input.IconURL != nil {
 		ws.IconURL = input.IconURL
+		if *input.IconURL == "" {
+			ws.IconURL = nil
+		}
 	}
 	if input.IsPublic != nil {
 		ws.IsPublic = *input.IsPublic

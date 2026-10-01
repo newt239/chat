@@ -21,6 +21,8 @@ export const ancestorPaths = (path: string) => {
 
 export const parentPath = (path: string) => ancestorPaths(path).at(-1) ?? null;
 
+export const canHaveChildChannel = (path: string) => path.split("/").length < MAX_DEPTH;
+
 export const lastSegment = (path: string) => path.split("/").at(-1) ?? path;
 
 // サーバーと同じ制約（小文字の英数字・ハイフン・アンダースコア、各階層 32 文字以内・4 階層まで）

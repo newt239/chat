@@ -35,6 +35,8 @@ export const workspaceSearchSchema = z.object({
   link: optionalId,
   // 右パネル。表示中のチャンネルのメンバー・情報・ピン留め
   panel: z.enum(["members", "info", "pins"]).optional().catch(undefined),
+  // create-channel で親にするチャンネル
+  parent: optionalId,
   // 右パネルのプロフィール
   profile: optionalId,
   // リアクション一覧を開いているメッセージ

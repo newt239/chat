@@ -20,6 +20,8 @@ configMapGenerator:
   - name: backend-env
     behavior: merge
     literals:
+      # アイコン画像の配信 URL に使う backend の公開 URL
+      - PUBLIC_BASE_URL=https://api-chat-mini.example.com
       - CORS_ALLOWED_ORIGINS=https://chat-mini.example.com
       - WASABI_BUCKET=example-chat-mini-attachments
       - GOOGLE_OAUTH_CLIENT_ID=

@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from "@connectrpc/connect-query";
+import { skipToken, useInfiniteQuery, useQuery } from "@connectrpc/connect-query";
 import { keepPreviousData } from "@tanstack/react-query";
 
 import { AdminService } from "#/gen/chat/v1/admin_service_pb";
@@ -27,5 +27,8 @@ export const useAuditLogPages = (input: MessageInitShape<typeof ListAuditLogsReq
     },
   );
 
-export const usePermissions = (workspaceId: string) =>
-  useQuery(PermissionService.method.getPermissions, { workspaceId });
+export const usePermissions = (workspaceId: string | null) =>
+  useQuery(
+    PermissionService.method.getPermissions,
+    workspaceId === null ? skipToken : { workspaceId },
+  );

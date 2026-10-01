@@ -62,6 +62,7 @@ message UnreadCountEvent {
   string channel_id = 1;
   int32 unread_count = 2;
   bool has_mention = 3;
+  int32 mention_count = 4;
 }
 
 message PinEvent {

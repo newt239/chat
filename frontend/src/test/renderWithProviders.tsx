@@ -15,6 +15,7 @@ import { Provider as JotaiProvider, createStore } from "jotai";
 import { z } from "zod";
 
 import { adminSearchSchema } from "#/features/admin/schemas";
+import { browseChannelsSearchSchema } from "#/features/channel/schemas";
 import { workspaceSearchSchema } from "#/features/layout/schemas";
 import { jumpDateSchema } from "#/features/message/utils/dateJump";
 import { searchQuerySchema } from "#/features/search/schemas";
@@ -59,6 +60,7 @@ export const renderWithProviders = async (
   const browseChannelsRoute = createRoute({
     getParentRoute: () => workspaceRoute,
     path: "/browse-channels",
+    validateSearch: browseChannelsSearchSchema,
   });
   const settingsRoute = createRoute({
     getParentRoute: () => workspaceRoute,

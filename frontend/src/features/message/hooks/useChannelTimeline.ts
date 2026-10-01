@@ -47,16 +47,11 @@ export const useChannelTimeline = ({
   initialMessages,
 }: UseChannelTimelineArgs) => {
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
-  const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
 
   // 初期ロード・チャンネル変更時に初期化
   useEffect(() => {
     setTimeline(initialMessages ?? []);
   }, [initialMessages, currentChannelId]);
-
-  useEffect(() => {
-    setTypingUserIds([]);
-  }, [currentChannelId]);
 
   const descendantKey = [...new Set(descendantIds)].toSorted().join(",");
 
@@ -200,18 +195,6 @@ export const useChannelTimeline = ({
           ),
         );
       }),
-
-      wsClient.on("typing", ({ channelId, userId }) => {
-        if (isCurrentChannel(channelId)) {
-          setTypingUserIds((prev) => (prev.includes(userId) ? prev : [...prev, userId]));
-        }
-      }),
-
-      wsClient.on("stopTyping", ({ channelId, userId }) => {
-        if (isCurrentChannel(channelId)) {
-          setTypingUserIds((prev) => prev.filter((id) => id !== userId));
-        }
-      }),
     ];
 
     return () => {
@@ -242,5 +225,5 @@ export const useChannelTimeline = ({
     return unique.toSorted((a, b) => toDate(a.createdAt).getTime() - toDate(b.createdAt).getTime());
   }, [timeline, currentChannelId]);
 
-  return { orderedItems, typingUserIds };
+  return { orderedItems };
 };

@@ -39,6 +39,7 @@ type ChannelUseCase interface {
 	SetChannelStarred(ctx context.Context, input SetChannelStarredInput) error
 	SetChannelMuted(ctx context.Context, input SetChannelMutedInput) error
 	ListBrowsableChannels(ctx context.Context, input ListChannelsInput) ([]BrowsableChannelOutput, error)
+	SearchBrowsableChannels(ctx context.Context, input SearchBrowsableChannelsInput) (*SearchBrowsableChannelsOutput, error)
 }
 
 type channelInteractor struct {
@@ -154,7 +155,7 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 
 	output := make([]ChannelOutput, 0, len(all))
 	for _, ch := range joined {
-		out := toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID] > 0)
+		out := toChannelOutputWithUnread(ch, unreadCounts[ch.ID], mentionCounts[ch.ID])
 		out.IsMember = true
 		output = append(output, out)
 	}
@@ -187,6 +188,37 @@ func (i *channelInteractor) ListBrowsableChannels(ctx context.Context, input Lis
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch channels: %w", err)
 	}
+	return i.toBrowsableOutputs(ctx, input.WorkspaceID, input.UserID, channels)
+}
+
+func (i *channelInteractor) SearchBrowsableChannels(ctx context.Context, input SearchBrowsableChannelsInput) (*SearchBrowsableChannelsOutput, error) {
+	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify membership: %w", err)
+	}
+	if member == nil {
+		return nil, ErrUnauthorized
+	}
+
+	channels, total, err := i.channelRepo.SearchBrowsableChannels(ctx, input.WorkspaceID, input.UserID, domainrepository.BrowsableChannelFilter{
+		Query:      input.Query,
+		Membership: input.Membership,
+		Sort:       input.Sort,
+		Limit:      input.PerPage,
+		Offset:     (input.Page - 1) * input.PerPage,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to search channels: %w", err)
+	}
+	outputs, err := i.toBrowsableOutputs(ctx, input.WorkspaceID, input.UserID, channels)
+	if err != nil {
+		return nil, err
+	}
+	return &SearchBrowsableChannelsOutput{Channels: outputs, Total: total}, nil
+}
+
+// toBrowsableOutputs はメンバー数と自分が参加しているかを付けます
+func (i *channelInteractor) toBrowsableOutputs(ctx context.Context, workspaceID, userID string, channels []*entity.Channel) ([]BrowsableChannelOutput, error) {
 	ids := make([]string, len(channels))
 	for idx, ch := range channels {
 		ids[idx] = ch.ID
@@ -195,7 +227,7 @@ func (i *channelInteractor) ListBrowsableChannels(ctx context.Context, input Lis
 	if err != nil {
 		return nil, fmt.Errorf("failed to count members: %w", err)
 	}
-	joined, err := i.channelRepo.FindAccessibleChannels(ctx, input.WorkspaceID, input.UserID)
+	joined, err := i.channelRepo.FindAccessibleChannels(ctx, workspaceID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch joined channels: %w", err)
 	}
@@ -667,23 +699,23 @@ func (i *channelInteractor) renameDescendants(ctx context.Context, ch *entity.Ch
 }
 
 func toChannelOutput(channel *entity.Channel) ChannelOutput {
-	return toChannelOutputWithUnread(channel, 0, false)
+	return toChannelOutputWithUnread(channel, 0, 0)
 }
 
-func toChannelOutputWithUnread(channel *entity.Channel, unreadCount int, hasMention bool) ChannelOutput {
+func toChannelOutputWithUnread(channel *entity.Channel, unreadCount, mentionCount int) ChannelOutput {
 	return ChannelOutput{
-		ID:          channel.ID,
-		WorkspaceID: channel.WorkspaceID,
-		Name:        channel.Name,
-		Description: channel.Description,
-		IsPrivate:   channel.IsPrivate,
-		CreatedBy:   channel.CreatedBy,
-		CreatedAt:   channel.CreatedAt,
-		UpdatedAt:   channel.UpdatedAt,
-		UnreadCount: unreadCount,
-		HasMention:  hasMention,
-		ParentID:    channel.ParentID,
-		ArchivedAt:  channel.ArchivedAt,
+		ID:           channel.ID,
+		WorkspaceID:  channel.WorkspaceID,
+		Name:         channel.Name,
+		Description:  channel.Description,
+		IsPrivate:    channel.IsPrivate,
+		CreatedBy:    channel.CreatedBy,
+		CreatedAt:    channel.CreatedAt,
+		UpdatedAt:    channel.UpdatedAt,
+		UnreadCount:  unreadCount,
+		MentionCount: mentionCount,
+		ParentID:     channel.ParentID,
+		ArchivedAt:   channel.ArchivedAt,
 	}
 }
 

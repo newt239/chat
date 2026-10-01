@@ -13,6 +13,7 @@ import (
 	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	draftuc "github.com/newt239/chat/internal/usecase/draft"
+	imageuc "github.com/newt239/chat/internal/usecase/image"
 	insightuc "github.com/newt239/chat/internal/usecase/insight"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 	linkuc "github.com/newt239/chat/internal/usecase/link"
@@ -402,6 +403,15 @@ func (r *UseCaseRegistry) NewUserNoteUseCase() usernoteuc.UseCase {
 	return usernoteuc.NewInteractor(
 		r.domainRegistry.NewUserNoteRepository(),
 		r.domainRegistry.NewUserRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewImageUseCase() *imageuc.Interactor {
+	return imageuc.NewInteractor(
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.infrastructureRegistry.NewStorageService(),
+		r.infrastructureRegistry.NewStorageConfig(),
+		r.infrastructureRegistry.config.Storage.PublicBaseURL,
 	)
 }
 

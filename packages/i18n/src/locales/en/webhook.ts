@@ -3,7 +3,7 @@ import type { Messages } from "../../messages";
 export const webhook: Messages["webhook"] = {
   add: "Add",
   appTag: "APP",
-  avatarUrl: "Icon image URL (optional)",
+  avatar: "Icon image (optional)",
   copied: "URL copied",
   copy: "Copy",
   copyFailed: "Couldn't copy. Select the URL and copy it manually",
@@ -23,7 +23,6 @@ export const webhook: Messages["webhook"] = {
   example: "Example",
   heading: "Webhooks",
   hint: "Anyone who can view the channel can add one. Only the creator and admins can edit or delete it.",
-  invalidAvatarUrl: "Enter a URL starting with https://",
   lastUsed: "Last used {{time}}",
   name: "Name",
   namePlaceholder: "e.g. Deploy notifications",

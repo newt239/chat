@@ -25,9 +25,11 @@ const nameFromFileName = (fileName: string) =>
 
 type CustomEmojiFormProps = {
   workspaceId: string;
+  // 登録できたときに登録名を受け取る
+  onAdded: (name: string) => void;
 };
 
-export const CustomEmojiForm = ({ workspaceId }: CustomEmojiFormProps) => {
+export const CustomEmojiForm = ({ workspaceId, onAdded }: CustomEmojiFormProps) => {
   const { t } = useTranslation();
   const { register } = useCustomEmojiActions(workspaceId);
   const [name, setName] = useState("");
@@ -65,7 +67,7 @@ export const CustomEmojiForm = ({ workspaceId }: CustomEmojiFormProps) => {
 
   return (
     <Form
-      className="flex flex-col gap-3 rounded-lg border border-border p-3"
+      className="flex flex-col gap-3"
       onSubmit={(event) => {
         event.preventDefault();
         if (file === null || !isNameValid) {
@@ -84,12 +86,12 @@ export const CustomEmojiForm = ({ workspaceId }: CustomEmojiFormProps) => {
               setName("");
               setFile(null);
               setPreview(null);
+              onAdded(name);
             },
           },
         );
       }}
     >
-      <h3 className="m-0 text-body-strong">{t("workspace.emoji.add")}</h3>
       <TextField
         label={t("workspace.emoji.name")}
         value={name}

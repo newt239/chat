@@ -34,7 +34,7 @@ export const WorkspaceList = () => {
               key={workspace.id}
               className="flex items-center gap-3 rounded-lg border border-border bg-surface p-4"
             >
-              <WorkspaceLogo name={workspace.name} />
+              <WorkspaceLogo name={workspace.name} iconUrl={workspace.iconUrl} />
               <div className="flex min-w-0 flex-1 flex-col">
                 <b className="truncate text-body-strong">{workspace.name}</b>
                 {workspace.description && (

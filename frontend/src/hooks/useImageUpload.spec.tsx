@@ -1,0 +1,60 @@
+import type { ReactNode } from "react";
+
+import { createRouterTransport } from "@connectrpc/connect";
+import { TransportProvider } from "@connectrpc/connect-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, describe, expect, test, vi } from "vite-plus/test";
+
+import { ImagePurpose, ImageService } from "#/gen/chat/v1/image_service_pb";
+
+import { useImageUpload } from "./useImageUpload";
+
+import type { PresignImageUploadRequest } from "#/gen/chat/v1/image_service_pb";
+
+describe("useImageUpload", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test("発行された URL に画像を PUT して配信用の URL を返す", async () => {
+    const presigned = vi.fn<(req: PresignImageUploadRequest) => void>();
+    const transport = createRouterTransport((router) => {
+      router.rpc(ImageService.method.presignImageUpload, (req) => {
+        presigned(req);
+        return { imageUrl: "https://api.example.com/images/a", uploadUrl: "https://s3/put" };
+      });
+    });
+    const fetchMock = vi.fn<typeof fetch>(() =>
+      Promise.resolve(new Response(null, { status: 200 })),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <TransportProvider transport={transport}>
+        <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
+      </TransportProvider>
+    );
+    const { result } = renderHook(() => useImageUpload(ImagePurpose.WORKSPACE_ICON, "ws1"), {
+      wrapper,
+    });
+
+    let url = "";
+    await act(async () => {
+      url = await result.current.mutateAsync(new Blob(["x"], { type: "image/webp" }));
+    });
+
+    expect(url).toBe("https://api.example.com/images/a");
+    expect(presigned).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentType: "image/webp",
+        purpose: ImagePurpose.WORKSPACE_ICON,
+        sizeBytes: 1n,
+        workspaceId: "ws1",
+      }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://s3/put",
+      expect.objectContaining({ method: "PUT" }),
+    );
+  });
+});

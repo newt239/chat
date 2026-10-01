@@ -2,8 +2,8 @@
 // @generated from file chat/v1/channel_service.proto (package chat.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/channel_service.proto.
  */
 export const file_chat_v1_channel_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch1jaGF0L3YxL2NoYW5uZWxfc2VydmljZS5wcm90bxIHY2hhdC52MSKJBAoHQ2hhbm5lbBIKCgJpZBgBIAEoCRIUCgx3b3Jrc3BhY2VfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIYCgtkZXNjcmlwdGlvbhgEIAEoCUgAiAEBEhIKCmlzX3ByaXZhdGUYBSABKAgSEgoKY3JlYXRlZF9ieRgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgx1bnJlYWRfY291bnQYCSABKAUSEwoLaGFzX21lbnRpb24YCiABKAgSFgoJcGFyZW50X2lkGAsgASgJSAGIAQESEgoKaXNfc3RhcnJlZBgMIAEoCBIRCglpc19tZW1iZXIYDSABKAgSNAoLYXJjaGl2ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAKIAQESEAoIaXNfbXV0ZWQYDyABKAgSOAoPbGFzdF9tZXNzYWdlX2F0GBAgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgDiAEBQg4KDF9kZXNjcmlwdGlvbkIMCgpfcGFyZW50X2lkQg4KDF9hcmNoaXZlZF9hdEISChBfbGFzdF9tZXNzYWdlX2F0IjQKE0xpc3RDaGFubmVsc1JlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABIjoKFExpc3RDaGFubmVsc1Jlc3BvbnNlEiIKCGNoYW5uZWxzGAEgAygLMhAuY2hhdC52MS5DaGFubmVsItoBChRDcmVhdGVDaGFubmVsUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAESQgoEbmFtZRgCIAEoCUI0ukgxci8YyAEyKl5bYS16MC05Xy1dezEsMzJ9KC9bYS16MC05Xy1dezEsMzJ9KXswLDN9JBIYCgtkZXNjcmlwdGlvbhgDIAEoCUgAiAEBEhIKCmlzX3ByaXZhdGUYBCABKAgSIQoKbWVtYmVyX2lkcxgFIAMoCUINukgKkgEHIgVyA7ABAUIOCgxfZGVzY3JpcHRpb24iOgoVQ3JlYXRlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiMQoRR2V0Q2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiNwoSR2V0Q2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwi2AEKFFVwZGF0ZUNoYW5uZWxSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEkcKBG5hbWUYAiABKAlCNLpIMXIvGMgBMipeW2EtejAtOV8tXXsxLDMyfSgvW2EtejAtOV8tXXsxLDMyfSl7MCwzfSRIAIgBARIYCgtkZXNjcmlwdGlvbhgDIAEoCUgBiAEBEhcKCmlzX3ByaXZhdGUYBCABKAhIAogBAUIHCgVfbmFtZUIOCgxfZGVzY3JpcHRpb25CDQoLX2lzX3ByaXZhdGUiOgoVVXBkYXRlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiNAoURGVsZXRlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiFwoVRGVsZXRlQ2hhbm5lbFJlc3BvbnNlIkkKGFNldENoYW5uZWxTdGFycmVkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIPCgdzdGFycmVkGAIgASgIIhsKGVNldENoYW5uZWxTdGFycmVkUmVzcG9uc2UiRQoWU2V0Q2hhbm5lbE11dGVkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARINCgVtdXRlZBgCIAEoCCIZChdTZXRDaGFubmVsTXV0ZWRSZXNwb25zZSI1ChVBcmNoaXZlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiOwoWQXJjaGl2ZUNoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsIjcKF1VuYXJjaGl2ZUNoYW5uZWxSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBIj0KGFVuYXJjaGl2ZUNoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsIj0KHExpc3RCcm93c2FibGVDaGFubmVsc1JlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABIksKEEJyb3dzYWJsZUNoYW5uZWwSIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbBIUCgxtZW1iZXJfY291bnQYAiABKAUiTAodTGlzdEJyb3dzYWJsZUNoYW5uZWxzUmVzcG9uc2USKwoIY2hhbm5lbHMYASADKAsyGS5jaGF0LnYxLkJyb3dzYWJsZUNoYW5uZWwy2gYKDkNoYW5uZWxTZXJ2aWNlEksKDExpc3RDaGFubmVscxIcLmNoYXQudjEuTGlzdENoYW5uZWxzUmVxdWVzdBodLmNoYXQudjEuTGlzdENoYW5uZWxzUmVzcG9uc2USTgoNQ3JlYXRlQ2hhbm5lbBIdLmNoYXQudjEuQ3JlYXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLkNyZWF0ZUNoYW5uZWxSZXNwb25zZRJFCgpHZXRDaGFubmVsEhouY2hhdC52MS5HZXRDaGFubmVsUmVxdWVzdBobLmNoYXQudjEuR2V0Q2hhbm5lbFJlc3BvbnNlEk4KDVVwZGF0ZUNoYW5uZWwSHS5jaGF0LnYxLlVwZGF0ZUNoYW5uZWxSZXF1ZXN0Gh4uY2hhdC52MS5VcGRhdGVDaGFubmVsUmVzcG9uc2USTgoNRGVsZXRlQ2hhbm5lbBIdLmNoYXQudjEuRGVsZXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLkRlbGV0ZUNoYW5uZWxSZXNwb25zZRJaChFTZXRDaGFubmVsU3RhcnJlZBIhLmNoYXQudjEuU2V0Q2hhbm5lbFN0YXJyZWRSZXF1ZXN0GiIuY2hhdC52MS5TZXRDaGFubmVsU3RhcnJlZFJlc3BvbnNlElQKD1NldENoYW5uZWxNdXRlZBIfLmNoYXQudjEuU2V0Q2hhbm5lbE11dGVkUmVxdWVzdBogLmNoYXQudjEuU2V0Q2hhbm5lbE11dGVkUmVzcG9uc2USUQoOQXJjaGl2ZUNoYW5uZWwSHi5jaGF0LnYxLkFyY2hpdmVDaGFubmVsUmVxdWVzdBofLmNoYXQudjEuQXJjaGl2ZUNoYW5uZWxSZXNwb25zZRJXChBVbmFyY2hpdmVDaGFubmVsEiAuY2hhdC52MS5VbmFyY2hpdmVDaGFubmVsUmVxdWVzdBohLmNoYXQudjEuVW5hcmNoaXZlQ2hhbm5lbFJlc3BvbnNlEmYKFUxpc3RCcm93c2FibGVDaGFubmVscxIlLmNoYXQudjEuTGlzdEJyb3dzYWJsZUNoYW5uZWxzUmVxdWVzdBomLmNoYXQudjEuTGlzdEJyb3dzYWJsZUNoYW5uZWxzUmVzcG9uc2VClAEKC2NvbS5jaGF0LnYxQhNDaGFubmVsU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("Ch1jaGF0L3YxL2NoYW5uZWxfc2VydmljZS5wcm90bxIHY2hhdC52MSKgBAoHQ2hhbm5lbBIKCgJpZBgBIAEoCRIUCgx3b3Jrc3BhY2VfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIYCgtkZXNjcmlwdGlvbhgEIAEoCUgAiAEBEhIKCmlzX3ByaXZhdGUYBSABKAgSEgoKY3JlYXRlZF9ieRgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgx1bnJlYWRfY291bnQYCSABKAUSEwoLaGFzX21lbnRpb24YCiABKAgSFgoJcGFyZW50X2lkGAsgASgJSAGIAQESEgoKaXNfc3RhcnJlZBgMIAEoCBIRCglpc19tZW1iZXIYDSABKAgSNAoLYXJjaGl2ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAKIAQESEAoIaXNfbXV0ZWQYDyABKAgSOAoPbGFzdF9tZXNzYWdlX2F0GBAgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgDiAEBEhUKDW1lbnRpb25fY291bnQYESABKAVCDgoMX2Rlc2NyaXB0aW9uQgwKCl9wYXJlbnRfaWRCDgoMX2FyY2hpdmVkX2F0QhIKEF9sYXN0X21lc3NhZ2VfYXQiNAoTTGlzdENoYW5uZWxzUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAEiOgoUTGlzdENoYW5uZWxzUmVzcG9uc2USIgoIY2hhbm5lbHMYASADKAsyEC5jaGF0LnYxLkNoYW5uZWwi2gEKFENyZWF0ZUNoYW5uZWxSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARJCCgRuYW1lGAIgASgJQjS6SDFyLxjIATIqXlthLXowLTlfLV17MSwzMn0oL1thLXowLTlfLV17MSwzMn0pezAsM30kEhgKC2Rlc2NyaXB0aW9uGAMgASgJSACIAQESEgoKaXNfcHJpdmF0ZRgEIAEoCBIhCgptZW1iZXJfaWRzGAUgAygJQg26SAqSAQciBXIDsAEBQg4KDF9kZXNjcmlwdGlvbiI6ChVDcmVhdGVDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCIxChFHZXRDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASI3ChJHZXRDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCLYAQoUVXBkYXRlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESRwoEbmFtZRgCIAEoCUI0ukgxci8YyAEyKl5bYS16MC05Xy1dezEsMzJ9KC9bYS16MC05Xy1dezEsMzJ9KXswLDN9JEgAiAEBEhgKC2Rlc2NyaXB0aW9uGAMgASgJSAGIAQESFwoKaXNfcHJpdmF0ZRgEIAEoCEgCiAEBQgcKBV9uYW1lQg4KDF9kZXNjcmlwdGlvbkINCgtfaXNfcHJpdmF0ZSI6ChVVcGRhdGVDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCI0ChREZWxldGVDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASIXChVEZWxldGVDaGFubmVsUmVzcG9uc2UiSQoYU2V0Q2hhbm5lbFN0YXJyZWRSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEg8KB3N0YXJyZWQYAiABKAgiGwoZU2V0Q2hhbm5lbFN0YXJyZWRSZXNwb25zZSJFChZTZXRDaGFubmVsTXV0ZWRSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEg0KBW11dGVkGAIgASgIIhkKF1NldENoYW5uZWxNdXRlZFJlc3BvbnNlIjUKFUFyY2hpdmVDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASI7ChZBcmNoaXZlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiNwoXVW5hcmNoaXZlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiPQoYVW5hcmNoaXZlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiPQocTGlzdEJyb3dzYWJsZUNoYW5uZWxzUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAEiSwoQQnJvd3NhYmxlQ2hhbm5lbBIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsEhQKDG1lbWJlcl9jb3VudBgCIAEoBSJMCh1MaXN0QnJvd3NhYmxlQ2hhbm5lbHNSZXNwb25zZRIrCghjaGFubmVscxgBIAMoCzIZLmNoYXQudjEuQnJvd3NhYmxlQ2hhbm5lbCKFAgoeU2VhcmNoQnJvd3NhYmxlQ2hhbm5lbHNSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARIWCgVxdWVyeRgCIAEoCUIHukgEcgIYZBJBCgptZW1iZXJzaGlwGAMgASgOMiMuY2hhdC52MS5Ccm93c2FibGVDaGFubmVsTWVtYmVyc2hpcEIIukgFggECEAESNQoEc29ydBgEIAEoDjIdLmNoYXQudjEuQnJvd3NhYmxlQ2hhbm5lbFNvcnRCCLpIBYIBAhABEhUKBHBhZ2UYBSABKAVCB7pIBBoCKAESGwoIcGVyX3BhZ2UYBiABKAVCCbpIBhoEGGQoASJdCh9TZWFyY2hCcm93c2FibGVDaGFubmVsc1Jlc3BvbnNlEisKCGNoYW5uZWxzGAEgAygLMhkuY2hhdC52MS5Ccm93c2FibGVDaGFubmVsEg0KBXRvdGFsGAIgASgFKqABChpCcm93c2FibGVDaGFubmVsTWVtYmVyc2hpcBIsCihCUk9XU0FCTEVfQ0hBTk5FTF9NRU1CRVJTSElQX1VOU1BFQ0lGSUVEEAASJwojQlJPV1NBQkxFX0NIQU5ORUxfTUVNQkVSU0hJUF9KT0lORUQQARIrCidCUk9XU0FCTEVfQ0hBTk5FTF9NRU1CRVJTSElQX05PVF9KT0lORUQQAipnChRCcm93c2FibGVDaGFubmVsU29ydBImCiJCUk9XU0FCTEVfQ0hBTk5FTF9TT1JUX1VOU1BFQ0lGSUVEEAASJwojQlJPV1NBQkxFX0NIQU5ORUxfU09SVF9NRU1CRVJfQ09VTlQQATLIBwoOQ2hhbm5lbFNlcnZpY2USSwoMTGlzdENoYW5uZWxzEhwuY2hhdC52MS5MaXN0Q2hhbm5lbHNSZXF1ZXN0Gh0uY2hhdC52MS5MaXN0Q2hhbm5lbHNSZXNwb25zZRJOCg1DcmVhdGVDaGFubmVsEh0uY2hhdC52MS5DcmVhdGVDaGFubmVsUmVxdWVzdBoeLmNoYXQudjEuQ3JlYXRlQ2hhbm5lbFJlc3BvbnNlEkUKCkdldENoYW5uZWwSGi5jaGF0LnYxLkdldENoYW5uZWxSZXF1ZXN0GhsuY2hhdC52MS5HZXRDaGFubmVsUmVzcG9uc2USTgoNVXBkYXRlQ2hhbm5lbBIdLmNoYXQudjEuVXBkYXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLlVwZGF0ZUNoYW5uZWxSZXNwb25zZRJOCg1EZWxldGVDaGFubmVsEh0uY2hhdC52MS5EZWxldGVDaGFubmVsUmVxdWVzdBoeLmNoYXQudjEuRGVsZXRlQ2hhbm5lbFJlc3BvbnNlEloKEVNldENoYW5uZWxTdGFycmVkEiEuY2hhdC52MS5TZXRDaGFubmVsU3RhcnJlZFJlcXVlc3QaIi5jaGF0LnYxLlNldENoYW5uZWxTdGFycmVkUmVzcG9uc2USVAoPU2V0Q2hhbm5lbE11dGVkEh8uY2hhdC52MS5TZXRDaGFubmVsTXV0ZWRSZXF1ZXN0GiAuY2hhdC52MS5TZXRDaGFubmVsTXV0ZWRSZXNwb25zZRJRCg5BcmNoaXZlQ2hhbm5lbBIeLmNoYXQudjEuQXJjaGl2ZUNoYW5uZWxSZXF1ZXN0Gh8uY2hhdC52MS5BcmNoaXZlQ2hhbm5lbFJlc3BvbnNlElcKEFVuYXJjaGl2ZUNoYW5uZWwSIC5jaGF0LnYxLlVuYXJjaGl2ZUNoYW5uZWxSZXF1ZXN0GiEuY2hhdC52MS5VbmFyY2hpdmVDaGFubmVsUmVzcG9uc2USZgoVTGlzdEJyb3dzYWJsZUNoYW5uZWxzEiUuY2hhdC52MS5MaXN0QnJvd3NhYmxlQ2hhbm5lbHNSZXF1ZXN0GiYuY2hhdC52MS5MaXN0QnJvd3NhYmxlQ2hhbm5lbHNSZXNwb25zZRJsChdTZWFyY2hCcm93c2FibGVDaGFubmVscxInLmNoYXQudjEuU2VhcmNoQnJvd3NhYmxlQ2hhbm5lbHNSZXF1ZXN0GiguY2hhdC52MS5TZWFyY2hCcm93c2FibGVDaGFubmVsc1Jlc3BvbnNlQpQBCgtjb20uY2hhdC52MUITQ2hhbm5lbFNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.Channel
@@ -106,6 +106,13 @@ export type Channel = Message<"chat.v1.Channel"> & {
    * @generated from field: optional google.protobuf.Timestamp last_message_at = 16;
    */
   lastMessageAt?: Timestamp | undefined;
+
+  /**
+   * 未読のうち自分宛てのメンションの数。ミュート中でも数える
+   *
+   * @generated from field: int32 mention_count = 17;
+   */
+  mentionCount: number;
 };
 
 /**
@@ -517,6 +524,127 @@ export const ListBrowsableChannelsResponseSchema: GenMessage<ListBrowsableChanne
   messageDesc(file_chat_v1_channel_service, 21);
 
 /**
+ * @generated from message chat.v1.SearchBrowsableChannelsRequest
+ */
+export type SearchBrowsableChannelsRequest = Message<"chat.v1.SearchBrowsableChannelsRequest"> & {
+  /**
+   * @generated from field: string workspace_id = 1;
+   */
+  workspaceId: string;
+
+  /**
+   * 名前と説明の部分一致。空ならすべて
+   *
+   * @generated from field: string query = 2;
+   */
+  query: string;
+
+  /**
+   * @generated from field: chat.v1.BrowsableChannelMembership membership = 3;
+   */
+  membership: BrowsableChannelMembership;
+
+  /**
+   * @generated from field: chat.v1.BrowsableChannelSort sort = 4;
+   */
+  sort: BrowsableChannelSort;
+
+  /**
+   * @generated from field: int32 page = 5;
+   */
+  page: number;
+
+  /**
+   * @generated from field: int32 per_page = 6;
+   */
+  perPage: number;
+};
+
+/**
+ * Describes the message chat.v1.SearchBrowsableChannelsRequest.
+ * Use `create(SearchBrowsableChannelsRequestSchema)` to create a new message.
+ */
+export const SearchBrowsableChannelsRequestSchema: GenMessage<SearchBrowsableChannelsRequest> = /*@__PURE__*/
+  messageDesc(file_chat_v1_channel_service, 22);
+
+/**
+ * @generated from message chat.v1.SearchBrowsableChannelsResponse
+ */
+export type SearchBrowsableChannelsResponse = Message<"chat.v1.SearchBrowsableChannelsResponse"> & {
+  /**
+   * @generated from field: repeated chat.v1.BrowsableChannel channels = 1;
+   */
+  channels: BrowsableChannel[];
+
+  /**
+   * 条件に合うチャンネルの総数
+   *
+   * @generated from field: int32 total = 2;
+   */
+  total: number;
+};
+
+/**
+ * Describes the message chat.v1.SearchBrowsableChannelsResponse.
+ * Use `create(SearchBrowsableChannelsResponseSchema)` to create a new message.
+ */
+export const SearchBrowsableChannelsResponseSchema: GenMessage<SearchBrowsableChannelsResponse> = /*@__PURE__*/
+  messageDesc(file_chat_v1_channel_service, 23);
+
+/**
+ * @generated from enum chat.v1.BrowsableChannelMembership
+ */
+export enum BrowsableChannelMembership {
+  /**
+   * 参加の有無を問わない
+   *
+   * @generated from enum value: BROWSABLE_CHANNEL_MEMBERSHIP_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: BROWSABLE_CHANNEL_MEMBERSHIP_JOINED = 1;
+   */
+  JOINED = 1,
+
+  /**
+   * @generated from enum value: BROWSABLE_CHANNEL_MEMBERSHIP_NOT_JOINED = 2;
+   */
+  NOT_JOINED = 2,
+}
+
+/**
+ * Describes the enum chat.v1.BrowsableChannelMembership.
+ */
+export const BrowsableChannelMembershipSchema: GenEnum<BrowsableChannelMembership> = /*@__PURE__*/
+  enumDesc(file_chat_v1_channel_service, 0);
+
+/**
+ * @generated from enum chat.v1.BrowsableChannelSort
+ */
+export enum BrowsableChannelSort {
+  /**
+   * 名前順
+   *
+   * @generated from enum value: BROWSABLE_CHANNEL_SORT_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * メンバーの多い順
+   *
+   * @generated from enum value: BROWSABLE_CHANNEL_SORT_MEMBER_COUNT = 1;
+   */
+  MEMBER_COUNT = 1,
+}
+
+/**
+ * Describes the enum chat.v1.BrowsableChannelSort.
+ */
+export const BrowsableChannelSortSchema: GenEnum<BrowsableChannelSort> = /*@__PURE__*/
+  enumDesc(file_chat_v1_channel_service, 1);
+
+/**
  * @generated from service chat.v1.ChannelService
  */
 export const ChannelService: GenService<{
@@ -605,6 +733,16 @@ export const ChannelService: GenService<{
     methodKind: "unary";
     input: typeof ListBrowsableChannelsRequestSchema;
     output: typeof ListBrowsableChannelsResponseSchema;
+  },
+  /**
+   * 閲覧できるチャンネルを検索・絞り込み・並べ替えしてページ単位で返す
+   *
+   * @generated from rpc chat.v1.ChannelService.SearchBrowsableChannels
+   */
+  searchBrowsableChannels: {
+    methodKind: "unary";
+    input: typeof SearchBrowsableChannelsRequestSchema;
+    output: typeof SearchBrowsableChannelsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_chat_v1_channel_service, 0);

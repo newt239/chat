@@ -67,7 +67,7 @@ export const ChannelTreeItem = ({ workspaceId, node, depth, isLast }: ChannelTre
           isStarred={channel.isStarred}
           isMuted={channel.isMuted}
           unreadCount={unread.unreadCount}
-          showsBadge={unread.hasMention}
+          badgeCount={unread.mentionCount}
         >
           {/* 親が別のカテゴリにあると最上位に来るため、フルパスで出す */}
           <ChannelName

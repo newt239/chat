@@ -6,16 +6,20 @@ import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { preferencesAtom } from "#/providers/store/preferences";
 
+import { useTypingUsers } from "../hooks/useTypingUsers";
+
 type TypingIndicatorProps = {
-  userIds: string[];
+  channelId: string;
 };
 
-export const TypingIndicator = ({ userIds }: TypingIndicatorProps) => {
+// 入力欄の真上に重ねて出し、表示の有無で入力欄の位置が動かないようにする
+export const TypingIndicator = ({ channelId }: TypingIndicatorProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: members } = useMembers(workspaceId);
   const displayName = useDisplayName();
+  const userIds = useTypingUsers(channelId);
 
   if (userIds.length === 0) {
     return null;
@@ -33,7 +37,7 @@ export const TypingIndicator = ({ userIds }: TypingIndicatorProps) => {
   return (
     <div
       aria-live="polite"
-      className="flex h-[18px] items-center gap-1.5 px-5 font-sans text-[11.5px] text-muted"
+      className="absolute inset-x-0 bottom-full flex h-[18px] items-center gap-1.5 bg-surface px-5 font-sans text-[11.5px] text-muted"
     >
       <span aria-hidden className="inline-flex gap-0.5">
         {[0, 1, 2].map((index) => (
@@ -44,7 +48,7 @@ export const TypingIndicator = ({ userIds }: TypingIndicatorProps) => {
           />
         ))}
       </span>
-      {t(names.length > 2 ? "message.typing.many" : "message.typing.one", { names: list })}
+      {names.length > 2 ? t("message.typing.many") : t("message.typing.one", { names: list })}
     </div>
   );
 };

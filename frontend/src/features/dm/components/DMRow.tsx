@@ -20,7 +20,7 @@ export const DMRow = ({ workspaceId, dm }: DMRowProps) => {
       isStarred={dm.isStarred}
       isMuted={dm.isMuted}
       unreadCount={dm.unreadCount}
-      showsBadge
+      badgeCount={dm.isMuted ? 0 : dm.unreadCount}
     >
       <DMAvatar dm={dm} size={18} />
       <span className="min-w-0 flex-1 truncate">{dmName(dm, displayName)}</span>

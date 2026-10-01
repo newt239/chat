@@ -1,6 +1,10 @@
 package channel
 
-import "time"
+import (
+	"time"
+
+	domainrepository "github.com/newt239/chat/internal/domain/repository"
+)
 
 type ListChannelsInput struct {
 	WorkspaceID string
@@ -53,21 +57,21 @@ type SetChannelMutedInput struct {
 }
 
 type ChannelOutput struct {
-	ID          string     `json:"id"`
-	WorkspaceID string     `json:"workspaceId"`
-	Name        string     `json:"name"`
-	Description *string    `json:"description"`
-	IsPrivate   bool       `json:"isPrivate"`
-	CreatedBy   string     `json:"createdBy"`
-	CreatedAt   time.Time  `json:"createdAt"`
-	UpdatedAt   time.Time  `json:"updatedAt"`
-	UnreadCount int        `json:"unreadCount"`
-	HasMention  bool       `json:"hasMention"`
-	ParentID    *string    `json:"parentId"`
-	IsStarred   bool       `json:"isStarred"`
-	IsMuted     bool       `json:"isMuted"`
-	IsMember    bool       `json:"isMember"`
-	ArchivedAt  *time.Time `json:"archivedAt,omitempty"`
+	ID           string     `json:"id"`
+	WorkspaceID  string     `json:"workspaceId"`
+	Name         string     `json:"name"`
+	Description  *string    `json:"description"`
+	IsPrivate    bool       `json:"isPrivate"`
+	CreatedBy    string     `json:"createdBy"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
+	UnreadCount  int        `json:"unreadCount"`
+	MentionCount int        `json:"mentionCount"`
+	ParentID     *string    `json:"parentId"`
+	IsStarred    bool       `json:"isStarred"`
+	IsMuted      bool       `json:"isMuted"`
+	IsMember     bool       `json:"isMember"`
+	ArchivedAt   *time.Time `json:"archivedAt,omitempty"`
 	// ListChannels でだけ設定する
 	LastMessageAt *time.Time `json:"lastMessageAt,omitempty"`
 }
@@ -75,4 +79,20 @@ type ChannelOutput struct {
 type BrowsableChannelOutput struct {
 	Channel     ChannelOutput
 	MemberCount int
+}
+
+type SearchBrowsableChannelsInput struct {
+	WorkspaceID string
+	UserID      string
+	Query       string
+	Membership  domainrepository.BrowsableChannelMembership
+	Sort        domainrepository.BrowsableChannelSort
+	// 1 始まり
+	Page    int
+	PerPage int
+}
+
+type SearchBrowsableChannelsOutput struct {
+	Channels []BrowsableChannelOutput
+	Total    int
 }

@@ -3,8 +3,8 @@ import {
   IconBookmark,
   IconChartBar,
   IconFilePencil,
-  IconHash,
   IconMessages,
+  IconPlus,
   IconShieldCheck,
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -56,10 +56,6 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
             <IconFilePencil aria-hidden />
             {t("draft.page.title")}
           </NavLink>
-          <NavLink to="/app/$workspaceId/browse-channels" params={params}>
-            <IconHash aria-hidden />
-            {t("shell.nav.browseChannels")}
-          </NavLink>
         </div>
         <StarredSection workspaceId={workspaceId} />
         {categories.map((category) => (
@@ -91,6 +87,10 @@ export const NavigationList = ({ workspaceId }: NavigationListProps) => {
           }}
         >
           <ChannelList workspaceId={workspaceId} categoryId={null} />
+          <NavLink to="/app/$workspaceId/browse-channels" params={params}>
+            <IconPlus aria-hidden />
+            {t("shell.sidebar.browseChannels")}
+          </NavLink>
         </SidebarSection>
         <SidebarSection
           id="dms"

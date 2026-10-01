@@ -24,7 +24,6 @@ import { useWsClient } from "#/providers/ws/useWsClient";
 import { useMessages } from "../hooks/useMessage";
 import { MessageItem } from "./MessageItem";
 import { MessageList } from "./MessageList";
-import { TypingIndicator } from "./TypingIndicator";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -80,7 +79,7 @@ export const MessagePanel = () => {
       ]
     : [];
 
-  const { orderedItems, typingUserIds } = useChannelTimeline({
+  const { orderedItems } = useChannelTimeline({
     currentChannelId,
     descendantIds,
     initialMessages,
@@ -223,10 +222,5 @@ export const MessagePanel = () => {
     );
   };
 
-  return (
-    <div className="flex h-full min-h-0 w-full flex-col bg-surface">
-      <div className="flex min-h-0 flex-1 flex-col">{renderBody()}</div>
-      <TypingIndicator userIds={typingUserIds} />
-    </div>
-  );
+  return <div className="flex h-full min-h-0 w-full flex-col bg-surface">{renderBody()}</div>;
 };

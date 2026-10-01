@@ -28,6 +28,8 @@
   --color-mention-text: var(--c-mention-text);
   --color-pin-bg: var(--c-pin-bg);
   --color-pin-bar: var(--c-pin-bar);
+  --color-bookmark-bg: var(--c-bookmark-bg);
+  --color-bookmark-bar: var(--c-bookmark-bar);
   --color-danger: var(--c-danger);
   --color-danger-fg: var(--c-danger-fg);
   --color-success: var(--c-success);

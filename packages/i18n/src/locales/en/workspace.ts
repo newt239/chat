@@ -65,6 +65,7 @@ export const workspace: Messages["workspace"] = {
     deleteConfirm: "Delete {{name}}?",
     deleteDescription: "All channels and messages are deleted too. This can't be undone.",
     description: "Description",
+    icon: "Icon",
     isPublic: "Make this workspace public (anyone can join)",
     name: "Name",
     sections: {

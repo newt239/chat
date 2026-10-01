@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -592,7 +593,7 @@ func createDisplaySamples(
 	startAt time.Time,
 ) error {
 	permalink := func(msg *entity.Message) string {
-		return fmt.Sprintf("http://localhost:5173/app/general/%s?message=%s", msg.ChannelID, msg.ID)
+		return samplePermalink(msg.ChannelID, msg.ID)
 	}
 	youtubeURL := "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 	durationSeconds := int32(213)
@@ -675,6 +676,15 @@ func CreateSeedData(
 }
 
 // Helper functions for password hashing
+// samplePermalink はフロントの URL（APP_URL）でメッセージへのリンクを作ります
+func samplePermalink(channelID, messageID string) string {
+	appURL := os.Getenv("APP_URL")
+	if appURL == "" {
+		appURL = "https://chat.localhost"
+	}
+	return fmt.Sprintf("%s/app/general/%s?message=%s", appURL, channelID, messageID)
+}
+
 func mustHashPassword(service authuc.PasswordService, password string) string {
 	hash, err := service.HashPassword(password)
 	if err != nil {

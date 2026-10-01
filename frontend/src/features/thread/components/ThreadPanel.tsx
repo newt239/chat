@@ -37,15 +37,24 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
     if (replyCount === undefined) {
       return;
     }
+    const body = bodyRef.current;
+    if (!body) {
+      return;
+    }
     const target =
       targetReplyId === undefined
         ? null
-        : bodyRef.current?.querySelector(`[data-message-id="${targetReplyId}"]`);
-    if (target) {
-      target.scrollIntoView({ block: "center" });
-    } else {
-      bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight });
+        : body.querySelector(`[data-message-id="${targetReplyId}"]`);
+    if (!target) {
+      body.scrollTo({ top: body.scrollHeight });
+      return;
     }
+    // scrollIntoView は祖先のスクロールまで動かして画面全体がずれるため、本文だけをスクロールする
+    const rect = target.getBoundingClientRect();
+    const bodyRect = body.getBoundingClientRect();
+    body.scrollTo({
+      top: body.scrollTop + rect.top - bodyRect.top - (body.clientHeight - rect.height) / 2,
+    });
   }, [replyCount, targetReplyId]);
 
   const handleCreateThread = useCallback(

@@ -68,7 +68,7 @@ export const ChannelMemberPanel = ({ channelId }: ChannelMemberPanelProps) => {
   );
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-surface p-1.5">
+    <div className="flex min-h-full flex-col bg-surface p-1.5">
       {section(t("channel.members.viewing"), viewers, () => t("channel.members.viewingNow"))}
       {section(t("channel.members.others"), others, (member) => member.email)}
     </div>

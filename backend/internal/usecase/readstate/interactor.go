@@ -106,7 +106,7 @@ func (i *readStateInteractor) markAsRead(ctx context.Context, channel *entity.Ch
 		return fmt.Errorf("failed to update read state: %w", err)
 	}
 
-	// 未読数とメンション有無を取得してWebSocket通知を送信
+	// 未読数とメンション数を取得してWebSocket通知を送信
 	if i.notificationSvc != nil {
 		count, err := i.readStateRepo.GetUnreadCount(ctx, channel.ID, userID)
 		if err != nil {
@@ -119,7 +119,7 @@ func (i *readStateInteractor) markAsRead(ctx context.Context, channel *entity.Ch
 			fmt.Printf("Warning: failed to get unread mention count for notification: %v\n", err)
 		}
 
-		i.notificationSvc.NotifyUnreadCount(channel.WorkspaceID, userID, channel.ID, count, mentionCounts[channel.ID] > 0)
+		i.notificationSvc.NotifyUnreadCount(channel.WorkspaceID, userID, channel.ID, count, mentionCounts[channel.ID])
 	}
 
 	return nil

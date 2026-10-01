@@ -11,6 +11,7 @@ import { useViewChannel } from "#/features/channel/hooks/useChannelViewers";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { MessageInput } from "#/features/message/components/MessageInput";
 import { MessagePanel } from "#/features/message/components/MessagePanel";
+import { TypingIndicator } from "#/features/message/components/TypingIndicator";
 import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { setCurrentChannelAtom } from "#/providers/store/workspace";
 
@@ -48,7 +49,10 @@ export const ChannelPage = () => {
           channelName={channel.name}
         />
       ) : (
-        <MessageInput key={channelId} channelId={channelId} />
+        <div className="relative">
+          <TypingIndicator channelId={channelId} />
+          <MessageInput key={channelId} channelId={channelId} />
+        </div>
       )}
     </>
   );

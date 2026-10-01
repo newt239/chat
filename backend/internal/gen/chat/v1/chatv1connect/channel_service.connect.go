@@ -63,6 +63,9 @@ const (
 	// ChannelServiceListBrowsableChannelsProcedure is the fully-qualified name of the ChannelService's
 	// ListBrowsableChannels RPC.
 	ChannelServiceListBrowsableChannelsProcedure = "/chat.v1.ChannelService/ListBrowsableChannels"
+	// ChannelServiceSearchBrowsableChannelsProcedure is the fully-qualified name of the
+	// ChannelService's SearchBrowsableChannels RPC.
+	ChannelServiceSearchBrowsableChannelsProcedure = "/chat.v1.ChannelService/SearchBrowsableChannels"
 )
 
 // ChannelServiceClient is a client for the chat.v1.ChannelService service.
@@ -80,6 +83,8 @@ type ChannelServiceClient interface {
 	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
 	// 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
 	ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error)
+	// 閲覧できるチャンネルを検索・絞り込み・並べ替えしてページ単位で返す
+	SearchBrowsableChannels(context.Context, *v1.SearchBrowsableChannelsRequest) (*v1.SearchBrowsableChannelsResponse, error)
 }
 
 // NewChannelServiceClient constructs a client for the chat.v1.ChannelService service. By default,
@@ -153,21 +158,28 @@ func NewChannelServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(channelServiceMethods.ByName("ListBrowsableChannels")),
 			connect.WithClientOptions(opts...),
 		),
+		searchBrowsableChannels: connect.NewClient[v1.SearchBrowsableChannelsRequest, v1.SearchBrowsableChannelsResponse](
+			httpClient,
+			baseURL+ChannelServiceSearchBrowsableChannelsProcedure,
+			connect.WithSchema(channelServiceMethods.ByName("SearchBrowsableChannels")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // channelServiceClient implements ChannelServiceClient.
 type channelServiceClient struct {
-	listChannels          *connect.Client[v1.ListChannelsRequest, v1.ListChannelsResponse]
-	createChannel         *connect.Client[v1.CreateChannelRequest, v1.CreateChannelResponse]
-	getChannel            *connect.Client[v1.GetChannelRequest, v1.GetChannelResponse]
-	updateChannel         *connect.Client[v1.UpdateChannelRequest, v1.UpdateChannelResponse]
-	deleteChannel         *connect.Client[v1.DeleteChannelRequest, v1.DeleteChannelResponse]
-	setChannelStarred     *connect.Client[v1.SetChannelStarredRequest, v1.SetChannelStarredResponse]
-	setChannelMuted       *connect.Client[v1.SetChannelMutedRequest, v1.SetChannelMutedResponse]
-	archiveChannel        *connect.Client[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse]
-	unarchiveChannel      *connect.Client[v1.UnarchiveChannelRequest, v1.UnarchiveChannelResponse]
-	listBrowsableChannels *connect.Client[v1.ListBrowsableChannelsRequest, v1.ListBrowsableChannelsResponse]
+	listChannels            *connect.Client[v1.ListChannelsRequest, v1.ListChannelsResponse]
+	createChannel           *connect.Client[v1.CreateChannelRequest, v1.CreateChannelResponse]
+	getChannel              *connect.Client[v1.GetChannelRequest, v1.GetChannelResponse]
+	updateChannel           *connect.Client[v1.UpdateChannelRequest, v1.UpdateChannelResponse]
+	deleteChannel           *connect.Client[v1.DeleteChannelRequest, v1.DeleteChannelResponse]
+	setChannelStarred       *connect.Client[v1.SetChannelStarredRequest, v1.SetChannelStarredResponse]
+	setChannelMuted         *connect.Client[v1.SetChannelMutedRequest, v1.SetChannelMutedResponse]
+	archiveChannel          *connect.Client[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse]
+	unarchiveChannel        *connect.Client[v1.UnarchiveChannelRequest, v1.UnarchiveChannelResponse]
+	listBrowsableChannels   *connect.Client[v1.ListBrowsableChannelsRequest, v1.ListBrowsableChannelsResponse]
+	searchBrowsableChannels *connect.Client[v1.SearchBrowsableChannelsRequest, v1.SearchBrowsableChannelsResponse]
 }
 
 // ListChannels calls chat.v1.ChannelService.ListChannels.
@@ -260,6 +272,15 @@ func (c *channelServiceClient) ListBrowsableChannels(ctx context.Context, req *v
 	return nil, err
 }
 
+// SearchBrowsableChannels calls chat.v1.ChannelService.SearchBrowsableChannels.
+func (c *channelServiceClient) SearchBrowsableChannels(ctx context.Context, req *v1.SearchBrowsableChannelsRequest) (*v1.SearchBrowsableChannelsResponse, error) {
+	response, err := c.searchBrowsableChannels.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
 // ChannelServiceHandler is an implementation of the chat.v1.ChannelService service.
 type ChannelServiceHandler interface {
 	ListChannels(context.Context, *v1.ListChannelsRequest) (*v1.ListChannelsResponse, error)
@@ -275,6 +296,8 @@ type ChannelServiceHandler interface {
 	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
 	// 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
 	ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error)
+	// 閲覧できるチャンネルを検索・絞り込み・並べ替えしてページ単位で返す
+	SearchBrowsableChannels(context.Context, *v1.SearchBrowsableChannelsRequest) (*v1.SearchBrowsableChannelsResponse, error)
 }
 
 // NewChannelServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -344,6 +367,12 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 		connect.WithSchema(channelServiceMethods.ByName("ListBrowsableChannels")),
 		connect.WithHandlerOptions(opts...),
 	)
+	channelServiceSearchBrowsableChannelsHandler := connect.NewUnaryHandlerSimple(
+		ChannelServiceSearchBrowsableChannelsProcedure,
+		svc.SearchBrowsableChannels,
+		connect.WithSchema(channelServiceMethods.ByName("SearchBrowsableChannels")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/chat.v1.ChannelService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ChannelServiceListChannelsProcedure:
@@ -366,6 +395,8 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 			channelServiceUnarchiveChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceListBrowsableChannelsProcedure:
 			channelServiceListBrowsableChannelsHandler.ServeHTTP(w, r)
+		case ChannelServiceSearchBrowsableChannelsProcedure:
+			channelServiceSearchBrowsableChannelsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -413,4 +444,8 @@ func (UnimplementedChannelServiceHandler) UnarchiveChannel(context.Context, *v1.
 
 func (UnimplementedChannelServiceHandler) ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.ListBrowsableChannels is not implemented"))
+}
+
+func (UnimplementedChannelServiceHandler) SearchBrowsableChannels(context.Context, *v1.SearchBrowsableChannelsRequest) (*v1.SearchBrowsableChannelsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.SearchBrowsableChannels is not implemented"))
 }

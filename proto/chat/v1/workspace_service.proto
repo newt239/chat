@@ -105,10 +105,15 @@ message UpdateWorkspaceRequest {
     max_len: 100
   }];
   optional string description = 3 [(buf.validate.field).string.max_len = 500];
-  optional string icon_url = 4 [(buf.validate.field).string = {
-    uri: true
-    max_len: 2048
-  }];
+  // 空文字はアイコンを外す
+  optional string icon_url = 4 [
+    (buf.validate.field).string.max_len = 2048,
+    (buf.validate.field).cel = {
+      id: "uri_or_empty"
+      message: "URL か空文字を指定してください"
+      expression: "this == '' || this.isUri()"
+    }
+  ];
   optional bool is_public = 5;
   optional bool signup_enabled = 6;
   optional bool email_signup_enabled = 7;
