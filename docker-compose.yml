@@ -1,14 +1,13 @@
 services:
   db:
     image: postgres:18-alpine
-    container_name: chat-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: chat
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     ports:
-      - "5432:5432"
+      - "127.0.0.1::5432"
     volumes:
       # PostgreSQL 18 以降は /data ではなくこの階層をマウントする
       - postgres_data:/var/lib/postgresql
@@ -24,13 +23,12 @@ services:
 
   meilisearch:
     image: getmeili/meilisearch:v1.54
-    container_name: chat-meilisearch
     environment:
       MEILI_ENV: development
       MEILI_MASTER_KEY: development-master-key
       MEILI_NO_ANALYTICS: "true"
     ports:
-      - "7700:7700"
+      - "127.0.0.1::7700"
     volumes:
       - meilisearch_data:/meili_data
     healthcheck:
@@ -44,11 +42,10 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: chat-redis
     # WebSocket の配信などに使うだけなので永続化しない
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
-      - "6379:6379"
+      - "127.0.0.1::6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -62,12 +59,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: chat-backend
     environment:
       - PORT=8080
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
       - JWT_SECRET=development-secret-key
-      - CORS_ALLOWED_ORIGINS=http://localhost:5173,tauri://localhost,https://tauri.localhost
+      - CORS_ALLOWED_ORIGINS=${CHAT_APP_URL:-http://localhost:5173},tauri://localhost,https://tauri.localhost
+      - PUBLIC_BASE_URL=${CHAT_API_URL:-http://localhost:8080}
       - MEILISEARCH_URL=http://meilisearch:7700
       - MEILISEARCH_API_KEY=development-master-key
       - REDIS_URL=redis://redis:6379
@@ -75,7 +72,7 @@ services:
       - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET:-}
       - GOOGLE_OAUTH_REDIRECT_URL=${GOOGLE_OAUTH_REDIRECT_URL:-}
     ports:
-      - "8080:8080"
+      - "127.0.0.1::8080"
     volumes:
       - ./backend:/app
       - backend_cache:/go/pkg/mod
@@ -95,7 +92,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: chat-reset
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
     volumes:
@@ -114,12 +110,12 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile.dev
-    container_name: chat-frontend
     environment:
-      - VITE_API_BASE_URL=http://localhost:8080
+      - VITE_API_BASE_URL=${CHAT_API_URL:-http://localhost:8080}
+      - VITE_WS_URL=${CHAT_WS_URL:-ws://localhost:8080}
       - VITE_GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
     ports:
-      - "5173:5173"
+      - "127.0.0.1::5173"
     volumes:
       - ./frontend:/app/frontend
       - ./packages:/app/packages

@@ -182,6 +182,9 @@ importers:
       node:
         specifier: runtime:26.10.0
         version: runtime:26.10.0
+      portless:
+        specifier: 0.15.6
+        version: 0.15.6
       turbo:
         specifier: 2.11.3
         version: 2.11.3
@@ -4701,6 +4704,12 @@ packages:
   pngjs@7.0.0:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
+
+  portless@0.15.6:
+    resolution: {integrity: sha512-uOAwWLF32rmyEGFASzSO0VOaqb/AQxFCCzyZbPGd82UNNOfIEvc09zy92nroNibE5HNfzV4oVB0ObKbPXgkM9A==}
+    engines: {node: '>=24'}
+    os: [darwin, linux, win32]
+    hasBin: true
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -9606,6 +9615,8 @@ snapshots:
   picomatch@4.0.7: {}
 
   pngjs@7.0.0: {}
+
+  portless@0.15.6: {}
 
   possible-typed-array-names@1.1.0: {}
 
