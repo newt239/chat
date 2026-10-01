@@ -35,6 +35,8 @@ type bulkMessage struct {
 	createdAt time.Time
 	deleted   bool
 	mentionee *uuid.UUID
+	// 本文に <@channel> を含む
+	mentionsChannel bool
 }
 
 // BulkMessages は channelCount 個のチャンネルを足したうえで、全チャンネルに perChannel 件ずつ
@@ -129,9 +131,10 @@ func generateBulkMessages(rng *rand.Rand, userIDs []uuid.UUID, start time.Time, 
 		case r < 5:
 			mentionee := userIDs[rng.IntN(len(userIDs))]
 			m.mentionee = &mentionee
-			m.body = "@mention " + m.body
+			m.body = "<@" + mentionee.String() + "> " + m.body
 		case r < 7:
-			m.body = "@channel " + m.body
+			m.body = "<@channel> " + m.body
+			m.mentionsChannel = true
 		case r < 10:
 			m.body += " https://example.com/docs"
 		}
@@ -150,6 +153,7 @@ func insertBulkMessages(ctx context.Context, client *ent.Client, channelID uuid.
 			SetUserID(m.userID).
 			SetNillableParentID(m.parentID).
 			SetBody(m.body).
+			SetMentionsChannel(m.mentionsChannel).
 			SetCreatedAt(m.createdAt)
 		if m.deleted {
 			b.SetDeletedAt(m.createdAt.Add(time.Minute)).SetDeletedBy(m.userID)

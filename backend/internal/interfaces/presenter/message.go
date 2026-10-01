@@ -24,7 +24,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		ParentId:  m.ParentID,
 		Body:      m.Body,
 		Mentions: ConvertAll(m.Mentions, func(u messageuc.UserMention) *chatv1.UserMention {
-			return &chatv1.UserMention{UserId: u.UserID, DisplayName: u.DisplayName}
+			return &chatv1.UserMention{UserId: u.UserID, ViaGroupId: u.ViaGroupID}
 		}),
 		Groups: ConvertAll(m.Groups, func(g messageuc.GroupMention) *chatv1.GroupMention {
 			return &chatv1.GroupMention{GroupId: g.GroupID, Name: g.Name}
@@ -48,6 +48,9 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		EditedAt:  optionalTimestamp(m.EditedAt),
 		DeletedAt: optionalTimestamp(m.DeletedAt),
 		IsDeleted: m.IsDeleted,
+
+		MentionsChannel: m.MentionsChannel,
+		MentionsHere:    m.MentionsHere,
 	}
 	if m.DeletedBy != nil {
 		msg.DeletedBy = UserSummary(*m.DeletedBy)

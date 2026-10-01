@@ -14,11 +14,24 @@ const reindexBatchSize = 500
 type Indexer struct {
 	messageRepo domainrepository.MessageRepository
 	index       domainrepository.MessageSearchIndex
+	mentionSvc  service.MentionService
 	logger      service.Logger
 }
 
-func NewIndexer(messageRepo domainrepository.MessageRepository, index domainrepository.MessageSearchIndex, logger service.Logger) *Indexer {
-	return &Indexer{messageRepo: messageRepo, index: index, logger: logger}
+func NewIndexer(messageRepo domainrepository.MessageRepository, index domainrepository.MessageSearchIndex, mentionSvc service.MentionService, logger service.Logger) *Indexer {
+	return &Indexer{messageRepo: messageRepo, index: index, mentionSvc: mentionSvc, logger: logger}
+}
+
+// upsert は本文の ID 記法を名前に置き換え、名前で検索できるようにして登録します
+func (i *Indexer) upsert(ctx context.Context, docs []domainrepository.MessageSearchDocument) error {
+	for j := range docs {
+		body, err := i.mentionSvc.RenderPlain(ctx, docs[j].Body)
+		if err != nil {
+			return fmt.Errorf("failed to render message body: %w", err)
+		}
+		docs[j].Body = body
+	}
+	return i.index.Upsert(ctx, docs)
 }
 
 // Sync は指定したメッセージを登録し直し、削除済みのものはインデックスから外します。
@@ -34,7 +47,7 @@ func (i *Indexer) sync(ctx context.Context, messageIDs []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to load search documents: %w", err)
 	}
-	if err := i.index.Upsert(ctx, docs); err != nil {
+	if err := i.upsert(ctx, docs); err != nil {
 		return fmt.Errorf("failed to upsert documents: %w", err)
 	}
 
@@ -68,7 +81,7 @@ func (i *Indexer) Reindex(ctx context.Context) (int, error) {
 		if len(docs) == 0 {
 			return total, nil
 		}
-		if err := i.index.Upsert(ctx, docs); err != nil {
+		if err := i.upsert(ctx, docs); err != nil {
 			return total, fmt.Errorf("failed to upsert documents: %w", err)
 		}
 		total += len(docs)

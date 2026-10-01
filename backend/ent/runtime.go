@@ -301,6 +301,14 @@ func init() {
 	messageDescCreatedAt := messageFields[5].Descriptor()
 	// message.DefaultCreatedAt holds the default value on creation for the created_at field.
 	message.DefaultCreatedAt = messageDescCreatedAt.Default.(func() time.Time)
+	// messageDescMentionsChannel is the schema descriptor for mentions_channel field.
+	messageDescMentionsChannel := messageFields[15].Descriptor()
+	// message.DefaultMentionsChannel holds the default value on creation for the mentions_channel field.
+	message.DefaultMentionsChannel = messageDescMentionsChannel.Default.(bool)
+	// messageDescMentionsHere is the schema descriptor for mentions_here field.
+	messageDescMentionsHere := messageFields[16].Descriptor()
+	// message.DefaultMentionsHere holds the default value on creation for the mentions_here field.
+	message.DefaultMentionsHere = messageDescMentionsHere.Default.(bool)
 	// messageDescID is the schema descriptor for id field.
 	messageDescID := messageFields[0].Descriptor()
 	// message.DefaultID holds the default value on creation for the id field.
@@ -366,7 +374,7 @@ func init() {
 	messageusermentionFields := schema.MessageUserMention{}.Fields()
 	_ = messageusermentionFields
 	// messageusermentionDescCreatedAt is the schema descriptor for created_at field.
-	messageusermentionDescCreatedAt := messageusermentionFields[1].Descriptor()
+	messageusermentionDescCreatedAt := messageusermentionFields[2].Descriptor()
 	// messageusermention.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messageusermention.DefaultCreatedAt = messageusermentionDescCreatedAt.Default.(func() time.Time)
 	// messageusermentionDescID is the schema descriptor for id field.

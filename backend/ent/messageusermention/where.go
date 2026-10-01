@@ -56,9 +56,64 @@ func IDLTE(id uuid.UUID) predicate.MessageUserMention {
 	return predicate.MessageUserMention(sql.FieldLTE(FieldID, id))
 }
 
+// ViaGroupID applies equality check predicate on the "via_group_id" field. It's identical to ViaGroupIDEQ.
+func ViaGroupID(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldEQ(FieldViaGroupID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.MessageUserMention {
 	return predicate.MessageUserMention(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// ViaGroupIDEQ applies the EQ predicate on the "via_group_id" field.
+func ViaGroupIDEQ(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldEQ(FieldViaGroupID, v))
+}
+
+// ViaGroupIDNEQ applies the NEQ predicate on the "via_group_id" field.
+func ViaGroupIDNEQ(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldNEQ(FieldViaGroupID, v))
+}
+
+// ViaGroupIDIn applies the In predicate on the "via_group_id" field.
+func ViaGroupIDIn(vs ...uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldIn(FieldViaGroupID, vs...))
+}
+
+// ViaGroupIDNotIn applies the NotIn predicate on the "via_group_id" field.
+func ViaGroupIDNotIn(vs ...uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldNotIn(FieldViaGroupID, vs...))
+}
+
+// ViaGroupIDGT applies the GT predicate on the "via_group_id" field.
+func ViaGroupIDGT(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldGT(FieldViaGroupID, v))
+}
+
+// ViaGroupIDGTE applies the GTE predicate on the "via_group_id" field.
+func ViaGroupIDGTE(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldGTE(FieldViaGroupID, v))
+}
+
+// ViaGroupIDLT applies the LT predicate on the "via_group_id" field.
+func ViaGroupIDLT(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldLT(FieldViaGroupID, v))
+}
+
+// ViaGroupIDLTE applies the LTE predicate on the "via_group_id" field.
+func ViaGroupIDLTE(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldLTE(FieldViaGroupID, v))
+}
+
+// ViaGroupIDIsNil applies the IsNil predicate on the "via_group_id" field.
+func ViaGroupIDIsNil() predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldIsNull(FieldViaGroupID))
+}
+
+// ViaGroupIDNotNil applies the NotNil predicate on the "via_group_id" field.
+func ViaGroupIDNotNil() predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldNotNull(FieldViaGroupID))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

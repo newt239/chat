@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { applySuggestion, findSuggestionQuery, mentionTokenOf, rankByQuery } from "./suggestion";
+import { applySuggestion, findSuggestionQuery, rankByQuery } from "./suggestion";
 
 describe("findSuggestionQuery", () => {
   test("行頭や空白の後の @ と # をカーソルまで検索語にする", () => {
@@ -11,6 +11,7 @@ describe("findSuggestionQuery", () => {
       trigger: "#",
     });
     expect(findSuggestionQuery("hi @", 4)).toEqual({ query: "", start: 3, trigger: "@" });
+    expect(findSuggestionQuery("@山田", 3)).toEqual({ query: "山田", start: 0, trigger: "@" });
   });
 
   test("単語の途中や空白を挟んだ後は候補を出さない", () => {
@@ -27,13 +28,6 @@ describe("applySuggestion", () => {
       cursor: 10,
       text: "hi @Alice  and more",
     });
-  });
-});
-
-describe("mentionTokenOf", () => {
-  test("表示名の先頭の英数字を返し、なければ null", () => {
-    expect(mentionTokenOf("Alice Johnson")).toBe("Alice");
-    expect(mentionTokenOf("山田")).toBeNull();
   });
 });
 

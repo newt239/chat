@@ -96,7 +96,11 @@ export const MessageItem = ({
   }, isMobile && !isEditing);
   const { handleEdit, handleDelete, isDeleting } = useMessageActions();
   const toggleReaction = useToggleReaction(message.id);
-  const isMentioned = message.mentions.some((mention) => mention.userId === currentUserId);
+  // グループ経由は投稿時点のメンバーに展開済み。@channel / @here はチャンネルのメンバー全員宛て
+  const isMentioned =
+    message.mentionsChannel ||
+    message.mentionsHere ||
+    message.mentions.some((mention) => mention.userId === currentUserId);
 
   const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
     isAuthor: message.userId === currentUserId,

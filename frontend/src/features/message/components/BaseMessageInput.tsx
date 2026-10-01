@@ -17,6 +17,7 @@ import { useScheduleMessage } from "#/features/schedule/hooks/useScheduledMessag
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
+import { useMentionCodec } from "../hooks/useMentionCodec";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { applyFormat, detectActiveFormats, insertEmoji } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
@@ -77,21 +78,23 @@ export const BaseMessageInput = ({
   } = useDraftAutosave(channelId, parentId);
   const isRestoredRef = useRef(false);
   const scheduleMessage = useScheduleMessage();
+  const mentionCodec = useMentionCodec();
+  const { decode, encode, isReady: isCodecReady } = mentionCodec;
 
-  // 開き直したときに書きかけを戻す。読み込み前に打ち始めていたら上書きしない
+  // 開き直したときに書きかけを戻す。読み込み前に打ち始めていたら上書きしない。名前に戻せるようメンバーを読んでから戻す
   useEffect(() => {
-    if (draftBody === null || isRestoredRef.current) {
+    if (draftBody === null || !isCodecReady || isRestoredRef.current) {
       return;
     }
     isRestoredRef.current = true;
-    setBody((current) => (current === "" ? draftBody : current));
-  }, [draftBody]);
+    setBody((current) => (current === "" ? decode(draftBody) : current));
+  }, [draftBody, isCodecReady, decode]);
 
   const handleBodyChange = useCallback(
     (next: string) => {
       setBody(next);
       notifyTyping();
-      saveDraft(next);
+      saveDraft(encode(next));
 
       const urls: string[] = next.match(urlPattern) ?? [];
       for (const url of urls) {
@@ -103,7 +106,7 @@ export const BaseMessageInput = ({
         }
       }
     },
-    [addPreview, previews, removePreview, notifyTyping, saveDraft],
+    [addPreview, previews, removePreview, notifyTyping, saveDraft, encode],
   );
 
   const replaceSelection = (next: { text: string; cursor: number }) => {
@@ -119,7 +122,10 @@ export const BaseMessageInput = ({
   const suggestion = useComposerSuggestion({
     body,
     cursor: selection.start,
-    onApply: replaceSelection,
+    onApply: (next, item) => {
+      mentionCodec.register(item.value, item.token);
+      replaceSelection(next);
+    },
   });
 
   const handleFormat = (key: FormatKey) => {
@@ -160,7 +166,7 @@ export const BaseMessageInput = ({
       toast(t("message.composer.uploading"));
       return null;
     }
-    return { attachmentIds: getCompletedAttachmentIds(), body: body.trim(), location };
+    return { attachmentIds: getCompletedAttachmentIds(), body: encode(body.trim()), location };
   };
 
   // 送信・予約した後は書きかけも消す
@@ -227,7 +233,7 @@ export const BaseMessageInput = ({
         )}
         {!isPreview && suggestion.isOpen && <SuggestionList {...suggestion.listProps} />}
         {isPreview ? (
-          <MessagePreview content={body} />
+          <MessagePreview content={encode(body)} />
         ) : (
           <TextField
             aria-label={placeholder}

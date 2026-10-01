@@ -207,6 +207,34 @@ func (_c *MessageCreate) SetNillableLocationLabel(v *string) *MessageCreate {
 	return _c
 }
 
+// SetMentionsChannel sets the "mentions_channel" field.
+func (_c *MessageCreate) SetMentionsChannel(v bool) *MessageCreate {
+	_c.mutation.SetMentionsChannel(v)
+	return _c
+}
+
+// SetNillableMentionsChannel sets the "mentions_channel" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableMentionsChannel(v *bool) *MessageCreate {
+	if v != nil {
+		_c.SetMentionsChannel(*v)
+	}
+	return _c
+}
+
+// SetMentionsHere sets the "mentions_here" field.
+func (_c *MessageCreate) SetMentionsHere(v bool) *MessageCreate {
+	_c.mutation.SetMentionsHere(v)
+	return _c
+}
+
+// SetNillableMentionsHere sets the "mentions_here" field if the given value is not nil.
+func (_c *MessageCreate) SetNillableMentionsHere(v *bool) *MessageCreate {
+	if v != nil {
+		_c.SetMentionsHere(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *MessageCreate) SetID(v uuid.UUID) *MessageCreate {
 	_c.mutation.SetID(v)
@@ -425,6 +453,14 @@ func (_c *MessageCreate) defaults() {
 		v := message.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
+	if _, ok := _c.mutation.MentionsChannel(); !ok {
+		v := message.DefaultMentionsChannel
+		_c.mutation.SetMentionsChannel(v)
+	}
+	if _, ok := _c.mutation.MentionsHere(); !ok {
+		v := message.DefaultMentionsHere
+		_c.mutation.SetMentionsHere(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := message.DefaultID()
 		_c.mutation.SetID(v)
@@ -444,6 +480,12 @@ func (_c *MessageCreate) check() error {
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Message.created_at"`)}
+	}
+	if _, ok := _c.mutation.MentionsChannel(); !ok {
+		return &ValidationError{Name: "mentions_channel", err: errors.New(`ent: missing required field "Message.mentions_channel"`)}
+	}
+	if _, ok := _c.mutation.MentionsHere(); !ok {
+		return &ValidationError{Name: "mentions_here", err: errors.New(`ent: missing required field "Message.mentions_here"`)}
 	}
 	if len(_c.mutation.ChannelIDs()) == 0 {
 		return &ValidationError{Name: "channel", err: errors.New(`ent: missing required edge "Message.channel"`)}
@@ -530,6 +572,14 @@ func (_c *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.LocationLabel(); ok {
 		_spec.SetField(message.FieldLocationLabel, field.TypeString, value)
 		_node.LocationLabel = &value
+	}
+	if value, ok := _c.mutation.MentionsChannel(); ok {
+		_spec.SetField(message.FieldMentionsChannel, field.TypeBool, value)
+		_node.MentionsChannel = value
+	}
+	if value, ok := _c.mutation.MentionsHere(); ok {
+		_spec.SetField(message.FieldMentionsHere, field.TypeBool, value)
+		_node.MentionsHere = value
 	}
 	if nodes := _c.mutation.ChannelIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -986,6 +1036,30 @@ func (u *MessageUpsert) ClearLocationLabel() *MessageUpsert {
 	return u
 }
 
+// SetMentionsChannel sets the "mentions_channel" field.
+func (u *MessageUpsert) SetMentionsChannel(v bool) *MessageUpsert {
+	u.Set(message.FieldMentionsChannel, v)
+	return u
+}
+
+// UpdateMentionsChannel sets the "mentions_channel" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateMentionsChannel() *MessageUpsert {
+	u.SetExcluded(message.FieldMentionsChannel)
+	return u
+}
+
+// SetMentionsHere sets the "mentions_here" field.
+func (u *MessageUpsert) SetMentionsHere(v bool) *MessageUpsert {
+	u.Set(message.FieldMentionsHere, v)
+	return u
+}
+
+// UpdateMentionsHere sets the "mentions_here" field to the value that was provided on create.
+func (u *MessageUpsert) UpdateMentionsHere() *MessageUpsert {
+	u.SetExcluded(message.FieldMentionsHere)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1267,6 +1341,34 @@ func (u *MessageUpsertOne) UpdateLocationLabel() *MessageUpsertOne {
 func (u *MessageUpsertOne) ClearLocationLabel() *MessageUpsertOne {
 	return u.Update(func(s *MessageUpsert) {
 		s.ClearLocationLabel()
+	})
+}
+
+// SetMentionsChannel sets the "mentions_channel" field.
+func (u *MessageUpsertOne) SetMentionsChannel(v bool) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetMentionsChannel(v)
+	})
+}
+
+// UpdateMentionsChannel sets the "mentions_channel" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateMentionsChannel() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateMentionsChannel()
+	})
+}
+
+// SetMentionsHere sets the "mentions_here" field.
+func (u *MessageUpsertOne) SetMentionsHere(v bool) *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetMentionsHere(v)
+	})
+}
+
+// UpdateMentionsHere sets the "mentions_here" field to the value that was provided on create.
+func (u *MessageUpsertOne) UpdateMentionsHere() *MessageUpsertOne {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateMentionsHere()
 	})
 }
 
@@ -1718,6 +1820,34 @@ func (u *MessageUpsertBulk) UpdateLocationLabel() *MessageUpsertBulk {
 func (u *MessageUpsertBulk) ClearLocationLabel() *MessageUpsertBulk {
 	return u.Update(func(s *MessageUpsert) {
 		s.ClearLocationLabel()
+	})
+}
+
+// SetMentionsChannel sets the "mentions_channel" field.
+func (u *MessageUpsertBulk) SetMentionsChannel(v bool) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetMentionsChannel(v)
+	})
+}
+
+// UpdateMentionsChannel sets the "mentions_channel" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateMentionsChannel() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateMentionsChannel()
+	})
+}
+
+// SetMentionsHere sets the "mentions_here" field.
+func (u *MessageUpsertBulk) SetMentionsHere(v bool) *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.SetMentionsHere(v)
+	})
+}
+
+// UpdateMentionsHere sets the "mentions_here" field to the value that was provided on create.
+func (u *MessageUpsertBulk) UpdateMentionsHere() *MessageUpsertBulk {
+	return u.Update(func(s *MessageUpsert) {
+		s.UpdateMentionsHere()
 	})
 }
 

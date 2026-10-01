@@ -50,6 +50,7 @@ type ChannelRepository interface {
 	FindOrCreateGroupDM(ctx context.Context, workspaceID string, creatorID string, memberIDs []string, name string) (*entity.Channel, error)
 	FindUserDMs(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error)
 	FindByNames(ctx context.Context, workspaceID string, names []string) ([]*entity.Channel, error)
+	FindByIDs(ctx context.Context, ids []string) ([]*entity.Channel, error)
 	// FindDescendants はパスの前方一致で子孫チャンネルを返します
 	FindDescendants(ctx context.Context, ch *entity.Channel) ([]*entity.Channel, error)
 }

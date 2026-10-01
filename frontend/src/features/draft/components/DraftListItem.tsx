@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { toDate } from "#/lib/timestamp";
 import { preferencesAtom } from "#/providers/store/preferences";
 
@@ -22,6 +23,7 @@ type DraftListItemProps = {
 // 下書きの一覧の行。開くと書きかけの入力欄に戻れる
 export const DraftListItem = ({ workspaceId, draft, label, onDelete }: DraftListItemProps) => {
   const { t } = useTranslation();
+  const { toText } = useMentionDirectory();
   const { locale } = useAtomValue(preferencesAtom);
   const { channelId, parentId } = draft;
 
@@ -35,7 +37,9 @@ export const DraftListItem = ({ workspaceId, draft, label, onDelete }: DraftList
             {t("draft.list.savedAt", { time: formatDateTime(toDate(draft.updatedAt), locale) })}
           </span>
         </header>
-        <p className="m-0 line-clamp-3 text-body break-words whitespace-pre-wrap">{draft.body}</p>
+        <p className="m-0 line-clamp-3 text-body break-words whitespace-pre-wrap">
+          {toText(draft.body)}
+        </p>
       </div>
       {parentId === undefined ? (
         <LinkButton

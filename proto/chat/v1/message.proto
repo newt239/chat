@@ -30,6 +30,9 @@ message Message {
   MessagePin pin = 18;
   // 位置情報を共有したメッセージのみ設定される
   MessageLocation location = 19;
+  // 本文に <@channel> / <@here> を含む
+  bool mentions_channel = 20;
+  bool mentions_here = 21;
 }
 
 message MessageLocation {
@@ -54,9 +57,13 @@ message MessagePin {
   google.protobuf.Timestamp pinned_at = 2;
 }
 
+// 投稿時点でメンションの宛先になったユーザー。グループへのメンションは投稿時点のメンバーに展開する
 message UserMention {
+  reserved 2;
+  reserved "display_name";
   string user_id = 1;
-  string display_name = 2;
+  // グループ経由のときの展開元
+  optional string via_group_id = 3;
 }
 
 message GroupMention {

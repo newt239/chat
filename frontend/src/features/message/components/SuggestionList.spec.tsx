@@ -6,13 +6,28 @@ import { SuggestionList } from "./SuggestionList";
 import type { SuggestionItem } from "../utils/suggestion";
 
 const items: SuggestionItem[] = [
-  { avatarUrl: undefined, id: "u1", kind: "user", label: "Alice Johnson", value: "@Alice" },
-  { avatarUrl: undefined, id: "g1", kind: "group", label: "developers", value: "@developers" },
+  {
+    avatarUrl: undefined,
+    id: "u1",
+    kind: "user",
+    label: "Alice Johnson",
+    token: "<@u1>",
+    value: "@Alice Johnson",
+  },
+  {
+    avatarUrl: undefined,
+    id: "g1",
+    kind: "group",
+    label: "developers",
+    token: "<@&g1>",
+    value: "@developers",
+  },
   {
     avatarUrl: undefined,
     id: "c1",
     kind: "channel",
     label: "dev/frontend",
+    token: "<#c1>",
     value: "#dev/frontend",
   },
 ];
@@ -27,7 +42,7 @@ describe("SuggestionList", () => {
       "aria-selected",
       "true",
     );
-    expect(screen.getByRole("option", { name: /Alice Johnson/ })).toHaveTextContent("@Alice");
+    expect(screen.getByRole("option", { name: /Alice Johnson/ })).toBeInTheDocument();
 
     fireEvent.pointerDown(screen.getByRole("option", { name: /dev\/frontend/ }));
     expect(onSelect).toHaveBeenCalledWith(items[2]);

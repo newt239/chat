@@ -1,66 +1,42 @@
 import { visit } from "unist-util-visit";
 
+import { splitMentionTokens } from "../../mentionToken";
+
+import type { MentionPart } from "../../mentionToken";
+
 import type { Root, RootContent, Text } from "mdast";
 
-const MENTION_REGEX = /@(?<username>[\w-]+)/g;
+const toNode = (part: MentionPart) => {
+  if (part.kind === "text") {
+    return { type: "text", value: part.text } satisfies RootContent;
+  }
+  if (part.kind === "channel") {
+    return {
+      data: { hName: "span", hProperties: { className: ["channel-link"], dataChannel: part.id } },
+      type: "channelLink",
+      value: part.id,
+    } satisfies RootContent;
+  }
+  // sanitize は hast のプロパティ名（キャメルケース）で判定する
+  return {
+    data: {
+      hName: "span",
+      hProperties: { className: ["mention"], dataMention: `${part.kind}:${part.id}` },
+    },
+    type: "mention",
+    value: part.id,
+  } satisfies RootContent;
+};
 
+/** 本文に ID で埋め込んだメンションとチャンネルを、今の名前で描画するノードにする */
 export const remarkMention = () => (tree: Root) => {
   visit(tree, "text", (node: Text, index, parent) => {
     if (!parent || index === undefined) {
       return;
     }
-
-    const { value } = node;
-    const matches = [...value.matchAll(MENTION_REGEX)];
-
-    if (matches.length === 0) {
-      return;
+    const parts = splitMentionTokens(node.value);
+    if (parts.some((part) => part.kind !== "text")) {
+      parent.children.splice(index, 1, ...parts.map((part) => toNode(part)));
     }
-
-    const newNodes: RootContent[] = [];
-    let lastIndex = 0;
-
-    for (const match of matches) {
-      const matchIndex = match.index;
-      const username = match.groups?.username;
-      if (username === undefined) {
-        continue;
-      }
-
-      // メンション前のテキスト
-      if (matchIndex > lastIndex) {
-        newNodes.push({
-          type: "text",
-          value: value.slice(lastIndex, matchIndex),
-        });
-      }
-
-      // メンションノード
-      newNodes.push({
-        data: {
-          hName: "span",
-          hProperties: {
-            className: ["mention"],
-            // sanitize は hast のプロパティ名（キャメルケース）で判定する
-            dataMention: username,
-          },
-        },
-        type: "mention",
-        value: username,
-      });
-
-      lastIndex = matchIndex + match[0].length;
-    }
-
-    // 残りのテキスト
-    if (lastIndex < value.length) {
-      newNodes.push({
-        type: "text",
-        value: value.slice(lastIndex),
-      });
-    }
-
-    // ノードを置き換え
-    parent.children.splice(index, 1, ...newNodes);
   });
 };

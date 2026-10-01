@@ -9,6 +9,7 @@ import { Tab } from "#/components/ui/Tab/Tab";
 import { TabList } from "#/components/ui/TabList/TabList";
 import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { toPlainText } from "#/features/message/utils/markdown/plainText";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
@@ -31,6 +32,7 @@ type ReactionsDialogProps = {
 // 誰がいつどのリアクションを付けたかの一覧。新しい順に並べる
 export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogProps) => {
   const { t } = useTranslation();
+  const { toText } = useMentionDirectory();
   const { locale } = useAtomValue(preferencesAtom);
   const currentUserId = useAtomValue(userAtom)?.id ?? null;
   const toggleReaction = useToggleReaction(message.id);
@@ -57,7 +59,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
     >
       <p className="-mt-1 mb-0 truncate text-[12.5px] text-muted">
         {message.user?.displayName}:{" "}
-        {toPlainText(message.body) || t("message.sheet.attachmentOnly")}
+        {toPlainText(toText(message.body)) || t("message.sheet.attachmentOnly")}
       </p>
       <Tabs
         selectedKey={selectedTab}

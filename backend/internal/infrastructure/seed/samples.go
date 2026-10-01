@@ -97,7 +97,7 @@ func createRichSamples(
 		}
 	}
 
-	if err := createShowcaseMessages(ctx, client, members, byName["showcase"], messages); err != nil {
+	if err := createShowcaseMessages(ctx, client, members, byName, messages); err != nil {
 		return err
 	}
 	if err := createScrollTestMessages(ctx, client, members, byName["scroll-test"]); err != nil {
@@ -190,7 +190,8 @@ type sampleMessage struct {
 }
 
 // createShowcaseMessages は Markdown・コード・メンション・リンク・位置情報・編集・削除・スレッド・ピンなどを 1 つのチャンネルに並べます
-func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*entity.User, ch *entity.Channel, messages []*entity.Message) error {
+func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*entity.User, channelsByName map[string]*entity.Channel, messages []*entity.Message) error {
+	ch := channelsByName["showcase"]
 	general := messages[0]
 	permalink := samplePermalink(general.ChannelID, general.ID)
 	longText := strings.Repeat("長いメッセージの折り返しと高さの確認用の文章です。仮想スクロールでは行ごとに高さが変わるため、長文が混ざっても位置がずれないことを確かめます。", 6)
@@ -200,14 +201,14 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		{userIndex: 3, body: "Go と TypeScript の例です。\n\n```go\nfunc Hello(name string) string {\n\treturn fmt.Sprintf(\"Hello, %s\", name)\n}\n```\n\n```ts\nexport const hello = (name: string) => `Hello, ${name}`;\n```\n\n```sql\nSELECT id, name FROM channel WHERE is_private = false ORDER BY name;\n```"},
 		{userIndex: 4, body: longText, reactions: map[string]int{"👀": 3}},
 		{userIndex: 5, body: "🎉🎉🎉"},
-		{userIndex: 0, body: "@Bob @Eve レビューをお願いします。@developers にも共有します。詳細は #dev/frontend と #general を見てください", reactions: map[string]int{"👍": 6, "🙏": 2, "✅": 1}},
+		{userIndex: 0, body: "<@" + users[1].ID + "> <@" + users[len(users)-len(sampleUserNames)].ID + "> レビューをお願いします。<@&" + developersGroupID + "> にも共有します。詳細は <#" + channelsByName["dev/frontend"].ID + "> と <#" + channelsByName["general"].ID + "> を見てください", reactions: map[string]int{"👍": 6, "🙏": 2, "✅": 1}},
 		{userIndex: 6, body: "参考資料です https://github.com/example/repo", link: &entity.MessageLink{URL: "https://github.com/example/repo", OGP: entity.OGPData{Title: stringPtr("Example Repository"), Description: stringPtr("A sample repository for demonstration"), SiteName: stringPtr("GitHub")}}},
 		{userIndex: 1, body: "最初の挨拶はここです " + permalink, link: &entity.MessageLink{URL: permalink, LinkedMessageID: &general.ID}},
 		{userIndex: 7, body: "今ここにいます", location: &entity.MessageLocation{Latitude: 35.681236, Longitude: 139.767125, Label: stringPtr("東京駅")}},
 		{userIndex: 2, body: "この文章はあとから編集しました（編集済みの表示）", edited: true},
 		{userIndex: 3, body: "このメッセージは削除されました", deleted: true},
 		{userIndex: 0, body: "リリース日の相談をスレッドでしましょう", replies: []string{"金曜はどうでしょう？", "金曜は QA が間に合わないかもしれません", "では来週の火曜で", "了解です 👍", "カレンダーに入れておきます"}},
-		{userIndex: len(sampleUserNames) + 3, body: "山田です。表示名が日本語だけのユーザーは @ の候補に出ません"},
+		{userIndex: len(sampleUserNames) + 3, body: "山田です。表示名が日本語だけでも @ の候補から選べます"},
 		{userIndex: 9, body: "短いメッセージ"},
 	}
 

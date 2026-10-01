@@ -569,6 +569,8 @@ var (
 		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
 		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
 		{Name: "location_label", Type: field.TypeString, Nullable: true},
+		{Name: "mentions_channel", Type: field.TypeBool, Default: false},
+		{Name: "mentions_here", Type: field.TypeBool, Default: false},
 		{Name: "message_channel", Type: field.TypeUUID},
 		{Name: "message_user", Type: field.TypeUUID},
 		{Name: "message_parent", Type: field.TypeUUID, Nullable: true},
@@ -581,19 +583,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "messages_channels_channel",
-				Columns:    []*schema.Column{MessagesColumns[12]},
+				Columns:    []*schema.Column{MessagesColumns[14]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_users_user",
-				Columns:    []*schema.Column{MessagesColumns[13]},
+				Columns:    []*schema.Column{MessagesColumns[15]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_messages_parent",
-				Columns:    []*schema.Column{MessagesColumns[14]},
+				Columns:    []*schema.Column{MessagesColumns[16]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -607,7 +609,7 @@ var (
 			{
 				Name:    "message_message_channel_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[12], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[14], MessagesColumns[2]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "deleted_at IS NULL",
 				},
@@ -615,12 +617,12 @@ var (
 			{
 				Name:    "message_message_parent_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[14], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[16], MessagesColumns[2]},
 			},
 			{
 				Name:    "message_message_user",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[13]},
+				Columns: []*schema.Column{MessagesColumns[15]},
 			},
 		},
 	}
@@ -842,6 +844,7 @@ var (
 	// MessageUserMentionsColumns holds the columns for the "message_user_mentions" table.
 	MessageUserMentionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "via_group_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_user_mention_message", Type: field.TypeUUID},
 		{Name: "message_user_mention_user", Type: field.TypeUUID},
@@ -854,13 +857,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "message_user_mentions_messages_message",
-				Columns:    []*schema.Column{MessageUserMentionsColumns[2]},
+				Columns:    []*schema.Column{MessageUserMentionsColumns[3]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "message_user_mentions_users_user",
-				Columns:    []*schema.Column{MessageUserMentionsColumns[3]},
+				Columns:    []*schema.Column{MessageUserMentionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -869,12 +872,12 @@ var (
 			{
 				Name:    "messageusermention_message_user_mention_message",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionsColumns[2]},
+				Columns: []*schema.Column{MessageUserMentionsColumns[3]},
 			},
 			{
 				Name:    "messageusermention_message_user_mention_user",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionsColumns[3]},
+				Columns: []*schema.Column{MessageUserMentionsColumns[4]},
 			},
 		},
 	}

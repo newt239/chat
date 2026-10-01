@@ -1,4 +1,4 @@
-import { IconHash, IconUsersGroup } from "@tabler/icons-react";
+import { IconHash, IconSpeakerphone, IconUsersGroup } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
@@ -43,10 +43,15 @@ export const SuggestionList = ({ id, items, activeIndex, onSelect }: SuggestionL
           {item.kind === "user" && <Avatar name={item.label} src={item.avatarUrl} size={20} />}
           {item.kind === "group" && <IconUsersGroup aria-hidden />}
           {item.kind === "channel" && <IconHash aria-hidden />}
+          {item.kind === "broadcast" && <IconSpeakerphone aria-hidden />}
           <span className="min-w-0 flex-1 truncate font-medium">{item.label}</span>
-          {item.kind !== "channel" && (
+          {(item.kind === "group" || item.kind === "broadcast") && (
             <span className="shrink-0 text-caption text-subtle">
-              {item.kind === "group" ? t("message.suggestion.groups") : item.value}
+              {t(
+                item.kind === "group"
+                  ? "message.suggestion.groups"
+                  : "message.suggestion.broadcast",
+              )}
             </span>
           )}
         </div>

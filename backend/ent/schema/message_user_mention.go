@@ -21,6 +21,10 @@ func (MessageUserMention) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		// グループへのメンションを投稿時点のメンバーに展開した行の展開元
+		field.UUID("via_group_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

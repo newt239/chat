@@ -114,9 +114,12 @@ type Message struct {
 	// ピン留めされている場合のみ設定される
 	Pin *MessagePin `protobuf:"bytes,18,opt,name=pin,proto3" json:"pin,omitempty"`
 	// 位置情報を共有したメッセージのみ設定される
-	Location      *MessageLocation `protobuf:"bytes,19,opt,name=location,proto3" json:"location,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Location *MessageLocation `protobuf:"bytes,19,opt,name=location,proto3" json:"location,omitempty"`
+	// 本文に <@channel> / <@here> を含む
+	MentionsChannel bool `protobuf:"varint,20,opt,name=mentions_channel,json=mentionsChannel,proto3" json:"mentions_channel,omitempty"`
+	MentionsHere    bool `protobuf:"varint,21,opt,name=mentions_here,json=mentionsHere,proto3" json:"mentions_here,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Message) Reset() {
@@ -282,6 +285,20 @@ func (x *Message) GetLocation() *MessageLocation {
 	return nil
 }
 
+func (x *Message) GetMentionsChannel() bool {
+	if x != nil {
+		return x.MentionsChannel
+	}
+	return false
+}
+
+func (x *Message) GetMentionsHere() bool {
+	if x != nil {
+		return x.MentionsHere
+	}
+	return false
+}
+
 type MessageLocation struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	Latitude  float64                `protobuf:"fixed64,1,opt,name=latitude,proto3" json:"latitude,omitempty"`
@@ -403,10 +420,12 @@ func (x *MessagePin) GetPinnedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// 投稿時点でメンションの宛先になったユーザー。グループへのメンションは投稿時点のメンバーに展開する
 type UserMention struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	UserId string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// グループ経由のときの展開元
+	ViaGroupId    *string `protobuf:"bytes,3,opt,name=via_group_id,json=viaGroupId,proto3,oneof" json:"via_group_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -448,9 +467,9 @@ func (x *UserMention) GetUserId() string {
 	return ""
 }
 
-func (x *UserMention) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
+func (x *UserMention) GetViaGroupId() string {
+	if x != nil && x.ViaGroupId != nil {
+		return *x.ViaGroupId
 	}
 	return ""
 }
@@ -1424,7 +1443,7 @@ var File_chat_v1_message_proto protoreflect.FileDescriptor
 
 const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
-	"\x15chat/v1/message.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdd\x06\n" +
+	"\x15chat/v1/message.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x12chat/v1/user.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xad\a\n" +
 	"\aMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1450,7 +1469,9 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"deleted_by\x18\x10 \x01(\v2\x14.chat.v1.UserSummaryR\tdeletedBy\x12@\n" +
 	"\x0fthread_metadata\x18\x11 \x01(\v2\x17.chat.v1.ThreadMetadataR\x0ethreadMetadata\x12%\n" +
 	"\x03pin\x18\x12 \x01(\v2\x13.chat.v1.MessagePinR\x03pin\x124\n" +
-	"\blocation\x18\x13 \x01(\v2\x18.chat.v1.MessageLocationR\blocationB\f\n" +
+	"\blocation\x18\x13 \x01(\v2\x18.chat.v1.MessageLocationR\blocation\x12)\n" +
+	"\x10mentions_channel\x18\x14 \x01(\bR\x0fmentionsChannel\x12#\n" +
+	"\rmentions_here\x18\x15 \x01(\bR\fmentionsHereB\f\n" +
 	"\n" +
 	"_parent_id\"\x86\x02\n" +
 	"\x0fMessageLocation\x123\n" +
@@ -1463,10 +1484,12 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"MessagePin\x121\n" +
 	"\tpinned_by\x18\x01 \x01(\v2\x14.chat.v1.UserSummaryR\bpinnedBy\x127\n" +
-	"\tpinned_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bpinnedAt\"I\n" +
+	"\tpinned_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bpinnedAt\"r\n" +
 	"\vUserMention\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"=\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12%\n" +
+	"\fvia_group_id\x18\x03 \x01(\tH\x00R\n" +
+	"viaGroupId\x88\x01\x01B\x0f\n" +
+	"\r_via_group_idJ\x04\b\x02\x10\x03R\fdisplay_name\"=\n" +
 	"\fGroupMention\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"\xdc\x01\n" +
@@ -1668,6 +1691,7 @@ func file_chat_v1_message_proto_init() {
 	file_chat_v1_user_proto_init()
 	file_chat_v1_message_proto_msgTypes[0].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[1].OneofWrappers = []any{}
+	file_chat_v1_message_proto_msgTypes[3].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[5].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[6].OneofWrappers = []any{}
 	file_chat_v1_message_proto_msgTypes[8].OneofWrappers = []any{}

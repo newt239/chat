@@ -113,7 +113,6 @@ func TestSearchWorkspaceBuildsCriteria(t *testing.T) {
 		UserID:             "u1",
 		ViewableChannelIDs: []string{"dev", "dev-web", "devops", "general"},
 		JoinedChannelIDs:   []string{"dev"},
-		GroupIDs:           []string{"g1"},
 	}
 	searcher, _, index := newSearcher([]*entity.Channel{
 		{ID: "dev", Name: "dev"},

@@ -83,7 +83,7 @@ func docs(ids ...string) []domainrepository.MessageSearchDocument {
 
 func TestSyncUpsertsLiveAndDeletesRemoved(t *testing.T) {
 	index := &stubIndex{}
-	indexer := NewIndexer(&stubMessageRepo{docs: docs("a", "b")}, index, &stubLogger{})
+	indexer := NewIndexer(&stubMessageRepo{docs: docs("a", "b")}, index, stubMentionService{}, &stubLogger{})
 
 	indexer.Sync(context.Background(), "a", "deleted", "b")
 
@@ -97,7 +97,7 @@ func TestSyncUpsertsLiveAndDeletesRemoved(t *testing.T) {
 
 func TestSyncOnlyLogsFailure(t *testing.T) {
 	logger := &stubLogger{}
-	indexer := NewIndexer(&stubMessageRepo{docs: docs("a")}, &stubIndex{upsertErr: errors.New("unavailable")}, logger)
+	indexer := NewIndexer(&stubMessageRepo{docs: docs("a")}, &stubIndex{upsertErr: errors.New("unavailable")}, stubMentionService{}, logger)
 
 	indexer.Sync(context.Background(), "a")
 
@@ -112,7 +112,7 @@ func TestReindexRegistersAllInBatches(t *testing.T) {
 		ids = append(ids, fmt.Sprintf("%04d", i))
 	}
 	index := &stubIndex{}
-	indexer := NewIndexer(&stubMessageRepo{docs: docs(ids...)}, index, &stubLogger{})
+	indexer := NewIndexer(&stubMessageRepo{docs: docs(ids...)}, index, stubMentionService{}, &stubLogger{})
 
 	count, err := indexer.Reindex(context.Background())
 	if err != nil {
@@ -121,4 +121,12 @@ func TestReindexRegistersAllInBatches(t *testing.T) {
 	if !index.cleared || count != len(ids) || !reflect.DeepEqual(index.upserted, ids) {
 		t.Errorf("全件が登録されていません: cleared=%v count=%d upserted=%d", index.cleared, count, len(index.upserted))
 	}
+}
+
+type stubMentionService struct {
+	service.MentionService
+}
+
+func (stubMentionService) RenderPlain(_ context.Context, body string) (string, error) {
+	return body, nil
 }

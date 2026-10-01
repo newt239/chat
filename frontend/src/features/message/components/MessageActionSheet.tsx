@@ -9,6 +9,7 @@ import { cn, focusRing } from "#/components/ui/styles/styles";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { EmojiPicker } from "#/features/reaction/components/EmojiPicker";
 
+import { useMentionDirectory } from "../hooks/useMentionDirectory";
 import { toPlainText } from "../utils/markdown/plainText";
 import { quickReactions } from "../utils/quickReactions";
 
@@ -35,6 +36,7 @@ export const MessageActionSheet = ({
   onReact,
 }: MessageActionSheetProps) => {
   const { t } = useTranslation();
+  const { toText } = useMentionDirectory();
   const [isPickingEmoji, setIsPickingEmoji] = useState(false);
   const displayName = useDisplayName();
   const close = () => {
@@ -76,7 +78,7 @@ export const MessageActionSheet = ({
               {displayName(message.userId, message.user?.displayName ?? "")}
             </b>
             <span className="line-clamp-2">
-              {toPlainText(message.body) || t("message.sheet.attachmentOnly")}
+              {toPlainText(toText(message.body)) || t("message.sheet.attachmentOnly")}
             </span>
           </div>
           <div className="flex justify-between px-4 pb-2.5">

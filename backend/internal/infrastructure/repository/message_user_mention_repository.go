@@ -140,6 +140,7 @@ func (r *messageUserMentionRepository) Create(ctx context.Context, mention *enti
 	_, err = client.MessageUserMention.Create().
 		SetMessageID(mid).
 		SetUserID(uid).
+		SetNillableViaGroupID(utils.ParseUUIDPtr(mention.ViaGroupID)).
 		Save(ctx)
 
 	return err

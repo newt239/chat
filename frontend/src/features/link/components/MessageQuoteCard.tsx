@@ -8,6 +8,7 @@ import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { lastSegment } from "#/features/channel/utils/channelPath";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { toPlainText } from "#/features/message/utils/markdown/plainText";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { toDate } from "#/lib/timestamp";
@@ -25,6 +26,7 @@ type MessageQuoteCardProps = {
 // 同じワークスペースのメッセージへのリンクを引用カードにする。閲覧できないメッセージは何も出さない
 export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
   const { t } = useTranslation();
+  const { toText } = useMentionDirectory();
   const displayName = useDisplayName();
   const { locale } = useAtomValue(preferencesAtom);
   const { workspaceId } = useParams({ strict: false });
@@ -42,7 +44,7 @@ export const MessageQuoteCard = ({ link }: MessageQuoteCardProps) => {
     return null;
   }
   const name = displayName(preview.user?.id ?? "", preview.user?.displayName ?? "");
-  const excerpt = toPlainText(preview.bodyExcerpt);
+  const excerpt = toPlainText(toText(preview.bodyExcerpt));
 
   return (
     <div className="flex w-[min(520px,100%)] flex-col gap-1 rounded-[10px] border border-border bg-surface px-3 py-2 font-sans">

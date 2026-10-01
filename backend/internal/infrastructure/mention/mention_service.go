@@ -2,8 +2,8 @@ package mention
 
 import (
 	"context"
-	"regexp"
-	"strings"
+	"fmt"
+	"slices"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	"github.com/newt239/chat/internal/domain/repository"
@@ -11,129 +11,108 @@ import (
 )
 
 type mentionService struct {
-	workspaceRepo    repository.WorkspaceRepository
-	userRepo         repository.UserRepository
-	userGroupRepo    repository.UserGroupRepository
-	userMentionRepo  repository.MessageUserMentionRepository
-	groupMentionRepo repository.MessageGroupMentionRepository
+	workspaceRepo repository.WorkspaceRepository
+	userRepo      repository.UserRepository
+	userGroupRepo repository.UserGroupRepository
+	channelRepo   repository.ChannelRepository
 }
 
 func NewMentionService(
 	workspaceRepo repository.WorkspaceRepository,
 	userRepo repository.UserRepository,
 	userGroupRepo repository.UserGroupRepository,
-	userMentionRepo repository.MessageUserMentionRepository,
-	groupMentionRepo repository.MessageGroupMentionRepository,
+	channelRepo repository.ChannelRepository,
 ) service.MentionService {
 	return &mentionService{
-		workspaceRepo:    workspaceRepo,
-		userRepo:         userRepo,
-		userGroupRepo:    userGroupRepo,
-		userMentionRepo:  userMentionRepo,
-		groupMentionRepo: groupMentionRepo,
+		workspaceRepo: workspaceRepo,
+		userRepo:      userRepo,
+		userGroupRepo: userGroupRepo,
+		channelRepo:   channelRepo,
 	}
 }
 
-// ExtractUserMentions はメッセージ本文からユーザーメンションを抽出します
-func (s *mentionService) ExtractUserMentions(ctx context.Context, body, workspaceID string) ([]*entity.MessageUserMention, error) {
-	// @username パターンを検出
-	mentionRegex := regexp.MustCompile(`@([a-zA-Z0-9_-]+)`)
-	matches := mentionRegex.FindAllStringSubmatch(body, -1)
+func (s *mentionService) Resolve(ctx context.Context, body, workspaceID string, knownGroups []string) (*service.ResolvedMentions, error) {
+	tokens := entity.ParseMentionTokens(body)
+	resolved := &service.ResolvedMentions{GroupMembers: map[string][]string{}, Channel: tokens.Channel, Here: tokens.Here}
 
-	var mentions []*entity.MessageUserMention
-	userIDSet := make(map[string]bool)
-
-	// ワークスペースの全メンバーを一度に取得
-	workspaceMembers, err := s.workspaceRepo.FindMembersByWorkspaceID(ctx, workspaceID)
-	if err != nil {
-		return mentions, err
-	}
-
-	// メンバーのユーザーIDを収集
-	userIDs := make([]string, 0, len(workspaceMembers))
-	for _, member := range workspaceMembers {
-		userIDs = append(userIDs, member.UserID)
-	}
-
-	// バルクでユーザー情報を取得
-	users, err := s.userRepo.FindByIDs(ctx, userIDs)
-	if err != nil {
-		return mentions, err
-	}
-
-	// ユーザーIDをキーとしたマップを作成
-	userMap := make(map[string]*entity.User)
-	for _, user := range users {
-		userMap[user.ID] = user
-	}
-
-	// メンションを処理
-	for _, match := range matches {
-		if len(match) < 2 {
-			continue
+	if len(tokens.UserIDs) > 0 {
+		members, err := s.workspaceRepo.FindMembersByWorkspaceID(ctx, workspaceID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load workspace members: %w", err)
 		}
-		username := match[1]
+		for _, member := range members {
+			if slices.Contains(tokens.UserIDs, member.UserID) {
+				resolved.UserIDs = append(resolved.UserIDs, member.UserID)
+			}
+		}
+	}
 
-		// ユーザー名でマッチング
-		for _, member := range workspaceMembers {
-			user, exists := userMap[member.UserID]
-			if !exists {
+	if len(tokens.GroupIDs) > 0 {
+		groups, err := s.userGroupRepo.FindByIDs(ctx, tokens.GroupIDs)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load groups: %w", err)
+		}
+		for _, group := range groups {
+			if group.WorkspaceID != workspaceID {
 				continue
 			}
-			// 簡略化のため、display_nameの最初の部分でマッチング
-			if strings.HasPrefix(strings.ToLower(user.DisplayName), strings.ToLower(username)) {
-				if !userIDSet[user.ID] {
-					mentions = append(mentions, &entity.MessageUserMention{
-						UserID: user.ID,
-					})
-					userIDSet[user.ID] = true
-				}
-				break
+			resolved.GroupIDs = append(resolved.GroupIDs, group.ID)
+			if slices.Contains(knownGroups, group.ID) {
+				continue
+			}
+			members, err := s.userGroupRepo.FindMembersByGroupID(ctx, group.ID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load group members: %w", err)
+			}
+			for _, member := range members {
+				resolved.GroupMembers[group.ID] = append(resolved.GroupMembers[group.ID], member.UserID)
 			}
 		}
 	}
-
-	return mentions, nil
+	return resolved, nil
 }
 
-// ExtractGroupMentions はメッセージ本文からグループメンションを抽出します
-func (s *mentionService) ExtractGroupMentions(ctx context.Context, body, workspaceID string) ([]*entity.MessageGroupMention, error) {
-	// @groupname パターンを検出
-	mentionRegex := regexp.MustCompile(`@([a-zA-Z0-9_-]+)`)
-	matches := mentionRegex.FindAllStringSubmatch(body, -1)
-
-	var mentions []*entity.MessageGroupMention
-	groupIDSet := make(map[string]bool)
-
-	// ワークスペースの全グループを取得
-	groups, err := s.userGroupRepo.FindByWorkspaceID(ctx, workspaceID)
-	if err != nil {
-		return mentions, err
-	}
-
-	// グループ名をキーとしたマップを作成
-	groupMap := make(map[string]*entity.UserGroup)
-	for _, group := range groups {
-		groupMap[group.Name] = group
-	}
-
-	// メンションを処理
-	for _, match := range matches {
-		if len(match) < 2 {
-			continue
+func (s *mentionService) RenderPlain(ctx context.Context, body string) (string, error) {
+	tokens := entity.ParseMentionTokens(body)
+	names := map[string]string{}
+	if len(tokens.UserIDs) > 0 {
+		users, err := s.userRepo.FindByIDs(ctx, tokens.UserIDs)
+		if err != nil {
+			return "", err
 		}
-		groupname := match[1]
-
-		// グループ名でマッチング
-		if group, exists := groupMap[groupname]; exists {
-			if !groupIDSet[group.ID] {
-				mentions = append(mentions, &entity.MessageGroupMention{
-					GroupID: group.ID,
-				})
-				groupIDSet[group.ID] = true
-			}
+		for _, u := range users {
+			names[u.ID] = u.DisplayName
 		}
 	}
-
-	return mentions, nil
+	if len(tokens.GroupIDs) > 0 {
+		groups, err := s.userGroupRepo.FindByIDs(ctx, tokens.GroupIDs)
+		if err != nil {
+			return "", err
+		}
+		for _, g := range groups {
+			names[g.ID] = g.Name
+		}
+	}
+	if len(tokens.ChannelIDs) > 0 {
+		channels, err := s.channelRepo.FindByIDs(ctx, tokens.ChannelIDs)
+		if err != nil {
+			return "", err
+		}
+		for _, c := range channels {
+			names[c.ID] = c.Name
+		}
+	}
+	return entity.ReplaceMentionTokens(body, func(kind entity.MentionKind, id string) string {
+		prefix := "@"
+		if kind == entity.MentionKindChannel {
+			prefix = "#"
+		}
+		if kind == entity.MentionKindBroadcast {
+			return prefix + id
+		}
+		if name, ok := names[id]; ok {
+			return prefix + name
+		}
+		return prefix + "unknown"
+	}), nil
 }

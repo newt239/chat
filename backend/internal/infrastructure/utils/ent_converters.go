@@ -204,6 +204,8 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 		SenderName:      m.SenderName,
 		SenderAvatarURL: m.SenderAvatarURL,
 		Location:        LocationToEntity(m.LocationLatitude, m.LocationLongitude, m.LocationAccuracy, m.LocationLabel),
+		MentionsChannel: m.MentionsChannel,
+		MentionsHere:    m.MentionsHere,
 	}
 }
 
@@ -371,9 +373,10 @@ func MessageUserMentionToEntity(mum *ent.MessageUserMention) *entity.MessageUser
 		userID = mum.Edges.User.ID.String()
 	}
 	return &entity.MessageUserMention{
-		MessageID: messageID,
-		UserID:    userID,
-		CreatedAt: mum.CreatedAt,
+		MessageID:  messageID,
+		UserID:     userID,
+		ViaGroupID: UUIDPtrToStringPtr(mum.ViaGroupID),
+		CreatedAt:  mum.CreatedAt,
 	}
 }
 

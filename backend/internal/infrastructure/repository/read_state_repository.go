@@ -35,14 +35,10 @@ const unreadCountSQL = `
 	FROM unnest($1::uuid[]) AS c(id)
 	LEFT JOIN channel_read_states rs ON rs.channel_read_state_channel = c.id AND rs.channel_read_state_user = $2`
 
-// 本人か所属グループへのメンションを含む未読メッセージをチャンネルごとに数える
+// 本人へのメンション（グループ経由を含む）を含む未読メッセージをチャンネルごとに数える
 const unreadMentionCountSQL = `
 	WITH mentioned AS (
-		SELECT message_user_mention_message AS id FROM message_user_mentions WHERE message_user_mention_user = $2
-		UNION
-		SELECT gm.message_group_mention_message FROM message_group_mentions gm
-		JOIN user_group_members ugm ON ugm.user_group_member_group = gm.message_group_mention_group
-		WHERE ugm.user_group_member_user = $2
+		SELECT DISTINCT message_user_mention_message AS id FROM message_user_mentions WHERE message_user_mention_user = $2
 	)
 	SELECT m.message_channel, COUNT(*)
 	FROM mentioned JOIN messages m ON m.id = mentioned.id

@@ -8,8 +8,8 @@ import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { Mention } from "./Mention";
 
-const setup = (username: string) =>
-  renderWithProviders(<Mention data-mention={username} />, "/app/ws1", (routes) => {
+const setup = (value: string) =>
+  renderWithProviders(<Mention data-mention={value} />, "/app/ws1", (routes) => {
     routes.rpc(WorkspaceService.method.listMembers, () => ({
       members: [create(WorkspaceMemberSchema, { displayName: "Bob Smith", userId: "u-bob" })],
     }));
@@ -19,19 +19,25 @@ const setup = (username: string) =>
   });
 
 describe("Mention", () => {
-  test("表示名の前方一致で見つかったユーザーは大文字小文字を問わずボタンにする", async () => {
-    await setup("bob");
-    expect(await screen.findByRole("button", { name: "@bob" })).toBeInTheDocument();
+  test("ユーザーは ID で引いた今の表示名のボタンにする", async () => {
+    await setup("user:u-bob");
+    expect(await screen.findByRole("button", { name: "@Bob Smith" })).toBeInTheDocument();
   });
 
-  test("名前が一致するグループはボタンにする", async () => {
-    await setup("developers");
+  test("グループは ID で引いた今の名前のボタンにする", async () => {
+    await setup("group:g1");
     expect(await screen.findByRole("button", { name: "@developers" })).toBeInTheDocument();
   });
 
-  test("存在しない名前はハイライトせず文字列のまま出す", async () => {
-    await setup("nobody");
-    expect(await screen.findByText("@nobody")).toBeInTheDocument();
+  test("@channel / @here はボタンにしない", async () => {
+    await setup("broadcast:here");
+    expect(await screen.findByText("@here")).toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  test("見つからないユーザーは名前を伏せる", async () => {
+    await setup("user:u-nobody");
+    expect(await screen.findByText("@不明なユーザー")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

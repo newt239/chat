@@ -17,6 +17,10 @@ import (
 )
 
 // AutoSeed checks if the database is empty and seeds it with initial data
+
+// developersGroupID はサンプルの本文からも参照する developers グループの ID
+const developersGroupID = "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+
 func AutoSeed(client *ent.Client) error {
 	ctx := context.Background()
 
@@ -415,7 +419,7 @@ func createSeedData(
 	userGroupRepo := repository.NewUserGroupRepository(client)
 	groups := []*entity.UserGroup{
 		{
-			ID:          "0aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+			ID:          developersGroupID,
 			WorkspaceID: "general",
 			Name:        "developers",
 			Description: stringPtr("Development team members"),
@@ -468,19 +472,19 @@ func createSeedData(
 			ID:        "fccccccc-cccc-cccc-cccc-cccccccccccc",
 			ChannelID: channels[0].ID, // general
 			UserID:    users[0].ID,    // Alice
-			Body:      "Hey @bob, can you review the latest changes? Also check out this link: https://github.com/example/repo",
+			Body:      "Hey <@" + users[1].ID + ">, can you review the latest changes? Also check out this link: https://github.com/example/repo",
 		},
 		{
 			ID:        "fddddddd-dddd-dddd-dddd-dddddddddddd",
 			ChannelID: channels[0].ID, // general
 			UserID:    users[1].ID,    // Bob
-			Body:      "Sure @alice! @developers, let's discuss the new features. Here's a useful resource: https://docs.example.com/guide",
+			Body:      "Sure <@" + users[0].ID + ">! <@&" + groups[0].ID + ">, let's discuss the new features. Here's a useful resource: https://docs.example.com/guide",
 		},
 		{
 			ID:        "feeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
 			ChannelID: channels[2].ID, // development
 			UserID:    users[3].ID,    // Diana
-			Body:      "@developers @designers, I've updated the UI mockups. Check this out: https://figma.com/design/example",
+			Body:      "<@&" + groups[0].ID + "> <@&" + groups[2].ID + ">, I've updated the UI mockups. Check this out: https://figma.com/design/example",
 		},
 	}
 
@@ -493,13 +497,16 @@ func createSeedData(
 		}
 	}
 
-	// Create user mentions using message repository
+	// グループへのメンションは投稿時点のメンバーに展開して保存する
+	developers := &groups[0].ID
 	userMentions := []*entity.MessageUserMention{
-		{MessageID: mentionMessages[0].ID, UserID: users[1].ID, CreatedAt: mentionMessages[0].CreatedAt}, // Alice mentions Bob
-		{MessageID: mentionMessages[1].ID, UserID: users[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions Alice
-		{MessageID: mentionMessages[2].ID, UserID: users[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions Alice
-		{MessageID: mentionMessages[2].ID, UserID: users[1].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions Bob
-		{MessageID: mentionMessages[2].ID, UserID: users[3].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions Diana
+		{MessageID: mentionMessages[0].ID, UserID: users[1].ID, CreatedAt: mentionMessages[0].CreatedAt},
+		{MessageID: mentionMessages[1].ID, UserID: users[0].ID, CreatedAt: mentionMessages[1].CreatedAt},
+		{MessageID: mentionMessages[1].ID, UserID: users[1].ID, ViaGroupID: developers, CreatedAt: mentionMessages[1].CreatedAt},
+		{MessageID: mentionMessages[1].ID, UserID: users[3].ID, ViaGroupID: developers, CreatedAt: mentionMessages[1].CreatedAt},
+		{MessageID: mentionMessages[2].ID, UserID: users[0].ID, ViaGroupID: developers, CreatedAt: mentionMessages[2].CreatedAt},
+		{MessageID: mentionMessages[2].ID, UserID: users[1].ID, ViaGroupID: developers, CreatedAt: mentionMessages[2].CreatedAt},
+		{MessageID: mentionMessages[2].ID, UserID: users[3].ID, ViaGroupID: developers, CreatedAt: mentionMessages[2].CreatedAt},
 	}
 
 	for _, mention := range userMentions {

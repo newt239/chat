@@ -178,8 +178,7 @@ func (r *InfrastructureRegistry) NewMentionService() service.MentionService {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewUserGroupRepository(),
-		r.domainRegistry.NewMessageUserMentionRepository(),
-		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.domainRegistry.NewChannelRepository(),
 	)
 }
 

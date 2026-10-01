@@ -144,6 +144,8 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 		SetChannelID(channelID).
 		SetUserID(userID).
 		SetBody(msg.Body).
+		SetMentionsChannel(msg.MentionsChannel).
+		SetMentionsHere(msg.MentionsHere).
 		SetNillableSenderName(msg.SenderName).
 		SetNillableSenderAvatarURL(msg.SenderAvatarURL)
 	if loc := msg.Location; loc != nil {
@@ -204,7 +206,9 @@ func (r *messageRepository) Update(ctx context.Context, msg *entity.Message) err
 	client := transaction.ResolveClient(ctx, r.client)
 
 	builder := client.Message.UpdateOneID(messageID).
-		SetBody(msg.Body)
+		SetBody(msg.Body).
+		SetMentionsChannel(msg.MentionsChannel).
+		SetMentionsHere(msg.MentionsHere)
 
 	if msg.EditedAt != nil {
 		builder = builder.SetEditedAt(*msg.EditedAt)
@@ -341,6 +345,7 @@ func (r *messageRepository) AddUserMention(ctx context.Context, mention *entity.
 	_, err = client.MessageUserMention.Create().
 		SetMessageID(messageID).
 		SetUserID(userID).
+		SetNillableViaGroupID(utils.ParseUUIDPtr(mention.ViaGroupID)).
 		Save(ctx)
 
 	return err

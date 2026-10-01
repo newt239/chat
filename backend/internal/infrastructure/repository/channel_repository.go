@@ -573,6 +573,22 @@ func (r *channelRepository) FindByNames(ctx context.Context, workspaceID string,
 	return channelsToEntities(channels), nil
 }
 
+func (r *channelRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Channel, error) {
+	parsedIDs, err := parseUUIDs(ids, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	channels, err := transaction.ResolveClient(ctx, r.client).Channel.Query().
+		Where(channel.IDIn(parsedIDs...)).
+		WithWorkspace().
+		WithCreatedBy().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return channelsToEntities(channels), nil
+}
+
 func (r *channelRepository) FindDescendants(ctx context.Context, ch *entity.Channel) ([]*entity.Channel, error) {
 	client := transaction.ResolveClient(ctx, r.client)
 	channels, err := client.Channel.Query().

@@ -9718,6 +9718,8 @@ type MessageMutation struct {
 	location_accuracy          *float64
 	addlocation_accuracy       *float64
 	location_label             *string
+	mentions_channel           *bool
+	mentions_here              *bool
 	clearedFields              map[string]struct{}
 	channel                    *uuid.UUID
 	clearedchannel             bool
@@ -10561,6 +10563,78 @@ func (m *MessageMutation) ResetLocationLabel() {
 	delete(m.clearedFields, message.FieldLocationLabel)
 }
 
+// SetMentionsChannel sets the "mentions_channel" field.
+func (m *MessageMutation) SetMentionsChannel(b bool) {
+	m.mentions_channel = &b
+}
+
+// MentionsChannel returns the value of the "mentions_channel" field in the mutation.
+func (m *MessageMutation) MentionsChannel() (r bool, exists bool) {
+	v := m.mentions_channel
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMentionsChannel returns the old "mentions_channel" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldMentionsChannel(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMentionsChannel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMentionsChannel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMentionsChannel: %w", err)
+	}
+	return oldValue.MentionsChannel, nil
+}
+
+// ResetMentionsChannel resets all changes to the "mentions_channel" field.
+func (m *MessageMutation) ResetMentionsChannel() {
+	m.mentions_channel = nil
+}
+
+// SetMentionsHere sets the "mentions_here" field.
+func (m *MessageMutation) SetMentionsHere(b bool) {
+	m.mentions_here = &b
+}
+
+// MentionsHere returns the value of the "mentions_here" field in the mutation.
+func (m *MessageMutation) MentionsHere() (r bool, exists bool) {
+	v := m.mentions_here
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMentionsHere returns the old "mentions_here" field's value of the Message entity.
+// If the Message object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageMutation) OldMentionsHere(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMentionsHere is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMentionsHere requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMentionsHere: %w", err)
+	}
+	return oldValue.MentionsHere, nil
+}
+
+// ResetMentionsHere resets all changes to the "mentions_here" field.
+func (m *MessageMutation) ResetMentionsHere() {
+	m.mentions_here = nil
+}
+
 // ClearChannel clears the "channel" edge to the Channel entity.
 func (m *MessageMutation) ClearChannel() {
 	m.clearedchannel = true
@@ -11216,7 +11290,7 @@ func (m *MessageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 16)
 	if m.channel != nil {
 		fields = append(fields, message.FieldChannelID)
 	}
@@ -11259,6 +11333,12 @@ func (m *MessageMutation) Fields() []string {
 	if m.location_label != nil {
 		fields = append(fields, message.FieldLocationLabel)
 	}
+	if m.mentions_channel != nil {
+		fields = append(fields, message.FieldMentionsChannel)
+	}
+	if m.mentions_here != nil {
+		fields = append(fields, message.FieldMentionsHere)
+	}
 	return fields
 }
 
@@ -11295,6 +11375,10 @@ func (m *MessageMutation) Field(name string) (ent.Value, bool) {
 		return m.LocationAccuracy()
 	case message.FieldLocationLabel:
 		return m.LocationLabel()
+	case message.FieldMentionsChannel:
+		return m.MentionsChannel()
+	case message.FieldMentionsHere:
+		return m.MentionsHere()
 	}
 	return nil, false
 }
@@ -11332,6 +11416,10 @@ func (m *MessageMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldLocationAccuracy(ctx)
 	case message.FieldLocationLabel:
 		return m.OldLocationLabel(ctx)
+	case message.FieldMentionsChannel:
+		return m.OldMentionsChannel(ctx)
+	case message.FieldMentionsHere:
+		return m.OldMentionsHere(ctx)
 	}
 	return nil, fmt.Errorf("unknown Message field %s", name)
 }
@@ -11438,6 +11526,20 @@ func (m *MessageMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLocationLabel(v)
+		return nil
+	case message.FieldMentionsChannel:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMentionsChannel(v)
+		return nil
+	case message.FieldMentionsHere:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMentionsHere(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Message field %s", name)
@@ -11631,6 +11733,12 @@ func (m *MessageMutation) ResetField(name string) error {
 		return nil
 	case message.FieldLocationLabel:
 		m.ResetLocationLabel()
+		return nil
+	case message.FieldMentionsChannel:
+		m.ResetMentionsChannel()
+		return nil
+	case message.FieldMentionsHere:
+		m.ResetMentionsHere()
 		return nil
 	}
 	return fmt.Errorf("unknown Message field %s", name)
@@ -15469,6 +15577,7 @@ type MessageUserMentionMutation struct {
 	op             Op
 	typ            string
 	id             *uuid.UUID
+	via_group_id   *uuid.UUID
 	created_at     *time.Time
 	clearedFields  map[string]struct{}
 	message        *uuid.UUID
@@ -15582,6 +15691,55 @@ func (m *MessageUserMentionMutation) IDs(ctx context.Context) ([]uuid.UUID, erro
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetViaGroupID sets the "via_group_id" field.
+func (m *MessageUserMentionMutation) SetViaGroupID(u uuid.UUID) {
+	m.via_group_id = &u
+}
+
+// ViaGroupID returns the value of the "via_group_id" field in the mutation.
+func (m *MessageUserMentionMutation) ViaGroupID() (r uuid.UUID, exists bool) {
+	v := m.via_group_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldViaGroupID returns the old "via_group_id" field's value of the MessageUserMention entity.
+// If the MessageUserMention object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MessageUserMentionMutation) OldViaGroupID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldViaGroupID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldViaGroupID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldViaGroupID: %w", err)
+	}
+	return oldValue.ViaGroupID, nil
+}
+
+// ClearViaGroupID clears the value of the "via_group_id" field.
+func (m *MessageUserMentionMutation) ClearViaGroupID() {
+	m.via_group_id = nil
+	m.clearedFields[messageusermention.FieldViaGroupID] = struct{}{}
+}
+
+// ViaGroupIDCleared returns if the "via_group_id" field was cleared in this mutation.
+func (m *MessageUserMentionMutation) ViaGroupIDCleared() bool {
+	_, ok := m.clearedFields[messageusermention.FieldViaGroupID]
+	return ok
+}
+
+// ResetViaGroupID resets all changes to the "via_group_id" field.
+func (m *MessageUserMentionMutation) ResetViaGroupID() {
+	m.via_group_id = nil
+	delete(m.clearedFields, messageusermention.FieldViaGroupID)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -15732,7 +15890,10 @@ func (m *MessageUserMentionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MessageUserMentionMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
+	if m.via_group_id != nil {
+		fields = append(fields, messageusermention.FieldViaGroupID)
+	}
 	if m.created_at != nil {
 		fields = append(fields, messageusermention.FieldCreatedAt)
 	}
@@ -15744,6 +15905,8 @@ func (m *MessageUserMentionMutation) Fields() []string {
 // schema.
 func (m *MessageUserMentionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case messageusermention.FieldViaGroupID:
+		return m.ViaGroupID()
 	case messageusermention.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -15755,6 +15918,8 @@ func (m *MessageUserMentionMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *MessageUserMentionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case messageusermention.FieldViaGroupID:
+		return m.OldViaGroupID(ctx)
 	case messageusermention.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -15766,6 +15931,13 @@ func (m *MessageUserMentionMutation) OldField(ctx context.Context, name string) 
 // type.
 func (m *MessageUserMentionMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case messageusermention.FieldViaGroupID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetViaGroupID(v)
+		return nil
 	case messageusermention.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -15802,7 +15974,11 @@ func (m *MessageUserMentionMutation) AddField(name string, value ent.Value) erro
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *MessageUserMentionMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(messageusermention.FieldViaGroupID) {
+		fields = append(fields, messageusermention.FieldViaGroupID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -15815,6 +15991,11 @@ func (m *MessageUserMentionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *MessageUserMentionMutation) ClearField(name string) error {
+	switch name {
+	case messageusermention.FieldViaGroupID:
+		m.ClearViaGroupID()
+		return nil
+	}
 	return fmt.Errorf("unknown MessageUserMention nullable field %s", name)
 }
 
@@ -15822,6 +16003,9 @@ func (m *MessageUserMentionMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *MessageUserMentionMutation) ResetField(name string) error {
 	switch name {
+	case messageusermention.FieldViaGroupID:
+		m.ResetViaGroupID()
+		return nil
 	case messageusermention.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil

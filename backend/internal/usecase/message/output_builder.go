@@ -257,10 +257,13 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		DeletedAt:   msg.DeletedAt,
 		IsDeleted:   msg.DeletedAt != nil,
 		Location:    msg.Location,
+
+		MentionsChannel: msg.MentionsChannel,
+		MentionsHere:    msg.MentionsHere,
 	}
 
 	for _, mention := range related.userMentions[msg.ID] {
-		output.Mentions = append(output.Mentions, UserMention{UserID: mention.UserID})
+		output.Mentions = append(output.Mentions, UserMention{UserID: mention.UserID, ViaGroupID: mention.ViaGroupID})
 	}
 	for _, mention := range related.groupMentions[msg.ID] {
 		name := ""

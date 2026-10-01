@@ -208,8 +208,8 @@ func (r *UseCaseRegistry) NewPushDispatcher() *notificationuc.Dispatcher {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewChannelMuteRepository(),
 		r.domainRegistry.NewThreadRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
 		r.domainRegistry.NewPushTokenRepository(),
+		r.infrastructureRegistry.NewMentionService(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.infrastructureRegistry.PushSender(),
 		r.infrastructureRegistry.NewLogger(),
@@ -243,6 +243,7 @@ func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {
 	return searchindex.NewIndexer(
 		r.domainRegistry.NewMessageRepository(),
 		r.infrastructureRegistry.MessageSearchIndex(),
+		r.infrastructureRegistry.NewMentionService(),
 		r.infrastructureRegistry.NewLogger(),
 	)
 }

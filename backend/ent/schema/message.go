@@ -63,6 +63,11 @@ func (Message) Fields() []ent.Field {
 		field.String("location_label").
 			Optional().
 			Nillable(),
+		// 本文の <@channel> / <@here>。届く範囲は読むときのチャンネルメンバーで決まる
+		field.Bool("mentions_channel").
+			Default(false),
+		field.Bool("mentions_here").
+			Default(false),
 	}
 }
 

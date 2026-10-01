@@ -7,19 +7,16 @@ import { useMembers } from "#/features/member/hooks/useMembers";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
-import {
-  applySuggestion,
-  findSuggestionQuery,
-  mentionTokenOf,
-  rankByQuery,
-} from "../utils/suggestion";
+import { toMentionToken } from "../utils/mentionToken";
+import { applySuggestion, findSuggestionQuery, rankByQuery } from "../utils/suggestion";
 
 import type { SuggestionItem } from "../utils/suggestion";
 
 type Options = {
   body: string;
   cursor: number;
-  onApply: (next: { text: string; cursor: number }) => void;
+  // item は選んだ候補。送信時に名前を ID 記法へ戻すために使う
+  onApply: (next: { text: string; cursor: number }, item: SuggestionItem) => void;
 };
 
 type SuggestionKeyEvent = {
@@ -29,6 +26,15 @@ type SuggestionKeyEvent = {
 };
 
 const LIMIT = 8;
+
+const broadcasts = (["channel", "here"] as const).map((id) => ({
+  avatarUrl: undefined,
+  id,
+  kind: "broadcast" as const,
+  label: id,
+  token: toMentionToken({ id, kind: "broadcast" }),
+  value: `@${id}`,
+}));
 
 /** 入力欄で @ を打つとユーザーとユーザーグループ、# を打つとチャンネルの候補を出す */
 export const useComposerSuggestion = ({ body, cursor, onApply }: Options) => {
@@ -53,30 +59,32 @@ export const useComposerSuggestion = ({ body, cursor, onApply }: Options) => {
           id: channel.id,
           kind: "channel",
           label: channel.name,
+          token: toMentionToken({ id: channel.id, kind: "channel" }),
           value: `#${channel.name}`,
         }))
       : [
-          ...members.flatMap((member) => {
-            const token = mentionTokenOf(member.displayName);
-            return token === null || member.suspendedAt !== undefined
-              ? []
-              : [
-                  {
-                    avatarUrl: member.avatarUrl,
-                    id: member.userId,
-                    kind: "user" as const,
-                    label: member.nickname ?? member.displayName,
-                    value: `@${token}`,
-                  },
-                ];
-          }),
+          ...members
+            .filter((member) => member.suspendedAt === undefined)
+            .map((member) => {
+              const label = member.nickname ?? member.displayName;
+              return {
+                avatarUrl: member.avatarUrl,
+                id: member.userId,
+                kind: "user" as const,
+                label,
+                token: toMentionToken({ id: member.userId, kind: "user" }),
+                value: `@${label}`,
+              };
+            }),
           ...groups.map((group) => ({
             avatarUrl: undefined,
             id: group.id,
             kind: "group" as const,
             label: group.name,
+            token: toMentionToken({ id: group.id, kind: "group" }),
             value: `@${group.name}`,
           })),
+          ...broadcasts,
         ];
   const items =
     query === null
@@ -91,7 +99,7 @@ export const useComposerSuggestion = ({ body, cursor, onApply }: Options) => {
 
   const select = (item: SuggestionItem) => {
     if (query !== null) {
-      onApply(applySuggestion({ cursor, query, text: body, value: item.value }));
+      onApply(applySuggestion({ cursor, query, text: body, value: item.value }), item);
     }
   };
 

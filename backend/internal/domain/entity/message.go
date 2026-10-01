@@ -16,6 +16,8 @@ type Message struct {
 	SenderName      *string
 	SenderAvatarURL *string
 	Location        *MessageLocation
+	MentionsChannel bool
+	MentionsHere    bool
 }
 
 // MessageLocation はメッセージで共有された位置情報です

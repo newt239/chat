@@ -64,8 +64,8 @@ type UserInfo struct {
 }
 
 type UserMention struct {
-	UserID      string `json:"userId"`
-	DisplayName string `json:"displayName"`
+	UserID     string
+	ViaGroupID *string
 }
 
 type GroupMention struct {
@@ -113,24 +113,26 @@ type AttachmentInfo struct {
 }
 
 type MessageOutput struct {
-	ID          string                  `json:"id"`
-	ChannelID   string                  `json:"channelId"`
-	UserID      string                  `json:"userId"`
-	User        UserInfo                `json:"user"`
-	ParentID    *string                 `json:"parentId"`
-	Body        string                  `json:"body"`
-	Mentions    []UserMention           `json:"mentions"`
-	Groups      []GroupMention          `json:"groups"`
-	Links       []LinkInfo              `json:"links"`
-	Reactions   []ReactionInfo          `json:"reactions"`
-	Attachments []AttachmentInfo        `json:"attachments"`
-	CreatedAt   time.Time               `json:"createdAt"`
-	EditedAt    *time.Time              `json:"editedAt"`
-	DeletedAt   *time.Time              `json:"deletedAt"`
-	IsDeleted   bool                    `json:"isDeleted"`
-	DeletedBy   *UserInfo               `json:"deletedBy,omitempty"`
-	Pin         *PinInfo                `json:"pin,omitempty"`
-	Location    *entity.MessageLocation `json:"location,omitempty"`
+	ID              string                  `json:"id"`
+	ChannelID       string                  `json:"channelId"`
+	UserID          string                  `json:"userId"`
+	User            UserInfo                `json:"user"`
+	ParentID        *string                 `json:"parentId"`
+	Body            string                  `json:"body"`
+	Mentions        []UserMention           `json:"mentions"`
+	Groups          []GroupMention          `json:"groups"`
+	Links           []LinkInfo              `json:"links"`
+	Reactions       []ReactionInfo          `json:"reactions"`
+	Attachments     []AttachmentInfo        `json:"attachments"`
+	CreatedAt       time.Time               `json:"createdAt"`
+	EditedAt        *time.Time              `json:"editedAt"`
+	DeletedAt       *time.Time              `json:"deletedAt"`
+	IsDeleted       bool                    `json:"isDeleted"`
+	DeletedBy       *UserInfo               `json:"deletedBy,omitempty"`
+	Pin             *PinInfo                `json:"pin,omitempty"`
+	Location        *entity.MessageLocation `json:"location,omitempty"`
+	MentionsChannel bool
+	MentionsHere    bool
 }
 
 // WithoutMessagePreviews は引用カードを除いたコピーを返します。

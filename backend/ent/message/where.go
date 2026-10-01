@@ -126,6 +126,16 @@ func LocationLabel(v string) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldLocationLabel, v))
 }
 
+// MentionsChannel applies equality check predicate on the "mentions_channel" field. It's identical to MentionsChannelEQ.
+func MentionsChannel(v bool) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldMentionsChannel, v))
+}
+
+// MentionsHere applies equality check predicate on the "mentions_here" field. It's identical to MentionsHereEQ.
+func MentionsHere(v bool) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldMentionsHere, v))
+}
+
 // ChannelIDEQ applies the EQ predicate on the "channel_id" field.
 func ChannelIDEQ(v uuid.UUID) predicate.Message {
 	return predicate.Message(sql.FieldEQ(FieldChannelID, v))
@@ -824,6 +834,26 @@ func LocationLabelEqualFold(v string) predicate.Message {
 // LocationLabelContainsFold applies the ContainsFold predicate on the "location_label" field.
 func LocationLabelContainsFold(v string) predicate.Message {
 	return predicate.Message(sql.FieldContainsFold(FieldLocationLabel, v))
+}
+
+// MentionsChannelEQ applies the EQ predicate on the "mentions_channel" field.
+func MentionsChannelEQ(v bool) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldMentionsChannel, v))
+}
+
+// MentionsChannelNEQ applies the NEQ predicate on the "mentions_channel" field.
+func MentionsChannelNEQ(v bool) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldMentionsChannel, v))
+}
+
+// MentionsHereEQ applies the EQ predicate on the "mentions_here" field.
+func MentionsHereEQ(v bool) predicate.Message {
+	return predicate.Message(sql.FieldEQ(FieldMentionsHere, v))
+}
+
+// MentionsHereNEQ applies the NEQ predicate on the "mentions_here" field.
+func MentionsHereNEQ(v bool) predicate.Message {
+	return predicate.Message(sql.FieldNEQ(FieldMentionsHere, v))
 }
 
 // HasChannel applies the HasEdge predicate on the "channel" edge.

@@ -23,12 +23,12 @@ func TestBuildFilter(t *testing.T) {
 		PinnedOnly:     true,
 		ThreadOnly:     true,
 		ExcludeReplies: true,
-		Mention:        &domainrepository.MessageSearchScope{UserID: "u1", GroupIDs: []string{"g1"}, JoinedChannelIDs: []string{"c1"}},
+		Mention:        &domainrepository.MessageSearchScope{UserID: "u1", JoinedChannelIDs: []string{"c1"}},
 		After:          &after,
 	})
 	want := `workspace_id = "w\"s" AND channel_id IN ["c1", "c2"] AND sender_id IN ["u2"] AND has = "image" AND has = "link"` +
 		` AND pinned = true AND (parent_id IS NOT NULL OR has_replies = true) AND parent_id IS NULL` +
-		` AND (mentioned_user_ids = "u1" OR mentioned_group_ids IN ["g1"] OR (mentions_channel = true AND channel_id IN ["c1"]))` +
+		` AND (mentioned_user_ids = "u1" OR (mentions_channel = true AND channel_id IN ["c1"]))` +
 		` AND created_at >= 1000`
 	if got != want {
 		t.Errorf("フィルタが期待と異なります:\n got=%s\nwant=%s", got, want)
@@ -95,7 +95,7 @@ func TestMessageIndexSearch(t *testing.T) {
 		{
 			name: "自分宛て",
 			criteria: domainrepository.MessageSearchCriteria{Mention: &domainrepository.MessageSearchScope{
-				UserID: "alice", JoinedChannelIDs: []string{"dev"}, GroupIDs: []string{"designers"},
+				UserID: "alice", JoinedChannelIDs: []string{"dev"},
 			}},
 			want: []string{"m4", "m1"},
 		},
