@@ -14,6 +14,24 @@ pnpm start
 
 コンテナのホストポートは自動で割り当て、[portless](https://github.com/vercel-labs/portless) で名前付きの URL に振り分けるため、他のプロジェクトとポートやコンテナ名がぶつかりません。git worktree で起動すると `https://<ブランチ名>.chat.localhost` になり、メインの環境と並べて動かせます。初回の `pnpm start` では portless のプロキシ（443 番）の起動とローカル CA の信頼登録のために sudo のパスワードを求められます。
 
+### 外部に公開する
+
+Cloudflare Tunnel で、手元の環境をスマホなどの外部の端末から開けるようにできます。
+
+```bash
+# 初回だけ: Cloudflare の CLI を入れてログインし、公開に使うドメイン（Cloudflare のゾーン）を設定する
+npm i -g cf && cf auth login
+git config chat.tunnelDomain newt239.dev
+
+pnpm public          # 公開する → https://chat-local.newt239.dev
+pnpm private         # 非公開に戻す
+pnpm tunnel:status   # 今の状態を表示する
+```
+
+- 公開中は、`https://chat.localhost` から開いても API は公開用の URL を通ります。
+- worktree では `https://<ブランチ名>-chat-local.<ドメイン>` になります。Tunnel（`chat-local`）とコネクタのコンテナ（`chat-tunnel`）はメインと各 worktree で共有し、公開・非公開はホスト名ごとの振り分けルールと DNS レコードの追加・削除で切り替えます。
+- 公開中は、URL を知っていれば誰でもシードのアカウント（`alice@example.com`）でログインできます。使い終わったら `pnpm private` で戻してください。
+
 ### 利用可能なコマンド
 
 ```bash
