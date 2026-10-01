@@ -2,7 +2,7 @@ import { visit } from "unist-util-visit";
 
 import type { Root, RootContent, Text } from "mdast";
 
-const MENTION_REGEX = /@(?<username>\w+)/g;
+const MENTION_REGEX = /@(?<username>[\w-]+)/g;
 
 export const remarkMention = () => (tree: Root) => {
   visit(tree, "text", (node: Text, index, parent) => {
