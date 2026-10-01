@@ -121,7 +121,7 @@ export const message = {
     sendFailed: "返信を送信できませんでした",
   },
   typing: {
-    many: "{{names}} ほかが入力中",
+    many: "複数人が入力中",
     one: "{{names}} が入力中",
     someone: "誰か",
   },

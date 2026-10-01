@@ -123,7 +123,7 @@ export const message: Messages["message"] = {
     sendFailed: "Couldn't send the reply",
   },
   typing: {
-    many: "{{names}} and others are typing",
+    many: "Several people are typing",
     one: "Typing: {{names}}",
     someone: "Someone",
   },
