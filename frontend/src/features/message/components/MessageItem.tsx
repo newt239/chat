@@ -96,6 +96,7 @@ export const MessageItem = ({
   }, isMobile && !isEditing);
   const { handleEdit, handleDelete, isDeleting } = useMessageActions();
   const toggleReaction = useToggleReaction(message.id);
+  const isMentioned = message.mentions.some((mention) => mention.userId === currentUserId);
 
   const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
     isAuthor: message.userId === currentUserId,
@@ -163,8 +164,13 @@ export const MessageItem = ({
         (isHovered || isOverlayOpen) && "bg-hover",
         isMobile && "select-none [-webkit-touch-callout:none]",
         isPressed && "bg-hover",
-        message.pin && "bg-pin-bg shadow-[inset_3px_0_0_var(--color-pin-bar)]",
-        isHighlighted && "bg-accent-soft",
+        isHighlighted
+          ? "bg-accent-soft"
+          : isMentioned
+            ? "bg-mention-bg shadow-[inset_3px_0_0_var(--color-mention-bar)]"
+            : isBookmarked
+              ? "bg-bookmark-bg shadow-[inset_3px_0_0_var(--color-bookmark-bar)]"
+              : message.pin && "bg-pin-bg shadow-[inset_3px_0_0_var(--color-pin-bar)]",
         "transition-colors motion-reduce:transition-none",
       )}
     >
