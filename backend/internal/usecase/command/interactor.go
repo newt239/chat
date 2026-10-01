@@ -33,14 +33,15 @@ type ExecuteInput struct {
 }
 
 type Interactor struct {
-	reminderRepo     domainrepository.ReminderRepository
-	userRepo         domainrepository.UserRepository
-	workspaceRepo    domainrepository.WorkspaceRepository
-	channelRepo      domainrepository.ChannelRepository
-	channelAccessSvc domainservice.ChannelAccessService
-	poster           OfficialPoster
-	logger           domainservice.Logger
-	now              func() time.Time
+	reminderRepo      domainrepository.ReminderRepository
+	userRepo          domainrepository.UserRepository
+	workspaceRepo     domainrepository.WorkspaceRepository
+	channelRepo       domainrepository.ChannelRepository
+	channelMemberRepo domainrepository.ChannelMemberRepository
+	channelAccessSvc  domainservice.ChannelAccessService
+	poster            OfficialPoster
+	logger            domainservice.Logger
+	now               func() time.Time
 }
 
 func NewInteractor(
@@ -48,19 +49,21 @@ func NewInteractor(
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelRepo domainrepository.ChannelRepository,
+	channelMemberRepo domainrepository.ChannelMemberRepository,
 	channelAccessSvc domainservice.ChannelAccessService,
 	poster OfficialPoster,
 	logger domainservice.Logger,
 ) *Interactor {
 	return &Interactor{
-		reminderRepo:     reminderRepo,
-		userRepo:         userRepo,
-		workspaceRepo:    workspaceRepo,
-		channelRepo:      channelRepo,
-		channelAccessSvc: channelAccessSvc,
-		poster:           poster,
-		logger:           logger,
-		now:              time.Now,
+		reminderRepo:      reminderRepo,
+		userRepo:          userRepo,
+		workspaceRepo:     workspaceRepo,
+		channelRepo:       channelRepo,
+		channelMemberRepo: channelMemberRepo,
+		channelAccessSvc:  channelAccessSvc,
+		poster:            poster,
+		logger:            logger,
+		now:               time.Now,
 	}
 }
 
@@ -213,6 +216,18 @@ func (i *Interactor) deliver(ctx context.Context, reminder *entity.Reminder) err
 	dm, err := i.channelRepo.FindOrCreateDM(ctx, reminder.WorkspaceID, official.BotUserID, recipient)
 	if err != nil {
 		return fmt.Errorf("failed to open DM: %w", err)
+	}
+	// 新しく作った DM にはメンバーがいないため、公式アプリと受け取る人を参加させる
+	for _, userID := range []string{official.BotUserID, recipient} {
+		isMember, err := i.channelMemberRepo.IsMember(ctx, dm.ID, userID)
+		if err != nil {
+			return fmt.Errorf("failed to verify DM membership: %w", err)
+		}
+		if !isMember {
+			if err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: dm.ID, UserID: userID, Role: entity.ChannelRoleMember, JoinedAt: time.Now()}); err != nil {
+				return fmt.Errorf("failed to join DM: %w", err)
+			}
+		}
 	}
 	body := fmt.Sprintf("<@%s> リマインダー: %s", recipient, reminder.Text)
 	if recipient != reminder.CreatorID {

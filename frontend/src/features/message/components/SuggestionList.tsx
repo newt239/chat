@@ -46,7 +46,14 @@ export const SuggestionList = ({ id, items, activeIndex, onSelect }: SuggestionL
           {item.kind === "channel" && <IconHash aria-hidden />}
           {item.kind === "broadcast" && <IconSpeakerphone aria-hidden />}
           {item.kind === "command" && <IconSlash aria-hidden />}
-          <span className="min-w-0 flex-1 truncate font-medium">{item.label}</span>
+          <span
+            className={cn(
+              "min-w-0 flex-1 truncate font-medium",
+              item.kind === "command" && "flex-none",
+            )}
+          >
+            {item.label}
+          </span>
           {(item.kind === "group" || item.kind === "broadcast") && (
             <span className="shrink-0 text-caption text-subtle">
               {t(
@@ -57,7 +64,7 @@ export const SuggestionList = ({ id, items, activeIndex, onSelect }: SuggestionL
             </span>
           )}
           {item.kind === "command" && (
-            <span className="min-w-0 shrink truncate text-caption text-subtle">
+            <span className="min-w-0 flex-1 truncate text-caption text-subtle">
               {commandNames
                 .filter((name) => `/${name}` === item.value)
                 .map((name) => t(`command.${name}.usage`))}

@@ -201,6 +201,7 @@ func (r *UseCaseRegistry) NewCommandUseCase() *commanduc.Interactor {
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.NewAppUseCase(),
 		r.infrastructureRegistry.NewLogger(),
