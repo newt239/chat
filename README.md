@@ -4,35 +4,39 @@
 
 ```bash
 # 1. Docker Desktopを起動
-# 2. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
-docker-compose up -d --build
+# 2. 依存関係をインストール
+pnpm install
+# 3. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
+pnpm start
 ```
 
-→ http://localhost:5173 にアクセス
+→ https://chat.localhost にアクセス
+
+コンテナのホストポートは自動で割り当て、[portless](https://github.com/vercel-labs/portless) で名前付きの URL に振り分けるため、他のプロジェクトとポートやコンテナ名がぶつかりません。git worktree で起動すると `https://<ブランチ名>.chat.localhost` になり、メインの環境と並べて動かせます。初回の `pnpm start` では portless のプロキシ（443 番）の起動とローカル CA の信頼登録のために sudo のパスワードを求められます。
 
 ### 利用可能なコマンド
 
 ```bash
-# アプリケーションを起動
-docker-compose up -d --build
+# アプリケーションを起動（ポートが変わったときも再実行すれば URL の振り分けを登録し直す）
+pnpm start
 
 # アプリケーションを停止
-docker-compose down
+pnpm stop
 
 # データベーススキーマをリセット
-docker-compose exec backend go run cmd/reset/main.go
+pnpm db:reset
 
 # シードデータを投入（通常は自動実行されます）
-docker-compose exec backend go run cmd/seed/main.go
+pnpm db:seed
 
 # バックエンドコードのリント
-docker-compose exec backend golangci-lint run
+docker compose exec backend golangci-lint run
 
 # ログを表示
-docker-compose logs -f
+pnpm logs
 
 # コンテナの状態を確認
-docker-compose ps
+docker compose ps
 ```
 
 ### フロントエンドの開発コマンド
@@ -154,24 +158,25 @@ git clone <repository-url>
 cd chat
 
 # 2. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
-docker-compose up -d --build
+pnpm install
+pnpm start
 
-# 3. 起動完了後、http://localhost:5173 にアクセス
+# 3. 起動完了後、https://chat.localhost にアクセス
 ```
 
 #### 停止方法
 
 ```bash
 # アプリケーションを停止
-docker-compose down
+pnpm stop
 
 # データベースも含めて完全削除
-docker-compose down -v
+docker compose down -v
 ```
 
 ### アプリケーションへアクセス
 
-ブラウザで http://localhost:5173 にアクセスしてください。
+ブラウザで https://chat.localhost にアクセスしてください。
 
 1. 初回は「新規登録」からアカウントを作成
 2. ログイン後、ワークスペースを作成して利用開始
@@ -194,10 +199,10 @@ cp backend/.env.example backend/.env
 
 ```bash
 # データベーススキーマをリセット（全テーブルを再作成）
-docker-compose exec backend go run cmd/reset/main.go
+docker compose exec backend go run cmd/reset/main.go
 
 # シードデータを投入（通常は自動実行されます）
-docker-compose exec backend go run cmd/seed/main.go
+docker compose exec backend go run cmd/seed/main.go
 ```
 
 ### スキーマの変更
@@ -207,7 +212,7 @@ docker-compose exec backend go run cmd/seed/main.go
 1. `backend/ent/schema/` ディレクトリ内のスキーマファイルを編集
 2. ent のコード生成を実行:
    ```bash
-   docker-compose exec backend go generate ./ent
+   docker compose exec backend go generate ./ent
    ```
 3. アプリケーションを再起動すると、自動的にスキーマが適用されます
 
@@ -223,7 +228,7 @@ docker-compose exec backend go run cmd/seed/main.go
 
 ```bash
 # ER図を生成（entのコード生成と同時に実行されます）
-docker-compose exec backend go generate ./ent
+docker compose exec backend go generate ./ent
 ```
 
 #### ER 図の確認手順

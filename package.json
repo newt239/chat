@@ -2,6 +2,9 @@
   "name": "chat",
   "private": true,
   "scripts": {
+    "start": "./scripts/dev.sh",
+    "stop": "docker compose down",
+    "logs": "docker compose logs -f",
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "preview": "turbo run preview",
@@ -14,16 +17,19 @@
     "knip": "turbo run knip",
     "codecheck": "turbo run codecheck",
     "clean": "./scripts/clean.sh",
-    "claude": "claude --setting-sources project,local",
-    "migrate:generate": "docker-compose exec backend go run cmd/migrate/main.go",
+    "claude": "claude --setting-sources project,local --permission-mode bypassPermissions",
+    "migrate:generate": "docker compose exec backend go run cmd/migrate/main.go",
     "generate:proto": "buf generate proto --template proto/buf.gen.yaml",
     "proto:format": "buf format -w proto",
-    "proto:lint": "buf lint proto"
+    "proto:lint": "buf lint proto",
+    "db:reset": "docker compose run --rm reset",
+    "db:seed": "docker compose exec backend go run cmd/seed/main.go"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.73.0",
     "@bufbuild/protoc-gen-es": "2.15.0",
     "lefthook": "2.1.14",
+    "portless": "0.15.6",
     "turbo": "2.11.3"
   },
   "devEngines": {

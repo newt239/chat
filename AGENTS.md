@@ -9,9 +9,11 @@
 
 ## デバッグ
 
-- フロントエンド、バックエンドいずれも Docker 上で実行しています。デバッグは原則 Docker コンテナ内で行いますが、worktree で並列に作業する場合は、Docker の Postgres に専用の DB を作り、ホストで backend / frontend を起動して構いません。
-- 起動は `docker-compose up -d --build` で行ってください。ただし、すでにユーザーが起動している場合もあるので、すでに起動されている場合はスキップしてください。
-- 依存関係に変更が生まれた場合は `docker-compose down -v` でコンテナを停止・削除し、`docker-compose up -d --build` で再起動してください。
+- フロントエンド、バックエンドいずれも Docker 上で実行しています。デバッグは原則 Docker コンテナ内で行ってください。
+- 起動は `pnpm start` で行ってください。ただし、すでにユーザーが起動している場合もあるので、すでに起動されている場合はスキップしてください。
+  - URL は `https://chat.localhost`（API は `https://api.chat.localhost`）です。ホストポートは自動で割り当てるため固定のポート番号は使えません。DB などに繋ぐときは `docker compose port db 5432` で調べてください。
+  - worktree でも `pnpm start` でメインとは別のコンテナ・DB が立ち上がり、`https://<ブランチ名>.chat.localhost` で開けます。
+- 依存関係に変更が生まれた場合は `docker compose down -v` でコンテナを停止・削除し、`pnpm start` で再起動してください。
 - ローカルで動作させるための実装は不要です。
 - テスト用アカウントとしてユーザー名`alice@example.com`、パスワード`password123`を使用できます。
 - コミット時に lefthook の pre-commit フックが lint・format を実行します。ホスト側に`pnpm install`済みであることが前提のため、Docker のみで開発している場合は`LEFTHOOK=0 git commit`で回避できます。
