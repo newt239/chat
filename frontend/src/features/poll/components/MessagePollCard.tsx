@@ -1,8 +1,6 @@
 import { useState } from "react";
 
-import { formatDateTime, formatDateWithWeekday, formatRelativeTime, formatTime } from "@chat/i18n";
 import { IconChartBar, IconCheck } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { Button as AriaButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -13,8 +11,8 @@ import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { PollMode } from "#/gen/chat/v1/message_pb";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { usePollActions } from "../hooks/usePollActions";
 
@@ -31,7 +29,7 @@ const MAX_VOTER_AVATARS = 5;
 /** メッセージに付けた投票。押した選択肢に投票し、もう一度押すと取り消す */
 export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime, formatDateWithWeekday, formatRelativeTime, formatTime } = useDateFormat();
   const { member } = useMentionDirectory();
   const { close, vote } = usePollActions();
   // 配信されるメッセージには自分の投票が含まれないため、読み込んだ時点と投票した結果を覚えておく
@@ -44,8 +42,8 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
     }
     const at = toDate(option.startsAt);
     return option.allDay
-      ? formatDateWithWeekday(at, locale)
-      : `${formatDateWithWeekday(at, locale)} ${formatTime(at, locale)}`;
+      ? formatDateWithWeekday(at)
+      : `${formatDateWithWeekday(at)} ${formatTime(at)}`;
   };
 
   const choose = (optionId: string) => {
@@ -136,8 +134,8 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
         {poll.closesAt && !poll.isClosed && (
           <span>
             {t("poll.closesAt", {
-              relative: formatRelativeTime(toDate(poll.closesAt), new Date(), locale),
-              time: formatDateTime(toDate(poll.closesAt), locale),
+              relative: formatRelativeTime(toDate(poll.closesAt), new Date()),
+              time: formatDateTime(toDate(poll.closesAt)),
             })}
           </span>
         )}

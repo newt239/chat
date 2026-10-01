@@ -40,12 +40,10 @@ export const toHeatmapGrid = (cells: readonly HeatmapCell[]) => {
 
 // 2024-01-01 は月曜日なので、ISO の曜日をそのまま日付に足せる
 export const isoWeekdayLabel = (weekday: number, locale: Locale) =>
-  formatWeekday(new Date(2024, 0, weekday), locale);
+  formatWeekday(new Date(2024, 0, weekday), locale, undefined);
 
 // サーバーが指定したタイムゾーンで区切った日付 (YYYY-MM-DD) をローカルの日付として読む
 export const parseLocalDate = (value: string) => {
   const [year = 1970, month = 1, day = 1] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
 };
-
-export const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;

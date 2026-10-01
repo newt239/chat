@@ -100,8 +100,9 @@ export const UiGalleryPage = () => {
         <header className="flex flex-col gap-1">
           <h1 className="m-0 text-xl font-bold">UI gallery</h1>
           <p className="m-0 text-muted">
-            {formatDate(sampleDate, locale)} ({formatWeekday(sampleDate, locale)}){" "}
-            {formatTime(sampleDate, locale)} ·{" "}
+            {formatDate(sampleDate, locale, undefined)} (
+            {formatWeekday(sampleDate, locale, undefined)}){" "}
+            {formatTime(sampleDate, locale, undefined)} ·{" "}
             {formatRelativeTime(new Date(sampleDate.getTime() - 180_000), sampleDate, locale)} ·{" "}
             <Link to="/app">/app</Link>
           </p>

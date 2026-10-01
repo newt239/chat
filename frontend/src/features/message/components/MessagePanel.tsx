@@ -15,6 +15,7 @@ import { useMessagePages } from "#/features/message/hooks/useMessagePages";
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
 import { startOfDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
@@ -49,7 +50,8 @@ export const MessagePanel = () => {
     select: (params) => params.messageId !== undefined,
     strict: false,
   });
-  const around = jumpDate === null ? null : startOfDateKey(jumpDate);
+  const { timeZone } = useDateFormat();
+  const around = jumpDate === null ? null : startOfDateKey(jumpDate, timeZone);
   const {
     data: messageResponse,
     isLoading: isLoadingMessages,
@@ -97,8 +99,8 @@ export const MessagePanel = () => {
 
   const { hideJoinMessages } = useAtomValue(preferencesAtom);
   const rows = useMemo(
-    () => buildTimelineRows(orderedItems, hideJoinMessages),
-    [orderedItems, hideJoinMessages],
+    () => buildTimelineRows(orderedItems, hideJoinMessages, timeZone),
+    [orderedItems, hideJoinMessages, timeZone],
   );
   const navigate = useNavigate();
 

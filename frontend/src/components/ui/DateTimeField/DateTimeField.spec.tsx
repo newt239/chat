@@ -10,6 +10,7 @@ const Controlled = ({ onChange }: { onChange: (value: Date) => void }) => {
   const [value, setValue] = useState(new Date(2026, 8, 30, 9, 0));
   return (
     <DateTimeField
+      timeZone="Asia/Tokyo"
       label="送信日時"
       value={value}
       onChange={(next) => {
@@ -41,6 +42,7 @@ describe("DateTimeField", () => {
   test("エラーを表示できる", () => {
     render(
       <DateTimeField
+        timeZone="Asia/Tokyo"
         label="送信日時"
         value={new Date(2026, 8, 30, 9, 0)}
         onChange={vi.fn<(value: Date) => void>()}

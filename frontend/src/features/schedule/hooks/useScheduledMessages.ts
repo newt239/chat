@@ -1,13 +1,11 @@
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
-import { formatDateTime } from "@chat/i18n";
 import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { ScheduledMessageService } from "#/gen/chat/v1/scheduled_message_service_pb";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { useDateFormat } from "#/hooks/useDateFormat";
 
 import type { ComposerContent } from "#/features/message/utils/composerContent";
 
@@ -31,7 +29,7 @@ type ScheduleTarget = ComposerContent & { channelId: string; parentId: string | 
 // 入力欄の内容を予約する。予約できたら onScheduled で入力欄を空にする
 export const useScheduleMessage = () => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime } = useDateFormat();
   const invalidate = useInvalidateScheduledMessages();
   const { mutate } = useMutation(ScheduledMessageService.method.createScheduledMessage);
 
@@ -44,7 +42,7 @@ export const useScheduleMessage = () => {
         },
         onSuccess: () => {
           onScheduled();
-          toast(t("schedule.scheduled", { time: formatDateTime(scheduledAt, locale) }), {
+          toast(t("schedule.scheduled", { time: formatDateTime(scheduledAt) }), {
             tone: "success",
           });
           void invalidate();

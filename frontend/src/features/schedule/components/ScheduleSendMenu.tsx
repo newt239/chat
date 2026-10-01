@@ -7,6 +7,7 @@ import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
+import { useDateFormat } from "#/hooks/useDateFormat";
 
 import { defaultScheduleDate, schedulePresets } from "../utils/schedulePresets";
 import { ScheduleDialog } from "./ScheduleDialog";
@@ -21,6 +22,7 @@ export const ScheduleSendMenu = ({ isDisabled, onSchedule }: ScheduleSendMenuPro
   const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const now = new Date();
+  const { timeZone } = useDateFormat();
 
   return (
     <>
@@ -36,7 +38,7 @@ export const ScheduleSendMenu = ({ isDisabled, onSchedule }: ScheduleSendMenuPro
           </IconButton>
         }
       >
-        {schedulePresets(now).map(({ key, date }) => (
+        {schedulePresets(now, timeZone).map(({ key, date }) => (
           <MenuItem
             key={key}
             icon={<IconClock aria-hidden />}
@@ -62,7 +64,7 @@ export const ScheduleSendMenu = ({ isDisabled, onSchedule }: ScheduleSendMenuPro
           isOpen
           onOpenChange={setIsDialogOpen}
           title={t("schedule.dialog.title")}
-          initialDate={defaultScheduleDate(now)}
+          initialDate={defaultScheduleDate(now, timeZone)}
           isPending={false}
           onConfirm={(scheduledAt) => {
             setIsDialogOpen(false);

@@ -15,6 +15,7 @@ import { useSendThreadReply, useThreadReplies } from "#/features/message/hooks/u
 import { toDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
 
@@ -40,6 +41,7 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
     targetReplyId,
   );
   const sendReply = useSendThreadReply();
+  const { timeZone } = useDateFormat();
   // 親チャンネルの集約表示から開いたスレッドは子孫チャンネルのものなので、返信先は親メッセージのチャンネルにする
   const threadChannelId = parentMessage?.channelId ?? channelId;
   const handleCopyLink = useCopyMessageLink(workspaceId, threadChannelId);
@@ -67,17 +69,18 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
         }),
       ),
       false,
+      timeZone,
     );
     if (thread.hasMore) {
       return replyRows;
     }
     const header: TimelineRow = {
-      dateKey: toDateKey(toDate(parentMessage.createdAt)),
+      dateKey: toDateKey(toDate(parentMessage.createdAt), timeZone),
       key: "header",
       kind: "header",
     };
     return [header, ...replyRows];
-  }, [thread, parentMessage]);
+  }, [thread, parentMessage, timeZone]);
 
   const renderMessage = (message: Message, isHighlighted: boolean) => (
     <MessageItem

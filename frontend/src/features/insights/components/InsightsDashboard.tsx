@@ -40,6 +40,7 @@ type InsightsDashboardProps = {
 export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
+  // 集計の日付はサーバーがプロフィールのタイムゾーンで区切った暦日で、端末の 0 時として読むため端末のタイムゾーンで書式化する
   const { data: insights, error } = useInsights(workspaceId);
   const { data: myRole } = useMyWorkspaceRole(workspaceId);
 
@@ -70,9 +71,9 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
       return {
         isPartial,
         key: day.date,
-        label: formatMonthDay(date, locale),
+        label: formatMonthDay(date, locale, undefined),
         tooltip: countTooltip(
-          `${formatDate(date, locale)} (${formatWeekday(date, locale)})`,
+          `${formatDate(date, locale, undefined)} (${formatWeekday(date, locale, undefined)})`,
           day.value,
           isPartial,
         ),
@@ -81,7 +82,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
     });
   const dateLabel = (value: string) => {
     const date = parseLocalDate(value);
-    return `${formatDate(date, locale)} (${formatWeekday(date, locale)})`;
+    return `${formatDate(date, locale, undefined)} (${formatWeekday(date, locale, undefined)})`;
   };
   const channelRows = (
     channels: readonly ChannelActivity[],

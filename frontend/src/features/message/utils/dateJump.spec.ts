@@ -9,14 +9,18 @@ import { groupByDate, jumpDateSchema, jumpPresets, startOfDateKey, toDateKey } f
 const item = (date: Date) => create(TimelineItemSchema, { createdAt: timestampFromDate(date) });
 
 describe("日付ジャンプ", () => {
-  test("端末のタイムゾーンの日付と 0 時を相互に変換する", () => {
-    expect(toDateKey(new Date(2026, 8, 1, 23, 59))).toBe("2026-09-01");
-    expect(startOfDateKey("2026-09-01")).toStrictEqual(new Date(2026, 8, 1));
-    expect(startOfDateKey("first")).toStrictEqual(new Date(0));
+  test("指定したタイムゾーンの日付と 0 時を相互に変換する", () => {
+    const justAfterMidnight = new Date("2026-09-01T00:30:00+09:00");
+    expect(toDateKey(justAfterMidnight, "Asia/Tokyo")).toBe("2026-09-01");
+    expect(toDateKey(justAfterMidnight, "America/New_York")).toBe("2026-08-31");
+    expect(startOfDateKey("2026-09-01", "Asia/Tokyo")).toStrictEqual(
+      new Date("2026-09-01T00:00:00+09:00"),
+    );
+    expect(startOfDateKey("first", "Asia/Tokyo")).toStrictEqual(new Date(0));
   });
 
   test("今日・昨日・先週・先月の日付を求める", () => {
-    expect(jumpPresets(new Date(2026, 2, 31, 10))).toStrictEqual({
+    expect(jumpPresets(new Date("2026-03-31T10:00:00+09:00"), "Asia/Tokyo")).toStrictEqual({
       lastMonth: "2026-02-28",
       lastWeek: "2026-03-24",
       today: "2026-03-31",
@@ -31,11 +35,14 @@ describe("日付ジャンプ", () => {
   });
 
   test("古い順の項目を日付ごとにまとめる", () => {
-    const groups = groupByDate([
-      item(new Date(2026, 8, 1, 9)),
-      item(new Date(2026, 8, 1, 18)),
-      item(new Date(2026, 8, 3, 8)),
-    ]);
+    const groups = groupByDate(
+      [
+        item(new Date("2026-09-01T09:00:00+09:00")),
+        item(new Date("2026-09-01T18:00:00+09:00")),
+        item(new Date("2026-09-03T08:00:00+09:00")),
+      ],
+      "Asia/Tokyo",
+    );
 
     expect(groups.map(({ dateKey, items }) => [dateKey, items.length])).toStrictEqual([
       ["2026-09-01", 2],

@@ -1,12 +1,9 @@
-import { formatDateTime } from "@chat/i18n";
-import { useAtomValue } from "jotai";
-
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -22,7 +19,7 @@ type MessageLinkCardProps = {
 // ピン留めやブックマークの一覧で、元のメッセージへ移動するカード
 export const MessageLinkCard = ({ message, workspaceId, markedAt }: MessageLinkCardProps) => {
   const { toText } = useMentionDirectory();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime } = useDateFormat();
   const name = useDisplayName()(message.userId, message.user?.displayName ?? "");
 
   return (
@@ -37,7 +34,7 @@ export const MessageLinkCard = ({ message, workspaceId, markedAt }: MessageLinkC
         <span className="flex items-baseline gap-2">
           <b className="truncate text-[13.5px] font-semibold">{name}</b>
           <span className="shrink-0 font-mono text-[11px] text-subtle tabular-nums">
-            {formatDateTime(toDate(markedAt), locale)}
+            {formatDateTime(toDate(markedAt))}
           </span>
         </span>
         <span className="line-clamp-3 text-[13px] whitespace-pre-wrap text-muted">

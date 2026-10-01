@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
-import { formatDateTime } from "@chat/i18n";
 import {
   IconDotsVertical,
   IconEdit,
@@ -10,7 +9,6 @@ import {
   IconSend,
   IconTrash,
 } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "#/components/ui/Badge/Badge";
@@ -22,8 +20,8 @@ import { TextArea } from "#/components/ui/TextArea/TextArea";
 import { useMentionCodec } from "#/features/message/hooks/useMentionCodec";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { ScheduledMessageStatus } from "#/gen/chat/v1/scheduled_message_service_pb";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useScheduledMessageActions } from "../hooks/useScheduledMessages";
 import { ScheduleDialog } from "./ScheduleDialog";
@@ -44,7 +42,7 @@ export const ScheduledMessageItem = ({
   label,
 }: ScheduledMessageItemProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime } = useDateFormat();
   const { remove, sendNow, update } = useScheduledMessageActions();
   const { toText } = useMentionDirectory();
   // 編集欄では ID 記法を名前に戻して見せる
@@ -55,7 +53,7 @@ export const ScheduledMessageItem = ({
   const isSent = status === ScheduledMessageStatus.SENT;
   const isEditable =
     status === ScheduledMessageStatus.SCHEDULED || status === ScheduledMessageStatus.FAILED;
-  const time = formatDateTime(toDate(isSent ? message.updatedAt : message.scheduledAt), locale);
+  const time = formatDateTime(toDate(isSent ? message.updatedAt : message.scheduledAt));
 
   return (
     <article className="flex items-start gap-2 rounded-[10px] border border-border bg-surface py-2.5 pr-2 pl-3 font-sans text-text">

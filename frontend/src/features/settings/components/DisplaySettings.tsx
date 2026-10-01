@@ -7,7 +7,6 @@ import { channelSortOrders, preferencesAtom } from "#/providers/store/preference
 
 import { useUpdatePreferences } from "../hooks/usePreferences";
 import { SettingRow } from "./SettingRow";
-import { TimezoneSettings } from "./TimezoneSettings";
 
 export const DisplaySettings = () => {
   const { t } = useTranslation();
@@ -29,7 +28,6 @@ export const DisplaySettings = () => {
           }}
         />
       </SettingRow>
-      <TimezoneSettings />
       <SettingRow
         title={t("preferences.channelSort.title")}
         description={t("preferences.channelSort.description")}

@@ -15,14 +15,18 @@ const joinKinds = new Set([SystemMessageKind.MEMBER_JOINED, SystemMessageKind.ME
 
 // 古い順の項目を、日付の区切りとメッセージを 1 行ずつ並べた仮想リストの行にする
 // 参加のお知らせを隠すときは、それしかない日の区切りも出さない
-export const buildTimelineRows = (items: readonly TimelineItem[], hideJoinMessages: boolean) => {
+export const buildTimelineRows = (
+  items: readonly TimelineItem[],
+  hideJoinMessages: boolean,
+  timeZone: string,
+) => {
   const visible = hideJoinMessages
     ? items.filter(
         ({ content }) => content.case !== "systemMessage" || !joinKinds.has(content.value.kind),
       )
     : items;
   const rows: TimelineRow[] = [];
-  for (const { dateKey, items: dayItems } of groupByDate(visible)) {
+  for (const { dateKey, items: dayItems } of groupByDate(visible, timeZone)) {
     rows.push({ dateKey, key: `d-${dateKey}`, kind: "date" });
     for (const item of dayItems) {
       if (item.content.case === "userMessage") {

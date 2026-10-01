@@ -1,4 +1,4 @@
-import { formatTimeInZone } from "@chat/i18n";
+import { formatTime } from "@chat/i18n";
 import { IconMessage, IconTag } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
@@ -89,7 +89,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
             <>
               <dt className="text-muted">{t("member.profile.localTime")}</dt>
               <dd className="m-0 truncate">
-                {formatTimeInZone(new Date(), locale, member.timezone)}
+                {formatTime(new Date(), locale, member.timezone)}
                 <span className="ml-1.5 text-muted">{member.timezone}</span>
               </dd>
             </>

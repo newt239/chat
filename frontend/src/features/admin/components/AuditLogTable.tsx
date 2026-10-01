@@ -1,5 +1,3 @@
-import { formatDateTime } from "@chat/i18n";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "#/components/ui/styles/styles";
@@ -7,8 +5,8 @@ import { useAuditLogFormatter } from "#/features/admin/hooks/useAuditLogFormatte
 import { auditActionKeys, sensitiveAuditActions } from "#/features/admin/utils/labels";
 import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { summarizeUserAgent } from "#/features/admin/utils/userAgent";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { AuditLog } from "#/gen/chat/v1/admin_service_pb";
 
@@ -20,7 +18,7 @@ type AuditLogTableProps = {
 
 export const AuditLogTable = ({ logs }: AuditLogTableProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime } = useDateFormat();
   const { target, detail } = useAuditLogFormatter();
 
   if (logs.length === 0) {
@@ -48,9 +46,7 @@ export const AuditLogTable = ({ logs }: AuditLogTableProps) => {
             return (
               <tr key={log.id} className={tableClassNames.row}>
                 <td className={cn(tableClassNames.cell, tableClassNames.numeric)}>
-                  <time dateTime={createdAt.toISOString()}>
-                    {formatDateTime(createdAt, locale)}
-                  </time>
+                  <time dateTime={createdAt.toISOString()}>{formatDateTime(createdAt)}</time>
                 </td>
                 <td className={tableClassNames.cell}>
                   {log.actor?.displayName ?? (

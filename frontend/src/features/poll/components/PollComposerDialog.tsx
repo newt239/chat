@@ -14,6 +14,8 @@ import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedCont
 import { Switch } from "#/components/ui/Switch/Switch";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { PollInputSchema, PollMode } from "#/gen/chat/v1/message_pb";
+import { useDateFormat } from "#/hooks/useDateFormat";
+import { atHourDaysLater } from "#/lib/zonedDate";
 
 import type { PollInput } from "#/gen/chat/v1/message_pb";
 
@@ -28,14 +30,6 @@ type DateOption = { at: Date; allDay: boolean };
 const MAX_OPTIONS = 20;
 const modes = ["text", "date"] as const;
 
-// 今日から days 日後の hour 時
-const daysLater = (days: number, hour: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  date.setHours(hour, 0, 0, 0);
-  return date;
-};
-
 /** 投票を組み立てる。日程調整では日時の候補を並べる */
 export const PollComposerDialog = ({
   isOpen,
@@ -43,6 +37,9 @@ export const PollComposerDialog = ({
   onConfirm,
 }: PollComposerDialogProps) => {
   const { t } = useTranslation();
+  const { timeZone } = useDateFormat();
+  const daysLater = (days: number, hour: number) =>
+    atHourDaysLater(new Date(), timeZone, { days, hour });
   const [mode, setMode] = useState<(typeof modes)[number]>("text");
   const [question, setQuestion] = useState("");
   const [labels, setLabels] = useState(["", ""]);
@@ -167,6 +164,7 @@ export const PollComposerDialog = ({
               <div key={index} className="flex items-end gap-2">
                 <DateTimeField
                   label={t("poll.optionDate", { number: index + 1 })}
+                  timeZone={timeZone}
                   value={option.at}
                   onChange={(at) => {
                     setDates((current) =>
@@ -219,6 +217,7 @@ export const PollComposerDialog = ({
       {hasDeadline && (
         <DateTimeField
           label={t("poll.deadlineLabel")}
+          timeZone={timeZone}
           value={deadline}
           onChange={setDeadline}
           errorMessage={isSubmitted && isDeadlinePast ? t("poll.deadlinePast") : undefined}

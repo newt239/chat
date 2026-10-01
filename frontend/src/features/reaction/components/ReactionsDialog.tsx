@@ -1,4 +1,3 @@
-import { formatDateTime } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
@@ -11,9 +10,9 @@ import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { toPlainText } from "#/features/message/utils/markdown/plainText";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useToggleReaction } from "../hooks/useReactions";
 import { groupReactions } from "../utils/groupReactions";
@@ -33,7 +32,7 @@ type ReactionsDialogProps = {
 export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogProps) => {
   const { t } = useTranslation();
   const { toText } = useMentionDirectory();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime } = useDateFormat();
   const currentUserId = useAtomValue(userAtom)?.id ?? null;
   const toggleReaction = useToggleReaction(message.id);
   const groups = groupReactions(message.reactions, currentUserId);
@@ -100,7 +99,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
                           {isMine ? t("reaction.names.you") : row.user?.displayName}
                         </span>
                         <small className="font-mono text-[11.5px] text-subtle tabular-nums">
-                          {formatDateTime(toDate(row.createdAt), locale)}
+                          {formatDateTime(toDate(row.createdAt))}
                         </small>
                       </span>
                       {id === ALL_REACTIONS_TAB && (

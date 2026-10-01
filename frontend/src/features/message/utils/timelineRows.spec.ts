@@ -1,5 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
+import { getLocalTimeZone } from "@internationalized/date";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
@@ -34,6 +35,7 @@ describe("buildTimelineRows", () => {
         userItem("m2", "2026-09-29T09:00:00"),
       ],
       false,
+      getLocalTimeZone(),
     );
     expect(rows.map((row) => row.key)).toEqual([
       "d-2026-09-28",
@@ -52,7 +54,10 @@ describe("buildTimelineRows", () => {
       systemItem("s2", "2026-09-28T10:00:00", SystemMessageKind.MEMBER_ADDED),
       systemItem("s3", "2026-09-28T11:00:00"),
     ];
-    expect(buildTimelineRows(items, true).map((row) => row.key)).toEqual(["d-2026-09-28", "s-s3"]);
-    expect(buildTimelineRows(items, false)).toHaveLength(5);
+    expect(buildTimelineRows(items, true, getLocalTimeZone()).map((row) => row.key)).toEqual([
+      "d-2026-09-28",
+      "s-s3",
+    ]);
+    expect(buildTimelineRows(items, false, getLocalTimeZone())).toHaveLength(5);
   });
 });
