@@ -33,7 +33,6 @@ pnpm tauri android dev                          # Android（エミュレータ�
 pnpm tauri ios dev                              # iOS
 ```
 
-- `tauri dev` はウィンドウに `http://localhost:5173` を読み込むため、Docker の frontend コンテナを止めてから起動する。
 - エミュレータから Mac の backend へは `10.0.2.2` で届く。実機では Mac の LAN の IP を `.env.tauri.local` に書く。
 - Android で gradle が `ERR_PNPM_BAD_PM_VERSION` で失敗したら、古い PATH のまま動いている gradle のデーモンを止める（`src-tauri/gen/android/gradlew --stop -p src-tauri/gen/android`）。
 
