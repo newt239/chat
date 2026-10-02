@@ -13,15 +13,15 @@ type IconButtonProps = Omit<AriaButtonProps, "children" | "aria-label"> & {
   children: ReactNode;
 };
 
+// IconToggleButton と共有する見た目
+export const iconButtonClassName = `relative inline-grid size-[30px] shrink-0 cursor-pointer place-items-center rounded-md text-muted transition-colors data-disabled:cursor-default data-disabled:text-subtle data-hovered:bg-hover data-hovered:text-text data-pressed:bg-hover [&_svg]:size-[18px] ${focusRing}`;
+
 export const IconButton = ({ label, className, children, ...props }: IconButtonProps) => (
   <Tooltip content={label}>
     <AriaButton
       {...props}
       aria-label={label}
-      className={withBaseClassName(
-        className,
-        `relative inline-grid size-[30px] shrink-0 cursor-pointer place-items-center rounded-md text-muted transition-colors data-disabled:cursor-default data-disabled:text-subtle data-hovered:bg-hover data-hovered:text-text data-pressed:bg-hover [&_svg]:size-[18px] ${focusRing}`,
-      )}
+      className={withBaseClassName(className, iconButtonClassName)}
     >
       {children}
     </AriaButton>

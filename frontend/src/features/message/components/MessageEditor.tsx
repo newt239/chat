@@ -7,6 +7,7 @@ import { Button } from "#/components/ui/Button/Button";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
 import { useMentionCodec } from "../hooks/useMentionCodec";
+import { continueList } from "../utils/format";
 import { SuggestionList } from "./SuggestionList";
 
 type MessageEditorProps = {
@@ -31,17 +32,20 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
   const [error, setError] = useState<string | null>(null);
   const [cursor, setCursor] = useState(draft.length);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const replaceDraft = (text: string, nextCursor: number) => {
+    setDraft(text);
+    setCursor(nextCursor);
+    requestAnimationFrame(() => {
+      textareaRef.current?.setSelectionRange(nextCursor, nextCursor);
+    });
+  };
   const suggestion = useComposerSuggestion({
     allowsCommands: false,
     body: draft,
     cursor,
     onApply: (next, item) => {
       mentionCodec.register(item.value, item.token);
-      setDraft(next.text);
-      setCursor(next.cursor);
-      requestAnimationFrame(() => {
-        textareaRef.current?.setSelectionRange(next.cursor, next.cursor);
-      });
+      replaceDraft(next.text, next.cursor);
     },
   });
   const syncCursor = () => {
@@ -88,9 +92,21 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
           if (event.key === "Escape") {
             onClose();
           }
-          if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+          if (event.key !== "Enter" || event.nativeEvent.isComposing) {
+            return;
+          }
+          if (!event.shiftKey) {
             event.preventDefault();
             void save();
+            return;
+          }
+          const textarea = textareaRef.current;
+          const continued =
+            textarea &&
+            continueList(draft, { end: textarea.selectionEnd, start: textarea.selectionStart });
+          if (continued) {
+            event.preventDefault();
+            replaceDraft(continued.text, continued.selection.start);
           }
         }}
       >
