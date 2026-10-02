@@ -3,12 +3,16 @@ package notification
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
+
+// dispatchTimeout は投稿の処理が終わったあとも送り続けるプッシュ通知の上限時間
+const dispatchTimeout = 30 * time.Second
 
 const maxBodyRunes = 200
 
@@ -78,7 +82,9 @@ func (d *Dispatcher) NotifyNewMessage(ctx context.Context, channel *entity.Chann
 		return
 	}
 	go func() {
-		if err := d.dispatch(context.WithoutCancel(ctx), channel, message); err != nil {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), dispatchTimeout)
+		defer cancel()
+		if err := d.dispatch(ctx, channel, message); err != nil {
 			d.logger.Warn("プッシュ通知の送信に失敗しました", service.LogField{Key: "messageID", Value: message.ID}, service.LogField{Key: "error", Value: err.Error()})
 		}
 	}()

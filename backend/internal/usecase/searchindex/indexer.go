@@ -3,10 +3,14 @@ package searchindex
 import (
 	"context"
 	"fmt"
+	"time"
 
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
+
+// syncTimeout は呼び出し元が終わったあとも続ける検索インデックスの更新の上限時間
+const syncTimeout = 10 * time.Second
 
 const reindexBatchSize = 500
 
@@ -37,7 +41,9 @@ func (i *Indexer) upsert(ctx context.Context, docs []domainrepository.MessageSea
 // Sync は指定したメッセージを登録し直し、削除済みのものはインデックスから外します。
 // 検索は補助機能のため、失敗してもログに残すだけで呼び出し元の処理は失敗させない
 func (i *Indexer) Sync(ctx context.Context, messageIDs ...string) {
-	if err := i.sync(context.WithoutCancel(ctx), messageIDs); err != nil {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), syncTimeout)
+	defer cancel()
+	if err := i.sync(ctx, messageIDs); err != nil {
 		i.logger.Warn("検索インデックスの更新に失敗しました", service.LogField{Key: "messageIDs", Value: messageIDs}, service.LogField{Key: "error", Value: err.Error()})
 	}
 }

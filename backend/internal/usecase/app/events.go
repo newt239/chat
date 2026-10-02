@@ -17,6 +17,9 @@ import (
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
+// dispatchTimeout は投稿の処理が終わったあとも送り続ける送信 Webhook の上限時間
+const dispatchTimeout = 30 * time.Second
+
 // EventSender は送信 Webhook の本文を外部の URL へ送ります
 type EventSender interface {
 	Send(ctx context.Context, url string, body []byte, headers map[string]string) error
@@ -66,7 +69,9 @@ type eventUser struct {
 // NotifyNewMessage は投稿の応答を待たせないよう非同期で送り、失敗はログに残すだけにします
 func (d *EventDispatcher) NotifyNewMessage(ctx context.Context, channel *entity.Channel, message messageuc.MessageOutput) {
 	go func() {
-		if err := d.dispatch(context.WithoutCancel(ctx), channel, message); err != nil {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), dispatchTimeout)
+		defer cancel()
+		if err := d.dispatch(ctx, channel, message); err != nil {
 			d.logger.Warn("送信 Webhook の送信に失敗しました", domainservice.LogField{Key: "messageID", Value: message.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
 		}
 	}()
