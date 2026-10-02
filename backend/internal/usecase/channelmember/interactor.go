@@ -71,14 +71,14 @@ func NewChannelMemberInteractor(
 }
 
 // recordSystemMessage はメンバーの増減をチャンネルのタイムラインに残します。失敗してもメンバーの変更は取り消さない
-func (i *channelMemberInteractor) recordSystemMessage(ctx context.Context, channelID string, kind entity.SystemMessageKind, actorID, targetUserID string) {
+func (i *channelMemberInteractor) recordSystemMessage(ctx context.Context, ch *entity.Channel, kind entity.SystemMessageKind, actorID, targetUserID string) {
 	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-		ChannelID: channelID,
+		Channel:   ch,
 		Kind:      kind,
 		Payload:   map[string]any{"actorId": actorID, "userId": targetUserID},
 		ActorID:   &actorID,
 	}); err != nil {
-		i.logger.Warn("メンバーの変更をタイムラインに残せません", service.LogField{Key: "channelId", Value: channelID}, service.LogField{Key: "error", Value: err.Error()})
+		i.logger.Warn("メンバーの変更をタイムラインに残せません", service.LogField{Key: "channelId", Value: ch.ID}, service.LogField{Key: "error", Value: err.Error()})
 	}
 }
 
@@ -200,7 +200,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 	}); err != nil {
 		return err
 	}
-	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberAdded, input.OperatorID, input.TargetUserID)
+	i.recordSystemMessage(ctx, ch, entity.SystemMessageKindMemberAdded, input.OperatorID, input.TargetUserID)
 	return nil
 }
 
@@ -232,7 +232,7 @@ func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input J
 	if err != nil {
 		return fmt.Errorf("failed to add member: %w", err)
 	}
-	i.recordSystemMessage(ctx, input.ChannelID, entity.SystemMessageKindMemberJoined, input.UserID, input.UserID)
+	i.recordSystemMessage(ctx, ch, entity.SystemMessageKindMemberJoined, input.UserID, input.UserID)
 	return nil
 }
 

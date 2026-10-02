@@ -584,13 +584,13 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 	}
 
 	if ch.Name != original.Name {
-		i.recordSystemMessage(ctx, ch.ID, input.UserID, entity.SystemMessageKindChannelNameChanged, original.Name, ch.Name)
+		i.recordSystemMessage(ctx, ch, input.UserID, entity.SystemMessageKindChannelNameChanged, original.Name, ch.Name)
 	}
 	if from, to := derefString(original.Description), derefString(ch.Description); from != to {
-		i.recordSystemMessage(ctx, ch.ID, input.UserID, entity.SystemMessageKindChannelDescriptionChanged, from, to)
+		i.recordSystemMessage(ctx, ch, input.UserID, entity.SystemMessageKindChannelDescriptionChanged, from, to)
 	}
 	if original.Type != ch.Type {
-		i.recordSystemMessage(ctx, ch.ID, input.UserID, entity.SystemMessageKindChannelPrivacyChanged, string(original.Type), string(ch.Type))
+		i.recordSystemMessage(ctx, ch, input.UserID, entity.SystemMessageKindChannelPrivacyChanged, string(original.Type), string(ch.Type))
 		if ch.IsPrivate() {
 			// 参加していないユーザーは見られなくなる
 			i.revoker.RevokeChannel(ch.WorkspaceID, ch.ID, "")
@@ -602,14 +602,14 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 }
 
 // recordSystemMessage はチャンネルの変更をタイムラインに残します。失敗しても変更は取り消さない
-func (i *channelInteractor) recordSystemMessage(ctx context.Context, channelID, actorID string, kind entity.SystemMessageKind, from, to string) {
+func (i *channelInteractor) recordSystemMessage(ctx context.Context, ch *entity.Channel, actorID string, kind entity.SystemMessageKind, from, to string) {
 	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-		ChannelID: channelID,
+		Channel:   ch,
 		Kind:      kind,
 		Payload:   map[string]any{"from": from, "to": to},
 		ActorID:   &actorID,
 	}); err != nil {
-		i.logger.Warn("チャンネルの変更をタイムラインに残せません", domainservice.LogField{Key: "channelId", Value: channelID}, domainservice.LogField{Key: "error", Value: err.Error()})
+		i.logger.Warn("チャンネルの変更をタイムラインに残せません", domainservice.LogField{Key: "channelId", Value: ch.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
 	}
 }
 

@@ -334,7 +334,6 @@ func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {
 func (r *UseCaseRegistry) NewSystemMessageUseCase() systemmsguc.UseCase {
 	return systemmsguc.New(
 		r.domainRegistry.NewSystemMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 	)
 }

@@ -135,7 +135,7 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 		payload["parentId"] = *msg.ParentID
 	}
 	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-		ChannelID: input.ChannelID,
+		Channel:   ch,
 		Kind:      entity.SystemMessageKindMessagePinned,
 		Payload:   payload,
 		ActorID:   &input.UserID,
