@@ -6,10 +6,10 @@ import (
 	"github.com/newt239/chat/internal/usecase/message"
 )
 
-// Notifier はピン留めの変更をチャンネルの参加者へ配信します
+// Notifier はピン留めの変更をチャンネルの参加者全員へ配信します
 type Notifier interface {
-	NotifyPinCreated(workspaceID, channelID string, pin PinNotification)
-	NotifyPinDeleted(workspaceID, channelID string, pin PinNotification)
+	NotifyPinCreated(workspaceID, channelID string, memberIDs []string, pin PinNotification)
+	NotifyPinDeleted(workspaceID, channelID string, memberIDs []string, pin PinNotification)
 }
 
 // PinNotification はピン留め通知の内容です

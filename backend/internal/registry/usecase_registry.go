@@ -26,6 +26,7 @@ import (
 	polluc "github.com/newt239/chat/internal/usecase/poll"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
+	realtimeuc "github.com/newt239/chat/internal/usecase/realtime"
 	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
 	searchuc "github.com/newt239/chat/internal/usecase/search"
 	"github.com/newt239/chat/internal/usecase/searchindex"
@@ -64,7 +65,16 @@ func (r *UseCaseRegistry) NewAuthUseCase() authuc.AuthUseCase {
 		r.infrastructureRegistry.NewGoogleOAuth(),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewNotificationService(),
 		r.infrastructureRegistry.NewAuthSettings(),
+	)
+}
+
+func (r *UseCaseRegistry) NewRealtimeUseCase() *realtimeuc.Interactor {
+	return realtimeuc.NewInteractor(
+		r.infrastructureRegistry.NewTicketStore(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewSessionRepository(),
 	)
 }
 
@@ -92,7 +102,7 @@ func (r *UseCaseRegistry) NewAdminUseCase() *adminuc.Interactor {
 		r.domainRegistry.NewInsightRepository(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
-		r.infrastructureRegistry.NewTransactionManager(),
+		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
 
@@ -107,6 +117,7 @@ func (r *UseCaseRegistry) NewWorkspaceUseCase() workspaceuc.WorkspaceUseCase {
 		r.domainRegistry.NewUserNoteRepository(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
 
@@ -350,9 +361,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 	return pinuc.NewPinInteractor(
 		r.domainRegistry.NewPinRepository(),
 		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
 		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.NewMessageOutputBuilder(),
@@ -360,6 +369,7 @@ func (r *UseCaseRegistry) NewPinUseCase() pinuc.PinUseCase {
 		r.NewSystemMessageUseCase(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewSearchIndexer(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 
@@ -425,6 +435,7 @@ func (r *UseCaseRegistry) NewUserUseCase() useruc.UseCase {
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewSessionRepository(),
 		r.infrastructureRegistry.NewPasswordService(),
+		r.infrastructureRegistry.NewNotificationService(),
 	)
 }
 

@@ -29,6 +29,7 @@ import (
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 	notificationuc "github.com/newt239/chat/internal/usecase/notification"
+	realtimeuc "github.com/newt239/chat/internal/usecase/realtime"
 )
 
 // InfrastructureRegistry はインフラストラクチャ層の依存関係を管理します
@@ -73,6 +74,14 @@ func (r *InfrastructureRegistry) NewWebhookRateLimiter() httphandler.RateLimiter
 		return nil
 	}
 	return redis.NewRateLimiter(r.redis, "webhook", httphandler.WebhookRatePerSecond, httphandler.WebhookBurst)
+}
+
+// NewTicketStore は WebSocket のチケットを、Redis があれば全レプリカで共有して保存します
+func (r *InfrastructureRegistry) NewTicketStore() realtimeuc.TicketStore {
+	if r.redis == nil {
+		return realtimeuc.NewMemoryTicketStore()
+	}
+	return redis.NewTicketStore(r.redis)
 }
 
 // newPushSender は FIREBASE_PROJECT_ID が未設定か初期化に失敗したら nil を返し、通知を送らない

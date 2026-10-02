@@ -28,18 +28,25 @@ type UseCase interface {
 	DeleteMe(ctx context.Context, userID string) error
 }
 
+// UserCloser は全セッションを失効させたユーザーのリアルタイム接続を切ります
+type UserCloser interface {
+	CloseUser(userID string)
+}
+
 type interactor struct {
 	userRepo    domainrepository.UserRepository
 	sessionRepo domainrepository.SessionRepository
 	passwordSvc auth.PasswordService
+	userCloser  UserCloser
 }
 
 func NewInteractor(
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
 	passwordSvc auth.PasswordService,
+	userCloser UserCloser,
 ) UseCase {
-	return &interactor{userRepo: userRepo, sessionRepo: sessionRepo, passwordSvc: passwordSvc}
+	return &interactor{userRepo: userRepo, sessionRepo: sessionRepo, passwordSvc: passwordSvc, userCloser: userCloser}
 }
 
 // UpdatePassword は現在のパスワードを確認した上でパスワードを変更し、全セッションを失効させます
@@ -64,7 +71,15 @@ func (i *interactor) UpdatePassword(ctx context.Context, input UpdatePasswordInp
 	}
 
 	// パスワード変更後は他端末のセッションも無効化する
-	return i.sessionRepo.RevokeAllByUserID(ctx, input.UserID)
+	return i.revokeAllSessions(ctx, input.UserID)
+}
+
+func (i *interactor) revokeAllSessions(ctx context.Context, userID string) error {
+	if err := i.sessionRepo.RevokeAllByUserID(ctx, userID); err != nil {
+		return err
+	}
+	i.userCloser.CloseUser(userID)
+	return nil
 }
 
 // DeleteMe はアカウントを削除します
@@ -73,7 +88,7 @@ func (i *interactor) DeleteMe(ctx context.Context, userID string) error {
 		return err
 	}
 
-	if err := i.sessionRepo.RevokeAllByUserID(ctx, userID); err != nil {
+	if err := i.revokeAllSessions(ctx, userID); err != nil {
 		return err
 	}
 

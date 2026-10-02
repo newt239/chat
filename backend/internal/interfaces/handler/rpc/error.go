@@ -23,7 +23,6 @@ import (
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
 	mentionuc "github.com/newt239/chat/internal/usecase/mention"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-	pinuc "github.com/newt239/chat/internal/usecase/pin"
 	polluc "github.com/newt239/chat/internal/usecase/poll"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
@@ -53,7 +52,6 @@ var errorCodes = []struct {
 		draftuc.ErrParentMessageNotFound,
 		scheduledmessageuc.ErrScheduledMessageNotFound,
 		messageuc.ErrChannelNotFound, messageuc.ErrParentMessageNotFound, messageuc.ErrMessageNotFound, messageuc.ErrAttachmentNotFound,
-		pinuc.ErrMessageNotFound,
 		reactionuc.ErrMessageNotFound,
 		readstateuc.ErrChannelNotFound,
 		searchuc.ErrWorkspaceNotFound,
@@ -77,7 +75,6 @@ var errorCodes = []struct {
 		mentionuc.ErrUnauthorized,
 		messageuc.ErrUnauthorized, messageuc.ErrOfficialMessage,
 		polluc.ErrUnauthorized,
-		pinuc.ErrUnauthorized,
 		reactionuc.ErrUnauthorized,
 		readstateuc.ErrUnauthorized,
 		searchuc.ErrUnauthorized,
@@ -92,7 +89,7 @@ var errorCodes = []struct {
 		channelmemberuc.ErrAlreadyMember,
 		customemojiuc.ErrNameExists,
 		invitationuc.ErrAlreadyMember,
-		pinuc.ErrPinExists,
+		domerr.ErrPinExists,
 		reactionuc.ErrReactionExists,
 		usergroupuc.ErrUserGroupNameExists, usergroupuc.ErrUserAlreadyInGroup,
 	}},

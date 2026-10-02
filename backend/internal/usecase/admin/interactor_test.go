@@ -86,12 +86,6 @@ func (r *stubPermissionRepo) Upsert(_ context.Context, _ string, o entity.Permis
 	return nil
 }
 
-type stubTxManager struct{}
-
-func (stubTxManager) Do(ctx context.Context, fn func(context.Context) error) error {
-	return fn(ctx)
-}
-
 type fixture struct {
 	uc          *Interactor
 	members     map[string]*entity.WorkspaceMember
@@ -99,6 +93,13 @@ type fixture struct {
 	auditLogs   *stubAuditLogRepo
 	permissions *stubPermissionRepo
 	recorder    *audittest.Recorder
+	closer      *stubCloser
+}
+
+type stubCloser struct{ closed []string }
+
+func (c *stubCloser) CloseWorkspaceUser(workspaceID, userID string) {
+	c.closed = append(c.closed, workspaceID+"/"+userID)
 }
 
 func newFixture() *fixture {
@@ -112,6 +113,7 @@ func newFixture() *fixture {
 		auditLogs:   &stubAuditLogRepo{},
 		permissions: &stubPermissionRepo{},
 		recorder:    &audittest.Recorder{},
+		closer:      &stubCloser{},
 	}
 	workspaceRepo := &stubWorkspaceRepo{members: f.members}
 	f.uc = NewInteractor(
@@ -123,7 +125,7 @@ func newFixture() *fixture {
 		nil,
 		domainservice.NewPermissionService(workspaceRepo, f.permissions),
 		f.recorder,
-		stubTxManager{},
+		f.closer,
 	)
 	return f
 }
@@ -149,16 +151,19 @@ func TestSuspendMember(t *testing.T) {
 				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
 			}
 			if tt.wantErr != nil {
-				if len(f.sessions.revoked) != 0 || len(f.recorder.Logs) != 0 {
-					t.Errorf("失敗時にセッションの失効や記録が行われました")
+				if len(f.closer.closed) != 0 || len(f.recorder.Logs) != 0 {
+					t.Errorf("失敗時に接続の切断や記録が行われました")
 				}
 				return
 			}
 			if f.members[tt.target].SuspendedAt == nil {
 				t.Errorf("停止状態になっていません")
 			}
-			if !slices.Equal(f.sessions.revoked, []string{tt.target}) {
-				t.Errorf("セッションが失効されていません: %v", f.sessions.revoked)
+			if len(f.sessions.revoked) != 0 {
+				t.Errorf("他のワークスペースで使えるようセッションは失効させないはず: %v", f.sessions.revoked)
+			}
+			if !slices.Equal(f.closer.closed, []string{"ws/" + tt.target}) {
+				t.Errorf("このワークスペースの接続が切られていません: %v", f.closer.closed)
 			}
 			if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionMemberSuspended}) {
 				t.Errorf("監査ログが期待と異なります: %v", f.recorder.Actions())

@@ -9,15 +9,6 @@ import (
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 )
 
-func newTestClient(h *Hub, userID string) *Client {
-	c := &Client{hub: h, id: userID + "-conn", send: make(chan []byte, 8), userID: userID, workspaceID: "ws"}
-	if h.workspaces["ws"] == nil {
-		h.workspaces["ws"] = map[string][]*Client{}
-	}
-	h.workspaces["ws"][userID] = append(h.workspaces["ws"][userID], c)
-	return c
-}
-
 // lastViewers は受信したイベントのうち最後の閲覧者一覧を返します
 func lastViewers(t *testing.T, c *Client) *chatv1.ChannelViewersEvent {
 	t.Helper()
@@ -29,7 +20,9 @@ func lastViewers(t *testing.T, c *Client) *chatv1.ChannelViewersEvent {
 			if err := protojson.Unmarshal(data, &event); err != nil {
 				t.Fatal(err)
 			}
-			last = event.GetChannelViewers()
+			if viewers := event.GetChannelViewers(); viewers != nil {
+				last = viewers
+			}
 		default:
 			return last
 		}
@@ -37,10 +30,9 @@ func lastViewers(t *testing.T, c *Client) *chatv1.ChannelViewersEvent {
 }
 
 func TestSetViewingChannelBroadcastsViewers(t *testing.T) {
-	h := NewHub()
-	alice := newTestClient(h, "alice")
-	bob := newTestClient(h, "bob")
-	h.channelSubscribers["ws"] = map[string]map[string]bool{"general": {"alice": true}}
+	h := NewHub(nil)
+	alice := NewTestClient(h, "ws", "alice", "general")
+	bob := NewTestClient(h, "ws", "bob")
 
 	// 購読していない本人にも一覧が届く
 	h.SetViewingChannel(bob, "general")
@@ -64,17 +56,14 @@ func TestSetViewingChannelBroadcastsViewers(t *testing.T) {
 }
 
 func TestClearViewingChannelOnDisconnect(t *testing.T) {
-	h := NewHub()
-	alice := newTestClient(h, "alice")
-	bob := newTestClient(h, "bob")
-	h.channelSubscribers["ws"] = map[string]map[string]bool{"general": {"alice": true}}
+	h := NewHub(nil)
+	alice := NewTestClient(h, "ws", "alice", "general")
+	bob := NewTestClient(h, "ws", "bob")
 	h.SetViewingChannel(alice, "general")
 	h.SetViewingChannel(bob, "general")
 	lastViewers(t, alice)
 
-	h.workspaces["ws"]["bob"] = nil
-	bob.viewingChannel = ""
-	h.leaveViewing(bob, "general")
+	h.unregister(bob, nil)
 
 	if got := lastViewers(t, alice); !slices.Equal(got.UserIds, []string{"alice"}) {
 		t.Fatalf("切断したユーザーが閲覧者に残っています: %v", got.UserIds)

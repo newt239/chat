@@ -9,7 +9,7 @@ import (
 
 	goredis "github.com/redis/go-redis/v9"
 
-	"github.com/newt239/chat/internal/interfaces/handler/websocket"
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 // presenceTTL を過ぎても延長されない閲覧は、落ちたレプリカの接続とみなして消す
@@ -29,15 +29,15 @@ func presenceKey(workspaceID, channelID string) string {
 	return "chat:viewers:" + workspaceID + ":" + channelID
 }
 
-func presenceMember(e websocket.PresenceEntry) string {
+func presenceMember(e service.PresenceEntry) string {
 	return e.ConnID + "|" + e.UserID
 }
 
-func (s *PresenceStore) Add(ctx context.Context, e websocket.PresenceEntry) error {
-	return s.Refresh(ctx, []websocket.PresenceEntry{e})
+func (s *PresenceStore) Add(ctx context.Context, e service.PresenceEntry) error {
+	return s.Refresh(ctx, []service.PresenceEntry{e})
 }
 
-func (s *PresenceStore) Refresh(ctx context.Context, entries []websocket.PresenceEntry) error {
+func (s *PresenceStore) Refresh(ctx context.Context, entries []service.PresenceEntry) error {
 	if len(entries) == 0 {
 		return nil
 	}
@@ -52,7 +52,7 @@ func (s *PresenceStore) Refresh(ctx context.Context, entries []websocket.Presenc
 	return err
 }
 
-func (s *PresenceStore) Remove(ctx context.Context, e websocket.PresenceEntry) error {
+func (s *PresenceStore) Remove(ctx context.Context, e service.PresenceEntry) error {
 	return s.client.ZRem(ctx, presenceKey(e.WorkspaceID, e.ChannelID), presenceMember(e)).Err()
 }
 

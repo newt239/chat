@@ -2,21 +2,15 @@ package pin
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
 	"github.com/newt239/chat/internal/usecase/systemmessage"
-)
-
-var (
-	ErrUnauthorized    = errors.New("この操作を行う権限がありません")
-	ErrMessageNotFound = errors.New("メッセージが見つかりません")
-	ErrPinExists       = errors.New("このメッセージは既にピン留めされています")
 )
 
 type PinUseCase interface {
@@ -28,9 +22,7 @@ type PinUseCase interface {
 type interactor struct {
 	pinRepo           domainrepository.PinRepository
 	messageRepo       domainrepository.MessageRepository
-	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
-	workspaceRepo     domainrepository.WorkspaceRepository
 	userRepo          domainrepository.UserRepository
 	notificationSvc   Notifier
 	outputBuilder     *message.MessageOutputBuilder
@@ -38,14 +30,13 @@ type interactor struct {
 	systemMessageUC   systemmessage.UseCase
 	permissionSvc     service.PermissionService
 	searchIndexer     message.SearchIndexer
+	logger            service.Logger
 }
 
 func NewPinInteractor(
 	pinRepo domainrepository.PinRepository,
 	messageRepo domainrepository.MessageRepository,
-	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
-	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	notificationSvc Notifier,
 	outputBuilder *message.MessageOutputBuilder,
@@ -53,13 +44,12 @@ func NewPinInteractor(
 	systemMessageUC systemmessage.UseCase,
 	permissionSvc service.PermissionService,
 	searchIndexer message.SearchIndexer,
+	logger service.Logger,
 ) PinUseCase {
 	return &interactor{
 		pinRepo:           pinRepo,
 		messageRepo:       messageRepo,
-		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
-		workspaceRepo:     workspaceRepo,
 		userRepo:          userRepo,
 		notificationSvc:   notificationSvc,
 		outputBuilder:     outputBuilder,
@@ -67,17 +57,8 @@ func NewPinInteractor(
 		systemMessageUC:   systemMessageUC,
 		permissionSvc:     permissionSvc,
 		searchIndexer:     searchIndexer,
+		logger:            logger,
 	}
-}
-
-// ensureCanPin はチャンネルを閲覧でき、ピン留めが許可されたロールであることを確認します
-func (i *interactor) ensureCanPin(ctx context.Context, channelID, userID string) error {
-	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID)
-	if err != nil {
-		return err
-	}
-	_, err = i.permissionSvc.Ensure(ctx, ch.WorkspaceID, userID, entity.PermissionPinMessages)
-	return err
 }
 
 type PinMessageInput struct {
@@ -110,102 +91,95 @@ type ListPinsOutput struct {
 	NextCursor *string
 }
 
-func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) error {
-	// メッセージ存在確認
-	msg, err := i.messageRepo.FindByID(ctx, input.MessageID)
+// ensureCanPin はメッセージがチャンネルにあり、閲覧でき、ピン留めが許可されたロールであることを確認します
+func (i *interactor) ensureCanPin(ctx context.Context, channelID, messageID, userID string) (*entity.Message, *entity.Channel, error) {
+	msg, err := i.messageRepo.FindByID(ctx, messageID)
 	if err != nil {
-		return fmt.Errorf("failed to fetch message: %w", err)
+		return nil, nil, fmt.Errorf("failed to fetch message: %w", err)
 	}
-	if msg == nil || msg.ChannelID != input.ChannelID {
-		return ErrMessageNotFound
+	if msg == nil || msg.ChannelID != channelID {
+		return nil, nil, domerr.ErrMessageNotFound
 	}
+	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	if _, err := i.permissionSvc.Ensure(ctx, ch.WorkspaceID, userID, entity.PermissionPinMessages); err != nil {
+		return nil, nil, err
+	}
+	return msg, ch, nil
+}
 
-	// アクセス権確認
-	if err := i.ensureCanPin(ctx, input.ChannelID, input.UserID); err != nil {
+func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) error {
+	msg, ch, err := i.ensureCanPin(ctx, input.ChannelID, input.MessageID, input.UserID)
+	if err != nil {
 		return err
 	}
 
-	// 作成（ユニーク制約違反はリポジトリ側でDBエラーになるが、409として扱いたいのでここではそのまま返す）
 	p := &entity.MessagePin{
 		ChannelID: input.ChannelID,
 		MessageID: input.MessageID,
 		PinnedBy:  input.UserID,
-		PinnedAt:  time.Now(),
 	}
 	if err := i.pinRepo.Create(ctx, p); err != nil {
 		return err
 	}
 	i.searchIndexer.Sync(ctx, input.MessageID)
 
-	// システムメッセージ作成（ピン留め）
-	if i.systemMessageUC != nil {
-		payload := map[string]any{
-			"messageId": input.MessageID,
-			"pinnedBy":  input.UserID,
-		}
-		// スレッドの返信はスレッドを開いて表示するため、親メッセージも渡す
-		if msg.ParentID != nil {
-			payload["parentId"] = *msg.ParentID
-		}
-		actorID := input.UserID
-		_, _ = i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-			ChannelID: input.ChannelID,
-			Kind:      entity.SystemMessageKindMessagePinned,
-			Payload:   payload,
-			ActorID:   &actorID,
-		})
+	payload := map[string]any{
+		"messageId": input.MessageID,
+		"pinnedBy":  input.UserID,
 	}
-	// 通知
-	if i.notificationSvc != nil && p.Message != nil {
-		workspaceID := ""
-		if p.Message.ChannelID != "" {
-			// チャンネルのワークスペースID取得のために再取得
-			ch, _ := i.channelRepo.FindByID(ctx, p.Message.ChannelID)
-			if ch != nil {
-				workspaceID = ch.WorkspaceID
-			}
-		}
-		if workspaceID != "" {
-			notification := PinNotification{MessageID: p.Message.ID, PinnedBy: p.PinnedBy, PinnedAt: p.PinnedAt}
-			if u, _ := i.userRepo.FindByID(ctx, p.PinnedBy); u != nil {
-				notification.PinnedByUser = &message.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL}
-			}
-			i.notificationSvc.NotifyPinCreated(workspaceID, input.ChannelID, notification)
-		}
+	// スレッドの返信はスレッドを開いて表示するため、親メッセージも渡す
+	if msg.ParentID != nil {
+		payload["parentId"] = *msg.ParentID
 	}
+	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+		ChannelID: input.ChannelID,
+		Kind:      entity.SystemMessageKindMessagePinned,
+		Payload:   payload,
+		ActorID:   &input.UserID,
+	}); err != nil {
+		i.logger.Warn("ピン留めのシステムメッセージを作成できません", service.LogField{Key: "error", Value: err.Error()})
+	}
+
+	notification := PinNotification{MessageID: input.MessageID, PinnedBy: p.PinnedBy, PinnedAt: p.PinnedAt}
+	if u, err := i.userRepo.FindByID(ctx, p.PinnedBy); err == nil && u != nil {
+		notification.PinnedByUser = &message.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
+	}
+	i.notificationSvc.NotifyPinCreated(ch.WorkspaceID, input.ChannelID, i.memberIDs(ctx, input.ChannelID), notification)
 	return nil
 }
 
 func (i *interactor) UnpinMessage(ctx context.Context, input UnpinMessageInput) error {
-	// メッセージ存在確認
-	msg, err := i.messageRepo.FindByID(ctx, input.MessageID)
+	_, ch, err := i.ensureCanPin(ctx, input.ChannelID, input.MessageID, input.UserID)
 	if err != nil {
-		return fmt.Errorf("failed to fetch message: %w", err)
-	}
-	if msg == nil || msg.ChannelID != input.ChannelID {
-		return ErrMessageNotFound
-	}
-
-	// アクセス権確認
-	if err := i.ensureCanPin(ctx, input.ChannelID, input.UserID); err != nil {
 		return err
 	}
-
 	if err := i.pinRepo.Delete(ctx, input.ChannelID, input.MessageID); err != nil {
 		return err
 	}
 	i.searchIndexer.Sync(ctx, input.MessageID)
-	if i.notificationSvc != nil {
-		ch, _ := i.channelRepo.FindByID(ctx, input.ChannelID)
-		if ch != nil {
-			i.notificationSvc.NotifyPinDeleted(ch.WorkspaceID, input.ChannelID, PinNotification{
-				MessageID: input.MessageID,
-				PinnedBy:  input.UserID,
-				PinnedAt:  time.Now(),
-			})
-		}
-	}
+	i.notificationSvc.NotifyPinDeleted(ch.WorkspaceID, input.ChannelID, i.memberIDs(ctx, input.ChannelID), PinNotification{
+		MessageID: input.MessageID,
+		PinnedBy:  input.UserID,
+		PinnedAt:  time.Now(),
+	})
 	return nil
+}
+
+// memberIDs はピンの件数を知らせるチャンネルの参加者です。取得できなくてもピン留めは成功させる
+func (i *interactor) memberIDs(ctx context.Context, channelID string) []string {
+	members, err := i.channelMemberRepo.FindMembers(ctx, channelID)
+	if err != nil {
+		i.logger.Warn("ピン留めを知らせる参加者を取得できません", service.LogField{Key: "error", Value: err.Error()})
+		return nil
+	}
+	ids := make([]string, 0, len(members))
+	for _, m := range members {
+		ids = append(ids, m.UserID)
+	}
+	return ids
 }
 
 func (i *interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPinsOutput, error) {
@@ -246,5 +220,3 @@ func (i *interactor) ListPins(ctx context.Context, input ListPinsInput) (*ListPi
 
 	return &ListPinsOutput{Pins: outputs, NextCursor: next}, nil
 }
-
-// ensureChannelAccess は ChannelAccessService に委譲済み

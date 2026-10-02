@@ -28,7 +28,7 @@ func NewRegistry(client *ent.Client, cfg *config.Config, rdb *goredis.Client) *R
 	if rdb != nil {
 		hubOpts = append(hubOpts, websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
 	}
-	hub := websocket.NewHub(hubOpts...)
+	hub := websocket.NewHub(domainRegistry.NewChannelAccessService(), hubOpts...)
 
 	// インフラストラクチャ層のRegistryを作成
 	infrastructureRegistry := NewInfrastructureRegistry(client, cfg, hub, rdb, domainRegistry)

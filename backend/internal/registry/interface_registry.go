@@ -27,7 +27,7 @@ func NewInterfaceRegistry(usecaseRegistry *UseCaseRegistry, infrastructureRegist
 
 func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 	uc := r.usecaseRegistry
-	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService(),
+	return rpc.NewHandler(r.infrastructureRegistry.NewJWTService(), r.infrastructureRegistry.config.CORS.AllowedOrigins,
 		rpc.Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&rpc.AuthServer{UC: uc.NewAuthUseCase()})),
 		rpc.Register(chatv1connect.NewInvitationServiceHandler, chatv1connect.InvitationServiceHandler(&rpc.InvitationServer{UC: uc.NewInvitationUseCase()})),
 		rpc.Register(chatv1connect.NewUserServiceHandler, chatv1connect.UserServiceHandler(&rpc.UserServer{UC: uc.NewUserUseCase(), NoteUC: uc.NewUserNoteUseCase()})),
@@ -63,24 +63,23 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewAppServiceHandler, chatv1connect.AppServiceHandler(&rpc.AppServer{UC: uc.NewAppUseCase()})),
 		rpc.Register(chatv1connect.NewCustomEmojiServiceHandler, chatv1connect.CustomEmojiServiceHandler(&rpc.CustomEmojiServer{UC: uc.NewCustomEmojiUseCase()})),
 		rpc.Register(chatv1connect.NewImageServiceHandler, chatv1connect.ImageServiceHandler(&rpc.ImageServer{UC: uc.NewImageUseCase()})),
-		rpc.Register(chatv1connect.NewRealtimeServiceHandler, chatv1connect.RealtimeServiceHandler(&rpc.RealtimeServer{})),
+		rpc.Register(chatv1connect.NewRealtimeServiceHandler, chatv1connect.RealtimeServiceHandler(&rpc.RealtimeServer{UC: uc.NewRealtimeUseCase()})),
 	)
 }
 
 func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	routerConfig := http.RouterConfig{
-		JWTService:          r.infrastructureRegistry.NewJWTService(),
-		AllowedOrigins:      r.infrastructureRegistry.config.CORS.AllowedOrigins,
-		WebSocketHub:        r.infrastructureRegistry.hub,
-		WorkspaceRepository: r.domainRegistry.NewWorkspaceRepository(),
-		ChannelAccess:       r.domainRegistry.NewChannelAccessService(),
-		RPCHandler:          r.NewRPCHandler(),
-		WebhookPoster:       r.usecaseRegistry.NewAppUseCase(),
-		WebhookRateLimiter:  r.infrastructureRegistry.NewWebhookRateLimiter(),
-		Ready:               r.infrastructureRegistry.Ready,
-		GoogleOAuth:         r.infrastructureRegistry.NewGoogleOAuth(),
-		Storage:             r.infrastructureRegistry.NewStorageService(),
-		StorageConfig:       r.infrastructureRegistry.NewStorageConfig(),
+		AllowedOrigins:     r.infrastructureRegistry.config.CORS.AllowedOrigins,
+		TrustedProxies:     r.infrastructureRegistry.config.Server.TrustedProxies,
+		WebSocketHub:       r.infrastructureRegistry.hub,
+		TicketConsumer:     r.usecaseRegistry.NewRealtimeUseCase(),
+		RPCHandler:         r.NewRPCHandler(),
+		WebhookPoster:      r.usecaseRegistry.NewAppUseCase(),
+		WebhookRateLimiter: r.infrastructureRegistry.NewWebhookRateLimiter(),
+		Ready:              r.infrastructureRegistry.Ready,
+		GoogleOAuth:        r.infrastructureRegistry.NewGoogleOAuth(),
+		Storage:            r.infrastructureRegistry.NewStorageService(),
+		StorageConfig:      r.infrastructureRegistry.NewStorageConfig(),
 	}
 	if r.infrastructureRegistry.config.Storage.Driver == "local" {
 		routerConfig.StorageHandler = r.infrastructureRegistry.NewLocalStorage()

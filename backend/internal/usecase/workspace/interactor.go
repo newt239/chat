@@ -36,12 +36,18 @@ type WorkspaceUseCase interface {
 	GetSignupInfo(ctx context.Context, workspaceID string) (*SignupInfoOutput, error)
 }
 
+// MemberCloser はワークスペースから外したメンバーのリアルタイム接続を切ります
+type MemberCloser interface {
+	CloseWorkspaceUser(workspaceID, userID string)
+}
+
 type workspaceInteractor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	userRepo      domainrepository.UserRepository
 	userNoteRepo  domainrepository.UserNoteRepository
 	permissionSvc domainservice.PermissionService
 	recorder      audit.Recorder
+	memberCloser  MemberCloser
 }
 
 func NewWorkspaceInteractor(
@@ -50,6 +56,7 @@ func NewWorkspaceInteractor(
 	userNoteRepo domainrepository.UserNoteRepository,
 	permissionSvc domainservice.PermissionService,
 	recorder audit.Recorder,
+	memberCloser MemberCloser,
 ) WorkspaceUseCase {
 	return &workspaceInteractor{
 		workspaceRepo: workspaceRepo,
@@ -57,6 +64,7 @@ func NewWorkspaceInteractor(
 		userNoteRepo:  userNoteRepo,
 		permissionSvc: permissionSvc,
 		recorder:      recorder,
+		memberCloser:  memberCloser,
 	}
 }
 
@@ -356,6 +364,7 @@ func (i *workspaceInteractor) RemoveMember(ctx context.Context, input RemoveMemb
 	if err := i.workspaceRepo.RemoveMember(ctx, input.WorkspaceID, input.UserID); err != nil {
 		return nil, fmt.Errorf("failed to remove member: %w", err)
 	}
+	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.UserID)
 
 	return &MemberActionOutput{Success: true}, nil
 }

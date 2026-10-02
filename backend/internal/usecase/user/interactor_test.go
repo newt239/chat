@@ -40,7 +40,7 @@ var cobalt = entity.UserPreferences{
 
 func TestUpdatePreferencesSavesAndReturnsPreferences(t *testing.T) {
 	repo := &stubUserRepo{users: map[string]*entity.User{"alice": {ID: "alice", DisplayName: "Alice"}}}
-	uc := NewInteractor(repo, nil, nil)
+	uc := NewInteractor(repo, nil, nil, nil)
 
 	got, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "alice", Preferences: cobalt})
 	if err != nil {
@@ -60,7 +60,7 @@ func TestUpdatePreferencesSavesAndReturnsPreferences(t *testing.T) {
 }
 
 func TestUpdatePreferencesRejectsUnknownUser(t *testing.T) {
-	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil)
+	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil, nil)
 
 	_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "ghost", Preferences: cobalt})
 	if !errors.Is(err, entity.ErrUserNotFound) {
@@ -69,7 +69,7 @@ func TestUpdatePreferencesRejectsUnknownUser(t *testing.T) {
 }
 
 func TestUpdatePreferencesRequiresLogin(t *testing.T) {
-	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil)
+	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil, nil)
 
 	_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{Preferences: cobalt})
 	if !errors.Is(err, ErrUnauthorized) {
@@ -90,7 +90,7 @@ func TestUpdatePreferencesValidatesTimezone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{"alice": {ID: "alice"}}}, nil, nil)
+			uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{"alice": {ID: "alice"}}}, nil, nil, nil)
 			prefs := cobalt
 			prefs.Timezone = tt.timezone
 

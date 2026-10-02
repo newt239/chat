@@ -11,7 +11,6 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
-	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/usecase/audit"
 )
 
@@ -23,6 +22,11 @@ var (
 	ErrOwnerOnlyPermissions = errors.New("管理者の権限はオーナーだけが変更できます")
 )
 
+// MemberCloser は停止したメンバーのリアルタイム接続を切ります
+type MemberCloser interface {
+	CloseWorkspaceUser(workspaceID, userID string)
+}
+
 type Interactor struct {
 	workspaceRepo  domainrepository.WorkspaceRepository
 	userRepo       domainrepository.UserRepository
@@ -32,7 +36,7 @@ type Interactor struct {
 	insightRepo    domainrepository.InsightRepository
 	permissionSvc  domainservice.PermissionService
 	recorder       audit.Recorder
-	txManager      domaintransaction.Manager
+	memberCloser   MemberCloser
 	now            func() time.Time
 }
 
@@ -45,7 +49,7 @@ func NewInteractor(
 	insightRepo domainrepository.InsightRepository,
 	permissionSvc domainservice.PermissionService,
 	recorder audit.Recorder,
-	txManager domaintransaction.Manager,
+	memberCloser MemberCloser,
 ) *Interactor {
 	return &Interactor{
 		workspaceRepo:  workspaceRepo,
@@ -56,7 +60,7 @@ func NewInteractor(
 		insightRepo:    insightRepo,
 		permissionSvc:  permissionSvc,
 		recorder:       recorder,
-		txManager:      txManager,
+		memberCloser:   memberCloser,
 		now:            time.Now,
 	}
 }
@@ -144,19 +148,11 @@ func (i *Interactor) SuspendMember(ctx context.Context, input MemberActionInput)
 	}
 
 	now := i.now()
-	// 停止と同時にリフレッシュトークンを失効させ、再ログインを強制する
-	err = i.txManager.Do(ctx, func(txCtx context.Context) error {
-		if err := i.workspaceRepo.SetMemberSuspended(txCtx, input.WorkspaceID, input.TargetUserID, &now); err != nil {
-			return fmt.Errorf("failed to suspend member: %w", err)
-		}
-		if err := i.sessionRepo.RevokeAllByUserID(txCtx, input.TargetUserID); err != nil {
-			return fmt.Errorf("failed to revoke sessions: %w", err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
+	if err := i.workspaceRepo.SetMemberSuspended(ctx, input.WorkspaceID, input.TargetUserID, &now); err != nil {
+		return fmt.Errorf("failed to suspend member: %w", err)
 	}
+	// 他のワークスペースでは使い続けられるようセッションは失効させず、このワークスペースの接続だけを切る
+	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.TargetUserID)
 
 	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberSuspended)
 	return nil

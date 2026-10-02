@@ -25,4 +25,5 @@ var (
 	ErrConflict             = errors.New("処理が競合しました")
 	ErrValidation           = errors.New("入力値が条件を満たしていません")
 	ErrInternal             = errors.New("サーバー内部でエラーが発生しました")
+	ErrPinExists            = errors.New("このメッセージは既にピン留めされています")
 )

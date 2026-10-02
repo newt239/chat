@@ -26,7 +26,7 @@ func startReplicas(t *testing.T) (*websocket.Hub, *websocket.Hub) {
 	t.Cleanup(cancel)
 	hubs := make([]*websocket.Hub, 2)
 	for i := range hubs {
-		hubs[i] = websocket.NewHub(websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
+		hubs[i] = websocket.NewHub(nil, websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
 		go hubs[i].Run(ctx)
 	}
 
@@ -66,7 +66,7 @@ func TestBroadcastReachesClientsOnOtherReplicas(t *testing.T) {
 	bob := websocket.NewTestClient(h2, "ws", "bob", "general")
 	carol := websocket.NewTestClient(h2, "ws", "carol")
 
-	h1.BroadcastToChannelSubscribers("ws", "general", []byte(`{"n":1}`))
+	h1.BroadcastToChannel("ws", "general", []byte(`{"n":1}`), "")
 	for _, c := range []*websocket.Client{alice, bob} {
 		if got := string(receive(t, c)); got != `{"n":1}` {
 			t.Fatalf("配信内容が変わっています: %s", got)
@@ -79,9 +79,74 @@ func TestBroadcastReachesClientsOnOtherReplicas(t *testing.T) {
 	receive(t, bob)
 	assertNothing(t, alice)
 
-	h2.BroadcastToUser("ws", "alice", []byte(`{"n":3}`))
+	h2.BroadcastToUsers("ws", []string{"alice"}, []byte(`{"n":3}`))
 	receive(t, alice)
 	assertNothing(t, bob)
+}
+
+func TestCloseEnvelopesDisconnectClientsOnOtherReplicas(t *testing.T) {
+	h1, h2 := startReplicas(t)
+	alice := websocket.NewTestClient(h2, "ws", "alice", "general")
+	aliceOther := websocket.NewTestClient(h2, "other", "alice")
+	bob := websocket.NewTestClient(h2, "ws", "bob", "general")
+
+	h1.CloseWorkspaceUser("ws", "alice")
+	assertClosed(t, alice)
+	assertOpen(t, aliceOther)
+
+	h1.CloseSession("session-bob")
+	assertClosed(t, bob)
+
+	h1.CloseUser("alice")
+	assertClosed(t, aliceOther)
+}
+
+func TestRevokeChannelStopsDelivery(t *testing.T) {
+	h1, h2 := startReplicas(t)
+	alice := websocket.NewTestClient(h2, "ws", "alice", "general")
+	bob := websocket.NewTestClient(h2, "ws", "bob", "general")
+
+	h1.RevokeChannel("ws", "general", "alice")
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		h1.BroadcastToChannel("ws", "general", []byte(`{"n":1}`), "")
+		receive(t, bob)
+		select {
+		case <-alice.Sent():
+			if time.Now().After(deadline) {
+				t.Fatal("購読を外したユーザーに配信が続いています")
+			}
+			continue
+		case <-time.After(100 * time.Millisecond):
+		}
+		return
+	}
+}
+
+func assertClosed(t *testing.T, c *websocket.Client) {
+	t.Helper()
+	deadline := time.After(2 * time.Second)
+	for {
+		select {
+		case _, ok := <-c.Sent():
+			if !ok {
+				return
+			}
+		case <-deadline:
+			t.Fatal("接続が切られませんでした")
+		}
+	}
+}
+
+func assertOpen(t *testing.T, c *websocket.Client) {
+	t.Helper()
+	select {
+	case _, ok := <-c.Sent():
+		if !ok {
+			t.Fatal("切られないはずの接続が切られました")
+		}
+	case <-time.After(100 * time.Millisecond):
+	}
 }
 
 func lastViewers(t *testing.T, c *websocket.Client, want []string) {

@@ -9,6 +9,7 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -22,32 +23,21 @@ func NewPinRepository(client *ent.Client) domainrepository.PinRepository {
 	return &pinRepository{client: client}
 }
 
+// Create は同じメッセージが既にピン留めされていれば ErrPinExists を返します
 func (r *pinRepository) Create(ctx context.Context, pin *entity.MessagePin) error {
-	chID := utils.ParseUUIDOrNil(pin.ChannelID)
-	msgID := utils.ParseUUIDOrNil(pin.MessageID)
-	byID := utils.ParseUUIDOrNil(pin.PinnedBy)
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	mp, err := client.MessagePin.Create().
-		SetChannelID(chID).
-		SetMessageID(msgID).
-		SetPinnedByID(byID).
+	mp, err := transaction.ResolveClient(ctx, r.client).MessagePin.Create().
+		SetChannelID(utils.ParseUUIDOrNil(pin.ChannelID)).
+		SetMessageID(utils.ParseUUIDOrNil(pin.MessageID)).
+		SetPinnedByID(utils.ParseUUIDOrNil(pin.PinnedBy)).
 		Save(ctx)
+	if ent.IsConstraintError(err) {
+		return domerr.ErrPinExists
+	}
 	if err != nil {
 		return err
 	}
-
-	// 再読込してエッジを付与
-	mp, err = client.MessagePin.Query().
-		Where(messagepin.IDEQ(mp.ID)).
-		WithMessage().
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
-	*pin = *messagePinToEntity(mp)
+	pin.ID = mp.ID.String()
+	pin.PinnedAt = mp.CreatedAt
 	return nil
 }
 

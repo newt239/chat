@@ -66,7 +66,7 @@ func newFixture(members map[string]*entity.WorkspaceMember, overrides ...entity.
 	repo := &stubWorkspaceRepo{members: members}
 	recorder := &audittest.Recorder{}
 	permissionSvc := domainservice.NewPermissionService(repo, &stubPermissionRepo{overrides: overrides})
-	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, permissionSvc, recorder), repo: repo, recorder: recorder}
+	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, permissionSvc, recorder, stubCloser{}), repo: repo, recorder: recorder}
 }
 
 func newInteractor(members map[string]*entity.WorkspaceMember) (WorkspaceUseCase, *stubWorkspaceRepo) {
@@ -208,3 +208,7 @@ func TestSignupEnabledWorkspace(t *testing.T) {
 		})
 	}
 }
+
+type stubCloser struct{}
+
+func (stubCloser) CloseWorkspaceUser(string, string) {}

@@ -1,18 +1,25 @@
 package websocket
 
 import (
-	"log"
+	"context"
+	"errors"
 	"net/http"
 	"slices"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 
-	"github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
-	authuc "github.com/newt239/chat/internal/usecase/auth"
+	domerr "github.com/newt239/chat/internal/domain/errors"
+	"github.com/newt239/chat/internal/infrastructure/logger"
+	realtimeuc "github.com/newt239/chat/internal/usecase/realtime"
 )
+
+// TicketConsumer は接続に使われたチケットを使用済みにし、接続者を返します
+type TicketConsumer interface {
+	ConsumeTicket(ctx context.Context, ticket string) (*realtimeuc.Ticket, error)
+}
 
 // newUpgrader は許可オリジンのみ受け付ける Upgrader を作ります
 func newUpgrader(allowedOrigins []string) websocket.Upgrader {
@@ -28,86 +35,28 @@ func newUpgrader(allowedOrigins []string) websocket.Upgrader {
 	}
 }
 
-// Handler はWebSocketハンドラーを返します
-func Handler(hub *Hub, jwtService authuc.JWTService, workspaceRepo repository.WorkspaceRepository, channelAccess service.ChannelAccessService, allowedOrigins []string) echo.HandlerFunc {
+// Handler は RealtimeService で発行した 1 回限りのチケットで認証し、WebSocket に切り替えます
+func Handler(hub *Hub, tickets TicketConsumer, allowedOrigins []string) echo.HandlerFunc {
 	upgrader := newUpgrader(allowedOrigins)
 
 	return func(c echo.Context) error {
-		log.Printf("[WebSocket] 接続リクエスト受信: RemoteAddr=%s", c.Request().RemoteAddr)
-
-		// 認証トークンの取得
-		// WebSocketではAuthorizationヘッダーを設定できないため、クエリパラメータからも取得を試みる
-		var token string
-		authHeader := c.Request().Header.Get("Authorization")
-		if authHeader != "" {
-			token = authHeader
-			if len(token) > 7 && token[:7] == "Bearer " {
-				token = token[7:]
-			}
-		} else {
-			// クエリパラメータからトークンを取得
-			token = c.QueryParam("token")
-			if token == "" {
-				log.Printf("[WebSocket] 認証トークンが指定されていません: RemoteAddr=%s", c.Request().RemoteAddr)
-				return echo.NewHTTPError(http.StatusUnauthorized, "認証トークンが指定されていません")
-			}
+		ticket, err := tickets.ConsumeTicket(c.Request().Context(), c.QueryParam("ticket"))
+		if errors.Is(err, domerr.ErrForbidden) {
+			return echo.NewHTTPError(http.StatusForbidden, "ワークスペースのメンバーではありません")
 		}
-
-		// JWTトークンの検証
-		claims, err := jwtService.VerifyToken(token)
 		if err != nil {
-			log.Printf("[WebSocket] トークン検証失敗: err=%v RemoteAddr=%s", err, c.Request().RemoteAddr)
-			return echo.NewHTTPError(http.StatusUnauthorized, "トークンが無効または期限切れです")
+			if !errors.Is(err, domerr.ErrInvalidToken) {
+				logger.Get().Error("WebSocket のチケットを確認できません", zap.Error(err))
+			}
+			return echo.NewHTTPError(http.StatusUnauthorized, "チケットが無効か期限切れです")
 		}
 
-		// WorkspaceIDの取得
-		workspaceID := c.QueryParam("workspaceId")
-		if workspaceID == "" {
-			log.Printf("[WebSocket] workspaceIdが指定されていません: userID=%s RemoteAddr=%s", claims.UserID, c.Request().RemoteAddr)
-			return echo.NewHTTPError(http.StatusBadRequest, "workspaceIdクエリパラメータは必須です")
-		}
-
-		// Workspace所属確認
-		ctx := c.Request().Context()
-		member, err := workspaceRepo.FindMember(ctx, workspaceID, claims.UserID)
-		if err != nil {
-			log.Printf("[WebSocket] FindMember error: userID=%s workspaceID=%s err=%v", claims.UserID, workspaceID, err)
-			return echo.NewHTTPError(http.StatusForbidden, "ユーザーはこのワークスペースのメンバーではありません")
-		}
-		if member == nil {
-			log.Printf("[WebSocket] Member not found: userID=%s workspaceID=%s", claims.UserID, workspaceID)
-			return echo.NewHTTPError(http.StatusForbidden, "ユーザーはこのワークスペースのメンバーではありません")
-		}
-
-		log.Printf("[WebSocket] 認証成功、アップグレード開始: userID=%s workspaceID=%s", claims.UserID, workspaceID)
-
-		// WebSocket接続のアップグレード
 		conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 		if err != nil {
-			log.Printf("[WebSocket] アップグレード失敗: userID=%s workspaceID=%s err=%v", claims.UserID, workspaceID, err)
-			return err
+			// Upgrade がエラーの応答を書き込み済み
+			return nil
 		}
-
-		log.Printf("[WebSocket] アップグレード成功: userID=%s workspaceID=%s", claims.UserID, workspaceID)
-
-		// クライアントを作成してハブに登録
-		client := &Client{
-			hub:                hub,
-			conn:               conn,
-			id:                 uuid.NewString(),
-			send:               make(chan []byte, 256),
-			userID:             claims.UserID,
-			workspaceID:        workspaceID,
-			subscribedChannels: make(map[string]bool),
-			channelAccess:      channelAccess,
-		}
-
-		client.hub.register <- client
-
-		// ゴルーチンを開始
-		go client.writePump()
-		go client.readPump()
-
+		newClient(hub, conn, uuid.NewString(), ticket.UserID, ticket.SessionID, ticket.WorkspaceID).start()
 		return nil
 	}
 }
