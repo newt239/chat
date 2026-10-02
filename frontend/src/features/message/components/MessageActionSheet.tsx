@@ -1,11 +1,13 @@
 import { useState } from "react";
 
 import { IconMoodPlus } from "@tabler/icons-react";
-import { Button, Heading, Menu, MenuItem, Separator } from "react-aria-components";
+import { Button, Heading, Menu } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { DialogFrame } from "#/components/ui/Dialog/DialogFrame";
-import { cn, focusRing } from "#/components/ui/styles/styles";
+import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
+import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
+import { focusRing } from "#/components/ui/styles/styles";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { EmojiPicker } from "#/features/reaction/components/EmojiPicker";
 
@@ -18,8 +20,7 @@ import type { MessageMenuAction } from "../hooks/useMessageMenuActions";
 import type { Message } from "#/gen/chat/v1/message_pb";
 
 type MessageActionSheetProps = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onClose: () => void;
   message: Message;
   actions: MessageMenuAction[];
   onReact: (emoji: string) => void;
@@ -27,10 +28,9 @@ type MessageActionSheetProps = {
 
 const roundButtonClassName = `grid size-11 place-items-center rounded-full bg-sunken text-[21px] text-muted data-pressed:bg-hover [&_svg]:size-[21px] ${focusRing}`;
 
-// モバイルでメッセージを長押ししたときの操作。新しいタブで開く操作はモバイルでは出さない
+// モバイルでメッセージを長押ししたときの操作。開いている間だけマウントする。新しいタブで開く操作はモバイルでは出さない
 export const MessageActionSheet = ({
-  isOpen,
-  onOpenChange,
+  onClose,
   message,
   actions,
   onReact,
@@ -39,21 +39,17 @@ export const MessageActionSheet = ({
   const { toText } = useMentionDirectory();
   const [isPickingEmoji, setIsPickingEmoji] = useState(false);
   const displayName = useDisplayName();
-  const close = () => {
-    onOpenChange(false);
-    setIsPickingEmoji(false);
-  };
   const react = (emoji: string) => {
     onReact(emoji);
-    close();
+    onClose();
   };
 
   return (
     <DialogFrame
-      isOpen={isOpen}
+      isOpen
       onOpenChange={(next) => {
         if (!next) {
-          close();
+          onClose();
         }
       }}
       layout="bottom"
@@ -100,27 +96,21 @@ export const MessageActionSheet = ({
               <IconMoodPlus aria-hidden />
             </Button>
           </div>
-          <Menu aria-label={t("message.sheet.title")} className="flex flex-col outline-none">
+          <Menu aria-label={t("message.sheet.title")} className="flex flex-col px-3 outline-none">
             {actions
               .filter(({ href }) => href === undefined)
               .flatMap(({ id, label, icon: ActionIcon, tone, onAction }) => [
-                tone === "danger" && (
-                  <Separator key={`${id}-separator`} className="mx-5 my-1 h-px bg-border" />
-                ),
+                tone === "danger" && <MenuSeparator key={`${id}-separator`} />,
                 <MenuItem
                   key={id}
                   id={id}
-                  textValue={label}
+                  icon={<ActionIcon aria-hidden />}
+                  tone={tone}
                   onAction={() => {
-                    close();
+                    onClose();
                     onAction?.();
                   }}
-                  className={cn(
-                    "flex min-h-12 cursor-default items-center gap-3.5 px-5 text-[15.5px] text-text outline-none data-focus-visible:bg-hover data-pressed:bg-hover [&_svg]:size-[21px] [&_svg]:text-muted",
-                    tone === "danger" && "text-danger [&_svg]:text-danger",
-                  )}
                 >
-                  <ActionIcon aria-hidden />
                   {label}
                 </MenuItem>,
               ])}

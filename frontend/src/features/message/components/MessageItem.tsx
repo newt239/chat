@@ -286,13 +286,10 @@ export const MessageItem = ({
         />
       )}
 
-      {isMobile && (
+      {isMobile && isSheetOpen && (
         <MessageActionSheet
-          isOpen={isSheetOpen}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              void navigate({ search: closeDialog, to: "." });
-            }
+          onClose={() => {
+            void navigate({ search: closeDialog, to: "." });
           }}
           message={message}
           actions={actions}
