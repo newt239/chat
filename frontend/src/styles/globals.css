@@ -82,11 +82,12 @@
 
 @theme {
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --default-transition-duration: 100ms;
 
-  --animate-fade-in: fade-in 120ms var(--ease-standard);
-  --animate-fade-out: fade-out 120ms var(--ease-standard) forwards;
-  --animate-pop-in: pop-in 120ms var(--ease-standard);
-  --animate-pop-out: fade-out 120ms var(--ease-standard) forwards;
+  --animate-fade-in: fade-in 90ms var(--ease-standard);
+  --animate-fade-out: fade-out 90ms var(--ease-standard) forwards;
+  --animate-pop-in: pop-in 90ms var(--ease-standard);
+  --animate-pop-out: fade-out 90ms var(--ease-standard) forwards;
 
   @keyframes fade-in {
     from {
@@ -101,7 +102,7 @@
   @keyframes pop-in {
     from {
       opacity: 0;
-      transform: scale(0.96);
+      transform: scale(0.98);
     }
   }
 }
