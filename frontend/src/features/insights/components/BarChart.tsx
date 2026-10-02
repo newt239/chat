@@ -10,7 +10,7 @@ import { transitions } from "#/lib/motion";
 
 import { ChartTooltip } from "./ChartTooltip";
 
-export type BarDatum = {
+type BarDatum = {
   key: string;
   // 軸に出す短い表示
   label: string;
