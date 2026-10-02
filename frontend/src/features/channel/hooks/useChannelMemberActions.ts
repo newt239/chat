@@ -9,7 +9,7 @@ import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 export const useChannelMemberActions = (workspaceId: string) => {
   const queryClient = useQueryClient();
 
-  const onSuccess = async (_: unknown, { channelId }: { channelId?: string }) => {
+  const onSuccess = async (_: object, { channelId }: { channelId?: string }) => {
     await Promise.all([
       queryClient.invalidateQueries({
         queryKey: createConnectQueryKey({

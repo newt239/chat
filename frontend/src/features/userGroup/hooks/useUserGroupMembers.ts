@@ -14,7 +14,7 @@ export const useUserGroupMembers = (groupId: string) =>
 /** ユーザーグループのメンバー追加・削除を提供する */
 export const useUserGroupMemberActions = () => {
   const queryClient = useQueryClient();
-  const onSuccess = async (_: unknown, { groupId }: { groupId?: string }) => {
+  const onSuccess = async (_: object, { groupId }: { groupId?: string }) => {
     await queryClient.invalidateQueries({
       queryKey: createConnectQueryKey({
         cardinality: "finite",

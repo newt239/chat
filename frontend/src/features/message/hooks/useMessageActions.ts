@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import { ConnectError } from "@connectrpc/connect";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
@@ -10,9 +11,6 @@ import {
 } from "#/features/message/hooks/useMessage";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
-
-const errorDescription = (error: unknown) =>
-  error instanceof Error && error.message ? error.message : undefined;
 
 export const useMessageActions = () => {
   const { t } = useTranslation();
@@ -26,7 +24,10 @@ export const useMessageActions = () => {
         await updateMessage.mutateAsync({ body: nextBody, messageId });
         toast(t("message.edit.done"), { tone: "success" });
       } catch (error) {
-        toast(t("message.edit.failed"), { description: errorDescription(error), tone: "danger" });
+        toast(t("message.edit.failed"), {
+          description: ConnectError.from(error).message || undefined,
+          tone: "danger",
+        });
         throw error;
       }
     },
@@ -43,7 +44,10 @@ export const useMessageActions = () => {
           await invalidateThreadMetadata(channelId);
         }
       } catch (error) {
-        toast(t("message.delete.failed"), { description: errorDescription(error), tone: "danger" });
+        toast(t("message.delete.failed"), {
+          description: ConnectError.from(error).message || undefined,
+          tone: "danger",
+        });
       }
     },
     [deleteMessage, invalidateThreadMetadata, t],
