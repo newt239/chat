@@ -124,7 +124,6 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 		WorkspaceID: c.WorkspaceID,
 		Name:        c.Name,
 		Description: StringPtrFromNullable(c.Description),
-		IsPrivate:   c.IsPrivate,
 		Type:        channelType,
 		ParentID:    UUIDPtrToStringPtr(c.ParentID),
 		CreatedBy:   c.CreatedByID.String(),

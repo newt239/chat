@@ -66,7 +66,7 @@ var errorCodes = []struct {
 		domerr.ErrChannelArchived, domerr.ErrPasswordAuthDisabled, domerr.ErrGoogleAuthDisabled, domerr.ErrSignupDisabled,
 		adminuc.ErrCannotSuspendOwner, adminuc.ErrCannotSuspendSelf,
 		appuc.ErrUnsupportedChannel, appuc.ErrInactive,
-		channeluc.ErrCannotArchiveDM, channeluc.ErrChannelHasChildren,
+		channeluc.ErrCannotModifyDM, channeluc.ErrChannelHasChildren,
 		channelmemberuc.ErrNotMember, channelmemberuc.ErrLastAdminRemoval,
 		messageuc.ErrMessageAlreadyDeleted, messageuc.ErrCannotEditDeleted,
 		polluc.ErrPollClosed,

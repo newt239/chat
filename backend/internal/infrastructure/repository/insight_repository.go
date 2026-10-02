@@ -130,17 +130,17 @@ func (r *insightRepository) ChannelMessageCounts(ctx context.Context, workspaceI
 	}
 	var result []entity.ChannelMessageCount
 	err := r.query(ctx, `
-		SELECT c.id, c.name, c.is_private,
+		SELECT c.id, c.name, c.channel_type <> 'public',
 			COUNT(m.id),
 			COUNT(m.id) FILTER (WHERE m.created_at >= $3)
 		FROM channel c
 		LEFT JOIN message m ON m.channel_id = c.id AND m.deleted_at IS NULL AND m.created_at >= $2 AND m.created_at < $4
 		WHERE c.workspace_id = $1
 			AND COALESCE(c.channel_type, 'public') IN ('public', 'private')
-			AND ($5::uuid IS NULL OR NOT c.is_private OR EXISTS (
+			AND ($5::uuid IS NULL OR c.channel_type = 'public' OR EXISTS (
 				SELECT 1 FROM channel_member cm WHERE cm.channel_id = c.id AND cm.user_id = $5::uuid
 			))
-		GROUP BY c.id, c.name, c.is_private
+		GROUP BY c.id, c.name, c.channel_type
 		ORDER BY COUNT(m.id) DESC, c.name`,
 		[]any{workspaceID, from, recentFrom, to, viewer},
 		func(rows *sql.Rows) error {

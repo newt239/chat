@@ -76,11 +76,6 @@ func Description(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldDescription, v))
 }
 
-// IsPrivate applies equality check predicate on the "is_private" field. It's identical to IsPrivateEQ.
-func IsPrivate(v bool) predicate.Channel {
-	return predicate.Channel(sql.FieldEQ(FieldIsPrivate, v))
-}
-
 // ChannelType applies equality check predicate on the "channel_type" field. It's identical to ChannelTypeEQ.
 func ChannelType(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldChannelType, v))
@@ -336,16 +331,6 @@ func DescriptionContainsFold(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// IsPrivateEQ applies the EQ predicate on the "is_private" field.
-func IsPrivateEQ(v bool) predicate.Channel {
-	return predicate.Channel(sql.FieldEQ(FieldIsPrivate, v))
-}
-
-// IsPrivateNEQ applies the NEQ predicate on the "is_private" field.
-func IsPrivateNEQ(v bool) predicate.Channel {
-	return predicate.Channel(sql.FieldNEQ(FieldIsPrivate, v))
-}
-
 // ChannelTypeEQ applies the EQ predicate on the "channel_type" field.
 func ChannelTypeEQ(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldEQ(FieldChannelType, v))
@@ -399,16 +384,6 @@ func ChannelTypeHasPrefix(v string) predicate.Channel {
 // ChannelTypeHasSuffix applies the HasSuffix predicate on the "channel_type" field.
 func ChannelTypeHasSuffix(v string) predicate.Channel {
 	return predicate.Channel(sql.FieldHasSuffix(FieldChannelType, v))
-}
-
-// ChannelTypeIsNil applies the IsNil predicate on the "channel_type" field.
-func ChannelTypeIsNil() predicate.Channel {
-	return predicate.Channel(sql.FieldIsNull(FieldChannelType))
-}
-
-// ChannelTypeNotNil applies the NotNil predicate on the "channel_type" field.
-func ChannelTypeNotNil() predicate.Channel {
-	return predicate.Channel(sql.FieldNotNull(FieldChannelType))
 }
 
 // ChannelTypeEqualFold applies the EqualFold predicate on the "channel_type" field.

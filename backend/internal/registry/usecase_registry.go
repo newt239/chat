@@ -134,6 +134,8 @@ func (r *UseCaseRegistry) NewChannelUseCase() channeluc.ChannelUseCase {
 		r.domainRegistry.NewChannelAccessService(),
 		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 
@@ -144,6 +146,10 @@ func (r *UseCaseRegistry) NewChannelMemberUseCase() channelmemberuc.ChannelMembe
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.NewSystemMessageUseCase(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.infrastructureRegistry.NewTransactionManager(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 

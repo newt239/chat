@@ -46,7 +46,7 @@ func (n *Notifier) broadcastToUsers(workspaceID string, userIDs []string, event 
 	}
 }
 
-// RevokeChannel はチャンネルの購読を外します。userID が空なら購読者ごとに閲覧権限を確かめ直します
+// RevokeChannel はチャンネルを見られなくなった接続の購読を外します。userID が空なら購読者全員を確かめ直します
 func (n *Notifier) RevokeChannel(workspaceID, channelID, userID string) {
 	n.hub.RevokeChannel(workspaceID, channelID, userID)
 }

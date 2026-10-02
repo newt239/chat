@@ -55,7 +55,7 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 		return nil, domerr.ErrUnauthorized
 	}
 
-	if ch.IsPrivate {
+	if ch.IsPrivate() {
 		isMember, err := s.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
@@ -86,7 +86,7 @@ func (s *channelAccessService) EnsureChannelMember(ctx context.Context, channelI
 func (s *channelAccessService) FilterAccessible(ctx context.Context, channels []*entity.Channel, userID string) ([]*entity.Channel, error) {
 	result := make([]*entity.Channel, 0, len(channels))
 	for _, ch := range channels {
-		if ch.IsPrivate {
+		if ch.IsPrivate() {
 			isMember, err := s.channelMemberRepo.IsMember(ctx, ch.ID, userID)
 			if err != nil {
 				return nil, fmt.Errorf("failed to verify channel membership: %w", err)

@@ -23,8 +23,6 @@ const (
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldIsPrivate holds the string denoting the is_private field in the database.
-	FieldIsPrivate = "is_private"
 	// FieldChannelType holds the string denoting the channel_type field in the database.
 	FieldChannelType = "channel_type"
 	// FieldArchivedAt holds the string denoting the archived_at field in the database.
@@ -114,7 +112,6 @@ var Columns = []string{
 	FieldCreatedByID,
 	FieldName,
 	FieldDescription,
-	FieldIsPrivate,
 	FieldChannelType,
 	FieldArchivedAt,
 	FieldParentID,
@@ -136,8 +133,6 @@ func ValidColumn(column string) bool {
 var (
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
-	// DefaultIsPrivate holds the default value on creation for the "is_private" field.
-	DefaultIsPrivate bool
 	// DefaultChannelType holds the default value on creation for the "channel_type" field.
 	DefaultChannelType string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -176,11 +171,6 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByIsPrivate orders the results by the is_private field.
-func ByIsPrivate(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsPrivate, opts...).ToFunc()
 }
 
 // ByChannelType orders the results by the channel_type field.

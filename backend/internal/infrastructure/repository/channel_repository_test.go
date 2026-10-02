@@ -2,8 +2,11 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
+
+	domerr "github.com/newt239/chat/internal/domain/errors"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -90,15 +93,15 @@ func TestFindOrCreateDMReusesChannelByKey(t *testing.T) {
 	}
 }
 
-func TestAddMemberIgnoresDuplicate(t *testing.T) {
+func TestAddMemberReportsDuplicate(t *testing.T) {
 	client := openTestClient(t)
 	f := newSearchFixture(t, client)
 	repo := NewChannelMemberRepository(client)
 	ctx := context.Background()
 	member := &entity.ChannelMember{ChannelID: f.channels["general"].ID.String(), UserID: f.alice.ID.String(), Role: entity.ChannelRoleMember}
 
-	if err := repo.AddMember(ctx, member); err != nil {
-		t.Fatalf("参加済みのメンバーを追加してもエラーにしないことを期待しましたが %v でした", err)
+	if err := repo.AddMember(ctx, member); !errors.Is(err, domerr.ErrAlreadyMember) {
+		t.Fatalf("参加済みのメンバーは ErrAlreadyMember を返すことを期待しましたが %v でした", err)
 	}
 	members, err := repo.FindMembers(ctx, member.ChannelID)
 	if err != nil || len(members) != 2 {

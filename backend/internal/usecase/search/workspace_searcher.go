@@ -292,7 +292,7 @@ func (s *WorkspaceSearcher) searchChannels(
 			WorkspaceID: ch.WorkspaceID,
 			Name:        ch.Name,
 			Description: ch.Description,
-			IsPrivate:   ch.IsPrivate,
+			IsPrivate:   ch.IsPrivate(),
 			CreatedBy:   ch.CreatedBy,
 			CreatedAt:   ch.CreatedAt,
 			UpdatedAt:   ch.UpdatedAt,

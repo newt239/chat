@@ -205,7 +205,7 @@ func viewableChannel(workspaceID string, userID uuid.UUID) predicate.Channel {
 	return channel.And(
 		channel.WorkspaceID(workspaceID),
 		channel.Or(
-			channel.IsPrivate(false),
+			channel.ChannelType(string(entity.ChannelTypePublic)),
 			channel.HasMembersWith(channelmember.UserID(userID)),
 		),
 	)

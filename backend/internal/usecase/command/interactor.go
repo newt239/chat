@@ -3,6 +3,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -219,7 +220,8 @@ func (i *Interactor) deliver(ctx context.Context, reminder *entity.Reminder) err
 	}
 	// 新しく作った DM にはメンバーがいないため、公式アプリと受け取る人を参加させる。参加済みなら何もしない
 	for _, userID := range []string{official.BotUserID, recipient} {
-		if err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: dm.ID, UserID: userID, Role: entity.ChannelRoleMember, JoinedAt: time.Now()}); err != nil {
+		err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: dm.ID, UserID: userID, Role: entity.ChannelRoleMember, JoinedAt: time.Now()})
+		if err != nil && !errors.Is(err, domerr.ErrAlreadyMember) {
 			return fmt.Errorf("failed to join DM: %w", err)
 		}
 	}

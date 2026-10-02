@@ -28,8 +28,6 @@ type Channel struct {
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// IsPrivate holds the value of the "is_private" field.
-	IsPrivate bool `json:"is_private,omitempty"`
 	// ChannelType holds the value of the "channel_type" field.
 	ChannelType string `json:"channel_type,omitempty"`
 	// ArchivedAt holds the value of the "archived_at" field.
@@ -156,8 +154,6 @@ func (*Channel) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case channel.FieldParentID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case channel.FieldIsPrivate:
-			values[i] = new(sql.NullBool)
 		case channel.FieldWorkspaceID, channel.FieldName, channel.FieldDescription, channel.FieldChannelType, channel.FieldDmKey:
 			values[i] = new(sql.NullString)
 		case channel.FieldArchivedAt, channel.FieldCreatedAt, channel.FieldUpdatedAt:
@@ -208,12 +204,6 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
-			}
-		case channel.FieldIsPrivate:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_private", values[i])
-			} else if value.Valid {
-				_m.IsPrivate = value.Bool
 			}
 		case channel.FieldChannelType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -341,9 +331,6 @@ func (_m *Channel) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
-	builder.WriteString("is_private=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IsPrivate))
 	builder.WriteString(", ")
 	builder.WriteString("channel_type=")
 	builder.WriteString(_m.ChannelType)

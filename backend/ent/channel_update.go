@@ -97,20 +97,6 @@ func (_u *ChannelUpdate) ClearDescription() *ChannelUpdate {
 	return _u
 }
 
-// SetIsPrivate sets the "is_private" field.
-func (_u *ChannelUpdate) SetIsPrivate(v bool) *ChannelUpdate {
-	_u.mutation.SetIsPrivate(v)
-	return _u
-}
-
-// SetNillableIsPrivate sets the "is_private" field if the given value is not nil.
-func (_u *ChannelUpdate) SetNillableIsPrivate(v *bool) *ChannelUpdate {
-	if v != nil {
-		_u.SetIsPrivate(*v)
-	}
-	return _u
-}
-
 // SetChannelType sets the "channel_type" field.
 func (_u *ChannelUpdate) SetChannelType(v string) *ChannelUpdate {
 	_u.mutation.SetChannelType(v)
@@ -122,12 +108,6 @@ func (_u *ChannelUpdate) SetNillableChannelType(v *string) *ChannelUpdate {
 	if v != nil {
 		_u.SetChannelType(*v)
 	}
-	return _u
-}
-
-// ClearChannelType clears the value of the "channel_type" field.
-func (_u *ChannelUpdate) ClearChannelType() *ChannelUpdate {
-	_u.mutation.ClearChannelType()
 	return _u
 }
 
@@ -468,14 +448,8 @@ func (_u *ChannelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(channel.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.IsPrivate(); ok {
-		_spec.SetField(channel.FieldIsPrivate, field.TypeBool, value)
-	}
 	if value, ok := _u.mutation.ChannelType(); ok {
 		_spec.SetField(channel.FieldChannelType, field.TypeString, value)
-	}
-	if _u.mutation.ChannelTypeCleared() {
-		_spec.ClearField(channel.FieldChannelType, field.TypeString)
 	}
 	if value, ok := _u.mutation.ArchivedAt(); ok {
 		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)
@@ -883,20 +857,6 @@ func (_u *ChannelUpdateOne) ClearDescription() *ChannelUpdateOne {
 	return _u
 }
 
-// SetIsPrivate sets the "is_private" field.
-func (_u *ChannelUpdateOne) SetIsPrivate(v bool) *ChannelUpdateOne {
-	_u.mutation.SetIsPrivate(v)
-	return _u
-}
-
-// SetNillableIsPrivate sets the "is_private" field if the given value is not nil.
-func (_u *ChannelUpdateOne) SetNillableIsPrivate(v *bool) *ChannelUpdateOne {
-	if v != nil {
-		_u.SetIsPrivate(*v)
-	}
-	return _u
-}
-
 // SetChannelType sets the "channel_type" field.
 func (_u *ChannelUpdateOne) SetChannelType(v string) *ChannelUpdateOne {
 	_u.mutation.SetChannelType(v)
@@ -908,12 +868,6 @@ func (_u *ChannelUpdateOne) SetNillableChannelType(v *string) *ChannelUpdateOne 
 	if v != nil {
 		_u.SetChannelType(*v)
 	}
-	return _u
-}
-
-// ClearChannelType clears the value of the "channel_type" field.
-func (_u *ChannelUpdateOne) ClearChannelType() *ChannelUpdateOne {
-	_u.mutation.ClearChannelType()
 	return _u
 }
 
@@ -1284,14 +1238,8 @@ func (_u *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err er
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(channel.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.IsPrivate(); ok {
-		_spec.SetField(channel.FieldIsPrivate, field.TypeBool, value)
-	}
 	if value, ok := _u.mutation.ChannelType(); ok {
 		_spec.SetField(channel.FieldChannelType, field.TypeString, value)
-	}
-	if _u.mutation.ChannelTypeCleared() {
-		_spec.ClearField(channel.FieldChannelType, field.TypeString)
 	}
 	if value, ok := _u.mutation.ArchivedAt(); ok {
 		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)

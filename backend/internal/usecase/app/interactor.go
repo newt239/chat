@@ -398,7 +398,7 @@ func (i *Interactor) applySettings(ctx context.Context, app *entity.App, setting
 		if ch.WorkspaceID != app.WorkspaceID {
 			return domerr.ErrChannelNotFound
 		}
-		if ch.Type == entity.ChannelTypeDM || ch.Type == entity.ChannelTypeGroupDM {
+		if ch.IsDM() {
 			return ErrUnsupportedChannel
 		}
 	}
@@ -443,7 +443,11 @@ func (i *Interactor) joinDefaultChannel(ctx context.Context, app *entity.App) er
 	if app.DefaultChannelID == nil {
 		return nil
 	}
-	return i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: *app.DefaultChannelID, UserID: app.BotUserID, Role: entity.ChannelRoleMember})
+	err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: *app.DefaultChannelID, UserID: app.BotUserID, Role: entity.ChannelRoleMember})
+	if errors.Is(err, domerr.ErrAlreadyMember) {
+		return nil
+	}
+	return err
 }
 
 func buildMessage(app *entity.App, input PostInput) (*entity.Message, error) {
@@ -495,7 +499,7 @@ func (i *Interactor) findManageableInChannel(ctx context.Context, input ChannelI
 	if ch.WorkspaceID != app.WorkspaceID {
 		return nil, nil, domerr.ErrChannelNotFound
 	}
-	if ch.Type == entity.ChannelTypeDM || ch.Type == entity.ChannelTypeGroupDM {
+	if ch.IsDM() {
 		return nil, nil, ErrUnsupportedChannel
 	}
 	return app, ch, nil

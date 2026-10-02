@@ -6,6 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
+	"github.com/newt239/chat/internal/domain/service"
+
 	"github.com/alicebob/miniredis/v2"
 	goredis "github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -14,6 +18,19 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
+
+// stubAccess は denied のユーザーだけチャンネルを閲覧できないものとして扱います
+type stubAccess struct {
+	service.ChannelAccessService
+	denied string
+}
+
+func (a stubAccess) EnsureChannelAccess(_ context.Context, channelID, userID string) (*entity.Channel, error) {
+	if userID == a.denied {
+		return nil, domerr.ErrUnauthorized
+	}
+	return &entity.Channel{ID: channelID, WorkspaceID: "ws"}, nil
+}
 
 // startReplicas は同じ Redis を共有する 2 つのハブを、レプリカに見立てて起動します
 func startReplicas(t *testing.T) (*websocket.Hub, *websocket.Hub) {
@@ -26,7 +43,7 @@ func startReplicas(t *testing.T) (*websocket.Hub, *websocket.Hub) {
 	t.Cleanup(cancel)
 	hubs := make([]*websocket.Hub, 2)
 	for i := range hubs {
-		hubs[i] = websocket.NewHub(nil, websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
+		hubs[i] = websocket.NewHub(stubAccess{denied: "alice"}, websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
 		go hubs[i].Run(ctx)
 	}
 
@@ -106,7 +123,8 @@ func TestRevokeChannelStopsDelivery(t *testing.T) {
 	alice := websocket.NewTestClient(h2, "ws", "alice", "general")
 	bob := websocket.NewTestClient(h2, "ws", "bob", "general")
 
-	h1.RevokeChannel("ws", "general", "alice")
+	// 閲覧できる bob は全員を確かめ直しても外れない
+	h1.RevokeChannel("ws", "general", "")
 	deadline := time.Now().Add(2 * time.Second)
 	for {
 		h1.BroadcastToChannel("ws", "general", []byte(`{"n":1}`), "")

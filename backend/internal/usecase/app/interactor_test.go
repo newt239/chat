@@ -29,7 +29,7 @@ const (
 var channels = map[string]*entity.Channel{
 	joinedID:  {ID: joinedID, WorkspaceID: workspaceID, Name: "joined", Type: entity.ChannelTypePublic},
 	publicID:  {ID: publicID, WorkspaceID: workspaceID, Name: "public", Type: entity.ChannelTypePublic},
-	privateID: {ID: privateID, WorkspaceID: workspaceID, Name: "private", Type: entity.ChannelTypePrivate, IsPrivate: true},
+	privateID: {ID: privateID, WorkspaceID: workspaceID, Name: "private", Type: entity.ChannelTypePrivate},
 }
 
 type stubAccess struct {

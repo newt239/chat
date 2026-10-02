@@ -62,20 +62,6 @@ func (_c *ChannelCreate) SetNillableDescription(v *string) *ChannelCreate {
 	return _c
 }
 
-// SetIsPrivate sets the "is_private" field.
-func (_c *ChannelCreate) SetIsPrivate(v bool) *ChannelCreate {
-	_c.mutation.SetIsPrivate(v)
-	return _c
-}
-
-// SetNillableIsPrivate sets the "is_private" field if the given value is not nil.
-func (_c *ChannelCreate) SetNillableIsPrivate(v *bool) *ChannelCreate {
-	if v != nil {
-		_c.SetIsPrivate(*v)
-	}
-	return _c
-}
-
 // SetChannelType sets the "channel_type" field.
 func (_c *ChannelCreate) SetChannelType(v string) *ChannelCreate {
 	_c.mutation.SetChannelType(v)
@@ -299,10 +285,6 @@ func (_c *ChannelCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *ChannelCreate) defaults() {
-	if _, ok := _c.mutation.IsPrivate(); !ok {
-		v := channel.DefaultIsPrivate
-		_c.mutation.SetIsPrivate(v)
-	}
 	if _, ok := _c.mutation.ChannelType(); !ok {
 		v := channel.DefaultChannelType
 		_c.mutation.SetChannelType(v)
@@ -337,8 +319,8 @@ func (_c *ChannelCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Channel.name": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.IsPrivate(); !ok {
-		return &ValidationError{Name: "is_private", err: errors.New(`ent: missing required field "Channel.is_private"`)}
+	if _, ok := _c.mutation.ChannelType(); !ok {
+		return &ValidationError{Name: "channel_type", err: errors.New(`ent: missing required field "Channel.channel_type"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Channel.created_at"`)}
@@ -395,10 +377,6 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(channel.FieldDescription, field.TypeString, value)
 		_node.Description = value
-	}
-	if value, ok := _c.mutation.IsPrivate(); ok {
-		_spec.SetField(channel.FieldIsPrivate, field.TypeBool, value)
-		_node.IsPrivate = value
 	}
 	if value, ok := _c.mutation.ChannelType(); ok {
 		_spec.SetField(channel.FieldChannelType, field.TypeString, value)
@@ -657,18 +635,6 @@ func (u *ChannelUpsert) ClearDescription() *ChannelUpsert {
 	return u
 }
 
-// SetIsPrivate sets the "is_private" field.
-func (u *ChannelUpsert) SetIsPrivate(v bool) *ChannelUpsert {
-	u.Set(channel.FieldIsPrivate, v)
-	return u
-}
-
-// UpdateIsPrivate sets the "is_private" field to the value that was provided on create.
-func (u *ChannelUpsert) UpdateIsPrivate() *ChannelUpsert {
-	u.SetExcluded(channel.FieldIsPrivate)
-	return u
-}
-
 // SetChannelType sets the "channel_type" field.
 func (u *ChannelUpsert) SetChannelType(v string) *ChannelUpsert {
 	u.Set(channel.FieldChannelType, v)
@@ -678,12 +644,6 @@ func (u *ChannelUpsert) SetChannelType(v string) *ChannelUpsert {
 // UpdateChannelType sets the "channel_type" field to the value that was provided on create.
 func (u *ChannelUpsert) UpdateChannelType() *ChannelUpsert {
 	u.SetExcluded(channel.FieldChannelType)
-	return u
-}
-
-// ClearChannelType clears the value of the "channel_type" field.
-func (u *ChannelUpsert) ClearChannelType() *ChannelUpsert {
-	u.SetNull(channel.FieldChannelType)
 	return u
 }
 
@@ -852,20 +812,6 @@ func (u *ChannelUpsertOne) ClearDescription() *ChannelUpsertOne {
 	})
 }
 
-// SetIsPrivate sets the "is_private" field.
-func (u *ChannelUpsertOne) SetIsPrivate(v bool) *ChannelUpsertOne {
-	return u.Update(func(s *ChannelUpsert) {
-		s.SetIsPrivate(v)
-	})
-}
-
-// UpdateIsPrivate sets the "is_private" field to the value that was provided on create.
-func (u *ChannelUpsertOne) UpdateIsPrivate() *ChannelUpsertOne {
-	return u.Update(func(s *ChannelUpsert) {
-		s.UpdateIsPrivate()
-	})
-}
-
 // SetChannelType sets the "channel_type" field.
 func (u *ChannelUpsertOne) SetChannelType(v string) *ChannelUpsertOne {
 	return u.Update(func(s *ChannelUpsert) {
@@ -877,13 +823,6 @@ func (u *ChannelUpsertOne) SetChannelType(v string) *ChannelUpsertOne {
 func (u *ChannelUpsertOne) UpdateChannelType() *ChannelUpsertOne {
 	return u.Update(func(s *ChannelUpsert) {
 		s.UpdateChannelType()
-	})
-}
-
-// ClearChannelType clears the value of the "channel_type" field.
-func (u *ChannelUpsertOne) ClearChannelType() *ChannelUpsertOne {
-	return u.Update(func(s *ChannelUpsert) {
-		s.ClearChannelType()
 	})
 }
 
@@ -1227,20 +1166,6 @@ func (u *ChannelUpsertBulk) ClearDescription() *ChannelUpsertBulk {
 	})
 }
 
-// SetIsPrivate sets the "is_private" field.
-func (u *ChannelUpsertBulk) SetIsPrivate(v bool) *ChannelUpsertBulk {
-	return u.Update(func(s *ChannelUpsert) {
-		s.SetIsPrivate(v)
-	})
-}
-
-// UpdateIsPrivate sets the "is_private" field to the value that was provided on create.
-func (u *ChannelUpsertBulk) UpdateIsPrivate() *ChannelUpsertBulk {
-	return u.Update(func(s *ChannelUpsert) {
-		s.UpdateIsPrivate()
-	})
-}
-
 // SetChannelType sets the "channel_type" field.
 func (u *ChannelUpsertBulk) SetChannelType(v string) *ChannelUpsertBulk {
 	return u.Update(func(s *ChannelUpsert) {
@@ -1252,13 +1177,6 @@ func (u *ChannelUpsertBulk) SetChannelType(v string) *ChannelUpsertBulk {
 func (u *ChannelUpsertBulk) UpdateChannelType() *ChannelUpsertBulk {
 	return u.Update(func(s *ChannelUpsert) {
 		s.UpdateChannelType()
-	})
-}
-
-// ClearChannelType clears the value of the "channel_type" field.
-func (u *ChannelUpsertBulk) ClearChannelType() *ChannelUpsertBulk {
-	return u.Update(func(s *ChannelUpsert) {
-		s.ClearChannelType()
 	})
 }
 

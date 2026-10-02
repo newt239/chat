@@ -59,7 +59,7 @@ func createRichSamples(
 	// 既存の公開チャンネルにも新しいメンバーを入れ、参加のお知らせを残す
 	joinedAt := time.Now().Add(-26 * time.Hour)
 	for _, ch := range channels {
-		if ch.IsPrivate {
+		if ch.IsPrivate() {
 			continue
 		}
 		for i, member := range members[len(users):] {

@@ -31,11 +31,9 @@ func (Channel) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("description").
 			Optional(),
-		field.Bool("is_private").
-			Default(false),
+		// public / private / dm / group_dm。public 以外は参加者だけが閲覧できる
 		field.String("channel_type").
-			Default("public").
-			Optional(),
+			Default("public"),
 		field.Time("archived_at").
 			Optional().
 			Nillable(),
@@ -83,8 +81,7 @@ func (Channel) Edges() []ent.Edge {
 
 func (Channel) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("is_private"),
-		index.Fields("workspace_id"),
+		index.Fields("workspace_id", "channel_type"),
 		index.Fields("workspace_id", "name").
 			Unique().
 			Annotations(entsql.IndexWhere("dm_key IS NULL")),

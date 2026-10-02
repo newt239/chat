@@ -51,7 +51,6 @@ type Channel struct {
 	WorkspaceID string
 	Name        string
 	Description *string
-	IsPrivate   bool
 	Type        ChannelType
 	ParentID    *string
 	CreatedBy   string
@@ -65,7 +64,6 @@ type ChannelParams struct {
 	WorkspaceID string
 	Name        string
 	Description *string
-	IsPrivate   bool
 	Type        ChannelType
 	ParentID    *string
 	CreatedBy   string
@@ -119,23 +117,27 @@ func NewChannel(params ChannelParams) (*Channel, error) {
 		createdAt = time.Now().UTC()
 	}
 
-	isPrivate := params.IsPrivate
-	if channelType == ChannelTypeDM || channelType == ChannelTypeGroupDM {
-		isPrivate = true
-	}
-
 	return &Channel{
 		ID:          id,
 		WorkspaceID: workspaceID,
 		Name:        name,
 		Description: cloneString(params.Description),
-		IsPrivate:   isPrivate,
 		Type:        channelType,
 		ParentID:    cloneString(params.ParentID),
 		CreatedBy:   creatorID,
 		CreatedAt:   createdAt,
 		UpdatedAt:   createdAt,
 	}, nil
+}
+
+// IsPrivate は参加者だけが閲覧できるチャンネルかを返します。DM とグループ DM も含む
+func (c *Channel) IsPrivate() bool {
+	return c.Type != ChannelTypePublic
+}
+
+// IsDM は 1 対 1 の DM とグループ DM かを返します
+func (c *Channel) IsDM() bool {
+	return c.Type == ChannelTypeDM || c.Type == ChannelTypeGroupDM
 }
 
 // ChangeName はチャンネル名を変更します。階層を移動する変更は受け付けません

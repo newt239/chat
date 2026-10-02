@@ -71,7 +71,7 @@ const (
 	targetWorkspace target = "workspace"
 	targetChannel   target = "channel"
 	targetUsers     target = "users"
-	// 購読を外す。UserID が空なら購読者ごとに閲覧権限を確かめ直す
+	// 閲覧権限を確かめ直し、見られなくなった接続の購読を外す。UserID が空なら全員を確かめる
 	targetRevokeChannel target = "revokeChannel"
 	// ワークスペースから外されたユーザーの接続を 4403 で切る
 	targetCloseWorkspaceUser target = "closeWorkspaceUser"
@@ -386,7 +386,8 @@ func (h *Hub) revokeChannel(workspaceID, channelID, userID string) {
 		if _, ok := checked[c]; ok {
 			continue
 		}
-		revoke := userID != "" || !h.canAccess(c, channelID)
+		// 公開チャンネルは退出しても閲覧できるため、権限を確かめ直して見られなくなった接続だけを外す
+		revoke := !h.canAccess(c, channelID)
 		checked[c] = revoke
 		if !revoke {
 			continue
@@ -416,7 +417,7 @@ func (h *Hub) BroadcastToUsers(workspaceID string, userIDs []string, message []b
 	h.publish(envelope{Target: targetUsers, WorkspaceID: workspaceID, UserIDs: userIDs, Data: message})
 }
 
-// RevokeChannel はユーザーのチャンネルの購読を外します。userID が空なら購読者ごとに閲覧権限を確かめ直します
+// RevokeChannel はチャンネルを見られなくなった接続の購読を外します。userID が空なら購読者全員を確かめ直します
 func (h *Hub) RevokeChannel(workspaceID, channelID, userID string) {
 	h.publish(envelope{Target: targetRevokeChannel, WorkspaceID: workspaceID, ChannelID: channelID, UserID: userID})
 }

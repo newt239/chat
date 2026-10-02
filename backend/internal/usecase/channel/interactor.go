@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -23,8 +21,13 @@ var (
 	ErrChannelNameExists    = errors.New("同じ名前のチャンネルがすでに存在します")
 	ErrChannelHasChildren   = errors.New("下の階層にチャンネルがあるため削除できません")
 	ErrMemberNotInWorkspace = fmt.Errorf("%w: ワークスペースのメンバーではないユーザーが含まれています", domerr.ErrValidation)
-	ErrCannotArchiveDM      = errors.New("DM はアーカイブできません")
+	ErrCannotModifyDM       = errors.New("DM とグループ DM は変更やアーカイブができません")
 )
+
+// ChannelRevoker はチャンネルを見られなくなった接続へのリアルタイム配信を止めます
+type ChannelRevoker interface {
+	RevokeChannel(workspaceID, channelID, userID string)
+}
 
 type ChannelUseCase interface {
 	GetChannel(ctx context.Context, input GetChannelInput) (*ChannelOutput, error)
@@ -51,6 +54,8 @@ type channelInteractor struct {
 	channelAccessSvc  domainservice.ChannelAccessService
 	permissionSvc     domainservice.PermissionService
 	recorder          audit.Recorder
+	revoker           ChannelRevoker
+	logger            domainservice.Logger
 }
 
 func NewChannelInteractor(
@@ -65,6 +70,8 @@ func NewChannelInteractor(
 	channelAccessSvc domainservice.ChannelAccessService,
 	permissionSvc domainservice.PermissionService,
 	recorder audit.Recorder,
+	revoker ChannelRevoker,
+	logger domainservice.Logger,
 ) ChannelUseCase {
 	return &channelInteractor{
 		channelRepo:       channelRepo,
@@ -78,17 +85,12 @@ func NewChannelInteractor(
 		channelAccessSvc:  channelAccessSvc,
 		permissionSvc:     permissionSvc,
 		recorder:          recorder,
+		revoker:           revoker,
+		logger:            logger,
 	}
 }
 
 func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannelsInput) ([]ChannelOutput, error) {
-	if err := validateWorkspaceID(input.WorkspaceID); err != nil {
-		return nil, err
-	}
-	if err := validateUUID(input.UserID, "user ID"); err != nil {
-		return nil, err
-	}
-
 	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
@@ -122,14 +124,11 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 
 	unreadCounts, err := i.readStateRepo.GetUnreadCountBatch(ctx, joinedIDs, input.UserID)
 	if err != nil {
-		fmt.Printf("[WARN] Failed to get unread counts: userID=%s err=%v\n", input.UserID, err)
-		unreadCounts = make(map[string]int)
+		return nil, fmt.Errorf("failed to get unread counts: %w", err)
 	}
-
 	mentionCounts, err := i.readStateRepo.GetUnreadMentionCountBatch(ctx, joinedIDs, input.UserID)
 	if err != nil {
-		fmt.Printf("[WARN] Failed to get unread mention counts: userID=%s err=%v\n", input.UserID, err)
-		mentionCounts = make(map[string]int)
+		return nil, fmt.Errorf("failed to get unread mention counts: %w", err)
 	}
 
 	all := slices.Concat(joined, ancestors)
@@ -272,13 +271,6 @@ func (i *channelInteractor) findMissingAncestors(ctx context.Context, workspaceI
 }
 
 func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChannelInput) (*ChannelOutput, error) {
-	if err := validateWorkspaceID(input.WorkspaceID); err != nil {
-		return nil, err
-	}
-	if err := validateUUID(input.UserID, "user ID"); err != nil {
-		return nil, err
-	}
-
 	workspace, err := i.workspaceRepo.FindByID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
@@ -287,9 +279,9 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, domerr.ErrWorkspaceNotFound
 	}
 
-	permission := entity.PermissionCreatePublicChannel
+	permission, channelType := entity.PermissionCreatePublicChannel, entity.ChannelTypePublic
 	if input.IsPrivate {
-		permission = entity.PermissionCreatePrivateChannel
+		permission, channelType = entity.PermissionCreatePrivateChannel, entity.ChannelTypePrivate
 	}
 	if _, err := i.permissionSvc.Ensure(ctx, input.WorkspaceID, input.UserID, permission); err != nil {
 		return nil, err
@@ -299,7 +291,7 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		WorkspaceID: input.WorkspaceID,
 		Name:        input.Name,
 		Description: input.Description,
-		IsPrivate:   input.IsPrivate,
+		Type:        channelType,
 		CreatedBy:   input.UserID,
 	})
 	if err != nil {
@@ -383,7 +375,7 @@ func (i *channelInteractor) ensureAncestors(ctx context.Context, ch *entity.Chan
 			parent, err = entity.NewChannel(entity.ChannelParams{
 				WorkspaceID: ch.WorkspaceID,
 				Name:        path,
-				IsPrivate:   ch.IsPrivate,
+				Type:        ch.Type,
 				ParentID:    parentID,
 				CreatedBy:   ch.CreatedBy,
 			})
@@ -484,6 +476,7 @@ func (i *channelInteractor) DeleteChannel(ctx context.Context, input DeleteChann
 	if err := i.channelRepo.Delete(ctx, input.ChannelID); err != nil {
 		return fmt.Errorf("failed to delete channel: %w", err)
 	}
+	i.revoker.RevokeChannel(ch.WorkspaceID, ch.ID, "")
 	i.recordChannelAction(ctx, ch, input.UserID, entity.AuditActionChannelDeleted)
 	return nil
 }
@@ -496,9 +489,6 @@ func (i *channelInteractor) SetArchived(ctx context.Context, input SetArchivedIn
 	}
 	if ch == nil {
 		return nil, domerr.ErrChannelNotFound
-	}
-	if ch.Type == entity.ChannelTypeDM || ch.Type == entity.ChannelTypeGroupDM {
-		return nil, ErrCannotArchiveDM
 	}
 	if err := i.ensureCanManage(ctx, ch, input.UserID); err != nil {
 		return nil, err
@@ -522,8 +512,11 @@ func (i *channelInteractor) SetArchived(ctx context.Context, input SetArchivedIn
 	return &out, nil
 }
 
-// ensureCanManage はチャンネルの作成者かワークスペースの管理者であることを確認します
+// ensureCanManage は DM でなく、チャンネルの作成者かワークスペースの管理者であることを確認します
 func (i *channelInteractor) ensureCanManage(ctx context.Context, ch *entity.Channel, userID string) error {
+	if ch.IsDM() {
+		return ErrCannotModifyDM
+	}
 	member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to verify membership: %w", err)
@@ -542,18 +535,11 @@ func (i *channelInteractor) recordChannelAction(ctx context.Context, ch *entity.
 		TargetType:  entity.AuditTargetChannel,
 		TargetID:    ch.ID,
 		TargetLabel: ch.Name,
-		Metadata:    map[string]string{"private": fmt.Sprint(ch.IsPrivate)},
+		Metadata:    map[string]string{"private": fmt.Sprint(ch.IsPrivate())},
 	})
 }
 
 func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChannelInput) (*ChannelOutput, error) {
-	if err := validateUUID(input.ChannelID, "channel ID"); err != nil {
-		return nil, err
-	}
-	if err := validateUUID(input.UserID, "user ID"); err != nil {
-		return nil, err
-	}
-
 	ch, err := i.channelRepo.FindByID(ctx, input.ChannelID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch channel: %w", err)
@@ -561,50 +547,30 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 	if ch == nil {
 		return nil, domerr.ErrChannelNotFound
 	}
-
-	// 権限: ワークスペースの管理権限（チャンネル編集権限として流用）
-	wsMember, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
-	if err != nil || wsMember == nil || !wsMember.IsAdmin() {
-		return nil, domerr.ErrUnauthorized
+	if err := i.ensureCanManage(ctx, ch, input.UserID); err != nil {
+		return nil, err
 	}
 
-	// 変更適用
-	originalName := ch.Name
-	originalDesc := ch.Description
-	originalPrivate := ch.IsPrivate
-
-	descChanged := false
-	privChanged := false
-
+	original := *ch
 	if input.Name != nil {
 		if err := ch.ChangeName(*input.Name); err != nil {
 			return nil, err
 		}
 	}
-	nameChanged := originalName != ch.Name
 	if input.Description != nil {
 		ch.Description = input.Description
-		ch.UpdatedAt = time.Now().UTC()
-		// detect change
-		old := ""
-		if originalDesc != nil {
-			old = *originalDesc
-		}
-		now := ""
-		if ch.Description != nil {
-			now = *ch.Description
-		}
-		descChanged = (old != now)
 	}
 	if input.IsPrivate != nil {
-		ch.IsPrivate = *input.IsPrivate
-		ch.UpdatedAt = time.Now().UTC()
-		privChanged = (originalPrivate != ch.IsPrivate)
+		ch.Type = entity.ChannelTypePublic
+		if *input.IsPrivate {
+			ch.Type = entity.ChannelTypePrivate
+		}
 	}
+	ch.UpdatedAt = time.Now().UTC()
 
 	err = i.txManager.Do(ctx, func(txCtx context.Context) error {
-		if nameChanged {
-			if err := i.renameDescendants(txCtx, ch, originalName); err != nil {
+		if ch.Name != original.Name {
+			if err := i.renameDescendants(txCtx, ch, original.Name); err != nil {
 				return err
 			}
 		}
@@ -617,59 +583,41 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 		return nil, err
 	}
 
-	// 変更に応じてシステムメッセージ作成
-	actorID := input.UserID
-	if i.systemMessageUC != nil {
-		if nameChanged {
-			if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-				ChannelID: ch.ID,
-				Kind:      entity.SystemMessageKindChannelNameChanged,
-				Payload:   map[string]any{"from": originalName, "to": ch.Name},
-				ActorID:   &actorID,
-			}); err != nil {
-				fmt.Printf("[WARN] Failed to create system message for channel name change: channelID=%s err=%v\n", ch.ID, err)
-			}
-		}
-		if descChanged {
-			from := ""
-			if originalDesc != nil {
-				from = *originalDesc
-			}
-			to := ""
-			if ch.Description != nil {
-				to = *ch.Description
-			}
-			if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-				ChannelID: ch.ID,
-				Kind:      entity.SystemMessageKindChannelDescriptionChanged,
-				Payload:   map[string]any{"from": from, "to": to},
-				ActorID:   &actorID,
-			}); err != nil {
-				fmt.Printf("[WARN] Failed to create system message for channel description change: channelID=%s err=%v\n", ch.ID, err)
-			}
-		}
-		if privChanged {
-			from := "public"
-			if originalPrivate {
-				from = "private"
-			}
-			to := "public"
-			if ch.IsPrivate {
-				to = "private"
-			}
-			if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-				ChannelID: ch.ID,
-				Kind:      entity.SystemMessageKindChannelPrivacyChanged,
-				Payload:   map[string]any{"from": from, "to": to},
-				ActorID:   &actorID,
-			}); err != nil {
-				fmt.Printf("[WARN] Failed to create system message for channel privacy change: channelID=%s err=%v\n", ch.ID, err)
-			}
+	if ch.Name != original.Name {
+		i.recordSystemMessage(ctx, ch.ID, input.UserID, entity.SystemMessageKindChannelNameChanged, original.Name, ch.Name)
+	}
+	if from, to := derefString(original.Description), derefString(ch.Description); from != to {
+		i.recordSystemMessage(ctx, ch.ID, input.UserID, entity.SystemMessageKindChannelDescriptionChanged, from, to)
+	}
+	if original.Type != ch.Type {
+		i.recordSystemMessage(ctx, ch.ID, input.UserID, entity.SystemMessageKindChannelPrivacyChanged, string(original.Type), string(ch.Type))
+		if ch.IsPrivate() {
+			// 参加していないユーザーは見られなくなる
+			i.revoker.RevokeChannel(ch.WorkspaceID, ch.ID, "")
 		}
 	}
 
 	out := toChannelOutput(ch)
 	return &out, nil
+}
+
+// recordSystemMessage はチャンネルの変更をタイムラインに残します。失敗しても変更は取り消さない
+func (i *channelInteractor) recordSystemMessage(ctx context.Context, channelID, actorID string, kind entity.SystemMessageKind, from, to string) {
+	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
+		ChannelID: channelID,
+		Kind:      kind,
+		Payload:   map[string]any{"from": from, "to": to},
+		ActorID:   &actorID,
+	}); err != nil {
+		i.logger.Warn("チャンネルの変更をタイムラインに残せません", domainservice.LogField{Key: "channelId", Value: channelID}, domainservice.LogField{Key: "error", Value: err.Error()})
+	}
+}
+
+func derefString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // renameDescendants は名前を変えたチャンネルの子孫のパスを付け替えます
@@ -705,7 +653,7 @@ func toChannelOutputWithUnread(channel *entity.Channel, unreadCount, mentionCoun
 		WorkspaceID:  channel.WorkspaceID,
 		Name:         channel.Name,
 		Description:  channel.Description,
-		IsPrivate:    channel.IsPrivate,
+		IsPrivate:    channel.IsPrivate(),
 		CreatedBy:    channel.CreatedBy,
 		CreatedAt:    channel.CreatedAt,
 		UpdatedAt:    channel.UpdatedAt,
@@ -714,22 +662,4 @@ func toChannelOutputWithUnread(channel *entity.Channel, unreadCount, mentionCoun
 		ParentID:     channel.ParentID,
 		ArchivedAt:   channel.ArchivedAt,
 	}
-}
-
-func validateUUID(id string, label string) error {
-	if _, err := uuid.Parse(id); err != nil {
-		return fmt.Errorf("%w: invalid %s format", domerr.ErrValidation, label)
-	}
-	return nil
-}
-
-func validateWorkspaceID(id string) error {
-	// ワークスペースIDはslug形式（3-12文字の英小文字、数字、ハイフン）またはUUID形式を許可
-	if err := entity.ValidateWorkspaceSlug(id); err != nil {
-		// slug形式でない場合、UUID形式かチェック
-		if _, err := uuid.Parse(id); err != nil {
-			return fmt.Errorf("%w: invalid workspace ID format", domerr.ErrValidation)
-		}
-	}
-	return nil
 }

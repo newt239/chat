@@ -183,7 +183,7 @@ func createSeedData(
 		id          string
 		name        string
 		description *string
-		isPrivate   bool
+		channelType entity.ChannelType
 		createdBy   string
 		parentID    *string
 	}{
@@ -191,28 +191,25 @@ func createSeedData(
 			id:          "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
 			name:        "general",
 			description: stringPtr("General discussion channel"),
-			isPrivate:   false,
 			createdBy:   users[0].ID,
 		},
 		{
 			id:          "cccccccc-cccc-cccc-cccc-cccccccccccc",
 			name:        "random",
 			description: stringPtr("Random thoughts and off-topic discussions"),
-			isPrivate:   false,
 			createdBy:   users[1].ID,
 		},
 		{
 			id:          "dddddddd-dddd-dddd-dddd-dddddddddddd",
 			name:        "development",
 			description: stringPtr("Development discussions and code reviews"),
-			isPrivate:   false,
 			createdBy:   users[0].ID,
 		},
 		{
 			id:          "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
 			name:        "private-team",
 			description: stringPtr("Private channel for team discussions"),
-			isPrivate:   true,
+			channelType: entity.ChannelTypePrivate,
 			createdBy:   users[0].ID,
 		},
 		// 階層チャンネルの例
@@ -246,7 +243,7 @@ func createSeedData(
 			WorkspaceID: "general",
 			Name:        def.name,
 			Description: def.description,
-			IsPrivate:   def.isPrivate,
+			Type:        def.channelType,
 			ParentID:    def.parentID,
 			CreatedBy:   def.createdBy,
 		})
@@ -261,7 +258,7 @@ func createSeedData(
 
 		// Add all users to public channels, only Alice and Bob to private channel
 		usersToAdd := users
-		if channel.IsPrivate {
+		if channel.IsPrivate() {
 			usersToAdd = users[:2] // Only Alice and Bob
 		}
 

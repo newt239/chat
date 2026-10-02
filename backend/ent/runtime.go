@@ -158,20 +158,16 @@ func init() {
 	channelDescName := channelFields[3].Descriptor()
 	// channel.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	channel.NameValidator = channelDescName.Validators[0].(func(string) error)
-	// channelDescIsPrivate is the schema descriptor for is_private field.
-	channelDescIsPrivate := channelFields[5].Descriptor()
-	// channel.DefaultIsPrivate holds the default value on creation for the is_private field.
-	channel.DefaultIsPrivate = channelDescIsPrivate.Default.(bool)
 	// channelDescChannelType is the schema descriptor for channel_type field.
-	channelDescChannelType := channelFields[6].Descriptor()
+	channelDescChannelType := channelFields[5].Descriptor()
 	// channel.DefaultChannelType holds the default value on creation for the channel_type field.
 	channel.DefaultChannelType = channelDescChannelType.Default.(string)
 	// channelDescCreatedAt is the schema descriptor for created_at field.
-	channelDescCreatedAt := channelFields[10].Descriptor()
+	channelDescCreatedAt := channelFields[9].Descriptor()
 	// channel.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channel.DefaultCreatedAt = channelDescCreatedAt.Default.(func() time.Time)
 	// channelDescUpdatedAt is the schema descriptor for updated_at field.
-	channelDescUpdatedAt := channelFields[11].Descriptor()
+	channelDescUpdatedAt := channelFields[10].Descriptor()
 	// channel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	channel.DefaultUpdatedAt = channelDescUpdatedAt.Default.(func() time.Time)
 	// channel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

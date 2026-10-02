@@ -202,7 +202,7 @@ func wants(level entity.NotificationLevel, r reason) bool {
 }
 
 func isDM(channel *entity.Channel) bool {
-	return channel.Type == entity.ChannelTypeDM || channel.Type == entity.ChannelTypeGroupDM
+	return channel.IsDM()
 }
 
 // content の body は ID 記法を名前に置き換えた本文です

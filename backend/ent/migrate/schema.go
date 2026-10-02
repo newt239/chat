@@ -181,8 +181,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "is_private", Type: field.TypeBool, Default: false},
-		{Name: "channel_type", Type: field.TypeString, Nullable: true, Default: "public"},
+		{Name: "channel_type", Type: field.TypeString, Default: "public"},
 		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
 		{Name: "dm_key", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -199,38 +198,33 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "channel_workspace_workspace",
-				Columns:    []*schema.Column{ChannelColumns[9]},
+				Columns:    []*schema.Column{ChannelColumns[8]},
 				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "channel_user_created_by",
-				Columns:    []*schema.Column{ChannelColumns[10]},
+				Columns:    []*schema.Column{ChannelColumns[9]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "channel_channel_children",
-				Columns:    []*schema.Column{ChannelColumns[11]},
+				Columns:    []*schema.Column{ChannelColumns[10]},
 				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "channel_is_private",
+				Name:    "channel_workspace_id_channel_type",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelColumns[3]},
-			},
-			{
-				Name:    "channel_workspace_id",
-				Unique:  false,
-				Columns: []*schema.Column{ChannelColumns[9]},
+				Columns: []*schema.Column{ChannelColumns[8], ChannelColumns[3]},
 			},
 			{
 				Name:    "channel_workspace_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelColumns[9], ChannelColumns[1]},
+				Columns: []*schema.Column{ChannelColumns[8], ChannelColumns[1]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "dm_key IS NULL",
 				},
@@ -238,7 +232,7 @@ var (
 			{
 				Name:    "channel_workspace_id_dm_key",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelColumns[9], ChannelColumns[6]},
+				Columns: []*schema.Column{ChannelColumns[8], ChannelColumns[5]},
 			},
 		},
 	}

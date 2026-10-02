@@ -78,7 +78,7 @@ func (r *channelRepository) FindBrowsableChannels(ctx context.Context, workspace
 			channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate)),
 			channel.ArchivedAtIsNil(),
 			channel.Or(
-				channel.IsPrivate(false),
+				channel.ChannelType(string(entity.ChannelTypePublic)),
 				channel.HasMembersWith(channelmember.UserID(uid)),
 			),
 		).
@@ -107,7 +107,7 @@ func (r *channelRepository) SearchBrowsableChannels(ctx context.Context, workspa
 			channel.WorkspaceID(workspaceID),
 			channel.ChannelTypeIn(string(entity.ChannelTypePublic), string(entity.ChannelTypePrivate)),
 			channel.ArchivedAtIsNil(),
-			channel.Or(channel.IsPrivate(false), isMember),
+			channel.Or(channel.ChannelType(string(entity.ChannelTypePublic)), isMember),
 		)
 	if keyword := strings.TrimSpace(filter.Query); keyword != "" {
 		query = query.Where(channel.Or(channel.NameContainsFold(keyword), channel.DescriptionContainsFold(keyword)))
@@ -210,7 +210,6 @@ func (r *channelRepository) Create(ctx context.Context, ch *entity.Channel) erro
 		SetWorkspaceID(ch.WorkspaceID).
 		SetCreatedByID(createdBy).
 		SetName(ch.Name).
-		SetIsPrivate(ch.IsPrivate).
 		SetChannelType(string(ch.Type))
 
 	if ch.ID != "" {
@@ -259,7 +258,7 @@ func (r *channelRepository) Update(ctx context.Context, ch *entity.Channel) erro
 		builder = builder.ClearDescription()
 	}
 
-	builder = builder.SetIsPrivate(ch.IsPrivate).SetNillableArchivedAt(ch.ArchivedAt)
+	builder = builder.SetChannelType(string(ch.Type)).SetNillableArchivedAt(ch.ArchivedAt)
 	if ch.ArchivedAt == nil {
 		builder = builder.ClearArchivedAt()
 	}
@@ -368,7 +367,6 @@ func (r *channelRepository) FindOrCreateDM(ctx context.Context, workspaceID stri
 	return r.findOrCreateByDMKey(ctx, &entity.Channel{
 		WorkspaceID: workspaceID,
 		Name:        "dm_" + userID1 + "_" + userID2,
-		IsPrivate:   true,
 		Type:        entity.ChannelTypeDM,
 		CreatedBy:   userID1,
 	}, dmKey("dm:", userID1, userID2))
@@ -385,7 +383,6 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 	return r.findOrCreateByDMKey(ctx, &entity.Channel{
 		WorkspaceID: workspaceID,
 		Name:        name,
-		IsPrivate:   true,
 		Type:        entity.ChannelTypeGroupDM,
 		CreatedBy:   creatorID,
 	}, dmKey("g:", memberIDs...))
@@ -409,7 +406,6 @@ func (r *channelRepository) findOrCreateByDMKey(ctx context.Context, ch *entity.
 		SetWorkspaceID(ch.WorkspaceID).
 		SetCreatedByID(createdBy).
 		SetName(ch.Name).
-		SetIsPrivate(ch.IsPrivate).
 		SetChannelType(string(ch.Type)).
 		SetDmKey(key).
 		OnConflictColumns(channel.FieldWorkspaceID, channel.FieldDmKey).

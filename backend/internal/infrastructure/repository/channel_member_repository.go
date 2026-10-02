@@ -2,11 +2,14 @@ package repository
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
 	"time"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -20,7 +23,7 @@ func NewChannelMemberRepository(client *ent.Client) domainrepository.ChannelMemb
 	return &channelMemberRepository{client: client}
 }
 
-func (r *channelMemberRepository) FindByChannelAndUser(ctx context.Context, channelID, userID string) (*entity.ChannelMember, error) {
+func (r *channelMemberRepository) FindMember(ctx context.Context, channelID, userID string) (*entity.ChannelMember, error) {
 	cid, err := utils.ParseUUID(channelID, "channel ID")
 	if err != nil {
 		return nil, err
@@ -72,7 +75,11 @@ func (r *channelMemberRepository) AddMember(ctx context.Context, member *entity.
 		OnConflictColumns(channelmember.FieldChannelID, channelmember.FieldUserID).
 		DoNothing().
 		Exec(ctx)
-	return ignoreConflict(err)
+	// 衝突して挿入しなかったときは RETURNING が行を返さない
+	if errors.Is(err, stdsql.ErrNoRows) {
+		return domerr.ErrAlreadyMember
+	}
+	return err
 }
 
 func (r *channelMemberRepository) RemoveMember(ctx context.Context, channelID, userID string) error {
