@@ -54,7 +54,7 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
   const tab = routeTab ?? lastTab;
   const { close, content } = useRightPanel(workspaceId);
   const viewport = useVisualViewport();
-  const showTabBar = routeTab !== undefined && !content && !viewport?.keyboardOpen;
+  const isTabScreen = routeTab !== undefined && !content;
 
   const panelKey = content?.key ?? null;
   // 履歴の位置ごとの画面。戻る先が下に見えている画面と同じかを確かめるのに使う
@@ -95,11 +95,19 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
       style={{ height: viewport?.height }}
       className="group/shell flex h-full flex-col bg-surface pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] font-sans text-text [word-break:auto-phrase]"
     >
+      {/* 重ねた画面はボトムタブごと覆う。ボトムタブは下に置いたままにし、戻ったときに後から出てこないようにする */}
       <div className="relative flex min-h-0 flex-1 flex-col overflow-clip">
-        {tab === "home" && <MobileHome workspaceId={workspaceId} />}
-        {tab === "dms" && <DMsPage />}
-        {tab === "activity" && <ActivityPage />}
-        {tab === "me" && <MePage />}
+        <div inert={!isTabScreen} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col">
+            {tab === "home" && <MobileHome workspaceId={workspaceId} />}
+            {tab === "dms" && <DMsPage />}
+            {tab === "activity" && <ActivityPage />}
+            {tab === "me" && <MePage />}
+          </div>
+          {/* タブの画面ではボトムタブの上に出す。チャンネルの画面では入力欄の上（ChannelPage） */}
+          {isTabScreen && !viewport?.keyboardOpen && <MiniPlayer variant="mobile" />}
+          {!viewport?.keyboardOpen && <MobileTabBar workspaceId={workspaceId} />}
+        </div>
         {routeTab === undefined && (
           <MobileStackLayer key={stackKey} onBack={backToTab}>
             <Outlet />
@@ -116,9 +124,6 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
           </MobileStackLayer>
         )}
       </div>
-      {/* タブの画面ではボトムタブの上に出す。チャンネルの画面では入力欄の上（ChannelPage） */}
-      {showTabBar && <MiniPlayer variant="mobile" />}
-      {showTabBar && <MobileTabBar workspaceId={workspaceId} />}
     </div>
   );
 };
