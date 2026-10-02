@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/audit"
 )
 
@@ -44,7 +43,6 @@ type workspaceInteractor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	userRepo      domainrepository.UserRepository
 	userNoteRepo  domainrepository.UserNoteRepository
-	permissionSvc domainservice.PermissionService
 	recorder      audit.Recorder
 	memberCloser  MemberCloser
 }
@@ -53,7 +51,6 @@ func NewWorkspaceInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	userNoteRepo domainrepository.UserNoteRepository,
-	permissionSvc domainservice.PermissionService,
 	recorder audit.Recorder,
 	memberCloser MemberCloser,
 ) WorkspaceUseCase {
@@ -61,7 +58,6 @@ func NewWorkspaceInteractor(
 		workspaceRepo: workspaceRepo,
 		userRepo:      userRepo,
 		userNoteRepo:  userNoteRepo,
-		permissionSvc: permissionSvc,
 		recorder:      recorder,
 		memberCloser:  memberCloser,
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
 )
 
@@ -56,26 +55,16 @@ func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error)
 	return &entity.User{ID: id, DisplayName: "name-" + id}, nil
 }
 
-type stubPermissionRepo struct {
-	domainrepository.PermissionRepository
-	overrides []entity.PermissionOverride
-}
-
-func (r *stubPermissionRepo) FindOverrides(context.Context, string) ([]entity.PermissionOverride, error) {
-	return r.overrides, nil
-}
-
 type fixture struct {
 	uc       WorkspaceUseCase
 	repo     *stubWorkspaceRepo
 	recorder *audittest.Recorder
 }
 
-func newFixture(members map[string]*entity.WorkspaceMember, overrides ...entity.PermissionOverride) fixture {
+func newFixture(members map[string]*entity.WorkspaceMember) fixture {
 	repo := &stubWorkspaceRepo{members: members}
 	recorder := &audittest.Recorder{}
-	permissionSvc := domainservice.NewPermissionService(repo, &stubPermissionRepo{overrides: overrides})
-	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, permissionSvc, recorder, stubCloser{}), repo: repo, recorder: recorder}
+	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, recorder, stubCloser{}), repo: repo, recorder: recorder}
 }
 
 func newInteractor(members map[string]*entity.WorkspaceMember) (WorkspaceUseCase, *stubWorkspaceRepo) {
@@ -226,7 +215,7 @@ func TestSuspendedMemberCannotRejoin(t *testing.T) {
 	suspended := member(entity.WorkspaceRoleMember)
 	suspended.SuspendedAt = new(time.Now())
 	repo := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{"bob": suspended}, workspace: &entity.Workspace{ID: "ws", IsPublic: true}}
-	uc := NewWorkspaceInteractor(repo, stubUserRepo{}, nil, nil, &audittest.Recorder{}, stubCloser{})
+	uc := NewWorkspaceInteractor(repo, stubUserRepo{}, nil, &audittest.Recorder{}, stubCloser{})
 
 	if _, err := uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "bob"}); !errors.Is(err, domerr.ErrAlreadyMember) {
 		t.Fatalf("停止中のメンバーが参加し直せています: %v", err)

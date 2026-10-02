@@ -31,7 +31,6 @@ type Interactor struct {
 	workspaceRepo domainrepository.WorkspaceRepository
 	permissionSvc domainservice.PermissionService
 	storage       domainservice.StorageService
-	storageConfig domainservice.StorageConfig
 	notifier      Notifier
 	recorder      audit.Recorder
 	logger        domainservice.Logger
@@ -43,7 +42,6 @@ func NewInteractor(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	permissionSvc domainservice.PermissionService,
 	storage domainservice.StorageService,
-	storageConfig domainservice.StorageConfig,
 	notifier Notifier,
 	recorder audit.Recorder,
 	logger domainservice.Logger,
@@ -54,7 +52,6 @@ func NewInteractor(
 		workspaceRepo: workspaceRepo,
 		permissionSvc: permissionSvc,
 		storage:       storage,
-		storageConfig: storageConfig,
 		notifier:      notifier,
 		recorder:      recorder,
 		logger:        logger,

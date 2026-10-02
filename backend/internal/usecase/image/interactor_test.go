@@ -44,7 +44,7 @@ func (fakeConfig) GetDownloadExpires() time.Duration { return 0 }
 
 func TestPresign(t *testing.T) {
 	storage := &fakeStorage{}
-	uc := NewInteractor(fakeWorkspaceRepo{}, storage, fakeConfig{}, "https://api.example.com/")
+	uc := NewInteractor(fakeWorkspaceRepo{}, storage, "https://api.example.com/")
 
 	out, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, Purpose: PurposeAvatar, ContentType: "image/png", SizeBytes: 10})
 	if err != nil {

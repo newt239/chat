@@ -158,7 +158,7 @@ func newFixture() fixture {
 	storage := &fakeStorage{}
 	notifier := &fakeNotifier{}
 	recorder := &audittest.Recorder{}
-	uc := NewInteractor(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, fakeConfig{}, notifier, recorder, nopLogger{})
+	uc := NewInteractor(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, notifier, recorder, nopLogger{})
 	return fixture{uc: uc, repo: repo, storage: storage, notifier: notifier, recorder: recorder}
 }
 

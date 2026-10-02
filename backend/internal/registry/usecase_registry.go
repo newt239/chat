@@ -115,7 +115,6 @@ func (r *UseCaseRegistry) NewWorkspaceUseCase() workspaceuc.WorkspaceUseCase {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewUserNoteRepository(),
-		r.domainRegistry.NewPermissionService(),
 		r.NewAuditRecorder(),
 		r.infrastructureRegistry.NewNotificationService(),
 	)
@@ -487,7 +486,6 @@ func (r *UseCaseRegistry) NewImageUseCase() *imageuc.Interactor {
 	return imageuc.NewInteractor(
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.infrastructureRegistry.NewStorageService(),
-		r.infrastructureRegistry.NewStorageConfig(),
 		r.infrastructureRegistry.config.Storage.PublicBaseURL,
 	)
 }
@@ -499,7 +497,6 @@ func (r *UseCaseRegistry) NewCustomEmojiUseCase() *customemojiuc.Interactor {
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewPermissionService(),
 		r.infrastructureRegistry.NewStorageService(),
-		r.infrastructureRegistry.NewStorageConfig(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.NewAuditRecorder(),
 		r.infrastructureRegistry.NewLogger(),
