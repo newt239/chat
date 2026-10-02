@@ -1,10 +1,7 @@
 import { createConnectQueryKey, useMutation } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSetAtom } from "jotai";
 
-import { useInvalidateMessages } from "#/features/message/hooks/useMessage";
 import { PinService } from "#/gen/chat/v1/pin_service_pb";
-import { addChannelPinsDeltaAtom } from "#/providers/store/ui";
 
 export const pinListKey = (channelId: string) =>
   createConnectQueryKey({
@@ -15,22 +12,13 @@ export const pinListKey = (channelId: string) =>
 
 export const usePinActions = () => {
   const queryClient = useQueryClient();
-  const addPinsDelta = useSetAtom(addChannelPinsDeltaAtom);
-  // メッセージ側のピン留めの表示も更新する
-  const invalidateMessages = useInvalidateMessages();
 
-  const onSuccess =
-    (delta: number) =>
-    async (_: unknown, { channelId = "" }) => {
-      addPinsDelta({ channelId, delta });
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: pinListKey(channelId) }),
-        invalidateMessages(),
-      ]);
-    };
+  // メッセージ側のピン留めの表示は WebSocket の差分で更新する
+  const onSuccess = (_: object, { channelId = "" }) =>
+    queryClient.invalidateQueries({ queryKey: pinListKey(channelId) });
 
-  const pin = useMutation(PinService.method.createPin, { onSuccess: onSuccess(1) });
-  const unpin = useMutation(PinService.method.deletePin, { onSuccess: onSuccess(-1) });
+  const pin = useMutation(PinService.method.createPin, { onSuccess });
+  const unpin = useMutation(PinService.method.deletePin, { onSuccess });
 
   return { pin, unpin };
 };

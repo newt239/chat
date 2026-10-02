@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { BaseMessageInput } from "#/features/message/components/BaseMessageInput";
-import { useInvalidateMessages } from "#/features/message/hooks/useMessage";
+import { useInvalidateThreadMetadata } from "#/features/message/hooks/useMessage";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 
@@ -25,7 +25,7 @@ export const InlineReplyComposer = ({
 }: InlineReplyComposerProps) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const invalidateMessages = useInvalidateMessages();
+  const invalidateThreadMetadata = useInvalidateThreadMetadata();
   const send = useMutation(MessageService.method.createMessage, {
     onSuccess: async ({ message }) => {
       if (message) {
@@ -34,12 +34,12 @@ export const InlineReplyComposer = ({
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: createConnectQueryKey({
-            cardinality: "finite",
+            cardinality: "infinite",
             input: { messageId: parentId },
             schema: ThreadService.method.getThreadReplies,
           }),
         }),
-        invalidateMessages(),
+        invalidateThreadMetadata(channelId),
       ]);
     },
   });

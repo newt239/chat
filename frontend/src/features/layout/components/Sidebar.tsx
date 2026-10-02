@@ -4,11 +4,11 @@ import { useTranslation } from "react-i18next";
 
 import { NavLink } from "#/components/block/NavLink/NavLink";
 import { ResizeHandle } from "#/components/ui/ResizeHandle/ResizeHandle";
+import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 import { sidebarWidthRanges, sidebarWidthsAtom } from "#/providers/store/ui";
 
 import { sidebarNavTone } from "../utils/navTone";
-import { MiniPlayerSlot } from "./MiniPlayerSlot";
 import { NavigationList } from "./NavigationList";
 import { SidebarFooter } from "./SidebarFooter";
 
@@ -38,7 +38,7 @@ export const Sidebar = ({ workspaceId }: SidebarProps) => {
         {t("shell.nav.search")}
       </NavLink>
       <NavigationList workspaceId={workspaceId} />
-      <MiniPlayerSlot />
+      <MiniPlayer variant="sidebar" />
       <SidebarFooter />
       <ResizeHandle
         label={t("shell.sidebar.resize")}

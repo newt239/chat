@@ -19,9 +19,7 @@ import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
-import { useWsClient } from "#/providers/ws/useWsClient";
 
-import { useMessages } from "../hooks/useMessage";
 import { MessageItem } from "./MessageItem";
 import { MessageList } from "./MessageList";
 
@@ -55,36 +53,30 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const { timeZone } = useDateFormat();
   const around = jumpDate === null ? null : startOfDateKey(jumpDate, timeZone);
   const {
-    data: messageResponse,
+    items,
+    hasOlder,
+    hasNewer,
+    load,
+    loading,
     isLoading: isLoadingMessages,
     isError,
     error,
-  } = useMessages(isResolved ? channelId : null, includesDescendants, around);
+  } = useMessagePages({
+    around,
+    channelId: isResolved ? channelId : null,
+    includeDescendants: includesDescendants,
+  });
   const isLoading = !isResolved || isLoadingMessages;
-  const { wsClient } = useWsClient();
   const threadMetadataById = useChannelThreadMetadata(
     isResolved ? channelId : null,
     includesDescendants,
   );
 
-  const {
-    items: initialMessages,
-    hasMore: hasOlderMessages,
-    hasNewer: hasNewerMessages,
-    load,
-    loading,
-  } = useMessagePages({
-    base: messageResponse,
-    channelId,
-    includeDescendants: includesDescendants,
-    jumpDate,
-  });
-
   // 一覧にない未参加の公開子孫も、届いたメッセージから購読する
   const descendantIds = includesDescendants
     ? [
         ...descendants.map((descendant) => descendant.id),
-        ...(initialMessages ?? []).flatMap((item) =>
+        ...(items ?? []).flatMap((item) =>
           item.content.case === "userMessage" && item.content.value.channelId !== channelId
             ? [item.content.value.channelId]
             : [],
@@ -93,10 +85,10 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     : [];
 
   const { orderedItems } = useChannelTimeline({
-    currentChannelId: channelId,
+    channelId,
     descendantIds,
-    initialMessages,
-    wsClient: wsClient ?? null,
+    includeDescendants: includesDescendants,
+    items,
   });
 
   const { hideJoinMessages } = useAtomValue(preferencesAtom);
@@ -106,33 +98,20 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   );
   const navigate = useNavigate();
 
-  // 最新メッセージのIDを取得（ユーザーメッセージのみ）
-  const latestUserMessageId =
-    orderedItems.length > 0
-      ? (() => {
-          for (let i = orderedItems.length - 1; i >= 0; i--) {
-            const item = orderedItems[i];
-            if (item?.content.case === "userMessage") {
-              return item.content.value.id;
-            }
-          }
-          return null;
-        })()
-      : null;
+  const latestUserMessage = orderedItems.findLast((item) => item.content.case === "userMessage");
+  const latestUserMessageId = latestUserMessage?.content.value?.id ?? null;
 
   const { latestMessageRef } = useMessageViewportDetection({
     channelId,
     includeDescendants: includesDescendants,
     // 日付へ移動して最新まで読み込んでいないうちは既読にしない
-    latestMessageId: hasNewerMessages ? null : latestUserMessageId,
+    latestMessageId: hasNewer ? null : latestUserMessageId,
     workspaceId,
   });
 
-  // 指定日以降で最初の投稿。一覧は新しい順に並ぶ
+  // 指定日以降で最初の投稿
   const jumpTargetId =
-    (around &&
-      messageResponse?.messages.findLast((item) => toDate(item.createdAt) >= around)?.content.value
-        ?.id) ??
+    (around && orderedItems.find((item) => toDate(item.createdAt) >= around)?.content.value?.id) ??
     null;
 
   const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
@@ -185,7 +164,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
       );
     }
     if (isError) {
-      return <p className="m-0 px-[18px] py-4 text-body text-danger">{error.message}</p>;
+      return <p className="m-0 px-[18px] py-4 text-body text-danger">{error?.message}</p>;
     }
     if (orderedItems.length === 0) {
       return (
@@ -204,12 +183,10 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
         rows={rows}
         currentUserId={myId}
         targetMessageId={isThreadOpen ? null : (messageParam ?? jumpTargetId)}
-        hasOlder={hasOlderMessages}
-        hasNewer={hasNewerMessages}
+        hasOlder={hasOlder}
+        hasNewer={hasNewer}
         loading={loading}
-        onLoad={(direction) => {
-          void load(direction);
-        }}
+        onLoad={load}
         onJumpToLatest={() => {
           void navigate({ search: (prev) => ({ ...prev, date: undefined }), to: "." });
         }}

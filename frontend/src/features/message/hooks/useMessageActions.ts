@@ -3,7 +3,13 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { useDeleteMessage, useUpdateMessage } from "#/features/message/hooks/useMessage";
+import {
+  useDeleteMessage,
+  useInvalidateThreadMetadata,
+  useUpdateMessage,
+} from "#/features/message/hooks/useMessage";
+
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 const errorDescription = (error: unknown) =>
   error instanceof Error && error.message ? error.message : undefined;
@@ -12,6 +18,7 @@ export const useMessageActions = () => {
   const { t } = useTranslation();
   const updateMessage = useUpdateMessage();
   const deleteMessage = useDeleteMessage();
+  const invalidateThreadMetadata = useInvalidateThreadMetadata();
 
   const handleEdit = useCallback(
     async (messageId: string, nextBody: string) => {
@@ -27,15 +34,19 @@ export const useMessageActions = () => {
   );
 
   const handleDelete = useCallback(
-    async (messageId: string) => {
+    async ({ id, channelId, parentId }: Message) => {
       try {
-        await deleteMessage.mutateAsync({ messageId });
+        await deleteMessage.mutateAsync({ messageId: id });
         toast(t("message.delete.done"), { tone: "success" });
+        // 返信を消すと親のスレッドの件数が変わる
+        if (parentId !== undefined) {
+          await invalidateThreadMetadata(channelId);
+        }
       } catch (error) {
         toast(t("message.delete.failed"), { description: errorDescription(error), tone: "danger" });
       }
     },
-    [deleteMessage, t],
+    [deleteMessage, invalidateThreadMetadata, t],
   );
 
   return { handleDelete, handleEdit, isDeleting: deleteMessage.isPending };

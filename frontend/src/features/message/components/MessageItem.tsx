@@ -310,7 +310,7 @@ export const MessageItem = ({
         tone="danger"
         isPending={isDeleting}
         onConfirm={() => {
-          void handleDelete(message.id).then(() => {
+          void handleDelete(message).then(() => {
             setIsDeleteOpen(false);
           });
         }}
