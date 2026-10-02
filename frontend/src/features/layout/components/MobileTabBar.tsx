@@ -56,6 +56,8 @@ export const MobileTabBar = ({ workspaceId }: MobileTabBarProps) => {
           key={name}
           to={to}
           params={{ workspaceId }}
+          // ホームは他のタブの親のパスなので、完全一致のときだけ現在地にする
+          activeOptions={{ exact: name === "home" }}
           data-tab={tab === name ? "on" : "off"}
           className="group flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] text-subtle no-underline data-[tab=on]:font-semibold data-[tab=on]:text-accent-text"
         >
