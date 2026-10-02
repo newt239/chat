@@ -1,18 +1,19 @@
 import { IconHash, IconLock } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
+import { surfaceNavTone } from "#/components/block/NavLink/navTone";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { Switch } from "#/components/ui/Switch/Switch";
 import { ChannelAppsSection } from "#/features/app/components/ChannelAppsSection";
 import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
-import { useChannels } from "#/features/channel/hooks/useChannel";
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 
+import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelListActions } from "../hooks/useChannelListActions";
-import { isDescendantPath, relativePath } from "../utils/channelTree";
+import { relativePath } from "../utils/channelTree";
 import { ChannelLinksSection } from "./ChannelLinksSection";
 import { ChannelNavItem } from "./ChannelNavItem";
 
@@ -23,11 +24,15 @@ type ChannelInfoPanelProps = {
 
 export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelProps) => {
   const { t } = useTranslation();
-  const { data: channels, isLoading, isError } = useChannels(workspaceId);
-  const activeChannel = channels?.find((candidate) => candidate.id === channelId);
+  const {
+    channel: activeChannel,
+    descendants,
+    isError,
+    isResolved,
+  } = useChannelAggregation(workspaceId, channelId);
   const { setMuted, setStarred } = useChannelListActions(workspaceId);
 
-  if (isLoading) {
+  if (!isResolved) {
     return (
       <div className="flex flex-col gap-2 p-4">
         <Skeleton className="h-4 w-32" />
@@ -45,9 +50,6 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
   }
 
   const description = activeChannel.description ?? "";
-  const descendants = (channels ?? []).filter((candidate) =>
-    isDescendantPath(activeChannel.name, candidate.name),
-  );
   const canCreateChild = activeChannel.isMember && canHaveChildChannel(activeChannel.name);
 
   return (
@@ -80,7 +82,9 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
       </section>
       <ChannelLinksSection channelId={activeChannel.id} />
       {(descendants.length > 0 || canCreateChild) && (
-        <section className="flex flex-col gap-1.5 border-b border-border px-4 py-3 [--nav-active-fg:var(--c-accent-text)] [--nav-active:var(--c-accent-soft)] [--nav-fg:var(--c-text)] [--nav-hover:var(--c-hover)] [--nav-muted:var(--c-muted)] [--nav-strong:var(--c-text)]">
+        <section
+          className={`flex flex-col gap-1.5 border-b border-border px-4 py-3 ${surfaceNavTone}`}
+        >
           <h4 className="m-0 flex items-center justify-between text-xs font-semibold text-muted">
             {t("channel.info.descendants", { count: descendants.length })}
             {canCreateChild && (
