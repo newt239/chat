@@ -2,7 +2,6 @@ import { useCallback, useMemo } from "react";
 
 import { IconHash } from "@tabler/icons-react";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
@@ -18,7 +17,6 @@ import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { usePreferences } from "#/hooks/usePreferences";
 import { toDate } from "#/lib/timestamp";
-import { myUserIdAtom } from "#/providers/store/auth";
 
 import { MessageItem } from "./MessageItem";
 import { MessageList } from "./MessageList";
@@ -32,7 +30,6 @@ type MessagePanelProps = {
 
 export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const { t } = useTranslation();
-  const myId = useAtomValue(myUserIdAtom);
   const { channel, descendants, includesDescendants, isResolved } = useChannelAggregation(
     workspaceId,
     channelId,
@@ -129,10 +126,8 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const renderMessage = (msg: Message, isHighlighted: boolean) => (
     <MessageItem
       message={msg}
-      currentUserId={myId}
       onCopyLink={handleCopyLink}
       onCreateThread={handleOpenThread}
-      onOpenThread={handleOpenThread}
       threadMetadata={threadMetadataById.get(msg.id)}
       isHighlighted={isHighlighted}
       channelChip={
@@ -181,7 +176,6 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
         // チャンネルや日付を切り替えたら、位置と読み込み状態を作り直す
         key={`${channelId}:${String(includesDescendants)}:${jumpDate ?? ""}`}
         rows={rows}
-        currentUserId={myId}
         targetMessageId={isThreadOpen ? null : (messageParam ?? jumpTargetId)}
         hasOlder={hasOlder}
         hasNewer={hasNewer}

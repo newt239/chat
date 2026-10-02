@@ -40,11 +40,9 @@ import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 type MessageItemProps = {
   message: Message;
-  currentUserId: string | null;
   onCopyLink: (messageId: string) => void;
   onCreateThread: (messageId: string) => void;
   threadMetadata?: ThreadMetadata;
-  onOpenThread?: (messageId: string) => void;
   isHighlighted?: boolean;
   // 親チャンネルの集約表示で、子孫チャンネルのメッセージに付けるチップ
   channelChip?: ReactNode;
@@ -52,11 +50,9 @@ type MessageItemProps = {
 
 export const MessageItem = ({
   message,
-  currentUserId,
   onCopyLink,
   onCreateThread,
   threadMetadata,
-  onOpenThread,
   isHighlighted = false,
   channelChip = null,
 }: MessageItemProps) => {
@@ -101,10 +97,10 @@ export const MessageItem = ({
   const isMentioned =
     message.mentionsChannel ||
     message.mentionsHere ||
-    message.mentions.some((mention) => mention.userId === currentUserId);
+    message.mentions.some((mention) => mention.userId === myId);
 
   const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
-    isAuthor: message.userId === currentUserId,
+    isAuthor: message.userId === myId,
     message,
     onCopyLink: () => {
       onCopyLink(message.id);
@@ -196,7 +192,7 @@ export const MessageItem = ({
             <IconPin aria-hidden />
             {t("pin.label", {
               name:
-                message.pin.pinnedBy?.id === currentUserId
+                message.pin.pinnedBy?.id === myId
                   ? t("reaction.names.you")
                   : (message.pin.pinnedBy?.displayName ?? ""),
             })}
@@ -253,7 +249,7 @@ export const MessageItem = ({
           <MessageLocationCard location={message.location} />
         )}
         {!message.isDeleted && message.poll && (
-          <MessagePollCard poll={message.poll} isAuthor={message.userId === currentUserId} />
+          <MessagePollCard poll={message.poll} isAuthor={message.userId === myId} />
         )}
         {!message.isDeleted && <MessageAttachments message={message} />}
 
@@ -263,11 +259,11 @@ export const MessageItem = ({
           onOpenList={setReactionTab}
         />
 
-        {threadMetadata && threadMetadata.replyCount > 0 && onOpenThread && (
+        {threadMetadata && threadMetadata.replyCount > 0 && (
           <ThreadMetadataPreview
             metadata={threadMetadata}
             onPress={() => {
-              onOpenThread(message.id);
+              onCreateThread(message.id);
             }}
           />
         )}

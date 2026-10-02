@@ -2,7 +2,6 @@ import { useCallback, useMemo } from "react";
 
 import { create } from "@bufbuild/protobuf";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
@@ -18,7 +17,6 @@ import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { myUserIdAtom } from "#/providers/store/auth";
 
 import type { TimelineRow } from "#/features/message/utils/timelineRows";
 import type { Message } from "#/gen/chat/v1/message_pb";
@@ -34,7 +32,6 @@ const noopRef = () => undefined;
 export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currentUserId = useAtomValue(myUserIdAtom);
   // ?message= で返信を指しているときはその返信の前後を読み、そこまでスクロールする
   const targetReplyId = useSearch({ select: (search) => search.message, strict: false }) ?? null;
   const {
@@ -94,7 +91,6 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
   const renderMessage = (message: Message, isHighlighted: boolean) => (
     <MessageItem
       message={message}
-      currentUserId={currentUserId}
       onCopyLink={handleCopyLink}
       onCreateThread={handleCreateThread}
       isHighlighted={isHighlighted}
@@ -120,7 +116,6 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
       <MessageList
         key={`${threadId}:${targetReplyId ?? ""}`}
         rows={rows}
-        currentUserId={currentUserId}
         targetMessageId={targetReplyId}
         hasOlder={hasOlder}
         hasNewer={hasNewer}
@@ -136,7 +131,6 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
           <>
             <MessageItem
               message={parentMessage}
-              currentUserId={currentUserId}
               onCopyLink={handleCopyLink}
               onCreateThread={handleCreateThread}
             />

@@ -1,6 +1,5 @@
 import { useMutation } from "@connectrpc/connect-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "#/components/ui/Badge/Badge";
@@ -10,7 +9,6 @@ import { MessageListCard } from "#/features/message/components/MessageListCard";
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { useUpdateListedThread } from "#/features/thread/hooks/useParticipatingThreads";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
-import { myUserIdAtom } from "#/providers/store/auth";
 
 import { InlineReplyComposer } from "./InlineReplyComposer";
 import { ThreadFollowButton } from "./ThreadFollowButton";
@@ -27,7 +25,6 @@ type ThreadCardProps = {
 export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currentUserId = useAtomValue(myUserIdAtom);
   const markThreadRead = useMutation(ThreadService.method.markThreadRead);
   const updateThread = useUpdateListedThread();
   const { firstMessage, threadId } = thread;
@@ -43,12 +40,7 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
 
   return (
     <MessageListCard workspaceId={workspaceId} message={firstMessage}>
-      <MessageItem
-        message={firstMessage}
-        currentUserId={currentUserId}
-        onCopyLink={handleCopyLink}
-        onCreateThread={openThread}
-      />
+      <MessageItem message={firstMessage} onCopyLink={handleCopyLink} onCreateThread={openThread} />
       <div className="flex items-center gap-2 pr-3 pl-[60px] max-md:pl-3">
         <Link
           to="/app/$workspaceId/$channelId/thread/$messageId"
@@ -83,7 +75,6 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
         <MessageItem
           key={reply.id}
           message={reply}
-          currentUserId={currentUserId}
           onCopyLink={handleCopyLink}
           onCreateThread={openThread}
         />
