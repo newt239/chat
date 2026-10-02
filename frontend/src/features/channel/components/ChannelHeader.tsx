@@ -16,10 +16,11 @@ import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { IconToggleButton } from "#/components/ui/IconToggleButton/IconToggleButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
-import { cn, focusRing } from "#/components/ui/styles/styles";
+import { focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
@@ -106,19 +107,16 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
     <>
       <header className="flex h-12 shrink-0 items-center gap-1.5 border-b border-border pr-2.5 pl-[18px] max-md:pl-3">
         <BackButton />
-        <IconButton
-          label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
-          aria-pressed={isStarred}
-          className={cn(
-            "max-md:hidden",
-            isStarred && "text-mention-bar data-hovered:text-mention-bar",
-          )}
-          onPress={() => {
-            setStarred(channelId, !isStarred);
+        <IconToggleButton
+          label={t("shell.channelMenu.star")}
+          isSelected={isStarred}
+          className="max-md:hidden data-selected:bg-transparent data-selected:text-mention-bar data-selected:data-hovered:bg-hover"
+          onChange={(starred) => {
+            setStarred(channelId, starred);
           }}
         >
           {isStarred ? <IconStarFilled /> : <IconStar />}
-        </IconButton>
+        </IconToggleButton>
         <Button
           onPress={() => {
             openRightPanel(infoPanel);
