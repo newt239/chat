@@ -236,7 +236,10 @@ export default defineConfig(({ mode }) => {
           display_override: ["standalone", "minimal-ui"],
           id: "/",
           lang: "ja",
+          // 通知やリンクから開いたときに新しいウィンドウを増やさない
+          launch_handler: { client_mode: "focus-existing" },
           name: "Chat",
+          scope: "/",
           short_name: "Chat",
           shortcuts: [
             { name: "DM", url: "/app/?open=dms" },
