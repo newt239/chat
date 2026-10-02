@@ -17,6 +17,8 @@ type ChannelAccessService interface {
 	FilterAccessible(ctx context.Context, channels []*entity.Channel, userID string) ([]*entity.Channel, error)
 	// AccessibleDescendants は閲覧できる子孫チャンネルを返します
 	AccessibleDescendants(ctx context.Context, ch *entity.Channel, userID string) ([]*entity.Channel, error)
+	// FilterUsersWithAccess は userIDs のうちチャンネルを閲覧できるユーザーを返します
+	FilterUsersWithAccess(ctx context.Context, ch *entity.Channel, userIDs []string) (map[string]bool, error)
 }
 
 type channelAccessService struct {
@@ -84,20 +86,49 @@ func (s *channelAccessService) EnsureChannelMember(ctx context.Context, channelI
 }
 
 func (s *channelAccessService) FilterAccessible(ctx context.Context, channels []*entity.Channel, userID string) ([]*entity.Channel, error) {
-	result := make([]*entity.Channel, 0, len(channels))
+	var privateIDs []string
 	for _, ch := range channels {
 		if ch.IsPrivate() {
-			isMember, err := s.channelMemberRepo.IsMember(ctx, ch.ID, userID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to verify channel membership: %w", err)
-			}
-			if !isMember {
-				continue
-			}
+			privateIDs = append(privateIDs, ch.ID)
 		}
-		result = append(result, ch)
+	}
+	joined := map[string]bool{}
+	if len(privateIDs) > 0 {
+		var err error
+		if joined, err = s.channelMemberRepo.FindJoinedChannelIDs(ctx, userID, privateIDs); err != nil {
+			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
+		}
+	}
+	result := make([]*entity.Channel, 0, len(channels))
+	for _, ch := range channels {
+		if !ch.IsPrivate() || joined[ch.ID] {
+			result = append(result, ch)
+		}
 	}
 	return result, nil
+}
+
+func (s *channelAccessService) FilterUsersWithAccess(ctx context.Context, ch *entity.Channel, userIDs []string) (map[string]bool, error) {
+	if len(userIDs) == 0 {
+		return map[string]bool{}, nil
+	}
+	members, err := s.workspaceRepo.FindActiveMemberIDs(ctx, ch.WorkspaceID, userIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
+	}
+	if !ch.IsPrivate() {
+		return members, nil
+	}
+	joined, err := s.channelMemberRepo.FindMemberIDsIn(ctx, ch.ID, userIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to verify channel membership: %w", err)
+	}
+	for id := range members {
+		if !joined[id] {
+			delete(members, id)
+		}
+	}
+	return members, nil
 }
 
 func (s *channelAccessService) AccessibleDescendants(ctx context.Context, ch *entity.Channel, userID string) ([]*entity.Channel, error) {

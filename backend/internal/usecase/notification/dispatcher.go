@@ -148,7 +148,7 @@ func (d *Dispatcher) candidates(ctx context.Context, channel *entity.Channel, me
 	for _, m := range message.Mentions {
 		add(m.UserID, reasonMention)
 	}
-	if isDM(channel) {
+	if channel.IsDM() {
 		members, err := d.channelMemberRepo.FindMembers(ctx, channel.ID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load DM members: %w", err)
@@ -175,20 +175,18 @@ func (d *Dispatcher) filterRecipients(ctx context.Context, channel *entity.Chann
 	if err != nil {
 		return nil, fmt.Errorf("failed to load recipients: %w", err)
 	}
+	accessible, err := d.channelAccessSvc.FilterUsersWithAccess(ctx, channel, ids)
+	if err != nil {
+		return nil, err
+	}
+	muted, err := d.channelMuteRepo.FindMutedUserIDs(ctx, channel.ID, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load mutes: %w", err)
+	}
 
 	recipients := []string{}
 	for _, u := range users {
-		if u.IsApp || !wants(u.Preferences.NotificationLevel, candidates[u.ID]) {
-			continue
-		}
-		if _, err := d.channelAccessSvc.EnsureChannelAccess(ctx, channel.ID, u.ID); err != nil {
-			continue
-		}
-		muted, err := d.channelMuteRepo.FindMutedChannelIDs(ctx, u.ID, []string{channel.ID})
-		if err != nil {
-			return nil, fmt.Errorf("failed to load mutes: %w", err)
-		}
-		if !muted[channel.ID] {
+		if !u.IsApp && wants(u.Preferences.NotificationLevel, candidates[u.ID]) && accessible[u.ID] && !muted[u.ID] {
 			recipients = append(recipients, u.ID)
 		}
 	}
@@ -207,14 +205,10 @@ func wants(level entity.NotificationLevel, r reason) bool {
 	}
 }
 
-func isDM(channel *entity.Channel) bool {
-	return channel.IsDM()
-}
-
 // content の body は ID 記法を名前に置き換えた本文です
 func content(channel *entity.Channel, message messageuc.MessageOutput, body string) (string, string, map[string]string) {
 	title := message.User.DisplayName
-	if !isDM(channel) {
+	if !channel.IsDM() {
 		title += " · #" + channel.Name
 	}
 	if runes := []rune(body); len(runes) > maxBodyRunes {

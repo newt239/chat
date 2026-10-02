@@ -187,3 +187,47 @@ func (r *channelMemberRepository) UpdateMemberRole(ctx context.Context, channelI
 
 	return err
 }
+
+func (r *channelMemberRepository) FindJoinedChannelIDs(ctx context.Context, userID string, channelIDs []string) (map[string]bool, error) {
+	uid, err := utils.ParseUUID(userID, "user ID")
+	if err != nil {
+		return nil, err
+	}
+	cids, err := utils.ParseUUIDs(channelIDs, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).ChannelMember.Query().
+		Where(channelmember.UserID(uid), channelmember.ChannelIDIn(cids...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(members))
+	for _, m := range members {
+		result[m.ChannelID.String()] = true
+	}
+	return result, nil
+}
+
+func (r *channelMemberRepository) FindMemberIDsIn(ctx context.Context, channelID string, userIDs []string) (map[string]bool, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	uids, err := utils.ParseUUIDs(userIDs, "user ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).ChannelMember.Query().
+		Where(channelmember.ChannelID(cid), channelmember.UserIDIn(uids...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(members))
+	for _, m := range members {
+		result[m.UserID.String()] = true
+	}
+	return result, nil
+}

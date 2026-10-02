@@ -37,15 +37,14 @@ func (r *channelStarRepository) SetStarred(ctx context.Context, userID string, c
 			Exec(ctx)
 		return err
 	}
+	// 付与済みでも結果は同じなので成功とみなす
 	err = client.ChannelStar.Create().
 		SetUserID(uid).
 		SetChannelID(cid).
+		OnConflictColumns(channelstar.FieldUserID, channelstar.FieldChannelID).
+		DoNothing().
 		Exec(ctx)
-	// 付与済みの場合は一意制約違反になるが、結果は同じなので成功とみなす
-	if ent.IsConstraintError(err) {
-		return nil
-	}
-	return err
+	return ignoreConflict(err)
 }
 
 func (r *channelStarRepository) FindStarredChannelIDs(ctx context.Context, userID string, channelIDs []string) (map[string]bool, error) {

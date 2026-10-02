@@ -137,6 +137,16 @@ func (r *fakeMemberRepo) IsMember(_ context.Context, channelID, userID string) (
 	return r.joined[channelID][userID], nil
 }
 
+func (r *fakeMemberRepo) FindJoinedChannelIDs(_ context.Context, userID string, channelIDs []string) (map[string]bool, error) {
+	result := map[string]bool{}
+	for _, id := range channelIDs {
+		if r.joined[id][userID] {
+			result[id] = true
+		}
+	}
+	return result, nil
+}
+
 type fakeStarRepo struct {
 	domainrepository.ChannelStarRepository
 	starred map[string]bool

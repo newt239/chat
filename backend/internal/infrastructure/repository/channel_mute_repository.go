@@ -3,8 +3,6 @@ package repository
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channelmute"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -37,15 +35,14 @@ func (r *channelMuteRepository) SetMuted(ctx context.Context, userID string, cha
 			Exec(ctx)
 		return err
 	}
+	// ミュート済みでも結果は同じなので成功とみなす
 	err = client.ChannelMute.Create().
 		SetUserID(uid).
 		SetChannelID(cid).
+		OnConflictColumns(channelmute.FieldUserID, channelmute.FieldChannelID).
+		DoNothing().
 		Exec(ctx)
-	// ミュート済みの場合は一意制約違反になるが、結果は同じなので成功とみなす
-	if ent.IsConstraintError(err) {
-		return nil
-	}
-	return err
+	return ignoreConflict(err)
 }
 
 func (r *channelMuteRepository) FindMutedChannelIDs(ctx context.Context, userID string, channelIDs []string) (map[string]bool, error) {
@@ -53,27 +50,41 @@ func (r *channelMuteRepository) FindMutedChannelIDs(ctx context.Context, userID 
 	if err != nil {
 		return nil, err
 	}
-	cids := make([]uuid.UUID, 0, len(channelIDs))
-	for _, id := range channelIDs {
-		cid, err := utils.ParseUUID(id, "channel ID")
-		if err != nil {
-			return nil, err
-		}
-		cids = append(cids, cid)
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	mutedIDs, err := client.ChannelMute.Query().
-		Where(channelmute.UserID(uid), channelmute.ChannelIDIn(cids...)).
-		QueryChannel().
-		IDs(ctx)
+	cids, err := utils.ParseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
 	}
+	mutes, err := transaction.ResolveClient(ctx, r.client).ChannelMute.Query().
+		Where(channelmute.UserID(uid), channelmute.ChannelIDIn(cids...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(mutes))
+	for _, m := range mutes {
+		result[m.ChannelID.String()] = true
+	}
+	return result, nil
+}
 
-	result := make(map[string]bool, len(mutedIDs))
-	for _, id := range mutedIDs {
-		result[id.String()] = true
+func (r *channelMuteRepository) FindMutedUserIDs(ctx context.Context, channelID string, userIDs []string) (map[string]bool, error) {
+	cid, err := utils.ParseUUID(channelID, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	uids, err := utils.ParseUUIDs(userIDs, "user ID")
+	if err != nil {
+		return nil, err
+	}
+	mutes, err := transaction.ResolveClient(ctx, r.client).ChannelMute.Query().
+		Where(channelmute.ChannelID(cid), channelmute.UserIDIn(uids...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(mutes))
+	for _, m := range mutes {
+		result[m.UserID.String()] = true
 	}
 	return result, nil
 }

@@ -379,3 +379,21 @@ func (r *workspaceRepository) FindMembershipsByUserID(ctx context.Context, userI
 	}
 	return result, nil
 }
+
+func (r *workspaceRepository) FindActiveMemberIDs(ctx context.Context, workspaceID string, userIDs []string) (map[string]bool, error) {
+	uids, err := utils.ParseUUIDs(userIDs, "user ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).WorkspaceMember.Query().
+		Where(workspacemember.WorkspaceID(workspaceID), workspacemember.UserIDIn(uids...), workspacemember.SuspendedAtIsNil()).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string]bool, len(members))
+	for _, m := range members {
+		result[m.UserID.String()] = true
+	}
+	return result, nil
+}
