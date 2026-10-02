@@ -178,25 +178,10 @@ func (r *UseCaseRegistry) NewAppUseCase() *appuc.Interactor {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewChannelAccessService(),
-		messageuc.NewMessageCreator(
-			r.domainRegistry.NewMessageRepository(),
-			r.domainRegistry.NewMessageUserMentionRepository(),
-			r.domainRegistry.NewMessageGroupMentionRepository(),
-			r.domainRegistry.NewMessageLinkRepository(),
-			r.domainRegistry.NewThreadRepository(),
-			r.domainRegistry.NewAttachmentRepository(),
-			r.domainRegistry.NewPollRepository(),
-			r.infrastructureRegistry.NewNotificationService(),
-			r.infrastructureRegistry.NewMentionService(),
-			r.infrastructureRegistry.NewLinkProcessingService(),
-			r.infrastructureRegistry.NewTransactionManager(),
-			r.NewMessageOutputBuilder(),
-			r.domainRegistry.NewChannelAccessService(),
-			r.NewSearchIndexer(),
-			r.newMessageObservers(),
-		),
+		r.NewMessageCreator(),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
+		r.infrastructureRegistry.NewLogger(),
 	)
 }
 
@@ -238,30 +223,64 @@ func (r *UseCaseRegistry) newMessageObservers() []messageuc.NewMessageObserver {
 	}
 }
 
-func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
-	return messageuc.NewMessageUseCase(
-		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewSystemMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
-		r.domainRegistry.NewUserRepository(),
+// NewContentRecorder は投稿と編集で共有する、本文のメンションとリンクの保存役です
+func (r *UseCaseRegistry) NewContentRecorder() *messageuc.ContentRecorder {
+	return messageuc.NewContentRecorder(
+		r.infrastructureRegistry.NewMentionService(),
 		r.domainRegistry.NewMessageUserMentionRepository(),
 		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.infrastructureRegistry.NewLinkProcessingService(),
 		r.domainRegistry.NewMessageLinkRepository(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageCreator() *messageuc.MessageCreator {
+	return messageuc.NewMessageCreator(
+		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewThreadRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewPollRepository(),
-		r.NewMessageOutputBuilder(),
 		r.infrastructureRegistry.NewNotificationService(),
-		r.infrastructureRegistry.NewMentionService(),
-		r.infrastructureRegistry.NewLinkProcessingService(),
+		r.NewContentRecorder(),
 		r.infrastructureRegistry.NewTransactionManager(),
+		r.NewMessageOutputBuilder(),
 		r.domainRegistry.NewChannelAccessService(),
-		r.domainRegistry.NewPermissionService(),
-		r.infrastructureRegistry.NewLogger(),
 		r.NewSearchIndexer(),
 		r.newMessageObservers(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageUpdater() *messageuc.MessageUpdater {
+	return messageuc.NewMessageUpdater(
+		r.domainRegistry.NewMessageRepository(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.NewContentRecorder(),
+		r.infrastructureRegistry.NewTransactionManager(),
+		r.NewMessageOutputBuilder(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewSearchIndexer(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageDeleter() *messageuc.MessageDeleter {
+	return messageuc.NewMessageDeleter(
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.domainRegistry.NewPermissionService(),
+		r.NewSearchIndexer(),
+	)
+}
+
+func (r *UseCaseRegistry) NewMessageLister() *messageuc.MessageLister {
+	return messageuc.NewMessageLister(
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewSystemMessageRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewThreadRepository(),
+		r.NewMessageOutputBuilder(),
+		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
@@ -296,8 +315,9 @@ func (r *UseCaseRegistry) NewScheduledMessageUseCase() *scheduledmessageuc.Inter
 		r.domainRegistry.NewScheduledMessageRepository(),
 		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewSessionRepository(),
 		r.domainRegistry.NewChannelAccessService(),
-		r.NewMessageUseCase(),
+		r.NewMessageCreator(),
 		r.infrastructureRegistry.NewLogger(),
 	)
 }

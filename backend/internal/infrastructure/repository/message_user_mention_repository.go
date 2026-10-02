@@ -108,26 +108,27 @@ func (r *messageUserMentionRepository) FindByUserID(ctx context.Context, userID 
 	return result, nil
 }
 
-func (r *messageUserMentionRepository) Create(ctx context.Context, mention *entity.MessageUserMention) error {
-	mid, err := utils.ParseUUID(mention.MessageID, "message ID")
-	if err != nil {
-		return err
+func (r *messageUserMentionRepository) CreateBulk(ctx context.Context, mentions []*entity.MessageUserMention) error {
+	if len(mentions) == 0 {
+		return nil
 	}
-
-	uid, err := utils.ParseUUID(mention.UserID, "user ID")
-	if err != nil {
-		return err
-	}
-
 	client := transaction.ResolveClient(ctx, r.client)
-
-	_, err = client.MessageUserMention.Create().
-		SetMessageID(mid).
-		SetUserID(uid).
-		SetNillableViaGroupID(utils.ParseUUIDPtr(mention.ViaGroupID)).
-		Save(ctx)
-
-	return err
+	builders := make([]*ent.MessageUserMentionCreate, 0, len(mentions))
+	for _, mention := range mentions {
+		mid, err := utils.ParseUUID(mention.MessageID, "message ID")
+		if err != nil {
+			return err
+		}
+		uid, err := utils.ParseUUID(mention.UserID, "user ID")
+		if err != nil {
+			return err
+		}
+		builders = append(builders, client.MessageUserMention.Create().
+			SetMessageID(mid).
+			SetUserID(uid).
+			SetNillableViaGroupID(utils.ParseUUIDPtr(mention.ViaGroupID)))
+	}
+	return client.MessageUserMention.CreateBulk(builders...).Exec(ctx)
 }
 
 func (r *messageUserMentionRepository) DeleteByMessageID(ctx context.Context, messageID string) error {

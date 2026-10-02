@@ -265,7 +265,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		if sample.link != nil {
 			sample.link.MessageID = msg.ID.String()
 			sample.link.CreatedAt = createdAt
-			if err := linkRepo.Create(ctx, sample.link); err != nil {
+			if err := createLink(ctx, linkRepo, sample.link); err != nil {
 				return fmt.Errorf("failed to create link: %w", err)
 			}
 		}

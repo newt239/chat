@@ -556,7 +556,7 @@ func createSeedData(
 	}
 
 	for _, link := range links {
-		if err := linkRepo.Create(ctx, link); err != nil {
+		if err := createLink(ctx, linkRepo, link); err != nil {
 			return fmt.Errorf("failed to create message link: %w", err)
 		}
 	}
@@ -630,7 +630,7 @@ func createDisplaySamples(
 			return fmt.Errorf("failed to create sample message: %w", err)
 		}
 		sample.link.MessageID = sample.message.ID
-		if err := linkRepo.Create(ctx, sample.link); err != nil {
+		if err := createLink(ctx, linkRepo, sample.link); err != nil {
 			return fmt.Errorf("failed to create sample link: %w", err)
 		}
 	}
@@ -694,4 +694,16 @@ func mustHashPassword(service authuc.PasswordService, password string) string {
 // Helper function for string pointers
 func stringPtr(s string) *string {
 	return &s
+}
+
+// createLink はメッセージへのリンクでなければプレビューを先に保存してからリンクを作ります
+func createLink(ctx context.Context, linkRepo domainrepository.MessageLinkRepository, link *entity.MessageLink) error {
+	if link.LinkedMessageID == nil {
+		preview := &entity.LinkPreview{URL: link.URL, OGP: link.OGP, FetchedAt: time.Now()}
+		if err := linkRepo.UpsertPreview(ctx, preview); err != nil {
+			return err
+		}
+		link.LinkPreviewID = &preview.ID
+	}
+	return linkRepo.CreateBulk(ctx, []*entity.MessageLink{link})
 }

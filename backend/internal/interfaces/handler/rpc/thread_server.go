@@ -10,13 +10,13 @@ import (
 )
 
 type ThreadServer struct {
-	MessageUC    messageuc.MessageUseCase
-	ThreadLister *threaduc.ThreadLister
-	ThreadReader *threaduc.ThreadReader
+	MessageLister *messageuc.MessageLister
+	ThreadLister  *threaduc.ThreadLister
+	ThreadReader  *threaduc.ThreadReader
 }
 
 func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThreadRepliesRequest) (*chatv1.GetThreadRepliesResponse, error) {
-	out, err := s.MessageUC.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
+	out, err := s.MessageLister.GetThreadReplies(ctx, messageuc.GetThreadRepliesInput{
 		MessageID:     req.MessageId,
 		UserID:        userIDFrom(ctx),
 		Limit:         int(req.Limit),
@@ -37,7 +37,7 @@ func (s *ThreadServer) GetThreadReplies(ctx context.Context, req *chatv1.GetThre
 }
 
 func (s *ThreadServer) GetThreadMetadata(ctx context.Context, req *chatv1.GetThreadMetadataRequest) (*chatv1.GetThreadMetadataResponse, error) {
-	out, err := s.MessageUC.GetThreadMetadata(ctx, messageuc.GetThreadMetadataInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
+	out, err := s.MessageLister.GetThreadMetadata(ctx, messageuc.GetThreadMetadataInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
 	if err != nil {
 		return nil, err
 	}

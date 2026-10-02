@@ -7,6 +7,7 @@ import (
 )
 
 type LinkProcessingService interface {
-	// ProcessLinks は本文中の URL を MessageLink にします。workspaceID は同じワークスペースのメッセージリンクの判定に使います
-	ProcessLinks(ctx context.Context, body, workspaceID string) ([]*entity.MessageLink, error)
+	// PrepareLinks は本文中の URL をメッセージリンクにし、外部の URL はプレビューを保存してから返します
+	// OGP を取りに行くためトランザクションの外で呼びます。workspaceID は同じワークスペースのメッセージリンクの判定に使います
+	PrepareLinks(ctx context.Context, body, workspaceID string) ([]*entity.MessageLink, error)
 }

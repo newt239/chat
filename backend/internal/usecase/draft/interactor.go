@@ -69,7 +69,7 @@ func (i *Interactor) ensureTarget(ctx context.Context, target domainrepository.D
 	if err != nil {
 		return fmt.Errorf("failed to load parent message: %w", err)
 	}
-	if parent == nil || parent.ChannelID != target.ChannelID || parent.DeletedAt != nil {
+	if !parent.CanBeRepliedIn(target.ChannelID) {
 		return domerr.ErrParentMessageNotFound
 	}
 	return nil

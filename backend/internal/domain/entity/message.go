@@ -17,6 +17,11 @@ type Message struct {
 	MentionsHere    bool
 }
 
+// CanBeRepliedIn は channelID のスレッドの親にできるメッセージかを返します。返信と削除済みのメッセージは親にできない
+func (m *Message) CanBeRepliedIn(channelID string) bool {
+	return m != nil && m.ChannelID == channelID && m.ParentID == nil && m.DeletedAt == nil
+}
+
 // MessageLocation はメッセージで共有された位置情報です
 type MessageLocation struct {
 	Latitude  float64

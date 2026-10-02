@@ -327,6 +327,7 @@ func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 		MessageID:       ml.MessageID.String(),
 		URL:             ml.URL,
 		OGP:             LinkPreviewToOGP(ml.Edges.LinkPreview),
+		LinkPreviewID:   UUIDPtrToStringPtr(ml.LinkPreviewID),
 		LinkedMessageID: UUIDPtrToStringPtr(ml.LinkedMessageID),
 		CreatedAt:       ml.CreatedAt,
 	}

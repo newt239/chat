@@ -108,25 +108,24 @@ func (r *messageGroupMentionRepository) FindByGroupID(ctx context.Context, group
 	return result, nil
 }
 
-func (r *messageGroupMentionRepository) Create(ctx context.Context, mention *entity.MessageGroupMention) error {
-	mid, err := utils.ParseUUID(mention.MessageID, "message ID")
-	if err != nil {
-		return err
+func (r *messageGroupMentionRepository) CreateBulk(ctx context.Context, mentions []*entity.MessageGroupMention) error {
+	if len(mentions) == 0 {
+		return nil
 	}
-
-	gid, err := utils.ParseUUID(mention.GroupID, "group ID")
-	if err != nil {
-		return err
-	}
-
 	client := transaction.ResolveClient(ctx, r.client)
-
-	_, err = client.MessageGroupMention.Create().
-		SetMessageID(mid).
-		SetGroupID(gid).
-		Save(ctx)
-
-	return err
+	builders := make([]*ent.MessageGroupMentionCreate, 0, len(mentions))
+	for _, mention := range mentions {
+		mid, err := utils.ParseUUID(mention.MessageID, "message ID")
+		if err != nil {
+			return err
+		}
+		gid, err := utils.ParseUUID(mention.GroupID, "group ID")
+		if err != nil {
+			return err
+		}
+		builders = append(builders, client.MessageGroupMention.Create().SetMessageID(mid).SetGroupID(gid))
+	}
+	return client.MessageGroupMention.CreateBulk(builders...).Exec(ctx)
 }
 
 func (r *messageGroupMentionRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
