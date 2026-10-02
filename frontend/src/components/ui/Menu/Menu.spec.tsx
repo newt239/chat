@@ -9,6 +9,15 @@ import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 
 import { Menu } from "./Menu";
 
+const stubMatchMedia = (matches: boolean) => {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    addEventListener: () => {},
+    matches,
+    media: query,
+    removeEventListener: () => {},
+  }));
+};
+
 describe("Menu", () => {
   test("トリガーで開き、選んだ項目の操作を実行して閉じる", async () => {
     const onPin = vi.fn<() => void>();
@@ -46,14 +55,6 @@ describe("Menu", () => {
   });
 
   describe("モバイル", () => {
-    const stubMatchMedia = (matches: boolean) => {
-      vi.stubGlobal("matchMedia", (query: string) => ({
-        addEventListener: () => {},
-        matches,
-        media: query,
-        removeEventListener: () => {},
-      }));
-    };
     afterEach(() => {
       stubMatchMedia(false);
     });

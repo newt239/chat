@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { ToggleButton } from "react-aria-components";
 
-import { iconButtonClassName } from "#/components/ui/IconButton/IconButton";
+import { iconButtonClassName } from "#/components/ui/IconButton/iconButtonClassName";
 import { cn, withBaseClassName } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 
