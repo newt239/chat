@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 
-import type { OGPData } from "../types";
+import type { OgpData } from "#/gen/chat/v1/message_pb";
 
 type OgpCardProps = {
   url: string;
-  ogp: OGPData;
+  ogp: OgpData;
   // 投稿前のプレビューだけが外せる
   onRemove?: () => void;
 };
@@ -28,7 +28,7 @@ export const OgpCard = ({ url, ogp, onRemove }: OgpCardProps) => {
       )}
       <div className="flex flex-col gap-0.5 px-3 pt-2 pb-2.5">
         <span className="truncate text-[11.5px] text-muted">
-          {ogp.siteName ?? new URL(url).hostname}
+          {ogp.siteName || new URL(url).hostname}
         </span>
         <a
           href={url}
@@ -36,7 +36,7 @@ export const OgpCard = ({ url, ogp, onRemove }: OgpCardProps) => {
           rel="noopener noreferrer"
           className="text-[13.5px] leading-[1.45] font-semibold text-accent-text no-underline"
         >
-          {ogp.title ?? url}
+          {ogp.title || url}
         </a>
         {ogp.description && (
           <p className="m-0 line-clamp-2 text-[12.5px] text-muted">{ogp.description}</p>

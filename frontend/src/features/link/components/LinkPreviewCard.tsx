@@ -1,21 +1,26 @@
+import { useQuery } from "@connectrpc/connect-query";
 import { IconX } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { LinkService } from "#/gen/chat/v1/link_service_pb";
 
 import { OgpCard } from "./OgpCard";
 
-import type { LinkPreview } from "../types";
-
 type LinkPreviewCardProps = {
-  preview: LinkPreview;
+  url: string;
   onRemove: () => void;
 };
 
-export const LinkPreviewCard = ({ preview, onRemove }: LinkPreviewCardProps) => {
+// 入力中の本文にある URL のプレビュー。同じ URL は取得結果を使い回す
+export const LinkPreviewCard = ({ url, onRemove }: LinkPreviewCardProps) => {
   const { t } = useTranslation();
-  const { url, ogpData, isLoading, error } = preview;
+  const { data: ogp, isLoading } = useQuery(
+    LinkService.method.fetchOgp,
+    { url },
+    { retry: false, select: (res) => res.ogp },
+  );
 
   if (isLoading) {
     return (
@@ -27,7 +32,7 @@ export const LinkPreviewCard = ({ preview, onRemove }: LinkPreviewCardProps) => 
     );
   }
 
-  if (error) {
+  if (ogp === undefined) {
     return (
       <div className="flex w-[min(420px,100%)] items-center gap-2 rounded-[10px] border border-border py-1.5 pr-1.5 pl-3 text-caption">
         <span className="min-w-0 flex-1 truncate text-danger">
@@ -40,5 +45,5 @@ export const LinkPreviewCard = ({ preview, onRemove }: LinkPreviewCardProps) => 
     );
   }
 
-  return <OgpCard url={url} ogp={ogpData} onRemove={onRemove} />;
+  return <OgpCard url={url} ogp={ogp} onRemove={onRemove} />;
 };
