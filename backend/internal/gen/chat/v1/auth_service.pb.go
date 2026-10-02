@@ -155,10 +155,11 @@ func (x *LoginRequest) GetPassword() string {
 }
 
 type LoginResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
-	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+	RefreshToken  *string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
+	User          *User   `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -201,8 +202,8 @@ func (x *LoginResponse) GetAccessToken() string {
 }
 
 func (x *LoginResponse) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
 	}
 	return ""
 }
@@ -269,10 +270,11 @@ func (x *LoginWithGoogleRequest) GetWorkspaceId() string {
 }
 
 type LoginWithGoogleResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
-	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+	RefreshToken  *string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
+	User          *User   `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -315,8 +317,8 @@ func (x *LoginWithGoogleResponse) GetAccessToken() string {
 }
 
 func (x *LoginWithGoogleResponse) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
 	}
 	return ""
 }
@@ -398,10 +400,11 @@ func (x *LoginWithGoogleCodeRequest) GetWorkspaceId() string {
 }
 
 type LoginWithGoogleCodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
-	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+	RefreshToken  *string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
+	User          *User   `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -444,8 +447,8 @@ func (x *LoginWithGoogleCodeResponse) GetAccessToken() string {
 }
 
 func (x *LoginWithGoogleCodeResponse) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
 	}
 	return ""
 }
@@ -518,10 +521,11 @@ func (x *SignUpWithInvitationRequest) GetPassword() string {
 }
 
 type SignUpWithInvitationResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
-	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+	RefreshToken  *string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
+	User          *User   `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -564,8 +568,8 @@ func (x *SignUpWithInvitationResponse) GetAccessToken() string {
 }
 
 func (x *SignUpWithInvitationResponse) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
 	}
 	return ""
 }
@@ -646,10 +650,11 @@ func (x *SignUpRequest) GetPassword() string {
 }
 
 type SignUpResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
-	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+	RefreshToken  *string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
+	User          *User   `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -692,8 +697,8 @@ func (x *SignUpResponse) GetAccessToken() string {
 }
 
 func (x *SignUpResponse) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
 	}
 	return ""
 }
@@ -706,8 +711,9 @@ func (x *SignUpResponse) GetUser() *User {
 }
 
 type RefreshRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// ネイティブアプリだけが送る。ブラウザは Cookie を使う
+	RefreshToken  *string `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -743,17 +749,18 @@ func (*RefreshRequest) Descriptor() ([]byte, []int) {
 }
 
 func (x *RefreshRequest) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
 	}
 	return ""
 }
 
 type RefreshResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
-	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	// ネイティブアプリにだけ返す。ブラウザには httpOnly Cookie で渡す
+	RefreshToken  *string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3,oneof" json:"refresh_token,omitempty"`
+	User          *User   `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -796,8 +803,8 @@ func (x *RefreshResponse) GetAccessToken() string {
 }
 
 func (x *RefreshResponse) GetRefreshToken() string {
-	if x != nil {
-		return x.RefreshToken
+	if x != nil && x.RefreshToken != nil {
+		return *x.RefreshToken
 	}
 	return ""
 }
@@ -891,53 +898,60 @@ const file_chat_v1_auth_service_proto_rawDesc = "" +
 	"\x15password_auth_enabled\x18\x01 \x01(\bR\x13passwordAuthEnabled\"R\n" +
 	"\fLoginRequest\x12\x1d\n" +
 	"\x05email\x18\x01 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12#\n" +
-	"\bpassword\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bpassword\"z\n" +
+	"\bpassword\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bpassword\"\x91\x01\n" +
 	"\rLoginResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
-	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"~\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12(\n" +
+	"\rrefresh_token\x18\x02 \x01(\tH\x00R\frefreshToken\x88\x01\x01\x12!\n" +
+	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04userB\x10\n" +
+	"\x0e_refresh_token\"~\n" +
 	"\x16LoginWithGoogleRequest\x12\"\n" +
 	"\bid_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aidToken\x12/\n" +
 	"\fworkspace_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vworkspaceId\x88\x01\x01B\x0f\n" +
-	"\r_workspace_id\"\x84\x01\n" +
+	"\r_workspace_id\"\x9b\x01\n" +
 	"\x17LoginWithGoogleResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
-	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"\xcb\x01\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12(\n" +
+	"\rrefresh_token\x18\x02 \x01(\tH\x00R\frefreshToken\x88\x01\x01\x12!\n" +
+	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04userB\x10\n" +
+	"\x0e_refresh_token\"\xcb\x01\n" +
 	"\x1aLoginWithGoogleCodeRequest\x12\x1b\n" +
 	"\x04code\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04code\x12/\n" +
 	"\rcode_verifier\x18\x02 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10+\x18\x80\x01R\fcodeVerifier\x12\x1d\n" +
 	"\x05nonce\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05nonce\x12/\n" +
 	"\fworkspace_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vworkspaceId\x88\x01\x01B\x0f\n" +
-	"\r_workspace_id\"\x88\x01\n" +
+	"\r_workspace_id\"\x9f\x01\n" +
 	"\x1bLoginWithGoogleCodeResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
-	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"\x8f\x01\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12(\n" +
+	"\rrefresh_token\x18\x02 \x01(\tH\x00R\frefreshToken\x88\x01\x01\x12!\n" +
+	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04userB\x10\n" +
+	"\x0e_refresh_token\"\x8f\x01\n" +
 	"\x1bSignUpWithInvitationRequest\x12\x1d\n" +
 	"\x05token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05token\x12,\n" +
 	"\fdisplay_name\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18dR\vdisplayName\x12#\n" +
-	"\bpassword\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\bR\bpassword\"\x89\x01\n" +
+	"\bpassword\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\bR\bpassword\"\xa0\x01\n" +
 	"\x1cSignUpWithInvitationResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
-	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"\xad\x01\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12(\n" +
+	"\rrefresh_token\x18\x02 \x01(\tH\x00R\frefreshToken\x88\x01\x01\x12!\n" +
+	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04userB\x10\n" +
+	"\x0e_refresh_token\"\xad\x01\n" +
 	"\rSignUpRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12\x1d\n" +
 	"\x05email\x18\x02 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12,\n" +
 	"\fdisplay_name\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18dR\vdisplayName\x12#\n" +
-	"\bpassword\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\bR\bpassword\"{\n" +
+	"\bpassword\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\bR\bpassword\"\x92\x01\n" +
 	"\x0eSignUpResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
-	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\">\n" +
-	"\x0eRefreshRequest\x12,\n" +
-	"\rrefresh_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\frefreshToken\"|\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12(\n" +
+	"\rrefresh_token\x18\x02 \x01(\tH\x00R\frefreshToken\x88\x01\x01\x12!\n" +
+	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04userB\x10\n" +
+	"\x0e_refresh_token\"U\n" +
+	"\x0eRefreshRequest\x121\n" +
+	"\rrefresh_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\frefreshToken\x88\x01\x01B\x10\n" +
+	"\x0e_refresh_token\"\x93\x01\n" +
 	"\x0fRefreshResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12!\n" +
-	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04user\"\x0f\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12(\n" +
+	"\rrefresh_token\x18\x02 \x01(\tH\x00R\frefreshToken\x88\x01\x01\x12!\n" +
+	"\x04user\x18\x03 \x01(\v2\r.chat.v1.UserR\x04userB\x10\n" +
+	"\x0e_refresh_token\"\x0f\n" +
 	"\rLogoutRequest\"\x10\n" +
 	"\x0eLogoutResponse2\xe6\x04\n" +
 	"\vAuthService\x12N\n" +
@@ -1019,8 +1033,15 @@ func file_chat_v1_auth_service_proto_init() {
 		return
 	}
 	file_chat_v1_user_proto_init()
+	file_chat_v1_auth_service_proto_msgTypes[3].OneofWrappers = []any{}
 	file_chat_v1_auth_service_proto_msgTypes[4].OneofWrappers = []any{}
+	file_chat_v1_auth_service_proto_msgTypes[5].OneofWrappers = []any{}
 	file_chat_v1_auth_service_proto_msgTypes[6].OneofWrappers = []any{}
+	file_chat_v1_auth_service_proto_msgTypes[7].OneofWrappers = []any{}
+	file_chat_v1_auth_service_proto_msgTypes[9].OneofWrappers = []any{}
+	file_chat_v1_auth_service_proto_msgTypes[11].OneofWrappers = []any{}
+	file_chat_v1_auth_service_proto_msgTypes[12].OneofWrappers = []any{}
+	file_chat_v1_auth_service_proto_msgTypes[13].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

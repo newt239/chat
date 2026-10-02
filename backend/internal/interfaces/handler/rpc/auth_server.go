@@ -21,7 +21,7 @@ func (s *AuthServer) Login(ctx context.Context, req *chatv1.LoginRequest) (*chat
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.LoginResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.LoginResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) LoginWithGoogle(ctx context.Context, req *chatv1.LoginWithGoogleRequest) (*chatv1.LoginWithGoogleResponse, error) {
@@ -29,7 +29,7 @@ func (s *AuthServer) LoginWithGoogle(ctx context.Context, req *chatv1.LoginWithG
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.LoginWithGoogleResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.LoginWithGoogleResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) LoginWithGoogleCode(ctx context.Context, req *chatv1.LoginWithGoogleCodeRequest) (*chatv1.LoginWithGoogleCodeResponse, error) {
@@ -37,7 +37,7 @@ func (s *AuthServer) LoginWithGoogleCode(ctx context.Context, req *chatv1.LoginW
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.LoginWithGoogleCodeResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.LoginWithGoogleCodeResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) SignUp(ctx context.Context, req *chatv1.SignUpRequest) (*chatv1.SignUpResponse, error) {
@@ -45,7 +45,7 @@ func (s *AuthServer) SignUp(ctx context.Context, req *chatv1.SignUpRequest) (*ch
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.SignUpResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.SignUpResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) SignUpWithInvitation(ctx context.Context, req *chatv1.SignUpWithInvitationRequest) (*chatv1.SignUpWithInvitationResponse, error) {
@@ -53,15 +53,15 @@ func (s *AuthServer) SignUpWithInvitation(ctx context.Context, req *chatv1.SignU
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.SignUpWithInvitationResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.SignUpWithInvitationResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) Refresh(ctx context.Context, req *chatv1.RefreshRequest) (*chatv1.RefreshResponse, error) {
-	out, err := s.UC.RefreshToken(ctx, authuc.RefreshTokenInput{RefreshToken: req.RefreshToken})
+	out, err := s.UC.RefreshToken(ctx, authuc.RefreshTokenInput{RefreshToken: req.GetRefreshToken()})
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.RefreshResponse{AccessToken: out.AccessToken, RefreshToken: out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.RefreshResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) Logout(ctx context.Context, _ *chatv1.LogoutRequest) (*chatv1.LogoutResponse, error) {

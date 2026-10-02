@@ -12,7 +12,7 @@ import (
 )
 
 func UserSummary(u messageuc.UserInfo) *chatv1.UserSummary {
-	return &chatv1.UserSummary{Id: u.ID, DisplayName: u.DisplayName, AvatarUrl: u.AvatarURL, IsBot: u.IsBot}
+	return &chatv1.UserSummary{Id: u.ID, DisplayName: u.DisplayName, AvatarUrl: u.AvatarURL, IsApp: u.IsBot}
 }
 
 func Message(m messageuc.MessageOutput) *chatv1.Message {
@@ -127,10 +127,10 @@ func MessageWithThread(m messageuc.MessageWithThreadOutput) *chatv1.Message {
 
 func ThreadMetadata(t messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
 	metadata := &chatv1.ThreadMetadata{
-		MessageId:          t.MessageID,
-		ReplyCount:         int32(t.ReplyCount),
-		LastReplyAt:        optionalTimestamp(t.LastReplyAt),
-		ParticipantUserIds: t.ParticipantUserIDs,
+		MessageId:   t.MessageID,
+		ReplyCount:  int32(t.ReplyCount),
+		LastReplyAt: optionalTimestamp(t.LastReplyAt),
+		IsFollowing: t.IsFollowing,
 	}
 	if t.LastReplyUser != nil {
 		metadata.LastReplyUser = UserSummary(*t.LastReplyUser)

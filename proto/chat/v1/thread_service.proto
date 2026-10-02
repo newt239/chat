@@ -24,6 +24,8 @@ message ParticipatingThread {
   int32 unread_count = 6;
   // 最新の返信（古い順、最大 2 件）。すべての返信は GetThreadReplies で取得する
   repeated Message latest_replies = 7;
+  // 閲覧者がフォローしているか
+  bool is_following = 8;
 }
 
 message ThreadCursor {

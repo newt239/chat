@@ -33,6 +33,8 @@ type ParticipatingThread struct {
 	UnreadCount    int32                  `protobuf:"varint,6,opt,name=unread_count,json=unreadCount,proto3" json:"unread_count,omitempty"`
 	// 最新の返信（古い順、最大 2 件）。すべての返信は GetThreadReplies で取得する
 	LatestReplies []*Message `protobuf:"bytes,7,rep,name=latest_replies,json=latestReplies,proto3" json:"latest_replies,omitempty"`
+	// 閲覧者がフォローしているか
+	IsFollowing   bool `protobuf:"varint,8,opt,name=is_following,json=isFollowing,proto3" json:"is_following,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -114,6 +116,13 @@ func (x *ParticipatingThread) GetLatestReplies() []*Message {
 		return x.LatestReplies
 	}
 	return nil
+}
+
+func (x *ParticipatingThread) GetIsFollowing() bool {
+	if x != nil {
+		return x.IsFollowing
+	}
+	return false
 }
 
 type ThreadCursor struct {
@@ -772,7 +781,7 @@ var File_chat_v1_thread_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdf\x02\n" +
+	"\x1cchat/v1/thread_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x82\x03\n" +
 	"\x13ParticipatingThread\x12\x1b\n" +
 	"\tthread_id\x18\x01 \x01(\tR\bthreadId\x12\"\n" +
 	"\n" +
@@ -782,7 +791,8 @@ const file_chat_v1_thread_service_proto_rawDesc = "" +
 	"replyCount\x12D\n" +
 	"\x10last_activity_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12!\n" +
 	"\funread_count\x18\x06 \x01(\x05R\vunreadCount\x127\n" +
-	"\x0elatest_replies\x18\a \x03(\v2\x10.chat.v1.MessageR\rlatestRepliesB\r\n" +
+	"\x0elatest_replies\x18\a \x03(\v2\x10.chat.v1.MessageR\rlatestReplies\x12!\n" +
+	"\fis_following\x18\b \x01(\bR\visFollowingB\r\n" +
 	"\v_channel_id\"q\n" +
 	"\fThreadCursor\x12D\n" +
 	"\x10last_activity_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastActivityAt\x12\x1b\n" +

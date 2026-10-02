@@ -218,7 +218,8 @@ message ThreadMetadata {
   int32 reply_count = 2;
   google.protobuf.Timestamp last_reply_at = 3;
   UserSummary last_reply_user = 4;
-  repeated string participant_user_ids = 5;
+  // 閲覧者がフォローしているか
+  bool is_following = 5;
 }
 
 enum SystemMessageKind {

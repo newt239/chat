@@ -63,6 +63,7 @@ func (r *InterfaceRegistry) NewRPCHandler() nethttp.Handler {
 		rpc.Register(chatv1connect.NewAppServiceHandler, chatv1connect.AppServiceHandler(&rpc.AppServer{UC: uc.NewAppUseCase()})),
 		rpc.Register(chatv1connect.NewCustomEmojiServiceHandler, chatv1connect.CustomEmojiServiceHandler(&rpc.CustomEmojiServer{UC: uc.NewCustomEmojiUseCase()})),
 		rpc.Register(chatv1connect.NewImageServiceHandler, chatv1connect.ImageServiceHandler(&rpc.ImageServer{UC: uc.NewImageUseCase()})),
+		rpc.Register(chatv1connect.NewRealtimeServiceHandler, chatv1connect.RealtimeServiceHandler(&rpc.RealtimeServer{})),
 	)
 }
 

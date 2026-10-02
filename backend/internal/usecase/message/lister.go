@@ -205,11 +205,10 @@ func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMe
 			}
 
 			output.ThreadMetadata = &ThreadMetadataOutput{
-				MessageID:          metadata.MessageID,
-				ReplyCount:         metadata.ReplyCount,
-				LastReplyAt:        metadata.LastReplyAt,
-				LastReplyUser:      lastReplyUser,
-				ParticipantUserIDs: metadata.ParticipantUserIDs,
+				MessageID:     metadata.MessageID,
+				ReplyCount:    metadata.ReplyCount,
+				LastReplyAt:   metadata.LastReplyAt,
+				LastReplyUser: lastReplyUser,
 			}
 		}
 
@@ -337,11 +336,10 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 	// メタデータが存在しない場合は空のメタデータを返す
 	if metadata == nil {
 		return &ThreadMetadataOutput{
-			MessageID:          input.MessageID,
-			ReplyCount:         0,
-			LastReplyAt:        nil,
-			LastReplyUser:      nil,
-			ParticipantUserIDs: []string{},
+			MessageID:     input.MessageID,
+			ReplyCount:    0,
+			LastReplyAt:   nil,
+			LastReplyUser: nil,
 		}, nil
 	}
 
@@ -359,10 +357,9 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 	}
 
 	return &ThreadMetadataOutput{
-		MessageID:          metadata.MessageID,
-		ReplyCount:         metadata.ReplyCount,
-		LastReplyAt:        metadata.LastReplyAt,
-		LastReplyUser:      lastReplyUser,
-		ParticipantUserIDs: metadata.ParticipantUserIDs,
+		MessageID:     metadata.MessageID,
+		ReplyCount:    metadata.ReplyCount,
+		LastReplyAt:   metadata.LastReplyAt,
+		LastReplyUser: lastReplyUser,
 	}, nil
 }

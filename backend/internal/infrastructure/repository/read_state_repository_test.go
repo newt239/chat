@@ -60,9 +60,6 @@ func TestCalculateMetadataByMessageIDs(t *testing.T) {
 	if got.ReplyCount != 1 || *got.LastReplyUserID != f.alice.ID.String() || !got.LastReplyAt.Equal(f.messages["reply"].CreatedAt) {
 		t.Errorf("スレッドのメタデータが期待と異なります: %+v", got)
 	}
-	if !reflect.DeepEqual(got.ParticipantUserIDs, []string{f.bob.ID.String()}) {
-		t.Errorf("参加者が期待と異なります: %v", got.ParticipantUserIDs)
-	}
 	if metadata[single].ReplyCount != 0 || metadata[single].LastReplyAt != nil {
 		t.Errorf("返信のないメッセージのメタデータが期待と異なります: %+v", metadata[single])
 	}

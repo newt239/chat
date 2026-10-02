@@ -490,7 +490,7 @@ export const AppPermissionSchema: GenEnum<AppPermission> = /*@__PURE__*/
 /**
  * ワークスペースの連携アプリ。メンバーなら誰でも作成でき、編集・削除は作成者とワークスペースの管理者だけができる。
  * 公式アプリはワークスペースごとに 1 つあり、誰も編集・削除できない。
- * 着信 Webhook は POST /webhooks/{app_id}/{token} に JSON（text と、任意で channel_id・thread_id・username・avatar_url）を送る。
+ * 着信 Webhook は POST /webhooks/{app_id}/{token} に JSON（text と、任意で channel_id・thread_id）を送る。
  * 送信 Webhook は参加しているチャンネルの投稿を outgoing_url に POST し、
  * X-Chat-Signature に「X-Chat-Timestamp の値.本文」を outgoing_secret で署名した HMAC-SHA256 を付ける
  *

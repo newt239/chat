@@ -164,11 +164,11 @@ type ListMessagesOutput struct {
 }
 
 type ThreadMetadataOutput struct {
-	MessageID          string     `json:"messageId"`
-	ReplyCount         int        `json:"replyCount"`
-	LastReplyAt        *time.Time `json:"lastReplyAt"`
-	LastReplyUser      *UserInfo  `json:"lastReplyUser"`
-	ParticipantUserIDs []string   `json:"participantUserIds"`
+	MessageID     string     `json:"messageId"`
+	ReplyCount    int        `json:"replyCount"`
+	LastReplyAt   *time.Time `json:"lastReplyAt"`
+	LastReplyUser *UserInfo  `json:"lastReplyUser"`
+	IsFollowing   bool       `json:"isFollowing"`
 }
 
 type GetThreadRepliesInput struct {

@@ -67,7 +67,7 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 	}
 	byID := make(map[uuid.UUID]*domainrepository.ThreadMetadata, len(messageIDs))
 	for i, id := range messageIDs {
-		result[id] = &domainrepository.ThreadMetadata{MessageID: id, ParticipantUserIDs: []string{}}
+		result[id] = &domainrepository.ThreadMetadata{MessageID: id}
 		byID[parsedIDs[i]] = result[id]
 	}
 
@@ -92,19 +92,6 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
-	}
-
-	follows, err := client.UserThreadFollow.Query().
-		Where(userthreadfollow.HasThreadWith(message.IDIn(parsedIDs...))).
-		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
-		WithThread(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, follow := range follows {
-		metadata := byID[follow.Edges.Thread.ID]
-		metadata.ParticipantUserIDs = append(metadata.ParticipantUserIDs, follow.Edges.User.ID.String())
 	}
 
 	return result, nil

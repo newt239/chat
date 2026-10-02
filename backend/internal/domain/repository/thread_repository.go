@@ -9,11 +9,10 @@ import (
 
 // ThreadMetadata はスレッドのメタデータを表します（計算結果）
 type ThreadMetadata struct {
-	MessageID          string
-	ReplyCount         int
-	LastReplyAt        *time.Time
-	LastReplyUserID    *string
-	ParticipantUserIDs []string
+	MessageID       string
+	ReplyCount      int
+	LastReplyAt     *time.Time
+	LastReplyUserID *string
 }
 
 type ThreadRepository interface {

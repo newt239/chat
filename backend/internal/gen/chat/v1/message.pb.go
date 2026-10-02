@@ -1608,14 +1608,15 @@ func (x *MediaThumbnail) GetHeight() int32 {
 }
 
 type ThreadMetadata struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	MessageId          string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	ReplyCount         int32                  `protobuf:"varint,2,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
-	LastReplyAt        *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=last_reply_at,json=lastReplyAt,proto3" json:"last_reply_at,omitempty"`
-	LastReplyUser      *UserSummary           `protobuf:"bytes,4,opt,name=last_reply_user,json=lastReplyUser,proto3" json:"last_reply_user,omitempty"`
-	ParticipantUserIds []string               `protobuf:"bytes,5,rep,name=participant_user_ids,json=participantUserIds,proto3" json:"participant_user_ids,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
+	ReplyCount    int32                  `protobuf:"varint,2,opt,name=reply_count,json=replyCount,proto3" json:"reply_count,omitempty"`
+	LastReplyAt   *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=last_reply_at,json=lastReplyAt,proto3" json:"last_reply_at,omitempty"`
+	LastReplyUser *UserSummary           `protobuf:"bytes,4,opt,name=last_reply_user,json=lastReplyUser,proto3" json:"last_reply_user,omitempty"`
+	// 閲覧者がフォローしているか
+	IsFollowing   bool `protobuf:"varint,5,opt,name=is_following,json=isFollowing,proto3" json:"is_following,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ThreadMetadata) Reset() {
@@ -1676,11 +1677,11 @@ func (x *ThreadMetadata) GetLastReplyUser() *UserSummary {
 	return nil
 }
 
-func (x *ThreadMetadata) GetParticipantUserIds() []string {
+func (x *ThreadMetadata) GetIsFollowing() bool {
 	if x != nil {
-		return x.ParticipantUserIds
+		return x.IsFollowing
 	}
-	return nil
+	return false
 }
 
 type SystemMessage struct {
@@ -2027,15 +2028,15 @@ const file_chat_v1_message_proto_rawDesc = "" +
 	"\x11_duration_seconds\">\n" +
 	"\x0eMediaThumbnail\x12\x14\n" +
 	"\x05width\x18\x01 \x01(\x05R\x05width\x12\x16\n" +
-	"\x06height\x18\x02 \x01(\x05R\x06height\"\x80\x02\n" +
+	"\x06height\x18\x02 \x01(\x05R\x06height\"\xf1\x01\n" +
 	"\x0eThreadMetadata\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1f\n" +
 	"\vreply_count\x18\x02 \x01(\x05R\n" +
 	"replyCount\x12>\n" +
 	"\rlast_reply_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\vlastReplyAt\x12<\n" +
-	"\x0flast_reply_user\x18\x04 \x01(\v2\x14.chat.v1.UserSummaryR\rlastReplyUser\x120\n" +
-	"\x14participant_user_ids\x18\x05 \x03(\tR\x12participantUserIds\"\x89\x02\n" +
+	"\x0flast_reply_user\x18\x04 \x01(\v2\x14.chat.v1.UserSummaryR\rlastReplyUser\x12!\n" +
+	"\fis_following\x18\x05 \x01(\bR\visFollowing\"\x89\x02\n" +
 	"\rSystemMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
