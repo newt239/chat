@@ -265,7 +265,8 @@ func (i *authInteractor) joinSignupWorkspace(ctx context.Context, userID, worksp
 	if err := i.checkSignupEnabled(ctx, workspaceID, false); err != nil {
 		return err
 	}
-	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
+	// 停止中のメンバーは参加し直させない
+	member, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, workspaceID, userID)
 	if err != nil || member != nil {
 		return err
 	}

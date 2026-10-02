@@ -56,7 +56,7 @@ var errorCodes = []struct {
 		domerr.ErrUserAlreadyExists, domerr.ErrAlreadyMember, domerr.ErrPinExists, domerr.ErrReactionExists, domerr.ErrBookmarkExists, domerr.ErrWorkspaceIDExists,
 		channeluc.ErrChannelNameExists,
 		customemojiuc.ErrNameExists,
-		usergroupuc.ErrUserGroupNameExists, usergroupuc.ErrUserAlreadyInGroup,
+		usergroupuc.ErrUserGroupNameExists,
 	}},
 	{connect.CodeInvalidArgument, []error{
 		domerr.ErrInvalidInput, domerr.ErrValidation,

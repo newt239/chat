@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -22,6 +23,13 @@ type stubWorkspaceRepo struct {
 }
 
 func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
+	if m := r.members[userID]; m != nil && m.SuspendedAt == nil {
+		return m, nil
+	}
+	return nil, nil
+}
+
+func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
 	return r.members[userID], nil
 }
 
@@ -213,3 +221,17 @@ func TestSignupEnabledWorkspace(t *testing.T) {
 type stubCloser struct{}
 
 func (stubCloser) CloseWorkspaceUser(string, string) {}
+
+func TestSuspendedMemberCannotRejoin(t *testing.T) {
+	suspended := member(entity.WorkspaceRoleMember)
+	suspended.SuspendedAt = new(time.Now())
+	repo := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{"bob": suspended}, workspace: &entity.Workspace{ID: "ws", IsPublic: true}}
+	uc := NewWorkspaceInteractor(repo, stubUserRepo{}, nil, nil, &audittest.Recorder{}, stubCloser{})
+
+	if _, err := uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "bob"}); !errors.Is(err, domerr.ErrAlreadyMember) {
+		t.Fatalf("停止中のメンバーが参加し直せています: %v", err)
+	}
+	if repo.members["bob"].SuspendedAt == nil {
+		t.Error("参加し直しで停止が解けています")
+	}
+}

@@ -14,7 +14,6 @@ import (
 var (
 	ErrUserGroupNotFound   = errors.New("ユーザーグループが見つかりません")
 	ErrUserGroupNameExists = errors.New("同じ名前のユーザーグループが既に存在します")
-	ErrUserAlreadyInGroup  = errors.New("ユーザーは既にこのグループに参加しています")
 	ErrUserNotInGroup      = errors.New("ユーザーはこのグループに参加していません")
 )
 
@@ -230,24 +229,18 @@ func (i *userGroupInteractor) AddMember(ctx context.Context, input AddMemberInpu
 		return nil, err
 	}
 
-	// 既にメンバーかチェック
-	isMember, err := i.userGroupRepo.IsMember(ctx, input.GroupID, input.UserID)
+	// 停止中やワークスペース外のユーザーはグループに入れない
+	target, err := i.workspaceRepo.FindMember(ctx, group.WorkspaceID, input.UserID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check membership: %w", err)
+		return nil, fmt.Errorf("failed to verify target membership: %w", err)
 	}
-	if isMember {
-		return nil, ErrUserAlreadyInGroup
-	}
-
-	// メンバー追加
-	member := &entity.UserGroupMember{
-		GroupID:  input.GroupID,
-		UserID:   input.UserID,
-		JoinedAt: time.Now(),
+	if target == nil {
+		return nil, domerr.ErrUserNotFound
 	}
 
-	if err := i.userGroupRepo.AddMember(ctx, member); err != nil {
-		return nil, fmt.Errorf("failed to add member: %w", err)
+	// 既に参加していれば ErrAlreadyMember になる
+	if err := i.userGroupRepo.AddMember(ctx, &entity.UserGroupMember{GroupID: input.GroupID, UserID: input.UserID, JoinedAt: time.Now()}); err != nil {
+		return nil, err
 	}
 
 	return &AddMemberOutput{Success: true}, nil

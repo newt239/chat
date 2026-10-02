@@ -104,7 +104,7 @@ func (stubWorkspaceRepo) FindByID(_ context.Context, id string) (*entity.Workspa
 	return nil, nil
 }
 
-func (r *stubWorkspaceRepo) FindMember(_ context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
+func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
 	for _, m := range r.added {
 		if m.WorkspaceID == workspaceID && m.UserID == userID {
 			return m, nil

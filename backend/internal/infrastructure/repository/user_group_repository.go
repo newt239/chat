@@ -2,6 +2,10 @@ package repository
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
+
+	domerr "github.com/newt239/chat/internal/domain/errors"
 
 	"github.com/google/uuid"
 
@@ -197,7 +201,11 @@ func (r *userGroupRepository) AddMember(ctx context.Context, member *entity.User
 		OnConflictColumns(usergroupmember.FieldGroupID, usergroupmember.FieldUserID).
 		DoNothing().
 		Exec(ctx)
-	return ignoreConflict(err)
+	// 衝突して挿入しなかったときは RETURNING が行を返さない
+	if errors.Is(err, stdsql.ErrNoRows) {
+		return domerr.ErrAlreadyMember
+	}
+	return err
 }
 
 func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID, userID string) error {

@@ -35,6 +35,36 @@ func (stubUserGroupRepo) Create(context.Context, *entity.UserGroup) error {
 	return nil
 }
 
+func (stubUserGroupRepo) FindByID(_ context.Context, id string) (*entity.UserGroup, error) {
+	return &entity.UserGroup{ID: id, WorkspaceID: "ws"}, nil
+}
+
+func (stubUserGroupRepo) AddMember(_ context.Context, m *entity.UserGroupMember) error {
+	if m.UserID == "admin" {
+		return domerr.ErrAlreadyMember
+	}
+	return nil
+}
+
+func TestAddMemberRequiresWorkspaceMember(t *testing.T) {
+	workspaceRepo := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{
+		"admin":  {UserID: "admin", Role: entity.WorkspaceRoleAdmin},
+		"member": {UserID: "member", Role: entity.WorkspaceRoleMember},
+	}}
+	uc := NewUserGroupInteractor(stubUserGroupRepo{}, workspaceRepo, nil)
+
+	for target, wantErr := range map[string]error{
+		"member":   nil,
+		"outsider": domerr.ErrUserNotFound,
+		"admin":    domerr.ErrAlreadyMember,
+	} {
+		_, err := uc.AddMember(context.Background(), AddMemberInput{GroupID: "g1", UserID: target, AddedBy: "admin"})
+		if !errors.Is(err, wantErr) {
+			t.Errorf("%s: got=%v want=%v", target, err, wantErr)
+		}
+	}
+}
+
 func TestCreateUserGroupRequiresAdmin(t *testing.T) {
 	workspaceRepo := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{
 		"owner":  {UserID: "owner", Role: entity.WorkspaceRoleOwner},

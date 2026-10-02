@@ -17,6 +17,13 @@ type stubWorkspaceRepo struct {
 }
 
 func (r *stubWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
+	if m := r.members[userID]; m != nil && m.SuspendedAt == nil {
+		return m, nil
+	}
+	return nil, nil
+}
+
+func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, _ string, userID string) (*entity.WorkspaceMember, error) {
 	return r.members[userID], nil
 }
 

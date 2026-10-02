@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	domerr "github.com/newt239/chat/internal/domain/errors"
+
 	"entgo.io/ent/dialect/sql"
 
 	"github.com/newt239/chat/ent"
@@ -87,6 +89,9 @@ func (r *workspaceRepository) Create(ctx context.Context, w *entity.Workspace) e
 	}
 
 	ws, err := builder.Save(ctx)
+	if ent.IsConstraintError(err) {
+		return domerr.ErrWorkspaceIDExists
+	}
 	if err != nil {
 		return err
 	}
@@ -118,6 +123,9 @@ func (r *workspaceRepository) Update(ctx context.Context, w *entity.Workspace) e
 		SetEmailSignupEnabled(w.EmailSignupEnabled)
 
 	ws, err := builder.Save(ctx)
+	if ent.IsConstraintError(err) {
+		return domerr.ErrWorkspaceIDExists
+	}
 	if err != nil {
 		return err
 	}
@@ -329,24 +337,45 @@ func (r *workspaceRepository) FindAllPublic(ctx context.Context) ([]*entity.Work
 	return result, nil
 }
 
-func (r *workspaceRepository) CountMembers(ctx context.Context, workspaceID string) (int, error) {
-	client := transaction.ResolveClient(ctx, r.client)
-	count, err := client.WorkspaceMember.Query().
-		Where(workspacemember.WorkspaceID(workspaceID)).
-		Count(ctx)
-	if err != nil {
-		return 0, err
+// CountMembersBatch は停止中も含めたメンバー数をワークスペースごとに返します
+func (r *workspaceRepository) CountMembersBatch(ctx context.Context, workspaceIDs []string) (map[string]int, error) {
+	counts := make(map[string]int, len(workspaceIDs))
+	if len(workspaceIDs) == 0 {
+		return counts, nil
 	}
-	return count, nil
+	var rows []struct {
+		WorkspaceID string `json:"workspace_id"`
+		Count       int    `json:"count"`
+	}
+	err := transaction.ResolveClient(ctx, r.client).WorkspaceMember.Query().
+		Where(workspacemember.WorkspaceIDIn(workspaceIDs...)).
+		GroupBy(workspacemember.FieldWorkspaceID).
+		Aggregate(ent.Count()).
+		Scan(ctx, &rows)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		counts[row.WorkspaceID] = row.Count
+	}
+	return counts, nil
 }
 
-func (r *workspaceRepository) ExistsByID(ctx context.Context, id string) (bool, error) {
-	client := transaction.ResolveClient(ctx, r.client)
-	count, err := client.Workspace.Query().
-		Where(workspace.ID(id)).
-		Count(ctx)
+// FindMembershipsByUserID はユーザーが停止されずに参加しているワークスペースのメンバー情報を返します
+func (r *workspaceRepository) FindMembershipsByUserID(ctx context.Context, userID string) ([]*entity.WorkspaceMember, error) {
+	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return count > 0, nil
+	members, err := transaction.ResolveClient(ctx, r.client).WorkspaceMember.Query().
+		Where(workspacemember.UserID(uid), workspacemember.SuspendedAtIsNil()).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.WorkspaceMember, 0, len(members))
+	for _, wm := range members {
+		result = append(result, utils.WorkspaceMemberToEntity(wm))
+	}
+	return result, nil
 }

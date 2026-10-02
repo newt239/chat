@@ -72,23 +72,21 @@ func (i *workspaceInteractor) GetWorkspacesByUserID(ctx context.Context, userID 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workspaces: %w", err)
 	}
-
-	output := &GetWorkspacesOutput{
-		Workspaces: make([]WorkspaceOutput, 0, len(workspaces)),
+	memberships, err := i.workspaceRepo.FindMembershipsByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get memberships: %w", err)
+	}
+	roles := make(map[string]entity.WorkspaceRole, len(memberships))
+	for _, m := range memberships {
+		roles[m.WorkspaceID] = m.Role
 	}
 
+	output := &GetWorkspacesOutput{Workspaces: make([]WorkspaceOutput, 0, len(workspaces))}
 	for _, ws := range workspaces {
-		member, err := i.workspaceRepo.FindMember(ctx, ws.ID, userID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get member info: %w", err)
+		if role, ok := roles[ws.ID]; ok {
+			output.Workspaces = append(output.Workspaces, newWorkspaceOutput(ws, role))
 		}
-		if member == nil {
-			continue
-		}
-
-		output.Workspaces = append(output.Workspaces, newWorkspaceOutput(ws, member.Role))
 	}
-
 	return output, nil
 }
 
@@ -115,18 +113,8 @@ func (i *workspaceInteractor) GetWorkspace(ctx context.Context, input GetWorkspa
 }
 
 func (i *workspaceInteractor) CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*CreateWorkspaceOutput, error) {
-	// Validate slug
 	if err := entity.ValidateWorkspaceSlug(input.ID); err != nil {
 		return nil, err
-	}
-
-	// Check duplication
-	exists, err := i.workspaceRepo.ExistsByID(ctx, input.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check workspace id: %w", err)
-	}
-	if exists {
-		return nil, domerr.ErrWorkspaceIDExists
 	}
 
 	workspace := &entity.Workspace{
@@ -140,8 +128,9 @@ func (i *workspaceInteractor) CreateWorkspace(ctx context.Context, input CreateW
 		UpdatedAt:   time.Now(),
 	}
 
+	// ID が使われていれば ErrWorkspaceIDExists になる
 	if err := i.workspaceRepo.Create(ctx, workspace); err != nil {
-		return nil, fmt.Errorf("failed to create workspace: %w", err)
+		return nil, err
 	}
 
 	member := &entity.WorkspaceMember{
@@ -165,7 +154,7 @@ func (i *workspaceInteractor) UpdateWorkspace(ctx context.Context, input UpdateW
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
-	if member == nil || (member.Role != entity.WorkspaceRoleOwner && member.Role != entity.WorkspaceRoleAdmin) {
+	if !member.IsAdmin() {
 		return nil, domerr.ErrUnauthorized
 	}
 
@@ -294,7 +283,7 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 	if err != nil {
 		return nil, fmt.Errorf("failed to check requester membership: %w", err)
 	}
-	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
+	if !requester.IsAdmin() {
 		return nil, domerr.ErrUnauthorized
 	}
 
@@ -302,12 +291,13 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 		return nil, err
 	}
 
-	target, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
+	// 停止中のメンバーも外したりロールを変えたりできる
+	target, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get target member: %w", err)
 	}
 	if target == nil {
-		return nil, domerr.ErrWorkspaceNotFound
+		return nil, domerr.ErrUserNotFound
 	}
 
 	// owner の降格と owner への昇格は owner 本人にのみ許可する
@@ -345,16 +335,17 @@ func (i *workspaceInteractor) RemoveMember(ctx context.Context, input RemoveMemb
 	if err != nil {
 		return nil, fmt.Errorf("failed to check requester membership: %w", err)
 	}
-	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
+	if !requester.IsAdmin() {
 		return nil, domerr.ErrUnauthorized
 	}
 
-	target, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
+	// 停止中のメンバーも外したりロールを変えたりできる
+	target, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get target member: %w", err)
 	}
 	if target == nil {
-		return nil, domerr.ErrWorkspaceNotFound
+		return nil, domerr.ErrUserNotFound
 	}
 	if target.Role == entity.WorkspaceRoleOwner {
 		return nil, ErrCannotRemoveOwner
@@ -393,18 +384,23 @@ func (i *workspaceInteractor) ListPublicWorkspaces(ctx context.Context, userID s
 		joinedMap[w.ID] = true
 	}
 
+	ids := make([]string, len(workspaces))
+	for idx, w := range workspaces {
+		ids[idx] = w.ID
+	}
+	counts, err := i.workspaceRepo.CountMembersBatch(ctx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count members: %w", err)
+	}
+
 	output := &ListPublicWorkspacesOutput{Workspaces: make([]PublicWorkspaceItem, 0, len(workspaces))}
 	for _, w := range workspaces {
-		count, err := i.workspaceRepo.CountMembers(ctx, w.ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to count members: %w", err)
-		}
 		output.Workspaces = append(output.Workspaces, PublicWorkspaceItem{
 			ID:          w.ID,
 			Name:        w.Name,
 			Description: w.Description,
 			IconURL:     w.IconURL,
-			MemberCount: count,
+			MemberCount: counts[w.ID],
 			IsJoined:    joinedMap[w.ID],
 			CreatedAt:   w.CreatedAt,
 		})
@@ -425,7 +421,8 @@ func (i *workspaceInteractor) JoinPublicWorkspace(ctx context.Context, input Joi
 		return nil, ErrWorkspaceNotPublic
 	}
 
-	existing, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
+	// 停止中のメンバーが参加し直して停止を解かないよう、停止中も参加済みとして扱う
+	existing, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}

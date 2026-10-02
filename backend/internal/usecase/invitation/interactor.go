@@ -117,7 +117,8 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*CreateOutp
 }
 
 func (i *Interactor) addExistingUser(ctx context.Context, input CreateInput, user *entity.User) (*CreateOutput, error) {
-	existing, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, user.ID)
+	// 停止中のメンバーを招待して停止を解かないよう、停止中も参加済みとして扱う
+	existing, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, user.ID)
 	if err != nil {
 		return nil, err
 	}
