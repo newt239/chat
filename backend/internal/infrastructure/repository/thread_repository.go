@@ -42,7 +42,7 @@ func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, me
 	if len(messageIDs) == 0 {
 		return result, nil
 	}
-	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
+	parsedIDs, err := utils.ParseUUIDs(messageIDs, "message ID")
 	if err != nil {
 		return nil, err
 	}

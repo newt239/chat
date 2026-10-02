@@ -63,7 +63,7 @@ func (r *messageRepository) FindSearchDocuments(ctx context.Context, messageIDs 
 	if len(messageIDs) == 0 {
 		return []domainrepository.MessageSearchDocument{}, nil
 	}
-	if _, err := parseUUIDs(messageIDs, "message ID"); err != nil {
+	if _, err := utils.ParseUUIDs(messageIDs, "message ID"); err != nil {
 		return nil, err
 	}
 	return r.querySearchDocuments(ctx, "m.id = ANY($1::uuid[])", pq.Array(messageIDs))

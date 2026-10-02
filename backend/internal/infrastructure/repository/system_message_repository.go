@@ -46,7 +46,7 @@ func (r *systemMessageRepository) Create(ctx context.Context, msg *entity.System
 }
 
 func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.SystemMessage, error) {
-	chIDs, err := parseUUIDs(channelIDs, "channel ID")
+	chIDs, err := utils.ParseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
 	}

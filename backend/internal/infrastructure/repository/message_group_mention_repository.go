@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -20,28 +19,6 @@ type messageGroupMentionRepository struct {
 
 func NewMessageGroupMentionRepository(client *ent.Client) domainrepository.MessageGroupMentionRepository {
 	return &messageGroupMentionRepository{client: client}
-}
-
-func (r *messageGroupMentionRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.MessageGroupMention, error) {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	mentions, err := client.MessageGroupMention.Query().
-		Where(messagegroupmention.MessageID(mid)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.MessageGroupMention, 0, len(mentions))
-	for _, mgm := range mentions {
-		result = append(result, utils.MessageGroupMentionToEntity(mgm))
-	}
-
-	return result, nil
 }
 
 func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) ([]*entity.MessageGroupMention, error) {
@@ -62,39 +39,6 @@ func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, me
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageGroupMention.Query().
 		Where(messagegroupmention.MessageIDIn(parsedIDs...)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.MessageGroupMention, 0, len(mentions))
-	for _, mgm := range mentions {
-		result = append(result, utils.MessageGroupMentionToEntity(mgm))
-	}
-
-	return result, nil
-}
-
-func (r *messageGroupMentionRepository) FindByGroupID(ctx context.Context, groupID string, limit int, since *time.Time) ([]*entity.MessageGroupMention, error) {
-	gid, err := utils.ParseUUID(groupID, "group ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	query := client.MessageGroupMention.Query().
-		Where(messagegroupmention.GroupID(gid))
-
-	if since != nil {
-		query = query.Where(messagegroupmention.CreatedAtGT(*since))
-	}
-
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-
-	mentions, err := query.
-		Order(ent.Desc(messagegroupmention.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err

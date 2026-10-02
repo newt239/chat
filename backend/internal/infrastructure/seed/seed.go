@@ -500,23 +500,19 @@ func createSeedData(
 		{MessageID: mentionMessages[2].ID, UserID: users[3].ID, ViaGroupID: developers, CreatedAt: mentionMessages[2].CreatedAt},
 	}
 
-	for _, mention := range userMentions {
-		if err := messageRepo.AddUserMention(ctx, mention); err != nil {
-			return fmt.Errorf("failed to create user mention: %w", err)
-		}
+	if err := repository.NewMessageUserMentionRepository(client).CreateBulk(ctx, userMentions); err != nil {
+		return fmt.Errorf("failed to create user mentions: %w", err)
 	}
 
-	// Create group mentions using message repository
+	// Create group mentions
 	groupMentions := []*entity.MessageGroupMention{
 		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[1].CreatedAt}, // Bob mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions developers
 		{MessageID: mentionMessages[2].ID, GroupID: groups[2].ID, CreatedAt: mentionMessages[2].CreatedAt}, // Diana mentions designers
 	}
 
-	for _, mention := range groupMentions {
-		if err := messageRepo.AddGroupMention(ctx, mention); err != nil {
-			return fmt.Errorf("failed to create group mention: %w", err)
-		}
+	if err := repository.NewMessageGroupMentionRepository(client).CreateBulk(ctx, groupMentions); err != nil {
+		return fmt.Errorf("failed to create group mentions: %w", err)
 	}
 
 	// Create message links (simplified OGP data)

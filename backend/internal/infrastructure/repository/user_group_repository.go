@@ -256,28 +256,6 @@ func (r *userGroupRepository) FindMembersByGroupIDs(ctx context.Context, groupID
 	return result, nil
 }
 
-func (r *userGroupRepository) FindGroupsByUserID(ctx context.Context, userID string) ([]*entity.UserGroup, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	groups, err := client.UserGroup.Query().
-		Where(usergroup.HasMembersWith(usergroupmember.UserID(uid))).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.UserGroup, 0, len(groups))
-	for _, ug := range groups {
-		result = append(result, utils.UserGroupToEntity(ug))
-	}
-
-	return result, nil
-}
-
 func (r *userGroupRepository) IsMember(ctx context.Context, groupID string, userID string) (bool, error) {
 	gid, err := utils.ParseUUID(groupID, "group ID")
 	if err != nil {

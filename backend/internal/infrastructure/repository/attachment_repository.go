@@ -97,18 +97,6 @@ func (r *attachmentRepository) Create(ctx context.Context, att *entity.Attachmen
 	return nil
 }
 
-func (r *attachmentRepository) UpdateStatus(ctx context.Context, id string, status entity.AttachmentStatus) error {
-	aid, err := utils.ParseUUID(id, "attachment ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	return client.Attachment.UpdateOneID(aid).
-		SetStatus(string(status)).
-		Exec(ctx)
-}
-
 func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.Attachment) error {
 	aid, err := utils.ParseUUID(att.ID, "attachment ID")
 	if err != nil {
@@ -174,28 +162,6 @@ func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentID
 		SetStatus(string(entity.AttachmentStatusAttached)).
 		SetUploadedAt(time.Now()).
 		Exec(ctx)
-}
-
-func (r *attachmentRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.Attachment, error) {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	attachments, err := client.Attachment.Query().
-		Where(attachment.MessageID(mid)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.Attachment, 0, len(attachments))
-	for _, a := range attachments {
-		result = append(result, utils.AttachmentToEntity(a))
-	}
-
-	return result, nil
 }
 
 func (r *attachmentRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) (map[string][]*entity.Attachment, error) {

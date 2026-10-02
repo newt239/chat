@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -20,28 +19,6 @@ type messageUserMentionRepository struct {
 
 func NewMessageUserMentionRepository(client *ent.Client) domainrepository.MessageUserMentionRepository {
 	return &messageUserMentionRepository{client: client}
-}
-
-func (r *messageUserMentionRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.MessageUserMention, error) {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	mentions, err := client.MessageUserMention.Query().
-		Where(messageusermention.MessageID(mid)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.MessageUserMention, 0, len(mentions))
-	for _, mum := range mentions {
-		result = append(result, utils.MessageUserMentionToEntity(mum))
-	}
-
-	return result, nil
 }
 
 func (r *messageUserMentionRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) ([]*entity.MessageUserMention, error) {
@@ -62,39 +39,6 @@ func (r *messageUserMentionRepository) FindByMessageIDs(ctx context.Context, mes
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageUserMention.Query().
 		Where(messageusermention.MessageIDIn(parsedIDs...)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.MessageUserMention, 0, len(mentions))
-	for _, mum := range mentions {
-		result = append(result, utils.MessageUserMentionToEntity(mum))
-	}
-
-	return result, nil
-}
-
-func (r *messageUserMentionRepository) FindByUserID(ctx context.Context, userID string, limit int, since *time.Time) ([]*entity.MessageUserMention, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	query := client.MessageUserMention.Query().
-		Where(messageusermention.UserID(uid))
-
-	if since != nil {
-		query = query.Where(messageusermention.CreatedAtGT(*since))
-	}
-
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-
-	mentions, err := query.
-		Order(ent.Desc(messageusermention.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err

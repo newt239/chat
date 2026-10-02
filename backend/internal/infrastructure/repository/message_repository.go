@@ -6,8 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagereaction"
@@ -45,7 +43,7 @@ func (r *messageRepository) FindByID(ctx context.Context, id string) (*entity.Me
 }
 
 func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.Message, error) {
-	chIDs, err := parseUUIDs(channelIDs, "channel ID")
+	chIDs, err := utils.ParseUUIDs(channelIDs, "channel ID")
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +80,7 @@ func (r *messageRepository) FindByChannelIDs(ctx context.Context, channelIDs []s
 }
 
 func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Message, error) {
-	parsedIDs, err := parseUUIDs(ids, "message ID")
+	parsedIDs, err := utils.ParseUUIDs(ids, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +228,7 @@ func (r *messageRepository) SoftDeleteByIDs(ctx context.Context, ids []string, d
 	if err != nil {
 		return err
 	}
-	messageIDs, err := parseUUIDs(ids, "message ID")
+	messageIDs, err := utils.ParseUUIDs(ids, "message ID")
 	if err != nil {
 		return err
 	}
@@ -309,7 +307,7 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 		return result, nil
 	}
 
-	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
+	parsedIDs, err := utils.ParseUUIDs(messageIDs, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -330,67 +328,12 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 	return result, nil
 }
 
-func (r *messageRepository) AddUserMention(ctx context.Context, mention *entity.MessageUserMention) error {
-	messageID, err := utils.ParseUUID(mention.MessageID, "message ID")
-	if err != nil {
-		return err
-	}
-
-	userID, err := utils.ParseUUID(mention.UserID, "user ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	_, err = client.MessageUserMention.Create().
-		SetMessageID(messageID).
-		SetUserID(userID).
-		SetNillableViaGroupID(utils.ParseUUIDPtr(mention.ViaGroupID)).
-		Save(ctx)
-
-	return err
-}
-
-func (r *messageRepository) AddGroupMention(ctx context.Context, mention *entity.MessageGroupMention) error {
-	messageID, err := utils.ParseUUID(mention.MessageID, "message ID")
-	if err != nil {
-		return err
-	}
-
-	groupID, err := utils.ParseUUID(mention.GroupID, "group ID")
-	if err != nil {
-		return err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	_, err = client.MessageGroupMention.Create().
-		SetMessageID(messageID).
-		SetGroupID(groupID).
-		Save(ctx)
-
-	return err
-}
-
 // ignoreConflict は ON CONFLICT DO NOTHING で既存の行と重なったときに返る sql.ErrNoRows を無視します
 func ignoreConflict(err error) error {
 	if errors.Is(err, stdsql.ErrNoRows) {
 		return nil
 	}
 	return err
-}
-
-func parseUUIDs(ids []string, label string) ([]uuid.UUID, error) {
-	parsed := make([]uuid.UUID, 0, len(ids))
-	for _, id := range ids {
-		p, err := utils.ParseUUID(id, label)
-		if err != nil {
-			return nil, err
-		}
-		parsed = append(parsed, p)
-	}
-	return parsed, nil
 }
 
 func toMessageEntities(messages []*ent.Message) []*entity.Message {

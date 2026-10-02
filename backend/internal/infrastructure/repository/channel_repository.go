@@ -57,12 +57,7 @@ func (r *channelRepository) FindByWorkspaceID(ctx context.Context, workspaceID s
 		return nil, err
 	}
 
-	result := make([]*entity.Channel, 0, len(channels))
-	for _, c := range channels {
-		result = append(result, utils.ChannelToEntity(c))
-	}
-
-	return result, nil
+	return channelsToEntities(channels), nil
 }
 
 func (r *channelRepository) FindBrowsableChannels(ctx context.Context, workspaceID, userID string) ([]*entity.Channel, error) {
@@ -88,11 +83,7 @@ func (r *channelRepository) FindBrowsableChannels(ctx context.Context, workspace
 		return nil, err
 	}
 
-	result := make([]*entity.Channel, 0, len(channels))
-	for _, c := range channels {
-		result = append(result, utils.ChannelToEntity(c))
-	}
-	return result, nil
+	return channelsToEntities(channels), nil
 }
 
 func (r *channelRepository) SearchBrowsableChannels(ctx context.Context, workspaceID, userID string, filter domainrepository.BrowsableChannelFilter) ([]*entity.Channel, int, error) {
@@ -137,11 +128,7 @@ func (r *channelRepository) SearchBrowsableChannels(ctx context.Context, workspa
 		return nil, 0, err
 	}
 
-	result := make([]*entity.Channel, 0, len(channels))
-	for _, c := range channels {
-		result = append(result, utils.ChannelToEntity(c))
-	}
-	return result, total, nil
+	return channelsToEntities(channels), total, nil
 }
 
 // スレッドの返信と削除済みを除いた最後のメッセージの投稿日時
@@ -326,12 +313,7 @@ func (r *channelRepository) SearchAccessibleChannels(ctx context.Context, worksp
 		return nil, 0, err
 	}
 
-	result := make([]*entity.Channel, 0, len(channels))
-	for _, c := range channels {
-		result = append(result, utils.ChannelToEntity(c))
-	}
-
-	return result, total, nil
+	return channelsToEntities(channels), total, nil
 }
 
 func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspaceID, userID string) ([]*entity.Channel, error) {
@@ -354,12 +336,7 @@ func (r *channelRepository) FindAccessibleChannels(ctx context.Context, workspac
 		return nil, err
 	}
 
-	result := make([]*entity.Channel, 0, len(channels))
-	for _, c := range channels {
-		result = append(result, utils.ChannelToEntity(c))
-	}
-
-	return result, nil
+	return channelsToEntities(channels), nil
 }
 
 // FindOrCreateDM は 2 人の DM を返します。なければ作ります。同時に作られても dm_key の一意制約で 1 つにまとまる
@@ -443,12 +420,7 @@ func (r *channelRepository) FindUserDMs(ctx context.Context, workspaceID string,
 		return nil, err
 	}
 
-	result := make([]*entity.Channel, 0, len(channels))
-	for _, c := range channels {
-		result = append(result, utils.ChannelToEntity(c))
-	}
-
-	return result, nil
+	return channelsToEntities(channels), nil
 }
 
 func (r *channelRepository) FindByNames(ctx context.Context, workspaceID string, names []string) ([]*entity.Channel, error) {
@@ -467,7 +439,7 @@ func (r *channelRepository) FindByNames(ctx context.Context, workspaceID string,
 }
 
 func (r *channelRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity.Channel, error) {
-	parsedIDs, err := parseUUIDs(ids, "channel ID")
+	parsedIDs, err := utils.ParseUUIDs(ids, "channel ID")
 	if err != nil {
 		return nil, err
 	}
