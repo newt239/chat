@@ -1,11 +1,10 @@
 import { useCallback, useState } from "react";
 
-import { useAtomValue } from "jotai";
+import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { PostTargetPicker } from "#/features/channel/components/PostTargetPicker";
 import { useChannelAggregation } from "#/features/channel/hooks/useChannelAggregation";
-import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
 
 import { useSendMessage } from "../hooks/useMessage";
 import { BaseMessageInput } from "./BaseMessageInput";
@@ -19,7 +18,7 @@ type MessageInputProps = {
 export const MessageInput = ({ channelId }: MessageInputProps) => {
   const { t } = useTranslation();
   const sendMessage = useSendMessage();
-  const workspaceId = useAtomValue(currentWorkspaceIdAtom);
+  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { channel, descendants, includesDescendants } = useChannelAggregation(
     workspaceId,
     channelId,

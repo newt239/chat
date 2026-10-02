@@ -96,8 +96,6 @@ export const message: Messages["message"] = {
     empty: "No messages yet",
     jumpToLatest: "Jump to latest messages",
     loading: "Loading…",
-    selectChannel: "Pick a channel to see its messages",
-    selectWorkspace: "Pick a workspace",
   },
   profileOf: "Profile of {{name}}",
   sheet: {

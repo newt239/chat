@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { IconHash } from "@tabler/icons-react";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
@@ -17,9 +17,8 @@ import { startOfDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
-import { currentChannelIdAtom, currentWorkspaceIdAtom } from "#/providers/store/workspace";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 import { useMessages } from "../hooks/useMessage";
@@ -28,14 +27,17 @@ import { MessageList } from "./MessageList";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
-export const MessagePanel = () => {
+type MessagePanelProps = {
+  workspaceId: string;
+  channelId: string;
+};
+
+export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
   const { t } = useTranslation();
-  const [currentWorkspaceId] = useAtom(currentWorkspaceIdAtom);
-  const [currentChannelId] = useAtom(currentChannelIdAtom);
-  const currentUser = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const { channel, descendants, includesDescendants, isResolved } = useChannelAggregation(
-    currentWorkspaceId,
-    currentChannelId,
+    workspaceId,
+    channelId,
   );
   const jumpDate = useSearch({
     from: "/app/$workspaceId/$channelId",
@@ -57,11 +59,11 @@ export const MessagePanel = () => {
     isLoading: isLoadingMessages,
     isError,
     error,
-  } = useMessages(isResolved ? currentChannelId : null, includesDescendants, around);
+  } = useMessages(isResolved ? channelId : null, includesDescendants, around);
   const isLoading = !isResolved || isLoadingMessages;
   const { wsClient } = useWsClient();
   const threadMetadataById = useChannelThreadMetadata(
-    isResolved ? currentChannelId : null,
+    isResolved ? channelId : null,
     includesDescendants,
   );
 
@@ -73,7 +75,7 @@ export const MessagePanel = () => {
     loading,
   } = useMessagePages({
     base: messageResponse,
-    channelId: currentChannelId,
+    channelId,
     includeDescendants: includesDescendants,
     jumpDate,
   });
@@ -83,7 +85,7 @@ export const MessagePanel = () => {
     ? [
         ...descendants.map((descendant) => descendant.id),
         ...(initialMessages ?? []).flatMap((item) =>
-          item.content.case === "userMessage" && item.content.value.channelId !== currentChannelId
+          item.content.case === "userMessage" && item.content.value.channelId !== channelId
             ? [item.content.value.channelId]
             : [],
         ),
@@ -91,7 +93,7 @@ export const MessagePanel = () => {
     : [];
 
   const { orderedItems } = useChannelTimeline({
-    currentChannelId,
+    currentChannelId: channelId,
     descendantIds,
     initialMessages,
     wsClient: wsClient ?? null,
@@ -119,11 +121,11 @@ export const MessagePanel = () => {
       : null;
 
   const { latestMessageRef } = useMessageViewportDetection({
-    channelId: currentChannelId,
+    channelId,
     includeDescendants: includesDescendants,
     // 日付へ移動して最新まで読み込んでいないうちは既読にしない
     latestMessageId: hasNewerMessages ? null : latestUserMessageId,
-    workspaceId: currentWorkspaceId,
+    workspaceId,
   });
 
   // 指定日以降で最初の投稿。一覧は新しい順に並ぶ
@@ -133,33 +135,31 @@ export const MessagePanel = () => {
         ?.id) ??
     null;
 
-  const handleCopyLink = useCopyMessageLink(currentWorkspaceId, currentChannelId);
+  const handleCopyLink = useCopyMessageLink(workspaceId, channelId);
 
   const handleOpenThread = useCallback(
     (messageId: string) => {
-      if (currentWorkspaceId !== null && currentChannelId !== null) {
-        void navigate({
-          params: { channelId: currentChannelId, messageId, workspaceId: currentWorkspaceId },
-          to: "/app/$workspaceId/$channelId/thread/$messageId",
-        });
-      }
+      void navigate({
+        params: { channelId, messageId, workspaceId },
+        to: "/app/$workspaceId/$channelId/thread/$messageId",
+      });
     },
-    [navigate, currentChannelId, currentWorkspaceId],
+    [navigate, channelId, workspaceId],
   );
 
   const renderMessage = (msg: Message, isHighlighted: boolean) => (
     <MessageItem
       message={msg}
-      currentUserId={currentUser?.id ?? null}
+      currentUserId={myId}
       onCopyLink={handleCopyLink}
       onCreateThread={handleOpenThread}
       onOpenThread={handleOpenThread}
       threadMetadata={threadMetadataById.get(msg.id)}
       isHighlighted={isHighlighted}
       channelChip={
-        channel && currentWorkspaceId !== null && msg.channelId !== channel.id ? (
+        channel && msg.channelId !== channel.id ? (
           <ChannelChip
-            workspaceId={currentWorkspaceId}
+            workspaceId={workspaceId}
             parentName={channel.name}
             channelId={msg.channelId}
           />
@@ -167,18 +167,6 @@ export const MessagePanel = () => {
       }
     />
   );
-
-  if (currentWorkspaceId === null || currentChannelId === null) {
-    return (
-      <div className="grid h-full place-items-center p-6 font-sans text-body text-muted">
-        {t(
-          currentWorkspaceId === null
-            ? "message.panel.selectWorkspace"
-            : "message.panel.selectChannel",
-        )}
-      </div>
-    );
-  }
 
   const renderBody = () => {
     if (isLoading) {
@@ -212,9 +200,9 @@ export const MessagePanel = () => {
     return (
       <MessageList
         // チャンネルや日付を切り替えたら、位置と読み込み状態を作り直す
-        key={`${currentChannelId}:${String(includesDescendants)}:${jumpDate ?? ""}`}
+        key={`${channelId}:${String(includesDescendants)}:${jumpDate ?? ""}`}
         rows={rows}
-        currentUserId={currentUser?.id ?? null}
+        currentUserId={myId}
         targetMessageId={isThreadOpen ? null : (messageParam ?? jumpTargetId)}
         hasOlder={hasOlderMessages}
         hasNewer={hasNewerMessages}

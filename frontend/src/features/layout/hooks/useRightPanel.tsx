@@ -13,7 +13,7 @@ import { ProfileEditor } from "#/features/settings/components/ProfileEditor";
 import { ThreadPanel } from "#/features/thread/components/ThreadPanel";
 import { UserGroupPanel } from "#/features/userGroup/components/UserGroupPanel";
 import { isTauri } from "#/lib/platform/platform";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { closePanel } from "../utils/overlaySearch";
 import { workspaceRoute } from "../utils/workspaceRoute";
@@ -24,7 +24,7 @@ export const useRightPanel = (workspaceId: string) => {
   const navigate = useNavigate();
   const { channelId, messageId } = useParams({ strict: false });
   const { group, panel, profile } = workspaceRoute.useSearch();
-  const myId = useAtomValue(userAtom)?.id;
+  const myId = useAtomValue(myUserIdAtom);
   const channelPanel = channelId === undefined ? undefined : panel;
   const isThreadOpen = messageId !== undefined && channelId !== undefined;
 
@@ -81,7 +81,7 @@ export const useRightPanel = (workspaceId: string) => {
           title: t("shell.rightPanel.members"),
         },
         pins: {
-          body: <PinnedPanel channelId={channelId} />,
+          body: <PinnedPanel workspaceId={workspaceId} channelId={channelId} />,
           extra: null,
           key: `pins-${channelId}`,
           title: t("shell.rightPanel.pins"),

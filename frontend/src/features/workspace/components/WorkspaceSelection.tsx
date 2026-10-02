@@ -3,7 +3,7 @@ import { useAtomValue } from "jotai";
 
 import { WorkspaceList } from "#/features/workspace/components/WorkspaceList";
 import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
-import { currentWorkspaceIdAtom } from "#/providers/store/workspace";
+import { lastWorkspaceIdAtom } from "#/providers/store/workspace";
 
 const shortcutRoutes = {
   activity: "/app/$workspaceId/activity",
@@ -17,7 +17,7 @@ const appIndexRoute = getRouteApi("/app/");
 export const WorkspaceSelection = () => {
   const { data: workspaces } = useWorkspaces();
   const open = appIndexRoute.useSearch({ select: (search) => search.open });
-  const storedWorkspaceId = useAtomValue(currentWorkspaceIdAtom);
+  const storedWorkspaceId = useAtomValue(lastWorkspaceIdAtom);
   const target =
     workspaces?.find((workspace) => workspace.id === storedWorkspaceId) ?? workspaces?.[0];
 

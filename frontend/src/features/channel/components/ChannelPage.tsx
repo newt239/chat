@@ -1,7 +1,4 @@
-import { useEffect } from "react";
-
 import { useParams } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
 
 import { ChannelHeader } from "#/features/channel/components/ChannelHeader";
 import { JoinChannelBar } from "#/features/channel/components/JoinChannelBar";
@@ -13,11 +10,9 @@ import { MessageInput } from "#/features/message/components/MessageInput";
 import { MessagePanel } from "#/features/message/components/MessagePanel";
 import { TypingIndicator } from "#/features/message/components/TypingIndicator";
 import { MiniPlayer } from "#/features/player/components/MiniPlayer";
-import { setCurrentChannelAtom } from "#/providers/store/workspace";
 
 export const ChannelPage = () => {
   const { workspaceId, channelId } = useParams({ from: "/app/$workspaceId/$channelId" });
-  const setCurrentChannel = useSetAtom(setCurrentChannelAtom);
   useViewChannel(channelId);
   const { data: channels } = useChannels(workspaceId);
   const { data: dms } = useDMs(workspaceId);
@@ -30,15 +25,11 @@ export const ChannelPage = () => {
     channel !== undefined &&
     !(channels.find((candidate) => candidate.id === channelId)?.isMember ?? false);
 
-  useEffect(() => {
-    setCurrentChannel(channelId);
-  }, [channelId, setCurrentChannel]);
-
   return (
     <>
       <ChannelHeader workspaceId={workspaceId} channelId={channelId} />
       <div className="min-h-0 flex-1">
-        <MessagePanel />
+        <MessagePanel workspaceId={workspaceId} channelId={channelId} />
       </div>
       {/* モバイルでは入力欄の上に出す。デスクトップはサイドバーの下部 */}
       <MiniPlayer variant="mobile" />
