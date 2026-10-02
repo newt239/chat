@@ -28,12 +28,27 @@ type fakeReadStateRepo struct {
 	lastReadAt map[string]time.Time
 }
 
-func (r *fakeReadStateRepo) FindByChannelAndUser(_ context.Context, channelID string, userID string) (*entity.ChannelReadState, error) {
-	at, ok := r.lastReadAt[channelID]
-	if !ok {
-		return nil, nil
+func (r *fakeReadStateRepo) AdvanceBatch(_ context.Context, channelIDs []string, _ string, lastReadAt time.Time) error {
+	for _, id := range channelIDs {
+		if at, ok := r.lastReadAt[id]; !ok || at.Before(lastReadAt) {
+			r.lastReadAt[id] = lastReadAt
+		}
 	}
-	return &entity.ChannelReadState{ChannelID: channelID, UserID: userID, LastReadAt: at}, nil
+	return nil
+}
+
+func (r *fakeReadStateRepo) GetUnreadCountBatch(context.Context, []string, string) (map[string]int, error) {
+	return map[string]int{}, nil
+}
+
+func (r *fakeReadStateRepo) GetUnreadMentionCountBatch(context.Context, []string, string) (map[string]int, error) {
+	return map[string]int{}, nil
+}
+
+type recordingNotifier struct{ notified []string }
+
+func (n *recordingNotifier) NotifyUnreadCount(_, _, channelID string, _, _ int) {
+	n.notified = append(n.notified, channelID)
 }
 
 func (r *fakeReadStateRepo) Upsert(_ context.Context, rs *entity.ChannelReadState) error {
@@ -46,7 +61,8 @@ func TestUpdateReadStateIncludeDescendants(t *testing.T) {
 	later := now.Add(time.Hour)
 	repo := &fakeReadStateRepo{lastReadAt: map[string]time.Time{"newer": later}}
 	access := stubAccess{descendants: []*entity.Channel{{ID: "unread"}, {ID: "newer"}}}
-	uc := NewReadStateInteractor(repo, nil, nil, nil, nil, access)
+	notifier := &recordingNotifier{}
+	uc := NewReadStateInteractor(repo, notifier, access)
 
 	if err := uc.UpdateReadState(context.Background(), UpdateReadStateInput{ChannelID: "parent", UserID: "u", LastReadAt: now, IncludeDescendants: true}); err != nil {
 		t.Fatalf("既読にできません: %v", err)
@@ -58,12 +74,15 @@ func TestUpdateReadStateIncludeDescendants(t *testing.T) {
 	if !repo.lastReadAt["newer"].Equal(later) {
 		t.Fatal("子孫の既読位置が巻き戻っています")
 	}
+	if len(notifier.notified) != 3 {
+		t.Errorf("既読にしたチャンネルの未読数を配信していません: %v", notifier.notified)
+	}
 }
 
 func TestUpdateReadStateWithoutDescendants(t *testing.T) {
 	repo := &fakeReadStateRepo{lastReadAt: map[string]time.Time{}}
 	access := stubAccess{descendants: []*entity.Channel{{ID: "child"}}}
-	uc := NewReadStateInteractor(repo, nil, nil, nil, nil, access)
+	uc := NewReadStateInteractor(repo, &recordingNotifier{}, access)
 
 	if err := uc.UpdateReadState(context.Background(), UpdateReadStateInput{ChannelID: "parent", UserID: "u", LastReadAt: time.Now()}); err != nil {
 		t.Fatal(err)

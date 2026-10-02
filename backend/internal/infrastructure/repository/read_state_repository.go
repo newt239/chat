@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -65,32 +66,26 @@ func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.Chan
 		Exec(ctx)
 }
 
-func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelID, userID string) (*entity.ChannelReadState, error) {
-	cid, err := utils.ParseUUID(channelID, "channel ID")
-	if err != nil {
-		return nil, err
-	}
+// 既読位置は進めるだけにする。$1: チャンネル ID の配列, $2: ユーザー ID, $3: 既読にした日時
+const advanceReadStateSQL = `
+	INSERT INTO channel_read_state (id, channel_id, user_id, last_read_at)
+	SELECT gen_random_uuid(), c.id, $2, $3 FROM unnest($1::uuid[]) AS c(id)
+	ON CONFLICT (channel_id, user_id) DO UPDATE
+	SET last_read_at = GREATEST(channel_read_state.last_read_at, EXCLUDED.last_read_at)`
 
+func (r *readStateRepository) AdvanceBatch(ctx context.Context, channelIDs []string, userID string, lastReadAt time.Time) error {
+	if len(channelIDs) == 0 {
+		return nil
+	}
+	if _, err := utils.ParseUUIDs(channelIDs, "channel ID"); err != nil {
+		return err
+	}
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	crs, err := client.ChannelReadState.Query().
-		Where(
-			channelreadstate.ChannelID(cid),
-			channelreadstate.UserID(uid),
-		).
-		Only(ctx)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &entity.ChannelReadState{ChannelID: channelID, UserID: userID, LastReadAt: crs.LastReadAt}, nil
+	_, err = transaction.ResolveClient(ctx, r.client).ExecContext(ctx, advanceReadStateSQL, pq.Array(channelIDs), uid, lastReadAt)
+	return err
 }
 
 func (r *readStateRepository) GetUnreadCount(ctx context.Context, channelID, userID string) (int, error) {
@@ -115,7 +110,7 @@ func (r *readStateRepository) countByChannel(ctx context.Context, query string, 
 	if len(channelIDs) == 0 {
 		return result, nil
 	}
-	if _, err := parseUUIDs(channelIDs, "channel ID"); err != nil {
+	if _, err := utils.ParseUUIDs(channelIDs, "channel ID"); err != nil {
 		return nil, err
 	}
 	uid, err := utils.ParseUUID(userID, "user ID")

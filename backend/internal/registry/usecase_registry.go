@@ -342,9 +342,6 @@ func (r *UseCaseRegistry) NewSystemMessageUseCase() systemmsguc.UseCase {
 func (r *UseCaseRegistry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
 	return readstateuc.NewReadStateInteractor(
 		r.domainRegistry.NewReadStateRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.domainRegistry.NewChannelAccessService(),
 	)
