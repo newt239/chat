@@ -2,6 +2,28 @@ import type { Locale } from "./i18n";
 
 const toBcp47 = (locale: Locale) => (locale === "ja" ? "ja-JP" : "en-US");
 
+// Intl のインスタンスは作るのが重いため、言語と形式の組ごとに使い回す
+const memoize = <K, T>(cache: Map<K, T>, key: K, create: () => T) => {
+  const hit = cache.get(key);
+  if (hit !== undefined) {
+    return hit;
+  }
+  const created = create();
+  cache.set(key, created);
+  return created;
+};
+
+const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
+const dateTimeFormat = (locale: Locale, options: Intl.DateTimeFormatOptions) =>
+  memoize(
+    dateTimeFormats,
+    `${locale}:${JSON.stringify(options)}`,
+    () => new Intl.DateTimeFormat(toBcp47(locale), options),
+  );
+
+const relativeTimeFormats = new Map<Locale, Intl.RelativeTimeFormat>();
+const numberFormats = new Map<Locale, Intl.NumberFormat>();
+
 const dateOptions = { day: "numeric", month: "short", year: "numeric" } as const;
 const timeOptions = { hour: "numeric", minute: "2-digit" } as const;
 
@@ -9,21 +31,19 @@ const timeOptions = { hour: "numeric", minute: "2-digit" } as const;
 
 // 2026年9月28日 / Sep 28, 2026
 export const formatDate = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, timeZone }).format(date);
+  dateTimeFormat(locale, { ...dateOptions, timeZone }).format(date);
 
 // 10:16 / 10:16 AM
 export const formatTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { ...timeOptions, timeZone }).format(date);
+  dateTimeFormat(locale, { ...timeOptions, timeZone }).format(date);
 
 // 2026年9月28日 10:16 / Sep 28, 2026, 10:16 AM
 export const formatDateTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, ...timeOptions, timeZone }).format(
-    date,
-  );
+  dateTimeFormat(locale, { ...dateOptions, ...timeOptions, timeZone }).format(date);
 
 // 2026年9月28日(月) 10:16:05 / Mon, Sep 28, 2026, 10:16:05 AM
 export const formatFullDateTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  new Intl.DateTimeFormat(toBcp47(locale), {
+  dateTimeFormat(locale, {
     ...dateOptions,
     ...timeOptions,
     second: "2-digit",
@@ -33,19 +53,15 @@ export const formatFullDateTime = (date: Date, locale: Locale, timeZone: string 
 
 // 2026年9月28日(月) / Mon, Sep 28, 2026
 export const formatDateWithWeekday = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, timeZone, weekday: "short" }).format(
-    date,
-  );
+  dateTimeFormat(locale, { ...dateOptions, timeZone, weekday: "short" }).format(date);
 
 // 9/28（グラフの軸など幅の狭い場所に使う）
 export const formatMonthDay = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { day: "numeric", month: "numeric", timeZone }).format(
-    date,
-  );
+  dateTimeFormat(locale, { day: "numeric", month: "numeric", timeZone }).format(date);
 
 // 月 / Mon
 export const formatWeekday = (date: Date, locale: Locale, timeZone: string | undefined) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { timeZone, weekday: "short" }).format(date);
+  dateTimeFormat(locale, { timeZone, weekday: "short" }).format(date);
 
 const relativeUnits = [
   { seconds: 60 * 60 * 24 * 365, unit: "year" },
@@ -58,7 +74,11 @@ const relativeUnits = [
 
 // 3 分前 / 3 minutes ago。1 分未満は「今」
 export const formatRelativeTime = (date: Date, now: Date, locale: Locale) => {
-  const format = new Intl.RelativeTimeFormat(toBcp47(locale), { numeric: "auto" });
+  const format = memoize(
+    relativeTimeFormats,
+    locale,
+    () => new Intl.RelativeTimeFormat(toBcp47(locale), { numeric: "auto" }),
+  );
   const diffSeconds = (date.getTime() - now.getTime()) / 1000;
   const matched = relativeUnits.find(({ seconds }) => Math.abs(diffSeconds) >= seconds);
   if (!matched) {
@@ -69,7 +89,11 @@ export const formatRelativeTime = (date: Date, now: Date, locale: Locale) => {
 
 // 1,234
 export const formatNumber = (value: number, locale: Locale) =>
-  new Intl.NumberFormat(toBcp47(locale), { maximumFractionDigits: 1 }).format(value);
+  memoize(
+    numberFormats,
+    locale,
+    () => new Intl.NumberFormat(toBcp47(locale), { maximumFractionDigits: 1 }),
+  ).format(value);
 
 const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
 
