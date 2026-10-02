@@ -64,7 +64,7 @@ export const MobileStackLayer = ({ onBack, children }: MobileStackLayerProps) =>
             }
           }}
           // 入力欄をホームインジケーターから離す。キーボードが出ている間は不要
-          className="absolute inset-0 flex touch-pan-y flex-col overscroll-contain bg-surface pb-[env(safe-area-inset-bottom)] shadow-xl group-data-keyboard/shell:pb-0"
+          className="absolute inset-0 isolate flex touch-pan-y flex-col overscroll-contain bg-surface pb-[env(safe-area-inset-bottom)] shadow-xl group-data-keyboard/shell:pb-0"
         >
           {children}
         </motion.div>
