@@ -27,6 +27,12 @@ const claimDueSQL = `
 	)
 	RETURNING id`
 
+// 送信の途中でサーバーが止まり、送信中のまま残った予約を失敗にする
+// $1: 現在時刻, $2: これより前から送信中なら止まったとみなす時刻
+const failStaleSendingSQL = `
+	UPDATE scheduled_message SET status = 'failed', failure_reason = '送信が中断されました', updated_at = $1
+	WHERE status = 'sending' AND updated_at < $2`
+
 type scheduledMessageRepository struct {
 	client *ent.Client
 }
@@ -126,8 +132,11 @@ func (r *scheduledMessageRepository) Delete(ctx context.Context, id string) erro
 	return transaction.ResolveClient(ctx, r.client).ScheduledMessage.DeleteOneID(sid).Exec(ctx)
 }
 
-func (r *scheduledMessageRepository) ClaimDue(ctx context.Context, now time.Time, limit int) ([]*entity.ScheduledMessage, error) {
+func (r *scheduledMessageRepository) ClaimDue(ctx context.Context, now, staleBefore time.Time, limit int) ([]*entity.ScheduledMessage, error) {
 	client := transaction.ResolveClient(ctx, r.client)
+	if _, err := client.ExecContext(ctx, failStaleSendingSQL, now, staleBefore); err != nil {
+		return nil, err
+	}
 	rows, err := client.QueryContext(ctx, claimDueSQL, now, limit)
 	if err != nil {
 		return nil, err

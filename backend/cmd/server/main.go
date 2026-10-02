@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 	_ "time/tzdata" // インサイトでクライアントのタイムゾーンを扱うため、tzdata のないイメージでも読み込めるよう埋め込む
@@ -67,13 +68,17 @@ func main() {
 	reg := registry.NewRegistry(client, cfg, rdb)
 	go prepareSearchIndex(reg)
 
+	// 停止時に DB を閉じる前に終わりを待つ
+	var background sync.WaitGroup
 	runCtx, stopRun := context.WithCancel(context.Background())
-	go reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	background.Go(func() {
+		reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	})
 	// リマインダーも予約メッセージと同じ間隔で確かめる
-	go reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	background.Go(func() { reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval) })
 
 	hub := reg.NewWebSocketHub()
-	go hub.Run(runCtx)
+	background.Go(func() { hub.Run(runCtx) })
 
 	e := reg.NewRouter()
 
@@ -104,6 +109,7 @@ func main() {
 		log.Printf("Server forced to shutdown: %v", err)
 	}
 	stopRun()
+	background.Wait()
 	if rdb != nil {
 		_ = rdb.Close()
 	}

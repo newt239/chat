@@ -27,7 +27,18 @@ var userFacingErrors = []error{
 	domerr.ErrParentMessageNotFound, domerr.ErrAttachmentNotFound, messageuc.ErrEmptyMessage,
 }
 
-const dispatchBatchSize = 50
+const (
+	dispatchBatchSize = 50
+	// 送信中のまま staleSendingAfter を過ぎた予約は、送信の途中でサーバーが止まったものとして失敗にする
+	staleSendingAfter = 5 * time.Minute
+	// 期限切れのセッションを消す間隔
+	sessionCleanupInterval = time.Hour
+)
+
+// MessagePoster は予約した内容を通常の投稿と同じ経路で投稿します
+type MessagePoster interface {
+	CreateMessage(ctx context.Context, input messageuc.CreateMessageInput) (*messageuc.MessageOutput, error)
+}
 
 type ScheduleInput struct {
 	UserID        string
@@ -50,8 +61,9 @@ type Interactor struct {
 	scheduledRepo    domainrepository.ScheduledMessageRepository
 	messageRepo      domainrepository.MessageRepository
 	attachmentRepo   domainrepository.AttachmentRepository
+	sessionRepo      domainrepository.SessionRepository
 	channelAccessSvc service.ChannelAccessService
-	messageUC        messageuc.MessageUseCase
+	poster           MessagePoster
 	logger           service.Logger
 }
 
@@ -59,16 +71,18 @@ func NewInteractor(
 	scheduledRepo domainrepository.ScheduledMessageRepository,
 	messageRepo domainrepository.MessageRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
+	sessionRepo domainrepository.SessionRepository,
 	channelAccessSvc service.ChannelAccessService,
-	messageUC messageuc.MessageUseCase,
+	poster MessagePoster,
 	logger service.Logger,
 ) *Interactor {
 	return &Interactor{
 		scheduledRepo:    scheduledRepo,
 		messageRepo:      messageRepo,
 		attachmentRepo:   attachmentRepo,
+		sessionRepo:      sessionRepo,
 		channelAccessSvc: channelAccessSvc,
-		messageUC:        messageUC,
+		poster:           poster,
 		logger:           logger,
 	}
 }
@@ -164,7 +178,8 @@ func (i *Interactor) SendNow(ctx context.Context, id, userID string) (*entity.Sc
 
 // DispatchDue は期限の来た予約を送り、処理した件数を返します
 func (i *Interactor) DispatchDue(ctx context.Context) (int, error) {
-	messages, err := i.scheduledRepo.ClaimDue(ctx, time.Now(), dispatchBatchSize)
+	now := time.Now()
+	messages, err := i.scheduledRepo.ClaimDue(ctx, now, now.Add(-staleSendingAfter), dispatchBatchSize)
 	if err != nil {
 		return 0, fmt.Errorf("failed to claim due messages: %w", err)
 	}
@@ -174,17 +189,25 @@ func (i *Interactor) DispatchDue(ctx context.Context) (int, error) {
 	return len(messages), nil
 }
 
-// RunDispatcher は ctx が終わるまで interval ごとに期限の来た予約を送ります
+// RunDispatcher は ctx が終わるまで interval ごとに期限の来た予約を送り、ついでに期限切れのセッションを消します
 func (i *Interactor) RunDispatcher(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	var cleanedAt time.Time
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
+		case now := <-ticker.C:
 			if _, err := i.DispatchDue(ctx); err != nil {
 				i.logger.Error("予約メッセージの送信処理に失敗しました", service.LogField{Key: "error", Value: err.Error()})
+			}
+			if now.Sub(cleanedAt) < sessionCleanupInterval {
+				continue
+			}
+			cleanedAt = now
+			if err := i.sessionRepo.DeleteExpired(ctx); err != nil {
+				i.logger.Error("期限切れのセッションを削除できません", service.LogField{Key: "error", Value: err.Error()})
 			}
 		}
 	}
@@ -192,7 +215,7 @@ func (i *Interactor) RunDispatcher(ctx context.Context, interval time.Duration) 
 
 // send は通常の投稿と同じ経路（権限の確認・メンション・検索インデックス・配信）で投稿し、結果を記録します
 func (i *Interactor) send(ctx context.Context, message *entity.ScheduledMessage) {
-	out, err := i.messageUC.CreateMessage(ctx, messageuc.CreateMessageInput{
+	out, err := i.poster.CreateMessage(ctx, messageuc.CreateMessageInput{
 		ChannelID:     message.ChannelID,
 		UserID:        message.UserID,
 		Body:          message.Body,
@@ -245,7 +268,7 @@ func (i *Interactor) ensureParent(ctx context.Context, parentID *string, channel
 	if err != nil {
 		return fmt.Errorf("failed to load parent message: %w", err)
 	}
-	if parent == nil || parent.ChannelID != channelID || parent.DeletedAt != nil {
+	if !parent.CanBeRepliedIn(channelID) {
 		return domerr.ErrParentMessageNotFound
 	}
 	return nil

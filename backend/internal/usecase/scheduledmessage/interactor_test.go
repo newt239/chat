@@ -20,7 +20,7 @@ type fakeScheduledRepo struct {
 	failed map[string]string
 }
 
-func (r *fakeScheduledRepo) ClaimDue(_ context.Context, _ time.Time, _ int) ([]*entity.ScheduledMessage, error) {
+func (r *fakeScheduledRepo) ClaimDue(_ context.Context, _, _ time.Time, _ int) ([]*entity.ScheduledMessage, error) {
 	return r.due, nil
 }
 
@@ -36,7 +36,6 @@ func (r *fakeScheduledRepo) MarkFailed(_ context.Context, id, reason string) err
 
 // fakeMessageUC は "lost" チャンネルへの投稿を権限なし、"broken" を内部エラーにする
 type fakeMessageUC struct {
-	messageuc.MessageUseCase
 	created []messageuc.CreateMessageInput
 }
 
@@ -66,7 +65,7 @@ func TestDispatchDue(t *testing.T) {
 		failed: map[string]string{},
 	}
 	messages := &fakeMessageUC{}
-	uc := NewInteractor(repo, nil, nil, nil, messages, nopLogger{})
+	uc := NewInteractor(repo, nil, nil, nil, nil, messages, nopLogger{})
 
 	count, err := uc.DispatchDue(context.Background())
 	if err != nil || count != 3 {
@@ -84,7 +83,7 @@ func TestDispatchDue(t *testing.T) {
 }
 
 func TestScheduleRejectsPastAndEmpty(t *testing.T) {
-	uc := NewInteractor(nil, nil, nil, nil, nil, nopLogger{})
+	uc := NewInteractor(nil, nil, nil, nil, nil, nil, nopLogger{})
 	ctx := context.Background()
 
 	_, err := uc.Schedule(ctx, ScheduleInput{UserID: "u1", ChannelID: "ch1", Body: "x", ScheduledAt: time.Now().Add(-time.Minute)})
