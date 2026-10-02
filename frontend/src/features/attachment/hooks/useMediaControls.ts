@@ -19,14 +19,18 @@ export const useMediaControls = (
 ) => {
   const { t } = useTranslation();
   const { workspaceId = "" } = useParams({ strict: false });
-  const state = usePlayerState();
+  // 再生中の添付だけが位置の更新を受け取り、ほかの添付は描き直さない
+  const state = usePlayerState((current) =>
+    current.track?.attachmentId === attachment.id && current.track.messageId === message.id
+      ? current
+      : null,
+  );
   const { mutateAsync: fetchUrl } = useDownloadUrl();
   const { data: posterUrl } = useAttachmentUrl(
     kind === "video" && attachment.media?.thumbnail ? attachment.id : null,
     true,
   );
-  const isActive =
-    state.track?.attachmentId === attachment.id && state.track.messageId === message.id;
+  const isActive = state !== null;
 
   const start = async () => {
     try {
@@ -84,14 +88,14 @@ export const useMediaControls = (
   );
 
   return {
-    duration: isActive ? state.duration : (attachment.media?.durationSeconds ?? 0),
+    duration: state?.duration ?? attachment.media?.durationSeconds ?? 0,
     handleCycleRate: isActive ? mediaPlayer.cycleRate : toggle,
     handleSeek: seek,
     handleToggle: toggle,
     inlineRef,
     isActive,
-    isPlaying: isActive && state.isPlaying,
-    position: isActive ? state.position : 0,
-    rate: isActive ? state.rate : 1,
+    isPlaying: state?.isPlaying ?? false,
+    position: state?.position ?? 0,
+    rate: state?.rate ?? 1,
   };
 };

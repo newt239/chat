@@ -42,7 +42,9 @@ const variants = {
 export const MiniPlayer = ({ variant }: MiniPlayerProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { track, isPlaying, isInlineVisible, position, duration, rate } = usePlayerState();
+  const { track, isPlaying, isInlineVisible, position, duration, rate } = usePlayerState(
+    (state) => state,
+  );
   const { data: channels } = useChannels(track?.workspaceId ?? null);
   const styles = variants[variant];
   // 共有の <video> の枠が 2 つできないよう、画面幅に合う方だけを描画する
