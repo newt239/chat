@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"slices"
 	"strings"
 
 	"connectrpc.com/connect"
@@ -21,25 +22,52 @@ var publicProcedures = map[string]struct{}{
 	chatv1connect.AuthServiceSignUpProcedure:                      {},
 	chatv1connect.AuthServiceSignUpWithInvitationProcedure:        {},
 	chatv1connect.AuthServiceRefreshProcedure:                     {},
+	chatv1connect.AuthServiceLogoutProcedure:                      {},
 	chatv1connect.InvitationServiceGetInvitationProcedure:         {},
 	chatv1connect.WorkspaceServiceGetWorkspaceSignupInfoProcedure: {},
 }
 
+// cookieProcedures は Cookie のリフレッシュトークンを使うため、許可していないオリジンからの呼び出しを拒否します
+var cookieProcedures = map[string]struct{}{
+	chatv1connect.AuthServiceRefreshProcedure: {},
+	chatv1connect.AuthServiceLogoutProcedure:  {},
+}
+
+// newAuthInterceptor は公開 RPC でもアクセストークンがあれば検証し、本人とセッションを context に載せます
 func newAuthInterceptor(jwtService authuc.JWTService) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			if _, ok := publicProcedures[req.Spec().Procedure]; ok {
-				return next(ctx, req)
-			}
+			_, public := publicProcedures[req.Spec().Procedure]
 			token, ok := strings.CutPrefix(req.Header().Get("Authorization"), "Bearer ")
 			if !ok || token == "" {
+				if public {
+					return next(ctx, req)
+				}
 				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("Authorizationヘッダーが指定されていません"))
 			}
 			claims, err := jwtService.VerifyToken(token)
 			if err != nil {
+				if public {
+					return next(ctx, req)
+				}
 				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("トークンが無効または期限切れです"))
 			}
-			return next(withUserID(ctx, claims.UserID), req)
+			return next(withClaims(ctx, claims), req)
+		}
+	}
+}
+
+// newOriginInterceptor はブラウザから Cookie を使う RPC を呼んだとき、Origin が許可したものかを確かめます。Origin のないネイティブアプリは通す
+func newOriginInterceptor(allowedOrigins []string) connect.UnaryInterceptorFunc {
+	return func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			if _, ok := cookieProcedures[req.Spec().Procedure]; ok {
+				origin := req.Header().Get("Origin")
+				if origin != "" && !slices.Contains(allowedOrigins, "*") && !slices.Contains(allowedOrigins, origin) {
+					return nil, connect.NewError(connect.CodePermissionDenied, errors.New("許可されていないオリジンです"))
+				}
+			}
+			return next(ctx, req)
 		}
 	}
 }
@@ -71,12 +99,8 @@ func newClientInfoInterceptor() connect.UnaryInterceptorFunc {
 	}
 }
 
-// clientIP はロードバランサーを経由する前提で X-Forwarded-For の先頭を優先します
+// clientIP は信頼するプロキシを経由したときだけ X-Forwarded-For を使うよう、ルーターで書き換えた接続元を返します
 func clientIP(req connect.AnyRequest) string {
-	if forwarded := req.Header().Get("X-Forwarded-For"); forwarded != "" {
-		first, _, _ := strings.Cut(forwarded, ",")
-		return strings.TrimSpace(first)
-	}
 	host, _, err := net.SplitHostPort(req.Peer().Addr)
 	if err != nil {
 		return req.Peer().Addr

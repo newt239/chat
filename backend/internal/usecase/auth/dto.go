@@ -46,8 +46,10 @@ type RefreshTokenInput struct {
 	RefreshToken string
 }
 
+// LogoutInput はブラウザなら Cookie のリフレッシュトークン、ネイティブアプリならアクセストークンのセッション ID で失効させるセッションを指します
 type LogoutInput struct {
-	UserID string
+	RefreshToken string
+	SessionID    string
 }
 
 // GoogleIdentity は検証済みの Google ID トークンから取り出した本人情報です
@@ -75,8 +77,4 @@ type UserInfo struct {
 	Email       string  `json:"email"`
 	DisplayName string  `json:"displayName"`
 	AvatarURL   *string `json:"avatarUrl,omitempty"`
-}
-
-type LogoutOutput struct {
-	Success bool `json:"success"`
 }

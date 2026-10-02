@@ -12,6 +12,15 @@ type AuthServer struct {
 	UC authuc.AuthUseCase
 }
 
+// handOverRefreshToken はブラウザには Cookie で渡し、ネイティブアプリにだけ本文で返すリフレッシュトークンを返します
+func handOverRefreshToken(ctx context.Context, out *authuc.AuthOutput) *string {
+	if isNativeClient(ctx) {
+		return &out.RefreshToken
+	}
+	setRefreshTokenCookie(ctx, out.RefreshToken, out.ExpiresAt)
+	return nil
+}
+
 func (s *AuthServer) GetAuthConfig(context.Context, *chatv1.GetAuthConfigRequest) (*chatv1.GetAuthConfigResponse, error) {
 	return &chatv1.GetAuthConfigResponse{PasswordAuthEnabled: s.UC.PasswordAuthEnabled()}, nil
 }
@@ -21,7 +30,7 @@ func (s *AuthServer) Login(ctx context.Context, req *chatv1.LoginRequest) (*chat
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.LoginResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.LoginResponse{AccessToken: out.AccessToken, RefreshToken: handOverRefreshToken(ctx, out), User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) LoginWithGoogle(ctx context.Context, req *chatv1.LoginWithGoogleRequest) (*chatv1.LoginWithGoogleResponse, error) {
@@ -29,7 +38,7 @@ func (s *AuthServer) LoginWithGoogle(ctx context.Context, req *chatv1.LoginWithG
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.LoginWithGoogleResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.LoginWithGoogleResponse{AccessToken: out.AccessToken, RefreshToken: handOverRefreshToken(ctx, out), User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) LoginWithGoogleCode(ctx context.Context, req *chatv1.LoginWithGoogleCodeRequest) (*chatv1.LoginWithGoogleCodeResponse, error) {
@@ -37,7 +46,7 @@ func (s *AuthServer) LoginWithGoogleCode(ctx context.Context, req *chatv1.LoginW
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.LoginWithGoogleCodeResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.LoginWithGoogleCodeResponse{AccessToken: out.AccessToken, RefreshToken: handOverRefreshToken(ctx, out), User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) SignUp(ctx context.Context, req *chatv1.SignUpRequest) (*chatv1.SignUpResponse, error) {
@@ -45,7 +54,7 @@ func (s *AuthServer) SignUp(ctx context.Context, req *chatv1.SignUpRequest) (*ch
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.SignUpResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.SignUpResponse{AccessToken: out.AccessToken, RefreshToken: handOverRefreshToken(ctx, out), User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) SignUpWithInvitation(ctx context.Context, req *chatv1.SignUpWithInvitationRequest) (*chatv1.SignUpWithInvitationResponse, error) {
@@ -53,19 +62,26 @@ func (s *AuthServer) SignUpWithInvitation(ctx context.Context, req *chatv1.SignU
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.SignUpWithInvitationResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.SignUpWithInvitationResponse{AccessToken: out.AccessToken, RefreshToken: handOverRefreshToken(ctx, out), User: presenter.AuthUser(out.User)}, nil
 }
 
 func (s *AuthServer) Refresh(ctx context.Context, req *chatv1.RefreshRequest) (*chatv1.RefreshResponse, error) {
-	out, err := s.UC.RefreshToken(ctx, authuc.RefreshTokenInput{RefreshToken: req.GetRefreshToken()})
+	token := req.GetRefreshToken()
+	if !isNativeClient(ctx) {
+		token = refreshTokenFromCookie(ctx)
+	}
+	out, err := s.UC.RefreshToken(ctx, authuc.RefreshTokenInput{RefreshToken: token})
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.RefreshResponse{AccessToken: out.AccessToken, RefreshToken: &out.RefreshToken, User: presenter.AuthUser(out.User)}, nil
+	return &chatv1.RefreshResponse{AccessToken: out.AccessToken, RefreshToken: handOverRefreshToken(ctx, out), User: presenter.AuthUser(out.User)}, nil
 }
 
+// Logout は公開 RPC で、Cookie のリフレッシュトークンか、あればアクセストークンのセッションを失効させます
 func (s *AuthServer) Logout(ctx context.Context, _ *chatv1.LogoutRequest) (*chatv1.LogoutResponse, error) {
-	if _, err := s.UC.Logout(ctx, authuc.LogoutInput{UserID: userIDFrom(ctx)}); err != nil {
+	clearRefreshTokenCookie(ctx)
+	input := authuc.LogoutInput{RefreshToken: refreshTokenFromCookie(ctx), SessionID: claimsFrom(ctx).SessionID}
+	if err := s.UC.Logout(ctx, input); err != nil {
 		return nil, err
 	}
 	return &chatv1.LogoutResponse{}, nil

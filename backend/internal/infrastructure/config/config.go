@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -56,6 +57,8 @@ type StorageConfig struct {
 type ServerConfig struct {
 	Port string
 	Env  string
+	// X-Forwarded-For を信頼するプロキシの CIDR。空ならループバックとプライベートネットワークを信頼する
+	TrustedProxies []string
 }
 
 type DatabaseConfig struct {
@@ -100,8 +103,9 @@ func Load() (*Config, error) {
 	env := getEnv("ENV", "development")
 	cfg := &Config{
 		Server: ServerConfig{
-			Port: getEnv("PORT", "8080"),
-			Env:  env,
+			Port:           getEnv("PORT", "8080"),
+			Env:            env,
+			TrustedProxies: getEnvList("TRUSTED_PROXIES", ""),
 		},
 		Database: DatabaseConfig{
 			URL:             getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/chat?sslmode=disable"),
@@ -199,6 +203,11 @@ func getEnvBool(key string, defaultVal bool) bool {
 }
 
 func (c *Config) Validate() error {
+	for _, cidr := range c.Server.TrustedProxies {
+		if _, _, err := net.ParseCIDR(cidr); err != nil {
+			return fmt.Errorf("TRUSTED_PROXIES must be a list of CIDRs: %q", cidr)
+		}
+	}
 	if c.JWT.Secret == "change-me-in-production" && c.Server.Env == "production" {
 		return fmt.Errorf("JWT_SECRET must be set in production")
 	}

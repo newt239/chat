@@ -54,6 +54,7 @@ type stubSessionRepo struct {
 	created []*entity.Session
 	active  []*entity.Session
 	rotated []string
+	revoked []string
 }
 
 func (r *stubSessionRepo) Create(_ context.Context, s *entity.Session) error {
@@ -68,6 +69,11 @@ func (r *stubSessionRepo) FindActiveByTokenHash(_ context.Context, hash string) 
 		}
 	}
 	return nil, nil
+}
+
+func (r *stubSessionRepo) Revoke(_ context.Context, id string) error {
+	r.revoked = append(r.revoked, id)
+	return nil
 }
 
 func (r *stubSessionRepo) Rotate(_ context.Context, id string, _ string, _ time.Time) error {
@@ -143,8 +149,8 @@ func (r *stubInvitationRepo) MarkAccepted(_ context.Context, id string, _ time.T
 
 type stubJWT struct{}
 
-func (stubJWT) GenerateToken(userID string, _ time.Duration) (string, error) {
-	return "token-" + userID, nil
+func (stubJWT) GenerateToken(claims TokenClaims, _ time.Duration) (string, error) {
+	return "token-" + claims.UserID + "-" + claims.SessionID, nil
 }
 func (stubJWT) VerifyToken(string) (*TokenClaims, error) { return &TokenClaims{UserID: "alice"}, nil }
 
@@ -192,7 +198,12 @@ type fixture struct {
 	workspaces  *stubWorkspaceRepo
 	invitations *stubInvitationRepo
 	recorder    *audittest.Recorder
+	closer      *stubCloser
 }
+
+type stubCloser struct{ closed []string }
+
+func (c *stubCloser) CloseSession(sessionID string) { c.closed = append(c.closed, sessionID) }
 
 var google = stubGoogle{
 	"alice":    {Sub: "sub-alice", Email: "alice@example.com", EmailVerified: true},
@@ -219,9 +230,10 @@ func newFixture(passwordAuthEnabled bool) fixture {
 			{ID: "expired", WorkspaceID: "ws3", Email: "new@example.com", Role: entity.WorkspaceRoleMember, TokenHash: entity.HashSecretToken("expired-token"), ExpiresAt: time.Now().Add(-time.Hour)},
 		}},
 		recorder: &audittest.Recorder{},
+		closer:   &stubCloser{},
 	}
 	settings := Settings{AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour, PasswordAuthEnabled: passwordAuthEnabled}
-	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, settings)
+	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, settings)
 	return f
 }
 
@@ -502,5 +514,42 @@ func TestLoginWithGoogleJoinsExistingUserToSignupWorkspace(t *testing.T) {
 	}
 	if len(f.users.created) != 0 || len(f.workspaces.added) != 1 || f.workspaces.added[0].UserID != "alice" || f.workspaces.added[0].WorkspaceID != workspaceID {
 		t.Errorf("既存ユーザーが一度だけメンバーとして参加するはず: %+v", f.workspaces.added)
+	}
+}
+
+func TestLoginNormalizesEmailAndEmbedsSessionID(t *testing.T) {
+	f := newFixture(true)
+
+	out, err := f.uc.Login(context.Background(), LoginInput{Email: " Alice@Example.COM ", Password: "password123"})
+	if err != nil {
+		t.Fatalf("大文字を含むメールアドレスでログインできません: %v", err)
+	}
+	sessionID := f.sessions.created[0].ID
+	if sessionID == "" || out.AccessToken != "token-alice-"+sessionID {
+		t.Errorf("アクセストークンに保存したセッションの ID が入っていません: token=%s session=%s", out.AccessToken, sessionID)
+	}
+}
+
+func TestLogoutRevokesOnlyCurrentSession(t *testing.T) {
+	tests := []struct {
+		name  string
+		input LogoutInput
+		want  []string
+	}{
+		{name: "Cookie のリフレッシュトークンのセッションを失効させる", input: LogoutInput{RefreshToken: "refresh", SessionID: "s1"}, want: []string{"s2"}},
+		{name: "リフレッシュトークンがなければアクセストークンのセッションを失効させる", input: LogoutInput{SessionID: "s1"}, want: []string{"s1"}},
+		{name: "どちらもなければ何もしない", input: LogoutInput{}, want: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newFixture(true)
+			f.sessions.active = []*entity.Session{{ID: "s2", UserID: "alice", RefreshTokenHash: entity.HashSecretToken("refresh")}}
+			if err := f.uc.Logout(context.Background(), tt.input); err != nil {
+				t.Fatalf("予期しないエラー: %v", err)
+			}
+			if !slices.Equal(f.sessions.revoked, tt.want) || !slices.Equal(f.closer.closed, tt.want) {
+				t.Errorf("失効と切断の対象が期待と異なります: revoked=%v closed=%v", f.sessions.revoked, f.closer.closed)
+			}
+		})
 	}
 }

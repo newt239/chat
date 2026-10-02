@@ -101,18 +101,17 @@ func (r *sessionRepository) Create(ctx context.Context, sess *entity.Session) er
 	return nil
 }
 
+// Revoke は失効済みや存在しないセッションでもエラーにしません
 func (r *sessionRepository) Revoke(ctx context.Context, id string) error {
 	sessionID, err := utils.ParseUUID(id, "session ID")
 	if err != nil {
 		return err
 	}
-
-	now := time.Now()
-	client := transaction.ResolveClient(ctx, r.client)
-
-	return client.Session.UpdateOneID(sessionID).
-		SetRevokedAt(now).
-		Exec(ctx)
+	_, err = transaction.ResolveClient(ctx, r.client).Session.Update().
+		Where(session.ID(sessionID), session.RevokedAtIsNil()).
+		SetRevokedAt(time.Now()).
+		Save(ctx)
+	return err
 }
 
 func (r *sessionRepository) Rotate(ctx context.Context, id string, refreshTokenHash string, expiresAt time.Time) error {
