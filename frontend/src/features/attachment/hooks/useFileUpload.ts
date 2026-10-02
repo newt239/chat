@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
+import { putToStorage } from "#/lib/storage";
+
 import { usePresignUpload } from "../api/client";
 import { measureMedia } from "../utils/measureMedia";
 import { formatFileSize, validateFile } from "../utils/validator";
@@ -13,46 +15,6 @@ type UploadOptions = {
   // 録音のように、ファイルから再生時間を読めないときに計測済みの値を渡す
   durationSeconds: number | undefined;
 };
-
-// 進捗の通知と、失敗したときの文言（辞書から取ったもの）
-type UploadHandlers = {
-  onProgress: (progress: number) => void;
-  http: (status: number) => string;
-  network: string;
-  aborted: string;
-};
-
-const uploadToStorage = (file: Blob, uploadUrl: string, handlers: UploadHandlers) =>
-  new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
-        const progress = Math.round((e.loaded / e.total) * 100);
-        handlers.onProgress(progress);
-      }
-    });
-
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve();
-      } else {
-        reject(new Error(handlers.http(xhr.status)));
-      }
-    });
-
-    xhr.addEventListener("error", () => {
-      reject(new Error(handlers.network));
-    });
-
-    xhr.addEventListener("abort", () => {
-      reject(new Error(handlers.aborted));
-    });
-
-    xhr.open("PUT", uploadUrl);
-    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-    xhr.send(file);
-  });
 
 export const useFileUpload = () => {
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
@@ -108,26 +70,15 @@ export const useFileUpload = () => {
       });
       setState(id, { progress: 0, status: "uploading" });
 
-      const errors = {
-        aborted: t("attachment.errors.aborted"),
-        http: (status: number) => t("attachment.errors.http", { status }),
-        network: t("attachment.errors.network"),
-      };
       // サムネイルは表示を補うだけなので、失敗しても本体のアップロードは続ける
       const { thumbnailUploadUrl } = presignData;
       const thumbnailUpload =
         thumbnail && thumbnailUploadUrl !== undefined
-          ? uploadToStorage(thumbnail.blob, thumbnailUploadUrl, {
-              ...errors,
-              onProgress: () => {},
-            }).catch(() => {})
+          ? putToStorage(thumbnail.blob, thumbnailUploadUrl, () => {}).catch(() => {})
           : undefined;
 
-      await uploadToStorage(file, presignData.uploadUrl, {
-        ...errors,
-        onProgress: (progress) => {
-          setState(id, { progress, status: "uploading" });
-        },
+      await putToStorage(file, presignData.uploadUrl, (progress) => {
+        setState(id, { progress, status: "uploading" });
       });
       await thumbnailUpload;
 

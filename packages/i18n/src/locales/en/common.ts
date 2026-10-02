@@ -8,4 +8,9 @@ export const common: Messages["common"] = {
   loading: "Loading",
   ok: "OK",
   save: "Save",
+  upload: {
+    aborted: "Upload canceled",
+    http: "Upload failed (HTTP {{status}})",
+    network: "A network error occurred",
+  },
 };
