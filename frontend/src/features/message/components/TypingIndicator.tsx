@@ -1,8 +1,6 @@
-import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
-import { useMembers } from "#/features/member/hooks/useMembers";
 import { usePreferences } from "#/hooks/usePreferences";
 
 import { useTypingUsers } from "../hooks/useTypingUsers";
@@ -15,8 +13,6 @@ type TypingIndicatorProps = {
 export const TypingIndicator = ({ channelId }: TypingIndicatorProps) => {
   const { t } = useTranslation();
   const { locale } = usePreferences();
-  const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const { data: members } = useMembers(workspaceId);
   const displayName = useDisplayName();
   const userIds = useTypingUsers(channelId);
 
@@ -24,13 +20,7 @@ export const TypingIndicator = ({ channelId }: TypingIndicatorProps) => {
     return null;
   }
 
-  const names = userIds.map((userId) =>
-    displayName(
-      userId,
-      members?.find((member) => member.userId === userId)?.displayName ??
-        t("message.typing.someone"),
-    ),
-  );
+  const names = userIds.map((userId) => displayName(userId, t("message.typing.someone")));
   const list = new Intl.ListFormat(locale).format(names.slice(0, 2));
 
   return (
