@@ -26,7 +26,7 @@ export const RightSidePanel = ({ workspaceId }: RightSidePanelProps) => {
           animate={{ width: 340 }}
           exit={{ width: 0 }}
           transition={transitions.base}
-          className="flex shrink-0 overflow-hidden border-l border-border bg-surface"
+          className="flex shrink-0 overflow-clip border-l border-border bg-surface"
         >
           <div className="flex w-[340px] shrink-0 flex-col">
             <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border pr-2 pl-4">

@@ -127,6 +127,13 @@ body,
   height: 100%;
 }
 
+/* 各領域のスクロールが端で文書全体へ連鎖し、画面ごと動かないようにする */
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text);

@@ -68,7 +68,7 @@ export const MobileShell = ({ workspaceId }: MobileShellProps) => {
       style={{ height: viewport?.height }}
       className="group/shell flex h-full flex-col bg-surface pt-[env(safe-area-inset-top)] font-sans text-text [word-break:auto-phrase]"
     >
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-clip">
         {tab === "home" && <MobileHome workspaceId={workspaceId} />}
         {tab === "dms" && <DMsPage />}
         {tab === "activity" && <ActivityPage />}
