@@ -1,10 +1,9 @@
 import { useParams } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 import { useTypingUsers } from "../hooks/useTypingUsers";
 
@@ -15,7 +14,7 @@ type TypingIndicatorProps = {
 // 入力欄の真上に重ねて出し、表示の有無で入力欄の位置が動かないようにする
 export const TypingIndicator = ({ channelId }: TypingIndicatorProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: members } = useMembers(workspaceId);
   const displayName = useDisplayName();

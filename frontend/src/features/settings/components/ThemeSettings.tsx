@@ -1,14 +1,12 @@
 import { findThemePreset, themePresetNames, themePresets } from "@chat/design-tokens";
-import { useAtom } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
 import { Slider } from "#/components/ui/Slider/Slider";
 import { focusRing } from "#/components/ui/styles/styles";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
 
-import { useUpdatePreferences } from "../hooks/usePreferences";
 import { SettingRow } from "./SettingRow";
 import { ThemePreview } from "./ThemePreview";
 
@@ -20,9 +18,8 @@ const hueTrack = `linear-gradient(90deg, ${Array.from(
 
 export const ThemeSettings = () => {
   const { t } = useTranslation();
-  const [preferences, setPreferences] = useAtom(preferencesAtom);
-  const { mode, theme } = preferences;
-  const updatePreferences = useUpdatePreferences();
+  const { mode, theme } = usePreferences();
+  const { preview, update: updatePreferences } = useUpdatePreferences();
   const currentPreset = findThemePreset(theme);
 
   return (
@@ -69,7 +66,7 @@ export const ThemeSettings = () => {
             step={1}
             trackBackground={hueTrack}
             onChange={(hue) => {
-              setPreferences({ ...preferences, theme: { ...theme, hue } });
+              preview({ theme: { ...theme, hue } });
             }}
             onChangeEnd={(hue) => {
               updatePreferences({ theme: { ...theme, hue } });
@@ -82,7 +79,7 @@ export const ThemeSettings = () => {
             maxValue={0.3}
             step={0.005}
             onChange={(chroma) => {
-              setPreferences({ ...preferences, theme: { ...theme, chroma } });
+              preview({ theme: { ...theme, chroma } });
             }}
             onChangeEnd={(chroma) => {
               updatePreferences({ theme: { ...theme, chroma } });

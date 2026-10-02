@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 import { formatNumber } from "@chat/i18n";
-import { useAtomValue } from "jotai";
 import { motion } from "motion/react";
 
 import { cn } from "#/components/ui/styles/styles";
 import { niceMax } from "#/features/insights/utils/chart";
+import { usePreferences } from "#/hooks/usePreferences";
 import { transitions } from "#/lib/motion";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { ChartTooltip } from "./ChartTooltip";
 
@@ -31,7 +30,7 @@ type BarChartProps = {
 };
 
 export const BarChart = ({ data, height, labelEvery, ariaLabel }: BarChartProps) => {
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const [hovered, setHovered] = useState<number | null>(null);
   const max = niceMax(Math.max(0, ...data.map((datum) => datum.value)));
   const percentOf = (value: number) => (value / max) * 100;

@@ -5,11 +5,11 @@ import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 const loadPreferences = async (saved: object) => {
   localStorage.setItem("preferences", JSON.stringify(saved));
   vi.resetModules();
-  const { defaultPreferences, preferencesAtom } = await import("./preferences");
-  return { defaultPreferences, preferences: createStore().get(preferencesAtom) };
+  const { defaultPreferences, storedPreferencesAtom } = await import("./preferences");
+  return { defaultPreferences, preferences: createStore().get(storedPreferencesAtom) };
 };
 
-describe("preferencesAtom", () => {
+describe("storedPreferencesAtom", () => {
   afterEach(() => {
     localStorage.clear();
   });

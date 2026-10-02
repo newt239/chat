@@ -1,6 +1,5 @@
 import { IconCheck, IconDots, IconFolderPlus, IconHash } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
@@ -10,8 +9,8 @@ import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
-import { useUpdatePreferences } from "#/features/settings/hooks/usePreferences";
-import { channelSortOrders, preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
+import { channelSortOrders } from "#/providers/store/preferences";
 
 type ChannelSectionMenuProps = {
   workspaceId: string;
@@ -21,8 +20,8 @@ type ChannelSectionMenuProps = {
 export const ChannelSectionMenu = ({ workspaceId }: ChannelSectionMenuProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { channelSortOrder } = useAtomValue(preferencesAtom);
-  const updatePreferences = useUpdatePreferences();
+  const { channelSortOrder } = usePreferences();
+  const { update: updatePreferences } = useUpdatePreferences();
 
   return (
     <Menu

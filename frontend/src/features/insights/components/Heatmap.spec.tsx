@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vite-plus/test";
 
+import { QueryWrapper } from "#/test/QueryWrapper";
+
 import { Heatmap } from "./Heatmap";
 
 const grid = Array.from({ length: 7 }, (_row, weekday) =>
@@ -9,7 +11,7 @@ const grid = Array.from({ length: 7 }, (_row, weekday) =>
 
 describe("Heatmap", () => {
   test("7 × 24 のセルを描き、ホバーしたセルの平均を出す", () => {
-    render(<Heatmap grid={grid} ariaLabel="会話が多い時間帯" />);
+    render(<Heatmap grid={grid} ariaLabel="会話が多い時間帯" />, { wrapper: QueryWrapper });
     const heatmap = screen.getByRole("img", { name: "会話が多い時間帯" });
     const cells = heatmap.querySelectorAll("i");
     expect(cells).toHaveLength(7 * 24);

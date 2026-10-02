@@ -1,5 +1,4 @@
 import { formatBytes, formatNumber } from "@chat/i18n";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
@@ -9,7 +8,7 @@ import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { ChartCard } from "#/features/insights/components/ChartCard";
 import { HBarList } from "#/features/insights/components/HBarList";
 import { KpiCard } from "#/features/insights/components/KpiCard";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 import { AuditLogTable } from "./AuditLogTable";
 
@@ -25,7 +24,7 @@ type AdminOverviewTabProps = {
 
 export const AdminOverviewTab = ({ workspaceId, members }: AdminOverviewTabProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const { data: recent } = useAuditLogs({ limit: RECENT_LOGS, workspaceId });
 
   const active = members.filter((member) => member.suspendedAt === undefined);

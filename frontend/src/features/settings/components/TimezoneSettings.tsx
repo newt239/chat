@@ -1,17 +1,15 @@
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { ComboBox } from "#/components/ui/ComboBox/ComboBox";
 import { Switch } from "#/components/ui/Switch/Switch";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
 
-import { useUpdatePreferences } from "../hooks/usePreferences";
 import { SettingRow } from "./SettingRow";
 
 export const TimezoneSettings = () => {
   const { t } = useTranslation();
-  const { timezone, timezoneAutoUpdate } = useAtomValue(preferencesAtom);
-  const updatePreferences = useUpdatePreferences();
+  const { timezone, timezoneAutoUpdate } = usePreferences();
+  const { update: updatePreferences } = useUpdatePreferences();
   // 端末の値が一覧にない別名のこともあるので、保存値は必ず候補に含める
   const options = [...new Set([...Intl.supportedValuesOf("timeZone"), timezone])]
     .filter(Boolean)

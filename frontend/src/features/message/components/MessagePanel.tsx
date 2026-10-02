@@ -16,9 +16,9 @@ import { useMessageViewportDetection } from "#/features/message/hooks/useMessage
 import { startOfDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { useDateFormat } from "#/hooks/useDateFormat";
+import { usePreferences } from "#/hooks/usePreferences";
 import { toDate } from "#/lib/timestamp";
 import { myUserIdAtom } from "#/providers/store/auth";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { MessageItem } from "./MessageItem";
 import { MessageList } from "./MessageList";
@@ -91,7 +91,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     items,
   });
 
-  const { hideJoinMessages } = useAtomValue(preferencesAtom);
+  const { hideJoinMessages } = usePreferences();
   const rows = useMemo(
     () => buildTimelineRows(orderedItems, hideJoinMessages, timeZone),
     [orderedItems, hideJoinMessages, timeZone],

@@ -1,12 +1,11 @@
 import { formatRelativeTime } from "@chat/i18n";
-import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { focusRing } from "#/components/ui/styles/styles";
+import { usePreferences } from "#/hooks/usePreferences";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
@@ -17,7 +16,7 @@ type ThreadMetadataPreviewProps = {
 
 export const ThreadMetadataPreview = ({ metadata, onPress }: ThreadMetadataPreviewProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const { lastReplyUser, lastReplyAt, replyCount } = metadata;
 
   return (

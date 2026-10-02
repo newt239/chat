@@ -1,9 +1,8 @@
 import { formatBytes, formatNumber } from "@chat/i18n";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { directionOf, percentChange, signed } from "#/features/insights/utils/chart";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 import { KpiCard } from "./KpiCard";
 
@@ -17,7 +16,7 @@ type InsightsKpisProps = {
 
 export const InsightsKpis = ({ insights }: InsightsKpisProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
 
   const percentDelta = (
     current: bigint | undefined,

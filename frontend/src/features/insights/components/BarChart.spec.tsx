@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vite-plus/test";
 
+import { QueryWrapper } from "#/test/QueryWrapper";
+
 import { BarChart } from "./BarChart";
 
 const data = [
@@ -11,7 +13,9 @@ const data = [
 
 describe("BarChart", () => {
   test("軸を切りのよい最大値にし、ホバーした棒の値を出す", () => {
-    render(<BarChart data={data} height={120} labelEvery={1} ariaLabel="日別のメッセージ" />);
+    render(<BarChart data={data} height={120} labelEvery={1} ariaLabel="日別のメッセージ" />, {
+      wrapper: QueryWrapper,
+    });
     const chart = screen.getByRole("img", { name: "日別のメッセージ" });
     expect(chart).toHaveTextContent("10");
     expect(screen.queryByRole("status")).not.toBeInTheDocument();

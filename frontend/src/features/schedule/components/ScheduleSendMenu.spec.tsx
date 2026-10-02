@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
+import { QueryWrapper } from "#/test/QueryWrapper";
+
 import { ScheduleSendMenu } from "./ScheduleSendMenu";
 
 beforeEach(() => {
@@ -15,7 +17,9 @@ afterEach(() => {
 describe("ScheduleSendMenu", () => {
   test("プリセットを選ぶとその日時で予約する", async () => {
     const onSchedule = vi.fn<(scheduledAt: Date) => void>();
-    render(<ScheduleSendMenu isDisabled={false} onSchedule={onSchedule} />);
+    render(<ScheduleSendMenu isDisabled={false} onSchedule={onSchedule} />, {
+      wrapper: QueryWrapper,
+    });
 
     await userEvent.click(screen.getByRole("button", { name: "送信を予約" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "明日の朝 9:00" }));
@@ -25,7 +29,9 @@ describe("ScheduleSendMenu", () => {
 
   test("日時を指定するダイアログから予約する", async () => {
     const onSchedule = vi.fn<(scheduledAt: Date) => void>();
-    render(<ScheduleSendMenu isDisabled={false} onSchedule={onSchedule} />);
+    render(<ScheduleSendMenu isDisabled={false} onSchedule={onSchedule} />, {
+      wrapper: QueryWrapper,
+    });
 
     await userEvent.click(screen.getByRole("button", { name: "送信を予約" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "日時を指定…" }));
@@ -35,7 +41,9 @@ describe("ScheduleSendMenu", () => {
   });
 
   test("送信できないときは開けない", () => {
-    render(<ScheduleSendMenu isDisabled onSchedule={vi.fn<(scheduledAt: Date) => void>()} />);
+    render(<ScheduleSendMenu isDisabled onSchedule={vi.fn<(scheduledAt: Date) => void>()} />, {
+      wrapper: QueryWrapper,
+    });
     expect(screen.getByRole("button", { name: "送信を予約" })).toBeDisabled();
   });
 });

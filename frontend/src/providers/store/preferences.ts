@@ -37,7 +37,6 @@ export const defaultPreferences: Preferences = {
   timezoneAutoUpdate: false,
 };
 
-// ログイン前や GetMe の応答前も前回の設定で描画できるよう端末にも保持する
 const preferencesStorageAtom = atomWithStorage<Preferences>(
   "preferences",
   defaultPreferences,
@@ -45,7 +44,8 @@ const preferencesStorageAtom = atomWithStorage<Preferences>(
   { getOnInit: true },
 );
 
-export const preferencesAtom = atom(
+// アカウントの設定の写し。ログイン前や GetMe の応答前も前回の設定で描画するために端末に残す。読むときは usePreferences を使う
+export const storedPreferencesAtom = atom(
   (get) => preferencesSchema.safeParse(get(preferencesStorageAtom)).data ?? defaultPreferences,
   (_get, set, update: Preferences) => {
     set(preferencesStorageAtom, update);

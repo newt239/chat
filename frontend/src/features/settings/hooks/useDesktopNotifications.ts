@@ -6,11 +6,11 @@ import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { usePreferences } from "#/hooks/usePreferences";
 import { navigateTo } from "#/lib/navigation";
 import { isNotificationSupported, showNotification } from "#/lib/platform/notify";
 import { myUserIdAtom } from "#/providers/store/auth";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
-import { preferencesAtom } from "#/providers/store/preferences";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 /** 設定に従って新着メッセージを OS の通知で知らせる。ミュート中と表示中のチャンネルは除く。プッシュ通知と同じ tag で出し、二重にならないようにする */
@@ -18,7 +18,7 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
   const { toText } = useMentionDirectory();
   const { wsClient } = useWsClient();
   const { desktop, pushToken } = useAtomValue(notificationPreferencesAtom);
-  const level = useAtomValue(preferencesAtom).notificationLevel;
+  const level = usePreferences().notificationLevel;
   const myId = useAtomValue(myUserIdAtom);
   const { data: channels } = useChannels(workspaceId);
   const { data: dms } = useDMs(workspaceId);

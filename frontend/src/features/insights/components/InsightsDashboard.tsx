@@ -1,6 +1,5 @@
 import { formatBytes, formatDate, formatMonthDay, formatNumber, formatWeekday } from "@chat/i18n";
 import { IconHash, IconLock, IconShieldCheck } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Link } from "#/components/ui/Link/Link";
@@ -10,7 +9,7 @@ import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { useInsights } from "#/features/insights/hooks/useInsights";
 import { isoWeekdayLabel, parseLocalDate, toHeatmapGrid } from "#/features/insights/utils/chart";
 import { StorageCategory } from "#/gen/chat/v1/insight_service_pb";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 import { BarChart } from "./BarChart";
 import { ChartCard } from "./ChartCard";
@@ -39,7 +38,7 @@ type InsightsDashboardProps = {
 
 export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   // 集計の日付はサーバーがプロフィールのタイムゾーンで区切った暦日で、端末の 0 時として読むため端末のタイムゾーンで書式化する
   const { data: insights, error } = useInsights(workspaceId);
   const { data: myRole } = useMyWorkspaceRole(workspaceId);

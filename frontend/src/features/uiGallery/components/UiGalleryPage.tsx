@@ -8,7 +8,6 @@ import {
 } from "@chat/design-tokens";
 import { formatDate, formatRelativeTime, formatTime, formatWeekday } from "@chat/i18n";
 import { IconCopy, IconDots, IconPin, IconSettings, IconTrash } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -39,8 +38,7 @@ import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { CodeBlock } from "#/features/message/components/markdown/CodeBlock";
-import { useUpdatePreferences } from "#/features/settings/hooks/usePreferences";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
 
 const channels = [
   { label: "general", value: "general" },
@@ -54,8 +52,8 @@ const sampleDate = new Date(2026, 8, 28, 10, 16);
 // 開発時だけ表示する ui コンポーネントとテーマの見本。画面移行の見た目確認に使う
 export const UiGalleryPage = () => {
   const { t, i18n } = useTranslation();
-  const preferences = useAtomValue(preferencesAtom);
-  const updatePreferences = useUpdatePreferences();
+  const preferences = usePreferences();
+  const { update: updatePreferences } = useUpdatePreferences();
   const [channel, setChannel] = useState<(typeof channels)[number]["value"] | null>("general");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);

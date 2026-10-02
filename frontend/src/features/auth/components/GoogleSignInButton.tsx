@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useLoginWithGoogle } from "#/features/auth/hooks/useLoginWithGoogle";
 import { loadGoogleIdentity } from "#/features/auth/utils/googleIdentity";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 type GoogleSignInButtonProps = {
   clientId: string;
@@ -16,7 +15,7 @@ type GoogleSignInButtonProps = {
 // Google Identity Services が描画するボタン。受け取った ID トークンをサーバーで検証してログインする
 export const GoogleSignInButton = ({ clientId, workspaceId }: GoogleSignInButtonProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const loginWithGoogle = useLoginWithGoogle(workspaceId);
   const { mutate } = loginWithGoogle;
   const containerRef = useRef<HTMLDivElement>(null);

@@ -4,6 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, test } from "vite-plus/test";
 
 import { AuditAction, AuditLogSchema } from "#/gen/chat/v1/admin_service_pb";
+import { QueryWrapper } from "#/test/QueryWrapper";
 
 import { AuditLogTable } from "./AuditLogTable";
 
@@ -49,6 +50,7 @@ describe("AuditLogTable", () => {
           }),
         ]}
       />,
+      { wrapper: QueryWrapper },
     );
     const rows = screen.getAllByRole("row").slice(1);
     expect(rows[0]).toHaveTextContent("2026年9月28日 10:16");
@@ -64,7 +66,7 @@ describe("AuditLogTable", () => {
   });
 
   test("ログがなければ案内を出す", () => {
-    render(<AuditLogTable logs={[]} />);
+    render(<AuditLogTable logs={[]} />, { wrapper: QueryWrapper });
     expect(screen.getByText("条件に合う監査ログはありません")).toBeInTheDocument();
   });
 });

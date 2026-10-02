@@ -1,17 +1,16 @@
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { SegmentedControl } from "#/components/ui/SegmentedControl/SegmentedControl";
 import { Switch } from "#/components/ui/Switch/Switch";
-import { channelSortOrders, preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences, useUpdatePreferences } from "#/hooks/usePreferences";
+import { channelSortOrders } from "#/providers/store/preferences";
 
-import { useUpdatePreferences } from "../hooks/usePreferences";
 import { SettingRow } from "./SettingRow";
 
 export const DisplaySettings = () => {
   const { t } = useTranslation();
-  const { channelSortOrder, hideJoinMessages, locale } = useAtomValue(preferencesAtom);
-  const updatePreferences = useUpdatePreferences();
+  const { channelSortOrder, hideJoinMessages, locale } = usePreferences();
+  const { update: updatePreferences } = useUpdatePreferences();
 
   return (
     <div className="flex flex-col">

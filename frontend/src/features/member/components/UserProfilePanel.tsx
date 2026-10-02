@@ -12,8 +12,8 @@ import { focusRing } from "#/components/ui/styles/styles";
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
+import { usePreferences } from "#/hooks/usePreferences";
 import { myUserIdAtom } from "#/providers/store/auth";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useUserNote } from "../hooks/useUserNote";
 import { displayUrl, linkIconOf } from "../utils/linkIcon";
@@ -28,7 +28,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
   const { t } = useTranslation();
   const { data: members, isLoading, isError } = useMembers(workspaceId);
   const myId = useAtomValue(myUserIdAtom);
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const createDM = useCreateDM();
   const navigate = useNavigate();
   const member = members?.find((candidate) => candidate.userId === userId);

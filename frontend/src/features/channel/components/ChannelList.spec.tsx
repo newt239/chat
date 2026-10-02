@@ -9,7 +9,7 @@ import {
   ChannelCategoryService,
 } from "#/gen/chat/v1/channel_category_service_pb";
 import { ChannelSchema, ChannelService } from "#/gen/chat/v1/channel_service_pb";
-import { preferencesAtom, defaultPreferences } from "#/providers/store/preferences";
+import { defaultPreferences, storedPreferencesAtom } from "#/providers/store/preferences";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { ChannelList } from "./ChannelList";
@@ -91,7 +91,7 @@ describe("ChannelList", () => {
 
   test("新しいメッセージ順では階層を分けてフルパスで並べる", async () => {
     const { store } = await render();
-    store.set(preferencesAtom, { ...defaultPreferences, channelSortOrder: "recentActivity" });
+    store.set(storedPreferencesAtom, { ...defaultPreferences, channelSortOrder: "recentActivity" });
     const links = await screen.findAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
       "general",

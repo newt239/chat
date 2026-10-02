@@ -1,12 +1,11 @@
 import { useState } from "react";
 
 import { formatNumber } from "@chat/i18n";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "#/components/ui/styles/styles";
 import { isoWeekdayLabel } from "#/features/insights/utils/chart";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 type HeatmapProps = {
   // 7（月〜日）× 24 時間の平均値
@@ -26,7 +25,7 @@ const colorOf = (ratio: number) =>
 
 export const Heatmap = ({ grid, ariaLabel }: HeatmapProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const [hovered, setHovered] = useState<{ weekday: number; hour: number } | null>(null);
   const max = Math.max(0, ...grid.flat());
   const hoveredValue = hovered === null ? undefined : grid[hovered.weekday - 1]?.[hovered.hour];

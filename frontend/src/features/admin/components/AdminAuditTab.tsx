@@ -4,7 +4,6 @@ import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { formatNumber } from "@chat/i18n";
 import { IconDownload } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
@@ -19,7 +18,7 @@ import { downloadText } from "#/features/admin/utils/downloadText";
 import { auditActionKeys } from "#/features/admin/utils/labels";
 import { toLocalDateTime } from "#/features/admin/utils/localDateTime";
 import { AuditAction } from "#/gen/chat/v1/admin_service_pb";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { usePreferences } from "#/hooks/usePreferences";
 
 import { AuditLogTable } from "./AuditLogTable";
 
@@ -77,7 +76,7 @@ type AdminAuditTabProps = {
 
 export const AdminAuditTab = ({ workspaceId, members }: AdminAuditTabProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { locale } = usePreferences();
   const { exportAuditLogs } = useAdminActions();
   const search = adminRoute.useSearch();
   const navigate = adminRoute.useNavigate();
