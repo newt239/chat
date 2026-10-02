@@ -1,4 +1,4 @@
-import { oklchToHex } from "@chat/design-tokens";
+import { oklchToHex } from "@chat/design-tokens/color";
 
 import { cn } from "#/components/ui/styles/styles";
 import { useColorMode } from "#/providers/theme/colorMode";

@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf";
-import { colorModePreferences, defaultTheme, sidebarStyles } from "@chat/design-tokens";
-import { resolveLocale } from "@chat/i18n";
+import { colorModePreferences, defaultTheme, sidebarStyles } from "@chat/design-tokens/theme";
+import { resolveLocale } from "@chat/i18n/i18n";
 
 import {
   ChannelSortOrder,
@@ -14,7 +14,10 @@ import { channelSortOrders, notificationLevels } from "#/providers/store/prefere
 import type { UserPreferences } from "#/gen/chat/v1/user_pb";
 import type { Preferences } from "#/providers/store/preferences";
 
-import type { ColorModePreference, SidebarStyle as SidebarStyleName } from "@chat/design-tokens";
+import type {
+  ColorModePreference,
+  SidebarStyle as SidebarStyleName,
+} from "@chat/design-tokens/theme";
 
 const sidebarStyleValues: Record<SidebarStyleName, SidebarStyle> = {
   light: SidebarStyle.LIGHT,

@@ -1,4 +1,4 @@
-import { buildTokens, defaultTheme } from "@chat/design-tokens";
+import { buildTokens, defaultTheme } from "@chat/design-tokens/theme";
 import { expect, test } from "vite-plus/test";
 
 import { pwaColors } from "./pwaColors";

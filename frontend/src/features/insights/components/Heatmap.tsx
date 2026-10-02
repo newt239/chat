@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { formatNumber } from "@chat/i18n";
+import { formatNumber } from "@chat/i18n/format";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "#/components/ui/styles/styles";

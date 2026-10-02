@@ -1,8 +1,8 @@
-import { buildTokens } from "@chat/design-tokens";
+import { buildTokens } from "@chat/design-tokens/theme";
 
 import { useColorMode } from "#/providers/theme/colorMode";
 
-import type { ThemeInput } from "@chat/design-tokens";
+import type { ThemeInput } from "@chat/design-tokens/theme";
 
 type ThemePreviewProps = {
   theme: ThemeInput;

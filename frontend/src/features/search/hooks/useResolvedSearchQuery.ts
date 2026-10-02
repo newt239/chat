@@ -1,4 +1,4 @@
-import { parseSearchQuery } from "@chat/search-query";
+import { parseSearchQuery } from "@chat/search-query/query";
 
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useMembers } from "#/features/member/hooks/useMembers";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
-import { formatNumber } from "@chat/i18n";
+import { formatNumber } from "@chat/i18n/format";
 import { IconDownload } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";

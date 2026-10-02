@@ -1,6 +1,7 @@
-import { buildTokens, fontFamily, radius, shadow, typography } from "@chat/design-tokens";
+import { fontFamily, radius, shadow, typography } from "@chat/design-tokens/scale";
+import { buildTokens } from "@chat/design-tokens/theme";
 
-import type { ColorMode, ThemeInput } from "@chat/design-tokens";
+import type { ColorMode, ThemeInput } from "@chat/design-tokens/theme";
 
 const px = (value: number) => `${value}px`;
 const fontStack = (families: readonly string[]) =>

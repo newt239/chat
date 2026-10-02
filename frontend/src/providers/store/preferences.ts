@@ -1,5 +1,5 @@
-import { colorModePreferences, defaultTheme, sidebarStyles } from "@chat/design-tokens";
-import { defaultLocale, locales } from "@chat/i18n";
+import { colorModePreferences, defaultTheme, sidebarStyles } from "@chat/design-tokens/theme";
+import { defaultLocale, locales } from "@chat/i18n/i18n";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { z } from "zod";

@@ -1,4 +1,4 @@
-import { createI18n } from "@chat/i18n";
+import { createI18n } from "@chat/i18n/i18n";
 import { initReactI18next } from "react-i18next";
 
 import { storedPreferencesAtom } from "#/providers/store/preferences";

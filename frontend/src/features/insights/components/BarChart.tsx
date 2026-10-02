@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { formatNumber } from "@chat/i18n";
+import { formatNumber } from "@chat/i18n/format";
 import { motion } from "motion/react";
 
 import { cn } from "#/components/ui/styles/styles";

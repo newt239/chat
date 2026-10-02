@@ -1,5 +1,5 @@
 import { create } from "@bufbuild/protobuf";
-import { themePresets } from "@chat/design-tokens";
+import { themePresets } from "@chat/design-tokens/theme";
 import { describe, expect, test } from "vite-plus/test";
 
 import {

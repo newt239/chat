@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    "./color": "./src/color.ts",
+    "./motion": "./src/motion.ts",
+    "./scale": "./src/scale.ts",
+    "./theme": "./src/theme.ts"
   },
   "scripts": {
     "codecheck": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run test",

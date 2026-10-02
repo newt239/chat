@@ -1,4 +1,4 @@
-import { formatRelativeTime } from "@chat/i18n";
+import { formatRelativeTime } from "@chat/i18n/format";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 

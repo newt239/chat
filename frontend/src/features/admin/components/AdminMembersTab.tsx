@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { formatBytes, formatNumber } from "@chat/i18n";
+import { formatBytes, formatNumber } from "@chat/i18n/format";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 

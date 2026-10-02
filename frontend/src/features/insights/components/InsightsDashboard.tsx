@@ -1,4 +1,10 @@
-import { formatBytes, formatDate, formatMonthDay, formatNumber, formatWeekday } from "@chat/i18n";
+import {
+  formatBytes,
+  formatDate,
+  formatMonthDay,
+  formatNumber,
+  formatWeekday,
+} from "@chat/i18n/format";
 import { IconHash, IconLock, IconShieldCheck } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 

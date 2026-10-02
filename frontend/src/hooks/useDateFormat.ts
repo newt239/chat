@@ -7,7 +7,7 @@ import {
   formatRelativeTime,
   formatTime,
   formatWeekday,
-} from "@chat/i18n";
+} from "@chat/i18n/format";
 import { getLocalTimeZone } from "@internationalized/date";
 
 import { usePreferences } from "#/hooks/usePreferences";

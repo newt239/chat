@@ -1,4 +1,4 @@
-import { formatTime } from "@chat/i18n";
+import { formatTime } from "@chat/i18n/format";
 import { IconMessage, IconTag } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";

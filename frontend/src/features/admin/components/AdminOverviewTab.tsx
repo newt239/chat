@@ -1,4 +1,4 @@
-import { formatBytes, formatNumber } from "@chat/i18n";
+import { formatBytes, formatNumber } from "@chat/i18n/format";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";

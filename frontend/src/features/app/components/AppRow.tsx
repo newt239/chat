@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { formatRelativeTime } from "@chat/i18n";
+import { formatRelativeTime } from "@chat/i18n/format";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";

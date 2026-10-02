@@ -1,4 +1,5 @@
-import { colorTokenNames, radius, shadow, typography } from "@chat/design-tokens";
+import { radius, shadow, typography } from "@chat/design-tokens/scale";
+import { colorTokenNames } from "@chat/design-tokens/theme";
 import { composeRenderProps } from "react-aria-components";
 import { extendTailwindMerge } from "tailwind-merge";
 

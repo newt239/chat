@@ -1,4 +1,4 @@
-import { findThemePreset, themePresetNames, themePresets } from "@chat/design-tokens";
+import { findThemePreset, themePresetNames, themePresets } from "@chat/design-tokens/theme";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 

@@ -5,8 +5,8 @@ import {
   findThemePreset,
   themePresetNames,
   themePresets,
-} from "@chat/design-tokens";
-import { formatDate, formatRelativeTime, formatTime, formatWeekday } from "@chat/i18n";
+} from "@chat/design-tokens/theme";
+import { formatDate, formatRelativeTime, formatTime, formatWeekday } from "@chat/i18n/format";
 import { IconCopy, IconDots, IconPin, IconSettings, IconTrash } from "@tabler/icons-react";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";

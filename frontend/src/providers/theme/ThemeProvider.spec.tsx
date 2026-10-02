@@ -1,4 +1,4 @@
-import { buildTokens, themePresets } from "@chat/design-tokens";
+import { buildTokens, themePresets } from "@chat/design-tokens/theme";
 import { render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { useTranslation } from "react-i18next";
