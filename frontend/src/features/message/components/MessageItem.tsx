@@ -121,6 +121,7 @@ export const MessageItem = ({
     onViewReactions: () => {
       setReactionTab(ALL_REACTIONS_TAB);
     },
+    threadMetadata,
   });
 
   const react = (emoji: string) => {

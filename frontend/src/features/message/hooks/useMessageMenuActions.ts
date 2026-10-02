@@ -1,4 +1,6 @@
 import {
+  IconBell,
+  IconBellOff,
   IconBookmark,
   IconBookmarkOff,
   IconCopy,
@@ -22,8 +24,9 @@ import {
 } from "#/features/bookmark/hooks/useBookmarks";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { usePinActions } from "#/features/pin/hooks/usePinActions";
+import { useToggleThreadFollow } from "#/features/thread/hooks/useToggleThreadFollow";
 
-import type { Message } from "#/gen/chat/v1/message_pb";
+import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
 import type { Icon } from "@tabler/icons-react";
 
@@ -39,6 +42,7 @@ export type MessageMenuAction = {
 
 type Options = {
   message: Message;
+  threadMetadata: ThreadMetadata | undefined;
   isAuthor: boolean;
   onReplyInThread: () => void;
   onCopyLink: () => void;
@@ -50,6 +54,7 @@ type Options = {
 // ホバー時の「その他」メニューとモバイルのシートで同じ操作を並べる
 export const useMessageMenuActions = ({
   message,
+  threadMetadata,
   isAuthor,
   onReplyInThread,
   onCopyLink,
@@ -67,6 +72,8 @@ export const useMessageMenuActions = ({
   const isPinned = message.pin !== undefined;
   const { pin, unpin } = usePinActions();
   const canModify = isAuthor && !message.isDeleted;
+  const { setFollowing } = useToggleThreadFollow(message.id);
+  const isFollowing = threadMetadata?.isFollowing ?? false;
 
   const toggleBookmark = () => {
     (isBookmarked ? removeBookmark : addBookmark).mutate(
@@ -120,6 +127,15 @@ export const useMessageMenuActions = ({
       id: "thread",
       label: t("message.actions.replyInThread"),
       onAction: onReplyInThread,
+      tone: "default",
+    },
+    (threadMetadata?.replyCount ?? 0) > 0 && {
+      icon: isFollowing ? IconBellOff : IconBell,
+      id: "followThread",
+      label: t(isFollowing ? "thread.follow.unfollow" : "thread.follow.follow"),
+      onAction: () => {
+        setFollowing(!isFollowing);
+      },
       tone: "default",
     },
     threadHref !== undefined && {

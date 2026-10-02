@@ -13,6 +13,7 @@ import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { InlineReplyComposer } from "./InlineReplyComposer";
+import { ThreadFollowButton } from "./ThreadFollowButton";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 import type { ParticipatingThread } from "#/gen/chat/v1/thread_service_pb";
@@ -71,6 +72,12 @@ export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
         {thread.unreadCount > 0 && (
           <Badge tone="accent">{t("inbox.thread.unread", { count: thread.unreadCount })}</Badge>
         )}
+        {/* 解除しても一覧からはすぐに消さず、押し直せるようにする */}
+        <ThreadFollowButton
+          className="ml-auto"
+          threadId={threadId}
+          isFollowing={thread.isFollowing}
+        />
       </div>
       {thread.latestReplies.map((reply) => (
         <MessageItem
