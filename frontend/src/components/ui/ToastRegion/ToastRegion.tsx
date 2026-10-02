@@ -56,7 +56,7 @@ export const ToastRegion = () => {
           <Button
             slot="close"
             aria-label={t("ui.toast.dismiss")}
-            className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-sm opacity-70 outline-none data-focus-visible:opacity-100 data-hovered:opacity-100"
+            className="grid size-6 shrink-0 cursor-pointer max-md:size-11 place-items-center rounded-sm opacity-70 outline-none data-focus-visible:opacity-100 data-hovered:opacity-100"
           >
             <IconX aria-hidden className="size-3.5" />
           </Button>

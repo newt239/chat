@@ -43,7 +43,9 @@ export const AppRow = ({ app, actions }: AppRowProps) => {
               ].join(" · ")}
         </small>
       </span>
-      <span className="flex shrink-0 [&_button]:size-7 [&_svg]:size-4!">{actions}</span>
+      <span className="flex shrink-0 [&_button]:size-7 [&_svg]:size-4! max-md:gap-1 max-md:[&_button]:size-11">
+        {actions}
+      </span>
     </li>
   );
 };

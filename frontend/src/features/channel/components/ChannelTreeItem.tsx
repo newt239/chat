@@ -92,7 +92,7 @@ export const ChannelTreeItem = ({ workspaceId, node, depth, isLast }: ChannelTre
             onPress={() => {
               setCollapsed({ ...collapsed, [channel.id]: !isCollapsed });
             }}
-            className={`absolute top-1/2 right-1.5 grid size-4 -translate-y-1/2 cursor-pointer place-items-center rounded-sm text-(--nav-muted) data-hovered:bg-(--nav-hover) max-md:size-6 ${focusRing}`}
+            className={`absolute top-1/2 right-1.5 grid size-4 -translate-y-1/2 cursor-pointer place-items-center rounded-sm text-(--nav-muted) data-hovered:bg-(--nav-hover) max-md:size-9 ${focusRing}`}
           >
             <IconChevronDown
               aria-hidden

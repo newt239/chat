@@ -26,6 +26,9 @@ export const ui = {
     title: "画像を切り抜く",
     zoom: "拡大",
   },
+  menu: {
+    title: "メニュー",
+  },
   toast: {
     dismiss: "通知を閉じる",
     region: "通知",

@@ -52,10 +52,10 @@ export const ComboBox = <T extends string>({
     >
       <Label className={fieldStyles.label}>{label}</Label>
       <div className="relative">
-        <Input placeholder={placeholder} className={cn(fieldStyles.input, "pr-8")} />
+        <Input placeholder={placeholder} className={cn(fieldStyles.input, "pr-8 max-md:pr-10")} />
         <Button
           aria-label={t("ui.comboBox.showSuggestions")}
-          className="absolute inset-y-0 right-1 my-auto grid size-7 cursor-pointer place-items-center rounded-sm text-muted outline-none data-hovered:text-text"
+          className="absolute inset-y-0 right-1 my-auto grid size-7 cursor-pointer max-md:size-9 place-items-center rounded-sm text-muted outline-none data-hovered:text-text"
         >
           <IconSelector aria-hidden className="size-4" />
         </Button>

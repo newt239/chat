@@ -20,7 +20,7 @@ import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
-import { focusRing } from "#/components/ui/styles/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
@@ -105,7 +105,10 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
         <IconButton
           label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
           aria-pressed={isStarred}
-          className={isStarred ? "text-mention-bar data-hovered:text-mention-bar" : undefined}
+          className={cn(
+            "max-md:hidden",
+            isStarred && "text-mention-bar data-hovered:text-mention-bar",
+          )}
           onPress={() => {
             setStarred(channelId, !isStarred);
           }}

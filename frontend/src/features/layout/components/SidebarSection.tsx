@@ -47,7 +47,7 @@ export const SidebarSection = ({ id, title, onAdd, menu, children }: SidebarSect
           <IconButton
             label={onAdd.label}
             onPress={handleAdd}
-            className="size-[22px] text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5"
+            className="size-6 text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5"
           >
             <IconPlus />
           </IconButton>

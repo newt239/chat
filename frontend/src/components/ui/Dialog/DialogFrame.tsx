@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useDragControls } from "motion/react";
 import { Dialog as AriaDialog, Modal, ModalOverlay } from "react-aria-components";
 
 import { cn } from "#/components/ui/styles/styles";
@@ -52,6 +52,8 @@ export const DialogFrame = ({
   children,
 }: DialogFrameProps) => {
   const { animation, className: layoutClassName, transition } = layouts[layout];
+  const dragControls = useDragControls();
+  const isBottom = layout === "bottom";
   return (
     <AnimatePresence>
       {isOpen && (
@@ -68,6 +70,17 @@ export const DialogFrame = ({
           <MotionModal
             {...animation}
             transition={transition}
+            // 高さ可変のシートはつまみを下へ引くと閉じる
+            drag={isBottom && "y"}
+            dragListener={false}
+            dragControls={dragControls}
+            dragConstraints={{ bottom: 0, top: 0 }}
+            dragElastic={{ bottom: 1, top: 0 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 80 || info.velocity.y > 500) {
+                onOpenChange(false);
+              }
+            }}
             className={cn(
               "flex flex-col bg-surface font-sans text-text",
               layoutClassName,
@@ -75,6 +88,17 @@ export const DialogFrame = ({
             )}
           >
             <AriaDialog role={role} className="flex min-h-0 flex-1 flex-col outline-none">
+              {isBottom && (
+                <div
+                  aria-hidden
+                  className="-mt-2 flex h-7 shrink-0 cursor-grab touch-none items-center justify-center"
+                  onPointerDown={(event) => {
+                    dragControls.start(event);
+                  }}
+                >
+                  <span className="h-[5px] w-9 rounded-[3px] bg-border-strong" />
+                </div>
+              )}
               {children}
             </AriaDialog>
           </MotionModal>

@@ -64,7 +64,7 @@ const formatButtons: { key: FormatKey; icon: Icon }[] = [
   { icon: IconListNumbers, key: "orderedList" },
 ];
 
-const buttonClassName = "size-7 [&_svg]:size-4 max-md:size-11 max-md:[&_svg]:size-5";
+const buttonClassName = "size-7 [&_svg]:size-4";
 
 export const MessageInputToolbar = ({
   isPreview,
@@ -90,7 +90,7 @@ export const MessageInputToolbar = ({
   return (
     <div className="flex items-center gap-px px-[5px] pb-[5px] max-md:gap-1">
       {/* 幅が足りないときは送信まわり以外を横にスクロールさせる */}
-      <div className="flex min-w-0 flex-1 items-center gap-px overflow-x-auto [scrollbar-width:none] max-md:gap-1">
+      <div className="flex min-w-0 flex-1 items-center gap-px overflow-x-auto [scrollbar-width:none] max-md:gap-1 max-md:mask-r-from-85%">
         {formatButtons.map(({ key, icon: FormatIcon }) => (
           <IconToggleButton
             key={key}
@@ -177,7 +177,7 @@ export const MessageInputToolbar = ({
         label={t("message.composer.send")}
         isDisabled={isSendDisabled}
         onPress={onSubmit}
-        className="h-7 w-8 max-md:size-11 bg-accent text-accent-fg data-disabled:bg-transparent data-hovered:bg-accent-hover data-hovered:text-accent-fg [&_svg]:size-4 max-md:[&_svg]:size-5"
+        className="h-7 w-8 bg-accent text-accent-fg data-disabled:bg-transparent data-hovered:bg-accent-hover data-hovered:text-accent-fg [&_svg]:size-4"
       >
         {isSending ? (
           <IconLoader2 className="animate-spin motion-reduce:animate-none" />
