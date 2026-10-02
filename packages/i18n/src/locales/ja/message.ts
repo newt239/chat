@@ -92,7 +92,6 @@ export const message = {
   },
   panel: {
     empty: "まだメッセージがありません",
-    emptyHint: "最初のメッセージを送ってみましょう",
     jumpToLatest: "最新のメッセージへ移動",
     loading: "読み込み中…",
     selectChannel: "チャンネルを選ぶとメッセージが表示されます",

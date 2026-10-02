@@ -28,6 +28,9 @@ export const ui: Messages["ui"] = {
     title: "Crop image",
     zoom: "Zoom",
   },
+  menu: {
+    title: "Menu",
+  },
   toast: {
     dismiss: "Dismiss notification",
     region: "Notifications",

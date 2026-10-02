@@ -2,8 +2,10 @@ import type { ReactNode } from "react";
 
 import { Button as AriaButton } from "react-aria-components";
 
-import { focusRing, withBaseClassName } from "#/components/ui/styles/styles";
+import { withBaseClassName } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
+
+import { iconButtonClassName } from "./iconButtonClassName";
 
 import type { ButtonProps as AriaButtonProps } from "react-aria-components";
 
@@ -18,10 +20,7 @@ export const IconButton = ({ label, className, children, ...props }: IconButtonP
     <AriaButton
       {...props}
       aria-label={label}
-      className={withBaseClassName(
-        className,
-        `relative inline-grid size-[30px] shrink-0 cursor-pointer place-items-center rounded-md text-muted transition-colors data-disabled:cursor-default data-disabled:text-subtle data-hovered:bg-hover data-hovered:text-text data-pressed:bg-hover [&_svg]:size-[18px] ${focusRing}`,
-      )}
+      className={withBaseClassName(className, iconButtonClassName)}
     >
       {children}
     </AriaButton>

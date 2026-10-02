@@ -25,7 +25,7 @@ import { FileTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { IconButton } from "#/components/ui/IconButton/IconButton";
-import { cn } from "#/components/ui/styles/styles";
+import { IconToggleButton } from "#/components/ui/IconToggleButton/IconToggleButton";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
 import { EmojiPickerPopover } from "#/features/reaction/components/EmojiPickerPopover";
 import { ScheduleSendMenu } from "#/features/schedule/components/ScheduleSendMenu";
@@ -65,7 +65,6 @@ const formatButtons: { key: FormatKey; icon: Icon }[] = [
 ];
 
 const buttonClassName = "size-7 [&_svg]:size-4";
-const activeClassName = "bg-accent-soft text-accent-text data-hovered:bg-accent-soft";
 
 export const MessageInputToolbar = ({
   isPreview,
@@ -89,89 +88,90 @@ export const MessageInputToolbar = ({
   const hasPickedEmojiRef = useRef(false);
 
   return (
-    <div className="@container flex items-center gap-px px-[5px] pb-[5px]">
-      {/* モバイルやスレッドの欄は幅が足りないため、書式のボタンを出さない */}
-      <div className="hidden items-center gap-px @lg:flex">
+    <div className="flex items-center gap-px px-[5px] pb-[5px] max-md:gap-1">
+      {/* 幅が足りないときは送信まわり以外を横にスクロールさせる */}
+      <div className="flex min-w-0 flex-1 items-center gap-px overflow-x-auto [scrollbar-width:none] max-md:gap-1 max-md:mask-r-from-85%">
         {formatButtons.map(({ key, icon: FormatIcon }) => (
-          <IconButton
+          <IconToggleButton
             key={key}
             label={t(`message.composer.${key}`)}
             isDisabled={isPreview}
-            className={cn(buttonClassName, activeFormats[key] && activeClassName)}
-            onPress={() => {
+            isSelected={activeFormats[key]}
+            className={buttonClassName}
+            onChange={() => {
               onFormat(key);
             }}
           >
             <FormatIcon />
-          </IconButton>
+          </IconToggleButton>
         ))}
-        <span className="mx-1 h-4 w-px bg-border" />
-      </div>
-      <EmojiPickerPopover
-        label={t("message.composer.emoji")}
-        placement="top start"
-        onSelect={(emoji) => {
-          hasPickedEmojiRef.current = true;
-          onInsertEmoji(emoji);
-        }}
-        trigger={
-          <IconButton
-            label={t("message.composer.emoji")}
-            isDisabled={isPreview}
-            className={buttonClassName}
-            onFocus={() => {
-              if (hasPickedEmojiRef.current) {
-                hasPickedEmojiRef.current = false;
-                onFocusInput();
-              }
-            }}
-          >
-            <IconMoodSmile />
-          </IconButton>
-        }
-      />
-      <FileTrigger
-        allowsMultiple
-        onSelect={(files) => {
-          if (files !== null) {
-            onFileSelect([...files]);
+        <span className="mx-1 h-4 w-px shrink-0 bg-border" />
+        <EmojiPickerPopover
+          label={t("message.composer.emoji")}
+          placement="top start"
+          onSelect={(emoji) => {
+            hasPickedEmojiRef.current = true;
+            onInsertEmoji(emoji);
+          }}
+          trigger={
+            <IconButton
+              label={t("message.composer.emoji")}
+              isDisabled={isPreview}
+              className={buttonClassName}
+              onFocus={() => {
+                if (hasPickedEmojiRef.current) {
+                  hasPickedEmojiRef.current = false;
+                  onFocusInput();
+                }
+              }}
+            >
+              <IconMoodSmile />
+            </IconButton>
           }
-        }}
-      >
-        <IconButton label={t("message.composer.attach")} className={buttonClassName}>
-          <IconPaperclip />
+        />
+        <FileTrigger
+          allowsMultiple
+          onSelect={(files) => {
+            if (files !== null) {
+              onFileSelect([...files]);
+            }
+          }}
+        >
+          <IconButton label={t("message.composer.attach")} className={buttonClassName}>
+            <IconPaperclip />
+          </IconButton>
+        </FileTrigger>
+        <IconButton
+          label={t("location.composer.share")}
+          className={buttonClassName}
+          onPress={onShareLocation}
+        >
+          <IconMapPin />
         </IconButton>
-      </FileTrigger>
-      <IconButton
-        label={t("location.composer.share")}
-        className={buttonClassName}
-        onPress={onShareLocation}
-      >
-        <IconMapPin />
-      </IconButton>
-      <IconButton label={t("recorder.start")} className={buttonClassName} onPress={onRecord}>
-        <IconMicrophone />
-      </IconButton>
-      <IconButton label={t("poll.create")} className={buttonClassName} onPress={onCreatePoll}>
-        <IconChartBar />
-      </IconButton>
-      <IconButton
-        label={t("message.composer.help")}
-        className={cn(buttonClassName, "hidden @lg:inline-grid")}
-        onPress={() => {
-          void navigate({ search: openDialog({ dialog: "markdown-help" }), to: "." });
-        }}
-      >
-        <IconHelp />
-      </IconButton>
-      <span className="flex-1" />
-      <IconButton
+        <IconButton label={t("recorder.start")} className={buttonClassName} onPress={onRecord}>
+          <IconMicrophone />
+        </IconButton>
+        <IconButton label={t("poll.create")} className={buttonClassName} onPress={onCreatePoll}>
+          <IconChartBar />
+        </IconButton>
+        <IconButton
+          label={t("message.composer.help")}
+          className={buttonClassName}
+          onPress={() => {
+            void navigate({ search: openDialog({ dialog: "markdown-help" }), to: "." });
+          }}
+        >
+          <IconHelp />
+        </IconButton>
+      </div>
+      <IconToggleButton
         label={t("message.composer.preview")}
-        className={cn(buttonClassName, isPreview && activeClassName)}
-        onPress={onTogglePreview}
+        isSelected={isPreview}
+        className={buttonClassName}
+        onChange={onTogglePreview}
       >
         <IconEye />
-      </IconButton>
+      </IconToggleButton>
       <ScheduleSendMenu isDisabled={isSendDisabled} onSchedule={onSchedule} />
       <IconButton
         label={t("message.composer.send")}

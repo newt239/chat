@@ -41,9 +41,11 @@ export const ChannelList = ({ workspaceId, categoryId }: ChannelListProps) => {
 
   if (sorted.length === 0 && tree.length === 0) {
     return (
-      <p className="m-0 px-2 py-1 text-caption text-(--nav-muted)">
-        {categoryId === null ? t("shell.sidebar.noChannels") : t("channel.category.empty")}
-      </p>
+      categoryId === null && (
+        <p className="m-0 px-2 py-1 text-caption text-(--nav-muted)">
+          {t("shell.sidebar.noChannels")}
+        </p>
+      )
     );
   }
 

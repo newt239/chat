@@ -7,72 +7,70 @@ import { mobileTabAtom } from "#/providers/store/ui";
 
 import { useUnreadSummary } from "../hooks/useUnreadSummary";
 
-import type { MobileTab } from "#/providers/store/ui";
-
 type MobileTabBarProps = {
   workspaceId: string;
 };
-
-const tabClassName =
-  "relative flex min-h-[46px] flex-1 flex-col items-center justify-center gap-px text-[10.5px] text-subtle no-underline data-[tab=on]:font-semibold data-[tab=on]:text-accent-text [&_svg]:size-[22px]";
-
-const pip = (count: number) =>
-  count > 0 && (
-    <span className="absolute top-1 left-[calc(50%+5px)] box-content grid h-4 min-w-4 place-items-center rounded-full border-2 border-surface bg-danger px-[3px] text-[10px] leading-none font-bold text-danger-fg">
-      {count > 99 ? "99+" : count}
-    </span>
-  );
 
 export const MobileTabBar = ({ workspaceId }: MobileTabBarProps) => {
   const { t } = useTranslation();
   const tab = useAtomValue(mobileTabAtom);
   const { activityUnread, dmUnread } = useUnreadSummary(workspaceId);
-  const params = { workspaceId };
-  const state = (name: MobileTab) => (tab === name ? "on" : "off");
+  const tabs = [
+    {
+      icon: IconHome,
+      label: t("shell.tabs.home"),
+      name: "home",
+      to: "/app/$workspaceId",
+      unread: 0,
+    },
+    {
+      icon: IconMessageCircle,
+      label: t("shell.tabs.dms"),
+      name: "dms",
+      to: "/app/$workspaceId/dms",
+      unread: dmUnread,
+    },
+    {
+      icon: IconBell,
+      label: t("shell.tabs.activity"),
+      name: "activity",
+      to: "/app/$workspaceId/activity",
+      unread: activityUnread,
+    },
+    {
+      icon: IconUser,
+      label: t("shell.tabs.me"),
+      name: "me",
+      to: "/app/$workspaceId/me",
+      unread: 0,
+    },
+  ] as const;
 
   return (
     <nav
       aria-label={t("shell.sidebar.label")}
-      className="flex shrink-0 border-t border-border bg-surface px-2 pt-1 pb-[max(8px,env(safe-area-inset-bottom))]"
+      className="flex shrink-0 border-t border-border bg-surface px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]"
     >
-      <Link
-        to="/app/$workspaceId"
-        params={params}
-        data-tab={state("home")}
-        className={tabClassName}
-      >
-        <IconHome aria-hidden />
-        {t("shell.tabs.home")}
-      </Link>
-      <Link
-        to="/app/$workspaceId/dms"
-        params={params}
-        data-tab={state("dms")}
-        className={tabClassName}
-      >
-        <IconMessageCircle aria-hidden />
-        {pip(dmUnread)}
-        {t("shell.tabs.dms")}
-      </Link>
-      <Link
-        to="/app/$workspaceId/activity"
-        params={params}
-        data-tab={state("activity")}
-        className={tabClassName}
-      >
-        <IconBell aria-hidden />
-        {pip(activityUnread)}
-        {t("shell.tabs.activity")}
-      </Link>
-      <Link
-        to="/app/$workspaceId/me"
-        params={params}
-        data-tab={state("me")}
-        className={tabClassName}
-      >
-        <IconUser aria-hidden />
-        {t("shell.tabs.me")}
-      </Link>
+      {tabs.map(({ icon: TabIcon, label, name, to, unread }) => (
+        <Link
+          key={name}
+          to={to}
+          params={{ workspaceId }}
+          data-tab={tab === name ? "on" : "off"}
+          className="group flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] text-subtle no-underline data-[tab=on]:font-semibold data-[tab=on]:text-accent-text"
+        >
+          {/* アクティブなタブはアイコンを薄い色のピルで囲む */}
+          <span className="relative grid h-8 w-14 place-items-center rounded-full transition-colors group-data-[tab=on]:bg-accent-soft [&_svg]:size-[22px]">
+            <TabIcon aria-hidden />
+            {unread > 0 && (
+              <span className="absolute -top-0.5 left-[calc(50%+6px)] box-content grid h-4 min-w-4 place-items-center rounded-full border-2 border-surface bg-danger px-[3px] text-[10px] leading-none font-bold text-danger-fg">
+                {unread > 99 ? "99+" : unread}
+              </span>
+            )}
+          </span>
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 };

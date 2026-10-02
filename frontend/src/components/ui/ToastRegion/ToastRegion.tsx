@@ -24,7 +24,7 @@ export const ToastRegion = () => {
     <AriaToastRegion
       queue={toastQueue}
       aria-label={t("ui.toast.region")}
-      className="fixed bottom-5 left-1/2 max-md:bottom-[calc(72px+env(safe-area-inset-bottom))] z-[400] flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
+      className="fixed bottom-5 left-1/2 max-md:bottom-[calc(88px+env(safe-area-inset-bottom))] z-[400] flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
     >
       {({ toast }) => (
         <Toast
@@ -56,7 +56,7 @@ export const ToastRegion = () => {
           <Button
             slot="close"
             aria-label={t("ui.toast.dismiss")}
-            className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-sm opacity-70 outline-none data-focus-visible:opacity-100 data-hovered:opacity-100"
+            className="grid size-6 shrink-0 cursor-pointer max-md:size-11 place-items-center rounded-sm opacity-70 outline-none data-focus-visible:opacity-100 data-hovered:opacity-100"
           >
             <IconX aria-hidden className="size-3.5" />
           </Button>

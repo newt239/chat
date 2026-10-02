@@ -10,9 +10,7 @@ export const MentionsPage = () => {
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   return (
     <>
-      <PageHeader icon={<IconAt />} title={t("shell.nav.mentions")}>
-        <span className="hidden text-caption text-muted md:inline">{t("inbox.replyHint")}</span>
-      </PageHeader>
+      <PageHeader icon={<IconAt />} title={t("shell.nav.mentions")} />
       <MentionList workspaceId={workspaceId} />
     </>
   );

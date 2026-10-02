@@ -7,7 +7,6 @@ export const inbox: Messages["inbox"] = {
     failed: "Couldn't load mentions",
     replyPlaceholder: "Reply to {{name}} in thread…",
   },
-  replyHint: "Reply right from here",
   thread: {
     open: "Open thread",
     replyPlaceholder: "Reply…",

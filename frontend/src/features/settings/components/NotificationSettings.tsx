@@ -22,10 +22,7 @@ export const NotificationSettings = () => {
 
   return (
     <div className="flex flex-col">
-      <SettingRow
-        title={t("settings.notifications.level")}
-        description={t("settings.notifications.levelDescription")}
-      >
+      <SettingRow title={t("settings.notifications.level")} description={null}>
         <SegmentedControl
           label={t("settings.notifications.level")}
           options={notificationLevels.map((value) => ({

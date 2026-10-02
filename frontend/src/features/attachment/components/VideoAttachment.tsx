@@ -85,7 +85,7 @@ export const VideoAttachment = ({ attachment, message }: VideoAttachmentProps) =
         <PlayPauseButton
           isPlaying={isPlaying}
           onPress={handleToggle}
-          className="size-7 rounded-md text-text data-hovered:bg-hover [&_svg]:size-3.5"
+          className="size-7 rounded-md text-text max-md:size-11 data-hovered:bg-hover [&_svg]:size-3.5"
         />
         <SeekBar position={position} duration={duration} onSeek={handleSeek} track="bar" />
         <span className="font-mono text-[11px] whitespace-nowrap tabular-nums">

@@ -30,7 +30,7 @@ export const ChannelSectionMenu = ({ workspaceId }: ChannelSectionMenuProps) => 
       trigger={
         <IconButton
           label={t("channel.sectionMenu")}
-          className="size-[22px] text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5"
+          className="size-6 text-(--nav-muted) data-hovered:bg-(--nav-hover) data-hovered:text-(--nav-strong) [&_svg]:size-3.5"
         >
           <IconDots />
         </IconButton>

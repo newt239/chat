@@ -13,7 +13,7 @@ type TooltipProps = {
 
 // ホバーは補助。ツールチップだけに情報を置かず、タップでも届く場所に同じ情報を置く
 export const Tooltip = ({ content, children, placement = "top" }: TooltipProps) => (
-  <TooltipTrigger delay={500} closeDelay={0}>
+  <TooltipTrigger delay={300} closeDelay={0}>
     {children}
     <AriaTooltip
       offset={6}

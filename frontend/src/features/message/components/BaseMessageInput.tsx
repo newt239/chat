@@ -22,13 +22,13 @@ import { useIsMobile } from "#/hooks/useMediaQuery";
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
 import { useMentionCodec } from "../hooks/useMentionCodec";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
-import { applyFormat, detectActiveFormats, insertEmoji } from "../utils/format";
+import { continueList, detectActiveFormats, insertEmoji, toggleFormat } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 import { SuggestionList } from "./SuggestionList";
 
 import type { ComposerContent } from "../utils/composerContent";
-import type { FormatKey } from "../utils/format";
+import type { FormatKey, Selection } from "../utils/format";
 
 import type { MessageLocation } from "#/gen/chat/v1/message_pb";
 
@@ -115,13 +115,13 @@ export const BaseMessageInput = ({
     [addPreview, previews, removePreview, notifyTyping, saveDraft, encode],
   );
 
-  const replaceSelection = (next: { text: string; cursor: number }) => {
+  const replaceSelection = (next: { text: string; selection: Selection }) => {
     handleBodyChange(next.text);
-    setSelection({ end: next.cursor, start: next.cursor });
-    // 値が反映されてからカーソルを動かす
+    setSelection(next.selection);
+    // 値が反映されてから選択範囲を動かす
     requestAnimationFrame(() => {
       textareaRef.current?.focus();
-      textareaRef.current?.setSelectionRange(next.cursor, next.cursor);
+      textareaRef.current?.setSelectionRange(next.selection.start, next.selection.end);
     });
   };
 
@@ -131,12 +131,12 @@ export const BaseMessageInput = ({
     cursor: selection.start,
     onApply: (next, item) => {
       mentionCodec.register(item.value, item.token);
-      replaceSelection(next);
+      replaceSelection({ selection: { end: next.cursor, start: next.cursor }, text: next.text });
     },
   });
 
   const handleFormat = (key: FormatKey) => {
-    replaceSelection(applyFormat(body, selection, key));
+    replaceSelection(toggleFormat(body, selection, key));
   };
 
   const handleInsertEmoji = (emoji: string) => {
@@ -278,18 +278,26 @@ export const BaseMessageInput = ({
             }}
             isDisabled={isBusy}
             onKeyDown={(event) => {
-              if (suggestion.handleKeyDown(event)) {
+              if (
+                suggestion.handleKeyDown(event) ||
+                event.key !== "Enter" ||
+                event.nativeEvent.isComposing
+              ) {
                 return;
               }
               // モバイルの Enter は改行にする
-              if (
-                event.key === "Enter" &&
-                !event.shiftKey &&
-                !event.nativeEvent.isComposing &&
-                !isMobile
-              ) {
+              if (!event.shiftKey && !isMobile) {
                 event.preventDefault();
                 handleSubmit();
+                return;
+              }
+              const textarea = textareaRef.current;
+              const continued =
+                textarea &&
+                continueList(body, { end: textarea.selectionEnd, start: textarea.selectionStart });
+              if (continued) {
+                event.preventDefault();
+                replaceSelection(continued);
               }
             }}
           >

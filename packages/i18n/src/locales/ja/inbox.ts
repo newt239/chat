@@ -6,7 +6,6 @@ export const inbox = {
     failed: "メンションを読み込めませんでした",
     replyPlaceholder: "{{name}} さんにスレッドで返信…",
   },
-  replyHint: "ここから直接返信できます",
   thread: {
     open: "スレッドを開く",
     replyPlaceholder: "返信する…",

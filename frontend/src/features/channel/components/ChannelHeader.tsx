@@ -2,7 +2,6 @@ import { skipToken, useQuery } from "@connectrpc/connect-query";
 import {
   IconBellOff,
   IconNote,
-  IconChevronDown,
   IconDots,
   IconInfoCircle,
   IconPin,
@@ -21,12 +20,13 @@ import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Menu } from "#/components/ui/Menu/Menu";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
-import { focusRing } from "#/components/ui/styles/styles";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
 import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { dmName } from "#/features/dm/utils/dmName";
 import { BackButton } from "#/features/layout/components/BackButton";
+import { useMobileForward } from "#/features/layout/hooks/useMobileForward";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
@@ -94,6 +94,10 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
   const infoPanel: PanelSearch = partner
     ? { profile: partner.userId }
     : { panel: dm ? "members" : "info" };
+  // モバイルでは左へのスワイプでも同じ情報を開く
+  useMobileForward(() => {
+    openRightPanel(infoPanel);
+  });
 
   if (!channel && !dm) {
     return <header className="h-12 shrink-0 border-b border-border" />;
@@ -106,7 +110,10 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
         <IconButton
           label={isStarred ? t("shell.channelMenu.unstar") : t("shell.channelMenu.star")}
           aria-pressed={isStarred}
-          className={isStarred ? "text-mention-bar data-hovered:text-mention-bar" : undefined}
+          className={cn(
+            "max-md:hidden",
+            isStarred && "text-mention-bar data-hovered:text-mention-bar",
+          )}
           onPress={() => {
             setStarred(channelId, !isStarred);
           }}
@@ -129,7 +136,6 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
               </>
             )
           )}
-          <IconChevronDown aria-hidden className="size-3!" />
         </Button>
         {isMuted && (
           <Tooltip content={t("shell.channel.muted")}>
@@ -188,6 +194,16 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             </span>
           )}
         </IconButton>
+        {channel && (
+          <IconButton
+            label={t("shell.rightPanel.channelInfo")}
+            onPress={() => {
+              openRightPanel({ panel: "info" });
+            }}
+          >
+            <IconInfoCircle />
+          </IconButton>
+        )}
         {partner && (
           <IconButton
             label={t("shell.rightPanel.profile")}
@@ -212,11 +228,6 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             isMuted={isMuted}
           />
           <MenuSeparator />
-          {channel && (
-            <MenuItemLink icon={<IconInfoCircle />} to="." search={openPanel({ panel: "info" })}>
-              {t("shell.rightPanel.channelInfo")}
-            </MenuItemLink>
-          )}
           <MenuItemLink icon={<IconUsers />} to="." search={openPanel({ panel: "members" })}>
             {t("shell.rightPanel.members")}
           </MenuItemLink>

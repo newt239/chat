@@ -206,7 +206,6 @@ export const MessagePanel = () => {
             <IconHash aria-hidden />
           </span>
           <b className="text-body-strong">{t("message.panel.empty")}</b>
-          <span className="text-caption text-muted">{t("message.panel.emptyHint")}</span>
         </div>
       );
     }

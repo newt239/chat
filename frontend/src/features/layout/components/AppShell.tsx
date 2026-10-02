@@ -40,7 +40,7 @@ export const AppShell = ({ workspaceId }: AppShellProps) => {
       {isMobile ? (
         <MobileShell workspaceId={workspaceId} />
       ) : (
-        <div className="flex h-full overflow-hidden bg-bg font-sans text-text">
+        <div className="flex h-full overflow-clip bg-bg pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] font-sans text-text">
           <Sidebar workspaceId={workspaceId} />
           <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-surface">
             <Outlet />

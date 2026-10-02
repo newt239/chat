@@ -15,7 +15,7 @@ export const DisplaySettings = () => {
 
   return (
     <div className="flex flex-col">
-      <SettingRow title={t("preferences.locale.title")} description="Language">
+      <SettingRow title={t("preferences.locale.title")} description={null}>
         <SegmentedControl
           label={t("preferences.locale.title")}
           options={(["ja", "en"] as const).map((value) => ({

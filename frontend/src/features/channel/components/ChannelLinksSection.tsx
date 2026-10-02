@@ -34,9 +34,6 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
           </LinkButton>
         )}
       </h4>
-      {links.length === 0 && (
-        <p className="m-0 text-[12.5px] text-muted">{t("channel.links.empty")}</p>
-      )}
       <ul className="m-0 -mx-2 flex list-none flex-col p-0">
         {links.map((link, index) => (
           <li
@@ -56,7 +53,7 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
               <small className="truncate text-[11.5px] text-subtle">{link.url}</small>
             </span>
             {canEdit && (
-              <span className="flex shrink-0 [&_button]:size-7 [&_svg]:size-4!">
+              <span className="flex shrink-0 [&_button]:size-7 [&_svg]:size-4! max-md:gap-1 max-md:[&_button]:size-11">
                 <IconButton
                   label={t("channel.links.moveUp", { title: link.title })}
                   isDisabled={index === 0}

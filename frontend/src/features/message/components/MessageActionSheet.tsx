@@ -63,10 +63,6 @@ export const MessageActionSheet = ({
       <Heading slot="title" className="sr-only">
         {t("message.sheet.title")}
       </Heading>
-      <span
-        aria-hidden
-        className="mb-2.5 h-[5px] w-9 shrink-0 self-center rounded-[3px] bg-border-strong"
-      />
       {isPickingEmoji ? (
         <div className="flex justify-center px-3">
           <EmojiPicker onEmojiSelect={react} />

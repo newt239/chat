@@ -49,7 +49,7 @@ export const RecordingPreview = ({ url, durationSeconds }: RecordingPreviewProps
             audio.pause();
           }
         }}
-        className="size-7 rounded-full bg-accent text-accent-fg data-hovered:bg-accent-hover [&_svg]:size-3.5"
+        className="size-7 rounded-full bg-accent max-md:size-11 text-accent-fg data-hovered:bg-accent-hover [&_svg]:size-3.5"
       />
       <span className="min-w-0 flex-1">
         <Waveform seed={url} progress={durationSeconds > 0 ? position / durationSeconds : 0} />
