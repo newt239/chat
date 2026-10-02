@@ -114,9 +114,9 @@ var File_chat_v1_realtime_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_realtime_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1echat/v1/realtime_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"J\n" +
-	"\x1bIssueWebSocketTicketRequest\x12+\n" +
-	"\fworkspace_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\vworkspaceId\"6\n" +
+	"\x1echat/v1/realtime_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"I\n" +
+	"\x1bIssueWebSocketTicketRequest\x12*\n" +
+	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"6\n" +
 	"\x1cIssueWebSocketTicketResponse\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\tR\x06ticket2v\n" +
 	"\x0fRealtimeService\x12c\n" +

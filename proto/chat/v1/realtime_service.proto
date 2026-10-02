@@ -10,7 +10,7 @@ service RealtimeService {
 }
 
 message IssueWebSocketTicketRequest {
-  string workspace_id = 1 [(buf.validate.field).string.uuid = true];
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
 }
 
 message IssueWebSocketTicketResponse {
