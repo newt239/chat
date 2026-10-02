@@ -1,6 +1,9 @@
+import { useState } from "react";
+
 import { IconUserMinus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { Select } from "#/components/ui/Select/Select";
@@ -10,6 +13,8 @@ import { useWorkspaceMemberActions } from "#/features/workspace/hooks/useWorkspa
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
 import { InviteMemberForm } from "./InviteMemberForm";
+
+import type { WorkspaceMember } from "#/gen/chat/v1/workspace_service_pb";
 
 const ROLES = [WorkspaceRole.MEMBER, WorkspaceRole.ADMIN];
 
@@ -23,6 +28,7 @@ export const WorkspaceMemberManager = ({ workspaceId, canManage }: WorkspaceMemb
   const { t } = useTranslation();
   const { data: members = [] } = useMembers(workspaceId);
   const { remove, updateRole } = useWorkspaceMemberActions();
+  const [removing, setRemoving] = useState<WorkspaceMember | null>(null);
   const roleOptions = ROLES.map((role) => ({
     label: t(workspaceRoleKeys[role]),
     value: String(role),
@@ -60,7 +66,7 @@ export const WorkspaceMemberManager = ({ workspaceId, canManage }: WorkspaceMemb
                 <IconButton
                   label={t("workspace.members.remove", { name: member.displayName })}
                   onPress={() => {
-                    remove.mutate({ userId: member.userId, workspaceId });
+                    setRemoving(member);
                   }}
                 >
                   <IconUserMinus />
@@ -71,6 +77,32 @@ export const WorkspaceMemberManager = ({ workspaceId, canManage }: WorkspaceMemb
         ))}
       </ul>
       <InviteMemberForm workspaceId={workspaceId} />
+      <AlertDialog
+        isOpen={removing !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setRemoving(null);
+          }
+        }}
+        title={t("workspace.members.removeConfirm", { name: removing?.displayName ?? "" })}
+        confirmLabel={t("workspace.members.removeSubmit")}
+        tone="danger"
+        isPending={remove.isPending}
+        onConfirm={() => {
+          if (removing !== null) {
+            remove.mutate(
+              { userId: removing.userId, workspaceId },
+              {
+                onSettled: () => {
+                  setRemoving(null);
+                },
+              },
+            );
+          }
+        }}
+      >
+        {t("workspace.members.removeConfirmBody")}
+      </AlertDialog>
     </section>
   );
 };

@@ -55,7 +55,12 @@ export const workspace: Messages["workspace"] = {
     submit: "Add",
   },
   members: {
+    actionFailed: "Couldn't update the member",
     remove: "Remove {{name}} from the workspace",
+    removeConfirm: "Remove {{name}} from the workspace?",
+    removeConfirmBody:
+      "They will also leave the channels they joined. They need a new invitation to come back.",
+    removeSubmit: "Remove",
     role: "Role",
     title: "Members ({{count}})",
   },
