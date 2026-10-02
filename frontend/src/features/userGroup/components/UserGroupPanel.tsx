@@ -7,8 +7,8 @@ import { useTranslation } from "react-i18next";
 import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
-import { toast } from "#/components/ui/ToastRegion/toast";
 import { closePanel, openDialog } from "#/features/layout/utils/overlaySearch";
+import { copyWithToast } from "#/lib/clipboard";
 
 import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroupActions, useUserGroups } from "../hooks/useUserGroups";
@@ -58,8 +58,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
             variant="secondary"
             size="sm"
             onPress={() => {
-              void navigator.clipboard.writeText(`@${group.name}`);
-              toast(t("userGroup.mentionCopied"));
+              void copyWithToast(`@${group.name}`, t("userGroup.mentionCopied"));
             }}
           >
             <IconAt aria-hidden />

@@ -81,9 +81,7 @@ export const message = {
   },
   link: {
     copied: "リンクをコピーしました",
-    copyFailed: "リンクをコピーできませんでした",
     textCopied: "テキストをコピーしました",
-    textCopyFailed: "テキストをコピーできませんでした",
   },
   mention: {
     unknownChannel: "非公開のチャンネル",

@@ -13,7 +13,6 @@ export const ui = {
   copyableUrl: {
     copied: "リンクをコピーしました",
     copy: "コピー",
-    copyFailed: "コピーできませんでした",
   },
   iconImage: {
     change: "画像を変更",

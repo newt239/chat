@@ -25,6 +25,7 @@ import {
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { usePinActions } from "#/features/pin/hooks/usePinActions";
 import { useToggleThreadFollow } from "#/features/thread/hooks/useToggleThreadFollow";
+import { copyWithToast } from "#/lib/clipboard";
 
 import type { Message, ThreadMetadata } from "#/gen/chat/v1/message_pb";
 
@@ -87,10 +88,7 @@ export const useMessageMenuActions = ({
   };
 
   const copyText = () => {
-    navigator.clipboard.writeText(toText(message.body)).then(
-      () => toast(t("message.link.textCopied"), { tone: "success" }),
-      () => toast(t("message.link.textCopyFailed"), { tone: "danger" }),
-    );
+    void copyWithToast(toText(message.body), t("message.link.textCopied"));
   };
 
   const togglePin = () => {

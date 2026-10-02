@@ -83,9 +83,7 @@ export const message: Messages["message"] = {
   },
   link: {
     copied: "Link copied",
-    copyFailed: "Couldn't copy the link",
     textCopied: "Text copied",
-    textCopyFailed: "Couldn't copy the text",
   },
   mention: {
     unknownChannel: "private channel",
