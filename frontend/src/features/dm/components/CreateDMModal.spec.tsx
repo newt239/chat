@@ -34,7 +34,7 @@ const setup = async () => {
   const createChannel = vi.fn<(req: CreateChannelRequest) => void>();
   const onClose = vi.fn<() => void>();
   const { router } = await renderWithProviders(
-    <CreateDMModal workspaceId="ws1" opened onClose={onClose} />,
+    <CreateDMModal workspaceId="ws1" onClose={onClose} />,
     "/app/ws1",
     (routes) => {
       routes.rpc(WorkspaceService.method.listMembers, () => ({ members }));

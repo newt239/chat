@@ -61,7 +61,6 @@ export const channel: Messages["channel"] = {
     descriptionPlaceholder: "What this channel is about",
     name: "Channel name",
     nameHint: "Separate with “/” to nest it under a parent",
-    noWorkspace: "Select a workspace first",
     parentsCreated: "Parent channels {{names}} will also be created",
     preview: "Where it will be created",
     private: "Make private",

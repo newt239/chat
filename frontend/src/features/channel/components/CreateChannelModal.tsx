@@ -20,19 +20,14 @@ import {
 import { ChannelNameField } from "./ChannelNameField";
 
 type CreateChannelModalProps = {
-  workspaceId: string | null;
+  workspaceId: string;
   // 子チャンネルとして作るときの親
   parentId: string | null;
-  opened: boolean;
   onClose: () => void;
 };
 
-export const CreateChannelModal = ({
-  workspaceId,
-  parentId,
-  opened,
-  onClose,
-}: CreateChannelModalProps) => {
+// 開くたびにマウントし直すため、入力は閉じるときに戻さなくてよい
+export const CreateChannelModal = ({ workspaceId, parentId, onClose }: CreateChannelModalProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const formId = useId();
@@ -40,37 +35,28 @@ export const CreateChannelModal = ({
   const [description, setDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
-  const { data: channels } = useChannels(opened ? workspaceId : null);
+  const { data: channels } = useChannels(workspaceId);
   const createChannel = useCreateChannel();
   const parent = channels?.find((channel) => channel.id === parentId);
   const parentName = parent?.name;
   const isParentPrivate = parent?.isPrivate ?? false;
 
-  // 親を指定して開いたら、親のパスと公開範囲を初期値にする
+  // 親を指定して開いたら、一覧が読み込まれた時点で親のパスと公開範囲を初期値にする
   useEffect(() => {
-    if (opened && parentName !== undefined) {
+    if (parentName !== undefined) {
       setName(`${parentName}/`);
       setIsPrivate(isParentPrivate);
     }
-  }, [opened, parentName, isParentPrivate]);
+  }, [parentName, isParentPrivate]);
 
   const existingNames = (channels ?? []).map((channel) => channel.name);
   const error = validateChannelPath(name, existingNames);
   const segments = name.split("/").filter((segment) => segment.length > 0);
   const missingParents = ancestorPaths(name).filter((path) => !existingNames.includes(path));
 
-  const close = () => {
-    setName("");
-    setDescription("");
-    setIsPrivate(false);
-    setIsTouched(false);
-    createChannel.reset();
-    onClose();
-  };
-
   const submit = () => {
     setIsTouched(true);
-    if (workspaceId === null || error !== null) {
+    if (error !== null) {
       return;
     }
     createChannel.mutate(
@@ -78,8 +64,10 @@ export const CreateChannelModal = ({
       {
         onSuccess: ({ channel }) => {
           toast(t("channel.create.created", { name }), { tone: "success" });
-          close();
-          if (channel !== undefined) {
+          // 移動先に ?dialog= がないため、移動するとダイアログも閉じる
+          if (channel === undefined) {
+            onClose();
+          } else {
             void navigate({
               params: { channelId: channel.id, workspaceId },
               to: "/app/$workspaceId/$channelId",
@@ -92,24 +80,19 @@ export const CreateChannelModal = ({
 
   return (
     <Dialog
-      isOpen={opened}
+      isOpen
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          close();
+          onClose();
         }
       }}
       title={t("channel.create.title")}
       footer={
         <>
-          <Button variant="secondary" onPress={close}>
+          <Button variant="secondary" onPress={onClose}>
             {t("common.cancel")}
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            isDisabled={workspaceId === null}
-            isPending={createChannel.isPending}
-          >
+          <Button type="submit" form={formId} isPending={createChannel.isPending}>
             {t("channel.create.submit")}
           </Button>
         </>
@@ -171,9 +154,6 @@ export const CreateChannelModal = ({
           </Switch>
           <span className="pl-11 text-caption text-muted">{t("channel.create.privateHint")}</span>
         </div>
-        {workspaceId === null && (
-          <p className="m-0 text-caption text-muted">{t("channel.create.noWorkspace")}</p>
-        )}
         {createChannel.isError && (
           <p role="alert" className="m-0 text-caption text-danger">
             {createChannel.error.message}

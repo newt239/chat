@@ -59,7 +59,6 @@ export const channel = {
     descriptionPlaceholder: "このチャンネルで話すこと",
     name: "チャンネル名",
     nameHint: "「/」で区切ると親の下にツリー表示されます",
-    noWorkspace: "先にワークスペースを選択してください",
     parentsCreated: "親の {{names}} も作成されます",
     preview: "作成される場所",
     private: "非公開にする",

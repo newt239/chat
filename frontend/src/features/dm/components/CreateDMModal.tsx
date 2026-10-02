@@ -29,16 +29,18 @@ import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useCreateDM, useCreateGroupDM } from "../hooks/useDM";
 
+import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
+
 // 自分を含めた DM の上限。超えると非公開チャンネルとして作る
 const DM_MAX = 10;
 
 type CreateDMModalProps = {
   workspaceId: string;
-  opened: boolean;
   onClose: () => void;
 };
 
-export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalProps) => {
+// 開くたびにマウントし直すため、選択や入力は閉じるときに戻さなくてよい
+export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const formId = useId();
@@ -48,8 +50,8 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const [channelName, setChannelName] = useState("");
   const [isTouched, setIsTouched] = useState(false);
 
-  const { data: members } = useMembers(opened ? workspaceId : null);
-  const { data: channels } = useChannels(opened ? workspaceId : null);
+  const { data: members } = useMembers(workspaceId);
+  const { data: channels } = useChannels(workspaceId);
   const createDM = useCreateDM();
   const createGroupDM = useCreateGroupDM();
   const createChannel = useCreateChannel();
@@ -79,19 +81,12 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const isPending = mutations.some((mutation) => mutation.isPending);
   const mutationError = mutations.find((mutation) => mutation.error !== null)?.error;
 
-  const close = () => {
-    setSelectedIds([]);
-    setQuery("");
-    setChannelName("");
-    setIsTouched(false);
-    for (const mutation of mutations) {
-      mutation.reset();
+  // 移動先に ?dialog= がないため、移動するとダイアログも閉じる
+  const openChannel = (channelId: string | undefined) => {
+    if (channelId === undefined) {
+      onClose();
+      return;
     }
-    onClose();
-  };
-
-  const openChannel = (channelId: string) => {
-    close();
     void navigate({ params: { channelId, workspaceId }, to: "/app/$workspaceId/$channelId" });
   };
 
@@ -101,31 +96,31 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
     );
   };
 
-  const submit = async () => {
+  const submit = () => {
     setIsTouched(true);
     const [firstUserId] = selectedIds;
     if (firstUserId === undefined || nameError !== null) {
       return;
     }
     if (isOverLimit) {
-      const { channel } = await createChannel.mutateAsync({
-        isPrivate: true,
-        memberIds: selectedIds,
-        name: channelName,
-        workspaceId,
-      });
-      toast(t("channel.create.created", { name: channelName }), { tone: "success" });
-      if (channel !== undefined) {
-        openChannel(channel.id);
-      }
+      createChannel.mutate(
+        { isPrivate: true, memberIds: selectedIds, name: channelName, workspaceId },
+        {
+          onSuccess: ({ channel }) => {
+            toast(t("channel.create.created", { name: channelName }), { tone: "success" });
+            openChannel(channel?.id);
+          },
+        },
+      );
       return;
     }
-    const { directMessage } =
-      selectedIds.length > 1
-        ? await createGroupDM.mutateAsync({ userIds: selectedIds, workspaceId })
-        : await createDM.mutateAsync({ userId: firstUserId, workspaceId });
-    if (directMessage !== undefined) {
-      openChannel(directMessage.id);
+    const onSuccess = ({ directMessage }: { directMessage?: DirectMessage }) => {
+      openChannel(directMessage?.id);
+    };
+    if (selectedIds.length > 1) {
+      createGroupDM.mutate({ userIds: selectedIds, workspaceId }, { onSuccess });
+    } else {
+      createDM.mutate({ userId: firstUserId, workspaceId }, { onSuccess });
     }
   };
 
@@ -137,17 +132,17 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
 
   return (
     <Dialog
-      isOpen={opened}
+      isOpen
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          close();
+          onClose();
         }
       }}
       title={t("dm.create.title")}
       size="md"
       footer={
         <>
-          <Button variant="secondary" onPress={close}>
+          <Button variant="secondary" onPress={onClose}>
             {t("common.cancel")}
           </Button>
           <Button
@@ -166,7 +161,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
         className="flex flex-col gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          void submit();
+          submit();
         }}
       >
         <div className="flex flex-col gap-1.5">

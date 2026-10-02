@@ -41,12 +41,14 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
 
   return (
     <>
-      <CreateChannelModal
-        workspaceId={workspaceId}
-        parentId={parent ?? null}
-        opened={dialog === "create-channel"}
-        onClose={close}
-      />
+      {dialog === "create-channel" && (
+        <CreateChannelModal
+          key={parent ?? ""}
+          workspaceId={workspaceId}
+          parentId={parent ?? null}
+          onClose={close}
+        />
+      )}
       {(dialog === "create-category" || (dialog === "edit-category" && editingCategory)) && (
         <ChannelCategoryDialog
           key={dialog}
@@ -56,7 +58,7 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
           onClose={close}
         />
       )}
-      <CreateDMModal workspaceId={workspaceId} opened={dialog === "create-dm"} onClose={close} />
+      {dialog === "create-dm" && <CreateDMModal workspaceId={workspaceId} onClose={close} />}
       <CreateWorkspaceModal isOpen={dialog === "create-workspace"} onOpenChange={onOpenChange} />
       <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={onOpenChange} />
       {canManageGroups &&
