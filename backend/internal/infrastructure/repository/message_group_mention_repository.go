@@ -7,9 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagegroupmention"
-	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -32,15 +30,7 @@ func (r *messageGroupMentionRepository) FindByMessageID(ctx context.Context, mes
 
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageGroupMention.Query().
-		Where(messagegroupmention.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithGroup(func(q *ent.UserGroupQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
+		Where(messagegroupmention.MessageID(mid)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -71,9 +61,7 @@ func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, me
 
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageGroupMention.Query().
-		Where(messagegroupmention.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
-		WithGroup(func(q *ent.UserGroupQuery) { q.Select(usergroup.FieldID) }).
+		Where(messagegroupmention.MessageIDIn(parsedIDs...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -95,7 +83,7 @@ func (r *messageGroupMentionRepository) FindByGroupID(ctx context.Context, group
 
 	client := transaction.ResolveClient(ctx, r.client)
 	query := client.MessageGroupMention.Query().
-		Where(messagegroupmention.HasGroupWith(usergroup.ID(gid)))
+		Where(messagegroupmention.GroupID(gid))
 
 	if since != nil {
 		query = query.Where(messagegroupmention.CreatedAtGT(*since))
@@ -106,14 +94,6 @@ func (r *messageGroupMentionRepository) FindByGroupID(ctx context.Context, group
 	}
 
 	mentions, err := query.
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithGroup(func(q *ent.UserGroupQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
 		Order(ent.Desc(messagegroupmention.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -157,7 +137,7 @@ func (r *messageGroupMentionRepository) DeleteByMessageID(ctx context.Context, m
 
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.MessageGroupMention.Delete().
-		Where(messagegroupmention.HasMessageWith(message.ID(mid))).
+		Where(messagegroupmention.MessageID(mid)).
 		Exec(ctx)
 
 	return err

@@ -22,6 +22,12 @@ type App struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreatedByID holds the value of the "created_by_id" field.
+	CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
+	// BotUserID holds the value of the "bot_user_id" field.
+	BotUserID uuid.UUID `json:"bot_user_id,omitempty"`
+	// DefaultChannelID holds the value of the "default_channel_id" field.
+	DefaultChannelID *uuid.UUID `json:"default_channel_id,omitempty"`
 	// WorkspaceID holds the value of the "workspace_id" field.
 	WorkspaceID string `json:"workspace_id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -48,11 +54,8 @@ type App struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AppQuery when eager-loading is set.
-	Edges               AppEdges `json:"edges"`
-	app_created_by      *uuid.UUID
-	app_bot_user        *uuid.UUID
-	app_default_channel *uuid.UUID
-	selectValues        sql.SelectValues
+	Edges        AppEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // AppEdges holds the relations/edges for other nodes in the graph.
@@ -119,6 +122,8 @@ func (*App) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case app.FieldDefaultChannelID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case app.FieldPermissions:
 			values[i] = new([]byte)
 		case app.FieldIsOfficial:
@@ -127,14 +132,8 @@ func (*App) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case app.FieldLastUsedAt, app.FieldCreatedAt, app.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case app.FieldID:
+		case app.FieldID, app.FieldCreatedByID, app.FieldBotUserID:
 			values[i] = new(uuid.UUID)
-		case app.ForeignKeys[0]: // app_created_by
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case app.ForeignKeys[1]: // app_bot_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case app.ForeignKeys[2]: // app_default_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -155,6 +154,25 @@ func (_m *App) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case app.FieldCreatedByID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by_id", values[i])
+			} else if value != nil {
+				_m.CreatedByID = *value
+			}
+		case app.FieldBotUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field bot_user_id", values[i])
+			} else if value != nil {
+				_m.BotUserID = *value
+			}
+		case app.FieldDefaultChannelID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field default_channel_id", values[i])
+			} else if value.Valid {
+				_m.DefaultChannelID = new(uuid.UUID)
+				*_m.DefaultChannelID = *value.S.(*uuid.UUID)
 			}
 		case app.FieldWorkspaceID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -236,27 +254,6 @@ func (_m *App) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case app.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field app_created_by", values[i])
-			} else if value.Valid {
-				_m.app_created_by = new(uuid.UUID)
-				*_m.app_created_by = *value.S.(*uuid.UUID)
-			}
-		case app.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field app_bot_user", values[i])
-			} else if value.Valid {
-				_m.app_bot_user = new(uuid.UUID)
-				*_m.app_bot_user = *value.S.(*uuid.UUID)
-			}
-		case app.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field app_default_channel", values[i])
-			} else if value.Valid {
-				_m.app_default_channel = new(uuid.UUID)
-				*_m.app_default_channel = *value.S.(*uuid.UUID)
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -313,6 +310,17 @@ func (_m *App) String() string {
 	var builder strings.Builder
 	builder.WriteString("App(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("created_by_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedByID))
+	builder.WriteString(", ")
+	builder.WriteString("bot_user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.BotUserID))
+	builder.WriteString(", ")
+	if v := _m.DefaultChannelID; v != nil {
+		builder.WriteString("default_channel_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("workspace_id=")
 	builder.WriteString(_m.WorkspaceID)
 	builder.WriteString(", ")

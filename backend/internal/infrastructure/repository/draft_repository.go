@@ -11,7 +11,6 @@ import (
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/predicate"
-	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -80,7 +79,7 @@ func (r *draftRepository) FindByWorkspace(ctx context.Context, userID string, wo
 		return nil, err
 	}
 	drafts, err := transaction.ResolveClient(ctx, r.client).Draft.Query().
-		Where(draft.UserID(uid), draft.HasChannelWith(channel.HasWorkspaceWith(workspace.ID(workspaceID)))).
+		Where(draft.UserID(uid), draft.HasChannelWith(channel.WorkspaceID(workspaceID))).
 		Order(ent.Desc(draft.FieldUpdatedAt)).
 		All(ctx)
 	if err != nil {

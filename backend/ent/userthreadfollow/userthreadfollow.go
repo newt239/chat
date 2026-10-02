@@ -15,6 +15,10 @@ const (
 	Label = "user_thread_follow"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// FieldThreadID holds the string denoting the thread_id field in the database.
+	FieldThreadID = "thread_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -22,45 +26,35 @@ const (
 	// EdgeThread holds the string denoting the thread edge name in mutations.
 	EdgeThread = "thread"
 	// Table holds the table name of the userthreadfollow in the database.
-	Table = "user_thread_follows"
+	Table = "user_thread_follow"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "user_thread_follows"
+	UserTable = "user_thread_follow"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "user_thread_follow_user"
+	UserColumn = "user_id"
 	// ThreadTable is the table that holds the thread relation/edge.
-	ThreadTable = "user_thread_follows"
+	ThreadTable = "user_thread_follow"
 	// ThreadInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	ThreadInverseTable = "messages"
+	ThreadInverseTable = "message"
 	// ThreadColumn is the table column denoting the thread relation/edge.
-	ThreadColumn = "user_thread_follow_thread"
+	ThreadColumn = "thread_id"
 )
 
 // Columns holds all SQL columns for userthreadfollow fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
+	FieldThreadID,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "user_thread_follows"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_thread_follow_user",
-	"user_thread_follow_thread",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -80,6 +74,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByThreadID orders the results by the thread_id field.
+func ByThreadID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThreadID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

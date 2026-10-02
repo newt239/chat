@@ -23,11 +23,8 @@ import (
 // MaxTextLength は 1 回の投稿で受け付ける本文の最大文字数です
 const MaxTextLength = 4000
 
-const (
-	maxSenderNameLength = 80
-	// OfficialAppName は公式アプリの名前です
-	OfficialAppName = "Chat"
-)
+// OfficialAppName は公式アプリの名前です
+const OfficialAppName = "Chat"
 
 var (
 	ErrAppNotFound        = errors.New("指定されたアプリが見つかりません")
@@ -241,10 +238,6 @@ func (i *Interactor) AddToChannel(ctx context.Context, input ChannelInput) error
 	if ch.ArchivedAt != nil {
 		return domerr.ErrChannelArchived
 	}
-	isMember, err := i.channelMemberRepo.IsMember(ctx, ch.ID, app.BotUserID)
-	if err != nil || isMember {
-		return err
-	}
 	return i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: ch.ID, UserID: app.BotUserID, Role: entity.ChannelRoleMember})
 }
 
@@ -437,7 +430,7 @@ func (i *Interactor) createBotUser(ctx context.Context, app *entity.App, isOffic
 		PasswordHash: entity.UnusablePasswordHash,
 		DisplayName:  app.Name,
 		AvatarURL:    app.AvatarURL,
-		IsBot:        true,
+		IsApp:        true,
 		IsOfficial:   isOfficial,
 	}
 	if err := i.userRepo.Create(ctx, bot); err != nil {
@@ -451,10 +444,6 @@ func (i *Interactor) joinDefaultChannel(ctx context.Context, app *entity.App) er
 	if app.DefaultChannelID == nil {
 		return nil
 	}
-	isMember, err := i.channelMemberRepo.IsMember(ctx, *app.DefaultChannelID, app.BotUserID)
-	if err != nil || isMember {
-		return err
-	}
 	return i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: *app.DefaultChannelID, UserID: app.BotUserID, Role: entity.ChannelRoleMember})
 }
 
@@ -467,20 +456,7 @@ func buildMessage(app *entity.App, input PostInput) (*entity.Message, error) {
 		return nil, ErrTextTooLong
 	}
 
-	message := &entity.Message{UserID: app.BotUserID, Body: text}
-	if input.Username != nil {
-		if name := truncate(strings.TrimSpace(*input.Username), maxSenderNameLength); name != "" {
-			message.SenderName = &name
-		}
-	}
-	if input.AvatarURL != nil && strings.TrimSpace(*input.AvatarURL) != "" {
-		avatar := strings.TrimSpace(*input.AvatarURL)
-		if !isHTTPURL(avatar) {
-			return nil, ErrInvalidURL
-		}
-		message.SenderAvatarURL = &avatar
-	}
-	return message, nil
+	return &entity.Message{UserID: app.BotUserID, Body: text}, nil
 }
 
 // findManageable はアプリを取得し、作成者か管理者であることを確認します。公式アプリは誰も管理できない
@@ -593,12 +569,4 @@ func (i *Interactor) record(ctx context.Context, app *entity.App, actorID string
 func isHTTPURL(raw string) bool {
 	u, err := url.Parse(raw)
 	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
-}
-
-func truncate(s string, maxRunes int) string {
-	runes := []rune(s)
-	if len(runes) <= maxRunes {
-		return s
-	}
-	return string(runes[:maxRunes])
 }

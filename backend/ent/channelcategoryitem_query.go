@@ -29,7 +29,6 @@ type ChannelCategoryItemQuery struct {
 	withCategory *ChannelCategoryQuery
 	withUser     *UserQuery
 	withChannel  *ChannelQuery
-	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -368,6 +367,18 @@ func (_q *ChannelCategoryItemQuery) WithChannel(opts ...func(*ChannelQuery)) *Ch
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		CategoryID uuid.UUID `json:"category_id,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.ChannelCategoryItem.Query().
+//		GroupBy(channelcategoryitem.FieldCategoryID).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (_q *ChannelCategoryItemQuery) GroupBy(field string, fields ...string) *ChannelCategoryItemGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &ChannelCategoryItemGroupBy{build: _q}
@@ -379,6 +390,16 @@ func (_q *ChannelCategoryItemQuery) GroupBy(field string, fields ...string) *Cha
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		CategoryID uuid.UUID `json:"category_id,omitempty"`
+//	}
+//
+//	client.ChannelCategoryItem.Query().
+//		Select(channelcategoryitem.FieldCategoryID).
+//		Scan(ctx, &v)
 func (_q *ChannelCategoryItemQuery) Select(fields ...string) *ChannelCategoryItemSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
 	sbuild := &ChannelCategoryItemSelect{ChannelCategoryItemQuery: _q}
@@ -421,7 +442,6 @@ func (_q *ChannelCategoryItemQuery) prepareQuery(ctx context.Context) error {
 func (_q *ChannelCategoryItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ChannelCategoryItem, error) {
 	var (
 		nodes       = []*ChannelCategoryItem{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withCategory != nil,
@@ -429,12 +449,6 @@ func (_q *ChannelCategoryItemQuery) sqlAll(ctx context.Context, hooks ...queryHo
 			_q.withChannel != nil,
 		}
 	)
-	if _q.withCategory != nil || _q.withUser != nil || _q.withChannel != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, channelcategoryitem.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ChannelCategoryItem).scanValues(nil, columns)
 	}
@@ -478,10 +492,7 @@ func (_q *ChannelCategoryItemQuery) loadCategory(ctx context.Context, query *Cha
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelCategoryItem)
 	for i := range nodes {
-		if nodes[i].channel_category_items == nil {
-			continue
-		}
-		fk := *nodes[i].channel_category_items
+		fk := nodes[i].CategoryID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -498,7 +509,7 @@ func (_q *ChannelCategoryItemQuery) loadCategory(ctx context.Context, query *Cha
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_category_items" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "category_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -510,10 +521,7 @@ func (_q *ChannelCategoryItemQuery) loadUser(ctx context.Context, query *UserQue
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelCategoryItem)
 	for i := range nodes {
-		if nodes[i].channel_category_item_user == nil {
-			continue
-		}
-		fk := *nodes[i].channel_category_item_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -530,7 +538,7 @@ func (_q *ChannelCategoryItemQuery) loadUser(ctx context.Context, query *UserQue
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_category_item_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,10 +550,7 @@ func (_q *ChannelCategoryItemQuery) loadChannel(ctx context.Context, query *Chan
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelCategoryItem)
 	for i := range nodes {
-		if nodes[i].channel_category_item_channel == nil {
-			continue
-		}
-		fk := *nodes[i].channel_category_item_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -562,7 +567,7 @@ func (_q *ChannelCategoryItemQuery) loadChannel(ctx context.Context, query *Chan
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_category_item_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -595,6 +600,15 @@ func (_q *ChannelCategoryItemQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != channelcategoryitem.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withCategory != nil {
+			_spec.Node.AddColumnOnce(channelcategoryitem.FieldCategoryID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(channelcategoryitem.FieldUserID)
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(channelcategoryitem.FieldChannelID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

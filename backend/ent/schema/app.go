@@ -26,6 +26,11 @@ func (App) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("created_by_id", uuid.UUID{}),
+		field.UUID("bot_user_id", uuid.UUID{}),
+		field.UUID("default_channel_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 		field.String("workspace_id").
 			Immutable(),
 		field.String("name").
@@ -75,14 +80,17 @@ func (App) Edges() []ent.Edge {
 			Immutable().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("created_by", User.Type).
+			Field("created_by_id").
 			Unique().
 			Required(),
 		// 削除後も過去の投稿の名義として残すため、ボットユーザーは消さない
 		edge.To("bot_user", User.Type).
+			Field("bot_user_id").
 			Unique().
 			Required(),
 		// 着信 Webhook で投稿先を省略したときのチャンネル
 		edge.To("default_channel", Channel.Type).
+			Field("default_channel_id").
 			Unique().
 			Annotations(entsql.OnDelete(entsql.SetNull)),
 	}

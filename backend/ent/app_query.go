@@ -30,7 +30,6 @@ type AppQuery struct {
 	withCreatedBy      *UserQuery
 	withBotUser        *UserQuery
 	withDefaultChannel *ChannelQuery
-	withFKs            bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -407,12 +406,12 @@ func (_q *AppQuery) WithDefaultChannel(opts ...func(*ChannelQuery)) *AppQuery {
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID string `json:"workspace_id,omitempty"`
+//		CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.App.Query().
-//		GroupBy(app.FieldWorkspaceID).
+//		GroupBy(app.FieldCreatedByID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *AppQuery) GroupBy(field string, fields ...string) *AppGroupBy {
@@ -430,11 +429,11 @@ func (_q *AppQuery) GroupBy(field string, fields ...string) *AppGroupBy {
 // Example:
 //
 //	var v []struct {
-//		WorkspaceID string `json:"workspace_id,omitempty"`
+//		CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 //	}
 //
 //	client.App.Query().
-//		Select(app.FieldWorkspaceID).
+//		Select(app.FieldCreatedByID).
 //		Scan(ctx, &v)
 func (_q *AppQuery) Select(fields ...string) *AppSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -478,7 +477,6 @@ func (_q *AppQuery) prepareQuery(ctx context.Context) error {
 func (_q *AppQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*App, error) {
 	var (
 		nodes       = []*App{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withWorkspace != nil,
@@ -487,12 +485,6 @@ func (_q *AppQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*App, err
 			_q.withDefaultChannel != nil,
 		}
 	)
-	if _q.withCreatedBy != nil || _q.withBotUser != nil || _q.withDefaultChannel != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, app.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*App).scanValues(nil, columns)
 	}
@@ -571,10 +563,7 @@ func (_q *AppQuery) loadCreatedBy(ctx context.Context, query *UserQuery, nodes [
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*App)
 	for i := range nodes {
-		if nodes[i].app_created_by == nil {
-			continue
-		}
-		fk := *nodes[i].app_created_by
+		fk := nodes[i].CreatedByID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -591,7 +580,7 @@ func (_q *AppQuery) loadCreatedBy(ctx context.Context, query *UserQuery, nodes [
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "app_created_by" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "created_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -603,10 +592,7 @@ func (_q *AppQuery) loadBotUser(ctx context.Context, query *UserQuery, nodes []*
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*App)
 	for i := range nodes {
-		if nodes[i].app_bot_user == nil {
-			continue
-		}
-		fk := *nodes[i].app_bot_user
+		fk := nodes[i].BotUserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -623,7 +609,7 @@ func (_q *AppQuery) loadBotUser(ctx context.Context, query *UserQuery, nodes []*
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "app_bot_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "bot_user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -635,10 +621,10 @@ func (_q *AppQuery) loadDefaultChannel(ctx context.Context, query *ChannelQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*App)
 	for i := range nodes {
-		if nodes[i].app_default_channel == nil {
+		if nodes[i].DefaultChannelID == nil {
 			continue
 		}
-		fk := *nodes[i].app_default_channel
+		fk := *nodes[i].DefaultChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -655,7 +641,7 @@ func (_q *AppQuery) loadDefaultChannel(ctx context.Context, query *ChannelQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "app_default_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "default_channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -691,6 +677,15 @@ func (_q *AppQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withWorkspace != nil {
 			_spec.Node.AddColumnOnce(app.FieldWorkspaceID)
+		}
+		if _q.withCreatedBy != nil {
+			_spec.Node.AddColumnOnce(app.FieldCreatedByID)
+		}
+		if _q.withBotUser != nil {
+			_spec.Node.AddColumnOnce(app.FieldBotUserID)
+		}
+		if _q.withDefaultChannel != nil {
+			_spec.Node.AddColumnOnce(app.FieldDefaultChannelID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

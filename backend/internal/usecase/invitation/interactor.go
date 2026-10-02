@@ -89,7 +89,7 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*CreateOutp
 	if err != nil {
 		return nil, err
 	}
-	if user != nil && !user.IsBot {
+	if user != nil && !user.IsApp {
 		return i.addExistingUser(ctx, input, user)
 	}
 

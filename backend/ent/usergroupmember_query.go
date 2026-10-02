@@ -27,7 +27,6 @@ type UserGroupMemberQuery struct {
 	predicates []predicate.UserGroupMember
 	withGroup  *UserGroupQuery
 	withUser   *UserQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *UserGroupMemberQuery) WithUser(opts ...func(*UserQuery)) *UserGroupMem
 // Example:
 //
 //	var v []struct {
-//		JoinedAt time.Time `json:"joined_at,omitempty"`
+//		GroupID uuid.UUID `json:"group_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UserGroupMember.Query().
-//		GroupBy(usergroupmember.FieldJoinedAt).
+//		GroupBy(usergroupmember.FieldGroupID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *UserGroupMemberQuery) GroupBy(field string, fields ...string) *UserGroupMemberGroupBy {
@@ -359,11 +358,11 @@ func (_q *UserGroupMemberQuery) GroupBy(field string, fields ...string) *UserGro
 // Example:
 //
 //	var v []struct {
-//		JoinedAt time.Time `json:"joined_at,omitempty"`
+//		GroupID uuid.UUID `json:"group_id,omitempty"`
 //	}
 //
 //	client.UserGroupMember.Query().
-//		Select(usergroupmember.FieldJoinedAt).
+//		Select(usergroupmember.FieldGroupID).
 //		Scan(ctx, &v)
 func (_q *UserGroupMemberQuery) Select(fields ...string) *UserGroupMemberSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *UserGroupMemberQuery) prepareQuery(ctx context.Context) error {
 func (_q *UserGroupMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*UserGroupMember, error) {
 	var (
 		nodes       = []*UserGroupMember{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withGroup != nil,
 			_q.withUser != nil,
 		}
 	)
-	if _q.withGroup != nil || _q.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, usergroupmember.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*UserGroupMember).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *UserGroupMemberQuery) loadGroup(ctx context.Context, query *UserGroupQ
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserGroupMember)
 	for i := range nodes {
-		if nodes[i].user_group_member_group == nil {
-			continue
-		}
-		fk := *nodes[i].user_group_member_group
+		fk := nodes[i].GroupID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *UserGroupMemberQuery) loadGroup(ctx context.Context, query *UserGroupQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_group_member_group" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "group_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *UserGroupMemberQuery) loadUser(ctx context.Context, query *UserQuery, 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserGroupMember)
 	for i := range nodes {
-		if nodes[i].user_group_member_user == nil {
-			continue
-		}
-		fk := *nodes[i].user_group_member_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *UserGroupMemberQuery) loadUser(ctx context.Context, query *UserQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_group_member_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *UserGroupMemberQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != usergroupmember.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withGroup != nil {
+			_spec.Node.AddColumnOnce(usergroupmember.FieldGroupID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(usergroupmember.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

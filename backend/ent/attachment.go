@@ -21,6 +21,12 @@ type Attachment struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// MessageID holds the value of the "message_id" field.
+	MessageID *uuid.UUID `json:"message_id,omitempty"`
+	// UploaderID holds the value of the "uploader_id" field.
+	UploaderID uuid.UUID `json:"uploader_id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
 	// FileName holds the value of the "file_name" field.
 	FileName string `json:"file_name,omitempty"`
 	// MimeType holds the value of the "mime_type" field.
@@ -51,11 +57,8 @@ type Attachment struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AttachmentQuery when eager-loading is set.
-	Edges               AttachmentEdges `json:"edges"`
-	attachment_message  *uuid.UUID
-	attachment_uploader *uuid.UUID
-	attachment_channel  *uuid.UUID
-	selectValues        sql.SelectValues
+	Edges        AttachmentEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // AttachmentEdges holds the relations/edges for other nodes in the graph.
@@ -109,6 +112,8 @@ func (*Attachment) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case attachment.FieldMessageID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case attachment.FieldDurationSeconds:
 			values[i] = new(sql.NullFloat64)
 		case attachment.FieldSizeBytes, attachment.FieldWidth, attachment.FieldHeight, attachment.FieldThumbnailWidth, attachment.FieldThumbnailHeight:
@@ -117,14 +122,8 @@ func (*Attachment) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case attachment.FieldUploadedAt, attachment.FieldExpiresAt, attachment.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case attachment.FieldID:
+		case attachment.FieldID, attachment.FieldUploaderID, attachment.FieldChannelID:
 			values[i] = new(uuid.UUID)
-		case attachment.ForeignKeys[0]: // attachment_message
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case attachment.ForeignKeys[1]: // attachment_uploader
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case attachment.ForeignKeys[2]: // attachment_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -145,6 +144,25 @@ func (_m *Attachment) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case attachment.FieldMessageID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field message_id", values[i])
+			} else if value.Valid {
+				_m.MessageID = new(uuid.UUID)
+				*_m.MessageID = *value.S.(*uuid.UUID)
+			}
+		case attachment.FieldUploaderID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uploader_id", values[i])
+			} else if value != nil {
+				_m.UploaderID = *value
+			}
+		case attachment.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
 			}
 		case attachment.FieldFileName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -236,27 +254,6 @@ func (_m *Attachment) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
-		case attachment.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field attachment_message", values[i])
-			} else if value.Valid {
-				_m.attachment_message = new(uuid.UUID)
-				*_m.attachment_message = *value.S.(*uuid.UUID)
-			}
-		case attachment.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field attachment_uploader", values[i])
-			} else if value.Valid {
-				_m.attachment_uploader = new(uuid.UUID)
-				*_m.attachment_uploader = *value.S.(*uuid.UUID)
-			}
-		case attachment.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field attachment_channel", values[i])
-			} else if value.Valid {
-				_m.attachment_channel = new(uuid.UUID)
-				*_m.attachment_channel = *value.S.(*uuid.UUID)
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -308,6 +305,17 @@ func (_m *Attachment) String() string {
 	var builder strings.Builder
 	builder.WriteString("Attachment(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	if v := _m.MessageID; v != nil {
+		builder.WriteString("message_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("uploader_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UploaderID))
+	builder.WriteString(", ")
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
 	builder.WriteString("file_name=")
 	builder.WriteString(_m.FileName)
 	builder.WriteString(", ")

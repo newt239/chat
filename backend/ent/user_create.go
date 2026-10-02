@@ -25,6 +25,8 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userlink"
+	"github.com/newt239/chat/ent/userpreference"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -83,12 +85,6 @@ func (_c *UserCreate) SetNillableBio(v *string) *UserCreate {
 	return _c
 }
 
-// SetLinks sets the "links" field.
-func (_c *UserCreate) SetLinks(v []string) *UserCreate {
-	_c.mutation.SetLinks(v)
-	return _c
-}
-
 // SetAvatarURL sets the "avatar_url" field.
 func (_c *UserCreate) SetAvatarURL(v string) *UserCreate {
 	_c.mutation.SetAvatarURL(v)
@@ -103,16 +99,16 @@ func (_c *UserCreate) SetNillableAvatarURL(v *string) *UserCreate {
 	return _c
 }
 
-// SetIsBot sets the "is_bot" field.
-func (_c *UserCreate) SetIsBot(v bool) *UserCreate {
-	_c.mutation.SetIsBot(v)
+// SetIsApp sets the "is_app" field.
+func (_c *UserCreate) SetIsApp(v bool) *UserCreate {
+	_c.mutation.SetIsApp(v)
 	return _c
 }
 
-// SetNillableIsBot sets the "is_bot" field if the given value is not nil.
-func (_c *UserCreate) SetNillableIsBot(v *bool) *UserCreate {
+// SetNillableIsApp sets the "is_app" field if the given value is not nil.
+func (_c *UserCreate) SetNillableIsApp(v *bool) *UserCreate {
 	if v != nil {
-		_c.SetIsBot(*v)
+		_c.SetIsApp(*v)
 	}
 	return _c
 }
@@ -127,146 +123,6 @@ func (_c *UserCreate) SetIsOfficial(v bool) *UserCreate {
 func (_c *UserCreate) SetNillableIsOfficial(v *bool) *UserCreate {
 	if v != nil {
 		_c.SetIsOfficial(*v)
-	}
-	return _c
-}
-
-// SetThemeHue sets the "theme_hue" field.
-func (_c *UserCreate) SetThemeHue(v int) *UserCreate {
-	_c.mutation.SetThemeHue(v)
-	return _c
-}
-
-// SetNillableThemeHue sets the "theme_hue" field if the given value is not nil.
-func (_c *UserCreate) SetNillableThemeHue(v *int) *UserCreate {
-	if v != nil {
-		_c.SetThemeHue(*v)
-	}
-	return _c
-}
-
-// SetThemeChroma sets the "theme_chroma" field.
-func (_c *UserCreate) SetThemeChroma(v float64) *UserCreate {
-	_c.mutation.SetThemeChroma(v)
-	return _c
-}
-
-// SetNillableThemeChroma sets the "theme_chroma" field if the given value is not nil.
-func (_c *UserCreate) SetNillableThemeChroma(v *float64) *UserCreate {
-	if v != nil {
-		_c.SetThemeChroma(*v)
-	}
-	return _c
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (_c *UserCreate) SetThemeSidebar(v user.ThemeSidebar) *UserCreate {
-	_c.mutation.SetThemeSidebar(v)
-	return _c
-}
-
-// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
-func (_c *UserCreate) SetNillableThemeSidebar(v *user.ThemeSidebar) *UserCreate {
-	if v != nil {
-		_c.SetThemeSidebar(*v)
-	}
-	return _c
-}
-
-// SetColorMode sets the "color_mode" field.
-func (_c *UserCreate) SetColorMode(v user.ColorMode) *UserCreate {
-	_c.mutation.SetColorMode(v)
-	return _c
-}
-
-// SetNillableColorMode sets the "color_mode" field if the given value is not nil.
-func (_c *UserCreate) SetNillableColorMode(v *user.ColorMode) *UserCreate {
-	if v != nil {
-		_c.SetColorMode(*v)
-	}
-	return _c
-}
-
-// SetLocale sets the "locale" field.
-func (_c *UserCreate) SetLocale(v string) *UserCreate {
-	_c.mutation.SetLocale(v)
-	return _c
-}
-
-// SetNillableLocale sets the "locale" field if the given value is not nil.
-func (_c *UserCreate) SetNillableLocale(v *string) *UserCreate {
-	if v != nil {
-		_c.SetLocale(*v)
-	}
-	return _c
-}
-
-// SetNotificationLevel sets the "notification_level" field.
-func (_c *UserCreate) SetNotificationLevel(v user.NotificationLevel) *UserCreate {
-	_c.mutation.SetNotificationLevel(v)
-	return _c
-}
-
-// SetNillableNotificationLevel sets the "notification_level" field if the given value is not nil.
-func (_c *UserCreate) SetNillableNotificationLevel(v *user.NotificationLevel) *UserCreate {
-	if v != nil {
-		_c.SetNotificationLevel(*v)
-	}
-	return _c
-}
-
-// SetTimezone sets the "timezone" field.
-func (_c *UserCreate) SetTimezone(v string) *UserCreate {
-	_c.mutation.SetTimezone(v)
-	return _c
-}
-
-// SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (_c *UserCreate) SetNillableTimezone(v *string) *UserCreate {
-	if v != nil {
-		_c.SetTimezone(*v)
-	}
-	return _c
-}
-
-// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
-func (_c *UserCreate) SetTimezoneAutoUpdate(v bool) *UserCreate {
-	_c.mutation.SetTimezoneAutoUpdate(v)
-	return _c
-}
-
-// SetNillableTimezoneAutoUpdate sets the "timezone_auto_update" field if the given value is not nil.
-func (_c *UserCreate) SetNillableTimezoneAutoUpdate(v *bool) *UserCreate {
-	if v != nil {
-		_c.SetTimezoneAutoUpdate(*v)
-	}
-	return _c
-}
-
-// SetChannelSortOrder sets the "channel_sort_order" field.
-func (_c *UserCreate) SetChannelSortOrder(v user.ChannelSortOrder) *UserCreate {
-	_c.mutation.SetChannelSortOrder(v)
-	return _c
-}
-
-// SetNillableChannelSortOrder sets the "channel_sort_order" field if the given value is not nil.
-func (_c *UserCreate) SetNillableChannelSortOrder(v *user.ChannelSortOrder) *UserCreate {
-	if v != nil {
-		_c.SetChannelSortOrder(*v)
-	}
-	return _c
-}
-
-// SetHideJoinMessages sets the "hide_join_messages" field.
-func (_c *UserCreate) SetHideJoinMessages(v bool) *UserCreate {
-	_c.mutation.SetHideJoinMessages(v)
-	return _c
-}
-
-// SetNillableHideJoinMessages sets the "hide_join_messages" field if the given value is not nil.
-func (_c *UserCreate) SetNillableHideJoinMessages(v *bool) *UserCreate {
-	if v != nil {
-		_c.SetHideJoinMessages(*v)
 	}
 	return _c
 }
@@ -508,6 +364,40 @@ func (_c *UserCreate) AddChannelReadStates(v ...*ChannelReadState) *UserCreate {
 	return _c.AddChannelReadStateIDs(ids...)
 }
 
+// SetPreferenceID sets the "preference" edge to the UserPreference entity by ID.
+func (_c *UserCreate) SetPreferenceID(id uuid.UUID) *UserCreate {
+	_c.mutation.SetPreferenceID(id)
+	return _c
+}
+
+// SetNillablePreferenceID sets the "preference" edge to the UserPreference entity by ID if the given value is not nil.
+func (_c *UserCreate) SetNillablePreferenceID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		_c = _c.SetPreferenceID(*id)
+	}
+	return _c
+}
+
+// SetPreference sets the "preference" edge to the UserPreference entity.
+func (_c *UserCreate) SetPreference(v *UserPreference) *UserCreate {
+	return _c.SetPreferenceID(v.ID)
+}
+
+// AddLinkIDs adds the "links" edge to the UserLink entity by IDs.
+func (_c *UserCreate) AddLinkIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddLinkIDs(ids...)
+	return _c
+}
+
+// AddLinks adds the "links" edges to the UserLink entity.
+func (_c *UserCreate) AddLinks(v ...*UserLink) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddLinkIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_c *UserCreate) Mutation() *UserMutation {
 	return _c.mutation
@@ -543,53 +433,13 @@ func (_c *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *UserCreate) defaults() {
-	if _, ok := _c.mutation.IsBot(); !ok {
-		v := user.DefaultIsBot
-		_c.mutation.SetIsBot(v)
+	if _, ok := _c.mutation.IsApp(); !ok {
+		v := user.DefaultIsApp
+		_c.mutation.SetIsApp(v)
 	}
 	if _, ok := _c.mutation.IsOfficial(); !ok {
 		v := user.DefaultIsOfficial
 		_c.mutation.SetIsOfficial(v)
-	}
-	if _, ok := _c.mutation.ThemeHue(); !ok {
-		v := user.DefaultThemeHue
-		_c.mutation.SetThemeHue(v)
-	}
-	if _, ok := _c.mutation.ThemeChroma(); !ok {
-		v := user.DefaultThemeChroma
-		_c.mutation.SetThemeChroma(v)
-	}
-	if _, ok := _c.mutation.ThemeSidebar(); !ok {
-		v := user.DefaultThemeSidebar
-		_c.mutation.SetThemeSidebar(v)
-	}
-	if _, ok := _c.mutation.ColorMode(); !ok {
-		v := user.DefaultColorMode
-		_c.mutation.SetColorMode(v)
-	}
-	if _, ok := _c.mutation.Locale(); !ok {
-		v := user.DefaultLocale
-		_c.mutation.SetLocale(v)
-	}
-	if _, ok := _c.mutation.NotificationLevel(); !ok {
-		v := user.DefaultNotificationLevel
-		_c.mutation.SetNotificationLevel(v)
-	}
-	if _, ok := _c.mutation.Timezone(); !ok {
-		v := user.DefaultTimezone
-		_c.mutation.SetTimezone(v)
-	}
-	if _, ok := _c.mutation.TimezoneAutoUpdate(); !ok {
-		v := user.DefaultTimezoneAutoUpdate
-		_c.mutation.SetTimezoneAutoUpdate(v)
-	}
-	if _, ok := _c.mutation.ChannelSortOrder(); !ok {
-		v := user.DefaultChannelSortOrder
-		_c.mutation.SetChannelSortOrder(v)
-	}
-	if _, ok := _c.mutation.HideJoinMessages(); !ok {
-		v := user.DefaultHideJoinMessages
-		_c.mutation.SetHideJoinMessages(v)
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
@@ -631,61 +481,11 @@ func (_c *UserCreate) check() error {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "User.display_name": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.IsBot(); !ok {
-		return &ValidationError{Name: "is_bot", err: errors.New(`ent: missing required field "User.is_bot"`)}
+	if _, ok := _c.mutation.IsApp(); !ok {
+		return &ValidationError{Name: "is_app", err: errors.New(`ent: missing required field "User.is_app"`)}
 	}
 	if _, ok := _c.mutation.IsOfficial(); !ok {
 		return &ValidationError{Name: "is_official", err: errors.New(`ent: missing required field "User.is_official"`)}
-	}
-	if _, ok := _c.mutation.ThemeHue(); !ok {
-		return &ValidationError{Name: "theme_hue", err: errors.New(`ent: missing required field "User.theme_hue"`)}
-	}
-	if _, ok := _c.mutation.ThemeChroma(); !ok {
-		return &ValidationError{Name: "theme_chroma", err: errors.New(`ent: missing required field "User.theme_chroma"`)}
-	}
-	if _, ok := _c.mutation.ThemeSidebar(); !ok {
-		return &ValidationError{Name: "theme_sidebar", err: errors.New(`ent: missing required field "User.theme_sidebar"`)}
-	}
-	if v, ok := _c.mutation.ThemeSidebar(); ok {
-		if err := user.ThemeSidebarValidator(v); err != nil {
-			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "User.theme_sidebar": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.ColorMode(); !ok {
-		return &ValidationError{Name: "color_mode", err: errors.New(`ent: missing required field "User.color_mode"`)}
-	}
-	if v, ok := _c.mutation.ColorMode(); ok {
-		if err := user.ColorModeValidator(v); err != nil {
-			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.Locale(); !ok {
-		return &ValidationError{Name: "locale", err: errors.New(`ent: missing required field "User.locale"`)}
-	}
-	if _, ok := _c.mutation.NotificationLevel(); !ok {
-		return &ValidationError{Name: "notification_level", err: errors.New(`ent: missing required field "User.notification_level"`)}
-	}
-	if v, ok := _c.mutation.NotificationLevel(); ok {
-		if err := user.NotificationLevelValidator(v); err != nil {
-			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.Timezone(); !ok {
-		return &ValidationError{Name: "timezone", err: errors.New(`ent: missing required field "User.timezone"`)}
-	}
-	if _, ok := _c.mutation.TimezoneAutoUpdate(); !ok {
-		return &ValidationError{Name: "timezone_auto_update", err: errors.New(`ent: missing required field "User.timezone_auto_update"`)}
-	}
-	if _, ok := _c.mutation.ChannelSortOrder(); !ok {
-		return &ValidationError{Name: "channel_sort_order", err: errors.New(`ent: missing required field "User.channel_sort_order"`)}
-	}
-	if v, ok := _c.mutation.ChannelSortOrder(); ok {
-		if err := user.ChannelSortOrderValidator(v); err != nil {
-			return &ValidationError{Name: "channel_sort_order", err: fmt.Errorf(`ent: validator failed for field "User.channel_sort_order": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.HideJoinMessages(); !ok {
-		return &ValidationError{Name: "hide_join_messages", err: errors.New(`ent: missing required field "User.hide_join_messages"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -749,61 +549,17 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldBio, field.TypeString, value)
 		_node.Bio = value
 	}
-	if value, ok := _c.mutation.Links(); ok {
-		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
-		_node.Links = value
-	}
 	if value, ok := _c.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 		_node.AvatarURL = value
 	}
-	if value, ok := _c.mutation.IsBot(); ok {
-		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
-		_node.IsBot = value
+	if value, ok := _c.mutation.IsApp(); ok {
+		_spec.SetField(user.FieldIsApp, field.TypeBool, value)
+		_node.IsApp = value
 	}
 	if value, ok := _c.mutation.IsOfficial(); ok {
 		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
 		_node.IsOfficial = value
-	}
-	if value, ok := _c.mutation.ThemeHue(); ok {
-		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
-		_node.ThemeHue = value
-	}
-	if value, ok := _c.mutation.ThemeChroma(); ok {
-		_spec.SetField(user.FieldThemeChroma, field.TypeFloat64, value)
-		_node.ThemeChroma = value
-	}
-	if value, ok := _c.mutation.ThemeSidebar(); ok {
-		_spec.SetField(user.FieldThemeSidebar, field.TypeEnum, value)
-		_node.ThemeSidebar = value
-	}
-	if value, ok := _c.mutation.ColorMode(); ok {
-		_spec.SetField(user.FieldColorMode, field.TypeEnum, value)
-		_node.ColorMode = value
-	}
-	if value, ok := _c.mutation.Locale(); ok {
-		_spec.SetField(user.FieldLocale, field.TypeString, value)
-		_node.Locale = value
-	}
-	if value, ok := _c.mutation.NotificationLevel(); ok {
-		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
-		_node.NotificationLevel = value
-	}
-	if value, ok := _c.mutation.Timezone(); ok {
-		_spec.SetField(user.FieldTimezone, field.TypeString, value)
-		_node.Timezone = value
-	}
-	if value, ok := _c.mutation.TimezoneAutoUpdate(); ok {
-		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
-		_node.TimezoneAutoUpdate = value
-	}
-	if value, ok := _c.mutation.ChannelSortOrder(); ok {
-		_spec.SetField(user.FieldChannelSortOrder, field.TypeEnum, value)
-		_node.ChannelSortOrder = value
-	}
-	if value, ok := _c.mutation.HideJoinMessages(); ok {
-		_spec.SetField(user.FieldHideJoinMessages, field.TypeBool, value)
-		_node.HideJoinMessages = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
@@ -1021,6 +777,38 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.PreferenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.PreferenceTable,
+			Columns: []string{user.PreferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userpreference.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.LinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -1145,24 +933,6 @@ func (u *UserUpsert) ClearBio() *UserUpsert {
 	return u
 }
 
-// SetLinks sets the "links" field.
-func (u *UserUpsert) SetLinks(v []string) *UserUpsert {
-	u.Set(user.FieldLinks, v)
-	return u
-}
-
-// UpdateLinks sets the "links" field to the value that was provided on create.
-func (u *UserUpsert) UpdateLinks() *UserUpsert {
-	u.SetExcluded(user.FieldLinks)
-	return u
-}
-
-// ClearLinks clears the value of the "links" field.
-func (u *UserUpsert) ClearLinks() *UserUpsert {
-	u.SetNull(user.FieldLinks)
-	return u
-}
-
 // SetAvatarURL sets the "avatar_url" field.
 func (u *UserUpsert) SetAvatarURL(v string) *UserUpsert {
 	u.Set(user.FieldAvatarURL, v)
@@ -1181,15 +951,15 @@ func (u *UserUpsert) ClearAvatarURL() *UserUpsert {
 	return u
 }
 
-// SetIsBot sets the "is_bot" field.
-func (u *UserUpsert) SetIsBot(v bool) *UserUpsert {
-	u.Set(user.FieldIsBot, v)
+// SetIsApp sets the "is_app" field.
+func (u *UserUpsert) SetIsApp(v bool) *UserUpsert {
+	u.Set(user.FieldIsApp, v)
 	return u
 }
 
-// UpdateIsBot sets the "is_bot" field to the value that was provided on create.
-func (u *UserUpsert) UpdateIsBot() *UserUpsert {
-	u.SetExcluded(user.FieldIsBot)
+// UpdateIsApp sets the "is_app" field to the value that was provided on create.
+func (u *UserUpsert) UpdateIsApp() *UserUpsert {
+	u.SetExcluded(user.FieldIsApp)
 	return u
 }
 
@@ -1202,138 +972,6 @@ func (u *UserUpsert) SetIsOfficial(v bool) *UserUpsert {
 // UpdateIsOfficial sets the "is_official" field to the value that was provided on create.
 func (u *UserUpsert) UpdateIsOfficial() *UserUpsert {
 	u.SetExcluded(user.FieldIsOfficial)
-	return u
-}
-
-// SetThemeHue sets the "theme_hue" field.
-func (u *UserUpsert) SetThemeHue(v int) *UserUpsert {
-	u.Set(user.FieldThemeHue, v)
-	return u
-}
-
-// UpdateThemeHue sets the "theme_hue" field to the value that was provided on create.
-func (u *UserUpsert) UpdateThemeHue() *UserUpsert {
-	u.SetExcluded(user.FieldThemeHue)
-	return u
-}
-
-// AddThemeHue adds v to the "theme_hue" field.
-func (u *UserUpsert) AddThemeHue(v int) *UserUpsert {
-	u.Add(user.FieldThemeHue, v)
-	return u
-}
-
-// SetThemeChroma sets the "theme_chroma" field.
-func (u *UserUpsert) SetThemeChroma(v float64) *UserUpsert {
-	u.Set(user.FieldThemeChroma, v)
-	return u
-}
-
-// UpdateThemeChroma sets the "theme_chroma" field to the value that was provided on create.
-func (u *UserUpsert) UpdateThemeChroma() *UserUpsert {
-	u.SetExcluded(user.FieldThemeChroma)
-	return u
-}
-
-// AddThemeChroma adds v to the "theme_chroma" field.
-func (u *UserUpsert) AddThemeChroma(v float64) *UserUpsert {
-	u.Add(user.FieldThemeChroma, v)
-	return u
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (u *UserUpsert) SetThemeSidebar(v user.ThemeSidebar) *UserUpsert {
-	u.Set(user.FieldThemeSidebar, v)
-	return u
-}
-
-// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
-func (u *UserUpsert) UpdateThemeSidebar() *UserUpsert {
-	u.SetExcluded(user.FieldThemeSidebar)
-	return u
-}
-
-// SetColorMode sets the "color_mode" field.
-func (u *UserUpsert) SetColorMode(v user.ColorMode) *UserUpsert {
-	u.Set(user.FieldColorMode, v)
-	return u
-}
-
-// UpdateColorMode sets the "color_mode" field to the value that was provided on create.
-func (u *UserUpsert) UpdateColorMode() *UserUpsert {
-	u.SetExcluded(user.FieldColorMode)
-	return u
-}
-
-// SetLocale sets the "locale" field.
-func (u *UserUpsert) SetLocale(v string) *UserUpsert {
-	u.Set(user.FieldLocale, v)
-	return u
-}
-
-// UpdateLocale sets the "locale" field to the value that was provided on create.
-func (u *UserUpsert) UpdateLocale() *UserUpsert {
-	u.SetExcluded(user.FieldLocale)
-	return u
-}
-
-// SetNotificationLevel sets the "notification_level" field.
-func (u *UserUpsert) SetNotificationLevel(v user.NotificationLevel) *UserUpsert {
-	u.Set(user.FieldNotificationLevel, v)
-	return u
-}
-
-// UpdateNotificationLevel sets the "notification_level" field to the value that was provided on create.
-func (u *UserUpsert) UpdateNotificationLevel() *UserUpsert {
-	u.SetExcluded(user.FieldNotificationLevel)
-	return u
-}
-
-// SetTimezone sets the "timezone" field.
-func (u *UserUpsert) SetTimezone(v string) *UserUpsert {
-	u.Set(user.FieldTimezone, v)
-	return u
-}
-
-// UpdateTimezone sets the "timezone" field to the value that was provided on create.
-func (u *UserUpsert) UpdateTimezone() *UserUpsert {
-	u.SetExcluded(user.FieldTimezone)
-	return u
-}
-
-// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
-func (u *UserUpsert) SetTimezoneAutoUpdate(v bool) *UserUpsert {
-	u.Set(user.FieldTimezoneAutoUpdate, v)
-	return u
-}
-
-// UpdateTimezoneAutoUpdate sets the "timezone_auto_update" field to the value that was provided on create.
-func (u *UserUpsert) UpdateTimezoneAutoUpdate() *UserUpsert {
-	u.SetExcluded(user.FieldTimezoneAutoUpdate)
-	return u
-}
-
-// SetChannelSortOrder sets the "channel_sort_order" field.
-func (u *UserUpsert) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpsert {
-	u.Set(user.FieldChannelSortOrder, v)
-	return u
-}
-
-// UpdateChannelSortOrder sets the "channel_sort_order" field to the value that was provided on create.
-func (u *UserUpsert) UpdateChannelSortOrder() *UserUpsert {
-	u.SetExcluded(user.FieldChannelSortOrder)
-	return u
-}
-
-// SetHideJoinMessages sets the "hide_join_messages" field.
-func (u *UserUpsert) SetHideJoinMessages(v bool) *UserUpsert {
-	u.Set(user.FieldHideJoinMessages, v)
-	return u
-}
-
-// UpdateHideJoinMessages sets the "hide_join_messages" field to the value that was provided on create.
-func (u *UserUpsert) UpdateHideJoinMessages() *UserUpsert {
-	u.SetExcluded(user.FieldHideJoinMessages)
 	return u
 }
 
@@ -1484,27 +1122,6 @@ func (u *UserUpsertOne) ClearBio() *UserUpsertOne {
 	})
 }
 
-// SetLinks sets the "links" field.
-func (u *UserUpsertOne) SetLinks(v []string) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetLinks(v)
-	})
-}
-
-// UpdateLinks sets the "links" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateLinks() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateLinks()
-	})
-}
-
-// ClearLinks clears the value of the "links" field.
-func (u *UserUpsertOne) ClearLinks() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearLinks()
-	})
-}
-
 // SetAvatarURL sets the "avatar_url" field.
 func (u *UserUpsertOne) SetAvatarURL(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
@@ -1526,17 +1143,17 @@ func (u *UserUpsertOne) ClearAvatarURL() *UserUpsertOne {
 	})
 }
 
-// SetIsBot sets the "is_bot" field.
-func (u *UserUpsertOne) SetIsBot(v bool) *UserUpsertOne {
+// SetIsApp sets the "is_app" field.
+func (u *UserUpsertOne) SetIsApp(v bool) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.SetIsBot(v)
+		s.SetIsApp(v)
 	})
 }
 
-// UpdateIsBot sets the "is_bot" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateIsBot() *UserUpsertOne {
+// UpdateIsApp sets the "is_app" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateIsApp() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateIsBot()
+		s.UpdateIsApp()
 	})
 }
 
@@ -1551,160 +1168,6 @@ func (u *UserUpsertOne) SetIsOfficial(v bool) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateIsOfficial() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateIsOfficial()
-	})
-}
-
-// SetThemeHue sets the "theme_hue" field.
-func (u *UserUpsertOne) SetThemeHue(v int) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetThemeHue(v)
-	})
-}
-
-// AddThemeHue adds v to the "theme_hue" field.
-func (u *UserUpsertOne) AddThemeHue(v int) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.AddThemeHue(v)
-	})
-}
-
-// UpdateThemeHue sets the "theme_hue" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateThemeHue() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateThemeHue()
-	})
-}
-
-// SetThemeChroma sets the "theme_chroma" field.
-func (u *UserUpsertOne) SetThemeChroma(v float64) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetThemeChroma(v)
-	})
-}
-
-// AddThemeChroma adds v to the "theme_chroma" field.
-func (u *UserUpsertOne) AddThemeChroma(v float64) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.AddThemeChroma(v)
-	})
-}
-
-// UpdateThemeChroma sets the "theme_chroma" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateThemeChroma() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateThemeChroma()
-	})
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (u *UserUpsertOne) SetThemeSidebar(v user.ThemeSidebar) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetThemeSidebar(v)
-	})
-}
-
-// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateThemeSidebar() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateThemeSidebar()
-	})
-}
-
-// SetColorMode sets the "color_mode" field.
-func (u *UserUpsertOne) SetColorMode(v user.ColorMode) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetColorMode(v)
-	})
-}
-
-// UpdateColorMode sets the "color_mode" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateColorMode() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateColorMode()
-	})
-}
-
-// SetLocale sets the "locale" field.
-func (u *UserUpsertOne) SetLocale(v string) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetLocale(v)
-	})
-}
-
-// UpdateLocale sets the "locale" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateLocale() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateLocale()
-	})
-}
-
-// SetNotificationLevel sets the "notification_level" field.
-func (u *UserUpsertOne) SetNotificationLevel(v user.NotificationLevel) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetNotificationLevel(v)
-	})
-}
-
-// UpdateNotificationLevel sets the "notification_level" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateNotificationLevel() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateNotificationLevel()
-	})
-}
-
-// SetTimezone sets the "timezone" field.
-func (u *UserUpsertOne) SetTimezone(v string) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetTimezone(v)
-	})
-}
-
-// UpdateTimezone sets the "timezone" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateTimezone() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateTimezone()
-	})
-}
-
-// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
-func (u *UserUpsertOne) SetTimezoneAutoUpdate(v bool) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetTimezoneAutoUpdate(v)
-	})
-}
-
-// UpdateTimezoneAutoUpdate sets the "timezone_auto_update" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateTimezoneAutoUpdate() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateTimezoneAutoUpdate()
-	})
-}
-
-// SetChannelSortOrder sets the "channel_sort_order" field.
-func (u *UserUpsertOne) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetChannelSortOrder(v)
-	})
-}
-
-// UpdateChannelSortOrder sets the "channel_sort_order" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateChannelSortOrder() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateChannelSortOrder()
-	})
-}
-
-// SetHideJoinMessages sets the "hide_join_messages" field.
-func (u *UserUpsertOne) SetHideJoinMessages(v bool) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetHideJoinMessages(v)
-	})
-}
-
-// UpdateHideJoinMessages sets the "hide_join_messages" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateHideJoinMessages() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateHideJoinMessages()
 	})
 }
 
@@ -2024,27 +1487,6 @@ func (u *UserUpsertBulk) ClearBio() *UserUpsertBulk {
 	})
 }
 
-// SetLinks sets the "links" field.
-func (u *UserUpsertBulk) SetLinks(v []string) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetLinks(v)
-	})
-}
-
-// UpdateLinks sets the "links" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateLinks() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateLinks()
-	})
-}
-
-// ClearLinks clears the value of the "links" field.
-func (u *UserUpsertBulk) ClearLinks() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearLinks()
-	})
-}
-
 // SetAvatarURL sets the "avatar_url" field.
 func (u *UserUpsertBulk) SetAvatarURL(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
@@ -2066,17 +1508,17 @@ func (u *UserUpsertBulk) ClearAvatarURL() *UserUpsertBulk {
 	})
 }
 
-// SetIsBot sets the "is_bot" field.
-func (u *UserUpsertBulk) SetIsBot(v bool) *UserUpsertBulk {
+// SetIsApp sets the "is_app" field.
+func (u *UserUpsertBulk) SetIsApp(v bool) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.SetIsBot(v)
+		s.SetIsApp(v)
 	})
 }
 
-// UpdateIsBot sets the "is_bot" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateIsBot() *UserUpsertBulk {
+// UpdateIsApp sets the "is_app" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateIsApp() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateIsBot()
+		s.UpdateIsApp()
 	})
 }
 
@@ -2091,160 +1533,6 @@ func (u *UserUpsertBulk) SetIsOfficial(v bool) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateIsOfficial() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateIsOfficial()
-	})
-}
-
-// SetThemeHue sets the "theme_hue" field.
-func (u *UserUpsertBulk) SetThemeHue(v int) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetThemeHue(v)
-	})
-}
-
-// AddThemeHue adds v to the "theme_hue" field.
-func (u *UserUpsertBulk) AddThemeHue(v int) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.AddThemeHue(v)
-	})
-}
-
-// UpdateThemeHue sets the "theme_hue" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateThemeHue() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateThemeHue()
-	})
-}
-
-// SetThemeChroma sets the "theme_chroma" field.
-func (u *UserUpsertBulk) SetThemeChroma(v float64) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetThemeChroma(v)
-	})
-}
-
-// AddThemeChroma adds v to the "theme_chroma" field.
-func (u *UserUpsertBulk) AddThemeChroma(v float64) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.AddThemeChroma(v)
-	})
-}
-
-// UpdateThemeChroma sets the "theme_chroma" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateThemeChroma() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateThemeChroma()
-	})
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (u *UserUpsertBulk) SetThemeSidebar(v user.ThemeSidebar) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetThemeSidebar(v)
-	})
-}
-
-// UpdateThemeSidebar sets the "theme_sidebar" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateThemeSidebar() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateThemeSidebar()
-	})
-}
-
-// SetColorMode sets the "color_mode" field.
-func (u *UserUpsertBulk) SetColorMode(v user.ColorMode) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetColorMode(v)
-	})
-}
-
-// UpdateColorMode sets the "color_mode" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateColorMode() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateColorMode()
-	})
-}
-
-// SetLocale sets the "locale" field.
-func (u *UserUpsertBulk) SetLocale(v string) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetLocale(v)
-	})
-}
-
-// UpdateLocale sets the "locale" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateLocale() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateLocale()
-	})
-}
-
-// SetNotificationLevel sets the "notification_level" field.
-func (u *UserUpsertBulk) SetNotificationLevel(v user.NotificationLevel) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetNotificationLevel(v)
-	})
-}
-
-// UpdateNotificationLevel sets the "notification_level" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateNotificationLevel() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateNotificationLevel()
-	})
-}
-
-// SetTimezone sets the "timezone" field.
-func (u *UserUpsertBulk) SetTimezone(v string) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetTimezone(v)
-	})
-}
-
-// UpdateTimezone sets the "timezone" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateTimezone() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateTimezone()
-	})
-}
-
-// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
-func (u *UserUpsertBulk) SetTimezoneAutoUpdate(v bool) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetTimezoneAutoUpdate(v)
-	})
-}
-
-// UpdateTimezoneAutoUpdate sets the "timezone_auto_update" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateTimezoneAutoUpdate() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateTimezoneAutoUpdate()
-	})
-}
-
-// SetChannelSortOrder sets the "channel_sort_order" field.
-func (u *UserUpsertBulk) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetChannelSortOrder(v)
-	})
-}
-
-// UpdateChannelSortOrder sets the "channel_sort_order" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateChannelSortOrder() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateChannelSortOrder()
-	})
-}
-
-// SetHideJoinMessages sets the "hide_join_messages" field.
-func (u *UserUpsertBulk) SetHideJoinMessages(v bool) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetHideJoinMessages(v)
-	})
-}
-
-// UpdateHideJoinMessages sets the "hide_join_messages" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateHideJoinMessages() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateHideJoinMessages()
 	})
 }
 

@@ -22,7 +22,7 @@ type User struct {
 	AvatarURL    *string
 	// プロフィールに載せるリンクの URL
 	Links []string
-	IsBot bool
+	IsApp bool
 	// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
 	IsOfficial  bool
 	Preferences UserPreferences
@@ -63,6 +63,19 @@ const (
 	ChannelSortOrderDefault        ChannelSortOrder = "default"
 	ChannelSortOrderRecentActivity ChannelSortOrder = "recent_activity"
 )
+
+// DefaultPreferences は設定を保存していないユーザーの値です。Jade プリセット・システムに合わせる・日本語
+func DefaultPreferences() UserPreferences {
+	return UserPreferences{
+		ThemeHue:          168,
+		ThemeChroma:       0.12,
+		ThemeSidebar:      SidebarStyleTinted,
+		ColorMode:         ColorModeSystem,
+		Locale:            "ja",
+		NotificationLevel: NotificationLevelMentions,
+		ChannelSortOrder:  ChannelSortOrderDefault,
+	}
+}
 
 // UserPreferences は端末をまたいで共有する表示・通知の設定です
 type UserPreferences struct {

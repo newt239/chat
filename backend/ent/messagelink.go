@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/newt239/chat/ent/linkpreview"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagelink"
 )
@@ -19,50 +20,31 @@ type MessageLink struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// MessageID holds the value of the "message_id" field.
+	MessageID uuid.UUID `json:"message_id,omitempty"`
 	// URL holds the value of the "url" field.
 	URL string `json:"url,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
-	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
-	// ImageURL holds the value of the "image_url" field.
-	ImageURL string `json:"image_url,omitempty"`
-	// SiteName holds the value of the "site_name" field.
-	SiteName string `json:"site_name,omitempty"`
-	// CardType holds the value of the "card_type" field.
-	CardType string `json:"card_type,omitempty"`
-	// ImageWidth holds the value of the "image_width" field.
-	ImageWidth *int32 `json:"image_width,omitempty"`
-	// ImageHeight holds the value of the "image_height" field.
-	ImageHeight *int32 `json:"image_height,omitempty"`
-	// YoutubeVideoID holds the value of the "youtube_video_id" field.
-	YoutubeVideoID *string `json:"youtube_video_id,omitempty"`
-	// YoutubeChannelName holds the value of the "youtube_channel_name" field.
-	YoutubeChannelName *string `json:"youtube_channel_name,omitempty"`
-	// YoutubeDurationSeconds holds the value of the "youtube_duration_seconds" field.
-	YoutubeDurationSeconds *int32 `json:"youtube_duration_seconds,omitempty"`
-	// XAuthorName holds the value of the "x_author_name" field.
-	XAuthorName *string `json:"x_author_name,omitempty"`
-	// XAuthorHandle holds the value of the "x_author_handle" field.
-	XAuthorHandle *string `json:"x_author_handle,omitempty"`
+	// LinkPreviewID holds the value of the "link_preview_id" field.
+	LinkPreviewID *uuid.UUID `json:"link_preview_id,omitempty"`
 	// LinkedMessageID holds the value of the "linked_message_id" field.
 	LinkedMessageID *uuid.UUID `json:"linked_message_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageLinkQuery when eager-loading is set.
-	Edges                MessageLinkEdges `json:"edges"`
-	message_link_message *uuid.UUID
-	selectValues         sql.SelectValues
+	Edges        MessageLinkEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MessageLinkEdges holds the relations/edges for other nodes in the graph.
 type MessageLinkEdges struct {
 	// Message holds the value of the message edge.
 	Message *Message `json:"message,omitempty"`
+	// LinkPreview holds the value of the link_preview edge.
+	LinkPreview *LinkPreview `json:"link_preview,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // MessageOrErr returns the Message value or an error if the edge
@@ -76,23 +58,30 @@ func (e MessageLinkEdges) MessageOrErr() (*Message, error) {
 	return nil, &NotLoadedError{edge: "message"}
 }
 
+// LinkPreviewOrErr returns the LinkPreview value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MessageLinkEdges) LinkPreviewOrErr() (*LinkPreview, error) {
+	if e.LinkPreview != nil {
+		return e.LinkPreview, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: linkpreview.Label}
+	}
+	return nil, &NotLoadedError{edge: "link_preview"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*MessageLink) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case messagelink.FieldLinkedMessageID:
+		case messagelink.FieldLinkPreviewID, messagelink.FieldLinkedMessageID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messagelink.FieldImageWidth, messagelink.FieldImageHeight, messagelink.FieldYoutubeDurationSeconds:
-			values[i] = new(sql.NullInt64)
-		case messagelink.FieldURL, messagelink.FieldTitle, messagelink.FieldDescription, messagelink.FieldImageURL, messagelink.FieldSiteName, messagelink.FieldCardType, messagelink.FieldYoutubeVideoID, messagelink.FieldYoutubeChannelName, messagelink.FieldXAuthorName, messagelink.FieldXAuthorHandle:
+		case messagelink.FieldURL:
 			values[i] = new(sql.NullString)
 		case messagelink.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case messagelink.FieldID:
+		case messagelink.FieldID, messagelink.FieldMessageID:
 			values[i] = new(uuid.UUID)
-		case messagelink.ForeignKeys[0]: // message_link_message
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -114,90 +103,24 @@ func (_m *MessageLink) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case messagelink.FieldMessageID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field message_id", values[i])
+			} else if value != nil {
+				_m.MessageID = *value
+			}
 		case messagelink.FieldURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
 				_m.URL = value.String
 			}
-		case messagelink.FieldTitle:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
+		case messagelink.FieldLinkPreviewID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field link_preview_id", values[i])
 			} else if value.Valid {
-				_m.Title = value.String
-			}
-		case messagelink.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				_m.Description = value.String
-			}
-		case messagelink.FieldImageURL:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field image_url", values[i])
-			} else if value.Valid {
-				_m.ImageURL = value.String
-			}
-		case messagelink.FieldSiteName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field site_name", values[i])
-			} else if value.Valid {
-				_m.SiteName = value.String
-			}
-		case messagelink.FieldCardType:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field card_type", values[i])
-			} else if value.Valid {
-				_m.CardType = value.String
-			}
-		case messagelink.FieldImageWidth:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field image_width", values[i])
-			} else if value.Valid {
-				_m.ImageWidth = new(int32)
-				*_m.ImageWidth = int32(value.Int64)
-			}
-		case messagelink.FieldImageHeight:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field image_height", values[i])
-			} else if value.Valid {
-				_m.ImageHeight = new(int32)
-				*_m.ImageHeight = int32(value.Int64)
-			}
-		case messagelink.FieldYoutubeVideoID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field youtube_video_id", values[i])
-			} else if value.Valid {
-				_m.YoutubeVideoID = new(string)
-				*_m.YoutubeVideoID = value.String
-			}
-		case messagelink.FieldYoutubeChannelName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field youtube_channel_name", values[i])
-			} else if value.Valid {
-				_m.YoutubeChannelName = new(string)
-				*_m.YoutubeChannelName = value.String
-			}
-		case messagelink.FieldYoutubeDurationSeconds:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field youtube_duration_seconds", values[i])
-			} else if value.Valid {
-				_m.YoutubeDurationSeconds = new(int32)
-				*_m.YoutubeDurationSeconds = int32(value.Int64)
-			}
-		case messagelink.FieldXAuthorName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field x_author_name", values[i])
-			} else if value.Valid {
-				_m.XAuthorName = new(string)
-				*_m.XAuthorName = value.String
-			}
-		case messagelink.FieldXAuthorHandle:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field x_author_handle", values[i])
-			} else if value.Valid {
-				_m.XAuthorHandle = new(string)
-				*_m.XAuthorHandle = value.String
+				_m.LinkPreviewID = new(uuid.UUID)
+				*_m.LinkPreviewID = *value.S.(*uuid.UUID)
 			}
 		case messagelink.FieldLinkedMessageID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -211,13 +134,6 @@ func (_m *MessageLink) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case messagelink.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_link_message", values[i])
-			} else if value.Valid {
-				_m.message_link_message = new(uuid.UUID)
-				*_m.message_link_message = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -235,6 +151,11 @@ func (_m *MessageLink) Value(name string) (ent.Value, error) {
 // QueryMessage queries the "message" edge of the MessageLink entity.
 func (_m *MessageLink) QueryMessage() *MessageQuery {
 	return NewMessageLinkClient(_m.config).QueryMessage(_m)
+}
+
+// QueryLinkPreview queries the "link_preview" edge of the MessageLink entity.
+func (_m *MessageLink) QueryLinkPreview() *LinkPreviewQuery {
+	return NewMessageLinkClient(_m.config).QueryLinkPreview(_m)
 }
 
 // Update returns a builder for updating this MessageLink.
@@ -260,57 +181,15 @@ func (_m *MessageLink) String() string {
 	var builder strings.Builder
 	builder.WriteString("MessageLink(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("message_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MessageID))
+	builder.WriteString(", ")
 	builder.WriteString("url=")
 	builder.WriteString(_m.URL)
 	builder.WriteString(", ")
-	builder.WriteString("title=")
-	builder.WriteString(_m.Title)
-	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
-	builder.WriteString("image_url=")
-	builder.WriteString(_m.ImageURL)
-	builder.WriteString(", ")
-	builder.WriteString("site_name=")
-	builder.WriteString(_m.SiteName)
-	builder.WriteString(", ")
-	builder.WriteString("card_type=")
-	builder.WriteString(_m.CardType)
-	builder.WriteString(", ")
-	if v := _m.ImageWidth; v != nil {
-		builder.WriteString("image_width=")
+	if v := _m.LinkPreviewID; v != nil {
+		builder.WriteString("link_preview_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.ImageHeight; v != nil {
-		builder.WriteString("image_height=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.YoutubeVideoID; v != nil {
-		builder.WriteString("youtube_video_id=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.YoutubeChannelName; v != nil {
-		builder.WriteString("youtube_channel_name=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.YoutubeDurationSeconds; v != nil {
-		builder.WriteString("youtube_duration_seconds=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.XAuthorName; v != nil {
-		builder.WriteString("x_author_name=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.XAuthorHandle; v != nil {
-		builder.WriteString("x_author_handle=")
-		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	if v := _m.LinkedMessageID; v != nil {

@@ -20,6 +20,9 @@ import (
 	"github.com/newt239/chat/ent/customemoji"
 	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/invitation"
+	"github.com/newt239/chat/ent/linkpreview"
+	"github.com/newt239/chat/ent/linkpreviewxpost"
+	"github.com/newt239/chat/ent/linkpreviewyoutube"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -40,7 +43,9 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userlink"
 	"github.com/newt239/chat/ent/usernote"
+	"github.com/newt239/chat/ent/userpreference"
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -54,23 +59,23 @@ func init() {
 	appFields := schema.App{}.Fields()
 	_ = appFields
 	// appDescName is the schema descriptor for name field.
-	appDescName := appFields[2].Descriptor()
+	appDescName := appFields[5].Descriptor()
 	// app.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	app.NameValidator = appDescName.Validators[0].(func(string) error)
 	// appDescPermissions is the schema descriptor for permissions field.
-	appDescPermissions := appFields[6].Descriptor()
+	appDescPermissions := appFields[9].Descriptor()
 	// app.DefaultPermissions holds the default value on creation for the permissions field.
 	app.DefaultPermissions = appDescPermissions.Default.([]string)
 	// appDescIsOfficial is the schema descriptor for is_official field.
-	appDescIsOfficial := appFields[9].Descriptor()
+	appDescIsOfficial := appFields[12].Descriptor()
 	// app.DefaultIsOfficial holds the default value on creation for the is_official field.
 	app.DefaultIsOfficial = appDescIsOfficial.Default.(bool)
 	// appDescCreatedAt is the schema descriptor for created_at field.
-	appDescCreatedAt := appFields[11].Descriptor()
+	appDescCreatedAt := appFields[14].Descriptor()
 	// app.DefaultCreatedAt holds the default value on creation for the created_at field.
 	app.DefaultCreatedAt = appDescCreatedAt.Default.(func() time.Time)
 	// appDescUpdatedAt is the schema descriptor for updated_at field.
-	appDescUpdatedAt := appFields[12].Descriptor()
+	appDescUpdatedAt := appFields[15].Descriptor()
 	// app.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	app.DefaultUpdatedAt = appDescUpdatedAt.Default.(func() time.Time)
 	// app.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -82,27 +87,27 @@ func init() {
 	attachmentFields := schema.Attachment{}.Fields()
 	_ = attachmentFields
 	// attachmentDescFileName is the schema descriptor for file_name field.
-	attachmentDescFileName := attachmentFields[1].Descriptor()
+	attachmentDescFileName := attachmentFields[4].Descriptor()
 	// attachment.FileNameValidator is a validator for the "file_name" field. It is called by the builders before save.
 	attachment.FileNameValidator = attachmentDescFileName.Validators[0].(func(string) error)
 	// attachmentDescMimeType is the schema descriptor for mime_type field.
-	attachmentDescMimeType := attachmentFields[2].Descriptor()
+	attachmentDescMimeType := attachmentFields[5].Descriptor()
 	// attachment.MimeTypeValidator is a validator for the "mime_type" field. It is called by the builders before save.
 	attachment.MimeTypeValidator = attachmentDescMimeType.Validators[0].(func(string) error)
 	// attachmentDescSizeBytes is the schema descriptor for size_bytes field.
-	attachmentDescSizeBytes := attachmentFields[3].Descriptor()
+	attachmentDescSizeBytes := attachmentFields[6].Descriptor()
 	// attachment.SizeBytesValidator is a validator for the "size_bytes" field. It is called by the builders before save.
 	attachment.SizeBytesValidator = attachmentDescSizeBytes.Validators[0].(func(int64) error)
 	// attachmentDescStorageKey is the schema descriptor for storage_key field.
-	attachmentDescStorageKey := attachmentFields[7].Descriptor()
+	attachmentDescStorageKey := attachmentFields[10].Descriptor()
 	// attachment.StorageKeyValidator is a validator for the "storage_key" field. It is called by the builders before save.
 	attachment.StorageKeyValidator = attachmentDescStorageKey.Validators[0].(func(string) error)
 	// attachmentDescStatus is the schema descriptor for status field.
-	attachmentDescStatus := attachmentFields[11].Descriptor()
+	attachmentDescStatus := attachmentFields[14].Descriptor()
 	// attachment.DefaultStatus holds the default value on creation for the status field.
 	attachment.DefaultStatus = attachmentDescStatus.Default.(string)
 	// attachmentDescCreatedAt is the schema descriptor for created_at field.
-	attachmentDescCreatedAt := attachmentFields[14].Descriptor()
+	attachmentDescCreatedAt := attachmentFields[17].Descriptor()
 	// attachment.DefaultCreatedAt holds the default value on creation for the created_at field.
 	attachment.DefaultCreatedAt = attachmentDescCreatedAt.Default.(func() time.Time)
 	// attachmentDescID is the schema descriptor for id field.
@@ -150,23 +155,23 @@ func init() {
 	channelFields := schema.Channel{}.Fields()
 	_ = channelFields
 	// channelDescName is the schema descriptor for name field.
-	channelDescName := channelFields[1].Descriptor()
+	channelDescName := channelFields[3].Descriptor()
 	// channel.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	channel.NameValidator = channelDescName.Validators[0].(func(string) error)
 	// channelDescIsPrivate is the schema descriptor for is_private field.
-	channelDescIsPrivate := channelFields[3].Descriptor()
+	channelDescIsPrivate := channelFields[5].Descriptor()
 	// channel.DefaultIsPrivate holds the default value on creation for the is_private field.
 	channel.DefaultIsPrivate = channelDescIsPrivate.Default.(bool)
 	// channelDescChannelType is the schema descriptor for channel_type field.
-	channelDescChannelType := channelFields[4].Descriptor()
+	channelDescChannelType := channelFields[6].Descriptor()
 	// channel.DefaultChannelType holds the default value on creation for the channel_type field.
 	channel.DefaultChannelType = channelDescChannelType.Default.(string)
 	// channelDescCreatedAt is the schema descriptor for created_at field.
-	channelDescCreatedAt := channelFields[7].Descriptor()
+	channelDescCreatedAt := channelFields[10].Descriptor()
 	// channel.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channel.DefaultCreatedAt = channelDescCreatedAt.Default.(func() time.Time)
 	// channelDescUpdatedAt is the schema descriptor for updated_at field.
-	channelDescUpdatedAt := channelFields[8].Descriptor()
+	channelDescUpdatedAt := channelFields[11].Descriptor()
 	// channel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	channel.DefaultUpdatedAt = channelDescUpdatedAt.Default.(func() time.Time)
 	// channel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -178,15 +183,15 @@ func init() {
 	channelcategoryFields := schema.ChannelCategory{}.Fields()
 	_ = channelcategoryFields
 	// channelcategoryDescName is the schema descriptor for name field.
-	channelcategoryDescName := channelcategoryFields[1].Descriptor()
+	channelcategoryDescName := channelcategoryFields[3].Descriptor()
 	// channelcategory.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	channelcategory.NameValidator = channelcategoryDescName.Validators[0].(func(string) error)
 	// channelcategoryDescPosition is the schema descriptor for position field.
-	channelcategoryDescPosition := channelcategoryFields[2].Descriptor()
+	channelcategoryDescPosition := channelcategoryFields[4].Descriptor()
 	// channelcategory.DefaultPosition holds the default value on creation for the position field.
 	channelcategory.DefaultPosition = channelcategoryDescPosition.Default.(int)
 	// channelcategoryDescCreatedAt is the schema descriptor for created_at field.
-	channelcategoryDescCreatedAt := channelcategoryFields[3].Descriptor()
+	channelcategoryDescCreatedAt := channelcategoryFields[5].Descriptor()
 	// channelcategory.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channelcategory.DefaultCreatedAt = channelcategoryDescCreatedAt.Default.(func() time.Time)
 	// channelcategoryDescID is the schema descriptor for id field.
@@ -202,23 +207,23 @@ func init() {
 	channellinkFields := schema.ChannelLink{}.Fields()
 	_ = channellinkFields
 	// channellinkDescTitle is the schema descriptor for title field.
-	channellinkDescTitle := channellinkFields[1].Descriptor()
+	channellinkDescTitle := channellinkFields[3].Descriptor()
 	// channellink.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	channellink.TitleValidator = channellinkDescTitle.Validators[0].(func(string) error)
 	// channellinkDescURL is the schema descriptor for url field.
-	channellinkDescURL := channellinkFields[2].Descriptor()
+	channellinkDescURL := channellinkFields[4].Descriptor()
 	// channellink.URLValidator is a validator for the "url" field. It is called by the builders before save.
 	channellink.URLValidator = channellinkDescURL.Validators[0].(func(string) error)
 	// channellinkDescPosition is the schema descriptor for position field.
-	channellinkDescPosition := channellinkFields[3].Descriptor()
+	channellinkDescPosition := channellinkFields[5].Descriptor()
 	// channellink.DefaultPosition holds the default value on creation for the position field.
 	channellink.DefaultPosition = channellinkDescPosition.Default.(int)
 	// channellinkDescCreatedAt is the schema descriptor for created_at field.
-	channellinkDescCreatedAt := channellinkFields[4].Descriptor()
+	channellinkDescCreatedAt := channellinkFields[6].Descriptor()
 	// channellink.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channellink.DefaultCreatedAt = channellinkDescCreatedAt.Default.(func() time.Time)
 	// channellinkDescUpdatedAt is the schema descriptor for updated_at field.
-	channellinkDescUpdatedAt := channellinkFields[5].Descriptor()
+	channellinkDescUpdatedAt := channellinkFields[7].Descriptor()
 	// channellink.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	channellink.DefaultUpdatedAt = channellinkDescUpdatedAt.Default.(func() time.Time)
 	// channellink.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -230,11 +235,11 @@ func init() {
 	channelmemberFields := schema.ChannelMember{}.Fields()
 	_ = channelmemberFields
 	// channelmemberDescRole is the schema descriptor for role field.
-	channelmemberDescRole := channelmemberFields[1].Descriptor()
+	channelmemberDescRole := channelmemberFields[3].Descriptor()
 	// channelmember.DefaultRole holds the default value on creation for the role field.
 	channelmember.DefaultRole = channelmemberDescRole.Default.(string)
 	// channelmemberDescJoinedAt is the schema descriptor for joined_at field.
-	channelmemberDescJoinedAt := channelmemberFields[2].Descriptor()
+	channelmemberDescJoinedAt := channelmemberFields[4].Descriptor()
 	// channelmember.DefaultJoinedAt holds the default value on creation for the joined_at field.
 	channelmember.DefaultJoinedAt = channelmemberDescJoinedAt.Default.(func() time.Time)
 	// channelmemberDescID is the schema descriptor for id field.
@@ -244,7 +249,7 @@ func init() {
 	channelmuteFields := schema.ChannelMute{}.Fields()
 	_ = channelmuteFields
 	// channelmuteDescCreatedAt is the schema descriptor for created_at field.
-	channelmuteDescCreatedAt := channelmuteFields[1].Descriptor()
+	channelmuteDescCreatedAt := channelmuteFields[3].Descriptor()
 	// channelmute.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channelmute.DefaultCreatedAt = channelmuteDescCreatedAt.Default.(func() time.Time)
 	// channelmuteDescID is the schema descriptor for id field.
@@ -254,7 +259,7 @@ func init() {
 	channelreadstateFields := schema.ChannelReadState{}.Fields()
 	_ = channelreadstateFields
 	// channelreadstateDescLastReadAt is the schema descriptor for last_read_at field.
-	channelreadstateDescLastReadAt := channelreadstateFields[1].Descriptor()
+	channelreadstateDescLastReadAt := channelreadstateFields[3].Descriptor()
 	// channelreadstate.DefaultLastReadAt holds the default value on creation for the last_read_at field.
 	channelreadstate.DefaultLastReadAt = channelreadstateDescLastReadAt.Default.(func() time.Time)
 	// channelreadstateDescID is the schema descriptor for id field.
@@ -264,7 +269,7 @@ func init() {
 	channelstarFields := schema.ChannelStar{}.Fields()
 	_ = channelstarFields
 	// channelstarDescCreatedAt is the schema descriptor for created_at field.
-	channelstarDescCreatedAt := channelstarFields[1].Descriptor()
+	channelstarDescCreatedAt := channelstarFields[3].Descriptor()
 	// channelstar.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channelstar.DefaultCreatedAt = channelstarDescCreatedAt.Default.(func() time.Time)
 	// channelstarDescID is the schema descriptor for id field.
@@ -308,25 +313,51 @@ func init() {
 	invitationFields := schema.Invitation{}.Fields()
 	_ = invitationFields
 	// invitationDescEmail is the schema descriptor for email field.
-	invitationDescEmail := invitationFields[1].Descriptor()
+	invitationDescEmail := invitationFields[3].Descriptor()
 	// invitation.EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	invitation.EmailValidator = invitationDescEmail.Validators[0].(func(string) error)
 	// invitationDescRole is the schema descriptor for role field.
-	invitationDescRole := invitationFields[2].Descriptor()
+	invitationDescRole := invitationFields[4].Descriptor()
 	// invitation.RoleValidator is a validator for the "role" field. It is called by the builders before save.
 	invitation.RoleValidator = invitationDescRole.Validators[0].(func(string) error)
 	// invitationDescTokenHash is the schema descriptor for token_hash field.
-	invitationDescTokenHash := invitationFields[3].Descriptor()
+	invitationDescTokenHash := invitationFields[5].Descriptor()
 	// invitation.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
 	invitation.TokenHashValidator = invitationDescTokenHash.Validators[0].(func(string) error)
 	// invitationDescCreatedAt is the schema descriptor for created_at field.
-	invitationDescCreatedAt := invitationFields[6].Descriptor()
+	invitationDescCreatedAt := invitationFields[8].Descriptor()
 	// invitation.DefaultCreatedAt holds the default value on creation for the created_at field.
 	invitation.DefaultCreatedAt = invitationDescCreatedAt.Default.(func() time.Time)
 	// invitationDescID is the schema descriptor for id field.
 	invitationDescID := invitationFields[0].Descriptor()
 	// invitation.DefaultID holds the default value on creation for the id field.
 	invitation.DefaultID = invitationDescID.Default.(func() uuid.UUID)
+	linkpreviewFields := schema.LinkPreview{}.Fields()
+	_ = linkpreviewFields
+	// linkpreviewDescURL is the schema descriptor for url field.
+	linkpreviewDescURL := linkpreviewFields[1].Descriptor()
+	// linkpreview.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	linkpreview.URLValidator = linkpreviewDescURL.Validators[0].(func(string) error)
+	// linkpreviewDescID is the schema descriptor for id field.
+	linkpreviewDescID := linkpreviewFields[0].Descriptor()
+	// linkpreview.DefaultID holds the default value on creation for the id field.
+	linkpreview.DefaultID = linkpreviewDescID.Default.(func() uuid.UUID)
+	linkpreviewxpostFields := schema.LinkPreviewXPost{}.Fields()
+	_ = linkpreviewxpostFields
+	// linkpreviewxpostDescID is the schema descriptor for id field.
+	linkpreviewxpostDescID := linkpreviewxpostFields[0].Descriptor()
+	// linkpreviewxpost.DefaultID holds the default value on creation for the id field.
+	linkpreviewxpost.DefaultID = linkpreviewxpostDescID.Default.(func() uuid.UUID)
+	linkpreviewyoutubeFields := schema.LinkPreviewYoutube{}.Fields()
+	_ = linkpreviewyoutubeFields
+	// linkpreviewyoutubeDescVideoID is the schema descriptor for video_id field.
+	linkpreviewyoutubeDescVideoID := linkpreviewyoutubeFields[2].Descriptor()
+	// linkpreviewyoutube.VideoIDValidator is a validator for the "video_id" field. It is called by the builders before save.
+	linkpreviewyoutube.VideoIDValidator = linkpreviewyoutubeDescVideoID.Validators[0].(func(string) error)
+	// linkpreviewyoutubeDescID is the schema descriptor for id field.
+	linkpreviewyoutubeDescID := linkpreviewyoutubeFields[0].Descriptor()
+	// linkpreviewyoutube.DefaultID holds the default value on creation for the id field.
+	linkpreviewyoutube.DefaultID = linkpreviewyoutubeDescID.Default.(func() uuid.UUID)
 	messageFields := schema.Message{}.Fields()
 	_ = messageFields
 	// messageDescCreatedAt is the schema descriptor for created_at field.
@@ -334,11 +365,11 @@ func init() {
 	// message.DefaultCreatedAt holds the default value on creation for the created_at field.
 	message.DefaultCreatedAt = messageDescCreatedAt.Default.(func() time.Time)
 	// messageDescMentionsChannel is the schema descriptor for mentions_channel field.
-	messageDescMentionsChannel := messageFields[15].Descriptor()
+	messageDescMentionsChannel := messageFields[13].Descriptor()
 	// message.DefaultMentionsChannel holds the default value on creation for the mentions_channel field.
 	message.DefaultMentionsChannel = messageDescMentionsChannel.Default.(bool)
 	// messageDescMentionsHere is the schema descriptor for mentions_here field.
-	messageDescMentionsHere := messageFields[16].Descriptor()
+	messageDescMentionsHere := messageFields[14].Descriptor()
 	// message.DefaultMentionsHere holds the default value on creation for the mentions_here field.
 	message.DefaultMentionsHere = messageDescMentionsHere.Default.(bool)
 	// messageDescID is the schema descriptor for id field.
@@ -348,7 +379,7 @@ func init() {
 	messagebookmarkFields := schema.MessageBookmark{}.Fields()
 	_ = messagebookmarkFields
 	// messagebookmarkDescCreatedAt is the schema descriptor for created_at field.
-	messagebookmarkDescCreatedAt := messagebookmarkFields[1].Descriptor()
+	messagebookmarkDescCreatedAt := messagebookmarkFields[3].Descriptor()
 	// messagebookmark.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagebookmark.DefaultCreatedAt = messagebookmarkDescCreatedAt.Default.(func() time.Time)
 	// messagebookmarkDescID is the schema descriptor for id field.
@@ -358,7 +389,7 @@ func init() {
 	messagegroupmentionFields := schema.MessageGroupMention{}.Fields()
 	_ = messagegroupmentionFields
 	// messagegroupmentionDescCreatedAt is the schema descriptor for created_at field.
-	messagegroupmentionDescCreatedAt := messagegroupmentionFields[1].Descriptor()
+	messagegroupmentionDescCreatedAt := messagegroupmentionFields[3].Descriptor()
 	// messagegroupmention.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagegroupmention.DefaultCreatedAt = messagegroupmentionDescCreatedAt.Default.(func() time.Time)
 	// messagegroupmentionDescID is the schema descriptor for id field.
@@ -368,11 +399,11 @@ func init() {
 	messagelinkFields := schema.MessageLink{}.Fields()
 	_ = messagelinkFields
 	// messagelinkDescURL is the schema descriptor for url field.
-	messagelinkDescURL := messagelinkFields[1].Descriptor()
+	messagelinkDescURL := messagelinkFields[2].Descriptor()
 	// messagelink.URLValidator is a validator for the "url" field. It is called by the builders before save.
 	messagelink.URLValidator = messagelinkDescURL.Validators[0].(func(string) error)
 	// messagelinkDescCreatedAt is the schema descriptor for created_at field.
-	messagelinkDescCreatedAt := messagelinkFields[15].Descriptor()
+	messagelinkDescCreatedAt := messagelinkFields[5].Descriptor()
 	// messagelink.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagelink.DefaultCreatedAt = messagelinkDescCreatedAt.Default.(func() time.Time)
 	// messagelinkDescID is the schema descriptor for id field.
@@ -382,7 +413,7 @@ func init() {
 	messagepinFields := schema.MessagePin{}.Fields()
 	_ = messagepinFields
 	// messagepinDescCreatedAt is the schema descriptor for created_at field.
-	messagepinDescCreatedAt := messagepinFields[1].Descriptor()
+	messagepinDescCreatedAt := messagepinFields[4].Descriptor()
 	// messagepin.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagepin.DefaultCreatedAt = messagepinDescCreatedAt.Default.(func() time.Time)
 	// messagepinDescID is the schema descriptor for id field.
@@ -392,11 +423,11 @@ func init() {
 	messagereactionFields := schema.MessageReaction{}.Fields()
 	_ = messagereactionFields
 	// messagereactionDescEmoji is the schema descriptor for emoji field.
-	messagereactionDescEmoji := messagereactionFields[1].Descriptor()
+	messagereactionDescEmoji := messagereactionFields[3].Descriptor()
 	// messagereaction.EmojiValidator is a validator for the "emoji" field. It is called by the builders before save.
 	messagereaction.EmojiValidator = messagereactionDescEmoji.Validators[0].(func(string) error)
 	// messagereactionDescCreatedAt is the schema descriptor for created_at field.
-	messagereactionDescCreatedAt := messagereactionFields[2].Descriptor()
+	messagereactionDescCreatedAt := messagereactionFields[4].Descriptor()
 	// messagereaction.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagereaction.DefaultCreatedAt = messagereactionDescCreatedAt.Default.(func() time.Time)
 	// messagereactionDescID is the schema descriptor for id field.
@@ -406,7 +437,7 @@ func init() {
 	messageusermentionFields := schema.MessageUserMention{}.Fields()
 	_ = messageusermentionFields
 	// messageusermentionDescCreatedAt is the schema descriptor for created_at field.
-	messageusermentionDescCreatedAt := messageusermentionFields[2].Descriptor()
+	messageusermentionDescCreatedAt := messageusermentionFields[4].Descriptor()
 	// messageusermention.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messageusermention.DefaultCreatedAt = messageusermentionDescCreatedAt.Default.(func() time.Time)
 	// messageusermentionDescID is the schema descriptor for id field.
@@ -454,19 +485,19 @@ func init() {
 	pushtokenFields := schema.PushToken{}.Fields()
 	_ = pushtokenFields
 	// pushtokenDescToken is the schema descriptor for token field.
-	pushtokenDescToken := pushtokenFields[1].Descriptor()
+	pushtokenDescToken := pushtokenFields[2].Descriptor()
 	// pushtoken.TokenValidator is a validator for the "token" field. It is called by the builders before save.
 	pushtoken.TokenValidator = pushtokenDescToken.Validators[0].(func(string) error)
 	// pushtokenDescUserAgent is the schema descriptor for user_agent field.
-	pushtokenDescUserAgent := pushtokenFields[3].Descriptor()
+	pushtokenDescUserAgent := pushtokenFields[4].Descriptor()
 	// pushtoken.DefaultUserAgent holds the default value on creation for the user_agent field.
 	pushtoken.DefaultUserAgent = pushtokenDescUserAgent.Default.(string)
 	// pushtokenDescLastSeenAt is the schema descriptor for last_seen_at field.
-	pushtokenDescLastSeenAt := pushtokenFields[4].Descriptor()
+	pushtokenDescLastSeenAt := pushtokenFields[5].Descriptor()
 	// pushtoken.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
 	pushtoken.DefaultLastSeenAt = pushtokenDescLastSeenAt.Default.(func() time.Time)
 	// pushtokenDescCreatedAt is the schema descriptor for created_at field.
-	pushtokenDescCreatedAt := pushtokenFields[5].Descriptor()
+	pushtokenDescCreatedAt := pushtokenFields[6].Descriptor()
 	// pushtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
 	pushtoken.DefaultCreatedAt = pushtokenDescCreatedAt.Default.(func() time.Time)
 	// pushtokenDescID is the schema descriptor for id field.
@@ -512,19 +543,19 @@ func init() {
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescRefreshTokenHash is the schema descriptor for refresh_token_hash field.
-	sessionDescRefreshTokenHash := sessionFields[1].Descriptor()
+	sessionDescRefreshTokenHash := sessionFields[2].Descriptor()
 	// session.RefreshTokenHashValidator is a validator for the "refresh_token_hash" field. It is called by the builders before save.
 	session.RefreshTokenHashValidator = sessionDescRefreshTokenHash.Validators[0].(func(string) error)
 	// sessionDescIPAddress is the schema descriptor for ip_address field.
-	sessionDescIPAddress := sessionFields[4].Descriptor()
+	sessionDescIPAddress := sessionFields[5].Descriptor()
 	// session.DefaultIPAddress holds the default value on creation for the ip_address field.
 	session.DefaultIPAddress = sessionDescIPAddress.Default.(string)
 	// sessionDescUserAgent is the schema descriptor for user_agent field.
-	sessionDescUserAgent := sessionFields[5].Descriptor()
+	sessionDescUserAgent := sessionFields[6].Descriptor()
 	// session.DefaultUserAgent holds the default value on creation for the user_agent field.
 	session.DefaultUserAgent = sessionDescUserAgent.Default.(string)
 	// sessionDescCreatedAt is the schema descriptor for created_at field.
-	sessionDescCreatedAt := sessionFields[6].Descriptor()
+	sessionDescCreatedAt := sessionFields[7].Descriptor()
 	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
 	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
 	// sessionDescID is the schema descriptor for id field.
@@ -534,11 +565,11 @@ func init() {
 	systemmessageFields := schema.SystemMessage{}.Fields()
 	_ = systemmessageFields
 	// systemmessageDescKind is the schema descriptor for kind field.
-	systemmessageDescKind := systemmessageFields[1].Descriptor()
+	systemmessageDescKind := systemmessageFields[3].Descriptor()
 	// systemmessage.KindValidator is a validator for the "kind" field. It is called by the builders before save.
 	systemmessage.KindValidator = systemmessageDescKind.Validators[0].(func(string) error)
 	// systemmessageDescCreatedAt is the schema descriptor for created_at field.
-	systemmessageDescCreatedAt := systemmessageFields[3].Descriptor()
+	systemmessageDescCreatedAt := systemmessageFields[5].Descriptor()
 	// systemmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemmessage.DefaultCreatedAt = systemmessageDescCreatedAt.Default.(func() time.Time)
 	// systemmessageDescID is the schema descriptor for id field.
@@ -548,15 +579,15 @@ func init() {
 	threadreadstateFields := schema.ThreadReadState{}.Fields()
 	_ = threadreadstateFields
 	// threadreadstateDescLastReadAt is the schema descriptor for last_read_at field.
-	threadreadstateDescLastReadAt := threadreadstateFields[1].Descriptor()
+	threadreadstateDescLastReadAt := threadreadstateFields[3].Descriptor()
 	// threadreadstate.DefaultLastReadAt holds the default value on creation for the last_read_at field.
 	threadreadstate.DefaultLastReadAt = threadreadstateDescLastReadAt.Default.(func() time.Time)
 	// threadreadstateDescCreatedAt is the schema descriptor for created_at field.
-	threadreadstateDescCreatedAt := threadreadstateFields[2].Descriptor()
+	threadreadstateDescCreatedAt := threadreadstateFields[4].Descriptor()
 	// threadreadstate.DefaultCreatedAt holds the default value on creation for the created_at field.
 	threadreadstate.DefaultCreatedAt = threadreadstateDescCreatedAt.Default.(func() time.Time)
 	// threadreadstateDescUpdatedAt is the schema descriptor for updated_at field.
-	threadreadstateDescUpdatedAt := threadreadstateFields[3].Descriptor()
+	threadreadstateDescUpdatedAt := threadreadstateFields[5].Descriptor()
 	// threadreadstate.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	threadreadstate.DefaultUpdatedAt = threadreadstateDescUpdatedAt.Default.(func() time.Time)
 	// threadreadstate.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -579,44 +610,20 @@ func init() {
 	userDescDisplayName := userFields[4].Descriptor()
 	// user.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
-	// userDescIsBot is the schema descriptor for is_bot field.
-	userDescIsBot := userFields[8].Descriptor()
-	// user.DefaultIsBot holds the default value on creation for the is_bot field.
-	user.DefaultIsBot = userDescIsBot.Default.(bool)
+	// userDescIsApp is the schema descriptor for is_app field.
+	userDescIsApp := userFields[7].Descriptor()
+	// user.DefaultIsApp holds the default value on creation for the is_app field.
+	user.DefaultIsApp = userDescIsApp.Default.(bool)
 	// userDescIsOfficial is the schema descriptor for is_official field.
-	userDescIsOfficial := userFields[9].Descriptor()
+	userDescIsOfficial := userFields[8].Descriptor()
 	// user.DefaultIsOfficial holds the default value on creation for the is_official field.
 	user.DefaultIsOfficial = userDescIsOfficial.Default.(bool)
-	// userDescThemeHue is the schema descriptor for theme_hue field.
-	userDescThemeHue := userFields[10].Descriptor()
-	// user.DefaultThemeHue holds the default value on creation for the theme_hue field.
-	user.DefaultThemeHue = userDescThemeHue.Default.(int)
-	// userDescThemeChroma is the schema descriptor for theme_chroma field.
-	userDescThemeChroma := userFields[11].Descriptor()
-	// user.DefaultThemeChroma holds the default value on creation for the theme_chroma field.
-	user.DefaultThemeChroma = userDescThemeChroma.Default.(float64)
-	// userDescLocale is the schema descriptor for locale field.
-	userDescLocale := userFields[14].Descriptor()
-	// user.DefaultLocale holds the default value on creation for the locale field.
-	user.DefaultLocale = userDescLocale.Default.(string)
-	// userDescTimezone is the schema descriptor for timezone field.
-	userDescTimezone := userFields[16].Descriptor()
-	// user.DefaultTimezone holds the default value on creation for the timezone field.
-	user.DefaultTimezone = userDescTimezone.Default.(string)
-	// userDescTimezoneAutoUpdate is the schema descriptor for timezone_auto_update field.
-	userDescTimezoneAutoUpdate := userFields[17].Descriptor()
-	// user.DefaultTimezoneAutoUpdate holds the default value on creation for the timezone_auto_update field.
-	user.DefaultTimezoneAutoUpdate = userDescTimezoneAutoUpdate.Default.(bool)
-	// userDescHideJoinMessages is the schema descriptor for hide_join_messages field.
-	userDescHideJoinMessages := userFields[19].Descriptor()
-	// user.DefaultHideJoinMessages holds the default value on creation for the hide_join_messages field.
-	user.DefaultHideJoinMessages = userDescHideJoinMessages.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[20].Descriptor()
+	userDescCreatedAt := userFields[9].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[21].Descriptor()
+	userDescUpdatedAt := userFields[10].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -628,15 +635,15 @@ func init() {
 	usergroupFields := schema.UserGroup{}.Fields()
 	_ = usergroupFields
 	// usergroupDescName is the schema descriptor for name field.
-	usergroupDescName := usergroupFields[1].Descriptor()
+	usergroupDescName := usergroupFields[3].Descriptor()
 	// usergroup.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	usergroup.NameValidator = usergroupDescName.Validators[0].(func(string) error)
 	// usergroupDescCreatedAt is the schema descriptor for created_at field.
-	usergroupDescCreatedAt := usergroupFields[3].Descriptor()
+	usergroupDescCreatedAt := usergroupFields[5].Descriptor()
 	// usergroup.DefaultCreatedAt holds the default value on creation for the created_at field.
 	usergroup.DefaultCreatedAt = usergroupDescCreatedAt.Default.(func() time.Time)
 	// usergroupDescUpdatedAt is the schema descriptor for updated_at field.
-	usergroupDescUpdatedAt := usergroupFields[4].Descriptor()
+	usergroupDescUpdatedAt := usergroupFields[6].Descriptor()
 	// usergroup.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	usergroup.DefaultUpdatedAt = usergroupDescUpdatedAt.Default.(func() time.Time)
 	// usergroup.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -648,17 +655,27 @@ func init() {
 	usergroupmemberFields := schema.UserGroupMember{}.Fields()
 	_ = usergroupmemberFields
 	// usergroupmemberDescJoinedAt is the schema descriptor for joined_at field.
-	usergroupmemberDescJoinedAt := usergroupmemberFields[1].Descriptor()
+	usergroupmemberDescJoinedAt := usergroupmemberFields[3].Descriptor()
 	// usergroupmember.DefaultJoinedAt holds the default value on creation for the joined_at field.
 	usergroupmember.DefaultJoinedAt = usergroupmemberDescJoinedAt.Default.(func() time.Time)
 	// usergroupmemberDescID is the schema descriptor for id field.
 	usergroupmemberDescID := usergroupmemberFields[0].Descriptor()
 	// usergroupmember.DefaultID holds the default value on creation for the id field.
 	usergroupmember.DefaultID = usergroupmemberDescID.Default.(func() uuid.UUID)
+	userlinkFields := schema.UserLink{}.Fields()
+	_ = userlinkFields
+	// userlinkDescURL is the schema descriptor for url field.
+	userlinkDescURL := userlinkFields[3].Descriptor()
+	// userlink.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	userlink.URLValidator = userlinkDescURL.Validators[0].(func(string) error)
+	// userlinkDescID is the schema descriptor for id field.
+	userlinkDescID := userlinkFields[0].Descriptor()
+	// userlink.DefaultID holds the default value on creation for the id field.
+	userlink.DefaultID = userlinkDescID.Default.(func() uuid.UUID)
 	usernoteFields := schema.UserNote{}.Fields()
 	_ = usernoteFields
 	// usernoteDescUpdatedAt is the schema descriptor for updated_at field.
-	usernoteDescUpdatedAt := usernoteFields[3].Descriptor()
+	usernoteDescUpdatedAt := usernoteFields[5].Descriptor()
 	// usernote.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	usernote.DefaultUpdatedAt = usernoteDescUpdatedAt.Default.(func() time.Time)
 	// usernote.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -667,10 +684,16 @@ func init() {
 	usernoteDescID := usernoteFields[0].Descriptor()
 	// usernote.DefaultID holds the default value on creation for the id field.
 	usernote.DefaultID = usernoteDescID.Default.(func() uuid.UUID)
+	userpreferenceFields := schema.UserPreference{}.Fields()
+	_ = userpreferenceFields
+	// userpreferenceDescID is the schema descriptor for id field.
+	userpreferenceDescID := userpreferenceFields[0].Descriptor()
+	// userpreference.DefaultID holds the default value on creation for the id field.
+	userpreference.DefaultID = userpreferenceDescID.Default.(func() uuid.UUID)
 	userthreadfollowFields := schema.UserThreadFollow{}.Fields()
 	_ = userthreadfollowFields
 	// userthreadfollowDescCreatedAt is the schema descriptor for created_at field.
-	userthreadfollowDescCreatedAt := userthreadfollowFields[1].Descriptor()
+	userthreadfollowDescCreatedAt := userthreadfollowFields[3].Descriptor()
 	// userthreadfollow.DefaultCreatedAt holds the default value on creation for the created_at field.
 	userthreadfollow.DefaultCreatedAt = userthreadfollowDescCreatedAt.Default.(func() time.Time)
 	// userthreadfollowDescID is the schema descriptor for id field.
@@ -680,27 +703,27 @@ func init() {
 	workspaceFields := schema.Workspace{}.Fields()
 	_ = workspaceFields
 	// workspaceDescName is the schema descriptor for name field.
-	workspaceDescName := workspaceFields[1].Descriptor()
+	workspaceDescName := workspaceFields[2].Descriptor()
 	// workspace.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	workspace.NameValidator = workspaceDescName.Validators[0].(func(string) error)
 	// workspaceDescIsPublic is the schema descriptor for is_public field.
-	workspaceDescIsPublic := workspaceFields[4].Descriptor()
+	workspaceDescIsPublic := workspaceFields[5].Descriptor()
 	// workspace.DefaultIsPublic holds the default value on creation for the is_public field.
 	workspace.DefaultIsPublic = workspaceDescIsPublic.Default.(bool)
 	// workspaceDescSignupEnabled is the schema descriptor for signup_enabled field.
-	workspaceDescSignupEnabled := workspaceFields[5].Descriptor()
+	workspaceDescSignupEnabled := workspaceFields[6].Descriptor()
 	// workspace.DefaultSignupEnabled holds the default value on creation for the signup_enabled field.
 	workspace.DefaultSignupEnabled = workspaceDescSignupEnabled.Default.(bool)
 	// workspaceDescEmailSignupEnabled is the schema descriptor for email_signup_enabled field.
-	workspaceDescEmailSignupEnabled := workspaceFields[6].Descriptor()
+	workspaceDescEmailSignupEnabled := workspaceFields[7].Descriptor()
 	// workspace.DefaultEmailSignupEnabled holds the default value on creation for the email_signup_enabled field.
 	workspace.DefaultEmailSignupEnabled = workspaceDescEmailSignupEnabled.Default.(bool)
 	// workspaceDescCreatedAt is the schema descriptor for created_at field.
-	workspaceDescCreatedAt := workspaceFields[7].Descriptor()
+	workspaceDescCreatedAt := workspaceFields[8].Descriptor()
 	// workspace.DefaultCreatedAt holds the default value on creation for the created_at field.
 	workspace.DefaultCreatedAt = workspaceDescCreatedAt.Default.(func() time.Time)
 	// workspaceDescUpdatedAt is the schema descriptor for updated_at field.
-	workspaceDescUpdatedAt := workspaceFields[8].Descriptor()
+	workspaceDescUpdatedAt := workspaceFields[9].Descriptor()
 	// workspace.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	workspace.DefaultUpdatedAt = workspaceDescUpdatedAt.Default.(func() time.Time)
 	// workspace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -728,11 +751,11 @@ func init() {
 	workspacememberFields := schema.WorkspaceMember{}.Fields()
 	_ = workspacememberFields
 	// workspacememberDescRole is the schema descriptor for role field.
-	workspacememberDescRole := workspacememberFields[1].Descriptor()
+	workspacememberDescRole := workspacememberFields[3].Descriptor()
 	// workspacemember.RoleValidator is a validator for the "role" field. It is called by the builders before save.
 	workspacemember.RoleValidator = workspacememberDescRole.Validators[0].(func(string) error)
 	// workspacememberDescJoinedAt is the schema descriptor for joined_at field.
-	workspacememberDescJoinedAt := workspacememberFields[2].Descriptor()
+	workspacememberDescJoinedAt := workspacememberFields[4].Descriptor()
 	// workspacemember.DefaultJoinedAt holds the default value on creation for the joined_at field.
 	workspacemember.DefaultJoinedAt = workspacememberDescJoinedAt.Default.(func() time.Time)
 	// workspacememberDescID is the schema descriptor for id field.

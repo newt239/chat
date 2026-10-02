@@ -172,7 +172,7 @@ func (d *Dispatcher) filterRecipients(ctx context.Context, channel *entity.Chann
 
 	recipients := []string{}
 	for _, u := range users {
-		if u.IsBot || !wants(u.Preferences.NotificationLevel, candidates[u.ID]) {
+		if u.IsApp || !wants(u.Preferences.NotificationLevel, candidates[u.ID]) {
 			continue
 		}
 		if _, err := d.channelAccessSvc.EnsureChannelAccess(ctx, channel.ID, u.ID); err != nil {

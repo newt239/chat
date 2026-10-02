@@ -295,7 +295,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		SetEmail("deploy-bot@example.com").
 		SetPasswordHash("!").
 		SetDisplayName("Deploy Bot").
-		SetIsBot(true).
+		SetIsApp(true).
 		Save(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create bot: %w", err)
@@ -317,7 +317,6 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 	if err := client.Message.Create().
 		SetChannelID(channelID).
 		SetUserID(bot.ID).
-		SetSenderName("Deploy Bot").
 		SetBody("✅ v1.2.3 を本番環境にデプロイしました").
 		SetCreatedAt(next()).
 		Exec(ctx); err != nil {

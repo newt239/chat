@@ -20,14 +20,16 @@ type MessageGroupMention struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// MessageID holds the value of the "message_id" field.
+	MessageID uuid.UUID `json:"message_id,omitempty"`
+	// GroupID holds the value of the "group_id" field.
+	GroupID uuid.UUID `json:"group_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageGroupMentionQuery when eager-loading is set.
-	Edges                         MessageGroupMentionEdges `json:"edges"`
-	message_group_mention_message *uuid.UUID
-	message_group_mention_group   *uuid.UUID
-	selectValues                  sql.SelectValues
+	Edges        MessageGroupMentionEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MessageGroupMentionEdges holds the relations/edges for other nodes in the graph.
@@ -70,12 +72,8 @@ func (*MessageGroupMention) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case messagegroupmention.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case messagegroupmention.FieldID:
+		case messagegroupmention.FieldID, messagegroupmention.FieldMessageID, messagegroupmention.FieldGroupID:
 			values[i] = new(uuid.UUID)
-		case messagegroupmention.ForeignKeys[0]: // message_group_mention_message
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messagegroupmention.ForeignKeys[1]: // message_group_mention_group
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -97,25 +95,23 @@ func (_m *MessageGroupMention) assignValues(columns []string, values []any) erro
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case messagegroupmention.FieldMessageID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field message_id", values[i])
+			} else if value != nil {
+				_m.MessageID = *value
+			}
+		case messagegroupmention.FieldGroupID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field group_id", values[i])
+			} else if value != nil {
+				_m.GroupID = *value
+			}
 		case messagegroupmention.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case messagegroupmention.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_group_mention_message", values[i])
-			} else if value.Valid {
-				_m.message_group_mention_message = new(uuid.UUID)
-				*_m.message_group_mention_message = *value.S.(*uuid.UUID)
-			}
-		case messagegroupmention.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_group_mention_group", values[i])
-			} else if value.Valid {
-				_m.message_group_mention_group = new(uuid.UUID)
-				*_m.message_group_mention_group = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -163,6 +159,12 @@ func (_m *MessageGroupMention) String() string {
 	var builder strings.Builder
 	builder.WriteString("MessageGroupMention(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("message_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MessageID))
+	builder.WriteString(", ")
+	builder.WriteString("group_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.GroupID))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

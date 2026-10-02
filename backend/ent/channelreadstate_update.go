@@ -31,6 +31,34 @@ func (_u *ChannelReadStateUpdate) Where(ps ...predicate.ChannelReadState) *Chann
 	return _u
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelReadStateUpdate) SetChannelID(v uuid.UUID) *ChannelReadStateUpdate {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelReadStateUpdate) SetNillableChannelID(v *uuid.UUID) *ChannelReadStateUpdate {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *ChannelReadStateUpdate) SetUserID(v uuid.UUID) *ChannelReadStateUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelReadStateUpdate) SetNillableUserID(v *uuid.UUID) *ChannelReadStateUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetLastReadAt sets the "last_read_at" field.
 func (_u *ChannelReadStateUpdate) SetLastReadAt(v time.Time) *ChannelReadStateUpdate {
 	_u.mutation.SetLastReadAt(v)
@@ -45,21 +73,9 @@ func (_u *ChannelReadStateUpdate) SetNillableLastReadAt(v *time.Time) *ChannelRe
 	return _u
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelReadStateUpdate) SetChannelID(id uuid.UUID) *ChannelReadStateUpdate {
-	_u.mutation.SetChannelID(id)
-	return _u
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_u *ChannelReadStateUpdate) SetChannel(v *Channel) *ChannelReadStateUpdate {
 	return _u.SetChannelID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelReadStateUpdate) SetUserID(id uuid.UUID) *ChannelReadStateUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -215,6 +231,34 @@ type ChannelReadStateUpdateOne struct {
 	mutation *ChannelReadStateMutation
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_u *ChannelReadStateUpdateOne) SetChannelID(v uuid.UUID) *ChannelReadStateUpdateOne {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *ChannelReadStateUpdateOne) SetNillableChannelID(v *uuid.UUID) *ChannelReadStateUpdateOne {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *ChannelReadStateUpdateOne) SetUserID(v uuid.UUID) *ChannelReadStateUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ChannelReadStateUpdateOne) SetNillableUserID(v *uuid.UUID) *ChannelReadStateUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetLastReadAt sets the "last_read_at" field.
 func (_u *ChannelReadStateUpdateOne) SetLastReadAt(v time.Time) *ChannelReadStateUpdateOne {
 	_u.mutation.SetLastReadAt(v)
@@ -229,21 +273,9 @@ func (_u *ChannelReadStateUpdateOne) SetNillableLastReadAt(v *time.Time) *Channe
 	return _u
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *ChannelReadStateUpdateOne) SetChannelID(id uuid.UUID) *ChannelReadStateUpdateOne {
-	_u.mutation.SetChannelID(id)
-	return _u
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_u *ChannelReadStateUpdateOne) SetChannel(v *Channel) *ChannelReadStateUpdateOne {
 	return _u.SetChannelID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ChannelReadStateUpdateOne) SetUserID(id uuid.UUID) *ChannelReadStateUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.

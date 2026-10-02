@@ -20,14 +20,16 @@ type ChannelReadState struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// LastReadAt holds the value of the "last_read_at" field.
 	LastReadAt time.Time `json:"last_read_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelReadStateQuery when eager-loading is set.
-	Edges                      ChannelReadStateEdges `json:"edges"`
-	channel_read_state_channel *uuid.UUID
-	channel_read_state_user    *uuid.UUID
-	selectValues               sql.SelectValues
+	Edges        ChannelReadStateEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ChannelReadStateEdges holds the relations/edges for other nodes in the graph.
@@ -70,12 +72,8 @@ func (*ChannelReadState) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case channelreadstate.FieldLastReadAt:
 			values[i] = new(sql.NullTime)
-		case channelreadstate.FieldID:
+		case channelreadstate.FieldID, channelreadstate.FieldChannelID, channelreadstate.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case channelreadstate.ForeignKeys[0]: // channel_read_state_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case channelreadstate.ForeignKeys[1]: // channel_read_state_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -97,25 +95,23 @@ func (_m *ChannelReadState) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case channelreadstate.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
+			}
+		case channelreadstate.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
 		case channelreadstate.FieldLastReadAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field last_read_at", values[i])
 			} else if value.Valid {
 				_m.LastReadAt = value.Time
-			}
-		case channelreadstate.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_read_state_channel", values[i])
-			} else if value.Valid {
-				_m.channel_read_state_channel = new(uuid.UUID)
-				*_m.channel_read_state_channel = *value.S.(*uuid.UUID)
-			}
-		case channelreadstate.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_read_state_user", values[i])
-			} else if value.Valid {
-				_m.channel_read_state_user = new(uuid.UUID)
-				*_m.channel_read_state_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -163,6 +159,12 @@ func (_m *ChannelReadState) String() string {
 	var builder strings.Builder
 	builder.WriteString("ChannelReadState(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("last_read_at=")
 	builder.WriteString(_m.LastReadAt.Format(time.ANSIC))
 	builder.WriteByte(')')

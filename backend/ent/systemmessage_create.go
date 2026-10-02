@@ -26,6 +26,26 @@ type SystemMessageCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_c *SystemMessageCreate) SetChannelID(v uuid.UUID) *SystemMessageCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
+// SetActorID sets the "actor_id" field.
+func (_c *SystemMessageCreate) SetActorID(v uuid.UUID) *SystemMessageCreate {
+	_c.mutation.SetActorID(v)
+	return _c
+}
+
+// SetNillableActorID sets the "actor_id" field if the given value is not nil.
+func (_c *SystemMessageCreate) SetNillableActorID(v *uuid.UUID) *SystemMessageCreate {
+	if v != nil {
+		_c.SetActorID(*v)
+	}
+	return _c
+}
+
 // SetKind sets the "kind" field.
 func (_c *SystemMessageCreate) SetKind(v string) *SystemMessageCreate {
 	_c.mutation.SetKind(v)
@@ -66,29 +86,9 @@ func (_c *SystemMessageCreate) SetNillableID(v *uuid.UUID) *SystemMessageCreate 
 	return _c
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *SystemMessageCreate) SetChannelID(id uuid.UUID) *SystemMessageCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_c *SystemMessageCreate) SetChannel(v *Channel) *SystemMessageCreate {
 	return _c.SetChannelID(v.ID)
-}
-
-// SetActorID sets the "actor" edge to the User entity by ID.
-func (_c *SystemMessageCreate) SetActorID(id uuid.UUID) *SystemMessageCreate {
-	_c.mutation.SetActorID(id)
-	return _c
-}
-
-// SetNillableActorID sets the "actor" edge to the User entity by ID if the given value is not nil.
-func (_c *SystemMessageCreate) SetNillableActorID(id *uuid.UUID) *SystemMessageCreate {
-	if id != nil {
-		_c = _c.SetActorID(*id)
-	}
-	return _c
 }
 
 // SetActor sets the "actor" edge to the User entity.
@@ -143,6 +143,9 @@ func (_c *SystemMessageCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *SystemMessageCreate) check() error {
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "SystemMessage.channel_id"`)}
+	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "SystemMessage.kind"`)}
 	}
@@ -222,7 +225,7 @@ func (_c *SystemMessageCreate) createSpec() (*SystemMessage, *sqlgraph.CreateSpe
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.system_message_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ActorIDs(); len(nodes) > 0 {
@@ -239,7 +242,7 @@ func (_c *SystemMessageCreate) createSpec() (*SystemMessage, *sqlgraph.CreateSpe
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.system_message_actor = &nodes[0]
+		_node.ActorID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -249,7 +252,7 @@ func (_c *SystemMessageCreate) createSpec() (*SystemMessage, *sqlgraph.CreateSpe
 // of the `INSERT` statement. For example:
 //
 //	client.SystemMessage.Create().
-//		SetKind(v).
+//		SetChannelID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -258,7 +261,7 @@ func (_c *SystemMessageCreate) createSpec() (*SystemMessage, *sqlgraph.CreateSpe
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemMessageUpsert) {
-//			SetKind(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *SystemMessageCreate) OnConflict(opts ...sql.ConflictOption) *SystemMessageUpsertOne {
@@ -293,6 +296,36 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetChannelID sets the "channel_id" field.
+func (u *SystemMessageUpsert) SetChannelID(v uuid.UUID) *SystemMessageUpsert {
+	u.Set(systemmessage.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *SystemMessageUpsert) UpdateChannelID() *SystemMessageUpsert {
+	u.SetExcluded(systemmessage.FieldChannelID)
+	return u
+}
+
+// SetActorID sets the "actor_id" field.
+func (u *SystemMessageUpsert) SetActorID(v uuid.UUID) *SystemMessageUpsert {
+	u.Set(systemmessage.FieldActorID, v)
+	return u
+}
+
+// UpdateActorID sets the "actor_id" field to the value that was provided on create.
+func (u *SystemMessageUpsert) UpdateActorID() *SystemMessageUpsert {
+	u.SetExcluded(systemmessage.FieldActorID)
+	return u
+}
+
+// ClearActorID clears the value of the "actor_id" field.
+func (u *SystemMessageUpsert) ClearActorID() *SystemMessageUpsert {
+	u.SetNull(systemmessage.FieldActorID)
+	return u
+}
 
 // SetKind sets the "kind" field.
 func (u *SystemMessageUpsert) SetKind(v string) *SystemMessageUpsert {
@@ -367,6 +400,41 @@ func (u *SystemMessageUpsertOne) Update(set func(*SystemMessageUpsert)) *SystemM
 		set(&SystemMessageUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *SystemMessageUpsertOne) SetChannelID(v uuid.UUID) *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *SystemMessageUpsertOne) UpdateChannelID() *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetActorID sets the "actor_id" field.
+func (u *SystemMessageUpsertOne) SetActorID(v uuid.UUID) *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetActorID(v)
+	})
+}
+
+// UpdateActorID sets the "actor_id" field to the value that was provided on create.
+func (u *SystemMessageUpsertOne) UpdateActorID() *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdateActorID()
+	})
+}
+
+// ClearActorID clears the value of the "actor_id" field.
+func (u *SystemMessageUpsertOne) ClearActorID() *SystemMessageUpsertOne {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.ClearActorID()
+	})
 }
 
 // SetKind sets the "kind" field.
@@ -533,7 +601,7 @@ func (_c *SystemMessageCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemMessageUpsert) {
-//			SetKind(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *SystemMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemMessageUpsertBulk {
@@ -613,6 +681,41 @@ func (u *SystemMessageUpsertBulk) Update(set func(*SystemMessageUpsert)) *System
 		set(&SystemMessageUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *SystemMessageUpsertBulk) SetChannelID(v uuid.UUID) *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *SystemMessageUpsertBulk) UpdateChannelID() *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetActorID sets the "actor_id" field.
+func (u *SystemMessageUpsertBulk) SetActorID(v uuid.UUID) *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.SetActorID(v)
+	})
+}
+
+// UpdateActorID sets the "actor_id" field to the value that was provided on create.
+func (u *SystemMessageUpsertBulk) UpdateActorID() *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.UpdateActorID()
+	})
+}
+
+// ClearActorID clears the value of the "actor_id" field.
+func (u *SystemMessageUpsertBulk) ClearActorID() *SystemMessageUpsertBulk {
+	return u.Update(func(s *SystemMessageUpsert) {
+		s.ClearActorID()
+	})
 }
 
 // SetKind sets the "kind" field.

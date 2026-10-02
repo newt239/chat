@@ -27,6 +27,18 @@ type ChannelCategoryCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *ChannelCategoryCreate) SetUserID(v uuid.UUID) *ChannelCategoryCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (_c *ChannelCategoryCreate) SetWorkspaceID(v string) *ChannelCategoryCreate {
+	_c.mutation.SetWorkspaceID(v)
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *ChannelCategoryCreate) SetName(v string) *ChannelCategoryCreate {
 	_c.mutation.SetName(v)
@@ -75,21 +87,9 @@ func (_c *ChannelCategoryCreate) SetNillableID(v *uuid.UUID) *ChannelCategoryCre
 	return _c
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *ChannelCategoryCreate) SetUserID(id uuid.UUID) *ChannelCategoryCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *ChannelCategoryCreate) SetUser(v *User) *ChannelCategoryCreate {
 	return _c.SetUserID(v.ID)
-}
-
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_c *ChannelCategoryCreate) SetWorkspaceID(id string) *ChannelCategoryCreate {
-	_c.mutation.SetWorkspaceID(id)
-	return _c
 }
 
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
@@ -163,6 +163,12 @@ func (_c *ChannelCategoryCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ChannelCategoryCreate) check() error {
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ChannelCategory.user_id"`)}
+	}
+	if _, ok := _c.mutation.WorkspaceID(); !ok {
+		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "ChannelCategory.workspace_id"`)}
+	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "ChannelCategory.name"`)}
 	}
@@ -245,7 +251,7 @@ func (_c *ChannelCategoryCreate) createSpec() (*ChannelCategory, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_category_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.WorkspaceIDs(); len(nodes) > 0 {
@@ -262,7 +268,7 @@ func (_c *ChannelCategoryCreate) createSpec() (*ChannelCategory, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_category_workspace = &nodes[0]
+		_node.WorkspaceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ItemsIDs(); len(nodes) > 0 {
@@ -288,7 +294,7 @@ func (_c *ChannelCategoryCreate) createSpec() (*ChannelCategory, *sqlgraph.Creat
 // of the `INSERT` statement. For example:
 //
 //	client.ChannelCategory.Create().
-//		SetName(v).
+//		SetUserID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -297,7 +303,7 @@ func (_c *ChannelCategoryCreate) createSpec() (*ChannelCategory, *sqlgraph.Creat
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelCategoryUpsert) {
-//			SetName(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelCategoryCreate) OnConflict(opts ...sql.ConflictOption) *ChannelCategoryUpsertOne {
@@ -332,6 +338,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelCategoryUpsert) SetUserID(v uuid.UUID) *ChannelCategoryUpsert {
+	u.Set(channelcategory.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelCategoryUpsert) UpdateUserID() *ChannelCategoryUpsert {
+	u.SetExcluded(channelcategory.FieldUserID)
+	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *ChannelCategoryUpsert) SetWorkspaceID(v string) *ChannelCategoryUpsert {
+	u.Set(channelcategory.FieldWorkspaceID, v)
+	return u
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *ChannelCategoryUpsert) UpdateWorkspaceID() *ChannelCategoryUpsert {
+	u.SetExcluded(channelcategory.FieldWorkspaceID)
+	return u
+}
 
 // SetName sets the "name" field.
 func (u *ChannelCategoryUpsert) SetName(v string) *ChannelCategoryUpsert {
@@ -412,6 +442,34 @@ func (u *ChannelCategoryUpsertOne) Update(set func(*ChannelCategoryUpsert)) *Cha
 		set(&ChannelCategoryUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelCategoryUpsertOne) SetUserID(v uuid.UUID) *ChannelCategoryUpsertOne {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelCategoryUpsertOne) UpdateUserID() *ChannelCategoryUpsertOne {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *ChannelCategoryUpsertOne) SetWorkspaceID(v string) *ChannelCategoryUpsertOne {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *ChannelCategoryUpsertOne) UpdateWorkspaceID() *ChannelCategoryUpsertOne {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.UpdateWorkspaceID()
+	})
 }
 
 // SetName sets the "name" field.
@@ -585,7 +643,7 @@ func (_c *ChannelCategoryCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelCategoryUpsert) {
-//			SetName(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelCategoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelCategoryUpsertBulk {
@@ -665,6 +723,34 @@ func (u *ChannelCategoryUpsertBulk) Update(set func(*ChannelCategoryUpsert)) *Ch
 		set(&ChannelCategoryUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelCategoryUpsertBulk) SetUserID(v uuid.UUID) *ChannelCategoryUpsertBulk {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelCategoryUpsertBulk) UpdateUserID() *ChannelCategoryUpsertBulk {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *ChannelCategoryUpsertBulk) SetWorkspaceID(v string) *ChannelCategoryUpsertBulk {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *ChannelCategoryUpsertBulk) UpdateWorkspaceID() *ChannelCategoryUpsertBulk {
+	return u.Update(func(s *ChannelCategoryUpsert) {
+		s.UpdateWorkspaceID()
+	})
 }
 
 // SetName sets the "name" field.

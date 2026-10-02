@@ -29,7 +29,6 @@ type MessagePinQuery struct {
 	withChannel  *ChannelQuery
 	withMessage  *MessageQuery
 	withPinnedBy *UserQuery
-	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -372,12 +371,12 @@ func (_q *MessagePinQuery) WithPinnedBy(opts ...func(*UserQuery)) *MessagePinQue
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MessagePin.Query().
-//		GroupBy(messagepin.FieldCreatedAt).
+//		GroupBy(messagepin.FieldChannelID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessagePinQuery) GroupBy(field string, fields ...string) *MessagePinGroupBy {
@@ -395,11 +394,11 @@ func (_q *MessagePinQuery) GroupBy(field string, fields ...string) *MessagePinGr
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //	}
 //
 //	client.MessagePin.Query().
-//		Select(messagepin.FieldCreatedAt).
+//		Select(messagepin.FieldChannelID).
 //		Scan(ctx, &v)
 func (_q *MessagePinQuery) Select(fields ...string) *MessagePinSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -443,7 +442,6 @@ func (_q *MessagePinQuery) prepareQuery(ctx context.Context) error {
 func (_q *MessagePinQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*MessagePin, error) {
 	var (
 		nodes       = []*MessagePin{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withChannel != nil,
@@ -451,12 +449,6 @@ func (_q *MessagePinQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*M
 			_q.withPinnedBy != nil,
 		}
 	)
-	if _q.withChannel != nil || _q.withMessage != nil || _q.withPinnedBy != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, messagepin.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*MessagePin).scanValues(nil, columns)
 	}
@@ -500,10 +492,7 @@ func (_q *MessagePinQuery) loadChannel(ctx context.Context, query *ChannelQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessagePin)
 	for i := range nodes {
-		if nodes[i].message_pin_channel == nil {
-			continue
-		}
-		fk := *nodes[i].message_pin_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -520,7 +509,7 @@ func (_q *MessagePinQuery) loadChannel(ctx context.Context, query *ChannelQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_pin_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -532,10 +521,7 @@ func (_q *MessagePinQuery) loadMessage(ctx context.Context, query *MessageQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessagePin)
 	for i := range nodes {
-		if nodes[i].message_pin_message == nil {
-			continue
-		}
-		fk := *nodes[i].message_pin_message
+		fk := nodes[i].MessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -552,7 +538,7 @@ func (_q *MessagePinQuery) loadMessage(ctx context.Context, query *MessageQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_pin_message" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -564,10 +550,7 @@ func (_q *MessagePinQuery) loadPinnedBy(ctx context.Context, query *UserQuery, n
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessagePin)
 	for i := range nodes {
-		if nodes[i].message_pin_pinned_by == nil {
-			continue
-		}
-		fk := *nodes[i].message_pin_pinned_by
+		fk := nodes[i].PinnedByID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -584,7 +567,7 @@ func (_q *MessagePinQuery) loadPinnedBy(ctx context.Context, query *UserQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_pin_pinned_by" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "pinned_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -617,6 +600,15 @@ func (_q *MessagePinQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != messagepin.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(messagepin.FieldChannelID)
+		}
+		if _q.withMessage != nil {
+			_spec.Node.AddColumnOnce(messagepin.FieldMessageID)
+		}
+		if _q.withPinnedBy != nil {
+			_spec.Node.AddColumnOnce(messagepin.FieldPinnedByID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -27,7 +27,6 @@ type SystemMessageQuery struct {
 	predicates  []predicate.SystemMessage
 	withChannel *ChannelQuery
 	withActor   *UserQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *SystemMessageQuery) WithActor(opts ...func(*UserQuery)) *SystemMessage
 // Example:
 //
 //	var v []struct {
-//		Kind string `json:"kind,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemMessage.Query().
-//		GroupBy(systemmessage.FieldKind).
+//		GroupBy(systemmessage.FieldChannelID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *SystemMessageQuery) GroupBy(field string, fields ...string) *SystemMessageGroupBy {
@@ -359,11 +358,11 @@ func (_q *SystemMessageQuery) GroupBy(field string, fields ...string) *SystemMes
 // Example:
 //
 //	var v []struct {
-//		Kind string `json:"kind,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //	}
 //
 //	client.SystemMessage.Query().
-//		Select(systemmessage.FieldKind).
+//		Select(systemmessage.FieldChannelID).
 //		Scan(ctx, &v)
 func (_q *SystemMessageQuery) Select(fields ...string) *SystemMessageSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *SystemMessageQuery) prepareQuery(ctx context.Context) error {
 func (_q *SystemMessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemMessage, error) {
 	var (
 		nodes       = []*SystemMessage{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withChannel != nil,
 			_q.withActor != nil,
 		}
 	)
-	if _q.withChannel != nil || _q.withActor != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, systemmessage.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemMessage).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *SystemMessageQuery) loadChannel(ctx context.Context, query *ChannelQue
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemMessage)
 	for i := range nodes {
-		if nodes[i].system_message_channel == nil {
-			continue
-		}
-		fk := *nodes[i].system_message_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *SystemMessageQuery) loadChannel(ctx context.Context, query *ChannelQue
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "system_message_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,10 @@ func (_q *SystemMessageQuery) loadActor(ctx context.Context, query *UserQuery, n
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemMessage)
 	for i := range nodes {
-		if nodes[i].system_message_actor == nil {
+		if nodes[i].ActorID == nil {
 			continue
 		}
-		fk := *nodes[i].system_message_actor
+		fk := *nodes[i].ActorID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +498,7 @@ func (_q *SystemMessageQuery) loadActor(ctx context.Context, query *UserQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "system_message_actor" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "actor_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +531,12 @@ func (_q *SystemMessageQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemmessage.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(systemmessage.FieldChannelID)
+		}
+		if _q.withActor != nil {
+			_spec.Node.AddColumnOnce(systemmessage.FieldActorID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

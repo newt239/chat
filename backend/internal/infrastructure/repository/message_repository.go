@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,7 +11,6 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagereaction"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -145,9 +146,7 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 		SetUserID(userID).
 		SetBody(msg.Body).
 		SetMentionsChannel(msg.MentionsChannel).
-		SetMentionsHere(msg.MentionsHere).
-		SetNillableSenderName(msg.SenderName).
-		SetNillableSenderAvatarURL(msg.SenderAvatarURL)
+		SetMentionsHere(msg.MentionsHere)
 	if loc := msg.Location; loc != nil {
 		builder = builder.
 			SetLocationLatitude(loc.Latitude).
@@ -283,8 +282,8 @@ func (r *messageRepository) RemoveReaction(ctx context.Context, messageID, userI
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.MessageReaction.Delete().
 		Where(
-			messagereaction.HasMessageWith(message.ID(mid)),
-			messagereaction.HasUserWith(user.ID(uid)),
+			messagereaction.MessageID(mid),
+			messagereaction.UserID(uid),
 			messagereaction.Emoji(emoji),
 		).
 		Exec(ctx)
@@ -313,9 +312,7 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 
 	client := transaction.ResolveClient(ctx, r.client)
 	reactions, err := client.MessageReaction.Query().
-		Where(messagereaction.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
-		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
+		Where(messagereaction.MessageIDIn(parsedIDs...)).
 		Order(ent.Asc(messagereaction.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -323,7 +320,7 @@ func (r *messageRepository) FindReactionsByMessageIDs(ctx context.Context, messa
 	}
 
 	for _, reaction := range reactions {
-		messageID := reaction.Edges.Message.ID.String()
+		messageID := reaction.MessageID.String()
 		result[messageID] = append(result[messageID], utils.MessageReactionToEntity(reaction))
 	}
 	return result, nil
@@ -369,6 +366,14 @@ func (r *messageRepository) AddGroupMention(ctx context.Context, mention *entity
 		SetGroupID(groupID).
 		Save(ctx)
 
+	return err
+}
+
+// ignoreConflict は ON CONFLICT DO NOTHING で既存の行と重なったときに返る sql.ErrNoRows を無視します
+func ignoreConflict(err error) error {
+	if errors.Is(err, stdsql.ErrNoRows) {
+		return nil
+	}
 	return err
 }
 

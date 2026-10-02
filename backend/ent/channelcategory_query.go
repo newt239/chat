@@ -30,7 +30,6 @@ type ChannelCategoryQuery struct {
 	withUser      *UserQuery
 	withWorkspace *WorkspaceQuery
 	withItems     *ChannelCategoryItemQuery
-	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -373,12 +372,12 @@ func (_q *ChannelCategoryQuery) WithItems(opts ...func(*ChannelCategoryItemQuery
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ChannelCategory.Query().
-//		GroupBy(channelcategory.FieldName).
+//		GroupBy(channelcategory.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ChannelCategoryQuery) GroupBy(field string, fields ...string) *ChannelCategoryGroupBy {
@@ -396,11 +395,11 @@ func (_q *ChannelCategoryQuery) GroupBy(field string, fields ...string) *Channel
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.ChannelCategory.Query().
-//		Select(channelcategory.FieldName).
+//		Select(channelcategory.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *ChannelCategoryQuery) Select(fields ...string) *ChannelCategorySelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -444,7 +443,6 @@ func (_q *ChannelCategoryQuery) prepareQuery(ctx context.Context) error {
 func (_q *ChannelCategoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ChannelCategory, error) {
 	var (
 		nodes       = []*ChannelCategory{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withUser != nil,
@@ -452,12 +450,6 @@ func (_q *ChannelCategoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			_q.withItems != nil,
 		}
 	)
-	if _q.withUser != nil || _q.withWorkspace != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, channelcategory.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ChannelCategory).scanValues(nil, columns)
 	}
@@ -502,10 +494,7 @@ func (_q *ChannelCategoryQuery) loadUser(ctx context.Context, query *UserQuery, 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelCategory)
 	for i := range nodes {
-		if nodes[i].channel_category_user == nil {
-			continue
-		}
-		fk := *nodes[i].channel_category_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -522,7 +511,7 @@ func (_q *ChannelCategoryQuery) loadUser(ctx context.Context, query *UserQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_category_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -534,10 +523,7 @@ func (_q *ChannelCategoryQuery) loadWorkspace(ctx context.Context, query *Worksp
 	ids := make([]string, 0, len(nodes))
 	nodeids := make(map[string][]*ChannelCategory)
 	for i := range nodes {
-		if nodes[i].channel_category_workspace == nil {
-			continue
-		}
-		fk := *nodes[i].channel_category_workspace
+		fk := nodes[i].WorkspaceID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -554,7 +540,7 @@ func (_q *ChannelCategoryQuery) loadWorkspace(ctx context.Context, query *Worksp
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_category_workspace" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -572,7 +558,9 @@ func (_q *ChannelCategoryQuery) loadItems(ctx context.Context, query *ChannelCat
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(channelcategoryitem.FieldCategoryID)
+	}
 	query.Where(predicate.ChannelCategoryItem(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(channelcategory.ItemsColumn), fks...))
 	}))
@@ -581,13 +569,10 @@ func (_q *ChannelCategoryQuery) loadItems(ctx context.Context, query *ChannelCat
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.channel_category_items
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "channel_category_items" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.CategoryID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_category_items" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "category_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -618,6 +603,12 @@ func (_q *ChannelCategoryQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != channelcategory.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(channelcategory.FieldUserID)
+		}
+		if _q.withWorkspace != nil {
+			_spec.Node.AddColumnOnce(channelcategory.FieldWorkspaceID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -30,6 +30,34 @@ func (_u *MessageReactionUpdate) Where(ps ...predicate.MessageReaction) *Message
 	return _u
 }
 
+// SetMessageID sets the "message_id" field.
+func (_u *MessageReactionUpdate) SetMessageID(v uuid.UUID) *MessageReactionUpdate {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageReactionUpdate) SetNillableMessageID(v *uuid.UUID) *MessageReactionUpdate {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *MessageReactionUpdate) SetUserID(v uuid.UUID) *MessageReactionUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *MessageReactionUpdate) SetNillableUserID(v *uuid.UUID) *MessageReactionUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetEmoji sets the "emoji" field.
 func (_u *MessageReactionUpdate) SetEmoji(v string) *MessageReactionUpdate {
 	_u.mutation.SetEmoji(v)
@@ -44,21 +72,9 @@ func (_u *MessageReactionUpdate) SetNillableEmoji(v *string) *MessageReactionUpd
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageReactionUpdate) SetMessageID(id uuid.UUID) *MessageReactionUpdate {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessageReactionUpdate) SetMessage(v *Message) *MessageReactionUpdate {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageReactionUpdate) SetUserID(id uuid.UUID) *MessageReactionUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -219,6 +235,34 @@ type MessageReactionUpdateOne struct {
 	mutation *MessageReactionMutation
 }
 
+// SetMessageID sets the "message_id" field.
+func (_u *MessageReactionUpdateOne) SetMessageID(v uuid.UUID) *MessageReactionUpdateOne {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageReactionUpdateOne) SetNillableMessageID(v *uuid.UUID) *MessageReactionUpdateOne {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *MessageReactionUpdateOne) SetUserID(v uuid.UUID) *MessageReactionUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *MessageReactionUpdateOne) SetNillableUserID(v *uuid.UUID) *MessageReactionUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetEmoji sets the "emoji" field.
 func (_u *MessageReactionUpdateOne) SetEmoji(v string) *MessageReactionUpdateOne {
 	_u.mutation.SetEmoji(v)
@@ -233,21 +277,9 @@ func (_u *MessageReactionUpdateOne) SetNillableEmoji(v *string) *MessageReaction
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageReactionUpdateOne) SetMessageID(id uuid.UUID) *MessageReactionUpdateOne {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessageReactionUpdateOne) SetMessage(v *Message) *MessageReactionUpdateOne {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageReactionUpdateOne) SetUserID(id uuid.UUID) *MessageReactionUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.

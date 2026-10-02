@@ -7,10 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
-	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagepin"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -44,11 +41,7 @@ func (r *pinRepository) Create(ctx context.Context, pin *entity.MessagePin) erro
 	// 再読込してエッジを付与
 	mp, err = client.MessagePin.Query().
 		Where(messagepin.IDEQ(mp.ID)).
-		WithChannel().
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) { q2.WithWorkspace().WithCreatedBy() }).WithUser()
-		}).
-		WithPinnedBy().
+		WithMessage().
 		Only(ctx)
 	if err != nil {
 		return err
@@ -65,8 +58,8 @@ func (r *pinRepository) Delete(ctx context.Context, channelID, messageID string)
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err := client.MessagePin.Delete().
 		Where(
-			messagepin.HasChannelWith(channel.ID(chID)),
-			messagepin.HasMessageWith(message.ID(msgID)),
+			messagepin.ChannelID(chID),
+			messagepin.MessageID(msgID),
 		).
 		Exec(ctx)
 	return err
@@ -77,11 +70,8 @@ func (r *pinRepository) List(ctx context.Context, channelID string, limit int, c
 	client := transaction.ResolveClient(ctx, r.client)
 
 	q := client.MessagePin.Query().
-		Where(messagepin.HasChannelWith(channel.ID(chID))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) { q2.WithWorkspace().WithCreatedBy() }).WithUser()
-		}).
-		WithPinnedBy().
+		Where(messagepin.ChannelID(chID)).
+		WithMessage().
 		Order(ent.Desc(messagepin.FieldCreatedAt)).
 		Limit(limit + 1)
 
@@ -117,10 +107,7 @@ func (r *pinRepository) FindByMessageIDs(ctx context.Context, messageIDs []strin
 	}
 
 	rows, err := transaction.ResolveClient(ctx, r.client).MessagePin.Query().
-		Where(messagepin.HasMessageWith(message.IDIn(ids...))).
-		WithChannel(func(q *ent.ChannelQuery) { q.Select(channel.FieldID) }).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
-		WithPinnedBy(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
+		Where(messagepin.MessageIDIn(ids...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -129,28 +116,17 @@ func (r *pinRepository) FindByMessageIDs(ctx context.Context, messageIDs []strin
 	pins := make(map[string]*entity.MessagePin, len(rows))
 	for _, mp := range rows {
 		pin := messagePinToEntity(mp)
-		pin.Message = nil
 		pins[pin.MessageID] = pin
 	}
 	return pins, nil
 }
 
 func messagePinToEntity(mp *ent.MessagePin) *entity.MessagePin {
-	var channelID, messageID, pinnedBy string
-	if mp.Edges.Channel != nil {
-		channelID = mp.Edges.Channel.ID.String()
-	}
-	if mp.Edges.Message != nil {
-		messageID = mp.Edges.Message.ID.String()
-	}
-	if mp.Edges.PinnedBy != nil {
-		pinnedBy = mp.Edges.PinnedBy.ID.String()
-	}
 	return &entity.MessagePin{
 		ID:        mp.ID.String(),
-		ChannelID: channelID,
-		MessageID: messageID,
-		PinnedBy:  pinnedBy,
+		ChannelID: mp.ChannelID.String(),
+		MessageID: mp.MessageID.String(),
+		PinnedBy:  mp.PinnedByID.String(),
 		PinnedAt:  mp.CreatedAt,
 		Message:   utils.MessageToEntity(mp.Edges.Message),
 	}

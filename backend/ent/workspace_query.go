@@ -32,7 +32,6 @@ type WorkspaceQuery struct {
 	withMembers    *WorkspaceMemberQuery
 	withChannels   *ChannelQuery
 	withUserGroups *UserGroupQuery
-	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -409,12 +408,12 @@ func (_q *WorkspaceQuery) WithUserGroups(opts ...func(*UserGroupQuery)) *Workspa
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Workspace.Query().
-//		GroupBy(workspace.FieldName).
+//		GroupBy(workspace.FieldCreatedByID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *WorkspaceQuery) GroupBy(field string, fields ...string) *WorkspaceGroupBy {
@@ -432,11 +431,11 @@ func (_q *WorkspaceQuery) GroupBy(field string, fields ...string) *WorkspaceGrou
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 //	}
 //
 //	client.Workspace.Query().
-//		Select(workspace.FieldName).
+//		Select(workspace.FieldCreatedByID).
 //		Scan(ctx, &v)
 func (_q *WorkspaceQuery) Select(fields ...string) *WorkspaceSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -480,7 +479,6 @@ func (_q *WorkspaceQuery) prepareQuery(ctx context.Context) error {
 func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Workspace, error) {
 	var (
 		nodes       = []*Workspace{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withCreatedBy != nil,
@@ -489,12 +487,6 @@ func (_q *WorkspaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Wo
 			_q.withUserGroups != nil,
 		}
 	)
-	if _q.withCreatedBy != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, workspace.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Workspace).scanValues(nil, columns)
 	}
@@ -547,10 +539,7 @@ func (_q *WorkspaceQuery) loadCreatedBy(ctx context.Context, query *UserQuery, n
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Workspace)
 	for i := range nodes {
-		if nodes[i].workspace_created_by == nil {
-			continue
-		}
-		fk := *nodes[i].workspace_created_by
+		fk := nodes[i].CreatedByID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -567,7 +556,7 @@ func (_q *WorkspaceQuery) loadCreatedBy(ctx context.Context, query *UserQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "workspace_created_by" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "created_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -585,7 +574,9 @@ func (_q *WorkspaceQuery) loadMembers(ctx context.Context, query *WorkspaceMembe
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(workspacemember.FieldWorkspaceID)
+	}
 	query.Where(predicate.WorkspaceMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.MembersColumn), fks...))
 	}))
@@ -594,13 +585,10 @@ func (_q *WorkspaceQuery) loadMembers(ctx context.Context, query *WorkspaceMembe
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.workspace_member_workspace
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "workspace_member_workspace" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "workspace_member_workspace" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -616,7 +604,9 @@ func (_q *WorkspaceQuery) loadChannels(ctx context.Context, query *ChannelQuery,
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(channel.FieldWorkspaceID)
+	}
 	query.Where(predicate.Channel(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.ChannelsColumn), fks...))
 	}))
@@ -625,13 +615,10 @@ func (_q *WorkspaceQuery) loadChannels(ctx context.Context, query *ChannelQuery,
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.channel_workspace
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "channel_workspace" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "channel_workspace" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -647,7 +634,9 @@ func (_q *WorkspaceQuery) loadUserGroups(ctx context.Context, query *UserGroupQu
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(usergroup.FieldWorkspaceID)
+	}
 	query.Where(predicate.UserGroup(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(workspace.UserGroupsColumn), fks...))
 	}))
@@ -656,13 +645,10 @@ func (_q *WorkspaceQuery) loadUserGroups(ctx context.Context, query *UserGroupQu
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_group_workspace
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_group_workspace" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.WorkspaceID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_group_workspace" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "workspace_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -693,6 +679,9 @@ func (_q *WorkspaceQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != workspace.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withCreatedBy != nil {
+			_spec.Node.AddColumnOnce(workspace.FieldCreatedByID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

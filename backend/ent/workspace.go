@@ -19,6 +19,8 @@ type Workspace struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID string `json:"id,omitempty"`
+	// CreatedByID holds the value of the "created_by_id" field.
+	CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
@@ -37,9 +39,8 @@ type Workspace struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WorkspaceQuery when eager-loading is set.
-	Edges                WorkspaceEdges `json:"edges"`
-	workspace_created_by *uuid.UUID
-	selectValues         sql.SelectValues
+	Edges        WorkspaceEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // WorkspaceEdges holds the relations/edges for other nodes in the graph.
@@ -106,8 +107,8 @@ func (*Workspace) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case workspace.FieldCreatedAt, workspace.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case workspace.ForeignKeys[0]: // workspace_created_by
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case workspace.FieldCreatedByID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -128,6 +129,12 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				_m.ID = value.String
+			}
+		case workspace.FieldCreatedByID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by_id", values[i])
+			} else if value != nil {
+				_m.CreatedByID = *value
 			}
 		case workspace.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -176,13 +183,6 @@ func (_m *Workspace) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case workspace.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field workspace_created_by", values[i])
-			} else if value.Valid {
-				_m.workspace_created_by = new(uuid.UUID)
-				*_m.workspace_created_by = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -240,6 +240,9 @@ func (_m *Workspace) String() string {
 	var builder strings.Builder
 	builder.WriteString("Workspace(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("created_by_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedByID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")

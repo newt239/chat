@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.WorkspaceMember {
 	return predicate.WorkspaceMember(sql.FieldLTE(FieldID, id))
 }
 
+// WorkspaceID applies equality check predicate on the "workspace_id" field. It's identical to WorkspaceIDEQ.
+func WorkspaceID(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldEQ(FieldWorkspaceID, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldEQ(FieldUserID, v))
+}
+
 // Role applies equality check predicate on the "role" field. It's identical to RoleEQ.
 func Role(v string) predicate.WorkspaceMember {
 	return predicate.WorkspaceMember(sql.FieldEQ(FieldRole, v))
@@ -69,6 +79,91 @@ func JoinedAt(v time.Time) predicate.WorkspaceMember {
 // SuspendedAt applies equality check predicate on the "suspended_at" field. It's identical to SuspendedAtEQ.
 func SuspendedAt(v time.Time) predicate.WorkspaceMember {
 	return predicate.WorkspaceMember(sql.FieldEQ(FieldSuspendedAt, v))
+}
+
+// WorkspaceIDEQ applies the EQ predicate on the "workspace_id" field.
+func WorkspaceIDEQ(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldEQ(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDNEQ applies the NEQ predicate on the "workspace_id" field.
+func WorkspaceIDNEQ(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldNEQ(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDIn applies the In predicate on the "workspace_id" field.
+func WorkspaceIDIn(vs ...string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldIn(FieldWorkspaceID, vs...))
+}
+
+// WorkspaceIDNotIn applies the NotIn predicate on the "workspace_id" field.
+func WorkspaceIDNotIn(vs ...string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldNotIn(FieldWorkspaceID, vs...))
+}
+
+// WorkspaceIDGT applies the GT predicate on the "workspace_id" field.
+func WorkspaceIDGT(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldGT(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDGTE applies the GTE predicate on the "workspace_id" field.
+func WorkspaceIDGTE(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldGTE(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDLT applies the LT predicate on the "workspace_id" field.
+func WorkspaceIDLT(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldLT(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDLTE applies the LTE predicate on the "workspace_id" field.
+func WorkspaceIDLTE(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldLTE(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDContains applies the Contains predicate on the "workspace_id" field.
+func WorkspaceIDContains(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldContains(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDHasPrefix applies the HasPrefix predicate on the "workspace_id" field.
+func WorkspaceIDHasPrefix(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldHasPrefix(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDHasSuffix applies the HasSuffix predicate on the "workspace_id" field.
+func WorkspaceIDHasSuffix(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldHasSuffix(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDEqualFold applies the EqualFold predicate on the "workspace_id" field.
+func WorkspaceIDEqualFold(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldEqualFold(FieldWorkspaceID, v))
+}
+
+// WorkspaceIDContainsFold applies the ContainsFold predicate on the "workspace_id" field.
+func WorkspaceIDContainsFold(v string) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldContainsFold(FieldWorkspaceID, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.WorkspaceMember {
+	return predicate.WorkspaceMember(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // RoleEQ applies the EQ predicate on the "role" field.

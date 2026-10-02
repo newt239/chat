@@ -20,14 +20,16 @@ type UserThreadFollow struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
+	// ThreadID holds the value of the "thread_id" field.
+	ThreadID uuid.UUID `json:"thread_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserThreadFollowQuery when eager-loading is set.
-	Edges                     UserThreadFollowEdges `json:"edges"`
-	user_thread_follow_user   *uuid.UUID
-	user_thread_follow_thread *uuid.UUID
-	selectValues              sql.SelectValues
+	Edges        UserThreadFollowEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // UserThreadFollowEdges holds the relations/edges for other nodes in the graph.
@@ -70,12 +72,8 @@ func (*UserThreadFollow) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case userthreadfollow.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case userthreadfollow.FieldID:
+		case userthreadfollow.FieldID, userthreadfollow.FieldUserID, userthreadfollow.FieldThreadID:
 			values[i] = new(uuid.UUID)
-		case userthreadfollow.ForeignKeys[0]: // user_thread_follow_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case userthreadfollow.ForeignKeys[1]: // user_thread_follow_thread
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -97,25 +95,23 @@ func (_m *UserThreadFollow) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case userthreadfollow.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
+		case userthreadfollow.FieldThreadID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field thread_id", values[i])
+			} else if value != nil {
+				_m.ThreadID = *value
+			}
 		case userthreadfollow.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case userthreadfollow.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_thread_follow_user", values[i])
-			} else if value.Valid {
-				_m.user_thread_follow_user = new(uuid.UUID)
-				*_m.user_thread_follow_user = *value.S.(*uuid.UUID)
-			}
-		case userthreadfollow.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_thread_follow_thread", values[i])
-			} else if value.Valid {
-				_m.user_thread_follow_thread = new(uuid.UUID)
-				*_m.user_thread_follow_thread = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -163,6 +159,12 @@ func (_m *UserThreadFollow) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserThreadFollow(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("thread_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ThreadID))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

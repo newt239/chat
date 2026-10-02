@@ -9,7 +9,6 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/scheduledmessage"
-	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -96,7 +95,7 @@ func (r *scheduledMessageRepository) FindByWorkspace(ctx context.Context, userID
 	messages, err := transaction.ResolveClient(ctx, r.client).ScheduledMessage.Query().
 		Where(
 			scheduledmessage.UserID(uid),
-			scheduledmessage.HasChannelWith(channel.HasWorkspaceWith(workspace.ID(workspaceID))),
+			scheduledmessage.HasChannelWith(channel.WorkspaceID(workspaceID)),
 		).
 		Order(ent.Asc(scheduledmessage.FieldScheduledAt)).
 		All(ctx)

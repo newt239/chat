@@ -33,6 +33,20 @@ func (_u *WorkspaceUpdate) Where(ps ...predicate.Workspace) *WorkspaceUpdate {
 	return _u
 }
 
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *WorkspaceUpdate) SetCreatedByID(v uuid.UUID) *WorkspaceUpdate {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *WorkspaceUpdate) SetNillableCreatedByID(v *uuid.UUID) *WorkspaceUpdate {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *WorkspaceUpdate) SetName(v string) *WorkspaceUpdate {
 	_u.mutation.SetName(v)
@@ -132,12 +146,6 @@ func (_u *WorkspaceUpdate) SetNillableEmailSignupEnabled(v *bool) *WorkspaceUpda
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WorkspaceUpdate) SetUpdatedAt(v time.Time) *WorkspaceUpdate {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *WorkspaceUpdate) SetCreatedByID(id uuid.UUID) *WorkspaceUpdate {
-	_u.mutation.SetCreatedByID(id)
 	return _u
 }
 
@@ -537,6 +545,20 @@ type WorkspaceUpdateOne struct {
 	mutation *WorkspaceMutation
 }
 
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *WorkspaceUpdateOne) SetCreatedByID(v uuid.UUID) *WorkspaceUpdateOne {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *WorkspaceUpdateOne) SetNillableCreatedByID(v *uuid.UUID) *WorkspaceUpdateOne {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *WorkspaceUpdateOne) SetName(v string) *WorkspaceUpdateOne {
 	_u.mutation.SetName(v)
@@ -636,12 +658,6 @@ func (_u *WorkspaceUpdateOne) SetNillableEmailSignupEnabled(v *bool) *WorkspaceU
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *WorkspaceUpdateOne) SetUpdatedAt(v time.Time) *WorkspaceUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *WorkspaceUpdateOne) SetCreatedByID(id uuid.UUID) *WorkspaceUpdateOne {
-	_u.mutation.SetCreatedByID(id)
 	return _u
 }
 

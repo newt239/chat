@@ -32,7 +32,6 @@ type UserGroupQuery struct {
 	withCreatedBy     *UserQuery
 	withMembers       *UserGroupMemberQuery
 	withGroupMentions *MessageGroupMentionQuery
-	withFKs           bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -409,12 +408,12 @@ func (_q *UserGroupQuery) WithGroupMentions(opts ...func(*MessageGroupMentionQue
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UserGroup.Query().
-//		GroupBy(usergroup.FieldName).
+//		GroupBy(usergroup.FieldWorkspaceID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *UserGroupQuery) GroupBy(field string, fields ...string) *UserGroupGroupBy {
@@ -432,11 +431,11 @@ func (_q *UserGroupQuery) GroupBy(field string, fields ...string) *UserGroupGrou
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //	}
 //
 //	client.UserGroup.Query().
-//		Select(usergroup.FieldName).
+//		Select(usergroup.FieldWorkspaceID).
 //		Scan(ctx, &v)
 func (_q *UserGroupQuery) Select(fields ...string) *UserGroupSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -480,7 +479,6 @@ func (_q *UserGroupQuery) prepareQuery(ctx context.Context) error {
 func (_q *UserGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*UserGroup, error) {
 	var (
 		nodes       = []*UserGroup{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withWorkspace != nil,
@@ -489,12 +487,6 @@ func (_q *UserGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Us
 			_q.withGroupMentions != nil,
 		}
 	)
-	if _q.withWorkspace != nil || _q.withCreatedBy != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, usergroup.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*UserGroup).scanValues(nil, columns)
 	}
@@ -546,10 +538,7 @@ func (_q *UserGroupQuery) loadWorkspace(ctx context.Context, query *WorkspaceQue
 	ids := make([]string, 0, len(nodes))
 	nodeids := make(map[string][]*UserGroup)
 	for i := range nodes {
-		if nodes[i].user_group_workspace == nil {
-			continue
-		}
-		fk := *nodes[i].user_group_workspace
+		fk := nodes[i].WorkspaceID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -566,7 +555,7 @@ func (_q *UserGroupQuery) loadWorkspace(ctx context.Context, query *WorkspaceQue
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_group_workspace" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -578,10 +567,7 @@ func (_q *UserGroupQuery) loadCreatedBy(ctx context.Context, query *UserQuery, n
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserGroup)
 	for i := range nodes {
-		if nodes[i].user_group_created_by == nil {
-			continue
-		}
-		fk := *nodes[i].user_group_created_by
+		fk := nodes[i].CreatedByID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -598,7 +584,7 @@ func (_q *UserGroupQuery) loadCreatedBy(ctx context.Context, query *UserQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_group_created_by" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "created_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -616,7 +602,9 @@ func (_q *UserGroupQuery) loadMembers(ctx context.Context, query *UserGroupMembe
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(usergroupmember.FieldGroupID)
+	}
 	query.Where(predicate.UserGroupMember(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(usergroup.MembersColumn), fks...))
 	}))
@@ -625,13 +613,10 @@ func (_q *UserGroupQuery) loadMembers(ctx context.Context, query *UserGroupMembe
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_group_member_group
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_group_member_group" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.GroupID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_group_member_group" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "group_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -647,7 +632,9 @@ func (_q *UserGroupQuery) loadGroupMentions(ctx context.Context, query *MessageG
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(messagegroupmention.FieldGroupID)
+	}
 	query.Where(predicate.MessageGroupMention(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(usergroup.GroupMentionsColumn), fks...))
 	}))
@@ -656,13 +643,10 @@ func (_q *UserGroupQuery) loadGroupMentions(ctx context.Context, query *MessageG
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.message_group_mention_group
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_group_mention_group" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.GroupID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_group_mention_group" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "group_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -693,6 +677,12 @@ func (_q *UserGroupQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != usergroup.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withWorkspace != nil {
+			_spec.Node.AddColumnOnce(usergroup.FieldWorkspaceID)
+		}
+		if _q.withCreatedBy != nil {
+			_spec.Node.AddColumnOnce(usergroup.FieldCreatedByID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

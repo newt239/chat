@@ -20,16 +20,18 @@ type ChannelMember struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Role holds the value of the "role" field.
 	Role string `json:"role,omitempty"`
 	// JoinedAt holds the value of the "joined_at" field.
 	JoinedAt time.Time `json:"joined_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelMemberQuery when eager-loading is set.
-	Edges                  ChannelMemberEdges `json:"edges"`
-	channel_member_channel *uuid.UUID
-	channel_member_user    *uuid.UUID
-	selectValues           sql.SelectValues
+	Edges        ChannelMemberEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ChannelMemberEdges holds the relations/edges for other nodes in the graph.
@@ -74,12 +76,8 @@ func (*ChannelMember) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case channelmember.FieldJoinedAt:
 			values[i] = new(sql.NullTime)
-		case channelmember.FieldID:
+		case channelmember.FieldID, channelmember.FieldChannelID, channelmember.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case channelmember.ForeignKeys[0]: // channel_member_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case channelmember.ForeignKeys[1]: // channel_member_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -101,6 +99,18 @@ func (_m *ChannelMember) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case channelmember.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
+			}
+		case channelmember.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
 		case channelmember.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
@@ -112,20 +122,6 @@ func (_m *ChannelMember) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field joined_at", values[i])
 			} else if value.Valid {
 				_m.JoinedAt = value.Time
-			}
-		case channelmember.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_member_channel", values[i])
-			} else if value.Valid {
-				_m.channel_member_channel = new(uuid.UUID)
-				*_m.channel_member_channel = *value.S.(*uuid.UUID)
-			}
-		case channelmember.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_member_user", values[i])
-			} else if value.Valid {
-				_m.channel_member_user = new(uuid.UUID)
-				*_m.channel_member_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -173,6 +169,12 @@ func (_m *ChannelMember) String() string {
 	var builder strings.Builder
 	builder.WriteString("ChannelMember(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(_m.Role)
 	builder.WriteString(", ")

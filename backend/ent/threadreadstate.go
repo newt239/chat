@@ -20,6 +20,10 @@ type ThreadReadState struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
+	// ThreadID holds the value of the "thread_id" field.
+	ThreadID uuid.UUID `json:"thread_id,omitempty"`
 	// LastReadAt holds the value of the "last_read_at" field.
 	LastReadAt time.Time `json:"last_read_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -28,10 +32,8 @@ type ThreadReadState struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ThreadReadStateQuery when eager-loading is set.
-	Edges                    ThreadReadStateEdges `json:"edges"`
-	thread_read_state_user   *uuid.UUID
-	thread_read_state_thread *uuid.UUID
-	selectValues             sql.SelectValues
+	Edges        ThreadReadStateEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ThreadReadStateEdges holds the relations/edges for other nodes in the graph.
@@ -74,12 +76,8 @@ func (*ThreadReadState) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case threadreadstate.FieldLastReadAt, threadreadstate.FieldCreatedAt, threadreadstate.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case threadreadstate.FieldID:
+		case threadreadstate.FieldID, threadreadstate.FieldUserID, threadreadstate.FieldThreadID:
 			values[i] = new(uuid.UUID)
-		case threadreadstate.ForeignKeys[0]: // thread_read_state_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case threadreadstate.ForeignKeys[1]: // thread_read_state_thread
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -101,6 +99,18 @@ func (_m *ThreadReadState) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case threadreadstate.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
+		case threadreadstate.FieldThreadID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field thread_id", values[i])
+			} else if value != nil {
+				_m.ThreadID = *value
+			}
 		case threadreadstate.FieldLastReadAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field last_read_at", values[i])
@@ -118,20 +128,6 @@ func (_m *ThreadReadState) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case threadreadstate.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field thread_read_state_user", values[i])
-			} else if value.Valid {
-				_m.thread_read_state_user = new(uuid.UUID)
-				*_m.thread_read_state_user = *value.S.(*uuid.UUID)
-			}
-		case threadreadstate.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field thread_read_state_thread", values[i])
-			} else if value.Valid {
-				_m.thread_read_state_thread = new(uuid.UUID)
-				*_m.thread_read_state_thread = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -179,6 +175,12 @@ func (_m *ThreadReadState) String() string {
 	var builder strings.Builder
 	builder.WriteString("ThreadReadState(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("thread_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ThreadID))
+	builder.WriteString(", ")
 	builder.WriteString("last_read_at=")
 	builder.WriteString(_m.LastReadAt.Format(time.ANSIC))
 	builder.WriteString(", ")

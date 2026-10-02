@@ -50,13 +50,11 @@ type ChannelInput struct {
 	UserID    string
 }
 
-// PostInput は着信 Webhook に届いた投稿です。Username と AvatarURL はこの投稿の表示だけを上書きします
+// PostInput は着信 Webhook に届いた投稿です
 type PostInput struct {
-	AppID     string
-	Token     string
-	Text      string
-	Username  *string
-	AvatarURL *string
+	AppID string
+	Token string
+	Text  string
 	// 省略したらアプリの既定のチャンネルに投稿する
 	ChannelID *string
 	ParentID  *string

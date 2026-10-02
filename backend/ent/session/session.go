@@ -15,6 +15,8 @@ const (
 	Label = "session"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldRefreshTokenHash holds the string denoting the refresh_token_hash field in the database.
 	FieldRefreshTokenHash = "refresh_token_hash"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
@@ -30,19 +32,20 @@ const (
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the session in the database.
-	Table = "sessions"
+	Table = "session"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "sessions"
+	UserTable = "session"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "session_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for session fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
 	FieldRefreshTokenHash,
 	FieldExpiresAt,
 	FieldRevokedAt,
@@ -51,21 +54,10 @@ var Columns = []string{
 	FieldCreatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "sessions"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"session_user",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -91,6 +83,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByRefreshTokenHash orders the results by the refresh_token_hash field.

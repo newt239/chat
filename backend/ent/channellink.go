@@ -20,6 +20,10 @@ type ChannelLink struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
+	// CreatedByID holds the value of the "created_by_id" field.
+	CreatedByID uuid.UUID `json:"created_by_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// URL holds the value of the "url" field.
@@ -32,10 +36,8 @@ type ChannelLink struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelLinkQuery when eager-loading is set.
-	Edges                   ChannelLinkEdges `json:"edges"`
-	channel_link_channel    *uuid.UUID
-	channel_link_created_by *uuid.UUID
-	selectValues            sql.SelectValues
+	Edges        ChannelLinkEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ChannelLinkEdges holds the relations/edges for other nodes in the graph.
@@ -82,12 +84,8 @@ func (*ChannelLink) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case channellink.FieldCreatedAt, channellink.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case channellink.FieldID:
+		case channellink.FieldID, channellink.FieldChannelID, channellink.FieldCreatedByID:
 			values[i] = new(uuid.UUID)
-		case channellink.ForeignKeys[0]: // channel_link_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case channellink.ForeignKeys[1]: // channel_link_created_by
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -108,6 +106,18 @@ func (_m *ChannelLink) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case channellink.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
+			}
+		case channellink.FieldCreatedByID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by_id", values[i])
+			} else if value != nil {
+				_m.CreatedByID = *value
 			}
 		case channellink.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -138,20 +148,6 @@ func (_m *ChannelLink) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case channellink.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_link_channel", values[i])
-			} else if value.Valid {
-				_m.channel_link_channel = new(uuid.UUID)
-				*_m.channel_link_channel = *value.S.(*uuid.UUID)
-			}
-		case channellink.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_link_created_by", values[i])
-			} else if value.Valid {
-				_m.channel_link_created_by = new(uuid.UUID)
-				*_m.channel_link_created_by = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -199,6 +195,12 @@ func (_m *ChannelLink) String() string {
 	var builder strings.Builder
 	builder.WriteString("ChannelLink(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
+	builder.WriteString("created_by_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedByID))
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
 	builder.WriteString(", ")

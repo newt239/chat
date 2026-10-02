@@ -28,6 +28,12 @@ type WorkspaceCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetCreatedByID sets the "created_by_id" field.
+func (_c *WorkspaceCreate) SetCreatedByID(v uuid.UUID) *WorkspaceCreate {
+	_c.mutation.SetCreatedByID(v)
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *WorkspaceCreate) SetName(v string) *WorkspaceCreate {
 	_c.mutation.SetName(v)
@@ -135,12 +141,6 @@ func (_c *WorkspaceCreate) SetNillableUpdatedAt(v *time.Time) *WorkspaceCreate {
 // SetID sets the "id" field.
 func (_c *WorkspaceCreate) SetID(v string) *WorkspaceCreate {
 	_c.mutation.SetID(v)
-	return _c
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_c *WorkspaceCreate) SetCreatedByID(id uuid.UUID) *WorkspaceCreate {
-	_c.mutation.SetCreatedByID(id)
 	return _c
 }
 
@@ -253,6 +253,9 @@ func (_c *WorkspaceCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *WorkspaceCreate) check() error {
+	if _, ok := _c.mutation.CreatedByID(); !ok {
+		return &ValidationError{Name: "created_by_id", err: errors.New(`ent: missing required field "Workspace.created_by_id"`)}
+	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Workspace.name"`)}
 	}
@@ -366,7 +369,7 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.workspace_created_by = &nodes[0]
+		_node.CreatedByID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
@@ -424,7 +427,7 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Workspace.Create().
-//		SetName(v).
+//		SetCreatedByID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -433,7 +436,7 @@ func (_c *WorkspaceCreate) createSpec() (*Workspace, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.WorkspaceUpsert) {
-//			SetName(v+v).
+//			SetCreatedByID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *WorkspaceCreate) OnConflict(opts ...sql.ConflictOption) *WorkspaceUpsertOne {
@@ -468,6 +471,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *WorkspaceUpsert) SetCreatedByID(v uuid.UUID) *WorkspaceUpsert {
+	u.Set(workspace.FieldCreatedByID, v)
+	return u
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *WorkspaceUpsert) UpdateCreatedByID() *WorkspaceUpsert {
+	u.SetExcluded(workspace.FieldCreatedByID)
+	return u
+}
 
 // SetName sets the "name" field.
 func (u *WorkspaceUpsert) SetName(v string) *WorkspaceUpsert {
@@ -614,6 +629,20 @@ func (u *WorkspaceUpsertOne) Update(set func(*WorkspaceUpsert)) *WorkspaceUpsert
 		set(&WorkspaceUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *WorkspaceUpsertOne) SetCreatedByID(v uuid.UUID) *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *WorkspaceUpsertOne) UpdateCreatedByID() *WorkspaceUpsertOne {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetName sets the "name" field.
@@ -864,7 +893,7 @@ func (_c *WorkspaceCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.WorkspaceUpsert) {
-//			SetName(v+v).
+//			SetCreatedByID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *WorkspaceCreateBulk) OnConflict(opts ...sql.ConflictOption) *WorkspaceUpsertBulk {
@@ -944,6 +973,20 @@ func (u *WorkspaceUpsertBulk) Update(set func(*WorkspaceUpsert)) *WorkspaceUpser
 		set(&WorkspaceUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *WorkspaceUpsertBulk) SetCreatedByID(v uuid.UUID) *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *WorkspaceUpsertBulk) UpdateCreatedByID() *WorkspaceUpsertBulk {
+	return u.Update(func(s *WorkspaceUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetName sets the "name" field.

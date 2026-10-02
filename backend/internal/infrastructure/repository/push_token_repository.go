@@ -5,7 +5,6 @@ import (
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/pushtoken"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -46,7 +45,7 @@ func (r *pushTokenRepository) Delete(ctx context.Context, userID string, token s
 
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.PushToken.Delete().
-		Where(pushtoken.Token(token), pushtoken.HasUserWith(user.ID(uid))).
+		Where(pushtoken.Token(token), pushtoken.UserID(uid)).
 		Exec(ctx)
 	return err
 }
@@ -68,8 +67,7 @@ func (r *pushTokenRepository) FindByUserIDs(ctx context.Context, userIDs []strin
 
 	client := transaction.ResolveClient(ctx, r.client)
 	rows, err := client.PushToken.Query().
-		Where(pushtoken.HasUserWith(user.IDIn(uids...))).
-		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
+		Where(pushtoken.UserIDIn(uids...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -78,7 +76,7 @@ func (r *pushTokenRepository) FindByUserIDs(ctx context.Context, userIDs []strin
 	result := make([]*entity.PushToken, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, &entity.PushToken{
-			UserID:     row.Edges.User.ID.String(),
+			UserID:     row.UserID.String(),
 			Token:      row.Token,
 			Platform:   entity.PushPlatform(row.Platform),
 			UserAgent:  row.UserAgent,

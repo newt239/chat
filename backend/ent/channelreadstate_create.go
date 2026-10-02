@@ -26,6 +26,18 @@ type ChannelReadStateCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_c *ChannelReadStateCreate) SetChannelID(v uuid.UUID) *ChannelReadStateCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *ChannelReadStateCreate) SetUserID(v uuid.UUID) *ChannelReadStateCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetLastReadAt sets the "last_read_at" field.
 func (_c *ChannelReadStateCreate) SetLastReadAt(v time.Time) *ChannelReadStateCreate {
 	_c.mutation.SetLastReadAt(v)
@@ -54,21 +66,9 @@ func (_c *ChannelReadStateCreate) SetNillableID(v *uuid.UUID) *ChannelReadStateC
 	return _c
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *ChannelReadStateCreate) SetChannelID(id uuid.UUID) *ChannelReadStateCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_c *ChannelReadStateCreate) SetChannel(v *Channel) *ChannelReadStateCreate {
 	return _c.SetChannelID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *ChannelReadStateCreate) SetUserID(id uuid.UUID) *ChannelReadStateCreate {
-	_c.mutation.SetUserID(id)
-	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -123,6 +123,12 @@ func (_c *ChannelReadStateCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ChannelReadStateCreate) check() error {
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "ChannelReadState.channel_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ChannelReadState.user_id"`)}
+	}
 	if _, ok := _c.mutation.LastReadAt(); !ok {
 		return &ValidationError{Name: "last_read_at", err: errors.New(`ent: missing required field "ChannelReadState.last_read_at"`)}
 	}
@@ -186,7 +192,7 @@ func (_c *ChannelReadStateCreate) createSpec() (*ChannelReadState, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_read_state_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -203,7 +209,7 @@ func (_c *ChannelReadStateCreate) createSpec() (*ChannelReadState, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_read_state_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -213,7 +219,7 @@ func (_c *ChannelReadStateCreate) createSpec() (*ChannelReadState, *sqlgraph.Cre
 // of the `INSERT` statement. For example:
 //
 //	client.ChannelReadState.Create().
-//		SetLastReadAt(v).
+//		SetChannelID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -222,7 +228,7 @@ func (_c *ChannelReadStateCreate) createSpec() (*ChannelReadState, *sqlgraph.Cre
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelReadStateUpsert) {
-//			SetLastReadAt(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelReadStateCreate) OnConflict(opts ...sql.ConflictOption) *ChannelReadStateUpsertOne {
@@ -257,6 +263,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelReadStateUpsert) SetChannelID(v uuid.UUID) *ChannelReadStateUpsert {
+	u.Set(channelreadstate.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelReadStateUpsert) UpdateChannelID() *ChannelReadStateUpsert {
+	u.SetExcluded(channelreadstate.FieldChannelID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelReadStateUpsert) SetUserID(v uuid.UUID) *ChannelReadStateUpsert {
+	u.Set(channelreadstate.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelReadStateUpsert) UpdateUserID() *ChannelReadStateUpsert {
+	u.SetExcluded(channelreadstate.FieldUserID)
+	return u
+}
 
 // SetLastReadAt sets the "last_read_at" field.
 func (u *ChannelReadStateUpsert) SetLastReadAt(v time.Time) *ChannelReadStateUpsert {
@@ -316,6 +346,34 @@ func (u *ChannelReadStateUpsertOne) Update(set func(*ChannelReadStateUpsert)) *C
 		set(&ChannelReadStateUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelReadStateUpsertOne) SetChannelID(v uuid.UUID) *ChannelReadStateUpsertOne {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelReadStateUpsertOne) UpdateChannelID() *ChannelReadStateUpsertOne {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelReadStateUpsertOne) SetUserID(v uuid.UUID) *ChannelReadStateUpsertOne {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelReadStateUpsertOne) UpdateUserID() *ChannelReadStateUpsertOne {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetLastReadAt sets the "last_read_at" field.
@@ -468,7 +526,7 @@ func (_c *ChannelReadStateCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelReadStateUpsert) {
-//			SetLastReadAt(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelReadStateCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelReadStateUpsertBulk {
@@ -545,6 +603,34 @@ func (u *ChannelReadStateUpsertBulk) Update(set func(*ChannelReadStateUpsert)) *
 		set(&ChannelReadStateUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelReadStateUpsertBulk) SetChannelID(v uuid.UUID) *ChannelReadStateUpsertBulk {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelReadStateUpsertBulk) UpdateChannelID() *ChannelReadStateUpsertBulk {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *ChannelReadStateUpsertBulk) SetUserID(v uuid.UUID) *ChannelReadStateUpsertBulk {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *ChannelReadStateUpsertBulk) UpdateUserID() *ChannelReadStateUpsertBulk {
+	return u.Update(func(s *ChannelReadStateUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetLastReadAt sets the "last_read_at" field.

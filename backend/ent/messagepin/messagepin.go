@@ -15,6 +15,12 @@ const (
 	Label = "message_pin"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldChannelID holds the string denoting the channel_id field in the database.
+	FieldChannelID = "channel_id"
+	// FieldMessageID holds the string denoting the message_id field in the database.
+	FieldMessageID = "message_id"
+	// FieldPinnedByID holds the string denoting the pinned_by_id field in the database.
+	FieldPinnedByID = "pinned_by_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeChannel holds the string denoting the channel edge name in mutations.
@@ -24,53 +30,43 @@ const (
 	// EdgePinnedBy holds the string denoting the pinned_by edge name in mutations.
 	EdgePinnedBy = "pinned_by"
 	// Table holds the table name of the messagepin in the database.
-	Table = "message_pins"
+	Table = "message_pin"
 	// ChannelTable is the table that holds the channel relation/edge.
-	ChannelTable = "message_pins"
+	ChannelTable = "message_pin"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
-	ChannelColumn = "message_pin_channel"
+	ChannelColumn = "channel_id"
 	// MessageTable is the table that holds the message relation/edge.
-	MessageTable = "message_pins"
+	MessageTable = "message_pin"
 	// MessageInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessageInverseTable = "messages"
+	MessageInverseTable = "message"
 	// MessageColumn is the table column denoting the message relation/edge.
-	MessageColumn = "message_pin_message"
+	MessageColumn = "message_id"
 	// PinnedByTable is the table that holds the pinned_by relation/edge.
-	PinnedByTable = "message_pins"
+	PinnedByTable = "message_pin"
 	// PinnedByInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	PinnedByInverseTable = "users"
+	PinnedByInverseTable = "user"
 	// PinnedByColumn is the table column denoting the pinned_by relation/edge.
-	PinnedByColumn = "message_pin_pinned_by"
+	PinnedByColumn = "pinned_by_id"
 )
 
 // Columns holds all SQL columns for messagepin fields.
 var Columns = []string{
 	FieldID,
+	FieldChannelID,
+	FieldMessageID,
+	FieldPinnedByID,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "message_pins"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"message_pin_channel",
-	"message_pin_message",
-	"message_pin_pinned_by",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -90,6 +86,21 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByChannelID orders the results by the channel_id field.
+func ByChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelID, opts...).ToFunc()
+}
+
+// ByMessageID orders the results by the message_id field.
+func ByMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessageID, opts...).ToFunc()
+}
+
+// ByPinnedByID orders the results by the pinned_by_id field.
+func ByPinnedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPinnedByID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

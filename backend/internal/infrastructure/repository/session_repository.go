@@ -6,7 +6,6 @@ import (
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/session"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -30,7 +29,6 @@ func (r *sessionRepository) FindByID(ctx context.Context, id string) (*entity.Se
 	client := transaction.ResolveClient(ctx, r.client)
 	s, err := client.Session.Query().
 		Where(session.ID(sessionID)).
-		WithUser().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -49,7 +47,6 @@ func (r *sessionRepository) FindActiveByTokenHash(ctx context.Context, refreshTo
 			session.ExpiresAtGT(time.Now()),
 			session.RevokedAtIsNil(),
 		).
-		WithUser().
 		Only(ctx)
 	if ent.IsNotFound(err) {
 		return nil, nil
@@ -95,7 +92,6 @@ func (r *sessionRepository) Create(ctx context.Context, sess *entity.Session) er
 	// Load user edge
 	s, err = client.Session.Query().
 		Where(session.ID(s.ID)).
-		WithUser().
 		Only(ctx)
 	if err != nil {
 		return err
@@ -140,8 +136,7 @@ func (r *sessionRepository) FindLatestByUserIDs(ctx context.Context, userIDs []s
 
 	client := transaction.ResolveClient(ctx, r.client)
 	sessions, err := client.Session.Query().
-		Where(session.HasUserWith(user.IDIn(uids...))).
-		WithUser().
+		Where(session.UserIDIn(uids...)).
 		Order(ent.Desc(session.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -168,7 +163,7 @@ func (r *sessionRepository) RevokeAllByUserID(ctx context.Context, userID string
 	client := transaction.ResolveClient(ctx, r.client)
 
 	_, err = client.Session.Update().
-		Where(session.HasUserWith(user.ID(uid)), session.RevokedAtIsNil()).
+		Where(session.UserID(uid), session.RevokedAtIsNil()).
 		SetRevokedAt(now).
 		Save(ctx)
 

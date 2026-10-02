@@ -26,6 +26,18 @@ type ChannelLinkCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_c *ChannelLinkCreate) SetChannelID(v uuid.UUID) *ChannelLinkCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (_c *ChannelLinkCreate) SetCreatedByID(v uuid.UUID) *ChannelLinkCreate {
+	_c.mutation.SetCreatedByID(v)
+	return _c
+}
+
 // SetTitle sets the "title" field.
 func (_c *ChannelLinkCreate) SetTitle(v string) *ChannelLinkCreate {
 	_c.mutation.SetTitle(v)
@@ -94,21 +106,9 @@ func (_c *ChannelLinkCreate) SetNillableID(v *uuid.UUID) *ChannelLinkCreate {
 	return _c
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *ChannelLinkCreate) SetChannelID(id uuid.UUID) *ChannelLinkCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_c *ChannelLinkCreate) SetChannel(v *Channel) *ChannelLinkCreate {
 	return _c.SetChannelID(v.ID)
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_c *ChannelLinkCreate) SetCreatedByID(id uuid.UUID) *ChannelLinkCreate {
-	_c.mutation.SetCreatedByID(id)
-	return _c
 }
 
 // SetCreatedBy sets the "created_by" edge to the User entity.
@@ -171,6 +171,12 @@ func (_c *ChannelLinkCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ChannelLinkCreate) check() error {
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "ChannelLink.channel_id"`)}
+	}
+	if _, ok := _c.mutation.CreatedByID(); !ok {
+		return &ValidationError{Name: "created_by_id", err: errors.New(`ent: missing required field "ChannelLink.created_by_id"`)}
+	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "ChannelLink.title"`)}
 	}
@@ -272,7 +278,7 @@ func (_c *ChannelLinkCreate) createSpec() (*ChannelLink, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_link_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.CreatedByIDs(); len(nodes) > 0 {
@@ -289,7 +295,7 @@ func (_c *ChannelLinkCreate) createSpec() (*ChannelLink, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_link_created_by = &nodes[0]
+		_node.CreatedByID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -299,7 +305,7 @@ func (_c *ChannelLinkCreate) createSpec() (*ChannelLink, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.ChannelLink.Create().
-//		SetTitle(v).
+//		SetChannelID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -308,7 +314,7 @@ func (_c *ChannelLinkCreate) createSpec() (*ChannelLink, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelLinkUpsert) {
-//			SetTitle(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelLinkCreate) OnConflict(opts ...sql.ConflictOption) *ChannelLinkUpsertOne {
@@ -343,6 +349,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelLinkUpsert) SetChannelID(v uuid.UUID) *ChannelLinkUpsert {
+	u.Set(channellink.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelLinkUpsert) UpdateChannelID() *ChannelLinkUpsert {
+	u.SetExcluded(channellink.FieldChannelID)
+	return u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *ChannelLinkUpsert) SetCreatedByID(v uuid.UUID) *ChannelLinkUpsert {
+	u.Set(channellink.FieldCreatedByID, v)
+	return u
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *ChannelLinkUpsert) UpdateCreatedByID() *ChannelLinkUpsert {
+	u.SetExcluded(channellink.FieldCreatedByID)
+	return u
+}
 
 // SetTitle sets the "title" field.
 func (u *ChannelLinkUpsert) SetTitle(v string) *ChannelLinkUpsert {
@@ -447,6 +477,34 @@ func (u *ChannelLinkUpsertOne) Update(set func(*ChannelLinkUpsert)) *ChannelLink
 		set(&ChannelLinkUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelLinkUpsertOne) SetChannelID(v uuid.UUID) *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelLinkUpsertOne) UpdateChannelID() *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *ChannelLinkUpsertOne) SetCreatedByID(v uuid.UUID) *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *ChannelLinkUpsertOne) UpdateCreatedByID() *ChannelLinkUpsertOne {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetTitle sets the "title" field.
@@ -648,7 +706,7 @@ func (_c *ChannelLinkCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelLinkUpsert) {
-//			SetTitle(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelLinkCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelLinkUpsertBulk {
@@ -728,6 +786,34 @@ func (u *ChannelLinkUpsertBulk) Update(set func(*ChannelLinkUpsert)) *ChannelLin
 		set(&ChannelLinkUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *ChannelLinkUpsertBulk) SetChannelID(v uuid.UUID) *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *ChannelLinkUpsertBulk) UpdateChannelID() *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *ChannelLinkUpsertBulk) SetCreatedByID(v uuid.UUID) *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *ChannelLinkUpsertBulk) UpdateCreatedByID() *ChannelLinkUpsertBulk {
+	return u.Update(func(s *ChannelLinkUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetTitle sets the "title" field.

@@ -7,9 +7,7 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelreadstate"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -28,24 +26,24 @@ func NewReadStateRepository(client *ent.Client) domainrepository.ReadStateReposi
 // $1: チャンネル ID の配列, $2: ユーザー ID
 const unreadCountSQL = `
 	SELECT c.id, (
-		SELECT COUNT(*) FROM messages m
-		WHERE m.message_channel = c.id AND m.deleted_at IS NULL
+		SELECT COUNT(*) FROM message m
+		WHERE m.channel_id = c.id AND m.deleted_at IS NULL
 			AND m.created_at > COALESCE(rs.last_read_at, '-infinity')
 	)
 	FROM unnest($1::uuid[]) AS c(id)
-	LEFT JOIN channel_read_states rs ON rs.channel_read_state_channel = c.id AND rs.channel_read_state_user = $2`
+	LEFT JOIN channel_read_state rs ON rs.channel_id = c.id AND rs.user_id = $2`
 
 // 本人へのメンション（グループ経由を含む）を含む未読メッセージをチャンネルごとに数える
 const unreadMentionCountSQL = `
 	WITH mentioned AS (
-		SELECT DISTINCT message_user_mention_message AS id FROM message_user_mentions WHERE message_user_mention_user = $2
+		SELECT DISTINCT message_id AS id FROM message_user_mention WHERE user_id = $2
 	)
-	SELECT m.message_channel, COUNT(*)
-	FROM mentioned JOIN messages m ON m.id = mentioned.id
-	LEFT JOIN channel_read_states rs ON rs.channel_read_state_channel = m.message_channel AND rs.channel_read_state_user = $2
-	WHERE m.message_channel = ANY($1::uuid[]) AND m.deleted_at IS NULL
+	SELECT m.channel_id, COUNT(*)
+	FROM mentioned JOIN message m ON m.id = mentioned.id
+	LEFT JOIN channel_read_state rs ON rs.channel_id = m.channel_id AND rs.user_id = $2
+	WHERE m.channel_id = ANY($1::uuid[]) AND m.deleted_at IS NULL
 		AND m.created_at > COALESCE(rs.last_read_at, '-infinity')
-	GROUP BY m.message_channel`
+	GROUP BY m.channel_id`
 
 func (r *readStateRepository) Upsert(ctx context.Context, readState *entity.ChannelReadState) error {
 	cid, err := utils.ParseUUID(readState.ChannelID, "channel ID")
@@ -81,8 +79,8 @@ func (r *readStateRepository) FindByChannelAndUser(ctx context.Context, channelI
 	client := transaction.ResolveClient(ctx, r.client)
 	crs, err := client.ChannelReadState.Query().
 		Where(
-			channelreadstate.HasChannelWith(channel.ID(cid)),
-			channelreadstate.HasUserWith(user.ID(uid)),
+			channelreadstate.ChannelID(cid),
+			channelreadstate.UserID(uid),
 		).
 		Only(ctx)
 	if err != nil {

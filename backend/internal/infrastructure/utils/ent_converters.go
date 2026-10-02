@@ -14,6 +14,10 @@ func UserToEntity(u *ent.User) *entity.User {
 	if u == nil {
 		return nil
 	}
+	links := make([]string, 0, len(u.Edges.Links))
+	for _, l := range u.Edges.Links {
+		links = append(links, l.URL)
+	}
 	return &entity.User{
 		ID:           u.ID.String(),
 		Email:        u.Email,
@@ -22,23 +26,31 @@ func UserToEntity(u *ent.User) *entity.User {
 		DisplayName:  u.DisplayName,
 		Bio:          StringPtrFromNullable(u.Bio),
 		AvatarURL:    StringPtrFromNullable(u.AvatarURL),
-		Links:        u.Links,
-		IsBot:        u.IsBot,
+		Links:        links,
+		IsApp:        u.IsApp,
 		IsOfficial:   u.IsOfficial,
-		Preferences: entity.UserPreferences{
-			ThemeHue:           u.ThemeHue,
-			ThemeChroma:        u.ThemeChroma,
-			ThemeSidebar:       entity.SidebarStyle(u.ThemeSidebar),
-			ColorMode:          entity.ColorMode(u.ColorMode),
-			Locale:             u.Locale,
-			NotificationLevel:  entity.NotificationLevel(u.NotificationLevel),
-			Timezone:           u.Timezone,
-			TimezoneAutoUpdate: u.TimezoneAutoUpdate,
-			ChannelSortOrder:   entity.ChannelSortOrder(u.ChannelSortOrder),
-			HideJoinMessages:   u.HideJoinMessages,
-		},
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
+		Preferences:  UserPreferenceToEntity(u.Edges.Preference),
+		CreatedAt:    u.CreatedAt,
+		UpdatedAt:    u.UpdatedAt,
+	}
+}
+
+// UserPreferenceToEntity は設定を変換します。まだ保存していなければ既定値を返します
+func UserPreferenceToEntity(p *ent.UserPreference) entity.UserPreferences {
+	if p == nil {
+		return entity.DefaultPreferences()
+	}
+	return entity.UserPreferences{
+		ThemeHue:           p.ThemeHue,
+		ThemeChroma:        p.ThemeChroma,
+		ThemeSidebar:       entity.SidebarStyle(p.ThemeSidebar),
+		ColorMode:          entity.ColorMode(p.ColorMode),
+		Locale:             p.Locale,
+		NotificationLevel:  entity.NotificationLevel(p.NotificationLevel),
+		Timezone:           p.Timezone,
+		TimezoneAutoUpdate: p.TimezoneAutoUpdate,
+		ChannelSortOrder:   entity.ChannelSortOrder(p.ChannelSortOrder),
+		HideJoinMessages:   p.HideJoinMessages,
 	}
 }
 
@@ -47,17 +59,13 @@ func SessionToEntity(s *ent.Session) *entity.Session {
 	if s == nil {
 		return nil
 	}
-	var userID string
-	if s.Edges.User != nil {
-		userID = s.Edges.User.ID.String()
-	}
 	var revokedAt *time.Time
 	if !s.RevokedAt.IsZero() {
 		revokedAt = &s.RevokedAt
 	}
 	return &entity.Session{
 		ID:               s.ID.String(),
-		UserID:           userID,
+		UserID:           s.UserID.String(),
 		RefreshTokenHash: s.RefreshTokenHash,
 		ExpiresAt:        s.ExpiresAt,
 		RevokedAt:        revokedAt,
@@ -72,10 +80,6 @@ func WorkspaceToEntity(w *ent.Workspace) *entity.Workspace {
 	if w == nil {
 		return nil
 	}
-	var createdBy string
-	if w.Edges.CreatedBy != nil {
-		createdBy = w.Edges.CreatedBy.ID.String()
-	}
 	return &entity.Workspace{
 		ID:                 w.ID,
 		Name:               w.Name,
@@ -84,7 +88,7 @@ func WorkspaceToEntity(w *ent.Workspace) *entity.Workspace {
 		IsPublic:           w.IsPublic,
 		SignupEnabled:      w.SignupEnabled,
 		EmailSignupEnabled: w.EmailSignupEnabled,
-		CreatedBy:          createdBy,
+		CreatedBy:          w.CreatedByID.String(),
 		CreatedAt:          w.CreatedAt,
 		UpdatedAt:          w.UpdatedAt,
 	}
@@ -95,16 +99,9 @@ func WorkspaceMemberToEntity(wm *ent.WorkspaceMember) *entity.WorkspaceMember {
 	if wm == nil {
 		return nil
 	}
-	var workspaceID, userID string
-	if wm.Edges.Workspace != nil {
-		workspaceID = wm.Edges.Workspace.ID
-	}
-	if wm.Edges.User != nil {
-		userID = wm.Edges.User.ID.String()
-	}
 	return &entity.WorkspaceMember{
-		WorkspaceID: workspaceID,
-		UserID:      userID,
+		WorkspaceID: wm.WorkspaceID,
+		UserID:      wm.UserID.String(),
 		Role:        entity.WorkspaceRole(wm.Role),
 		JoinedAt:    wm.JoinedAt,
 		SuspendedAt: wm.SuspendedAt,
@@ -116,13 +113,6 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 	if c == nil {
 		return nil
 	}
-	var workspaceID, createdBy string
-	if c.Edges.Workspace != nil {
-		workspaceID = c.Edges.Workspace.ID
-	}
-	if c.Edges.CreatedBy != nil {
-		createdBy = c.Edges.CreatedBy.ID.String()
-	}
 
 	channelType := entity.ChannelTypePublic
 	if c.ChannelType != "" {
@@ -131,13 +121,13 @@ func ChannelToEntity(c *ent.Channel) *entity.Channel {
 
 	return &entity.Channel{
 		ID:          c.ID.String(),
-		WorkspaceID: workspaceID,
+		WorkspaceID: c.WorkspaceID,
 		Name:        c.Name,
 		Description: StringPtrFromNullable(c.Description),
 		IsPrivate:   c.IsPrivate,
 		Type:        channelType,
 		ParentID:    UUIDPtrToStringPtr(c.ParentID),
-		CreatedBy:   createdBy,
+		CreatedBy:   c.CreatedByID.String(),
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,
 		ArchivedAt:  c.ArchivedAt,
@@ -149,16 +139,9 @@ func ChannelMemberToEntity(cm *ent.ChannelMember) *entity.ChannelMember {
 	if cm == nil {
 		return nil
 	}
-	var channelID, userID string
-	if cm.Edges.Channel != nil {
-		channelID = cm.Edges.Channel.ID.String()
-	}
-	if cm.Edges.User != nil {
-		userID = cm.Edges.User.ID.String()
-	}
 	return &entity.ChannelMember{
-		ChannelID: channelID,
-		UserID:    userID,
+		ChannelID: cm.ChannelID.String(),
+		UserID:    cm.UserID.String(),
 		Role:      entity.ChannelRole(cm.Role),
 		JoinedAt:  cm.JoinedAt,
 	}
@@ -203,8 +186,6 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 		DeletedAt: deletedAt,
 		DeletedBy: deletedBy,
 
-		SenderName:      m.SenderName,
-		SenderAvatarURL: m.SenderAvatarURL,
 		Location:        LocationToEntity(m.LocationLatitude, m.LocationLongitude, m.LocationAccuracy, m.LocationLabel),
 		MentionsChannel: m.MentionsChannel,
 		MentionsHere:    m.MentionsHere,
@@ -224,16 +205,9 @@ func MessageReactionToEntity(mr *ent.MessageReaction) *entity.MessageReaction {
 	if mr == nil {
 		return nil
 	}
-	var messageID, userID string
-	if mr.Edges.Message != nil {
-		messageID = mr.Edges.Message.ID.String()
-	}
-	if mr.Edges.User != nil {
-		userID = mr.Edges.User.ID.String()
-	}
 	return &entity.MessageReaction{
-		MessageID: messageID,
-		UserID:    userID,
+		MessageID: mr.MessageID.String(),
+		UserID:    mr.UserID.String(),
 		Emoji:     mr.Emoji,
 		CreatedAt: mr.CreatedAt,
 	}
@@ -244,19 +218,10 @@ func MessageBookmarkToEntity(mb *ent.MessageBookmark) *entity.MessageBookmark {
 	if mb == nil {
 		return nil
 	}
-	var userID, messageID string
-	var message *entity.Message
-	if mb.Edges.User != nil {
-		userID = mb.Edges.User.ID.String()
-	}
-	if mb.Edges.Message != nil {
-		messageID = mb.Edges.Message.ID.String()
-		message = MessageToEntity(mb.Edges.Message)
-	}
 	return &entity.MessageBookmark{
-		UserID:    userID,
-		MessageID: messageID,
-		Message:   message,
+		UserID:    mb.UserID.String(),
+		MessageID: mb.MessageID.String(),
+		Message:   MessageToEntity(mb.Edges.Message),
 		CreatedAt: mb.CreatedAt,
 	}
 }
@@ -266,16 +231,9 @@ func ChannelReadStateToEntity(crs *ent.ChannelReadState) *entity.ChannelReadStat
 	if crs == nil {
 		return nil
 	}
-	var channelID, userID string
-	if crs.Edges.Channel != nil {
-		channelID = crs.Edges.Channel.ID.String()
-	}
-	if crs.Edges.User != nil {
-		userID = crs.Edges.User.ID.String()
-	}
 	return &entity.ChannelReadState{
-		ChannelID:  channelID,
-		UserID:     userID,
+		ChannelID:  crs.ChannelID.String(),
+		UserID:     crs.UserID.String(),
 		LastReadAt: crs.LastReadAt,
 	}
 }
@@ -286,28 +244,15 @@ func AttachmentToEntity(a *ent.Attachment) *entity.Attachment {
 		return nil
 	}
 
-	var messageID *string
-	if a.Edges.Message != nil {
-		mid := a.Edges.Message.ID.String()
-		messageID = &mid
-	}
-
-	var uploaderID, channelID string
-	if a.Edges.Uploader != nil {
-		uploaderID = a.Edges.Uploader.ID.String()
-	}
-	if a.Edges.Channel != nil {
-		channelID = a.Edges.Channel.ID.String()
-	}
 	var thumbnail *entity.Thumbnail
 	if a.ThumbnailStorageKey != nil && a.ThumbnailWidth != nil && a.ThumbnailHeight != nil {
 		thumbnail = &entity.Thumbnail{StorageKey: *a.ThumbnailStorageKey, Width: *a.ThumbnailWidth, Height: *a.ThumbnailHeight}
 	}
 	return &entity.Attachment{
 		ID:         a.ID.String(),
-		MessageID:  messageID,
-		UploaderID: uploaderID,
-		ChannelID:  channelID,
+		MessageID:  UUIDPtrToStringPtr(a.MessageID),
+		UploaderID: a.UploaderID.String(),
+		ChannelID:  a.ChannelID.String(),
 		FileName:   a.FileName,
 		MimeType:   a.MimeType,
 		SizeBytes:  a.SizeBytes,
@@ -325,19 +270,12 @@ func UserGroupToEntity(ug *ent.UserGroup) *entity.UserGroup {
 	if ug == nil {
 		return nil
 	}
-	var workspaceID, createdBy string
-	if ug.Edges.Workspace != nil {
-		workspaceID = ug.Edges.Workspace.ID
-	}
-	if ug.Edges.CreatedBy != nil {
-		createdBy = ug.Edges.CreatedBy.ID.String()
-	}
 	return &entity.UserGroup{
 		ID:          ug.ID.String(),
-		WorkspaceID: workspaceID,
+		WorkspaceID: ug.WorkspaceID,
 		Name:        ug.Name,
 		Description: StringPtrFromNullable(ug.Description),
-		CreatedBy:   createdBy,
+		CreatedBy:   ug.CreatedByID.String(),
 		CreatedAt:   ug.CreatedAt,
 		UpdatedAt:   ug.UpdatedAt,
 	}
@@ -348,16 +286,9 @@ func UserGroupMemberToEntity(ugm *ent.UserGroupMember) *entity.UserGroupMember {
 	if ugm == nil {
 		return nil
 	}
-	var groupID, userID string
-	if ugm.Edges.Group != nil {
-		groupID = ugm.Edges.Group.ID.String()
-	}
-	if ugm.Edges.User != nil {
-		userID = ugm.Edges.User.ID.String()
-	}
 	return &entity.UserGroupMember{
-		GroupID:  groupID,
-		UserID:   userID,
+		GroupID:  ugm.GroupID.String(),
+		UserID:   ugm.UserID.String(),
 		JoinedAt: ugm.JoinedAt,
 	}
 }
@@ -367,16 +298,9 @@ func MessageUserMentionToEntity(mum *ent.MessageUserMention) *entity.MessageUser
 	if mum == nil {
 		return nil
 	}
-	var messageID, userID string
-	if mum.Edges.Message != nil {
-		messageID = mum.Edges.Message.ID.String()
-	}
-	if mum.Edges.User != nil {
-		userID = mum.Edges.User.ID.String()
-	}
 	return &entity.MessageUserMention{
-		MessageID:  messageID,
-		UserID:     userID,
+		MessageID:  mum.MessageID.String(),
+		UserID:     mum.UserID.String(),
 		ViaGroupID: UUIDPtrToStringPtr(mum.ViaGroupID),
 		CreatedAt:  mum.CreatedAt,
 	}
@@ -387,59 +311,49 @@ func MessageGroupMentionToEntity(mgm *ent.MessageGroupMention) *entity.MessageGr
 	if mgm == nil {
 		return nil
 	}
-	var messageID, groupID string
-	if mgm.Edges.Message != nil {
-		messageID = mgm.Edges.Message.ID.String()
-	}
-	if mgm.Edges.Group != nil {
-		groupID = mgm.Edges.Group.ID.String()
-	}
 	return &entity.MessageGroupMention{
-		MessageID: messageID,
-		GroupID:   groupID,
+		MessageID: mgm.MessageID.String(),
+		GroupID:   mgm.GroupID.String(),
 		CreatedAt: mgm.CreatedAt,
 	}
 }
 
-// MessageLink converters
+// MessageLinkToEntity は保存済みのリンクを変換します。OGP は Edges.LinkPreview を読み込んだときだけ埋まります
 func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 	if ml == nil {
 		return nil
 	}
-	var messageID string
-	if ml.Edges.Message != nil {
-		messageID = ml.Edges.Message.ID.String()
-	}
-	var youtube *entity.YouTubeVideo
-	if ml.YoutubeVideoID != nil {
-		youtube = &entity.YouTubeVideo{
-			VideoID:         *ml.YoutubeVideoID,
-			ChannelName:     ml.YoutubeChannelName,
-			DurationSeconds: ml.YoutubeDurationSeconds,
-		}
-	}
-	var xPost *entity.XPost
-	if ml.XAuthorName != nil && ml.XAuthorHandle != nil {
-		xPost = &entity.XPost{AuthorName: *ml.XAuthorName, AuthorHandle: *ml.XAuthorHandle}
-	}
 	return &entity.MessageLink{
-		ID:        ml.ID.String(),
-		MessageID: messageID,
-		URL:       ml.URL,
-		OGP: entity.OGPData{
-			Title:       StringPtrFromNullable(ml.Title),
-			Description: StringPtrFromNullable(ml.Description),
-			ImageURL:    StringPtrFromNullable(ml.ImageURL),
-			SiteName:    StringPtrFromNullable(ml.SiteName),
-			CardType:    StringPtrFromNullable(ml.CardType),
-			ImageWidth:  ml.ImageWidth,
-			ImageHeight: ml.ImageHeight,
-			YouTube:     youtube,
-			XPost:       xPost,
-		},
+		ID:              ml.ID.String(),
+		MessageID:       ml.MessageID.String(),
+		URL:             ml.URL,
+		OGP:             LinkPreviewToOGP(ml.Edges.LinkPreview),
 		LinkedMessageID: UUIDPtrToStringPtr(ml.LinkedMessageID),
 		CreatedAt:       ml.CreatedAt,
 	}
+}
+
+// LinkPreviewToOGP は YouTube と X の付加情報を読み込んだ link_preview を OGP に変換します
+func LinkPreviewToOGP(lp *ent.LinkPreview) entity.OGPData {
+	if lp == nil {
+		return entity.OGPData{}
+	}
+	ogp := entity.OGPData{
+		Title:       lp.Title,
+		Description: lp.Description,
+		ImageURL:    lp.ImageURL,
+		SiteName:    lp.SiteName,
+		CardType:    lp.CardType,
+		ImageWidth:  lp.ImageWidth,
+		ImageHeight: lp.ImageHeight,
+	}
+	if yt := lp.Edges.Youtube; yt != nil {
+		ogp.YouTube = &entity.YouTubeVideo{VideoID: yt.VideoID, ChannelName: yt.ChannelName, DurationSeconds: yt.DurationSeconds}
+	}
+	if x := lp.Edges.XPost; x != nil {
+		ogp.XPost = &entity.XPost{AuthorName: x.AuthorName, AuthorHandle: x.AuthorHandle}
+	}
+	return ogp
 }
 
 // Helper functions

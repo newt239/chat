@@ -31,9 +31,45 @@ func (_u *MessagePinUpdate) Where(ps ...predicate.MessagePin) *MessagePinUpdate 
 	return _u
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *MessagePinUpdate) SetChannelID(id uuid.UUID) *MessagePinUpdate {
-	_u.mutation.SetChannelID(id)
+// SetChannelID sets the "channel_id" field.
+func (_u *MessagePinUpdate) SetChannelID(v uuid.UUID) *MessagePinUpdate {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *MessagePinUpdate) SetNillableChannelID(v *uuid.UUID) *MessagePinUpdate {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
+// SetMessageID sets the "message_id" field.
+func (_u *MessagePinUpdate) SetMessageID(v uuid.UUID) *MessagePinUpdate {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessagePinUpdate) SetNillableMessageID(v *uuid.UUID) *MessagePinUpdate {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetPinnedByID sets the "pinned_by_id" field.
+func (_u *MessagePinUpdate) SetPinnedByID(v uuid.UUID) *MessagePinUpdate {
+	_u.mutation.SetPinnedByID(v)
+	return _u
+}
+
+// SetNillablePinnedByID sets the "pinned_by_id" field if the given value is not nil.
+func (_u *MessagePinUpdate) SetNillablePinnedByID(v *uuid.UUID) *MessagePinUpdate {
+	if v != nil {
+		_u.SetPinnedByID(*v)
+	}
 	return _u
 }
 
@@ -42,21 +78,9 @@ func (_u *MessagePinUpdate) SetChannel(v *Channel) *MessagePinUpdate {
 	return _u.SetChannelID(v.ID)
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessagePinUpdate) SetMessageID(id uuid.UUID) *MessagePinUpdate {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessagePinUpdate) SetMessage(v *Message) *MessagePinUpdate {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetPinnedByID sets the "pinned_by" edge to the User entity by ID.
-func (_u *MessagePinUpdate) SetPinnedByID(id uuid.UUID) *MessagePinUpdate {
-	_u.mutation.SetPinnedByID(id)
-	return _u
 }
 
 // SetPinnedBy sets the "pinned_by" edge to the User entity.
@@ -247,9 +271,45 @@ type MessagePinUpdateOne struct {
 	mutation *MessagePinMutation
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_u *MessagePinUpdateOne) SetChannelID(id uuid.UUID) *MessagePinUpdateOne {
-	_u.mutation.SetChannelID(id)
+// SetChannelID sets the "channel_id" field.
+func (_u *MessagePinUpdateOne) SetChannelID(v uuid.UUID) *MessagePinUpdateOne {
+	_u.mutation.SetChannelID(v)
+	return _u
+}
+
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (_u *MessagePinUpdateOne) SetNillableChannelID(v *uuid.UUID) *MessagePinUpdateOne {
+	if v != nil {
+		_u.SetChannelID(*v)
+	}
+	return _u
+}
+
+// SetMessageID sets the "message_id" field.
+func (_u *MessagePinUpdateOne) SetMessageID(v uuid.UUID) *MessagePinUpdateOne {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessagePinUpdateOne) SetNillableMessageID(v *uuid.UUID) *MessagePinUpdateOne {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetPinnedByID sets the "pinned_by_id" field.
+func (_u *MessagePinUpdateOne) SetPinnedByID(v uuid.UUID) *MessagePinUpdateOne {
+	_u.mutation.SetPinnedByID(v)
+	return _u
+}
+
+// SetNillablePinnedByID sets the "pinned_by_id" field if the given value is not nil.
+func (_u *MessagePinUpdateOne) SetNillablePinnedByID(v *uuid.UUID) *MessagePinUpdateOne {
+	if v != nil {
+		_u.SetPinnedByID(*v)
+	}
 	return _u
 }
 
@@ -258,21 +318,9 @@ func (_u *MessagePinUpdateOne) SetChannel(v *Channel) *MessagePinUpdateOne {
 	return _u.SetChannelID(v.ID)
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessagePinUpdateOne) SetMessageID(id uuid.UUID) *MessagePinUpdateOne {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessagePinUpdateOne) SetMessage(v *Message) *MessagePinUpdateOne {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetPinnedByID sets the "pinned_by" edge to the User entity by ID.
-func (_u *MessagePinUpdateOne) SetPinnedByID(id uuid.UUID) *MessagePinUpdateOne {
-	_u.mutation.SetPinnedByID(id)
-	return _u
 }
 
 // SetPinnedBy sets the "pinned_by" edge to the User entity.

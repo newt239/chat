@@ -8,9 +8,6 @@ import (
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/attachment"
-	"github.com/newt239/chat/ent/channel"
-	"github.com/newt239/chat/ent/message"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -34,15 +31,6 @@ func (r *attachmentRepository) FindByID(ctx context.Context, id string) (*entity
 	client := transaction.ResolveClient(ctx, r.client)
 	a, err := client.Attachment.Query().
 		Where(attachment.IDEQ(aid)).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUploader().
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -105,23 +93,6 @@ func (r *attachmentRepository) Create(ctx context.Context, att *entity.Attachmen
 		return err
 	}
 
-	// Load edges
-	a, err = client.Attachment.Query().
-		Where(attachment.IDEQ(a.ID)).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUploader().
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		Only(ctx)
-	if err != nil {
-		return err
-	}
-
 	*att = *utils.AttachmentToEntity(a)
 	return nil
 }
@@ -178,18 +149,7 @@ func (r *attachmentRepository) CreatePending(ctx context.Context, att *entity.At
 		create.SetExpiresAt(*att.ExpiresAt)
 	}
 
-	if _, err := create.Save(ctx); err != nil {
-		return err
-	}
-
-	// Load edges
-	a, err := client.Attachment.Query().
-		Where(attachment.IDEQ(aid)).
-		WithUploader().
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
-		Only(ctx)
+	a, err := create.Save(ctx)
 	if err != nil {
 		return err
 	}
@@ -233,16 +193,7 @@ func (r *attachmentRepository) FindByMessageID(ctx context.Context, messageID st
 
 	client := transaction.ResolveClient(ctx, r.client)
 	attachments, err := client.Attachment.Query().
-		Where(attachment.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUploader().
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
+		Where(attachment.MessageID(mid)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -273,10 +224,7 @@ func (r *attachmentRepository) FindByMessageIDs(ctx context.Context, messageIDs 
 
 	client := transaction.ResolveClient(ctx, r.client)
 	attachments, err := client.Attachment.Query().
-		Where(attachment.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
-		WithUploader(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
-		WithChannel(func(q *ent.ChannelQuery) { q.Select(channel.FieldID) }).
+		Where(attachment.MessageIDIn(parsedIDs...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -284,7 +232,7 @@ func (r *attachmentRepository) FindByMessageIDs(ctx context.Context, messageIDs 
 
 	result := make(map[string][]*entity.Attachment)
 	for _, a := range attachments {
-		messageID := a.Edges.Message.ID.String()
+		messageID := a.MessageID.String()
 		if result[messageID] == nil {
 			result[messageID] = make([]*entity.Attachment, 0)
 		}
@@ -308,19 +256,10 @@ func (r *attachmentRepository) FindPendingByUploaderAndChannel(ctx context.Conte
 	client := transaction.ResolveClient(ctx, r.client)
 	attachments, err := client.Attachment.Query().
 		Where(
-			attachment.HasUploaderWith(user.ID(uid)),
-			attachment.HasChannelWith(channel.ID(cid)),
+			attachment.UploaderID(uid),
+			attachment.ChannelID(cid),
 			attachment.Status("pending"),
 		).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUploader().
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -358,18 +297,9 @@ func (r *attachmentRepository) FindPendingByIDsForUser(ctx context.Context, user
 	attachments, err := client.Attachment.Query().
 		Where(
 			attachment.IDIn(parsedIDs...),
-			attachment.HasUploaderWith(user.ID(uid)),
+			attachment.UploaderID(uid),
 			attachment.Status("pending"),
 		).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUploader().
-		WithChannel(func(q *ent.ChannelQuery) {
-			q.WithWorkspace().WithCreatedBy()
-		}).
 		All(ctx)
 	if err != nil {
 		return nil, err

@@ -2,11 +2,14 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/message"
+	"github.com/newt239/chat/ent/linkpreview"
+	"github.com/newt239/chat/ent/linkpreviewxpost"
+	"github.com/newt239/chat/ent/linkpreviewyoutube"
 	"github.com/newt239/chat/ent/messagelink"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -22,6 +25,7 @@ func NewLinkRepository(client *ent.Client) domainrepository.MessageLinkRepositor
 	return &linkRepository{client: client}
 }
 
+// Create はリンクを保存します。メッセージへのリンクでなければ OGP を URL ごとの link_preview に上書きで保存し、そこから参照します
 func (r *linkRepository) Create(ctx context.Context, link *entity.MessageLink) error {
 	mid, err := utils.ParseUUID(link.MessageID, "message ID")
 	if err != nil {
@@ -29,11 +33,10 @@ func (r *linkRepository) Create(ctx context.Context, link *entity.MessageLink) e
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-
 	builder := client.MessageLink.Create().
 		SetMessageID(mid).
-		SetURL(link.URL)
-
+		SetURL(link.URL).
+		SetNillableLinkedMessageID(utils.ParseUUIDPtr(link.LinkedMessageID))
 	if link.ID != "" {
 		linkID, err := utils.ParseUUID(link.ID, "link ID")
 		if err != nil {
@@ -41,9 +44,26 @@ func (r *linkRepository) Create(ctx context.Context, link *entity.MessageLink) e
 		}
 		builder = builder.SetID(linkID)
 	}
+	if link.LinkedMessageID == nil {
+		previewID, err := r.savePreview(ctx, client, link.URL, link.OGP)
+		if err != nil {
+			return err
+		}
+		builder = builder.SetLinkPreviewID(previewID)
+	}
 
-	ogp := link.OGP
-	builder = builder.
+	ml, err := builder.Save(ctx)
+	if err != nil {
+		return err
+	}
+	link.ID = ml.ID.String()
+	link.CreatedAt = ml.CreatedAt
+	return nil
+}
+
+func (r *linkRepository) savePreview(ctx context.Context, client *ent.Client, url string, ogp entity.OGPData) (uuid.UUID, error) {
+	previewID, err := client.LinkPreview.Create().
+		SetURL(url).
 		SetNillableTitle(ogp.Title).
 		SetNillableDescription(ogp.Description).
 		SetNillableImageURL(ogp.ImageURL).
@@ -51,87 +71,58 @@ func (r *linkRepository) Create(ctx context.Context, link *entity.MessageLink) e
 		SetNillableCardType(ogp.CardType).
 		SetNillableImageWidth(ogp.ImageWidth).
 		SetNillableImageHeight(ogp.ImageHeight).
-		SetNillableLinkedMessageID(utils.ParseUUIDPtr(link.LinkedMessageID))
-	if ogp.YouTube != nil {
-		builder = builder.
-			SetYoutubeVideoID(ogp.YouTube.VideoID).
-			SetNillableYoutubeChannelName(ogp.YouTube.ChannelName).
-			SetNillableYoutubeDurationSeconds(ogp.YouTube.DurationSeconds)
-	}
-	if ogp.XPost != nil {
-		builder = builder.
-			SetXAuthorName(ogp.XPost.AuthorName).
-			SetXAuthorHandle(ogp.XPost.AuthorHandle)
-	}
-
-	ml, err := builder.Save(ctx)
+		SetFetchedAt(time.Now()).
+		OnConflictColumns(linkpreview.FieldURL).
+		UpdateNewValues().
+		ID(ctx)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
-	// Load edges
-	ml, err = client.MessageLink.Query().
-		Where(messagelink.ID(ml.ID)).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		Only(ctx)
-	if err != nil {
-		return err
+	if _, err := client.LinkPreviewYoutube.Delete().Where(linkpreviewyoutube.LinkPreviewID(previewID)).Exec(ctx); err != nil {
+		return uuid.Nil, err
 	}
-
-	*link = *utils.MessageLinkToEntity(ml)
-	return nil
+	if yt := ogp.YouTube; yt != nil {
+		if err := client.LinkPreviewYoutube.Create().
+			SetLinkPreviewID(previewID).
+			SetVideoID(yt.VideoID).
+			SetNillableChannelName(yt.ChannelName).
+			SetNillableDurationSeconds(yt.DurationSeconds).
+			Exec(ctx); err != nil {
+			return uuid.Nil, err
+		}
+	}
+	if _, err := client.LinkPreviewXPost.Delete().Where(linkpreviewxpost.LinkPreviewID(previewID)).Exec(ctx); err != nil {
+		return uuid.Nil, err
+	}
+	if x := ogp.XPost; x != nil {
+		if err := client.LinkPreviewXPost.Create().
+			SetLinkPreviewID(previewID).
+			SetAuthorName(x.AuthorName).
+			SetAuthorHandle(x.AuthorHandle).
+			Exec(ctx); err != nil {
+			return uuid.Nil, err
+		}
+	}
+	return previewID, nil
 }
 
 func (r *linkRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.MessageLink, error) {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	links, err := client.MessageLink.Query().
-		Where(messagelink.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*entity.MessageLink, 0, len(links))
-	for _, ml := range links {
-		result = append(result, utils.MessageLinkToEntity(ml))
-	}
-
-	return result, nil
+	return r.FindByMessageIDs(ctx, []string{messageID})
 }
 
 func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) ([]*entity.MessageLink, error) {
 	if len(messageIDs) == 0 {
 		return []*entity.MessageLink{}, nil
 	}
-
-	// Parse all message IDs
-	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
-	for _, id := range messageIDs {
-		parsedID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
+	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
+	if err != nil {
+		return nil, err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	links, err := client.MessageLink.Query().
-		Where(messagelink.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
+	links, err := transaction.ResolveClient(ctx, r.client).MessageLink.Query().
+		Where(messagelink.MessageIDIn(parsedIDs...)).
+		WithLinkPreview(func(q *ent.LinkPreviewQuery) { q.WithYoutube().WithXPost() }).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -141,24 +132,22 @@ func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []stri
 	for _, ml := range links {
 		result = append(result, utils.MessageLinkToEntity(ml))
 	}
-
 	return result, nil
 }
 
 func (r *linkRepository) FindByURL(ctx context.Context, url string) (*entity.MessageLink, error) {
-	client := transaction.ResolveClient(ctx, r.client)
-	ml, err := client.MessageLink.Query().
-		Where(messagelink.URL(url)).
-		Order(ent.Desc(messagelink.FieldCreatedAt)).
-		First(ctx)
+	lp, err := transaction.ResolveClient(ctx, r.client).LinkPreview.Query().
+		Where(linkpreview.URL(url)).
+		WithYoutube().
+		WithXPost().
+		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, err
 	}
-
-	return utils.MessageLinkToEntity(ml), nil
+	return &entity.MessageLink{URL: lp.URL, OGP: utils.LinkPreviewToOGP(lp)}, nil
 }
 
 func (r *linkRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
@@ -167,10 +156,8 @@ func (r *linkRepository) DeleteByMessageID(ctx context.Context, messageID string
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	_, err = client.MessageLink.Delete().
-		Where(messagelink.HasMessageWith(message.ID(mid))).
+	_, err = transaction.ResolveClient(ctx, r.client).MessageLink.Delete().
+		Where(messagelink.MessageID(mid)).
 		Exec(ctx)
-
 	return err
 }

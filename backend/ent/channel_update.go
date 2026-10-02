@@ -35,6 +35,34 @@ func (_u *ChannelUpdate) Where(ps ...predicate.Channel) *ChannelUpdate {
 	return _u
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *ChannelUpdate) SetWorkspaceID(v string) *ChannelUpdate {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *ChannelUpdate) SetNillableWorkspaceID(v *string) *ChannelUpdate {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *ChannelUpdate) SetCreatedByID(v uuid.UUID) *ChannelUpdate {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *ChannelUpdate) SetNillableCreatedByID(v *uuid.UUID) *ChannelUpdate {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *ChannelUpdate) SetName(v string) *ChannelUpdate {
 	_u.mutation.SetName(v)
@@ -149,21 +177,9 @@ func (_u *ChannelUpdate) SetUpdatedAt(v time.Time) *ChannelUpdate {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *ChannelUpdate) SetWorkspaceID(id string) *ChannelUpdate {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *ChannelUpdate) SetWorkspace(v *Workspace) *ChannelUpdate {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *ChannelUpdate) SetCreatedByID(id uuid.UUID) *ChannelUpdate {
-	_u.mutation.SetCreatedByID(id)
-	return _u
 }
 
 // SetCreatedBy sets the "created_by" edge to the User entity.
@@ -466,6 +482,9 @@ func (_u *ChannelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ArchivedAtCleared() {
 		_spec.ClearField(channel.FieldArchivedAt, field.TypeTime)
+	}
+	if _u.mutation.DmKeyCleared() {
+		_spec.ClearField(channel.FieldDmKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(channel.FieldUpdatedAt, field.TypeTime, value)
@@ -802,6 +821,34 @@ type ChannelUpdateOne struct {
 	mutation *ChannelMutation
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *ChannelUpdateOne) SetWorkspaceID(v string) *ChannelUpdateOne {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *ChannelUpdateOne) SetNillableWorkspaceID(v *string) *ChannelUpdateOne {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (_u *ChannelUpdateOne) SetCreatedByID(v uuid.UUID) *ChannelUpdateOne {
+	_u.mutation.SetCreatedByID(v)
+	return _u
+}
+
+// SetNillableCreatedByID sets the "created_by_id" field if the given value is not nil.
+func (_u *ChannelUpdateOne) SetNillableCreatedByID(v *uuid.UUID) *ChannelUpdateOne {
+	if v != nil {
+		_u.SetCreatedByID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *ChannelUpdateOne) SetName(v string) *ChannelUpdateOne {
 	_u.mutation.SetName(v)
@@ -916,21 +963,9 @@ func (_u *ChannelUpdateOne) SetUpdatedAt(v time.Time) *ChannelUpdateOne {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *ChannelUpdateOne) SetWorkspaceID(id string) *ChannelUpdateOne {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *ChannelUpdateOne) SetWorkspace(v *Workspace) *ChannelUpdateOne {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_u *ChannelUpdateOne) SetCreatedByID(id uuid.UUID) *ChannelUpdateOne {
-	_u.mutation.SetCreatedByID(id)
-	return _u
 }
 
 // SetCreatedBy sets the "created_by" edge to the User entity.
@@ -1263,6 +1298,9 @@ func (_u *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err er
 	}
 	if _u.mutation.ArchivedAtCleared() {
 		_spec.ClearField(channel.FieldArchivedAt, field.TypeTime)
+	}
+	if _u.mutation.DmKeyCleared() {
+		_spec.ClearField(channel.FieldDmKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(channel.FieldUpdatedAt, field.TypeTime, value)

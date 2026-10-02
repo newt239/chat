@@ -27,7 +27,6 @@ type ChannelLinkQuery struct {
 	predicates    []predicate.ChannelLink
 	withChannel   *ChannelQuery
 	withCreatedBy *UserQuery
-	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *ChannelLinkQuery) WithCreatedBy(opts ...func(*UserQuery)) *ChannelLink
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ChannelLink.Query().
-//		GroupBy(channellink.FieldTitle).
+//		GroupBy(channellink.FieldChannelID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *ChannelLinkQuery) GroupBy(field string, fields ...string) *ChannelLinkGroupBy {
@@ -359,11 +358,11 @@ func (_q *ChannelLinkQuery) GroupBy(field string, fields ...string) *ChannelLink
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		ChannelID uuid.UUID `json:"channel_id,omitempty"`
 //	}
 //
 //	client.ChannelLink.Query().
-//		Select(channellink.FieldTitle).
+//		Select(channellink.FieldChannelID).
 //		Scan(ctx, &v)
 func (_q *ChannelLinkQuery) Select(fields ...string) *ChannelLinkSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *ChannelLinkQuery) prepareQuery(ctx context.Context) error {
 func (_q *ChannelLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ChannelLink, error) {
 	var (
 		nodes       = []*ChannelLink{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withChannel != nil,
 			_q.withCreatedBy != nil,
 		}
 	)
-	if _q.withChannel != nil || _q.withCreatedBy != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, channellink.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ChannelLink).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *ChannelLinkQuery) loadChannel(ctx context.Context, query *ChannelQuery
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelLink)
 	for i := range nodes {
-		if nodes[i].channel_link_channel == nil {
-			continue
-		}
-		fk := *nodes[i].channel_link_channel
+		fk := nodes[i].ChannelID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *ChannelLinkQuery) loadChannel(ctx context.Context, query *ChannelQuery
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_link_channel" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "channel_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *ChannelLinkQuery) loadCreatedBy(ctx context.Context, query *UserQuery,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ChannelLink)
 	for i := range nodes {
-		if nodes[i].channel_link_created_by == nil {
-			continue
-		}
-		fk := *nodes[i].channel_link_created_by
+		fk := nodes[i].CreatedByID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *ChannelLinkQuery) loadCreatedBy(ctx context.Context, query *UserQuery,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "channel_link_created_by" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "created_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *ChannelLinkQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != channellink.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withChannel != nil {
+			_spec.Node.AddColumnOnce(channellink.FieldChannelID)
+		}
+		if _q.withCreatedBy != nil {
+			_spec.Node.AddColumnOnce(channellink.FieldCreatedByID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

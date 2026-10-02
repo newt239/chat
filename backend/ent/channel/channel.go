@@ -15,6 +15,10 @@ const (
 	Label = "channel"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
+	FieldWorkspaceID = "workspace_id"
+	// FieldCreatedByID holds the string denoting the created_by_id field in the database.
+	FieldCreatedByID = "created_by_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -27,6 +31,8 @@ const (
 	FieldArchivedAt = "archived_at"
 	// FieldParentID holds the string denoting the parent_id field in the database.
 	FieldParentID = "parent_id"
+	// FieldDmKey holds the string denoting the dm_key field in the database.
+	FieldDmKey = "dm_key"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -48,55 +54,55 @@ const (
 	// EdgeChildren holds the string denoting the children edge name in mutations.
 	EdgeChildren = "children"
 	// Table holds the table name of the channel in the database.
-	Table = "channels"
+	Table = "channel"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
-	WorkspaceTable = "channels"
+	WorkspaceTable = "channel"
 	// WorkspaceInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
+	WorkspaceInverseTable = "workspace"
 	// WorkspaceColumn is the table column denoting the workspace relation/edge.
-	WorkspaceColumn = "channel_workspace"
+	WorkspaceColumn = "workspace_id"
 	// CreatedByTable is the table that holds the created_by relation/edge.
-	CreatedByTable = "channels"
+	CreatedByTable = "channel"
 	// CreatedByInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatedByInverseTable = "users"
+	CreatedByInverseTable = "user"
 	// CreatedByColumn is the table column denoting the created_by relation/edge.
-	CreatedByColumn = "channel_created_by"
+	CreatedByColumn = "created_by_id"
 	// MembersTable is the table that holds the members relation/edge.
-	MembersTable = "channel_members"
+	MembersTable = "channel_member"
 	// MembersInverseTable is the table name for the ChannelMember entity.
 	// It exists in this package in order to avoid circular dependency with the "channelmember" package.
-	MembersInverseTable = "channel_members"
+	MembersInverseTable = "channel_member"
 	// MembersColumn is the table column denoting the members relation/edge.
-	MembersColumn = "channel_member_channel"
+	MembersColumn = "channel_id"
 	// MessagesTable is the table that holds the messages relation/edge.
-	MessagesTable = "messages"
+	MessagesTable = "message"
 	// MessagesInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessagesInverseTable = "messages"
+	MessagesInverseTable = "message"
 	// MessagesColumn is the table column denoting the messages relation/edge.
-	MessagesColumn = "message_channel"
+	MessagesColumn = "channel_id"
 	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "attachments"
+	AttachmentsTable = "attachment"
 	// AttachmentsInverseTable is the table name for the Attachment entity.
 	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "attachments"
+	AttachmentsInverseTable = "attachment"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "attachment_channel"
+	AttachmentsColumn = "channel_id"
 	// ReadStatesTable is the table that holds the read_states relation/edge.
-	ReadStatesTable = "channel_read_states"
+	ReadStatesTable = "channel_read_state"
 	// ReadStatesInverseTable is the table name for the ChannelReadState entity.
 	// It exists in this package in order to avoid circular dependency with the "channelreadstate" package.
-	ReadStatesInverseTable = "channel_read_states"
+	ReadStatesInverseTable = "channel_read_state"
 	// ReadStatesColumn is the table column denoting the read_states relation/edge.
-	ReadStatesColumn = "channel_read_state_channel"
+	ReadStatesColumn = "channel_id"
 	// ParentTable is the table that holds the parent relation/edge.
-	ParentTable = "channels"
+	ParentTable = "channel"
 	// ParentColumn is the table column denoting the parent relation/edge.
 	ParentColumn = "parent_id"
 	// ChildrenTable is the table that holds the children relation/edge.
-	ChildrenTable = "channels"
+	ChildrenTable = "channel"
 	// ChildrenColumn is the table column denoting the children relation/edge.
 	ChildrenColumn = "parent_id"
 )
@@ -104,32 +110,23 @@ const (
 // Columns holds all SQL columns for channel fields.
 var Columns = []string{
 	FieldID,
+	FieldWorkspaceID,
+	FieldCreatedByID,
 	FieldName,
 	FieldDescription,
 	FieldIsPrivate,
 	FieldChannelType,
 	FieldArchivedAt,
 	FieldParentID,
+	FieldDmKey,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "channels"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"channel_workspace",
-	"channel_created_by",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -161,6 +158,16 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByWorkspaceID orders the results by the workspace_id field.
+func ByWorkspaceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkspaceID, opts...).ToFunc()
+}
+
+// ByCreatedByID orders the results by the created_by_id field.
+func ByCreatedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedByID, opts...).ToFunc()
+}
+
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
@@ -189,6 +196,11 @@ func ByArchivedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByParentID orders the results by the parent_id field.
 func ByParentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldParentID, opts...).ToFunc()
+}
+
+// ByDmKey orders the results by the dm_key field.
+func ByDmKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDmKey, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

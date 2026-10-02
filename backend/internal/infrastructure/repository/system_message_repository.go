@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/systemmessage"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -55,7 +54,7 @@ func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelI
 	client := transaction.ResolveClient(ctx, r.client)
 	q := client.SystemMessage.Query().
 		Where(
-			systemmessage.HasChannelWith(channel.IDIn(chIDs...)),
+			systemmessage.ChannelIDIn(chIDs...),
 			// 退出・削除は以前は記録していたがタイムラインには出さない
 			systemmessage.KindNotIn(string(entity.SystemMessageKindMemberLeft), string(entity.SystemMessageKindMemberRemoved)),
 		)
@@ -75,8 +74,6 @@ func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelI
 		order = ent.Asc(systemmessage.FieldCreatedAt)
 	}
 	rows, err := q.
-		WithChannel().
-		WithActor().
 		Order(order).
 		All(ctx)
 	if err != nil {
@@ -85,21 +82,12 @@ func (r *systemMessageRepository) FindByChannelIDs(ctx context.Context, channelI
 
 	out := make([]*entity.SystemMessage, 0, len(rows))
 	for _, sm := range rows {
-		var actorID *string
-		if sm.Edges.Actor != nil {
-			s := sm.Edges.Actor.ID.String()
-			actorID = &s
-		}
-		chID := ""
-		if sm.Edges.Channel != nil {
-			chID = sm.Edges.Channel.ID.String()
-		}
 		out = append(out, &entity.SystemMessage{
 			ID:        sm.ID.String(),
-			ChannelID: chID,
+			ChannelID: sm.ChannelID.String(),
 			Kind:      entity.SystemMessageKind(sm.Kind),
 			Payload:   sm.Payload,
-			ActorID:   actorID,
+			ActorID:   utils.UUIDPtrToStringPtr(sm.ActorID),
 			CreatedAt: sm.CreatedAt,
 		})
 	}

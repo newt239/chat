@@ -26,6 +26,18 @@ type UserGroupMemberCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetGroupID sets the "group_id" field.
+func (_c *UserGroupMemberCreate) SetGroupID(v uuid.UUID) *UserGroupMemberCreate {
+	_c.mutation.SetGroupID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *UserGroupMemberCreate) SetUserID(v uuid.UUID) *UserGroupMemberCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetJoinedAt sets the "joined_at" field.
 func (_c *UserGroupMemberCreate) SetJoinedAt(v time.Time) *UserGroupMemberCreate {
 	_c.mutation.SetJoinedAt(v)
@@ -54,21 +66,9 @@ func (_c *UserGroupMemberCreate) SetNillableID(v *uuid.UUID) *UserGroupMemberCre
 	return _c
 }
 
-// SetGroupID sets the "group" edge to the UserGroup entity by ID.
-func (_c *UserGroupMemberCreate) SetGroupID(id uuid.UUID) *UserGroupMemberCreate {
-	_c.mutation.SetGroupID(id)
-	return _c
-}
-
 // SetGroup sets the "group" edge to the UserGroup entity.
 func (_c *UserGroupMemberCreate) SetGroup(v *UserGroup) *UserGroupMemberCreate {
 	return _c.SetGroupID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *UserGroupMemberCreate) SetUserID(id uuid.UUID) *UserGroupMemberCreate {
-	_c.mutation.SetUserID(id)
-	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -123,6 +123,12 @@ func (_c *UserGroupMemberCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *UserGroupMemberCreate) check() error {
+	if _, ok := _c.mutation.GroupID(); !ok {
+		return &ValidationError{Name: "group_id", err: errors.New(`ent: missing required field "UserGroupMember.group_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "UserGroupMember.user_id"`)}
+	}
 	if _, ok := _c.mutation.JoinedAt(); !ok {
 		return &ValidationError{Name: "joined_at", err: errors.New(`ent: missing required field "UserGroupMember.joined_at"`)}
 	}
@@ -186,7 +192,7 @@ func (_c *UserGroupMemberCreate) createSpec() (*UserGroupMember, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_group_member_group = &nodes[0]
+		_node.GroupID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -203,7 +209,7 @@ func (_c *UserGroupMemberCreate) createSpec() (*UserGroupMember, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_group_member_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -213,7 +219,7 @@ func (_c *UserGroupMemberCreate) createSpec() (*UserGroupMember, *sqlgraph.Creat
 // of the `INSERT` statement. For example:
 //
 //	client.UserGroupMember.Create().
-//		SetJoinedAt(v).
+//		SetGroupID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -222,7 +228,7 @@ func (_c *UserGroupMemberCreate) createSpec() (*UserGroupMember, *sqlgraph.Creat
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserGroupMemberUpsert) {
-//			SetJoinedAt(v+v).
+//			SetGroupID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserGroupMemberCreate) OnConflict(opts ...sql.ConflictOption) *UserGroupMemberUpsertOne {
@@ -257,6 +263,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetGroupID sets the "group_id" field.
+func (u *UserGroupMemberUpsert) SetGroupID(v uuid.UUID) *UserGroupMemberUpsert {
+	u.Set(usergroupmember.FieldGroupID, v)
+	return u
+}
+
+// UpdateGroupID sets the "group_id" field to the value that was provided on create.
+func (u *UserGroupMemberUpsert) UpdateGroupID() *UserGroupMemberUpsert {
+	u.SetExcluded(usergroupmember.FieldGroupID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserGroupMemberUpsert) SetUserID(v uuid.UUID) *UserGroupMemberUpsert {
+	u.Set(usergroupmember.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserGroupMemberUpsert) UpdateUserID() *UserGroupMemberUpsert {
+	u.SetExcluded(usergroupmember.FieldUserID)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -307,6 +337,34 @@ func (u *UserGroupMemberUpsertOne) Update(set func(*UserGroupMemberUpsert)) *Use
 		set(&UserGroupMemberUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetGroupID sets the "group_id" field.
+func (u *UserGroupMemberUpsertOne) SetGroupID(v uuid.UUID) *UserGroupMemberUpsertOne {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.SetGroupID(v)
+	})
+}
+
+// UpdateGroupID sets the "group_id" field to the value that was provided on create.
+func (u *UserGroupMemberUpsertOne) UpdateGroupID() *UserGroupMemberUpsertOne {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.UpdateGroupID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserGroupMemberUpsertOne) SetUserID(v uuid.UUID) *UserGroupMemberUpsertOne {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserGroupMemberUpsertOne) UpdateUserID() *UserGroupMemberUpsertOne {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // Exec executes the query.
@@ -445,7 +503,7 @@ func (_c *UserGroupMemberCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserGroupMemberUpsert) {
-//			SetJoinedAt(v+v).
+//			SetGroupID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserGroupMemberCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserGroupMemberUpsertBulk {
@@ -525,6 +583,34 @@ func (u *UserGroupMemberUpsertBulk) Update(set func(*UserGroupMemberUpsert)) *Us
 		set(&UserGroupMemberUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetGroupID sets the "group_id" field.
+func (u *UserGroupMemberUpsertBulk) SetGroupID(v uuid.UUID) *UserGroupMemberUpsertBulk {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.SetGroupID(v)
+	})
+}
+
+// UpdateGroupID sets the "group_id" field to the value that was provided on create.
+func (u *UserGroupMemberUpsertBulk) UpdateGroupID() *UserGroupMemberUpsertBulk {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.UpdateGroupID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserGroupMemberUpsertBulk) SetUserID(v uuid.UUID) *UserGroupMemberUpsertBulk {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserGroupMemberUpsertBulk) UpdateUserID() *UserGroupMemberUpsertBulk {
+	return u.Update(func(s *UserGroupMemberUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // Exec executes the query.

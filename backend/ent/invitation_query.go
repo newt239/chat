@@ -27,7 +27,6 @@ type InvitationQuery struct {
 	predicates    []predicate.Invitation
 	withWorkspace *WorkspaceQuery
 	withInvitedBy *UserQuery
-	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *InvitationQuery) WithInvitedBy(opts ...func(*UserQuery)) *InvitationQu
 // Example:
 //
 //	var v []struct {
-//		Email string `json:"email,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Invitation.Query().
-//		GroupBy(invitation.FieldEmail).
+//		GroupBy(invitation.FieldWorkspaceID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *InvitationQuery) GroupBy(field string, fields ...string) *InvitationGroupBy {
@@ -359,11 +358,11 @@ func (_q *InvitationQuery) GroupBy(field string, fields ...string) *InvitationGr
 // Example:
 //
 //	var v []struct {
-//		Email string `json:"email,omitempty"`
+//		WorkspaceID string `json:"workspace_id,omitempty"`
 //	}
 //
 //	client.Invitation.Query().
-//		Select(invitation.FieldEmail).
+//		Select(invitation.FieldWorkspaceID).
 //		Scan(ctx, &v)
 func (_q *InvitationQuery) Select(fields ...string) *InvitationSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *InvitationQuery) prepareQuery(ctx context.Context) error {
 func (_q *InvitationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Invitation, error) {
 	var (
 		nodes       = []*Invitation{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withWorkspace != nil,
 			_q.withInvitedBy != nil,
 		}
 	)
-	if _q.withWorkspace != nil || _q.withInvitedBy != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, invitation.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Invitation).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *InvitationQuery) loadWorkspace(ctx context.Context, query *WorkspaceQu
 	ids := make([]string, 0, len(nodes))
 	nodeids := make(map[string][]*Invitation)
 	for i := range nodes {
-		if nodes[i].invitation_workspace == nil {
-			continue
-		}
-		fk := *nodes[i].invitation_workspace
+		fk := nodes[i].WorkspaceID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *InvitationQuery) loadWorkspace(ctx context.Context, query *WorkspaceQu
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "invitation_workspace" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "workspace_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *InvitationQuery) loadInvitedBy(ctx context.Context, query *UserQuery, 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Invitation)
 	for i := range nodes {
-		if nodes[i].invitation_invited_by == nil {
-			continue
-		}
-		fk := *nodes[i].invitation_invited_by
+		fk := nodes[i].InvitedByID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *InvitationQuery) loadInvitedBy(ctx context.Context, query *UserQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "invitation_invited_by" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "invited_by_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *InvitationQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != invitation.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withWorkspace != nil {
+			_spec.Node.AddColumnOnce(invitation.FieldWorkspaceID)
+		}
+		if _q.withInvitedBy != nil {
+			_spec.Node.AddColumnOnce(invitation.FieldInvitedByID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

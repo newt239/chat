@@ -6,9 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmute"
-	"github.com/newt239/chat/ent/user"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -35,7 +33,7 @@ func (r *channelMuteRepository) SetMuted(ctx context.Context, userID string, cha
 	client := transaction.ResolveClient(ctx, r.client)
 	if !muted {
 		_, err = client.ChannelMute.Delete().
-			Where(channelmute.HasUserWith(user.ID(uid)), channelmute.HasChannelWith(channel.ID(cid))).
+			Where(channelmute.UserID(uid), channelmute.ChannelID(cid)).
 			Exec(ctx)
 		return err
 	}
@@ -66,7 +64,7 @@ func (r *channelMuteRepository) FindMutedChannelIDs(ctx context.Context, userID 
 
 	client := transaction.ResolveClient(ctx, r.client)
 	mutedIDs, err := client.ChannelMute.Query().
-		Where(channelmute.HasUserWith(user.ID(uid)), channelmute.HasChannelWith(channel.IDIn(cids...))).
+		Where(channelmute.UserID(uid), channelmute.ChannelIDIn(cids...)).
 		QueryChannel().
 		IDs(ctx)
 	if err != nil {

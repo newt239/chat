@@ -15,6 +15,10 @@ const (
 	Label = "channel_member"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldChannelID holds the string denoting the channel_id field in the database.
+	FieldChannelID = "channel_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldJoinedAt holds the string denoting the joined_at field in the database.
@@ -24,46 +28,36 @@ const (
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the channelmember in the database.
-	Table = "channel_members"
+	Table = "channel_member"
 	// ChannelTable is the table that holds the channel relation/edge.
-	ChannelTable = "channel_members"
+	ChannelTable = "channel_member"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
-	ChannelColumn = "channel_member_channel"
+	ChannelColumn = "channel_id"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "channel_members"
+	UserTable = "channel_member"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "channel_member_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for channelmember fields.
 var Columns = []string{
 	FieldID,
+	FieldChannelID,
+	FieldUserID,
 	FieldRole,
 	FieldJoinedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "channel_members"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"channel_member_channel",
-	"channel_member_user",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -85,6 +79,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByChannelID orders the results by the channel_id field.
+func ByChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

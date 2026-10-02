@@ -7,9 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messageusermention"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -32,13 +30,7 @@ func (r *messageUserMentionRepository) FindByMessageID(ctx context.Context, mess
 
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageUserMention.Query().
-		Where(messageusermention.HasMessageWith(message.ID(mid))).
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUser().
+		Where(messageusermention.MessageID(mid)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -69,9 +61,7 @@ func (r *messageUserMentionRepository) FindByMessageIDs(ctx context.Context, mes
 
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageUserMention.Query().
-		Where(messageusermention.HasMessageWith(message.IDIn(parsedIDs...))).
-		WithMessage(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
-		WithUser(func(q *ent.UserQuery) { q.Select(user.FieldID) }).
+		Where(messageusermention.MessageIDIn(parsedIDs...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -93,7 +83,7 @@ func (r *messageUserMentionRepository) FindByUserID(ctx context.Context, userID 
 
 	client := transaction.ResolveClient(ctx, r.client)
 	query := client.MessageUserMention.Query().
-		Where(messageusermention.HasUserWith(user.ID(uid)))
+		Where(messageusermention.UserID(uid))
 
 	if since != nil {
 		query = query.Where(messageusermention.CreatedAtGT(*since))
@@ -104,12 +94,6 @@ func (r *messageUserMentionRepository) FindByUserID(ctx context.Context, userID 
 	}
 
 	mentions, err := query.
-		WithMessage(func(q *ent.MessageQuery) {
-			q.WithChannel(func(q2 *ent.ChannelQuery) {
-				q2.WithWorkspace().WithCreatedBy()
-			}).WithUser()
-		}).
-		WithUser().
 		Order(ent.Desc(messageusermention.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
@@ -154,7 +138,7 @@ func (r *messageUserMentionRepository) DeleteByMessageID(ctx context.Context, me
 
 	client := transaction.ResolveClient(ctx, r.client)
 	_, err = client.MessageUserMention.Delete().
-		Where(messageusermention.HasMessageWith(message.ID(mid))).
+		Where(messageusermention.MessageID(mid)).
 		Exec(ctx)
 
 	return err

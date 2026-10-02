@@ -15,6 +15,10 @@ const (
 	Label = "user_group"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
+	FieldWorkspaceID = "workspace_id"
+	// FieldCreatedByID holds the string denoting the created_by_id field in the database.
+	FieldCreatedByID = "created_by_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -32,62 +36,52 @@ const (
 	// EdgeGroupMentions holds the string denoting the group_mentions edge name in mutations.
 	EdgeGroupMentions = "group_mentions"
 	// Table holds the table name of the usergroup in the database.
-	Table = "user_groups"
+	Table = "user_group"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
-	WorkspaceTable = "user_groups"
+	WorkspaceTable = "user_group"
 	// WorkspaceInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
+	WorkspaceInverseTable = "workspace"
 	// WorkspaceColumn is the table column denoting the workspace relation/edge.
-	WorkspaceColumn = "user_group_workspace"
+	WorkspaceColumn = "workspace_id"
 	// CreatedByTable is the table that holds the created_by relation/edge.
-	CreatedByTable = "user_groups"
+	CreatedByTable = "user_group"
 	// CreatedByInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatedByInverseTable = "users"
+	CreatedByInverseTable = "user"
 	// CreatedByColumn is the table column denoting the created_by relation/edge.
-	CreatedByColumn = "user_group_created_by"
+	CreatedByColumn = "created_by_id"
 	// MembersTable is the table that holds the members relation/edge.
-	MembersTable = "user_group_members"
+	MembersTable = "user_group_member"
 	// MembersInverseTable is the table name for the UserGroupMember entity.
 	// It exists in this package in order to avoid circular dependency with the "usergroupmember" package.
-	MembersInverseTable = "user_group_members"
+	MembersInverseTable = "user_group_member"
 	// MembersColumn is the table column denoting the members relation/edge.
-	MembersColumn = "user_group_member_group"
+	MembersColumn = "group_id"
 	// GroupMentionsTable is the table that holds the group_mentions relation/edge.
-	GroupMentionsTable = "message_group_mentions"
+	GroupMentionsTable = "message_group_mention"
 	// GroupMentionsInverseTable is the table name for the MessageGroupMention entity.
 	// It exists in this package in order to avoid circular dependency with the "messagegroupmention" package.
-	GroupMentionsInverseTable = "message_group_mentions"
+	GroupMentionsInverseTable = "message_group_mention"
 	// GroupMentionsColumn is the table column denoting the group_mentions relation/edge.
-	GroupMentionsColumn = "message_group_mention_group"
+	GroupMentionsColumn = "group_id"
 )
 
 // Columns holds all SQL columns for usergroup fields.
 var Columns = []string{
 	FieldID,
+	FieldWorkspaceID,
+	FieldCreatedByID,
 	FieldName,
 	FieldDescription,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "user_groups"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_group_workspace",
-	"user_group_created_by",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -113,6 +107,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByWorkspaceID orders the results by the workspace_id field.
+func ByWorkspaceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkspaceID, opts...).ToFunc()
+}
+
+// ByCreatedByID orders the results by the created_by_id field.
+func ByCreatedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedByID, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

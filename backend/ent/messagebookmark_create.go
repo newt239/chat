@@ -26,6 +26,18 @@ type MessageBookmarkCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *MessageBookmarkCreate) SetUserID(v uuid.UUID) *MessageBookmarkCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetMessageID sets the "message_id" field.
+func (_c *MessageBookmarkCreate) SetMessageID(v uuid.UUID) *MessageBookmarkCreate {
+	_c.mutation.SetMessageID(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *MessageBookmarkCreate) SetCreatedAt(v time.Time) *MessageBookmarkCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -54,21 +66,9 @@ func (_c *MessageBookmarkCreate) SetNillableID(v *uuid.UUID) *MessageBookmarkCre
 	return _c
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *MessageBookmarkCreate) SetUserID(id uuid.UUID) *MessageBookmarkCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *MessageBookmarkCreate) SetUser(v *User) *MessageBookmarkCreate {
 	return _c.SetUserID(v.ID)
-}
-
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_c *MessageBookmarkCreate) SetMessageID(id uuid.UUID) *MessageBookmarkCreate {
-	_c.mutation.SetMessageID(id)
-	return _c
 }
 
 // SetMessage sets the "message" edge to the Message entity.
@@ -123,6 +123,12 @@ func (_c *MessageBookmarkCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *MessageBookmarkCreate) check() error {
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "MessageBookmark.user_id"`)}
+	}
+	if _, ok := _c.mutation.MessageID(); !ok {
+		return &ValidationError{Name: "message_id", err: errors.New(`ent: missing required field "MessageBookmark.message_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "MessageBookmark.created_at"`)}
 	}
@@ -186,7 +192,7 @@ func (_c *MessageBookmarkCreate) createSpec() (*MessageBookmark, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_bookmark_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MessageIDs(); len(nodes) > 0 {
@@ -203,7 +209,7 @@ func (_c *MessageBookmarkCreate) createSpec() (*MessageBookmark, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_bookmark_message = &nodes[0]
+		_node.MessageID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -213,7 +219,7 @@ func (_c *MessageBookmarkCreate) createSpec() (*MessageBookmark, *sqlgraph.Creat
 // of the `INSERT` statement. For example:
 //
 //	client.MessageBookmark.Create().
-//		SetCreatedAt(v).
+//		SetUserID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -222,7 +228,7 @@ func (_c *MessageBookmarkCreate) createSpec() (*MessageBookmark, *sqlgraph.Creat
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageBookmarkUpsert) {
-//			SetCreatedAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageBookmarkCreate) OnConflict(opts ...sql.ConflictOption) *MessageBookmarkUpsertOne {
@@ -257,6 +263,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUserID sets the "user_id" field.
+func (u *MessageBookmarkUpsert) SetUserID(v uuid.UUID) *MessageBookmarkUpsert {
+	u.Set(messagebookmark.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageBookmarkUpsert) UpdateUserID() *MessageBookmarkUpsert {
+	u.SetExcluded(messagebookmark.FieldUserID)
+	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageBookmarkUpsert) SetMessageID(v uuid.UUID) *MessageBookmarkUpsert {
+	u.Set(messagebookmark.FieldMessageID, v)
+	return u
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageBookmarkUpsert) UpdateMessageID() *MessageBookmarkUpsert {
+	u.SetExcluded(messagebookmark.FieldMessageID)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -307,6 +337,34 @@ func (u *MessageBookmarkUpsertOne) Update(set func(*MessageBookmarkUpsert)) *Mes
 		set(&MessageBookmarkUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageBookmarkUpsertOne) SetUserID(v uuid.UUID) *MessageBookmarkUpsertOne {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageBookmarkUpsertOne) UpdateUserID() *MessageBookmarkUpsertOne {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageBookmarkUpsertOne) SetMessageID(v uuid.UUID) *MessageBookmarkUpsertOne {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageBookmarkUpsertOne) UpdateMessageID() *MessageBookmarkUpsertOne {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.UpdateMessageID()
+	})
 }
 
 // Exec executes the query.
@@ -445,7 +503,7 @@ func (_c *MessageBookmarkCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageBookmarkUpsert) {
-//			SetCreatedAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageBookmarkCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageBookmarkUpsertBulk {
@@ -525,6 +583,34 @@ func (u *MessageBookmarkUpsertBulk) Update(set func(*MessageBookmarkUpsert)) *Me
 		set(&MessageBookmarkUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageBookmarkUpsertBulk) SetUserID(v uuid.UUID) *MessageBookmarkUpsertBulk {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageBookmarkUpsertBulk) UpdateUserID() *MessageBookmarkUpsertBulk {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageBookmarkUpsertBulk) SetMessageID(v uuid.UUID) *MessageBookmarkUpsertBulk {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageBookmarkUpsertBulk) UpdateMessageID() *MessageBookmarkUpsertBulk {
+	return u.Update(func(s *MessageBookmarkUpsert) {
+		s.UpdateMessageID()
+	})
 }
 
 // Exec executes the query.

@@ -30,21 +30,37 @@ func (_u *UserGroupMemberUpdate) Where(ps ...predicate.UserGroupMember) *UserGro
 	return _u
 }
 
-// SetGroupID sets the "group" edge to the UserGroup entity by ID.
-func (_u *UserGroupMemberUpdate) SetGroupID(id uuid.UUID) *UserGroupMemberUpdate {
-	_u.mutation.SetGroupID(id)
+// SetGroupID sets the "group_id" field.
+func (_u *UserGroupMemberUpdate) SetGroupID(v uuid.UUID) *UserGroupMemberUpdate {
+	_u.mutation.SetGroupID(v)
+	return _u
+}
+
+// SetNillableGroupID sets the "group_id" field if the given value is not nil.
+func (_u *UserGroupMemberUpdate) SetNillableGroupID(v *uuid.UUID) *UserGroupMemberUpdate {
+	if v != nil {
+		_u.SetGroupID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *UserGroupMemberUpdate) SetUserID(v uuid.UUID) *UserGroupMemberUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *UserGroupMemberUpdate) SetNillableUserID(v *uuid.UUID) *UserGroupMemberUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
 	return _u
 }
 
 // SetGroup sets the "group" edge to the UserGroup entity.
 func (_u *UserGroupMemberUpdate) SetGroup(v *UserGroup) *UserGroupMemberUpdate {
 	return _u.SetGroupID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *UserGroupMemberUpdate) SetUserID(id uuid.UUID) *UserGroupMemberUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -197,21 +213,37 @@ type UserGroupMemberUpdateOne struct {
 	mutation *UserGroupMemberMutation
 }
 
-// SetGroupID sets the "group" edge to the UserGroup entity by ID.
-func (_u *UserGroupMemberUpdateOne) SetGroupID(id uuid.UUID) *UserGroupMemberUpdateOne {
-	_u.mutation.SetGroupID(id)
+// SetGroupID sets the "group_id" field.
+func (_u *UserGroupMemberUpdateOne) SetGroupID(v uuid.UUID) *UserGroupMemberUpdateOne {
+	_u.mutation.SetGroupID(v)
+	return _u
+}
+
+// SetNillableGroupID sets the "group_id" field if the given value is not nil.
+func (_u *UserGroupMemberUpdateOne) SetNillableGroupID(v *uuid.UUID) *UserGroupMemberUpdateOne {
+	if v != nil {
+		_u.SetGroupID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *UserGroupMemberUpdateOne) SetUserID(v uuid.UUID) *UserGroupMemberUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *UserGroupMemberUpdateOne) SetNillableUserID(v *uuid.UUID) *UserGroupMemberUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
 	return _u
 }
 
 // SetGroup sets the "group" edge to the UserGroup entity.
 func (_u *UserGroupMemberUpdateOne) SetGroup(v *UserGroup) *UserGroupMemberUpdateOne {
 	return _u.SetGroupID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *UserGroupMemberUpdateOne) SetUserID(id uuid.UUID) *UserGroupMemberUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.

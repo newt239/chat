@@ -171,21 +171,15 @@ func TestBuildIncludesPreviewsOnlyForAccessibleMessages(t *testing.T) {
 	}
 }
 
-func TestBuildAppliesWebhookSenderOverride(t *testing.T) {
+func TestBuildIncludesAppUser(t *testing.T) {
 	builder := newTestBuilder()
-	builder.userRepo = &builderUserRepo{users: []*entity.User{{ID: "bot", DisplayName: "Deploy", IsBot: true}}}
-	outputs, err := builder.Build(context.Background(), viewerID, []*entity.Message{
-		{ID: "m1", ChannelID: "public", UserID: "bot"},
-		{ID: "m2", ChannelID: "public", UserID: "bot", SenderName: ptr("GitHub"), SenderAvatarURL: ptr("https://example.com/gh.png")},
-	})
+	builder.userRepo = &builderUserRepo{users: []*entity.User{{ID: "bot", DisplayName: "Deploy", IsApp: true}}}
+	outputs, err := builder.Build(context.Background(), viewerID, []*entity.Message{{ID: "m1", ChannelID: "public", UserID: "bot"}})
 	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
-	if user := outputs[0].User; user.DisplayName != "Deploy" || !user.IsBot {
-		t.Errorf("ボットユーザーの情報が含まれていません: %+v", user)
-	}
-	if user := outputs[1].User; user.DisplayName != "GitHub" || *user.AvatarURL != "https://example.com/gh.png" || !user.IsBot {
-		t.Errorf("投稿ごとの表示名とアイコンが反映されていません: %+v", user)
+	if user := outputs[0].User; user.DisplayName != "Deploy" || !user.IsApp {
+		t.Errorf("アプリのユーザーの情報が含まれていません: %+v", user)
 	}
 }
 

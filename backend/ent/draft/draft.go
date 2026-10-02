@@ -37,21 +37,21 @@ const (
 	UserTable = "draft"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
 	// ChannelTable is the table that holds the channel relation/edge.
 	ChannelTable = "draft"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
 	ChannelColumn = "channel_id"
 	// ParentTable is the table that holds the parent relation/edge.
 	ParentTable = "draft"
 	// ParentInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	ParentInverseTable = "messages"
+	ParentInverseTable = "message"
 	// ParentColumn is the table column denoting the parent relation/edge.
 	ParentColumn = "parent_id"
 )

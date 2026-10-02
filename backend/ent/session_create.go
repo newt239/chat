@@ -25,6 +25,12 @@ type SessionCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *SessionCreate) SetUserID(v uuid.UUID) *SessionCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetRefreshTokenHash sets the "refresh_token_hash" field.
 func (_c *SessionCreate) SetRefreshTokenHash(v string) *SessionCreate {
 	_c.mutation.SetRefreshTokenHash(v)
@@ -107,12 +113,6 @@ func (_c *SessionCreate) SetNillableID(v *uuid.UUID) *SessionCreate {
 	return _c
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *SessionCreate) SetUserID(id uuid.UUID) *SessionCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *SessionCreate) SetUser(v *User) *SessionCreate {
 	return _c.SetUserID(v.ID)
@@ -173,6 +173,9 @@ func (_c *SessionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *SessionCreate) check() error {
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Session.user_id"`)}
+	}
 	if _, ok := _c.mutation.RefreshTokenHash(); !ok {
 		return &ValidationError{Name: "refresh_token_hash", err: errors.New(`ent: missing required field "Session.refresh_token_hash"`)}
 	}
@@ -270,7 +273,7 @@ func (_c *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.session_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -280,7 +283,7 @@ func (_c *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Session.Create().
-//		SetRefreshTokenHash(v).
+//		SetUserID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -289,7 +292,7 @@ func (_c *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SessionUpsert) {
-//			SetRefreshTokenHash(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *SessionCreate) OnConflict(opts ...sql.ConflictOption) *SessionUpsertOne {
@@ -324,6 +327,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUserID sets the "user_id" field.
+func (u *SessionUpsert) SetUserID(v uuid.UUID) *SessionUpsert {
+	u.Set(session.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *SessionUpsert) UpdateUserID() *SessionUpsert {
+	u.SetExcluded(session.FieldUserID)
+	return u
+}
 
 // SetRefreshTokenHash sets the "refresh_token_hash" field.
 func (u *SessionUpsert) SetRefreshTokenHash(v string) *SessionUpsert {
@@ -440,6 +455,20 @@ func (u *SessionUpsertOne) Update(set func(*SessionUpsert)) *SessionUpsertOne {
 		set(&SessionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *SessionUpsertOne) SetUserID(v uuid.UUID) *SessionUpsertOne {
+	return u.Update(func(s *SessionUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *SessionUpsertOne) UpdateUserID() *SessionUpsertOne {
+	return u.Update(func(s *SessionUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetRefreshTokenHash sets the "refresh_token_hash" field.
@@ -655,7 +684,7 @@ func (_c *SessionCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SessionUpsert) {
-//			SetRefreshTokenHash(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *SessionCreateBulk) OnConflict(opts ...sql.ConflictOption) *SessionUpsertBulk {
@@ -735,6 +764,20 @@ func (u *SessionUpsertBulk) Update(set func(*SessionUpsert)) *SessionUpsertBulk 
 		set(&SessionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *SessionUpsertBulk) SetUserID(v uuid.UUID) *SessionUpsertBulk {
+	return u.Update(func(s *SessionUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *SessionUpsertBulk) UpdateUserID() *SessionUpsertBulk {
+	return u.Update(func(s *SessionUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetRefreshTokenHash sets the "refresh_token_hash" field.

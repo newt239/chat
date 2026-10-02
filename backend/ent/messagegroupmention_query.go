@@ -27,7 +27,6 @@ type MessageGroupMentionQuery struct {
 	predicates  []predicate.MessageGroupMention
 	withMessage *MessageQuery
 	withGroup   *UserGroupQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *MessageGroupMentionQuery) WithGroup(opts ...func(*UserGroupQuery)) *Me
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MessageGroupMention.Query().
-//		GroupBy(messagegroupmention.FieldCreatedAt).
+//		GroupBy(messagegroupmention.FieldMessageID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessageGroupMentionQuery) GroupBy(field string, fields ...string) *MessageGroupMentionGroupBy {
@@ -359,11 +358,11 @@ func (_q *MessageGroupMentionQuery) GroupBy(field string, fields ...string) *Mes
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //	}
 //
 //	client.MessageGroupMention.Query().
-//		Select(messagegroupmention.FieldCreatedAt).
+//		Select(messagegroupmention.FieldMessageID).
 //		Scan(ctx, &v)
 func (_q *MessageGroupMentionQuery) Select(fields ...string) *MessageGroupMentionSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *MessageGroupMentionQuery) prepareQuery(ctx context.Context) error {
 func (_q *MessageGroupMentionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*MessageGroupMention, error) {
 	var (
 		nodes       = []*MessageGroupMention{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withMessage != nil,
 			_q.withGroup != nil,
 		}
 	)
-	if _q.withMessage != nil || _q.withGroup != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, messagegroupmention.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*MessageGroupMention).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *MessageGroupMentionQuery) loadMessage(ctx context.Context, query *Mess
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageGroupMention)
 	for i := range nodes {
-		if nodes[i].message_group_mention_message == nil {
-			continue
-		}
-		fk := *nodes[i].message_group_mention_message
+		fk := nodes[i].MessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *MessageGroupMentionQuery) loadMessage(ctx context.Context, query *Mess
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_group_mention_message" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *MessageGroupMentionQuery) loadGroup(ctx context.Context, query *UserGr
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageGroupMention)
 	for i := range nodes {
-		if nodes[i].message_group_mention_group == nil {
-			continue
-		}
-		fk := *nodes[i].message_group_mention_group
+		fk := nodes[i].GroupID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *MessageGroupMentionQuery) loadGroup(ctx context.Context, query *UserGr
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_group_mention_group" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "group_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *MessageGroupMentionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != messagegroupmention.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withMessage != nil {
+			_spec.Node.AddColumnOnce(messagegroupmention.FieldMessageID)
+		}
+		if _q.withGroup != nil {
+			_spec.Node.AddColumnOnce(messagegroupmention.FieldGroupID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

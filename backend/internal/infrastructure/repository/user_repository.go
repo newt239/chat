@@ -8,6 +8,8 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
+	"github.com/newt239/chat/ent/userlink"
+	"github.com/newt239/chat/ent/userpreference"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -29,9 +31,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*entity.User,
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	u, err := client.User.Query().
-		Where(user.ID(userID)).
-		Only(ctx)
+	u, err := withProfile(client.User.Query().Where(user.ID(userID))).Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil
@@ -57,9 +57,7 @@ func (r *userRepository) FindByIDs(ctx context.Context, ids []string) ([]*entity
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	users, err := client.User.Query().
-		Where(user.IDIn(userIDs...)).
-		All(ctx)
+	users, err := withProfile(client.User.Query().Where(user.IDIn(userIDs...))).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +80,7 @@ func (r *userRepository) FindByGoogleSub(ctx context.Context, sub string) (*enti
 
 func (r *userRepository) findOne(ctx context.Context, where predicate.User) (*entity.User, error) {
 	client := transaction.ResolveClient(ctx, r.client)
-	u, err := client.User.Query().
-		Where(where).
-		Only(ctx)
+	u, err := withProfile(client.User.Query().Where(where)).Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, nil
@@ -95,6 +91,11 @@ func (r *userRepository) findOne(ctx context.Context, where predicate.User) (*en
 	return utils.UserToEntity(u), nil
 }
 
+// withProfile は設定とプロフィールのリンクを読み込みます
+func withProfile(q *ent.UserQuery) *ent.UserQuery {
+	return q.WithPreference().WithLinks(func(q *ent.UserLinkQuery) { q.Order(ent.Asc(userlink.FieldPosition)) })
+}
+
 func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 	client := transaction.ResolveClient(ctx, r.client)
 
@@ -103,7 +104,7 @@ func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 		SetPasswordHash(usr.PasswordHash).
 		SetNillableGoogleSub(usr.GoogleSub).
 		SetDisplayName(usr.DisplayName).
-		SetIsBot(usr.IsBot).
+		SetIsApp(usr.IsApp).
 		SetIsOfficial(usr.IsOfficial)
 
 	if usr.ID != "" {
@@ -127,45 +128,63 @@ func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 	return nil
 }
 
+// Update はユーザーと設定・リンクを 1 つのトランザクションで書き換えます。設定は初めて書くときに作ります
 func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 	userID, err := utils.ParseUUID(usr.ID, "user ID")
 	if err != nil {
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
+	return transaction.WithTx(ctx, r.client, func(client *ent.Client) error {
+		builder := client.User.UpdateOneID(userID).
+			SetEmail(usr.Email).
+			SetPasswordHash(usr.PasswordHash).
+			SetNillableGoogleSub(usr.GoogleSub).
+			SetDisplayName(usr.DisplayName).
+			SetNillableBio(usr.Bio)
+		if usr.AvatarURL != nil {
+			builder = builder.SetAvatarURL(*usr.AvatarURL)
+		} else {
+			builder = builder.ClearAvatarURL()
+		}
+		u, err := builder.Save(ctx)
+		if err != nil {
+			return err
+		}
 
-	builder := client.User.UpdateOneID(userID).
-		SetEmail(usr.Email).
-		SetPasswordHash(usr.PasswordHash).
-		SetNillableGoogleSub(usr.GoogleSub).
-		SetDisplayName(usr.DisplayName).
-		SetNillableBio(usr.Bio).
-		SetLinks(usr.Links).
-		SetThemeHue(usr.Preferences.ThemeHue).
-		SetThemeChroma(usr.Preferences.ThemeChroma).
-		SetThemeSidebar(user.ThemeSidebar(usr.Preferences.ThemeSidebar)).
-		SetColorMode(user.ColorMode(usr.Preferences.ColorMode)).
-		SetLocale(usr.Preferences.Locale).
-		SetNotificationLevel(user.NotificationLevel(usr.Preferences.NotificationLevel)).
-		SetTimezone(usr.Preferences.Timezone).
-		SetTimezoneAutoUpdate(usr.Preferences.TimezoneAutoUpdate).
-		SetChannelSortOrder(user.ChannelSortOrder(usr.Preferences.ChannelSortOrder)).
-		SetHideJoinMessages(usr.Preferences.HideJoinMessages)
+		p := usr.Preferences
+		if err := client.UserPreference.Create().
+			SetUserID(userID).
+			SetThemeHue(p.ThemeHue).
+			SetThemeChroma(p.ThemeChroma).
+			SetThemeSidebar(userpreference.ThemeSidebar(p.ThemeSidebar)).
+			SetColorMode(userpreference.ColorMode(p.ColorMode)).
+			SetLocale(p.Locale).
+			SetNotificationLevel(userpreference.NotificationLevel(p.NotificationLevel)).
+			SetTimezone(p.Timezone).
+			SetTimezoneAutoUpdate(p.TimezoneAutoUpdate).
+			SetChannelSortOrder(userpreference.ChannelSortOrder(p.ChannelSortOrder)).
+			SetHideJoinMessages(p.HideJoinMessages).
+			OnConflictColumns(userpreference.FieldUserID).
+			UpdateNewValues().
+			Exec(ctx); err != nil {
+			return err
+		}
 
-	if usr.AvatarURL != nil {
-		builder = builder.SetAvatarURL(*usr.AvatarURL)
-	} else {
-		builder = builder.ClearAvatarURL()
-	}
+		if _, err := client.UserLink.Delete().Where(userlink.UserID(userID)).Exec(ctx); err != nil {
+			return err
+		}
+		links := make([]*ent.UserLinkCreate, 0, len(usr.Links))
+		for i, url := range usr.Links {
+			links = append(links, client.UserLink.Create().SetUserID(userID).SetPosition(i).SetURL(url))
+		}
+		if err := client.UserLink.CreateBulk(links...).Exec(ctx); err != nil {
+			return err
+		}
 
-	u, err := builder.Save(ctx)
-	if err != nil {
-		return err
-	}
-
-	usr.UpdatedAt = u.UpdatedAt
-	return nil
+		usr.UpdatedAt = u.UpdatedAt
+		return nil
+	})
 }
 
 func (r *userRepository) Delete(ctx context.Context, id string) error {

@@ -26,6 +26,18 @@ type WorkspaceMemberCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_c *WorkspaceMemberCreate) SetWorkspaceID(v string) *WorkspaceMemberCreate {
+	_c.mutation.SetWorkspaceID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *WorkspaceMemberCreate) SetUserID(v uuid.UUID) *WorkspaceMemberCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetRole sets the "role" field.
 func (_c *WorkspaceMemberCreate) SetRole(v string) *WorkspaceMemberCreate {
 	_c.mutation.SetRole(v)
@@ -74,21 +86,9 @@ func (_c *WorkspaceMemberCreate) SetNillableID(v *uuid.UUID) *WorkspaceMemberCre
 	return _c
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_c *WorkspaceMemberCreate) SetWorkspaceID(id string) *WorkspaceMemberCreate {
-	_c.mutation.SetWorkspaceID(id)
-	return _c
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_c *WorkspaceMemberCreate) SetWorkspace(v *Workspace) *WorkspaceMemberCreate {
 	return _c.SetWorkspaceID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *WorkspaceMemberCreate) SetUserID(id uuid.UUID) *WorkspaceMemberCreate {
-	_c.mutation.SetUserID(id)
-	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -143,6 +143,12 @@ func (_c *WorkspaceMemberCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *WorkspaceMemberCreate) check() error {
+	if _, ok := _c.mutation.WorkspaceID(); !ok {
+		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "WorkspaceMember.workspace_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "WorkspaceMember.user_id"`)}
+	}
 	if _, ok := _c.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "WorkspaceMember.role"`)}
 	}
@@ -222,7 +228,7 @@ func (_c *WorkspaceMemberCreate) createSpec() (*WorkspaceMember, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.workspace_member_workspace = &nodes[0]
+		_node.WorkspaceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -239,7 +245,7 @@ func (_c *WorkspaceMemberCreate) createSpec() (*WorkspaceMember, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.workspace_member_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -249,7 +255,7 @@ func (_c *WorkspaceMemberCreate) createSpec() (*WorkspaceMember, *sqlgraph.Creat
 // of the `INSERT` statement. For example:
 //
 //	client.WorkspaceMember.Create().
-//		SetRole(v).
+//		SetWorkspaceID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -258,7 +264,7 @@ func (_c *WorkspaceMemberCreate) createSpec() (*WorkspaceMember, *sqlgraph.Creat
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.WorkspaceMemberUpsert) {
-//			SetRole(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *WorkspaceMemberCreate) OnConflict(opts ...sql.ConflictOption) *WorkspaceMemberUpsertOne {
@@ -293,6 +299,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *WorkspaceMemberUpsert) SetWorkspaceID(v string) *WorkspaceMemberUpsert {
+	u.Set(workspacemember.FieldWorkspaceID, v)
+	return u
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *WorkspaceMemberUpsert) UpdateWorkspaceID() *WorkspaceMemberUpsert {
+	u.SetExcluded(workspacemember.FieldWorkspaceID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *WorkspaceMemberUpsert) SetUserID(v uuid.UUID) *WorkspaceMemberUpsert {
+	u.Set(workspacemember.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *WorkspaceMemberUpsert) UpdateUserID() *WorkspaceMemberUpsert {
+	u.SetExcluded(workspacemember.FieldUserID)
+	return u
+}
 
 // SetRole sets the "role" field.
 func (u *WorkspaceMemberUpsert) SetRole(v string) *WorkspaceMemberUpsert {
@@ -373,6 +403,34 @@ func (u *WorkspaceMemberUpsertOne) Update(set func(*WorkspaceMemberUpsert)) *Wor
 		set(&WorkspaceMemberUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *WorkspaceMemberUpsertOne) SetWorkspaceID(v string) *WorkspaceMemberUpsertOne {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *WorkspaceMemberUpsertOne) UpdateWorkspaceID() *WorkspaceMemberUpsertOne {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *WorkspaceMemberUpsertOne) SetUserID(v uuid.UUID) *WorkspaceMemberUpsertOne {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *WorkspaceMemberUpsertOne) UpdateUserID() *WorkspaceMemberUpsertOne {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetRole sets the "role" field.
@@ -546,7 +604,7 @@ func (_c *WorkspaceMemberCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.WorkspaceMemberUpsert) {
-//			SetRole(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *WorkspaceMemberCreateBulk) OnConflict(opts ...sql.ConflictOption) *WorkspaceMemberUpsertBulk {
@@ -626,6 +684,34 @@ func (u *WorkspaceMemberUpsertBulk) Update(set func(*WorkspaceMemberUpsert)) *Wo
 		set(&WorkspaceMemberUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *WorkspaceMemberUpsertBulk) SetWorkspaceID(v string) *WorkspaceMemberUpsertBulk {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *WorkspaceMemberUpsertBulk) UpdateWorkspaceID() *WorkspaceMemberUpsertBulk {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *WorkspaceMemberUpsertBulk) SetUserID(v uuid.UUID) *WorkspaceMemberUpsertBulk {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *WorkspaceMemberUpsertBulk) UpdateUserID() *WorkspaceMemberUpsertBulk {
+	return u.Update(func(s *WorkspaceMemberUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetRole sets the "role" field.

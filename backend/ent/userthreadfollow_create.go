@@ -26,6 +26,18 @@ type UserThreadFollowCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *UserThreadFollowCreate) SetUserID(v uuid.UUID) *UserThreadFollowCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
+// SetThreadID sets the "thread_id" field.
+func (_c *UserThreadFollowCreate) SetThreadID(v uuid.UUID) *UserThreadFollowCreate {
+	_c.mutation.SetThreadID(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *UserThreadFollowCreate) SetCreatedAt(v time.Time) *UserThreadFollowCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -54,21 +66,9 @@ func (_c *UserThreadFollowCreate) SetNillableID(v *uuid.UUID) *UserThreadFollowC
 	return _c
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *UserThreadFollowCreate) SetUserID(id uuid.UUID) *UserThreadFollowCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *UserThreadFollowCreate) SetUser(v *User) *UserThreadFollowCreate {
 	return _c.SetUserID(v.ID)
-}
-
-// SetThreadID sets the "thread" edge to the Message entity by ID.
-func (_c *UserThreadFollowCreate) SetThreadID(id uuid.UUID) *UserThreadFollowCreate {
-	_c.mutation.SetThreadID(id)
-	return _c
 }
 
 // SetThread sets the "thread" edge to the Message entity.
@@ -123,6 +123,12 @@ func (_c *UserThreadFollowCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *UserThreadFollowCreate) check() error {
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "UserThreadFollow.user_id"`)}
+	}
+	if _, ok := _c.mutation.ThreadID(); !ok {
+		return &ValidationError{Name: "thread_id", err: errors.New(`ent: missing required field "UserThreadFollow.thread_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "UserThreadFollow.created_at"`)}
 	}
@@ -186,7 +192,7 @@ func (_c *UserThreadFollowCreate) createSpec() (*UserThreadFollow, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_thread_follow_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.ThreadIDs(); len(nodes) > 0 {
@@ -203,7 +209,7 @@ func (_c *UserThreadFollowCreate) createSpec() (*UserThreadFollow, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_thread_follow_thread = &nodes[0]
+		_node.ThreadID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -213,7 +219,7 @@ func (_c *UserThreadFollowCreate) createSpec() (*UserThreadFollow, *sqlgraph.Cre
 // of the `INSERT` statement. For example:
 //
 //	client.UserThreadFollow.Create().
-//		SetCreatedAt(v).
+//		SetUserID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -222,7 +228,7 @@ func (_c *UserThreadFollowCreate) createSpec() (*UserThreadFollow, *sqlgraph.Cre
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserThreadFollowUpsert) {
-//			SetCreatedAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserThreadFollowCreate) OnConflict(opts ...sql.ConflictOption) *UserThreadFollowUpsertOne {
@@ -257,6 +263,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUserID sets the "user_id" field.
+func (u *UserThreadFollowUpsert) SetUserID(v uuid.UUID) *UserThreadFollowUpsert {
+	u.Set(userthreadfollow.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserThreadFollowUpsert) UpdateUserID() *UserThreadFollowUpsert {
+	u.SetExcluded(userthreadfollow.FieldUserID)
+	return u
+}
+
+// SetThreadID sets the "thread_id" field.
+func (u *UserThreadFollowUpsert) SetThreadID(v uuid.UUID) *UserThreadFollowUpsert {
+	u.Set(userthreadfollow.FieldThreadID, v)
+	return u
+}
+
+// UpdateThreadID sets the "thread_id" field to the value that was provided on create.
+func (u *UserThreadFollowUpsert) UpdateThreadID() *UserThreadFollowUpsert {
+	u.SetExcluded(userthreadfollow.FieldThreadID)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -307,6 +337,34 @@ func (u *UserThreadFollowUpsertOne) Update(set func(*UserThreadFollowUpsert)) *U
 		set(&UserThreadFollowUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserThreadFollowUpsertOne) SetUserID(v uuid.UUID) *UserThreadFollowUpsertOne {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserThreadFollowUpsertOne) UpdateUserID() *UserThreadFollowUpsertOne {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetThreadID sets the "thread_id" field.
+func (u *UserThreadFollowUpsertOne) SetThreadID(v uuid.UUID) *UserThreadFollowUpsertOne {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.SetThreadID(v)
+	})
+}
+
+// UpdateThreadID sets the "thread_id" field to the value that was provided on create.
+func (u *UserThreadFollowUpsertOne) UpdateThreadID() *UserThreadFollowUpsertOne {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.UpdateThreadID()
+	})
 }
 
 // Exec executes the query.
@@ -445,7 +503,7 @@ func (_c *UserThreadFollowCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserThreadFollowUpsert) {
-//			SetCreatedAt(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserThreadFollowCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserThreadFollowUpsertBulk {
@@ -525,6 +583,34 @@ func (u *UserThreadFollowUpsertBulk) Update(set func(*UserThreadFollowUpsert)) *
 		set(&UserThreadFollowUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *UserThreadFollowUpsertBulk) SetUserID(v uuid.UUID) *UserThreadFollowUpsertBulk {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *UserThreadFollowUpsertBulk) UpdateUserID() *UserThreadFollowUpsertBulk {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetThreadID sets the "thread_id" field.
+func (u *UserThreadFollowUpsertBulk) SetThreadID(v uuid.UUID) *UserThreadFollowUpsertBulk {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.SetThreadID(v)
+	})
+}
+
+// UpdateThreadID sets the "thread_id" field to the value that was provided on create.
+func (u *UserThreadFollowUpsertBulk) UpdateThreadID() *UserThreadFollowUpsertBulk {
+	return u.Update(func(s *UserThreadFollowUpsert) {
+		s.UpdateThreadID()
+	})
 }
 
 // Exec executes the query.

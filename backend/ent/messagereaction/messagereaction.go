@@ -15,6 +15,10 @@ const (
 	Label = "message_reaction"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldMessageID holds the string denoting the message_id field in the database.
+	FieldMessageID = "message_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldEmoji holds the string denoting the emoji field in the database.
 	FieldEmoji = "emoji"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -24,46 +28,36 @@ const (
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the messagereaction in the database.
-	Table = "message_reactions"
+	Table = "message_reaction"
 	// MessageTable is the table that holds the message relation/edge.
-	MessageTable = "message_reactions"
+	MessageTable = "message_reaction"
 	// MessageInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessageInverseTable = "messages"
+	MessageInverseTable = "message"
 	// MessageColumn is the table column denoting the message relation/edge.
-	MessageColumn = "message_reaction_message"
+	MessageColumn = "message_id"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "message_reactions"
+	UserTable = "message_reaction"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "message_reaction_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for messagereaction fields.
 var Columns = []string{
 	FieldID,
+	FieldMessageID,
+	FieldUserID,
 	FieldEmoji,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "message_reactions"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"message_reaction_message",
-	"message_reaction_user",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -85,6 +79,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByMessageID orders the results by the message_id field.
+func ByMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessageID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByEmoji orders the results by the emoji field.

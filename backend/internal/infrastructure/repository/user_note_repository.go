@@ -7,7 +7,6 @@ import (
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/predicate"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -24,7 +23,7 @@ func NewUserNoteRepository(client *ent.Client) domainrepository.UserNoteReposito
 }
 
 func notePredicate(ownerID, targetID uuid.UUID) predicate.UserNote {
-	return usernote.And(usernote.HasOwnerWith(user.ID(ownerID)), usernote.HasTargetWith(user.ID(targetID)))
+	return usernote.And(usernote.OwnerID(ownerID), usernote.TargetID(targetID))
 }
 
 func parseNoteUsers(ownerID, targetID string) (uuid.UUID, uuid.UUID, error) {
@@ -70,8 +69,7 @@ func (r *userNoteRepository) FindNicknames(ctx context.Context, ownerID string) 
 
 	client := transaction.ResolveClient(ctx, r.client)
 	notes, err := client.UserNote.Query().
-		Where(usernote.HasOwnerWith(user.ID(oid)), usernote.NicknameNotNil()).
-		WithTarget().
+		Where(usernote.OwnerID(oid), usernote.NicknameNotNil()).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -79,9 +77,7 @@ func (r *userNoteRepository) FindNicknames(ctx context.Context, ownerID string) 
 
 	result := make(map[string]string, len(notes))
 	for _, note := range notes {
-		if note.Edges.Target != nil {
-			result[note.Edges.Target.ID.String()] = *note.Nickname
-		}
+		result[note.TargetID.String()] = *note.Nickname
 	}
 	return result, nil
 }

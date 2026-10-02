@@ -15,6 +15,10 @@ const (
 	Label = "thread_read_state"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// FieldThreadID holds the string denoting the thread_id field in the database.
+	FieldThreadID = "thread_id"
 	// FieldLastReadAt holds the string denoting the last_read_at field in the database.
 	FieldLastReadAt = "last_read_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -26,47 +30,37 @@ const (
 	// EdgeThread holds the string denoting the thread edge name in mutations.
 	EdgeThread = "thread"
 	// Table holds the table name of the threadreadstate in the database.
-	Table = "thread_read_states"
+	Table = "thread_read_state"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "thread_read_states"
+	UserTable = "thread_read_state"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "thread_read_state_user"
+	UserColumn = "user_id"
 	// ThreadTable is the table that holds the thread relation/edge.
-	ThreadTable = "thread_read_states"
+	ThreadTable = "thread_read_state"
 	// ThreadInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	ThreadInverseTable = "messages"
+	ThreadInverseTable = "message"
 	// ThreadColumn is the table column denoting the thread relation/edge.
-	ThreadColumn = "thread_read_state_thread"
+	ThreadColumn = "thread_id"
 )
 
 // Columns holds all SQL columns for threadreadstate fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
+	FieldThreadID,
 	FieldLastReadAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "thread_read_states"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"thread_read_state_user",
-	"thread_read_state_thread",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -92,6 +86,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByThreadID orders the results by the thread_id field.
+func ByThreadID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldThreadID, opts...).ToFunc()
 }
 
 // ByLastReadAt orders the results by the last_read_at field.

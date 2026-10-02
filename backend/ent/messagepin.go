@@ -21,15 +21,18 @@ type MessagePin struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ChannelID holds the value of the "channel_id" field.
+	ChannelID uuid.UUID `json:"channel_id,omitempty"`
+	// MessageID holds the value of the "message_id" field.
+	MessageID uuid.UUID `json:"message_id,omitempty"`
+	// PinnedByID holds the value of the "pinned_by_id" field.
+	PinnedByID uuid.UUID `json:"pinned_by_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessagePinQuery when eager-loading is set.
-	Edges                 MessagePinEdges `json:"edges"`
-	message_pin_channel   *uuid.UUID
-	message_pin_message   *uuid.UUID
-	message_pin_pinned_by *uuid.UUID
-	selectValues          sql.SelectValues
+	Edges        MessagePinEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MessagePinEdges holds the relations/edges for other nodes in the graph.
@@ -85,14 +88,8 @@ func (*MessagePin) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case messagepin.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case messagepin.FieldID:
+		case messagepin.FieldID, messagepin.FieldChannelID, messagepin.FieldMessageID, messagepin.FieldPinnedByID:
 			values[i] = new(uuid.UUID)
-		case messagepin.ForeignKeys[0]: // message_pin_channel
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messagepin.ForeignKeys[1]: // message_pin_message
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messagepin.ForeignKeys[2]: // message_pin_pinned_by
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -114,32 +111,29 @@ func (_m *MessagePin) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case messagepin.FieldChannelID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value != nil {
+				_m.ChannelID = *value
+			}
+		case messagepin.FieldMessageID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field message_id", values[i])
+			} else if value != nil {
+				_m.MessageID = *value
+			}
+		case messagepin.FieldPinnedByID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field pinned_by_id", values[i])
+			} else if value != nil {
+				_m.PinnedByID = *value
+			}
 		case messagepin.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case messagepin.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_pin_channel", values[i])
-			} else if value.Valid {
-				_m.message_pin_channel = new(uuid.UUID)
-				*_m.message_pin_channel = *value.S.(*uuid.UUID)
-			}
-		case messagepin.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_pin_message", values[i])
-			} else if value.Valid {
-				_m.message_pin_message = new(uuid.UUID)
-				*_m.message_pin_message = *value.S.(*uuid.UUID)
-			}
-		case messagepin.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_pin_pinned_by", values[i])
-			} else if value.Valid {
-				_m.message_pin_pinned_by = new(uuid.UUID)
-				*_m.message_pin_pinned_by = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -192,6 +186,15 @@ func (_m *MessagePin) String() string {
 	var builder strings.Builder
 	builder.WriteString("MessagePin(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("channel_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChannelID))
+	builder.WriteString(", ")
+	builder.WriteString("message_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MessageID))
+	builder.WriteString(", ")
+	builder.WriteString("pinned_by_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.PinnedByID))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

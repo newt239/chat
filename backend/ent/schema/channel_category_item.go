@@ -24,6 +24,9 @@ func (ChannelCategoryItem) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("category_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
+		field.UUID("channel_id", uuid.UUID{}),
 	}
 }
 
@@ -31,13 +34,16 @@ func (ChannelCategoryItem) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("category", ChannelCategory.Type).
 			Ref("items").
+			Field("category_id").
 			Unique().
 			Required(),
 		edge.To("user", User.Type).
+			Field("user_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("channel", Channel.Type).
+			Field("channel_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
@@ -46,7 +52,7 @@ func (ChannelCategoryItem) Edges() []ent.Edge {
 
 func (ChannelCategoryItem) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Edges("user", "channel").
+		index.Fields("user_id", "channel_id").
 			Unique(),
 	}
 }

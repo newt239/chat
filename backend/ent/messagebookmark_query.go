@@ -27,7 +27,6 @@ type MessageBookmarkQuery struct {
 	predicates  []predicate.MessageBookmark
 	withUser    *UserQuery
 	withMessage *MessageQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *MessageBookmarkQuery) WithMessage(opts ...func(*MessageQuery)) *Messag
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MessageBookmark.Query().
-//		GroupBy(messagebookmark.FieldCreatedAt).
+//		GroupBy(messagebookmark.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessageBookmarkQuery) GroupBy(field string, fields ...string) *MessageBookmarkGroupBy {
@@ -359,11 +358,11 @@ func (_q *MessageBookmarkQuery) GroupBy(field string, fields ...string) *Message
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.MessageBookmark.Query().
-//		Select(messagebookmark.FieldCreatedAt).
+//		Select(messagebookmark.FieldUserID).
 //		Scan(ctx, &v)
 func (_q *MessageBookmarkQuery) Select(fields ...string) *MessageBookmarkSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *MessageBookmarkQuery) prepareQuery(ctx context.Context) error {
 func (_q *MessageBookmarkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*MessageBookmark, error) {
 	var (
 		nodes       = []*MessageBookmark{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withUser != nil,
 			_q.withMessage != nil,
 		}
 	)
-	if _q.withUser != nil || _q.withMessage != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, messagebookmark.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*MessageBookmark).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *MessageBookmarkQuery) loadUser(ctx context.Context, query *UserQuery, 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageBookmark)
 	for i := range nodes {
-		if nodes[i].message_bookmark_user == nil {
-			continue
-		}
-		fk := *nodes[i].message_bookmark_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *MessageBookmarkQuery) loadUser(ctx context.Context, query *UserQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_bookmark_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *MessageBookmarkQuery) loadMessage(ctx context.Context, query *MessageQ
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageBookmark)
 	for i := range nodes {
-		if nodes[i].message_bookmark_message == nil {
-			continue
-		}
-		fk := *nodes[i].message_bookmark_message
+		fk := nodes[i].MessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *MessageBookmarkQuery) loadMessage(ctx context.Context, query *MessageQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_bookmark_message" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *MessageBookmarkQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != messagebookmark.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(messagebookmark.FieldUserID)
+		}
+		if _q.withMessage != nil {
+			_spec.Node.AddColumnOnce(messagebookmark.FieldMessageID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

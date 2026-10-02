@@ -25,6 +25,12 @@ type PushTokenCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetUserID sets the "user_id" field.
+func (_c *PushTokenCreate) SetUserID(v uuid.UUID) *PushTokenCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetToken sets the "token" field.
 func (_c *PushTokenCreate) SetToken(v string) *PushTokenCreate {
 	_c.mutation.SetToken(v)
@@ -93,12 +99,6 @@ func (_c *PushTokenCreate) SetNillableID(v *uuid.UUID) *PushTokenCreate {
 	return _c
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *PushTokenCreate) SetUserID(id uuid.UUID) *PushTokenCreate {
-	_c.mutation.SetUserID(id)
-	return _c
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_c *PushTokenCreate) SetUser(v *User) *PushTokenCreate {
 	return _c.SetUserID(v.ID)
@@ -159,6 +159,9 @@ func (_c *PushTokenCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *PushTokenCreate) check() error {
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "PushToken.user_id"`)}
+	}
 	if _, ok := _c.mutation.Token(); !ok {
 		return &ValidationError{Name: "token", err: errors.New(`ent: missing required field "PushToken.token"`)}
 	}
@@ -257,7 +260,7 @@ func (_c *PushTokenCreate) createSpec() (*PushToken, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.push_token_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -267,7 +270,7 @@ func (_c *PushTokenCreate) createSpec() (*PushToken, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.PushToken.Create().
-//		SetToken(v).
+//		SetUserID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -276,7 +279,7 @@ func (_c *PushTokenCreate) createSpec() (*PushToken, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.PushTokenUpsert) {
-//			SetToken(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *PushTokenCreate) OnConflict(opts ...sql.ConflictOption) *PushTokenUpsertOne {
@@ -311,6 +314,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetUserID sets the "user_id" field.
+func (u *PushTokenUpsert) SetUserID(v uuid.UUID) *PushTokenUpsert {
+	u.Set(pushtoken.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *PushTokenUpsert) UpdateUserID() *PushTokenUpsert {
+	u.SetExcluded(pushtoken.FieldUserID)
+	return u
+}
 
 // SetToken sets the "token" field.
 func (u *PushTokenUpsert) SetToken(v string) *PushTokenUpsert {
@@ -409,6 +424,20 @@ func (u *PushTokenUpsertOne) Update(set func(*PushTokenUpsert)) *PushTokenUpsert
 		set(&PushTokenUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *PushTokenUpsertOne) SetUserID(v uuid.UUID) *PushTokenUpsertOne {
+	return u.Update(func(s *PushTokenUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *PushTokenUpsertOne) UpdateUserID() *PushTokenUpsertOne {
+	return u.Update(func(s *PushTokenUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetToken sets the "token" field.
@@ -603,7 +632,7 @@ func (_c *PushTokenCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.PushTokenUpsert) {
-//			SetToken(v+v).
+//			SetUserID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *PushTokenCreateBulk) OnConflict(opts ...sql.ConflictOption) *PushTokenUpsertBulk {
@@ -683,6 +712,20 @@ func (u *PushTokenUpsertBulk) Update(set func(*PushTokenUpsert)) *PushTokenUpser
 		set(&PushTokenUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *PushTokenUpsertBulk) SetUserID(v uuid.UUID) *PushTokenUpsertBulk {
+	return u.Update(func(s *PushTokenUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *PushTokenUpsertBulk) UpdateUserID() *PushTokenUpsertBulk {
+	return u.Update(func(s *PushTokenUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetToken sets the "token" field.

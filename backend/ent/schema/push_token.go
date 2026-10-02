@@ -26,6 +26,7 @@ func (PushToken) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("user_id", uuid.UUID{}),
 		// 同じ端末で別のユーザーがログインしたら付け替える
 		field.Text("token").
 			Unique().
@@ -45,6 +46,7 @@ func (PushToken) Fields() []ent.Field {
 func (PushToken) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
+			Field("user_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
@@ -53,6 +55,6 @@ func (PushToken) Edges() []ent.Edge {
 
 func (PushToken) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Edges("user"),
+		index.Fields("user_id"),
 	}
 }

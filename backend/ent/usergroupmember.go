@@ -20,14 +20,16 @@ type UserGroupMember struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// GroupID holds the value of the "group_id" field.
+	GroupID uuid.UUID `json:"group_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// JoinedAt holds the value of the "joined_at" field.
 	JoinedAt time.Time `json:"joined_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserGroupMemberQuery when eager-loading is set.
-	Edges                   UserGroupMemberEdges `json:"edges"`
-	user_group_member_group *uuid.UUID
-	user_group_member_user  *uuid.UUID
-	selectValues            sql.SelectValues
+	Edges        UserGroupMemberEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // UserGroupMemberEdges holds the relations/edges for other nodes in the graph.
@@ -70,12 +72,8 @@ func (*UserGroupMember) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case usergroupmember.FieldJoinedAt:
 			values[i] = new(sql.NullTime)
-		case usergroupmember.FieldID:
+		case usergroupmember.FieldID, usergroupmember.FieldGroupID, usergroupmember.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case usergroupmember.ForeignKeys[0]: // user_group_member_group
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case usergroupmember.ForeignKeys[1]: // user_group_member_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -97,25 +95,23 @@ func (_m *UserGroupMember) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case usergroupmember.FieldGroupID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field group_id", values[i])
+			} else if value != nil {
+				_m.GroupID = *value
+			}
+		case usergroupmember.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
 		case usergroupmember.FieldJoinedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field joined_at", values[i])
 			} else if value.Valid {
 				_m.JoinedAt = value.Time
-			}
-		case usergroupmember.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_group_member_group", values[i])
-			} else if value.Valid {
-				_m.user_group_member_group = new(uuid.UUID)
-				*_m.user_group_member_group = *value.S.(*uuid.UUID)
-			}
-		case usergroupmember.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_group_member_user", values[i])
-			} else if value.Valid {
-				_m.user_group_member_user = new(uuid.UUID)
-				*_m.user_group_member_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -163,6 +159,12 @@ func (_m *UserGroupMember) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserGroupMember(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("group_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.GroupID))
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("joined_at=")
 	builder.WriteString(_m.JoinedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

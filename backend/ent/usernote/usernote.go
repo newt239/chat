@@ -15,6 +15,10 @@ const (
 	Label = "user_note"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldOwnerID holds the string denoting the owner_id field in the database.
+	FieldOwnerID = "owner_id"
+	// FieldTargetID holds the string denoting the target_id field in the database.
+	FieldTargetID = "target_id"
 	// FieldNickname holds the string denoting the nickname field in the database.
 	FieldNickname = "nickname"
 	// FieldMemo holds the string denoting the memo field in the database.
@@ -31,42 +35,32 @@ const (
 	OwnerTable = "user_note"
 	// OwnerInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	OwnerInverseTable = "users"
+	OwnerInverseTable = "user"
 	// OwnerColumn is the table column denoting the owner relation/edge.
-	OwnerColumn = "user_note_owner"
+	OwnerColumn = "owner_id"
 	// TargetTable is the table that holds the target relation/edge.
 	TargetTable = "user_note"
 	// TargetInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	TargetInverseTable = "users"
+	TargetInverseTable = "user"
 	// TargetColumn is the table column denoting the target relation/edge.
-	TargetColumn = "user_note_target"
+	TargetColumn = "target_id"
 )
 
 // Columns holds all SQL columns for usernote fields.
 var Columns = []string{
 	FieldID,
+	FieldOwnerID,
+	FieldTargetID,
 	FieldNickname,
 	FieldMemo,
 	FieldUpdatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "user_note"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_note_owner",
-	"user_note_target",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -88,6 +82,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByOwnerID orders the results by the owner_id field.
+func ByOwnerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerID, opts...).ToFunc()
+}
+
+// ByTargetID orders the results by the target_id field.
+func ByTargetID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTargetID, opts...).ToFunc()
 }
 
 // ByNickname orders the results by the nickname field.

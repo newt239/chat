@@ -26,7 +26,6 @@ type UserNoteQuery struct {
 	predicates []predicate.UserNote
 	withOwner  *UserQuery
 	withTarget *UserQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -335,12 +334,12 @@ func (_q *UserNoteQuery) WithTarget(opts ...func(*UserQuery)) *UserNoteQuery {
 // Example:
 //
 //	var v []struct {
-//		Nickname string `json:"nickname,omitempty"`
+//		OwnerID uuid.UUID `json:"owner_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UserNote.Query().
-//		GroupBy(usernote.FieldNickname).
+//		GroupBy(usernote.FieldOwnerID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *UserNoteQuery) GroupBy(field string, fields ...string) *UserNoteGroupBy {
@@ -358,11 +357,11 @@ func (_q *UserNoteQuery) GroupBy(field string, fields ...string) *UserNoteGroupB
 // Example:
 //
 //	var v []struct {
-//		Nickname string `json:"nickname,omitempty"`
+//		OwnerID uuid.UUID `json:"owner_id,omitempty"`
 //	}
 //
 //	client.UserNote.Query().
-//		Select(usernote.FieldNickname).
+//		Select(usernote.FieldOwnerID).
 //		Scan(ctx, &v)
 func (_q *UserNoteQuery) Select(fields ...string) *UserNoteSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -406,19 +405,12 @@ func (_q *UserNoteQuery) prepareQuery(ctx context.Context) error {
 func (_q *UserNoteQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*UserNote, error) {
 	var (
 		nodes       = []*UserNote{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withOwner != nil,
 			_q.withTarget != nil,
 		}
 	)
-	if _q.withOwner != nil || _q.withTarget != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, usernote.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*UserNote).scanValues(nil, columns)
 	}
@@ -456,10 +448,7 @@ func (_q *UserNoteQuery) loadOwner(ctx context.Context, query *UserQuery, nodes 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserNote)
 	for i := range nodes {
-		if nodes[i].user_note_owner == nil {
-			continue
-		}
-		fk := *nodes[i].user_note_owner
+		fk := nodes[i].OwnerID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -476,7 +465,7 @@ func (_q *UserNoteQuery) loadOwner(ctx context.Context, query *UserQuery, nodes 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_note_owner" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "owner_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -488,10 +477,7 @@ func (_q *UserNoteQuery) loadTarget(ctx context.Context, query *UserQuery, nodes
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UserNote)
 	for i := range nodes {
-		if nodes[i].user_note_target == nil {
-			continue
-		}
-		fk := *nodes[i].user_note_target
+		fk := nodes[i].TargetID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -508,7 +494,7 @@ func (_q *UserNoteQuery) loadTarget(ctx context.Context, query *UserQuery, nodes
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_note_target" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "target_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -541,6 +527,12 @@ func (_q *UserNoteQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != usernote.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withOwner != nil {
+			_spec.Node.AddColumnOnce(usernote.FieldOwnerID)
+		}
+		if _q.withTarget != nil {
+			_spec.Node.AddColumnOnce(usernote.FieldTargetID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

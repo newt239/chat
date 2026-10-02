@@ -25,13 +25,10 @@ type WebhookPoster interface {
 	Post(ctx context.Context, input appuc.PostInput) (*messageuc.MessageOutput, error)
 }
 
-// webhookPayload は Slack の Incoming Webhook と互換の最小限の形式です。avatar_url は Discord 互換の別名。
+// webhookPayload は Slack の Incoming Webhook と互換の最小限の形式です。
 // channel_id を省略したらアプリの既定のチャンネルに、thread_id を指定したらそのスレッドに投稿する
 type webhookPayload struct {
 	Text      string  `json:"text"`
-	Username  *string `json:"username"`
-	IconURL   *string `json:"icon_url"`
-	AvatarURL *string `json:"avatar_url"`
 	ChannelID *string `json:"channel_id"`
 	ThreadID  *string `json:"thread_id"`
 }
@@ -65,17 +62,10 @@ func webhookHandler(poster WebhookPoster, limiter RateLimiter) echo.HandlerFunc 
 		if err := json.Unmarshal(body, &payload); err != nil {
 			return c.String(http.StatusBadRequest, "invalid_payload")
 		}
-		avatarURL := payload.AvatarURL
-		if avatarURL == nil {
-			avatarURL = payload.IconURL
-		}
-
 		_, err = poster.Post(c.Request().Context(), appuc.PostInput{
 			AppID:     appID,
 			Token:     c.Param("token"),
 			Text:      payload.Text,
-			Username:  payload.Username,
-			AvatarURL: avatarURL,
 			ChannelID: payload.ChannelID,
 			ParentID:  payload.ThreadID,
 		})

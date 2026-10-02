@@ -24,9 +24,9 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "workspace_id", Type: field.TypeString, Size: 12},
-		{Name: "app_created_by", Type: field.TypeUUID},
-		{Name: "app_bot_user", Type: field.TypeUUID},
-		{Name: "app_default_channel", Type: field.TypeUUID, Nullable: true},
+		{Name: "created_by_id", Type: field.TypeUUID},
+		{Name: "bot_user_id", Type: field.TypeUUID},
+		{Name: "default_channel_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AppTable holds the schema information for the "app" table.
 	AppTable = &schema.Table{
@@ -35,27 +35,27 @@ var (
 		PrimaryKey: []*schema.Column{AppColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "app_workspaces_workspace",
+				Symbol:     "app_workspace_workspace",
 				Columns:    []*schema.Column{AppColumns[12]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "app_users_created_by",
+				Symbol:     "app_user_created_by",
 				Columns:    []*schema.Column{AppColumns[13]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "app_users_bot_user",
+				Symbol:     "app_user_bot_user",
 				Columns:    []*schema.Column{AppColumns[14]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "app_channels_default_channel",
+				Symbol:     "app_channel_default_channel",
 				Columns:    []*schema.Column{AppColumns[15]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -75,8 +75,8 @@ var (
 			},
 		},
 	}
-	// AttachmentsColumns holds the columns for the "attachments" table.
-	AttachmentsColumns = []*schema.Column{
+	// AttachmentColumns holds the columns for the "attachment" table.
+	AttachmentColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "file_name", Type: field.TypeString},
 		{Name: "mime_type", Type: field.TypeString},
@@ -92,32 +92,32 @@ var (
 		{Name: "uploaded_at", Type: field.TypeTime, Nullable: true},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "attachment_message", Type: field.TypeUUID, Nullable: true},
-		{Name: "attachment_uploader", Type: field.TypeUUID},
-		{Name: "attachment_channel", Type: field.TypeUUID},
+		{Name: "message_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "uploader_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
 	}
-	// AttachmentsTable holds the schema information for the "attachments" table.
-	AttachmentsTable = &schema.Table{
-		Name:       "attachments",
-		Columns:    AttachmentsColumns,
-		PrimaryKey: []*schema.Column{AttachmentsColumns[0]},
+	// AttachmentTable holds the schema information for the "attachment" table.
+	AttachmentTable = &schema.Table{
+		Name:       "attachment",
+		Columns:    AttachmentColumns,
+		PrimaryKey: []*schema.Column{AttachmentColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "attachments_messages_message",
-				Columns:    []*schema.Column{AttachmentsColumns[15]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "attachment_message_message",
+				Columns:    []*schema.Column{AttachmentColumns[15]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "attachments_users_uploader",
-				Columns:    []*schema.Column{AttachmentsColumns[16]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "attachment_user_uploader",
+				Columns:    []*schema.Column{AttachmentColumns[16]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "attachments_channels_channel",
-				Columns:    []*schema.Column{AttachmentsColumns[17]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				Symbol:     "attachment_channel_channel",
+				Columns:    []*schema.Column{AttachmentColumns[17]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -125,17 +125,17 @@ var (
 			{
 				Name:    "attachment_status",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[11]},
+				Columns: []*schema.Column{AttachmentColumns[11]},
 			},
 			{
-				Name:    "attachment_attachment_message",
+				Name:    "attachment_message_id",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[15]},
+				Columns: []*schema.Column{AttachmentColumns[15]},
 			},
 			{
-				Name:    "attachment_attachment_channel",
+				Name:    "attachment_channel_id",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentsColumns[17]},
+				Columns: []*schema.Column{AttachmentColumns[17]},
 			},
 		},
 	}
@@ -176,42 +176,43 @@ var (
 			},
 		},
 	}
-	// ChannelsColumns holds the columns for the "channels" table.
-	ChannelsColumns = []*schema.Column{
+	// ChannelColumns holds the columns for the "channel" table.
+	ChannelColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "is_private", Type: field.TypeBool, Default: false},
 		{Name: "channel_type", Type: field.TypeString, Nullable: true, Default: "public"},
 		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
+		{Name: "dm_key", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "channel_workspace", Type: field.TypeString, Size: 12},
-		{Name: "channel_created_by", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "created_by_id", Type: field.TypeUUID},
 		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// ChannelsTable holds the schema information for the "channels" table.
-	ChannelsTable = &schema.Table{
-		Name:       "channels",
-		Columns:    ChannelsColumns,
-		PrimaryKey: []*schema.Column{ChannelsColumns[0]},
+	// ChannelTable holds the schema information for the "channel" table.
+	ChannelTable = &schema.Table{
+		Name:       "channel",
+		Columns:    ChannelColumns,
+		PrimaryKey: []*schema.Column{ChannelColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "channels_workspaces_workspace",
-				Columns:    []*schema.Column{ChannelsColumns[8]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				Symbol:     "channel_workspace_workspace",
+				Columns:    []*schema.Column{ChannelColumns[9]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "channels_users_created_by",
-				Columns:    []*schema.Column{ChannelsColumns[9]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "channel_user_created_by",
+				Columns:    []*schema.Column{ChannelColumns[10]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "channels_channels_children",
-				Columns:    []*schema.Column{ChannelsColumns[10]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				Symbol:     "channel_channel_children",
+				Columns:    []*schema.Column{ChannelColumns[11]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -219,17 +220,25 @@ var (
 			{
 				Name:    "channel_is_private",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelsColumns[3]},
+				Columns: []*schema.Column{ChannelColumns[3]},
 			},
 			{
-				Name:    "channel_channel_workspace",
+				Name:    "channel_workspace_id",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelsColumns[8]},
+				Columns: []*schema.Column{ChannelColumns[9]},
 			},
 			{
-				Name:    "channel_name_channel_workspace",
+				Name:    "channel_workspace_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelsColumns[1], ChannelsColumns[8]},
+				Columns: []*schema.Column{ChannelColumns[9], ChannelColumns[1]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "dm_key IS NULL",
+				},
+			},
+			{
+				Name:    "channel_workspace_id_dm_key",
+				Unique:  true,
+				Columns: []*schema.Column{ChannelColumns[9], ChannelColumns[6]},
 			},
 		},
 	}
@@ -239,8 +248,8 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "position", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "channel_category_user", Type: field.TypeUUID},
-		{Name: "channel_category_workspace", Type: field.TypeString, Size: 12},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
 	}
 	// ChannelCategoryTable holds the schema information for the "channel_category" table.
 	ChannelCategoryTable = &schema.Table{
@@ -249,32 +258,32 @@ var (
 		PrimaryKey: []*schema.Column{ChannelCategoryColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "channel_category_users_user",
+				Symbol:     "channel_category_user_user",
 				Columns:    []*schema.Column{ChannelCategoryColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "channel_category_workspaces_workspace",
+				Symbol:     "channel_category_workspace_workspace",
 				Columns:    []*schema.Column{ChannelCategoryColumns[5]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "channelcategory_position_channel_category_user_channel_category_workspace",
+				Name:    "channelcategory_user_id_workspace_id_position",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelCategoryColumns[2], ChannelCategoryColumns[4], ChannelCategoryColumns[5]},
+				Columns: []*schema.Column{ChannelCategoryColumns[4], ChannelCategoryColumns[5], ChannelCategoryColumns[2]},
 			},
 		},
 	}
 	// ChannelCategoryItemColumns holds the columns for the "channel_category_item" table.
 	ChannelCategoryItemColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "channel_category_items", Type: field.TypeUUID},
-		{Name: "channel_category_item_user", Type: field.TypeUUID},
-		{Name: "channel_category_item_channel", Type: field.TypeUUID},
+		{Name: "category_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
 	}
 	// ChannelCategoryItemTable holds the schema information for the "channel_category_item" table.
 	ChannelCategoryItemTable = &schema.Table{
@@ -289,21 +298,21 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "channel_category_item_users_user",
+				Symbol:     "channel_category_item_user_user",
 				Columns:    []*schema.Column{ChannelCategoryItemColumns[2]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "channel_category_item_channels_channel",
+				Symbol:     "channel_category_item_channel_channel",
 				Columns:    []*schema.Column{ChannelCategoryItemColumns[3]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "channelcategoryitem_channel_category_item_user_channel_category_item_channel",
+				Name:    "channelcategoryitem_user_id_channel_id",
 				Unique:  true,
 				Columns: []*schema.Column{ChannelCategoryItemColumns[2], ChannelCategoryItemColumns[3]},
 			},
@@ -317,8 +326,8 @@ var (
 		{Name: "position", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "channel_link_channel", Type: field.TypeUUID},
-		{Name: "channel_link_created_by", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "created_by_id", Type: field.TypeUUID},
 	}
 	// ChannelLinkTable holds the schema information for the "channel_link" table.
 	ChannelLinkTable = &schema.Table{
@@ -327,50 +336,50 @@ var (
 		PrimaryKey: []*schema.Column{ChannelLinkColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "channel_link_channels_channel",
+				Symbol:     "channel_link_channel_channel",
 				Columns:    []*schema.Column{ChannelLinkColumns[6]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "channel_link_users_created_by",
+				Symbol:     "channel_link_user_created_by",
 				Columns:    []*schema.Column{ChannelLinkColumns[7]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "channellink_position_channel_link_channel",
+				Name:    "channellink_channel_id_position",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelLinkColumns[3], ChannelLinkColumns[6]},
+				Columns: []*schema.Column{ChannelLinkColumns[6], ChannelLinkColumns[3]},
 			},
 		},
 	}
-	// ChannelMembersColumns holds the columns for the "channel_members" table.
-	ChannelMembersColumns = []*schema.Column{
+	// ChannelMemberColumns holds the columns for the "channel_member" table.
+	ChannelMemberColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeString, Default: "member"},
 		{Name: "joined_at", Type: field.TypeTime},
-		{Name: "channel_member_channel", Type: field.TypeUUID},
-		{Name: "channel_member_user", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// ChannelMembersTable holds the schema information for the "channel_members" table.
-	ChannelMembersTable = &schema.Table{
-		Name:       "channel_members",
-		Columns:    ChannelMembersColumns,
-		PrimaryKey: []*schema.Column{ChannelMembersColumns[0]},
+	// ChannelMemberTable holds the schema information for the "channel_member" table.
+	ChannelMemberTable = &schema.Table{
+		Name:       "channel_member",
+		Columns:    ChannelMemberColumns,
+		PrimaryKey: []*schema.Column{ChannelMemberColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "channel_members_channels_channel",
-				Columns:    []*schema.Column{ChannelMembersColumns[3]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				Symbol:     "channel_member_channel_channel",
+				Columns:    []*schema.Column{ChannelMemberColumns[3]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "channel_members_users_user",
-				Columns:    []*schema.Column{ChannelMembersColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "channel_member_user_user",
+				Columns:    []*schema.Column{ChannelMemberColumns[4]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -378,17 +387,17 @@ var (
 			{
 				Name:    "channelmember_role",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelMembersColumns[1]},
+				Columns: []*schema.Column{ChannelMemberColumns[1]},
 			},
 			{
-				Name:    "channelmember_channel_member_channel_channel_member_user",
-				Unique:  false,
-				Columns: []*schema.Column{ChannelMembersColumns[3], ChannelMembersColumns[4]},
+				Name:    "channelmember_channel_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{ChannelMemberColumns[3], ChannelMemberColumns[4]},
 			},
 			{
-				Name:    "channelmember_channel_member_user",
+				Name:    "channelmember_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelMembersColumns[4]},
+				Columns: []*schema.Column{ChannelMemberColumns[4]},
 			},
 		},
 	}
@@ -396,8 +405,8 @@ var (
 	ChannelMuteColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "channel_mute_user", Type: field.TypeUUID},
-		{Name: "channel_mute_channel", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
 	}
 	// ChannelMuteTable holds the schema information for the "channel_mute" table.
 	ChannelMuteTable = &schema.Table{
@@ -406,49 +415,49 @@ var (
 		PrimaryKey: []*schema.Column{ChannelMuteColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "channel_mute_users_user",
+				Symbol:     "channel_mute_user_user",
 				Columns:    []*schema.Column{ChannelMuteColumns[2]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "channel_mute_channels_channel",
+				Symbol:     "channel_mute_channel_channel",
 				Columns:    []*schema.Column{ChannelMuteColumns[3]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "channelmute_channel_mute_user_channel_mute_channel",
+				Name:    "channelmute_user_id_channel_id",
 				Unique:  true,
 				Columns: []*schema.Column{ChannelMuteColumns[2], ChannelMuteColumns[3]},
 			},
 		},
 	}
-	// ChannelReadStatesColumns holds the columns for the "channel_read_states" table.
-	ChannelReadStatesColumns = []*schema.Column{
+	// ChannelReadStateColumns holds the columns for the "channel_read_state" table.
+	ChannelReadStateColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "last_read_at", Type: field.TypeTime},
-		{Name: "channel_read_state_channel", Type: field.TypeUUID},
-		{Name: "channel_read_state_user", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// ChannelReadStatesTable holds the schema information for the "channel_read_states" table.
-	ChannelReadStatesTable = &schema.Table{
-		Name:       "channel_read_states",
-		Columns:    ChannelReadStatesColumns,
-		PrimaryKey: []*schema.Column{ChannelReadStatesColumns[0]},
+	// ChannelReadStateTable holds the schema information for the "channel_read_state" table.
+	ChannelReadStateTable = &schema.Table{
+		Name:       "channel_read_state",
+		Columns:    ChannelReadStateColumns,
+		PrimaryKey: []*schema.Column{ChannelReadStateColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "channel_read_states_channels_channel",
-				Columns:    []*schema.Column{ChannelReadStatesColumns[2]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				Symbol:     "channel_read_state_channel_channel",
+				Columns:    []*schema.Column{ChannelReadStateColumns[2]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "channel_read_states_users_user",
-				Columns:    []*schema.Column{ChannelReadStatesColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "channel_read_state_user_user",
+				Columns:    []*schema.Column{ChannelReadStateColumns[3]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -456,12 +465,12 @@ var (
 			{
 				Name:    "channelreadstate_last_read_at",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelReadStatesColumns[1]},
+				Columns: []*schema.Column{ChannelReadStateColumns[1]},
 			},
 			{
-				Name:    "channelreadstate_channel_read_state_channel_channel_read_state_user",
+				Name:    "channelreadstate_channel_id_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelReadStatesColumns[2], ChannelReadStatesColumns[3]},
+				Columns: []*schema.Column{ChannelReadStateColumns[2], ChannelReadStateColumns[3]},
 			},
 		},
 	}
@@ -469,8 +478,8 @@ var (
 	ChannelStarColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "channel_star_user", Type: field.TypeUUID},
-		{Name: "channel_star_channel", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "channel_id", Type: field.TypeUUID},
 	}
 	// ChannelStarTable holds the schema information for the "channel_star" table.
 	ChannelStarTable = &schema.Table{
@@ -479,21 +488,21 @@ var (
 		PrimaryKey: []*schema.Column{ChannelStarColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "channel_star_users_user",
+				Symbol:     "channel_star_user_user",
 				Columns:    []*schema.Column{ChannelStarColumns[2]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "channel_star_channels_channel",
+				Symbol:     "channel_star_channel_channel",
 				Columns:    []*schema.Column{ChannelStarColumns[3]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "channelstar_channel_star_user_channel_star_channel",
+				Name:    "channelstar_user_id_channel_id",
 				Unique:  true,
 				Columns: []*schema.Column{ChannelStarColumns[2], ChannelStarColumns[3]},
 			},
@@ -515,9 +524,9 @@ var (
 		PrimaryKey: []*schema.Column{CustomEmojiColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "custom_emoji_workspaces_workspace",
+				Symbol:     "custom_emoji_workspace_workspace",
 				Columns:    []*schema.Column{CustomEmojiColumns[5]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -545,21 +554,21 @@ var (
 		PrimaryKey: []*schema.Column{DraftColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "draft_users_user",
+				Symbol:     "draft_user_user",
 				Columns:    []*schema.Column{DraftColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "draft_channels_channel",
+				Symbol:     "draft_channel_channel",
 				Columns:    []*schema.Column{DraftColumns[4]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "draft_messages_parent",
+				Symbol:     "draft_message_parent",
 				Columns:    []*schema.Column{DraftColumns[5]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -591,8 +600,8 @@ var (
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "invitation_workspace", Type: field.TypeString, Size: 12},
-		{Name: "invitation_invited_by", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "invited_by_id", Type: field.TypeUUID},
 	}
 	// InvitationTable holds the schema information for the "invitation" table.
 	InvitationTable = &schema.Table{
@@ -601,15 +610,15 @@ var (
 		PrimaryKey: []*schema.Column{InvitationColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "invitation_workspaces_workspace",
+				Symbol:     "invitation_workspace_workspace",
 				Columns:    []*schema.Column{InvitationColumns[7]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "invitation_users_invited_by",
+				Symbol:     "invitation_user_invited_by",
 				Columns:    []*schema.Column{InvitationColumns[8]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -621,159 +630,10 @@ var (
 			},
 		},
 	}
-	// MessagesColumns holds the columns for the "messages" table.
-	MessagesColumns = []*schema.Column{
+	// LinkPreviewColumns holds the columns for the "link_preview" table.
+	LinkPreviewColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "body", Type: field.TypeString, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "edited_at", Type: field.TypeTime, Nullable: true},
-		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
-		{Name: "deleted_by", Type: field.TypeUUID, Nullable: true},
-		{Name: "sender_name", Type: field.TypeString, Nullable: true},
-		{Name: "sender_avatar_url", Type: field.TypeString, Nullable: true},
-		{Name: "location_latitude", Type: field.TypeFloat64, Nullable: true},
-		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
-		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
-		{Name: "location_label", Type: field.TypeString, Nullable: true},
-		{Name: "mentions_channel", Type: field.TypeBool, Default: false},
-		{Name: "mentions_here", Type: field.TypeBool, Default: false},
-		{Name: "message_channel", Type: field.TypeUUID},
-		{Name: "message_user", Type: field.TypeUUID},
-		{Name: "message_parent", Type: field.TypeUUID, Nullable: true},
-	}
-	// MessagesTable holds the schema information for the "messages" table.
-	MessagesTable = &schema.Table{
-		Name:       "messages",
-		Columns:    MessagesColumns,
-		PrimaryKey: []*schema.Column{MessagesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "messages_channels_channel",
-				Columns:    []*schema.Column{MessagesColumns[14]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "messages_users_user",
-				Columns:    []*schema.Column{MessagesColumns[15]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "messages_messages_parent",
-				Columns:    []*schema.Column{MessagesColumns[16]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "message_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[2]},
-			},
-			{
-				Name:    "message_message_channel_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[14], MessagesColumns[2]},
-				Annotation: &entsql.IndexAnnotation{
-					Where: "deleted_at IS NULL",
-				},
-			},
-			{
-				Name:    "message_message_parent_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[16], MessagesColumns[2]},
-			},
-			{
-				Name:    "message_message_user",
-				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[15]},
-			},
-		},
-	}
-	// MessageBookmarksColumns holds the columns for the "message_bookmarks" table.
-	MessageBookmarksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "message_bookmark_user", Type: field.TypeUUID},
-		{Name: "message_bookmark_message", Type: field.TypeUUID},
-	}
-	// MessageBookmarksTable holds the schema information for the "message_bookmarks" table.
-	MessageBookmarksTable = &schema.Table{
-		Name:       "message_bookmarks",
-		Columns:    MessageBookmarksColumns,
-		PrimaryKey: []*schema.Column{MessageBookmarksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "message_bookmarks_users_user",
-				Columns:    []*schema.Column{MessageBookmarksColumns[2]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "message_bookmarks_messages_message",
-				Columns:    []*schema.Column{MessageBookmarksColumns[3]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "messagebookmark_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MessageBookmarksColumns[1]},
-			},
-			{
-				Name:    "messagebookmark_message_bookmark_user_message_bookmark_message",
-				Unique:  true,
-				Columns: []*schema.Column{MessageBookmarksColumns[2], MessageBookmarksColumns[3]},
-			},
-		},
-	}
-	// MessageGroupMentionsColumns holds the columns for the "message_group_mentions" table.
-	MessageGroupMentionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "message_group_mention_message", Type: field.TypeUUID},
-		{Name: "message_group_mention_group", Type: field.TypeUUID},
-	}
-	// MessageGroupMentionsTable holds the schema information for the "message_group_mentions" table.
-	MessageGroupMentionsTable = &schema.Table{
-		Name:       "message_group_mentions",
-		Columns:    MessageGroupMentionsColumns,
-		PrimaryKey: []*schema.Column{MessageGroupMentionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "message_group_mentions_messages_message",
-				Columns:    []*schema.Column{MessageGroupMentionsColumns[2]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "message_group_mentions_user_groups_group",
-				Columns:    []*schema.Column{MessageGroupMentionsColumns[3]},
-				RefColumns: []*schema.Column{UserGroupsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "messagegroupmention_message_group_mention_message",
-				Unique:  false,
-				Columns: []*schema.Column{MessageGroupMentionsColumns[2]},
-			},
-			{
-				Name:    "messagegroupmention_message_group_mention_group",
-				Unique:  false,
-				Columns: []*schema.Column{MessageGroupMentionsColumns[3]},
-			},
-		},
-	}
-	// MessageLinksColumns holds the columns for the "message_links" table.
-	MessageLinksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "url", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString, Unique: true},
 		{Name: "title", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "image_url", Type: field.TypeString, Nullable: true},
@@ -781,71 +641,270 @@ var (
 		{Name: "card_type", Type: field.TypeString, Nullable: true},
 		{Name: "image_width", Type: field.TypeInt32, Nullable: true},
 		{Name: "image_height", Type: field.TypeInt32, Nullable: true},
-		{Name: "youtube_video_id", Type: field.TypeString, Nullable: true},
-		{Name: "youtube_channel_name", Type: field.TypeString, Nullable: true},
-		{Name: "youtube_duration_seconds", Type: field.TypeInt32, Nullable: true},
-		{Name: "x_author_name", Type: field.TypeString, Nullable: true},
-		{Name: "x_author_handle", Type: field.TypeString, Nullable: true},
-		{Name: "linked_message_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "message_link_message", Type: field.TypeUUID},
+		{Name: "fetched_at", Type: field.TypeTime},
 	}
-	// MessageLinksTable holds the schema information for the "message_links" table.
-	MessageLinksTable = &schema.Table{
-		Name:       "message_links",
-		Columns:    MessageLinksColumns,
-		PrimaryKey: []*schema.Column{MessageLinksColumns[0]},
+	// LinkPreviewTable holds the schema information for the "link_preview" table.
+	LinkPreviewTable = &schema.Table{
+		Name:       "link_preview",
+		Columns:    LinkPreviewColumns,
+		PrimaryKey: []*schema.Column{LinkPreviewColumns[0]},
+	}
+	// LinkPreviewXPostColumns holds the columns for the "link_preview_x_post" table.
+	LinkPreviewXPostColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "author_name", Type: field.TypeString},
+		{Name: "author_handle", Type: field.TypeString},
+		{Name: "link_preview_id", Type: field.TypeUUID, Unique: true},
+	}
+	// LinkPreviewXPostTable holds the schema information for the "link_preview_x_post" table.
+	LinkPreviewXPostTable = &schema.Table{
+		Name:       "link_preview_x_post",
+		Columns:    LinkPreviewXPostColumns,
+		PrimaryKey: []*schema.Column{LinkPreviewXPostColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "message_links_messages_message",
-				Columns:    []*schema.Column{MessageLinksColumns[16]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "link_preview_x_post_link_preview_x_post",
+				Columns:    []*schema.Column{LinkPreviewXPostColumns[3]},
+				RefColumns: []*schema.Column{LinkPreviewColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// LinkPreviewYoutubeColumns holds the columns for the "link_preview_youtube" table.
+	LinkPreviewYoutubeColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "video_id", Type: field.TypeString},
+		{Name: "channel_name", Type: field.TypeString, Nullable: true},
+		{Name: "duration_seconds", Type: field.TypeInt32, Nullable: true},
+		{Name: "link_preview_id", Type: field.TypeUUID, Unique: true},
+	}
+	// LinkPreviewYoutubeTable holds the schema information for the "link_preview_youtube" table.
+	LinkPreviewYoutubeTable = &schema.Table{
+		Name:       "link_preview_youtube",
+		Columns:    LinkPreviewYoutubeColumns,
+		PrimaryKey: []*schema.Column{LinkPreviewYoutubeColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "link_preview_youtube_link_preview_youtube",
+				Columns:    []*schema.Column{LinkPreviewYoutubeColumns[4]},
+				RefColumns: []*schema.Column{LinkPreviewColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// MessageColumns holds the columns for the "message" table.
+	MessageColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "body", Type: field.TypeString, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "edited_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_by", Type: field.TypeUUID, Nullable: true},
+		{Name: "location_latitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
+		{Name: "location_label", Type: field.TypeString, Nullable: true},
+		{Name: "mentions_channel", Type: field.TypeBool, Default: false},
+		{Name: "mentions_here", Type: field.TypeBool, Default: false},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// MessageTable holds the schema information for the "message" table.
+	MessageTable = &schema.Table{
+		Name:       "message",
+		Columns:    MessageColumns,
+		PrimaryKey: []*schema.Column{MessageColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "message_channel_channel",
+				Columns:    []*schema.Column{MessageColumns[12]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "message_user_user",
+				Columns:    []*schema.Column{MessageColumns[13]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "message_message_parent",
+				Columns:    []*schema.Column{MessageColumns[14]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "message_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessageColumns[2]},
+			},
+			{
+				Name:    "message_channel_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessageColumns[12], MessageColumns[2]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "deleted_at IS NULL",
+				},
+			},
+			{
+				Name:    "message_parent_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessageColumns[14], MessageColumns[2]},
+			},
+			{
+				Name:    "message_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{MessageColumns[13]},
+			},
+		},
+	}
+	// MessageBookmarkColumns holds the columns for the "message_bookmark" table.
+	MessageBookmarkColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "message_id", Type: field.TypeUUID},
+	}
+	// MessageBookmarkTable holds the schema information for the "message_bookmark" table.
+	MessageBookmarkTable = &schema.Table{
+		Name:       "message_bookmark",
+		Columns:    MessageBookmarkColumns,
+		PrimaryKey: []*schema.Column{MessageBookmarkColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "message_bookmark_user_user",
+				Columns:    []*schema.Column{MessageBookmarkColumns[2]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "message_bookmark_message_message",
+				Columns:    []*schema.Column{MessageBookmarkColumns[3]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "messagelink_url_message_link_message",
-				Unique:  true,
-				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[16]},
+				Name:    "messagebookmark_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MessageBookmarkColumns[1]},
 			},
 			{
-				Name:    "messagelink_message_link_message",
-				Unique:  false,
-				Columns: []*schema.Column{MessageLinksColumns[16]},
+				Name:    "messagebookmark_user_id_message_id",
+				Unique:  true,
+				Columns: []*schema.Column{MessageBookmarkColumns[2], MessageBookmarkColumns[3]},
 			},
 		},
 	}
-	// MessagePinsColumns holds the columns for the "message_pins" table.
-	MessagePinsColumns = []*schema.Column{
+	// MessageGroupMentionColumns holds the columns for the "message_group_mention" table.
+	MessageGroupMentionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "message_pin_channel", Type: field.TypeUUID},
-		{Name: "message_pin_message", Type: field.TypeUUID},
-		{Name: "message_pin_pinned_by", Type: field.TypeUUID},
+		{Name: "message_id", Type: field.TypeUUID},
+		{Name: "group_id", Type: field.TypeUUID},
 	}
-	// MessagePinsTable holds the schema information for the "message_pins" table.
-	MessagePinsTable = &schema.Table{
-		Name:       "message_pins",
-		Columns:    MessagePinsColumns,
-		PrimaryKey: []*schema.Column{MessagePinsColumns[0]},
+	// MessageGroupMentionTable holds the schema information for the "message_group_mention" table.
+	MessageGroupMentionTable = &schema.Table{
+		Name:       "message_group_mention",
+		Columns:    MessageGroupMentionColumns,
+		PrimaryKey: []*schema.Column{MessageGroupMentionColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "message_pins_channels_channel",
-				Columns:    []*schema.Column{MessagePinsColumns[2]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				Symbol:     "message_group_mention_message_message",
+				Columns:    []*schema.Column{MessageGroupMentionColumns[2]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "message_pins_messages_message",
-				Columns:    []*schema.Column{MessagePinsColumns[3]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "message_group_mention_user_group_group",
+				Columns:    []*schema.Column{MessageGroupMentionColumns[3]},
+				RefColumns: []*schema.Column{UserGroupColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "messagegroupmention_message_id",
+				Unique:  false,
+				Columns: []*schema.Column{MessageGroupMentionColumns[2]},
+			},
+			{
+				Name:    "messagegroupmention_group_id",
+				Unique:  false,
+				Columns: []*schema.Column{MessageGroupMentionColumns[3]},
+			},
+		},
+	}
+	// MessageLinkColumns holds the columns for the "message_link" table.
+	MessageLinkColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "url", Type: field.TypeString},
+		{Name: "linked_message_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "message_id", Type: field.TypeUUID},
+		{Name: "link_preview_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// MessageLinkTable holds the schema information for the "message_link" table.
+	MessageLinkTable = &schema.Table{
+		Name:       "message_link",
+		Columns:    MessageLinkColumns,
+		PrimaryKey: []*schema.Column{MessageLinkColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "message_link_message_message",
+				Columns:    []*schema.Column{MessageLinkColumns[4]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "message_link_link_preview_link_preview",
+				Columns:    []*schema.Column{MessageLinkColumns[5]},
+				RefColumns: []*schema.Column{LinkPreviewColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "messagelink_message_id_url",
+				Unique:  true,
+				Columns: []*schema.Column{MessageLinkColumns[4], MessageLinkColumns[1]},
+			},
+		},
+	}
+	// MessagePinColumns holds the columns for the "message_pin" table.
+	MessagePinColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "message_id", Type: field.TypeUUID},
+		{Name: "pinned_by_id", Type: field.TypeUUID},
+	}
+	// MessagePinTable holds the schema information for the "message_pin" table.
+	MessagePinTable = &schema.Table{
+		Name:       "message_pin",
+		Columns:    MessagePinColumns,
+		PrimaryKey: []*schema.Column{MessagePinColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "message_pin_channel_channel",
+				Columns:    []*schema.Column{MessagePinColumns[2]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "message_pins_users_pinned_by",
-				Columns:    []*schema.Column{MessagePinsColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "message_pin_message_message",
+				Columns:    []*schema.Column{MessagePinColumns[3]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "message_pin_user_pinned_by",
+				Columns:    []*schema.Column{MessagePinColumns[4]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -853,97 +912,97 @@ var (
 			{
 				Name:    "messagepin_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagePinsColumns[1]},
+				Columns: []*schema.Column{MessagePinColumns[1]},
 			},
 			{
-				Name:    "messagepin_message_pin_channel_message_pin_message",
+				Name:    "messagepin_channel_id_message_id",
 				Unique:  true,
-				Columns: []*schema.Column{MessagePinsColumns[2], MessagePinsColumns[3]},
+				Columns: []*schema.Column{MessagePinColumns[2], MessagePinColumns[3]},
 			},
 			{
-				Name:    "messagepin_message_pin_message",
+				Name:    "messagepin_message_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessagePinsColumns[3]},
+				Columns: []*schema.Column{MessagePinColumns[3]},
 			},
 		},
 	}
-	// MessageReactionsColumns holds the columns for the "message_reactions" table.
-	MessageReactionsColumns = []*schema.Column{
+	// MessageReactionColumns holds the columns for the "message_reaction" table.
+	MessageReactionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "emoji", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "message_reaction_message", Type: field.TypeUUID},
-		{Name: "message_reaction_user", Type: field.TypeUUID},
+		{Name: "message_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// MessageReactionsTable holds the schema information for the "message_reactions" table.
-	MessageReactionsTable = &schema.Table{
-		Name:       "message_reactions",
-		Columns:    MessageReactionsColumns,
-		PrimaryKey: []*schema.Column{MessageReactionsColumns[0]},
+	// MessageReactionTable holds the schema information for the "message_reaction" table.
+	MessageReactionTable = &schema.Table{
+		Name:       "message_reaction",
+		Columns:    MessageReactionColumns,
+		PrimaryKey: []*schema.Column{MessageReactionColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "message_reactions_messages_message",
-				Columns:    []*schema.Column{MessageReactionsColumns[3]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "message_reaction_message_message",
+				Columns:    []*schema.Column{MessageReactionColumns[3]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "message_reactions_users_user",
-				Columns:    []*schema.Column{MessageReactionsColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "message_reaction_user_user",
+				Columns:    []*schema.Column{MessageReactionColumns[4]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "messagereaction_emoji_message_reaction_message_message_reaction_user",
+				Name:    "messagereaction_message_id_user_id_emoji",
 				Unique:  true,
-				Columns: []*schema.Column{MessageReactionsColumns[1], MessageReactionsColumns[3], MessageReactionsColumns[4]},
+				Columns: []*schema.Column{MessageReactionColumns[3], MessageReactionColumns[4], MessageReactionColumns[1]},
 			},
 			{
-				Name:    "messagereaction_message_reaction_message",
+				Name:    "messagereaction_message_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessageReactionsColumns[3]},
+				Columns: []*schema.Column{MessageReactionColumns[3]},
 			},
 		},
 	}
-	// MessageUserMentionsColumns holds the columns for the "message_user_mentions" table.
-	MessageUserMentionsColumns = []*schema.Column{
+	// MessageUserMentionColumns holds the columns for the "message_user_mention" table.
+	MessageUserMentionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "via_group_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "message_user_mention_message", Type: field.TypeUUID},
-		{Name: "message_user_mention_user", Type: field.TypeUUID},
+		{Name: "message_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// MessageUserMentionsTable holds the schema information for the "message_user_mentions" table.
-	MessageUserMentionsTable = &schema.Table{
-		Name:       "message_user_mentions",
-		Columns:    MessageUserMentionsColumns,
-		PrimaryKey: []*schema.Column{MessageUserMentionsColumns[0]},
+	// MessageUserMentionTable holds the schema information for the "message_user_mention" table.
+	MessageUserMentionTable = &schema.Table{
+		Name:       "message_user_mention",
+		Columns:    MessageUserMentionColumns,
+		PrimaryKey: []*schema.Column{MessageUserMentionColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "message_user_mentions_messages_message",
-				Columns:    []*schema.Column{MessageUserMentionsColumns[3]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "message_user_mention_message_message",
+				Columns:    []*schema.Column{MessageUserMentionColumns[3]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "message_user_mentions_users_user",
-				Columns:    []*schema.Column{MessageUserMentionsColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "message_user_mention_user_user",
+				Columns:    []*schema.Column{MessageUserMentionColumns[4]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "messageusermention_message_user_mention_message",
+				Name:    "messageusermention_message_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionsColumns[3]},
+				Columns: []*schema.Column{MessageUserMentionColumns[3]},
 			},
 			{
-				Name:    "messageusermention_message_user_mention_user",
+				Name:    "messageusermention_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionsColumns[4]},
+				Columns: []*schema.Column{MessageUserMentionColumns[4]},
 			},
 		},
 	}
@@ -966,9 +1025,9 @@ var (
 		PrimaryKey: []*schema.Column{PollColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "poll_messages_message",
+				Symbol:     "poll_message_message",
 				Columns:    []*schema.Column{PollColumns[8]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -1023,9 +1082,9 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "poll_vote_users_user",
+				Symbol:     "poll_vote_user_user",
 				Columns:    []*schema.Column{PollVoteColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -1050,7 +1109,7 @@ var (
 		{Name: "user_agent", Type: field.TypeString, Default: ""},
 		{Name: "last_seen_at", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "push_token_user", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// PushTokenTable holds the schema information for the "push_token" table.
 	PushTokenTable = &schema.Table{
@@ -1059,15 +1118,15 @@ var (
 		PrimaryKey: []*schema.Column{PushTokenColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "push_token_users_user",
+				Symbol:     "push_token_user_user",
 				Columns:    []*schema.Column{PushTokenColumns[6]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "pushtoken_push_token_user",
+				Name:    "pushtoken_user_id",
 				Unique:  false,
 				Columns: []*schema.Column{PushTokenColumns[6]},
 			},
@@ -1093,15 +1152,15 @@ var (
 		PrimaryKey: []*schema.Column{ReminderColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "reminder_workspaces_workspace",
+				Symbol:     "reminder_workspace_workspace",
 				Columns:    []*schema.Column{ReminderColumns[8]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "reminder_users_creator",
+				Symbol:     "reminder_user_creator",
 				Columns:    []*schema.Column{ReminderColumns[9]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -1142,27 +1201,27 @@ var (
 		PrimaryKey: []*schema.Column{ScheduledMessageColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scheduled_message_users_user",
+				Symbol:     "scheduled_message_user_user",
 				Columns:    []*schema.Column{ScheduledMessageColumns[12]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scheduled_message_channels_channel",
+				Symbol:     "scheduled_message_channel_channel",
 				Columns:    []*schema.Column{ScheduledMessageColumns[13]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scheduled_message_messages_parent",
+				Symbol:     "scheduled_message_message_parent",
 				Columns:    []*schema.Column{ScheduledMessageColumns[14]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scheduled_message_messages_sent_message",
+				Symbol:     "scheduled_message_message_sent_message",
 				Columns:    []*schema.Column{ScheduledMessageColumns[15]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -1182,8 +1241,8 @@ var (
 			},
 		},
 	}
-	// SessionsColumns holds the columns for the "sessions" table.
-	SessionsColumns = []*schema.Column{
+	// SessionColumns holds the columns for the "session" table.
+	SessionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "refresh_token_hash", Type: field.TypeString},
 		{Name: "expires_at", Type: field.TypeTime},
@@ -1191,18 +1250,18 @@ var (
 		{Name: "ip_address", Type: field.TypeString, Default: ""},
 		{Name: "user_agent", Type: field.TypeString, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "session_user", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// SessionsTable holds the schema information for the "sessions" table.
-	SessionsTable = &schema.Table{
-		Name:       "sessions",
-		Columns:    SessionsColumns,
-		PrimaryKey: []*schema.Column{SessionsColumns[0]},
+	// SessionTable holds the schema information for the "session" table.
+	SessionTable = &schema.Table{
+		Name:       "session",
+		Columns:    SessionColumns,
+		PrimaryKey: []*schema.Column{SessionColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "sessions_users_user",
-				Columns:    []*schema.Column{SessionsColumns[7]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "session_user_user",
+				Columns:    []*schema.Column{SessionColumns[7]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -1210,40 +1269,40 @@ var (
 			{
 				Name:    "session_expires_at",
 				Unique:  false,
-				Columns: []*schema.Column{SessionsColumns[2]},
+				Columns: []*schema.Column{SessionColumns[2]},
 			},
 			{
 				Name:    "session_refresh_token_hash",
 				Unique:  true,
-				Columns: []*schema.Column{SessionsColumns[1]},
+				Columns: []*schema.Column{SessionColumns[1]},
 			},
 		},
 	}
-	// SystemMessagesColumns holds the columns for the "system_messages" table.
-	SystemMessagesColumns = []*schema.Column{
+	// SystemMessageColumns holds the columns for the "system_message" table.
+	SystemMessageColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "kind", Type: field.TypeString},
 		{Name: "payload", Type: field.TypeJSON},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "system_message_channel", Type: field.TypeUUID},
-		{Name: "system_message_actor", Type: field.TypeUUID, Nullable: true},
+		{Name: "channel_id", Type: field.TypeUUID},
+		{Name: "actor_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// SystemMessagesTable holds the schema information for the "system_messages" table.
-	SystemMessagesTable = &schema.Table{
-		Name:       "system_messages",
-		Columns:    SystemMessagesColumns,
-		PrimaryKey: []*schema.Column{SystemMessagesColumns[0]},
+	// SystemMessageTable holds the schema information for the "system_message" table.
+	SystemMessageTable = &schema.Table{
+		Name:       "system_message",
+		Columns:    SystemMessageColumns,
+		PrimaryKey: []*schema.Column{SystemMessageColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_messages_channels_channel",
-				Columns:    []*schema.Column{SystemMessagesColumns[4]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				Symbol:     "system_message_channel_channel",
+				Columns:    []*schema.Column{SystemMessageColumns[4]},
+				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_messages_users_actor",
-				Columns:    []*schema.Column{SystemMessagesColumns[5]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "system_message_user_actor",
+				Columns:    []*schema.Column{SystemMessageColumns[5]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -1251,162 +1310,172 @@ var (
 			{
 				Name:    "systemmessage_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{SystemMessagesColumns[3]},
+				Columns: []*schema.Column{SystemMessageColumns[3]},
 			},
 			{
 				Name:    "systemmessage_kind",
 				Unique:  false,
-				Columns: []*schema.Column{SystemMessagesColumns[1]},
+				Columns: []*schema.Column{SystemMessageColumns[1]},
 			},
 		},
 	}
-	// ThreadReadStatesColumns holds the columns for the "thread_read_states" table.
-	ThreadReadStatesColumns = []*schema.Column{
+	// ThreadReadStateColumns holds the columns for the "thread_read_state" table.
+	ThreadReadStateColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "last_read_at", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "thread_read_state_user", Type: field.TypeUUID},
-		{Name: "thread_read_state_thread", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "thread_id", Type: field.TypeUUID},
 	}
-	// ThreadReadStatesTable holds the schema information for the "thread_read_states" table.
-	ThreadReadStatesTable = &schema.Table{
-		Name:       "thread_read_states",
-		Columns:    ThreadReadStatesColumns,
-		PrimaryKey: []*schema.Column{ThreadReadStatesColumns[0]},
+	// ThreadReadStateTable holds the schema information for the "thread_read_state" table.
+	ThreadReadStateTable = &schema.Table{
+		Name:       "thread_read_state",
+		Columns:    ThreadReadStateColumns,
+		PrimaryKey: []*schema.Column{ThreadReadStateColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "thread_read_states_users_user",
-				Columns:    []*schema.Column{ThreadReadStatesColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "thread_read_state_user_user",
+				Columns:    []*schema.Column{ThreadReadStateColumns[4]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "thread_read_states_messages_thread",
-				Columns:    []*schema.Column{ThreadReadStatesColumns[5]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "thread_read_state_message_thread",
+				Columns:    []*schema.Column{ThreadReadStateColumns[5]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "threadreadstate_thread_read_state_user_thread_read_state_thread",
+				Name:    "threadreadstate_user_id_thread_id",
 				Unique:  true,
-				Columns: []*schema.Column{ThreadReadStatesColumns[4], ThreadReadStatesColumns[5]},
+				Columns: []*schema.Column{ThreadReadStateColumns[4], ThreadReadStateColumns[5]},
 			},
 		},
 	}
-	// UsersColumns holds the columns for the "users" table.
-	UsersColumns = []*schema.Column{
+	// UserColumns holds the columns for the "user" table.
+	UserColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString},
 		{Name: "google_sub", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "bio", Type: field.TypeString, Nullable: true},
-		{Name: "links", Type: field.TypeJSON, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
-		{Name: "is_bot", Type: field.TypeBool, Default: false},
+		{Name: "is_app", Type: field.TypeBool, Default: false},
 		{Name: "is_official", Type: field.TypeBool, Default: false},
-		{Name: "theme_hue", Type: field.TypeInt, Default: 168},
-		{Name: "theme_chroma", Type: field.TypeFloat64, Default: 0.12},
-		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}, Default: "tinted"},
-		{Name: "color_mode", Type: field.TypeEnum, Enums: []string{"light", "dark", "system"}, Default: "system"},
-		{Name: "locale", Type: field.TypeString, Default: "ja"},
-		{Name: "notification_level", Type: field.TypeEnum, Enums: []string{"all", "mentions", "none"}, Default: "mentions"},
-		{Name: "timezone", Type: field.TypeString, Default: ""},
-		{Name: "timezone_auto_update", Type: field.TypeBool, Default: false},
-		{Name: "channel_sort_order", Type: field.TypeEnum, Enums: []string{"default", "recent_activity"}, Default: "default"},
-		{Name: "hide_join_messages", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
-	// UsersTable holds the schema information for the "users" table.
-	UsersTable = &schema.Table{
-		Name:       "users",
-		Columns:    UsersColumns,
-		PrimaryKey: []*schema.Column{UsersColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "user_email",
-				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[1]},
-			},
-		},
+	// UserTable holds the schema information for the "user" table.
+	UserTable = &schema.Table{
+		Name:       "user",
+		Columns:    UserColumns,
+		PrimaryKey: []*schema.Column{UserColumns[0]},
 	}
-	// UserGroupsColumns holds the columns for the "user_groups" table.
-	UserGroupsColumns = []*schema.Column{
+	// UserGroupColumns holds the columns for the "user_group" table.
+	UserGroupColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "user_group_workspace", Type: field.TypeString, Size: 12},
-		{Name: "user_group_created_by", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "created_by_id", Type: field.TypeUUID},
 	}
-	// UserGroupsTable holds the schema information for the "user_groups" table.
-	UserGroupsTable = &schema.Table{
-		Name:       "user_groups",
-		Columns:    UserGroupsColumns,
-		PrimaryKey: []*schema.Column{UserGroupsColumns[0]},
+	// UserGroupTable holds the schema information for the "user_group" table.
+	UserGroupTable = &schema.Table{
+		Name:       "user_group",
+		Columns:    UserGroupColumns,
+		PrimaryKey: []*schema.Column{UserGroupColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_groups_workspaces_workspace",
-				Columns:    []*schema.Column{UserGroupsColumns[5]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				Symbol:     "user_group_workspace_workspace",
+				Columns:    []*schema.Column{UserGroupColumns[5]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "user_groups_users_created_by",
-				Columns:    []*schema.Column{UserGroupsColumns[6]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "user_group_user_created_by",
+				Columns:    []*schema.Column{UserGroupColumns[6]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "usergroup_name_user_group_workspace",
+				Name:    "usergroup_workspace_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{UserGroupsColumns[1], UserGroupsColumns[5]},
+				Columns: []*schema.Column{UserGroupColumns[5], UserGroupColumns[1]},
 			},
 		},
 	}
-	// UserGroupMembersColumns holds the columns for the "user_group_members" table.
-	UserGroupMembersColumns = []*schema.Column{
+	// UserGroupMemberColumns holds the columns for the "user_group_member" table.
+	UserGroupMemberColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "joined_at", Type: field.TypeTime},
-		{Name: "user_group_member_group", Type: field.TypeUUID},
-		{Name: "user_group_member_user", Type: field.TypeUUID},
+		{Name: "group_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// UserGroupMembersTable holds the schema information for the "user_group_members" table.
-	UserGroupMembersTable = &schema.Table{
-		Name:       "user_group_members",
-		Columns:    UserGroupMembersColumns,
-		PrimaryKey: []*schema.Column{UserGroupMembersColumns[0]},
+	// UserGroupMemberTable holds the schema information for the "user_group_member" table.
+	UserGroupMemberTable = &schema.Table{
+		Name:       "user_group_member",
+		Columns:    UserGroupMemberColumns,
+		PrimaryKey: []*schema.Column{UserGroupMemberColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_group_members_user_groups_group",
-				Columns:    []*schema.Column{UserGroupMembersColumns[2]},
-				RefColumns: []*schema.Column{UserGroupsColumns[0]},
+				Symbol:     "user_group_member_user_group_group",
+				Columns:    []*schema.Column{UserGroupMemberColumns[2]},
+				RefColumns: []*schema.Column{UserGroupColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "user_group_members_users_user",
-				Columns:    []*schema.Column{UserGroupMembersColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "user_group_member_user_user",
+				Columns:    []*schema.Column{UserGroupMemberColumns[3]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "usergroupmember_user_group_member_group",
-				Unique:  false,
-				Columns: []*schema.Column{UserGroupMembersColumns[2]},
+				Name:    "usergroupmember_group_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{UserGroupMemberColumns[2], UserGroupMemberColumns[3]},
 			},
 			{
-				Name:    "usergroupmember_user_group_member_user",
+				Name:    "usergroupmember_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{UserGroupMembersColumns[3]},
+				Columns: []*schema.Column{UserGroupMemberColumns[3]},
+			},
+		},
+	}
+	// UserLinkColumns holds the columns for the "user_link" table.
+	UserLinkColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "position", Type: field.TypeInt},
+		{Name: "url", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// UserLinkTable holds the schema information for the "user_link" table.
+	UserLinkTable = &schema.Table{
+		Name:       "user_link",
+		Columns:    UserLinkColumns,
+		PrimaryKey: []*schema.Column{UserLinkColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_link_user_user",
+				Columns:    []*schema.Column{UserLinkColumns[3]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userlink_user_id_position",
+				Unique:  true,
+				Columns: []*schema.Column{UserLinkColumns[3], UserLinkColumns[1]},
 			},
 		},
 	}
@@ -1416,8 +1485,8 @@ var (
 		{Name: "nickname", Type: field.TypeString, Nullable: true},
 		{Name: "memo", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "user_note_owner", Type: field.TypeUUID},
-		{Name: "user_note_target", Type: field.TypeUUID},
+		{Name: "owner_id", Type: field.TypeUUID},
+		{Name: "target_id", Type: field.TypeUUID},
 	}
 	// UserNoteTable holds the schema information for the "user_note" table.
 	UserNoteTable = &schema.Table{
@@ -1426,49 +1495,78 @@ var (
 		PrimaryKey: []*schema.Column{UserNoteColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_note_users_owner",
+				Symbol:     "user_note_user_owner",
 				Columns:    []*schema.Column{UserNoteColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "user_note_users_target",
+				Symbol:     "user_note_user_target",
 				Columns:    []*schema.Column{UserNoteColumns[5]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "usernote_user_note_owner_user_note_target",
+				Name:    "usernote_owner_id_target_id",
 				Unique:  true,
 				Columns: []*schema.Column{UserNoteColumns[4], UserNoteColumns[5]},
 			},
 		},
 	}
-	// UserThreadFollowsColumns holds the columns for the "user_thread_follows" table.
-	UserThreadFollowsColumns = []*schema.Column{
+	// UserPreferenceColumns holds the columns for the "user_preference" table.
+	UserPreferenceColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "user_thread_follow_user", Type: field.TypeUUID},
-		{Name: "user_thread_follow_thread", Type: field.TypeUUID},
+		{Name: "theme_hue", Type: field.TypeInt},
+		{Name: "theme_chroma", Type: field.TypeFloat64},
+		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}},
+		{Name: "color_mode", Type: field.TypeEnum, Enums: []string{"light", "dark", "system"}},
+		{Name: "locale", Type: field.TypeString},
+		{Name: "notification_level", Type: field.TypeEnum, Enums: []string{"all", "mentions", "none"}},
+		{Name: "timezone", Type: field.TypeString},
+		{Name: "timezone_auto_update", Type: field.TypeBool},
+		{Name: "channel_sort_order", Type: field.TypeEnum, Enums: []string{"default", "recent_activity"}},
+		{Name: "hide_join_messages", Type: field.TypeBool},
+		{Name: "user_id", Type: field.TypeUUID, Unique: true},
 	}
-	// UserThreadFollowsTable holds the schema information for the "user_thread_follows" table.
-	UserThreadFollowsTable = &schema.Table{
-		Name:       "user_thread_follows",
-		Columns:    UserThreadFollowsColumns,
-		PrimaryKey: []*schema.Column{UserThreadFollowsColumns[0]},
+	// UserPreferenceTable holds the schema information for the "user_preference" table.
+	UserPreferenceTable = &schema.Table{
+		Name:       "user_preference",
+		Columns:    UserPreferenceColumns,
+		PrimaryKey: []*schema.Column{UserPreferenceColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_thread_follows_users_user",
-				Columns:    []*schema.Column{UserThreadFollowsColumns[2]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "user_preference_user_preference",
+				Columns:    []*schema.Column{UserPreferenceColumns[11]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// UserThreadFollowColumns holds the columns for the "user_thread_follow" table.
+	UserThreadFollowColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "thread_id", Type: field.TypeUUID},
+	}
+	// UserThreadFollowTable holds the schema information for the "user_thread_follow" table.
+	UserThreadFollowTable = &schema.Table{
+		Name:       "user_thread_follow",
+		Columns:    UserThreadFollowColumns,
+		PrimaryKey: []*schema.Column{UserThreadFollowColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_thread_follow_user_user",
+				Columns:    []*schema.Column{UserThreadFollowColumns[2]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "user_thread_follows_messages_thread",
-				Columns:    []*schema.Column{UserThreadFollowsColumns[3]},
-				RefColumns: []*schema.Column{MessagesColumns[0]},
+				Symbol:     "user_thread_follow_message_thread",
+				Columns:    []*schema.Column{UserThreadFollowColumns[3]},
+				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -1476,22 +1574,22 @@ var (
 			{
 				Name:    "userthreadfollow_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{UserThreadFollowsColumns[1]},
+				Columns: []*schema.Column{UserThreadFollowColumns[1]},
 			},
 			{
-				Name:    "userthreadfollow_user_thread_follow_user_user_thread_follow_thread",
+				Name:    "userthreadfollow_user_id_thread_id",
 				Unique:  true,
-				Columns: []*schema.Column{UserThreadFollowsColumns[2], UserThreadFollowsColumns[3]},
+				Columns: []*schema.Column{UserThreadFollowColumns[2], UserThreadFollowColumns[3]},
 			},
 			{
-				Name:    "userthreadfollow_user_thread_follow_thread",
+				Name:    "userthreadfollow_thread_id",
 				Unique:  false,
-				Columns: []*schema.Column{UserThreadFollowsColumns[3]},
+				Columns: []*schema.Column{UserThreadFollowColumns[3]},
 			},
 		},
 	}
-	// WorkspacesColumns holds the columns for the "workspaces" table.
-	WorkspacesColumns = []*schema.Column{
+	// WorkspaceColumns holds the columns for the "workspace" table.
+	WorkspaceColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 12},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
@@ -1501,18 +1599,18 @@ var (
 		{Name: "email_signup_enabled", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "workspace_created_by", Type: field.TypeUUID},
+		{Name: "created_by_id", Type: field.TypeUUID},
 	}
-	// WorkspacesTable holds the schema information for the "workspaces" table.
-	WorkspacesTable = &schema.Table{
-		Name:       "workspaces",
-		Columns:    WorkspacesColumns,
-		PrimaryKey: []*schema.Column{WorkspacesColumns[0]},
+	// WorkspaceTable holds the schema information for the "workspace" table.
+	WorkspaceTable = &schema.Table{
+		Name:       "workspace",
+		Columns:    WorkspaceColumns,
+		PrimaryKey: []*schema.Column{WorkspaceColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "workspaces_users_created_by",
-				Columns:    []*schema.Column{WorkspacesColumns[9]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "workspace_user_created_by",
+				Columns:    []*schema.Column{WorkspaceColumns[9]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -1520,48 +1618,48 @@ var (
 			{
 				Name:    "workspace_id",
 				Unique:  true,
-				Columns: []*schema.Column{WorkspacesColumns[0]},
+				Columns: []*schema.Column{WorkspaceColumns[0]},
 			},
 			{
 				Name:    "workspace_is_public",
 				Unique:  false,
-				Columns: []*schema.Column{WorkspacesColumns[4]},
+				Columns: []*schema.Column{WorkspaceColumns[4]},
 			},
 		},
 	}
-	// WorkspaceMembersColumns holds the columns for the "workspace_members" table.
-	WorkspaceMembersColumns = []*schema.Column{
+	// WorkspaceMemberColumns holds the columns for the "workspace_member" table.
+	WorkspaceMemberColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeString},
 		{Name: "joined_at", Type: field.TypeTime},
 		{Name: "suspended_at", Type: field.TypeTime, Nullable: true},
-		{Name: "workspace_member_workspace", Type: field.TypeString, Size: 12},
-		{Name: "workspace_member_user", Type: field.TypeUUID},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// WorkspaceMembersTable holds the schema information for the "workspace_members" table.
-	WorkspaceMembersTable = &schema.Table{
-		Name:       "workspace_members",
-		Columns:    WorkspaceMembersColumns,
-		PrimaryKey: []*schema.Column{WorkspaceMembersColumns[0]},
+	// WorkspaceMemberTable holds the schema information for the "workspace_member" table.
+	WorkspaceMemberTable = &schema.Table{
+		Name:       "workspace_member",
+		Columns:    WorkspaceMemberColumns,
+		PrimaryKey: []*schema.Column{WorkspaceMemberColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "workspace_members_workspaces_workspace",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[4]},
-				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				Symbol:     "workspace_member_workspace_workspace",
+				Columns:    []*schema.Column{WorkspaceMemberColumns[4]},
+				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "workspace_members_users_user",
-				Columns:    []*schema.Column{WorkspaceMembersColumns[5]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
+				Symbol:     "workspace_member_user_user",
+				Columns:    []*schema.Column{WorkspaceMemberColumns[5]},
+				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "workspacemember_workspace_member_workspace_workspace_member_user",
+				Name:    "workspacemember_workspace_id_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{WorkspaceMembersColumns[4], WorkspaceMembersColumns[5]},
+				Columns: []*schema.Column{WorkspaceMemberColumns[4], WorkspaceMemberColumns[5]},
 			},
 		},
 	}
@@ -1590,124 +1688,174 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AppTable,
-		AttachmentsTable,
+		AttachmentTable,
 		AuditLogTable,
-		ChannelsTable,
+		ChannelTable,
 		ChannelCategoryTable,
 		ChannelCategoryItemTable,
 		ChannelLinkTable,
-		ChannelMembersTable,
+		ChannelMemberTable,
 		ChannelMuteTable,
-		ChannelReadStatesTable,
+		ChannelReadStateTable,
 		ChannelStarTable,
 		CustomEmojiTable,
 		DraftTable,
 		InvitationTable,
-		MessagesTable,
-		MessageBookmarksTable,
-		MessageGroupMentionsTable,
-		MessageLinksTable,
-		MessagePinsTable,
-		MessageReactionsTable,
-		MessageUserMentionsTable,
+		LinkPreviewTable,
+		LinkPreviewXPostTable,
+		LinkPreviewYoutubeTable,
+		MessageTable,
+		MessageBookmarkTable,
+		MessageGroupMentionTable,
+		MessageLinkTable,
+		MessagePinTable,
+		MessageReactionTable,
+		MessageUserMentionTable,
 		PollTable,
 		PollOptionTable,
 		PollVoteTable,
 		PushTokenTable,
 		ReminderTable,
 		ScheduledMessageTable,
-		SessionsTable,
-		SystemMessagesTable,
-		ThreadReadStatesTable,
-		UsersTable,
-		UserGroupsTable,
-		UserGroupMembersTable,
+		SessionTable,
+		SystemMessageTable,
+		ThreadReadStateTable,
+		UserTable,
+		UserGroupTable,
+		UserGroupMemberTable,
+		UserLinkTable,
 		UserNoteTable,
-		UserThreadFollowsTable,
-		WorkspacesTable,
-		WorkspaceMembersTable,
+		UserPreferenceTable,
+		UserThreadFollowTable,
+		WorkspaceTable,
+		WorkspaceMemberTable,
 		WorkspacePermissionTable,
 	}
 )
 
 func init() {
-	AppTable.ForeignKeys[0].RefTable = WorkspacesTable
-	AppTable.ForeignKeys[1].RefTable = UsersTable
-	AppTable.ForeignKeys[2].RefTable = UsersTable
-	AppTable.ForeignKeys[3].RefTable = ChannelsTable
+	AppTable.ForeignKeys[0].RefTable = WorkspaceTable
+	AppTable.ForeignKeys[1].RefTable = UserTable
+	AppTable.ForeignKeys[2].RefTable = UserTable
+	AppTable.ForeignKeys[3].RefTable = ChannelTable
 	AppTable.Annotation = &entsql.Annotation{
 		Table: "app",
 	}
-	AttachmentsTable.ForeignKeys[0].RefTable = MessagesTable
-	AttachmentsTable.ForeignKeys[1].RefTable = UsersTable
-	AttachmentsTable.ForeignKeys[2].RefTable = ChannelsTable
+	AttachmentTable.ForeignKeys[0].RefTable = MessageTable
+	AttachmentTable.ForeignKeys[1].RefTable = UserTable
+	AttachmentTable.ForeignKeys[2].RefTable = ChannelTable
+	AttachmentTable.Annotation = &entsql.Annotation{
+		Table: "attachment",
+	}
 	AuditLogTable.Annotation = &entsql.Annotation{
 		Table: "audit_log",
 	}
-	ChannelsTable.ForeignKeys[0].RefTable = WorkspacesTable
-	ChannelsTable.ForeignKeys[1].RefTable = UsersTable
-	ChannelsTable.ForeignKeys[2].RefTable = ChannelsTable
-	ChannelCategoryTable.ForeignKeys[0].RefTable = UsersTable
-	ChannelCategoryTable.ForeignKeys[1].RefTable = WorkspacesTable
+	ChannelTable.ForeignKeys[0].RefTable = WorkspaceTable
+	ChannelTable.ForeignKeys[1].RefTable = UserTable
+	ChannelTable.ForeignKeys[2].RefTable = ChannelTable
+	ChannelTable.Annotation = &entsql.Annotation{
+		Table: "channel",
+	}
+	ChannelCategoryTable.ForeignKeys[0].RefTable = UserTable
+	ChannelCategoryTable.ForeignKeys[1].RefTable = WorkspaceTable
 	ChannelCategoryTable.Annotation = &entsql.Annotation{
 		Table: "channel_category",
 	}
 	ChannelCategoryItemTable.ForeignKeys[0].RefTable = ChannelCategoryTable
-	ChannelCategoryItemTable.ForeignKeys[1].RefTable = UsersTable
-	ChannelCategoryItemTable.ForeignKeys[2].RefTable = ChannelsTable
+	ChannelCategoryItemTable.ForeignKeys[1].RefTable = UserTable
+	ChannelCategoryItemTable.ForeignKeys[2].RefTable = ChannelTable
 	ChannelCategoryItemTable.Annotation = &entsql.Annotation{
 		Table: "channel_category_item",
 	}
-	ChannelLinkTable.ForeignKeys[0].RefTable = ChannelsTable
-	ChannelLinkTable.ForeignKeys[1].RefTable = UsersTable
+	ChannelLinkTable.ForeignKeys[0].RefTable = ChannelTable
+	ChannelLinkTable.ForeignKeys[1].RefTable = UserTable
 	ChannelLinkTable.Annotation = &entsql.Annotation{
 		Table: "channel_link",
 	}
-	ChannelMembersTable.ForeignKeys[0].RefTable = ChannelsTable
-	ChannelMembersTable.ForeignKeys[1].RefTable = UsersTable
-	ChannelMuteTable.ForeignKeys[0].RefTable = UsersTable
-	ChannelMuteTable.ForeignKeys[1].RefTable = ChannelsTable
+	ChannelMemberTable.ForeignKeys[0].RefTable = ChannelTable
+	ChannelMemberTable.ForeignKeys[1].RefTable = UserTable
+	ChannelMemberTable.Annotation = &entsql.Annotation{
+		Table: "channel_member",
+	}
+	ChannelMuteTable.ForeignKeys[0].RefTable = UserTable
+	ChannelMuteTable.ForeignKeys[1].RefTable = ChannelTable
 	ChannelMuteTable.Annotation = &entsql.Annotation{
 		Table: "channel_mute",
 	}
-	ChannelReadStatesTable.ForeignKeys[0].RefTable = ChannelsTable
-	ChannelReadStatesTable.ForeignKeys[1].RefTable = UsersTable
-	ChannelStarTable.ForeignKeys[0].RefTable = UsersTable
-	ChannelStarTable.ForeignKeys[1].RefTable = ChannelsTable
+	ChannelReadStateTable.ForeignKeys[0].RefTable = ChannelTable
+	ChannelReadStateTable.ForeignKeys[1].RefTable = UserTable
+	ChannelReadStateTable.Annotation = &entsql.Annotation{
+		Table: "channel_read_state",
+	}
+	ChannelStarTable.ForeignKeys[0].RefTable = UserTable
+	ChannelStarTable.ForeignKeys[1].RefTable = ChannelTable
 	ChannelStarTable.Annotation = &entsql.Annotation{
 		Table: "channel_star",
 	}
-	CustomEmojiTable.ForeignKeys[0].RefTable = WorkspacesTable
+	CustomEmojiTable.ForeignKeys[0].RefTable = WorkspaceTable
 	CustomEmojiTable.Annotation = &entsql.Annotation{
 		Table: "custom_emoji",
 	}
-	DraftTable.ForeignKeys[0].RefTable = UsersTable
-	DraftTable.ForeignKeys[1].RefTable = ChannelsTable
-	DraftTable.ForeignKeys[2].RefTable = MessagesTable
+	DraftTable.ForeignKeys[0].RefTable = UserTable
+	DraftTable.ForeignKeys[1].RefTable = ChannelTable
+	DraftTable.ForeignKeys[2].RefTable = MessageTable
 	DraftTable.Annotation = &entsql.Annotation{
 		Table: "draft",
 	}
-	InvitationTable.ForeignKeys[0].RefTable = WorkspacesTable
-	InvitationTable.ForeignKeys[1].RefTable = UsersTable
+	InvitationTable.ForeignKeys[0].RefTable = WorkspaceTable
+	InvitationTable.ForeignKeys[1].RefTable = UserTable
 	InvitationTable.Annotation = &entsql.Annotation{
 		Table: "invitation",
 	}
-	MessagesTable.ForeignKeys[0].RefTable = ChannelsTable
-	MessagesTable.ForeignKeys[1].RefTable = UsersTable
-	MessagesTable.ForeignKeys[2].RefTable = MessagesTable
-	MessageBookmarksTable.ForeignKeys[0].RefTable = UsersTable
-	MessageBookmarksTable.ForeignKeys[1].RefTable = MessagesTable
-	MessageGroupMentionsTable.ForeignKeys[0].RefTable = MessagesTable
-	MessageGroupMentionsTable.ForeignKeys[1].RefTable = UserGroupsTable
-	MessageLinksTable.ForeignKeys[0].RefTable = MessagesTable
-	MessagePinsTable.ForeignKeys[0].RefTable = ChannelsTable
-	MessagePinsTable.ForeignKeys[1].RefTable = MessagesTable
-	MessagePinsTable.ForeignKeys[2].RefTable = UsersTable
-	MessageReactionsTable.ForeignKeys[0].RefTable = MessagesTable
-	MessageReactionsTable.ForeignKeys[1].RefTable = UsersTable
-	MessageUserMentionsTable.ForeignKeys[0].RefTable = MessagesTable
-	MessageUserMentionsTable.ForeignKeys[1].RefTable = UsersTable
-	PollTable.ForeignKeys[0].RefTable = MessagesTable
+	LinkPreviewTable.Annotation = &entsql.Annotation{
+		Table: "link_preview",
+	}
+	LinkPreviewXPostTable.ForeignKeys[0].RefTable = LinkPreviewTable
+	LinkPreviewXPostTable.Annotation = &entsql.Annotation{
+		Table: "link_preview_x_post",
+	}
+	LinkPreviewYoutubeTable.ForeignKeys[0].RefTable = LinkPreviewTable
+	LinkPreviewYoutubeTable.Annotation = &entsql.Annotation{
+		Table: "link_preview_youtube",
+	}
+	MessageTable.ForeignKeys[0].RefTable = ChannelTable
+	MessageTable.ForeignKeys[1].RefTable = UserTable
+	MessageTable.ForeignKeys[2].RefTable = MessageTable
+	MessageTable.Annotation = &entsql.Annotation{
+		Table: "message",
+	}
+	MessageBookmarkTable.ForeignKeys[0].RefTable = UserTable
+	MessageBookmarkTable.ForeignKeys[1].RefTable = MessageTable
+	MessageBookmarkTable.Annotation = &entsql.Annotation{
+		Table: "message_bookmark",
+	}
+	MessageGroupMentionTable.ForeignKeys[0].RefTable = MessageTable
+	MessageGroupMentionTable.ForeignKeys[1].RefTable = UserGroupTable
+	MessageGroupMentionTable.Annotation = &entsql.Annotation{
+		Table: "message_group_mention",
+	}
+	MessageLinkTable.ForeignKeys[0].RefTable = MessageTable
+	MessageLinkTable.ForeignKeys[1].RefTable = LinkPreviewTable
+	MessageLinkTable.Annotation = &entsql.Annotation{
+		Table: "message_link",
+	}
+	MessagePinTable.ForeignKeys[0].RefTable = ChannelTable
+	MessagePinTable.ForeignKeys[1].RefTable = MessageTable
+	MessagePinTable.ForeignKeys[2].RefTable = UserTable
+	MessagePinTable.Annotation = &entsql.Annotation{
+		Table: "message_pin",
+	}
+	MessageReactionTable.ForeignKeys[0].RefTable = MessageTable
+	MessageReactionTable.ForeignKeys[1].RefTable = UserTable
+	MessageReactionTable.Annotation = &entsql.Annotation{
+		Table: "message_reaction",
+	}
+	MessageUserMentionTable.ForeignKeys[0].RefTable = MessageTable
+	MessageUserMentionTable.ForeignKeys[1].RefTable = UserTable
+	MessageUserMentionTable.Annotation = &entsql.Annotation{
+		Table: "message_user_mention",
+	}
+	PollTable.ForeignKeys[0].RefTable = MessageTable
 	PollTable.Annotation = &entsql.Annotation{
 		Table: "poll",
 	}
@@ -1716,45 +1864,80 @@ func init() {
 		Table: "poll_option",
 	}
 	PollVoteTable.ForeignKeys[0].RefTable = PollOptionTable
-	PollVoteTable.ForeignKeys[1].RefTable = UsersTable
+	PollVoteTable.ForeignKeys[1].RefTable = UserTable
 	PollVoteTable.Annotation = &entsql.Annotation{
 		Table: "poll_vote",
 	}
-	PushTokenTable.ForeignKeys[0].RefTable = UsersTable
+	PushTokenTable.ForeignKeys[0].RefTable = UserTable
 	PushTokenTable.Annotation = &entsql.Annotation{
 		Table: "push_token",
 	}
-	ReminderTable.ForeignKeys[0].RefTable = WorkspacesTable
-	ReminderTable.ForeignKeys[1].RefTable = UsersTable
+	ReminderTable.ForeignKeys[0].RefTable = WorkspaceTable
+	ReminderTable.ForeignKeys[1].RefTable = UserTable
 	ReminderTable.Annotation = &entsql.Annotation{
 		Table: "reminder",
 	}
-	ScheduledMessageTable.ForeignKeys[0].RefTable = UsersTable
-	ScheduledMessageTable.ForeignKeys[1].RefTable = ChannelsTable
-	ScheduledMessageTable.ForeignKeys[2].RefTable = MessagesTable
-	ScheduledMessageTable.ForeignKeys[3].RefTable = MessagesTable
+	ScheduledMessageTable.ForeignKeys[0].RefTable = UserTable
+	ScheduledMessageTable.ForeignKeys[1].RefTable = ChannelTable
+	ScheduledMessageTable.ForeignKeys[2].RefTable = MessageTable
+	ScheduledMessageTable.ForeignKeys[3].RefTable = MessageTable
 	ScheduledMessageTable.Annotation = &entsql.Annotation{
 		Table: "scheduled_message",
 	}
-	SessionsTable.ForeignKeys[0].RefTable = UsersTable
-	SystemMessagesTable.ForeignKeys[0].RefTable = ChannelsTable
-	SystemMessagesTable.ForeignKeys[1].RefTable = UsersTable
-	ThreadReadStatesTable.ForeignKeys[0].RefTable = UsersTable
-	ThreadReadStatesTable.ForeignKeys[1].RefTable = MessagesTable
-	UserGroupsTable.ForeignKeys[0].RefTable = WorkspacesTable
-	UserGroupsTable.ForeignKeys[1].RefTable = UsersTable
-	UserGroupMembersTable.ForeignKeys[0].RefTable = UserGroupsTable
-	UserGroupMembersTable.ForeignKeys[1].RefTable = UsersTable
-	UserNoteTable.ForeignKeys[0].RefTable = UsersTable
-	UserNoteTable.ForeignKeys[1].RefTable = UsersTable
+	SessionTable.ForeignKeys[0].RefTable = UserTable
+	SessionTable.Annotation = &entsql.Annotation{
+		Table: "session",
+	}
+	SystemMessageTable.ForeignKeys[0].RefTable = ChannelTable
+	SystemMessageTable.ForeignKeys[1].RefTable = UserTable
+	SystemMessageTable.Annotation = &entsql.Annotation{
+		Table: "system_message",
+	}
+	ThreadReadStateTable.ForeignKeys[0].RefTable = UserTable
+	ThreadReadStateTable.ForeignKeys[1].RefTable = MessageTable
+	ThreadReadStateTable.Annotation = &entsql.Annotation{
+		Table: "thread_read_state",
+	}
+	UserTable.Annotation = &entsql.Annotation{
+		Table: "user",
+	}
+	UserGroupTable.ForeignKeys[0].RefTable = WorkspaceTable
+	UserGroupTable.ForeignKeys[1].RefTable = UserTable
+	UserGroupTable.Annotation = &entsql.Annotation{
+		Table: "user_group",
+	}
+	UserGroupMemberTable.ForeignKeys[0].RefTable = UserGroupTable
+	UserGroupMemberTable.ForeignKeys[1].RefTable = UserTable
+	UserGroupMemberTable.Annotation = &entsql.Annotation{
+		Table: "user_group_member",
+	}
+	UserLinkTable.ForeignKeys[0].RefTable = UserTable
+	UserLinkTable.Annotation = &entsql.Annotation{
+		Table: "user_link",
+	}
+	UserNoteTable.ForeignKeys[0].RefTable = UserTable
+	UserNoteTable.ForeignKeys[1].RefTable = UserTable
 	UserNoteTable.Annotation = &entsql.Annotation{
 		Table: "user_note",
 	}
-	UserThreadFollowsTable.ForeignKeys[0].RefTable = UsersTable
-	UserThreadFollowsTable.ForeignKeys[1].RefTable = MessagesTable
-	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
-	WorkspaceMembersTable.ForeignKeys[0].RefTable = WorkspacesTable
-	WorkspaceMembersTable.ForeignKeys[1].RefTable = UsersTable
+	UserPreferenceTable.ForeignKeys[0].RefTable = UserTable
+	UserPreferenceTable.Annotation = &entsql.Annotation{
+		Table: "user_preference",
+	}
+	UserThreadFollowTable.ForeignKeys[0].RefTable = UserTable
+	UserThreadFollowTable.ForeignKeys[1].RefTable = MessageTable
+	UserThreadFollowTable.Annotation = &entsql.Annotation{
+		Table: "user_thread_follow",
+	}
+	WorkspaceTable.ForeignKeys[0].RefTable = UserTable
+	WorkspaceTable.Annotation = &entsql.Annotation{
+		Table: "workspace",
+	}
+	WorkspaceMemberTable.ForeignKeys[0].RefTable = WorkspaceTable
+	WorkspaceMemberTable.ForeignKeys[1].RefTable = UserTable
+	WorkspaceMemberTable.Annotation = &entsql.Annotation{
+		Table: "workspace_member",
+	}
 	WorkspacePermissionTable.Annotation = &entsql.Annotation{
 		Table: "workspace_permission",
 	}

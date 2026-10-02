@@ -26,6 +26,9 @@ import (
 	"github.com/newt239/chat/ent/customemoji"
 	"github.com/newt239/chat/ent/draft"
 	"github.com/newt239/chat/ent/invitation"
+	"github.com/newt239/chat/ent/linkpreview"
+	"github.com/newt239/chat/ent/linkpreviewxpost"
+	"github.com/newt239/chat/ent/linkpreviewyoutube"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/ent/messagegroupmention"
@@ -45,7 +48,9 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userlink"
 	"github.com/newt239/chat/ent/usernote"
+	"github.com/newt239/chat/ent/userpreference"
 	"github.com/newt239/chat/ent/userthreadfollow"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -124,6 +129,9 @@ func checkColumn(t, c string) error {
 			customemoji.Table:         customemoji.ValidColumn,
 			draft.Table:               draft.ValidColumn,
 			invitation.Table:          invitation.ValidColumn,
+			linkpreview.Table:         linkpreview.ValidColumn,
+			linkpreviewxpost.Table:    linkpreviewxpost.ValidColumn,
+			linkpreviewyoutube.Table:  linkpreviewyoutube.ValidColumn,
 			message.Table:             message.ValidColumn,
 			messagebookmark.Table:     messagebookmark.ValidColumn,
 			messagegroupmention.Table: messagegroupmention.ValidColumn,
@@ -143,7 +151,9 @@ func checkColumn(t, c string) error {
 			user.Table:                user.ValidColumn,
 			usergroup.Table:           usergroup.ValidColumn,
 			usergroupmember.Table:     usergroupmember.ValidColumn,
+			userlink.Table:            userlink.ValidColumn,
 			usernote.Table:            usernote.ValidColumn,
+			userpreference.Table:      userpreference.ValidColumn,
 			userthreadfollow.Table:    userthreadfollow.ValidColumn,
 			workspace.Table:           workspace.ValidColumn,
 			workspacemember.Table:     workspacemember.ValidColumn,

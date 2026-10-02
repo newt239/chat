@@ -20,16 +20,18 @@ type MessageReaction struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// MessageID holds the value of the "message_id" field.
+	MessageID uuid.UUID `json:"message_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Emoji holds the value of the "emoji" field.
 	Emoji string `json:"emoji,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageReactionQuery when eager-loading is set.
-	Edges                    MessageReactionEdges `json:"edges"`
-	message_reaction_message *uuid.UUID
-	message_reaction_user    *uuid.UUID
-	selectValues             sql.SelectValues
+	Edges        MessageReactionEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MessageReactionEdges holds the relations/edges for other nodes in the graph.
@@ -74,12 +76,8 @@ func (*MessageReaction) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case messagereaction.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case messagereaction.FieldID:
+		case messagereaction.FieldID, messagereaction.FieldMessageID, messagereaction.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case messagereaction.ForeignKeys[0]: // message_reaction_message
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messagereaction.ForeignKeys[1]: // message_reaction_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -101,6 +99,18 @@ func (_m *MessageReaction) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case messagereaction.FieldMessageID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field message_id", values[i])
+			} else if value != nil {
+				_m.MessageID = *value
+			}
+		case messagereaction.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
 		case messagereaction.FieldEmoji:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field emoji", values[i])
@@ -112,20 +122,6 @@ func (_m *MessageReaction) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case messagereaction.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_reaction_message", values[i])
-			} else if value.Valid {
-				_m.message_reaction_message = new(uuid.UUID)
-				*_m.message_reaction_message = *value.S.(*uuid.UUID)
-			}
-		case messagereaction.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_reaction_user", values[i])
-			} else if value.Valid {
-				_m.message_reaction_user = new(uuid.UUID)
-				*_m.message_reaction_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -173,6 +169,12 @@ func (_m *MessageReaction) String() string {
 	var builder strings.Builder
 	builder.WriteString("MessageReaction(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("message_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MessageID))
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("emoji=")
 	builder.WriteString(_m.Emoji)
 	builder.WriteString(", ")

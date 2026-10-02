@@ -20,6 +20,10 @@ type ChannelCategory struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
+	// WorkspaceID holds the value of the "workspace_id" field.
+	WorkspaceID string `json:"workspace_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Position holds the value of the "position" field.
@@ -28,10 +32,8 @@ type ChannelCategory struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChannelCategoryQuery when eager-loading is set.
-	Edges                      ChannelCategoryEdges `json:"edges"`
-	channel_category_user      *uuid.UUID
-	channel_category_workspace *string
-	selectValues               sql.SelectValues
+	Edges        ChannelCategoryEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ChannelCategoryEdges holds the relations/edges for other nodes in the graph.
@@ -85,16 +87,12 @@ func (*ChannelCategory) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case channelcategory.FieldPosition:
 			values[i] = new(sql.NullInt64)
-		case channelcategory.FieldName:
+		case channelcategory.FieldWorkspaceID, channelcategory.FieldName:
 			values[i] = new(sql.NullString)
 		case channelcategory.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case channelcategory.FieldID:
+		case channelcategory.FieldID, channelcategory.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case channelcategory.ForeignKeys[0]: // channel_category_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case channelcategory.ForeignKeys[1]: // channel_category_workspace
-			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -116,6 +114,18 @@ func (_m *ChannelCategory) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case channelcategory.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
+		case channelcategory.FieldWorkspaceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field workspace_id", values[i])
+			} else if value.Valid {
+				_m.WorkspaceID = value.String
+			}
 		case channelcategory.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -133,20 +143,6 @@ func (_m *ChannelCategory) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case channelcategory.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_category_user", values[i])
-			} else if value.Valid {
-				_m.channel_category_user = new(uuid.UUID)
-				*_m.channel_category_user = *value.S.(*uuid.UUID)
-			}
-		case channelcategory.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field channel_category_workspace", values[i])
-			} else if value.Valid {
-				_m.channel_category_workspace = new(string)
-				*_m.channel_category_workspace = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -199,6 +195,12 @@ func (_m *ChannelCategory) String() string {
 	var builder strings.Builder
 	builder.WriteString("ChannelCategory(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("workspace_id=")
+	builder.WriteString(_m.WorkspaceID)
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")

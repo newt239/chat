@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelreadstate"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
@@ -45,7 +44,7 @@ func BulkMessages(ctx context.Context, client *ent.Client, channelCount int, per
 	if err := createBulkChannels(ctx, client, channelCount); err != nil {
 		return err
 	}
-	channels, err := client.Channel.Query().WithWorkspace().All(ctx)
+	channels, err := client.Channel.Query().All(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to load channels: %w", err)
 	}
@@ -53,7 +52,7 @@ func BulkMessages(ctx context.Context, client *ent.Client, channelCount int, per
 	start := time.Now().Add(-bulkSpan)
 	for _, ch := range channels {
 		userIDs, err := client.WorkspaceMember.Query().
-			Where(workspacemember.HasWorkspaceWith(workspace.ID(ch.Edges.Workspace.ID))).
+			Where(workspacemember.WorkspaceID(ch.WorkspaceID)).
 			QueryUser().IDs(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to load members: %w", err)
@@ -175,7 +174,7 @@ func insertBulkMessages(ctx context.Context, client *ent.Client, channelID uuid.
 // insertBulkReadStates は既読位置のないメンバーに、期間内のランダムな既読位置を作ります
 func insertBulkReadStates(ctx context.Context, client *ent.Client, rng *rand.Rand, channelID uuid.UUID, userIDs []uuid.UUID, start time.Time) error {
 	existing, err := client.ChannelReadState.Query().
-		Where(channelreadstate.HasChannelWith(channel.ID(channelID))).
+		Where(channelreadstate.ChannelID(channelID)).
 		QueryUser().IDs(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to load read states: %w", err)

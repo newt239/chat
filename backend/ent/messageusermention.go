@@ -20,16 +20,18 @@ type MessageUserMention struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// MessageID holds the value of the "message_id" field.
+	MessageID uuid.UUID `json:"message_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// ViaGroupID holds the value of the "via_group_id" field.
 	ViaGroupID *uuid.UUID `json:"via_group_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageUserMentionQuery when eager-loading is set.
-	Edges                        MessageUserMentionEdges `json:"edges"`
-	message_user_mention_message *uuid.UUID
-	message_user_mention_user    *uuid.UUID
-	selectValues                 sql.SelectValues
+	Edges        MessageUserMentionEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MessageUserMentionEdges holds the relations/edges for other nodes in the graph.
@@ -74,12 +76,8 @@ func (*MessageUserMention) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case messageusermention.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case messageusermention.FieldID:
+		case messageusermention.FieldID, messageusermention.FieldMessageID, messageusermention.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case messageusermention.ForeignKeys[0]: // message_user_mention_message
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messageusermention.ForeignKeys[1]: // message_user_mention_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -101,6 +99,18 @@ func (_m *MessageUserMention) assignValues(columns []string, values []any) error
 			} else if value != nil {
 				_m.ID = *value
 			}
+		case messageusermention.FieldMessageID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field message_id", values[i])
+			} else if value != nil {
+				_m.MessageID = *value
+			}
+		case messageusermention.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
+			}
 		case messageusermention.FieldViaGroupID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field via_group_id", values[i])
@@ -113,20 +123,6 @@ func (_m *MessageUserMention) assignValues(columns []string, values []any) error
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case messageusermention.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_user_mention_message", values[i])
-			} else if value.Valid {
-				_m.message_user_mention_message = new(uuid.UUID)
-				*_m.message_user_mention_message = *value.S.(*uuid.UUID)
-			}
-		case messageusermention.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field message_user_mention_user", values[i])
-			} else if value.Valid {
-				_m.message_user_mention_user = new(uuid.UUID)
-				*_m.message_user_mention_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -174,6 +170,12 @@ func (_m *MessageUserMention) String() string {
 	var builder strings.Builder
 	builder.WriteString("MessageUserMention(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("message_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MessageID))
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	if v := _m.ViaGroupID; v != nil {
 		builder.WriteString("via_group_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))

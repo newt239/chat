@@ -15,6 +15,10 @@ const (
 	Label = "channel_category"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
+	FieldWorkspaceID = "workspace_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldPosition holds the string denoting the position field in the database.
@@ -33,49 +37,39 @@ const (
 	UserTable = "channel_category"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "channel_category_user"
+	UserColumn = "user_id"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
 	WorkspaceTable = "channel_category"
 	// WorkspaceInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
+	WorkspaceInverseTable = "workspace"
 	// WorkspaceColumn is the table column denoting the workspace relation/edge.
-	WorkspaceColumn = "channel_category_workspace"
+	WorkspaceColumn = "workspace_id"
 	// ItemsTable is the table that holds the items relation/edge.
 	ItemsTable = "channel_category_item"
 	// ItemsInverseTable is the table name for the ChannelCategoryItem entity.
 	// It exists in this package in order to avoid circular dependency with the "channelcategoryitem" package.
 	ItemsInverseTable = "channel_category_item"
 	// ItemsColumn is the table column denoting the items relation/edge.
-	ItemsColumn = "channel_category_items"
+	ItemsColumn = "category_id"
 )
 
 // Columns holds all SQL columns for channelcategory fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
+	FieldWorkspaceID,
 	FieldName,
 	FieldPosition,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "channel_category"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"channel_category_user",
-	"channel_category_workspace",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -99,6 +93,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByWorkspaceID orders the results by the workspace_id field.
+func ByWorkspaceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkspaceID, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

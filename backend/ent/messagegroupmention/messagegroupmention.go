@@ -15,6 +15,10 @@ const (
 	Label = "message_group_mention"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldMessageID holds the string denoting the message_id field in the database.
+	FieldMessageID = "message_id"
+	// FieldGroupID holds the string denoting the group_id field in the database.
+	FieldGroupID = "group_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeMessage holds the string denoting the message edge name in mutations.
@@ -22,45 +26,35 @@ const (
 	// EdgeGroup holds the string denoting the group edge name in mutations.
 	EdgeGroup = "group"
 	// Table holds the table name of the messagegroupmention in the database.
-	Table = "message_group_mentions"
+	Table = "message_group_mention"
 	// MessageTable is the table that holds the message relation/edge.
-	MessageTable = "message_group_mentions"
+	MessageTable = "message_group_mention"
 	// MessageInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessageInverseTable = "messages"
+	MessageInverseTable = "message"
 	// MessageColumn is the table column denoting the message relation/edge.
-	MessageColumn = "message_group_mention_message"
+	MessageColumn = "message_id"
 	// GroupTable is the table that holds the group relation/edge.
-	GroupTable = "message_group_mentions"
+	GroupTable = "message_group_mention"
 	// GroupInverseTable is the table name for the UserGroup entity.
 	// It exists in this package in order to avoid circular dependency with the "usergroup" package.
-	GroupInverseTable = "user_groups"
+	GroupInverseTable = "user_group"
 	// GroupColumn is the table column denoting the group relation/edge.
-	GroupColumn = "message_group_mention_group"
+	GroupColumn = "group_id"
 )
 
 // Columns holds all SQL columns for messagegroupmention fields.
 var Columns = []string{
 	FieldID,
+	FieldMessageID,
+	FieldGroupID,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "message_group_mentions"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"message_group_mention_message",
-	"message_group_mention_group",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -80,6 +74,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByMessageID orders the results by the message_id field.
+func ByMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessageID, opts...).ToFunc()
+}
+
+// ByGroupID orders the results by the group_id field.
+func ByGroupID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGroupID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.PushToken {
 	return predicate.PushToken(sql.FieldLTE(FieldID, id))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.PushToken {
+	return predicate.PushToken(sql.FieldEQ(FieldUserID, v))
+}
+
 // Token applies equality check predicate on the "token" field. It's identical to TokenEQ.
 func Token(v string) predicate.PushToken {
 	return predicate.PushToken(sql.FieldEQ(FieldToken, v))
@@ -74,6 +79,26 @@ func LastSeenAt(v time.Time) predicate.PushToken {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.PushToken {
 	return predicate.PushToken(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.PushToken {
+	return predicate.PushToken(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.PushToken {
+	return predicate.PushToken(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.PushToken {
+	return predicate.PushToken(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.PushToken {
+	return predicate.PushToken(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // TokenEQ applies the EQ predicate on the "token" field.

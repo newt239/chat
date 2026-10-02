@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/message"
+	"github.com/newt239/chat/ent/linkpreview"
 	"github.com/newt239/chat/ent/messagelink"
 	"github.com/newt239/chat/ent/predicate"
 )
@@ -43,264 +43,23 @@ func (_u *MessageLinkUpdate) SetNillableURL(v *string) *MessageLinkUpdate {
 	return _u
 }
 
-// SetTitle sets the "title" field.
-func (_u *MessageLinkUpdate) SetTitle(v string) *MessageLinkUpdate {
-	_u.mutation.SetTitle(v)
+// SetLinkPreviewID sets the "link_preview_id" field.
+func (_u *MessageLinkUpdate) SetLinkPreviewID(v uuid.UUID) *MessageLinkUpdate {
+	_u.mutation.SetLinkPreviewID(v)
 	return _u
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableTitle(v *string) *MessageLinkUpdate {
+// SetNillableLinkPreviewID sets the "link_preview_id" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableLinkPreviewID(v *uuid.UUID) *MessageLinkUpdate {
 	if v != nil {
-		_u.SetTitle(*v)
+		_u.SetLinkPreviewID(*v)
 	}
 	return _u
 }
 
-// ClearTitle clears the value of the "title" field.
-func (_u *MessageLinkUpdate) ClearTitle() *MessageLinkUpdate {
-	_u.mutation.ClearTitle()
-	return _u
-}
-
-// SetDescription sets the "description" field.
-func (_u *MessageLinkUpdate) SetDescription(v string) *MessageLinkUpdate {
-	_u.mutation.SetDescription(v)
-	return _u
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableDescription(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetDescription(*v)
-	}
-	return _u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (_u *MessageLinkUpdate) ClearDescription() *MessageLinkUpdate {
-	_u.mutation.ClearDescription()
-	return _u
-}
-
-// SetImageURL sets the "image_url" field.
-func (_u *MessageLinkUpdate) SetImageURL(v string) *MessageLinkUpdate {
-	_u.mutation.SetImageURL(v)
-	return _u
-}
-
-// SetNillableImageURL sets the "image_url" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableImageURL(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetImageURL(*v)
-	}
-	return _u
-}
-
-// ClearImageURL clears the value of the "image_url" field.
-func (_u *MessageLinkUpdate) ClearImageURL() *MessageLinkUpdate {
-	_u.mutation.ClearImageURL()
-	return _u
-}
-
-// SetSiteName sets the "site_name" field.
-func (_u *MessageLinkUpdate) SetSiteName(v string) *MessageLinkUpdate {
-	_u.mutation.SetSiteName(v)
-	return _u
-}
-
-// SetNillableSiteName sets the "site_name" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableSiteName(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetSiteName(*v)
-	}
-	return _u
-}
-
-// ClearSiteName clears the value of the "site_name" field.
-func (_u *MessageLinkUpdate) ClearSiteName() *MessageLinkUpdate {
-	_u.mutation.ClearSiteName()
-	return _u
-}
-
-// SetCardType sets the "card_type" field.
-func (_u *MessageLinkUpdate) SetCardType(v string) *MessageLinkUpdate {
-	_u.mutation.SetCardType(v)
-	return _u
-}
-
-// SetNillableCardType sets the "card_type" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableCardType(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetCardType(*v)
-	}
-	return _u
-}
-
-// ClearCardType clears the value of the "card_type" field.
-func (_u *MessageLinkUpdate) ClearCardType() *MessageLinkUpdate {
-	_u.mutation.ClearCardType()
-	return _u
-}
-
-// SetImageWidth sets the "image_width" field.
-func (_u *MessageLinkUpdate) SetImageWidth(v int32) *MessageLinkUpdate {
-	_u.mutation.ResetImageWidth()
-	_u.mutation.SetImageWidth(v)
-	return _u
-}
-
-// SetNillableImageWidth sets the "image_width" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableImageWidth(v *int32) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetImageWidth(*v)
-	}
-	return _u
-}
-
-// AddImageWidth adds value to the "image_width" field.
-func (_u *MessageLinkUpdate) AddImageWidth(v int32) *MessageLinkUpdate {
-	_u.mutation.AddImageWidth(v)
-	return _u
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (_u *MessageLinkUpdate) ClearImageWidth() *MessageLinkUpdate {
-	_u.mutation.ClearImageWidth()
-	return _u
-}
-
-// SetImageHeight sets the "image_height" field.
-func (_u *MessageLinkUpdate) SetImageHeight(v int32) *MessageLinkUpdate {
-	_u.mutation.ResetImageHeight()
-	_u.mutation.SetImageHeight(v)
-	return _u
-}
-
-// SetNillableImageHeight sets the "image_height" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableImageHeight(v *int32) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetImageHeight(*v)
-	}
-	return _u
-}
-
-// AddImageHeight adds value to the "image_height" field.
-func (_u *MessageLinkUpdate) AddImageHeight(v int32) *MessageLinkUpdate {
-	_u.mutation.AddImageHeight(v)
-	return _u
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (_u *MessageLinkUpdate) ClearImageHeight() *MessageLinkUpdate {
-	_u.mutation.ClearImageHeight()
-	return _u
-}
-
-// SetYoutubeVideoID sets the "youtube_video_id" field.
-func (_u *MessageLinkUpdate) SetYoutubeVideoID(v string) *MessageLinkUpdate {
-	_u.mutation.SetYoutubeVideoID(v)
-	return _u
-}
-
-// SetNillableYoutubeVideoID sets the "youtube_video_id" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableYoutubeVideoID(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetYoutubeVideoID(*v)
-	}
-	return _u
-}
-
-// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
-func (_u *MessageLinkUpdate) ClearYoutubeVideoID() *MessageLinkUpdate {
-	_u.mutation.ClearYoutubeVideoID()
-	return _u
-}
-
-// SetYoutubeChannelName sets the "youtube_channel_name" field.
-func (_u *MessageLinkUpdate) SetYoutubeChannelName(v string) *MessageLinkUpdate {
-	_u.mutation.SetYoutubeChannelName(v)
-	return _u
-}
-
-// SetNillableYoutubeChannelName sets the "youtube_channel_name" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableYoutubeChannelName(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetYoutubeChannelName(*v)
-	}
-	return _u
-}
-
-// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
-func (_u *MessageLinkUpdate) ClearYoutubeChannelName() *MessageLinkUpdate {
-	_u.mutation.ClearYoutubeChannelName()
-	return _u
-}
-
-// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
-func (_u *MessageLinkUpdate) SetYoutubeDurationSeconds(v int32) *MessageLinkUpdate {
-	_u.mutation.ResetYoutubeDurationSeconds()
-	_u.mutation.SetYoutubeDurationSeconds(v)
-	return _u
-}
-
-// SetNillableYoutubeDurationSeconds sets the "youtube_duration_seconds" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableYoutubeDurationSeconds(v *int32) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetYoutubeDurationSeconds(*v)
-	}
-	return _u
-}
-
-// AddYoutubeDurationSeconds adds value to the "youtube_duration_seconds" field.
-func (_u *MessageLinkUpdate) AddYoutubeDurationSeconds(v int32) *MessageLinkUpdate {
-	_u.mutation.AddYoutubeDurationSeconds(v)
-	return _u
-}
-
-// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
-func (_u *MessageLinkUpdate) ClearYoutubeDurationSeconds() *MessageLinkUpdate {
-	_u.mutation.ClearYoutubeDurationSeconds()
-	return _u
-}
-
-// SetXAuthorName sets the "x_author_name" field.
-func (_u *MessageLinkUpdate) SetXAuthorName(v string) *MessageLinkUpdate {
-	_u.mutation.SetXAuthorName(v)
-	return _u
-}
-
-// SetNillableXAuthorName sets the "x_author_name" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableXAuthorName(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetXAuthorName(*v)
-	}
-	return _u
-}
-
-// ClearXAuthorName clears the value of the "x_author_name" field.
-func (_u *MessageLinkUpdate) ClearXAuthorName() *MessageLinkUpdate {
-	_u.mutation.ClearXAuthorName()
-	return _u
-}
-
-// SetXAuthorHandle sets the "x_author_handle" field.
-func (_u *MessageLinkUpdate) SetXAuthorHandle(v string) *MessageLinkUpdate {
-	_u.mutation.SetXAuthorHandle(v)
-	return _u
-}
-
-// SetNillableXAuthorHandle sets the "x_author_handle" field if the given value is not nil.
-func (_u *MessageLinkUpdate) SetNillableXAuthorHandle(v *string) *MessageLinkUpdate {
-	if v != nil {
-		_u.SetXAuthorHandle(*v)
-	}
-	return _u
-}
-
-// ClearXAuthorHandle clears the value of the "x_author_handle" field.
-func (_u *MessageLinkUpdate) ClearXAuthorHandle() *MessageLinkUpdate {
-	_u.mutation.ClearXAuthorHandle()
+// ClearLinkPreviewID clears the value of the "link_preview_id" field.
+func (_u *MessageLinkUpdate) ClearLinkPreviewID() *MessageLinkUpdate {
+	_u.mutation.ClearLinkPreviewID()
 	return _u
 }
 
@@ -324,15 +83,9 @@ func (_u *MessageLinkUpdate) ClearLinkedMessageID() *MessageLinkUpdate {
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageLinkUpdate) SetMessageID(id uuid.UUID) *MessageLinkUpdate {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
-// SetMessage sets the "message" edge to the Message entity.
-func (_u *MessageLinkUpdate) SetMessage(v *Message) *MessageLinkUpdate {
-	return _u.SetMessageID(v.ID)
+// SetLinkPreview sets the "link_preview" edge to the LinkPreview entity.
+func (_u *MessageLinkUpdate) SetLinkPreview(v *LinkPreview) *MessageLinkUpdate {
+	return _u.SetLinkPreviewID(v.ID)
 }
 
 // Mutation returns the MessageLinkMutation object of the builder.
@@ -340,9 +93,9 @@ func (_u *MessageLinkUpdate) Mutation() *MessageLinkMutation {
 	return _u.mutation
 }
 
-// ClearMessage clears the "message" edge to the Message entity.
-func (_u *MessageLinkUpdate) ClearMessage() *MessageLinkUpdate {
-	_u.mutation.ClearMessage()
+// ClearLinkPreview clears the "link_preview" edge to the LinkPreview entity.
+func (_u *MessageLinkUpdate) ClearLinkPreview() *MessageLinkUpdate {
+	_u.mutation.ClearLinkPreview()
 	return _u
 }
 
@@ -401,115 +154,34 @@ func (_u *MessageLinkUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(messagelink.FieldURL, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(messagelink.FieldTitle, field.TypeString, value)
-	}
-	if _u.mutation.TitleCleared() {
-		_spec.ClearField(messagelink.FieldTitle, field.TypeString)
-	}
-	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(messagelink.FieldDescription, field.TypeString, value)
-	}
-	if _u.mutation.DescriptionCleared() {
-		_spec.ClearField(messagelink.FieldDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.ImageURL(); ok {
-		_spec.SetField(messagelink.FieldImageURL, field.TypeString, value)
-	}
-	if _u.mutation.ImageURLCleared() {
-		_spec.ClearField(messagelink.FieldImageURL, field.TypeString)
-	}
-	if value, ok := _u.mutation.SiteName(); ok {
-		_spec.SetField(messagelink.FieldSiteName, field.TypeString, value)
-	}
-	if _u.mutation.SiteNameCleared() {
-		_spec.ClearField(messagelink.FieldSiteName, field.TypeString)
-	}
-	if value, ok := _u.mutation.CardType(); ok {
-		_spec.SetField(messagelink.FieldCardType, field.TypeString, value)
-	}
-	if _u.mutation.CardTypeCleared() {
-		_spec.ClearField(messagelink.FieldCardType, field.TypeString)
-	}
-	if value, ok := _u.mutation.ImageWidth(); ok {
-		_spec.SetField(messagelink.FieldImageWidth, field.TypeInt32, value)
-	}
-	if value, ok := _u.mutation.AddedImageWidth(); ok {
-		_spec.AddField(messagelink.FieldImageWidth, field.TypeInt32, value)
-	}
-	if _u.mutation.ImageWidthCleared() {
-		_spec.ClearField(messagelink.FieldImageWidth, field.TypeInt32)
-	}
-	if value, ok := _u.mutation.ImageHeight(); ok {
-		_spec.SetField(messagelink.FieldImageHeight, field.TypeInt32, value)
-	}
-	if value, ok := _u.mutation.AddedImageHeight(); ok {
-		_spec.AddField(messagelink.FieldImageHeight, field.TypeInt32, value)
-	}
-	if _u.mutation.ImageHeightCleared() {
-		_spec.ClearField(messagelink.FieldImageHeight, field.TypeInt32)
-	}
-	if value, ok := _u.mutation.YoutubeVideoID(); ok {
-		_spec.SetField(messagelink.FieldYoutubeVideoID, field.TypeString, value)
-	}
-	if _u.mutation.YoutubeVideoIDCleared() {
-		_spec.ClearField(messagelink.FieldYoutubeVideoID, field.TypeString)
-	}
-	if value, ok := _u.mutation.YoutubeChannelName(); ok {
-		_spec.SetField(messagelink.FieldYoutubeChannelName, field.TypeString, value)
-	}
-	if _u.mutation.YoutubeChannelNameCleared() {
-		_spec.ClearField(messagelink.FieldYoutubeChannelName, field.TypeString)
-	}
-	if value, ok := _u.mutation.YoutubeDurationSeconds(); ok {
-		_spec.SetField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
-	}
-	if value, ok := _u.mutation.AddedYoutubeDurationSeconds(); ok {
-		_spec.AddField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
-	}
-	if _u.mutation.YoutubeDurationSecondsCleared() {
-		_spec.ClearField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32)
-	}
-	if value, ok := _u.mutation.XAuthorName(); ok {
-		_spec.SetField(messagelink.FieldXAuthorName, field.TypeString, value)
-	}
-	if _u.mutation.XAuthorNameCleared() {
-		_spec.ClearField(messagelink.FieldXAuthorName, field.TypeString)
-	}
-	if value, ok := _u.mutation.XAuthorHandle(); ok {
-		_spec.SetField(messagelink.FieldXAuthorHandle, field.TypeString, value)
-	}
-	if _u.mutation.XAuthorHandleCleared() {
-		_spec.ClearField(messagelink.FieldXAuthorHandle, field.TypeString)
-	}
 	if value, ok := _u.mutation.LinkedMessageID(); ok {
 		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
 	}
 	if _u.mutation.LinkedMessageIDCleared() {
 		_spec.ClearField(messagelink.FieldLinkedMessageID, field.TypeUUID)
 	}
-	if _u.mutation.MessageCleared() {
+	if _u.mutation.LinkPreviewCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   messagelink.MessageTable,
-			Columns: []string{messagelink.MessageColumn},
+			Table:   messagelink.LinkPreviewTable,
+			Columns: []string{messagelink.LinkPreviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(linkpreview.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.MessageIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.LinkPreviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   messagelink.MessageTable,
-			Columns: []string{messagelink.MessageColumn},
+			Table:   messagelink.LinkPreviewTable,
+			Columns: []string{messagelink.LinkPreviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(linkpreview.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -551,264 +223,23 @@ func (_u *MessageLinkUpdateOne) SetNillableURL(v *string) *MessageLinkUpdateOne 
 	return _u
 }
 
-// SetTitle sets the "title" field.
-func (_u *MessageLinkUpdateOne) SetTitle(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetTitle(v)
+// SetLinkPreviewID sets the "link_preview_id" field.
+func (_u *MessageLinkUpdateOne) SetLinkPreviewID(v uuid.UUID) *MessageLinkUpdateOne {
+	_u.mutation.SetLinkPreviewID(v)
 	return _u
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableTitle(v *string) *MessageLinkUpdateOne {
+// SetNillableLinkPreviewID sets the "link_preview_id" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableLinkPreviewID(v *uuid.UUID) *MessageLinkUpdateOne {
 	if v != nil {
-		_u.SetTitle(*v)
+		_u.SetLinkPreviewID(*v)
 	}
 	return _u
 }
 
-// ClearTitle clears the value of the "title" field.
-func (_u *MessageLinkUpdateOne) ClearTitle() *MessageLinkUpdateOne {
-	_u.mutation.ClearTitle()
-	return _u
-}
-
-// SetDescription sets the "description" field.
-func (_u *MessageLinkUpdateOne) SetDescription(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetDescription(v)
-	return _u
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableDescription(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetDescription(*v)
-	}
-	return _u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (_u *MessageLinkUpdateOne) ClearDescription() *MessageLinkUpdateOne {
-	_u.mutation.ClearDescription()
-	return _u
-}
-
-// SetImageURL sets the "image_url" field.
-func (_u *MessageLinkUpdateOne) SetImageURL(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetImageURL(v)
-	return _u
-}
-
-// SetNillableImageURL sets the "image_url" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableImageURL(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetImageURL(*v)
-	}
-	return _u
-}
-
-// ClearImageURL clears the value of the "image_url" field.
-func (_u *MessageLinkUpdateOne) ClearImageURL() *MessageLinkUpdateOne {
-	_u.mutation.ClearImageURL()
-	return _u
-}
-
-// SetSiteName sets the "site_name" field.
-func (_u *MessageLinkUpdateOne) SetSiteName(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetSiteName(v)
-	return _u
-}
-
-// SetNillableSiteName sets the "site_name" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableSiteName(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetSiteName(*v)
-	}
-	return _u
-}
-
-// ClearSiteName clears the value of the "site_name" field.
-func (_u *MessageLinkUpdateOne) ClearSiteName() *MessageLinkUpdateOne {
-	_u.mutation.ClearSiteName()
-	return _u
-}
-
-// SetCardType sets the "card_type" field.
-func (_u *MessageLinkUpdateOne) SetCardType(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetCardType(v)
-	return _u
-}
-
-// SetNillableCardType sets the "card_type" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableCardType(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetCardType(*v)
-	}
-	return _u
-}
-
-// ClearCardType clears the value of the "card_type" field.
-func (_u *MessageLinkUpdateOne) ClearCardType() *MessageLinkUpdateOne {
-	_u.mutation.ClearCardType()
-	return _u
-}
-
-// SetImageWidth sets the "image_width" field.
-func (_u *MessageLinkUpdateOne) SetImageWidth(v int32) *MessageLinkUpdateOne {
-	_u.mutation.ResetImageWidth()
-	_u.mutation.SetImageWidth(v)
-	return _u
-}
-
-// SetNillableImageWidth sets the "image_width" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableImageWidth(v *int32) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetImageWidth(*v)
-	}
-	return _u
-}
-
-// AddImageWidth adds value to the "image_width" field.
-func (_u *MessageLinkUpdateOne) AddImageWidth(v int32) *MessageLinkUpdateOne {
-	_u.mutation.AddImageWidth(v)
-	return _u
-}
-
-// ClearImageWidth clears the value of the "image_width" field.
-func (_u *MessageLinkUpdateOne) ClearImageWidth() *MessageLinkUpdateOne {
-	_u.mutation.ClearImageWidth()
-	return _u
-}
-
-// SetImageHeight sets the "image_height" field.
-func (_u *MessageLinkUpdateOne) SetImageHeight(v int32) *MessageLinkUpdateOne {
-	_u.mutation.ResetImageHeight()
-	_u.mutation.SetImageHeight(v)
-	return _u
-}
-
-// SetNillableImageHeight sets the "image_height" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableImageHeight(v *int32) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetImageHeight(*v)
-	}
-	return _u
-}
-
-// AddImageHeight adds value to the "image_height" field.
-func (_u *MessageLinkUpdateOne) AddImageHeight(v int32) *MessageLinkUpdateOne {
-	_u.mutation.AddImageHeight(v)
-	return _u
-}
-
-// ClearImageHeight clears the value of the "image_height" field.
-func (_u *MessageLinkUpdateOne) ClearImageHeight() *MessageLinkUpdateOne {
-	_u.mutation.ClearImageHeight()
-	return _u
-}
-
-// SetYoutubeVideoID sets the "youtube_video_id" field.
-func (_u *MessageLinkUpdateOne) SetYoutubeVideoID(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetYoutubeVideoID(v)
-	return _u
-}
-
-// SetNillableYoutubeVideoID sets the "youtube_video_id" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableYoutubeVideoID(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetYoutubeVideoID(*v)
-	}
-	return _u
-}
-
-// ClearYoutubeVideoID clears the value of the "youtube_video_id" field.
-func (_u *MessageLinkUpdateOne) ClearYoutubeVideoID() *MessageLinkUpdateOne {
-	_u.mutation.ClearYoutubeVideoID()
-	return _u
-}
-
-// SetYoutubeChannelName sets the "youtube_channel_name" field.
-func (_u *MessageLinkUpdateOne) SetYoutubeChannelName(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetYoutubeChannelName(v)
-	return _u
-}
-
-// SetNillableYoutubeChannelName sets the "youtube_channel_name" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableYoutubeChannelName(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetYoutubeChannelName(*v)
-	}
-	return _u
-}
-
-// ClearYoutubeChannelName clears the value of the "youtube_channel_name" field.
-func (_u *MessageLinkUpdateOne) ClearYoutubeChannelName() *MessageLinkUpdateOne {
-	_u.mutation.ClearYoutubeChannelName()
-	return _u
-}
-
-// SetYoutubeDurationSeconds sets the "youtube_duration_seconds" field.
-func (_u *MessageLinkUpdateOne) SetYoutubeDurationSeconds(v int32) *MessageLinkUpdateOne {
-	_u.mutation.ResetYoutubeDurationSeconds()
-	_u.mutation.SetYoutubeDurationSeconds(v)
-	return _u
-}
-
-// SetNillableYoutubeDurationSeconds sets the "youtube_duration_seconds" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableYoutubeDurationSeconds(v *int32) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetYoutubeDurationSeconds(*v)
-	}
-	return _u
-}
-
-// AddYoutubeDurationSeconds adds value to the "youtube_duration_seconds" field.
-func (_u *MessageLinkUpdateOne) AddYoutubeDurationSeconds(v int32) *MessageLinkUpdateOne {
-	_u.mutation.AddYoutubeDurationSeconds(v)
-	return _u
-}
-
-// ClearYoutubeDurationSeconds clears the value of the "youtube_duration_seconds" field.
-func (_u *MessageLinkUpdateOne) ClearYoutubeDurationSeconds() *MessageLinkUpdateOne {
-	_u.mutation.ClearYoutubeDurationSeconds()
-	return _u
-}
-
-// SetXAuthorName sets the "x_author_name" field.
-func (_u *MessageLinkUpdateOne) SetXAuthorName(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetXAuthorName(v)
-	return _u
-}
-
-// SetNillableXAuthorName sets the "x_author_name" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableXAuthorName(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetXAuthorName(*v)
-	}
-	return _u
-}
-
-// ClearXAuthorName clears the value of the "x_author_name" field.
-func (_u *MessageLinkUpdateOne) ClearXAuthorName() *MessageLinkUpdateOne {
-	_u.mutation.ClearXAuthorName()
-	return _u
-}
-
-// SetXAuthorHandle sets the "x_author_handle" field.
-func (_u *MessageLinkUpdateOne) SetXAuthorHandle(v string) *MessageLinkUpdateOne {
-	_u.mutation.SetXAuthorHandle(v)
-	return _u
-}
-
-// SetNillableXAuthorHandle sets the "x_author_handle" field if the given value is not nil.
-func (_u *MessageLinkUpdateOne) SetNillableXAuthorHandle(v *string) *MessageLinkUpdateOne {
-	if v != nil {
-		_u.SetXAuthorHandle(*v)
-	}
-	return _u
-}
-
-// ClearXAuthorHandle clears the value of the "x_author_handle" field.
-func (_u *MessageLinkUpdateOne) ClearXAuthorHandle() *MessageLinkUpdateOne {
-	_u.mutation.ClearXAuthorHandle()
+// ClearLinkPreviewID clears the value of the "link_preview_id" field.
+func (_u *MessageLinkUpdateOne) ClearLinkPreviewID() *MessageLinkUpdateOne {
+	_u.mutation.ClearLinkPreviewID()
 	return _u
 }
 
@@ -832,15 +263,9 @@ func (_u *MessageLinkUpdateOne) ClearLinkedMessageID() *MessageLinkUpdateOne {
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageLinkUpdateOne) SetMessageID(id uuid.UUID) *MessageLinkUpdateOne {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
-// SetMessage sets the "message" edge to the Message entity.
-func (_u *MessageLinkUpdateOne) SetMessage(v *Message) *MessageLinkUpdateOne {
-	return _u.SetMessageID(v.ID)
+// SetLinkPreview sets the "link_preview" edge to the LinkPreview entity.
+func (_u *MessageLinkUpdateOne) SetLinkPreview(v *LinkPreview) *MessageLinkUpdateOne {
+	return _u.SetLinkPreviewID(v.ID)
 }
 
 // Mutation returns the MessageLinkMutation object of the builder.
@@ -848,9 +273,9 @@ func (_u *MessageLinkUpdateOne) Mutation() *MessageLinkMutation {
 	return _u.mutation
 }
 
-// ClearMessage clears the "message" edge to the Message entity.
-func (_u *MessageLinkUpdateOne) ClearMessage() *MessageLinkUpdateOne {
-	_u.mutation.ClearMessage()
+// ClearLinkPreview clears the "link_preview" edge to the LinkPreview entity.
+func (_u *MessageLinkUpdateOne) ClearLinkPreview() *MessageLinkUpdateOne {
+	_u.mutation.ClearLinkPreview()
 	return _u
 }
 
@@ -939,115 +364,34 @@ func (_u *MessageLinkUpdateOne) sqlSave(ctx context.Context) (_node *MessageLink
 	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(messagelink.FieldURL, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Title(); ok {
-		_spec.SetField(messagelink.FieldTitle, field.TypeString, value)
-	}
-	if _u.mutation.TitleCleared() {
-		_spec.ClearField(messagelink.FieldTitle, field.TypeString)
-	}
-	if value, ok := _u.mutation.Description(); ok {
-		_spec.SetField(messagelink.FieldDescription, field.TypeString, value)
-	}
-	if _u.mutation.DescriptionCleared() {
-		_spec.ClearField(messagelink.FieldDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.ImageURL(); ok {
-		_spec.SetField(messagelink.FieldImageURL, field.TypeString, value)
-	}
-	if _u.mutation.ImageURLCleared() {
-		_spec.ClearField(messagelink.FieldImageURL, field.TypeString)
-	}
-	if value, ok := _u.mutation.SiteName(); ok {
-		_spec.SetField(messagelink.FieldSiteName, field.TypeString, value)
-	}
-	if _u.mutation.SiteNameCleared() {
-		_spec.ClearField(messagelink.FieldSiteName, field.TypeString)
-	}
-	if value, ok := _u.mutation.CardType(); ok {
-		_spec.SetField(messagelink.FieldCardType, field.TypeString, value)
-	}
-	if _u.mutation.CardTypeCleared() {
-		_spec.ClearField(messagelink.FieldCardType, field.TypeString)
-	}
-	if value, ok := _u.mutation.ImageWidth(); ok {
-		_spec.SetField(messagelink.FieldImageWidth, field.TypeInt32, value)
-	}
-	if value, ok := _u.mutation.AddedImageWidth(); ok {
-		_spec.AddField(messagelink.FieldImageWidth, field.TypeInt32, value)
-	}
-	if _u.mutation.ImageWidthCleared() {
-		_spec.ClearField(messagelink.FieldImageWidth, field.TypeInt32)
-	}
-	if value, ok := _u.mutation.ImageHeight(); ok {
-		_spec.SetField(messagelink.FieldImageHeight, field.TypeInt32, value)
-	}
-	if value, ok := _u.mutation.AddedImageHeight(); ok {
-		_spec.AddField(messagelink.FieldImageHeight, field.TypeInt32, value)
-	}
-	if _u.mutation.ImageHeightCleared() {
-		_spec.ClearField(messagelink.FieldImageHeight, field.TypeInt32)
-	}
-	if value, ok := _u.mutation.YoutubeVideoID(); ok {
-		_spec.SetField(messagelink.FieldYoutubeVideoID, field.TypeString, value)
-	}
-	if _u.mutation.YoutubeVideoIDCleared() {
-		_spec.ClearField(messagelink.FieldYoutubeVideoID, field.TypeString)
-	}
-	if value, ok := _u.mutation.YoutubeChannelName(); ok {
-		_spec.SetField(messagelink.FieldYoutubeChannelName, field.TypeString, value)
-	}
-	if _u.mutation.YoutubeChannelNameCleared() {
-		_spec.ClearField(messagelink.FieldYoutubeChannelName, field.TypeString)
-	}
-	if value, ok := _u.mutation.YoutubeDurationSeconds(); ok {
-		_spec.SetField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
-	}
-	if value, ok := _u.mutation.AddedYoutubeDurationSeconds(); ok {
-		_spec.AddField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32, value)
-	}
-	if _u.mutation.YoutubeDurationSecondsCleared() {
-		_spec.ClearField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32)
-	}
-	if value, ok := _u.mutation.XAuthorName(); ok {
-		_spec.SetField(messagelink.FieldXAuthorName, field.TypeString, value)
-	}
-	if _u.mutation.XAuthorNameCleared() {
-		_spec.ClearField(messagelink.FieldXAuthorName, field.TypeString)
-	}
-	if value, ok := _u.mutation.XAuthorHandle(); ok {
-		_spec.SetField(messagelink.FieldXAuthorHandle, field.TypeString, value)
-	}
-	if _u.mutation.XAuthorHandleCleared() {
-		_spec.ClearField(messagelink.FieldXAuthorHandle, field.TypeString)
-	}
 	if value, ok := _u.mutation.LinkedMessageID(); ok {
 		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
 	}
 	if _u.mutation.LinkedMessageIDCleared() {
 		_spec.ClearField(messagelink.FieldLinkedMessageID, field.TypeUUID)
 	}
-	if _u.mutation.MessageCleared() {
+	if _u.mutation.LinkPreviewCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   messagelink.MessageTable,
-			Columns: []string{messagelink.MessageColumn},
+			Table:   messagelink.LinkPreviewTable,
+			Columns: []string{messagelink.LinkPreviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(linkpreview.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.MessageIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.LinkPreviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   messagelink.MessageTable,
-			Columns: []string{messagelink.MessageColumn},
+			Table:   messagelink.LinkPreviewTable,
+			Columns: []string{messagelink.LinkPreviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(linkpreview.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

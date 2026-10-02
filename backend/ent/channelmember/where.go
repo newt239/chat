@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.ChannelMember {
 	return predicate.ChannelMember(sql.FieldLTE(FieldID, id))
 }
 
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldEQ(FieldChannelID, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldEQ(FieldUserID, v))
+}
+
 // Role applies equality check predicate on the "role" field. It's identical to RoleEQ.
 func Role(v string) predicate.ChannelMember {
 	return predicate.ChannelMember(sql.FieldEQ(FieldRole, v))
@@ -64,6 +74,46 @@ func Role(v string) predicate.ChannelMember {
 // JoinedAt applies equality check predicate on the "joined_at" field. It's identical to JoinedAtEQ.
 func JoinedAt(v time.Time) predicate.ChannelMember {
 	return predicate.ChannelMember(sql.FieldEQ(FieldJoinedAt, v))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.ChannelMember {
+	return predicate.ChannelMember(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // RoleEQ applies the EQ predicate on the "role" field.

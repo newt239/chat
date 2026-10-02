@@ -190,7 +190,7 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 		}
 		creator := messageuc.UserInfo{ID: e.CreatedBy}
 		if u := byID[e.CreatedBy]; u != nil {
-			creator = messageuc.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsBot: u.IsBot}
+			creator = messageuc.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
 		}
 		outputs = append(outputs, Output{
 			ID:        e.ID,

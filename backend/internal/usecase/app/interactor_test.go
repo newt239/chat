@@ -210,7 +210,7 @@ func TestCreateStoresHashBotUserAndJoinsDefaultChannel(t *testing.T) {
 		t.Fatalf("トークンがハッシュで保存されていません: %+v", stored)
 	}
 	bot := f.users.users[stored.BotUserID]
-	if bot == nil || !bot.IsBot || bot.IsOfficial || bot.DisplayName != "Deploy Bot" {
+	if bot == nil || !bot.IsApp || bot.IsOfficial || bot.DisplayName != "Deploy Bot" {
 		t.Fatalf("ボットユーザーが作成されていません: %+v", bot)
 	}
 	if !f.members.members[joinedID+"/"+stored.BotUserID] {

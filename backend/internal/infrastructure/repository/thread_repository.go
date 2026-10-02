@@ -14,9 +14,7 @@ import (
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/threadreadstate"
-	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
-	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -51,9 +49,9 @@ func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, mes
 // 親ごとの返信数（削除済みを含む）と最新の返信を 1 本の SQL で求める
 // $1: 親メッセージ ID の配列
 const threadReplySummarySQL = `
-	SELECT DISTINCT ON (message_parent) message_parent, COUNT(*) OVER (PARTITION BY message_parent), created_at, message_user
-	FROM messages WHERE message_parent = ANY($1::uuid[])
-	ORDER BY message_parent, created_at DESC`
+	SELECT DISTINCT ON (parent_id) parent_id, COUNT(*) OVER (PARTITION BY parent_id), created_at, user_id
+	FROM message WHERE parent_id = ANY($1::uuid[])
+	ORDER BY parent_id, created_at DESC`
 
 // CalculateMetadataByMessageIDs は複数のメッセージIDのスレッドメタデータを一括計算します
 func (r *threadRepository) CalculateMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*domainrepository.ThreadMetadata, error) {
@@ -110,8 +108,8 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 
 	isMember, err := client.WorkspaceMember.Query().
 		Where(
-			workspacemember.HasUserWith(user.ID(userID)),
-			workspacemember.HasWorkspaceWith(workspace.ID(input.WorkspaceID)),
+			workspacemember.UserID(userID),
+			workspacemember.WorkspaceID(input.WorkspaceID),
 		).
 		Exist(ctx)
 	if err != nil {
@@ -126,9 +124,9 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 			message.Not(message.HasParent()),
 			message.HasChannelWith(viewableChannel(input.WorkspaceID, userID)),
 			message.Or(
-				message.HasUserThreadFollowsWith(userthreadfollow.HasUserWith(user.ID(userID))),
-				message.HasRepliesWith(message.HasUserWith(user.ID(userID))),
-				message.HasRepliesWith(message.HasUserMentionsWith(messageusermention.HasUserWith(user.ID(userID)))),
+				message.HasUserThreadFollowsWith(userthreadfollow.UserID(userID)),
+				message.HasRepliesWith(message.UserID(userID)),
+				message.HasRepliesWith(message.HasUserMentionsWith(messageusermention.UserID(userID))),
 			),
 		)
 
@@ -180,17 +178,16 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 
 	readStates, err := client.ThreadReadState.Query().
 		Where(
-			threadreadstate.HasUserWith(user.ID(userID)),
-			threadreadstate.HasThreadWith(message.IDIn(threadIDs...)),
+			threadreadstate.UserID(userID),
+			threadreadstate.ThreadIDIn(threadIDs...),
 		).
-		WithThread(func(q *ent.MessageQuery) { q.Select(message.FieldID) }).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	lastReadAt := make(map[uuid.UUID]time.Time)
 	for _, rs := range readStates {
-		lastReadAt[rs.Edges.Thread.ID] = rs.LastReadAt
+		lastReadAt[rs.ThreadID] = rs.LastReadAt
 	}
 
 	items := make([]domainrepository.ParticipatingThread, 0, len(threads))
@@ -254,8 +251,8 @@ func (r *threadRepository) UpsertReadState(ctx context.Context, userID, threadID
 	// 既存のreadstateを探す
 	existing, err := client.ThreadReadState.Query().
 		Where(
-			threadreadstate.HasUserWith(user.ID(uid)),
-			threadreadstate.HasThreadWith(message.ID(tid)),
+			threadreadstate.UserID(uid),
+			threadreadstate.ThreadID(tid),
 		).
 		Only(ctx)
 
@@ -291,8 +288,8 @@ func (r *threadRepository) GetReadState(ctx context.Context, userID, threadID st
 	client := transaction.ResolveClient(ctx, r.client)
 	readState, err := client.ThreadReadState.Query().
 		Where(
-			threadreadstate.HasUserWith(user.ID(uid)),
-			threadreadstate.HasThreadWith(message.ID(tid)),
+			threadreadstate.UserID(uid),
+			threadreadstate.ThreadID(tid),
 		).
 		Only(ctx)
 
@@ -321,8 +318,8 @@ func (r *threadRepository) FollowThread(ctx context.Context, userID, threadID st
 	// 既に存在するかチェック
 	exists, err := client.UserThreadFollow.Query().
 		Where(
-			userthreadfollow.HasUserWith(user.ID(uid)),
-			userthreadfollow.HasThreadWith(message.ID(tid)),
+			userthreadfollow.UserID(uid),
+			userthreadfollow.ThreadID(tid),
 		).
 		Exist(ctx)
 
@@ -356,8 +353,8 @@ func (r *threadRepository) UnfollowThread(ctx context.Context, userID, threadID 
 
 	_, err = client.UserThreadFollow.Delete().
 		Where(
-			userthreadfollow.HasUserWith(user.ID(uid)),
-			userthreadfollow.HasThreadWith(message.ID(tid)),
+			userthreadfollow.UserID(uid),
+			userthreadfollow.ThreadID(tid),
 		).
 		Exec(ctx)
 
@@ -378,8 +375,8 @@ func (r *threadRepository) IsFollowing(ctx context.Context, userID, threadID str
 
 	return client.UserThreadFollow.Query().
 		Where(
-			userthreadfollow.HasUserWith(user.ID(uid)),
-			userthreadfollow.HasThreadWith(message.ID(tid)),
+			userthreadfollow.UserID(uid),
+			userthreadfollow.ThreadID(tid),
 		).
 		Exist(ctx)
 }
@@ -392,7 +389,7 @@ func (r *threadRepository) FindFollowerIDs(ctx context.Context, threadID string)
 
 	client := transaction.ResolveClient(ctx, r.client)
 	ids, err := client.UserThreadFollow.Query().
-		Where(userthreadfollow.HasThreadWith(message.ID(tid))).
+		Where(userthreadfollow.ThreadID(tid)).
 		QueryUser().
 		IDs(ctx)
 	if err != nil {

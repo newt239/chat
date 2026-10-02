@@ -14,6 +14,8 @@ const (
 	Label = "workspace"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreatedByID holds the string denoting the created_by_id field in the database.
+	FieldCreatedByID = "created_by_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -39,40 +41,41 @@ const (
 	// EdgeUserGroups holds the string denoting the user_groups edge name in mutations.
 	EdgeUserGroups = "user_groups"
 	// Table holds the table name of the workspace in the database.
-	Table = "workspaces"
+	Table = "workspace"
 	// CreatedByTable is the table that holds the created_by relation/edge.
-	CreatedByTable = "workspaces"
+	CreatedByTable = "workspace"
 	// CreatedByInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatedByInverseTable = "users"
+	CreatedByInverseTable = "user"
 	// CreatedByColumn is the table column denoting the created_by relation/edge.
-	CreatedByColumn = "workspace_created_by"
+	CreatedByColumn = "created_by_id"
 	// MembersTable is the table that holds the members relation/edge.
-	MembersTable = "workspace_members"
+	MembersTable = "workspace_member"
 	// MembersInverseTable is the table name for the WorkspaceMember entity.
 	// It exists in this package in order to avoid circular dependency with the "workspacemember" package.
-	MembersInverseTable = "workspace_members"
+	MembersInverseTable = "workspace_member"
 	// MembersColumn is the table column denoting the members relation/edge.
-	MembersColumn = "workspace_member_workspace"
+	MembersColumn = "workspace_id"
 	// ChannelsTable is the table that holds the channels relation/edge.
-	ChannelsTable = "channels"
+	ChannelsTable = "channel"
 	// ChannelsInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelsInverseTable = "channels"
+	ChannelsInverseTable = "channel"
 	// ChannelsColumn is the table column denoting the channels relation/edge.
-	ChannelsColumn = "channel_workspace"
+	ChannelsColumn = "workspace_id"
 	// UserGroupsTable is the table that holds the user_groups relation/edge.
-	UserGroupsTable = "user_groups"
+	UserGroupsTable = "user_group"
 	// UserGroupsInverseTable is the table name for the UserGroup entity.
 	// It exists in this package in order to avoid circular dependency with the "usergroup" package.
-	UserGroupsInverseTable = "user_groups"
+	UserGroupsInverseTable = "user_group"
 	// UserGroupsColumn is the table column denoting the user_groups relation/edge.
-	UserGroupsColumn = "user_group_workspace"
+	UserGroupsColumn = "workspace_id"
 )
 
 // Columns holds all SQL columns for workspace fields.
 var Columns = []string{
 	FieldID,
+	FieldCreatedByID,
 	FieldName,
 	FieldDescription,
 	FieldIconURL,
@@ -83,21 +86,10 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "workspaces"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"workspace_created_by",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -129,6 +121,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByCreatedByID orders the results by the created_by_id field.
+func ByCreatedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedByID, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

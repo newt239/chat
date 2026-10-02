@@ -5,14 +5,21 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/google/uuid"
 )
 
 // Workspace holds the schema definition for the Workspace entity.
 type Workspace struct {
 	ent.Schema
+}
+
+func (Workspace) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "workspace"}}
 }
 
 // Fields of the Workspace.
@@ -25,6 +32,7 @@ func (Workspace) Fields() []ent.Field {
 			Unique().
 			Immutable().
 			Match(regexp.MustCompile(`^[a-z0-9][a-z0-9-]*[a-z0-9]$`)),
+		field.UUID("created_by_id", uuid.UUID{}),
 		field.String("name").
 			NotEmpty(),
 		field.String("description").
@@ -50,6 +58,7 @@ func (Workspace) Fields() []ent.Field {
 func (Workspace) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("created_by", User.Type).
+			Field("created_by_id").
 			Unique().
 			Required(),
 		edge.From("members", WorkspaceMember.Type).

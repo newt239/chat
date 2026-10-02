@@ -33,12 +33,12 @@ func postWebhook(t *testing.T, poster *stubPoster, body string) *httptest.Respon
 
 func TestWebhookHandlerParsesSlackPayload(t *testing.T) {
 	poster := &stubPoster{}
-	rec := postWebhook(t, poster, `{"text":"hello","username":"CI","icon_url":"https://example.com/a.png","channel_id":"c1","thread_id":"m1"}`)
+	rec := postWebhook(t, poster, `{"text":"hello","channel_id":"c1","thread_id":"m1"}`)
 	if rec.Code != http.StatusOK || rec.Body.String() != "ok" {
 		t.Fatalf("200 ok を期待しましたが %d %s でした", rec.Code, rec.Body.String())
 	}
 	got := poster.got
-	if got.AppID != "wh" || got.Token != "tok" || got.Text != "hello" || *got.Username != "CI" || *got.AvatarURL != "https://example.com/a.png" ||
+	if got.AppID != "wh" || got.Token != "tok" || got.Text != "hello" ||
 		*got.ChannelID != "c1" || *got.ParentID != "m1" {
 		t.Fatalf("入力が正しく渡されていません: %+v", got)
 	}

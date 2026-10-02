@@ -30,6 +30,18 @@ type ChannelCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_c *ChannelCreate) SetWorkspaceID(v string) *ChannelCreate {
+	_c.mutation.SetWorkspaceID(v)
+	return _c
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (_c *ChannelCreate) SetCreatedByID(v uuid.UUID) *ChannelCreate {
+	_c.mutation.SetCreatedByID(v)
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *ChannelCreate) SetName(v string) *ChannelCreate {
 	_c.mutation.SetName(v)
@@ -106,6 +118,20 @@ func (_c *ChannelCreate) SetNillableParentID(v *uuid.UUID) *ChannelCreate {
 	return _c
 }
 
+// SetDmKey sets the "dm_key" field.
+func (_c *ChannelCreate) SetDmKey(v string) *ChannelCreate {
+	_c.mutation.SetDmKey(v)
+	return _c
+}
+
+// SetNillableDmKey sets the "dm_key" field if the given value is not nil.
+func (_c *ChannelCreate) SetNillableDmKey(v *string) *ChannelCreate {
+	if v != nil {
+		_c.SetDmKey(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ChannelCreate) SetCreatedAt(v time.Time) *ChannelCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -148,21 +174,9 @@ func (_c *ChannelCreate) SetNillableID(v *uuid.UUID) *ChannelCreate {
 	return _c
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_c *ChannelCreate) SetWorkspaceID(id string) *ChannelCreate {
-	_c.mutation.SetWorkspaceID(id)
-	return _c
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_c *ChannelCreate) SetWorkspace(v *Workspace) *ChannelCreate {
 	return _c.SetWorkspaceID(v.ID)
-}
-
-// SetCreatedByID sets the "created_by" edge to the User entity by ID.
-func (_c *ChannelCreate) SetCreatedByID(id uuid.UUID) *ChannelCreate {
-	_c.mutation.SetCreatedByID(id)
-	return _c
 }
 
 // SetCreatedBy sets the "created_by" edge to the User entity.
@@ -309,6 +323,12 @@ func (_c *ChannelCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *ChannelCreate) check() error {
+	if _, ok := _c.mutation.WorkspaceID(); !ok {
+		return &ValidationError{Name: "workspace_id", err: errors.New(`ent: missing required field "Channel.workspace_id"`)}
+	}
+	if _, ok := _c.mutation.CreatedByID(); !ok {
+		return &ValidationError{Name: "created_by_id", err: errors.New(`ent: missing required field "Channel.created_by_id"`)}
+	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Channel.name"`)}
 	}
@@ -388,6 +408,10 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)
 		_node.ArchivedAt = &value
 	}
+	if value, ok := _c.mutation.DmKey(); ok {
+		_spec.SetField(channel.FieldDmKey, field.TypeString, value)
+		_node.DmKey = &value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(channel.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -410,7 +434,7 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_workspace = &nodes[0]
+		_node.WorkspaceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.CreatedByIDs(); len(nodes) > 0 {
@@ -427,7 +451,7 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.channel_created_by = &nodes[0]
+		_node.CreatedByID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
@@ -534,7 +558,7 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Channel.Create().
-//		SetName(v).
+//		SetWorkspaceID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -543,7 +567,7 @@ func (_c *ChannelCreate) createSpec() (*Channel, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelUpsert) {
-//			SetName(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelCreate) OnConflict(opts ...sql.ConflictOption) *ChannelUpsertOne {
@@ -578,6 +602,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *ChannelUpsert) SetWorkspaceID(v string) *ChannelUpsert {
+	u.Set(channel.FieldWorkspaceID, v)
+	return u
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *ChannelUpsert) UpdateWorkspaceID() *ChannelUpsert {
+	u.SetExcluded(channel.FieldWorkspaceID)
+	return u
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *ChannelUpsert) SetCreatedByID(v uuid.UUID) *ChannelUpsert {
+	u.Set(channel.FieldCreatedByID, v)
+	return u
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *ChannelUpsert) UpdateCreatedByID() *ChannelUpsert {
+	u.SetExcluded(channel.FieldCreatedByID)
+	return u
+}
 
 // SetName sets the "name" field.
 func (u *ChannelUpsert) SetName(v string) *ChannelUpsert {
@@ -704,6 +752,9 @@ func (u *ChannelUpsertOne) UpdateNewValues() *ChannelUpsertOne {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(channel.FieldID)
 		}
+		if _, exists := u.create.mutation.DmKey(); exists {
+			s.SetIgnore(channel.FieldDmKey)
+		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(channel.FieldCreatedAt)
 		}
@@ -736,6 +787,34 @@ func (u *ChannelUpsertOne) Update(set func(*ChannelUpsert)) *ChannelUpsertOne {
 		set(&ChannelUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *ChannelUpsertOne) SetWorkspaceID(v string) *ChannelUpsertOne {
+	return u.Update(func(s *ChannelUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *ChannelUpsertOne) UpdateWorkspaceID() *ChannelUpsertOne {
+	return u.Update(func(s *ChannelUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *ChannelUpsertOne) SetCreatedByID(v uuid.UUID) *ChannelUpsertOne {
+	return u.Update(func(s *ChannelUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *ChannelUpsertOne) UpdateCreatedByID() *ChannelUpsertOne {
+	return u.Update(func(s *ChannelUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetName sets the "name" field.
@@ -1000,7 +1079,7 @@ func (_c *ChannelCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ChannelUpsert) {
-//			SetName(v+v).
+//			SetWorkspaceID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *ChannelCreateBulk) OnConflict(opts ...sql.ConflictOption) *ChannelUpsertBulk {
@@ -1047,6 +1126,9 @@ func (u *ChannelUpsertBulk) UpdateNewValues() *ChannelUpsertBulk {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(channel.FieldID)
 			}
+			if _, exists := b.mutation.DmKey(); exists {
+				s.SetIgnore(channel.FieldDmKey)
+			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(channel.FieldCreatedAt)
 			}
@@ -1080,6 +1162,34 @@ func (u *ChannelUpsertBulk) Update(set func(*ChannelUpsert)) *ChannelUpsertBulk 
 		set(&ChannelUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWorkspaceID sets the "workspace_id" field.
+func (u *ChannelUpsertBulk) SetWorkspaceID(v string) *ChannelUpsertBulk {
+	return u.Update(func(s *ChannelUpsert) {
+		s.SetWorkspaceID(v)
+	})
+}
+
+// UpdateWorkspaceID sets the "workspace_id" field to the value that was provided on create.
+func (u *ChannelUpsertBulk) UpdateWorkspaceID() *ChannelUpsertBulk {
+	return u.Update(func(s *ChannelUpsert) {
+		s.UpdateWorkspaceID()
+	})
+}
+
+// SetCreatedByID sets the "created_by_id" field.
+func (u *ChannelUpsertBulk) SetCreatedByID(v uuid.UUID) *ChannelUpsertBulk {
+	return u.Update(func(s *ChannelUpsert) {
+		s.SetCreatedByID(v)
+	})
+}
+
+// UpdateCreatedByID sets the "created_by_id" field to the value that was provided on create.
+func (u *ChannelUpsertBulk) UpdateCreatedByID() *ChannelUpsertBulk {
+	return u.Update(func(s *ChannelUpsert) {
+		s.UpdateCreatedByID()
+	})
 }
 
 // SetName sets the "name" field.

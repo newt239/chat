@@ -60,7 +60,7 @@ type eventMessage struct {
 type eventUser struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"display_name"`
-	IsBot       bool   `json:"is_bot"`
+	IsApp       bool   `json:"is_app"`
 }
 
 // NotifyNewMessage は投稿の応答を待たせないよう非同期で送り、失敗はログに残すだけにします
@@ -104,7 +104,7 @@ func (d *EventDispatcher) dispatch(ctx context.Context, channel *entity.Channel,
 				ParentID:  message.ParentID,
 				Text:      text,
 				RawText:   message.Body,
-				User:      eventUser{ID: message.UserID, DisplayName: message.User.DisplayName, IsBot: message.User.IsBot},
+				User:      eventUser{ID: message.UserID, DisplayName: message.User.DisplayName, IsApp: message.User.IsApp},
 				CreatedAt: message.CreatedAt,
 			},
 		})

@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -15,12 +17,17 @@ type Session struct {
 	ent.Schema
 }
 
+func (Session) Annotations() []schema.Annotation {
+	return []schema.Annotation{entsql.Annotation{Table: "session"}}
+}
+
 // Fields of the Session.
 func (Session) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("user_id", uuid.UUID{}),
 		field.String("refresh_token_hash").
 			NotEmpty(),
 		field.Time("expires_at"),
@@ -40,6 +47,7 @@ func (Session) Fields() []ent.Field {
 func (Session) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
+			Field("user_id").
 			Unique().
 			Required(),
 	}

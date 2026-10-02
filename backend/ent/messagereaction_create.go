@@ -26,6 +26,18 @@ type MessageReactionCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetMessageID sets the "message_id" field.
+func (_c *MessageReactionCreate) SetMessageID(v uuid.UUID) *MessageReactionCreate {
+	_c.mutation.SetMessageID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *MessageReactionCreate) SetUserID(v uuid.UUID) *MessageReactionCreate {
+	_c.mutation.SetUserID(v)
+	return _c
+}
+
 // SetEmoji sets the "emoji" field.
 func (_c *MessageReactionCreate) SetEmoji(v string) *MessageReactionCreate {
 	_c.mutation.SetEmoji(v)
@@ -60,21 +72,9 @@ func (_c *MessageReactionCreate) SetNillableID(v *uuid.UUID) *MessageReactionCre
 	return _c
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_c *MessageReactionCreate) SetMessageID(id uuid.UUID) *MessageReactionCreate {
-	_c.mutation.SetMessageID(id)
-	return _c
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_c *MessageReactionCreate) SetMessage(v *Message) *MessageReactionCreate {
 	return _c.SetMessageID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_c *MessageReactionCreate) SetUserID(id uuid.UUID) *MessageReactionCreate {
-	_c.mutation.SetUserID(id)
-	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -129,6 +129,12 @@ func (_c *MessageReactionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *MessageReactionCreate) check() error {
+	if _, ok := _c.mutation.MessageID(); !ok {
+		return &ValidationError{Name: "message_id", err: errors.New(`ent: missing required field "MessageReaction.message_id"`)}
+	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "MessageReaction.user_id"`)}
+	}
 	if _, ok := _c.mutation.Emoji(); !ok {
 		return &ValidationError{Name: "emoji", err: errors.New(`ent: missing required field "MessageReaction.emoji"`)}
 	}
@@ -204,7 +210,7 @@ func (_c *MessageReactionCreate) createSpec() (*MessageReaction, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_reaction_message = &nodes[0]
+		_node.MessageID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -221,7 +227,7 @@ func (_c *MessageReactionCreate) createSpec() (*MessageReaction, *sqlgraph.Creat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_reaction_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -231,7 +237,7 @@ func (_c *MessageReactionCreate) createSpec() (*MessageReaction, *sqlgraph.Creat
 // of the `INSERT` statement. For example:
 //
 //	client.MessageReaction.Create().
-//		SetEmoji(v).
+//		SetMessageID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -240,7 +246,7 @@ func (_c *MessageReactionCreate) createSpec() (*MessageReaction, *sqlgraph.Creat
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageReactionUpsert) {
-//			SetEmoji(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageReactionCreate) OnConflict(opts ...sql.ConflictOption) *MessageReactionUpsertOne {
@@ -275,6 +281,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageReactionUpsert) SetMessageID(v uuid.UUID) *MessageReactionUpsert {
+	u.Set(messagereaction.FieldMessageID, v)
+	return u
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageReactionUpsert) UpdateMessageID() *MessageReactionUpsert {
+	u.SetExcluded(messagereaction.FieldMessageID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageReactionUpsert) SetUserID(v uuid.UUID) *MessageReactionUpsert {
+	u.Set(messagereaction.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageReactionUpsert) UpdateUserID() *MessageReactionUpsert {
+	u.SetExcluded(messagereaction.FieldUserID)
+	return u
+}
 
 // SetEmoji sets the "emoji" field.
 func (u *MessageReactionUpsert) SetEmoji(v string) *MessageReactionUpsert {
@@ -337,6 +367,34 @@ func (u *MessageReactionUpsertOne) Update(set func(*MessageReactionUpsert)) *Mes
 		set(&MessageReactionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageReactionUpsertOne) SetMessageID(v uuid.UUID) *MessageReactionUpsertOne {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageReactionUpsertOne) UpdateMessageID() *MessageReactionUpsertOne {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageReactionUpsertOne) SetUserID(v uuid.UUID) *MessageReactionUpsertOne {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageReactionUpsertOne) UpdateUserID() *MessageReactionUpsertOne {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetEmoji sets the "emoji" field.
@@ -489,7 +547,7 @@ func (_c *MessageReactionCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessageReactionUpsert) {
-//			SetEmoji(v+v).
+//			SetMessageID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessageReactionCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessageReactionUpsertBulk {
@@ -569,6 +627,34 @@ func (u *MessageReactionUpsertBulk) Update(set func(*MessageReactionUpsert)) *Me
 		set(&MessageReactionUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessageReactionUpsertBulk) SetMessageID(v uuid.UUID) *MessageReactionUpsertBulk {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessageReactionUpsertBulk) UpdateMessageID() *MessageReactionUpsertBulk {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *MessageReactionUpsertBulk) SetUserID(v uuid.UUID) *MessageReactionUpsertBulk {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *MessageReactionUpsertBulk) UpdateUserID() *MessageReactionUpsertBulk {
+	return u.Update(func(s *MessageReactionUpsert) {
+		s.UpdateUserID()
+	})
 }
 
 // SetEmoji sets the "emoji" field.

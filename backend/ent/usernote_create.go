@@ -25,6 +25,18 @@ type UserNoteCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetOwnerID sets the "owner_id" field.
+func (_c *UserNoteCreate) SetOwnerID(v uuid.UUID) *UserNoteCreate {
+	_c.mutation.SetOwnerID(v)
+	return _c
+}
+
+// SetTargetID sets the "target_id" field.
+func (_c *UserNoteCreate) SetTargetID(v uuid.UUID) *UserNoteCreate {
+	_c.mutation.SetTargetID(v)
+	return _c
+}
+
 // SetNickname sets the "nickname" field.
 func (_c *UserNoteCreate) SetNickname(v string) *UserNoteCreate {
 	_c.mutation.SetNickname(v)
@@ -81,21 +93,9 @@ func (_c *UserNoteCreate) SetNillableID(v *uuid.UUID) *UserNoteCreate {
 	return _c
 }
 
-// SetOwnerID sets the "owner" edge to the User entity by ID.
-func (_c *UserNoteCreate) SetOwnerID(id uuid.UUID) *UserNoteCreate {
-	_c.mutation.SetOwnerID(id)
-	return _c
-}
-
 // SetOwner sets the "owner" edge to the User entity.
 func (_c *UserNoteCreate) SetOwner(v *User) *UserNoteCreate {
 	return _c.SetOwnerID(v.ID)
-}
-
-// SetTargetID sets the "target" edge to the User entity by ID.
-func (_c *UserNoteCreate) SetTargetID(id uuid.UUID) *UserNoteCreate {
-	_c.mutation.SetTargetID(id)
-	return _c
 }
 
 // SetTarget sets the "target" edge to the User entity.
@@ -150,6 +150,12 @@ func (_c *UserNoteCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *UserNoteCreate) check() error {
+	if _, ok := _c.mutation.OwnerID(); !ok {
+		return &ValidationError{Name: "owner_id", err: errors.New(`ent: missing required field "UserNote.owner_id"`)}
+	}
+	if _, ok := _c.mutation.TargetID(); !ok {
+		return &ValidationError{Name: "target_id", err: errors.New(`ent: missing required field "UserNote.target_id"`)}
+	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "UserNote.updated_at"`)}
 	}
@@ -221,7 +227,7 @@ func (_c *UserNoteCreate) createSpec() (*UserNote, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_note_owner = &nodes[0]
+		_node.OwnerID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.TargetIDs(); len(nodes) > 0 {
@@ -238,7 +244,7 @@ func (_c *UserNoteCreate) createSpec() (*UserNote, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_note_target = &nodes[0]
+		_node.TargetID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -248,7 +254,7 @@ func (_c *UserNoteCreate) createSpec() (*UserNote, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.UserNote.Create().
-//		SetNickname(v).
+//		SetOwnerID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -257,7 +263,7 @@ func (_c *UserNoteCreate) createSpec() (*UserNote, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserNoteUpsert) {
-//			SetNickname(v+v).
+//			SetOwnerID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserNoteCreate) OnConflict(opts ...sql.ConflictOption) *UserNoteUpsertOne {
@@ -292,6 +298,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetOwnerID sets the "owner_id" field.
+func (u *UserNoteUpsert) SetOwnerID(v uuid.UUID) *UserNoteUpsert {
+	u.Set(usernote.FieldOwnerID, v)
+	return u
+}
+
+// UpdateOwnerID sets the "owner_id" field to the value that was provided on create.
+func (u *UserNoteUpsert) UpdateOwnerID() *UserNoteUpsert {
+	u.SetExcluded(usernote.FieldOwnerID)
+	return u
+}
+
+// SetTargetID sets the "target_id" field.
+func (u *UserNoteUpsert) SetTargetID(v uuid.UUID) *UserNoteUpsert {
+	u.Set(usernote.FieldTargetID, v)
+	return u
+}
+
+// UpdateTargetID sets the "target_id" field to the value that was provided on create.
+func (u *UserNoteUpsert) UpdateTargetID() *UserNoteUpsert {
+	u.SetExcluded(usernote.FieldTargetID)
+	return u
+}
 
 // SetNickname sets the "nickname" field.
 func (u *UserNoteUpsert) SetNickname(v string) *UserNoteUpsert {
@@ -387,6 +417,34 @@ func (u *UserNoteUpsertOne) Update(set func(*UserNoteUpsert)) *UserNoteUpsertOne
 		set(&UserNoteUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetOwnerID sets the "owner_id" field.
+func (u *UserNoteUpsertOne) SetOwnerID(v uuid.UUID) *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetOwnerID(v)
+	})
+}
+
+// UpdateOwnerID sets the "owner_id" field to the value that was provided on create.
+func (u *UserNoteUpsertOne) UpdateOwnerID() *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateOwnerID()
+	})
+}
+
+// SetTargetID sets the "target_id" field.
+func (u *UserNoteUpsertOne) SetTargetID(v uuid.UUID) *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetTargetID(v)
+	})
+}
+
+// UpdateTargetID sets the "target_id" field to the value that was provided on create.
+func (u *UserNoteUpsertOne) UpdateTargetID() *UserNoteUpsertOne {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateTargetID()
+	})
 }
 
 // SetNickname sets the "nickname" field.
@@ -581,7 +639,7 @@ func (_c *UserNoteCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserNoteUpsert) {
-//			SetNickname(v+v).
+//			SetOwnerID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *UserNoteCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserNoteUpsertBulk {
@@ -658,6 +716,34 @@ func (u *UserNoteUpsertBulk) Update(set func(*UserNoteUpsert)) *UserNoteUpsertBu
 		set(&UserNoteUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetOwnerID sets the "owner_id" field.
+func (u *UserNoteUpsertBulk) SetOwnerID(v uuid.UUID) *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetOwnerID(v)
+	})
+}
+
+// UpdateOwnerID sets the "owner_id" field to the value that was provided on create.
+func (u *UserNoteUpsertBulk) UpdateOwnerID() *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateOwnerID()
+	})
+}
+
+// SetTargetID sets the "target_id" field.
+func (u *UserNoteUpsertBulk) SetTargetID(v uuid.UUID) *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.SetTargetID(v)
+	})
+}
+
+// UpdateTargetID sets the "target_id" field to the value that was provided on create.
+func (u *UserNoteUpsertBulk) UpdateTargetID() *UserNoteUpsertBulk {
+	return u.Update(func(s *UserNoteUpsert) {
+		s.UpdateTargetID()
+	})
 }
 
 // SetNickname sets the "nickname" field.

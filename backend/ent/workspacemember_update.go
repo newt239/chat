@@ -31,6 +31,34 @@ func (_u *WorkspaceMemberUpdate) Where(ps ...predicate.WorkspaceMember) *Workspa
 	return _u
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *WorkspaceMemberUpdate) SetWorkspaceID(v string) *WorkspaceMemberUpdate {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *WorkspaceMemberUpdate) SetNillableWorkspaceID(v *string) *WorkspaceMemberUpdate {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *WorkspaceMemberUpdate) SetUserID(v uuid.UUID) *WorkspaceMemberUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *WorkspaceMemberUpdate) SetNillableUserID(v *uuid.UUID) *WorkspaceMemberUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetRole sets the "role" field.
 func (_u *WorkspaceMemberUpdate) SetRole(v string) *WorkspaceMemberUpdate {
 	_u.mutation.SetRole(v)
@@ -65,21 +93,9 @@ func (_u *WorkspaceMemberUpdate) ClearSuspendedAt() *WorkspaceMemberUpdate {
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *WorkspaceMemberUpdate) SetWorkspaceID(id string) *WorkspaceMemberUpdate {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *WorkspaceMemberUpdate) SetWorkspace(v *Workspace) *WorkspaceMemberUpdate {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *WorkspaceMemberUpdate) SetUserID(id uuid.UUID) *WorkspaceMemberUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -246,6 +262,34 @@ type WorkspaceMemberUpdateOne struct {
 	mutation *WorkspaceMemberMutation
 }
 
+// SetWorkspaceID sets the "workspace_id" field.
+func (_u *WorkspaceMemberUpdateOne) SetWorkspaceID(v string) *WorkspaceMemberUpdateOne {
+	_u.mutation.SetWorkspaceID(v)
+	return _u
+}
+
+// SetNillableWorkspaceID sets the "workspace_id" field if the given value is not nil.
+func (_u *WorkspaceMemberUpdateOne) SetNillableWorkspaceID(v *string) *WorkspaceMemberUpdateOne {
+	if v != nil {
+		_u.SetWorkspaceID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *WorkspaceMemberUpdateOne) SetUserID(v uuid.UUID) *WorkspaceMemberUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *WorkspaceMemberUpdateOne) SetNillableUserID(v *uuid.UUID) *WorkspaceMemberUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetRole sets the "role" field.
 func (_u *WorkspaceMemberUpdateOne) SetRole(v string) *WorkspaceMemberUpdateOne {
 	_u.mutation.SetRole(v)
@@ -280,21 +324,9 @@ func (_u *WorkspaceMemberUpdateOne) ClearSuspendedAt() *WorkspaceMemberUpdateOne
 	return _u
 }
 
-// SetWorkspaceID sets the "workspace" edge to the Workspace entity by ID.
-func (_u *WorkspaceMemberUpdateOne) SetWorkspaceID(id string) *WorkspaceMemberUpdateOne {
-	_u.mutation.SetWorkspaceID(id)
-	return _u
-}
-
 // SetWorkspace sets the "workspace" edge to the Workspace entity.
 func (_u *WorkspaceMemberUpdateOne) SetWorkspace(v *Workspace) *WorkspaceMemberUpdateOne {
 	return _u.SetWorkspaceID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *WorkspaceMemberUpdateOne) SetUserID(id uuid.UUID) *WorkspaceMemberUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.

@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.MessageUserMention {
 	return predicate.MessageUserMention(sql.FieldLTE(FieldID, id))
 }
 
+// MessageID applies equality check predicate on the "message_id" field. It's identical to MessageIDEQ.
+func MessageID(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldEQ(FieldMessageID, v))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldEQ(FieldUserID, v))
+}
+
 // ViaGroupID applies equality check predicate on the "via_group_id" field. It's identical to ViaGroupIDEQ.
 func ViaGroupID(v uuid.UUID) predicate.MessageUserMention {
 	return predicate.MessageUserMention(sql.FieldEQ(FieldViaGroupID, v))
@@ -64,6 +74,46 @@ func ViaGroupID(v uuid.UUID) predicate.MessageUserMention {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.MessageUserMention {
 	return predicate.MessageUserMention(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// MessageIDEQ applies the EQ predicate on the "message_id" field.
+func MessageIDEQ(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldEQ(FieldMessageID, v))
+}
+
+// MessageIDNEQ applies the NEQ predicate on the "message_id" field.
+func MessageIDNEQ(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldNEQ(FieldMessageID, v))
+}
+
+// MessageIDIn applies the In predicate on the "message_id" field.
+func MessageIDIn(vs ...uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldIn(FieldMessageID, vs...))
+}
+
+// MessageIDNotIn applies the NotIn predicate on the "message_id" field.
+func MessageIDNotIn(vs ...uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldNotIn(FieldMessageID, vs...))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.MessageUserMention {
+	return predicate.MessageUserMention(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // ViaGroupIDEQ applies the EQ predicate on the "via_group_id" field.

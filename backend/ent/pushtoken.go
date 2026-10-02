@@ -19,6 +19,8 @@ type PushToken struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Token holds the value of the "token" field.
 	Token string `json:"token,omitempty"`
 	// Platform holds the value of the "platform" field.
@@ -31,9 +33,8 @@ type PushToken struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PushTokenQuery when eager-loading is set.
-	Edges           PushTokenEdges `json:"edges"`
-	push_token_user *uuid.UUID
-	selectValues    sql.SelectValues
+	Edges        PushTokenEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // PushTokenEdges holds the relations/edges for other nodes in the graph.
@@ -65,10 +66,8 @@ func (*PushToken) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case pushtoken.FieldLastSeenAt, pushtoken.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case pushtoken.FieldID:
+		case pushtoken.FieldID, pushtoken.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case pushtoken.ForeignKeys[0]: // push_token_user
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -89,6 +88,12 @@ func (_m *PushToken) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case pushtoken.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
 			}
 		case pushtoken.FieldToken:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -119,13 +124,6 @@ func (_m *PushToken) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
-			}
-		case pushtoken.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field push_token_user", values[i])
-			} else if value.Valid {
-				_m.push_token_user = new(uuid.UUID)
-				*_m.push_token_user = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -168,6 +166,9 @@ func (_m *PushToken) String() string {
 	var builder strings.Builder
 	builder.WriteString("PushToken(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("token=")
 	builder.WriteString(_m.Token)
 	builder.WriteString(", ")

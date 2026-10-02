@@ -31,6 +31,34 @@ func (_u *ThreadReadStateUpdate) Where(ps ...predicate.ThreadReadState) *ThreadR
 	return _u
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *ThreadReadStateUpdate) SetUserID(v uuid.UUID) *ThreadReadStateUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ThreadReadStateUpdate) SetNillableUserID(v *uuid.UUID) *ThreadReadStateUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetThreadID sets the "thread_id" field.
+func (_u *ThreadReadStateUpdate) SetThreadID(v uuid.UUID) *ThreadReadStateUpdate {
+	_u.mutation.SetThreadID(v)
+	return _u
+}
+
+// SetNillableThreadID sets the "thread_id" field if the given value is not nil.
+func (_u *ThreadReadStateUpdate) SetNillableThreadID(v *uuid.UUID) *ThreadReadStateUpdate {
+	if v != nil {
+		_u.SetThreadID(*v)
+	}
+	return _u
+}
+
 // SetLastReadAt sets the "last_read_at" field.
 func (_u *ThreadReadStateUpdate) SetLastReadAt(v time.Time) *ThreadReadStateUpdate {
 	_u.mutation.SetLastReadAt(v)
@@ -51,21 +79,9 @@ func (_u *ThreadReadStateUpdate) SetUpdatedAt(v time.Time) *ThreadReadStateUpdat
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ThreadReadStateUpdate) SetUserID(id uuid.UUID) *ThreadReadStateUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ThreadReadStateUpdate) SetUser(v *User) *ThreadReadStateUpdate {
 	return _u.SetUserID(v.ID)
-}
-
-// SetThreadID sets the "thread" edge to the Message entity by ID.
-func (_u *ThreadReadStateUpdate) SetThreadID(id uuid.UUID) *ThreadReadStateUpdate {
-	_u.mutation.SetThreadID(id)
-	return _u
 }
 
 // SetThread sets the "thread" edge to the Message entity.
@@ -233,6 +249,34 @@ type ThreadReadStateUpdateOne struct {
 	mutation *ThreadReadStateMutation
 }
 
+// SetUserID sets the "user_id" field.
+func (_u *ThreadReadStateUpdateOne) SetUserID(v uuid.UUID) *ThreadReadStateUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *ThreadReadStateUpdateOne) SetNillableUserID(v *uuid.UUID) *ThreadReadStateUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetThreadID sets the "thread_id" field.
+func (_u *ThreadReadStateUpdateOne) SetThreadID(v uuid.UUID) *ThreadReadStateUpdateOne {
+	_u.mutation.SetThreadID(v)
+	return _u
+}
+
+// SetNillableThreadID sets the "thread_id" field if the given value is not nil.
+func (_u *ThreadReadStateUpdateOne) SetNillableThreadID(v *uuid.UUID) *ThreadReadStateUpdateOne {
+	if v != nil {
+		_u.SetThreadID(*v)
+	}
+	return _u
+}
+
 // SetLastReadAt sets the "last_read_at" field.
 func (_u *ThreadReadStateUpdateOne) SetLastReadAt(v time.Time) *ThreadReadStateUpdateOne {
 	_u.mutation.SetLastReadAt(v)
@@ -253,21 +297,9 @@ func (_u *ThreadReadStateUpdateOne) SetUpdatedAt(v time.Time) *ThreadReadStateUp
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *ThreadReadStateUpdateOne) SetUserID(id uuid.UUID) *ThreadReadStateUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (_u *ThreadReadStateUpdateOne) SetUser(v *User) *ThreadReadStateUpdateOne {
 	return _u.SetUserID(v.ID)
-}
-
-// SetThreadID sets the "thread" edge to the Message entity by ID.
-func (_u *ThreadReadStateUpdateOne) SetThreadID(id uuid.UUID) *ThreadReadStateUpdateOne {
-	_u.mutation.SetThreadID(id)
-	return _u
 }
 
 // SetThread sets the "thread" edge to the Message entity.

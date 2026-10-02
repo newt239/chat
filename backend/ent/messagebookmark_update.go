@@ -30,21 +30,37 @@ func (_u *MessageBookmarkUpdate) Where(ps ...predicate.MessageBookmark) *Message
 	return _u
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageBookmarkUpdate) SetUserID(id uuid.UUID) *MessageBookmarkUpdate {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *MessageBookmarkUpdate) SetUserID(v uuid.UUID) *MessageBookmarkUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *MessageBookmarkUpdate) SetNillableUserID(v *uuid.UUID) *MessageBookmarkUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetMessageID sets the "message_id" field.
+func (_u *MessageBookmarkUpdate) SetMessageID(v uuid.UUID) *MessageBookmarkUpdate {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageBookmarkUpdate) SetNillableMessageID(v *uuid.UUID) *MessageBookmarkUpdate {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *MessageBookmarkUpdate) SetUser(v *User) *MessageBookmarkUpdate {
 	return _u.SetUserID(v.ID)
-}
-
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageBookmarkUpdate) SetMessageID(id uuid.UUID) *MessageBookmarkUpdate {
-	_u.mutation.SetMessageID(id)
-	return _u
 }
 
 // SetMessage sets the "message" edge to the Message entity.
@@ -197,21 +213,37 @@ type MessageBookmarkUpdateOne struct {
 	mutation *MessageBookmarkMutation
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageBookmarkUpdateOne) SetUserID(id uuid.UUID) *MessageBookmarkUpdateOne {
-	_u.mutation.SetUserID(id)
+// SetUserID sets the "user_id" field.
+func (_u *MessageBookmarkUpdateOne) SetUserID(v uuid.UUID) *MessageBookmarkUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *MessageBookmarkUpdateOne) SetNillableUserID(v *uuid.UUID) *MessageBookmarkUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
+// SetMessageID sets the "message_id" field.
+func (_u *MessageBookmarkUpdateOne) SetMessageID(v uuid.UUID) *MessageBookmarkUpdateOne {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageBookmarkUpdateOne) SetNillableMessageID(v *uuid.UUID) *MessageBookmarkUpdateOne {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
 	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
 func (_u *MessageBookmarkUpdateOne) SetUser(v *User) *MessageBookmarkUpdateOne {
 	return _u.SetUserID(v.ID)
-}
-
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageBookmarkUpdateOne) SetMessageID(id uuid.UUID) *MessageBookmarkUpdateOne {
-	_u.mutation.SetMessageID(id)
-	return _u
 }
 
 // SetMessage sets the "message" edge to the Message entity.

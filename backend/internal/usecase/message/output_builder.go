@@ -269,7 +269,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		ID:          msg.ID,
 		ChannelID:   msg.ChannelID,
 		UserID:      msg.UserID,
-		User:        authorInfo(msg, users),
+		User:        toUserInfo(msg.UserID, users),
 		ParentID:    msg.ParentID,
 		Body:        msg.Body,
 		Mentions:    make([]UserMention, 0, len(related.userMentions[msg.ID])),
@@ -337,7 +337,7 @@ func buildPreview(msg *entity.Message, ch *entity.Channel, users map[string]*ent
 		ChannelID:   msg.ChannelID,
 		ChannelName: ch.Name,
 		ParentID:    msg.ParentID,
-		User:        authorInfo(msg, users),
+		User:        toUserInfo(msg.UserID, users),
 		BodyExcerpt: excerpt(msg.Body, previewExcerptRunes),
 		CreatedAt:   msg.CreatedAt,
 	}
@@ -353,21 +353,9 @@ func excerpt(body string, maxRunes int) string {
 
 func toUserInfo(userID string, users map[string]*entity.User) UserInfo {
 	if u := users[userID]; u != nil {
-		return UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsBot: u.IsBot}
+		return UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
 	}
 	return UserInfo{ID: userID, DisplayName: "Unknown User"}
-}
-
-// authorInfo は投稿者の情報に、アプリが投稿ごとに指定した表示名とアイコンを反映します
-func authorInfo(msg *entity.Message, users map[string]*entity.User) UserInfo {
-	info := toUserInfo(msg.UserID, users)
-	if msg.SenderName != nil {
-		info.DisplayName = *msg.SenderName
-	}
-	if msg.SenderAvatarURL != nil {
-		info.AvatarURL = msg.SenderAvatarURL
-	}
-	return info
 }
 
 func groupByMessageID[T any](items []T, messageID func(T) string) map[string][]T {

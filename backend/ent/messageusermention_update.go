@@ -30,6 +30,34 @@ func (_u *MessageUserMentionUpdate) Where(ps ...predicate.MessageUserMention) *M
 	return _u
 }
 
+// SetMessageID sets the "message_id" field.
+func (_u *MessageUserMentionUpdate) SetMessageID(v uuid.UUID) *MessageUserMentionUpdate {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageUserMentionUpdate) SetNillableMessageID(v *uuid.UUID) *MessageUserMentionUpdate {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *MessageUserMentionUpdate) SetUserID(v uuid.UUID) *MessageUserMentionUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *MessageUserMentionUpdate) SetNillableUserID(v *uuid.UUID) *MessageUserMentionUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetViaGroupID sets the "via_group_id" field.
 func (_u *MessageUserMentionUpdate) SetViaGroupID(v uuid.UUID) *MessageUserMentionUpdate {
 	_u.mutation.SetViaGroupID(v)
@@ -50,21 +78,9 @@ func (_u *MessageUserMentionUpdate) ClearViaGroupID() *MessageUserMentionUpdate 
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageUserMentionUpdate) SetMessageID(id uuid.UUID) *MessageUserMentionUpdate {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessageUserMentionUpdate) SetMessage(v *Message) *MessageUserMentionUpdate {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageUserMentionUpdate) SetUserID(id uuid.UUID) *MessageUserMentionUpdate {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
@@ -223,6 +239,34 @@ type MessageUserMentionUpdateOne struct {
 	mutation *MessageUserMentionMutation
 }
 
+// SetMessageID sets the "message_id" field.
+func (_u *MessageUserMentionUpdateOne) SetMessageID(v uuid.UUID) *MessageUserMentionUpdateOne {
+	_u.mutation.SetMessageID(v)
+	return _u
+}
+
+// SetNillableMessageID sets the "message_id" field if the given value is not nil.
+func (_u *MessageUserMentionUpdateOne) SetNillableMessageID(v *uuid.UUID) *MessageUserMentionUpdateOne {
+	if v != nil {
+		_u.SetMessageID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *MessageUserMentionUpdateOne) SetUserID(v uuid.UUID) *MessageUserMentionUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *MessageUserMentionUpdateOne) SetNillableUserID(v *uuid.UUID) *MessageUserMentionUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
+	}
+	return _u
+}
+
 // SetViaGroupID sets the "via_group_id" field.
 func (_u *MessageUserMentionUpdateOne) SetViaGroupID(v uuid.UUID) *MessageUserMentionUpdateOne {
 	_u.mutation.SetViaGroupID(v)
@@ -243,21 +287,9 @@ func (_u *MessageUserMentionUpdateOne) ClearViaGroupID() *MessageUserMentionUpda
 	return _u
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_u *MessageUserMentionUpdateOne) SetMessageID(id uuid.UUID) *MessageUserMentionUpdateOne {
-	_u.mutation.SetMessageID(id)
-	return _u
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_u *MessageUserMentionUpdateOne) SetMessage(v *Message) *MessageUserMentionUpdateOne {
 	return _u.SetMessageID(v.ID)
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (_u *MessageUserMentionUpdateOne) SetUserID(id uuid.UUID) *MessageUserMentionUpdateOne {
-	_u.mutation.SetUserID(id)
-	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.

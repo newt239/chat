@@ -15,6 +15,10 @@ const (
 	Label = "message_bookmark"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// FieldMessageID holds the string denoting the message_id field in the database.
+	FieldMessageID = "message_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -22,45 +26,35 @@ const (
 	// EdgeMessage holds the string denoting the message edge name in mutations.
 	EdgeMessage = "message"
 	// Table holds the table name of the messagebookmark in the database.
-	Table = "message_bookmarks"
+	Table = "message_bookmark"
 	// UserTable is the table that holds the user relation/edge.
-	UserTable = "message_bookmarks"
+	UserTable = "message_bookmark"
 	// UserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
+	UserInverseTable = "user"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "message_bookmark_user"
+	UserColumn = "user_id"
 	// MessageTable is the table that holds the message relation/edge.
-	MessageTable = "message_bookmarks"
+	MessageTable = "message_bookmark"
 	// MessageInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessageInverseTable = "messages"
+	MessageInverseTable = "message"
 	// MessageColumn is the table column denoting the message relation/edge.
-	MessageColumn = "message_bookmark_message"
+	MessageColumn = "message_id"
 )
 
 // Columns holds all SQL columns for messagebookmark fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
+	FieldMessageID,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "message_bookmarks"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"message_bookmark_user",
-	"message_bookmark_message",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -80,6 +74,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByMessageID orders the results by the message_id field.
+func ByMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessageID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

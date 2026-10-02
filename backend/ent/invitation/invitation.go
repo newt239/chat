@@ -15,6 +15,10 @@ const (
 	Label = "invitation"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldWorkspaceID holds the string denoting the workspace_id field in the database.
+	FieldWorkspaceID = "workspace_id"
+	// FieldInvitedByID holds the string denoting the invited_by_id field in the database.
+	FieldInvitedByID = "invited_by_id"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldRole holds the string denoting the role field in the database.
@@ -37,21 +41,23 @@ const (
 	WorkspaceTable = "invitation"
 	// WorkspaceInverseTable is the table name for the Workspace entity.
 	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	WorkspaceInverseTable = "workspaces"
+	WorkspaceInverseTable = "workspace"
 	// WorkspaceColumn is the table column denoting the workspace relation/edge.
-	WorkspaceColumn = "invitation_workspace"
+	WorkspaceColumn = "workspace_id"
 	// InvitedByTable is the table that holds the invited_by relation/edge.
 	InvitedByTable = "invitation"
 	// InvitedByInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	InvitedByInverseTable = "users"
+	InvitedByInverseTable = "user"
 	// InvitedByColumn is the table column denoting the invited_by relation/edge.
-	InvitedByColumn = "invitation_invited_by"
+	InvitedByColumn = "invited_by_id"
 )
 
 // Columns holds all SQL columns for invitation fields.
 var Columns = []string{
 	FieldID,
+	FieldWorkspaceID,
+	FieldInvitedByID,
 	FieldEmail,
 	FieldRole,
 	FieldTokenHash,
@@ -60,22 +66,10 @@ var Columns = []string{
 	FieldCreatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "invitation"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"invitation_workspace",
-	"invitation_invited_by",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -101,6 +95,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByWorkspaceID orders the results by the workspace_id field.
+func ByWorkspaceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkspaceID, opts...).ToFunc()
+}
+
+// ByInvitedByID orders the results by the invited_by_id field.
+func ByInvitedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInvitedByID, opts...).ToFunc()
 }
 
 // ByEmail orders the results by the email field.

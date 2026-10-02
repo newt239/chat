@@ -36,10 +36,6 @@ type Message struct {
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
 	// DeletedBy holds the value of the "deleted_by" field.
 	DeletedBy uuid.UUID `json:"deleted_by,omitempty"`
-	// SenderName holds the value of the "sender_name" field.
-	SenderName *string `json:"sender_name,omitempty"`
-	// SenderAvatarURL holds the value of the "sender_avatar_url" field.
-	SenderAvatarURL *string `json:"sender_avatar_url,omitempty"`
 	// LocationLatitude holds the value of the "location_latitude" field.
 	LocationLatitude *float64 `json:"location_latitude,omitempty"`
 	// LocationLongitude holds the value of the "location_longitude" field.
@@ -225,7 +221,7 @@ func (*Message) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case message.FieldLocationLatitude, message.FieldLocationLongitude, message.FieldLocationAccuracy:
 			values[i] = new(sql.NullFloat64)
-		case message.FieldBody, message.FieldSenderName, message.FieldSenderAvatarURL, message.FieldLocationLabel:
+		case message.FieldBody, message.FieldLocationLabel:
 			values[i] = new(sql.NullString)
 		case message.FieldCreatedAt, message.FieldEditedAt, message.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -300,20 +296,6 @@ func (_m *Message) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field deleted_by", values[i])
 			} else if value != nil {
 				_m.DeletedBy = *value
-			}
-		case message.FieldSenderName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field sender_name", values[i])
-			} else if value.Valid {
-				_m.SenderName = new(string)
-				*_m.SenderName = value.String
-			}
-		case message.FieldSenderAvatarURL:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field sender_avatar_url", values[i])
-			} else if value.Valid {
-				_m.SenderAvatarURL = new(string)
-				*_m.SenderAvatarURL = value.String
 			}
 		case message.FieldLocationLatitude:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -481,16 +463,6 @@ func (_m *Message) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deleted_by=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DeletedBy))
-	builder.WriteString(", ")
-	if v := _m.SenderName; v != nil {
-		builder.WriteString("sender_name=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.SenderAvatarURL; v != nil {
-		builder.WriteString("sender_avatar_url=")
-		builder.WriteString(*v)
-	}
 	builder.WriteString(", ")
 	if v := _m.LocationLatitude; v != nil {
 		builder.WriteString("location_latitude=")

@@ -56,9 +56,59 @@ func IDLTE(id uuid.UUID) predicate.MessageGroupMention {
 	return predicate.MessageGroupMention(sql.FieldLTE(FieldID, id))
 }
 
+// MessageID applies equality check predicate on the "message_id" field. It's identical to MessageIDEQ.
+func MessageID(v uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldEQ(FieldMessageID, v))
+}
+
+// GroupID applies equality check predicate on the "group_id" field. It's identical to GroupIDEQ.
+func GroupID(v uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldEQ(FieldGroupID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.MessageGroupMention {
 	return predicate.MessageGroupMention(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// MessageIDEQ applies the EQ predicate on the "message_id" field.
+func MessageIDEQ(v uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldEQ(FieldMessageID, v))
+}
+
+// MessageIDNEQ applies the NEQ predicate on the "message_id" field.
+func MessageIDNEQ(v uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldNEQ(FieldMessageID, v))
+}
+
+// MessageIDIn applies the In predicate on the "message_id" field.
+func MessageIDIn(vs ...uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldIn(FieldMessageID, vs...))
+}
+
+// MessageIDNotIn applies the NotIn predicate on the "message_id" field.
+func MessageIDNotIn(vs ...uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldNotIn(FieldMessageID, vs...))
+}
+
+// GroupIDEQ applies the EQ predicate on the "group_id" field.
+func GroupIDEQ(v uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldEQ(FieldGroupID, v))
+}
+
+// GroupIDNEQ applies the NEQ predicate on the "group_id" field.
+func GroupIDNEQ(v uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldNEQ(FieldGroupID, v))
+}
+
+// GroupIDIn applies the In predicate on the "group_id" field.
+func GroupIDIn(vs ...uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldIn(FieldGroupID, vs...))
+}
+
+// GroupIDNotIn applies the NotIn predicate on the "group_id" field.
+func GroupIDNotIn(vs ...uuid.UUID) predicate.MessageGroupMention {
+	return predicate.MessageGroupMention(sql.FieldNotIn(FieldGroupID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

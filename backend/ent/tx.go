@@ -42,6 +42,12 @@ type Tx struct {
 	Draft *DraftClient
 	// Invitation is the client for interacting with the Invitation builders.
 	Invitation *InvitationClient
+	// LinkPreview is the client for interacting with the LinkPreview builders.
+	LinkPreview *LinkPreviewClient
+	// LinkPreviewXPost is the client for interacting with the LinkPreviewXPost builders.
+	LinkPreviewXPost *LinkPreviewXPostClient
+	// LinkPreviewYoutube is the client for interacting with the LinkPreviewYoutube builders.
+	LinkPreviewYoutube *LinkPreviewYoutubeClient
 	// Message is the client for interacting with the Message builders.
 	Message *MessageClient
 	// MessageBookmark is the client for interacting with the MessageBookmark builders.
@@ -80,8 +86,12 @@ type Tx struct {
 	UserGroup *UserGroupClient
 	// UserGroupMember is the client for interacting with the UserGroupMember builders.
 	UserGroupMember *UserGroupMemberClient
+	// UserLink is the client for interacting with the UserLink builders.
+	UserLink *UserLinkClient
 	// UserNote is the client for interacting with the UserNote builders.
 	UserNote *UserNoteClient
+	// UserPreference is the client for interacting with the UserPreference builders.
+	UserPreference *UserPreferenceClient
 	// UserThreadFollow is the client for interacting with the UserThreadFollow builders.
 	UserThreadFollow *UserThreadFollowClient
 	// Workspace is the client for interacting with the Workspace builders.
@@ -235,6 +245,9 @@ func (tx *Tx) init() {
 	tx.CustomEmoji = NewCustomEmojiClient(tx.config)
 	tx.Draft = NewDraftClient(tx.config)
 	tx.Invitation = NewInvitationClient(tx.config)
+	tx.LinkPreview = NewLinkPreviewClient(tx.config)
+	tx.LinkPreviewXPost = NewLinkPreviewXPostClient(tx.config)
+	tx.LinkPreviewYoutube = NewLinkPreviewYoutubeClient(tx.config)
 	tx.Message = NewMessageClient(tx.config)
 	tx.MessageBookmark = NewMessageBookmarkClient(tx.config)
 	tx.MessageGroupMention = NewMessageGroupMentionClient(tx.config)
@@ -254,7 +267,9 @@ func (tx *Tx) init() {
 	tx.User = NewUserClient(tx.config)
 	tx.UserGroup = NewUserGroupClient(tx.config)
 	tx.UserGroupMember = NewUserGroupMemberClient(tx.config)
+	tx.UserLink = NewUserLinkClient(tx.config)
 	tx.UserNote = NewUserNoteClient(tx.config)
+	tx.UserPreference = NewUserPreferenceClient(tx.config)
 	tx.UserThreadFollow = NewUserThreadFollowClient(tx.config)
 	tx.Workspace = NewWorkspaceClient(tx.config)
 	tx.WorkspaceMember = NewWorkspaceMemberClient(tx.config)

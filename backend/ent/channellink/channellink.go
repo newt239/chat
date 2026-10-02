@@ -15,6 +15,10 @@ const (
 	Label = "channel_link"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldChannelID holds the string denoting the channel_id field in the database.
+	FieldChannelID = "channel_id"
+	// FieldCreatedByID holds the string denoting the created_by_id field in the database.
+	FieldCreatedByID = "created_by_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldURL holds the string denoting the url field in the database.
@@ -35,21 +39,23 @@ const (
 	ChannelTable = "channel_link"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
-	ChannelColumn = "channel_link_channel"
+	ChannelColumn = "channel_id"
 	// CreatedByTable is the table that holds the created_by relation/edge.
 	CreatedByTable = "channel_link"
 	// CreatedByInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	CreatedByInverseTable = "users"
+	CreatedByInverseTable = "user"
 	// CreatedByColumn is the table column denoting the created_by relation/edge.
-	CreatedByColumn = "channel_link_created_by"
+	CreatedByColumn = "created_by_id"
 )
 
 // Columns holds all SQL columns for channellink fields.
 var Columns = []string{
 	FieldID,
+	FieldChannelID,
+	FieldCreatedByID,
 	FieldTitle,
 	FieldURL,
 	FieldPosition,
@@ -57,22 +63,10 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "channel_link"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"channel_link_channel",
-	"channel_link_created_by",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -102,6 +96,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByChannelID orders the results by the channel_id field.
+func ByChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelID, opts...).ToFunc()
+}
+
+// ByCreatedByID orders the results by the created_by_id field.
+func ByCreatedByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedByID, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.

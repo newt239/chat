@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/attachment"
@@ -26,6 +25,8 @@ import (
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
 	"github.com/newt239/chat/ent/usergroupmember"
+	"github.com/newt239/chat/ent/userlink"
+	"github.com/newt239/chat/ent/userpreference"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 )
@@ -125,24 +126,6 @@ func (_u *UserUpdate) ClearBio() *UserUpdate {
 	return _u
 }
 
-// SetLinks sets the "links" field.
-func (_u *UserUpdate) SetLinks(v []string) *UserUpdate {
-	_u.mutation.SetLinks(v)
-	return _u
-}
-
-// AppendLinks appends value to the "links" field.
-func (_u *UserUpdate) AppendLinks(v []string) *UserUpdate {
-	_u.mutation.AppendLinks(v)
-	return _u
-}
-
-// ClearLinks clears the value of the "links" field.
-func (_u *UserUpdate) ClearLinks() *UserUpdate {
-	_u.mutation.ClearLinks()
-	return _u
-}
-
 // SetAvatarURL sets the "avatar_url" field.
 func (_u *UserUpdate) SetAvatarURL(v string) *UserUpdate {
 	_u.mutation.SetAvatarURL(v)
@@ -163,16 +146,16 @@ func (_u *UserUpdate) ClearAvatarURL() *UserUpdate {
 	return _u
 }
 
-// SetIsBot sets the "is_bot" field.
-func (_u *UserUpdate) SetIsBot(v bool) *UserUpdate {
-	_u.mutation.SetIsBot(v)
+// SetIsApp sets the "is_app" field.
+func (_u *UserUpdate) SetIsApp(v bool) *UserUpdate {
+	_u.mutation.SetIsApp(v)
 	return _u
 }
 
-// SetNillableIsBot sets the "is_bot" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableIsBot(v *bool) *UserUpdate {
+// SetNillableIsApp sets the "is_app" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableIsApp(v *bool) *UserUpdate {
 	if v != nil {
-		_u.SetIsBot(*v)
+		_u.SetIsApp(*v)
 	}
 	return _u
 }
@@ -187,160 +170,6 @@ func (_u *UserUpdate) SetIsOfficial(v bool) *UserUpdate {
 func (_u *UserUpdate) SetNillableIsOfficial(v *bool) *UserUpdate {
 	if v != nil {
 		_u.SetIsOfficial(*v)
-	}
-	return _u
-}
-
-// SetThemeHue sets the "theme_hue" field.
-func (_u *UserUpdate) SetThemeHue(v int) *UserUpdate {
-	_u.mutation.ResetThemeHue()
-	_u.mutation.SetThemeHue(v)
-	return _u
-}
-
-// SetNillableThemeHue sets the "theme_hue" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableThemeHue(v *int) *UserUpdate {
-	if v != nil {
-		_u.SetThemeHue(*v)
-	}
-	return _u
-}
-
-// AddThemeHue adds value to the "theme_hue" field.
-func (_u *UserUpdate) AddThemeHue(v int) *UserUpdate {
-	_u.mutation.AddThemeHue(v)
-	return _u
-}
-
-// SetThemeChroma sets the "theme_chroma" field.
-func (_u *UserUpdate) SetThemeChroma(v float64) *UserUpdate {
-	_u.mutation.ResetThemeChroma()
-	_u.mutation.SetThemeChroma(v)
-	return _u
-}
-
-// SetNillableThemeChroma sets the "theme_chroma" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableThemeChroma(v *float64) *UserUpdate {
-	if v != nil {
-		_u.SetThemeChroma(*v)
-	}
-	return _u
-}
-
-// AddThemeChroma adds value to the "theme_chroma" field.
-func (_u *UserUpdate) AddThemeChroma(v float64) *UserUpdate {
-	_u.mutation.AddThemeChroma(v)
-	return _u
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (_u *UserUpdate) SetThemeSidebar(v user.ThemeSidebar) *UserUpdate {
-	_u.mutation.SetThemeSidebar(v)
-	return _u
-}
-
-// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableThemeSidebar(v *user.ThemeSidebar) *UserUpdate {
-	if v != nil {
-		_u.SetThemeSidebar(*v)
-	}
-	return _u
-}
-
-// SetColorMode sets the "color_mode" field.
-func (_u *UserUpdate) SetColorMode(v user.ColorMode) *UserUpdate {
-	_u.mutation.SetColorMode(v)
-	return _u
-}
-
-// SetNillableColorMode sets the "color_mode" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableColorMode(v *user.ColorMode) *UserUpdate {
-	if v != nil {
-		_u.SetColorMode(*v)
-	}
-	return _u
-}
-
-// SetLocale sets the "locale" field.
-func (_u *UserUpdate) SetLocale(v string) *UserUpdate {
-	_u.mutation.SetLocale(v)
-	return _u
-}
-
-// SetNillableLocale sets the "locale" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableLocale(v *string) *UserUpdate {
-	if v != nil {
-		_u.SetLocale(*v)
-	}
-	return _u
-}
-
-// SetNotificationLevel sets the "notification_level" field.
-func (_u *UserUpdate) SetNotificationLevel(v user.NotificationLevel) *UserUpdate {
-	_u.mutation.SetNotificationLevel(v)
-	return _u
-}
-
-// SetNillableNotificationLevel sets the "notification_level" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableNotificationLevel(v *user.NotificationLevel) *UserUpdate {
-	if v != nil {
-		_u.SetNotificationLevel(*v)
-	}
-	return _u
-}
-
-// SetTimezone sets the "timezone" field.
-func (_u *UserUpdate) SetTimezone(v string) *UserUpdate {
-	_u.mutation.SetTimezone(v)
-	return _u
-}
-
-// SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableTimezone(v *string) *UserUpdate {
-	if v != nil {
-		_u.SetTimezone(*v)
-	}
-	return _u
-}
-
-// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
-func (_u *UserUpdate) SetTimezoneAutoUpdate(v bool) *UserUpdate {
-	_u.mutation.SetTimezoneAutoUpdate(v)
-	return _u
-}
-
-// SetNillableTimezoneAutoUpdate sets the "timezone_auto_update" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableTimezoneAutoUpdate(v *bool) *UserUpdate {
-	if v != nil {
-		_u.SetTimezoneAutoUpdate(*v)
-	}
-	return _u
-}
-
-// SetChannelSortOrder sets the "channel_sort_order" field.
-func (_u *UserUpdate) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpdate {
-	_u.mutation.SetChannelSortOrder(v)
-	return _u
-}
-
-// SetNillableChannelSortOrder sets the "channel_sort_order" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableChannelSortOrder(v *user.ChannelSortOrder) *UserUpdate {
-	if v != nil {
-		_u.SetChannelSortOrder(*v)
-	}
-	return _u
-}
-
-// SetHideJoinMessages sets the "hide_join_messages" field.
-func (_u *UserUpdate) SetHideJoinMessages(v bool) *UserUpdate {
-	_u.mutation.SetHideJoinMessages(v)
-	return _u
-}
-
-// SetNillableHideJoinMessages sets the "hide_join_messages" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableHideJoinMessages(v *bool) *UserUpdate {
-	if v != nil {
-		_u.SetHideJoinMessages(*v)
 	}
 	return _u
 }
@@ -544,6 +373,40 @@ func (_u *UserUpdate) AddChannelReadStates(v ...*ChannelReadState) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddChannelReadStateIDs(ids...)
+}
+
+// SetPreferenceID sets the "preference" edge to the UserPreference entity by ID.
+func (_u *UserUpdate) SetPreferenceID(id uuid.UUID) *UserUpdate {
+	_u.mutation.SetPreferenceID(id)
+	return _u
+}
+
+// SetNillablePreferenceID sets the "preference" edge to the UserPreference entity by ID if the given value is not nil.
+func (_u *UserUpdate) SetNillablePreferenceID(id *uuid.UUID) *UserUpdate {
+	if id != nil {
+		_u = _u.SetPreferenceID(*id)
+	}
+	return _u
+}
+
+// SetPreference sets the "preference" edge to the UserPreference entity.
+func (_u *UserUpdate) SetPreference(v *UserPreference) *UserUpdate {
+	return _u.SetPreferenceID(v.ID)
+}
+
+// AddLinkIDs adds the "links" edge to the UserLink entity by IDs.
+func (_u *UserUpdate) AddLinkIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddLinkIDs(ids...)
+	return _u
+}
+
+// AddLinks adds the "links" edges to the UserLink entity.
+func (_u *UserUpdate) AddLinks(v ...*UserLink) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLinkIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -824,6 +687,33 @@ func (_u *UserUpdate) RemoveChannelReadStates(v ...*ChannelReadState) *UserUpdat
 	return _u.RemoveChannelReadStateIDs(ids...)
 }
 
+// ClearPreference clears the "preference" edge to the UserPreference entity.
+func (_u *UserUpdate) ClearPreference() *UserUpdate {
+	_u.mutation.ClearPreference()
+	return _u
+}
+
+// ClearLinks clears all "links" edges to the UserLink entity.
+func (_u *UserUpdate) ClearLinks() *UserUpdate {
+	_u.mutation.ClearLinks()
+	return _u
+}
+
+// RemoveLinkIDs removes the "links" edge to UserLink entities by IDs.
+func (_u *UserUpdate) RemoveLinkIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveLinkIDs(ids...)
+	return _u
+}
+
+// RemoveLinks removes "links" edges to UserLink entities.
+func (_u *UserUpdate) RemoveLinks(v ...*UserLink) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLinkIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *UserUpdate) Save(ctx context.Context) (int, error) {
 	_u.defaults()
@@ -877,26 +767,6 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "User.display_name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ThemeSidebar(); ok {
-		if err := user.ThemeSidebarValidator(v); err != nil {
-			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "User.theme_sidebar": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ColorMode(); ok {
-		if err := user.ColorModeValidator(v); err != nil {
-			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.NotificationLevel(); ok {
-		if err := user.NotificationLevelValidator(v); err != nil {
-			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ChannelSortOrder(); ok {
-		if err := user.ChannelSortOrderValidator(v); err != nil {
-			return &ValidationError{Name: "channel_sort_order", err: fmt.Errorf(`ent: validator failed for field "User.channel_sort_order": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -933,64 +803,17 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.BioCleared() {
 		_spec.ClearField(user.FieldBio, field.TypeString)
 	}
-	if value, ok := _u.mutation.Links(); ok {
-		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedLinks(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, user.FieldLinks, value)
-		})
-	}
-	if _u.mutation.LinksCleared() {
-		_spec.ClearField(user.FieldLinks, field.TypeJSON)
-	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 	}
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
 	}
-	if value, ok := _u.mutation.IsBot(); ok {
-		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
+	if value, ok := _u.mutation.IsApp(); ok {
+		_spec.SetField(user.FieldIsApp, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.IsOfficial(); ok {
 		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
-	}
-	if value, ok := _u.mutation.ThemeHue(); ok {
-		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedThemeHue(); ok {
-		_spec.AddField(user.FieldThemeHue, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.ThemeChroma(); ok {
-		_spec.SetField(user.FieldThemeChroma, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.AddedThemeChroma(); ok {
-		_spec.AddField(user.FieldThemeChroma, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.ThemeSidebar(); ok {
-		_spec.SetField(user.FieldThemeSidebar, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.ColorMode(); ok {
-		_spec.SetField(user.FieldColorMode, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.Locale(); ok {
-		_spec.SetField(user.FieldLocale, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.NotificationLevel(); ok {
-		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.Timezone(); ok {
-		_spec.SetField(user.FieldTimezone, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.TimezoneAutoUpdate(); ok {
-		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
-	}
-	if value, ok := _u.mutation.ChannelSortOrder(); ok {
-		_spec.SetField(user.FieldChannelSortOrder, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.HideJoinMessages(); ok {
-		_spec.SetField(user.FieldHideJoinMessages, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -1580,6 +1403,80 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.PreferenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.PreferenceTable,
+			Columns: []string{user.PreferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userpreference.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PreferenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.PreferenceTable,
+			Columns: []string{user.PreferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userpreference.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userlink.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLinksIDs(); len(nodes) > 0 && !_u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -1682,24 +1579,6 @@ func (_u *UserUpdateOne) ClearBio() *UserUpdateOne {
 	return _u
 }
 
-// SetLinks sets the "links" field.
-func (_u *UserUpdateOne) SetLinks(v []string) *UserUpdateOne {
-	_u.mutation.SetLinks(v)
-	return _u
-}
-
-// AppendLinks appends value to the "links" field.
-func (_u *UserUpdateOne) AppendLinks(v []string) *UserUpdateOne {
-	_u.mutation.AppendLinks(v)
-	return _u
-}
-
-// ClearLinks clears the value of the "links" field.
-func (_u *UserUpdateOne) ClearLinks() *UserUpdateOne {
-	_u.mutation.ClearLinks()
-	return _u
-}
-
 // SetAvatarURL sets the "avatar_url" field.
 func (_u *UserUpdateOne) SetAvatarURL(v string) *UserUpdateOne {
 	_u.mutation.SetAvatarURL(v)
@@ -1720,16 +1599,16 @@ func (_u *UserUpdateOne) ClearAvatarURL() *UserUpdateOne {
 	return _u
 }
 
-// SetIsBot sets the "is_bot" field.
-func (_u *UserUpdateOne) SetIsBot(v bool) *UserUpdateOne {
-	_u.mutation.SetIsBot(v)
+// SetIsApp sets the "is_app" field.
+func (_u *UserUpdateOne) SetIsApp(v bool) *UserUpdateOne {
+	_u.mutation.SetIsApp(v)
 	return _u
 }
 
-// SetNillableIsBot sets the "is_bot" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableIsBot(v *bool) *UserUpdateOne {
+// SetNillableIsApp sets the "is_app" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableIsApp(v *bool) *UserUpdateOne {
 	if v != nil {
-		_u.SetIsBot(*v)
+		_u.SetIsApp(*v)
 	}
 	return _u
 }
@@ -1744,160 +1623,6 @@ func (_u *UserUpdateOne) SetIsOfficial(v bool) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillableIsOfficial(v *bool) *UserUpdateOne {
 	if v != nil {
 		_u.SetIsOfficial(*v)
-	}
-	return _u
-}
-
-// SetThemeHue sets the "theme_hue" field.
-func (_u *UserUpdateOne) SetThemeHue(v int) *UserUpdateOne {
-	_u.mutation.ResetThemeHue()
-	_u.mutation.SetThemeHue(v)
-	return _u
-}
-
-// SetNillableThemeHue sets the "theme_hue" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableThemeHue(v *int) *UserUpdateOne {
-	if v != nil {
-		_u.SetThemeHue(*v)
-	}
-	return _u
-}
-
-// AddThemeHue adds value to the "theme_hue" field.
-func (_u *UserUpdateOne) AddThemeHue(v int) *UserUpdateOne {
-	_u.mutation.AddThemeHue(v)
-	return _u
-}
-
-// SetThemeChroma sets the "theme_chroma" field.
-func (_u *UserUpdateOne) SetThemeChroma(v float64) *UserUpdateOne {
-	_u.mutation.ResetThemeChroma()
-	_u.mutation.SetThemeChroma(v)
-	return _u
-}
-
-// SetNillableThemeChroma sets the "theme_chroma" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableThemeChroma(v *float64) *UserUpdateOne {
-	if v != nil {
-		_u.SetThemeChroma(*v)
-	}
-	return _u
-}
-
-// AddThemeChroma adds value to the "theme_chroma" field.
-func (_u *UserUpdateOne) AddThemeChroma(v float64) *UserUpdateOne {
-	_u.mutation.AddThemeChroma(v)
-	return _u
-}
-
-// SetThemeSidebar sets the "theme_sidebar" field.
-func (_u *UserUpdateOne) SetThemeSidebar(v user.ThemeSidebar) *UserUpdateOne {
-	_u.mutation.SetThemeSidebar(v)
-	return _u
-}
-
-// SetNillableThemeSidebar sets the "theme_sidebar" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableThemeSidebar(v *user.ThemeSidebar) *UserUpdateOne {
-	if v != nil {
-		_u.SetThemeSidebar(*v)
-	}
-	return _u
-}
-
-// SetColorMode sets the "color_mode" field.
-func (_u *UserUpdateOne) SetColorMode(v user.ColorMode) *UserUpdateOne {
-	_u.mutation.SetColorMode(v)
-	return _u
-}
-
-// SetNillableColorMode sets the "color_mode" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableColorMode(v *user.ColorMode) *UserUpdateOne {
-	if v != nil {
-		_u.SetColorMode(*v)
-	}
-	return _u
-}
-
-// SetLocale sets the "locale" field.
-func (_u *UserUpdateOne) SetLocale(v string) *UserUpdateOne {
-	_u.mutation.SetLocale(v)
-	return _u
-}
-
-// SetNillableLocale sets the "locale" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableLocale(v *string) *UserUpdateOne {
-	if v != nil {
-		_u.SetLocale(*v)
-	}
-	return _u
-}
-
-// SetNotificationLevel sets the "notification_level" field.
-func (_u *UserUpdateOne) SetNotificationLevel(v user.NotificationLevel) *UserUpdateOne {
-	_u.mutation.SetNotificationLevel(v)
-	return _u
-}
-
-// SetNillableNotificationLevel sets the "notification_level" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableNotificationLevel(v *user.NotificationLevel) *UserUpdateOne {
-	if v != nil {
-		_u.SetNotificationLevel(*v)
-	}
-	return _u
-}
-
-// SetTimezone sets the "timezone" field.
-func (_u *UserUpdateOne) SetTimezone(v string) *UserUpdateOne {
-	_u.mutation.SetTimezone(v)
-	return _u
-}
-
-// SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableTimezone(v *string) *UserUpdateOne {
-	if v != nil {
-		_u.SetTimezone(*v)
-	}
-	return _u
-}
-
-// SetTimezoneAutoUpdate sets the "timezone_auto_update" field.
-func (_u *UserUpdateOne) SetTimezoneAutoUpdate(v bool) *UserUpdateOne {
-	_u.mutation.SetTimezoneAutoUpdate(v)
-	return _u
-}
-
-// SetNillableTimezoneAutoUpdate sets the "timezone_auto_update" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableTimezoneAutoUpdate(v *bool) *UserUpdateOne {
-	if v != nil {
-		_u.SetTimezoneAutoUpdate(*v)
-	}
-	return _u
-}
-
-// SetChannelSortOrder sets the "channel_sort_order" field.
-func (_u *UserUpdateOne) SetChannelSortOrder(v user.ChannelSortOrder) *UserUpdateOne {
-	_u.mutation.SetChannelSortOrder(v)
-	return _u
-}
-
-// SetNillableChannelSortOrder sets the "channel_sort_order" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableChannelSortOrder(v *user.ChannelSortOrder) *UserUpdateOne {
-	if v != nil {
-		_u.SetChannelSortOrder(*v)
-	}
-	return _u
-}
-
-// SetHideJoinMessages sets the "hide_join_messages" field.
-func (_u *UserUpdateOne) SetHideJoinMessages(v bool) *UserUpdateOne {
-	_u.mutation.SetHideJoinMessages(v)
-	return _u
-}
-
-// SetNillableHideJoinMessages sets the "hide_join_messages" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableHideJoinMessages(v *bool) *UserUpdateOne {
-	if v != nil {
-		_u.SetHideJoinMessages(*v)
 	}
 	return _u
 }
@@ -2101,6 +1826,40 @@ func (_u *UserUpdateOne) AddChannelReadStates(v ...*ChannelReadState) *UserUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.AddChannelReadStateIDs(ids...)
+}
+
+// SetPreferenceID sets the "preference" edge to the UserPreference entity by ID.
+func (_u *UserUpdateOne) SetPreferenceID(id uuid.UUID) *UserUpdateOne {
+	_u.mutation.SetPreferenceID(id)
+	return _u
+}
+
+// SetNillablePreferenceID sets the "preference" edge to the UserPreference entity by ID if the given value is not nil.
+func (_u *UserUpdateOne) SetNillablePreferenceID(id *uuid.UUID) *UserUpdateOne {
+	if id != nil {
+		_u = _u.SetPreferenceID(*id)
+	}
+	return _u
+}
+
+// SetPreference sets the "preference" edge to the UserPreference entity.
+func (_u *UserUpdateOne) SetPreference(v *UserPreference) *UserUpdateOne {
+	return _u.SetPreferenceID(v.ID)
+}
+
+// AddLinkIDs adds the "links" edge to the UserLink entity by IDs.
+func (_u *UserUpdateOne) AddLinkIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddLinkIDs(ids...)
+	return _u
+}
+
+// AddLinks adds the "links" edges to the UserLink entity.
+func (_u *UserUpdateOne) AddLinks(v ...*UserLink) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddLinkIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -2381,6 +2140,33 @@ func (_u *UserUpdateOne) RemoveChannelReadStates(v ...*ChannelReadState) *UserUp
 	return _u.RemoveChannelReadStateIDs(ids...)
 }
 
+// ClearPreference clears the "preference" edge to the UserPreference entity.
+func (_u *UserUpdateOne) ClearPreference() *UserUpdateOne {
+	_u.mutation.ClearPreference()
+	return _u
+}
+
+// ClearLinks clears all "links" edges to the UserLink entity.
+func (_u *UserUpdateOne) ClearLinks() *UserUpdateOne {
+	_u.mutation.ClearLinks()
+	return _u
+}
+
+// RemoveLinkIDs removes the "links" edge to UserLink entities by IDs.
+func (_u *UserUpdateOne) RemoveLinkIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveLinkIDs(ids...)
+	return _u
+}
+
+// RemoveLinks removes "links" edges to UserLink entities.
+func (_u *UserUpdateOne) RemoveLinks(v ...*UserLink) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveLinkIDs(ids...)
+}
+
 // Where appends a list predicates to the UserUpdate builder.
 func (_u *UserUpdateOne) Where(ps ...predicate.User) *UserUpdateOne {
 	_u.mutation.Where(ps...)
@@ -2447,26 +2233,6 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "User.display_name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ThemeSidebar(); ok {
-		if err := user.ThemeSidebarValidator(v); err != nil {
-			return &ValidationError{Name: "theme_sidebar", err: fmt.Errorf(`ent: validator failed for field "User.theme_sidebar": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ColorMode(); ok {
-		if err := user.ColorModeValidator(v); err != nil {
-			return &ValidationError{Name: "color_mode", err: fmt.Errorf(`ent: validator failed for field "User.color_mode": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.NotificationLevel(); ok {
-		if err := user.NotificationLevelValidator(v); err != nil {
-			return &ValidationError{Name: "notification_level", err: fmt.Errorf(`ent: validator failed for field "User.notification_level": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ChannelSortOrder(); ok {
-		if err := user.ChannelSortOrderValidator(v); err != nil {
-			return &ValidationError{Name: "channel_sort_order", err: fmt.Errorf(`ent: validator failed for field "User.channel_sort_order": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -2520,64 +2286,17 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.BioCleared() {
 		_spec.ClearField(user.FieldBio, field.TypeString)
 	}
-	if value, ok := _u.mutation.Links(); ok {
-		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedLinks(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, user.FieldLinks, value)
-		})
-	}
-	if _u.mutation.LinksCleared() {
-		_spec.ClearField(user.FieldLinks, field.TypeJSON)
-	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 	}
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
 	}
-	if value, ok := _u.mutation.IsBot(); ok {
-		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
+	if value, ok := _u.mutation.IsApp(); ok {
+		_spec.SetField(user.FieldIsApp, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.IsOfficial(); ok {
 		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
-	}
-	if value, ok := _u.mutation.ThemeHue(); ok {
-		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedThemeHue(); ok {
-		_spec.AddField(user.FieldThemeHue, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.ThemeChroma(); ok {
-		_spec.SetField(user.FieldThemeChroma, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.AddedThemeChroma(); ok {
-		_spec.AddField(user.FieldThemeChroma, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.ThemeSidebar(); ok {
-		_spec.SetField(user.FieldThemeSidebar, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.ColorMode(); ok {
-		_spec.SetField(user.FieldColorMode, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.Locale(); ok {
-		_spec.SetField(user.FieldLocale, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.NotificationLevel(); ok {
-		_spec.SetField(user.FieldNotificationLevel, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.Timezone(); ok {
-		_spec.SetField(user.FieldTimezone, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.TimezoneAutoUpdate(); ok {
-		_spec.SetField(user.FieldTimezoneAutoUpdate, field.TypeBool, value)
-	}
-	if value, ok := _u.mutation.ChannelSortOrder(); ok {
-		_spec.SetField(user.FieldChannelSortOrder, field.TypeEnum, value)
-	}
-	if value, ok := _u.mutation.HideJoinMessages(); ok {
-		_spec.SetField(user.FieldHideJoinMessages, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -3160,6 +2879,80 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PreferenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.PreferenceTable,
+			Columns: []string{user.PreferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userpreference.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PreferenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.PreferenceTable,
+			Columns: []string{user.PreferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userpreference.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userlink.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedLinksIDs(); len(nodes) > 0 && !_u.mutation.LinksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userlink.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.LinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userlink.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

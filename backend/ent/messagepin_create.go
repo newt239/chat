@@ -27,6 +27,24 @@ type MessagePinCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetChannelID sets the "channel_id" field.
+func (_c *MessagePinCreate) SetChannelID(v uuid.UUID) *MessagePinCreate {
+	_c.mutation.SetChannelID(v)
+	return _c
+}
+
+// SetMessageID sets the "message_id" field.
+func (_c *MessagePinCreate) SetMessageID(v uuid.UUID) *MessagePinCreate {
+	_c.mutation.SetMessageID(v)
+	return _c
+}
+
+// SetPinnedByID sets the "pinned_by_id" field.
+func (_c *MessagePinCreate) SetPinnedByID(v uuid.UUID) *MessagePinCreate {
+	_c.mutation.SetPinnedByID(v)
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *MessagePinCreate) SetCreatedAt(v time.Time) *MessagePinCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -55,32 +73,14 @@ func (_c *MessagePinCreate) SetNillableID(v *uuid.UUID) *MessagePinCreate {
 	return _c
 }
 
-// SetChannelID sets the "channel" edge to the Channel entity by ID.
-func (_c *MessagePinCreate) SetChannelID(id uuid.UUID) *MessagePinCreate {
-	_c.mutation.SetChannelID(id)
-	return _c
-}
-
 // SetChannel sets the "channel" edge to the Channel entity.
 func (_c *MessagePinCreate) SetChannel(v *Channel) *MessagePinCreate {
 	return _c.SetChannelID(v.ID)
 }
 
-// SetMessageID sets the "message" edge to the Message entity by ID.
-func (_c *MessagePinCreate) SetMessageID(id uuid.UUID) *MessagePinCreate {
-	_c.mutation.SetMessageID(id)
-	return _c
-}
-
 // SetMessage sets the "message" edge to the Message entity.
 func (_c *MessagePinCreate) SetMessage(v *Message) *MessagePinCreate {
 	return _c.SetMessageID(v.ID)
-}
-
-// SetPinnedByID sets the "pinned_by" edge to the User entity by ID.
-func (_c *MessagePinCreate) SetPinnedByID(id uuid.UUID) *MessagePinCreate {
-	_c.mutation.SetPinnedByID(id)
-	return _c
 }
 
 // SetPinnedBy sets the "pinned_by" edge to the User entity.
@@ -135,6 +135,15 @@ func (_c *MessagePinCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *MessagePinCreate) check() error {
+	if _, ok := _c.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "MessagePin.channel_id"`)}
+	}
+	if _, ok := _c.mutation.MessageID(); !ok {
+		return &ValidationError{Name: "message_id", err: errors.New(`ent: missing required field "MessagePin.message_id"`)}
+	}
+	if _, ok := _c.mutation.PinnedByID(); !ok {
+		return &ValidationError{Name: "pinned_by_id", err: errors.New(`ent: missing required field "MessagePin.pinned_by_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "MessagePin.created_at"`)}
 	}
@@ -201,7 +210,7 @@ func (_c *MessagePinCreate) createSpec() (*MessagePin, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_pin_channel = &nodes[0]
+		_node.ChannelID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MessageIDs(); len(nodes) > 0 {
@@ -218,7 +227,7 @@ func (_c *MessagePinCreate) createSpec() (*MessagePin, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_pin_message = &nodes[0]
+		_node.MessageID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.PinnedByIDs(); len(nodes) > 0 {
@@ -235,7 +244,7 @@ func (_c *MessagePinCreate) createSpec() (*MessagePin, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.message_pin_pinned_by = &nodes[0]
+		_node.PinnedByID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -245,7 +254,7 @@ func (_c *MessagePinCreate) createSpec() (*MessagePin, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.MessagePin.Create().
-//		SetCreatedAt(v).
+//		SetChannelID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -254,7 +263,7 @@ func (_c *MessagePinCreate) createSpec() (*MessagePin, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessagePinUpsert) {
-//			SetCreatedAt(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessagePinCreate) OnConflict(opts ...sql.ConflictOption) *MessagePinUpsertOne {
@@ -289,6 +298,42 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetChannelID sets the "channel_id" field.
+func (u *MessagePinUpsert) SetChannelID(v uuid.UUID) *MessagePinUpsert {
+	u.Set(messagepin.FieldChannelID, v)
+	return u
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *MessagePinUpsert) UpdateChannelID() *MessagePinUpsert {
+	u.SetExcluded(messagepin.FieldChannelID)
+	return u
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessagePinUpsert) SetMessageID(v uuid.UUID) *MessagePinUpsert {
+	u.Set(messagepin.FieldMessageID, v)
+	return u
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessagePinUpsert) UpdateMessageID() *MessagePinUpsert {
+	u.SetExcluded(messagepin.FieldMessageID)
+	return u
+}
+
+// SetPinnedByID sets the "pinned_by_id" field.
+func (u *MessagePinUpsert) SetPinnedByID(v uuid.UUID) *MessagePinUpsert {
+	u.Set(messagepin.FieldPinnedByID, v)
+	return u
+}
+
+// UpdatePinnedByID sets the "pinned_by_id" field to the value that was provided on create.
+func (u *MessagePinUpsert) UpdatePinnedByID() *MessagePinUpsert {
+	u.SetExcluded(messagepin.FieldPinnedByID)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -339,6 +384,48 @@ func (u *MessagePinUpsertOne) Update(set func(*MessagePinUpsert)) *MessagePinUps
 		set(&MessagePinUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *MessagePinUpsertOne) SetChannelID(v uuid.UUID) *MessagePinUpsertOne {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *MessagePinUpsertOne) UpdateChannelID() *MessagePinUpsertOne {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessagePinUpsertOne) SetMessageID(v uuid.UUID) *MessagePinUpsertOne {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessagePinUpsertOne) UpdateMessageID() *MessagePinUpsertOne {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetPinnedByID sets the "pinned_by_id" field.
+func (u *MessagePinUpsertOne) SetPinnedByID(v uuid.UUID) *MessagePinUpsertOne {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.SetPinnedByID(v)
+	})
+}
+
+// UpdatePinnedByID sets the "pinned_by_id" field to the value that was provided on create.
+func (u *MessagePinUpsertOne) UpdatePinnedByID() *MessagePinUpsertOne {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.UpdatePinnedByID()
+	})
 }
 
 // Exec executes the query.
@@ -477,7 +564,7 @@ func (_c *MessagePinCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MessagePinUpsert) {
-//			SetCreatedAt(v+v).
+//			SetChannelID(v+v).
 //		}).
 //		Exec(ctx)
 func (_c *MessagePinCreateBulk) OnConflict(opts ...sql.ConflictOption) *MessagePinUpsertBulk {
@@ -557,6 +644,48 @@ func (u *MessagePinUpsertBulk) Update(set func(*MessagePinUpsert)) *MessagePinUp
 		set(&MessagePinUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetChannelID sets the "channel_id" field.
+func (u *MessagePinUpsertBulk) SetChannelID(v uuid.UUID) *MessagePinUpsertBulk {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.SetChannelID(v)
+	})
+}
+
+// UpdateChannelID sets the "channel_id" field to the value that was provided on create.
+func (u *MessagePinUpsertBulk) UpdateChannelID() *MessagePinUpsertBulk {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.UpdateChannelID()
+	})
+}
+
+// SetMessageID sets the "message_id" field.
+func (u *MessagePinUpsertBulk) SetMessageID(v uuid.UUID) *MessagePinUpsertBulk {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.SetMessageID(v)
+	})
+}
+
+// UpdateMessageID sets the "message_id" field to the value that was provided on create.
+func (u *MessagePinUpsertBulk) UpdateMessageID() *MessagePinUpsertBulk {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.UpdateMessageID()
+	})
+}
+
+// SetPinnedByID sets the "pinned_by_id" field.
+func (u *MessagePinUpsertBulk) SetPinnedByID(v uuid.UUID) *MessagePinUpsertBulk {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.SetPinnedByID(v)
+	})
+}
+
+// UpdatePinnedByID sets the "pinned_by_id" field to the value that was provided on create.
+func (u *MessagePinUpsertBulk) UpdatePinnedByID() *MessagePinUpsertBulk {
+	return u.Update(func(s *MessagePinUpsert) {
+		s.UpdatePinnedByID()
+	})
 }
 
 // Exec executes the query.

@@ -15,6 +15,12 @@ const (
 	Label = "attachment"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldMessageID holds the string denoting the message_id field in the database.
+	FieldMessageID = "message_id"
+	// FieldUploaderID holds the string denoting the uploader_id field in the database.
+	FieldUploaderID = "uploader_id"
+	// FieldChannelID holds the string denoting the channel_id field in the database.
+	FieldChannelID = "channel_id"
 	// FieldFileName holds the string denoting the file_name field in the database.
 	FieldFileName = "file_name"
 	// FieldMimeType holds the string denoting the mime_type field in the database.
@@ -50,33 +56,36 @@ const (
 	// EdgeChannel holds the string denoting the channel edge name in mutations.
 	EdgeChannel = "channel"
 	// Table holds the table name of the attachment in the database.
-	Table = "attachments"
+	Table = "attachment"
 	// MessageTable is the table that holds the message relation/edge.
-	MessageTable = "attachments"
+	MessageTable = "attachment"
 	// MessageInverseTable is the table name for the Message entity.
 	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessageInverseTable = "messages"
+	MessageInverseTable = "message"
 	// MessageColumn is the table column denoting the message relation/edge.
-	MessageColumn = "attachment_message"
+	MessageColumn = "message_id"
 	// UploaderTable is the table that holds the uploader relation/edge.
-	UploaderTable = "attachments"
+	UploaderTable = "attachment"
 	// UploaderInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UploaderInverseTable = "users"
+	UploaderInverseTable = "user"
 	// UploaderColumn is the table column denoting the uploader relation/edge.
-	UploaderColumn = "attachment_uploader"
+	UploaderColumn = "uploader_id"
 	// ChannelTable is the table that holds the channel relation/edge.
-	ChannelTable = "attachments"
+	ChannelTable = "attachment"
 	// ChannelInverseTable is the table name for the Channel entity.
 	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelInverseTable = "channels"
+	ChannelInverseTable = "channel"
 	// ChannelColumn is the table column denoting the channel relation/edge.
-	ChannelColumn = "attachment_channel"
+	ChannelColumn = "channel_id"
 )
 
 // Columns holds all SQL columns for attachment fields.
 var Columns = []string{
 	FieldID,
+	FieldMessageID,
+	FieldUploaderID,
+	FieldChannelID,
 	FieldFileName,
 	FieldMimeType,
 	FieldSizeBytes,
@@ -93,23 +102,10 @@ var Columns = []string{
 	FieldCreatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "attachments"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"attachment_message",
-	"attachment_uploader",
-	"attachment_channel",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -139,6 +135,21 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByMessageID orders the results by the message_id field.
+func ByMessageID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMessageID, opts...).ToFunc()
+}
+
+// ByUploaderID orders the results by the uploader_id field.
+func ByUploaderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUploaderID, opts...).ToFunc()
+}
+
+// ByChannelID orders the results by the channel_id field.
+func ByChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelID, opts...).ToFunc()
 }
 
 // ByFileName orders the results by the file_name field.

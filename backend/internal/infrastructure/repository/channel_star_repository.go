@@ -6,9 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/ent"
-	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelstar"
-	"github.com/newt239/chat/ent/user"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -35,7 +33,7 @@ func (r *channelStarRepository) SetStarred(ctx context.Context, userID string, c
 	client := transaction.ResolveClient(ctx, r.client)
 	if !starred {
 		_, err = client.ChannelStar.Delete().
-			Where(channelstar.HasUserWith(user.ID(uid)), channelstar.HasChannelWith(channel.ID(cid))).
+			Where(channelstar.UserID(uid), channelstar.ChannelID(cid)).
 			Exec(ctx)
 		return err
 	}
@@ -66,7 +64,7 @@ func (r *channelStarRepository) FindStarredChannelIDs(ctx context.Context, userI
 
 	client := transaction.ResolveClient(ctx, r.client)
 	starredIDs, err := client.ChannelStar.Query().
-		Where(channelstar.HasUserWith(user.ID(uid)), channelstar.HasChannelWith(channel.IDIn(cids...))).
+		Where(channelstar.UserID(uid), channelstar.ChannelIDIn(cids...)).
 		QueryChannel().
 		IDs(ctx)
 	if err != nil {

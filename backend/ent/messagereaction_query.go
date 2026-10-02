@@ -27,7 +27,6 @@ type MessageReactionQuery struct {
 	predicates  []predicate.MessageReaction
 	withMessage *MessageQuery
 	withUser    *UserQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -336,12 +335,12 @@ func (_q *MessageReactionQuery) WithUser(opts ...func(*UserQuery)) *MessageReact
 // Example:
 //
 //	var v []struct {
-//		Emoji string `json:"emoji,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MessageReaction.Query().
-//		GroupBy(messagereaction.FieldEmoji).
+//		GroupBy(messagereaction.FieldMessageID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessageReactionQuery) GroupBy(field string, fields ...string) *MessageReactionGroupBy {
@@ -359,11 +358,11 @@ func (_q *MessageReactionQuery) GroupBy(field string, fields ...string) *Message
 // Example:
 //
 //	var v []struct {
-//		Emoji string `json:"emoji,omitempty"`
+//		MessageID uuid.UUID `json:"message_id,omitempty"`
 //	}
 //
 //	client.MessageReaction.Query().
-//		Select(messagereaction.FieldEmoji).
+//		Select(messagereaction.FieldMessageID).
 //		Scan(ctx, &v)
 func (_q *MessageReactionQuery) Select(fields ...string) *MessageReactionSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
@@ -407,19 +406,12 @@ func (_q *MessageReactionQuery) prepareQuery(ctx context.Context) error {
 func (_q *MessageReactionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*MessageReaction, error) {
 	var (
 		nodes       = []*MessageReaction{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withMessage != nil,
 			_q.withUser != nil,
 		}
 	)
-	if _q.withMessage != nil || _q.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, messagereaction.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*MessageReaction).scanValues(nil, columns)
 	}
@@ -457,10 +449,7 @@ func (_q *MessageReactionQuery) loadMessage(ctx context.Context, query *MessageQ
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageReaction)
 	for i := range nodes {
-		if nodes[i].message_reaction_message == nil {
-			continue
-		}
-		fk := *nodes[i].message_reaction_message
+		fk := nodes[i].MessageID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -477,7 +466,7 @@ func (_q *MessageReactionQuery) loadMessage(ctx context.Context, query *MessageQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_reaction_message" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "message_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -489,10 +478,7 @@ func (_q *MessageReactionQuery) loadUser(ctx context.Context, query *UserQuery, 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*MessageReaction)
 	for i := range nodes {
-		if nodes[i].message_reaction_user == nil {
-			continue
-		}
-		fk := *nodes[i].message_reaction_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -509,7 +495,7 @@ func (_q *MessageReactionQuery) loadUser(ctx context.Context, query *UserQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "message_reaction_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +528,12 @@ func (_q *MessageReactionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != messagereaction.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withMessage != nil {
+			_spec.Node.AddColumnOnce(messagereaction.FieldMessageID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(messagereaction.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

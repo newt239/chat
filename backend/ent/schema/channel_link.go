@@ -26,6 +26,8 @@ func (ChannelLink) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("channel_id", uuid.UUID{}),
+		field.UUID("created_by_id", uuid.UUID{}),
 		field.String("title").
 			NotEmpty(),
 		field.String("url").
@@ -44,10 +46,12 @@ func (ChannelLink) Fields() []ent.Field {
 func (ChannelLink) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("channel", Channel.Type).
+			Field("channel_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("created_by", User.Type).
+			Field("created_by_id").
 			Unique().
 			Required(),
 	}
@@ -55,7 +59,6 @@ func (ChannelLink) Edges() []ent.Edge {
 
 func (ChannelLink) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("position").
-			Edges("channel"),
+		index.Fields("channel_id", "position"),
 	}
 }

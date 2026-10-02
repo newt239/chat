@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.UserNote {
 	return predicate.UserNote(sql.FieldLTE(FieldID, id))
 }
 
+// OwnerID applies equality check predicate on the "owner_id" field. It's identical to OwnerIDEQ.
+func OwnerID(v uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldEQ(FieldOwnerID, v))
+}
+
+// TargetID applies equality check predicate on the "target_id" field. It's identical to TargetIDEQ.
+func TargetID(v uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldEQ(FieldTargetID, v))
+}
+
 // Nickname applies equality check predicate on the "nickname" field. It's identical to NicknameEQ.
 func Nickname(v string) predicate.UserNote {
 	return predicate.UserNote(sql.FieldEQ(FieldNickname, v))
@@ -69,6 +79,46 @@ func Memo(v string) predicate.UserNote {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.UserNote {
 	return predicate.UserNote(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// OwnerIDEQ applies the EQ predicate on the "owner_id" field.
+func OwnerIDEQ(v uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldEQ(FieldOwnerID, v))
+}
+
+// OwnerIDNEQ applies the NEQ predicate on the "owner_id" field.
+func OwnerIDNEQ(v uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldNEQ(FieldOwnerID, v))
+}
+
+// OwnerIDIn applies the In predicate on the "owner_id" field.
+func OwnerIDIn(vs ...uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldIn(FieldOwnerID, vs...))
+}
+
+// OwnerIDNotIn applies the NotIn predicate on the "owner_id" field.
+func OwnerIDNotIn(vs ...uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldNotIn(FieldOwnerID, vs...))
+}
+
+// TargetIDEQ applies the EQ predicate on the "target_id" field.
+func TargetIDEQ(v uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldEQ(FieldTargetID, v))
+}
+
+// TargetIDNEQ applies the NEQ predicate on the "target_id" field.
+func TargetIDNEQ(v uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldNEQ(FieldTargetID, v))
+}
+
+// TargetIDIn applies the In predicate on the "target_id" field.
+func TargetIDIn(vs ...uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldIn(FieldTargetID, vs...))
+}
+
+// TargetIDNotIn applies the NotIn predicate on the "target_id" field.
+func TargetIDNotIn(vs ...uuid.UUID) predicate.UserNote {
+	return predicate.UserNote(sql.FieldNotIn(FieldTargetID, vs...))
 }
 
 // NicknameEQ applies the EQ predicate on the "nickname" field.

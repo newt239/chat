@@ -114,7 +114,7 @@ func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutp
 	if err != nil {
 		return nil, err
 	}
-	if user == nil || user.IsBot {
+	if user == nil || user.IsApp {
 		return nil, ErrInvalidCredentials
 	}
 
@@ -183,7 +183,7 @@ func (i *authInteractor) linkGoogleAccount(ctx context.Context, identity *Google
 		return nil, err
 	}
 	// 別の Google アカウントに紐付いたユーザーやボットは乗っ取れないようにする
-	if user.IsBot || user.GoogleSub != nil {
+	if user.IsApp || user.GoogleSub != nil {
 		return nil, ErrInvalidCredentials
 	}
 	user.GoogleSub = &identity.Sub

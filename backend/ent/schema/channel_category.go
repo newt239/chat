@@ -26,6 +26,8 @@ func (ChannelCategory) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Immutable(),
+		field.UUID("user_id", uuid.UUID{}),
+		field.String("workspace_id"),
 		field.String("name").
 			NotEmpty(),
 		field.Int("position").
@@ -39,10 +41,12 @@ func (ChannelCategory) Fields() []ent.Field {
 func (ChannelCategory) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
+			Field("user_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("workspace", Workspace.Type).
+			Field("workspace_id").
 			Unique().
 			Required().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
@@ -53,7 +57,6 @@ func (ChannelCategory) Edges() []ent.Edge {
 
 func (ChannelCategory) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("position").
-			Edges("user", "workspace"),
+		index.Fields("user_id", "workspace_id", "position"),
 	}
 }
