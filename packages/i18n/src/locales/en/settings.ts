@@ -13,14 +13,12 @@ export const settings: Messages["settings"] = {
     password: "Change password",
     passwordChanged: "Password changed. Please log in again",
     profile: "Profile",
-    profileDescription: "Edit your name and bio from your profile",
   },
   notifications: {
     denied: "Notifications are blocked in this browser",
     desktop: "Desktop notifications",
     desktopDescription: "Show notifications in this browser while the app is open",
     level: "Notify me about",
-    levelDescription: "Shared across all your devices",
     levels: {
       all: "All messages",
       mentions: "Mentions and DMs",

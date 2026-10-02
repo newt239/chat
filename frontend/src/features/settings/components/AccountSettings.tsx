@@ -29,10 +29,7 @@ export const AccountSettings = () => {
   return (
     <div className="flex flex-col gap-5">
       <section className="flex flex-col">
-        <SettingRow
-          title={t("settings.account.profile")}
-          description={t("settings.account.profileDescription")}
-        >
+        <SettingRow title={t("settings.account.profile")} description={null}>
           <LinkButton variant="secondary" to="." search={openPanel({ profile: user?.id })}>
             {t("settings.account.openProfile")}
           </LinkButton>

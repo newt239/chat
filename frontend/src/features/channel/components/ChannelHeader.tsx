@@ -2,7 +2,6 @@ import { skipToken, useQuery } from "@connectrpc/connect-query";
 import {
   IconBellOff,
   IconNote,
-  IconChevronDown,
   IconDots,
   IconInfoCircle,
   IconPin,
@@ -129,7 +128,6 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
               </>
             )
           )}
-          <IconChevronDown aria-hidden className="size-3!" />
         </Button>
         {isMuted && (
           <Tooltip content={t("shell.channel.muted")}>
@@ -188,6 +186,16 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             </span>
           )}
         </IconButton>
+        {channel && (
+          <IconButton
+            label={t("shell.rightPanel.channelInfo")}
+            onPress={() => {
+              openRightPanel({ panel: "info" });
+            }}
+          >
+            <IconInfoCircle />
+          </IconButton>
+        )}
         {partner && (
           <IconButton
             label={t("shell.rightPanel.profile")}
@@ -212,11 +220,6 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
             isMuted={isMuted}
           />
           <MenuSeparator />
-          {channel && (
-            <MenuItemLink icon={<IconInfoCircle />} to="." search={openPanel({ panel: "info" })}>
-              {t("shell.rightPanel.channelInfo")}
-            </MenuItemLink>
-          )}
           <MenuItemLink icon={<IconUsers />} to="." search={openPanel({ panel: "members" })}>
             {t("shell.rightPanel.members")}
           </MenuItemLink>

@@ -23,7 +23,7 @@ export const SettingsLayout = ({
 
   return (
     <section className="flex h-full min-h-0 flex-col bg-surface font-sans text-text">
-      <PageHeader icon={icon} title={isMobile ? sectionTitle : title} />
+      <PageHeader icon={icon} title={sectionTitle} />
       <div className="flex min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex w-full max-w-4xl gap-8 px-[18px] pt-5 pb-8 max-md:px-3.5 max-md:pt-3">
           {!isMobile && (
@@ -34,10 +34,7 @@ export const SettingsLayout = ({
               {nav}
             </nav>
           )}
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
-            {!isMobile && <h2 className="m-0 text-title">{sectionTitle}</h2>}
-            {children}
-          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-3">{children}</div>
         </div>
       </div>
     </section>

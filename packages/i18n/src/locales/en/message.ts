@@ -94,7 +94,6 @@ export const message: Messages["message"] = {
   },
   panel: {
     empty: "No messages yet",
-    emptyHint: "Send the first message",
     jumpToLatest: "Jump to latest messages",
     loading: "Loading…",
     selectChannel: "Pick a channel to see its messages",

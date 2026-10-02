@@ -11,14 +11,12 @@ export const settings = {
     password: "パスワードの変更",
     passwordChanged: "パスワードを変更しました。もう一度ログインしてください",
     profile: "プロフィール",
-    profileDescription: "名前や自己紹介はプロフィールで編集します",
   },
   notifications: {
     denied: "ブラウザで通知が許可されていません",
     desktop: "デスクトップ通知",
     desktopDescription: "アプリを開いている間、この端末のブラウザに通知を出します",
     level: "通知するメッセージ",
-    levelDescription: "すべての端末で共通の設定です",
     levels: {
       all: "すべて",
       mentions: "メンションと DM",

@@ -25,9 +25,7 @@ export const ThreadListPage = () => {
 
   return (
     <>
-      <PageHeader icon={<IconMessages />} title={t("shell.nav.threads")}>
-        <span className="hidden text-caption text-muted md:inline">{t("inbox.replyHint")}</span>
-      </PageHeader>
+      <PageHeader icon={<IconMessages />} title={t("shell.nav.threads")} />
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-[18px] py-3 max-md:px-2.5">
         {isLoading ? (
           <Skeleton className="h-32 w-full rounded-[10px]" />

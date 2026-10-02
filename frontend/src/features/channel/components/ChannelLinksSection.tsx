@@ -34,9 +34,6 @@ export const ChannelLinksSection = ({ channelId }: ChannelLinksSectionProps) => 
           </LinkButton>
         )}
       </h4>
-      {links.length === 0 && (
-        <p className="m-0 text-[12.5px] text-muted">{t("channel.links.empty")}</p>
-      )}
       <ul className="m-0 -mx-2 flex list-none flex-col p-0">
         {links.map((link, index) => (
           <li
