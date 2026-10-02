@@ -14,8 +14,9 @@ import { MenuSection } from "#/components/ui/MenuSection/MenuSection";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { focusRing } from "#/components/ui/styles/styles";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 
-import { useIsWorkspaceAdmin } from "../hooks/useIsWorkspaceAdmin";
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { WorkspaceLogo } from "./WorkspaceLogo";
 
@@ -27,7 +28,7 @@ type WorkspaceMenuProps = {
 export const WorkspaceMenu = ({ workspaceId }: WorkspaceMenuProps) => {
   const { t } = useTranslation();
   const { data: workspaces = [] } = useWorkspaces();
-  const isAdmin = useIsWorkspaceAdmin(workspaceId);
+  const isAdmin = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const current = workspaces.find((workspace) => workspace.id === workspaceId);
   const name = current?.name ?? workspaceId;
 

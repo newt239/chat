@@ -8,9 +8,10 @@ import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { closePanel, openDialog } from "#/features/layout/utils/overlaySearch";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
 import { copyWithToast } from "#/lib/clipboard";
+import { isAdminRole } from "#/lib/isAdminRole";
 
-import { useCanManageUserGroups } from "../hooks/useCanManageUserGroups";
 import { useUserGroupActions, useUserGroups } from "../hooks/useUserGroups";
 import { UserGroupMembers } from "./UserGroupMembers";
 
@@ -26,7 +27,7 @@ export const UserGroupPanel = ({ workspaceId, groupId }: UserGroupPanelProps) =>
   const { remove } = useUserGroupActions();
   const navigate = useNavigate();
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
-  const canManage = useCanManageUserGroups(workspaceId);
+  const canManage = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const group = groups?.find((candidate) => candidate.id === groupId);
 
   if (group === undefined) {

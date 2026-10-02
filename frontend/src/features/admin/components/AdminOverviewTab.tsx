@@ -4,11 +4,11 @@ import { useTranslation } from "react-i18next";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { useAuditLogs } from "#/features/admin/hooks/useAdminQueries";
-import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { ChartCard } from "#/features/insights/components/ChartCard";
 import { HBarList } from "#/features/insights/components/HBarList";
 import { KpiCard } from "#/features/insights/components/KpiCard";
 import { usePreferences } from "#/hooks/usePreferences";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { AuditLogTable } from "./AuditLogTable";
 

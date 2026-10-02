@@ -3,10 +3,10 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
-import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { CustomEmojiSettings } from "#/features/customEmoji/components/CustomEmojiSettings";
 import { SettingsLayout } from "#/features/settings/components/SettingsLayout";
 import { SettingsNavLink } from "#/features/settings/components/SettingsNavLink";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { useWorkspaces } from "../hooks/useWorkspace";
 import { isWorkspaceSettingsSection, workspaceSettingsSections } from "../schemas";

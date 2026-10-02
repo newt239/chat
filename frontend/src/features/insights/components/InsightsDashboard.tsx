@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 
 import { Link } from "#/components/ui/Link/Link";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
-import { useMyWorkspaceRole } from "#/features/admin/hooks/useMyWorkspaceRole";
-import { isAdminRole } from "#/features/admin/utils/isAdminRole";
 import { useInsights } from "#/features/insights/hooks/useInsights";
 import { isoWeekdayLabel, parseLocalDate, toHeatmapGrid } from "#/features/insights/utils/chart";
 import { StorageCategory } from "#/gen/chat/v1/insight_service_pb";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
 import { usePreferences } from "#/hooks/usePreferences";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { BarChart } from "./BarChart";
 import { ChartCard } from "./ChartCard";

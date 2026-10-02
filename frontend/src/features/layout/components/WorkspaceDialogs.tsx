@@ -8,9 +8,10 @@ import { useChannelCategories } from "#/features/channel/hooks/useChannelCategor
 import { CreateDMModal } from "#/features/dm/components/CreateDMModal";
 import { MarkdownHelpModal } from "#/features/message/components/MarkdownHelpModal";
 import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog";
-import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 
 import { closeDialog, openPanel } from "../utils/overlaySearch";
 import { workspaceRoute } from "../utils/workspaceRoute";
@@ -25,7 +26,7 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const { app, assign, category, dialog, group, link, parent } = workspaceRoute.useSearch();
   const channelId = useParams({ select: (params) => params.channelId, strict: false });
   const { data: groups } = useUserGroups(workspaceId);
-  const canManageGroups = useCanManageUserGroups(workspaceId);
+  const canManageGroups = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const editingGroup = groups?.find((candidate) => candidate.id === group);
   const { data: categories } = useChannelCategories(workspaceId);
   const editingCategory = categories?.find((candidate) => candidate.id === category);

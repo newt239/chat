@@ -10,11 +10,12 @@ import { Button } from "#/components/ui/Button/Button";
 import { ComboBox } from "#/components/ui/ComboBox/ComboBox";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { useMembers } from "#/features/member/hooks/useMembers";
-import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import {
   useUserGroupMemberActions,
   useUserGroupMembers,
 } from "#/features/userGroup/hooks/useUserGroupMembers";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 type UserGroupMembersProps = {
@@ -28,7 +29,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
   const { data: workspaceMembers } = useMembers(workspaceId);
   const { add, remove } = useUserGroupMemberActions();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const canManage = useCanManageUserGroups(workspaceId);
+  const canManage = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const myId = useAtomValue(myUserIdAtom);
 
   const memberIds = new Set(members?.map((member) => member.userId));

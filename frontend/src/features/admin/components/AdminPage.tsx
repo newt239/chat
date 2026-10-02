@@ -15,8 +15,8 @@ import { AdminMembersTab } from "#/features/admin/components/AdminMembersTab";
 import { AdminOverviewTab } from "#/features/admin/components/AdminOverviewTab";
 import { AdminPermissionsTab } from "#/features/admin/components/AdminPermissionsTab";
 import { useAdminMembers, usePermissions } from "#/features/admin/hooks/useAdminQueries";
-import { useMyWorkspaceRole } from "#/features/admin/hooks/useMyWorkspaceRole";
 import { adminTabValues } from "#/features/admin/schemas";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
 
 import type { adminSearchSchema } from "#/features/admin/schemas";
 

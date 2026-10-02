@@ -23,8 +23,9 @@ import { useLogout } from "#/features/auth/hooks/useLogout";
 import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
 import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
-import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
 import { useMe } from "#/hooks/useMe";
+import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
+import { isAdminRole } from "#/lib/isAdminRole";
 import { isTauri } from "#/lib/platform/platform";
 
 import type { SettingsSection } from "#/features/settings/schemas";
@@ -43,7 +44,7 @@ export const MePage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: user } = useMe();
-  const isAdmin = useIsWorkspaceAdmin(workspaceId);
+  const isAdmin = isAdminRole(useMyWorkspaceRole(workspaceId).data);
   const logout = useLogout();
   const params = { workspaceId };
 
