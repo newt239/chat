@@ -10,18 +10,12 @@ import (
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
 )
 
-const defaultPinLimit = 100
-
 type PinServer struct {
 	UC pinuc.PinUseCase
 }
 
 func (s *PinServer) ListPins(ctx context.Context, req *chatv1.ListPinsRequest) (*chatv1.ListPinsResponse, error) {
-	input := pinuc.ListPinsInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), Limit: defaultPinLimit, Cursor: req.Cursor}
-	if req.Limit > 0 {
-		input.Limit = int(req.Limit)
-	}
-	out, err := s.UC.ListPins(ctx, input)
+	out, err := s.UC.ListPins(ctx, pinuc.ListPinsInput{ChannelID: req.ChannelId, UserID: userIDFrom(ctx), Limit: int(req.Limit), Cursor: req.Cursor})
 	if err != nil {
 		return nil, err
 	}

@@ -13,12 +13,18 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 )
 
-// CSV の書き出しは 1 回あたりこの件数までに抑える
-const maxExportAuditLogs = 10000
+const (
+	// CSV の書き出しは 1 回あたりこの件数までに抑える
+	maxExportAuditLogs   = 10000
+	defaultAuditLogLimit = 50
+)
 
 func (i *Interactor) ListAuditLogs(ctx context.Context, input ListAuditLogsInput) (*ListAuditLogsOutput, error) {
 	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
+	}
+	if input.Limit <= 0 {
+		input.Limit = defaultAuditLogLimit
 	}
 
 	page, err := i.auditLogRepo.List(ctx, input.filter(input.Limit, input.PageToken))

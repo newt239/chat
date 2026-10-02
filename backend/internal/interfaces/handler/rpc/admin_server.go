@@ -44,11 +44,7 @@ func auditLogQuery(ctx context.Context, req auditLogFilterRequest) adminuc.Audit
 }
 
 func (s *AdminServer) ListAuditLogs(ctx context.Context, req *chatv1.ListAuditLogsRequest) (*chatv1.ListAuditLogsResponse, error) {
-	limit := int(req.Limit)
-	if limit == 0 {
-		limit = 50
-	}
-	out, err := s.UC.ListAuditLogs(ctx, adminuc.ListAuditLogsInput{AuditLogQuery: auditLogQuery(ctx, req), Limit: limit, PageToken: req.PageToken})
+	out, err := s.UC.ListAuditLogs(ctx, adminuc.ListAuditLogsInput{AuditLogQuery: auditLogQuery(ctx, req), Limit: int(req.Limit), PageToken: req.PageToken})
 	if err != nil {
 		return nil, err
 	}
