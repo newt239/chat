@@ -22,7 +22,9 @@ func UserToEntity(u *ent.User) *entity.User {
 		DisplayName:  u.DisplayName,
 		Bio:          StringPtrFromNullable(u.Bio),
 		AvatarURL:    StringPtrFromNullable(u.AvatarURL),
+		Links:        u.Links,
 		IsBot:        u.IsBot,
+		IsOfficial:   u.IsOfficial,
 		Preferences: entity.UserPreferences{
 			ThemeHue:           u.ThemeHue,
 			ThemeChroma:        u.ThemeChroma,
@@ -204,6 +206,8 @@ func MessageToEntity(m *ent.Message) *entity.Message {
 		SenderName:      m.SenderName,
 		SenderAvatarURL: m.SenderAvatarURL,
 		Location:        LocationToEntity(m.LocationLatitude, m.LocationLongitude, m.LocationAccuracy, m.LocationLabel),
+		MentionsChannel: m.MentionsChannel,
+		MentionsHere:    m.MentionsHere,
 	}
 }
 
@@ -371,9 +375,10 @@ func MessageUserMentionToEntity(mum *ent.MessageUserMention) *entity.MessageUser
 		userID = mum.Edges.User.ID.String()
 	}
 	return &entity.MessageUserMention{
-		MessageID: messageID,
-		UserID:    userID,
-		CreatedAt: mum.CreatedAt,
+		MessageID:  messageID,
+		UserID:     userID,
+		ViaGroupID: UUIDPtrToStringPtr(mum.ViaGroupID),
+		CreatedAt:  mum.CreatedAt,
 	}
 }
 
@@ -413,6 +418,10 @@ func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 			DurationSeconds: ml.YoutubeDurationSeconds,
 		}
 	}
+	var xPost *entity.XPost
+	if ml.XAuthorName != nil && ml.XAuthorHandle != nil {
+		xPost = &entity.XPost{AuthorName: *ml.XAuthorName, AuthorHandle: *ml.XAuthorHandle}
+	}
 	return &entity.MessageLink{
 		ID:        ml.ID.String(),
 		MessageID: messageID,
@@ -426,6 +435,7 @@ func MessageLinkToEntity(ml *ent.MessageLink) *entity.MessageLink {
 			ImageWidth:  ml.ImageWidth,
 			ImageHeight: ml.ImageHeight,
 			YouTube:     youtube,
+			XPost:       xPost,
 		},
 		LinkedMessageID: UUIDPtrToStringPtr(ml.LinkedMessageID),
 		CreatedAt:       ml.CreatedAt,

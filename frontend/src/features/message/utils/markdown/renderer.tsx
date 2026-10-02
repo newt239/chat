@@ -14,7 +14,6 @@ import { CodeBlock } from "#/features/message/components/markdown/CodeBlock";
 import { LinkComponent } from "#/features/message/components/markdown/LinkComponent";
 import { Mention } from "#/features/message/components/markdown/Mention";
 
-import { remarkChannel } from "./plugins/channel";
 import { remarkCustomEmoji } from "./plugins/customEmoji";
 import { remarkHideLinks } from "./plugins/hideLinks";
 import { remarkMention } from "./plugins/mention";
@@ -41,7 +40,6 @@ export const renderMarkdown = (content: string, hiddenUrls: readonly string[]): 
     .use(remarkGfm)
     .use(remarkHideLinks, hiddenUrls)
     .use(remarkMention)
-    .use(remarkChannel)
     .use(remarkCustomEmoji)
     .use(remarkRehype)
     .use(rehypeSanitize, customSchema)

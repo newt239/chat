@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -17,64 +16,23 @@ import (
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	"github.com/newt239/chat/internal/infrastructure/safehttp"
 )
 
 type OGPService struct {
 	httpClient *http.Client
 }
 
-// ErrBlockedAddress は内部ネットワーク宛のリクエストを拒否したことを表します
-var ErrBlockedAddress = errors.New("内部ネットワーク宛の URL は取得できません")
-
 const (
 	maxOGPRedirects = 3
 	// YouTube の動画ページはメタデータが 700KB 付近にあるため余裕を持たせる
 	maxOGPBodyBytes = 2 * 1024 * 1024
-	userAgent       = "Mozilla/5.0 (compatible; ChatApp/1.0; +https://example.com)"
+	// X は User-Agent に bot を含むリクエストにだけ OGP を返す
+	userAgent = "Mozilla/5.0 (compatible; ChatApp-OGP-bot/1.0; +https://example.com)"
 )
 
-// isBlockedIP はループバック・プライベート・リンクローカル（クラウドのメタデータ含む）を弾きます
-func isBlockedIP(ip net.IP) bool {
-	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() ||
-		ip.IsLinkLocalMulticast() || ip.IsUnspecified() || ip.IsMulticast()
-}
-
 func NewOGPService() *OGPService {
-	dialer := &net.Dialer{Timeout: 5 * time.Second}
-
-	return &OGPService{
-		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				if len(via) >= maxOGPRedirects {
-					return fmt.Errorf("リダイレクトが多すぎます")
-				}
-				if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
-					return fmt.Errorf("unsupported URL scheme: %s", req.URL.Scheme)
-				}
-				return nil
-			},
-			// 名前解決後のアドレスを検証し、DNS リバインディングによる迂回も防ぐ
-			Transport: &http.Transport{
-				DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-					host, _, err := net.SplitHostPort(addr)
-					if err != nil {
-						return nil, err
-					}
-					ips, err := net.DefaultResolver.LookupIP(ctx, "ip", host)
-					if err != nil {
-						return nil, err
-					}
-					for _, ip := range ips {
-						if isBlockedIP(ip) {
-							return nil, ErrBlockedAddress
-						}
-					}
-					return dialer.DialContext(ctx, network, addr)
-				},
-			},
-		},
-	}
+	return &OGPService{httpClient: safehttp.NewClient(10*time.Second, maxOGPRedirects)}
 }
 
 func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*entity.OGPData, error) {
@@ -94,7 +52,11 @@ func (s *OGPService) FetchOGP(ctx context.Context, urlStr string) (*entity.OGPDa
 	if err != nil {
 		return nil, err
 	}
-	return buildOGPData(meta, parsedURL), nil
+	data := buildOGPData(meta, parsedURL)
+	if isXPostURL(parsedURL) {
+		applyXPost(data)
+	}
+	return data, nil
 }
 
 // get は GET リクエストを送り、200 以外や内部ネットワーク宛をエラーにします
@@ -107,8 +69,8 @@ func (s *OGPService) get(ctx context.Context, urlStr string) (*http.Response, er
 
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		if errors.Is(err, ErrBlockedAddress) {
-			return nil, fmt.Errorf("%w: %s", domainerrors.ErrValidation, ErrBlockedAddress.Error())
+		if errors.Is(err, safehttp.ErrBlockedAddress) {
+			return nil, fmt.Errorf("%w: %s", domainerrors.ErrValidation, safehttp.ErrBlockedAddress.Error())
 		}
 		return nil, fmt.Errorf("failed to fetch URL: %w", err)
 	}

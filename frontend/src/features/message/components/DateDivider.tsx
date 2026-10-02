@@ -1,9 +1,7 @@
 import { useRef, useState } from "react";
 
-import { formatDateWithWeekday } from "@chat/i18n";
 import { IconChevronDown } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -13,7 +11,7 @@ import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { Popover } from "#/components/ui/Popover/Popover";
 import { focusRing } from "#/components/ui/styles/styles";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { useDateFormat } from "#/hooks/useDateFormat";
 
 import { FIRST_MESSAGE, jumpPresets, startOfDateKey } from "../utils/dateJump";
 
@@ -26,11 +24,11 @@ type DateDividerProps = {
 // その日の投稿の上に置く区切り。押すと別の日へ移動できる
 export const DateDivider = ({ dateKey, floating = false }: DateDividerProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateWithWeekday, timeZone } = useDateFormat();
   const navigate = useNavigate();
   const anchorRef = useRef<HTMLDivElement>(null);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const presets = jumpPresets(new Date());
+  const presets = jumpPresets(new Date(), timeZone);
 
   const jump = (date: string) => {
     void navigate({ search: (prev) => ({ ...prev, date, message: undefined }), to: "." });
@@ -41,7 +39,7 @@ export const DateDivider = ({ dateKey, floating = false }: DateDividerProps) => 
       ? t("message.date.today")
       : dateKey === presets.yesterday
         ? t("message.date.yesterday")
-        : formatDateWithWeekday(startOfDateKey(dateKey), locale);
+        : formatDateWithWeekday(startOfDateKey(dateKey, timeZone));
 
   const pill = (
     <div

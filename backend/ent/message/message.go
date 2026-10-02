@@ -43,6 +43,10 @@ const (
 	FieldLocationAccuracy = "location_accuracy"
 	// FieldLocationLabel holds the string denoting the location_label field in the database.
 	FieldLocationLabel = "location_label"
+	// FieldMentionsChannel holds the string denoting the mentions_channel field in the database.
+	FieldMentionsChannel = "mentions_channel"
+	// FieldMentionsHere holds the string denoting the mentions_here field in the database.
+	FieldMentionsHere = "mentions_here"
 	// EdgeChannel holds the string denoting the channel edge name in mutations.
 	EdgeChannel = "channel"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -175,6 +179,8 @@ var Columns = []string{
 	FieldLocationLongitude,
 	FieldLocationAccuracy,
 	FieldLocationLabel,
+	FieldMentionsChannel,
+	FieldMentionsHere,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -190,6 +196,10 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultMentionsChannel holds the default value on creation for the "mentions_channel" field.
+	DefaultMentionsChannel bool
+	// DefaultMentionsHere holds the default value on creation for the "mentions_here" field.
+	DefaultMentionsHere bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -270,6 +280,16 @@ func ByLocationAccuracy(opts ...sql.OrderTermOption) OrderOption {
 // ByLocationLabel orders the results by the location_label field.
 func ByLocationLabel(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLocationLabel, opts...).ToFunc()
+}
+
+// ByMentionsChannel orders the results by the mentions_channel field.
+func ByMentionsChannel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMentionsChannel, opts...).ToFunc()
+}
+
+// ByMentionsHere orders the results by the mentions_here field.
+func ByMentionsHere(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMentionsHere, opts...).ToFunc()
 }
 
 // ByChannelField orders the results by channel field.

@@ -54,10 +54,10 @@ func TestPresign(t *testing.T) {
 	if _, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, WorkspaceID: "ws", Purpose: PurposeWorkspaceIcon}); err != nil || !strings.HasPrefix(storage.key, "images/workspaces/ws/") {
 		t.Fatalf("ワークスペースのアイコンを置けません: key=%s err=%v", storage.key, err)
 	}
-	if _, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, Purpose: PurposeWebhookIcon}); !errors.Is(err, domerr.ErrValidation) {
+	if _, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, Purpose: PurposeAppIcon}); !errors.Is(err, domerr.ErrValidation) {
 		t.Fatalf("workspace_id なしで発行できています: %v", err)
 	}
-	if _, err := uc.Presign(context.Background(), PresignInput{UserID: "other", WorkspaceID: "ws", Purpose: PurposeWebhookIcon}); !errors.Is(err, domerr.ErrUnauthorized) {
+	if _, err := uc.Presign(context.Background(), PresignInput{UserID: "other", WorkspaceID: "ws", Purpose: PurposeAppIcon}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("メンバー以外が発行できています: %v", err)
 	}
 }

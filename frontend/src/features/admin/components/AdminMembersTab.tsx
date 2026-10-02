@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { formatBytes, formatDateTime, formatNumber, formatRelativeTime } from "@chat/i18n";
+import { formatBytes, formatNumber } from "@chat/i18n";
 import { IconSearch } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { Input, SearchField } from "react-aria-components";
@@ -15,9 +15,9 @@ import { tableClassNames } from "#/features/admin/utils/tableClassNames";
 import { summarizeUserAgent } from "#/features/admin/utils/userAgent";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { MemberSuspendButton } from "./MemberSuspendButton";
 import { RoleSelect } from "./RoleSelect";
@@ -51,7 +51,7 @@ type AdminMembersTabProps = {
 
 export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime, formatRelativeTime, locale } = useDateFormat();
   const myId = useAtomValue(userAtom)?.id;
   const { updateRole } = useAdminActions();
   const [query, setQuery] = useState("");
@@ -176,11 +176,8 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
                     {lastLogin === null ? (
                       <span className="text-subtle">{t("admin.members.never")}</span>
                     ) : (
-                      <time
-                        dateTime={lastLogin.toISOString()}
-                        title={formatDateTime(lastLogin, locale)}
-                      >
-                        {formatRelativeTime(lastLogin, now, locale)}
+                      <time dateTime={lastLogin.toISOString()} title={formatDateTime(lastLogin)}>
+                        {formatRelativeTime(lastLogin, now)}
                       </time>
                     )}
                   </td>

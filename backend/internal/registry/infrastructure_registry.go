@@ -10,6 +10,7 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/internal/domain/service"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
+	"github.com/newt239/chat/internal/infrastructure/appwebhook"
 	"github.com/newt239/chat/internal/infrastructure/auth"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/fcm"
@@ -66,7 +67,7 @@ func (r *InfrastructureRegistry) SetReady(ready bool) {
 	r.ready.Store(ready)
 }
 
-// NewWebhookRateLimiter は Redis があれば全レプリカで共有して数えます。nil ならルーターがプロセス内で数える
+// NewWebhookRateLimiter はアプリの着信 Webhook の回数を、Redis があれば全レプリカで共有して数えます。nil ならルーターがプロセス内で数える
 func (r *InfrastructureRegistry) NewWebhookRateLimiter() httphandler.RateLimiter {
 	if r.redis == nil {
 		return nil
@@ -173,13 +174,16 @@ func (r *InfrastructureRegistry) NewWasabiConfig() *wasabi.Config {
 	return cfg
 }
 
+func (r *InfrastructureRegistry) NewAppEventSender() *appwebhook.Sender {
+	return appwebhook.NewSender()
+}
+
 func (r *InfrastructureRegistry) NewMentionService() service.MentionService {
 	return mention.NewMentionService(
 		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewUserGroupRepository(),
-		r.domainRegistry.NewMessageUserMentionRepository(),
-		r.domainRegistry.NewMessageGroupMentionRepository(),
+		r.domainRegistry.NewChannelRepository(),
 	)
 }
 

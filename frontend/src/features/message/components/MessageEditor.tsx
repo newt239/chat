@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/Button/Button";
 
 import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
+import { useMentionCodec } from "../hooks/useMentionCodec";
 import { SuggestionList } from "./SuggestionList";
 
 type MessageEditorProps = {
@@ -17,15 +18,25 @@ type MessageEditorProps = {
 
 export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorProps) => {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState(initialBody);
+  const mentionCodec = useMentionCodec();
+  // 本文の ID 記法を名前に戻して編集させる。メンバーを読み込む前に開いたら、読み込んだときに戻す
+  const [draft, setDraft] = useState(() => mentionCodec.decode(initialBody));
+  const { decode, isReady } = mentionCodec;
+  useEffect(() => {
+    if (isReady) {
+      setDraft((current) => (current === initialBody ? decode(initialBody) : current));
+    }
+  }, [isReady, decode, initialBody]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cursor, setCursor] = useState(initialBody.length);
+  const [cursor, setCursor] = useState(draft.length);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const suggestion = useComposerSuggestion({
+    allowsCommands: false,
     body: draft,
     cursor,
-    onApply: (next) => {
+    onApply: (next, item) => {
+      mentionCodec.register(item.value, item.token);
       setDraft(next.text);
       setCursor(next.cursor);
       requestAnimationFrame(() => {
@@ -38,7 +49,7 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
   };
 
   const save = async () => {
-    const trimmed = draft.trim();
+    const trimmed = mentionCodec.encode(draft.trim());
     if (trimmed.length === 0) {
       setError(t("message.edit.empty"));
       return;

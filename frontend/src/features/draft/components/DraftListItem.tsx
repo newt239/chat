@@ -1,13 +1,12 @@
-import { formatDateTime } from "@chat/i18n";
 import { IconTrash } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "#/components/ui/Badge/Badge";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { Draft } from "#/gen/chat/v1/draft_service_pb";
 
@@ -22,7 +21,8 @@ type DraftListItemProps = {
 // 下書きの一覧の行。開くと書きかけの入力欄に戻れる
 export const DraftListItem = ({ workspaceId, draft, label, onDelete }: DraftListItemProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { toText } = useMentionDirectory();
+  const { formatDateTime } = useDateFormat();
   const { channelId, parentId } = draft;
 
   return (
@@ -32,10 +32,12 @@ export const DraftListItem = ({ workspaceId, draft, label, onDelete }: DraftList
           {label && <b className="truncate font-semibold text-text">{label}</b>}
           {parentId !== undefined && <Badge tone="tag">{t("draft.list.inThread")}</Badge>}
           <span className="truncate">
-            {t("draft.list.savedAt", { time: formatDateTime(toDate(draft.updatedAt), locale) })}
+            {t("draft.list.savedAt", { time: formatDateTime(toDate(draft.updatedAt)) })}
           </span>
         </header>
-        <p className="m-0 line-clamp-3 text-body break-words whitespace-pre-wrap">{draft.body}</p>
+        <p className="m-0 line-clamp-3 text-body break-words whitespace-pre-wrap">
+          {toText(draft.body)}
+        </p>
       </div>
       {parentId === undefined ? (
         <LinkButton

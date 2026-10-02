@@ -134,6 +134,7 @@ func newTestBuilder() *MessageOutputBuilder {
 			sourceID: {{ID: "a1", MimeType: "image/png", Media: entity.MediaMetadata{Width: &width, Height: &height}}},
 		}},
 		&builderPinRepo{pins: map[string]*entity.MessagePin{sourceID: {MessageID: sourceID, PinnedBy: viewerID, PinnedAt: deletedAt}}},
+		builderPollRepo{},
 		&builderChannelAccess{accessible: map[string]*entity.Channel{"public": {ID: "public", Name: "general"}}},
 	)
 }
@@ -206,13 +207,25 @@ func TestBuildIncludesPinReactionsAndMedia(t *testing.T) {
 	}
 }
 
-func TestWithoutMessagePreviewsKeepsOriginal(t *testing.T) {
+type builderPollRepo struct {
+	domainrepository.PollRepository
+}
+
+func (builderPollRepo) FindByMessageIDs(_ context.Context, ids []string) (map[string]*entity.Poll, error) {
+	return map[string]*entity.Poll{sourceID: {ID: "poll", MessageID: sourceID, Options: []entity.PollOption{{ID: "o1"}, {ID: "o2"}}}}, nil
+}
+
+func (builderPollRepo) FindVotesByPollIDs(context.Context, []string) ([]*entity.PollVote, error) {
+	return []*entity.PollVote{{PollID: "poll", OptionID: "o2", UserID: viewerID}}, nil
+}
+
+func TestForBroadcastKeepsOriginal(t *testing.T) {
 	outputs, err := newTestBuilder().Build(context.Background(), viewerID, []*entity.Message{{ID: sourceID, ChannelID: "public", UserID: "author"}})
 	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
 
-	stripped := outputs[0].WithoutMessagePreviews()
+	stripped := outputs[0].ForBroadcast()
 
 	if stripped.Links[0].MessagePreview != nil {
 		t.Error("配信用の出力に引用カードが残っています")
@@ -222,6 +235,9 @@ func TestWithoutMessagePreviewsKeepsOriginal(t *testing.T) {
 	}
 	if outputs[0].Links[0].MessagePreview == nil {
 		t.Error("元の出力の引用カードまで消えています")
+	}
+	if len(stripped.Poll.MyOptionIDs) != 0 || len(outputs[0].Poll.MyOptionIDs) != 1 || stripped.Poll.Options[1].VoteCount != 1 {
+		t.Errorf("配信用の出力に自分の投票が残っているか、集計が消えています: %+v", stripped.Poll)
 	}
 }
 

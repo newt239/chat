@@ -13,6 +13,7 @@ export const member: Messages["member"] = {
   profile: {
     bio: "About",
     email: "Email",
+    links: "Links",
     loadFailed: "Couldn't load the profile",
     localTime: "Local time",
     message: "Message",

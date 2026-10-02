@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/user.proto";
+import "google/protobuf/timestamp.proto";
+
+// ワークスペースの連携アプリ。メンバーなら誰でも作成でき、編集・削除は作成者とワークスペースの管理者だけができる。
+// 公式アプリはワークスペースごとに 1 つあり、誰も編集・削除できない。
+// 着信 Webhook は POST /webhooks/{app_id}/{token} に JSON（text と、任意で channel_id・thread_id・username・avatar_url）を送る。
+// 送信 Webhook は参加しているチャンネルの投稿を outgoing_url に POST し、
+// X-Chat-Signature に「X-Chat-Timestamp の値.本文」を outgoing_secret で署名した HMAC-SHA256 を付ける
+service AppService {
+  rpc ListApps(ListAppsRequest) returns (ListAppsResponse);
+  // チャンネルに参加しているアプリ
+  rpc ListChannelApps(ListChannelAppsRequest) returns (ListChannelAppsResponse);
+  rpc CreateApp(CreateAppRequest) returns (CreateAppResponse);
+  rpc UpdateApp(UpdateAppRequest) returns (UpdateAppResponse);
+  // 古いトークンは直ちに使えなくなる
+  rpc RegenerateAppToken(RegenerateAppTokenRequest) returns (RegenerateAppTokenResponse);
+  rpc DeleteApp(DeleteAppRequest) returns (DeleteAppResponse);
+  // 参加しているチャンネルにアプリを追加する
+  rpc AddAppToChannel(AddAppToChannelRequest) returns (AddAppToChannelResponse);
+  rpc RemoveAppFromChannel(RemoveAppFromChannelRequest) returns (RemoveAppFromChannelResponse);
+}
+
+enum AppPermission {
+  APP_PERMISSION_UNSPECIFIED = 0;
+  // 参加しているチャンネルに投稿できる
+  APP_PERMISSION_POST_JOINED_CHANNELS = 1;
+  // 参加していなくても公開チャンネルに投稿できる
+  APP_PERMISSION_POST_PUBLIC_CHANNELS = 2;
+  // スレッドに返信できる
+  APP_PERMISSION_POST_THREAD_REPLIES = 3;
+  // 参加しているチャンネルに投稿があると outgoing_url へ送る
+  APP_PERMISSION_OUTGOING_WEBHOOK = 4;
+}
+
+message App {
+  string id = 1;
+  string workspace_id = 2;
+  string name = 3;
+  optional string description = 4;
+  optional string avatar_url = 5;
+  repeated AppPermission permissions = 6;
+  // 着信 Webhook で channel_id を省略したときの投稿先
+  optional string default_channel_id = 7;
+  optional string outgoing_url = 8;
+  // 管理できる人にだけ返す
+  optional string outgoing_secret = 9;
+  bool is_official = 10;
+  string bot_user_id = 11;
+  UserSummary created_by = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp last_used_at = 14;
+  // 閲覧者が編集・削除できるか
+  bool can_manage = 15;
+}
+
+message AppSettings {
+  string name = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 80
+  }];
+  optional string description = 2 [(buf.validate.field).string.max_len = 500];
+  optional string avatar_url = 3 [(buf.validate.field).string = {
+    uri: true
+    max_len: 2048
+  }];
+  repeated AppPermission permissions = 4 [(buf.validate.field).repeated.items.enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  optional string default_channel_id = 5 [(buf.validate.field).string.uuid = true];
+  optional string outgoing_url = 6 [(buf.validate.field).string = {
+    uri: true
+    max_len: 2048
+  }];
+}
+
+message ListAppsRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message ListAppsResponse {
+  // 作成日時の昇順
+  repeated App apps = 1;
+}
+
+message ListChannelAppsRequest {
+  string channel_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ListChannelAppsResponse {
+  repeated App apps = 1;
+}
+
+message CreateAppRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+  AppSettings settings = 2 [(buf.validate.field).required = true];
+}
+
+message CreateAppResponse {
+  App app = 1;
+  // 着信 Webhook の URL に埋め込むトークン。サーバーはハッシュしか保存しないため、この応答でしか取得できない
+  string token = 2;
+}
+
+message UpdateAppRequest {
+  string app_id = 1 [(buf.validate.field).string.uuid = true];
+  // 未指定の任意項目は外す
+  AppSettings settings = 2 [(buf.validate.field).required = true];
+}
+
+message UpdateAppResponse {
+  App app = 1;
+}
+
+message RegenerateAppTokenRequest {
+  string app_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message RegenerateAppTokenResponse {
+  string token = 1;
+}
+
+message DeleteAppRequest {
+  string app_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteAppResponse {}
+
+message AddAppToChannelRequest {
+  string app_id = 1 [(buf.validate.field).string.uuid = true];
+  string channel_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message AddAppToChannelResponse {}
+
+message RemoveAppFromChannelRequest {
+  string app_id = 1 [(buf.validate.field).string.uuid = true];
+  string channel_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message RemoveAppFromChannelResponse {}

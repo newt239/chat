@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { Switch } from "#/components/ui/Switch/Switch";
+import { ChannelAppsSection } from "#/features/app/components/ChannelAppsSection";
 import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
 import { openDialog } from "#/features/layout/utils/overlaySearch";
-import { WebhooksSection } from "#/features/webhook/components/WebhooksSection";
 
 import { useChannelListActions } from "../hooks/useChannelListActions";
 import { isDescendantPath, relativePath } from "../utils/channelTree";
@@ -136,7 +136,7 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
         </Switch>
       </section>
       <ChannelMemberManager channelId={activeChannel.id} workspaceId={workspaceId} />
-      <WebhooksSection channelId={activeChannel.id} />
+      <ChannelAppsSection workspaceId={workspaceId} channelId={activeChannel.id} />
       <ChannelSettingsPanel
         key={activeChannel.id}
         channelId={activeChannel.id}

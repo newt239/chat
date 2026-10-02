@@ -35,6 +35,8 @@ enum AuditAction {
   AUDIT_ACTION_WEBHOOK_DELETED = 13;
   AUDIT_ACTION_CUSTOM_EMOJI_CREATED = 14;
   AUDIT_ACTION_CUSTOM_EMOJI_DELETED = 15;
+  AUDIT_ACTION_APP_CREATED = 16;
+  AUDIT_ACTION_APP_DELETED = 17;
 }
 
 message AuditLog {
@@ -42,7 +44,7 @@ message AuditLog {
   // ログインの失敗など実行者を特定できない場合は空
   optional UserSummary actor = 2;
   AuditAction action = 3;
-  // user / channel / role / webhook / custom_emoji。対象がない操作（監査ログの書き出し）は空
+  // user / channel / role / webhook / app / custom_emoji。対象がない操作（監査ログの書き出し）は空
   string target_type = 4;
   string target_id = 5;
   // 記録時点の対象の名前（ユーザーの表示名、チャンネル名、ロール名など）

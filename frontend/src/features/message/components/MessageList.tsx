@@ -21,7 +21,8 @@ type Direction = "older" | "newer";
 type MessageListProps = {
   rows: TimelineRow[];
   currentUserId: string | null;
-  jumpTargetId: string | null;
+  // 開いたときにスクロールしてハイライトするメッセージ
+  targetMessageId: string | null;
   hasOlder: boolean;
   hasNewer: boolean;
   loading: Direction | null;
@@ -31,6 +32,8 @@ type MessageListProps = {
   latestMessageRef: (element: HTMLElement | null) => void;
   latestUserMessageId: string | null;
   renderMessage: (message: Message, isHighlighted: boolean) => ReactNode;
+  // kind が header の行に描画する内容
+  header: ReactNode;
 };
 
 // 最下部からこの距離以内なら、新着が届いたときに最下部へ追従する
@@ -38,14 +41,17 @@ const STICK_TO_BOTTOM_PX = 80;
 // 端からこの行数以内に来たら続きを読み込む
 const LOAD_THRESHOLD_ROWS = 3;
 
+const isMessageRow = (row: TimelineRow | undefined) =>
+  row?.kind === "user" || row?.kind === "system";
+
 const firstMessageKey = (rows: readonly TimelineRow[]) =>
-  rows.find((row) => row.kind !== "date")?.key;
+  rows.find((row) => isMessageRow(row))?.key;
 
 /** タイムラインを画面に見えている行だけ描画する。最下部に追従し、端に近づくと前後を読み込む */
 export const MessageList = ({
   rows,
   currentUserId,
-  jumpTargetId,
+  targetMessageId,
   hasOlder,
   hasNewer,
   loading,
@@ -54,6 +60,7 @@ export const MessageList = ({
   latestMessageRef,
   latestUserMessageId,
   renderMessage,
+  header,
 }: MessageListProps) => {
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -61,7 +68,7 @@ export const MessageList = ({
   // oxlint-disable-next-line react/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
-    estimateSize: (index) => (rows[index]?.kind === "date" ? 40 : 64),
+    estimateSize: (index) => (isMessageRow(rows[index]) ? 64 : 40),
     getItemKey: (index) => rows[index]?.key ?? index,
     getScrollElement: () => scrollRef.current,
     overscan: 8,
@@ -81,11 +88,7 @@ export const MessageList = ({
     },
     [rows, virtualizer],
   );
-  const { highlightedId, targetMessageId } = useHighlightedMessage(
-    rows.length > 0,
-    jumpTargetId,
-    scrollToMessage,
-  );
+  const highlightedId = useHighlightedMessage(rows.length > 0, targetMessageId, scrollToMessage);
 
   const isAtBottomRef = useRef(targetMessageId === null);
   // 最初の位置へスクロールし終えるまでは、先頭にいても過去を読み込まない
@@ -106,7 +109,7 @@ export const MessageList = ({
     // 日付の区切りは同じ日の過去が足されると動くため、メッセージの行を基準にする
     const anchor = virtualizer
       .getVirtualItems()
-      .find((item) => item.end > top && rows[item.index]?.kind !== "date");
+      .find((item) => item.end > top && isMessageRow(rows[item.index]));
     anchorRef.current = anchor ? { key: String(anchor.key), offset: anchor.start - top } : null;
   };
 
@@ -186,7 +189,7 @@ export const MessageList = ({
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      {topRow !== undefined && topRow.kind !== "date" && (
+      {topRow !== undefined && isMessageRow(topRow) && (
         <DateDivider dateKey={topRow.dateKey} floating />
       )}
       <div
@@ -208,6 +211,7 @@ export const MessageList = ({
                 className="absolute top-0 left-0 w-full"
                 style={{ transform: `translateY(${item.start}px)` }}
               >
+                {row.kind === "header" && header}
                 {row.kind === "date" && <DateDivider dateKey={row.dateKey} />}
                 {row.kind === "user" && (
                   <div ref={row.message.id === latestUserMessageId ? latestMessageRef : undefined}>

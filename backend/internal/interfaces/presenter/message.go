@@ -24,7 +24,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		ParentId:  m.ParentID,
 		Body:      m.Body,
 		Mentions: ConvertAll(m.Mentions, func(u messageuc.UserMention) *chatv1.UserMention {
-			return &chatv1.UserMention{UserId: u.UserID, DisplayName: u.DisplayName}
+			return &chatv1.UserMention{UserId: u.UserID, ViaGroupId: u.ViaGroupID}
 		}),
 		Groups: ConvertAll(m.Groups, func(g messageuc.GroupMention) *chatv1.GroupMention {
 			return &chatv1.GroupMention{GroupId: g.GroupID, Name: g.Name}
@@ -48,6 +48,10 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		EditedAt:  optionalTimestamp(m.EditedAt),
 		DeletedAt: optionalTimestamp(m.DeletedAt),
 		IsDeleted: m.IsDeleted,
+
+		MentionsChannel: m.MentionsChannel,
+		MentionsHere:    m.MentionsHere,
+		IsOfficial:      m.IsOfficial,
 	}
 	if m.DeletedBy != nil {
 		msg.DeletedBy = UserSummary(*m.DeletedBy)
@@ -56,6 +60,7 @@ func Message(m messageuc.MessageOutput) *chatv1.Message {
 		msg.Pin = &chatv1.MessagePin{PinnedBy: UserSummary(m.Pin.PinnedBy), PinnedAt: timestamppb.New(m.Pin.PinnedAt)}
 	}
 	msg.Location = MessageLocation(m.Location)
+	msg.Poll = Poll(m.Poll)
 	return msg
 }
 
@@ -78,6 +83,9 @@ func OGPData(o entity.OGPData) *chatv1.OgpData {
 	}
 	if o.YouTube != nil {
 		data.Youtube = &chatv1.YouTubeVideo{VideoId: o.YouTube.VideoID, ChannelName: o.YouTube.ChannelName, DurationSeconds: o.YouTube.DurationSeconds}
+	}
+	if o.XPost != nil {
+		data.XPost = &chatv1.XPost{AuthorName: o.XPost.AuthorName, AuthorHandle: o.XPost.AuthorHandle}
 	}
 	return data
 }

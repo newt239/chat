@@ -32,9 +32,13 @@ export const settings = {
     pushFailed: "プッシュ通知を登録できませんでした",
   },
   profile: {
+    addLink: "リンクを追加",
     avatar: "アイコン",
     bio: "自己紹介",
     displayNameDescription: "メッセージやメンションで表示される名前です",
+    links: "リンク",
+    linkUrl: "リンク {{number}}",
+    removeLink: "リンク {{number}} を削除",
     saved: "プロフィールを保存しました",
   },
   sections: {

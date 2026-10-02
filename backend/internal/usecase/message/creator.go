@@ -14,20 +14,17 @@ import (
 )
 
 type MessageCreator struct {
-	messageRepo           domainrepository.MessageRepository
-	userMentionRepo       domainrepository.MessageUserMentionRepository
-	groupMentionRepo      domainrepository.MessageGroupMentionRepository
-	linkRepo              domainrepository.MessageLinkRepository
-	threadRepo            domainrepository.ThreadRepository
-	attachmentRepo        domainrepository.AttachmentRepository
-	notificationSvc       Notifier
-	mentionService        service.MentionService
-	linkProcessingService service.LinkProcessingService
-	transactionManager    transaction.Manager
-	outputBuilder         *MessageOutputBuilder
-	channelAccessSvc      service.ChannelAccessService
-	searchIndexer         SearchIndexer
-	pushNotifier          PushNotifier
+	messageRepo        domainrepository.MessageRepository
+	threadRepo         domainrepository.ThreadRepository
+	attachmentRepo     domainrepository.AttachmentRepository
+	pollRepo           domainrepository.PollRepository
+	notificationSvc    Notifier
+	recorder           *contentRecorder
+	transactionManager transaction.Manager
+	outputBuilder      *MessageOutputBuilder
+	channelAccessSvc   service.ChannelAccessService
+	searchIndexer      SearchIndexer
+	observers          []NewMessageObserver
 }
 
 func NewMessageCreator(
@@ -37,6 +34,7 @@ func NewMessageCreator(
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
+	pollRepo domainrepository.PollRepository,
 	notificationSvc Notifier,
 	mentionService service.MentionService,
 	linkProcessingService service.LinkProcessingService,
@@ -44,29 +42,39 @@ func NewMessageCreator(
 	outputBuilder *MessageOutputBuilder,
 	channelAccessSvc service.ChannelAccessService,
 	searchIndexer SearchIndexer,
-	pushNotifier PushNotifier,
+	observers []NewMessageObserver,
 ) *MessageCreator {
 	return &MessageCreator{
-		messageRepo:           messageRepo,
-		userMentionRepo:       userMentionRepo,
-		groupMentionRepo:      groupMentionRepo,
-		linkRepo:              linkRepo,
-		threadRepo:            threadRepo,
-		attachmentRepo:        attachmentRepo,
-		notificationSvc:       notificationSvc,
-		mentionService:        mentionService,
-		linkProcessingService: linkProcessingService,
-		transactionManager:    transactionManager,
-		outputBuilder:         outputBuilder,
-		channelAccessSvc:      channelAccessSvc,
-		searchIndexer:         searchIndexer,
-		pushNotifier:          pushNotifier,
+		messageRepo:     messageRepo,
+		threadRepo:      threadRepo,
+		attachmentRepo:  attachmentRepo,
+		pollRepo:        pollRepo,
+		notificationSvc: notificationSvc,
+		recorder: &contentRecorder{
+			mentionService:        mentionService,
+			userMentionRepo:       userMentionRepo,
+			groupMentionRepo:      groupMentionRepo,
+			linkProcessingService: linkProcessingService,
+			linkRepo:              linkRepo,
+		},
+		transactionManager: transactionManager,
+		outputBuilder:      outputBuilder,
+		channelAccessSvc:   channelAccessSvc,
+		searchIndexer:      searchIndexer,
+		observers:          observers,
 	}
 }
 
 func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageInput) (*MessageOutput, error) {
-	if strings.TrimSpace(input.Body) == "" && len(input.AttachmentIDs) == 0 && input.Location == nil {
+	if strings.TrimSpace(input.Body) == "" && len(input.AttachmentIDs) == 0 && input.Location == nil && input.Poll == nil {
 		return nil, ErrEmptyMessage
+	}
+	var poll *entity.Poll
+	if input.Poll != nil {
+		var err error
+		if poll, err = newPoll(input.Poll, time.Now()); err != nil {
+			return nil, err
+		}
 	}
 	channel, err := c.channelAccessSvc.EnsureChannelMember(ctx, input.ChannelID, input.UserID)
 	if err != nil {
@@ -101,6 +109,12 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 				return err
 			}
 		}
+		if poll != nil {
+			poll.MessageID = message.ID
+			if err := c.pollRepo.Create(txCtx, poll); err != nil {
+				return fmt.Errorf("failed to create poll: %w", err)
+			}
+		}
 		if len(input.AttachmentIDs) > 0 {
 			if err := c.verifyAttachments(txCtx, input, channel.ID); err != nil {
 				return err
@@ -122,6 +136,7 @@ func (c *MessageCreator) CreateBotMessage(ctx context.Context, channel *entity.C
 
 // publish はメッセージを保存し、メンション・リンクを抽出してチャンネルの購読者へ配信します
 func (c *MessageCreator) publish(ctx context.Context, channel *entity.Channel, message *entity.Message, afterCreate func(txCtx context.Context) error) (*MessageOutput, error) {
+	applyBroadcastMentions(message)
 	var result *MessageOutput
 	err := c.transactionManager.Do(ctx, func(txCtx context.Context) error {
 		if err := c.messageRepo.Create(txCtx, message); err != nil {
@@ -130,8 +145,8 @@ func (c *MessageCreator) publish(ctx context.Context, channel *entity.Channel, m
 		if err := afterCreate(txCtx); err != nil {
 			return err
 		}
-		if err := c.extractAndSaveMentionsAndLinks(txCtx, message.ID, message.Body, channel.WorkspaceID); err != nil {
-			return fmt.Errorf("failed to extract mentions and links: %w", err)
+		if err := c.recorder.record(txCtx, message.ID, message.Body, channel.WorkspaceID, nil); err != nil {
+			return err
 		}
 		outputs, err := c.outputBuilder.Build(txCtx, message.UserID, []*entity.Message{message})
 		if err != nil {
@@ -152,50 +167,13 @@ func (c *MessageCreator) publish(ctx context.Context, channel *entity.Channel, m
 	c.searchIndexer.Sync(ctx, indexIDs...)
 
 	if c.notificationSvc != nil {
-		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, result.WithoutMessagePreviews())
+		c.notificationSvc.NotifyNewMessage(channel.WorkspaceID, channel.ID, result.ForBroadcast())
 	}
-	c.pushNotifier.NotifyNewMessage(ctx, channel, *result)
+	for _, observer := range c.observers {
+		observer.NotifyNewMessage(ctx, channel, *result)
+	}
 
 	return result, nil
-}
-
-func (c *MessageCreator) extractAndSaveMentionsAndLinks(ctx context.Context, messageID, body, workspaceID string) error {
-	userMentions, err := c.mentionService.ExtractUserMentions(ctx, body, workspaceID)
-	if err != nil {
-		return fmt.Errorf("failed to extract user mentions: %w", err)
-	}
-	for _, mention := range userMentions {
-		mention.MessageID = messageID
-		mention.CreatedAt = time.Now()
-		if err := c.userMentionRepo.Create(ctx, mention); err != nil {
-			return fmt.Errorf("failed to create user mention: %w", err)
-		}
-	}
-
-	groupMentions, err := c.mentionService.ExtractGroupMentions(ctx, body, workspaceID)
-	if err != nil {
-		return fmt.Errorf("failed to extract group mentions: %w", err)
-	}
-	for _, mention := range groupMentions {
-		mention.MessageID = messageID
-		mention.CreatedAt = time.Now()
-		if err := c.groupMentionRepo.Create(ctx, mention); err != nil {
-			return fmt.Errorf("failed to create group mention: %w", err)
-		}
-	}
-
-	links, err := c.linkProcessingService.ProcessLinks(ctx, body, workspaceID)
-	if err != nil {
-		return fmt.Errorf("failed to process links: %w", err)
-	}
-	for _, link := range links {
-		link.MessageID = messageID
-		if err := c.linkRepo.Create(ctx, link); err != nil {
-			return fmt.Errorf("failed to create link: %w", err)
-		}
-	}
-
-	return nil
 }
 
 // verifyAttachments は添付が投稿者本人のもので、かつ同じチャンネル宛かを検証します

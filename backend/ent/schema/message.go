@@ -43,7 +43,7 @@ func (Message) Fields() []ent.Field {
 			Optional(),
 		field.UUID("deleted_by", uuid.UUID{}).
 			Optional(),
-		// Webhook が投稿ごとに指定した表示名とアイコン
+		// アプリが投稿ごとに指定した表示名とアイコン
 		field.String("sender_name").
 			Optional().
 			Nillable(),
@@ -63,6 +63,11 @@ func (Message) Fields() []ent.Field {
 		field.String("location_label").
 			Optional().
 			Nillable(),
+		// 本文の <@channel> / <@here>。届く範囲は読むときのチャンネルメンバーで決まる
+		field.Bool("mentions_channel").
+			Default(false),
+		field.Bool("mentions_here").
+			Default(false),
 	}
 }
 

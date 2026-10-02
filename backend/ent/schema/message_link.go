@@ -48,6 +48,12 @@ func (MessageLink) Fields() []ent.Field {
 		field.Int32("youtube_duration_seconds").
 			Optional().
 			Nillable(),
+		field.String("x_author_name").
+			Optional().
+			Nillable(),
+		field.String("x_author_handle").
+			Optional().
+			Nillable(),
 		field.UUID("linked_message_id", uuid.UUID{}).
 			Optional().
 			Nillable(),

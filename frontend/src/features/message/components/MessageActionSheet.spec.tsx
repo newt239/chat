@@ -1,12 +1,12 @@
 import { create } from "@bufbuild/protobuf";
 import { IconExternalLink, IconTrash } from "@tabler/icons-react";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
 import { MessageSchema } from "#/gen/chat/v1/message_pb";
 import { UserSummarySchema } from "#/gen/chat/v1/user_pb";
-import { QueryWrapper } from "#/test/QueryWrapper";
+import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { MessageActionSheet } from "./MessageActionSheet";
 
@@ -16,13 +16,13 @@ const message = create(MessageSchema, {
   user: create(UserSummarySchema, { displayName: "Alice", id: "u1" }),
 });
 
-const renderSheet = () => {
+const renderSheet = async () => {
   const handlers = {
     handleDelete: vi.fn<() => void>(),
     handleOpenChange: vi.fn<(isOpen: boolean) => void>(),
     handleReact: vi.fn<(emoji: string) => void>(),
   };
-  render(
+  await renderWithProviders(
     <MessageActionSheet
       isOpen
       onOpenChange={handlers.handleOpenChange}
@@ -45,16 +45,17 @@ const renderSheet = () => {
       ]}
       onReact={handlers.handleReact}
     />,
-    { wrapper: QueryWrapper },
+    "/app/ws1",
+    () => {},
   );
   return handlers;
 };
 
 describe("MessageActionSheet", () => {
-  test("メッセージの抜粋と操作を並べ、新しいタブで開く操作は出さない", () => {
-    renderSheet();
+  test("メッセージの抜粋と操作を並べ、新しいタブで開く操作は出さない", async () => {
+    await renderSheet();
 
-    const sheet = screen.getByRole("dialog", { name: "メッセージの操作" });
+    const sheet = await screen.findByRole("dialog", { name: "メッセージの操作" });
     expect(sheet).toHaveTextContent("Alice");
     expect(sheet).toHaveTextContent("デプロイしました");
     expect(screen.getByRole("menuitem", { name: "メッセージを削除" })).toBeInTheDocument();
@@ -62,9 +63,9 @@ describe("MessageActionSheet", () => {
   });
 
   test("リアクションや操作を選ぶとシートを閉じる", async () => {
-    const handlers = renderSheet();
+    const handlers = await renderSheet();
 
-    await userEvent.click(screen.getByRole("button", { name: "🎉 でリアクション" }));
+    await userEvent.click(await screen.findByRole("button", { name: "🎉 でリアクション" }));
     expect(handlers.handleReact).toHaveBeenCalledWith("🎉");
     expect(handlers.handleOpenChange).toHaveBeenLastCalledWith(false);
 

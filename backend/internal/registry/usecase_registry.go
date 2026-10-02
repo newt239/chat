@@ -2,6 +2,7 @@ package registry
 
 import (
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
+	appuc "github.com/newt239/chat/internal/usecase/app"
 	attachmentuc "github.com/newt239/chat/internal/usecase/attachment"
 	"github.com/newt239/chat/internal/usecase/audit"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
@@ -10,6 +11,7 @@ import (
 	channelcategoryuc "github.com/newt239/chat/internal/usecase/channelcategory"
 	channellinkuc "github.com/newt239/chat/internal/usecase/channellink"
 	channelmemberuc "github.com/newt239/chat/internal/usecase/channelmember"
+	commanduc "github.com/newt239/chat/internal/usecase/command"
 	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
 	dmuc "github.com/newt239/chat/internal/usecase/dm"
 	draftuc "github.com/newt239/chat/internal/usecase/draft"
@@ -21,6 +23,7 @@ import (
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 	notificationuc "github.com/newt239/chat/internal/usecase/notification"
 	pinuc "github.com/newt239/chat/internal/usecase/pin"
+	polluc "github.com/newt239/chat/internal/usecase/poll"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
 	readstateuc "github.com/newt239/chat/internal/usecase/readstate"
 	scheduledmessageuc "github.com/newt239/chat/internal/usecase/scheduledmessage"
@@ -31,7 +34,6 @@ import (
 	useruc "github.com/newt239/chat/internal/usecase/user"
 	usergroupuc "github.com/newt239/chat/internal/usecase/user_group"
 	usernoteuc "github.com/newt239/chat/internal/usecase/usernote"
-	webhookuc "github.com/newt239/chat/internal/usecase/webhook"
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
@@ -145,15 +147,19 @@ func (r *UseCaseRegistry) NewMessageOutputBuilder() *messageuc.MessageOutputBuil
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
 		r.domainRegistry.NewPinRepository(),
+		r.domainRegistry.NewPollRepository(),
 		r.domainRegistry.NewChannelAccessService(),
 	)
 }
 
-func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
-	return webhookuc.NewInteractor(
-		r.domainRegistry.NewWebhookRepository(),
+func (r *UseCaseRegistry) NewAppUseCase() *appuc.Interactor {
+	return appuc.NewInteractor(
+		r.domainRegistry.NewAppRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewMessageRepository(),
 		r.domainRegistry.NewChannelAccessService(),
 		messageuc.NewMessageCreator(
 			r.domainRegistry.NewMessageRepository(),
@@ -162,6 +168,7 @@ func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
 			r.domainRegistry.NewMessageLinkRepository(),
 			r.domainRegistry.NewThreadRepository(),
 			r.domainRegistry.NewAttachmentRepository(),
+			r.domainRegistry.NewPollRepository(),
 			r.infrastructureRegistry.NewNotificationService(),
 			r.infrastructureRegistry.NewMentionService(),
 			r.infrastructureRegistry.NewLinkProcessingService(),
@@ -169,11 +176,49 @@ func (r *UseCaseRegistry) NewWebhookUseCase() *webhookuc.Interactor {
 			r.NewMessageOutputBuilder(),
 			r.domainRegistry.NewChannelAccessService(),
 			r.NewSearchIndexer(),
-			r.NewPushDispatcher(),
+			r.newMessageObservers(),
 		),
 		r.infrastructureRegistry.NewTransactionManager(),
 		r.NewAuditRecorder(),
 	)
+}
+
+func (r *UseCaseRegistry) NewPollUseCase() *polluc.Interactor {
+	return polluc.NewInteractor(
+		r.domainRegistry.NewPollRepository(),
+		r.domainRegistry.NewMessageRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewMessageOutputBuilder(),
+		r.infrastructureRegistry.NewNotificationService(),
+		r.infrastructureRegistry.NewTransactionManager(),
+	)
+}
+
+func (r *UseCaseRegistry) NewCommandUseCase() *commanduc.Interactor {
+	return commanduc.NewInteractor(
+		r.domainRegistry.NewReminderRepository(),
+		r.domainRegistry.NewUserRepository(),
+		r.domainRegistry.NewWorkspaceRepository(),
+		r.domainRegistry.NewChannelRepository(),
+		r.domainRegistry.NewChannelMemberRepository(),
+		r.domainRegistry.NewChannelAccessService(),
+		r.NewAppUseCase(),
+		r.infrastructureRegistry.NewLogger(),
+	)
+}
+
+// newMessageObservers は新着メッセージをプッシュ通知とアプリの送信 Webhook で知らせます
+func (r *UseCaseRegistry) newMessageObservers() []messageuc.NewMessageObserver {
+	return []messageuc.NewMessageObserver{
+		r.NewPushDispatcher(),
+		appuc.NewEventDispatcher(
+			r.domainRegistry.NewAppRepository(),
+			r.infrastructureRegistry.NewMentionService(),
+			r.infrastructureRegistry.NewAppEventSender(),
+			r.infrastructureRegistry.NewLogger(),
+		),
+	}
 }
 
 func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
@@ -189,6 +234,7 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.domainRegistry.NewMessageLinkRepository(),
 		r.domainRegistry.NewThreadRepository(),
 		r.domainRegistry.NewAttachmentRepository(),
+		r.domainRegistry.NewPollRepository(),
 		r.NewMessageOutputBuilder(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.infrastructureRegistry.NewMentionService(),
@@ -198,7 +244,7 @@ func (r *UseCaseRegistry) NewMessageUseCase() messageuc.MessageUseCase {
 		r.domainRegistry.NewPermissionService(),
 		r.infrastructureRegistry.NewLogger(),
 		r.NewSearchIndexer(),
-		r.NewPushDispatcher(),
+		r.newMessageObservers(),
 	)
 }
 
@@ -208,8 +254,8 @@ func (r *UseCaseRegistry) NewPushDispatcher() *notificationuc.Dispatcher {
 		r.domainRegistry.NewChannelMemberRepository(),
 		r.domainRegistry.NewChannelMuteRepository(),
 		r.domainRegistry.NewThreadRepository(),
-		r.domainRegistry.NewUserGroupRepository(),
 		r.domainRegistry.NewPushTokenRepository(),
+		r.infrastructureRegistry.NewMentionService(),
 		r.domainRegistry.NewChannelAccessService(),
 		r.infrastructureRegistry.PushSender(),
 		r.infrastructureRegistry.NewLogger(),
@@ -243,6 +289,7 @@ func (r *UseCaseRegistry) NewSearchIndexer() *searchindex.Indexer {
 	return searchindex.NewIndexer(
 		r.domainRegistry.NewMessageRepository(),
 		r.infrastructureRegistry.MessageSearchIndex(),
+		r.infrastructureRegistry.NewMentionService(),
 		r.infrastructureRegistry.NewLogger(),
 	)
 }

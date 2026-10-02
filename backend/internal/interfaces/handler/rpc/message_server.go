@@ -82,6 +82,7 @@ func (s *MessageServer) CreateMessage(ctx context.Context, req *chatv1.CreateMes
 		ParentID:      req.ParentId,
 		AttachmentIDs: req.AttachmentIds,
 		Location:      locationInput(req.Location),
+		Poll:          presenter.PollInput(req.Poll),
 	})
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/newt239/chat/ent/app"
 	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/auditlog"
 	"github.com/newt239/chat/ent/channel"
@@ -26,7 +27,11 @@ import (
 	"github.com/newt239/chat/ent/messagepin"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
+	"github.com/newt239/chat/ent/poll"
+	"github.com/newt239/chat/ent/polloption"
+	"github.com/newt239/chat/ent/pollvote"
 	"github.com/newt239/chat/ent/pushtoken"
+	"github.com/newt239/chat/ent/reminder"
 	"github.com/newt239/chat/ent/scheduledmessage"
 	"github.com/newt239/chat/ent/schema"
 	"github.com/newt239/chat/ent/session"
@@ -37,7 +42,6 @@ import (
 	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/usernote"
 	"github.com/newt239/chat/ent/userthreadfollow"
-	"github.com/newt239/chat/ent/webhook"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/ent/workspacemember"
 	"github.com/newt239/chat/ent/workspacepermission"
@@ -47,6 +51,34 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	appFields := schema.App{}.Fields()
+	_ = appFields
+	// appDescName is the schema descriptor for name field.
+	appDescName := appFields[2].Descriptor()
+	// app.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	app.NameValidator = appDescName.Validators[0].(func(string) error)
+	// appDescPermissions is the schema descriptor for permissions field.
+	appDescPermissions := appFields[6].Descriptor()
+	// app.DefaultPermissions holds the default value on creation for the permissions field.
+	app.DefaultPermissions = appDescPermissions.Default.([]string)
+	// appDescIsOfficial is the schema descriptor for is_official field.
+	appDescIsOfficial := appFields[9].Descriptor()
+	// app.DefaultIsOfficial holds the default value on creation for the is_official field.
+	app.DefaultIsOfficial = appDescIsOfficial.Default.(bool)
+	// appDescCreatedAt is the schema descriptor for created_at field.
+	appDescCreatedAt := appFields[11].Descriptor()
+	// app.DefaultCreatedAt holds the default value on creation for the created_at field.
+	app.DefaultCreatedAt = appDescCreatedAt.Default.(func() time.Time)
+	// appDescUpdatedAt is the schema descriptor for updated_at field.
+	appDescUpdatedAt := appFields[12].Descriptor()
+	// app.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	app.DefaultUpdatedAt = appDescUpdatedAt.Default.(func() time.Time)
+	// app.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	app.UpdateDefaultUpdatedAt = appDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// appDescID is the schema descriptor for id field.
+	appDescID := appFields[0].Descriptor()
+	// app.DefaultID holds the default value on creation for the id field.
+	app.DefaultID = appDescID.Default.(func() uuid.UUID)
 	attachmentFields := schema.Attachment{}.Fields()
 	_ = attachmentFields
 	// attachmentDescFileName is the schema descriptor for file_name field.
@@ -301,6 +333,14 @@ func init() {
 	messageDescCreatedAt := messageFields[5].Descriptor()
 	// message.DefaultCreatedAt holds the default value on creation for the created_at field.
 	message.DefaultCreatedAt = messageDescCreatedAt.Default.(func() time.Time)
+	// messageDescMentionsChannel is the schema descriptor for mentions_channel field.
+	messageDescMentionsChannel := messageFields[15].Descriptor()
+	// message.DefaultMentionsChannel holds the default value on creation for the mentions_channel field.
+	message.DefaultMentionsChannel = messageDescMentionsChannel.Default.(bool)
+	// messageDescMentionsHere is the schema descriptor for mentions_here field.
+	messageDescMentionsHere := messageFields[16].Descriptor()
+	// message.DefaultMentionsHere holds the default value on creation for the mentions_here field.
+	message.DefaultMentionsHere = messageDescMentionsHere.Default.(bool)
 	// messageDescID is the schema descriptor for id field.
 	messageDescID := messageFields[0].Descriptor()
 	// message.DefaultID holds the default value on creation for the id field.
@@ -332,7 +372,7 @@ func init() {
 	// messagelink.URLValidator is a validator for the "url" field. It is called by the builders before save.
 	messagelink.URLValidator = messagelinkDescURL.Validators[0].(func(string) error)
 	// messagelinkDescCreatedAt is the schema descriptor for created_at field.
-	messagelinkDescCreatedAt := messagelinkFields[13].Descriptor()
+	messagelinkDescCreatedAt := messagelinkFields[15].Descriptor()
 	// messagelink.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messagelink.DefaultCreatedAt = messagelinkDescCreatedAt.Default.(func() time.Time)
 	// messagelinkDescID is the schema descriptor for id field.
@@ -366,13 +406,51 @@ func init() {
 	messageusermentionFields := schema.MessageUserMention{}.Fields()
 	_ = messageusermentionFields
 	// messageusermentionDescCreatedAt is the schema descriptor for created_at field.
-	messageusermentionDescCreatedAt := messageusermentionFields[1].Descriptor()
+	messageusermentionDescCreatedAt := messageusermentionFields[2].Descriptor()
 	// messageusermention.DefaultCreatedAt holds the default value on creation for the created_at field.
 	messageusermention.DefaultCreatedAt = messageusermentionDescCreatedAt.Default.(func() time.Time)
 	// messageusermentionDescID is the schema descriptor for id field.
 	messageusermentionDescID := messageusermentionFields[0].Descriptor()
 	// messageusermention.DefaultID holds the default value on creation for the id field.
 	messageusermention.DefaultID = messageusermentionDescID.Default.(func() uuid.UUID)
+	pollFields := schema.Poll{}.Fields()
+	_ = pollFields
+	// pollDescQuestion is the schema descriptor for question field.
+	pollDescQuestion := pollFields[2].Descriptor()
+	// poll.QuestionValidator is a validator for the "question" field. It is called by the builders before save.
+	poll.QuestionValidator = pollDescQuestion.Validators[0].(func(string) error)
+	// pollDescCreatedAt is the schema descriptor for created_at field.
+	pollDescCreatedAt := pollFields[8].Descriptor()
+	// poll.DefaultCreatedAt holds the default value on creation for the created_at field.
+	poll.DefaultCreatedAt = pollDescCreatedAt.Default.(func() time.Time)
+	// pollDescID is the schema descriptor for id field.
+	pollDescID := pollFields[0].Descriptor()
+	// poll.DefaultID holds the default value on creation for the id field.
+	poll.DefaultID = pollDescID.Default.(func() uuid.UUID)
+	polloptionFields := schema.PollOption{}.Fields()
+	_ = polloptionFields
+	// polloptionDescLabel is the schema descriptor for label field.
+	polloptionDescLabel := polloptionFields[3].Descriptor()
+	// polloption.DefaultLabel holds the default value on creation for the label field.
+	polloption.DefaultLabel = polloptionDescLabel.Default.(string)
+	// polloptionDescAllDay is the schema descriptor for all_day field.
+	polloptionDescAllDay := polloptionFields[5].Descriptor()
+	// polloption.DefaultAllDay holds the default value on creation for the all_day field.
+	polloption.DefaultAllDay = polloptionDescAllDay.Default.(bool)
+	// polloptionDescID is the schema descriptor for id field.
+	polloptionDescID := polloptionFields[0].Descriptor()
+	// polloption.DefaultID holds the default value on creation for the id field.
+	polloption.DefaultID = polloptionDescID.Default.(func() uuid.UUID)
+	pollvoteFields := schema.PollVote{}.Fields()
+	_ = pollvoteFields
+	// pollvoteDescCreatedAt is the schema descriptor for created_at field.
+	pollvoteDescCreatedAt := pollvoteFields[3].Descriptor()
+	// pollvote.DefaultCreatedAt holds the default value on creation for the created_at field.
+	pollvote.DefaultCreatedAt = pollvoteDescCreatedAt.Default.(func() time.Time)
+	// pollvoteDescID is the schema descriptor for id field.
+	pollvoteDescID := pollvoteFields[0].Descriptor()
+	// pollvote.DefaultID holds the default value on creation for the id field.
+	pollvote.DefaultID = pollvoteDescID.Default.(func() uuid.UUID)
 	pushtokenFields := schema.PushToken{}.Fields()
 	_ = pushtokenFields
 	// pushtokenDescToken is the schema descriptor for token field.
@@ -395,6 +473,26 @@ func init() {
 	pushtokenDescID := pushtokenFields[0].Descriptor()
 	// pushtoken.DefaultID holds the default value on creation for the id field.
 	pushtoken.DefaultID = pushtokenDescID.Default.(func() uuid.UUID)
+	reminderFields := schema.Reminder{}.Fields()
+	_ = reminderFields
+	// reminderDescText is the schema descriptor for text field.
+	reminderDescText := reminderFields[5].Descriptor()
+	// reminder.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	reminder.TextValidator = reminderDescText.Validators[0].(func(string) error)
+	// reminderDescCreatedAt is the schema descriptor for created_at field.
+	reminderDescCreatedAt := reminderFields[8].Descriptor()
+	// reminder.DefaultCreatedAt holds the default value on creation for the created_at field.
+	reminder.DefaultCreatedAt = reminderDescCreatedAt.Default.(func() time.Time)
+	// reminderDescUpdatedAt is the schema descriptor for updated_at field.
+	reminderDescUpdatedAt := reminderFields[9].Descriptor()
+	// reminder.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	reminder.DefaultUpdatedAt = reminderDescUpdatedAt.Default.(func() time.Time)
+	// reminder.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	reminder.UpdateDefaultUpdatedAt = reminderDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// reminderDescID is the schema descriptor for id field.
+	reminderDescID := reminderFields[0].Descriptor()
+	// reminder.DefaultID holds the default value on creation for the id field.
+	reminder.DefaultID = reminderDescID.Default.(func() uuid.UUID)
 	scheduledmessageFields := schema.ScheduledMessage{}.Fields()
 	_ = scheduledmessageFields
 	// scheduledmessageDescCreatedAt is the schema descriptor for created_at field.
@@ -482,39 +580,43 @@ func init() {
 	// user.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	user.DisplayNameValidator = userDescDisplayName.Validators[0].(func(string) error)
 	// userDescIsBot is the schema descriptor for is_bot field.
-	userDescIsBot := userFields[7].Descriptor()
+	userDescIsBot := userFields[8].Descriptor()
 	// user.DefaultIsBot holds the default value on creation for the is_bot field.
 	user.DefaultIsBot = userDescIsBot.Default.(bool)
+	// userDescIsOfficial is the schema descriptor for is_official field.
+	userDescIsOfficial := userFields[9].Descriptor()
+	// user.DefaultIsOfficial holds the default value on creation for the is_official field.
+	user.DefaultIsOfficial = userDescIsOfficial.Default.(bool)
 	// userDescThemeHue is the schema descriptor for theme_hue field.
-	userDescThemeHue := userFields[8].Descriptor()
+	userDescThemeHue := userFields[10].Descriptor()
 	// user.DefaultThemeHue holds the default value on creation for the theme_hue field.
 	user.DefaultThemeHue = userDescThemeHue.Default.(int)
 	// userDescThemeChroma is the schema descriptor for theme_chroma field.
-	userDescThemeChroma := userFields[9].Descriptor()
+	userDescThemeChroma := userFields[11].Descriptor()
 	// user.DefaultThemeChroma holds the default value on creation for the theme_chroma field.
 	user.DefaultThemeChroma = userDescThemeChroma.Default.(float64)
 	// userDescLocale is the schema descriptor for locale field.
-	userDescLocale := userFields[12].Descriptor()
+	userDescLocale := userFields[14].Descriptor()
 	// user.DefaultLocale holds the default value on creation for the locale field.
 	user.DefaultLocale = userDescLocale.Default.(string)
 	// userDescTimezone is the schema descriptor for timezone field.
-	userDescTimezone := userFields[14].Descriptor()
+	userDescTimezone := userFields[16].Descriptor()
 	// user.DefaultTimezone holds the default value on creation for the timezone field.
 	user.DefaultTimezone = userDescTimezone.Default.(string)
 	// userDescTimezoneAutoUpdate is the schema descriptor for timezone_auto_update field.
-	userDescTimezoneAutoUpdate := userFields[15].Descriptor()
+	userDescTimezoneAutoUpdate := userFields[17].Descriptor()
 	// user.DefaultTimezoneAutoUpdate holds the default value on creation for the timezone_auto_update field.
 	user.DefaultTimezoneAutoUpdate = userDescTimezoneAutoUpdate.Default.(bool)
 	// userDescHideJoinMessages is the schema descriptor for hide_join_messages field.
-	userDescHideJoinMessages := userFields[17].Descriptor()
+	userDescHideJoinMessages := userFields[19].Descriptor()
 	// user.DefaultHideJoinMessages holds the default value on creation for the hide_join_messages field.
 	user.DefaultHideJoinMessages = userDescHideJoinMessages.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[18].Descriptor()
+	userDescCreatedAt := userFields[20].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[19].Descriptor()
+	userDescUpdatedAt := userFields[21].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -575,30 +677,6 @@ func init() {
 	userthreadfollowDescID := userthreadfollowFields[0].Descriptor()
 	// userthreadfollow.DefaultID holds the default value on creation for the id field.
 	userthreadfollow.DefaultID = userthreadfollowDescID.Default.(func() uuid.UUID)
-	webhookFields := schema.Webhook{}.Fields()
-	_ = webhookFields
-	// webhookDescName is the schema descriptor for name field.
-	webhookDescName := webhookFields[1].Descriptor()
-	// webhook.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	webhook.NameValidator = webhookDescName.Validators[0].(func(string) error)
-	// webhookDescTokenHash is the schema descriptor for token_hash field.
-	webhookDescTokenHash := webhookFields[3].Descriptor()
-	// webhook.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
-	webhook.TokenHashValidator = webhookDescTokenHash.Validators[0].(func(string) error)
-	// webhookDescCreatedAt is the schema descriptor for created_at field.
-	webhookDescCreatedAt := webhookFields[5].Descriptor()
-	// webhook.DefaultCreatedAt holds the default value on creation for the created_at field.
-	webhook.DefaultCreatedAt = webhookDescCreatedAt.Default.(func() time.Time)
-	// webhookDescUpdatedAt is the schema descriptor for updated_at field.
-	webhookDescUpdatedAt := webhookFields[6].Descriptor()
-	// webhook.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	webhook.DefaultUpdatedAt = webhookDescUpdatedAt.Default.(func() time.Time)
-	// webhook.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	webhook.UpdateDefaultUpdatedAt = webhookDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// webhookDescID is the schema descriptor for id field.
-	webhookDescID := webhookFields[0].Descriptor()
-	// webhook.DefaultID holds the default value on creation for the id field.
-	webhook.DefaultID = webhookDescID.Default.(func() uuid.UUID)
 	workspaceFields := schema.Workspace{}.Fields()
 	_ = workspaceFields
 	// workspaceDescName is the schema descriptor for name field.

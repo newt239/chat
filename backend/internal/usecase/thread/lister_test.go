@@ -88,7 +88,7 @@ func TestListParticipatingThreadsBuildsMessages(t *testing.T) {
 	}}}
 	builder := message.NewMessageOutputBuilder(
 		stubReactionRepo{}, stubUserRepo{}, nil, stubUserMentionRepo{}, stubGroupMentionRepo{}, stubLinkRepo{}, stubAttachmentRepo{},
-		stubPinRepo{}, nil,
+		stubPinRepo{}, stubPollRepo{}, nil,
 	)
 
 	out, err := NewThreadLister(threadRepo, builder).ListParticipatingThreads(context.Background(), ListParticipatingThreadsInput{})
@@ -112,4 +112,16 @@ func TestListParticipatingThreadsBuildsMessages(t *testing.T) {
 	if out.Items[0].ReplyCount != 5 {
 		t.Errorf("返信数が引き継がれていません: %d", out.Items[0].ReplyCount)
 	}
+}
+
+type stubPollRepo struct {
+	domainrepository.PollRepository
+}
+
+func (stubPollRepo) FindByMessageIDs(context.Context, []string) (map[string]*entity.Poll, error) {
+	return map[string]*entity.Poll{}, nil
+}
+
+func (stubPollRepo) FindVotesByPollIDs(context.Context, []string) ([]*entity.PollVote, error) {
+	return []*entity.PollVote{}, nil
 }

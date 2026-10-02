@@ -1,18 +1,16 @@
 import { useEffect } from "react";
 
-import { formatDateTime } from "@chat/i18n";
 import { IconChevronLeft, IconChevronRight, IconDownload, IconX } from "@tabler/icons-react";
-import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { Button, Dialog, Modal, ModalOverlay } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { cn, focusRing } from "#/components/ui/styles/styles";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { transitions } from "#/lib/motion";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useAttachmentUrl } from "../api/client";
 import { AttachmentImage } from "./AttachmentImage";
@@ -36,7 +34,7 @@ const controlClassName = `grid size-9 shrink-0 cursor-pointer place-items-center
 
 export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime } = useDateFormat();
   const isMobile = useIsMobile();
   const image = index === null ? undefined : images[index];
   const { data: url } = useAttachmentUrl(image?.id ?? null, false);
@@ -99,7 +97,7 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
                 <span className="flex min-w-0 flex-1 flex-col leading-[1.35]">
                   <span className="truncate">{image.fileName}</span>
                   <small className="truncate text-media-fg/60">
-                    {authorName} · {formatDateTime(toDate(message.createdAt), locale)}
+                    {authorName} · {formatDateTime(toDate(message.createdAt))}
                   </small>
                 </span>
                 {hasMany && (

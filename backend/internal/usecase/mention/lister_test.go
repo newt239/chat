@@ -91,7 +91,7 @@ func newLister(isMember bool, messages []*entity.Message) (*Lister, *stubMessage
 	messageRepo := &stubMessageRepo{messages: messages}
 	builder := messageuc.NewMessageOutputBuilder(
 		messageRepo, stubUserRepo{}, nil, stubUserMentionRepo{}, stubGroupMentionRepo{}, stubLinkRepo{}, stubAttachmentRepo{},
-		stubPinRepo{}, nil,
+		stubPinRepo{}, stubPollRepo{}, nil,
 	)
 	return NewLister(&stubWorkspaceRepo{isMember: isMember}, messageRepo, builder), messageRepo
 }
@@ -159,4 +159,16 @@ func TestListMentionsPassesCursor(t *testing.T) {
 	if got == nil || got.CreatedAt != cursor.CreatedAt || got.MessageID != cursor.MessageID {
 		t.Errorf("カーソルが渡されていません: %+v", got)
 	}
+}
+
+type stubPollRepo struct {
+	domainrepository.PollRepository
+}
+
+func (stubPollRepo) FindByMessageIDs(context.Context, []string) (map[string]*entity.Poll, error) {
+	return map[string]*entity.Poll{}, nil
+}
+
+func (stubPollRepo) FindVotesByPollIDs(context.Context, []string) ([]*entity.PollVote, error) {
+	return []*entity.PollVote{}, nil
 }

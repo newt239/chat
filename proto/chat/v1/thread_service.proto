@@ -33,12 +33,27 @@ message ThreadCursor {
 
 message GetThreadRepliesRequest {
   string message_id = 1 [(buf.validate.field).string.uuid = true];
+  // 0 の場合はサーバーの既定値を使う
+  int32 limit = 2 [(buf.validate.field).int32 = {
+    gte: 0
+    lte: 100
+  }];
+  // since だけなら直後から、until だけなら直前までを返す。どちらもなければ最新の返信を返す
+  google.protobuf.Timestamp since = 3;
+  google.protobuf.Timestamp until = 4;
+  // 指定した返信の前後 limit 件ずつをまとめて返す。since / until より優先する
+  optional string around_reply_id = 5 [(buf.validate.field).string.uuid = true];
 }
 
 message GetThreadRepliesResponse {
   Message parent_message = 1;
+  // 古い順
   repeated Message replies = 2;
+  // 返した範囲より前に返信がある
   bool has_more = 3;
+  // 返した範囲より後に返信がある
+  bool has_newer = 4;
+  int32 reply_count = 5;
 }
 
 message GetThreadMetadataRequest {

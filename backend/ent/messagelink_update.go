@@ -264,6 +264,46 @@ func (_u *MessageLinkUpdate) ClearYoutubeDurationSeconds() *MessageLinkUpdate {
 	return _u
 }
 
+// SetXAuthorName sets the "x_author_name" field.
+func (_u *MessageLinkUpdate) SetXAuthorName(v string) *MessageLinkUpdate {
+	_u.mutation.SetXAuthorName(v)
+	return _u
+}
+
+// SetNillableXAuthorName sets the "x_author_name" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableXAuthorName(v *string) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetXAuthorName(*v)
+	}
+	return _u
+}
+
+// ClearXAuthorName clears the value of the "x_author_name" field.
+func (_u *MessageLinkUpdate) ClearXAuthorName() *MessageLinkUpdate {
+	_u.mutation.ClearXAuthorName()
+	return _u
+}
+
+// SetXAuthorHandle sets the "x_author_handle" field.
+func (_u *MessageLinkUpdate) SetXAuthorHandle(v string) *MessageLinkUpdate {
+	_u.mutation.SetXAuthorHandle(v)
+	return _u
+}
+
+// SetNillableXAuthorHandle sets the "x_author_handle" field if the given value is not nil.
+func (_u *MessageLinkUpdate) SetNillableXAuthorHandle(v *string) *MessageLinkUpdate {
+	if v != nil {
+		_u.SetXAuthorHandle(*v)
+	}
+	return _u
+}
+
+// ClearXAuthorHandle clears the value of the "x_author_handle" field.
+func (_u *MessageLinkUpdate) ClearXAuthorHandle() *MessageLinkUpdate {
+	_u.mutation.ClearXAuthorHandle()
+	return _u
+}
+
 // SetLinkedMessageID sets the "linked_message_id" field.
 func (_u *MessageLinkUpdate) SetLinkedMessageID(v uuid.UUID) *MessageLinkUpdate {
 	_u.mutation.SetLinkedMessageID(v)
@@ -429,6 +469,18 @@ func (_u *MessageLinkUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if _u.mutation.YoutubeDurationSecondsCleared() {
 		_spec.ClearField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.XAuthorName(); ok {
+		_spec.SetField(messagelink.FieldXAuthorName, field.TypeString, value)
+	}
+	if _u.mutation.XAuthorNameCleared() {
+		_spec.ClearField(messagelink.FieldXAuthorName, field.TypeString)
+	}
+	if value, ok := _u.mutation.XAuthorHandle(); ok {
+		_spec.SetField(messagelink.FieldXAuthorHandle, field.TypeString, value)
+	}
+	if _u.mutation.XAuthorHandleCleared() {
+		_spec.ClearField(messagelink.FieldXAuthorHandle, field.TypeString)
 	}
 	if value, ok := _u.mutation.LinkedMessageID(); ok {
 		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)
@@ -720,6 +772,46 @@ func (_u *MessageLinkUpdateOne) ClearYoutubeDurationSeconds() *MessageLinkUpdate
 	return _u
 }
 
+// SetXAuthorName sets the "x_author_name" field.
+func (_u *MessageLinkUpdateOne) SetXAuthorName(v string) *MessageLinkUpdateOne {
+	_u.mutation.SetXAuthorName(v)
+	return _u
+}
+
+// SetNillableXAuthorName sets the "x_author_name" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableXAuthorName(v *string) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetXAuthorName(*v)
+	}
+	return _u
+}
+
+// ClearXAuthorName clears the value of the "x_author_name" field.
+func (_u *MessageLinkUpdateOne) ClearXAuthorName() *MessageLinkUpdateOne {
+	_u.mutation.ClearXAuthorName()
+	return _u
+}
+
+// SetXAuthorHandle sets the "x_author_handle" field.
+func (_u *MessageLinkUpdateOne) SetXAuthorHandle(v string) *MessageLinkUpdateOne {
+	_u.mutation.SetXAuthorHandle(v)
+	return _u
+}
+
+// SetNillableXAuthorHandle sets the "x_author_handle" field if the given value is not nil.
+func (_u *MessageLinkUpdateOne) SetNillableXAuthorHandle(v *string) *MessageLinkUpdateOne {
+	if v != nil {
+		_u.SetXAuthorHandle(*v)
+	}
+	return _u
+}
+
+// ClearXAuthorHandle clears the value of the "x_author_handle" field.
+func (_u *MessageLinkUpdateOne) ClearXAuthorHandle() *MessageLinkUpdateOne {
+	_u.mutation.ClearXAuthorHandle()
+	return _u
+}
+
 // SetLinkedMessageID sets the "linked_message_id" field.
 func (_u *MessageLinkUpdateOne) SetLinkedMessageID(v uuid.UUID) *MessageLinkUpdateOne {
 	_u.mutation.SetLinkedMessageID(v)
@@ -915,6 +1007,18 @@ func (_u *MessageLinkUpdateOne) sqlSave(ctx context.Context) (_node *MessageLink
 	}
 	if _u.mutation.YoutubeDurationSecondsCleared() {
 		_spec.ClearField(messagelink.FieldYoutubeDurationSeconds, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.XAuthorName(); ok {
+		_spec.SetField(messagelink.FieldXAuthorName, field.TypeString, value)
+	}
+	if _u.mutation.XAuthorNameCleared() {
+		_spec.ClearField(messagelink.FieldXAuthorName, field.TypeString)
+	}
+	if value, ok := _u.mutation.XAuthorHandle(); ok {
+		_spec.SetField(messagelink.FieldXAuthorHandle, field.TypeString, value)
+	}
+	if _u.mutation.XAuthorHandleCleared() {
+		_spec.ClearField(messagelink.FieldXAuthorHandle, field.TypeString)
 	}
 	if value, ok := _u.mutation.LinkedMessageID(); ok {
 		_spec.SetField(messagelink.FieldLinkedMessageID, field.TypeUUID, value)

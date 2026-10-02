@@ -1,17 +1,26 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useMemo } from "react";
 
+import { create } from "@bufbuild/protobuf";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { MessageItem } from "#/features/message/components/MessageItem";
+import { MessageList } from "#/features/message/components/MessageList";
 import { ThreadReplyInput } from "#/features/message/components/ThreadReplyInput";
-import { ThreadReplyList } from "#/features/message/components/ThreadReplyList";
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { ThreadPanelContext } from "#/features/message/hooks/useOwnsMessageOverlay";
 import { useSendThreadReply, useThreadReplies } from "#/features/message/hooks/useThread";
+import { toDateKey } from "#/features/message/utils/dateJump";
+import { buildTimelineRows } from "#/features/message/utils/timelineRows";
+import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
+import { useDateFormat } from "#/hooks/useDateFormat";
+import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
+
+import type { TimelineRow } from "#/features/message/utils/timelineRows";
+import type { Message } from "#/gen/chat/v1/message_pb";
 
 type ThreadPanelProps = {
   workspaceId: string;
@@ -19,43 +28,23 @@ type ThreadPanelProps = {
   threadId: string;
 };
 
+const noopRef = () => undefined;
+
 export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const currentUserId = useAtomValue(userAtom)?.id ?? null;
-  // ?message= で返信を指しているときはその返信までスクロールする
-  const targetReplyId = useSearch({ select: (search) => search.message, strict: false });
-  const { data, isLoading, isError, error } = useThreadReplies(threadId);
+  // ?message= で返信を指しているときはその返信の前後を読み、そこまでスクロールする
+  const targetReplyId = useSearch({ select: (search) => search.message, strict: false }) ?? null;
+  const { parentMessage, thread, isLoading, isError, error, load, loading } = useThreadReplies(
+    threadId,
+    targetReplyId,
+  );
   const sendReply = useSendThreadReply();
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const { timeZone } = useDateFormat();
   // 親チャンネルの集約表示から開いたスレッドは子孫チャンネルのものなので、返信先は親メッセージのチャンネルにする
-  const threadChannelId = data?.parentMessage?.channelId ?? channelId;
+  const threadChannelId = parentMessage?.channelId ?? channelId;
   const handleCopyLink = useCopyMessageLink(workspaceId, threadChannelId);
-
-  const replyCount = data?.replies.length;
-  useEffect(() => {
-    if (replyCount === undefined) {
-      return;
-    }
-    const body = bodyRef.current;
-    if (!body) {
-      return;
-    }
-    const target =
-      targetReplyId === undefined
-        ? null
-        : body.querySelector(`[data-message-id="${targetReplyId}"]`);
-    if (!target) {
-      body.scrollTo({ top: body.scrollHeight });
-      return;
-    }
-    // scrollIntoView は祖先のスクロールまで動かして画面全体がずれるため、本文だけをスクロールする
-    const rect = target.getBoundingClientRect();
-    const bodyRect = body.getBoundingClientRect();
-    body.scrollTo({
-      top: body.scrollTop + rect.top - bodyRect.top - (body.clientHeight - rect.height) / 2,
-    });
-  }, [replyCount, targetReplyId]);
 
   const handleCreateThread = useCallback(
     (messageId: string) => {
@@ -67,41 +56,100 @@ export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelPro
     [navigate, channelId, workspaceId],
   );
 
+  // 親メッセージは最初の返信まで読み込んだときだけ先頭に置く
+  const rows = useMemo(() => {
+    if (thread === null || parentMessage === undefined) {
+      return [];
+    }
+    const replyRows = buildTimelineRows(
+      thread.replies.map((reply) =>
+        create(TimelineItemSchema, {
+          content: { case: "userMessage", value: reply },
+          createdAt: reply.createdAt,
+        }),
+      ),
+      false,
+      timeZone,
+    );
+    if (thread.hasMore) {
+      return replyRows;
+    }
+    const header: TimelineRow = {
+      dateKey: toDateKey(toDate(parentMessage.createdAt), timeZone),
+      key: "header",
+      kind: "header",
+    };
+    return [header, ...replyRows];
+  }, [thread, parentMessage, timeZone]);
+
+  const renderMessage = (message: Message, isHighlighted: boolean) => (
+    <MessageItem
+      message={message}
+      currentUserId={currentUserId}
+      onCopyLink={handleCopyLink}
+      onCreateThread={handleCreateThread}
+      isHighlighted={isHighlighted}
+    />
+  );
+
+  const renderBody = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col gap-2 p-4">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-60" />
+        </div>
+      );
+    }
+    if (isError) {
+      return <p className="m-0 p-4 text-caption text-danger">{error?.message}</p>;
+    }
+    if (parentMessage === undefined || thread === null) {
+      return <p className="m-0 p-4 text-caption text-muted">{t("shell.thread.notFound")}</p>;
+    }
+    return (
+      <MessageList
+        key={`${threadId}:${targetReplyId ?? ""}`}
+        rows={rows}
+        currentUserId={currentUserId}
+        targetMessageId={targetReplyId}
+        hasOlder={thread.hasMore}
+        hasNewer={thread.hasNewer}
+        loading={loading}
+        onLoad={(direction) => {
+          void load(direction);
+        }}
+        onJumpToLatest={() => {
+          void navigate({ search: (prev) => ({ ...prev, message: undefined }), to: "." });
+        }}
+        latestMessageRef={noopRef}
+        latestUserMessageId={null}
+        renderMessage={renderMessage}
+        header={
+          <>
+            <MessageItem
+              message={parentMessage}
+              currentUserId={currentUserId}
+              onCopyLink={handleCopyLink}
+              onCreateThread={handleCreateThread}
+            />
+            <div className="mx-4 my-2 flex items-center gap-2 text-caption text-muted">
+              {thread.replyCount === 0
+                ? t("message.thread.noReplies")
+                : t("shell.thread.replyCount", { count: thread.replyCount })}
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </>
+        }
+      />
+    );
+  };
+
   return (
     <ThreadPanelContext value>
       <div className="flex min-h-0 flex-1 flex-col">
-        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex flex-col gap-2 p-4">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-60" />
-            </div>
-          ) : isError ? (
-            <p className="m-0 p-4 text-caption text-danger">{error.message}</p>
-          ) : data?.parentMessage ? (
-            <>
-              <MessageItem
-                message={data.parentMessage}
-                currentUserId={currentUserId}
-                onCopyLink={handleCopyLink}
-                onCreateThread={handleCreateThread}
-              />
-              <div className="mx-4 my-2 flex items-center gap-2 text-caption text-muted">
-                {t("shell.thread.replyCount", { count: data.replies.length })}
-                <span className="h-px flex-1 bg-border" />
-              </div>
-              <ThreadReplyList
-                replies={data.replies}
-                currentUserId={currentUserId}
-                workspaceId={workspaceId}
-                channelId={threadChannelId}
-              />
-            </>
-          ) : (
-            <p className="m-0 p-4 text-caption text-muted">{t("shell.thread.notFound")}</p>
-          )}
-        </div>
-        {data?.parentMessage && (
+        {renderBody()}
+        {parentMessage && (
           <ThreadReplyInput
             channelId={threadChannelId}
             parentId={threadId}

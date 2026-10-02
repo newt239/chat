@@ -84,9 +84,11 @@ func newSearchFixture(t *testing.T, client *ent.Client) *searchFixture {
 	client.MessageUserMention.Create().SetMessage(m1).SetUser(f.alice).SaveX(ctx)
 	newMessage("link", 1, "dev/web", f.bob, "Design review 資料 https://example.com")
 	newMessage("secret", 2, "secret", f.bob, "設計 secret")
-	newMessage("broadcast", 3, "dev", f.bob, "@channel 設計の締め切りと設計書")
+	broadcast := newMessage("broadcast", 3, "dev", f.bob, "<@channel> 設計の締め切りと設計書")
+	f.messages["broadcast"] = broadcast.Update().SetMentionsChannel(true).SaveX(ctx)
 	m5 := newMessage("group", 4, "general", f.bob, "group ping")
 	client.MessageGroupMention.Create().SetMessage(m5).SetGroup(f.group).SaveX(ctx)
+	client.MessageUserMention.Create().SetMessage(m5).SetUser(f.alice).SetViaGroupID(f.group.ID).SaveX(ctx)
 	reply := client.Message.Create().SetChannel(f.channels["general"]).SetUser(f.alice).SetParent(m1).SetBody("了解 設計").
 		SetCreatedAt(base.Add(5 * time.Minute)).SaveX(ctx)
 	f.messages["reply"] = reply
@@ -98,7 +100,7 @@ func newSearchFixture(t *testing.T, client *ent.Client) *searchFixture {
 	client.MessageUserMention.Create().SetMessage(m8).SetUser(f.alice).SaveX(ctx)
 	f.messages["deleted"] = client.Message.Create().SetChannel(f.channels["general"]).SetUser(f.bob).SetBody("設計 deleted").
 		SetCreatedAt(base.Add(8 * time.Minute)).SetDeletedAt(base.Add(9 * time.Minute)).SaveX(ctx)
-	newMessage("not-broadcast", 9, "general", f.bob, "@channelx はメンションではない")
+	newMessage("not-broadcast", 9, "general", f.bob, "@channel は ID 記法ではないのでメンションではない")
 	newMessage("reverse", 10, "general", f.bob, "review of the design")
 	f.messages["location"] = client.Message.Create().SetChannel(f.channels["secret"]).SetUser(f.bob).SetBody("").
 		SetLocationLatitude(35.68).SetLocationLongitude(139.76).SetCreatedAt(base.Add(11 * time.Minute)).SaveX(ctx)
@@ -141,9 +143,6 @@ func TestFindSearchScope(t *testing.T) {
 	}
 	if !reflect.DeepEqual(scope.JoinedChannelIDs, ids("general", "dev")) {
 		t.Errorf("参加しているチャンネルが期待と異なります: %v", scope.JoinedChannelIDs)
-	}
-	if !reflect.DeepEqual(scope.GroupIDs, []string{f.group.ID.String()}) {
-		t.Errorf("所属グループが期待と異なります: %v", scope.GroupIDs)
 	}
 }
 

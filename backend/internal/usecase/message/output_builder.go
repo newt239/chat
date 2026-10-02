@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainerrors "github.com/newt239/chat/internal/domain/errors"
@@ -23,6 +24,7 @@ type MessageOutputBuilder struct {
 	linkRepo         domainrepository.MessageLinkRepository
 	attachmentRepo   domainrepository.AttachmentRepository
 	pinRepo          domainrepository.PinRepository
+	pollRepo         domainrepository.PollRepository
 	channelAccessSvc service.ChannelAccessService
 }
 
@@ -35,6 +37,7 @@ func NewMessageOutputBuilder(
 	linkRepo domainrepository.MessageLinkRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
 	pinRepo domainrepository.PinRepository,
+	pollRepo domainrepository.PollRepository,
 	channelAccessSvc service.ChannelAccessService,
 ) *MessageOutputBuilder {
 	return &MessageOutputBuilder{
@@ -46,6 +49,7 @@ func NewMessageOutputBuilder(
 		linkRepo:         linkRepo,
 		attachmentRepo:   attachmentRepo,
 		pinRepo:          pinRepo,
+		pollRepo:         pollRepo,
 		channelAccessSvc: channelAccessSvc,
 	}
 }
@@ -58,6 +62,8 @@ type relatedData struct {
 	attachments   map[string][]*entity.Attachment
 	pins          map[string]*entity.MessagePin
 	groups        map[string]*entity.UserGroup
+	polls         map[string]*entity.Poll
+	pollVotes     map[string][]*entity.PollVote
 }
 
 // Build は viewerID から見た MessageOutput を組み立てます。メッセージリンクの引用は viewerID が参照できるものだけ含めます
@@ -119,7 +125,11 @@ func (b *MessageOutputBuilder) Build(ctx context.Context, viewerID string, messa
 
 	outputs := make([]MessageOutput, 0, len(messages))
 	for _, msg := range messages {
-		outputs = append(outputs, assemble(msg, related, previews, users))
+		output := assemble(msg, related, previews, users)
+		if poll := related.polls[msg.ID]; poll != nil {
+			output.Poll = buildPollOutput(poll, related.pollVotes[poll.ID], viewerID, time.Now())
+		}
+		outputs = append(outputs, output)
 	}
 	return outputs, nil
 }
@@ -198,6 +208,19 @@ func (b *MessageOutputBuilder) fetchRelatedData(ctx context.Context, messageIDs 
 		return nil, fmt.Errorf("failed to fetch pins: %w", err)
 	}
 
+	polls, err := b.pollRepo.FindByMessageIDs(ctx, messageIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch polls: %w", err)
+	}
+	pollIDs := make([]string, 0, len(polls))
+	for _, poll := range polls {
+		pollIDs = append(pollIDs, poll.ID)
+	}
+	votes, err := b.pollRepo.FindVotesByPollIDs(ctx, pollIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch poll votes: %w", err)
+	}
+
 	groupIDs := make([]string, 0, len(groupMentions))
 	for _, mention := range groupMentions {
 		groupIDs = append(groupIDs, mention.GroupID)
@@ -221,6 +244,8 @@ func (b *MessageOutputBuilder) fetchRelatedData(ctx context.Context, messageIDs 
 		attachments:   attachments,
 		pins:          pins,
 		groups:        groups,
+		polls:         polls,
+		pollVotes:     groupByMessageID(votes, func(v *entity.PollVote) string { return v.PollID }),
 	}, nil
 }
 
@@ -257,10 +282,14 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		DeletedAt:   msg.DeletedAt,
 		IsDeleted:   msg.DeletedAt != nil,
 		Location:    msg.Location,
+
+		MentionsChannel: msg.MentionsChannel,
+		MentionsHere:    msg.MentionsHere,
+		IsOfficial:      users[msg.UserID] != nil && users[msg.UserID].IsOfficial,
 	}
 
 	for _, mention := range related.userMentions[msg.ID] {
-		output.Mentions = append(output.Mentions, UserMention{UserID: mention.UserID})
+		output.Mentions = append(output.Mentions, UserMention{UserID: mention.UserID, ViaGroupID: mention.ViaGroupID})
 	}
 	for _, mention := range related.groupMentions[msg.ID] {
 		name := ""
@@ -329,7 +358,7 @@ func toUserInfo(userID string, users map[string]*entity.User) UserInfo {
 	return UserInfo{ID: userID, DisplayName: "Unknown User"}
 }
 
-// authorInfo は投稿者の情報に、Webhook が投稿ごとに指定した表示名とアイコンを反映します
+// authorInfo は投稿者の情報に、アプリが投稿ごとに指定した表示名とアイコンを反映します
 func authorInfo(msg *entity.Message, users map[string]*entity.User) UserInfo {
 	info := toUserInfo(msg.UserID, users)
 	if msg.SenderName != nil {

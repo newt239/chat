@@ -216,7 +216,9 @@ type WorkspaceMember struct {
 	// 停止中の場合だけ設定される
 	SuspendedAt *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=suspended_at,json=suspendedAt,proto3,oneof" json:"suspended_at,omitempty"`
 	// IANA のタイムゾーン名。空は未設定
-	Timezone      string `protobuf:"bytes,10,opt,name=timezone,proto3" json:"timezone,omitempty"`
+	Timezone string `protobuf:"bytes,10,opt,name=timezone,proto3" json:"timezone,omitempty"`
+	// プロフィールに載せるリンクの URL
+	Links         []string `protobuf:"bytes,11,rep,name=links,proto3" json:"links,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -319,6 +321,13 @@ func (x *WorkspaceMember) GetTimezone() string {
 		return x.Timezone
 	}
 	return ""
+}
+
+func (x *WorkspaceMember) GetLinks() []string {
+	if x != nil {
+		return x.Links
+	}
+	return nil
 }
 
 type PublicWorkspace struct {
@@ -1484,7 +1493,7 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	" \x01(\bR\rsignupEnabled\x120\n" +
 	"\x14email_signup_enabled\x18\v \x01(\bR\x12emailSignupEnabledB\x0e\n" +
 	"\f_descriptionB\v\n" +
-	"\t_icon_url\"\xb9\x03\n" +
+	"\t_icon_url\"\xcf\x03\n" +
 	"\x0fWorkspaceMember\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -1497,7 +1506,8 @@ const file_chat_v1_workspace_service_proto_rawDesc = "" +
 	"\bnickname\x18\b \x01(\tH\x02R\bnickname\x88\x01\x01\x12B\n" +
 	"\fsuspended_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampH\x03R\vsuspendedAt\x88\x01\x01\x12\x1a\n" +
 	"\btimezone\x18\n" +
-	" \x01(\tR\btimezoneB\r\n" +
+	" \x01(\tR\btimezone\x12\x14\n" +
+	"\x05links\x18\v \x03(\tR\x05linksB\r\n" +
 	"\v_avatar_urlB\x06\n" +
 	"\x04_bioB\v\n" +
 	"\t_nicknameB\x0f\n" +

@@ -40,8 +40,8 @@ type Dispatcher struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	channelMuteRepo   domainrepository.ChannelMuteRepository
 	threadRepo        domainrepository.ThreadRepository
-	userGroupRepo     domainrepository.UserGroupRepository
 	pushTokenRepo     domainrepository.PushTokenRepository
+	mentionSvc        service.MentionService
 	channelAccessSvc  service.ChannelAccessService
 	sender            Sender
 	logger            service.Logger
@@ -53,8 +53,8 @@ func NewDispatcher(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	channelMuteRepo domainrepository.ChannelMuteRepository,
 	threadRepo domainrepository.ThreadRepository,
-	userGroupRepo domainrepository.UserGroupRepository,
 	pushTokenRepo domainrepository.PushTokenRepository,
+	mentionSvc service.MentionService,
 	channelAccessSvc service.ChannelAccessService,
 	sender Sender,
 	logger service.Logger,
@@ -64,8 +64,8 @@ func NewDispatcher(
 		channelMemberRepo: channelMemberRepo,
 		channelMuteRepo:   channelMuteRepo,
 		threadRepo:        threadRepo,
-		userGroupRepo:     userGroupRepo,
 		pushTokenRepo:     pushTokenRepo,
+		mentionSvc:        mentionSvc,
 		channelAccessSvc:  channelAccessSvc,
 		sender:            sender,
 		logger:            logger,
@@ -102,7 +102,11 @@ func (d *Dispatcher) dispatch(ctx context.Context, channel *entity.Channel, mess
 		return nil
 	}
 
-	title, body, data := content(channel, message)
+	body, err := d.mentionSvc.RenderPlain(ctx, message.Body)
+	if err != nil {
+		return fmt.Errorf("failed to render message body: %w", err)
+	}
+	title, body, data := content(channel, message, body)
 	messages := make([]PushMessage, 0, len(tokens))
 	for _, t := range tokens {
 		messages = append(messages, PushMessage{Token: t.Token, Platform: t.Platform, Title: title, Body: body, Data: data})
@@ -134,17 +138,9 @@ func (d *Dispatcher) candidates(ctx context.Context, channel *entity.Channel, me
 			add(id, reasonThread)
 		}
 	}
+	// グループへのメンションは投稿時点のメンバーに展開済み
 	for _, m := range message.Mentions {
 		add(m.UserID, reasonMention)
-	}
-	for _, g := range message.Groups {
-		members, err := d.userGroupRepo.FindMembersByGroupID(ctx, g.GroupID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load group members: %w", err)
-		}
-		for _, m := range members {
-			add(m.UserID, reasonMention)
-		}
 	}
 	if isDM(channel) {
 		members, err := d.channelMemberRepo.FindMembers(ctx, channel.ID)
@@ -209,16 +205,16 @@ func isDM(channel *entity.Channel) bool {
 	return channel.Type == entity.ChannelTypeDM || channel.Type == entity.ChannelTypeGroupDM
 }
 
-func content(channel *entity.Channel, message messageuc.MessageOutput) (title string, body string, data map[string]string) {
-	title = message.User.DisplayName
+// content の body は ID 記法を名前に置き換えた本文です
+func content(channel *entity.Channel, message messageuc.MessageOutput, body string) (string, string, map[string]string) {
+	title := message.User.DisplayName
 	if !isDM(channel) {
 		title += " · #" + channel.Name
 	}
-	body = message.Body
 	if runes := []rune(body); len(runes) > maxBodyRunes {
 		body = string(runes[:maxBodyRunes]) + "…"
 	}
-	data = map[string]string{
+	data := map[string]string{
 		"workspaceId": channel.WorkspaceID,
 		"channelId":   channel.ID,
 		"messageId":   message.ID,

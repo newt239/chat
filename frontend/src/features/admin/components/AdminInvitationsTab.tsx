@@ -1,6 +1,4 @@
-import { formatDateTime } from "@chat/i18n";
 import { useQuery } from "@connectrpc/connect-query";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
@@ -12,8 +10,8 @@ import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { InviteMemberForm } from "#/features/workspace/components/InviteMemberForm";
 import { useInvitationActions } from "#/features/workspace/hooks/useInvitationActions";
 import { InvitationService } from "#/gen/chat/v1/invitation_service_pb";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 const columns = ["email", "role", "invitedBy", "expiresAt"] as const;
 
@@ -23,7 +21,7 @@ type AdminInvitationsTabProps = {
 
 export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { formatDateTime } = useDateFormat();
   const { data: invitations = [] } = useQuery(
     InvitationService.method.listInvitations,
     { workspaceId },
@@ -66,7 +64,7 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
                     </td>
                     <td className={tableClassNames.cell}>{invitation.invitedByName}</td>
                     <td className={cn(tableClassNames.cell, tableClassNames.numeric)}>
-                      {formatDateTime(toDate(invitation.expiresAt), locale)}
+                      {formatDateTime(toDate(invitation.expiresAt))}
                     </td>
                     <td className={cn(tableClassNames.cell, "text-right")}>
                       <Button

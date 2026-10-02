@@ -1,10 +1,12 @@
 import type { Messages } from "../../messages";
 import { admin } from "./admin";
+import { app } from "./app";
 import { attachment } from "./attachment";
 import { auth } from "./auth";
 import { bookmark } from "./bookmark";
 import { channel } from "./channel";
 import { codeBlock } from "./codeBlock";
+import { command } from "./command";
 import { common } from "./common";
 import { dm } from "./dm";
 import { draft } from "./draft";
@@ -15,6 +17,7 @@ import { location } from "./location";
 import { member } from "./member";
 import { message } from "./message";
 import { pin } from "./pin";
+import { poll } from "./poll";
 import { preferences } from "./preferences";
 import { pwa } from "./pwa";
 import { reaction } from "./reaction";
@@ -25,16 +28,17 @@ import { settings } from "./settings";
 import { shell } from "./shell";
 import { ui } from "./ui";
 import { userGroup } from "./userGroup";
-import { webhook } from "./webhook";
 import { workspace } from "./workspace";
 
 export const en: Messages = {
   admin,
+  app,
   attachment,
   auth,
   bookmark,
   channel,
   codeBlock,
+  command,
   common,
   dm,
   draft,
@@ -45,6 +49,7 @@ export const en: Messages = {
   member,
   message,
   pin,
+  poll,
   preferences,
   pwa,
   reaction,
@@ -55,6 +60,5 @@ export const en: Messages = {
   shell,
   ui,
   userGroup,
-  webhook,
   workspace,
 };

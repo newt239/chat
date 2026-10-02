@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -57,17 +58,12 @@ func (r stubThreadRepo) FindFollowerIDs(context.Context, string) ([]string, erro
 	return r.followers, nil
 }
 
-type stubGroupRepo struct {
-	domainrepository.UserGroupRepository
-	members []string
+type stubMentionService struct {
+	service.MentionService
 }
 
-func (r stubGroupRepo) FindMembersByGroupID(context.Context, string) ([]*entity.UserGroupMember, error) {
-	result := []*entity.UserGroupMember{}
-	for _, id := range r.members {
-		result = append(result, &entity.UserGroupMember{UserID: id})
-	}
-	return result, nil
+func (stubMentionService) RenderPlain(_ context.Context, body string) (string, error) {
+	return strings.ReplaceAll(body, "<@u1>", "@bob"), nil
 }
 
 type stubTokenRepo struct {
@@ -114,7 +110,6 @@ type fixture struct {
 	levels    map[string]entity.NotificationLevel
 	members   []string
 	followers []string
-	group     []string
 	mutedBy   string
 	denied    string
 }
@@ -128,8 +123,8 @@ func (f fixture) run(t *testing.T, channel *entity.Channel, message messageuc.Me
 		stubMemberRepo{members: f.members},
 		stubMuteRepo{mutedBy: f.mutedBy},
 		stubThreadRepo{followers: f.followers},
-		stubGroupRepo{members: f.group},
 		tokens,
+		stubMentionService{},
 		stubAccess{denied: f.denied},
 		sender,
 		nil,
@@ -157,9 +152,9 @@ func TestDispatchChannelMessage(t *testing.T) {
 		UserID:   "sender",
 		User:     messageuc.UserInfo{DisplayName: "Alice"},
 		ParentID: &parentID,
-		Body:     "hello",
-		Mentions: []messageuc.UserMention{{UserID: "mentioned"}, {UserID: "muted"}, {UserID: "outsider"}},
-		Groups:   []messageuc.GroupMention{{GroupID: "g1"}},
+		Body:     "hello <@u1>",
+		// グループへのメンションは投稿時点のメンバーに展開済み
+		Mentions: []messageuc.UserMention{{UserID: "mentioned"}, {UserID: "muted"}, {UserID: "outsider"}, {UserID: "grouped", ViaGroupID: new("g1")}, {UserID: "silent", ViaGroupID: new("g1")}},
 	}
 	f := fixture{
 		levels: map[string]entity.NotificationLevel{
@@ -169,7 +164,6 @@ func TestDispatchChannelMessage(t *testing.T) {
 			"grouped": entity.NotificationLevelMentions, "silent": entity.NotificationLevelNone,
 		},
 		followers: []string{"sender", "follower-all", "follower-mentions"},
-		group:     []string{"grouped", "silent"},
 		mutedBy:   "muted",
 		denied:    "outsider",
 	}
@@ -181,7 +175,7 @@ func TestDispatchChannelMessage(t *testing.T) {
 		t.Errorf("宛先が期待と異なります: got=%v want=%v", got, want)
 	}
 	first := sender.sent[0]
-	if first.Title != "Alice · #general" || first.Data["link"] != "/app/ws/c1/thread/parent?message=m1" {
+	if first.Title != "Alice · #general" || first.Body != "hello @bob" || first.Data["link"] != "/app/ws/c1/thread/parent?message=m1" {
 		t.Errorf("通知の内容が期待と異なります: %+v", first)
 	}
 	if !reflect.DeepEqual(tokens.deleted, []string{"token-stale"}) {

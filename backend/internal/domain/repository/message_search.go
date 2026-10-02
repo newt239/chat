@@ -60,9 +60,8 @@ type MessageSearchResult struct {
 type MessageSearchScope struct {
 	UserID             string
 	ViewableChannelIDs []string
-	// JoinedChannelIDs は参加しているチャンネル（@channel / @here が届く範囲）
+	// JoinedChannelIDs は参加しているチャンネル（@channel / @here が届く範囲）。グループへのメンションは投稿時点のメンバーに展開済み
 	JoinedChannelIDs []string
-	GroupIDs         []string
 }
 
 // MessageSearchDocument は検索インデックスに載せる、削除されていないメッセージの内容です
@@ -77,7 +76,7 @@ type MessageSearchDocument struct {
 	Has               []MessageContentKind
 	MentionedUserIDs  []string
 	MentionedGroupIDs []string
-	// MentionsChannel は本文が @channel / @here を含むかどうか
+	// MentionsChannel は本文が <@channel> / <@here> を含むかどうか
 	MentionsChannel bool
 	Pinned          bool
 	HasReplies      bool

@@ -30,6 +30,26 @@ func (_u *MessageUserMentionUpdate) Where(ps ...predicate.MessageUserMention) *M
 	return _u
 }
 
+// SetViaGroupID sets the "via_group_id" field.
+func (_u *MessageUserMentionUpdate) SetViaGroupID(v uuid.UUID) *MessageUserMentionUpdate {
+	_u.mutation.SetViaGroupID(v)
+	return _u
+}
+
+// SetNillableViaGroupID sets the "via_group_id" field if the given value is not nil.
+func (_u *MessageUserMentionUpdate) SetNillableViaGroupID(v *uuid.UUID) *MessageUserMentionUpdate {
+	if v != nil {
+		_u.SetViaGroupID(*v)
+	}
+	return _u
+}
+
+// ClearViaGroupID clears the value of the "via_group_id" field.
+func (_u *MessageUserMentionUpdate) ClearViaGroupID() *MessageUserMentionUpdate {
+	_u.mutation.ClearViaGroupID()
+	return _u
+}
+
 // SetMessageID sets the "message" edge to the Message entity by ID.
 func (_u *MessageUserMentionUpdate) SetMessageID(id uuid.UUID) *MessageUserMentionUpdate {
 	_u.mutation.SetMessageID(id)
@@ -119,6 +139,12 @@ func (_u *MessageUserMentionUpdate) sqlSave(ctx context.Context) (_node int, err
 			}
 		}
 	}
+	if value, ok := _u.mutation.ViaGroupID(); ok {
+		_spec.SetField(messageusermention.FieldViaGroupID, field.TypeUUID, value)
+	}
+	if _u.mutation.ViaGroupIDCleared() {
+		_spec.ClearField(messageusermention.FieldViaGroupID, field.TypeUUID)
+	}
 	if _u.mutation.MessageCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -195,6 +221,26 @@ type MessageUserMentionUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *MessageUserMentionMutation
+}
+
+// SetViaGroupID sets the "via_group_id" field.
+func (_u *MessageUserMentionUpdateOne) SetViaGroupID(v uuid.UUID) *MessageUserMentionUpdateOne {
+	_u.mutation.SetViaGroupID(v)
+	return _u
+}
+
+// SetNillableViaGroupID sets the "via_group_id" field if the given value is not nil.
+func (_u *MessageUserMentionUpdateOne) SetNillableViaGroupID(v *uuid.UUID) *MessageUserMentionUpdateOne {
+	if v != nil {
+		_u.SetViaGroupID(*v)
+	}
+	return _u
+}
+
+// ClearViaGroupID clears the value of the "via_group_id" field.
+func (_u *MessageUserMentionUpdateOne) ClearViaGroupID() *MessageUserMentionUpdateOne {
+	_u.mutation.ClearViaGroupID()
+	return _u
 }
 
 // SetMessageID sets the "message" edge to the Message entity by ID.
@@ -315,6 +361,12 @@ func (_u *MessageUserMentionUpdateOne) sqlSave(ctx context.Context) (_node *Mess
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.ViaGroupID(); ok {
+		_spec.SetField(messageusermention.FieldViaGroupID, field.TypeUUID, value)
+	}
+	if _u.mutation.ViaGroupIDCleared() {
+		_spec.ClearField(messageusermention.FieldViaGroupID, field.TypeUUID)
 	}
 	if _u.mutation.MessageCleared() {
 		edge := &sqlgraph.EdgeSpec{

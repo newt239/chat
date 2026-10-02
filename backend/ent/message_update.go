@@ -253,6 +253,34 @@ func (_u *MessageUpdate) ClearLocationLabel() *MessageUpdate {
 	return _u
 }
 
+// SetMentionsChannel sets the "mentions_channel" field.
+func (_u *MessageUpdate) SetMentionsChannel(v bool) *MessageUpdate {
+	_u.mutation.SetMentionsChannel(v)
+	return _u
+}
+
+// SetNillableMentionsChannel sets the "mentions_channel" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableMentionsChannel(v *bool) *MessageUpdate {
+	if v != nil {
+		_u.SetMentionsChannel(*v)
+	}
+	return _u
+}
+
+// SetMentionsHere sets the "mentions_here" field.
+func (_u *MessageUpdate) SetMentionsHere(v bool) *MessageUpdate {
+	_u.mutation.SetMentionsHere(v)
+	return _u
+}
+
+// SetNillableMentionsHere sets the "mentions_here" field if the given value is not nil.
+func (_u *MessageUpdate) SetNillableMentionsHere(v *bool) *MessageUpdate {
+	if v != nil {
+		_u.SetMentionsHere(*v)
+	}
+	return _u
+}
+
 // AddReplyIDs adds the "replies" edge to the Message entity by IDs.
 func (_u *MessageUpdate) AddReplyIDs(ids ...uuid.UUID) *MessageUpdate {
 	_u.mutation.AddReplyIDs(ids...)
@@ -733,6 +761,12 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LocationLabelCleared() {
 		_spec.ClearField(message.FieldLocationLabel, field.TypeString)
+	}
+	if value, ok := _u.mutation.MentionsChannel(); ok {
+		_spec.SetField(message.FieldMentionsChannel, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MentionsHere(); ok {
+		_spec.SetField(message.FieldMentionsHere, field.TypeBool, value)
 	}
 	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1419,6 +1453,34 @@ func (_u *MessageUpdateOne) ClearLocationLabel() *MessageUpdateOne {
 	return _u
 }
 
+// SetMentionsChannel sets the "mentions_channel" field.
+func (_u *MessageUpdateOne) SetMentionsChannel(v bool) *MessageUpdateOne {
+	_u.mutation.SetMentionsChannel(v)
+	return _u
+}
+
+// SetNillableMentionsChannel sets the "mentions_channel" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableMentionsChannel(v *bool) *MessageUpdateOne {
+	if v != nil {
+		_u.SetMentionsChannel(*v)
+	}
+	return _u
+}
+
+// SetMentionsHere sets the "mentions_here" field.
+func (_u *MessageUpdateOne) SetMentionsHere(v bool) *MessageUpdateOne {
+	_u.mutation.SetMentionsHere(v)
+	return _u
+}
+
+// SetNillableMentionsHere sets the "mentions_here" field if the given value is not nil.
+func (_u *MessageUpdateOne) SetNillableMentionsHere(v *bool) *MessageUpdateOne {
+	if v != nil {
+		_u.SetMentionsHere(*v)
+	}
+	return _u
+}
+
 // AddReplyIDs adds the "replies" edge to the Message entity by IDs.
 func (_u *MessageUpdateOne) AddReplyIDs(ids ...uuid.UUID) *MessageUpdateOne {
 	_u.mutation.AddReplyIDs(ids...)
@@ -1929,6 +1991,12 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 	}
 	if _u.mutation.LocationLabelCleared() {
 		_spec.ClearField(message.FieldLocationLabel, field.TypeString)
+	}
+	if value, ok := _u.mutation.MentionsChannel(); ok {
+		_spec.SetField(message.FieldMentionsChannel, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MentionsHere(); ok {
+		_spec.SetField(message.FieldMentionsHere, field.TypeBool, value)
 	}
 	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{

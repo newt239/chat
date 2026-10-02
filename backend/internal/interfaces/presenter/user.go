@@ -15,7 +15,7 @@ func AuthUser(u authuc.UserInfo) *chatv1.User {
 }
 
 func Me(me *useruc.MeOutput) *chatv1.User {
-	return &chatv1.User{Id: me.ID, Email: me.Email, DisplayName: me.DisplayName, AvatarUrl: me.AvatarURL, Bio: me.Bio, Preferences: Preferences(me.Preferences)}
+	return &chatv1.User{Id: me.ID, Email: me.Email, DisplayName: me.DisplayName, AvatarUrl: me.AvatarURL, Bio: me.Bio, Links: me.Links, Preferences: Preferences(me.Preferences)}
 }
 
 var sidebarStyles = map[entity.SidebarStyle]chatv1.SidebarStyle{
@@ -96,4 +96,12 @@ func UserNote(n *usernoteuc.Output) *chatv1.UserNote {
 		return nil
 	}
 	return &chatv1.UserNote{TargetUserId: n.TargetID, Nickname: n.Nickname, Memo: n.Memo, UpdatedAt: timestamppb.New(n.UpdatedAt)}
+}
+
+// ProfileLinksFromProto はリンクを指定しなかったときに nil を返し、変えないことを表します
+func ProfileLinksFromProto(links *chatv1.ProfileLinks) *[]string {
+	if links == nil {
+		return nil
+	}
+	return &links.Urls
 }

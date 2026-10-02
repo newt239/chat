@@ -87,6 +87,11 @@ export const message: Messages["message"] = {
     textCopied: "Text copied",
     textCopyFailed: "Couldn't copy the text",
   },
+  mention: {
+    unknownChannel: "private channel",
+    unknownGroup: "deleted group",
+    unknownUser: "unknown user",
+  },
   panel: {
     empty: "No messages yet",
     emptyHint: "Send the first message",
@@ -101,6 +106,7 @@ export const message: Messages["message"] = {
     title: "Message actions",
   },
   suggestion: {
+    broadcast: "Notify everyone",
     groups: "User groups",
     label: "Suggestions",
   },

@@ -5,6 +5,8 @@ import { groupByDate } from "./dateJump";
 import type { Message, SystemMessage, TimelineItem } from "#/gen/chat/v1/message_pb";
 
 export type TimelineRow =
+  // スレッドの親メッセージなど、一覧の先頭に置く行
+  | { kind: "header"; key: string; dateKey: string }
   | { kind: "date"; key: string; dateKey: string }
   | { kind: "user"; key: string; dateKey: string; message: Message }
   | { kind: "system"; key: string; dateKey: string; message: SystemMessage };
@@ -13,14 +15,18 @@ const joinKinds = new Set([SystemMessageKind.MEMBER_JOINED, SystemMessageKind.ME
 
 // 古い順の項目を、日付の区切りとメッセージを 1 行ずつ並べた仮想リストの行にする
 // 参加のお知らせを隠すときは、それしかない日の区切りも出さない
-export const buildTimelineRows = (items: readonly TimelineItem[], hideJoinMessages: boolean) => {
+export const buildTimelineRows = (
+  items: readonly TimelineItem[],
+  hideJoinMessages: boolean,
+  timeZone: string,
+) => {
   const visible = hideJoinMessages
     ? items.filter(
         ({ content }) => content.case !== "systemMessage" || !joinKinds.has(content.value.kind),
       )
     : items;
   const rows: TimelineRow[] = [];
-  for (const { dateKey, items: dayItems } of groupByDate(visible)) {
+  for (const { dateKey, items: dayItems } of groupByDate(visible, timeZone)) {
     rows.push({ dateKey, key: `d-${dateKey}`, kind: "date" });
     for (const item of dayItems) {
       if (item.content.case === "userMessage") {
@@ -36,4 +42,6 @@ export const buildTimelineRows = (items: readonly TimelineItem[], hideJoinMessag
 };
 
 export const findRowIndex = (rows: readonly TimelineRow[], messageId: string) =>
-  rows.findIndex((row) => row.kind !== "date" && row.message.id === messageId);
+  rows.findIndex(
+    (row) => (row.kind === "user" || row.kind === "system") && row.message.id === messageId,
+  );

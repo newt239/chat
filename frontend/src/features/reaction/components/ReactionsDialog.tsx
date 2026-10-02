@@ -1,4 +1,3 @@
-import { formatDateTime } from "@chat/i18n";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
@@ -9,10 +8,11 @@ import { Tab } from "#/components/ui/Tab/Tab";
 import { TabList } from "#/components/ui/TabList/TabList";
 import { TabPanel } from "#/components/ui/TabPanel/TabPanel";
 import { Tabs } from "#/components/ui/Tabs/Tabs";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { toPlainText } from "#/features/message/utils/markdown/plainText";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
-import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useToggleReaction } from "../hooks/useReactions";
 import { groupReactions } from "../utils/groupReactions";
@@ -31,7 +31,8 @@ type ReactionsDialogProps = {
 // 誰がいつどのリアクションを付けたかの一覧。新しい順に並べる
 export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogProps) => {
   const { t } = useTranslation();
-  const { locale } = useAtomValue(preferencesAtom);
+  const { toText } = useMentionDirectory();
+  const { formatDateTime } = useDateFormat();
   const currentUserId = useAtomValue(userAtom)?.id ?? null;
   const toggleReaction = useToggleReaction(message.id);
   const groups = groupReactions(message.reactions, currentUserId);
@@ -57,7 +58,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
     >
       <p className="-mt-1 mb-0 truncate text-[12.5px] text-muted">
         {message.user?.displayName}:{" "}
-        {toPlainText(message.body) || t("message.sheet.attachmentOnly")}
+        {toPlainText(toText(message.body)) || t("message.sheet.attachmentOnly")}
       </p>
       <Tabs
         selectedKey={selectedTab}
@@ -98,7 +99,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
                           {isMine ? t("reaction.names.you") : row.user?.displayName}
                         </span>
                         <small className="font-mono text-[11.5px] text-subtle tabular-nums">
-                          {formatDateTime(toDate(row.createdAt), locale)}
+                          {formatDateTime(toDate(row.createdAt))}
                         </small>
                       </span>
                       {id === ALL_REACTIONS_TAB && (

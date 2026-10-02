@@ -28,6 +28,7 @@ func (s *UserServer) UpdateMe(ctx context.Context, req *chatv1.UpdateMeRequest) 
 		DisplayName: req.DisplayName,
 		Bio:         req.Bio,
 		AvatarURL:   req.AvatarUrl,
+		Links:       presenter.ProfileLinksFromProto(req.Links),
 	})
 	if err != nil {
 		return nil, err

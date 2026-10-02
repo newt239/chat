@@ -4,6 +4,8 @@ export const admin: Messages["admin"] = {
   audit: {
     actionFilter: "Action",
     actions: {
+      appCreated: "Created an app",
+      appDeleted: "Deleted an app",
       auditLogExported: "Exported the audit log",
       channelArchived: "Archived a channel",
       channelCreated: "Created a channel",
@@ -143,6 +145,7 @@ export const admin: Messages["admin"] = {
     updated: "Permission changed",
   },
   tabs: {
+    apps: "Apps",
     audit: "Audit log",
     invitations: "Invitations",
     label: "Admin tabs",

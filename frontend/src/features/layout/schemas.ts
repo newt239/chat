@@ -20,8 +20,8 @@ export const workspaceSearchSchema = z.object({
       "markdown-help",
       "add-link",
       "edit-link",
-      "add-webhook",
-      "edit-webhook",
+      "add-app",
+      "edit-app",
     ])
     .optional()
     .catch(undefined),
@@ -41,8 +41,8 @@ export const workspaceSearchSchema = z.object({
   profile: optionalId,
   // リアクション一覧を開いているメッセージ
   reactions: optionalId,
-  // edit-webhook で編集する Webhook
-  webhook: optionalId,
+  // edit-app で編集するアプリ
+  app: optionalId,
   // モバイルで長押ししたメッセージの操作シート
   sheet: optionalId,
 });

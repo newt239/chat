@@ -5,6 +5,7 @@ import { useAtomValue } from "jotai";
 import { useChannels } from "#/features/channel/hooks/useChannel";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { navigateTo } from "#/lib/navigation";
 import { isNotificationSupported, showNotification } from "#/lib/platform/notify";
 import { userAtom } from "#/providers/store/auth";
@@ -14,6 +15,7 @@ import { useWsClient } from "#/providers/ws/useWsClient";
 
 /** 設定に従って新着メッセージを OS の通知で知らせる。ミュート中と表示中のチャンネルは除く。プッシュ通知と同じ tag で出し、二重にならないようにする */
 export const useDesktopNotifications = (workspaceId: string, currentChannelId: string | null) => {
+  const { toText } = useMentionDirectory();
   const { wsClient } = useWsClient();
   const { desktop, pushToken } = useAtomValue(notificationPreferencesAtom);
   const level = useAtomValue(preferencesAtom).notificationLevel;
@@ -41,13 +43,16 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
       if ((!channel && !dm) || channel?.isMuted || dm?.isMuted) {
         return;
       }
-      const isMention = message.mentions.some((mention) => mention.userId === myId);
+      const isMention =
+        message.mentionsChannel ||
+        message.mentionsHere ||
+        message.mentions.some((mention) => mention.userId === myId);
       if (level === "mentions" && !isMention && !dm) {
         return;
       }
       const author = displayName(message.userId, message.user?.displayName ?? "");
       void showNotification({
-        body: message.body,
+        body: toText(message.body),
         onClick: () => {
           navigateTo({
             params: { channelId, workspaceId },
@@ -70,5 +75,6 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
     currentChannelId,
     workspaceId,
     displayName,
+    toText,
   ]);
 };

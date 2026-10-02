@@ -15,6 +15,8 @@ const (
 	Label = "message_user_mention"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldViaGroupID holds the string denoting the via_group_id field in the database.
+	FieldViaGroupID = "via_group_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeMessage holds the string denoting the message edge name in mutations.
@@ -42,6 +44,7 @@ const (
 // Columns holds all SQL columns for messageusermention fields.
 var Columns = []string{
 	FieldID,
+	FieldViaGroupID,
 	FieldCreatedAt,
 }
 
@@ -80,6 +83,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByViaGroupID orders the results by the via_group_id field.
+func ByViaGroupID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldViaGroupID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

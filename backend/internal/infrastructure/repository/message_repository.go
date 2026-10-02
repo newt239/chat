@@ -95,20 +95,32 @@ func (r *messageRepository) FindByIDs(ctx context.Context, ids []string) ([]*ent
 	return toMessageEntities(messages), nil
 }
 
-func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID string) ([]*entity.Message, error) {
+func (r *messageRepository) FindThreadReplies(ctx context.Context, parentID string, limit int, since *time.Time, until *time.Time, ascending bool) ([]*entity.Message, error) {
 	pID, err := utils.ParseUUID(parentID, "parent ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
-	messages, err := client.Message.Query().
+	query := client.Message.Query().
 		Where(
 			message.ParentID(pID),
 			message.DeletedAtIsNil(),
-		).
-		Order(ent.Asc(message.FieldCreatedAt)).
-		All(ctx)
+		)
+	if since != nil {
+		query = query.Where(message.CreatedAtGT(*since))
+	}
+	if until != nil {
+		query = query.Where(message.CreatedAtLT(*until))
+	}
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	order := ent.Desc(message.FieldCreatedAt)
+	if ascending {
+		order = ent.Asc(message.FieldCreatedAt)
+	}
+	messages, err := query.Order(order).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -132,6 +144,8 @@ func (r *messageRepository) Create(ctx context.Context, msg *entity.Message) err
 		SetChannelID(channelID).
 		SetUserID(userID).
 		SetBody(msg.Body).
+		SetMentionsChannel(msg.MentionsChannel).
+		SetMentionsHere(msg.MentionsHere).
 		SetNillableSenderName(msg.SenderName).
 		SetNillableSenderAvatarURL(msg.SenderAvatarURL)
 	if loc := msg.Location; loc != nil {
@@ -192,7 +206,9 @@ func (r *messageRepository) Update(ctx context.Context, msg *entity.Message) err
 	client := transaction.ResolveClient(ctx, r.client)
 
 	builder := client.Message.UpdateOneID(messageID).
-		SetBody(msg.Body)
+		SetBody(msg.Body).
+		SetMentionsChannel(msg.MentionsChannel).
+		SetMentionsHere(msg.MentionsHere)
 
 	if msg.EditedAt != nil {
 		builder = builder.SetEditedAt(*msg.EditedAt)
@@ -329,6 +345,7 @@ func (r *messageRepository) AddUserMention(ctx context.Context, mention *entity.
 	_, err = client.MessageUserMention.Create().
 		SetMessageID(messageID).
 		SetUserID(userID).
+		SetNillableViaGroupID(utils.ParseUUIDPtr(mention.ViaGroupID)).
 		Save(ctx)
 
 	return err

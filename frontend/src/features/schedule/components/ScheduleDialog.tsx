@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/Button/Button";
 import { DateTimeField } from "#/components/ui/DateTimeField/DateTimeField";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
+import { useDateFormat } from "#/hooks/useDateFormat";
 
 type ScheduleDialogProps = {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export const ScheduleDialog = ({
   children,
 }: ScheduleDialogProps) => {
   const { t } = useTranslation();
+  const { timeZone } = useDateFormat();
   const [scheduledAt, setScheduledAt] = useState(initialDate);
   const [isPast, setIsPast] = useState(false);
 
@@ -65,6 +67,7 @@ export const ScheduleDialog = ({
       {children}
       <DateTimeField
         label={t("schedule.dialog.field")}
+        timeZone={timeZone}
         value={scheduledAt}
         onChange={(next) => {
           setScheduledAt(next);

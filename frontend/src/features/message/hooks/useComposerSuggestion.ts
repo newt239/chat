@@ -3,23 +3,23 @@ import { useEffect, useId, useState } from "react";
 import { skipToken, useQuery } from "@connectrpc/connect-query";
 import { useParams } from "@tanstack/react-router";
 
+import { commandNames } from "#/features/command/utils/commands";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
-import {
-  applySuggestion,
-  findSuggestionQuery,
-  mentionTokenOf,
-  rankByQuery,
-} from "../utils/suggestion";
+import { toMentionToken } from "../utils/mentionToken";
+import { applySuggestion, findSuggestionQuery, rankByQuery } from "../utils/suggestion";
 
 import type { SuggestionItem } from "../utils/suggestion";
 
 type Options = {
   body: string;
   cursor: number;
-  onApply: (next: { text: string; cursor: number }) => void;
+  // 入力欄の先頭の「/」でコマンドの候補を出すか。編集では出さない
+  allowsCommands: boolean;
+  // item は選んだ候補。送信時に名前を ID 記法へ戻すために使う
+  onApply: (next: { text: string; cursor: number }, item: SuggestionItem) => void;
 };
 
 type SuggestionKeyEvent = {
@@ -30,11 +30,29 @@ type SuggestionKeyEvent = {
 
 const LIMIT = 8;
 
-/** 入力欄で @ を打つとユーザーとユーザーグループ、# を打つとチャンネルの候補を出す */
-export const useComposerSuggestion = ({ body, cursor, onApply }: Options) => {
+const commands = commandNames.map((name) => ({
+  avatarUrl: undefined,
+  id: name,
+  kind: "command" as const,
+  label: `/${name}`,
+  token: `/${name}`,
+  value: `/${name}`,
+}));
+
+const broadcasts = (["channel", "here"] as const).map((id) => ({
+  avatarUrl: undefined,
+  id,
+  kind: "broadcast" as const,
+  label: id,
+  token: toMentionToken({ id, kind: "broadcast" }),
+  value: `@${id}`,
+}));
+
+/** 入力欄で @ を打つとユーザーとユーザーグループ、# を打つとチャンネル、先頭で / を打つとコマンドの候補を出す */
+export const useComposerSuggestion = ({ body, cursor, allowsCommands, onApply }: Options) => {
   const { workspaceId = null } = useParams({ strict: false });
   const listId = useId();
-  const query = findSuggestionQuery(body, cursor);
+  const query = findSuggestionQuery(body, cursor, allowsCommands);
   const [activeIndex, setActiveIndex] = useState(0);
   // Esc で閉じた候補は、別の @ / # を打つまで出さない
   const [dismissedStart, setDismissedStart] = useState<number | null>(null);
@@ -47,37 +65,41 @@ export const useComposerSuggestion = ({ body, cursor, onApply }: Options) => {
   );
 
   const candidates: SuggestionItem[] =
-    query?.trigger === "#"
-      ? channels.map((channel) => ({
-          avatarUrl: undefined,
-          id: channel.id,
-          kind: "channel",
-          label: channel.name,
-          value: `#${channel.name}`,
-        }))
-      : [
-          ...members.flatMap((member) => {
-            const token = mentionTokenOf(member.displayName);
-            return token === null || member.suspendedAt !== undefined
-              ? []
-              : [
-                  {
-                    avatarUrl: member.avatarUrl,
-                    id: member.userId,
-                    kind: "user" as const,
-                    label: member.nickname ?? member.displayName,
-                    value: `@${token}`,
-                  },
-                ];
-          }),
-          ...groups.map((group) => ({
+    query?.trigger === "/"
+      ? commands
+      : query?.trigger === "#"
+        ? channels.map((channel) => ({
             avatarUrl: undefined,
-            id: group.id,
-            kind: "group" as const,
-            label: group.name,
-            value: `@${group.name}`,
-          })),
-        ];
+            id: channel.id,
+            kind: "channel",
+            label: channel.name,
+            token: toMentionToken({ id: channel.id, kind: "channel" }),
+            value: `#${channel.name}`,
+          }))
+        : [
+            ...members
+              .filter((member) => member.suspendedAt === undefined)
+              .map((member) => {
+                const label = member.nickname ?? member.displayName;
+                return {
+                  avatarUrl: member.avatarUrl,
+                  id: member.userId,
+                  kind: "user" as const,
+                  label,
+                  token: toMentionToken({ id: member.userId, kind: "user" }),
+                  value: `@${label}`,
+                };
+              }),
+            ...groups.map((group) => ({
+              avatarUrl: undefined,
+              id: group.id,
+              kind: "group" as const,
+              label: group.name,
+              token: toMentionToken({ id: group.id, kind: "group" }),
+              value: `@${group.name}`,
+            })),
+            ...broadcasts,
+          ];
   const items =
     query === null
       ? []
@@ -91,7 +113,7 @@ export const useComposerSuggestion = ({ body, cursor, onApply }: Options) => {
 
   const select = (item: SuggestionItem) => {
     if (query !== null) {
-      onApply(applySuggestion({ cursor, query, text: body, value: item.value }));
+      onApply(applySuggestion({ cursor, query, text: body, value: item.value }), item);
     }
   };
 

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package chat.v1;
+
+import "buf/validate/validate.proto";
+import "chat/v1/message.proto";
+
+// メッセージに付けた投票。チャンネルの参加者が投票でき、締め切りは作成者と管理者だけができる。
+// 集計の変化は投票を付けたメッセージの message_updated として配信する
+service PollService {
+  // 自分の票を option_ids に置き換える。空なら取り消す
+  rpc Vote(VoteRequest) returns (VoteResponse);
+  rpc ClosePoll(ClosePollRequest) returns (ClosePollResponse);
+}
+
+message VoteRequest {
+  string poll_id = 1 [(buf.validate.field).string.uuid = true];
+  repeated string option_ids = 2 [(buf.validate.field).repeated.items.string.uuid = true];
+}
+
+message VoteResponse {
+  // 投票した人から見たメッセージ。my_option_ids が入る
+  Message message = 1;
+}
+
+message ClosePollRequest {
+  string poll_id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message ClosePollResponse {
+  Message message = 1;
+}

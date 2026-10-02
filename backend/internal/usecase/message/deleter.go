@@ -13,6 +13,7 @@ import (
 // MessageDeleter はメッセージ削除を担当するユースケースです
 type MessageDeleter struct {
 	messageRepo       domainrepository.MessageRepository
+	userRepo          domainrepository.UserRepository
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	threadRepo        domainrepository.ThreadRepository
@@ -26,6 +27,7 @@ type MessageDeleter struct {
 // NewMessageDeleter は新しいMessageDeleterを作成します
 func NewMessageDeleter(
 	messageRepo domainrepository.MessageRepository,
+	userRepo domainrepository.UserRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	threadRepo domainrepository.ThreadRepository,
@@ -37,6 +39,7 @@ func NewMessageDeleter(
 ) *MessageDeleter {
 	return &MessageDeleter{
 		messageRepo:       messageRepo,
+		userRepo:          userRepo,
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		threadRepo:        threadRepo,
@@ -70,6 +73,10 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 		return ErrMessageAlreadyDeleted
 	}
 
+	if err := ensureNotOfficial(ctx, d.userRepo, message); err != nil {
+		return err
+	}
+
 	// 他人のメッセージは権限設定で許可されたロールだけが削除できる
 	if message.UserID != input.ExecutorID {
 		if _, err := d.permissionSvc.Ensure(ctx, channel.WorkspaceID, input.ExecutorID, entity.PermissionDeleteOthersMessages); err != nil {
@@ -82,7 +89,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 
 	// スレッド親メッセージの場合、子メッセージも削除
 	if message.ParentID == nil {
-		replies, err := d.messageRepo.FindThreadReplies(ctx, message.ID)
+		replies, err := d.messageRepo.FindThreadReplies(ctx, message.ID, 0, nil, nil, true)
 		if err != nil {
 			return fmt.Errorf("返信の取得に失敗しました: %w", err)
 		}

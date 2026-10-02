@@ -12,8 +12,8 @@ type SearchIndexer interface {
 	Sync(ctx context.Context, messageIDs ...string)
 }
 
-// PushNotifier は新着メッセージの宛先の端末へプッシュ通知を送ります。失敗しても呼び出し元へは返さない
-type PushNotifier interface {
+// NewMessageObserver は新着メッセージをプッシュ通知やアプリの送信 Webhook で外へ知らせます。失敗しても呼び出し元へは返さない
+type NewMessageObserver interface {
 	NotifyNewMessage(ctx context.Context, channel *entity.Channel, message MessageOutput)
 }
 

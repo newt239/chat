@@ -12,6 +12,26 @@ message User {
   optional string avatar_url = 4;
   optional string bio = 5;
   UserPreferences preferences = 6;
+  // プロフィールに載せるリンクの URL
+  repeated string links = 7;
+}
+
+// プロフィールに載せるリンク。表示名は持たず、主要なサイトはアイコンで見分ける
+message ProfileLinks {
+  repeated string urls = 1 [(buf.validate.field).repeated = {
+    max_items: 5
+    items: {
+      string: {
+        uri: true
+        max_len: 2048
+      }
+      cel: {
+        id: "http_url"
+        message: "http(s) の URL を指定してください"
+        expression: "this.startsWith('http://') || this.startsWith('https://')"
+      }
+    }
+  }];
 }
 
 enum SidebarStyle {
@@ -92,6 +112,6 @@ message UserSummary {
   string id = 1;
   string display_name = 2;
   optional string avatar_url = 3;
-  // Webhook の投稿名義のボットユーザー。プロフィールを持たない
+  // アプリの投稿名義のボットユーザー。プロフィールを持たない
   bool is_bot = 4;
 }

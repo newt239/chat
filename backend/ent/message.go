@@ -48,6 +48,10 @@ type Message struct {
 	LocationAccuracy *float64 `json:"location_accuracy,omitempty"`
 	// LocationLabel holds the value of the "location_label" field.
 	LocationLabel *string `json:"location_label,omitempty"`
+	// MentionsChannel holds the value of the "mentions_channel" field.
+	MentionsChannel bool `json:"mentions_channel,omitempty"`
+	// MentionsHere holds the value of the "mentions_here" field.
+	MentionsHere bool `json:"mentions_here,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageQuery when eager-loading is set.
 	Edges        MessageEdges `json:"edges"`
@@ -217,6 +221,8 @@ func (*Message) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case message.FieldParentID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case message.FieldMentionsChannel, message.FieldMentionsHere:
+			values[i] = new(sql.NullBool)
 		case message.FieldLocationLatitude, message.FieldLocationLongitude, message.FieldLocationAccuracy:
 			values[i] = new(sql.NullFloat64)
 		case message.FieldBody, message.FieldSenderName, message.FieldSenderAvatarURL, message.FieldLocationLabel:
@@ -336,6 +342,18 @@ func (_m *Message) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.LocationLabel = new(string)
 				*_m.LocationLabel = value.String
+			}
+		case message.FieldMentionsChannel:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field mentions_channel", values[i])
+			} else if value.Valid {
+				_m.MentionsChannel = value.Bool
+			}
+		case message.FieldMentionsHere:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field mentions_here", values[i])
+			} else if value.Valid {
+				_m.MentionsHere = value.Bool
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -493,6 +511,12 @@ func (_m *Message) String() string {
 		builder.WriteString("location_label=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("mentions_channel=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MentionsChannel))
+	builder.WriteString(", ")
+	builder.WriteString("mentions_here=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MentionsHere))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 
+import { AppDialogLoader } from "#/features/app/components/AppDialogLoader";
 import { ChannelCategoryDialog } from "#/features/channel/components/ChannelCategoryDialog";
 import { ChannelLinkDialogLoader } from "#/features/channel/components/ChannelLinkDialogLoader";
 import { CreateChannelModal } from "#/features/channel/components/CreateChannelModal";
@@ -9,7 +10,6 @@ import { MarkdownHelpModal } from "#/features/message/components/MarkdownHelpMod
 import { UserGroupDialog } from "#/features/userGroup/components/UserGroupDialog";
 import { useCanManageUserGroups } from "#/features/userGroup/hooks/useCanManageUserGroups";
 import { useUserGroups } from "#/features/userGroup/hooks/useUserGroups";
-import { WebhookDialogLoader } from "#/features/webhook/components/WebhookDialogLoader";
 import { CreateWorkspaceModal } from "#/features/workspace/components/CreateWorkspaceModal";
 
 import { closeDialog, openPanel } from "../utils/overlaySearch";
@@ -22,7 +22,7 @@ type WorkspaceDialogsProps = {
 // ?dialog= で開くダイアログ。開くボタンが複数の画面にあっても、ここで一度だけ描く
 export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const navigate = useNavigate();
-  const { assign, category, dialog, group, link, parent, webhook } = workspaceRoute.useSearch();
+  const { app, assign, category, dialog, group, link, parent } = workspaceRoute.useSearch();
   const channelId = useParams({ select: (params) => params.channelId, strict: false });
   const { data: groups } = useUserGroups(workspaceId);
   const canManageGroups = useCanManageUserGroups(workspaceId);
@@ -83,14 +83,14 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
             onClose={close}
           />
         )}
-      {channelId !== undefined &&
-        (dialog === "add-webhook" || (dialog === "edit-webhook" && webhook !== undefined)) && (
-          <WebhookDialogLoader
-            channelId={channelId}
-            webhookId={dialog === "edit-webhook" ? (webhook ?? null) : null}
-            onClose={close}
-          />
-        )}
+      {(dialog === "add-app" || (dialog === "edit-app" && app !== undefined)) && (
+        <AppDialogLoader
+          workspaceId={workspaceId}
+          appId={dialog === "edit-app" ? (app ?? null) : null}
+          initialChannelId={channelId ?? null}
+          onClose={close}
+        />
+      )}
     </>
   );
 };

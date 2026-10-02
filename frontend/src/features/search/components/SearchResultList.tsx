@@ -7,6 +7,7 @@ import { MemberRow } from "#/features/member/components/MemberRow";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { excerpt } from "#/features/search/utils/excerpt";
 import { splitHighlights } from "#/features/search/utils/splitHighlights";
 
@@ -36,6 +37,7 @@ export const SearchResultList = ({
   workspaceId,
 }: SearchResultListProps) => {
   const { t } = useTranslation();
+  const { toText } = useMentionDirectory();
   const displayName = useDisplayName();
   const shows = (section: SearchFilter) => filter === "all" || filter === section;
 
@@ -48,7 +50,7 @@ export const SearchResultList = ({
               return null;
             }
             const authorName = displayName(message.userId, message.user?.displayName ?? "");
-            const body = excerpt(message.body, highlights, 40);
+            const body = excerpt(toText(message.body), highlights, 40);
             return (
               <div key={message.id} className="mx-[18px] my-1.5">
                 <MessageListCard workspaceId={workspaceId} message={message}>

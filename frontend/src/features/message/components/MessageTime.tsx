@@ -1,10 +1,8 @@
-import { formatFullDateTime, formatTime } from "@chat/i18n";
-import { useAtomValue } from "jotai";
 import { Focusable } from "react-aria-components";
 
 import { focusRing } from "#/components/ui/styles/styles";
 import { Tooltip } from "#/components/ui/Tooltip/Tooltip";
-import { preferencesAtom } from "#/providers/store/preferences";
+import { useDateFormat } from "#/hooks/useDateFormat";
 
 type MessageTimeProps = {
   date: Date;
@@ -12,11 +10,11 @@ type MessageTimeProps = {
 
 // 時刻だけを表示し、ホバー・フォーカスで曜日と秒を含む日時を出す
 export const MessageTime = ({ date }: MessageTimeProps) => {
-  const { locale } = useAtomValue(preferencesAtom);
-  const time = formatTime(date, locale);
+  const { formatFullDateTime, formatTime } = useDateFormat();
+  const time = formatTime(date);
 
   return (
-    <Tooltip content={formatFullDateTime(date, locale)}>
+    <Tooltip content={formatFullDateTime(date)}>
       <Focusable>
         {/* ツールチップの aria-describedby が読み上げられる役割のうち、操作を持たない img にする */}
         <time

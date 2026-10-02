@@ -103,7 +103,8 @@ func (r *userRepository) Create(ctx context.Context, usr *entity.User) error {
 		SetPasswordHash(usr.PasswordHash).
 		SetNillableGoogleSub(usr.GoogleSub).
 		SetDisplayName(usr.DisplayName).
-		SetIsBot(usr.IsBot)
+		SetIsBot(usr.IsBot).
+		SetIsOfficial(usr.IsOfficial)
 
 	if usr.ID != "" {
 		userID, err := utils.ParseUUID(usr.ID, "user ID")
@@ -140,6 +141,7 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 		SetNillableGoogleSub(usr.GoogleSub).
 		SetDisplayName(usr.DisplayName).
 		SetNillableBio(usr.Bio).
+		SetLinks(usr.Links).
 		SetThemeHue(usr.Preferences.ThemeHue).
 		SetThemeChroma(usr.Preferences.ThemeChroma).
 		SetThemeSidebar(user.ThemeSidebar(usr.Preferences.ThemeSidebar)).

@@ -30,6 +30,74 @@ message Message {
   MessagePin pin = 18;
   // 位置情報を共有したメッセージのみ設定される
   MessageLocation location = 19;
+  // 本文に <@channel> / <@here> を含む
+  bool mentions_channel = 20;
+  bool mentions_here = 21;
+  // 公式アプリの投稿。誰も編集・削除できない
+  bool is_official = 22;
+  // 投票を付けたメッセージのみ設定される
+  Poll poll = 23;
+}
+
+enum PollMode {
+  POLL_MODE_UNSPECIFIED = 0;
+  POLL_MODE_TEXT = 1;
+  // 日時の候補から選ぶ日程調整
+  POLL_MODE_DATE = 2;
+}
+
+message Poll {
+  string id = 1;
+  string question = 2;
+  PollMode mode = 3;
+  bool allow_multiple = 4;
+  // 誰がどれに投票したかを作成者にも見せない
+  bool anonymous = 5;
+  google.protobuf.Timestamp closes_at = 6;
+  // 締め切ったか、締切を過ぎた
+  bool is_closed = 7;
+  // 並び順
+  repeated PollOption options = 8;
+  // 閲覧者が選んでいる選択肢。WebSocket で配信するメッセージでは空
+  repeated string my_option_ids = 9;
+  int32 voter_count = 10;
+}
+
+message PollOption {
+  string id = 1;
+  string label = 2;
+  // 日程調整の候補。all_day なら日付だけを使う
+  google.protobuf.Timestamp starts_at = 3;
+  bool all_day = 4;
+  int32 vote_count = 5;
+  // 匿名の投票では空
+  repeated string voter_ids = 6;
+}
+
+message PollInput {
+  string question = 1 [(buf.validate.field).string = {
+    min_len: 1
+    max_len: 300
+  }];
+  PollMode mode = 2 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: [0]
+  }];
+  bool allow_multiple = 3;
+  bool anonymous = 4;
+  google.protobuf.Timestamp closes_at = 5;
+  repeated PollOptionInput options = 6 [(buf.validate.field).repeated = {
+    min_items: 2
+    max_items: 20
+  }];
+}
+
+message PollOptionInput {
+  // 文字の選択肢では必須
+  string label = 1 [(buf.validate.field).string.max_len = 100];
+  // 日程調整では必須
+  google.protobuf.Timestamp starts_at = 2;
+  bool all_day = 3;
 }
 
 message MessageLocation {
@@ -54,9 +122,13 @@ message MessagePin {
   google.protobuf.Timestamp pinned_at = 2;
 }
 
+// 投稿時点でメンションの宛先になったユーザー。グループへのメンションは投稿時点のメンバーに展開する
 message UserMention {
+  reserved 2;
+  reserved "display_name";
   string user_id = 1;
-  string display_name = 2;
+  // グループ経由のときの展開元
+  optional string via_group_id = 3;
 }
 
 message GroupMention {
@@ -85,6 +157,13 @@ message OgpData {
   optional int32 image_height = 7;
   // YouTube の動画 URL のときのみ設定される
   YouTubeVideo youtube = 8;
+  // X(Twitter) の投稿 URL のときのみ設定される
+  XPost x_post = 9;
+}
+
+message XPost {
+  string author_name = 1;
+  string author_handle = 2;
 }
 
 message YouTubeVideo {

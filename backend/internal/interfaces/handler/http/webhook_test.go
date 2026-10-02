@@ -9,16 +9,16 @@ import (
 	"time"
 
 	domerr "github.com/newt239/chat/internal/domain/errors"
+	appuc "github.com/newt239/chat/internal/usecase/app"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-	webhookuc "github.com/newt239/chat/internal/usecase/webhook"
 )
 
 type stubPoster struct {
-	got webhookuc.PostInput
+	got appuc.PostInput
 	err error
 }
 
-func (p *stubPoster) Post(_ context.Context, input webhookuc.PostInput) (*messageuc.MessageOutput, error) {
+func (p *stubPoster) Post(_ context.Context, input appuc.PostInput) (*messageuc.MessageOutput, error) {
 	p.got = input
 	return &messageuc.MessageOutput{}, p.err
 }
@@ -33,12 +33,13 @@ func postWebhook(t *testing.T, poster *stubPoster, body string) *httptest.Respon
 
 func TestWebhookHandlerParsesSlackPayload(t *testing.T) {
 	poster := &stubPoster{}
-	rec := postWebhook(t, poster, `{"text":"hello","username":"CI","icon_url":"https://example.com/a.png"}`)
+	rec := postWebhook(t, poster, `{"text":"hello","username":"CI","icon_url":"https://example.com/a.png","channel_id":"c1","thread_id":"m1"}`)
 	if rec.Code != http.StatusOK || rec.Body.String() != "ok" {
 		t.Fatalf("200 ok を期待しましたが %d %s でした", rec.Code, rec.Body.String())
 	}
 	got := poster.got
-	if got.WebhookID != "wh" || got.Token != "tok" || got.Text != "hello" || *got.Username != "CI" || *got.AvatarURL != "https://example.com/a.png" {
+	if got.AppID != "wh" || got.Token != "tok" || got.Text != "hello" || *got.Username != "CI" || *got.AvatarURL != "https://example.com/a.png" ||
+		*got.ChannelID != "c1" || *got.ParentID != "m1" {
 		t.Fatalf("入力が正しく渡されていません: %+v", got)
 	}
 }
@@ -50,9 +51,10 @@ func TestWebhookHandlerStatuses(t *testing.T) {
 		want int
 	}{
 		{`not json`, nil, http.StatusBadRequest},
-		{`{"text":"a"}`, webhookuc.ErrWebhookNotFound, http.StatusNotFound},
-		{`{"text":""}`, webhookuc.ErrEmptyText, http.StatusBadRequest},
-		{`{"text":"a"}`, webhookuc.ErrInactive, http.StatusForbidden},
+		{`{"text":"a"}`, appuc.ErrAppNotFound, http.StatusNotFound},
+		{`{"text":""}`, appuc.ErrEmptyText, http.StatusBadRequest},
+		{`{"text":"a"}`, appuc.ErrInactive, http.StatusForbidden},
+		{`{"text":"a"}`, appuc.ErrForbiddenChannel, http.StatusForbidden},
 		{`{"text":"a"}`, domerr.ErrChannelArchived, http.StatusForbidden},
 		{`{"text":"` + strings.Repeat("a", maxWebhookPayloadBytes) + `"}`, nil, http.StatusRequestEntityTooLarge},
 	}

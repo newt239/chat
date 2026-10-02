@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 
 import { IconHash } from "@tabler/icons-react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { useAtom, useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
@@ -15,6 +15,7 @@ import { useMessagePages } from "#/features/message/hooks/useMessagePages";
 import { useMessageViewportDetection } from "#/features/message/hooks/useMessageViewportDetection";
 import { startOfDateKey } from "#/features/message/utils/dateJump";
 import { buildTimelineRows } from "#/features/message/utils/timelineRows";
+import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
 import { userAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
@@ -40,7 +41,17 @@ export const MessagePanel = () => {
     from: "/app/$workspaceId/$channelId",
     select: (search) => search.date ?? null,
   });
-  const around = jumpDate === null ? null : startOfDateKey(jumpDate);
+  const messageParam = useSearch({
+    from: "/app/$workspaceId/$channelId",
+    select: (search) => search.message ?? null,
+  });
+  // スレッドを開いているときの ?message= はスレッドの返信を指すため、チャンネルでは扱わない
+  const isThreadOpen = useParams({
+    select: (params) => params.messageId !== undefined,
+    strict: false,
+  });
+  const { timeZone } = useDateFormat();
+  const around = jumpDate === null ? null : startOfDateKey(jumpDate, timeZone);
   const {
     data: messageResponse,
     isLoading: isLoadingMessages,
@@ -88,8 +99,8 @@ export const MessagePanel = () => {
 
   const { hideJoinMessages } = useAtomValue(preferencesAtom);
   const rows = useMemo(
-    () => buildTimelineRows(orderedItems, hideJoinMessages),
-    [orderedItems, hideJoinMessages],
+    () => buildTimelineRows(orderedItems, hideJoinMessages, timeZone),
+    [orderedItems, hideJoinMessages, timeZone],
   );
   const navigate = useNavigate();
 
@@ -205,7 +216,7 @@ export const MessagePanel = () => {
         key={`${currentChannelId}:${String(includesDescendants)}:${jumpDate ?? ""}`}
         rows={rows}
         currentUserId={currentUser?.id ?? null}
-        jumpTargetId={jumpTargetId}
+        targetMessageId={isThreadOpen ? null : (messageParam ?? jumpTargetId)}
         hasOlder={hasOlderMessages}
         hasNewer={hasNewerMessages}
         loading={loading}
@@ -218,6 +229,7 @@ export const MessagePanel = () => {
         latestMessageRef={latestMessageRef}
         latestUserMessageId={latestUserMessageId}
         renderMessage={renderMessage}
+        header={null}
       />
     );
   };

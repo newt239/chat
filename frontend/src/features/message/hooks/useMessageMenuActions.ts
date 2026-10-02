@@ -20,6 +20,7 @@ import {
   useIsBookmarked,
   useRemoveBookmark,
 } from "#/features/bookmark/hooks/useBookmarks";
+import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { usePinActions } from "#/features/pin/hooks/usePinActions";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
@@ -57,6 +58,7 @@ export const useMessageMenuActions = ({
   onViewReactions,
 }: Options) => {
   const { t } = useTranslation();
+  const { toText } = useMentionDirectory();
   const router = useRouter();
   const { workspaceId } = useParams({ strict: false });
   const isBookmarked = useIsBookmarked(message.id);
@@ -78,7 +80,7 @@ export const useMessageMenuActions = ({
   };
 
   const copyText = () => {
-    navigator.clipboard.writeText(message.body).then(
+    navigator.clipboard.writeText(toText(message.body)).then(
       () => toast(t("message.link.textCopied"), { tone: "success" }),
       () => toast(t("message.link.textCopyFailed"), { tone: "danger" }),
     );

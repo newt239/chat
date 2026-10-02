@@ -41,6 +41,7 @@ func NewMessageUseCase(
 	linkRepo domainrepository.MessageLinkRepository,
 	threadRepo domainrepository.ThreadRepository,
 	attachmentRepo domainrepository.AttachmentRepository,
+	pollRepo domainrepository.PollRepository,
 	outputBuilder *MessageOutputBuilder,
 	notificationSvc Notifier,
 	mentionService service.MentionService,
@@ -50,7 +51,7 @@ func NewMessageUseCase(
 	permissionSvc service.PermissionService,
 	logger service.Logger,
 	searchIndexer SearchIndexer,
-	pushNotifier PushNotifier,
+	observers []NewMessageObserver,
 ) MessageUseCase {
 	return &messageInteractor{
 		creator: NewMessageCreator(
@@ -60,6 +61,7 @@ func NewMessageUseCase(
 			linkRepo,
 			threadRepo,
 			attachmentRepo,
+			pollRepo,
 			notificationSvc,
 			mentionService,
 			linkProcessingService,
@@ -67,10 +69,11 @@ func NewMessageUseCase(
 			outputBuilder,
 			channelAccessSvc,
 			searchIndexer,
-			pushNotifier,
+			observers,
 		),
 		updater: NewMessageUpdater(
 			messageRepo,
+			userRepo,
 			workspaceRepo,
 			userMentionRepo,
 			groupMentionRepo,
@@ -85,6 +88,7 @@ func NewMessageUseCase(
 		),
 		deleter: NewMessageDeleter(
 			messageRepo,
+			userRepo,
 			channelRepo,
 			channelMemberRepo,
 			threadRepo,

@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// App is the predicate function for app builders.
+type App func(*sql.Selector)
+
 // Attachment is the predicate function for attachment builders.
 type Attachment func(*sql.Selector)
 
@@ -66,8 +69,20 @@ type MessageReaction func(*sql.Selector)
 // MessageUserMention is the predicate function for messageusermention builders.
 type MessageUserMention func(*sql.Selector)
 
+// Poll is the predicate function for poll builders.
+type Poll func(*sql.Selector)
+
+// PollOption is the predicate function for polloption builders.
+type PollOption func(*sql.Selector)
+
+// PollVote is the predicate function for pollvote builders.
+type PollVote func(*sql.Selector)
+
 // PushToken is the predicate function for pushtoken builders.
 type PushToken func(*sql.Selector)
+
+// Reminder is the predicate function for reminder builders.
+type Reminder func(*sql.Selector)
 
 // ScheduledMessage is the predicate function for scheduledmessage builders.
 type ScheduledMessage func(*sql.Selector)
@@ -95,9 +110,6 @@ type UserNote func(*sql.Selector)
 
 // UserThreadFollow is the predicate function for userthreadfollow builders.
 type UserThreadFollow func(*sql.Selector)
-
-// Webhook is the predicate function for webhook builders.
-type Webhook func(*sql.Selector)
 
 // Workspace is the predicate function for workspace builders.
 type Workspace func(*sql.Selector)

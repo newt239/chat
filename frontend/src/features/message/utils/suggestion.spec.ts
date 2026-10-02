@@ -1,39 +1,43 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { applySuggestion, findSuggestionQuery, mentionTokenOf, rankByQuery } from "./suggestion";
+import { applySuggestion, findSuggestionQuery, rankByQuery } from "./suggestion";
 
 describe("findSuggestionQuery", () => {
   test("行頭や空白の後の @ と # をカーソルまで検索語にする", () => {
-    expect(findSuggestionQuery("@al", 3)).toEqual({ query: "al", start: 0, trigger: "@" });
-    expect(findSuggestionQuery("see #dev/fr", 11)).toEqual({
+    expect(findSuggestionQuery("@al", 3, false)).toEqual({ query: "al", start: 0, trigger: "@" });
+    expect(findSuggestionQuery("see #dev/fr", 11, false)).toEqual({
       query: "dev/fr",
       start: 4,
       trigger: "#",
     });
-    expect(findSuggestionQuery("hi @", 4)).toEqual({ query: "", start: 3, trigger: "@" });
+    expect(findSuggestionQuery("hi @", 4, false)).toEqual({ query: "", start: 3, trigger: "@" });
+    expect(findSuggestionQuery("@山田", 3, false)).toEqual({
+      query: "山田",
+      start: 0,
+      trigger: "@",
+    });
+  });
+
+  test("コマンドは許可したときだけ、先頭の / を検索語にする", () => {
+    expect(findSuggestionQuery("/rem", 4, true)).toEqual({ query: "rem", start: 0, trigger: "/" });
+    expect(findSuggestionQuery("/rem", 4, false)).toBeNull();
+    expect(findSuggestionQuery("/remind me", 10, true)).toBeNull();
   });
 
   test("単語の途中や空白を挟んだ後は候補を出さない", () => {
-    expect(findSuggestionQuery("mail@example", 12)).toBeNull();
-    expect(findSuggestionQuery("@alice hello", 12)).toBeNull();
+    expect(findSuggestionQuery("mail@example", 12, false)).toBeNull();
+    expect(findSuggestionQuery("@alice hello", 12, false)).toBeNull();
   });
 });
 
 describe("applySuggestion", () => {
   test("検索語を置き換えて空白を足し、カーソルをその後ろに置く", () => {
     const text = "hi @al and more";
-    const query = findSuggestionQuery(text, 6);
+    const query = findSuggestionQuery(text, 6, false);
     expect(query && applySuggestion({ cursor: 6, query, text, value: "@Alice" })).toEqual({
       cursor: 10,
       text: "hi @Alice  and more",
     });
-  });
-});
-
-describe("mentionTokenOf", () => {
-  test("表示名の先頭の英数字を返し、なければ null", () => {
-    expect(mentionTokenOf("Alice Johnson")).toBe("Alice");
-    expect(mentionTokenOf("山田")).toBeNull();
   });
 });
 

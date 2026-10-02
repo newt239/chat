@@ -85,6 +85,11 @@ export const message = {
     textCopied: "テキストをコピーしました",
     textCopyFailed: "テキストをコピーできませんでした",
   },
+  mention: {
+    unknownChannel: "非公開のチャンネル",
+    unknownGroup: "削除されたグループ",
+    unknownUser: "不明なユーザー",
+  },
   panel: {
     empty: "まだメッセージがありません",
     emptyHint: "最初のメッセージを送ってみましょう",
@@ -99,6 +104,7 @@ export const message = {
     title: "メッセージの操作",
   },
   suggestion: {
+    broadcast: "全員に通知",
     groups: "ユーザーグループ",
     label: "候補",
   },

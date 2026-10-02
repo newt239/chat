@@ -35,6 +35,7 @@ const render = (userId: string) =>
             bio: "フロントエンド担当",
             displayName: "Bob",
             email: "bob@example.com",
+            links: ["https://github.com/bob", "https://bob.example.com/"],
             role: WorkspaceRole.ADMIN,
             timezone: "America/New_York",
             userId: "u-bob",
@@ -80,6 +81,14 @@ describe("UserProfilePanel", () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe("/app/ws1/dm1");
     });
+  });
+
+  test("リンクをスキームを除いた URL で並べ、新しいタブで開く", async () => {
+    await render("u-bob");
+    const github = await screen.findByRole("link", { name: "github.com/bob" });
+    expect(github).toHaveAttribute("href", "https://github.com/bob");
+    expect(github).toHaveAttribute("target", "_blank");
+    expect(screen.getByRole("link", { name: "bob.example.com" })).toBeInTheDocument();
   });
 
   test("自分のプロフィールにはメッセージボタンを出さない", async () => {

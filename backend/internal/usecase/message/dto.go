@@ -15,7 +15,8 @@ var (
 	ErrMessageAlreadyDeleted = errors.New("メッセージは既に削除されています")
 	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
 	ErrAttachmentNotFound    = errors.New("添付ファイルが見つかりません")
-	ErrEmptyMessage          = errors.New("本文・添付・位置情報のいずれかが必要です")
+	ErrEmptyMessage          = errors.New("本文・添付・位置情報・投票のいずれかが必要です")
+	ErrOfficialMessage       = errors.New("公式アプリの投稿は編集・削除できません")
 )
 
 const (
@@ -41,6 +42,7 @@ type CreateMessageInput struct {
 	ParentID      *string
 	AttachmentIDs []string
 	Location      *entity.MessageLocation
+	Poll          *PollInput
 }
 
 type UpdateMessageInput struct {
@@ -64,8 +66,8 @@ type UserInfo struct {
 }
 
 type UserMention struct {
-	UserID      string `json:"userId"`
-	DisplayName string `json:"displayName"`
+	UserID     string
+	ViaGroupID *string
 }
 
 type GroupMention struct {
@@ -113,35 +115,45 @@ type AttachmentInfo struct {
 }
 
 type MessageOutput struct {
-	ID          string                  `json:"id"`
-	ChannelID   string                  `json:"channelId"`
-	UserID      string                  `json:"userId"`
-	User        UserInfo                `json:"user"`
-	ParentID    *string                 `json:"parentId"`
-	Body        string                  `json:"body"`
-	Mentions    []UserMention           `json:"mentions"`
-	Groups      []GroupMention          `json:"groups"`
-	Links       []LinkInfo              `json:"links"`
-	Reactions   []ReactionInfo          `json:"reactions"`
-	Attachments []AttachmentInfo        `json:"attachments"`
-	CreatedAt   time.Time               `json:"createdAt"`
-	EditedAt    *time.Time              `json:"editedAt"`
-	DeletedAt   *time.Time              `json:"deletedAt"`
-	IsDeleted   bool                    `json:"isDeleted"`
-	DeletedBy   *UserInfo               `json:"deletedBy,omitempty"`
-	Pin         *PinInfo                `json:"pin,omitempty"`
-	Location    *entity.MessageLocation `json:"location,omitempty"`
+	ID              string                  `json:"id"`
+	ChannelID       string                  `json:"channelId"`
+	UserID          string                  `json:"userId"`
+	User            UserInfo                `json:"user"`
+	ParentID        *string                 `json:"parentId"`
+	Body            string                  `json:"body"`
+	Mentions        []UserMention           `json:"mentions"`
+	Groups          []GroupMention          `json:"groups"`
+	Links           []LinkInfo              `json:"links"`
+	Reactions       []ReactionInfo          `json:"reactions"`
+	Attachments     []AttachmentInfo        `json:"attachments"`
+	CreatedAt       time.Time               `json:"createdAt"`
+	EditedAt        *time.Time              `json:"editedAt"`
+	DeletedAt       *time.Time              `json:"deletedAt"`
+	IsDeleted       bool                    `json:"isDeleted"`
+	DeletedBy       *UserInfo               `json:"deletedBy,omitempty"`
+	Pin             *PinInfo                `json:"pin,omitempty"`
+	Location        *entity.MessageLocation `json:"location,omitempty"`
+	MentionsChannel bool
+	MentionsHere    bool
+	// 公式アプリの投稿。誰も編集・削除できない
+	IsOfficial bool
+	Poll       *PollOutput
 }
 
-// WithoutMessagePreviews は引用カードを除いたコピーを返します。
-// 投稿者の権限で組み立てた引用を、参照権限の異なる購読者へ配信しないために使います
-func (m MessageOutput) WithoutMessagePreviews() MessageOutput {
+// ForBroadcast は閲覧者ごとに変わる内容（引用カードと自分の投票）を除いたコピーを返します。
+// 投稿者や投票者の権限で組み立てた内容を、ほかの購読者へそのまま配信しないために使います
+func (m MessageOutput) ForBroadcast() MessageOutput {
 	links := make([]LinkInfo, len(m.Links))
 	for i, link := range m.Links {
 		link.MessagePreview = nil
 		links[i] = link
 	}
 	m.Links = links
+	if m.Poll != nil {
+		poll := *m.Poll
+		poll.MyOptionIDs = []string{}
+		m.Poll = &poll
+	}
 	return m
 }
 
@@ -163,12 +175,19 @@ type GetThreadRepliesInput struct {
 	MessageID string
 	UserID    string
 	Limit     int
+	Since     *time.Time
+	Until     *time.Time
+	// 指定した返信の前後をまとめて返す。Since / Until より優先する
+	AroundReplyID *string
 }
 
 type GetThreadRepliesOutput struct {
-	ParentMessage MessageOutput   `json:"parentMessage"`
-	Replies       []MessageOutput `json:"replies"`
-	HasMore       bool            `json:"hasMore"`
+	ParentMessage MessageOutput
+	// 古い順
+	Replies    []MessageOutput
+	HasMore    bool
+	HasNewer   bool
+	ReplyCount int
 }
 
 type GetMessagePreviewInput struct {

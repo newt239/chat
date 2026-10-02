@@ -5,6 +5,7 @@ export const adminTabValues = [
   "members",
   "invitations",
   "permissions",
+  "apps",
   "audit",
 ] as const;
 
@@ -24,6 +25,8 @@ export const auditActionKeyValues = [
   "auditLogExported",
   "customEmojiCreated",
   "customEmojiDeleted",
+  "appCreated",
+  "appDeleted",
 ] as const;
 
 // <input type="datetime-local"> の値（ブラウザのタイムゾーンでの日時）

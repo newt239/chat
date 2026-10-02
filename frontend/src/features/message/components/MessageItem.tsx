@@ -16,6 +16,7 @@ import { closeDialog, openDialog, openPanel } from "#/features/layout/utils/over
 import { workspaceRoute } from "#/features/layout/utils/workspaceRoute";
 import { MessageLocationCard } from "#/features/location/components/MessageLocationCard";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { MessagePollCard } from "#/features/poll/components/MessagePollCard";
 import { ReactionList } from "#/features/reaction/components/ReactionList";
 import { ReactionsDialog } from "#/features/reaction/components/ReactionsDialog";
 import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
@@ -96,7 +97,11 @@ export const MessageItem = ({
   }, isMobile && !isEditing);
   const { handleEdit, handleDelete, isDeleting } = useMessageActions();
   const toggleReaction = useToggleReaction(message.id);
-  const isMentioned = message.mentions.some((mention) => mention.userId === currentUserId);
+  // グループ経由は投稿時点のメンバーに展開済み。@channel / @here はチャンネルのメンバー全員宛て
+  const isMentioned =
+    message.mentionsChannel ||
+    message.mentionsHere ||
+    message.mentions.some((mention) => mention.userId === currentUserId);
 
   const { actions, isBookmarked, toggleBookmark } = useMessageMenuActions({
     isAuthor: message.userId === currentUserId,
@@ -132,7 +137,7 @@ export const MessageItem = ({
   };
 
   const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
-  // Webhook の投稿はプロフィールを持たないボットユーザー名義なので、プロフィールを開かない
+  // アプリの投稿はプロフィールを持たないボットユーザー名義なので、プロフィールを開かない
   const isBot = message.user?.isBot ?? false;
   const avatar = (
     <Avatar name={displayName} src={message.user?.avatarUrl} size={isMobile ? 34 : 32} />
@@ -203,7 +208,7 @@ export const MessageItem = ({
             <>
               <span className="text-sm font-bold text-text">{displayName}</span>
               <Badge tone="tag" className="self-center">
-                {t("webhook.appTag")}
+                {t(message.isOfficial ? "app.official" : "app.tag")}
               </Badge>
             </>
           ) : (
@@ -247,6 +252,9 @@ export const MessageItem = ({
 
         {!message.isDeleted && message.location && (
           <MessageLocationCard location={message.location} />
+        )}
+        {!message.isDeleted && message.poll && (
+          <MessagePollCard poll={message.poll} isAuthor={message.userId === currentUserId} />
         )}
         {!message.isDeleted && <MessageAttachments message={message} />}
 

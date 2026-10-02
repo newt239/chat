@@ -83,6 +83,12 @@ func (_c *UserCreate) SetNillableBio(v *string) *UserCreate {
 	return _c
 }
 
+// SetLinks sets the "links" field.
+func (_c *UserCreate) SetLinks(v []string) *UserCreate {
+	_c.mutation.SetLinks(v)
+	return _c
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (_c *UserCreate) SetAvatarURL(v string) *UserCreate {
 	_c.mutation.SetAvatarURL(v)
@@ -107,6 +113,20 @@ func (_c *UserCreate) SetIsBot(v bool) *UserCreate {
 func (_c *UserCreate) SetNillableIsBot(v *bool) *UserCreate {
 	if v != nil {
 		_c.SetIsBot(*v)
+	}
+	return _c
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (_c *UserCreate) SetIsOfficial(v bool) *UserCreate {
+	_c.mutation.SetIsOfficial(v)
+	return _c
+}
+
+// SetNillableIsOfficial sets the "is_official" field if the given value is not nil.
+func (_c *UserCreate) SetNillableIsOfficial(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetIsOfficial(*v)
 	}
 	return _c
 }
@@ -527,6 +547,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultIsBot
 		_c.mutation.SetIsBot(v)
 	}
+	if _, ok := _c.mutation.IsOfficial(); !ok {
+		v := user.DefaultIsOfficial
+		_c.mutation.SetIsOfficial(v)
+	}
 	if _, ok := _c.mutation.ThemeHue(); !ok {
 		v := user.DefaultThemeHue
 		_c.mutation.SetThemeHue(v)
@@ -609,6 +633,9 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.IsBot(); !ok {
 		return &ValidationError{Name: "is_bot", err: errors.New(`ent: missing required field "User.is_bot"`)}
+	}
+	if _, ok := _c.mutation.IsOfficial(); !ok {
+		return &ValidationError{Name: "is_official", err: errors.New(`ent: missing required field "User.is_official"`)}
 	}
 	if _, ok := _c.mutation.ThemeHue(); !ok {
 		return &ValidationError{Name: "theme_hue", err: errors.New(`ent: missing required field "User.theme_hue"`)}
@@ -722,6 +749,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldBio, field.TypeString, value)
 		_node.Bio = value
 	}
+	if value, ok := _c.mutation.Links(); ok {
+		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
+		_node.Links = value
+	}
 	if value, ok := _c.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 		_node.AvatarURL = value
@@ -729,6 +760,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IsBot(); ok {
 		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
 		_node.IsBot = value
+	}
+	if value, ok := _c.mutation.IsOfficial(); ok {
+		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
+		_node.IsOfficial = value
 	}
 	if value, ok := _c.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
@@ -1110,6 +1145,24 @@ func (u *UserUpsert) ClearBio() *UserUpsert {
 	return u
 }
 
+// SetLinks sets the "links" field.
+func (u *UserUpsert) SetLinks(v []string) *UserUpsert {
+	u.Set(user.FieldLinks, v)
+	return u
+}
+
+// UpdateLinks sets the "links" field to the value that was provided on create.
+func (u *UserUpsert) UpdateLinks() *UserUpsert {
+	u.SetExcluded(user.FieldLinks)
+	return u
+}
+
+// ClearLinks clears the value of the "links" field.
+func (u *UserUpsert) ClearLinks() *UserUpsert {
+	u.SetNull(user.FieldLinks)
+	return u
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (u *UserUpsert) SetAvatarURL(v string) *UserUpsert {
 	u.Set(user.FieldAvatarURL, v)
@@ -1137,6 +1190,18 @@ func (u *UserUpsert) SetIsBot(v bool) *UserUpsert {
 // UpdateIsBot sets the "is_bot" field to the value that was provided on create.
 func (u *UserUpsert) UpdateIsBot() *UserUpsert {
 	u.SetExcluded(user.FieldIsBot)
+	return u
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (u *UserUpsert) SetIsOfficial(v bool) *UserUpsert {
+	u.Set(user.FieldIsOfficial, v)
+	return u
+}
+
+// UpdateIsOfficial sets the "is_official" field to the value that was provided on create.
+func (u *UserUpsert) UpdateIsOfficial() *UserUpsert {
+	u.SetExcluded(user.FieldIsOfficial)
 	return u
 }
 
@@ -1419,6 +1484,27 @@ func (u *UserUpsertOne) ClearBio() *UserUpsertOne {
 	})
 }
 
+// SetLinks sets the "links" field.
+func (u *UserUpsertOne) SetLinks(v []string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLinks(v)
+	})
+}
+
+// UpdateLinks sets the "links" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateLinks() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLinks()
+	})
+}
+
+// ClearLinks clears the value of the "links" field.
+func (u *UserUpsertOne) ClearLinks() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLinks()
+	})
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (u *UserUpsertOne) SetAvatarURL(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
@@ -1451,6 +1537,20 @@ func (u *UserUpsertOne) SetIsBot(v bool) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateIsBot() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateIsBot()
+	})
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (u *UserUpsertOne) SetIsOfficial(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsOfficial(v)
+	})
+}
+
+// UpdateIsOfficial sets the "is_official" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateIsOfficial() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsOfficial()
 	})
 }
 
@@ -1924,6 +2024,27 @@ func (u *UserUpsertBulk) ClearBio() *UserUpsertBulk {
 	})
 }
 
+// SetLinks sets the "links" field.
+func (u *UserUpsertBulk) SetLinks(v []string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetLinks(v)
+	})
+}
+
+// UpdateLinks sets the "links" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateLinks() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateLinks()
+	})
+}
+
+// ClearLinks clears the value of the "links" field.
+func (u *UserUpsertBulk) ClearLinks() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearLinks()
+	})
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (u *UserUpsertBulk) SetAvatarURL(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
@@ -1956,6 +2077,20 @@ func (u *UserUpsertBulk) SetIsBot(v bool) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateIsBot() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateIsBot()
+	})
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (u *UserUpsertBulk) SetIsOfficial(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsOfficial(v)
+	})
+}
+
+// UpdateIsOfficial sets the "is_official" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateIsOfficial() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsOfficial()
 	})
 }
 

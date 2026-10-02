@@ -5,42 +5,47 @@ const toBcp47 = (locale: Locale) => (locale === "ja" ? "ja-JP" : "en-US");
 const dateOptions = { day: "numeric", month: "short", year: "numeric" } as const;
 const timeOptions = { hour: "numeric", minute: "2-digit" } as const;
 
+// 日付・時刻のフォーマッタは timeZone（IANA 名）の日時で表示する。undefined なら実行環境のタイムゾーン
+
 // 2026年9月28日 / Sep 28, 2026
-export const formatDate = (date: Date, locale: Locale) =>
-  new Intl.DateTimeFormat(toBcp47(locale), dateOptions).format(date);
+export const formatDate = (date: Date, locale: Locale, timeZone: string | undefined) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, timeZone }).format(date);
 
 // 10:16 / 10:16 AM
-export const formatTime = (date: Date, locale: Locale) =>
-  new Intl.DateTimeFormat(toBcp47(locale), timeOptions).format(date);
-
-// 相手の現地時刻など、端末と別のタイムゾーンの時刻
-export const formatTimeInZone = (date: Date, locale: Locale, timeZone: string) =>
+export const formatTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
   new Intl.DateTimeFormat(toBcp47(locale), { ...timeOptions, timeZone }).format(date);
 
 // 2026年9月28日 10:16 / Sep 28, 2026, 10:16 AM
-export const formatDateTime = (date: Date, locale: Locale) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, ...timeOptions }).format(date);
+export const formatDateTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, ...timeOptions, timeZone }).format(
+    date,
+  );
 
 // 2026年9月28日(月) 10:16:05 / Mon, Sep 28, 2026, 10:16:05 AM
-export const formatFullDateTime = (date: Date, locale: Locale) =>
+export const formatFullDateTime = (date: Date, locale: Locale, timeZone: string | undefined) =>
   new Intl.DateTimeFormat(toBcp47(locale), {
     ...dateOptions,
     ...timeOptions,
     second: "2-digit",
+    timeZone,
     weekday: "short",
   }).format(date);
 
 // 2026年9月28日(月) / Mon, Sep 28, 2026
-export const formatDateWithWeekday = (date: Date, locale: Locale) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, weekday: "short" }).format(date);
+export const formatDateWithWeekday = (date: Date, locale: Locale, timeZone: string | undefined) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { ...dateOptions, timeZone, weekday: "short" }).format(
+    date,
+  );
 
 // 9/28（グラフの軸など幅の狭い場所に使う）
-export const formatMonthDay = (date: Date, locale: Locale) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { day: "numeric", month: "numeric" }).format(date);
+export const formatMonthDay = (date: Date, locale: Locale, timeZone: string | undefined) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { day: "numeric", month: "numeric", timeZone }).format(
+    date,
+  );
 
 // 月 / Mon
-export const formatWeekday = (date: Date, locale: Locale) =>
-  new Intl.DateTimeFormat(toBcp47(locale), { weekday: "short" }).format(date);
+export const formatWeekday = (date: Date, locale: Locale, timeZone: string | undefined) =>
+  new Intl.DateTimeFormat(toBcp47(locale), { timeZone, weekday: "short" }).format(date);
 
 const relativeUnits = [
   { seconds: 60 * 60 * 24 * 365, unit: "year" },

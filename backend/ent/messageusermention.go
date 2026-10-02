@@ -20,6 +20,8 @@ type MessageUserMention struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ViaGroupID holds the value of the "via_group_id" field.
+	ViaGroupID *uuid.UUID `json:"via_group_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -68,6 +70,8 @@ func (*MessageUserMention) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case messageusermention.FieldViaGroupID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case messageusermention.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case messageusermention.FieldID:
@@ -96,6 +100,13 @@ func (_m *MessageUserMention) assignValues(columns []string, values []any) error
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
+			}
+		case messageusermention.FieldViaGroupID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field via_group_id", values[i])
+			} else if value.Valid {
+				_m.ViaGroupID = new(uuid.UUID)
+				*_m.ViaGroupID = *value.S.(*uuid.UUID)
 			}
 		case messageusermention.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -163,6 +174,11 @@ func (_m *MessageUserMention) String() string {
 	var builder strings.Builder
 	builder.WriteString("MessageUserMention(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	if v := _m.ViaGroupID; v != nil {
+		builder.WriteString("via_group_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

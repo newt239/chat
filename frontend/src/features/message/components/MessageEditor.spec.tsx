@@ -1,7 +1,8 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
+import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 import { UserGroupService } from "#/gen/chat/v1/user_group_service_pb";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { renderWithProviders } from "#/test/renderWithProviders";
@@ -20,6 +21,7 @@ const render = (onSave: (body: string) => Promise<void>, onClose: () => void) =>
         ],
       }));
       routes.rpc(UserGroupService.method.listUserGroups, () => ({ userGroups: [] }));
+      routes.rpc(ChannelService.method.listChannels, () => ({ channels: [] }));
     },
   );
 
@@ -63,8 +65,36 @@ describe("MessageEditor", () => {
     expect(screen.queryByRole("option", { name: /Alice/ })).not.toBeInTheDocument();
 
     await userEvent.keyboard("{Enter}");
-    expect(textbox).toHaveValue("before @Bob ");
+    expect(textbox).toHaveValue("before @Bob Smith ");
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
     expect(onSave).not.toHaveBeenCalled();
+
+    // 保存するときは選んだ名前を ID 記法に戻す
+    await userEvent.keyboard("{Enter}");
+    expect(onSave).toHaveBeenCalledWith("before <@u2>");
+  });
+
+  test("本文の ID 記法は今の名前で編集させる", async () => {
+    const onSave = vi.fn<(body: string) => Promise<void>>().mockResolvedValue();
+    const onClose = vi.fn<() => void>();
+    const alice = "11111111-1111-4111-8111-111111111111";
+    await renderWithProviders(
+      <MessageEditor initialBody={`hi <@${alice}>`} onSave={onSave} onClose={onClose} />,
+      "/app/ws1",
+      (routes) => {
+        routes.rpc(WorkspaceService.method.listMembers, () => ({
+          members: [{ displayName: "Alice Johnson", userId: alice }],
+        }));
+        routes.rpc(UserGroupService.method.listUserGroups, () => ({ userGroups: [] }));
+        routes.rpc(ChannelService.method.listChannels, () => ({ channels: [] }));
+      },
+    );
+
+    const textbox = await screen.findByRole("textbox", { name: "メッセージを編集" });
+    await waitFor(() => {
+      expect(textbox).toHaveValue("hi @Alice Johnson");
+    });
+    await userEvent.type(textbox, "!{Enter}");
+    expect(onSave).toHaveBeenCalledWith(`hi <@${alice}>!`);
   });
 });

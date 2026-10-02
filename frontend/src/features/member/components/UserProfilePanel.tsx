@@ -1,12 +1,14 @@
-import { formatTimeInZone } from "@chat/i18n";
+import { formatTime } from "@chat/i18n";
 import { IconMessage, IconTag } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
+import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Button } from "#/components/ui/Button/Button";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
+import { focusRing } from "#/components/ui/styles/styles";
 import { useCreateDM } from "#/features/dm/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
@@ -14,6 +16,7 @@ import { userAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import { useUserNote } from "../hooks/useUserNote";
+import { displayUrl, linkIconOf } from "../utils/linkIcon";
 import { UserNoteEditor } from "./UserNoteEditor";
 
 type UserProfilePanelProps = {
@@ -89,7 +92,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
             <>
               <dt className="text-muted">{t("member.profile.localTime")}</dt>
               <dd className="m-0 truncate">
-                {formatTimeInZone(new Date(), locale, member.timezone)}
+                {formatTime(new Date(), locale, member.timezone)}
                 <span className="ml-1.5 text-muted">{member.timezone}</span>
               </dd>
             </>
@@ -109,6 +112,29 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
           </div>
         )}
       </section>
+      {member.links.length > 0 && (
+        <section className="flex flex-col gap-1.5 border-b border-border px-4 py-3">
+          <h4 className="m-0 text-xs font-semibold text-muted">{t("member.profile.links")}</h4>
+          <ul className="m-0 flex list-none flex-col gap-1 p-0">
+            {member.links.map((url) => {
+              const SiteIcon = linkIconOf(url);
+              return (
+                <li key={url} className="flex min-w-0 items-center gap-1.5 text-[13.5px]">
+                  <SiteIcon aria-hidden className="size-4 shrink-0 text-muted" />
+                  <Link
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`truncate rounded-sm text-accent-text no-underline data-hovered:underline ${focusRing}`}
+                  >
+                    {displayUrl(url)}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
       {!isMe && !isLoadingNote && (
         <UserNoteEditor
           key={note?.updatedAt?.seconds.toString() ?? "new"}

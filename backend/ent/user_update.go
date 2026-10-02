@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/attachment"
@@ -124,6 +125,24 @@ func (_u *UserUpdate) ClearBio() *UserUpdate {
 	return _u
 }
 
+// SetLinks sets the "links" field.
+func (_u *UserUpdate) SetLinks(v []string) *UserUpdate {
+	_u.mutation.SetLinks(v)
+	return _u
+}
+
+// AppendLinks appends value to the "links" field.
+func (_u *UserUpdate) AppendLinks(v []string) *UserUpdate {
+	_u.mutation.AppendLinks(v)
+	return _u
+}
+
+// ClearLinks clears the value of the "links" field.
+func (_u *UserUpdate) ClearLinks() *UserUpdate {
+	_u.mutation.ClearLinks()
+	return _u
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (_u *UserUpdate) SetAvatarURL(v string) *UserUpdate {
 	_u.mutation.SetAvatarURL(v)
@@ -154,6 +173,20 @@ func (_u *UserUpdate) SetIsBot(v bool) *UserUpdate {
 func (_u *UserUpdate) SetNillableIsBot(v *bool) *UserUpdate {
 	if v != nil {
 		_u.SetIsBot(*v)
+	}
+	return _u
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (_u *UserUpdate) SetIsOfficial(v bool) *UserUpdate {
+	_u.mutation.SetIsOfficial(v)
+	return _u
+}
+
+// SetNillableIsOfficial sets the "is_official" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableIsOfficial(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetIsOfficial(*v)
 	}
 	return _u
 }
@@ -900,6 +933,17 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.BioCleared() {
 		_spec.ClearField(user.FieldBio, field.TypeString)
 	}
+	if value, ok := _u.mutation.Links(); ok {
+		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedLinks(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, user.FieldLinks, value)
+		})
+	}
+	if _u.mutation.LinksCleared() {
+		_spec.ClearField(user.FieldLinks, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 	}
@@ -908,6 +952,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.IsBot(); ok {
 		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsOfficial(); ok {
+		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)
@@ -1635,6 +1682,24 @@ func (_u *UserUpdateOne) ClearBio() *UserUpdateOne {
 	return _u
 }
 
+// SetLinks sets the "links" field.
+func (_u *UserUpdateOne) SetLinks(v []string) *UserUpdateOne {
+	_u.mutation.SetLinks(v)
+	return _u
+}
+
+// AppendLinks appends value to the "links" field.
+func (_u *UserUpdateOne) AppendLinks(v []string) *UserUpdateOne {
+	_u.mutation.AppendLinks(v)
+	return _u
+}
+
+// ClearLinks clears the value of the "links" field.
+func (_u *UserUpdateOne) ClearLinks() *UserUpdateOne {
+	_u.mutation.ClearLinks()
+	return _u
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (_u *UserUpdateOne) SetAvatarURL(v string) *UserUpdateOne {
 	_u.mutation.SetAvatarURL(v)
@@ -1665,6 +1730,20 @@ func (_u *UserUpdateOne) SetIsBot(v bool) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillableIsBot(v *bool) *UserUpdateOne {
 	if v != nil {
 		_u.SetIsBot(*v)
+	}
+	return _u
+}
+
+// SetIsOfficial sets the "is_official" field.
+func (_u *UserUpdateOne) SetIsOfficial(v bool) *UserUpdateOne {
+	_u.mutation.SetIsOfficial(v)
+	return _u
+}
+
+// SetNillableIsOfficial sets the "is_official" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableIsOfficial(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetIsOfficial(*v)
 	}
 	return _u
 }
@@ -2441,6 +2520,17 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.BioCleared() {
 		_spec.ClearField(user.FieldBio, field.TypeString)
 	}
+	if value, ok := _u.mutation.Links(); ok {
+		_spec.SetField(user.FieldLinks, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedLinks(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, user.FieldLinks, value)
+		})
+	}
+	if _u.mutation.LinksCleared() {
+		_spec.ClearField(user.FieldLinks, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 	}
@@ -2449,6 +2539,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.IsBot(); ok {
 		_spec.SetField(user.FieldIsBot, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.IsOfficial(); ok {
+		_spec.SetField(user.FieldIsOfficial, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ThemeHue(); ok {
 		_spec.SetField(user.FieldThemeHue, field.TypeInt, value)

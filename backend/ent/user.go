@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -28,10 +29,14 @@ type User struct {
 	DisplayName string `json:"display_name,omitempty"`
 	// Bio holds the value of the "bio" field.
 	Bio string `json:"bio,omitempty"`
+	// Links holds the value of the "links" field.
+	Links []string `json:"links,omitempty"`
 	// AvatarURL holds the value of the "avatar_url" field.
 	AvatarURL string `json:"avatar_url,omitempty"`
 	// IsBot holds the value of the "is_bot" field.
 	IsBot bool `json:"is_bot,omitempty"`
+	// IsOfficial holds the value of the "is_official" field.
+	IsOfficial bool `json:"is_official,omitempty"`
 	// ThemeHue holds the value of the "theme_hue" field.
 	ThemeHue int `json:"theme_hue,omitempty"`
 	// ThemeChroma holds the value of the "theme_chroma" field.
@@ -217,7 +222,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsBot, user.FieldTimezoneAutoUpdate, user.FieldHideJoinMessages:
+		case user.FieldLinks:
+			values[i] = new([]byte)
+		case user.FieldIsBot, user.FieldIsOfficial, user.FieldTimezoneAutoUpdate, user.FieldHideJoinMessages:
 			values[i] = new(sql.NullBool)
 		case user.FieldThemeChroma:
 			values[i] = new(sql.NullFloat64)
@@ -281,6 +288,14 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Bio = value.String
 			}
+		case user.FieldLinks:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field links", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Links); err != nil {
+					return fmt.Errorf("unmarshal field links: %w", err)
+				}
+			}
 		case user.FieldAvatarURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field avatar_url", values[i])
@@ -292,6 +307,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_bot", values[i])
 			} else if value.Valid {
 				_m.IsBot = value.Bool
+			}
+		case user.FieldIsOfficial:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_official", values[i])
+			} else if value.Valid {
+				_m.IsOfficial = value.Bool
 			}
 		case user.FieldThemeHue:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -483,11 +504,17 @@ func (_m *User) String() string {
 	builder.WriteString("bio=")
 	builder.WriteString(_m.Bio)
 	builder.WriteString(", ")
+	builder.WriteString("links=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Links))
+	builder.WriteString(", ")
 	builder.WriteString("avatar_url=")
 	builder.WriteString(_m.AvatarURL)
 	builder.WriteString(", ")
 	builder.WriteString("is_bot=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsBot))
+	builder.WriteString(", ")
+	builder.WriteString("is_official=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsOfficial))
 	builder.WriteString(", ")
 	builder.WriteString("theme_hue=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ThemeHue))

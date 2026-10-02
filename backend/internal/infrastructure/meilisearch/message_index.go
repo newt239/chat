@@ -182,9 +182,6 @@ func buildFilter(c domainrepository.MessageSearchCriteria) string {
 	}
 	if m := c.Mention; m != nil {
 		mentions := []string{"mentioned_user_ids = " + quote(m.UserID)}
-		if len(m.GroupIDs) > 0 {
-			mentions = append(mentions, "mentioned_group_ids IN "+list(m.GroupIDs))
-		}
 		if len(m.JoinedChannelIDs) > 0 {
 			mentions = append(mentions, "(mentions_channel = true AND channel_id IN "+list(m.JoinedChannelIDs)+")")
 		}

@@ -1,3 +1,4 @@
+import { getLocalTimeZone } from "@internationalized/date";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vite-plus/test";
@@ -7,7 +8,8 @@ import { renderWithProviders } from "#/test/renderWithProviders";
 import { jumpPresets } from "../utils/dateJump";
 import { DateDivider } from "./DateDivider";
 
-const presets = jumpPresets(new Date());
+// プロフィールのタイムゾーンが未設定なら端末のタイムゾーンで区切る
+const presets = jumpPresets(new Date(), getLocalTimeZone());
 
 describe("DateDivider", () => {
   test("今日・昨日は言葉で、それ以外は曜日付きの日付で表示する", async () => {

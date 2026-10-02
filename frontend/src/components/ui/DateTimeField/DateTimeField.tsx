@@ -1,4 +1,4 @@
-import { fromDate, getLocalTimeZone } from "@internationalized/date";
+import { fromDate } from "@internationalized/date";
 import { DateField, DateInput, DateSegment, FieldError, Label } from "react-aria-components";
 
 import { cn, fieldStyles } from "#/components/ui/styles/styles";
@@ -7,14 +7,22 @@ type DateTimeFieldProps = {
   label: string;
   value: Date;
   onChange: (value: Date) => void;
+  // 入力する日時のタイムゾーン（IANA 名）
+  timeZone: string;
   // 指定するとフィールドを不正な状態として表示する
   errorMessage?: string;
 };
 
-// 端末のタイムゾーンで日付と時刻（分まで）を入力する
-export const DateTimeField = ({ label, value, onChange, errorMessage }: DateTimeFieldProps) => (
+// timeZone の日付と時刻（分まで）を入力する
+export const DateTimeField = ({
+  label,
+  value,
+  onChange,
+  timeZone,
+  errorMessage,
+}: DateTimeFieldProps) => (
   <DateField
-    value={fromDate(value, getLocalTimeZone())}
+    value={fromDate(value, timeZone)}
     onChange={(next) => {
       if (next !== null) {
         onChange(next.toDate());

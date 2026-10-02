@@ -16,6 +16,7 @@ import (
 	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
+	"github.com/newt239/chat/internal/infrastructure/database/datamigration"
 	"github.com/newt239/chat/internal/infrastructure/logger"
 	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/infrastructure/seed"
@@ -47,11 +48,14 @@ func main() {
 
 	ctx := context.Background()
 	if err := database.WithMigrationLock(ctx, db, func(ctx context.Context) error {
-		return client.Schema.Create(
+		if err := client.Schema.Create(
 			ctx,
 			migrate.WithGlobalUniqueID(true),
 			migrate.WithForeignKeys(true),
-		)
+		); err != nil {
+			return err
+		}
+		return datamigration.Run(ctx, db)
 	}); err != nil {
 		log.Fatalf("failed to migrate database schema: %v", err)
 	}
@@ -87,6 +91,8 @@ func main() {
 
 	runCtx, stopRun := context.WithCancel(context.Background())
 	go reg.UseCase().NewScheduledMessageUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
+	// リマインダーも予約メッセージと同じ間隔で確かめる
+	go reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval)
 
 	hub := reg.NewWebSocketHub()
 	go hub.Run(runCtx)

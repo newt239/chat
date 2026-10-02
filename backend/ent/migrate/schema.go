@@ -9,6 +9,72 @@ import (
 )
 
 var (
+	// AppColumns holds the columns for the "app" table.
+	AppColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
+		{Name: "token_hash", Type: field.TypeString, Nullable: true},
+		{Name: "permissions", Type: field.TypeJSON},
+		{Name: "outgoing_url", Type: field.TypeString, Nullable: true},
+		{Name: "outgoing_secret", Type: field.TypeString, Nullable: true},
+		{Name: "is_official", Type: field.TypeBool, Default: false},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "app_created_by", Type: field.TypeUUID},
+		{Name: "app_bot_user", Type: field.TypeUUID},
+		{Name: "app_default_channel", Type: field.TypeUUID, Nullable: true},
+	}
+	// AppTable holds the schema information for the "app" table.
+	AppTable = &schema.Table{
+		Name:       "app",
+		Columns:    AppColumns,
+		PrimaryKey: []*schema.Column{AppColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "app_workspaces_workspace",
+				Columns:    []*schema.Column{AppColumns[12]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "app_users_created_by",
+				Columns:    []*schema.Column{AppColumns[13]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "app_users_bot_user",
+				Columns:    []*schema.Column{AppColumns[14]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "app_channels_default_channel",
+				Columns:    []*schema.Column{AppColumns[15]},
+				RefColumns: []*schema.Column{ChannelsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "app_workspace_id",
+				Unique:  false,
+				Columns: []*schema.Column{AppColumns[12]},
+			},
+			{
+				Name:    "app_official_workspace_id",
+				Unique:  true,
+				Columns: []*schema.Column{AppColumns[12]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "is_official",
+				},
+			},
+		},
+	}
 	// AttachmentsColumns holds the columns for the "attachments" table.
 	AttachmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -569,6 +635,8 @@ var (
 		{Name: "location_longitude", Type: field.TypeFloat64, Nullable: true},
 		{Name: "location_accuracy", Type: field.TypeFloat64, Nullable: true},
 		{Name: "location_label", Type: field.TypeString, Nullable: true},
+		{Name: "mentions_channel", Type: field.TypeBool, Default: false},
+		{Name: "mentions_here", Type: field.TypeBool, Default: false},
 		{Name: "message_channel", Type: field.TypeUUID},
 		{Name: "message_user", Type: field.TypeUUID},
 		{Name: "message_parent", Type: field.TypeUUID, Nullable: true},
@@ -581,19 +649,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "messages_channels_channel",
-				Columns:    []*schema.Column{MessagesColumns[12]},
+				Columns:    []*schema.Column{MessagesColumns[14]},
 				RefColumns: []*schema.Column{ChannelsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_users_user",
-				Columns:    []*schema.Column{MessagesColumns[13]},
+				Columns:    []*schema.Column{MessagesColumns[15]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "messages_messages_parent",
-				Columns:    []*schema.Column{MessagesColumns[14]},
+				Columns:    []*schema.Column{MessagesColumns[16]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -607,7 +675,7 @@ var (
 			{
 				Name:    "message_message_channel_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[12], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[14], MessagesColumns[2]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "deleted_at IS NULL",
 				},
@@ -615,12 +683,12 @@ var (
 			{
 				Name:    "message_message_parent_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[14], MessagesColumns[2]},
+				Columns: []*schema.Column{MessagesColumns[16], MessagesColumns[2]},
 			},
 			{
 				Name:    "message_message_user",
 				Unique:  false,
-				Columns: []*schema.Column{MessagesColumns[13]},
+				Columns: []*schema.Column{MessagesColumns[15]},
 			},
 		},
 	}
@@ -716,6 +784,8 @@ var (
 		{Name: "youtube_video_id", Type: field.TypeString, Nullable: true},
 		{Name: "youtube_channel_name", Type: field.TypeString, Nullable: true},
 		{Name: "youtube_duration_seconds", Type: field.TypeInt32, Nullable: true},
+		{Name: "x_author_name", Type: field.TypeString, Nullable: true},
+		{Name: "x_author_handle", Type: field.TypeString, Nullable: true},
 		{Name: "linked_message_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_link_message", Type: field.TypeUUID},
@@ -728,7 +798,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "message_links_messages_message",
-				Columns:    []*schema.Column{MessageLinksColumns[14]},
+				Columns:    []*schema.Column{MessageLinksColumns[16]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -737,12 +807,12 @@ var (
 			{
 				Name:    "messagelink_url_message_link_message",
 				Unique:  true,
-				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[14]},
+				Columns: []*schema.Column{MessageLinksColumns[1], MessageLinksColumns[16]},
 			},
 			{
 				Name:    "messagelink_message_link_message",
 				Unique:  false,
-				Columns: []*schema.Column{MessageLinksColumns[14]},
+				Columns: []*schema.Column{MessageLinksColumns[16]},
 			},
 		},
 	}
@@ -840,6 +910,7 @@ var (
 	// MessageUserMentionsColumns holds the columns for the "message_user_mentions" table.
 	MessageUserMentionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "via_group_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_user_mention_message", Type: field.TypeUUID},
 		{Name: "message_user_mention_user", Type: field.TypeUUID},
@@ -852,13 +923,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "message_user_mentions_messages_message",
-				Columns:    []*schema.Column{MessageUserMentionsColumns[2]},
+				Columns:    []*schema.Column{MessageUserMentionsColumns[3]},
 				RefColumns: []*schema.Column{MessagesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "message_user_mentions_users_user",
-				Columns:    []*schema.Column{MessageUserMentionsColumns[3]},
+				Columns:    []*schema.Column{MessageUserMentionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -867,12 +938,107 @@ var (
 			{
 				Name:    "messageusermention_message_user_mention_message",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionsColumns[2]},
+				Columns: []*schema.Column{MessageUserMentionsColumns[3]},
 			},
 			{
 				Name:    "messageusermention_message_user_mention_user",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionsColumns[3]},
+				Columns: []*schema.Column{MessageUserMentionsColumns[4]},
+			},
+		},
+	}
+	// PollColumns holds the columns for the "poll" table.
+	PollColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "question", Type: field.TypeString, Size: 2147483647},
+		{Name: "mode", Type: field.TypeEnum, Enums: []string{"text", "date"}},
+		{Name: "allow_multiple", Type: field.TypeBool},
+		{Name: "anonymous", Type: field.TypeBool},
+		{Name: "closes_at", Type: field.TypeTime, Nullable: true},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "message_id", Type: field.TypeUUID},
+	}
+	// PollTable holds the schema information for the "poll" table.
+	PollTable = &schema.Table{
+		Name:       "poll",
+		Columns:    PollColumns,
+		PrimaryKey: []*schema.Column{PollColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "poll_messages_message",
+				Columns:    []*schema.Column{PollColumns[8]},
+				RefColumns: []*schema.Column{MessagesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// PollOptionColumns holds the columns for the "poll_option" table.
+	PollOptionColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "position", Type: field.TypeInt},
+		{Name: "label", Type: field.TypeString, Default: ""},
+		{Name: "starts_at", Type: field.TypeTime, Nullable: true},
+		{Name: "all_day", Type: field.TypeBool, Default: false},
+		{Name: "poll_id", Type: field.TypeUUID},
+	}
+	// PollOptionTable holds the schema information for the "poll_option" table.
+	PollOptionTable = &schema.Table{
+		Name:       "poll_option",
+		Columns:    PollOptionColumns,
+		PrimaryKey: []*schema.Column{PollOptionColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "poll_option_poll_poll",
+				Columns:    []*schema.Column{PollOptionColumns[5]},
+				RefColumns: []*schema.Column{PollColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "polloption_poll_id_position",
+				Unique:  false,
+				Columns: []*schema.Column{PollOptionColumns[5], PollOptionColumns[1]},
+			},
+		},
+	}
+	// PollVoteColumns holds the columns for the "poll_vote" table.
+	PollVoteColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "option_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// PollVoteTable holds the schema information for the "poll_vote" table.
+	PollVoteTable = &schema.Table{
+		Name:       "poll_vote",
+		Columns:    PollVoteColumns,
+		PrimaryKey: []*schema.Column{PollVoteColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "poll_vote_poll_option_option",
+				Columns:    []*schema.Column{PollVoteColumns[2]},
+				RefColumns: []*schema.Column{PollOptionColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "poll_vote_users_user",
+				Columns:    []*schema.Column{PollVoteColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "pollvote_option_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{PollVoteColumns[2], PollVoteColumns[3]},
+			},
+			{
+				Name:    "pollvote_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{PollVoteColumns[3]},
 			},
 		},
 	}
@@ -904,6 +1070,49 @@ var (
 				Name:    "pushtoken_push_token_user",
 				Unique:  false,
 				Columns: []*schema.Column{PushTokenColumns[6]},
+			},
+		},
+	}
+	// ReminderColumns holds the columns for the "reminder" table.
+	ReminderColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "target_user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "target_channel_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
+		{Name: "remind_at", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"scheduled", "sending", "sent", "failed"}, Default: "scheduled"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "workspace_id", Type: field.TypeString, Size: 12},
+		{Name: "creator_id", Type: field.TypeUUID},
+	}
+	// ReminderTable holds the schema information for the "reminder" table.
+	ReminderTable = &schema.Table{
+		Name:       "reminder",
+		Columns:    ReminderColumns,
+		PrimaryKey: []*schema.Column{ReminderColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "reminder_workspaces_workspace",
+				Columns:    []*schema.Column{ReminderColumns[8]},
+				RefColumns: []*schema.Column{WorkspacesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "reminder_users_creator",
+				Columns:    []*schema.Column{ReminderColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "reminder_remind_at",
+				Unique:  false,
+				Columns: []*schema.Column{ReminderColumns[4]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "status = 'scheduled'",
+				},
 			},
 		},
 	}
@@ -1095,8 +1304,10 @@ var (
 		{Name: "google_sub", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "bio", Type: field.TypeString, Nullable: true},
+		{Name: "links", Type: field.TypeJSON, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "is_bot", Type: field.TypeBool, Default: false},
+		{Name: "is_official", Type: field.TypeBool, Default: false},
 		{Name: "theme_hue", Type: field.TypeInt, Default: 168},
 		{Name: "theme_chroma", Type: field.TypeFloat64, Default: 0.12},
 		{Name: "theme_sidebar", Type: field.TypeEnum, Enums: []string{"tinted", "light"}, Default: "tinted"},
@@ -1279,45 +1490,6 @@ var (
 			},
 		},
 	}
-	// WebhookColumns holds the columns for the "webhook" table.
-	WebhookColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
-		{Name: "token_hash", Type: field.TypeString},
-		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "webhook_channel", Type: field.TypeUUID},
-		{Name: "webhook_created_by", Type: field.TypeUUID},
-		{Name: "webhook_bot_user", Type: field.TypeUUID},
-	}
-	// WebhookTable holds the schema information for the "webhook" table.
-	WebhookTable = &schema.Table{
-		Name:       "webhook",
-		Columns:    WebhookColumns,
-		PrimaryKey: []*schema.Column{WebhookColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "webhook_channels_channel",
-				Columns:    []*schema.Column{WebhookColumns[7]},
-				RefColumns: []*schema.Column{ChannelsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "webhook_users_created_by",
-				Columns:    []*schema.Column{WebhookColumns[8]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "webhook_users_bot_user",
-				Columns:    []*schema.Column{WebhookColumns[9]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// WorkspacesColumns holds the columns for the "workspaces" table.
 	WorkspacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 12},
@@ -1417,6 +1589,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AppTable,
 		AttachmentsTable,
 		AuditLogTable,
 		ChannelsTable,
@@ -1437,7 +1610,11 @@ var (
 		MessagePinsTable,
 		MessageReactionsTable,
 		MessageUserMentionsTable,
+		PollTable,
+		PollOptionTable,
+		PollVoteTable,
 		PushTokenTable,
+		ReminderTable,
 		ScheduledMessageTable,
 		SessionsTable,
 		SystemMessagesTable,
@@ -1447,7 +1624,6 @@ var (
 		UserGroupMembersTable,
 		UserNoteTable,
 		UserThreadFollowsTable,
-		WebhookTable,
 		WorkspacesTable,
 		WorkspaceMembersTable,
 		WorkspacePermissionTable,
@@ -1455,6 +1631,13 @@ var (
 )
 
 func init() {
+	AppTable.ForeignKeys[0].RefTable = WorkspacesTable
+	AppTable.ForeignKeys[1].RefTable = UsersTable
+	AppTable.ForeignKeys[2].RefTable = UsersTable
+	AppTable.ForeignKeys[3].RefTable = ChannelsTable
+	AppTable.Annotation = &entsql.Annotation{
+		Table: "app",
+	}
 	AttachmentsTable.ForeignKeys[0].RefTable = MessagesTable
 	AttachmentsTable.ForeignKeys[1].RefTable = UsersTable
 	AttachmentsTable.ForeignKeys[2].RefTable = ChannelsTable
@@ -1524,9 +1707,27 @@ func init() {
 	MessageReactionsTable.ForeignKeys[1].RefTable = UsersTable
 	MessageUserMentionsTable.ForeignKeys[0].RefTable = MessagesTable
 	MessageUserMentionsTable.ForeignKeys[1].RefTable = UsersTable
+	PollTable.ForeignKeys[0].RefTable = MessagesTable
+	PollTable.Annotation = &entsql.Annotation{
+		Table: "poll",
+	}
+	PollOptionTable.ForeignKeys[0].RefTable = PollTable
+	PollOptionTable.Annotation = &entsql.Annotation{
+		Table: "poll_option",
+	}
+	PollVoteTable.ForeignKeys[0].RefTable = PollOptionTable
+	PollVoteTable.ForeignKeys[1].RefTable = UsersTable
+	PollVoteTable.Annotation = &entsql.Annotation{
+		Table: "poll_vote",
+	}
 	PushTokenTable.ForeignKeys[0].RefTable = UsersTable
 	PushTokenTable.Annotation = &entsql.Annotation{
 		Table: "push_token",
+	}
+	ReminderTable.ForeignKeys[0].RefTable = WorkspacesTable
+	ReminderTable.ForeignKeys[1].RefTable = UsersTable
+	ReminderTable.Annotation = &entsql.Annotation{
+		Table: "reminder",
 	}
 	ScheduledMessageTable.ForeignKeys[0].RefTable = UsersTable
 	ScheduledMessageTable.ForeignKeys[1].RefTable = ChannelsTable
@@ -1551,12 +1752,6 @@ func init() {
 	}
 	UserThreadFollowsTable.ForeignKeys[0].RefTable = UsersTable
 	UserThreadFollowsTable.ForeignKeys[1].RefTable = MessagesTable
-	WebhookTable.ForeignKeys[0].RefTable = ChannelsTable
-	WebhookTable.ForeignKeys[1].RefTable = UsersTable
-	WebhookTable.ForeignKeys[2].RefTable = UsersTable
-	WebhookTable.Annotation = &entsql.Annotation{
-		Table: "webhook",
-	}
 	WorkspacesTable.ForeignKeys[0].RefTable = UsersTable
 	WorkspaceMembersTable.ForeignKeys[0].RefTable = WorkspacesTable
 	WorkspaceMembersTable.ForeignKeys[1].RefTable = UsersTable

@@ -14,38 +14,41 @@ import (
 
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/infrastructure/logger"
+	appuc "github.com/newt239/chat/internal/usecase/app"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
-	webhookuc "github.com/newt239/chat/internal/usecase/webhook"
 )
 
 const maxWebhookPayloadBytes = 64 << 10
 
-// WebhookPoster は着信 Webhook の投稿を受け付けるユースケースです
+// WebhookPoster はアプリの着信 Webhook の投稿を受け付けるユースケースです
 type WebhookPoster interface {
-	Post(ctx context.Context, input webhookuc.PostInput) (*messageuc.MessageOutput, error)
+	Post(ctx context.Context, input appuc.PostInput) (*messageuc.MessageOutput, error)
 }
 
-// webhookPayload は Slack の Incoming Webhook と互換の最小限の形式です。avatar_url は Discord 互換の別名
+// webhookPayload は Slack の Incoming Webhook と互換の最小限の形式です。avatar_url は Discord 互換の別名。
+// channel_id を省略したらアプリの既定のチャンネルに、thread_id を指定したらそのスレッドに投稿する
 type webhookPayload struct {
 	Text      string  `json:"text"`
 	Username  *string `json:"username"`
 	IconURL   *string `json:"icon_url"`
 	AvatarURL *string `json:"avatar_url"`
+	ChannelID *string `json:"channel_id"`
+	ThreadID  *string `json:"thread_id"`
 }
 
 var webhookErrorStatuses = []struct {
 	status int
 	errs   []error
 }{
-	{http.StatusNotFound, []error{webhookuc.ErrWebhookNotFound, domerr.ErrChannelNotFound}},
+	{http.StatusNotFound, []error{appuc.ErrAppNotFound, domerr.ErrChannelNotFound, messageuc.ErrParentMessageNotFound}},
 	{http.StatusBadRequest, []error{domerr.ErrValidation}},
-	{http.StatusForbidden, []error{webhookuc.ErrInactive, domerr.ErrChannelArchived}},
+	{http.StatusForbidden, []error{appuc.ErrInactive, appuc.ErrForbiddenChannel, appuc.ErrForbiddenThread, domerr.ErrChannelArchived}},
 }
 
 func webhookHandler(poster WebhookPoster, limiter RateLimiter) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		webhookID := c.Param("id")
-		if ok, wait := limiter.Allow(c.Request().Context(), webhookID); !ok {
+		appID := c.Param("id")
+		if ok, wait := limiter.Allow(c.Request().Context(), appID); !ok {
 			c.Response().Header().Set("Retry-After", strconv.Itoa(int(math.Ceil(wait.Seconds()))))
 			return c.String(http.StatusTooManyRequests, "rate_limited")
 		}
@@ -67,12 +70,14 @@ func webhookHandler(poster WebhookPoster, limiter RateLimiter) echo.HandlerFunc 
 			avatarURL = payload.IconURL
 		}
 
-		_, err = poster.Post(c.Request().Context(), webhookuc.PostInput{
-			WebhookID: webhookID,
+		_, err = poster.Post(c.Request().Context(), appuc.PostInput{
+			AppID:     appID,
 			Token:     c.Param("token"),
 			Text:      payload.Text,
 			Username:  payload.Username,
 			AvatarURL: avatarURL,
+			ChannelID: payload.ChannelID,
+			ParentID:  payload.ThreadID,
 		})
 		if err != nil {
 			for _, entry := range webhookErrorStatuses {
@@ -82,7 +87,7 @@ func webhookHandler(poster WebhookPoster, limiter RateLimiter) echo.HandlerFunc 
 					}
 				}
 			}
-			logger.Get().Error("Webhook の投稿に失敗しました", zap.String("webhookId", webhookID), zap.Error(err))
+			logger.Get().Error("Webhook の投稿に失敗しました", zap.String("appId", appID), zap.Error(err))
 			return c.String(http.StatusInternalServerError, "internal_error")
 		}
 		return c.String(http.StatusOK, "ok")

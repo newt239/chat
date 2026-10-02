@@ -10,7 +10,6 @@ import {
   formatNumber,
   formatRelativeTime,
   formatTime,
-  formatTimeInZone,
   formatWeekday,
 } from "./format";
 
@@ -19,40 +18,41 @@ const date = new Date(2026, 8, 28, 10, 16);
 
 describe("日付・時刻のフォーマット", () => {
   it("日付を言語に合わせて表示する", () => {
-    expect(formatDate(date, "ja")).toBe("2026年9月28日");
-    expect(formatDate(date, "en")).toBe("Sep 28, 2026");
+    expect(formatDate(date, "ja", undefined)).toBe("2026年9月28日");
+    expect(formatDate(date, "en", undefined)).toBe("Sep 28, 2026");
   });
 
   it("時刻を言語に合わせて表示する", () => {
-    expect(formatTime(date, "ja")).toBe("10:16");
-    expect(formatTime(date, "en")).toBe("10:16 AM");
+    expect(formatTime(date, "ja", undefined)).toBe("10:16");
+    expect(formatTime(date, "en", undefined)).toBe("10:16 AM");
   });
 
-  it("指定したタイムゾーンの時刻を表示する", () => {
+  it("指定したタイムゾーンの日時を表示する", () => {
     const utc = new Date(Date.UTC(2026, 8, 28, 1, 16));
-    expect(formatTimeInZone(utc, "ja", "Asia/Tokyo")).toBe("10:16");
-    expect(formatTimeInZone(utc, "en", "America/New_York")).toBe("9:16 PM");
+    expect(formatTime(utc, "ja", "Asia/Tokyo")).toBe("10:16");
+    expect(formatTime(utc, "en", "America/New_York")).toBe("9:16 PM");
+    expect(formatDate(utc, "ja", "America/New_York")).toBe("2026年9月27日");
   });
 
   it("日時を言語に合わせて表示する", () => {
-    expect(formatDateTime(date, "ja")).toBe("2026年9月28日 10:16");
-    expect(formatDateTime(date, "en")).toBe("Sep 28, 2026, 10:16 AM");
+    expect(formatDateTime(date, "ja", undefined)).toBe("2026年9月28日 10:16");
+    expect(formatDateTime(date, "en", undefined)).toBe("Sep 28, 2026, 10:16 AM");
   });
 
   it("曜日付きの日付を言語に合わせて表示する", () => {
-    expect(formatDateWithWeekday(date, "ja")).toBe("2026年9月28日(月)");
-    expect(formatDateWithWeekday(date, "en")).toBe("Mon, Sep 28, 2026");
+    expect(formatDateWithWeekday(date, "ja", undefined)).toBe("2026年9月28日(月)");
+    expect(formatDateWithWeekday(date, "en", undefined)).toBe("Mon, Sep 28, 2026");
   });
 
   it("曜日と秒を含む日時を言語に合わせて表示する", () => {
     const withSeconds = new Date(2026, 8, 28, 10, 16, 5);
-    expect(formatFullDateTime(withSeconds, "ja")).toBe("2026年9月28日(月) 10:16:05");
-    expect(formatFullDateTime(withSeconds, "en")).toBe("Mon, Sep 28, 2026, 10:16:05 AM");
+    expect(formatFullDateTime(withSeconds, "ja", undefined)).toBe("2026年9月28日(月) 10:16:05");
+    expect(formatFullDateTime(withSeconds, "en", undefined)).toBe("Mon, Sep 28, 2026, 10:16:05 AM");
   });
 
   it("曜日を言語に合わせて表示する", () => {
-    expect(formatWeekday(date, "ja")).toBe("月");
-    expect(formatWeekday(date, "en")).toBe("Mon");
+    expect(formatWeekday(date, "ja", undefined)).toBe("月");
+    expect(formatWeekday(date, "en", undefined)).toBe("Mon");
   });
 });
 
@@ -80,8 +80,8 @@ describe("formatRelativeTime", () => {
 
 describe("数値のフォーマット", () => {
   it("月日を言語に合わせて表示する", () => {
-    expect(formatMonthDay(date, "ja")).toBe("9/28");
-    expect(formatMonthDay(date, "en")).toBe("9/28");
+    expect(formatMonthDay(date, "ja", undefined)).toBe("9/28");
+    expect(formatMonthDay(date, "en", undefined)).toBe("9/28");
   });
 
   it("桁区切りを付け、小数は 1 桁までにする", () => {

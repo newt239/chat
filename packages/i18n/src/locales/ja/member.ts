@@ -11,6 +11,7 @@ export const member = {
   profile: {
     bio: "自己紹介",
     email: "メール",
+    links: "リンク",
     loadFailed: "プロフィールを読み込めませんでした",
     localTime: "現地時刻",
     message: "メッセージ",

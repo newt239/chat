@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 
@@ -13,12 +12,9 @@ import (
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/message"
-	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
-	"github.com/newt239/chat/ent/usergroup"
-	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/workspace"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -26,18 +22,14 @@ import (
 	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
-// @channel / @here を単語として含む本文に一致する POSIX 正規表現
-const broadcastMentionPattern = `(^|[^[:alnum:]_])@(channel|here)([^[:alnum:]_-]|$)`
-
-// 検索用文書は関連テーブルを配列やフラグにまとめて 1 本の SQL で読む
-// $1: @channel / @here の正規表現。WHERE 句は呼び出し側で足す
+// 検索用文書は関連テーブルを配列やフラグにまとめて 1 本の SQL で読む。WHERE 句は呼び出し側で足す
 const searchDocumentSQL = `
 	SELECT m.id, c.channel_workspace, m.message_channel, m.message_user, m.message_parent, m.body, m.created_at,
 		ARRAY(SELECT a.file_name FROM attachments a WHERE a.attachment_message = m.id ORDER BY a.created_at),
 		ARRAY(SELECT a.mime_type FROM attachments a WHERE a.attachment_message = m.id),
 		ARRAY(SELECT um.message_user_mention_user::text FROM message_user_mentions um WHERE um.message_user_mention_message = m.id),
 		ARRAY(SELECT gm.message_group_mention_group::text FROM message_group_mentions gm WHERE gm.message_group_mention_message = m.id),
-		m.body ~ $1,
+		m.mentions_channel OR m.mentions_here,
 		EXISTS (SELECT 1 FROM message_links l WHERE l.message_link_message = m.id),
 		EXISTS (SELECT 1 FROM message_pins p WHERE p.message_pin_message = m.id),
 		EXISTS (SELECT 1 FROM messages r WHERE r.message_parent = m.id AND r.deleted_at IS NULL),
@@ -62,17 +54,10 @@ func (r *messageRepository) FindSearchScope(ctx context.Context, workspaceID str
 	if err != nil {
 		return nil, err
 	}
-	groups, err := client.UserGroup.Query().
-		Where(usergroup.HasWorkspaceWith(workspace.ID(workspaceID)), usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(uid)))).
-		IDs(ctx)
-	if err != nil {
-		return nil, err
-	}
 	return &domainrepository.MessageSearchScope{
 		UserID:             userID,
 		ViewableChannelIDs: uuidStrings(viewable),
 		JoinedChannelIDs:   uuidStrings(joined),
-		GroupIDs:           uuidStrings(groups),
 	}, nil
 }
 
@@ -83,7 +68,7 @@ func (r *messageRepository) FindSearchDocuments(ctx context.Context, messageIDs 
 	if _, err := parseUUIDs(messageIDs, "message ID"); err != nil {
 		return nil, err
 	}
-	return r.querySearchDocuments(ctx, "m.id = ANY($2::uuid[])", pq.Array(messageIDs))
+	return r.querySearchDocuments(ctx, "m.id = ANY($1::uuid[])", pq.Array(messageIDs))
 }
 
 func (r *messageRepository) FindSearchDocumentsAfter(ctx context.Context, afterID string, limit int) ([]domainrepository.MessageSearchDocument, error) {
@@ -95,11 +80,11 @@ func (r *messageRepository) FindSearchDocumentsAfter(ctx context.Context, afterI
 		}
 		after = parsed
 	}
-	return r.querySearchDocuments(ctx, "m.id > $2 ORDER BY m.id LIMIT $3", after, limit)
+	return r.querySearchDocuments(ctx, "m.id > $1 ORDER BY m.id LIMIT $2", after, limit)
 }
 
 func (r *messageRepository) querySearchDocuments(ctx context.Context, where string, args ...any) ([]domainrepository.MessageSearchDocument, error) {
-	rows, err := transaction.ResolveClient(ctx, r.client).QueryContext(ctx, searchDocumentSQL+where, append([]any{broadcastMentionPattern}, args...)...)
+	rows, err := transaction.ResolveClient(ctx, r.client).QueryContext(ctx, searchDocumentSQL+where, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -228,20 +213,13 @@ func viewableChannel(workspaceID string, userID uuid.UUID) predicate.Channel {
 	)
 }
 
-// mentionsUser は本人へのメンション、所属グループへのメンション、参加チャンネルでの @channel / @here に一致します
+// mentionsUser は本人へのメンション（グループ経由を含む）と、参加チャンネルでの @channel / @here に一致します
 func mentionsUser(userID uuid.UUID) predicate.Message {
 	return message.Or(
 		message.HasUserMentionsWith(messageusermention.HasUserWith(user.ID(userID))),
-		message.HasGroupMentionsWith(messagegroupmention.HasGroupWith(
-			usergroup.HasMembersWith(usergroupmember.HasUserWith(user.ID(userID))),
-		)),
 		message.And(
 			message.HasChannelWith(channel.HasMembersWith(channelmember.HasUserWith(user.ID(userID)))),
-			predicate.Message(func(s *sql.Selector) {
-				s.Where(sql.P(func(b *sql.Builder) {
-					b.WriteString(s.C(message.FieldBody)).WriteString(" ~ ").Arg(broadcastMentionPattern)
-				}))
-			}),
+			message.Or(message.MentionsChannel(true), message.MentionsHere(true)),
 		),
 	)
 }

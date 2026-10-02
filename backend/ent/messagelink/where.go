@@ -111,6 +111,16 @@ func YoutubeDurationSeconds(v int32) predicate.MessageLink {
 	return predicate.MessageLink(sql.FieldEQ(FieldYoutubeDurationSeconds, v))
 }
 
+// XAuthorName applies equality check predicate on the "x_author_name" field. It's identical to XAuthorNameEQ.
+func XAuthorName(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldXAuthorName, v))
+}
+
+// XAuthorHandle applies equality check predicate on the "x_author_handle" field. It's identical to XAuthorHandleEQ.
+func XAuthorHandle(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldXAuthorHandle, v))
+}
+
 // LinkedMessageID applies equality check predicate on the "linked_message_id" field. It's identical to LinkedMessageIDEQ.
 func LinkedMessageID(v uuid.UUID) predicate.MessageLink {
 	return predicate.MessageLink(sql.FieldEQ(FieldLinkedMessageID, v))
@@ -859,6 +869,156 @@ func YoutubeDurationSecondsIsNil() predicate.MessageLink {
 // YoutubeDurationSecondsNotNil applies the NotNil predicate on the "youtube_duration_seconds" field.
 func YoutubeDurationSecondsNotNil() predicate.MessageLink {
 	return predicate.MessageLink(sql.FieldNotNull(FieldYoutubeDurationSeconds))
+}
+
+// XAuthorNameEQ applies the EQ predicate on the "x_author_name" field.
+func XAuthorNameEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldXAuthorName, v))
+}
+
+// XAuthorNameNEQ applies the NEQ predicate on the "x_author_name" field.
+func XAuthorNameNEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldXAuthorName, v))
+}
+
+// XAuthorNameIn applies the In predicate on the "x_author_name" field.
+func XAuthorNameIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldXAuthorName, vs...))
+}
+
+// XAuthorNameNotIn applies the NotIn predicate on the "x_author_name" field.
+func XAuthorNameNotIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldXAuthorName, vs...))
+}
+
+// XAuthorNameGT applies the GT predicate on the "x_author_name" field.
+func XAuthorNameGT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldXAuthorName, v))
+}
+
+// XAuthorNameGTE applies the GTE predicate on the "x_author_name" field.
+func XAuthorNameGTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldXAuthorName, v))
+}
+
+// XAuthorNameLT applies the LT predicate on the "x_author_name" field.
+func XAuthorNameLT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldXAuthorName, v))
+}
+
+// XAuthorNameLTE applies the LTE predicate on the "x_author_name" field.
+func XAuthorNameLTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldXAuthorName, v))
+}
+
+// XAuthorNameContains applies the Contains predicate on the "x_author_name" field.
+func XAuthorNameContains(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContains(FieldXAuthorName, v))
+}
+
+// XAuthorNameHasPrefix applies the HasPrefix predicate on the "x_author_name" field.
+func XAuthorNameHasPrefix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasPrefix(FieldXAuthorName, v))
+}
+
+// XAuthorNameHasSuffix applies the HasSuffix predicate on the "x_author_name" field.
+func XAuthorNameHasSuffix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasSuffix(FieldXAuthorName, v))
+}
+
+// XAuthorNameIsNil applies the IsNil predicate on the "x_author_name" field.
+func XAuthorNameIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldXAuthorName))
+}
+
+// XAuthorNameNotNil applies the NotNil predicate on the "x_author_name" field.
+func XAuthorNameNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldXAuthorName))
+}
+
+// XAuthorNameEqualFold applies the EqualFold predicate on the "x_author_name" field.
+func XAuthorNameEqualFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEqualFold(FieldXAuthorName, v))
+}
+
+// XAuthorNameContainsFold applies the ContainsFold predicate on the "x_author_name" field.
+func XAuthorNameContainsFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContainsFold(FieldXAuthorName, v))
+}
+
+// XAuthorHandleEQ applies the EQ predicate on the "x_author_handle" field.
+func XAuthorHandleEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEQ(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleNEQ applies the NEQ predicate on the "x_author_handle" field.
+func XAuthorHandleNEQ(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNEQ(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleIn applies the In predicate on the "x_author_handle" field.
+func XAuthorHandleIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIn(FieldXAuthorHandle, vs...))
+}
+
+// XAuthorHandleNotIn applies the NotIn predicate on the "x_author_handle" field.
+func XAuthorHandleNotIn(vs ...string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotIn(FieldXAuthorHandle, vs...))
+}
+
+// XAuthorHandleGT applies the GT predicate on the "x_author_handle" field.
+func XAuthorHandleGT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGT(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleGTE applies the GTE predicate on the "x_author_handle" field.
+func XAuthorHandleGTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldGTE(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleLT applies the LT predicate on the "x_author_handle" field.
+func XAuthorHandleLT(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLT(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleLTE applies the LTE predicate on the "x_author_handle" field.
+func XAuthorHandleLTE(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldLTE(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleContains applies the Contains predicate on the "x_author_handle" field.
+func XAuthorHandleContains(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContains(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleHasPrefix applies the HasPrefix predicate on the "x_author_handle" field.
+func XAuthorHandleHasPrefix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasPrefix(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleHasSuffix applies the HasSuffix predicate on the "x_author_handle" field.
+func XAuthorHandleHasSuffix(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldHasSuffix(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleIsNil applies the IsNil predicate on the "x_author_handle" field.
+func XAuthorHandleIsNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldIsNull(FieldXAuthorHandle))
+}
+
+// XAuthorHandleNotNil applies the NotNil predicate on the "x_author_handle" field.
+func XAuthorHandleNotNil() predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldNotNull(FieldXAuthorHandle))
+}
+
+// XAuthorHandleEqualFold applies the EqualFold predicate on the "x_author_handle" field.
+func XAuthorHandleEqualFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldEqualFold(FieldXAuthorHandle, v))
+}
+
+// XAuthorHandleContainsFold applies the ContainsFold predicate on the "x_author_handle" field.
+func XAuthorHandleContainsFold(v string) predicate.MessageLink {
+	return predicate.MessageLink(sql.FieldContainsFold(FieldXAuthorHandle, v))
 }
 
 // LinkedMessageIDEQ applies the EQ predicate on the "linked_message_id" field.

@@ -336,12 +336,12 @@ func (_q *MessageUserMentionQuery) WithUser(opts ...func(*UserQuery)) *MessageUs
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		ViaGroupID uuid.UUID `json:"via_group_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MessageUserMention.Query().
-//		GroupBy(messageusermention.FieldCreatedAt).
+//		GroupBy(messageusermention.FieldViaGroupID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (_q *MessageUserMentionQuery) GroupBy(field string, fields ...string) *MessageUserMentionGroupBy {
@@ -359,11 +359,11 @@ func (_q *MessageUserMentionQuery) GroupBy(field string, fields ...string) *Mess
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		ViaGroupID uuid.UUID `json:"via_group_id,omitempty"`
 //	}
 //
 //	client.MessageUserMention.Query().
-//		Select(messageusermention.FieldCreatedAt).
+//		Select(messageusermention.FieldViaGroupID).
 //		Scan(ctx, &v)
 func (_q *MessageUserMentionQuery) Select(fields ...string) *MessageUserMentionSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)

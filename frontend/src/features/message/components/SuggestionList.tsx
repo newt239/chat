@@ -1,8 +1,9 @@
-import { IconHash, IconUsersGroup } from "@tabler/icons-react";
+import { IconHash, IconSlash, IconSpeakerphone, IconUsersGroup } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { cn } from "#/components/ui/styles/styles";
+import { commandNames } from "#/features/command/utils/commands";
 
 import type { SuggestionItem } from "../utils/suggestion";
 
@@ -13,7 +14,7 @@ type SuggestionListProps = {
   onSelect: (item: SuggestionItem) => void;
 };
 
-// 入力欄の上に出す @ / # の候補。フォーカスは入力欄に残し、aria-activedescendant で選択中を伝える
+// 入力欄の上に出す @ / # / の候補。フォーカスは入力欄に残し、aria-activedescendant で選択中を伝える
 export const SuggestionList = ({ id, items, activeIndex, onSelect }: SuggestionListProps) => {
   const { t } = useTranslation();
 
@@ -43,10 +44,30 @@ export const SuggestionList = ({ id, items, activeIndex, onSelect }: SuggestionL
           {item.kind === "user" && <Avatar name={item.label} src={item.avatarUrl} size={20} />}
           {item.kind === "group" && <IconUsersGroup aria-hidden />}
           {item.kind === "channel" && <IconHash aria-hidden />}
-          <span className="min-w-0 flex-1 truncate font-medium">{item.label}</span>
-          {item.kind !== "channel" && (
+          {item.kind === "broadcast" && <IconSpeakerphone aria-hidden />}
+          {item.kind === "command" && <IconSlash aria-hidden />}
+          <span
+            className={cn(
+              "min-w-0 flex-1 truncate font-medium",
+              item.kind === "command" && "flex-none",
+            )}
+          >
+            {item.label}
+          </span>
+          {(item.kind === "group" || item.kind === "broadcast") && (
             <span className="shrink-0 text-caption text-subtle">
-              {item.kind === "group" ? t("message.suggestion.groups") : item.value}
+              {t(
+                item.kind === "group"
+                  ? "message.suggestion.groups"
+                  : "message.suggestion.broadcast",
+              )}
+            </span>
+          )}
+          {item.kind === "command" && (
+            <span className="min-w-0 flex-1 truncate text-caption text-subtle">
+              {commandNames
+                .filter((name) => `/${name}` === item.value)
+                .map((name) => t(`command.${name}.usage`))}
             </span>
           )}
         </div>
