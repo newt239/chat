@@ -23,7 +23,7 @@ import { useToggleReaction } from "#/features/reaction/hooks/useReactions";
 import { ALL_REACTIONS_TAB } from "#/features/reaction/utils/reactionTabs";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useLongPress } from "../hooks/useLongPress";
 import { useMessageActions } from "../hooks/useMessageActions";
@@ -61,7 +61,7 @@ export const MessageItem = ({
   channelChip = null,
 }: MessageItemProps) => {
   const { t } = useTranslation();
-  const currentUser = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const ownsOverlay = useOwnsMessageOverlay(message.id);
@@ -126,9 +126,7 @@ export const MessageItem = ({
   const react = (emoji: string) => {
     toggleReaction(
       emoji,
-      message.reactions.some(
-        (reaction) => reaction.emoji === emoji && reaction.user?.id === currentUser?.id,
-      ),
+      message.reactions.some((reaction) => reaction.emoji === emoji && reaction.user?.id === myId),
     );
   };
 
@@ -137,8 +135,8 @@ export const MessageItem = ({
   };
 
   const displayName = useDisplayName()(message.userId, message.user?.displayName ?? "");
-  // アプリの投稿はプロフィールを持たないボットユーザー名義なので、プロフィールを開かない
-  const isBot = message.user?.isBot ?? false;
+  // アプリの投稿者はプロフィールを持たないため開かない
+  const isApp = message.user?.isApp ?? false;
   const avatar = (
     <Avatar name={displayName} src={message.user?.avatarUrl} size={isMobile ? 34 : 32} />
   );
@@ -179,7 +177,7 @@ export const MessageItem = ({
         "transition-colors motion-reduce:transition-none",
       )}
     >
-      {isBot ? (
+      {isApp ? (
         <span className="mt-0.5 self-start">{avatar}</span>
       ) : (
         <Button
@@ -204,7 +202,7 @@ export const MessageItem = ({
           </span>
         )}
         <div className="flex flex-wrap items-baseline gap-[7px] leading-[1.3]">
-          {isBot ? (
+          {isApp ? (
             <>
               <span className="text-sm font-bold text-text">{displayName}</span>
               <Badge tone="tag" className="self-center">
