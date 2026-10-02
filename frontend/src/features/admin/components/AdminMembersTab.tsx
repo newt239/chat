@@ -1,12 +1,11 @@
 import { useState } from "react";
 
 import { formatBytes, formatNumber } from "@chat/i18n";
-import { IconSearch } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { Input, SearchField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
+import { SearchField } from "#/components/ui/SearchField/SearchField";
 import { Select } from "#/components/ui/Select/Select";
 import { cn } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
@@ -72,15 +71,9 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
         <SearchField
           value={query}
           onChange={setQuery}
-          aria-label={t("admin.members.search")}
-          className="flex h-[34px] min-w-0 flex-[1_1_200px] items-center gap-2 rounded-md border border-border-strong bg-surface px-2.5 text-muted data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft"
-        >
-          <IconSearch aria-hidden className="size-[15px] shrink-0" />
-          <Input
-            placeholder={t("admin.members.search")}
-            className="h-full min-w-0 flex-1 border-0 bg-transparent font-sans text-[13.5px] text-text outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
-          />
-        </SearchField>
+          label={t("admin.members.search")}
+          className="flex-[1_1_200px]"
+        />
         <Select
           label={t("admin.members.columns.role")}
           className="w-40"

@@ -1,24 +1,17 @@
 import { useId, useState } from "react";
 
-import { IconCheck, IconLock, IconSearch, IconX } from "@tabler/icons-react";
+import { IconCheck, IconLock, IconX } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
-import {
-  Button as AriaButton,
-  Form,
-  Input,
-  ListBox,
-  ListBoxItem,
-  SearchField,
-  Text,
-} from "react-aria-components";
+import { Button as AriaButton, Form, ListBox, ListBoxItem, Text } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Button } from "#/components/ui/Button/Button";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
-import { cn, fieldStyles, focusRing } from "#/components/ui/styles/styles";
+import { SearchField } from "#/components/ui/SearchField/SearchField";
+import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { ChannelNameField } from "#/features/channel/components/ChannelNameField";
 import { useChannels, useCreateChannel } from "#/features/channel/hooks/useChannel";
@@ -165,21 +158,7 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
         }}
       >
         <div className="flex flex-col gap-1.5">
-          <SearchField
-            value={query}
-            onChange={setQuery}
-            aria-label={t("dm.create.search")}
-            className={cn(
-              fieldStyles.input,
-              "flex items-center gap-2 px-2.5 data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft",
-            )}
-          >
-            <IconSearch aria-hidden className="size-4 shrink-0 text-subtle" />
-            <Input
-              placeholder={t("dm.create.search")}
-              className="h-full min-w-0 flex-1 border-0 bg-transparent font-sans text-[13.5px] text-text outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
-            />
-          </SearchField>
+          <SearchField value={query} onChange={setQuery} label={t("dm.create.search")} />
           {selectedMembers.length > 0 && (
             <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
               {selectedMembers.map((member) => (

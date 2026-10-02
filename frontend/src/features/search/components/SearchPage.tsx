@@ -2,11 +2,12 @@ import { useRef, useState } from "react";
 
 import { IconChevronLeft, IconChevronRight, IconSearch } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
-import { Form, Input, SearchField } from "react-aria-components";
+import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { SearchField } from "#/components/ui/SearchField/SearchField";
 import { Select } from "#/components/ui/Select/Select";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { Tab } from "#/components/ui/Tab/Tab";
@@ -190,16 +191,11 @@ export const SearchPage = () => {
         <SearchField
           value={inputValue}
           onChange={setInputValue}
-          aria-label={t("search.input")}
-          className="flex h-10 items-center gap-2 rounded-[10px] border border-border-strong bg-surface pr-1.5 pl-3 text-muted data-focus-within:border-accent data-focus-within:ring-3 data-focus-within:ring-accent-soft"
-        >
-          <IconSearch aria-hidden className="size-4 shrink-0" />
-          <Input
-            ref={inputRef}
-            placeholder={t("search.placeholder")}
-            className="h-full min-w-0 flex-1 border-0 bg-transparent font-sans text-[15px] text-text outline-none placeholder:text-subtle [&::-webkit-search-cancel-button]:hidden"
-          />
-        </SearchField>
+          label={t("search.input")}
+          placeholder={t("search.placeholder")}
+          inputRef={inputRef}
+          className="h-10 rounded-[10px] pr-1.5 pl-3 text-[15px] max-md:h-10"
+        />
         <SearchModifierHelp onInsert={insertModifier} />
       </Form>
       <SearchFilterBar />
