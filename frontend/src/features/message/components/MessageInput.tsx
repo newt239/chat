@@ -46,7 +46,6 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
 
   return (
     <BaseMessageInput
-      key={channelId}
       onSubmit={handleSubmit}
       placeholder={
         target
