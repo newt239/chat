@@ -17,8 +17,6 @@ import { HBarList } from "./HBarList";
 import { Heatmap } from "./Heatmap";
 import { InsightsKpis } from "./InsightsKpis";
 
-import type { BarDatum } from "./BarChart";
-
 import type { ChannelActivity } from "#/gen/chat/v1/insight_service_pb";
 
 const storageCategoryKeys = {
@@ -63,7 +61,7 @@ export const InsightsDashboard = ({ workspaceId }: InsightsDashboardProps) => {
   const count = (value: number) => formatNumber(value, locale);
   const countTooltip = (label: string, value: number, isPartial: boolean) =>
     `${t("insights.tooltip.count", { label, value: count(value) })}${isPartial ? t("insights.tooltip.partial") : ""}`;
-  const toBars = (days: readonly { date: string; value: number }[]): BarDatum[] =>
+  const toBars = (days: readonly { date: string; value: number }[]) =>
     days.map((day, index) => {
       const date = parseLocalDate(day.date);
       const isPartial = index === days.length - 1;

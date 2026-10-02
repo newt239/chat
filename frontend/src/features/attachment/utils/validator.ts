@@ -1,6 +1,6 @@
 const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 
-export const formatFileSize = (bytes: number): string => {
+export const formatFileSize = (bytes: number) => {
   if (bytes === 0) {
     return "0 B";
   }

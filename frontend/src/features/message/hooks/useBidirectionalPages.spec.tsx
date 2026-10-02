@@ -18,7 +18,7 @@ const item = (id: number) => ({ createdAt: timestampFromMs(id * 1000), id });
 const getItems = (page: Page) => page.items;
 
 // 1〜9 の項目のうち、最初は 4〜6 を返す。前後は 3 件ずつ返す
-const fetchPage = (cursor: PageCursor): Promise<Page> => {
+const fetchPage = (cursor: PageCursor) => {
   if (cursor === null) {
     return Promise.resolve({ hasMore: true, hasNewer: true, items: [item(4), item(5), item(6)] });
   }

@@ -4,7 +4,7 @@ export type MediaKind = "image" | "video" | "audio" | "file";
 const PLAYABLE =
   /^(?:image\/(?:png|jpeg|gif|webp|avif|svg\+xml)|video\/(?:mp4|webm|ogg|quicktime)|audio\/(?:mpeg|mp4|aac|ogg|wav|x-wav|webm|flac|x-m4a))$/;
 
-export const mediaKindOf = (mimeType: string): MediaKind => {
+export const mediaKindOf = (mimeType: string) => {
   if (!PLAYABLE.test(mimeType)) {
     return "file";
   }

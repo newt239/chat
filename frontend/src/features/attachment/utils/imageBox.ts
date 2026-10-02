@@ -13,7 +13,7 @@ export type ImageBox = {
 };
 
 // 1 枚だけの画像の表示枠。縮小しても最小サイズを下回る極端な比率のときは切り取る
-export const imageBox = (width: number | undefined, height: number | undefined): ImageBox => {
+export const imageBox = (width: number | undefined, height: number | undefined) => {
   const source = width && height ? { height, width } : FALLBACK;
   const scale = Math.min(MAX_WIDTH / source.width, MAX_HEIGHT / source.height, 1);
   const scaledWidth = source.width * scale;

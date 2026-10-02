@@ -17,7 +17,7 @@ export const niceMax = (value: number) => {
 
 export type Direction = "up" | "down" | "flat";
 
-export const directionOf = (difference: number): Direction =>
+export const directionOf = (difference: number) =>
   difference > 0 ? "up" : difference < 0 ? "down" : "flat";
 
 // 前期が 0 のときは比率を出せないため null

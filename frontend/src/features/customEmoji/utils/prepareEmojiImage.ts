@@ -24,7 +24,7 @@ const toPngBlob = (canvas: HTMLCanvasElement) =>
   });
 
 // 128px 四方に収まるよう縮めて PNG にする。GIF はアニメーションを残すためそのまま使う
-export const prepareEmojiImage = async (file: File): Promise<Blob> => {
+export const prepareEmojiImage = async (file: File) => {
   if (!EMOJI_IMAGE_TYPES.includes(file.type)) {
     throw new EmojiImageError("type");
   }
