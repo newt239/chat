@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"strings"
-
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -138,13 +136,24 @@ func ThreadMetadata(t messageuc.ThreadMetadataOutput) *chatv1.ThreadMetadata {
 	return metadata
 }
 
+var systemMessageKinds = map[entity.SystemMessageKind]chatv1.SystemMessageKind{
+	entity.SystemMessageKindMemberJoined:              chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_JOINED,
+	entity.SystemMessageKindMemberAdded:               chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_ADDED,
+	entity.SystemMessageKindMemberRemoved:             chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_REMOVED,
+	entity.SystemMessageKindMemberLeft:                chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MEMBER_LEFT,
+	entity.SystemMessageKindChannelPrivacyChanged:     chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_PRIVACY_CHANGED,
+	entity.SystemMessageKindChannelNameChanged:        chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_NAME_CHANGED,
+	entity.SystemMessageKindChannelDescriptionChanged: chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_CHANNEL_DESCRIPTION_CHANGED,
+	entity.SystemMessageKindMessagePinned:             chatv1.SystemMessageKind_SYSTEM_MESSAGE_KIND_MESSAGE_PINNED,
+}
+
 func SystemMessage(s messageuc.SystemMessageOutput) *chatv1.SystemMessage {
 	// payload は文字列など JSON で表せる値だけを持つため変換に失敗しない
 	payload, _ := structpb.NewStruct(s.Payload)
 	return &chatv1.SystemMessage{
 		Id:        s.ID,
 		ChannelId: s.ChannelID,
-		Kind:      chatv1.SystemMessageKind(chatv1.SystemMessageKind_value["SYSTEM_MESSAGE_KIND_"+strings.ToUpper(s.Kind)]),
+		Kind:      systemMessageKinds[s.Kind],
 		Payload:   payload,
 		ActorId:   s.ActorID,
 		CreatedAt: timestamppb.New(s.CreatedAt),

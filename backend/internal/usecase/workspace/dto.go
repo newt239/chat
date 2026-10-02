@@ -1,6 +1,10 @@
 package workspace
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
+)
 
 // Input DTOs
 
@@ -38,7 +42,7 @@ type UpdateMemberRoleInput struct {
 	WorkspaceID string
 	UserID      string
 	UpdaterID   string // User performing the action
-	Role        string
+	Role        entity.WorkspaceRole
 }
 
 type RemoveMemberInput struct {
@@ -56,17 +60,17 @@ type ListMembersInput struct {
 
 // WorkspaceOutput represents a workspace in the response
 type WorkspaceOutput struct {
-	ID                 string    `json:"id"`
-	Name               string    `json:"name"`
-	Description        *string   `json:"description"`
-	IconURL            *string   `json:"iconUrl"`
-	IsPublic           bool      `json:"isPublic"`
-	SignupEnabled      bool      `json:"signupEnabled"`
-	EmailSignupEnabled bool      `json:"emailSignupEnabled"`
-	Role               string    `json:"role"`
-	CreatedBy          string    `json:"createdBy"`
-	CreatedAt          time.Time `json:"createdAt"`
-	UpdatedAt          time.Time `json:"updatedAt"`
+	ID                 string               `json:"id"`
+	Name               string               `json:"name"`
+	Description        *string              `json:"description"`
+	IconURL            *string              `json:"iconUrl"`
+	IsPublic           bool                 `json:"isPublic"`
+	SignupEnabled      bool                 `json:"signupEnabled"`
+	EmailSignupEnabled bool                 `json:"emailSignupEnabled"`
+	Role               entity.WorkspaceRole `json:"role"`
+	CreatedBy          string               `json:"createdBy"`
+	CreatedAt          time.Time            `json:"createdAt"`
+	UpdatedAt          time.Time            `json:"updatedAt"`
 }
 
 // GetWorkspacesOutput represents the output of getting workspaces
@@ -91,14 +95,14 @@ type DeleteWorkspaceOutput struct {
 }
 
 type MemberInfo struct {
-	UserID      string     `json:"userId"`
-	Email       string     `json:"email"`
-	DisplayName string     `json:"displayName"`
-	AvatarURL   *string    `json:"avatarUrl,omitempty"`
-	Bio         *string    `json:"bio,omitempty"`
-	Role        string     `json:"role"`
-	JoinedAt    time.Time  `json:"joinedAt"`
-	SuspendedAt *time.Time `json:"suspendedAt,omitempty"`
+	UserID      string               `json:"userId"`
+	Email       string               `json:"email"`
+	DisplayName string               `json:"displayName"`
+	AvatarURL   *string              `json:"avatarUrl,omitempty"`
+	Bio         *string              `json:"bio,omitempty"`
+	Role        entity.WorkspaceRole `json:"role"`
+	JoinedAt    time.Time            `json:"joinedAt"`
+	SuspendedAt *time.Time           `json:"suspendedAt,omitempty"`
 	// 取得したユーザーだけに見えるニックネーム
 	Nickname *string  `json:"nickname,omitempty"`
 	Timezone string   `json:"timezone"`

@@ -209,19 +209,19 @@ type ListMessagesWithThreadOutput struct {
 
 // SystemMessageOutput はシステムメッセージの出力です
 type SystemMessageOutput struct {
-	ID        string         `json:"id"`
-	ChannelID string         `json:"channelId"`
-	Kind      string         `json:"kind"`
-	Payload   map[string]any `json:"payload"`
-	ActorID   *string        `json:"actorId,omitempty"`
-	CreatedAt time.Time      `json:"createdAt"`
+	ID        string                   `json:"id"`
+	ChannelID string                   `json:"channelId"`
+	Kind      entity.SystemMessageKind `json:"kind"`
+	Payload   map[string]any           `json:"payload"`
+	ActorID   *string                  `json:"actorId,omitempty"`
+	CreatedAt time.Time                `json:"createdAt"`
 }
 
 func NewSystemMessageOutput(sm *entity.SystemMessage) SystemMessageOutput {
 	return SystemMessageOutput{
 		ID:        sm.ID,
 		ChannelID: sm.ChannelID,
-		Kind:      string(sm.Kind),
+		Kind:      sm.Kind,
 		Payload:   sm.Payload,
 		ActorID:   sm.ActorID,
 		CreatedAt: sm.CreatedAt,

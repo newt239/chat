@@ -81,7 +81,9 @@ func (stubDMChannelRepo) FindUserDMs(context.Context, string, string) ([]*entity
 	return []*entity.Channel{{ID: "dm1", Type: entity.ChannelTypeDM}, {ID: "g1", Type: entity.ChannelTypeGroupDM}}, nil
 }
 
-type stubMemberRepo struct{ repository.ChannelMemberRepository }
+type stubMemberRepo struct {
+	repository.ChannelMemberRepository
+}
 
 func (stubMemberRepo) FindMembersByChannelIDs(context.Context, []string) ([]*entity.ChannelMember, error) {
 	return []*entity.ChannelMember{

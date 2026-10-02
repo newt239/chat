@@ -387,7 +387,7 @@ func (s *WorkspaceSearcher) searchUsers(
 	for _, m := range members {
 		info := workspaceuc.MemberInfo{
 			UserID:   m.UserID,
-			Role:     string(m.Role),
+			Role:     m.Role,
 			JoinedAt: m.JoinedAt,
 		}
 		if user, exists := userMap[m.UserID]; exists && user != nil {

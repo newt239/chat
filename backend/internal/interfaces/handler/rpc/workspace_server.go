@@ -95,7 +95,7 @@ func (s *WorkspaceServer) UpdateMemberRole(ctx context.Context, req *chatv1.Upda
 		WorkspaceID: req.WorkspaceId,
 		UserID:      req.UserId,
 		UpdaterID:   userIDFrom(ctx),
-		Role:        presenter.WorkspaceRoleName(req.Role),
+		Role:        presenter.WorkspaceRoleFromProto(req.Role),
 	})
 	if err != nil {
 		return nil, err

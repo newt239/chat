@@ -604,10 +604,10 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 // recordSystemMessage はチャンネルの変更をタイムラインに残します。失敗しても変更は取り消さない
 func (i *channelInteractor) recordSystemMessage(ctx context.Context, ch *entity.Channel, actorID string, kind entity.SystemMessageKind, from, to string) {
 	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-		Channel:   ch,
-		Kind:      kind,
-		Payload:   map[string]any{"from": from, "to": to},
-		ActorID:   &actorID,
+		Channel: ch,
+		Kind:    kind,
+		Payload: map[string]any{"from": from, "to": to},
+		ActorID: &actorID,
 	}); err != nil {
 		i.logger.Warn("チャンネルの変更をタイムラインに残せません", domainservice.LogField{Key: "channelId", Value: ch.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
 	}

@@ -67,26 +67,10 @@ func PreferencesFromProto(p *chatv1.UserPreferences) entity.UserPreferences {
 		TimezoneAutoUpdate: p.GetTimezoneAutoUpdate(),
 		HideJoinMessages:   p.GetHideJoinMessages(),
 	}
-	for k, v := range sidebarStyles {
-		if v == p.GetTheme().GetSidebar() {
-			out.ThemeSidebar = k
-		}
-	}
-	for k, v := range colorModes {
-		if v == p.GetColorMode() {
-			out.ColorMode = k
-		}
-	}
-	for k, v := range channelSortOrders {
-		if v == p.GetChannelSortOrder() {
-			out.ChannelSortOrder = k
-		}
-	}
-	for k, v := range notificationLevels {
-		if v == p.GetNotificationLevel() {
-			out.NotificationLevel = k
-		}
-	}
+	out.ThemeSidebar = reverseLookup(sidebarStyles, p.GetTheme().GetSidebar())
+	out.ColorMode = reverseLookup(colorModes, p.GetColorMode())
+	out.ChannelSortOrder = reverseLookup(channelSortOrders, p.GetChannelSortOrder())
+	out.NotificationLevel = reverseLookup(notificationLevels, p.GetNotificationLevel())
 	return out
 }
 

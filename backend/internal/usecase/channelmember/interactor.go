@@ -73,10 +73,10 @@ func NewChannelMemberInteractor(
 // recordSystemMessage はメンバーの増減をチャンネルのタイムラインに残します。失敗してもメンバーの変更は取り消さない
 func (i *channelMemberInteractor) recordSystemMessage(ctx context.Context, ch *entity.Channel, kind entity.SystemMessageKind, actorID, targetUserID string) {
 	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-		Channel:   ch,
-		Kind:      kind,
-		Payload:   map[string]any{"actorId": actorID, "userId": targetUserID},
-		ActorID:   &actorID,
+		Channel: ch,
+		Kind:    kind,
+		Payload: map[string]any{"actorId": actorID, "userId": targetUserID},
+		ActorID: &actorID,
 	}); err != nil {
 		i.logger.Warn("メンバーの変更をタイムラインに残せません", service.LogField{Key: "channelId", Value: ch.ID}, service.LogField{Key: "error", Value: err.Error()})
 	}
@@ -125,10 +125,10 @@ func (i *channelMemberInteractor) changeMember(ctx context.Context, channelID, u
 	})
 }
 
-func parseRole(role string) (entity.ChannelRole, error) {
-	switch r := entity.ChannelRole(role); r {
+func parseRole(role entity.ChannelRole) (entity.ChannelRole, error) {
+	switch role {
 	case entity.ChannelRoleMember, entity.ChannelRoleAdmin:
-		return r, nil
+		return role, nil
 	}
 	return "", domerr.ErrInvalidRole
 }
@@ -163,7 +163,7 @@ func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMem
 		}
 		memberInfos = append(memberInfos, MemberInfo{
 			UserID:      m.UserID,
-			Role:        string(m.Role),
+			Role:        m.Role,
 			JoinedAt:    m.JoinedAt,
 			DisplayName: user.DisplayName,
 			Email:       user.Email,

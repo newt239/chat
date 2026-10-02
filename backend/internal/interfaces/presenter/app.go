@@ -45,10 +45,8 @@ func AppSettingsFromProto(s *chatv1.AppSettings) appuc.SettingsInput {
 		OutgoingURL:      s.OutgoingUrl,
 	}
 	for _, p := range s.Permissions {
-		for domain, proto := range appPermissions {
-			if proto == p {
-				input.Permissions = append(input.Permissions, domain)
-			}
+		if permission := reverseLookup(appPermissions, p); permission != "" {
+			input.Permissions = append(input.Permissions, permission)
 		}
 	}
 	return input

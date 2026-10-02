@@ -42,10 +42,8 @@ var permissions = map[entity.Permission]chatv1.Permission{
 func AuditActionNames(actions []chatv1.AuditAction) []entity.AuditAction {
 	names := make([]entity.AuditAction, 0, len(actions))
 	for _, a := range actions {
-		for name, v := range auditActions {
-			if v == a {
-				names = append(names, name)
-			}
+		if name := reverseLookup(auditActions, a); name != "" {
+			names = append(names, name)
 		}
 	}
 	return names
@@ -53,12 +51,7 @@ func AuditActionNames(actions []chatv1.AuditAction) []entity.AuditAction {
 
 // PermissionName はリクエストの権限をユースケースが扱う値に変換します
 func PermissionName(p chatv1.Permission) entity.Permission {
-	for name, v := range permissions {
-		if v == p {
-			return name
-		}
-	}
-	return ""
+	return reverseLookup(permissions, p)
 }
 
 func AuditLog(l adminuc.AuditLogOutput) *chatv1.AuditLog {
@@ -85,7 +78,7 @@ func AdminMember(m adminuc.MemberOutput) *chatv1.AdminMember {
 		Email:              m.Email,
 		DisplayName:        m.DisplayName,
 		AvatarUrl:          m.AvatarURL,
-		Role:               workspaceRoles[string(m.Role)],
+		Role:               workspaceRoles[m.Role],
 		JoinedAt:           timestamppb.New(m.JoinedAt),
 		SuspendedAt:        optionalTimestamp(m.SuspendedAt),
 		RecentMessageCount: int32(m.Activity.MessageCount),
@@ -105,7 +98,7 @@ func Permissions(out adminuc.PermissionsOutput) *chatv1.GetPermissionsResponse {
 	for _, role := range entity.ConfigurableRoles {
 		for _, p := range entity.AllPermissions {
 			res.Grants = append(res.Grants, &chatv1.PermissionGrant{
-				Role:       workspaceRoles[string(role)],
+				Role:       workspaceRoles[role],
 				Permission: permissions[p],
 				Allowed:    out.Matrix.Allows(role, p),
 			})

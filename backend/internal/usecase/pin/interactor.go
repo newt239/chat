@@ -135,10 +135,10 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 		payload["parentId"] = *msg.ParentID
 	}
 	if _, err := i.systemMessageUC.Create(ctx, systemmessage.CreateInput{
-		Channel:   ch,
-		Kind:      entity.SystemMessageKindMessagePinned,
-		Payload:   payload,
-		ActorID:   &input.UserID,
+		Channel: ch,
+		Kind:    entity.SystemMessageKindMessagePinned,
+		Payload: payload,
+		ActorID: &input.UserID,
 	}); err != nil {
 		i.logger.Warn("ピン留めのシステムメッセージを作成できません", service.LogField{Key: "error", Value: err.Error()})
 	}

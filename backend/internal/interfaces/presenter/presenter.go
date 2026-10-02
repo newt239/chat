@@ -14,6 +14,17 @@ func optionalTimestamp(t *time.Time) *timestamppb.Timestamp {
 	return timestamppb.New(*t)
 }
 
+// reverseLookup は値から map のキーを引きます。見つからなければゼロ値を返します
+func reverseLookup[K, V comparable](m map[K]V, value V) K {
+	for k, v := range m {
+		if v == value {
+			return k
+		}
+	}
+	var zero K
+	return zero
+}
+
 // ConvertAll はスライスの各要素を変換します
 func ConvertAll[T, U any](items []T, convert func(T) U) []U {
 	converted := make([]U, 0, len(items))

@@ -257,7 +257,7 @@ func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembers
 		user := userMap[m.UserID]
 		memberInfo := MemberInfo{
 			UserID:      m.UserID,
-			Role:        string(m.Role),
+			Role:        m.Role,
 			JoinedAt:    m.JoinedAt,
 			SuspendedAt: m.SuspendedAt,
 		}
@@ -301,7 +301,7 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 	}
 
 	// owner の降格と owner への昇格は owner 本人にのみ許可する
-	isOwnerChange := target.Role == entity.WorkspaceRoleOwner || entity.WorkspaceRole(input.Role) == entity.WorkspaceRoleOwner
+	isOwnerChange := target.Role == entity.WorkspaceRoleOwner || input.Role == entity.WorkspaceRoleOwner
 	if isOwnerChange && requester.Role != entity.WorkspaceRoleOwner {
 		return nil, ErrCannotChangeOwnerRole
 	}
@@ -309,7 +309,7 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 		return nil, ErrCannotChangeOwnerRole
 	}
 
-	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.UserID, entity.WorkspaceRole(input.Role)); err != nil {
+	if err := i.workspaceRepo.UpdateMemberRole(ctx, input.WorkspaceID, input.UserID, input.Role); err != nil {
 		return nil, fmt.Errorf("failed to update member role: %w", err)
 	}
 
@@ -324,7 +324,7 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 		TargetType:  entity.AuditTargetUser,
 		TargetID:    input.UserID,
 		TargetLabel: label,
-		Metadata:    map[string]string{"from": string(target.Role), "to": input.Role},
+		Metadata:    map[string]string{"from": string(target.Role), "to": string(input.Role)},
 	})
 
 	return &MemberActionOutput{Success: true}, nil
@@ -359,8 +359,8 @@ func (i *workspaceInteractor) RemoveMember(ctx context.Context, input RemoveMemb
 	return &MemberActionOutput{Success: true}, nil
 }
 
-func validateWorkspaceRole(role string) error {
-	switch entity.WorkspaceRole(role) {
+func validateWorkspaceRole(role entity.WorkspaceRole) error {
+	switch role {
 	case entity.WorkspaceRoleOwner, entity.WorkspaceRoleAdmin, entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
 		return nil
 	default:
@@ -451,7 +451,7 @@ func newWorkspaceOutput(ws *entity.Workspace, role entity.WorkspaceRole) Workspa
 		IsPublic:           ws.IsPublic,
 		SignupEnabled:      ws.SignupEnabled,
 		EmailSignupEnabled: ws.EmailSignupEnabled,
-		Role:               string(role),
+		Role:               role,
 		CreatedBy:          ws.CreatedBy,
 		CreatedAt:          ws.CreatedAt,
 		UpdatedAt:          ws.UpdatedAt,

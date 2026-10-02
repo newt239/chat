@@ -1,6 +1,10 @@
 package channelmember
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
+)
 
 type ListMembersInput struct {
 	ChannelID string
@@ -11,7 +15,7 @@ type InviteMemberInput struct {
 	ChannelID    string
 	OperatorID   string
 	TargetUserID string
-	Role         string
+	Role         entity.ChannelRole
 }
 
 type JoinChannelInput struct {
@@ -23,7 +27,7 @@ type UpdateMemberRoleInput struct {
 	ChannelID    string
 	OperatorID   string
 	TargetUserID string
-	Role         string
+	Role         entity.ChannelRole
 }
 
 type RemoveMemberInput struct {
@@ -38,12 +42,12 @@ type LeaveChannelInput struct {
 }
 
 type MemberInfo struct {
-	UserID      string    `json:"userId"`
-	Role        string    `json:"role"`
-	JoinedAt    time.Time `json:"joinedAt"`
-	DisplayName string    `json:"displayName"`
-	Email       string    `json:"email"`
-	AvatarURL   *string   `json:"avatarUrl"`
+	UserID      string             `json:"userId"`
+	Role        entity.ChannelRole `json:"role"`
+	JoinedAt    time.Time          `json:"joinedAt"`
+	DisplayName string             `json:"displayName"`
+	Email       string             `json:"email"`
+	AvatarURL   *string            `json:"avatarUrl"`
 }
 
 type MemberListOutput struct {

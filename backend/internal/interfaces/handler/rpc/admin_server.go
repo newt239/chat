@@ -5,7 +5,6 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
@@ -99,7 +98,7 @@ func (s *PermissionServer) UpdatePermission(ctx context.Context, req *chatv1.Upd
 	err := s.UC.UpdatePermission(ctx, adminuc.UpdatePermissionInput{
 		WorkspaceID: req.WorkspaceId,
 		OperatorID:  userIDFrom(ctx),
-		Role:        entity.WorkspaceRole(presenter.WorkspaceRoleName(req.Role)),
+		Role:        presenter.WorkspaceRoleFromProto(req.Role),
 		Permission:  presenter.PermissionName(req.Permission),
 		Allowed:     req.Allowed,
 	})

@@ -29,7 +29,7 @@ func (s *ChannelMemberServer) InviteChannelMember(ctx context.Context, req *chat
 		ChannelID:    req.ChannelId,
 		OperatorID:   userIDFrom(ctx),
 		TargetUserID: req.UserId,
-		Role:         presenter.ChannelRoleName(role),
+		Role:         presenter.ChannelRoleFromProto(role),
 	})
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (s *ChannelMemberServer) UpdateChannelMemberRole(ctx context.Context, req *
 		ChannelID:    req.ChannelId,
 		OperatorID:   userIDFrom(ctx),
 		TargetUserID: req.UserId,
-		Role:         presenter.ChannelRoleName(req.Role),
+		Role:         presenter.ChannelRoleFromProto(req.Role),
 	})
 	if err != nil {
 		return nil, err

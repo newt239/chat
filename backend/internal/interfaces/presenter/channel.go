@@ -3,6 +3,7 @@ package presenter
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	channeluc "github.com/newt239/chat/internal/usecase/channel"
@@ -29,19 +30,14 @@ func BrowsableChannelSort(s chatv1.BrowsableChannelSort) domainrepository.Browsa
 	return domainrepository.BrowsableChannelSortName
 }
 
-var channelRoles = map[string]chatv1.ChannelRole{
-	"member": chatv1.ChannelRole_CHANNEL_ROLE_MEMBER,
-	"admin":  chatv1.ChannelRole_CHANNEL_ROLE_ADMIN,
+var channelRoles = map[entity.ChannelRole]chatv1.ChannelRole{
+	entity.ChannelRoleMember: chatv1.ChannelRole_CHANNEL_ROLE_MEMBER,
+	entity.ChannelRoleAdmin:  chatv1.ChannelRole_CHANNEL_ROLE_ADMIN,
 }
 
-// ChannelRoleName はリクエストのロールをユースケースが扱う文字列に変換します
-func ChannelRoleName(role chatv1.ChannelRole) string {
-	for name, r := range channelRoles {
-		if r == role {
-			return name
-		}
-	}
-	return ""
+// ChannelRoleFromProto はリクエストのロールをエンティティのロールに変換します
+func ChannelRoleFromProto(role chatv1.ChannelRole) entity.ChannelRole {
+	return reverseLookup(channelRoles, role)
 }
 
 func Channel(c channeluc.ChannelOutput) *chatv1.Channel {
