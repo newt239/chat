@@ -2,14 +2,15 @@ import React from "react";
 
 import { TransportProvider } from "@connectrpc/connect-query";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider } from "@tanstack/react-router";
 import { Provider as JotaiProvider } from "jotai";
 import { createRoot } from "react-dom/client";
 
 import { ToastRegion } from "#/components/ui/ToastRegion/ToastRegion";
 import { setupPlatform } from "#/lib/platform/platform";
+import { router } from "#/lib/router";
 import { store } from "#/providers/store/store";
 
-import { App } from "./App";
 import { transport } from "./lib/api/transport";
 import { queryClient } from "./providers/query/query";
 import { ThemeProvider } from "./providers/theme/ThemeProvider";
@@ -33,7 +34,7 @@ if (rootEl) {
           <TransportProvider transport={transport}>
             <ThemeProvider>
               <ToastRegion />
-              <App />
+              <RouterProvider router={router} />
             </ThemeProvider>
           </TransportProvider>
         </QueryClientProvider>

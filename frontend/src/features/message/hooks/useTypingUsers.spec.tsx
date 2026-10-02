@@ -20,7 +20,7 @@ const typingEvent = (kind: "typing" | "stopTyping", channelId: string, userId: s
 
 describe("useTypingUsers", () => {
   test("表示中のチャンネルで入力中のユーザーだけを返す", () => {
-    const client = new WsClient("token", "ws1");
+    const client = new WsClient(() => Promise.resolve("ticket"), false);
     const wrapper = ({ children }: { children: ReactNode }) => (
       <WsClientContext value={{ wsClient: client }}>{children}</WsClientContext>
     );
