@@ -36,13 +36,13 @@ func (s *mentionService) Resolve(ctx context.Context, body, workspaceID string, 
 	resolved := &service.ResolvedMentions{GroupMembers: map[string][]string{}, Channel: tokens.Channel, Here: tokens.Here}
 
 	if len(tokens.UserIDs) > 0 {
-		members, err := s.workspaceRepo.FindMembersByWorkspaceID(ctx, workspaceID)
+		members, err := s.workspaceRepo.FindActiveMemberIDs(ctx, workspaceID, tokens.UserIDs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load workspace members: %w", err)
 		}
-		for _, member := range members {
-			if slices.Contains(tokens.UserIDs, member.UserID) {
-				resolved.UserIDs = append(resolved.UserIDs, member.UserID)
+		for _, userID := range tokens.UserIDs {
+			if members[userID] {
+				resolved.UserIDs = append(resolved.UserIDs, userID)
 			}
 		}
 	}
@@ -52,20 +52,23 @@ func (s *mentionService) Resolve(ctx context.Context, body, workspaceID string, 
 		if err != nil {
 			return nil, fmt.Errorf("failed to load groups: %w", err)
 		}
+		var expand []string
 		for _, group := range groups {
 			if group.WorkspaceID != workspaceID {
 				continue
 			}
 			resolved.GroupIDs = append(resolved.GroupIDs, group.ID)
-			if slices.Contains(knownGroups, group.ID) {
-				continue
+			if !slices.Contains(knownGroups, group.ID) {
+				expand = append(expand, group.ID)
 			}
-			members, err := s.userGroupRepo.FindMembersByGroupID(ctx, group.ID)
+		}
+		if len(expand) > 0 {
+			members, err := s.userGroupRepo.FindMembersByGroupIDs(ctx, expand)
 			if err != nil {
 				return nil, fmt.Errorf("failed to load group members: %w", err)
 			}
 			for _, member := range members {
-				resolved.GroupMembers[group.ID] = append(resolved.GroupMembers[group.ID], member.UserID)
+				resolved.GroupMembers[member.GroupID] = append(resolved.GroupMembers[member.GroupID], member.UserID)
 			}
 		}
 	}

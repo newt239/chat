@@ -231,14 +231,18 @@ func (r *userGroupRepository) RemoveMember(ctx context.Context, groupID, userID 
 }
 
 func (r *userGroupRepository) FindMembersByGroupID(ctx context.Context, groupID string) ([]*entity.UserGroupMember, error) {
-	gid, err := utils.ParseUUID(groupID, "group ID")
+	return r.FindMembersByGroupIDs(ctx, []string{groupID})
+}
+
+func (r *userGroupRepository) FindMembersByGroupIDs(ctx context.Context, groupIDs []string) ([]*entity.UserGroupMember, error) {
+	gids, err := utils.ParseUUIDs(groupIDs, "group ID")
 	if err != nil {
 		return nil, err
 	}
 
 	client := transaction.ResolveClient(ctx, r.client)
 	members, err := client.UserGroupMember.Query().
-		Where(usergroupmember.GroupID(gid)).
+		Where(usergroupmember.GroupIDIn(gids...)).
 		All(ctx)
 	if err != nil {
 		return nil, err

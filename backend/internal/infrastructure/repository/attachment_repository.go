@@ -164,25 +164,16 @@ func (r *attachmentRepository) AttachToMessage(ctx context.Context, attachmentID
 		return err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-
-	for _, attachmentID := range attachmentIDs {
-		aid, err := utils.ParseUUID(attachmentID, "attachment ID")
-		if err != nil {
-			return err
-		}
-
-		err = client.Attachment.UpdateOneID(aid).
-			SetMessageID(mid).
-			SetStatus(string(entity.AttachmentStatusAttached)).
-			SetUploadedAt(time.Now()).
-			Exec(ctx)
-		if err != nil {
-			return err
-		}
+	aids, err := utils.ParseUUIDs(attachmentIDs, "attachment ID")
+	if err != nil {
+		return err
 	}
-
-	return nil
+	return transaction.ResolveClient(ctx, r.client).Attachment.Update().
+		Where(attachment.IDIn(aids...)).
+		SetMessageID(mid).
+		SetStatus(string(entity.AttachmentStatusAttached)).
+		SetUploadedAt(time.Now()).
+		Exec(ctx)
 }
 
 func (r *attachmentRepository) FindByMessageID(ctx context.Context, messageID string) ([]*entity.Attachment, error) {

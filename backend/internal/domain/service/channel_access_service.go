@@ -17,6 +17,8 @@ type ChannelAccessService interface {
 	FilterAccessible(ctx context.Context, channels []*entity.Channel, userID string) ([]*entity.Channel, error)
 	// AccessibleDescendants は閲覧できる子孫チャンネルを返します
 	AccessibleDescendants(ctx context.Context, ch *entity.Channel, userID string) ([]*entity.Channel, error)
+	// AccessibleChannelsByIDs は channelIDs のうち userID が閲覧できるチャンネルを ID ごとに返します
+	AccessibleChannelsByIDs(ctx context.Context, channelIDs []string, userID string) (map[string]*entity.Channel, error)
 	// FilterUsersWithAccess は userIDs のうちチャンネルを閲覧できるユーザーを返します
 	FilterUsersWithAccess(ctx context.Context, ch *entity.Channel, userIDs []string) (map[string]bool, error)
 }
@@ -104,6 +106,42 @@ func (s *channelAccessService) FilterAccessible(ctx context.Context, channels []
 		if !ch.IsPrivate() || joined[ch.ID] {
 			result = append(result, ch)
 		}
+	}
+	return result, nil
+}
+
+func (s *channelAccessService) AccessibleChannelsByIDs(ctx context.Context, channelIDs []string, userID string) (map[string]*entity.Channel, error) {
+	result := map[string]*entity.Channel{}
+	if len(channelIDs) == 0 {
+		return result, nil
+	}
+	channels, err := s.channelRepo.FindByIDs(ctx, channelIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load channels: %w", err)
+	}
+	// 停止中のメンバーは FindMember で除外される。チャンネルは同じワークスペースにあることが多いため 1 回ずつ確かめる
+	memberOf := map[string]bool{}
+	var inWorkspace []*entity.Channel
+	for _, ch := range channels {
+		isMember, checked := memberOf[ch.WorkspaceID]
+		if !checked {
+			member, err := s.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
+			}
+			isMember = member != nil
+			memberOf[ch.WorkspaceID] = isMember
+		}
+		if isMember {
+			inWorkspace = append(inWorkspace, ch)
+		}
+	}
+	accessible, err := s.FilterAccessible(ctx, inWorkspace, userID)
+	if err != nil {
+		return nil, err
+	}
+	for _, ch := range accessible {
+		result[ch.ID] = ch
 	}
 	return result, nil
 }

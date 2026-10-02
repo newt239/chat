@@ -2,7 +2,6 @@ package message
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -152,30 +151,25 @@ func (b *MessageOutputBuilder) BuildPreview(ctx context.Context, viewerID, messa
 
 // fetchAccessibleMessages は削除されておらず viewerID が参照できるメッセージと、そのチャンネルを返します
 func (b *MessageOutputBuilder) fetchAccessibleMessages(ctx context.Context, viewerID string, ids []string) ([]*entity.Message, map[string]*entity.Channel, error) {
-	channels := map[string]*entity.Channel{}
 	if len(ids) == 0 {
-		return nil, channels, nil
+		return nil, map[string]*entity.Channel{}, nil
 	}
-
 	messages, err := b.messageRepo.FindByIDs(ctx, uniqueStrings(ids))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to fetch linked messages: %w", err)
 	}
+	channelIDs := make([]string, 0, len(messages))
+	for _, msg := range messages {
+		channelIDs = append(channelIDs, msg.ChannelID)
+	}
+	channels, err := b.channelAccessSvc.AccessibleChannelsByIDs(ctx, uniqueStrings(channelIDs), viewerID)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	accessible := make([]*entity.Message, 0, len(messages))
 	for _, msg := range messages {
-		if msg.DeletedAt != nil {
-			continue
-		}
-		ch, checked := channels[msg.ChannelID]
-		if !checked {
-			ch, err = b.channelAccessSvc.EnsureChannelAccess(ctx, msg.ChannelID, viewerID)
-			if err != nil && !errors.Is(err, domerr.ErrUnauthorized) && !errors.Is(err, domerr.ErrChannelNotFound) {
-				return nil, nil, err
-			}
-			channels[msg.ChannelID] = ch
-		}
-		if ch != nil {
+		if msg.DeletedAt == nil && channels[msg.ChannelID] != nil {
 			accessible = append(accessible, msg)
 		}
 	}

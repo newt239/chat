@@ -91,11 +91,14 @@ type builderChannelAccess struct {
 	accessible map[string]*entity.Channel
 }
 
-func (s *builderChannelAccess) EnsureChannelAccess(_ context.Context, channelID string, _ string) (*entity.Channel, error) {
-	if ch := s.accessible[channelID]; ch != nil {
-		return ch, nil
+func (s *builderChannelAccess) AccessibleChannelsByIDs(_ context.Context, channelIDs []string, _ string) (map[string]*entity.Channel, error) {
+	result := map[string]*entity.Channel{}
+	for _, id := range channelIDs {
+		if ch := s.accessible[id]; ch != nil {
+			result[id] = ch
+		}
 	}
-	return nil, domerr.ErrUnauthorized
+	return result, nil
 }
 
 const (

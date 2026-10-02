@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/newt239/chat/internal/domain/entity"
 )
 
 func TestMembershipBatchQueries(t *testing.T) {
@@ -49,5 +51,45 @@ func TestMembershipBatchQueries(t *testing.T) {
 	muted, err := mutes.FindMutedUserIDs(ctx, general, []string{alice, bob})
 	if err != nil || !reflect.DeepEqual(muted, map[string]bool{alice: true}) {
 		t.Errorf("ミュートしているユーザーが期待と異なります: %v %v", muted, err)
+	}
+}
+
+func TestFindLatestSessionsByUserIDs(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	ctx := context.Background()
+	repo := NewSessionRepository(client)
+	alice := f.alice.ID.String()
+
+	for _, hash := range []string{"old-" + alice, "new-" + alice} {
+		if err := repo.Create(ctx, &entity.Session{UserID: alice, RefreshTokenHash: hash, ExpiresAt: time.Now().Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+		time.Sleep(time.Millisecond)
+	}
+	latest, err := repo.FindLatestByUserIDs(ctx, []string{alice, f.bob.ID.String()})
+	if err != nil || len(latest) != 1 || latest[alice].RefreshTokenHash != "new-"+alice {
+		t.Errorf("最後のセッションが期待と異なります: %+v %v", latest, err)
+	}
+}
+
+func TestAttachToMessageUpdatesAllAtOnce(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	ctx := context.Background()
+	repo := NewAttachmentRepository(client)
+
+	var ids []string
+	for range 2 {
+		a := client.Attachment.Create().SetFileName("f").SetMimeType("text/plain").SetSizeBytes(1).SetStorageKey("k").
+			SetUploader(f.alice).SetChannel(f.channels["general"]).SaveX(ctx)
+		ids = append(ids, a.ID.String())
+	}
+	if err := repo.AttachToMessage(ctx, ids, f.messages["mention"].ID.String()); err != nil {
+		t.Fatal(err)
+	}
+	attached, err := repo.FindByMessageIDs(ctx, []string{f.messages["mention"].ID.String()})
+	if err != nil || len(attached[f.messages["mention"].ID.String()]) != 2 {
+		t.Errorf("添付が付いていません: %v %v", attached, err)
 	}
 }
