@@ -145,7 +145,7 @@ func (i *interactor) PinMessage(ctx context.Context, input PinMessageInput) erro
 
 	notification := PinNotification{MessageID: input.MessageID, PinnedBy: p.PinnedBy, PinnedAt: p.PinnedAt}
 	if u, err := i.userRepo.FindByID(ctx, p.PinnedBy); err == nil && u != nil {
-		notification.PinnedByUser = &message.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
+		notification.PinnedByUser = new(message.NewUserInfo(u))
 	}
 	i.notificationSvc.NotifyPinCreated(ch.WorkspaceID, input.ChannelID, i.memberIDs(ctx, input.ChannelID), notification)
 	return nil

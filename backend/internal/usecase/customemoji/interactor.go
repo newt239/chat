@@ -184,15 +184,11 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 		if err != nil {
 			return nil, fmt.Errorf("failed to presign download: %w", err)
 		}
-		creator := messageuc.UserInfo{ID: e.CreatedBy}
-		if u := byID[e.CreatedBy]; u != nil {
-			creator = messageuc.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
-		}
 		outputs = append(outputs, Output{
 			ID:        e.ID,
 			Name:      e.Name,
 			ImageURL:  url,
-			CreatedBy: creator,
+			CreatedBy: messageuc.UserInfoOf(e.CreatedBy, byID),
 			CreatedAt: e.CreatedAt,
 			CanDelete: canDelete(e, viewer),
 		})
