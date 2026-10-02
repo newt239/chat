@@ -14,7 +14,9 @@ import (
 	"github.com/newt239/chat/internal/usecase/systemmessage"
 )
 
-type stubMessageRepo struct{ domainrepository.MessageRepository }
+type stubMessageRepo struct {
+	domainrepository.MessageRepository
+}
 
 func (stubMessageRepo) FindByID(_ context.Context, id string) (*entity.Message, error) {
 	return &entity.Message{ID: id, ChannelID: "ch1"}, nil
@@ -34,13 +36,17 @@ func (r *stubPinRepo) Create(_ context.Context, p *entity.MessagePin) error {
 	return nil
 }
 
-type stubMemberRepo struct{ domainrepository.ChannelMemberRepository }
+type stubMemberRepo struct {
+	domainrepository.ChannelMemberRepository
+}
 
 func (stubMemberRepo) FindMembers(context.Context, string) ([]*entity.ChannelMember, error) {
 	return []*entity.ChannelMember{{UserID: "alice"}, {UserID: "bob"}}, nil
 }
 
-type stubUserRepo struct{ domainrepository.UserRepository }
+type stubUserRepo struct {
+	domainrepository.UserRepository
+}
 
 func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error) {
 	return &entity.User{ID: id, DisplayName: id}, nil
