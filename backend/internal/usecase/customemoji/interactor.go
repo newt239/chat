@@ -84,7 +84,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	uploadID := uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, i.storageConfig.GetUploadExpires())
+	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}
@@ -145,7 +145,7 @@ func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
 		return fmt.Errorf("failed to delete custom emoji: %w", err)
 	}
 	// 画像が残っても表示されることはないため、削除の失敗は記録だけにとどめる
-	if err := i.storage.DeleteObject(emoji.StorageKey); err != nil {
+	if err := i.storage.DeleteObject(ctx, emoji.StorageKey); err != nil {
 		i.logger.Warn("カスタム絵文字の画像の削除に失敗しました",
 			domainservice.LogField{Key: "storageKey", Value: emoji.StorageKey},
 			domainservice.LogField{Key: "error", Value: err.Error()},
@@ -183,7 +183,7 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 
 	outputs := make([]Output, 0, len(emojis))
 	for _, e := range emojis {
-		url, err := i.storage.GenerateDownloadURL(e.StorageKey, imageURLExpires)
+		url, err := i.storage.GenerateDownloadURL(ctx, e.StorageKey, imageURLExpires)
 		if err != nil {
 			return nil, fmt.Errorf("failed to presign download: %w", err)
 		}

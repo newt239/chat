@@ -144,13 +144,7 @@ func (r *InfrastructureRegistry) NewStorageService() service.StorageService {
 	if r.config.Storage.Driver == "local" {
 		return r.NewLocalStorage()
 	}
-	client, err := wasabi.NewClient(context.Background(), r.NewWasabiConfig())
-	if err != nil {
-		// エラーハンドリング: ログ出力してnilを返す
-		// 実際のアプリケーションでは適切なエラーハンドリングが必要
-		return nil
-	}
-	return wasabi.NewPresignService(client)
+	return wasabi.NewPresignService(r.NewWasabiConfig())
 }
 
 func (r *InfrastructureRegistry) NewStorageConfig() service.StorageConfig {

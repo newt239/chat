@@ -61,12 +61,12 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 
 	expires := time.Duration(input.ExpiresMin) * time.Minute
 	if expires == 0 {
-		expires = i.config.GetUploadExpires().(time.Duration)
+		expires = i.config.GetUploadExpires()
 	}
 	expiresAt := time.Now().Add(expires)
 
 	mimeType := normalizeMimeType(input.MimeType, input.FileName)
-	uploadURL, err := i.storageService.GenerateUploadURL(storageKey, mimeType, input.SizeBytes, expires)
+	uploadURL, err := i.storageService.GenerateUploadURL(ctx, storageKey, mimeType, input.SizeBytes, expires)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 			return nil, ErrThumbnailNotAllowed
 		}
 		thumbnailKey := storageKey + "-thumbnail"
-		url, err := i.storageService.GenerateUploadURL(thumbnailKey, input.Thumbnail.MimeType, input.Thumbnail.SizeBytes, expires)
+		url, err := i.storageService.GenerateUploadURL(ctx, thumbnailKey, input.Thumbnail.MimeType, input.Thumbnail.SizeBytes, expires)
 		if err != nil {
 			return nil, err
 		}
@@ -173,14 +173,14 @@ func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID st
 		}
 		storageKey = attachment.Media.Thumbnail.StorageKey
 	}
-	downloadURL, err := i.storageService.GenerateDownloadURL(storageKey, 0)
+	downloadURL, err := i.storageService.GenerateDownloadURL(ctx, storageKey, 0)
 	if err != nil {
 		return nil, err
 	}
 
 	return &DownloadURLOutput{
 		URL:       downloadURL,
-		ExpiresIn: int(i.config.GetDownloadExpires().(time.Duration).Seconds()),
+		ExpiresIn: int(i.config.GetDownloadExpires().Seconds()),
 	}, nil
 }
 
@@ -202,11 +202,11 @@ func (i *Interactor) Delete(ctx context.Context, userID, attachmentID string) er
 	}
 
 	if t := attachment.Media.Thumbnail; t != nil {
-		if err := i.storageService.DeleteObject(t.StorageKey); err != nil {
+		if err := i.storageService.DeleteObject(ctx, t.StorageKey); err != nil {
 			return err
 		}
 	}
-	return i.storageService.DeleteObject(attachment.StorageKey)
+	return i.storageService.DeleteObject(ctx, attachment.StorageKey)
 }
 
 // normalizeMimeType はパラメータを除いて小文字にし、判別できない種別はファイル名の拡張子から推定します

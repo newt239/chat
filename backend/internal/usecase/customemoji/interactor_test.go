@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -103,16 +104,16 @@ type fakeStorage struct {
 	deleted    []string
 }
 
-func (s *fakeStorage) GenerateUploadURL(key, _ string, _ int64, _ interface{}) (string, error) {
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, _ time.Duration) (string, error) {
 	s.uploadKeys = append(s.uploadKeys, key)
 	return "https://storage/put/" + key, nil
 }
 
-func (s *fakeStorage) GenerateDownloadURL(key string, _ interface{}) (string, error) {
+func (s *fakeStorage) GenerateDownloadURL(_ context.Context, key string, _ time.Duration) (string, error) {
 	return "https://storage/get/" + key, nil
 }
 
-func (s *fakeStorage) DeleteObject(key string) error {
+func (s *fakeStorage) DeleteObject(_ context.Context, key string) error {
 	s.deleted = append(s.deleted, key)
 	return nil
 }
@@ -121,7 +122,7 @@ type fakeConfig struct {
 	domainservice.StorageConfig
 }
 
-func (fakeConfig) GetUploadExpires() interface{} { return nil }
+func (fakeConfig) GetUploadExpires() time.Duration { return 0 }
 
 type fakeNotifier struct {
 	created, deleted []string

@@ -45,7 +45,7 @@ func TestUploadAndDownload(t *testing.T) {
 	storage, _ := newTestStorage(t)
 	key := "attachments/ch/file"
 
-	uploadURL, err := storage.GenerateUploadURL(key, "image/png", 5, nil)
+	uploadURL, err := storage.GenerateUploadURL(t.Context(), key, "image/png", 5, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestUploadAndDownload(t *testing.T) {
 		t.Fatalf("upload status = %d", res.StatusCode)
 	}
 
-	downloadURL, err := storage.GenerateDownloadURL(key, nil)
+	downloadURL, err := storage.GenerateDownloadURL(t.Context(), key, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +71,7 @@ func TestUploadAndDownload(t *testing.T) {
 		t.Fatalf("put with get signature = %d", res.StatusCode)
 	}
 
-	if err := storage.DeleteObject(key); err != nil {
+	if err := storage.DeleteObject(t.Context(), key); err != nil {
 		t.Fatal(err)
 	}
 	if res := do(t, http.MethodGet, downloadURL, "", ""); res.StatusCode != http.StatusNotFound {
@@ -82,7 +82,7 @@ func TestUploadAndDownload(t *testing.T) {
 func TestRejectsInvalidRequests(t *testing.T) {
 	storage, server := newTestStorage(t)
 
-	downloadURL, _ := storage.GenerateDownloadURL("a/b", nil)
+	downloadURL, _ := storage.GenerateDownloadURL(t.Context(), "a/b", 0)
 	if res := do(t, http.MethodGet, strings.Replace(downloadURL, "sig=", "sig=0", 1), "", ""); res.StatusCode != http.StatusForbidden {
 		t.Fatalf("tampered signature = %d", res.StatusCode)
 	}
@@ -92,14 +92,14 @@ func TestRejectsInvalidRequests(t *testing.T) {
 		t.Fatalf("expired = %d", res.StatusCode)
 	}
 
-	if _, err := storage.GenerateUploadURL("../escape", "", 0, nil); err == nil {
+	if _, err := storage.GenerateUploadURL(t.Context(), "../escape", "", 0, 0); err == nil {
 		t.Fatal("path traversal key must be rejected")
 	}
 	if res := do(t, http.MethodGet, server.URL+"/storage/a/../../x?op=get", "", ""); res.StatusCode != http.StatusForbidden {
 		t.Fatalf("unsigned traversal = %d", res.StatusCode)
 	}
 
-	uploadURL, _ := storage.GenerateUploadURL("big", "", 0, nil)
+	uploadURL, _ := storage.GenerateUploadURL(t.Context(), "big", "", 0, 0)
 	if res := do(t, http.MethodPut, uploadURL, "", strings.Repeat("x", 2048)); res.StatusCode != http.StatusBadRequest {
 		t.Fatalf("too large = %d", res.StatusCode)
 	}

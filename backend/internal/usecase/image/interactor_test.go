@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -26,18 +27,20 @@ func (fakeWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) 
 
 type fakeStorage struct{ key string }
 
-func (s *fakeStorage) GenerateUploadURL(key, _ string, _ int64, _ interface{}) (string, error) {
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, _ time.Duration) (string, error) {
 	s.key = key
 	return "https://storage.example.com/" + key, nil
 }
-func (*fakeStorage) GenerateDownloadURL(string, interface{}) (string, error) { return "", nil }
-func (*fakeStorage) DeleteObject(string) error                               { return nil }
+func (*fakeStorage) GenerateDownloadURL(context.Context, string, time.Duration) (string, error) {
+	return "", nil
+}
+func (*fakeStorage) DeleteObject(context.Context, string) error { return nil }
 
 type fakeConfig struct{}
 
-func (fakeConfig) GetMaxFileSize() int64           { return 0 }
-func (fakeConfig) GetUploadExpires() interface{}   { return nil }
-func (fakeConfig) GetDownloadExpires() interface{} { return nil }
+func (fakeConfig) GetMaxFileSize() int64             { return 0 }
+func (fakeConfig) GetUploadExpires() time.Duration   { return 0 }
+func (fakeConfig) GetDownloadExpires() time.Duration { return 0 }
 
 func TestPresign(t *testing.T) {
 	storage := &fakeStorage{}

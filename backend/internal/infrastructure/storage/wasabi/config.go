@@ -25,10 +25,10 @@ func (c *Config) GetMaxFileSize() int64 {
 	return c.MaxFileSize
 }
 
-func (c *Config) GetUploadExpires() interface{} {
+func (c *Config) GetUploadExpires() time.Duration {
 	return c.UploadExpires
 }
 
-func (c *Config) GetDownloadExpires() interface{} {
+func (c *Config) GetDownloadExpires() time.Duration {
 	return c.DownloadExpires
 }
