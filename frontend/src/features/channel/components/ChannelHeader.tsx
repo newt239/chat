@@ -26,6 +26,7 @@ import { DMAvatar } from "#/features/dm/components/DMAvatar";
 import { useDMs } from "#/features/dm/hooks/useDM";
 import { dmName } from "#/features/dm/utils/dmName";
 import { BackButton } from "#/features/layout/components/BackButton";
+import { useMobileForward } from "#/features/layout/hooks/useMobileForward";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
@@ -93,6 +94,10 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
   const infoPanel: PanelSearch = partner
     ? { profile: partner.userId }
     : { panel: dm ? "members" : "info" };
+  // モバイルでは左へのスワイプでも同じ情報を開く
+  useMobileForward(() => {
+    openRightPanel(infoPanel);
+  });
 
   if (!channel && !dm) {
     return <header className="h-12 shrink-0 border-b border-border" />;
