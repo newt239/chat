@@ -1,26 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-const pinsCountAtom = atom<Record<string, number>>({});
-
-export const pinsCountByChannelAtom = atom((get) => get(pinsCountAtom));
-
-export const setChannelPinsCountAtom = atom(
-  null,
-  (get, set, payload: { channelId: string; count: number }) => {
-    set(pinsCountAtom, { ...get(pinsCountAtom), [payload.channelId]: payload.count });
-  },
-);
-
-export const addChannelPinsDeltaAtom = atom(
-  null,
-  (get, set, payload: { channelId: string; delta: number }) => {
-    const current = get(pinsCountAtom);
-    const next = Math.max(0, (current[payload.channelId] ?? 0) + payload.delta);
-    set(pinsCountAtom, { ...current, [payload.channelId]: next });
-  },
-);
-
 // モバイルで最後に開いたボトムタブ。チャンネルなどを開いている間も下に残す
 export type MobileTab = "home" | "dms" | "activity" | "me";
 export const mobileTabAtom = atom<MobileTab>("home");

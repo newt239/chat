@@ -11,7 +11,6 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -29,10 +28,10 @@ import { BackButton } from "#/features/layout/components/BackButton";
 import { useMobileForward } from "#/features/layout/hooks/useMobileForward";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
+import { usePinCount } from "#/features/pin/hooks/usePinnedMessages";
 import { DirectMessageType } from "#/gen/chat/v1/direct_message_service_pb";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
-import { pinsCountByChannelAtom } from "#/providers/store/ui";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelById } from "../hooks/useChannelById";
@@ -54,7 +53,7 @@ export const ChannelHeader = ({ workspaceId, channelId }: ChannelHeaderProps) =>
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const pinsCount = useAtomValue(pinsCountByChannelAtom)[channelId] ?? 0;
+  const pinsCount = usePinCount(channelId);
   const { descendants, includesDescendants, setIncludesDescendants } = useChannelAggregation(
     workspaceId,
     channelId,
