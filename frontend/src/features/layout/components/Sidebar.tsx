@@ -3,12 +3,12 @@ import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { NavLink } from "#/components/block/NavLink/NavLink";
+import { sidebarNavTone } from "#/components/block/NavLink/navTone";
 import { ResizeHandle } from "#/components/ui/ResizeHandle/ResizeHandle";
 import { MiniPlayer } from "#/features/player/components/MiniPlayer";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 import { sidebarWidthRanges, sidebarWidthsAtom } from "#/providers/store/ui";
 
-import { sidebarNavTone } from "../utils/navTone";
 import { NavigationList } from "./NavigationList";
 import { SidebarFooter } from "./SidebarFooter";
 

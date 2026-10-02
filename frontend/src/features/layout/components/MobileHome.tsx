@@ -2,12 +2,12 @@ import { IconSearch } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { NavLink } from "#/components/block/NavLink/NavLink";
+import { mobileNavTone } from "#/components/block/NavLink/navTone";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { WorkspaceMenu } from "#/features/workspace/components/WorkspaceMenu";
 import { useMe } from "#/hooks/useMe";
 
-import { mobileNavTone } from "../utils/navTone";
 import { NavigationList } from "./NavigationList";
 
 type MobileHomeProps = {

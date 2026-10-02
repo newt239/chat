@@ -2,11 +2,10 @@ import { IconDownload } from "@tabler/icons-react";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
+import { navItemClassName } from "#/components/block/NavLink/navTone";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { promptInstall, useInstallPrompt } from "#/features/layout/utils/installPrompt";
-
-import { navItemClassName } from "../utils/navTone";
 
 // 「自分」タブの行。インストールできるときだけ出し、iOS では追加の手順を案内する
 export const InstallAppRow = () => {

@@ -16,12 +16,12 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { NavLink } from "#/components/block/NavLink/NavLink";
+import { mobileNavTone, navItemClassName } from "#/components/block/NavLink/navTone";
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { cn, focusRing } from "#/components/ui/styles/styles";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
-import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useMe } from "#/hooks/useMe";
 import { useMyWorkspaceRole } from "#/hooks/useMyWorkspaceRole";
