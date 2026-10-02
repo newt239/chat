@@ -17,7 +17,7 @@ type MessageUseCase interface {
 	GetThreadReplies(ctx context.Context, input GetThreadRepliesInput) (*GetThreadRepliesOutput, error)
 	GetThreadMetadata(ctx context.Context, input GetThreadMetadataInput) (*ThreadMetadataOutput, error)
 	GetMessagePreview(ctx context.Context, input GetMessagePreviewInput) (*MessagePreviewOutput, error)
-	ListMessagesWithThread(ctx context.Context, input ListMessagesInput) ([]MessageWithThreadOutput, error)
+	ListMessagesWithThread(ctx context.Context, input ListMessagesInput) (*ListMessagesWithThreadOutput, error)
 }
 
 // messageInteractor は分割されたユースケースを統合するインタラクターです
@@ -140,7 +140,7 @@ func (i *messageInteractor) GetThreadMetadata(ctx context.Context, input GetThre
 }
 
 // ListMessagesWithThread はスレッド情報付きのメッセージ一覧を取得します
-func (i *messageInteractor) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) ([]MessageWithThreadOutput, error) {
+func (i *messageInteractor) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) (*ListMessagesWithThreadOutput, error) {
 	return i.lister.ListMessagesWithThread(ctx, input)
 }
 

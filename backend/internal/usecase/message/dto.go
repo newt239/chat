@@ -205,6 +205,11 @@ type MessageWithThreadOutput struct {
 	ThreadMetadata *ThreadMetadataOutput `json:"threadMetadata,omitempty"`
 }
 
+type ListMessagesWithThreadOutput struct {
+	Messages []MessageWithThreadOutput
+	HasMore  bool
+}
+
 // SystemMessageOutput はシステムメッセージの出力です
 type SystemMessageOutput struct {
 	ID        string         `json:"id"`

@@ -22,6 +22,7 @@ type ParticipatingThreadOutput struct {
 	ReplyCount     int                     `json:"reply_count"`
 	LastActivityAt time.Time               `json:"last_activity_at"`
 	UnreadCount    int                     `json:"unread_count"`
+	IsFollowing    bool                    `json:"is_following"`
 }
 
 type ThreadCursorOutput struct {

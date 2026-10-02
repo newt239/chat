@@ -29,23 +29,6 @@ func NewThreadRepository(client *ent.Client) domainrepository.ThreadRepository {
 	return &threadRepository{client: client}
 }
 
-// CalculateMetadataByMessageID は指定されたメッセージIDのスレッドメタデータを計算します
-func (r *threadRepository) CalculateMetadataByMessageID(ctx context.Context, messageID string) (*domainrepository.ThreadMetadata, error) {
-	mid, err := utils.ParseUUID(messageID, "message ID")
-	if err != nil {
-		return nil, err
-	}
-	exists, err := transaction.ResolveClient(ctx, r.client).Message.Query().Where(message.ID(mid)).Exist(ctx)
-	if err != nil || !exists {
-		return nil, err
-	}
-	metadata, err := r.CalculateMetadataByMessageIDs(ctx, []string{messageID})
-	if err != nil {
-		return nil, err
-	}
-	return metadata[messageID], nil
-}
-
 // 親ごとの返信数（削除済みを含む）と最新の返信を 1 本の SQL で求める
 // $1: 親メッセージ ID の配列
 const threadReplySummarySQL = `
@@ -163,59 +146,27 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 	for i, t := range threads {
 		threadIDs[i] = t.ID
 	}
-
-	replies, err := client.Message.Query().
-		Where(message.ParentIDIn(threadIDs...), message.DeletedAtIsNil()).
-		Order(ent.Asc(message.FieldCreatedAt), ent.Asc(message.FieldID)).
-		All(ctx)
+	summaries, err := r.summarizeThreads(ctx, threadIDs, userID)
 	if err != nil {
 		return nil, err
-	}
-	repliesByThread := make(map[uuid.UUID][]*ent.Message)
-	for _, reply := range replies {
-		repliesByThread[*reply.ParentID] = append(repliesByThread[*reply.ParentID], reply)
-	}
-
-	readStates, err := client.ThreadReadState.Query().
-		Where(
-			threadreadstate.UserID(userID),
-			threadreadstate.ThreadIDIn(threadIDs...),
-		).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-	lastReadAt := make(map[uuid.UUID]time.Time)
-	for _, rs := range readStates {
-		lastReadAt[rs.ThreadID] = rs.LastReadAt
 	}
 
 	items := make([]domainrepository.ParticipatingThread, 0, len(threads))
 	for _, thread := range threads {
-		threadReplies := repliesByThread[thread.ID]
+		summary := summaries[thread.ID]
 		lastActivityAt := thread.CreatedAt
-		if len(threadReplies) > 0 {
-			lastActivityAt = threadReplies[len(threadReplies)-1].CreatedAt
+		if summary.lastReplyAt != nil {
+			lastActivityAt = *summary.lastReplyAt
 		}
-
-		readAt, hasRead := lastReadAt[thread.ID]
-		unreadCount := 0
-		for _, reply := range threadReplies {
-			if reply.UserID != userID && (!hasRead || reply.CreatedAt.After(readAt)) {
-				unreadCount++
-			}
-		}
-
 		channelID := thread.ChannelID.String()
-
 		items = append(items, domainrepository.ParticipatingThread{
 			ThreadID:       thread.ID.String(),
 			ChannelID:      &channelID,
 			FirstMessage:   utils.MessageToEntity(thread),
-			LatestReplies:  toMessageEntities(threadReplies[max(len(threadReplies)-latestReplyCount, 0):]),
-			ReplyCount:     len(threadReplies),
+			LatestReplies:  toMessageEntities(summary.latestReplies),
+			ReplyCount:     summary.replyCount,
 			LastActivityAt: lastActivityAt,
-			UnreadCount:    unreadCount,
+			UnreadCount:    summary.unreadCount,
 		})
 	}
 
@@ -226,6 +177,87 @@ func (r *threadRepository) FindParticipatingThreads(ctx context.Context, input d
 	}
 
 	return &domainrepository.FindParticipatingThreadsOutput{Items: items, NextCursor: nextCursor}, nil
+}
+
+type threadSummary struct {
+	replyCount    int
+	unreadCount   int
+	lastReplyAt   *time.Time
+	latestReplies []*ent.Message
+}
+
+// 削除されていない返信の件数・自分以外の未読の件数・最新の返信日時をスレッドごとに集計する
+// $1: スレッド ID の配列, $2: 閲覧者
+const threadSummarySQL = `
+	SELECT r.parent_id, COUNT(*),
+		COUNT(*) FILTER (WHERE r.user_id <> $2 AND (s.last_read_at IS NULL OR r.created_at > s.last_read_at)),
+		MAX(r.created_at)
+	FROM message AS r
+	LEFT JOIN thread_read_state AS s ON s.thread_id = r.parent_id AND s.user_id = $2
+	WHERE r.parent_id = ANY($1::uuid[]) AND r.deleted_at IS NULL
+	GROUP BY r.parent_id`
+
+// スレッドごとに削除されていない最新の返信を $2 件まで選ぶ
+const latestRepliesSQL = `
+	SELECT id FROM (
+		SELECT id, ROW_NUMBER() OVER (PARTITION BY parent_id ORDER BY created_at DESC, id DESC) AS rank
+		FROM message WHERE parent_id = ANY($1::uuid[]) AND deleted_at IS NULL
+	) AS ranked WHERE rank <= $2`
+
+// summarizeThreads は返信をすべて読み込まずに、一覧に出す件数と最新の返信を SQL で求めます
+func (r *threadRepository) summarizeThreads(ctx context.Context, threadIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*threadSummary, error) {
+	client := transaction.ResolveClient(ctx, r.client)
+	summaries := make(map[uuid.UUID]*threadSummary, len(threadIDs))
+	for _, id := range threadIDs {
+		summaries[id] = &threadSummary{}
+	}
+
+	rows, err := client.QueryContext(ctx, threadSummarySQL, pq.Array(threadIDs), userID)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var threadID uuid.UUID
+		var lastReplyAt time.Time
+		summary := &threadSummary{lastReplyAt: &lastReplyAt}
+		if err := rows.Scan(&threadID, &summary.replyCount, &summary.unreadCount, &lastReplyAt); err != nil {
+			return nil, err
+		}
+		summaries[threadID] = summary
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	idRows, err := client.QueryContext(ctx, latestRepliesSQL, pq.Array(threadIDs), latestReplyCount)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = idRows.Close() }()
+	var replyIDs []uuid.UUID
+	for idRows.Next() {
+		var id uuid.UUID
+		if err := idRows.Scan(&id); err != nil {
+			return nil, err
+		}
+		replyIDs = append(replyIDs, id)
+	}
+	if err := idRows.Err(); err != nil {
+		return nil, err
+	}
+	replies, err := client.Message.Query().
+		Where(message.IDIn(replyIDs...)).
+		Order(ent.Asc(message.FieldCreatedAt), ent.Asc(message.FieldID)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, reply := range replies {
+		summary := summaries[*reply.ParentID]
+		summary.latestReplies = append(summary.latestReplies, reply)
+	}
+	return summaries, nil
 }
 
 // lastActivityExpr はスレッドの最終アクティビティ（削除されていない最新の返信、なければ親の投稿日時）を表す SQL 式です
@@ -245,64 +277,16 @@ func (r *threadRepository) UpsertReadState(ctx context.Context, userID, threadID
 	if err != nil {
 		return err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	// 既存のreadstateを探す
-	existing, err := client.ThreadReadState.Query().
-		Where(
-			threadreadstate.UserID(uid),
-			threadreadstate.ThreadID(tid),
-		).
-		Only(ctx)
-
-	if err != nil {
-		if ent.IsNotFound(err) {
-			// 新規作成
-			_, err := client.ThreadReadState.Create().
-				SetUserID(uid).
-				SetThreadID(tid).
-				SetLastReadAt(lastReadAt).
-				Save(ctx)
-			return err
-		}
-		return err
-	}
-
-	// 更新
-	return client.ThreadReadState.UpdateOne(existing).
+	return transaction.ResolveClient(ctx, r.client).ThreadReadState.Create().
+		SetUserID(uid).
+		SetThreadID(tid).
 		SetLastReadAt(lastReadAt).
+		OnConflictColumns(threadreadstate.FieldUserID, threadreadstate.FieldThreadID).
+		UpdateLastReadAt().
 		Exec(ctx)
 }
 
-func (r *threadRepository) GetReadState(ctx context.Context, userID, threadID string) (*time.Time, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
-	if err != nil {
-		return nil, err
-	}
-	tid, err := utils.ParseUUID(threadID, "thread ID")
-	if err != nil {
-		return nil, err
-	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-	readState, err := client.ThreadReadState.Query().
-		Where(
-			threadreadstate.UserID(uid),
-			threadreadstate.ThreadID(tid),
-		).
-		Only(ctx)
-
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &readState.LastReadAt, nil
-}
-
+// FollowThread は既にフォローしていても成功します
 func (r *threadRepository) FollowThread(ctx context.Context, userID, threadID string) error {
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
@@ -312,31 +296,13 @@ func (r *threadRepository) FollowThread(ctx context.Context, userID, threadID st
 	if err != nil {
 		return err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	// 既に存在するかチェック
-	exists, err := client.UserThreadFollow.Query().
-		Where(
-			userthreadfollow.UserID(uid),
-			userthreadfollow.ThreadID(tid),
-		).
-		Exist(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	if exists {
-		return nil
-	}
-
-	_, err = client.UserThreadFollow.Create().
+	err = transaction.ResolveClient(ctx, r.client).UserThreadFollow.Create().
 		SetUserID(uid).
 		SetThreadID(tid).
-		Save(ctx)
-
-	return err
+		OnConflictColumns(userthreadfollow.FieldUserID, userthreadfollow.FieldThreadID).
+		DoNothing().
+		Exec(ctx)
+	return ignoreConflict(err)
 }
 
 func (r *threadRepository) UnfollowThread(ctx context.Context, userID, threadID string) error {
@@ -361,24 +327,29 @@ func (r *threadRepository) UnfollowThread(ctx context.Context, userID, threadID 
 	return err
 }
 
-func (r *threadRepository) IsFollowing(ctx context.Context, userID, threadID string) (bool, error) {
+func (r *threadRepository) FindFollowedThreadIDs(ctx context.Context, userID string, threadIDs []string) (map[string]bool, error) {
+	followed := make(map[string]bool, len(threadIDs))
+	if len(threadIDs) == 0 {
+		return followed, nil
+	}
 	uid, err := utils.ParseUUID(userID, "user ID")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	tid, err := utils.ParseUUID(threadID, "thread ID")
+	tids, err := utils.ParseUUIDs(threadIDs, "thread ID")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-
-	client := transaction.ResolveClient(ctx, r.client)
-
-	return client.UserThreadFollow.Query().
-		Where(
-			userthreadfollow.UserID(uid),
-			userthreadfollow.ThreadID(tid),
-		).
-		Exist(ctx)
+	follows, err := transaction.ResolveClient(ctx, r.client).UserThreadFollow.Query().
+		Where(userthreadfollow.UserID(uid), userthreadfollow.ThreadIDIn(tids...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, f := range follows {
+		followed[f.ThreadID.String()] = true
+	}
+	return followed, nil
 }
 
 func (r *threadRepository) FindFollowerIDs(ctx context.Context, threadID string) ([]string, error) {

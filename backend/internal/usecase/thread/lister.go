@@ -44,9 +44,15 @@ func (l *ThreadLister) ListParticipatingThreads(ctx context.Context, input ListP
 
 	// 親と最新の返信をまとめて組み立てる
 	messages := []*entity.Message{}
+	threadIDs := make([]string, 0, len(result.Items))
 	for _, item := range result.Items {
 		messages = append(messages, item.FirstMessage)
 		messages = append(messages, item.LatestReplies...)
+		threadIDs = append(threadIDs, item.ThreadID)
+	}
+	followed, err := l.threadRepo.FindFollowedThreadIDs(ctx, input.UserID, threadIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find followed threads: %w", err)
 	}
 	outputs, err := l.messageOutputBuilder.Build(ctx, input.UserID, messages)
 	if err != nil {
@@ -65,6 +71,7 @@ func (l *ThreadLister) ListParticipatingThreads(ctx context.Context, input ListP
 			ReplyCount:     item.ReplyCount,
 			LastActivityAt: item.LastActivityAt,
 			UnreadCount:    item.UnreadCount,
+			IsFollowing:    followed[item.ThreadID],
 		})
 		outputs = outputs[1+replyCount:]
 	}

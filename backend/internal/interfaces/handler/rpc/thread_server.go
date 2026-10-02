@@ -9,8 +9,6 @@ import (
 	threaduc "github.com/newt239/chat/internal/usecase/thread"
 )
 
-const defaultThreadLimit = 20
-
 type ThreadServer struct {
 	MessageUC    messageuc.MessageUseCase
 	ThreadLister *threaduc.ThreadLister
@@ -47,10 +45,7 @@ func (s *ThreadServer) GetThreadMetadata(ctx context.Context, req *chatv1.GetThr
 }
 
 func (s *ThreadServer) ListParticipatingThreads(ctx context.Context, req *chatv1.ListParticipatingThreadsRequest) (*chatv1.ListParticipatingThreadsResponse, error) {
-	input := threaduc.ListParticipatingThreadsInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Limit: defaultThreadLimit}
-	if req.Limit > 0 {
-		input.Limit = int(req.Limit)
-	}
+	input := threaduc.ListParticipatingThreadsInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Limit: int(req.Limit)}
 	if req.Cursor != nil {
 		input.CursorLastActivityAt = optionalTime(req.Cursor.LastActivityAt)
 		input.CursorThreadID = &req.Cursor.ThreadId

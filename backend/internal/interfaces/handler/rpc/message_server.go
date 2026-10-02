@@ -12,8 +12,6 @@ import (
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
-const defaultMessageLimit = 20
-
 type MessageServer struct {
 	UC messageuc.MessageUseCase
 }
@@ -28,18 +26,14 @@ type listMessagesRequest interface {
 }
 
 func listMessagesInput(ctx context.Context, req listMessagesRequest) messageuc.ListMessagesInput {
-	input := messageuc.ListMessagesInput{
+	return messageuc.ListMessagesInput{
 		ChannelID:          req.GetChannelId(),
 		UserID:             userIDFrom(ctx),
-		Limit:              defaultMessageLimit,
+		Limit:              int(req.GetLimit()),
 		Since:              optionalTime(req.GetSince()),
 		Until:              optionalTime(req.GetUntil()),
 		IncludeDescendants: req.GetIncludeDescendants(),
 	}
-	if req.GetLimit() > 0 {
-		input.Limit = int(req.GetLimit())
-	}
-	return input
 }
 
 func optionalTime(t *timestamppb.Timestamp) *time.Time {
@@ -61,17 +55,11 @@ func (s *MessageServer) ListMessages(ctx context.Context, req *chatv1.ListMessag
 }
 
 func (s *MessageServer) ListMessagesWithThread(ctx context.Context, req *chatv1.ListMessagesWithThreadRequest) (*chatv1.ListMessagesWithThreadResponse, error) {
-	input := listMessagesInput(ctx, req)
-	// has_more はスレッド付きの一覧では求まらないため通常の一覧から得る
-	list, err := s.UC.ListMessages(ctx, input)
+	out, err := s.UC.ListMessagesWithThread(ctx, listMessagesInput(ctx, req))
 	if err != nil {
 		return nil, err
 	}
-	out, err := s.UC.ListMessagesWithThread(ctx, input)
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.ListMessagesWithThreadResponse{Messages: presenter.ConvertAll(out, presenter.MessageWithThread), HasMore: list.HasMore}, nil
+	return &chatv1.ListMessagesWithThreadResponse{Messages: presenter.ConvertAll(out.Messages, presenter.MessageWithThread), HasMore: out.HasMore}, nil
 }
 
 func (s *MessageServer) CreateMessage(ctx context.Context, req *chatv1.CreateMessageRequest) (*chatv1.CreateMessageResponse, error) {
