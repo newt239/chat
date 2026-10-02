@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/migrate"
 	"github.com/newt239/chat/internal/infrastructure/config"
 )
 
@@ -55,8 +56,14 @@ func InitDB(cfg config.DatabaseConfig) (*ent.Client, *sql.DB, error) {
 	return nil, nil, fmt.Errorf("database is not reachable: %w", err)
 }
 
-// WithMigrationLock は複数のレプリカが同時に起動してもスキーマ移行が重ならないよう、advisory lock を取って fn を実行します
-func WithMigrationLock(ctx context.Context, db *sql.DB, fn func(context.Context) error) error {
+// Migrate はスキーマを ent の定義に合わせます。複数のレプリカが同時に起動しても重ならないよう advisory lock を取ります
+func Migrate(ctx context.Context, client *ent.Client, db *sql.DB) error {
+	return withMigrationLock(ctx, db, func(ctx context.Context) error {
+		return client.Schema.Create(ctx, migrate.WithGlobalUniqueID(true), migrate.WithForeignKeys(true))
+	})
+}
+
+func withMigrationLock(ctx context.Context, db *sql.DB, fn func(context.Context) error) error {
 	conn, err := db.Conn(ctx)
 	if err != nil {
 		return err
