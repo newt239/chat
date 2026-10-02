@@ -77,7 +77,7 @@ func main() {
 	// リマインダーも予約メッセージと同じ間隔で確かめる
 	background.Go(func() { reg.UseCase().NewCommandUseCase().RunDispatcher(runCtx, cfg.ScheduledMessage.DispatchInterval) })
 
-	hub := reg.NewWebSocketHub()
+	hub := reg.Hub()
 	background.Go(func() { hub.Run(runCtx) })
 
 	e := reg.NewRouter()

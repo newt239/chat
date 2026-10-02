@@ -8,7 +8,6 @@ import (
 	"github.com/newt239/chat/internal/gen/chat/v1/chatv1connect"
 	"github.com/newt239/chat/internal/interfaces/handler/http"
 	"github.com/newt239/chat/internal/interfaces/handler/rpc"
-	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
 type InterfaceRegistry struct {
@@ -91,8 +90,4 @@ func (r *InterfaceRegistry) NewRouter() *echo.Echo {
 	}
 
 	return http.NewRouter(routerConfig)
-}
-
-func (r *InterfaceRegistry) NewWebSocketHub() *websocket.Hub {
-	return r.infrastructureRegistry.hub
 }
