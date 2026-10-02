@@ -12,7 +12,6 @@ import {
   IconUser,
 } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -25,8 +24,8 @@ import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
 import { mobileNavTone, navItemClassName } from "#/features/layout/utils/navTone";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
 import { useIsWorkspaceAdmin } from "#/features/workspace/hooks/useIsWorkspaceAdmin";
+import { useMe } from "#/hooks/useMe";
 import { isTauri } from "#/lib/platform/platform";
-import { userAtom } from "#/providers/store/auth";
 
 import type { SettingsSection } from "#/features/settings/schemas";
 
@@ -43,7 +42,7 @@ const rowClassName = cn(navItemClassName, focusRing);
 export const MePage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const user = useAtomValue(userAtom);
+  const { data: user } = useMe();
   const isAdmin = useIsWorkspaceAdmin(workspaceId);
   const logout = useLogout();
   const params = { workspaceId };

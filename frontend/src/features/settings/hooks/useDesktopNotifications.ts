@@ -8,7 +8,7 @@ import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMentionDirectory } from "#/features/message/hooks/useMentionDirectory";
 import { navigateTo } from "#/lib/navigation";
 import { isNotificationSupported, showNotification } from "#/lib/platform/notify";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 import { notificationPreferencesAtom } from "#/providers/store/notificationPreferences";
 import { preferencesAtom } from "#/providers/store/preferences";
 import { useWsClient } from "#/providers/ws/useWsClient";
@@ -19,7 +19,7 @@ export const useDesktopNotifications = (workspaceId: string, currentChannelId: s
   const { wsClient } = useWsClient();
   const { desktop, pushToken } = useAtomValue(notificationPreferencesAtom);
   const level = useAtomValue(preferencesAtom).notificationLevel;
-  const myId = useAtomValue(userAtom)?.id;
+  const myId = useAtomValue(myUserIdAtom);
   const { data: channels } = useChannels(workspaceId);
   const { data: dms } = useDMs(workspaceId);
   const displayName = useDisplayName();

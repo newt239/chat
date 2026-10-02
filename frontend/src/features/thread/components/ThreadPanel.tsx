@@ -17,7 +17,7 @@ import { buildTimelineRows } from "#/features/message/utils/timelineRows";
 import { TimelineItemSchema } from "#/gen/chat/v1/message_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import type { TimelineRow } from "#/features/message/utils/timelineRows";
 import type { Message } from "#/gen/chat/v1/message_pb";
@@ -33,7 +33,7 @@ const noopRef = () => undefined;
 export const ThreadPanel = ({ workspaceId, channelId, threadId }: ThreadPanelProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currentUserId = useAtomValue(userAtom)?.id ?? null;
+  const currentUserId = useAtomValue(myUserIdAtom);
   // ?message= で返信を指しているときはその返信の前後を読み、そこまでスクロールする
   const targetReplyId = useSearch({ select: (search) => search.message, strict: false }) ?? null;
   const { parentMessage, thread, isLoading, isError, error, load, loading } = useThreadReplies(

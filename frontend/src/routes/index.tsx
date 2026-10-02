@@ -1,10 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { isAuthenticatedAtom } from "#/providers/store/auth";
-import { store } from "#/providers/store/store";
+import { ensureSession } from "#/lib/session";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    throw redirect({ to: store.get(isAuthenticatedAtom) ? "/app" : "/login" });
+  beforeLoad: async () => {
+    throw redirect({ to: (await ensureSession()) ? "/app" : "/login" });
   },
 });

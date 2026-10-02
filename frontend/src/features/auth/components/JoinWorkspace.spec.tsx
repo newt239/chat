@@ -5,7 +5,7 @@ import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
 import { AuthService } from "#/gen/chat/v1/auth_service_pb";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
-import { authAtom } from "#/providers/store/auth";
+import { sessionAtom } from "#/providers/store/auth";
 import { renderWithProviders } from "#/test/renderWithProviders";
 
 import { JoinWorkspace } from "./JoinWorkspace";
@@ -23,12 +23,12 @@ const renderLoggedOut = async (routes: (router: ConnectRouter) => void) => {
     "/app/ws1",
     routes,
   );
-  store.set(authAtom, { accessToken: null, refreshToken: null, user: null });
+  store.set(sessionAtom, null);
 };
 
 describe("JoinWorkspace", () => {
   test("未ログインならメールアドレスでアカウントを作って参加できる", async () => {
-    const signUp = vi.fn(() => ({ accessToken: "a", refreshToken: "r" }));
+    const signUp = vi.fn(() => ({ accessToken: "a", user: { id: "u1" } }));
     await renderLoggedOut((routes) => {
       routes.rpc(WorkspaceService.method.getWorkspaceSignupInfo, () => ({
         emailSignupEnabled: true,

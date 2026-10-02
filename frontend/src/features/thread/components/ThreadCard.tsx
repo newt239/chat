@@ -10,7 +10,7 @@ import { MessageListCard } from "#/features/message/components/MessageListCard";
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { useUpdateListedThread } from "#/features/thread/hooks/useParticipatingThreads";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { InlineReplyComposer } from "./InlineReplyComposer";
 
@@ -26,7 +26,7 @@ type ThreadCardProps = {
 export const ThreadCard = ({ workspaceId, thread }: ThreadCardProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currentUserId = useAtomValue(userAtom)?.id ?? null;
+  const currentUserId = useAtomValue(myUserIdAtom);
   const markThreadRead = useMutation(ThreadService.method.markThreadRead);
   const updateThread = useUpdateListedThread();
   const { firstMessage, threadId } = thread;

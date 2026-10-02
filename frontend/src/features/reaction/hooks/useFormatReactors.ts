@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 import { preferencesAtom } from "#/providers/store/preferences";
 
 import type { UserSummary } from "#/gen/chat/v1/user_pb";
@@ -13,7 +13,7 @@ const MAX_NAMES = 4;
 export const useFormatReactors = () => {
   const { t } = useTranslation();
   const { locale } = useAtomValue(preferencesAtom);
-  const currentUserId = useAtomValue(userAtom)?.id;
+  const currentUserId = useAtomValue(myUserIdAtom);
   const listFormat = new Intl.ListFormat(locale);
   const displayName = useDisplayName();
 

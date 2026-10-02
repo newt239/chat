@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import { useAtomValue } from "jotai";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
@@ -11,14 +10,14 @@ import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useLogout } from "#/features/auth/hooks/useLogout";
 import { openPanel } from "#/features/layout/utils/overlaySearch";
-import { userAtom } from "#/providers/store/auth";
+import { useMe } from "#/hooks/useMe";
 
 import { useDeleteAccount, useUpdatePassword } from "../hooks/useAccount";
 import { SettingRow } from "./SettingRow";
 
 export const AccountSettings = () => {
   const { t } = useTranslation();
-  const user = useAtomValue(userAtom);
+  const { data: user } = useMe();
   const updatePassword = useUpdatePassword();
   const deleteAccount = useDeleteAccount();
   const logout = useLogout();

@@ -19,7 +19,7 @@ import { channelRoleKeys } from "#/features/channel/utils/channelRole";
 import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { ChannelRole } from "#/gen/chat/v1/channel_member_service_pb";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 const ROLES = [ChannelRole.MEMBER, ChannelRole.ADMIN];
 
@@ -30,7 +30,7 @@ type ChannelMemberManagerProps = {
 
 export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberManagerProps) => {
   const { t } = useTranslation();
-  const currentUser = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const { data: channelMembers } = useChannelMembers(channelId);
   const { data: workspaceMembers } = useMembers(workspaceId);
   const { invite, join, leave, remove, updateRole } = useChannelMemberActions(workspaceId);
@@ -38,7 +38,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
   const displayName = useDisplayName();
 
   const memberIds = new Set(channelMembers?.map((member) => member.userId));
-  const isJoined = currentUser !== null && memberIds.has(currentUser.id);
+  const isJoined = myId !== null && memberIds.has(myId);
   const inviteOptions = (workspaceMembers ?? [])
     .filter((member) => !memberIds.has(member.userId))
     .map((member) => ({ label: member.nickname ?? member.displayName, value: member.userId }));

@@ -15,7 +15,7 @@ import {
   useUserGroupMemberActions,
   useUserGroupMembers,
 } from "#/features/userGroup/hooks/useUserGroupMembers";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 type UserGroupMembersProps = {
   groupId: string;
@@ -29,7 +29,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
   const { add, remove } = useUserGroupMemberActions();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const canManage = useCanManageUserGroups(workspaceId);
-  const myId = useAtomValue(userAtom)?.id;
+  const myId = useAtomValue(myUserIdAtom);
 
   const memberIds = new Set(members?.map((member) => member.userId));
   const options = (workspaceMembers ?? [])

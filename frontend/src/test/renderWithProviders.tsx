@@ -19,7 +19,7 @@ import { browseChannelsSearchSchema } from "#/features/channel/schemas";
 import { workspaceSearchSchema } from "#/features/layout/schemas";
 import { jumpDateSchema } from "#/features/message/utils/dateJump";
 import { searchQuerySchema } from "#/features/search/schemas";
-import { authAtom } from "#/providers/store/auth";
+import { sessionAtom } from "#/providers/store/auth";
 
 import type { ConnectRouter } from "@connectrpc/connect";
 
@@ -37,7 +37,7 @@ export const renderWithProviders = async (
   routes: (router: ConnectRouter) => void,
 ) => {
   const store = createStore();
-  store.set(authAtom, { accessToken: "a", refreshToken: "r", user: currentUser });
+  store.set(sessionAtom, { accessToken: "a", userId: currentUser.id });
 
   const rootRoute = createRootRoute({ component: () => ui });
   const workspaceRoute = createRoute({

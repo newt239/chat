@@ -10,7 +10,7 @@ import { Link } from "#/components/ui/Link/Link";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { useSignUp } from "#/features/auth/hooks/useSignUp";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
-import { isAuthenticatedAtom } from "#/providers/store/auth";
+import { sessionAtom } from "#/providers/store/auth";
 
 import { AuthCard } from "./AuthCard";
 import { AuthMethods } from "./AuthMethods";
@@ -24,7 +24,7 @@ type JoinWorkspaceProps = {
 export const JoinWorkspace = ({ workspaceId }: JoinWorkspaceProps) => {
   const { t } = useTranslation();
   const info = useQuery(WorkspaceService.method.getWorkspaceSignupInfo, { workspaceId });
-  const isAuthenticated = useAtomValue(isAuthenticatedAtom);
+  const isAuthenticated = useAtomValue(sessionAtom) !== null;
   const signUp = useSignUp(workspaceId);
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");

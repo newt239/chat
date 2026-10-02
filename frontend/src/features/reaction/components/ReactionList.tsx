@@ -6,7 +6,7 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing } from "#/components/ui/styles/styles";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useToggleReaction } from "../hooks/useReactions";
 import { reactionPillClassName } from "../styles";
@@ -27,10 +27,10 @@ const VISIBLE_LIMIT = 10;
 
 export const ReactionList = ({ messageId, reactions, onOpenList }: ReactionListProps) => {
   const { t } = useTranslation();
-  const user = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const toggleReaction = useToggleReaction(messageId);
   const [isExpanded, setIsExpanded] = useState(false);
-  const groups = groupReactions(reactions, user?.id ?? null);
+  const groups = groupReactions(reactions, myId);
 
   if (groups.length === 0) {
     return null;

@@ -1,12 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { useJoinPublicWorkspace } from "#/features/workspace/hooks/usePublicWorkspaces";
 import { useWorkspaces } from "#/features/workspace/hooks/useWorkspace";
-import { userAtom } from "#/providers/store/auth";
+import { useMe } from "#/hooks/useMe";
 
 type JoinAsMemberProps = {
   workspaceId: string;
@@ -15,7 +14,7 @@ type JoinAsMemberProps = {
 // ログイン済みのユーザーが参加リンクを開いたときは、今のアカウントのまま参加する
 export const JoinAsMember = ({ workspaceId }: JoinAsMemberProps) => {
   const { t } = useTranslation();
-  const user = useAtomValue(userAtom);
+  const { data: user } = useMe();
   const navigate = useNavigate();
   const workspaces = useWorkspaces();
   const join = useJoinPublicWorkspace();

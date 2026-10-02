@@ -7,7 +7,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { channelListKey } from "#/features/channel/hooks/useChannel";
 import { pinListKey } from "#/features/pin/hooks/usePinActions";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 import { addChannelPinsDeltaAtom } from "#/providers/store/ui";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
@@ -24,7 +24,7 @@ export const useChannelRealtimeSync = (
   const queryClient = useQueryClient();
   const { wsClient } = useWsClient();
   const addPinsDelta = useSetAtom(addChannelPinsDeltaAtom);
-  const currentUserId = useAtomValue(userAtom)?.id;
+  const currentUserId = useAtomValue(myUserIdAtom);
 
   useEffect(() => {
     if (!wsClient || workspaceId === null) {

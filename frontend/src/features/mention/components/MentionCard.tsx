@@ -9,7 +9,7 @@ import { MessageItem } from "#/features/message/components/MessageItem";
 import { MessageListCard } from "#/features/message/components/MessageListCard";
 import { useCopyMessageLink } from "#/features/message/hooks/useCopyMessageLink";
 import { InlineReplyComposer } from "#/features/thread/components/InlineReplyComposer";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -23,7 +23,7 @@ export const MentionCard = ({ workspaceId, message }: MentionCardProps) => {
   const { t } = useTranslation();
   const displayName = useDisplayName();
   const navigate = useNavigate();
-  const currentUserId = useAtomValue(userAtom)?.id ?? null;
+  const currentUserId = useAtomValue(myUserIdAtom);
   const [replies, setReplies] = useState<Message[]>([]);
   const { channelId } = message;
   // 返信へのメンションには同じスレッドで返す

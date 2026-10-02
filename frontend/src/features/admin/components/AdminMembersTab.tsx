@@ -17,7 +17,7 @@ import { workspaceRoleKeys } from "#/features/member/utils/workspaceRoleKeys";
 import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { MemberSuspendButton } from "./MemberSuspendButton";
 import { RoleSelect } from "./RoleSelect";
@@ -52,7 +52,7 @@ type AdminMembersTabProps = {
 export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) => {
   const { t } = useTranslation();
   const { formatDateTime, formatRelativeTime, locale } = useDateFormat();
-  const myId = useAtomValue(userAtom)?.id;
+  const myId = useAtomValue(myUserIdAtom);
   const { updateRole } = useAdminActions();
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");

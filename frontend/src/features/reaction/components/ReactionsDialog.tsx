@@ -12,7 +12,7 @@ import { useMentionDirectory } from "#/features/message/hooks/useMentionDirector
 import { toPlainText } from "#/features/message/utils/markdown/plainText";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useToggleReaction } from "../hooks/useReactions";
 import { groupReactions } from "../utils/groupReactions";
@@ -33,7 +33,7 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
   const { t } = useTranslation();
   const { toText } = useMentionDirectory();
   const { formatDateTime } = useDateFormat();
-  const currentUserId = useAtomValue(userAtom)?.id ?? null;
+  const currentUserId = useAtomValue(myUserIdAtom);
   const toggleReaction = useToggleReaction(message.id);
   const groups = groupReactions(message.reactions, currentUserId);
   const rows = message.reactions.toSorted(

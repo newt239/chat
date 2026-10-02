@@ -25,7 +25,7 @@ import { useChannels, useCreateChannel } from "#/features/channel/hooks/useChann
 import { channelPathErrorKeys, validateChannelPath } from "#/features/channel/utils/channelPath";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { transitions } from "#/lib/motion";
-import { userAtom } from "#/providers/store/auth";
+import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useCreateDM, useCreateGroupDM } from "../hooks/useDM";
 
@@ -42,7 +42,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const { t } = useTranslation();
   const navigate = useNavigate();
   const formId = useId();
-  const currentUser = useAtomValue(userAtom);
+  const myId = useAtomValue(myUserIdAtom);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [channelName, setChannelName] = useState("");
@@ -54,7 +54,7 @@ export const CreateDMModal = ({ workspaceId, opened, onClose }: CreateDMModalPro
   const createGroupDM = useCreateGroupDM();
   const createChannel = useCreateChannel();
 
-  const candidates = (members ?? []).filter((member) => member.userId !== currentUser?.id);
+  const candidates = (members ?? []).filter((member) => member.userId !== myId);
   const normalizedQuery = query.trim().toLowerCase();
   const visibleCandidates = candidates.filter(
     (member) =>
