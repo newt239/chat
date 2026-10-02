@@ -231,3 +231,22 @@ func (r *channelMemberRepository) FindMemberIDsIn(ctx context.Context, channelID
 	}
 	return result, nil
 }
+
+func (r *channelMemberRepository) FindMembersByChannelIDs(ctx context.Context, channelIDs []string) ([]*entity.ChannelMember, error) {
+	cids, err := utils.ParseUUIDs(channelIDs, "channel ID")
+	if err != nil {
+		return nil, err
+	}
+	members, err := transaction.ResolveClient(ctx, r.client).ChannelMember.Query().
+		Where(channelmember.ChannelIDIn(cids...)).
+		Order(ent.Asc(channelmember.FieldJoinedAt)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.ChannelMember, 0, len(members))
+	for _, cm := range members {
+		result = append(result, utils.ChannelMemberToEntity(cm))
+	}
+	return result, nil
+}
