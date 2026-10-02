@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/newt239/chat/internal/domain/entity"
+
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 
@@ -22,7 +24,8 @@ const maxWebhookPayloadBytes = 64 << 10
 
 // WebhookPoster はアプリの着信 Webhook の投稿を受け付けるユースケースです
 type WebhookPoster interface {
-	Post(ctx context.Context, input appuc.PostInput) (*messageuc.MessageOutput, error)
+	Authenticate(ctx context.Context, appID, token string) (*entity.App, error)
+	Post(ctx context.Context, app *entity.App, input appuc.PostInput) (*messageuc.MessageOutput, error)
 }
 
 // webhookPayload は Slack の Incoming Webhook と互換の最小限の形式です。
@@ -45,7 +48,12 @@ var webhookErrorStatuses = []struct {
 func webhookHandler(poster WebhookPoster, limiter RateLimiter) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		appID := c.Param("id")
-		if ok, wait := limiter.Allow(c.Request().Context(), appID); !ok {
+		// 不正なトークンで他のアプリの枠を使い切られないよう、確かめてから数える
+		app, err := poster.Authenticate(c.Request().Context(), appID, c.Param("token"))
+		if err != nil {
+			return webhookError(c, appID, err)
+		}
+		if ok, wait := limiter.Allow(c.Request().Context(), app.ID); !ok {
 			c.Response().Header().Set("Retry-After", strconv.Itoa(int(math.Ceil(wait.Seconds()))))
 			return c.String(http.StatusTooManyRequests, "rate_limited")
 		}
@@ -62,24 +70,21 @@ func webhookHandler(poster WebhookPoster, limiter RateLimiter) echo.HandlerFunc 
 		if err := json.Unmarshal(body, &payload); err != nil {
 			return c.String(http.StatusBadRequest, "invalid_payload")
 		}
-		_, err = poster.Post(c.Request().Context(), appuc.PostInput{
-			AppID:     appID,
-			Token:     c.Param("token"),
-			Text:      payload.Text,
-			ChannelID: payload.ChannelID,
-			ParentID:  payload.ThreadID,
-		})
-		if err != nil {
-			for _, entry := range webhookErrorStatuses {
-				for _, target := range entry.errs {
-					if errors.Is(err, target) {
-						return c.String(entry.status, err.Error())
-					}
-				}
-			}
-			logger.Get().Error("Webhook の投稿に失敗しました", zap.String("appId", appID), zap.Error(err))
-			return c.String(http.StatusInternalServerError, "internal_error")
+		if _, err := poster.Post(c.Request().Context(), app, appuc.PostInput{Text: payload.Text, ChannelID: payload.ChannelID, ParentID: payload.ThreadID}); err != nil {
+			return webhookError(c, appID, err)
 		}
 		return c.String(http.StatusOK, "ok")
 	}
+}
+
+func webhookError(c echo.Context, appID string, err error) error {
+	for _, entry := range webhookErrorStatuses {
+		for _, target := range entry.errs {
+			if errors.Is(err, target) {
+				return c.String(entry.status, err.Error())
+			}
+		}
+	}
+	logger.Get().Error("Webhook の投稿に失敗しました", zap.String("appId", appID), zap.Error(err))
+	return c.String(http.StatusInternalServerError, "internal_error")
 }

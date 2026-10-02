@@ -52,9 +52,7 @@ type ChannelInput struct {
 
 // PostInput は着信 Webhook に届いた投稿です
 type PostInput struct {
-	AppID string
-	Token string
-	Text  string
+	Text string
 	// 省略したらアプリの既定のチャンネルに投稿する
 	ChannelID *string
 	ParentID  *string

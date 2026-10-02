@@ -57,6 +57,7 @@ type Interactor struct {
 	poster            MessagePoster
 	txManager         domaintransaction.Manager
 	recorder          audit.Recorder
+	logger            domainservice.Logger
 }
 
 func NewInteractor(
@@ -70,6 +71,7 @@ func NewInteractor(
 	poster MessagePoster,
 	txManager domaintransaction.Manager,
 	recorder audit.Recorder,
+	logger domainservice.Logger,
 ) *Interactor {
 	return &Interactor{
 		appRepo:           appRepo,
@@ -82,10 +84,11 @@ func NewInteractor(
 		poster:            poster,
 		txManager:         txManager,
 		recorder:          recorder,
+		logger:            logger,
 	}
 }
 
-// List はワークスペースのアプリを返します。公式アプリがまだなければ用意します
+// List はワークスペースのアプリを返します
 func (i *Interactor) List(ctx context.Context, input ListInput) ([]Output, error) {
 	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
@@ -93,9 +96,6 @@ func (i *Interactor) List(ctx context.Context, input ListInput) ([]Output, error
 	}
 	if member == nil {
 		return nil, domerr.ErrUnauthorized
-	}
-	if _, err := i.EnsureOfficial(ctx, input.WorkspaceID); err != nil {
-		return nil, err
 	}
 	apps, err := i.appRepo.FindByWorkspaceID(ctx, input.WorkspaceID)
 	if err != nil {
@@ -248,19 +248,23 @@ func (i *Interactor) RemoveFromChannel(ctx context.Context, input ChannelInput) 
 	return i.channelMemberRepo.RemoveMember(ctx, ch.ID, app.BotUserID)
 }
 
-// Post は着信 Webhook に届いた内容をアプリのボットユーザー名義で投稿します
-func (i *Interactor) Post(ctx context.Context, input PostInput) (*messageuc.MessageOutput, error) {
-	if uuid.Validate(input.AppID) != nil {
+// Authenticate は着信 Webhook のアプリとトークンを確かめます。トークンの誤りも存在しない場合と区別しない
+func (i *Interactor) Authenticate(ctx context.Context, appID, token string) (*entity.App, error) {
+	if uuid.Validate(appID) != nil {
 		return nil, ErrAppNotFound
 	}
-	app, err := i.appRepo.FindByID(ctx, input.AppID)
+	app, err := i.appRepo.FindByID(ctx, appID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load app: %w", err)
 	}
-	// トークンの誤りも存在しない場合と区別しない
-	if app == nil || !app.VerifyToken(input.Token) {
+	if app == nil || !app.VerifyToken(token) {
 		return nil, ErrAppNotFound
 	}
+	return app, nil
+}
+
+// Post は Authenticate で確かめたアプリのボットユーザー名義で、着信 Webhook に届いた内容を投稿します
+func (i *Interactor) Post(ctx context.Context, app *entity.App, input PostInput) (*messageuc.MessageOutput, error) {
 	creator, err := i.workspaceRepo.FindMember(ctx, app.WorkspaceID, app.CreatedBy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify creator: %w", err)
@@ -284,8 +288,9 @@ func (i *Interactor) Post(ctx context.Context, input PostInput) (*messageuc.Mess
 	if err != nil {
 		return nil, err
 	}
+	// 最終利用日時は表示のためだけなので、記録できなくても投稿は成功させる
 	if err := i.appRepo.MarkUsed(ctx, app.ID, output.CreatedAt); err != nil {
-		return nil, fmt.Errorf("failed to update last used time: %w", err)
+		i.logger.Warn("アプリの最終利用日時を記録できません", domainservice.LogField{Key: "appId", Value: app.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
 	}
 	return output, nil
 }
@@ -366,7 +371,7 @@ func (i *Interactor) postAs(ctx context.Context, app *entity.App, channelID stri
 		if err != nil {
 			return nil, fmt.Errorf("failed to load parent message: %w", err)
 		}
-		if parent == nil || parent.ChannelID != ch.ID || parent.ParentID != nil || parent.DeletedAt != nil {
+		if !parent.CanBeRepliedIn(ch.ID) {
 			return nil, domerr.ErrParentMessageNotFound
 		}
 		message.ParentID = parentID
@@ -529,10 +534,6 @@ func (i *Interactor) toOutputs(ctx context.Context, apps []*entity.App, viewerID
 
 	outputs := make([]Output, 0, len(apps))
 	for _, a := range apps {
-		creator := messageuc.UserInfo{ID: a.CreatedBy}
-		if u := byID[a.CreatedBy]; u != nil {
-			creator = messageuc.UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL}
-		}
 		canManage := !a.IsOfficial && (isAdmin || a.CreatedBy == viewerID)
 		output := Output{
 			ID:               a.ID,
@@ -545,7 +546,7 @@ func (i *Interactor) toOutputs(ctx context.Context, apps []*entity.App, viewerID
 			OutgoingURL:      a.OutgoingURL,
 			IsOfficial:       a.IsOfficial,
 			BotUserID:        a.BotUserID,
-			CreatedBy:        creator,
+			CreatedBy:        messageuc.UserInfoOf(a.CreatedBy, byID),
 			CreatedAt:        a.CreatedAt,
 			LastUsedAt:       a.LastUsedAt,
 			CanManage:        canManage,
