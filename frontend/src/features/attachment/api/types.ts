@@ -7,6 +7,7 @@ type AttachmentUploadState =
   | { status: "error"; error: string };
 
 export type PendingAttachment = {
+  id: string;
   file: File;
   state: AttachmentUploadState;
 };
