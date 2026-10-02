@@ -18,8 +18,8 @@ const message = create(MessageSchema, {
 
 const renderSheet = async () => {
   const handlers = {
-    handleDelete: vi.fn<() => void>(),
     handleClose: vi.fn<() => void>(),
+    handleDelete: vi.fn<() => void>(),
     handleReact: vi.fn<(emoji: string) => void>(),
   };
   await renderWithProviders(
