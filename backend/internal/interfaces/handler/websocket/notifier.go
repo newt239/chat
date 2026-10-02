@@ -91,23 +91,14 @@ func (n *Notifier) NotifyDeletedMessage(workspaceID, channelID string, deletion 
 
 func (n *Notifier) NotifyReactionAdded(workspaceID, channelID string, reaction reactionuc.ReactionNotification) {
 	n.broadcastToSubscribers(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_ReactionAdded{
-		ReactionAdded: reactionEvent(channelID, reaction),
+		ReactionAdded: presenter.ReactionEvent(channelID, reaction),
 	}})
 }
 
 func (n *Notifier) NotifyReactionRemoved(workspaceID, channelID string, reaction reactionuc.ReactionNotification) {
 	n.broadcastToSubscribers(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_ReactionRemoved{
-		ReactionRemoved: reactionEvent(channelID, reaction),
+		ReactionRemoved: presenter.ReactionEvent(channelID, reaction),
 	}})
-}
-
-func reactionEvent(channelID string, reaction reactionuc.ReactionNotification) *chatv1.ReactionEvent {
-	event := &chatv1.ReactionEvent{ChannelId: channelID, MessageId: reaction.MessageID, UserId: reaction.UserID, Emoji: reaction.Emoji}
-	if reaction.User != nil {
-		event.User = &chatv1.UserSummary{Id: reaction.User.ID, DisplayName: reaction.User.DisplayName, AvatarUrl: reaction.User.AvatarURL}
-		event.CreatedAt = timestamppb.New(reaction.CreatedAt)
-	}
-	return event
 }
 
 func (n *Notifier) NotifyUnreadCount(workspaceID, userID, channelID string, unreadCount, mentionCount int) {
@@ -121,36 +112,21 @@ func (n *Notifier) NotifyUnreadCount(workspaceID, userID, channelID string, unre
 
 func (n *Notifier) NotifyPinCreated(workspaceID, channelID string, memberIDs []string, pin pinuc.PinNotification) {
 	n.broadcastToUsers(workspaceID, memberIDs, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_PinCreated{
-		PinCreated: pinEvent(channelID, pin),
+		PinCreated: presenter.PinEvent(channelID, pin),
 	}})
 }
 
 func (n *Notifier) NotifyPinDeleted(workspaceID, channelID string, memberIDs []string, pin pinuc.PinNotification) {
 	n.broadcastToUsers(workspaceID, memberIDs, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_PinDeleted{
-		PinDeleted: pinEvent(channelID, pin),
+		PinDeleted: presenter.PinEvent(channelID, pin),
 	}})
-}
-
-func pinEvent(channelID string, pin pinuc.PinNotification) *chatv1.PinEvent {
-	event := &chatv1.PinEvent{ChannelId: channelID, MessageId: pin.MessageID, PinnedBy: pin.PinnedBy, PinnedAt: timestamppb.New(pin.PinnedAt)}
-	if pin.PinnedByUser != nil {
-		event.PinnedByUser = presenter.UserSummary(*pin.PinnedByUser)
-	}
-	return event
 }
 
 func (n *Notifier) NotifySystemMessageCreated(workspaceID, channelID string, message *entity.SystemMessage) {
 	n.broadcastToSubscribers(workspaceID, channelID, &chatv1.ServerEvent{Event: &chatv1.ServerEvent_SystemMessageCreated{
 		SystemMessageCreated: &chatv1.SystemMessageEvent{
 			ChannelId: channelID,
-			Message: presenter.SystemMessage(messageuc.SystemMessageOutput{
-				ID:        message.ID,
-				ChannelID: message.ChannelID,
-				Kind:      string(message.Kind),
-				Payload:   message.Payload,
-				ActorID:   message.ActorID,
-				CreatedAt: message.CreatedAt,
-			}),
+			Message:   presenter.SystemMessage(messageuc.NewSystemMessageOutput(message)),
 		},
 	}})
 }

@@ -3,6 +3,7 @@ package reaction
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -17,20 +18,13 @@ func (stubMessageRepo) FindByID(_ context.Context, id string) (*entity.Message, 
 	return &entity.Message{ID: id, ChannelID: "ch1"}, nil
 }
 
-func (stubMessageRepo) AddReaction(_ context.Context, _ *entity.MessageReaction) error {
+func (stubMessageRepo) AddReaction(_ context.Context, r *entity.MessageReaction) error {
+	r.CreatedAt = time.Now()
 	return nil
 }
 
 func (stubMessageRepo) RemoveReaction(_ context.Context, _, _, _ string) error {
 	return nil
-}
-
-type stubChannelRepo struct {
-	domainrepository.ChannelRepository
-}
-
-func (stubChannelRepo) FindByID(_ context.Context, id string) (*entity.Channel, error) {
-	return &entity.Channel{ID: id, WorkspaceID: "ws"}, nil
 }
 
 type stubUserRepo struct {
@@ -64,7 +58,7 @@ func (n *recordingNotifier) NotifyReactionRemoved(_, _ string, reaction Reaction
 
 func TestReactionNotificationsIncludeUserOnAdd(t *testing.T) {
 	notifier := &recordingNotifier{}
-	uc := NewReactionInteractor(stubMessageRepo{}, stubChannelRepo{}, nil, nil, stubUserRepo{}, notifier, stubChannelAccess{})
+	uc := NewReactionInteractor(stubMessageRepo{}, stubUserRepo{}, notifier, stubChannelAccess{})
 	input := AddReactionInput{MessageID: "m1", UserID: "u1", Emoji: "👍"}
 
 	if err := uc.AddReaction(context.Background(), input); err != nil {

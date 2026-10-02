@@ -2,18 +2,12 @@ package invitation
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
-)
-
-var (
-	ErrAlreadyMember = errors.New("このユーザーは既にワークスペースに参加しています")
-	ErrInvalidRole   = errors.New("招待できないロールです")
 )
 
 // Sender は招待メールの送信先です。当面はリンクを管理画面でコピーするため送信しない実装を使います
@@ -77,11 +71,11 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*CreateOutp
 	switch input.Role {
 	case entity.WorkspaceRoleAdmin:
 		if !requester.IsAdmin() {
-			return nil, domainerrors.ErrUnauthorized
+			return nil, domerr.ErrUnauthorized
 		}
 	case entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
 	default:
-		return nil, ErrInvalidRole
+		return nil, domerr.ErrInvalidRole
 	}
 
 	email := entity.NormalizeEmail(input.Email)
@@ -128,7 +122,7 @@ func (i *Interactor) addExistingUser(ctx context.Context, input CreateInput, use
 		return nil, err
 	}
 	if existing != nil {
-		return nil, ErrAlreadyMember
+		return nil, domerr.ErrAlreadyMember
 	}
 	member := &entity.WorkspaceMember{WorkspaceID: input.WorkspaceID, UserID: user.ID, Role: input.Role, JoinedAt: time.Now()}
 	if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
@@ -178,14 +172,14 @@ func (i *Interactor) Preview(ctx context.Context, token string) (*PreviewOutput,
 		return nil, err
 	}
 	if invitation == nil || !invitation.IsPending(time.Now()) {
-		return nil, domainerrors.ErrInvitationNotFound
+		return nil, domerr.ErrInvitationNotFound
 	}
 	workspace, err := i.workspaceRepo.FindByID(ctx, invitation.WorkspaceID)
 	if err != nil {
 		return nil, err
 	}
 	if workspace == nil {
-		return nil, domainerrors.ErrInvitationNotFound
+		return nil, domerr.ErrInvitationNotFound
 	}
 	return &PreviewOutput{WorkspaceName: workspace.Name, Email: invitation.Email}, nil
 }

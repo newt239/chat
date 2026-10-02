@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
@@ -110,7 +111,7 @@ func TestListMentionsRequiresMembership(t *testing.T) {
 
 	_, err := lister.ListMentions(context.Background(), ListMentionsInput{WorkspaceID: "ws", UserID: "u1"})
 
-	if !errors.Is(err, ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("メンバー以外が拒否されていません: %v", err)
 	}
 	if messageRepo.input != nil {

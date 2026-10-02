@@ -162,7 +162,7 @@ func TestGetInsightsRejects(t *testing.T) {
 	if _, err := uc.GetInsights(context.Background(), Input{WorkspaceID: "ws", RequesterID: "stranger", TimeZone: "UTC"}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Errorf("ワークスペース外のユーザーが閲覧できてしまいます: %v", err)
 	}
-	if _, err := uc.GetInsights(context.Background(), Input{WorkspaceID: "ws", RequesterID: "member", TimeZone: "Mars/Olympus"}); !errors.Is(err, ErrInvalidTimeZone) {
+	if _, err := uc.GetInsights(context.Background(), Input{WorkspaceID: "ws", RequesterID: "member", TimeZone: "Mars/Olympus"}); !errors.Is(err, domerr.ErrInvalidTimeZone) {
 		t.Errorf("不正なタイムゾーンが拒否されていません: %v", err)
 	}
 }

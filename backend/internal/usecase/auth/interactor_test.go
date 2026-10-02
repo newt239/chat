@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/usecase/audit"
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
@@ -172,7 +173,7 @@ func (g stubGoogle) Verify(_ context.Context, token string) (*GoogleIdentity, er
 	if identity, ok := g[token]; ok {
 		return identity, nil
 	}
-	return nil, ErrInvalidToken
+	return nil, domerr.ErrInvalidToken
 }
 
 // "コード:code_verifier" に対応する ID トークンを返す
@@ -182,7 +183,7 @@ func (g stubGoogleCode) Exchange(_ context.Context, code, codeVerifier string) (
 	if token, ok := g[code+":"+codeVerifier]; ok {
 		return token, nil
 	}
-	return "", ErrInvalidToken
+	return "", domerr.ErrInvalidToken
 }
 
 var googleCode = stubGoogleCode{"code-alice:verifier": "alice-nonce"}
@@ -258,7 +259,7 @@ func TestLoginRecordsAuditLogInEveryWorkspace(t *testing.T) {
 func TestLoginFailureRecordsAuditLogWithoutActor(t *testing.T) {
 	f := newFixture(true)
 
-	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "wrong"}); !errors.Is(err, ErrInvalidCredentials) {
+	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "wrong"}); !errors.Is(err, domerr.ErrInvalidCredentials) {
 		t.Fatalf("エラーが期待と異なります: %v", err)
 	}
 	if len(f.sessions.created) != 0 {
@@ -275,10 +276,10 @@ func TestLoginFailureRecordsAuditLogWithoutActor(t *testing.T) {
 func TestPasswordAuthCanBeDisabled(t *testing.T) {
 	f := newFixture(false)
 
-	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "password123"}); !errors.Is(err, ErrPasswordAuthDisabled) {
+	if _, err := f.uc.Login(context.Background(), LoginInput{Email: "alice@example.com", Password: "password123"}); !errors.Is(err, domerr.ErrPasswordAuthDisabled) {
 		t.Errorf("パスワード認証が無効なのにログインできました: %v", err)
 	}
-	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, ErrPasswordAuthDisabled) {
+	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, domerr.ErrPasswordAuthDisabled) {
 		t.Errorf("パスワード認証が無効なのに招待からパスワードで登録できました: %v", err)
 	}
 	if len(f.sessions.created) != 0 || len(f.users.created) != 0 {
@@ -300,7 +301,7 @@ func TestRefreshRotatesSessionFoundByTokenHash(t *testing.T) {
 	if out.User.ID != "alice" || !slices.Equal(f.sessions.rotated, []string{"s2"}) || len(f.sessions.created) != 0 {
 		t.Errorf("一致したセッションのトークンだけを差し替えるはず: rotated=%v created=%d", f.sessions.rotated, len(f.sessions.created))
 	}
-	if _, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "unknown"}); !errors.Is(err, ErrInvalidToken) {
+	if _, err := f.uc.RefreshToken(context.Background(), RefreshTokenInput{RefreshToken: "unknown"}); !errors.Is(err, domerr.ErrInvalidToken) {
 		t.Errorf("未知のトークンは拒否するはず: %v", err)
 	}
 }
@@ -314,9 +315,9 @@ func TestLoginWithGoogle(t *testing.T) {
 	}{
 		{name: "sub が紐付いたユーザーはメールアドレスが変わってもログインできる", token: "linked", wantUser: "linked"},
 		{name: "未紐付けの既存ユーザーはメールアドレスで紐付く", token: "alice", wantUser: "alice"},
-		{name: "招待のない未登録のメールアドレスは拒否する", token: "stranger", wantErr: ErrInvitationRequired},
-		{name: "確認されていないメールアドレスは拒否する", token: "bob", wantErr: ErrEmailNotVerified},
-		{name: "不正な ID トークンは拒否する", token: "forged", wantErr: ErrInvalidToken},
+		{name: "招待のない未登録のメールアドレスは拒否する", token: "stranger", wantErr: domerr.ErrInvitationRequired},
+		{name: "確認されていないメールアドレスは拒否する", token: "bob", wantErr: domerr.ErrEmailNotVerified},
+		{name: "不正な ID トークンは拒否する", token: "forged", wantErr: domerr.ErrInvalidToken},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -346,8 +347,8 @@ func TestLoginWithGoogleCode(t *testing.T) {
 		wantErr  error
 	}{
 		{name: "交換した ID トークンの nonce が一致すればログインできる", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "nonce-1"}, wantUser: "alice"},
-		{name: "nonce が一致しなければ拒否する", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "other"}, wantErr: ErrInvalidToken},
-		{name: "code_verifier が違えば交換できない", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "wrong", Nonce: "nonce-1"}, wantErr: ErrInvalidToken},
+		{name: "nonce が一致しなければ拒否する", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "verifier", Nonce: "other"}, wantErr: domerr.ErrInvalidToken},
+		{name: "code_verifier が違えば交換できない", input: LoginWithGoogleCodeInput{Code: "code-alice", CodeVerifier: "wrong", Nonce: "nonce-1"}, wantErr: domerr.ErrInvalidToken},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -403,7 +404,7 @@ func TestLoginWithGoogleCreatesInvitedUser(t *testing.T) {
 func TestSignUpWithInvitation(t *testing.T) {
 	f := newFixture(true)
 
-	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "expired-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, ErrInvitationNotFound) {
+	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "expired-token", DisplayName: "New", Password: "password123"}); !errors.Is(err, domerr.ErrInvitationNotFound) {
 		t.Fatalf("期限切れの招待は拒否するはず: %v", err)
 	}
 	if _, err := f.uc.SignUpWithInvitation(context.Background(), SignUpWithInvitationInput{Token: "invite-token", DisplayName: "New", Password: "password123"}); err != nil {
@@ -437,8 +438,8 @@ func TestLoginWithGoogleCreatesUserFromSignupWorkspace(t *testing.T) {
 		wantErr     error
 	}{
 		{name: "登録を許可したワークスペースなら招待がなくても作る", workspaceID: "google-only"},
-		{name: "登録を許可していないワークスペースは拒否する", workspaceID: "closed", wantErr: ErrSignupDisabled},
-		{name: "存在しないワークスペースは拒否する", workspaceID: "missing", wantErr: ErrSignupDisabled},
+		{name: "登録を許可していないワークスペースは拒否する", workspaceID: "closed", wantErr: domerr.ErrSignupDisabled},
+		{name: "存在しないワークスペースは拒否する", workspaceID: "missing", wantErr: domerr.ErrSignupDisabled},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -467,10 +468,10 @@ func TestSignUp(t *testing.T) {
 		wantErr             error
 	}{
 		{name: "登録とメールでの登録を許可したワークスペースなら作る", passwordAuthEnabled: true, workspaceID: "open", email: "New@Example.com"},
-		{name: "メールでの登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "google-only", email: "new@example.com", wantErr: ErrSignupDisabled},
-		{name: "登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "closed", email: "new@example.com", wantErr: ErrSignupDisabled},
-		{name: "パスワード認証が無効なら拒否する", passwordAuthEnabled: false, workspaceID: "open", email: "new@example.com", wantErr: ErrPasswordAuthDisabled},
-		{name: "登録済みのメールアドレスは拒否する", passwordAuthEnabled: true, workspaceID: "open", email: "alice@example.com", wantErr: ErrUserAlreadyExists},
+		{name: "メールでの登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "google-only", email: "new@example.com", wantErr: domerr.ErrSignupDisabled},
+		{name: "登録を許可していなければ拒否する", passwordAuthEnabled: true, workspaceID: "closed", email: "new@example.com", wantErr: domerr.ErrSignupDisabled},
+		{name: "パスワード認証が無効なら拒否する", passwordAuthEnabled: false, workspaceID: "open", email: "new@example.com", wantErr: domerr.ErrPasswordAuthDisabled},
+		{name: "登録済みのメールアドレスは拒否する", passwordAuthEnabled: true, workspaceID: "open", email: "alice@example.com", wantErr: domerr.ErrUserAlreadyExists},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

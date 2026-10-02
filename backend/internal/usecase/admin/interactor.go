@@ -18,7 +18,7 @@ var (
 	ErrMemberNotFound       = errors.New("メンバーが見つかりません")
 	ErrCannotSuspendOwner   = errors.New("オーナーは停止できません")
 	ErrCannotSuspendSelf    = errors.New("自分自身は停止できません")
-	ErrInvalidPermission    = errors.New("無効な権限の指定です")
+	ErrInvalidPermission    = fmt.Errorf("%w: 無効な権限の指定です", domerr.ErrValidation)
 	ErrOwnerOnlyPermissions = errors.New("管理者の権限はオーナーだけが変更できます")
 )
 

@@ -256,7 +256,7 @@ func TestDelete(t *testing.T) {
 	}{
 		{name: "登録者は削除できる", userID: creatorID, emojiID: "e1"},
 		{name: "管理者は削除できる", userID: adminID, emojiID: "e1"},
-		{name: "他のメンバーは削除できない", userID: otherID, emojiID: "e1", want: ErrUnauthorized},
+		{name: "他のメンバーは削除できない", userID: otherID, emojiID: "e1", want: domerr.ErrUnauthorized},
 		{name: "他のワークスペースの絵文字は見つからない", userID: adminID, emojiID: "e2", want: ErrEmojiNotFound},
 		{name: "メンバー以外は削除できない", userID: outsiderID, emojiID: "e1", want: domerr.ErrUnauthorized},
 	}

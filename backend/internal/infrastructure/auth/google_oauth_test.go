@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
 func TestGoogleOAuthAuthCodeURL(t *testing.T) {
@@ -40,7 +40,7 @@ func TestGoogleOAuthAppRedirectURLForwardsOnlyKnownParams(t *testing.T) {
 func TestGoogleOAuthDisabledWithoutSecret(t *testing.T) {
 	g := NewGoogleOAuth("client", "", "https://api.example.com/oauth/google/callback", "dev.newt239.chat://auth/callback")
 
-	if _, err := g.AuthCodeURL("state-1", "challenge", "nonce-1"); !errors.Is(err, domainerrors.ErrGoogleAuthDisabled) {
+	if _, err := g.AuthCodeURL("state-1", "challenge", "nonce-1"); !errors.Is(err, domerr.ErrGoogleAuthDisabled) {
 		t.Errorf("client secret がないのに認可 URL を返しました: %v", err)
 	}
 }

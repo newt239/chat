@@ -20,12 +20,9 @@ import (
 )
 
 var (
-	ErrUnauthorized         = errors.New("この操作を行う権限がありません")
-	ErrWorkspaceNotFound    = errors.New("ワークスペースが見つかりません")
-	ErrChannelNotFound      = errors.New("チャンネルが見つかりません")
 	ErrChannelNameExists    = errors.New("同じ名前のチャンネルがすでに存在します")
 	ErrChannelHasChildren   = errors.New("下の階層にチャンネルがあるため削除できません")
-	ErrMemberNotInWorkspace = errors.New("ワークスペースのメンバーではないユーザーが含まれています")
+	ErrMemberNotInWorkspace = fmt.Errorf("%w: ワークスペースのメンバーではないユーザーが含まれています", domerr.ErrValidation)
 	ErrCannotArchiveDM      = errors.New("DM はアーカイブできません")
 )
 
@@ -97,7 +94,7 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
 	if workspace == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 
 	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
@@ -105,7 +102,7 @@ func (i *channelInteractor) ListChannels(ctx context.Context, input ListChannels
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
 	if member == nil {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	joined, err := i.channelRepo.FindAccessibleChannels(ctx, input.WorkspaceID, input.UserID)
@@ -181,7 +178,7 @@ func (i *channelInteractor) ListBrowsableChannels(ctx context.Context, input Lis
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
 	if member == nil {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	channels, err := i.channelRepo.FindBrowsableChannels(ctx, input.WorkspaceID, input.UserID)
@@ -197,7 +194,7 @@ func (i *channelInteractor) SearchBrowsableChannels(ctx context.Context, input S
 		return nil, fmt.Errorf("failed to verify membership: %w", err)
 	}
 	if member == nil {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	channels, total, err := i.channelRepo.SearchBrowsableChannels(ctx, input.WorkspaceID, input.UserID, domainrepository.BrowsableChannelFilter{
@@ -287,7 +284,7 @@ func (i *channelInteractor) CreateChannel(ctx context.Context, input CreateChann
 		return nil, fmt.Errorf("failed to load workspace: %w", err)
 	}
 	if workspace == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 
 	permission := entity.PermissionCreatePublicChannel
@@ -380,7 +377,7 @@ func (i *channelInteractor) ensureAncestors(ctx context.Context, ch *entity.Chan
 				return nil, err
 			}
 			if len(accessible) == 0 {
-				return nil, ErrUnauthorized
+				return nil, domerr.ErrUnauthorized
 			}
 		} else {
 			parent, err = entity.NewChannel(entity.ChannelParams{
@@ -469,7 +466,7 @@ func (i *channelInteractor) DeleteChannel(ctx context.Context, input DeleteChann
 		return fmt.Errorf("failed to fetch channel: %w", err)
 	}
 	if ch == nil {
-		return ErrChannelNotFound
+		return domerr.ErrChannelNotFound
 	}
 
 	if err := i.ensureCanManage(ctx, ch, input.UserID); err != nil {
@@ -498,7 +495,7 @@ func (i *channelInteractor) SetArchived(ctx context.Context, input SetArchivedIn
 		return nil, fmt.Errorf("failed to fetch channel: %w", err)
 	}
 	if ch == nil {
-		return nil, ErrChannelNotFound
+		return nil, domerr.ErrChannelNotFound
 	}
 	if ch.Type == entity.ChannelTypeDM || ch.Type == entity.ChannelTypeGroupDM {
 		return nil, ErrCannotArchiveDM
@@ -532,7 +529,7 @@ func (i *channelInteractor) ensureCanManage(ctx context.Context, ch *entity.Chan
 		return fmt.Errorf("failed to verify membership: %w", err)
 	}
 	if member == nil || (ch.CreatedBy != userID && !member.IsAdmin()) {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 	return nil
 }
@@ -562,13 +559,13 @@ func (i *channelInteractor) UpdateChannel(ctx context.Context, input UpdateChann
 		return nil, fmt.Errorf("failed to fetch channel: %w", err)
 	}
 	if ch == nil {
-		return nil, ErrChannelNotFound
+		return nil, domerr.ErrChannelNotFound
 	}
 
 	// 権限: ワークスペースの管理権限（チャンネル編集権限として流用）
 	wsMember, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
 	if err != nil || wsMember == nil || !wsMember.IsAdmin() {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	// 変更適用

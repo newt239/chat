@@ -90,7 +90,7 @@ func (c *MessageCreator) CreateMessage(ctx context.Context, input CreateMessageI
 			return nil, fmt.Errorf("failed to fetch parent message: %w", err)
 		}
 		if parent == nil || parent.ChannelID != channel.ID {
-			return nil, ErrParentMessageNotFound
+			return nil, domerr.ErrParentMessageNotFound
 		}
 	}
 
@@ -183,11 +183,11 @@ func (c *MessageCreator) verifyAttachments(ctx context.Context, input CreateMess
 		return fmt.Errorf("failed to verify attachments: %w", err)
 	}
 	if len(attachments) != len(input.AttachmentIDs) {
-		return ErrAttachmentNotFound
+		return domerr.ErrAttachmentNotFound
 	}
 	for _, attachment := range attachments {
 		if attachment.ChannelID != channelID {
-			return ErrAttachmentNotFound
+			return domerr.ErrAttachmentNotFound
 		}
 	}
 	return nil
@@ -200,7 +200,7 @@ func (c *MessageCreator) followThread(ctx context.Context, threadID, replierID s
 		return fmt.Errorf("failed to fetch parent message: %w", err)
 	}
 	if parent == nil {
-		return ErrParentMessageNotFound
+		return domerr.ErrParentMessageNotFound
 	}
 
 	for _, userID := range []string{parent.UserID, replierID} {

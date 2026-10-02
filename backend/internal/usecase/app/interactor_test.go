@@ -317,7 +317,7 @@ func TestDeleteRequiresCreatorOrAdmin(t *testing.T) {
 	out := f.create(t)
 	ctx := context.Background()
 
-	if err := f.uc.Delete(ctx, TargetInput{AppID: out.App.ID, UserID: otherID}); !errors.Is(err, ErrUnauthorized) {
+	if err := f.uc.Delete(ctx, TargetInput{AppID: out.App.ID, UserID: otherID}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("作成者と管理者以外の削除を拒否していません: %v", err)
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -95,7 +95,7 @@ func (s *builderChannelAccess) EnsureChannelAccess(_ context.Context, channelID 
 	if ch := s.accessible[channelID]; ch != nil {
 		return ch, nil
 	}
-	return nil, domainerrors.ErrUnauthorized
+	return nil, domerr.ErrUnauthorized
 }
 
 const (
@@ -244,7 +244,7 @@ func TestBuildPreview(t *testing.T) {
 	}
 
 	for _, id := range []string{secretTargetID, deletedID, "missing"} {
-		if _, err := builder.BuildPreview(context.Background(), viewerID, id); !errors.Is(err, ErrMessageNotFound) {
+		if _, err := builder.BuildPreview(context.Background(), viewerID, id); !errors.Is(err, domerr.ErrMessageNotFound) {
 			t.Errorf("%s は見つからない扱いにすべきです: %v", id, err)
 		}
 	}

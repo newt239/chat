@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domaintransaction "github.com/newt239/chat/internal/domain/transaction"
 	"github.com/newt239/chat/internal/usecase/audit"
@@ -43,18 +43,6 @@ type GoogleVerifier interface {
 type GoogleCodeExchanger interface {
 	Exchange(ctx context.Context, code, codeVerifier string) (idToken string, err error)
 }
-
-var (
-	ErrInvalidCredentials   = domainerrors.ErrInvalidCredentials
-	ErrUserAlreadyExists    = domainerrors.ErrUserAlreadyExists
-	ErrInvalidToken         = domainerrors.ErrInvalidToken
-	ErrSessionNotFound      = domainerrors.ErrSessionNotFound
-	ErrInvitationRequired   = domainerrors.ErrInvitationRequired
-	ErrInvitationNotFound   = domainerrors.ErrInvitationNotFound
-	ErrEmailNotVerified     = domainerrors.ErrEmailNotVerified
-	ErrPasswordAuthDisabled = domainerrors.ErrPasswordAuthDisabled
-	ErrSignupDisabled       = domainerrors.ErrSignupDisabled
-)
 
 type AuthUseCase interface {
 	PasswordAuthEnabled() bool
@@ -118,19 +106,19 @@ func (i *authInteractor) PasswordAuthEnabled() bool {
 
 func (i *authInteractor) Login(ctx context.Context, input LoginInput) (*AuthOutput, error) {
 	if !i.settings.PasswordAuthEnabled {
-		return nil, ErrPasswordAuthDisabled
+		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	user, err := i.userRepo.FindByEmail(ctx, entity.NormalizeEmail(input.Email))
 	if err != nil {
 		return nil, err
 	}
 	if user == nil || user.IsApp {
-		return nil, ErrInvalidCredentials
+		return nil, domerr.ErrInvalidCredentials
 	}
 
 	if err := i.passwordSvc.VerifyPassword(input.Password, user.PasswordHash); err != nil {
 		i.recordLogin(ctx, user, entity.AuditActionLoginFailed)
-		return nil, ErrInvalidCredentials
+		return nil, domerr.ErrInvalidCredentials
 	}
 	return i.login(ctx, user)
 }
@@ -156,14 +144,14 @@ func (i *authInteractor) LoginWithGoogleCode(ctx context.Context, input LoginWit
 	}
 	// 別の認可リクエストで発行されたトークンを使い回させない
 	if identity.Nonce == "" || identity.Nonce != input.Nonce {
-		return nil, ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 	return i.loginWithGoogleIdentity(ctx, identity, input.WorkspaceID)
 }
 
 func (i *authInteractor) loginWithGoogleIdentity(ctx context.Context, identity *GoogleIdentity, workspaceID *string) (*AuthOutput, error) {
 	if !identity.EmailVerified {
-		return nil, ErrEmailNotVerified
+		return nil, domerr.ErrEmailNotVerified
 	}
 
 	user, err := i.userRepo.FindByGoogleSub(ctx, identity.Sub)
@@ -194,7 +182,7 @@ func (i *authInteractor) linkGoogleAccount(ctx context.Context, identity *Google
 	}
 	// 別の Google アカウントに紐付いたユーザーやボットは乗っ取れないようにする
 	if user.IsApp || user.GoogleSub != nil {
-		return nil, ErrInvalidCredentials
+		return nil, domerr.ErrInvalidCredentials
 	}
 	user.GoogleSub = &identity.Sub
 	if err := i.userRepo.Update(ctx, user); err != nil {
@@ -210,7 +198,7 @@ func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleI
 		return nil, err
 	}
 	if len(invitations) == 0 && workspaceID == nil {
-		return nil, ErrInvitationRequired
+		return nil, domerr.ErrInvitationRequired
 	}
 
 	user := &entity.User{
@@ -238,7 +226,7 @@ func (i *authInteractor) createGoogleUser(ctx context.Context, identity *GoogleI
 
 func (i *authInteractor) SignUp(ctx context.Context, input SignUpInput) (*AuthOutput, error) {
 	if !i.settings.PasswordAuthEnabled {
-		return nil, ErrPasswordAuthDisabled
+		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	email := entity.NormalizeEmail(input.Email)
 	existing, err := i.userRepo.FindByEmail(ctx, email)
@@ -246,7 +234,7 @@ func (i *authInteractor) SignUp(ctx context.Context, input SignUpInput) (*AuthOu
 		return nil, err
 	}
 	if existing != nil {
-		return nil, ErrUserAlreadyExists
+		return nil, domerr.ErrUserAlreadyExists
 	}
 	hashed, err := i.passwordSvc.HashPassword(input.Password)
 	if err != nil {
@@ -290,7 +278,7 @@ func (i *authInteractor) checkSignupEnabled(ctx context.Context, workspaceID str
 		return err
 	}
 	if ws == nil || !ws.SignupEnabled || (byEmail && !ws.EmailSignupEnabled) {
-		return ErrSignupDisabled
+		return domerr.ErrSignupDisabled
 	}
 	return nil
 }
@@ -301,7 +289,7 @@ func (i *authInteractor) addSignupMember(ctx context.Context, workspaceID, userI
 
 func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpWithInvitationInput) (*AuthOutput, error) {
 	if !i.settings.PasswordAuthEnabled {
-		return nil, ErrPasswordAuthDisabled
+		return nil, domerr.ErrPasswordAuthDisabled
 	}
 	now := time.Now()
 	invitation, err := i.invitationRepo.FindByTokenHash(ctx, entity.HashSecretToken(input.Token))
@@ -309,14 +297,14 @@ func (i *authInteractor) SignUpWithInvitation(ctx context.Context, input SignUpW
 		return nil, err
 	}
 	if invitation == nil || !invitation.IsPending(now) {
-		return nil, ErrInvitationNotFound
+		return nil, domerr.ErrInvitationNotFound
 	}
 	existing, err := i.userRepo.FindByEmail(ctx, invitation.Email)
 	if err != nil {
 		return nil, err
 	}
 	if existing != nil {
-		return nil, ErrUserAlreadyExists
+		return nil, domerr.ErrUserAlreadyExists
 	}
 
 	hashed, err := i.passwordSvc.HashPassword(input.Password)
@@ -394,21 +382,21 @@ func (i *authInteractor) recordLogin(ctx context.Context, user *entity.User, act
 
 func (i *authInteractor) RefreshToken(ctx context.Context, input RefreshTokenInput) (*AuthOutput, error) {
 	if input.RefreshToken == "" {
-		return nil, ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 	session, err := i.sessionRepo.FindActiveByTokenHash(ctx, entity.HashSecretToken(input.RefreshToken))
 	if err != nil {
 		return nil, err
 	}
 	if session == nil {
-		return nil, ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 	user, err := i.userRepo.FindByID(ctx, session.UserID)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
-		return nil, ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 
 	// セッションはログイン単位で保持し、リフレッシュではトークンだけを差し替える

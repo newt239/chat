@@ -16,7 +16,7 @@ import (
 
 var (
 	ErrScheduledMessageNotFound = errors.New("予約メッセージが見つかりません")
-	ErrScheduleInPast           = errors.New("予約日時は現在より後にしてください")
+	ErrScheduleInPast           = fmt.Errorf("%w: 予約日時は現在より後にしてください", domerr.ErrValidation)
 	ErrNotEditable              = errors.New("送信中または送信済みの予約は変更できません")
 	errSendFailed               = errors.New("送信に失敗しました")
 )
@@ -24,7 +24,7 @@ var (
 // 送信の失敗理由としてそのまま利用者に見せるエラー。それ以外は内部の詳細を隠す
 var userFacingErrors = []error{
 	domerr.ErrUnauthorized, domerr.ErrChannelNotFound, domerr.ErrChannelArchived,
-	messageuc.ErrParentMessageNotFound, messageuc.ErrAttachmentNotFound, messageuc.ErrEmptyMessage,
+	domerr.ErrParentMessageNotFound, domerr.ErrAttachmentNotFound, messageuc.ErrEmptyMessage,
 }
 
 const dispatchBatchSize = 50
@@ -246,7 +246,7 @@ func (i *Interactor) ensureParent(ctx context.Context, parentID *string, channel
 		return fmt.Errorf("failed to load parent message: %w", err)
 	}
 	if parent == nil || parent.ChannelID != channelID || parent.DeletedAt != nil {
-		return messageuc.ErrParentMessageNotFound
+		return domerr.ErrParentMessageNotFound
 	}
 	return nil
 }
@@ -261,11 +261,11 @@ func (i *Interactor) ensureAttachments(ctx context.Context, input ScheduleInput)
 		return fmt.Errorf("failed to verify attachments: %w", err)
 	}
 	if len(attachments) != len(input.AttachmentIDs) {
-		return messageuc.ErrAttachmentNotFound
+		return domerr.ErrAttachmentNotFound
 	}
 	for _, attachment := range attachments {
 		if attachment.ChannelID != input.ChannelID {
-			return messageuc.ErrAttachmentNotFound
+			return domerr.ErrAttachmentNotFound
 		}
 	}
 	return nil

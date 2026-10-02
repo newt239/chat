@@ -2,18 +2,12 @@ package readstate
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
-)
-
-var (
-	ErrChannelNotFound = errors.New("チャンネルが見つかりません")
-	ErrUnauthorized    = errors.New("この操作を行う権限がありません")
 )
 
 type ReadStateUseCase interface {

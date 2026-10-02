@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/domain/transaction"
@@ -67,7 +68,7 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 		return nil, fmt.Errorf("メッセージの取得に失敗しました: %w", err)
 	}
 	if message == nil {
-		return nil, ErrMessageNotFound
+		return nil, domerr.ErrMessageNotFound
 	}
 
 	// チャンネルアクセス確認
@@ -91,7 +92,7 @@ func (u *MessageUpdater) UpdateMessage(ctx context.Context, input UpdateMessageI
 		return nil, fmt.Errorf("権限確認に失敗しました: %w", err)
 	}
 	if !canEdit {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	var result *MessageOutput

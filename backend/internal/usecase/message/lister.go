@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -123,14 +124,7 @@ func (l *MessageLister) fetchTimeline(ctx context.Context, userID string, channe
 		timeline = append(timeline, TimelineItem{Type: "user", UserMessage: &m, CreatedAt: m.CreatedAt})
 	}
 	for _, sm := range systemMessages {
-		timeline = append(timeline, TimelineItem{Type: "system", SystemMessage: &SystemMessageOutput{
-			ID:        sm.ID,
-			ChannelID: sm.ChannelID,
-			Kind:      string(sm.Kind),
-			Payload:   sm.Payload,
-			ActorID:   sm.ActorID,
-			CreatedAt: sm.CreatedAt,
-		}, CreatedAt: sm.CreatedAt})
+		timeline = append(timeline, TimelineItem{Type: "system", SystemMessage: new(NewSystemMessageOutput(sm)), CreatedAt: sm.CreatedAt})
 	}
 	sort.SliceStable(timeline, func(i, j int) bool {
 		if ascending {
@@ -207,7 +201,7 @@ func (l *MessageLister) buildThreadMetadata(ctx context.Context, userID string, 
 			IsFollowing: followed[id],
 		}
 		if metadata.LastReplyUserID != nil {
-			out.LastReplyUser = new(toUserInfo(*metadata.LastReplyUserID, replierMap))
+			out.LastReplyUser = new(UserInfoOf(*metadata.LastReplyUserID, replierMap))
 		}
 		result[id] = out
 	}
@@ -222,7 +216,7 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 		return nil, fmt.Errorf("failed to fetch parent message: %w", err)
 	}
 	if parentMessage == nil {
-		return nil, ErrParentMessageNotFound
+		return nil, domerr.ErrParentMessageNotFound
 	}
 
 	// チャンネルアクセス権限を確認
@@ -309,7 +303,7 @@ func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMe
 		return nil, fmt.Errorf("failed to fetch message: %w", err)
 	}
 	if message == nil {
-		return nil, ErrParentMessageNotFound
+		return nil, domerr.ErrParentMessageNotFound
 	}
 	if _, err := l.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
 		return nil, err

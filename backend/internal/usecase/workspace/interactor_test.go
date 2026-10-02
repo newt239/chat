@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/audit/audittest"
@@ -119,7 +120,7 @@ func TestUpdateMemberRole(t *testing.T) {
 				"target": member(entity.WorkspaceRoleMember),
 			},
 			input:   UpdateMemberRoleInput{UpdaterID: "user", UserID: "target", Role: "admin"},
-			wantErr: ErrUnauthorized,
+			wantErr: domerr.ErrUnauthorized,
 		},
 		{
 			name: "admin は member を admin に昇格できる",
@@ -194,7 +195,7 @@ func TestSignupEnabledWorkspace(t *testing.T) {
 			info, err := f.uc.GetSignupInfo(context.Background(), "ws")
 			_, joinErr := f.uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "u1"})
 			if tt.wantErr {
-				if !errors.Is(err, ErrWorkspaceNotFound) || joinErr == nil || len(f.repo.members) != 0 {
+				if !errors.Is(err, domerr.ErrWorkspaceNotFound) || joinErr == nil || len(f.repo.members) != 0 {
 					t.Errorf("登録を許可していないのに情報を返したか参加できました: err=%v joinErr=%v", err, joinErr)
 				}
 				return

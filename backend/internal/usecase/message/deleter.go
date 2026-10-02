@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -59,7 +60,7 @@ func (d *MessageDeleter) DeleteMessage(ctx context.Context, input DeleteMessageI
 		return fmt.Errorf("メッセージの取得に失敗しました: %w", err)
 	}
 	if message == nil {
-		return ErrMessageNotFound
+		return domerr.ErrMessageNotFound
 	}
 
 	// チャンネルアクセス確認

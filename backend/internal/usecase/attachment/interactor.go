@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -20,6 +20,7 @@ import (
 var (
 	ErrThumbnailNotAllowed = errors.New("サムネイルは動画にだけ付けられます")
 	ErrThumbnailNotFound   = errors.New("サムネイルがありません")
+	ErrFileTooLarge        = fmt.Errorf("%w: ファイルサイズが上限を超えています", domerr.ErrValidation)
 )
 
 type Interactor struct {
@@ -48,7 +49,7 @@ func NewInteractor(
 
 func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*PresignOutput, error) {
 	if input.SizeBytes > i.config.GetMaxFileSize() {
-		return nil, fmt.Errorf("ファイルサイズが上限(1GB)を超えています")
+		return nil, ErrFileTooLarge
 	}
 
 	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
@@ -118,7 +119,7 @@ func (i *Interactor) findAccessible(ctx context.Context, userID, attachmentID st
 		return nil, err
 	}
 	if attachment == nil {
-		return nil, errors.New("添付ファイルが見つかりません")
+		return nil, domerr.ErrAttachmentNotFound
 	}
 
 	channelID := attachment.ChannelID
@@ -128,7 +129,7 @@ func (i *Interactor) findAccessible(ctx context.Context, userID, attachmentID st
 			return nil, err
 		}
 		if message == nil {
-			return nil, errors.New("メッセージが見つかりません")
+			return nil, domerr.ErrMessageNotFound
 		}
 		channelID = message.ChannelID
 	}
@@ -190,10 +191,10 @@ func (i *Interactor) Delete(ctx context.Context, userID, attachmentID string) er
 		return err
 	}
 	if attachment == nil {
-		return domainerrors.ErrNotFound
+		return domerr.ErrAttachmentNotFound
 	}
 	if attachment.UploaderID != userID {
-		return domainerrors.ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	if err := i.attachmentRepo.Delete(ctx, attachmentID); err != nil {

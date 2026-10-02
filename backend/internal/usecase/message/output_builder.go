@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/domain/service"
 )
@@ -134,14 +134,14 @@ func (b *MessageOutputBuilder) Build(ctx context.Context, viewerID string, messa
 	return outputs, nil
 }
 
-// BuildPreview は viewerID が参照できるメッセージの引用カードを返します。参照できなければ ErrMessageNotFound を返します
+// BuildPreview は viewerID が参照できるメッセージの引用カードを返します。参照できなければ domerr.ErrMessageNotFound を返します
 func (b *MessageOutputBuilder) BuildPreview(ctx context.Context, viewerID, messageID string) (*MessagePreviewOutput, error) {
 	linked, channels, err := b.fetchAccessibleMessages(ctx, viewerID, []string{messageID})
 	if err != nil {
 		return nil, err
 	}
 	if len(linked) == 0 {
-		return nil, ErrMessageNotFound
+		return nil, domerr.ErrMessageNotFound
 	}
 	users, err := b.fetchUsers(ctx, []string{linked[0].UserID})
 	if err != nil {
@@ -170,7 +170,7 @@ func (b *MessageOutputBuilder) fetchAccessibleMessages(ctx context.Context, view
 		ch, checked := channels[msg.ChannelID]
 		if !checked {
 			ch, err = b.channelAccessSvc.EnsureChannelAccess(ctx, msg.ChannelID, viewerID)
-			if err != nil && !errors.Is(err, domainerrors.ErrUnauthorized) && !errors.Is(err, domainerrors.ErrChannelNotFound) {
+			if err != nil && !errors.Is(err, domerr.ErrUnauthorized) && !errors.Is(err, domerr.ErrChannelNotFound) {
 				return nil, nil, err
 			}
 			channels[msg.ChannelID] = ch
@@ -269,7 +269,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		ID:          msg.ID,
 		ChannelID:   msg.ChannelID,
 		UserID:      msg.UserID,
-		User:        toUserInfo(msg.UserID, users),
+		User:        UserInfoOf(msg.UserID, users),
 		ParentID:    msg.ParentID,
 		Body:        msg.Body,
 		Mentions:    make([]UserMention, 0, len(related.userMentions[msg.ID])),
@@ -307,7 +307,7 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 	}
 	for _, reaction := range related.reactions[msg.ID] {
 		output.Reactions = append(output.Reactions, ReactionInfo{
-			User:      toUserInfo(reaction.UserID, users),
+			User:      UserInfoOf(reaction.UserID, users),
 			Emoji:     reaction.Emoji,
 			CreatedAt: reaction.CreatedAt,
 		})
@@ -322,11 +322,11 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		})
 	}
 	if msg.DeletedBy != nil {
-		deletedBy := toUserInfo(*msg.DeletedBy, users)
+		deletedBy := UserInfoOf(*msg.DeletedBy, users)
 		output.DeletedBy = &deletedBy
 	}
 	if pin := related.pins[msg.ID]; pin != nil {
-		output.Pin = &PinInfo{PinnedBy: toUserInfo(pin.PinnedBy, users), PinnedAt: pin.PinnedAt}
+		output.Pin = &PinInfo{PinnedBy: UserInfoOf(pin.PinnedBy, users), PinnedAt: pin.PinnedAt}
 	}
 	return output
 }
@@ -337,7 +337,7 @@ func buildPreview(msg *entity.Message, ch *entity.Channel, users map[string]*ent
 		ChannelID:   msg.ChannelID,
 		ChannelName: ch.Name,
 		ParentID:    msg.ParentID,
-		User:        toUserInfo(msg.UserID, users),
+		User:        UserInfoOf(msg.UserID, users),
 		BodyExcerpt: excerpt(msg.Body, previewExcerptRunes),
 		CreatedAt:   msg.CreatedAt,
 	}
@@ -351,9 +351,15 @@ func excerpt(body string, maxRunes int) string {
 	return string(runes[:maxRunes]) + "…"
 }
 
-func toUserInfo(userID string, users map[string]*entity.User) UserInfo {
+// NewUserInfo は表示に使うユーザーの名前・アバター・アプリかどうかを取り出します
+func NewUserInfo(u *entity.User) UserInfo {
+	return UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
+}
+
+// UserInfoOf は users にないユーザーを削除済みとして扱います
+func UserInfoOf(userID string, users map[string]*entity.User) UserInfo {
 	if u := users[userID]; u != nil {
-		return UserInfo{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL, IsApp: u.IsApp}
+		return NewUserInfo(u)
 	}
 	return UserInfo{ID: userID, DisplayName: "Unknown User"}
 }

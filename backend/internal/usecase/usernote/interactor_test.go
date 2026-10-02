@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -59,7 +60,7 @@ func TestUpdateUserNote(t *testing.T) {
 		t.Fatalf("両方とも空のときに削除されていません: out=%+v err=%v", out, err)
 	}
 
-	if _, err := uc.Update(ctx, UpdateInput{OwnerID: "me", TargetID: "missing", Nickname: "x"}); !errors.Is(err, entity.ErrUserNotFound) {
+	if _, err := uc.Update(ctx, UpdateInput{OwnerID: "me", TargetID: "missing", Nickname: "x"}); !errors.Is(err, domerr.ErrUserNotFound) {
 		t.Fatalf("存在しないユーザーへのメモが拒否されていません: %v", err)
 	}
 }

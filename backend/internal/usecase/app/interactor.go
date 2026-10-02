@@ -28,7 +28,6 @@ const OfficialAppName = "Chat"
 
 var (
 	ErrAppNotFound        = errors.New("指定されたアプリが見つかりません")
-	ErrUnauthorized       = errors.New("このアプリを編集できるのは作成者と管理者だけです")
 	ErrOfficialApp        = errors.New("公式アプリは編集・削除できません")
 	ErrUnsupportedChannel = errors.New("DM にはアプリを追加できません")
 	ErrInactive           = errors.New("作成者がワークスペースを抜けたため、このアプリは使えません")
@@ -368,7 +367,7 @@ func (i *Interactor) postAs(ctx context.Context, app *entity.App, channelID stri
 			return nil, fmt.Errorf("failed to load parent message: %w", err)
 		}
 		if parent == nil || parent.ChannelID != ch.ID || parent.ParentID != nil || parent.DeletedAt != nil {
-			return nil, messageuc.ErrParentMessageNotFound
+			return nil, domerr.ErrParentMessageNotFound
 		}
 		message.ParentID = parentID
 	}
@@ -479,7 +478,7 @@ func (i *Interactor) findManageable(ctx context.Context, appID, userID string) (
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 	return app, nil
 }

@@ -102,7 +102,7 @@ func TestCreateLinkPermission(t *testing.T) {
 			t.Fatalf("%s がリンクを追加できません: %v", userID, err)
 		}
 	}
-	if _, err := uc.Create(ctx, CreateInput{ChannelID: channelID, UserID: guestID, Title: "x", URL: "https://example.com"}); !errors.Is(err, ErrUnauthorized) {
+	if _, err := uc.Create(ctx, CreateInput{ChannelID: channelID, UserID: guestID, Title: "x", URL: "https://example.com"}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("既定ではゲストがリンクを追加できないはず: %v", err)
 	}
 	if repo.links[1].Position != 1 {

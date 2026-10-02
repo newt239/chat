@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -35,7 +36,7 @@ func TestCreateDMRejectsNonWorkspaceMember(t *testing.T) {
 		TargetUserID: "outsider",
 	})
 
-	if !errors.Is(err, ErrNotWorkspaceMember) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("ワークスペース外のユーザーとの DM が拒否されていません: %v", err)
 	}
 }
@@ -49,7 +50,7 @@ func TestCreateDMRejectsNonMemberRequester(t *testing.T) {
 		TargetUserID: "bob",
 	})
 
-	if !errors.Is(err, ErrNotWorkspaceMember) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("ワークスペース外からの DM 作成が拒否されていません: %v", err)
 	}
 }

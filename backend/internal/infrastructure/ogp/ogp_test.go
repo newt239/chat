@@ -5,13 +5,13 @@ import (
 	"errors"
 	"testing"
 
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
 func TestFetchOGPBlocksInternalAddress(t *testing.T) {
 	_, err := NewOGPService().FetchOGP(context.Background(), "http://127.0.0.1/")
 
-	if !errors.Is(err, domainerrors.ErrValidation) {
+	if !errors.Is(err, domerr.ErrValidation) {
 		t.Fatalf("内部ネットワーク宛が遮断されていません: %v", err)
 	}
 }

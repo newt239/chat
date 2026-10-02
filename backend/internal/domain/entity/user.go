@@ -1,12 +1,7 @@
 package entity
 
 import (
-	"errors"
 	"time"
-)
-
-var (
-	ErrUserNotFound = errors.New("ユーザーが見つかりません")
 )
 
 // UnusablePasswordHash はパスワードでログインできないユーザー（Google アカウントのみ・ボット）に設定します

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/usecase/message"
 )
 
 type AuditLogQuery struct {
@@ -21,15 +22,9 @@ type ListAuditLogsInput struct {
 	PageToken string
 }
 
-type UserSummary struct {
-	ID          string
-	DisplayName string
-	AvatarURL   *string
-}
-
 type AuditLogOutput struct {
 	entity.AuditLog
-	Actor *UserSummary
+	Actor *message.UserInfo
 }
 
 type ListAuditLogsOutput struct {

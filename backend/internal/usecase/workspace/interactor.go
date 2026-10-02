@@ -7,17 +7,16 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/audit"
 )
 
 var (
-	ErrWorkspaceNotFound     = errors.New("ワークスペースが見つかりません")
-	ErrUnauthorized          = errors.New("この操作を行う権限がありません")
-	ErrInvalidRole           = errors.New("無効なワークスペースロールです")
 	ErrCannotRemoveOwner     = errors.New("ワークスペースのオーナーは削除できません")
 	ErrCannotChangeOwnerRole = errors.New("オーナーのロールは変更できません")
+	ErrWorkspaceNotPublic    = errors.New("このワークスペースは公開されていません")
 )
 
 type WorkspaceUseCase interface {
@@ -99,7 +98,7 @@ func (i *workspaceInteractor) GetWorkspace(ctx context.Context, input GetWorkspa
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
 	if member == nil {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	ws, err := i.workspaceRepo.FindByID(ctx, input.ID)
@@ -107,7 +106,7 @@ func (i *workspaceInteractor) GetWorkspace(ctx context.Context, input GetWorkspa
 		return nil, fmt.Errorf("failed to get workspace: %w", err)
 	}
 	if ws == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 
 	return &GetWorkspaceOutput{
@@ -127,7 +126,7 @@ func (i *workspaceInteractor) CreateWorkspace(ctx context.Context, input CreateW
 		return nil, fmt.Errorf("failed to check workspace id: %w", err)
 	}
 	if exists {
-		return nil, errors.New("このワークスペースIDは既に使用されています")
+		return nil, domerr.ErrWorkspaceIDExists
 	}
 
 	workspace := &entity.Workspace{
@@ -167,7 +166,7 @@ func (i *workspaceInteractor) UpdateWorkspace(ctx context.Context, input UpdateW
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
 	if member == nil || (member.Role != entity.WorkspaceRoleOwner && member.Role != entity.WorkspaceRoleAdmin) {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	ws, err := i.workspaceRepo.FindByID(ctx, input.ID)
@@ -175,7 +174,7 @@ func (i *workspaceInteractor) UpdateWorkspace(ctx context.Context, input UpdateW
 		return nil, fmt.Errorf("failed to get workspace: %w", err)
 	}
 	if ws == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 
 	if input.Name != nil {
@@ -217,7 +216,7 @@ func (i *workspaceInteractor) DeleteWorkspace(ctx context.Context, input DeleteW
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
 	if member == nil || member.Role != entity.WorkspaceRoleOwner {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	if err := i.workspaceRepo.Delete(ctx, input.ID); err != nil {
@@ -233,7 +232,7 @@ func (i *workspaceInteractor) ListMembers(ctx context.Context, input ListMembers
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
 	if member == nil {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	members, err := i.workspaceRepo.FindMembersByWorkspaceID(ctx, input.WorkspaceID)
@@ -296,7 +295,7 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 		return nil, fmt.Errorf("failed to check requester membership: %w", err)
 	}
 	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	if err := validateWorkspaceRole(input.Role); err != nil {
@@ -308,7 +307,7 @@ func (i *workspaceInteractor) UpdateMemberRole(ctx context.Context, input Update
 		return nil, fmt.Errorf("failed to get target member: %w", err)
 	}
 	if target == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 
 	// owner の降格と owner への昇格は owner 本人にのみ許可する
@@ -347,7 +346,7 @@ func (i *workspaceInteractor) RemoveMember(ctx context.Context, input RemoveMemb
 		return nil, fmt.Errorf("failed to check requester membership: %w", err)
 	}
 	if requester == nil || (requester.Role != entity.WorkspaceRoleOwner && requester.Role != entity.WorkspaceRoleAdmin) {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	target, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
@@ -355,7 +354,7 @@ func (i *workspaceInteractor) RemoveMember(ctx context.Context, input RemoveMemb
 		return nil, fmt.Errorf("failed to get target member: %w", err)
 	}
 	if target == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 	if target.Role == entity.WorkspaceRoleOwner {
 		return nil, ErrCannotRemoveOwner
@@ -374,7 +373,7 @@ func validateWorkspaceRole(role string) error {
 	case entity.WorkspaceRoleOwner, entity.WorkspaceRoleAdmin, entity.WorkspaceRoleMember, entity.WorkspaceRoleGuest:
 		return nil
 	default:
-		return ErrInvalidRole
+		return domerr.ErrInvalidRole
 	}
 }
 
@@ -420,10 +419,10 @@ func (i *workspaceInteractor) JoinPublicWorkspace(ctx context.Context, input Joi
 		return nil, fmt.Errorf("failed to get workspace: %w", err)
 	}
 	if ws == nil {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 	if !ws.IsPublic && !ws.SignupEnabled {
-		return nil, errors.New("このワークスペースは公開されていません")
+		return nil, ErrWorkspaceNotPublic
 	}
 
 	existing, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.UserID)
@@ -431,7 +430,7 @@ func (i *workspaceInteractor) JoinPublicWorkspace(ctx context.Context, input Joi
 		return nil, fmt.Errorf("failed to check membership: %w", err)
 	}
 	if existing != nil {
-		return nil, errors.New("既にこのワークスペースに参加しています")
+		return nil, domerr.ErrAlreadyMember
 	}
 
 	member := &entity.WorkspaceMember{
@@ -469,7 +468,7 @@ func (i *workspaceInteractor) GetSignupInfo(ctx context.Context, workspaceID str
 		return nil, fmt.Errorf("failed to get workspace: %w", err)
 	}
 	if ws == nil || !ws.SignupEnabled {
-		return nil, ErrWorkspaceNotFound
+		return nil, domerr.ErrWorkspaceNotFound
 	}
 	return &SignupInfoOutput{ID: ws.ID, Name: ws.Name, IconURL: ws.IconURL, EmailSignupEnabled: ws.EmailSignupEnabled}, nil
 }

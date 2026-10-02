@@ -3,7 +3,6 @@ package rpc
 import (
 	"context"
 
-	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -16,8 +15,6 @@ type AttachmentServer struct {
 	UC *attachmentuc.Interactor
 }
 
-// 添付ファイルのユースケースは専用のエラー値を持たないため、失敗の種類をここで決める
-
 func (s *AttachmentServer) PresignUpload(ctx context.Context, req *chatv1.PresignUploadRequest) (*chatv1.PresignUploadResponse, error) {
 	out, err := s.UC.Presign(ctx, &attachmentuc.PresignInput{
 		UserID:    userIDFrom(ctx),
@@ -29,7 +26,7 @@ func (s *AttachmentServer) PresignUpload(ctx context.Context, req *chatv1.Presig
 		Thumbnail: thumbnailInput(req.Thumbnail),
 	})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, err
 	}
 	return &chatv1.PresignUploadResponse{
 		AttachmentId:       out.AttachmentID,
@@ -49,26 +46,15 @@ func thumbnailInput(t *chatv1.ThumbnailUpload) *attachmentuc.ThumbnailInput {
 func (s *AttachmentServer) GetAttachment(ctx context.Context, req *chatv1.GetAttachmentRequest) (*chatv1.GetAttachmentResponse, error) {
 	out, err := s.UC.GetMetadata(ctx, userIDFrom(ctx), req.AttachmentId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, err)
+		return nil, err
 	}
-	return &chatv1.GetAttachmentResponse{Attachment: &chatv1.Attachment{
-		Id:         out.ID,
-		MessageId:  out.MessageID,
-		UploaderId: out.UploaderID,
-		ChannelId:  out.ChannelID,
-		FileName:   out.FileName,
-		MimeType:   out.MimeType,
-		SizeBytes:  out.SizeBytes,
-		Status:     out.Status,
-		CreatedAt:  timestamppb.New(out.CreatedAt),
-		Media:      presenter.MediaMetadata(out.Media),
-	}}, nil
+	return &chatv1.GetAttachmentResponse{Attachment: presenter.Attachment(out)}, nil
 }
 
 func (s *AttachmentServer) GetDownloadUrl(ctx context.Context, req *chatv1.GetDownloadUrlRequest) (*chatv1.GetDownloadUrlResponse, error) {
 	out, err := s.UC.GetDownloadURL(ctx, userIDFrom(ctx), req.AttachmentId, req.Thumbnail)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, err)
+		return nil, err
 	}
 	return &chatv1.GetDownloadUrlResponse{Url: out.URL, ExpiresIn: int32(out.ExpiresIn)}, nil
 }

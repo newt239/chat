@@ -1,9 +1,11 @@
 package entity
 
 import (
-	"errors"
+	"fmt"
 	"regexp"
 	"time"
+
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
 type WorkspaceRole string
@@ -46,16 +48,15 @@ func (m *WorkspaceMember) IsAdmin() bool {
 	return m.Role == WorkspaceRoleOwner || m.Role == WorkspaceRoleAdmin
 }
 
-// ValidateWorkspaceSlug validates the workspace slug format and length.
+var (
+	ErrWorkspaceSlugInvalid = fmt.Errorf("%w: ワークスペースIDは英小文字・数字・ハイフンの 3〜12 文字で指定してください", domerr.ErrValidation)
+	workspaceSlugPattern    = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*[a-z0-9]$`)
+)
+
+// ValidateWorkspaceSlug はワークスペース ID の長さと使える文字を確かめます
 func ValidateWorkspaceSlug(slug string) error {
-	if len(slug) < 3 || len(slug) > 12 {
-		return errors.New("ワークスペースIDは3〜12文字である必要があります")
+	if len(slug) < 3 || len(slug) > 12 || !workspaceSlugPattern.MatchString(slug) {
+		return ErrWorkspaceSlugInvalid
 	}
-
-	matched, _ := regexp.MatchString(`^[a-z0-9][a-z0-9-]*[a-z0-9]$`, slug)
-	if !matched {
-		return errors.New("ワークスペースIDは英小文字、数字、ハイフンのみ使用できます")
-	}
-
 	return nil
 }

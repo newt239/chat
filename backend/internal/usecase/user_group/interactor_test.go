@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -48,8 +49,8 @@ func TestCreateUserGroupRequiresAdmin(t *testing.T) {
 	}{
 		{userID: "owner"},
 		{userID: "admin"},
-		{userID: "member", wantErr: ErrUnauthorized},
-		{userID: "outsider", wantErr: ErrUnauthorized},
+		{userID: "member", wantErr: domerr.ErrUnauthorized},
+		{userID: "outsider", wantErr: domerr.ErrUnauthorized},
 	}
 	for _, tt := range tests {
 		t.Run(tt.userID, func(t *testing.T) {

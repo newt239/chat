@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	ErrUnauthorized = errors.New("関連リンクを編集する権限がありません")
 	ErrLinkNotFound = errors.New("関連リンクが見つかりません")
 	ErrInvalidOrder = fmt.Errorf("%w: 並び替えにはチャンネルのすべてのリンクを指定してください", domerr.ErrValidation)
 )
@@ -68,7 +67,7 @@ func (i *interactor) ensureEditable(ctx context.Context, channelID, userID strin
 		return err
 	}
 	if !editable {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 	return nil
 }

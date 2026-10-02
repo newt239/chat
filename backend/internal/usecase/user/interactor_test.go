@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -63,7 +64,7 @@ func TestUpdatePreferencesRejectsUnknownUser(t *testing.T) {
 	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil, nil)
 
 	_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "ghost", Preferences: cobalt})
-	if !errors.Is(err, entity.ErrUserNotFound) {
+	if !errors.Is(err, domerr.ErrUserNotFound) {
 		t.Fatalf("存在しないユーザーの設定更新が拒否されていません: %v", err)
 	}
 }
@@ -72,7 +73,7 @@ func TestUpdatePreferencesRequiresLogin(t *testing.T) {
 	uc := NewInteractor(&stubUserRepo{users: map[string]*entity.User{}}, nil, nil, nil)
 
 	_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{Preferences: cobalt})
-	if !errors.Is(err, ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("未ログインでの設定更新が拒否されていません: %v", err)
 	}
 }
@@ -95,7 +96,7 @@ func TestUpdatePreferencesValidatesTimezone(t *testing.T) {
 			prefs.Timezone = tt.timezone
 
 			_, err := uc.UpdatePreferences(context.Background(), UpdatePreferencesInput{UserID: "alice", Preferences: prefs})
-			if errors.Is(err, ErrInvalidTimeZone) != tt.wantErr {
+			if errors.Is(err, domerr.ErrInvalidTimeZone) != tt.wantErr {
 				t.Fatalf("タイムゾーン %q の検証結果が期待と異なります: %v", tt.timezone, err)
 			}
 		})

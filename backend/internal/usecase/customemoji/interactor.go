@@ -21,7 +21,6 @@ const imageURLExpires = 12 * time.Hour
 
 var (
 	ErrEmojiNotFound = errors.New("指定されたカスタム絵文字が見つかりません")
-	ErrUnauthorized  = errors.New("このカスタム絵文字を削除できるのは登録者と管理者だけです")
 	ErrNameExists    = errors.New("同じ名前のカスタム絵文字がすでにあります")
 	ErrInvalidName   = fmt.Errorf("%w: 名前は英小文字・数字・_・- の 32 文字以内で指定してください", domerr.ErrValidation)
 )
@@ -140,7 +139,7 @@ func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
 		return ErrEmojiNotFound
 	}
 	if !canDelete(emoji, member) {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 	if err := i.emojiRepo.Delete(ctx, emoji.ID); err != nil {
 		return fmt.Errorf("failed to delete custom emoji: %w", err)

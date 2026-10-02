@@ -19,7 +19,6 @@ import (
 var (
 	ErrPollNotFound = errors.New("投票が見つかりません")
 	ErrPollClosed   = errors.New("この投票は締め切られています")
-	ErrUnauthorized = errors.New("投票を締め切れるのは作成者と管理者だけです")
 	ErrInvalidVote  = fmt.Errorf("%w: 選択肢が正しくありません", domerr.ErrValidation)
 )
 
@@ -112,7 +111,7 @@ func (i *Interactor) Close(ctx context.Context, input CloseInput) (*messageuc.Me
 			return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 		}
 		if member == nil || !member.IsAdmin() {
-			return nil, ErrUnauthorized
+			return nil, domerr.ErrUnauthorized
 		}
 	}
 	if poll.IsClosed(time.Now()) {

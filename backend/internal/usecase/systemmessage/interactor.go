@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -36,10 +37,10 @@ func New(systemMsgRepo domainrepository.SystemMessageRepository, channelRepo dom
 
 func (i *interactor) Create(ctx context.Context, input CreateInput) (*entity.SystemMessage, error) {
 	if input.ChannelID == "" {
-		return nil, fmt.Errorf("channel id is required")
+		return nil, fmt.Errorf("%w: channel id is required", domerr.ErrValidation)
 	}
 	if input.Kind == "" {
-		return nil, fmt.Errorf("kind is required")
+		return nil, fmt.Errorf("%w: kind is required", domerr.ErrValidation)
 	}
 
 	msg := &entity.SystemMessage{

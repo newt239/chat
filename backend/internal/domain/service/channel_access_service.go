@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -43,7 +43,7 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 		return nil, fmt.Errorf("failed to load channel: %w", err)
 	}
 	if ch == nil {
-		return nil, domainerrors.ErrChannelNotFound
+		return nil, domerr.ErrChannelNotFound
 	}
 
 	// 停止中のメンバーは FindMember で除外されるため非公開チャンネルでも先に確認する
@@ -52,7 +52,7 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
 	if member == nil {
-		return nil, domainerrors.ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	if ch.IsPrivate {
@@ -61,7 +61,7 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 			return nil, fmt.Errorf("failed to verify channel membership: %w", err)
 		}
 		if !isMember {
-			return nil, domainerrors.ErrUnauthorized
+			return nil, domerr.ErrUnauthorized
 		}
 	}
 
@@ -78,7 +78,7 @@ func (s *channelAccessService) EnsureChannelMember(ctx context.Context, channelI
 		return nil, fmt.Errorf("failed to verify channel membership: %w", err)
 	}
 	if !isMember {
-		return nil, domainerrors.ErrNotChannelMember
+		return nil, domerr.ErrNotChannelMember
 	}
 	return ch, nil
 }

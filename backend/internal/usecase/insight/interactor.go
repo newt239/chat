@@ -3,7 +3,6 @@ package insight
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -11,8 +10,6 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
-
-var ErrInvalidTimeZone = errors.New("タイムゾーンの指定が正しくありません")
 
 const (
 	dailyActivityDays = 30
@@ -67,7 +64,7 @@ func NewInteractor(workspaceRepo domainrepository.WorkspaceRepository, insightRe
 func (i *Interactor) GetInsights(ctx context.Context, input Input) (*Output, error) {
 	loc, err := time.LoadLocation(input.TimeZone)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", ErrInvalidTimeZone, input.TimeZone)
+		return nil, fmt.Errorf("%w: %s", domerr.ErrInvalidTimeZone, input.TimeZone)
 	}
 	member, err := i.workspaceRepo.FindMember(ctx, input.WorkspaceID, input.RequesterID)
 	if err != nil {

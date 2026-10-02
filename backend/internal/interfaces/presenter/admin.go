@@ -62,13 +62,8 @@ func PermissionName(p chatv1.Permission) entity.Permission {
 }
 
 func AuditLog(l adminuc.AuditLogOutput) *chatv1.AuditLog {
-	var actor *chatv1.UserSummary
-	if l.Actor != nil {
-		actor = &chatv1.UserSummary{Id: l.Actor.ID, DisplayName: l.Actor.DisplayName, AvatarUrl: l.Actor.AvatarURL}
-	}
-	return &chatv1.AuditLog{
+	log := &chatv1.AuditLog{
 		Id:          l.ID,
-		Actor:       actor,
 		Action:      auditActions[l.Action],
 		TargetType:  string(l.TargetType),
 		TargetId:    l.TargetID,
@@ -78,6 +73,10 @@ func AuditLog(l adminuc.AuditLogOutput) *chatv1.AuditLog {
 		UserAgent:   l.UserAgent,
 		CreatedAt:   timestamppb.New(l.CreatedAt),
 	}
+	if l.Actor != nil {
+		log.Actor = UserSummary(*l.Actor)
+	}
+	return log
 }
 
 func AdminMember(m adminuc.MemberOutput) *chatv1.AdminMember {

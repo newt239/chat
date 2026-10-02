@@ -327,9 +327,6 @@ func (r *UseCaseRegistry) NewReadStateUseCase() readstateuc.ReadStateUseCase {
 func (r *UseCaseRegistry) NewReactionUseCase() reactionuc.ReactionUseCase {
 	return reactionuc.NewReactionInteractor(
 		r.domainRegistry.NewMessageRepository(),
-		r.domainRegistry.NewChannelRepository(),
-		r.domainRegistry.NewChannelMemberRepository(),
-		r.domainRegistry.NewWorkspaceRepository(),
 		r.domainRegistry.NewUserRepository(),
 		r.infrastructureRegistry.NewNotificationService(),
 		r.domainRegistry.NewChannelAccessService(),

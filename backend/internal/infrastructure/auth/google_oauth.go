@@ -7,7 +7,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
 
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
 // GoogleOAuth はネイティブアプリの Google ログインで、ブラウザでの認可コードフロー（PKCE）を仲介します
@@ -37,7 +37,7 @@ func (g *GoogleOAuth) enabled() bool {
 // AuthCodeURL は Google の同意画面の URL を返します。code_verifier はアプリだけが持つ
 func (g *GoogleOAuth) AuthCodeURL(state, codeChallenge, nonce string) (string, error) {
 	if !g.enabled() {
-		return "", domainerrors.ErrGoogleAuthDisabled
+		return "", domerr.ErrGoogleAuthDisabled
 	}
 	return g.config.AuthCodeURL(state,
 		oauth2.SetAuthURLParam("code_challenge", codeChallenge),
@@ -50,7 +50,7 @@ func (g *GoogleOAuth) AuthCodeURL(state, codeChallenge, nonce string) (string, e
 // AppRedirectURL は Google から戻ってきたクエリをアプリのディープリンクに載せ替えます
 func (g *GoogleOAuth) AppRedirectURL(query url.Values) (string, error) {
 	if !g.enabled() {
-		return "", domainerrors.ErrGoogleAuthDisabled
+		return "", domerr.ErrGoogleAuthDisabled
 	}
 	u, err := url.Parse(g.appRedirectURL)
 	if err != nil {
@@ -68,15 +68,15 @@ func (g *GoogleOAuth) AppRedirectURL(query url.Values) (string, error) {
 
 func (g *GoogleOAuth) Exchange(ctx context.Context, code, codeVerifier string) (string, error) {
 	if !g.enabled() {
-		return "", domainerrors.ErrGoogleAuthDisabled
+		return "", domerr.ErrGoogleAuthDisabled
 	}
 	token, err := g.config.Exchange(ctx, code, oauth2.VerifierOption(codeVerifier))
 	if err != nil {
-		return "", domainerrors.ErrInvalidToken
+		return "", domerr.ErrInvalidToken
 	}
 	idToken, ok := token.Extra("id_token").(string)
 	if !ok || idToken == "" {
-		return "", domainerrors.ErrInvalidToken
+		return "", domerr.ErrInvalidToken
 	}
 	return idToken, nil
 }

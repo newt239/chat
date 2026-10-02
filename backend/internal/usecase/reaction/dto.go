@@ -1,6 +1,10 @@
 package reaction
 
-import "time"
+import (
+	"time"
+
+	"github.com/newt239/chat/internal/usecase/message"
+)
 
 type AddReactionInput struct {
 	MessageID string
@@ -14,17 +18,11 @@ type RemoveReactionInput struct {
 	Emoji     string
 }
 
-type UserInfo struct {
-	ID          string  `json:"id"`
-	DisplayName string  `json:"displayName"`
-	AvatarURL   *string `json:"avatarUrl,omitempty"`
-}
-
 type ReactionOutput struct {
-	MessageID string    `json:"messageId"`
-	User      UserInfo  `json:"user"`
-	Emoji     string    `json:"emoji"`
-	CreatedAt time.Time `json:"createdAt"`
+	MessageID string           `json:"messageId"`
+	User      message.UserInfo `json:"user"`
+	Emoji     string           `json:"emoji"`
+	CreatedAt time.Time        `json:"createdAt"`
 }
 
 type ListReactionsOutput struct {

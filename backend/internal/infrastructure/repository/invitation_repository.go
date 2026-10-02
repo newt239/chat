@@ -8,7 +8,7 @@ import (
 	"github.com/newt239/chat/ent/invitation"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -101,7 +101,7 @@ func (r *invitationRepository) Delete(ctx context.Context, workspaceID, id strin
 		return err
 	}
 	if deleted == 0 {
-		return domainerrors.ErrNotFound
+		return domerr.ErrNotFound
 	}
 	return nil
 }

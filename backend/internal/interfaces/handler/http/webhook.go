@@ -37,7 +37,7 @@ var webhookErrorStatuses = []struct {
 	status int
 	errs   []error
 }{
-	{http.StatusNotFound, []error{appuc.ErrAppNotFound, domerr.ErrChannelNotFound, messageuc.ErrParentMessageNotFound}},
+	{http.StatusNotFound, []error{appuc.ErrAppNotFound, domerr.ErrChannelNotFound, domerr.ErrParentMessageNotFound}},
 	{http.StatusBadRequest, []error{domerr.ErrValidation}},
 	{http.StatusForbidden, []error{appuc.ErrInactive, appuc.ErrForbiddenChannel, appuc.ErrForbiddenThread, domerr.ErrChannelArchived}},
 }

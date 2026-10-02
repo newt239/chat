@@ -305,7 +305,7 @@ func TestCreateChannelUnderInaccessiblePrivateParent(t *testing.T) {
 
 	_, err := f.uc.CreateChannel(context.Background(), CreateChannelInput{WorkspaceID: workspaceID, UserID: memberID, Name: "secret/child", IsPrivate: true})
 
-	if !errors.Is(err, ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("閲覧できない非公開チャンネルの下に作成できています: %v", err)
 	}
 }
@@ -352,7 +352,7 @@ func TestSetArchived(t *testing.T) {
 	}{
 		{name: "作成者はアーカイブできる", userID: memberID},
 		{name: "管理者はアーカイブできる", userID: adminID},
-		{name: "作成者以外のメンバーはアーカイブできない", userID: guestID, wantErr: ErrUnauthorized},
+		{name: "作成者以外のメンバーはアーカイブできない", userID: guestID, wantErr: domerr.ErrUnauthorized},
 		{name: "DM はアーカイブできない", userID: memberID, dm: true, wantErr: ErrCannotArchiveDM},
 	}
 	for _, tt := range tests {
@@ -468,7 +468,7 @@ func TestSearchBrowsableChannels(t *testing.T) {
 		t.Fatalf("ページから求めた条件が正しくありません: %+v", f.channels.lastFilter)
 	}
 
-	if _, err := f.uc.SearchBrowsableChannels(context.Background(), SearchBrowsableChannelsInput{WorkspaceID: workspaceID, UserID: "44444444-4444-4444-4444-444444444444", Page: 1, PerPage: 20}); !errors.Is(err, ErrUnauthorized) {
+	if _, err := f.uc.SearchBrowsableChannels(context.Background(), SearchBrowsableChannelsInput{WorkspaceID: workspaceID, UserID: "44444444-4444-4444-4444-444444444444", Page: 1, PerPage: 20}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("ワークスペース外のユーザーが検索できています: %v", err)
 	}
 }

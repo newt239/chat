@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	"github.com/newt239/chat/internal/usecase/message"
 )
 
 const (
@@ -93,9 +94,9 @@ func (i *Interactor) withActors(ctx context.Context, logs []*entity.AuditLog) ([
 	if err != nil {
 		return nil, fmt.Errorf("failed to load actors: %w", err)
 	}
-	actors := make(map[string]*UserSummary, len(users))
+	actors := make(map[string]*message.UserInfo, len(users))
 	for _, u := range users {
-		actors[u.ID] = &UserSummary{ID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL}
+		actors[u.ID] = new(message.NewUserInfo(u))
 	}
 
 	outputs := make([]AuditLogOutput, 0, len(logs))

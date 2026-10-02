@@ -12,6 +12,7 @@ import (
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
 	"github.com/newt239/chat/internal/infrastructure/utils"
@@ -260,6 +261,9 @@ func (r *messageRepository) AddReaction(ctx context.Context, reaction *entity.Me
 		SetUserID(userID).
 		SetEmoji(reaction.Emoji).
 		Save(ctx)
+	if ent.IsConstraintError(err) {
+		return domerr.ErrReactionExists
+	}
 	if err != nil {
 		return err
 	}

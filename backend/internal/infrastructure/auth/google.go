@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/api/idtoken"
 
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
@@ -22,14 +22,14 @@ func NewGoogleVerifier(clientID string) authuc.GoogleVerifier {
 
 func (v *googleVerifier) Verify(ctx context.Context, token string) (*authuc.GoogleIdentity, error) {
 	if v.clientID == "" {
-		return nil, domainerrors.ErrGoogleAuthDisabled
+		return nil, domerr.ErrGoogleAuthDisabled
 	}
 	payload, err := idtoken.Validate(ctx, token, v.clientID)
 	if err != nil {
-		return nil, domainerrors.ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 	if !googleIssuers[payload.Issuer] {
-		return nil, domainerrors.ErrInvalidToken
+		return nil, domerr.ErrInvalidToken
 	}
 	return identityFromClaims(payload.Subject, payload.Claims), nil
 }

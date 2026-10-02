@@ -2,15 +2,13 @@ package dm
 
 import (
 	"context"
-	"errors"
 	"slices"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/repository"
 )
-
-var ErrNotWorkspaceMember = errors.New("ワークスペースのメンバーではありません")
 
 type Interactor struct {
 	channelRepo       repository.ChannelRepository
@@ -50,7 +48,7 @@ func (i *Interactor) ensureWorkspaceMembers(ctx context.Context, workspaceID str
 			return err
 		}
 		if member == nil {
-			return ErrNotWorkspaceMember
+			return domerr.ErrUnauthorized
 		}
 	}
 	return nil
@@ -66,7 +64,7 @@ func (i *Interactor) CreateDM(ctx context.Context, input CreateDMInput) (*DMOutp
 		return nil, err
 	}
 	if targetUser == nil {
-		return nil, entity.ErrUserNotFound
+		return nil, domerr.ErrUserNotFound
 	}
 
 	channel, err := i.channelRepo.FindOrCreateDM(ctx, input.WorkspaceID, input.UserID, input.TargetUserID)
@@ -122,7 +120,7 @@ func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput
 	}
 
 	if len(users) != len(input.MemberIDs) {
-		return nil, entity.ErrUserNotFound
+		return nil, domerr.ErrUserNotFound
 	}
 
 	channel, err := i.channelRepo.FindOrCreateGroupDM(ctx, input.WorkspaceID, input.CreatorID, input.MemberIDs, input.Name)

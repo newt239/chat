@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 )
 
@@ -103,7 +104,7 @@ func TestSearchWorkspaceValidation(t *testing.T) {
 func TestSearchWorkspaceRequiresMembership(t *testing.T) {
 	searcher := NewWorkspaceSearcher(&stubWorkspaceRepo{}, &stubChannelRepo{}, &stubMessageRepo{}, &stubSearchIndex{}, nil, nil, nil)
 	_, err := searcher.SearchWorkspace(context.Background(), WorkspaceSearchInput{Query: "a"})
-	if !errors.Is(err, ErrUnauthorized) {
+	if !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("メンバー以外の検索が拒否されていません: %v", err)
 	}
 }

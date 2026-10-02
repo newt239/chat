@@ -2,22 +2,19 @@ package user
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domainerrors "github.com/newt239/chat/internal/domain/errors"
+	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/usecase/auth"
 )
 
 var (
-	ErrUnauthorized    = errors.New("この操作を行う権限がありません")
-	ErrInvalidTimeZone = errors.New("タイムゾーンの指定が正しくありません")
-	ErrInvalidLink     = fmt.Errorf("%w: リンクは %d 件までの http(s) の URL で指定してください", domainerrors.ErrValidation, entity.MaxProfileLinks)
+	ErrInvalidLink = fmt.Errorf("%w: リンクは %d 件までの http(s) の URL で指定してください", domerr.ErrValidation, entity.MaxProfileLinks)
 )
 
 type UseCase interface {
@@ -57,7 +54,7 @@ func (i *interactor) UpdatePassword(ctx context.Context, input UpdatePasswordInp
 	}
 
 	if err := i.passwordSvc.VerifyPassword(input.CurrentPassword, u.PasswordHash); err != nil {
-		return domainerrors.ErrInvalidCredentials
+		return domerr.ErrInvalidCredentials
 	}
 
 	hashed, err := i.passwordSvc.HashPassword(input.NewPassword)
@@ -166,7 +163,7 @@ func (i *interactor) UpdatePreferences(ctx context.Context, input UpdatePreferen
 	if tz := input.Preferences.Timezone; tz != "" {
 		// "Local" はサーバーのタイムゾーンを指すため受け付けない
 		if _, err := time.LoadLocation(tz); err != nil || tz == "Local" {
-			return nil, fmt.Errorf("%w: %s", ErrInvalidTimeZone, tz)
+			return nil, fmt.Errorf("%w: %s", domerr.ErrInvalidTimeZone, tz)
 		}
 	}
 
@@ -180,7 +177,7 @@ func (i *interactor) UpdatePreferences(ctx context.Context, input UpdatePreferen
 
 func (i *interactor) findMe(ctx context.Context, userID string) (*entity.User, error) {
 	if userID == "" {
-		return nil, ErrUnauthorized
+		return nil, domerr.ErrUnauthorized
 	}
 
 	u, err := i.userRepo.FindByID(ctx, userID)
@@ -188,7 +185,7 @@ func (i *interactor) findMe(ctx context.Context, userID string) (*entity.User, e
 		return nil, err
 	}
 	if u == nil {
-		return nil, entity.ErrUserNotFound
+		return nil, domerr.ErrUserNotFound
 	}
 	return u, nil
 }

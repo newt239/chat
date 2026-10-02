@@ -3,8 +3,6 @@ package rpc
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	reactionuc "github.com/newt239/chat/internal/usecase/reaction"
@@ -19,16 +17,7 @@ func (s *ReactionServer) ListReactions(ctx context.Context, req *chatv1.ListReac
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListReactionsResponse{
-		Reactions: presenter.ConvertAll(out.Reactions, func(r reactionuc.ReactionOutput) *chatv1.Reaction {
-			return &chatv1.Reaction{
-				MessageId: r.MessageID,
-				User:      &chatv1.UserSummary{Id: r.User.ID, DisplayName: r.User.DisplayName, AvatarUrl: r.User.AvatarURL},
-				Emoji:     r.Emoji,
-				CreatedAt: timestamppb.New(r.CreatedAt),
-			}
-		}),
-	}, nil
+	return &chatv1.ListReactionsResponse{Reactions: presenter.ConvertAll(out.Reactions, presenter.Reaction)}, nil
 }
 
 func (s *ReactionServer) AddReaction(ctx context.Context, req *chatv1.AddReactionRequest) (*chatv1.AddReactionResponse, error) {

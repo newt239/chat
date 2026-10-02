@@ -15,12 +15,7 @@ import (
 )
 
 var (
-	ErrUnauthorized     = errors.New("この操作を行う権限がありません")
-	ErrChannelNotFound  = errors.New("チャンネルが見つかりません")
-	ErrUserNotFound     = errors.New("ユーザーが見つかりません")
-	ErrAlreadyMember    = errors.New("ユーザーは既にメンバーです")
 	ErrNotMember        = errors.New("ユーザーはメンバーではありません")
-	ErrInvalidRole      = errors.New("無効なロールです")
 	ErrChannelNotPublic = errors.New("このチャンネルは公開されていません")
 	ErrLastAdminRemoval = errors.New("最後の管理者は削除できません")
 )
@@ -93,7 +88,7 @@ func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMem
 		return nil, fmt.Errorf("failed to find channel: %w", err)
 	}
 	if channel == nil {
-		return nil, ErrChannelNotFound
+		return nil, domerr.ErrChannelNotFound
 	}
 
 	// プライベートチャンネルの場合、アクセス権を確認
@@ -103,7 +98,7 @@ func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMem
 			return nil, fmt.Errorf("failed to check membership: %w", err)
 		}
 		if !isMember {
-			return nil, ErrUnauthorized
+			return nil, domerr.ErrUnauthorized
 		}
 	} else {
 		// パブリックチャンネルの場合、ワークスペースメンバーかどうか確認
@@ -112,7 +107,7 @@ func (i *channelMemberInteractor) ListMembers(ctx context.Context, input ListMem
 			return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
 		}
 		if member == nil {
-			return nil, ErrUnauthorized
+			return nil, domerr.ErrUnauthorized
 		}
 	}
 
@@ -169,7 +164,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 	// ロールの検証
 	role := entity.ChannelRole(input.Role)
 	if role != entity.ChannelRoleMember && role != entity.ChannelRoleAdmin {
-		return ErrInvalidRole
+		return domerr.ErrInvalidRole
 	}
 
 	channel, err := i.channelRepo.FindByID(ctx, input.ChannelID)
@@ -177,7 +172,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 	if channel == nil {
-		return ErrChannelNotFound
+		return domerr.ErrChannelNotFound
 	}
 
 	// オペレーターがワークスペースメンバーかどうか確認
@@ -186,7 +181,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 		return fmt.Errorf("failed to verify operator workspace membership: %w", err)
 	}
 	if operatorMember == nil {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	// プライベートチャンネルの場合、オペレーターのアクセス権を確認
@@ -196,7 +191,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 			return fmt.Errorf("failed to check operator membership: %w", err)
 		}
 		if !isMember {
-			return ErrUnauthorized
+			return domerr.ErrUnauthorized
 		}
 	}
 
@@ -204,7 +199,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 	if operatorMember.Role != entity.WorkspaceRoleOwner &&
 		operatorMember.Role != entity.WorkspaceRoleAdmin &&
 		channel.CreatedBy != input.OperatorID {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	// ターゲットユーザーがワークスペースメンバーであるか検証
@@ -213,7 +208,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 		return fmt.Errorf("failed to verify target user workspace membership: %w", err)
 	}
 	if targetMember == nil {
-		return ErrUserNotFound
+		return domerr.ErrUserNotFound
 	}
 
 	// 既存メンバーなら409エラー
@@ -222,7 +217,7 @@ func (i *channelMemberInteractor) InviteMember(ctx context.Context, input Invite
 		return fmt.Errorf("failed to check target user membership: %w", err)
 	}
 	if isMember {
-		return ErrAlreadyMember
+		return domerr.ErrAlreadyMember
 	}
 
 	member := &entity.ChannelMember{
@@ -254,7 +249,7 @@ func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input J
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 	if channel == nil {
-		return ErrChannelNotFound
+		return domerr.ErrChannelNotFound
 	}
 
 	// 対象チャンネルがパブリックであることを確認
@@ -268,7 +263,7 @@ func (i *channelMemberInteractor) JoinPublicChannel(ctx context.Context, input J
 		return fmt.Errorf("failed to verify workspace membership: %w", err)
 	}
 	if member == nil {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	// 既存メンバーの場合は冪等に成功応答
@@ -310,7 +305,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 	// ロールの検証
 	role := entity.ChannelRole(input.Role)
 	if role != entity.ChannelRoleMember && role != entity.ChannelRoleAdmin {
-		return ErrInvalidRole
+		return domerr.ErrInvalidRole
 	}
 
 	channel, err := i.channelRepo.FindByID(ctx, input.ChannelID)
@@ -318,7 +313,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 	if channel == nil {
-		return ErrChannelNotFound
+		return domerr.ErrChannelNotFound
 	}
 
 	// オペレーターがワークスペースメンバーかどうか確認
@@ -327,7 +322,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 		return fmt.Errorf("failed to verify operator workspace membership: %w", err)
 	}
 	if operatorMember == nil {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	// プライベートチャンネルの場合、オペレーターのアクセス権を確認
@@ -337,7 +332,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 			return fmt.Errorf("failed to check operator membership: %w", err)
 		}
 		if !isMember {
-			return ErrUnauthorized
+			return domerr.ErrUnauthorized
 		}
 	}
 
@@ -345,7 +340,7 @@ func (i *channelMemberInteractor) UpdateMemberRole(ctx context.Context, input Up
 	if operatorMember.Role != entity.WorkspaceRoleOwner &&
 		operatorMember.Role != entity.WorkspaceRoleAdmin &&
 		channel.CreatedBy != input.OperatorID {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	// 対象ユーザーがチャンネルメンバーであることを確認
@@ -406,7 +401,7 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 	if channel == nil {
-		return ErrChannelNotFound
+		return domerr.ErrChannelNotFound
 	}
 
 	// オペレーターがワークスペースメンバーかどうか確認
@@ -415,7 +410,7 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 		return fmt.Errorf("failed to verify operator workspace membership: %w", err)
 	}
 	if operatorMember == nil {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	// プライベートチャンネルの場合、オペレーターのアクセス権を確認
@@ -425,7 +420,7 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 			return fmt.Errorf("failed to check operator membership: %w", err)
 		}
 		if !isMember {
-			return ErrUnauthorized
+			return domerr.ErrUnauthorized
 		}
 	}
 
@@ -433,7 +428,7 @@ func (i *channelMemberInteractor) RemoveMember(ctx context.Context, input Remove
 	if operatorMember.Role != entity.WorkspaceRoleOwner &&
 		operatorMember.Role != entity.WorkspaceRoleAdmin &&
 		channel.CreatedBy != input.OperatorID {
-		return ErrUnauthorized
+		return domerr.ErrUnauthorized
 	}
 
 	// 対象ユーザーがメンバーであることを確認
@@ -484,7 +479,7 @@ func (i *channelMemberInteractor) LeaveChannel(ctx context.Context, input LeaveC
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 	if channel == nil {
-		return ErrChannelNotFound
+		return domerr.ErrChannelNotFound
 	}
 
 	// 当該ユーザーがメンバーであることを確認
