@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/newt239/chat/ent/linkpreview"
 	"github.com/newt239/chat/internal/domain/entity"
 )
 
@@ -21,7 +22,7 @@ func TestLinkRepositorySharesPreviewByURL(t *testing.T) {
 		}
 	}
 
-	if n := client.LinkPreview.Query().CountX(ctx); n != 1 {
+	if n := client.LinkPreview.Query().Where(linkpreview.URL(url)).CountX(ctx); n != 1 {
 		t.Errorf("同じ URL のプレビューは 1 行にまとめることを期待しましたが %d 行でした", n)
 	}
 	links, err := repo.FindByMessageIDs(ctx, []string{f.messages["mention"].ID.String(), f.messages["link"].ID.String()})
