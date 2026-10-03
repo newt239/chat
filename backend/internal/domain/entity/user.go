@@ -25,9 +25,6 @@ type User struct {
 	UpdatedAt   time.Time
 }
 
-// MaxProfileLinks はプロフィールに載せられるリンクの数です
-const MaxProfileLinks = 5
-
 type SidebarStyle string
 
 const (

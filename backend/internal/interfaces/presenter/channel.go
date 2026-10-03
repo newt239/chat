@@ -40,10 +40,10 @@ func BrowsableChannel(c channeluc.BrowsableChannelOutput) *chatv1.BrowsableChann
 
 func ChannelMember(m channelmemberuc.MemberOutput) *chatv1.ChannelMember {
 	return &chatv1.ChannelMember{
-		UserId:      m.UserID,
-		Email:       m.Email,
-		DisplayName: m.DisplayName,
-		AvatarUrl:   m.AvatarURL,
+		UserId:      m.User.ID,
+		Email:       m.User.Email,
+		DisplayName: m.User.DisplayName,
+		AvatarUrl:   m.User.AvatarURL,
 		Role:        ChannelRoles[m.Role],
 	}
 }

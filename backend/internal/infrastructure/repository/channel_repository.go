@@ -182,8 +182,6 @@ func (r *channelRepository) FindOrCreateGroupDM(ctx context.Context, workspaceID
 	}, "g:", memberIDs)
 }
 
-// dmKey は参加者の ID を並べ替えてつなげ、参加者が同じ DM を同じキーにします
-
 // findOrCreateByDMKey は参加者の組で一意な DM を返し、参加者を揃えます。同時に作られても dm_key の一意制約で 1 つにまとまる
 func (r *channelRepository) findOrCreateByDMKey(ctx context.Context, ch *entity.Channel, keyPrefix string, memberIDs []string) (*entity.Channel, error) {
 	createdBy, err := parseUUID(ch.CreatedBy, "created_by user ID")

@@ -54,9 +54,9 @@ func AuditLog(l adminuc.AuditLogOutput) *chatv1.AuditLog {
 func AdminMember(m adminuc.MemberOutput) *chatv1.AdminMember {
 	member := &chatv1.AdminMember{
 		UserId:             m.UserID,
-		Email:              m.Email,
-		DisplayName:        m.DisplayName,
-		AvatarUrl:          m.AvatarURL,
+		Email:              m.User.Email,
+		DisplayName:        m.User.DisplayName,
+		AvatarUrl:          m.User.AvatarURL,
 		Role:               WorkspaceRoles[m.Role],
 		SuspendedAt:        optionalTimestamp(m.SuspendedAt),
 		RecentMessageCount: int32(m.Activity.MessageCount),

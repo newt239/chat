@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/url"
 	"slices"
 	"strings"
 	"unicode/utf8"
@@ -37,8 +36,6 @@ var (
 	ErrChannelRequired    = domerr.New(domerr.ErrValidation, "channel_id を指定するか、アプリの既定のチャンネルを設定してください")
 	ErrEmptyText          = domerr.New(domerr.ErrValidation, "text を指定してください")
 	ErrTextTooLong        = domerr.New(domerr.ErrValidation, fmt.Sprintf("text は %d 文字以内で指定してください", MaxTextLength))
-	ErrInvalidURL         = domerr.New(domerr.ErrValidation, "http(s) の URL を指定してください")
-	ErrUnknownPermission  = domerr.New(domerr.ErrValidation, "不明な権限です")
 	ErrOutgoingURLMissing = domerr.New(domerr.ErrValidation, "送信 Webhook を許可するときは送信先の URL を指定してください")
 )
 
@@ -362,17 +359,6 @@ func (i *Interactor) postAs(ctx context.Context, app *entity.App, channelID stri
 
 // applySettings は入力を検証してアプリに反映します。既定のチャンネルは設定する人が参加しているものに限る
 func (i *Interactor) applySettings(ctx context.Context, app *entity.App, settings SettingsInput, userID string) error {
-	for _, p := range settings.Permissions {
-		if !slices.Contains(entity.AllAppPermissions, p) {
-			return ErrUnknownPermission
-		}
-	}
-	if settings.AvatarURL != nil && !isHTTPURL(*settings.AvatarURL) {
-		return ErrInvalidURL
-	}
-	if settings.OutgoingURL != nil && !isHTTPURL(*settings.OutgoingURL) {
-		return ErrInvalidURL
-	}
 	if slices.Contains(settings.Permissions, entity.AppPermissionOutgoingWebhook) && settings.OutgoingURL == nil {
 		return ErrOutgoingURLMissing
 	}
@@ -531,9 +517,4 @@ func (i *Interactor) record(ctx context.Context, app *entity.App, actorID string
 		TargetID:    app.ID,
 		TargetLabel: app.Name,
 	})
-}
-
-func isHTTPURL(raw string) bool {
-	u, err := url.Parse(raw)
-	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
 }

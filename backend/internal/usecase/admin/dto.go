@@ -54,14 +54,10 @@ type UpdateMemberRoleInput struct {
 }
 
 type MemberOutput struct {
-	UserID      string
-	Email       string
-	DisplayName string
-	AvatarURL   *string
-	Role        entity.WorkspaceRole
-	SuspendedAt *time.Time
-	LastLogin   *entity.Session
-	Activity    entity.MemberActivity
+	*entity.WorkspaceMember
+	User      *entity.User
+	LastLogin *entity.Session
+	Activity  entity.MemberActivity
 }
 
 type PermissionsOutput struct {

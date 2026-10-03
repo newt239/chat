@@ -39,16 +39,6 @@ type seedMessage struct {
 	body    string
 }
 
-func createMessage(ctx context.Context, client *ent.Client, m *entity.Message) error {
-	return client.Message.Create().
-		SetID(uuid.MustParse(m.ID)).
-		SetChannelID(uuid.MustParse(m.ChannelID)).
-		SetUserID(uuid.MustParse(m.UserID)).
-		SetBody(m.Body).
-		SetCreatedAt(m.CreatedAt).
-		Exec(ctx)
-}
-
 func createReaction(ctx context.Context, client *ent.Client, messageID, userID, emoji string, at time.Time) error {
 	return client.MessageReaction.Create().
 		SetMessageID(uuid.MustParse(messageID)).
@@ -173,15 +163,18 @@ func CreateSeedData(ctx context.Context, client *ent.Client) error {
 		{id: "d1000000-0000-4000-8000-000000000001", channel: 4, user: 0, body: "dev の下にフロントエンドとバックエンドのチャンネルを作りました。"},
 		{id: "d1000000-0000-4000-8000-000000000002", channel: 5, user: 3, body: "サイドバーのツリー表示を実装中です。"},
 		{id: "d1000000-0000-4000-8000-000000000003", channel: 6, user: 1, body: "親チャンネルで子孫のメッセージをまとめて取得できるようにしました。"},
-		{id: "fccccccc-cccc-cccc-cccc-cccccccccccc", channel: 0, user: 0, body: "Hey <@" + users[1].ID + ">, can you review the latest changes? Also check out this link: https://github.com/example/repo"},
-		{id: "fddddddd-dddd-dddd-dddd-dddddddddddd", channel: 0, user: 1, body: "Sure <@" + users[0].ID + ">! <@&" + groups[0].ID + ">, let's discuss the new features. Here's a useful resource: https://docs.example.com/guide"},
-		{id: "feeeeeee-eeee-eeee-eeee-eeeeeeeeeeee", channel: 2, user: 3, body: "<@&" + groups[0].ID + "> <@&" + groups[2].ID + ">, I've updated the UI mockups. Check this out: https://figma.com/design/example"},
 	}
 	baseTime := time.Now().Add(-24 * time.Hour)
 	messages := make([]*entity.Message, len(definitions))
 	for i, def := range definitions {
-		messages[i] = &entity.Message{ID: def.id, ChannelID: channels[def.channel].ID, UserID: users[def.user].ID, Body: def.body, CreatedAt: baseTime.Add(time.Duration(i) * 30 * time.Minute)}
-		if err := createMessage(ctx, client, messages[i]); err != nil {
+		messages[i] = &entity.Message{ID: def.id, ChannelID: channels[def.channel].ID, CreatedAt: baseTime.Add(time.Duration(i) * 30 * time.Minute)}
+		if err := client.Message.Create().
+			SetID(uuid.MustParse(def.id)).
+			SetChannelID(uuid.MustParse(messages[i].ChannelID)).
+			SetUserID(uuid.MustParse(users[def.user].ID)).
+			SetBody(def.body).
+			SetCreatedAt(messages[i].CreatedAt).
+			Exec(ctx); err != nil {
 			return fmt.Errorf("failed to create message: %w", err)
 		}
 	}
@@ -192,45 +185,6 @@ func CreateSeedData(ctx context.Context, client *ent.Client) error {
 	}{{1, 0, "👋"}, {1, 2, "🎉"}, {6, 0, "👍"}} {
 		if err := createReaction(ctx, client, messages[r.message].ID, users[r.user].ID, r.emoji, messages[r.message].CreatedAt.Add(time.Minute)); err != nil {
 			return fmt.Errorf("failed to create message reaction: %w", err)
-		}
-	}
-
-	// グループへのメンションは投稿時点のメンバーに展開して保存する
-	mentionMessages := messages[14:]
-	developers := &groups[0].ID
-	userMentions := []*entity.MessageUserMention{
-		{MessageID: mentionMessages[0].ID, UserID: users[1].ID},
-		{MessageID: mentionMessages[1].ID, UserID: users[0].ID},
-		{MessageID: mentionMessages[1].ID, UserID: users[1].ID, ViaGroupID: developers},
-		{MessageID: mentionMessages[1].ID, UserID: users[3].ID, ViaGroupID: developers},
-		{MessageID: mentionMessages[2].ID, UserID: users[0].ID, ViaGroupID: developers},
-		{MessageID: mentionMessages[2].ID, UserID: users[1].ID, ViaGroupID: developers},
-		{MessageID: mentionMessages[2].ID, UserID: users[3].ID, ViaGroupID: developers},
-	}
-	groupMentions := []*entity.MessageGroupMention{
-		{MessageID: mentionMessages[1].ID, GroupID: groups[0].ID},
-		{MessageID: mentionMessages[2].ID, GroupID: groups[0].ID},
-		{MessageID: mentionMessages[2].ID, GroupID: groups[2].ID},
-	}
-	if err := repository.NewMessageMentionRepository(client).Create(ctx, userMentions, groupMentions); err != nil {
-		return fmt.Errorf("failed to create mentions: %w", err)
-	}
-
-	linkRepo := repository.NewLinkRepository(client)
-	links := []*entity.MessageLink{
-		{MessageID: mentionMessages[0].ID, URL: "https://github.com/example/repo", OGP: entity.OGPData{
-			Title: new("Example Repository"), Description: new("A sample repository for demonstration"), SiteName: new("GitHub"),
-		}},
-		{MessageID: mentionMessages[1].ID, URL: "https://docs.example.com/guide", OGP: entity.OGPData{
-			Title: new("Developer Guide"), Description: new("Comprehensive guide for developers"), SiteName: new("Example Docs"),
-		}},
-		{MessageID: mentionMessages[2].ID, URL: "https://figma.com/design/example", OGP: entity.OGPData{
-			Title: new("UI Design Mockups"), Description: new("Latest UI mockups for the project"), SiteName: new("Figma"), CardType: new("summary_large_image"),
-		}},
-	}
-	for _, link := range links {
-		if err := createLink(ctx, linkRepo, link); err != nil {
-			return fmt.Errorf("failed to create message link: %w", err)
 		}
 	}
 

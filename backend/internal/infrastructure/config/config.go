@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -91,8 +89,6 @@ type CORSConfig struct {
 }
 
 func Load() *Config {
-	_ = godotenv.Load()
-
 	env := getEnv("ENV", "development")
 	return &Config{
 		Server: ServerConfig{

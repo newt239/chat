@@ -153,11 +153,11 @@ func TestList(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(out.Emojis) != 1 || out.Emojis[0].Name != "party" || out.Emojis[0].CanDelete {
-			t.Fatalf("unexpected emojis: %+v", out.Emojis)
+		if len(out) != 1 || out[0].Name != "party" || out[0].CanDelete {
+			t.Fatalf("unexpected emojis: %+v", out)
 		}
-		if out.Emojis[0].ImageURL != "https://storage/get/custom-emojis/ws/e1" {
-			t.Fatalf("unexpected url: %s", out.Emojis[0].ImageURL)
+		if out[0].ImageURL != "https://storage/get/custom-emojis/ws/e1" {
+			t.Fatalf("unexpected url: %s", out[0].ImageURL)
 		}
 	})
 
@@ -215,7 +215,6 @@ func TestCreate(t *testing.T) {
 		want  error
 	}{
 		{name: "同じ名前は登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "party", UploadID: uploadID}, want: domerr.ErrCustomEmojiNameExists},
-		{name: "名前の形式が不正", input: CreateInput{WorkspaceID: workspaceID, UserID: otherID, Name: "Party!", UploadID: uploadID}, want: domerr.ErrValidation},
 		{name: "ゲストは既定で登録できない", input: CreateInput{WorkspaceID: workspaceID, UserID: guestID, Name: "tada", UploadID: uploadID}, want: domerr.ErrUnauthorized},
 	}
 	for _, tt := range tests {

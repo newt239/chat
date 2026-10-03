@@ -3,8 +3,6 @@ package rpc
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	customemojiuc "github.com/newt239/chat/internal/usecase/customemoji"
@@ -19,10 +17,7 @@ func (s *CustomEmojiServer) ListCustomEmojis(ctx context.Context, req *chatv1.Li
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListCustomEmojisResponse{
-		Emojis:    presenter.ConvertAll(out.Emojis, presenter.CustomEmoji),
-		ExpiresAt: timestamppb.New(out.ExpiresAt),
-	}, nil
+	return &chatv1.ListCustomEmojisResponse{Emojis: presenter.ConvertAll(out, presenter.CustomEmoji)}, nil
 }
 
 func (s *CustomEmojiServer) PresignCustomEmojiUpload(ctx context.Context, req *chatv1.PresignCustomEmojiUploadRequest) (*chatv1.PresignCustomEmojiUploadResponse, error) {

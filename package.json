@@ -16,7 +16,6 @@
     "typecheck": "pnpm -r run typecheck",
     "knip": "pnpm -r run knip",
     "codecheck": "pnpm -r run codecheck",
-    "clean": "./scripts/clean.sh",
     "claude": "claude --setting-sources project,local --permission-mode bypassPermissions",
     "generate:proto": "buf generate proto --template proto/buf.gen.yaml",
     "proto:format": "buf format -w proto",

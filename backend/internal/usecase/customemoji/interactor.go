@@ -19,11 +19,7 @@ import (
 // imageURLExpires は一覧で返す画像 URL の有効期限です。表示のたびに取り直さないよう長めにします
 const imageURLExpires = 12 * time.Hour
 
-var (
-	ErrEmojiNotFound = domerr.New(domerr.ErrNotFound, "指定されたカスタム絵文字が見つかりません")
-	ErrInvalidName   = domerr.New(domerr.ErrValidation, "名前は英小文字・数字・_・- の 32 文字以内で指定してください")
-	errInvalidUpload = domerr.New(domerr.ErrValidation, "upload_id が不正です")
-)
+var ErrEmojiNotFound = domerr.New(domerr.ErrNotFound, "指定されたカスタム絵文字が見つかりません")
 
 type Interactor struct {
 	emojiRepo     domainrepository.CustomEmojiRepository
@@ -55,7 +51,7 @@ func New(
 	}
 }
 
-func (i *Interactor) List(ctx context.Context, input ListInput) (*ListOutput, error) {
+func (i *Interactor) List(ctx context.Context, input ListInput) ([]Output, error) {
 	member, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, err
@@ -64,12 +60,7 @@ func (i *Interactor) List(ctx context.Context, input ListInput) (*ListOutput, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to load custom emojis: %w", err)
 	}
-	expiresAt := time.Now().Add(imageURLExpires)
-	outputs, err := i.toOutputs(ctx, emojis, member)
-	if err != nil {
-		return nil, err
-	}
-	return &ListOutput{Emojis: outputs, ExpiresAt: expiresAt}, nil
+	return i.toOutputs(ctx, emojis, member)
 }
 
 // Presign は画像のアップロード先を発行します。登録は画像を置いたあと Create で行います
@@ -89,12 +80,6 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 	member, err := i.permissionSvc.Ensure(ctx, input.WorkspaceID, input.UserID, entity.PermissionCreateCustomEmoji)
 	if err != nil {
 		return nil, err
-	}
-	if !entity.IsValidCustomEmojiName(input.Name) {
-		return nil, ErrInvalidName
-	}
-	if uuid.Validate(input.UploadID) != nil {
-		return nil, errInvalidUpload
 	}
 	// アップロード先はサーバーで組み立て直し、他のワークスペースの画像を指せないようにする
 	emoji := &entity.CustomEmoji{

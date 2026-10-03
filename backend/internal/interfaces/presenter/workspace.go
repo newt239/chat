@@ -34,15 +34,15 @@ func Workspace(w workspaceuc.WorkspaceOutput) *chatv1.Workspace {
 func WorkspaceMember(m workspaceuc.MemberInfo) *chatv1.WorkspaceMember {
 	return &chatv1.WorkspaceMember{
 		UserId:      m.UserID,
-		Email:       m.Email,
-		DisplayName: m.DisplayName,
-		AvatarUrl:   m.AvatarURL,
-		Bio:         m.Bio,
+		Email:       m.User.Email,
+		DisplayName: m.User.DisplayName,
+		AvatarUrl:   m.User.AvatarURL,
+		Bio:         m.User.Bio,
 		Role:        WorkspaceRoles[m.Role],
 		SuspendedAt: optionalTimestamp(m.SuspendedAt),
 		Nickname:    m.Nickname,
-		Timezone:    m.Timezone,
-		Links:       m.Links,
+		Timezone:    m.User.Preferences.Timezone,
+		Links:       m.User.Links,
 	}
 }
 

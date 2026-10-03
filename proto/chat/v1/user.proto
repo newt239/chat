@@ -28,7 +28,7 @@ message ProfileLinks {
       cel: {
         id: "http_url"
         message: "http(s) の URL を指定してください"
-        expression: "this.startsWith('http://') || this.startsWith('https://')"
+        expression: "this.matches('^https?://[^/?#]')"
       }
     }
   }];

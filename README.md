@@ -6,7 +6,7 @@
 # 1. Docker Desktopを起動
 # 2. 依存関係をインストール
 pnpm install
-# 3. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
+# 3. アプリケーションを起動（スキーマの適用と、DB が空なら初期データの作成は自動で行われます）
 pnpm start
 ```
 
@@ -165,9 +165,9 @@ chat/
 │   │   ├── features/ # 機能別モジュール
 │   │   ├── hooks/    # 複数の機能で使う hooks
 │   │   ├── providers/ # Jotai ストア・TanStack Query・WebSocket の Provider
-│   │   └── lib/      # API client, WS client, router など
+│   │   ├── lib/      # API client, WS client, router など
+│   │   └── test/     # Vitest のセットアップ
 │   ├── src-tauri/    # Tauri のネイティブ側
-│   ├── tests/        # Vitest のセットアップ
 │   └── public/       # Static assets（PWA アイコンの元になる logo.svg）
 ├── packages/         # DOM に依存しない共有パッケージ（デザイントークン・i18n 辞書）
 ├── proto/            # Protocol Buffers の API 定義（buf で Go / TypeScript を生成）
@@ -189,7 +189,7 @@ chat/
 git clone <repository-url>
 cd chat
 
-# 2. アプリケーションを起動（スキーマのリセットとシードデータは自動実行されます）
+# 2. アプリケーションを起動（スキーマの適用と、DB が空なら初期データの作成は自動で行われます）
 pnpm install
 pnpm start
 
@@ -211,16 +211,6 @@ docker compose down -v
 ブラウザで https://chat.localhost にアクセスしてください。
 
 シードの[テストアカウント](#テストアカウント)でログインできます。
-
-## 環境変数の設定
-
-### 環境変数ファイル
-
-Docker で起動する場合は `docker-compose.yml` の値が使われます。ホストで直接バックエンドを動かすときは `backend/.env.example` をコピーして `backend/.env` を作成してください。
-
-```bash
-cp backend/.env.example backend/.env
-```
 
 ## データベース管理
 

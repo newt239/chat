@@ -3,8 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -12,8 +10,6 @@ import (
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/usecase/auth"
 )
-
-var ErrInvalidLink = domerr.New(domerr.ErrValidation, fmt.Sprintf("リンクは %d 件までの http(s) の URL で指定してください", entity.MaxProfileLinks))
 
 type UpdateMeInput struct {
 	UserID      string
@@ -114,34 +110,13 @@ func (i *Interactor) UpdateMe(ctx context.Context, input UpdateMeInput) (*entity
 	}
 
 	if input.Links != nil {
-		links, err := normalizeLinks(*input.Links)
-		if err != nil {
-			return nil, err
-		}
-		u.Links = links
+		u.Links = *input.Links
 	}
 
 	if err := i.userRepo.Update(ctx, u); err != nil {
 		return nil, err
 	}
 	return u, nil
-}
-
-// normalizeLinks は前後の空白を除き、数と URL の形式を確かめます
-func normalizeLinks(links []string) ([]string, error) {
-	if len(links) > entity.MaxProfileLinks {
-		return nil, ErrInvalidLink
-	}
-	result := make([]string, 0, len(links))
-	for _, link := range links {
-		link = strings.TrimSpace(link)
-		u, err := url.Parse(link)
-		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
-			return nil, ErrInvalidLink
-		}
-		result = append(result, link)
-	}
-	return result, nil
 }
 
 // UpdatePreferences はテーマ・表示モード・言語・通知の設定を丸ごと置き換えます

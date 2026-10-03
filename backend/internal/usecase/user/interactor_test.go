@@ -102,20 +102,3 @@ func TestUpdatePreferencesValidatesTimezone(t *testing.T) {
 		})
 	}
 }
-
-func TestNormalizeLinks(t *testing.T) {
-	got, err := normalizeLinks([]string{" https://github.com/newt239 ", "http://example.com"})
-	if err != nil || got[0] != "https://github.com/newt239" || got[1] != "http://example.com" {
-		t.Fatalf("got=%+v err=%v", got, err)
-	}
-
-	tooMany := make([]string, entity.MaxProfileLinks+1)
-	for i := range tooMany {
-		tooMany[i] = "https://example.com"
-	}
-	for _, invalid := range [][]string{tooMany, {"javascript:alert(1)"}, {"example.com"}} {
-		if _, err := normalizeLinks(invalid); !errors.Is(err, ErrInvalidLink) {
-			t.Errorf("不正なリンクを拒否していません: %+v", invalid)
-		}
-	}
-}

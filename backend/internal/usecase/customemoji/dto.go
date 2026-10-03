@@ -39,12 +39,6 @@ type Output struct {
 	CanDelete bool
 }
 
-type ListOutput struct {
-	Emojis []Output
-	// ImageURL の有効期限
-	ExpiresAt time.Time
-}
-
 type PresignOutput struct {
 	UploadID  string
 	UploadURL string

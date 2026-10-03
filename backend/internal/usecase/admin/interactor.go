@@ -94,19 +94,9 @@ func (i *Interactor) ListMembers(ctx context.Context, input WorkspaceInput) ([]M
 
 	output := make([]MemberOutput, 0, len(members))
 	for _, m := range members {
-		out := MemberOutput{
-			UserID:      m.UserID,
-			Role:        m.Role,
-			SuspendedAt: m.SuspendedAt,
-			LastLogin:   sessions[m.UserID],
-			Activity:    activities[m.UserID],
-		}
 		if u := users[m.UserID]; u != nil {
-			out.Email = u.Email
-			out.DisplayName = u.DisplayName
-			out.AvatarURL = u.AvatarURL
+			output = append(output, MemberOutput{WorkspaceMember: m, User: u, LastLogin: sessions[m.UserID], Activity: activities[m.UserID]})
 		}
-		output = append(output, out)
 	}
 	return output, nil
 }

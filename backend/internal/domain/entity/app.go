@@ -20,13 +20,6 @@ const (
 	AppPermissionOutgoingWebhook AppPermission = "webhook:outgoing"
 )
 
-var AllAppPermissions = []AppPermission{
-	AppPermissionPostJoinedChannels,
-	AppPermissionPostPublicChannels,
-	AppPermissionPostThreadReplies,
-	AppPermissionOutgoingWebhook,
-}
-
 // App はワークスペースの連携アプリです。投稿は BotUserID の名義で行う
 type App struct {
 	ID          string

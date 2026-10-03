@@ -4,12 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/infrastructure/config"
 	"github.com/newt239/chat/internal/infrastructure/database"
-	"github.com/newt239/chat/internal/infrastructure/meilisearch"
-	"github.com/newt239/chat/internal/infrastructure/repository"
-	"github.com/newt239/chat/internal/usecase/searchindex"
+	"github.com/newt239/chat/internal/registry"
 )
 
 // 削除されていない全メッセージを Meilisearch に登録し直す
@@ -21,10 +18,7 @@ func main() {
 	}
 	defer func() { _ = client.Close() }()
 
-	mentionSvc := service.NewMentionService(repository.NewWorkspaceRepository(client), repository.NewUserRepository(client),
-		repository.NewUserGroupRepository(client), repository.NewChannelRepository(client))
-	indexer := searchindex.NewIndexer(repository.NewMessageRepository(client),
-		meilisearch.NewMessageIndex(cfg.Search.MeilisearchURL, cfg.Search.MeilisearchAPIKey), mentionSvc)
+	indexer := registry.NewSearchIndexer(client, cfg.Search)
 	count, err := indexer.Prepare(context.Background(), true)
 	if err != nil {
 		log.Fatalf("再インデックスに失敗しました: %v", err)

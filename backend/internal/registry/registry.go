@@ -81,6 +81,13 @@ func newPushSender(projectID string) notificationuc.Sender {
 	return sender
 }
 
+// NewSearchIndexer は検索インデックスを作り直すコマンド用の Indexer を組み立てます
+func NewSearchIndexer(client *ent.Client, cfg config.SearchConfig) *searchindex.Indexer {
+	mentionSvc := service.NewMentionService(repository.NewWorkspaceRepository(client), repository.NewUserRepository(client),
+		repository.NewUserGroupRepository(client), repository.NewChannelRepository(client))
+	return searchindex.NewIndexer(repository.NewMessageRepository(client), meilisearch.NewMessageIndex(cfg.MeilisearchURL, cfg.MeilisearchAPIKey), mentionSvc)
+}
+
 // New は依存関係を組み立てます。ready が false を返す間は readiness probe に 503 を返す
 func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func() bool) *App {
 	userRepo := repository.NewUserRepository(client)

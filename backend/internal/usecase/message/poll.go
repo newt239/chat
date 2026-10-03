@@ -1,23 +1,15 @@
 package message
 
 import (
-	"fmt"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 )
 
-const (
-	maxPollQuestionRunes = 300
-	maxPollLabelRunes    = 100
-)
-
 var (
 	ErrPollQuestionRequired = domerr.New(domerr.ErrValidation, "投票の質問を入力してください")
-	ErrPollOptionCount      = domerr.New(domerr.ErrValidation, fmt.Sprintf("選択肢は %d〜%d 個にしてください", entity.MinPollOptions, entity.MaxPollOptions))
 	ErrPollOptionInvalid    = domerr.New(domerr.ErrValidation, "選択肢の内容が正しくありません")
 	ErrPollClosesInPast     = domerr.New(domerr.ErrValidation, "締切は今より後にしてください")
 )
@@ -65,11 +57,8 @@ type PollOptionOutput struct {
 // newPoll は入力を検証して投票を作ります
 func newPoll(input *PollInput, now time.Time) (*entity.Poll, error) {
 	question := strings.TrimSpace(input.Question)
-	if question == "" || utf8.RuneCountInString(question) > maxPollQuestionRunes {
+	if question == "" {
 		return nil, ErrPollQuestionRequired
-	}
-	if len(input.Options) < entity.MinPollOptions || len(input.Options) > entity.MaxPollOptions {
-		return nil, ErrPollOptionCount
 	}
 	if input.ClosesAt != nil && !input.ClosesAt.After(now) {
 		return nil, ErrPollClosesInPast
@@ -83,10 +72,8 @@ func newPoll(input *PollInput, now time.Time) (*entity.Poll, error) {
 	}
 	for _, o := range input.Options {
 		label := strings.TrimSpace(o.Label)
-		switch {
-		case input.Mode == entity.PollModeDate && o.StartsAt == nil,
-			input.Mode == entity.PollModeText && (label == "" || o.StartsAt != nil),
-			utf8.RuneCountInString(label) > maxPollLabelRunes:
+		if input.Mode == entity.PollModeDate && o.StartsAt == nil ||
+			input.Mode == entity.PollModeText && (label == "" || o.StartsAt != nil) {
 			return nil, ErrPollOptionInvalid
 		}
 		poll.Options = append(poll.Options, entity.PollOption{Label: label, StartsAt: o.StartsAt, AllDay: o.AllDay})

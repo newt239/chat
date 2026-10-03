@@ -323,7 +323,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 	// アプリの投稿名義のボット
 	bot, err := client.User.Create().
 		SetEmail("deploy-bot@example.com").
-		SetPasswordHash("!").
+		SetPasswordHash(entity.UnusablePasswordHash).
 		SetDisplayName("Deploy Bot").
 		SetIsApp(true).
 		Save(ctx)

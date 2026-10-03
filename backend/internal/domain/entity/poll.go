@@ -13,11 +13,6 @@ const (
 	PollModeDate PollMode = "date"
 )
 
-const (
-	MinPollOptions = 2
-	MaxPollOptions = 20
-)
-
 type Poll struct {
 	ID            string
 	MessageID     string

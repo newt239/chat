@@ -28,11 +28,8 @@ type MemberInput struct {
 }
 
 type MemberOutput struct {
-	UserID      string
-	Role        entity.ChannelRole
-	DisplayName string
-	Email       string
-	AvatarURL   *string
+	User *entity.User
+	Role entity.ChannelRole
 }
 
 // ChannelRevoker はチャンネルから外れたユーザーへのリアルタイム配信を止めます
@@ -138,13 +135,7 @@ func (i *Interactor) ListMembers(ctx context.Context, channelID, userID string) 
 	outputs := make([]MemberOutput, 0, len(members))
 	for _, m := range members {
 		if user := users[m.UserID]; user != nil {
-			outputs = append(outputs, MemberOutput{
-				UserID:      m.UserID,
-				Role:        m.Role,
-				DisplayName: user.DisplayName,
-				Email:       user.Email,
-				AvatarURL:   user.AvatarURL,
-			})
+			outputs = append(outputs, MemberOutput{User: user, Role: m.Role})
 		}
 	}
 	return outputs, nil

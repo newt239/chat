@@ -18,7 +18,7 @@ message CustomEmoji {
   string id = 1;
   // 本文やリアクションでは :name: と書く
   string name = 2;
-  // 有効期限付きの URL。期限は ListCustomEmojisResponse.expires_at
+  // 有効期限付きの URL
   string image_url = 3;
   UserSummary created_by = 4;
   google.protobuf.Timestamp created_at = 5;
@@ -33,7 +33,6 @@ message ListCustomEmojisRequest {
 message ListCustomEmojisResponse {
   // 名前の昇順
   repeated CustomEmoji emojis = 1;
-  google.protobuf.Timestamp expires_at = 2;
 }
 
 message PresignCustomEmojiUploadRequest {

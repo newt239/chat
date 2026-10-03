@@ -63,12 +63,12 @@ services:
       - PORT=8080
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chat?sslmode=disable
       - JWT_SECRET=development-secret-key
-      - CORS_ALLOWED_ORIGINS=${CHAT_CORS_ORIGINS:-http://localhost:5173},tauri://localhost,https://tauri.localhost
+      - CORS_ALLOWED_ORIGINS=${CHAT_CORS_ORIGINS:-},tauri://localhost,https://tauri.localhost
       # 添付ファイルや絵文字は Wasabi ではなく backend/tmp/storage に保存し、backend の /storage から配信する
       - STORAGE_DRIVER=local
-      - PUBLIC_BASE_URL=${CHAT_API_URL:-http://localhost:8080}
+      - PUBLIC_BASE_URL=${CHAT_API_URL:-}
       # seed のメッセージリンクに使うフロントの URL
-      - APP_URL=${CHAT_APP_URL:-https://chat.localhost}
+      - APP_URL=${CHAT_APP_URL:-}
       - MEILISEARCH_URL=http://meilisearch:7700
       - MEILISEARCH_API_KEY=development-master-key
       - REDIS_URL=redis://redis:6379
@@ -96,8 +96,8 @@ services:
       context: .
       dockerfile: frontend/Dockerfile.dev
     environment:
-      - VITE_API_BASE_URL=${CHAT_API_URL:-http://localhost:8080}
-      - VITE_WS_URL=${CHAT_WS_URL:-ws://localhost:8080}
+      - VITE_API_BASE_URL=${CHAT_API_URL:-}
+      - VITE_WS_URL=${CHAT_WS_URL:-}
       - VITE_GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
     ports:
       - "127.0.0.1::5173"

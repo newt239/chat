@@ -37,12 +37,6 @@ type MemberInput struct {
 	OperatorID string
 }
 
-type MemberOutput struct {
-	UserID      string
-	DisplayName string
-	AvatarURL   *string
-}
-
 type Interactor struct {
 	userGroupRepo domainrepository.UserGroupRepository
 	workspaceRepo domainrepository.WorkspaceRepository
@@ -185,7 +179,7 @@ func (i *Interactor) RemoveMember(ctx context.Context, input MemberInput) error 
 	return nil
 }
 
-func (i *Interactor) ListMembers(ctx context.Context, groupID, userID string) ([]MemberOutput, error) {
+func (i *Interactor) ListMembers(ctx context.Context, groupID, userID string) ([]*entity.User, error) {
 	group, err := i.findGroup(ctx, groupID)
 	if err != nil {
 		return nil, err
@@ -205,10 +199,10 @@ func (i *Interactor) ListMembers(ctx context.Context, groupID, userID string) ([
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch users: %w", err)
 	}
-	members := make([]MemberOutput, 0, len(groupMembers))
+	members := make([]*entity.User, 0, len(groupMembers))
 	for _, member := range groupMembers {
 		if user := users[member.UserID]; user != nil {
-			members = append(members, MemberOutput{UserID: user.ID, DisplayName: user.DisplayName, AvatarURL: user.AvatarURL})
+			members = append(members, user)
 		}
 	}
 	return members, nil
