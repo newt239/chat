@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { TextArea, TextField } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -6,11 +6,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/Button/Button";
 import { useMentionCodec } from "#/features/mention/hooks/useMentionCodec";
 
-import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
-import { handleEnterKey } from "../utils/format";
+import { useComposerTextarea } from "../hooks/useComposerTextarea";
 import { SuggestionList } from "./SuggestionList";
-
-import type { Selection } from "../utils/format";
 
 type MessageEditorProps = {
   initialBody: string;
@@ -27,31 +24,6 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
   const draft = editedDraft ?? mentionCodec.decode(initialBody);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selection, setSelection] = useState({ end: draft.length, start: draft.length });
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const replaceSelection = (next: { text: string; selection: Selection }) => {
-    setEditedDraft(next.text);
-    setSelection(next.selection);
-    requestAnimationFrame(() => {
-      textareaRef.current?.setSelectionRange(next.selection.start, next.selection.end);
-    });
-  };
-  const suggestion = useComposerSuggestion({
-    allowsCommands: false,
-    body: draft,
-    cursor: selection.start,
-    onApply: (next, item) => {
-      mentionCodec.register(item.value, item.token);
-      replaceSelection({ selection: { end: next.cursor, start: next.cursor }, text: next.text });
-    },
-  });
-  const syncSelection = () => {
-    const textarea = textareaRef.current;
-    if (textarea !== null) {
-      setSelection({ end: textarea.selectionEnd, start: textarea.selectionStart });
-    }
-  };
-
   const save = async () => {
     const trimmed = mentionCodec.encode(draft.trim());
     if (trimmed.length === 0) {
@@ -70,44 +42,31 @@ export const MessageEditor = ({ initialBody, onSave, onClose }: MessageEditorPro
       setIsSaving(false);
     }
   };
+  const composer = useComposerTextarea({
+    allowsCommands: false,
+    body: draft,
+    onBodyChange: setEditedDraft,
+    onEscape: onClose,
+    onSubmit: () => {
+      void save();
+    },
+    registerMention: mentionCodec.register,
+    submitsOnEnter: true,
+  });
 
   return (
     <div className="relative flex flex-col gap-1.5">
-      {suggestion.isOpen && <SuggestionList {...suggestion.listProps} />}
+      {composer.suggestion.isOpen && <SuggestionList {...composer.suggestion.listProps} />}
       <TextField
         aria-label={t("message.actions.edit")}
-        value={draft}
-        onChange={(next) => {
-          setEditedDraft(next);
-          syncSelection();
-        }}
+        {...composer.fieldProps}
         isDisabled={isSaving}
         isInvalid={error !== null}
         // oxlint-disable-next-line jsx-a11y/no-autofocus -- 編集を始めた直後に入力できるようにする
         autoFocus
-        onKeyDown={(event) => {
-          if (suggestion.handleKeyDown(event)) {
-            return;
-          }
-          if (event.key === "Escape") {
-            onClose();
-          }
-          handleEnterKey({
-            event,
-            onReplace: replaceSelection,
-            onSubmit: () => {
-              void save();
-            },
-            submitsOnEnter: true,
-            text: draft,
-            textarea: textareaRef.current,
-          });
-        }}
       >
         <TextArea
-          {...suggestion.inputProps}
-          ref={textareaRef}
-          onSelect={syncSelection}
+          {...composer.textAreaProps}
           className="min-h-15 w-full resize-y rounded-md border border-accent bg-surface px-2.5 py-1.5 font-sans text-body text-text ring-3 ring-accent-soft outline-none"
         />
       </TextField>

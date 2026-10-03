@@ -56,11 +56,7 @@ export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialo
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       title={t(link ? "channel.links.editTitle" : "channel.links.addTitle")}
       footer={
         <>

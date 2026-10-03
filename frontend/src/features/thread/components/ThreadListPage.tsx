@@ -12,16 +12,9 @@ import { useLoadMoreRef } from "#/hooks/useLoadMoreRef";
 export const ThreadListPage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const {
-    data: threads,
-    isLoading,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useParticipatingThreads(workspaceId);
-  const loadMoreRef = useLoadMoreRef(() => {
-    void fetchNextPage();
-  }, hasNextPage && !isFetchingNextPage);
+  const participating = useParticipatingThreads(workspaceId);
+  const { data: threads, isLoading, isFetchingNextPage } = participating;
+  const loadMoreRef = useLoadMoreRef(participating);
 
   return (
     <>

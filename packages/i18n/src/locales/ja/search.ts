@@ -42,11 +42,8 @@ export const search = {
   invalidDate: "日付は YYYY-MM-DD の形式で指定してください: {{tokens}}",
   inThread: "スレッド内",
   input: "検索キーワード",
-  next: "次のページ",
   noDescription: "説明なし",
-  page: "{{page}} / {{total}} ページ",
   placeholder: "キーワード、from:@名前 in:#チャンネル has:image",
-  prev: "前のページ",
   prompt: "キーワードか条件を入力して検索してください",
   sections: {
     all: "すべて",

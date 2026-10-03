@@ -44,11 +44,8 @@ export const search: Messages["search"] = {
   invalidDate: "Use the YYYY-MM-DD format for dates: {{tokens}}",
   inThread: "In thread",
   input: "Search keywords",
-  next: "Next page",
   noDescription: "No description",
-  page: "Page {{page}} of {{total}}",
   placeholder: "Keywords, from:@name in:#channel has:image",
-  prev: "Previous page",
   prompt: "Enter keywords or filters to search",
   sections: {
     all: "All",

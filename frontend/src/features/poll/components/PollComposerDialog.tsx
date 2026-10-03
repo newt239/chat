@@ -20,8 +20,7 @@ import { atHourDaysLater } from "#/lib/zonedDate";
 import type { PollInput } from "#/gen/chat/v1/message_pb";
 
 type PollComposerDialogProps = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onClose: () => void;
   onConfirm: (poll: PollInput) => void;
 };
 
@@ -31,11 +30,7 @@ const MAX_OPTIONS = 20;
 const modes = ["text", "date"] as const;
 
 /** 投票を組み立てる。日程調整では日時の候補を並べる */
-export const PollComposerDialog = ({
-  isOpen,
-  onOpenChange,
-  onConfirm,
-}: PollComposerDialogProps) => {
+export const PollComposerDialog = ({ onClose, onConfirm }: PollComposerDialogProps) => {
   const { t } = useTranslation();
   const { timeZone } = useDateFormat();
   const daysLater = (days: number, hour: number) =>
@@ -77,7 +72,7 @@ export const PollComposerDialog = ({
         question: question.trim(),
       }),
     );
-    onOpenChange(false);
+    onClose();
   };
 
   const addOption = () => {
@@ -105,18 +100,13 @@ export const PollComposerDialog = ({
 
   return (
     <Dialog
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      isOpen
+      onOpenChange={onClose}
       title={t("poll.create")}
       size="md"
       footer={
         <>
-          <Button
-            variant="secondary"
-            onPress={() => {
-              onOpenChange(false);
-            }}
-          >
+          <Button variant="secondary" onPress={onClose}>
             {t("common.cancel")}
           </Button>
           <Button onPress={submit}>{t("poll.submit")}</Button>

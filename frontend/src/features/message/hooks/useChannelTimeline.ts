@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 
 import {
+  updateMessagePages,
   updateTimelineMessage,
   updateUserMessages,
 } from "#/features/message/utils/updateTimelineMessage";
@@ -22,9 +23,6 @@ import { useWsClient } from "#/providers/ws/useWsClient";
 import { messagePagesKey } from "./useMessagePages";
 
 import type { Reaction, TimelineItem } from "#/gen/chat/v1/message_pb";
-import type { ListMessagesResponse } from "#/gen/chat/v1/message_service_pb";
-
-import type { InfiniteData } from "@tanstack/react-query";
 
 type UseChannelTimelineArgs = {
   channelId: string;
@@ -73,18 +71,7 @@ export const useChannelTimeline = ({
       if (!channelIds.includes(eventChannelId)) {
         return;
       }
-      queryClient.setQueriesData<InfiniteData<ListMessagesResponse>>(
-        { queryKey: messagePagesKey(channelId, includeDescendants) },
-        (data) =>
-          data && {
-            ...data,
-            pages: data.pages.map((page, index) => ({
-              ...page,
-              // 新しい順に並ぶので先頭のページが最新。最新まで読み込んでいるときだけ新着を足す
-              messages: update(page.messages, index === 0 && !page.hasNewer),
-            })),
-          },
-      );
+      updateMessagePages(queryClient, messagePagesKey(channelId, includeDescendants), update);
     };
 
     const prependToLatest = (eventChannelId: string, item: TimelineItem) => {

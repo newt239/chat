@@ -207,10 +207,8 @@ export const AdminMembersTab = ({ workspaceId, members }: AdminMembersTabProps) 
       <p className="m-0 text-xs text-muted">{t("admin.members.count", { count: rows.length })}</p>
       <AlertDialog
         isOpen={removing !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setRemoving(null);
-          }
+        onOpenChange={() => {
+          setRemoving(null);
         }}
         title={t("admin.members.removeTitle", { name: removing?.displayName ?? "" })}
         confirmLabel={t("admin.members.removeConfirm")}

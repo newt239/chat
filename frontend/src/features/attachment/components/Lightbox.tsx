@@ -56,10 +56,8 @@ export const Lightbox = ({ images, message, index, onIndexChange }: LightboxProp
         <MotionModalOverlay
           isOpen
           isDismissable
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              onIndexChange(null);
-            }
+          onOpenChange={() => {
+            onIndexChange(null);
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

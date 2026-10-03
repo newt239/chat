@@ -9,6 +9,7 @@ import {
   formatSearchQuery,
   hasSearchConditions,
   searchHasValues,
+  searchIsValues,
 } from "#/features/search/utils/searchQuery";
 
 import { SearchDateFilter } from "./SearchDateFilter";
@@ -16,7 +17,7 @@ import { SearchFilterPicker } from "./SearchFilterPicker";
 
 import type { ResolvedSearchQuery } from "#/features/search/hooks/useResolvedSearchQuery";
 import type { SearchParams } from "#/features/search/schemas";
-import type { SearchIs, SearchQuery } from "#/features/search/utils/searchQuery";
+import type { SearchQuery } from "#/features/search/utils/searchQuery";
 
 const searchRoute = getRouteApi("/app/$workspaceId/search");
 
@@ -29,8 +30,6 @@ const summarize = (labels: readonly string[]) =>
     : labels.length === 1
       ? (labels[0] ?? null)
       : `${labels[0]} +${labels.length - 1}`;
-
-const isToggles = ["pinned", "thread", "mention"] as const satisfies readonly SearchIs[];
 
 type SearchFilterBarProps = {
   resolved: ResolvedSearchQuery;
@@ -124,7 +123,7 @@ export const SearchFilterBar = ({ resolved }: SearchFilterBarProps) => {
         isSearchable={false}
         isInvalid={false}
       />
-      {isToggles.map((is) => (
+      {searchIsValues.map((is) => (
         <ToggleButton
           key={is}
           isSelected={query.is.includes(is)}

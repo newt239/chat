@@ -15,17 +15,9 @@ type MentionListProps = {
 // メンション一覧の中身。デスクトップのメンション画面とモバイルの通知タブで使う
 export const MentionList = ({ workspaceId }: MentionListProps) => {
   const { t } = useTranslation();
-  const {
-    data: messages,
-    isLoading,
-    isError,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useMentions(workspaceId);
-  const loadMoreRef = useLoadMoreRef(() => {
-    void fetchNextPage();
-  }, hasNextPage && !isFetchingNextPage);
+  const mentions = useMentions(workspaceId);
+  const { data: messages, isLoading, isError, isFetchingNextPage } = mentions;
+  const loadMoreRef = useLoadMoreRef(mentions);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4.5 py-3 max-md:px-2.5">

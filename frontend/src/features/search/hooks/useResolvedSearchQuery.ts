@@ -1,4 +1,5 @@
 import { useChannels } from "#/features/channel/hooks/useChannel";
+import { isDescendantPath } from "#/features/channel/utils/channelTree";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { parseSearchQuery } from "#/features/search/utils/searchQuery";
 
@@ -27,7 +28,7 @@ export const useResolvedSearchQuery = (workspaceId: string, raw: string) => {
     name,
   }));
   const hasDescendants = inChannels.some(({ channel }) =>
-    channels?.some((other) => channel !== undefined && other.name.startsWith(`${channel.name}/`)),
+    channels?.some((other) => channel !== undefined && isDescendantPath(channel.name, other.name)),
   );
 
   return {

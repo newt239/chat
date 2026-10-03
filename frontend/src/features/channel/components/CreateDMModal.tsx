@@ -126,11 +126,7 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       title={t("dm.create.title")}
       size="md"
       footer={

@@ -47,10 +47,8 @@ export const ReactionsDialog = ({ message, tab, onTabChange }: ReactionsDialogPr
   return (
     <Dialog
       isOpen={tab !== null}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onTabChange(null);
-        }
+      onOpenChange={() => {
+        onTabChange(null);
       }}
       title={t("reaction.list.title")}
     >

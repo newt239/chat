@@ -58,7 +58,7 @@ export const useFileUpload = () => {
           },
         },
       ]);
-      return null;
+      return;
     }
 
     setPendingAttachments((prev) => [...prev, { file, id, state: { status: "presigning" } }]);
@@ -96,16 +96,14 @@ export const useFileUpload = () => {
       await thumbnailUpload;
 
       setState(id, { attachmentId: presignData.attachmentId, status: "completed" });
-      return presignData.attachmentId;
     };
     try {
-      return await upload();
+      await upload();
     } catch (error) {
       setState(id, {
         error: error instanceof Error ? error.message : t("attachment.errors.unknown"),
         status: "error",
       });
-      return null;
     }
   };
 

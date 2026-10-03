@@ -28,13 +28,36 @@ export const LocationShareDialog = ({ onClose, onConfirm }: LocationShareDialogP
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       title={t("location.share.title")}
       size="md"
+      footer={
+        <>
+          <Button variant="secondary" onPress={onClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            isDisabled={state.status !== "ready"}
+            onPress={() => {
+              if (state.status !== "ready") {
+                return;
+              }
+              const { accuracyMeters, latitude, longitude } = state.location;
+              onConfirm(
+                create(MessageLocationSchema, {
+                  accuracyMeters,
+                  label: label.trim() || undefined,
+                  latitude,
+                  longitude,
+                }),
+              );
+              onClose();
+            }}
+          >
+            {t("location.share.confirm")}
+          </Button>
+        </>
+      }
     >
       {state.status === "ready" ? (
         <p className="m-0 font-mono text-caption text-subtle tabular-nums">
@@ -62,31 +85,6 @@ export const LocationShareDialog = ({ onClose, onConfirm }: LocationShareDialogP
         onChange={setLabel}
         maxLength={100}
       />
-      <div className="flex justify-end gap-2 pt-1 pb-[max(16px,env(safe-area-inset-bottom))]">
-        <Button variant="secondary" onPress={onClose}>
-          {t("common.cancel")}
-        </Button>
-        <Button
-          isDisabled={state.status !== "ready"}
-          onPress={() => {
-            if (state.status !== "ready") {
-              return;
-            }
-            const { accuracyMeters, latitude, longitude } = state.location;
-            onConfirm(
-              create(MessageLocationSchema, {
-                accuracyMeters,
-                label: label.trim() || undefined,
-                latitude,
-                longitude,
-              }),
-            );
-            onClose();
-          }}
-        >
-          {t("location.share.confirm")}
-        </Button>
-      </div>
     </Dialog>
   );
 };

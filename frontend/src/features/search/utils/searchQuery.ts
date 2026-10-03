@@ -1,8 +1,8 @@
 export const searchHasValues = ["image", "file", "link", "video", "location"] as const;
 export type SearchHas = (typeof searchHasValues)[number];
 
-const searchIsValues = ["pinned", "thread", "mention"] as const;
-export type SearchIs = (typeof searchIsValues)[number];
+export const searchIsValues = ["pinned", "thread", "mention"] as const;
+type SearchIs = (typeof searchIsValues)[number];
 
 // 修飾子を取り除いた語と、名前のままの絞り込み条件。名前から ID への解決は利用側で行う
 export type SearchQuery = {

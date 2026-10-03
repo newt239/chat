@@ -35,11 +35,7 @@ export const ScheduleDialog = ({
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       title={title}
       footer={
         <>

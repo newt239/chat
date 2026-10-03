@@ -3,10 +3,9 @@ import { Button, ListBox, ListBoxItem, Popover, Select, SelectValue } from "reac
 import { useTranslation } from "react-i18next";
 
 import { cn, focusRing, overlayStyles } from "#/components/ui/styles/styles";
-import { workspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
-import { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
+import { assignableWorkspaceRoles } from "#/features/member/utils/workspaceRoleKeys";
 
-const roles = workspaceRoles.filter((option) => option.role !== WorkspaceRole.OWNER);
+import type { WorkspaceRole } from "#/gen/chat/v1/workspace_service_pb";
 
 type RoleSelectProps = {
   ariaLabel: string;
@@ -21,9 +20,9 @@ export const RoleSelect = ({ ariaLabel, value, onChange, isDisabled }: RoleSelec
   return (
     <Select
       aria-label={ariaLabel}
-      value={roles.find((option) => option.role === value)?.key ?? null}
+      value={assignableWorkspaceRoles.find((option) => option.role === value)?.key ?? null}
       onChange={(key) => {
-        const next = roles.find((option) => option.key === key);
+        const next = assignableWorkspaceRoles.find((option) => option.key === key);
         if (next !== undefined && next.role !== value) {
           onChange(next.role);
         }
@@ -41,7 +40,7 @@ export const RoleSelect = ({ ariaLabel, value, onChange, isDisabled }: RoleSelec
         <IconChevronDown aria-hidden className="size-3.5 shrink-0 text-muted" />
       </Button>
       <Popover offset={4} className={cn(overlayStyles.popover, "min-w-(--trigger-width) p-1")}>
-        <ListBox items={roles} className="outline-none">
+        <ListBox items={assignableWorkspaceRoles} className="outline-none">
           {(option) => (
             <ListBoxItem
               id={option.key}

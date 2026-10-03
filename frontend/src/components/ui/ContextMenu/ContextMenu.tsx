@@ -50,11 +50,7 @@ export const ContextMenu = ({ children, menu, className, ...props }: ContextMenu
       <Popover
         triggerRef={anchorRef}
         isOpen={point !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            close();
-          }
-        }}
+        onOpenChange={close}
         placement="bottom start"
         offset={0}
         className={cn(overlayStyles.popover, "overflow-y-auto")}

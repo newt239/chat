@@ -29,11 +29,7 @@ export const ImageCropDialog = ({ src, isPending, onCancel, onCrop }: ImageCropD
   return (
     <Dialog
       isOpen={src !== null}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onCancel();
-        }
-      }}
+      onOpenChange={onCancel}
       title={t("ui.imageCrop.title")}
       footer={
         <>

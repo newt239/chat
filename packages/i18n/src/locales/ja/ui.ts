@@ -27,6 +27,11 @@ export const ui = {
   menu: {
     title: "メニュー",
   },
+  pagination: {
+    next: "次のページ",
+    page: "{{page}} / {{total}} ページ",
+    previous: "前のページ",
+  },
   toast: {
     dismiss: "通知を閉じる",
     region: "通知",

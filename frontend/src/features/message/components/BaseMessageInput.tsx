@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { useMutation } from "@connectrpc/connect-query";
@@ -20,15 +20,13 @@ import { CommandService } from "#/gen/chat/v1/command_service_pb";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { useIsMobile } from "#/hooks/useMediaQuery";
 
-import { useComposerSuggestion } from "../hooks/useComposerSuggestion";
+import { useComposerTextarea } from "../hooks/useComposerTextarea";
 import { useTypingNotifier } from "../hooks/useTypingNotifier";
 import { findCommand, unescapeCommand } from "../utils/commands";
-import { detectActiveFormats, handleEnterKey, insertEmoji, toggleFormat } from "../utils/format";
+import { detectActiveFormats, insertEmoji, toggleFormat } from "../utils/format";
 import { MessageInputToolbar } from "./MessageInputToolbar";
 import { MessagePreview } from "./MessagePreview";
 import { SuggestionList } from "./SuggestionList";
-
-import type { FormatKey, Selection } from "../utils/format";
 
 import type { Message, MessageLocation, PollInput } from "#/gen/chat/v1/message_pb";
 
@@ -55,13 +53,11 @@ export const BaseMessageInput = ({
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [typedBody, setTypedBody] = useState<string | null>(null);
-  const [selection, setSelection] = useState({ end: 0, start: 0 });
   const [isPreview, setIsPreview] = useState(false);
   const [location, setLocation] = useState<MessageLocation | undefined>(undefined);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isPollOpen, setIsPollOpen] = useState(false);
   const [isRecorderOpen, setIsRecorderOpen] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { notifyTyping, notifyStopTyping } = useTypingNotifier(channelId);
   const {
     discard: discardDraft,
@@ -95,47 +91,6 @@ export const BaseMessageInput = ({
     setTypedBody(next);
     notifyTyping();
     saveDraft(encode(next));
-  };
-
-  const replaceSelection = (next: { text: string; selection: Selection }) => {
-    handleBodyChange(next.text);
-    setSelection(next.selection);
-    // 値が反映されてから選択範囲を動かす
-    requestAnimationFrame(() => {
-      textareaRef.current?.focus();
-      textareaRef.current?.setSelectionRange(next.selection.start, next.selection.end);
-    });
-  };
-
-  const suggestion = useComposerSuggestion({
-    allowsCommands: true,
-    body,
-    cursor: selection.start,
-    onApply: (next, item) => {
-      mentionCodec.register(item.value, item.token);
-      replaceSelection({ selection: { end: next.cursor, start: next.cursor }, text: next.text });
-    },
-  });
-
-  const handleFormat = (key: FormatKey) => {
-    replaceSelection(toggleFormat(body, selection, key));
-  };
-
-  const handleInsertEmoji = (emoji: string) => {
-    // select イベントはカーソルの移動では届かないため、挿入時の位置を textarea から読む
-    const textarea = textareaRef.current;
-    const current =
-      textarea === null
-        ? selection
-        : { end: textarea.selectionEnd, start: textarea.selectionStart };
-    const next = insertEmoji(body, current, emoji);
-    handleBodyChange(next.text);
-    setSelection({ end: next.cursor, start: next.cursor });
-  };
-
-  const focusInput = () => {
-    textareaRef.current?.focus();
-    textareaRef.current?.setSelectionRange(selection.start, selection.end);
   };
 
   const handleFileSelect = async (files: File[]) => {
@@ -218,6 +173,24 @@ export const BaseMessageInput = ({
     send({ ...content, body: unescapeCommand(content.body) });
   };
 
+  const composer = useComposerTextarea({
+    allowsCommands: true,
+    body,
+    onBodyChange: handleBodyChange,
+    onEscape: null,
+    onSubmit: handleSubmit,
+    registerMention: mentionCodec.register,
+    // モバイルの Enter は改行にする
+    submitsOnEnter: !isMobile,
+  });
+  const { selection, suggestion } = composer;
+
+  const handleInsertEmoji = (emoji: string) => {
+    const next = insertEmoji(body, composer.readSelection(), emoji);
+    handleBodyChange(next.text);
+    composer.setSelection({ end: next.cursor, start: next.cursor });
+  };
+
   const handleSchedule = (scheduledAt: Date) => {
     const content = collectContent();
     if (content !== null) {
@@ -275,43 +248,11 @@ export const BaseMessageInput = ({
         {isPreview ? (
           <MessagePreview content={encode(body)} />
         ) : (
-          <TextField
-            aria-label={placeholder}
-            value={body}
-            onChange={(next) => {
-              handleBodyChange(next);
-              // 候補の検索語はカーソルの位置で決まるため、入力のたびに読み直す
-              const textarea = textareaRef.current;
-              if (textarea !== null) {
-                setSelection({ end: textarea.selectionEnd, start: textarea.selectionStart });
-              }
-            }}
-            isDisabled={isBusy}
-            onKeyDown={(event) => {
-              if (!suggestion.handleKeyDown(event)) {
-                handleEnterKey({
-                  event,
-                  onReplace: replaceSelection,
-                  onSubmit: handleSubmit,
-                  // モバイルの Enter は改行にする
-                  submitsOnEnter: !isMobile,
-                  text: body,
-                  textarea: textareaRef.current,
-                });
-              }
-            }}
-          >
+          <TextField aria-label={placeholder} {...composer.fieldProps} isDisabled={isBusy}>
             <TextArea
-              {...suggestion.inputProps}
-              ref={textareaRef}
+              {...composer.textAreaProps}
               rows={1}
               placeholder={placeholder}
-              onSelect={(event) => {
-                setSelection({
-                  end: event.currentTarget.selectionEnd,
-                  start: event.currentTarget.selectionStart,
-                });
-              }}
               className="block max-h-45 min-h-9.5 w-full resize-none border-0 bg-transparent px-3 pt-2.25 pb-0.5 font-sans text-body leading-relaxed text-text outline-none [field-sizing:content] placeholder:text-subtle"
             />
           </TextField>
@@ -338,9 +279,13 @@ export const BaseMessageInput = ({
           isSendDisabled={isBusy || !hasContent || isUploading}
           isSending={isBusy}
           activeFormats={detectActiveFormats(body, selection)}
-          onFormat={handleFormat}
+          onFormat={(key) => {
+            composer.replaceSelection(toggleFormat(body, selection, key));
+          }}
           onInsertEmoji={handleInsertEmoji}
-          onFocusInput={focusInput}
+          onFocusInput={() => {
+            composer.focus();
+          }}
           onFileSelect={(files) => {
             void handleFileSelect(files);
           }}
@@ -356,14 +301,17 @@ export const BaseMessageInput = ({
           onSchedule={handleSchedule}
         />
       </div>
-      <PollComposerDialog
-        isOpen={isPollOpen}
-        onOpenChange={setIsPollOpen}
-        onConfirm={(poll) => {
-          // 書きかけの本文は投票の説明として一緒に投稿する
-          send({ attachmentIds: [], body: encode(body.trim()), location: undefined, poll });
-        }}
-      />
+      {isPollOpen && (
+        <PollComposerDialog
+          onClose={() => {
+            setIsPollOpen(false);
+          }}
+          onConfirm={(poll) => {
+            // 書きかけの本文は投票の説明として一緒に投稿する
+            send({ attachmentIds: [], body: encode(body.trim()), location: undefined, poll });
+          }}
+        />
+      )}
       {isLocationOpen && (
         <LocationShareDialog
           onClose={() => {

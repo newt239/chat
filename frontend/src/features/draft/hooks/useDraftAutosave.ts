@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@connectrpc/connect-query";
 
 import { DraftService } from "#/gen/chat/v1/draft_service_pb";
 
-import { useInvalidateDrafts } from "./useDrafts";
+import { useDeleteDraft, useInvalidateDrafts } from "./useDrafts";
 
 const SAVE_DELAY_MS = 800;
 
@@ -30,9 +30,7 @@ export const useDraftAutosave = (channelId: string, parentId: string | null) => 
   const { mutate: saveDraft } = useMutation(DraftService.method.saveDraft, {
     onSuccess: invalidateDrafts,
   });
-  const { mutate: deleteDraft } = useMutation(DraftService.method.deleteDraft, {
-    onSuccess: invalidateDrafts,
-  });
+  const { mutate: deleteDraft } = useDeleteDraft();
   const autosaveRef = useRef<Autosave>({ pending: null, timer: undefined });
 
   useEffect(() => {

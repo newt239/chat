@@ -1,4 +1,4 @@
-// サーバーの usecase/command で実行できるコマンド。説明と使い方は辞書の command.<名前> に置く
+// サーバーで実行できるコマンド。使い方は辞書の command.<名前>.usage に置く
 export const commandNames = ["remind"] as const;
 
 // 入力が既知のコマンドならその名前を返す。「//」で始めるとコマンドにせず「/」から始まる文章として送る

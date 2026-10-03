@@ -29,6 +29,11 @@ export const ui: Messages["ui"] = {
   menu: {
     title: "Menu",
   },
+  pagination: {
+    next: "Next page",
+    page: "Page {{page}} of {{total}}",
+    previous: "Previous page",
+  },
   toast: {
     dismiss: "Dismiss notification",
     region: "Notifications",

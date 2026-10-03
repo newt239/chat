@@ -8,6 +8,11 @@ export const workspaceRoles = [
   { key: "guest", role: WorkspaceRole.GUEST },
 ] as const;
 
+// オーナーは付け替えられないため、選択肢には出さない
+export const assignableWorkspaceRoles = workspaceRoles.filter(
+  (option) => option.role !== WorkspaceRole.OWNER,
+);
+
 export type WorkspaceRoleKey = (typeof workspaceRoles)[number]["key"];
 
 export const workspaceRoleKey = (role: WorkspaceRole) =>

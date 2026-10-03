@@ -1,12 +1,12 @@
 import { useRef } from "react";
 
-import { IconChevronLeft, IconChevronRight, IconSearch } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { Form } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
 import { PageHeader } from "#/components/block/PageHeader/PageHeader";
-import { IconButton } from "#/components/ui/IconButton/IconButton";
+import { Pagination } from "#/components/block/Pagination/Pagination";
 import { SearchField } from "#/components/ui/SearchField/SearchField";
 import { Select } from "#/components/ui/Select/Select";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
@@ -67,10 +67,6 @@ export const SearchPage = () => {
             .filter(([key]) => filter === "all" || key === filter)
             .map(([, section]) => pageCount(section.total, section.perPage)),
         );
-
-  const goToPage = (next: number) => {
-    void navigate({ search: (prev) => ({ ...prev, page: next }) });
-  };
 
   const renderResults = () => {
     const { invalidDates } = resolved.query;
@@ -136,29 +132,13 @@ export const SearchPage = () => {
           filter={filter}
           workspaceId={workspaceId}
         />
-        {totalPages > 1 && (
-          <nav className="flex items-center justify-center gap-2 pb-6 text-caption text-muted">
-            <IconButton
-              label={t("search.prev")}
-              isDisabled={page <= 1}
-              onPress={() => {
-                goToPage(page - 1);
-              }}
-            >
-              <IconChevronLeft />
-            </IconButton>
-            <span className="tabular-nums">{t("search.page", { page, total: totalPages })}</span>
-            <IconButton
-              label={t("search.next")}
-              isDisabled={page >= totalPages}
-              onPress={() => {
-                goToPage(page + 1);
-              }}
-            >
-              <IconChevronRight />
-            </IconButton>
-          </nav>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={(next) => {
+            void navigate({ search: (prev) => ({ ...prev, page: next }) });
+          }}
+        />
       </>
     );
   };

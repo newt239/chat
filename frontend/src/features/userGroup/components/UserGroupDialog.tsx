@@ -54,10 +54,8 @@ export const UserGroupDialog = ({ workspaceId, group, onClose }: UserGroupDialog
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose(null);
-        }
+      onOpenChange={() => {
+        onClose(null);
       }}
       title={t(group ? "userGroup.editTitle" : "userGroup.createLabel")}
       footer={

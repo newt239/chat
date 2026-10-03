@@ -7,13 +7,9 @@ import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { useWsClient } from "#/providers/ws/useWsClient";
 
 import { channelListKey } from "./useChannel";
-import { dmListKey } from "./useDM";
+import { dmListKey, updateListedDM } from "./useDM";
 
 import type { Channel, ListChannelsResponse } from "#/gen/chat/v1/channel_service_pb";
-import type {
-  DirectMessage,
-  ListDirectMessagesResponse,
-} from "#/gen/chat/v1/direct_message_service_pb";
 
 /** WebSocket イベントでチャンネルと DM の一覧の未読を更新する。表示中は既読扱いにし、再接続したら取り直す */
 export const useChannelRealtimeSync = (workspaceId: string, currentChannelId: string | null) => {
@@ -38,17 +34,6 @@ export const useChannelRealtimeSync = (workspaceId: string, currentChannelId: st
           },
       );
     };
-    const updateDM = (channelId: string, update: (dm: DirectMessage) => DirectMessage) => {
-      queryClient.setQueriesData<ListDirectMessagesResponse>(
-        { queryKey: dmListKey(workspaceId) },
-        (res) =>
-          res && {
-            ...res,
-            directMessages: res.directMessages.map((dm) => (dm.id === channelId ? update(dm) : dm)),
-          },
-      );
-    };
-
     const unsubscribes = [
       wsClient.onReconnect(() => {
         void queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) });
@@ -67,12 +52,15 @@ export const useChannelRealtimeSync = (workspaceId: string, currentChannelId: st
           lastMessageAt: lastMessageAt ?? channel.lastMessageAt,
           unreadCount: channel.unreadCount + unread,
         }));
-        updateDM(channelId, (dm) => ({ ...dm, unreadCount: dm.unreadCount + unread }));
+        updateListedDM(queryClient, { channelId, workspaceId }, (dm) => ({
+          ...dm,
+          unreadCount: dm.unreadCount + unread,
+        }));
       }),
 
       wsClient.on("unreadCount", ({ channelId, mentionCount, unreadCount }) => {
         updateChannel(channelId, (channel) => ({ ...channel, mentionCount, unreadCount }));
-        updateDM(channelId, (dm) => ({ ...dm, unreadCount }));
+        updateListedDM(queryClient, { channelId, workspaceId }, (dm) => ({ ...dm, unreadCount }));
       }),
     ];
 

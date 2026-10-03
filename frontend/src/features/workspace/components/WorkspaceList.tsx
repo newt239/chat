@@ -55,15 +55,13 @@ export const WorkspaceList = () => {
 
       <PublicWorkspaceList />
 
-      <CreateWorkspaceModal
-        isOpen={dialog === "create-workspace"}
-        onOpenChange={(isOpen) => {
-          void navigate({
-            search: { dialog: isOpen ? "create-workspace" : undefined },
-            to: "/app",
-          });
-        }}
-      />
+      {dialog === "create-workspace" && (
+        <CreateWorkspaceModal
+          onClose={() => {
+            void navigate({ search: { dialog: undefined }, to: "/app" });
+          }}
+        />
+      )}
     </div>
   );
 };

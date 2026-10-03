@@ -46,11 +46,7 @@ export const MessageActionSheet = ({
   return (
     <DialogFrame
       isOpen
-      onOpenChange={(next) => {
-        if (!next) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       layout="bottom"
       role="dialog"
       className="bg-raised pt-2"

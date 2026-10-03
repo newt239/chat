@@ -37,11 +37,6 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
   const close = () => {
     void navigate({ search: closeDialog, to: "." });
   };
-  const onOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      close();
-    }
-  };
 
   return (
     <>
@@ -63,8 +58,8 @@ export const WorkspaceDialogs = ({ workspaceId }: WorkspaceDialogsProps) => {
         />
       )}
       {dialog === "create-dm" && <CreateDMModal workspaceId={workspaceId} onClose={close} />}
-      <CreateWorkspaceModal isOpen={dialog === "create-workspace"} onOpenChange={onOpenChange} />
-      <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={onOpenChange} />
+      {dialog === "create-workspace" && <CreateWorkspaceModal onClose={close} />}
+      <MarkdownHelpModal isOpen={dialog === "markdown-help"} onOpenChange={close} />
       {canManageGroups &&
         (dialog === "create-group" || (dialog === "edit-group" && editingGroup)) && (
           <UserGroupDialog

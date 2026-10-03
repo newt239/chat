@@ -19,9 +19,6 @@ export const channel: Messages["channel"] = {
       label: "Membership",
       notJoined: "Not joined",
     },
-    next: "Next page",
-    page: "Page {{page}} of {{total}}",
-    prev: "Previous page",
     sort: {
       label: "Sort",
       members: "Most members",

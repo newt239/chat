@@ -12,7 +12,7 @@ import type { PollInput } from "#/gen/chat/v1/message_pb";
 const setup = async () => {
   const onConfirm = vi.fn<(poll: PollInput) => void>();
   await renderWithProviders(
-    <PollComposerDialog isOpen onOpenChange={() => {}} onConfirm={onConfirm} />,
+    <PollComposerDialog onClose={() => {}} onConfirm={onConfirm} />,
     "/app/ws1",
     () => {},
   );

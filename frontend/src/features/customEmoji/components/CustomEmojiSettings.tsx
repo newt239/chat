@@ -103,10 +103,8 @@ export const CustomEmojiSettings = ({ workspaceId }: CustomEmojiSettingsProps) =
 
       <AlertDialog
         isOpen={deleting !== null}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setDeleting(null);
-          }
+        onOpenChange={() => {
+          setDeleting(null);
         }}
         title={t("workspace.emoji.deleteConfirm", {
           name: deleting === null ? "" : toCustomEmojiValue(deleting.name),

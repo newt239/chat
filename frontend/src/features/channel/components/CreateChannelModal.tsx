@@ -74,11 +74,7 @@ export const CreateChannelModal = ({ workspaceId, parentId, onClose }: CreateCha
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       title={t("channel.create.title")}
       footer={
         <>

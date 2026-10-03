@@ -112,18 +112,13 @@ export const AppDialog = ({ workspaceId, app, initialChannelId, onClose }: AppDi
     );
   };
 
-  const onOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      onClose();
-    }
-  };
   const title = app ? t("app.editTitle") : t("app.createTitle");
 
   if (revealedUrl !== null) {
     return (
       <Dialog
         isOpen
-        onOpenChange={onOpenChange}
+        onOpenChange={onClose}
         title={title}
         size="md"
         footer={<Button onPress={onClose}>{t("app.done")}</Button>}
@@ -144,7 +139,7 @@ export const AppDialog = ({ workspaceId, app, initialChannelId, onClose }: AppDi
   return (
     <Dialog
       isOpen
-      onOpenChange={onOpenChange}
+      onOpenChange={onClose}
       title={title}
       size="md"
       footer={

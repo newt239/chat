@@ -13,15 +13,14 @@ import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { useWorkspaceMutation } from "../hooks/useWorkspace";
 
 type CreateWorkspaceModalProps = {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  onClose: () => void;
 };
 
 // CreateWorkspaceRequest.id と同じ制約
 const WORKSPACE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,10}[a-z0-9]$/;
 const FORM_ID = "create-workspace";
 
-export const CreateWorkspaceModal = ({ isOpen, onOpenChange }: CreateWorkspaceModalProps) => {
+export const CreateWorkspaceModal = ({ onClose }: CreateWorkspaceModalProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [id, setId] = useState("");
@@ -34,17 +33,12 @@ export const CreateWorkspaceModal = ({ isOpen, onOpenChange }: CreateWorkspaceMo
 
   return (
     <Dialog
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
+      isOpen
+      onOpenChange={onClose}
       title={t("workspace.create.title")}
       footer={
         <>
-          <Button
-            variant="secondary"
-            onPress={() => {
-              onOpenChange(false);
-            }}
-          >
+          <Button variant="secondary" onPress={onClose}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" form={FORM_ID} isPending={createWorkspace.isPending}>
@@ -66,7 +60,6 @@ export const CreateWorkspaceModal = ({ isOpen, onOpenChange }: CreateWorkspaceMo
             { description: description || undefined, id, name },
             {
               onSuccess: () => {
-                onOpenChange(false);
                 void navigate({ params: { workspaceId: id }, to: "/app/$workspaceId" });
               },
             },

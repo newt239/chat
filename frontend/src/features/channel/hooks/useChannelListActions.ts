@@ -5,38 +5,24 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
 
 import { channelListKey } from "./useChannel";
-import { dmListKey } from "./useDM";
+import { updateListedDM } from "./useDM";
 import { useUpdateReadState } from "./useUpdateReadState";
 
-import type {
-  DirectMessage,
-  ListDirectMessagesResponse,
-} from "#/gen/chat/v1/direct_message_service_pb";
+import type { DirectMessage } from "#/gen/chat/v1/direct_message_service_pb";
 
 /** サイドバーの行やチャンネルの「その他」メニューから行う、スター・ミュート・既読の操作 */
 export const useChannelListActions = (workspaceId: string) => {
   const queryClient = useQueryClient();
-  // DM の一覧は取り直さず、変えた DM の行だけを書き換える
-  const onSuccess = async (
-    channelId: string | undefined,
-    update: (dm: DirectMessage) => DirectMessage,
-  ) => {
-    queryClient.setQueriesData<ListDirectMessagesResponse>(
-      { queryKey: dmListKey(workspaceId) },
-      (res) =>
-        res && {
-          ...res,
-          directMessages: res.directMessages.map((dm) => (dm.id === channelId ? update(dm) : dm)),
-        },
-    );
+  const onSuccess = async (channelId: string, update: (dm: DirectMessage) => DirectMessage) => {
+    updateListedDM(queryClient, { channelId, workspaceId }, update);
     await queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) });
   };
   const setStarred = useMutation(ChannelService.method.setChannelStarred, {
-    onSuccess: (_, { channelId, starred = false }) =>
+    onSuccess: (_, { channelId = "", starred = false }) =>
       onSuccess(channelId, (dm) => ({ ...dm, isStarred: starred })),
   });
   const setMuted = useMutation(ChannelService.method.setChannelMuted, {
-    onSuccess: (_, { channelId, muted = false }) =>
+    onSuccess: (_, { channelId = "", muted = false }) =>
       onSuccess(channelId, (dm) => ({ ...dm, isMuted: muted })),
   });
   const updateReadState = useUpdateReadState(workspaceId);

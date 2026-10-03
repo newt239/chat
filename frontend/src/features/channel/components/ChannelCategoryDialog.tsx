@@ -58,11 +58,7 @@ export const ChannelCategoryDialog = ({
   return (
     <Dialog
       isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          onClose();
-        }
-      }}
+      onOpenChange={onClose}
       title={category === null ? t("channel.category.create") : t("channel.category.renameTitle")}
       footer={
         <>

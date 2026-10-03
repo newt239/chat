@@ -67,7 +67,7 @@ export default defineConfig(({ mode }) => {
       },
       overrides: [
         {
-          files: ["tests/**", "*.config.ts"],
+          files: ["*.config.ts"],
           rules: {
             "import/no-nodejs-modules": "off",
             "new-cap": "off",
@@ -271,7 +271,7 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       globals: false,
       include: ["src/**/*.{spec,test}.{ts,tsx}"],
-      setupFiles: ["./tests/vitest.setup.ts"],
+      setupFiles: ["./src/test/setup.ts"],
     },
   };
 });

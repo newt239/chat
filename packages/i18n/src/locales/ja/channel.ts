@@ -17,9 +17,6 @@ export const channel = {
       label: "参加状態",
       notJoined: "未参加",
     },
-    next: "次のページ",
-    page: "{{page}} / {{total}} ページ",
-    prev: "前のページ",
     sort: {
       label: "並び順",
       members: "メンバーの多い順",
