@@ -42,8 +42,15 @@ type stubUserRepo struct {
 }
 
 func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error) {
-	return &entity.User{ID: id, DisplayName: "name-" + id}, nil
+	u := &entity.User{ID: id, DisplayName: "name-" + id}
+	if id == deletedUserID {
+		now := time.Now()
+		u.DeletedAt = &now
+	}
+	return u, nil
 }
+
+const deletedUserID = "deleted"
 
 type fixture struct {
 	uc   *Interactor
@@ -102,5 +109,17 @@ func TestSuspendedMemberCannotRejoin(t *testing.T) {
 	}
 	if repo.members["bob"].SuspendedAt == nil {
 		t.Error("参加し直しで停止が解けています")
+	}
+}
+
+func TestDeletedUserCannotEnterWorkspace(t *testing.T) {
+	f := newFixture(map[string]*entity.WorkspaceMember{})
+	ctx := context.Background()
+
+	if _, err := f.uc.CreateWorkspace(ctx, CreateWorkspaceInput{ID: "new", Name: "New", CreatedBy: deletedUserID}); !errors.Is(err, domerr.ErrUserNotFound) {
+		t.Errorf("退会済みのユーザーはワークスペースを作れないはず: %v", err)
+	}
+	if err := f.uc.JoinPublicWorkspace(ctx, "ws", deletedUserID); !errors.Is(err, domerr.ErrUserNotFound) {
+		t.Errorf("退会済みのユーザーは公開ワークスペースに参加できないはず: %v", err)
 	}
 }

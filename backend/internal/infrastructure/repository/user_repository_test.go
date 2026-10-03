@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/newt239/chat/ent/channelmember"
 	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/session"
@@ -65,6 +66,9 @@ func TestUserRepositoryDeleteKeepsPostsAndAnonymizes(t *testing.T) {
 	category := client.ChannelCategory.Create().SetUser(alice).SetWorkspaceID(f.workspaceID).SetName("cat").SaveX(ctx)
 	client.ChannelCategoryItem.Create().SetCategory(category).SetUser(alice).SetChannel(general).SaveX(ctx)
 	client.MessageReaction.Create().SetMessageID(thread.ID).SetUser(alice).SetEmoji("👍").SaveX(ctx)
+	dm := client.Channel.Create().SetName("dm-" + alice.ID.String()).SetChannelType(string(entity.ChannelTypeDM)).SetWorkspaceID(f.workspaceID).SetCreatedBy(alice).SaveX(ctx)
+	client.ChannelMember.Create().SetChannel(dm).SetUser(alice).SaveX(ctx)
+	client.ChannelMember.Create().SetChannel(dm).SetUser(f.bob).SaveX(ctx)
 	repo := NewUserRepository(client)
 	u, err := repo.FindByID(ctx, alice.ID.String())
 	if err != nil {
@@ -90,6 +94,12 @@ func TestUserRepositoryDeleteKeepsPostsAndAnonymizes(t *testing.T) {
 	}
 	if n := client.WorkspaceMember.Query().Where(workspacemember.UserID(alice.ID)).CountX(ctx); n != 0 {
 		t.Errorf("ワークスペースのメンバー情報が残っています: %d", n)
+	}
+	if !client.ChannelMember.Query().Where(channelmember.ChannelID(dm.ID), channelmember.UserID(alice.ID)).ExistX(ctx) {
+		t.Error("DM の相手の一覧に残すため、DM のメンバー情報は消さないはず")
+	}
+	if client.ChannelMember.Query().Where(channelmember.ChannelID(general.ID), channelmember.UserID(alice.ID)).ExistX(ctx) {
+		t.Error("DM 以外のチャンネルのメンバー情報は消すはず")
 	}
 	if n := client.Session.Query().Where(session.UserID(alice.ID)).CountX(ctx); n != 0 {
 		t.Errorf("セッションが残っています: %d", n)

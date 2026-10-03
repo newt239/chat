@@ -146,7 +146,7 @@ func (r *userRepository) Update(ctx context.Context, usr *entity.User) error {
 
 // personalDataColumns は退会時に消す本人だけのデータの表と、ユーザーを指す列です
 var personalDataColumns = [][2]string{
-	{"session", "user_id"}, {"push_token", "user_id"}, {"workspace_member", "user_id"}, {"channel_member", "user_id"},
+	{"session", "user_id"}, {"push_token", "user_id"}, {"workspace_member", "user_id"},
 	{"channel_read_state", "user_id"}, {"thread_read_state", "user_id"}, {"user_thread_follow", "user_id"},
 	{"channel_star", "user_id"}, {"channel_mute", "user_id"}, {"channel_category_item", "user_id"}, {"channel_category", "user_id"},
 	{"draft", "user_id"}, {"scheduled_message", "user_id"}, {"reminder", "creator_id"}, {"reminder", "target_user_id"},
@@ -165,6 +165,10 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 			if _, err := client.ExecContext(ctx, fmt.Sprintf(`DELETE FROM %q WHERE %q = $1`, tc[0], tc[1]), userID); err != nil {
 				return err
 			}
+		}
+		// DM は相手の一覧に退会者として残すため、メンバー情報を消さない
+		if _, err := client.ExecContext(ctx, `DELETE FROM channel_member cm USING channel c WHERE cm.channel_id = c.id AND cm.user_id = $1 AND c.channel_type NOT IN ('dm', 'group_dm')`, userID); err != nil {
+			return err
 		}
 		return client.User.UpdateOneID(userID).
 			SetEmail("deleted-" + id + "@deleted.invalid").

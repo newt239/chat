@@ -73,6 +73,9 @@ func (i *Interactor) findWorkspace(ctx context.Context, workspaceID string) (*en
 
 // CreateWorkspace は ID が使われていれば ErrWorkspaceIDExists を返します
 func (i *Interactor) CreateWorkspace(ctx context.Context, input CreateWorkspaceInput) (*WorkspaceOutput, error) {
+	if err := i.ensureActiveUser(ctx, input.CreatedBy); err != nil {
+		return nil, err
+	}
 	workspace := &entity.Workspace{
 		ID:          input.ID,
 		Name:        input.Name,
@@ -204,6 +207,9 @@ func (i *Interactor) ListPublicWorkspaces(ctx context.Context, userID string) ([
 }
 
 func (i *Interactor) JoinPublicWorkspace(ctx context.Context, workspaceID, userID string) error {
+	if err := i.ensureActiveUser(ctx, userID); err != nil {
+		return err
+	}
 	ws, err := i.findWorkspace(ctx, workspaceID)
 	if err != nil {
 		return err
@@ -235,4 +241,16 @@ func (i *Interactor) GetSignupInfo(ctx context.Context, workspaceID string) (*en
 		return nil, domerr.ErrWorkspaceNotFound
 	}
 	return ws, nil
+}
+
+// 退会後もアクセストークンの期限までは API を呼べるため、ワークスペースに入る操作では退会済みを弾く
+func (i *Interactor) ensureActiveUser(ctx context.Context, userID string) error {
+	user, err := i.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if user == nil || user.DeletedAt != nil {
+		return domerr.ErrUserNotFound
+	}
+	return nil
 }
