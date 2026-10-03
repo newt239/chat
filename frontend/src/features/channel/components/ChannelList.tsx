@@ -5,6 +5,7 @@ import { usePreferences } from "#/hooks/usePreferences";
 
 import { useChannels } from "../hooks/useChannel";
 import { useChannelCategories } from "../hooks/useChannelCategories";
+import { usePreviewChannel } from "../hooks/usePreviewChannel";
 import { buildChannelTree, categoryOfChannel, sortChannelsByActivity } from "../utils/channelTree";
 import { ChannelRow } from "./ChannelRow";
 import { ChannelTreeItem } from "./ChannelTreeItem";
@@ -21,16 +22,24 @@ export const ChannelList = ({ workspaceId, categoryId }: ChannelListProps) => {
   const { channelSortOrder } = usePreferences();
   const { data: channels, isLoading } = useChannels(workspaceId);
   const { data: categories = [] } = useChannelCategories(workspaceId);
+  const preview = usePreviewChannel(workspaceId);
 
   if (isLoading) {
     return <Skeleton className="mx-2 my-1 h-4 w-32 bg-(--nav-hover)" />;
   }
 
-  const all = channels ?? [];
+  // プレビュー中のチャンネルは、離れるまで一時的に一覧へ加える
+  const all = [...(channels ?? []), ...(preview ? [preview] : [])];
   const inCategory = all.filter(
     (channel) => categoryOfChannel(channel, all, categories) === categoryId,
   );
-  const sorted = channelSortOrder === "recentActivity" ? sortChannelsByActivity(inCategory) : [];
+  const sorted =
+    channelSortOrder === "recentActivity"
+      ? [
+          ...sortChannelsByActivity(inCategory),
+          ...inCategory.filter((channel) => channel === preview),
+        ]
+      : [];
   const tree = channelSortOrder === "recentActivity" ? [] : buildChannelTree(inCategory);
 
   if (sorted.length === 0 && tree.length === 0) {

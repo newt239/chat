@@ -9,6 +9,7 @@ import {
   ChannelCategoryService,
 } from "#/gen/chat/v1/channel_category_service_pb";
 import { ChannelSchema, ChannelService } from "#/gen/chat/v1/channel_service_pb";
+import { DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
 import { ChannelSortOrder, UserPreferencesSchema } from "#/gen/chat/v1/user_pb";
 import { storedPreferencesAtom } from "#/providers/store/preferences";
 import { renderWithProviders } from "#/test/renderWithProviders";
@@ -103,5 +104,25 @@ describe("ChannelList", () => {
       "dev / frontend2",
       "dev / frontend / web",
     ]);
+  });
+
+  test("プレビュー中の未参加チャンネルも一時的に並べる", async () => {
+    await renderWithProviders(
+      <ChannelList workspaceId="ws1" categoryId={null} />,
+      "/app/ws1/random",
+      (routes) => {
+        routes.rpc(ChannelService.method.listChannels, () => ({ channels }));
+        routes.rpc(ChannelService.method.getChannel, () => ({
+          channel: create(ChannelSchema, { id: "random", isMember: false, name: "random" }),
+        }));
+        routes.rpc(DirectMessageService.method.listDirectMessages, () => ({ directMessages: [] }));
+        routes.rpc(ChannelCategoryService.method.listChannelCategories, () => ({
+          categories: [],
+        }));
+      },
+    );
+    expect(
+      await screen.findByRole("link", { name: /^公開チャンネル\s?random$/ }),
+    ).toBeInTheDocument();
   });
 });
