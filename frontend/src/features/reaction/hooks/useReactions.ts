@@ -3,6 +3,7 @@ import { useAtomValue } from "jotai";
 
 import { useInvalidateMessageLists } from "#/features/message/hooks/useInvalidateMessageLists";
 import { ReactionService } from "#/gen/chat/v1/reaction_service_pb";
+import { toastError } from "#/lib/toastError";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
@@ -12,9 +13,11 @@ export const useToggleReaction = (message: Message) => {
   const myId = useAtomValue(myUserIdAtom);
   const invalidateMessageLists = useInvalidateMessageLists();
   const addReaction = useMutation(ReactionService.method.addReaction, {
+    onError: toastError,
     onSuccess: invalidateMessageLists,
   });
   const removeReaction = useMutation(ReactionService.method.removeReaction, {
+    onError: toastError,
     onSuccess: invalidateMessageLists,
   });
 

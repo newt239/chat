@@ -25,8 +25,7 @@ export const ProfileLinksField = ({ value, onChange }: ProfileLinksFieldProps) =
       {value.map((url, index) => {
         const SiteIcon = linkIconOf(url);
         return (
-          // 並び替えないため、位置を key にする
-          // oxlint-disable-next-line react/no-array-index-key
+          // oxlint-disable-next-line react/no-array-index-key -- 並び替えないため位置を key にする
           <div key={index} className="flex items-center gap-1.5">
             <SiteIcon aria-hidden className="size-4 shrink-0 text-muted" />
             {/* ラベルは読み上げにだけ使い、画面には出さない */}

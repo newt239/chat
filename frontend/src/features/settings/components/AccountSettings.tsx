@@ -14,22 +14,30 @@ import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useMe } from "#/hooks/useMe";
 import { openPanel } from "#/lib/overlaySearch";
 import { signOut } from "#/lib/session";
+import { toastError } from "#/lib/toastError";
 
 import { SettingRow } from "./SettingRow";
 
 export const AccountSettings = () => {
   const { t } = useTranslation();
   const { data: user } = useMe();
-  // 変更後はサーバー側の全セッションが失効する
-  const updatePassword = useMutation(UserService.method.updatePassword);
-  const deleteAccount = useMutation(UserService.method.deleteMe, {
-    onMutate: useDisablePushBeforeSignOut(),
-    onSuccess: signOut,
-  });
-  const logout = useLogout();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
+  // 変更後はサーバー側の全セッションが失効する
+  const updatePassword = useMutation(UserService.method.updatePassword);
+  const disablePush = useDisablePushBeforeSignOut();
+  const deleteAccount = useMutation(UserService.method.deleteMe, {
+    onError: (error) => {
+      setIsDeleteConfirming(false);
+      toastError(error);
+    },
+    onSuccess: async () => {
+      await disablePush();
+      signOut();
+    },
+  });
+  const logout = useLogout();
 
   return (
     <div className="flex flex-col gap-5">

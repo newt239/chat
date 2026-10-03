@@ -3,6 +3,7 @@ import { useMutation } from "@connectrpc/connect-query";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import { channelListKey } from "./useChannel";
 import { updateListedDM } from "./useDM";
@@ -18,10 +19,12 @@ export const useChannelListActions = (workspaceId: string) => {
     await queryClient.invalidateQueries({ queryKey: channelListKey(workspaceId) });
   };
   const setStarred = useMutation(ChannelService.method.setChannelStarred, {
+    onError: toastError,
     onSuccess: (_, { channelId = "", starred = false }) =>
       onSuccess(channelId, (dm) => ({ ...dm, isStarred: starred })),
   });
   const setMuted = useMutation(ChannelService.method.setChannelMuted, {
+    onError: toastError,
     onSuccess: (_, { channelId = "", muted = false }) =>
       onSuccess(channelId, (dm) => ({ ...dm, isMuted: muted })),
   });

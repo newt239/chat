@@ -2,6 +2,7 @@ import { createConnectQueryKey, skipToken, useMutation, useQuery } from "@connec
 import { useQueryClient } from "@tanstack/react-query";
 
 import { UserGroupService } from "#/gen/chat/v1/user_group_service_pb";
+import { toastError } from "#/lib/toastError";
 
 /** ワークスペースのユーザーグループ一覧を取得する */
 export const useUserGroups = (workspaceId: string | null) =>
@@ -25,7 +26,10 @@ export const useUserGroupActions = () => {
 
   const create = useMutation(UserGroupService.method.createUserGroup, { onSuccess });
   const update = useMutation(UserGroupService.method.updateUserGroup, { onSuccess });
-  const remove = useMutation(UserGroupService.method.deleteUserGroup, { onSuccess });
+  const remove = useMutation(UserGroupService.method.deleteUserGroup, {
+    onError: toastError,
+    onSuccess,
+  });
 
   return { create, remove, update };
 };

@@ -118,10 +118,13 @@ export const BaseMessageInput = ({
     };
   };
 
-  // 送信・予約した後は書きかけも消す
-  const resetComposer = () => {
+  // 送信中に入力欄を離れても送った本文が下書きに残らないよう、送る時点で消す
+  const discardComposerDraft = () => {
     notifyStopTyping();
     discardDraft();
+  };
+
+  const clearComposer = () => {
     setTypedBody("");
     setLocation(undefined);
     setIsPreview(false);
@@ -135,11 +138,15 @@ export const BaseMessageInput = ({
     location: MessageLocation | undefined;
     poll: PollInput | undefined;
   }) => {
+    discardComposerDraft();
     sendMessage.mutate(
       { ...content, channelId, parentId: parentId ?? undefined },
       {
+        onError: () => {
+          saveDraft(encode(body));
+        },
         onSuccess: ({ message }) => {
-          resetComposer();
+          clearComposer();
           if (message && onSent) {
             onSent(message);
           }
@@ -159,13 +166,15 @@ export const BaseMessageInput = ({
       content.attachmentIds.length === 0 &&
       content.location === undefined
     ) {
+      discardComposerDraft();
       executeCommand.mutate(
         { channelId, parentId: parentId ?? undefined, text: content.body },
         {
           onError: (commandError) => {
+            saveDraft(encode(body));
             toast(commandError.rawMessage || t("command.failed"), { tone: "danger" });
           },
-          onSuccess: resetComposer,
+          onSuccess: clearComposer,
         },
       );
       return;
@@ -194,10 +203,11 @@ export const BaseMessageInput = ({
   const handleSchedule = (scheduledAt: Date) => {
     const content = collectContent();
     if (content !== null) {
+      discardComposerDraft();
       scheduleMessage(
         { ...content, channelId, parentId: parentId ?? undefined },
         scheduledAt,
-        resetComposer,
+        clearComposer,
       );
     }
   };

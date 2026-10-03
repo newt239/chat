@@ -18,6 +18,7 @@ import { PollMode } from "#/gen/chat/v1/message_pb";
 import { PollService } from "#/gen/chat/v1/poll_service_pb";
 import { useDateFormat } from "#/hooks/useDateFormat";
 import { toDate } from "#/lib/timestamp";
+import { toastError } from "#/lib/toastError";
 
 import type { Poll, PollOption } from "#/gen/chat/v1/message_pb";
 
@@ -37,7 +38,10 @@ export const MessagePollCard = ({ poll, isAuthor }: MessagePollCardProps) => {
   const nameOf = useDisplayName();
   // 集計の変化はメッセージの更新として WebSocket で届く
   const invalidateMessageLists = useInvalidateMessageLists();
-  const close = useMutation(PollService.method.closePoll, { onSuccess: invalidateMessageLists });
+  const close = useMutation(PollService.method.closePoll, {
+    onError: toastError,
+    onSuccess: invalidateMessageLists,
+  });
   const vote = useMutation(PollService.method.vote, { onSuccess: invalidateMessageLists });
   // 配信されるメッセージには自分の投票が含まれないため、読み込んだ時点と投票した結果を覚えておく
   const [myOptionIds, setMyOptionIds] = useState(poll.myOptionIds);

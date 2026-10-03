@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "#/components/ui/Button/Button";
 import { useWorkspaceMutation } from "#/features/workspace/hooks/useWorkspace";
 import { WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import { WorkspaceLogo } from "./WorkspaceLogo";
 
@@ -42,7 +43,7 @@ export const PublicWorkspaceList = () => {
               variant="secondary"
               isPending={join.isPending && join.variables.workspaceId === workspace.id}
               onPress={() => {
-                join.mutate({ workspaceId: workspace.id });
+                join.mutate({ workspaceId: workspace.id }, { onError: toastError });
               }}
             >
               {t("workspace.list.join")}

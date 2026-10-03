@@ -32,7 +32,7 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
 
   const memberIds = new Set(channelMembers?.map((member) => member.userId));
   const isJoined = myId !== null && memberIds.has(myId);
-  const failedAction = [remove, updateRole, leave, join].find((action) => action.isError);
+  const failedAction = [remove, updateRole, leave].find((action) => action.isError);
 
   return (
     <section className="flex flex-col gap-2 border-b border-border px-4 py-3">

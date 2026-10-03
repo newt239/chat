@@ -1,6 +1,7 @@
 import type { Messages } from "../../messages";
 
 export const common: Messages["common"] = {
+  actionFailed: "Something went wrong",
   cancel: "Cancel",
   close: "Close",
   copyFailed: "Couldn't copy",

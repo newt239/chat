@@ -2,6 +2,7 @@ import { createConnectQueryKey, skipToken, useMutation, useQuery } from "@connec
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ChannelLinkService } from "#/gen/chat/v1/channel_link_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import type { ListChannelLinksResponse } from "#/gen/chat/v1/channel_link_service_pb";
 
@@ -26,7 +27,10 @@ export const useChannelLinkActions = (channelId: string) => {
   };
   const create = useMutation(ChannelLinkService.method.createChannelLink, { onSuccess });
   const update = useMutation(ChannelLinkService.method.updateChannelLink, { onSuccess });
-  const remove = useMutation(ChannelLinkService.method.deleteChannelLink, { onSuccess });
+  const remove = useMutation(ChannelLinkService.method.deleteChannelLink, {
+    onError: toastError,
+    onSuccess,
+  });
   const reorder = useMutation(ChannelLinkService.method.reorderChannelLinks, {
     // 並びは押した直後に反映し、失敗したら取り直す
     onMutate: ({ linkIds = [] }) => {

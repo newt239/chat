@@ -14,7 +14,6 @@ type WsEventPayload<K extends WsEventType> = Extract<ServerEventOneof, { case: K
 
 const WS_BC_NAME = "ws-control";
 const WS_RECONNECT_DELAY = 2_000;
-const WS_MAX_RECONNECT_DELAY = 30_000;
 const WS_MAX_RECONNECT_ATTEMPTS = 5;
 // サーバーの停止（1001 Going Away）では他のレプリカへすぐつなぎ直す。一斉に来ないよう散らす
 const WS_GOING_AWAY_DELAY_MAX = 1_000;
@@ -182,7 +181,7 @@ export class WsClient {
     this.scheduleReconnect(event.code === 1001);
   };
 
-  /** 指数バックオフ（2, 4, 8, 16 秒、最大 30 秒）でつなぎ直す。上限に達したらリーダーを降り、focus か online で再開する */
+  /** 指数バックオフ（2, 4, 8, 16 秒）でつなぎ直す。上限に達したらリーダーを降り、focus か online で再開する */
   private scheduleReconnect(isGoingAway: boolean) {
     if (!this.isActiveLeader || this.reconnectTimeoutId !== null) {
       return;
@@ -200,7 +199,7 @@ export class WsClient {
       },
       isGoingAway
         ? Math.random() * WS_GOING_AWAY_DELAY_MAX
-        : Math.min(WS_RECONNECT_DELAY * 2 ** (this.reconnectAttempts - 1), WS_MAX_RECONNECT_DELAY),
+        : WS_RECONNECT_DELAY * 2 ** (this.reconnectAttempts - 1),
     );
   }
 

@@ -13,6 +13,7 @@ import { useCreateDM } from "#/features/channel/hooks/useDM";
 import { useMembers } from "#/features/member/hooks/useMembers";
 import { workspaceRoleKey } from "#/features/member/utils/workspaceRoleKeys";
 import { usePreferences } from "#/hooks/usePreferences";
+import { toastError } from "#/lib/toastError";
 import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useUserNote } from "../hooks/useUserNote";
@@ -35,14 +36,21 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
   const isMe = myId === userId;
   const { data: note, isLoading: isLoadingNote } = useUserNote(isMe ? null : userId);
 
-  const startDM = async () => {
-    const { directMessage } = await createDM.mutateAsync({ userId, workspaceId });
-    if (directMessage !== undefined) {
-      void navigate({
-        params: { channelId: directMessage.id, workspaceId },
-        to: "/app/$workspaceId/$channelId",
-      });
-    }
+  const startDM = () => {
+    createDM.mutate(
+      { userId, workspaceId },
+      {
+        onError: toastError,
+        onSuccess: ({ directMessage }) => {
+          if (directMessage !== undefined) {
+            void navigate({
+              params: { channelId: directMessage.id, workspaceId },
+              to: "/app/$workspaceId/$channelId",
+            });
+          }
+        },
+      },
+    );
   };
 
   if (isLoading) {
@@ -100,12 +108,7 @@ export const UserProfilePanel = ({ workspaceId, userId }: UserProfilePanelProps)
         </dl>
         {!isMe && (
           <div className="flex gap-1.5">
-            <Button
-              isPending={createDM.isPending}
-              onPress={() => {
-                void startDM();
-              }}
-            >
+            <Button isPending={createDM.isPending} onPress={startDM}>
               <IconMessage aria-hidden />
               {t("member.profile.message")}
             </Button>

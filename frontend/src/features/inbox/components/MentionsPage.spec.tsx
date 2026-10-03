@@ -4,6 +4,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vite-plus/test";
 
+import { toast } from "#/components/ui/ToastRegion/toast";
 import { ChannelSchema, ChannelService } from "#/gen/chat/v1/channel_service_pb";
 import { DirectMessageService } from "#/gen/chat/v1/direct_message_service_pb";
 import { MentionCursorSchema, MentionService } from "#/gen/chat/v1/mention_service_pb";
@@ -16,6 +17,8 @@ import { MentionsPage } from "./MentionsPage";
 
 import type { ListMentionsRequest } from "#/gen/chat/v1/mention_service_pb";
 import type { CreateMessageRequest } from "#/gen/chat/v1/message_service_pb";
+
+vi.mock("#/components/ui/ToastRegion/toast", () => ({ toast: vi.fn() }));
 
 // 末尾が見えたときの読み込みをテストから起こせるようにする
 const observers: ((entries: { isIntersecting: boolean }[]) => void)[] = [];
@@ -83,7 +86,7 @@ describe("MentionsPage", () => {
     expect(listed.mock.lastCall?.[0].cursor?.messageId).toBe("m2");
   });
 
-  test("一覧からスレッドに返信し、送った返信をカードに出す", async () => {
+  test("一覧からスレッドに返信し、送ったことをトーストで知らせる", async () => {
     const { created } = await setup();
     const [first, second] = await screen.findAllByRole("textbox", {
       name: "Bob さんにスレッドで返信…",
@@ -94,7 +97,10 @@ describe("MentionsPage", () => {
         expect.objectContaining({ body: "見ます", channelId: "c1", parentId: "m1" }),
       );
     });
-    expect(await screen.findByText("見ます")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith("スレッドに返信しました", expect.anything());
+    });
+    expect(screen.queryByText("見ます")).not.toBeInTheDocument();
 
     // 返信へのメンションには同じスレッドで返す
     await userEvent.type(second ?? document.body, "了解{Enter}");

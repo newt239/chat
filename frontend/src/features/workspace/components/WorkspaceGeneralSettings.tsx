@@ -13,6 +13,7 @@ import { useWorkspaceMutation } from "#/features/workspace/hooks/useWorkspace";
 import { ImagePurpose } from "#/gen/chat/v1/image_service_pb";
 import { WorkspaceRole, WorkspaceService } from "#/gen/chat/v1/workspace_service_pb";
 import { isAdminRole } from "#/lib/isAdminRole";
+import { toastError } from "#/lib/toastError";
 
 import type { Workspace as WorkspaceSummary } from "#/gen/chat/v1/workspace_service_pb";
 
@@ -114,6 +115,7 @@ export const WorkspaceGeneralSettings = ({ workspace }: WorkspaceGeneralSettings
           remove.mutate(
             { workspaceId: workspace.id },
             {
+              onError: toastError,
               onSuccess: () => {
                 setIsDeleteConfirming(false);
                 void navigate({ to: "/app" });

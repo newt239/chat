@@ -1,4 +1,5 @@
 export const common = {
+  actionFailed: "操作できませんでした",
   cancel: "キャンセル",
   close: "閉じる",
   copyFailed: "コピーできませんでした",

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { useInvalidateMessageLists } from "#/features/message/hooks/useInvalidateMessageLists";
 import { PinService } from "#/gen/chat/v1/pin_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import type { Message } from "#/gen/chat/v1/message_pb";
 
@@ -24,8 +25,8 @@ export const useTogglePin = (message: Message) => {
     invalidateMessageLists();
     void queryClient.invalidateQueries({ queryKey: pinListKey(message.channelId) });
   };
-  const pin = useMutation(PinService.method.createPin, { onSuccess });
-  const unpin = useMutation(PinService.method.deletePin, { onSuccess });
+  const pin = useMutation(PinService.method.createPin, { onError: toastError, onSuccess });
+  const unpin = useMutation(PinService.method.deletePin, { onError: toastError, onSuccess });
   const isPinned = message.pin !== undefined;
 
   return () => {

@@ -34,7 +34,7 @@ export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialo
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { create, update, remove } = useChannelLinkActions(channelId);
   const host = hostOf(url.trim());
-  const failed = [create, update, remove].find((mutation) => mutation.isError);
+  const failed = [create, update].find((mutation) => mutation.isError);
 
   const save = () => {
     setIsSubmitted(true);

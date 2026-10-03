@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { BookmarkService } from "#/gen/chat/v1/bookmark_service_pb";
+import { toastError } from "#/lib/toastError";
 
 export const useBookmarks = (workspaceId: string) =>
   useQuery(
@@ -30,8 +31,14 @@ export const useToggleBookmark = (messageId: string, workspaceId: string) => {
         schema: BookmarkService.method.listBookmarks,
       }),
     });
-  const addBookmark = useMutation(BookmarkService.method.addBookmark, { onSuccess });
-  const removeBookmark = useMutation(BookmarkService.method.removeBookmark, { onSuccess });
+  const addBookmark = useMutation(BookmarkService.method.addBookmark, {
+    onError: toastError,
+    onSuccess,
+  });
+  const removeBookmark = useMutation(BookmarkService.method.removeBookmark, {
+    onError: toastError,
+    onSuccess,
+  });
   const isBookmarked = bookmarks?.some((bookmark) => bookmark.message.id === messageId) ?? false;
 
   const toggleBookmark = () => {

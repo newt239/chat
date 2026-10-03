@@ -2,6 +2,7 @@ import { createConnectQueryKey, useMutation, useQuery } from "@connectrpc/connec
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ChannelCategoryService } from "#/gen/chat/v1/channel_category_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import type { ListChannelCategoriesResponse } from "#/gen/chat/v1/channel_category_service_pb";
 
@@ -25,12 +26,11 @@ export const useChannelCategoryActions = (workspaceId: string) => {
   const onSuccess = async () => {
     await queryClient.invalidateQueries({ queryKey: channelCategoriesKey(workspaceId) });
   };
-  const create = useMutation(ChannelCategoryService.method.createChannelCategory, { onSuccess });
-  const update = useMutation(ChannelCategoryService.method.updateChannelCategory, { onSuccess });
-  const remove = useMutation(ChannelCategoryService.method.deleteChannelCategory, { onSuccess });
-  const setChannel = useMutation(ChannelCategoryService.method.setChannelCategory, {
-    onSuccess,
-  });
+  const options = { onError: toastError, onSuccess };
+  const create = useMutation(ChannelCategoryService.method.createChannelCategory, options);
+  const update = useMutation(ChannelCategoryService.method.updateChannelCategory, options);
+  const remove = useMutation(ChannelCategoryService.method.deleteChannelCategory, options);
+  const setChannel = useMutation(ChannelCategoryService.method.setChannelCategory, options);
   const reorder = useMutation(ChannelCategoryService.method.reorderChannelCategories, {
     // 並びは押した直後に反映し、失敗したら取り直す
     onMutate: ({ categoryIds = [] }) => {

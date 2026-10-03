@@ -9,6 +9,7 @@ import {
 } from "#/features/message/utils/updateTimelineMessage";
 import { MessageService } from "#/gen/chat/v1/message_service_pb";
 import { ThreadService } from "#/gen/chat/v1/thread_service_pb";
+import { toastError } from "#/lib/toastError";
 
 import { useUpdateListedThread } from "./useParticipatingThreads";
 
@@ -19,8 +20,8 @@ export const useToggleThreadFollow = (threadId: string) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const updateListedThread = useUpdateListedThread();
-  const follow = useMutation(ThreadService.method.followThread);
-  const unfollow = useMutation(ThreadService.method.unfollowThread);
+  const follow = useMutation(ThreadService.method.followThread, { onError: toastError });
+  const unfollow = useMutation(ThreadService.method.unfollowThread, { onError: toastError });
 
   const setFollowing = (isFollowing: boolean) => {
     (isFollowing ? follow : unfollow).mutate(

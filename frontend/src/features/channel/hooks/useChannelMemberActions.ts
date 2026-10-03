@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { channelListKey } from "#/features/channel/hooks/useChannel";
 import { ChannelMemberService } from "#/gen/chat/v1/channel_member_service_pb";
 import { ChannelService } from "#/gen/chat/v1/channel_service_pb";
+import { toastError } from "#/lib/toastError";
 
 /** チャンネルメンバーの招待・追放・退出・ロール変更をまとめて提供する */
 export const useChannelMemberActions = (workspaceId: string) => {
@@ -47,7 +48,10 @@ export const useChannelMemberActions = (workspaceId: string) => {
   const updateRole = useMutation(ChannelMemberService.method.updateChannelMemberRole, {
     onSuccess,
   });
-  const join = useMutation(ChannelMemberService.method.joinChannel, { onSuccess });
+  const join = useMutation(ChannelMemberService.method.joinChannel, {
+    onError: toastError,
+    onSuccess,
+  });
   const leave = useMutation(ChannelMemberService.method.leaveChannel, { onSuccess });
 
   return { invite, join, leave, remove, updateRole };
