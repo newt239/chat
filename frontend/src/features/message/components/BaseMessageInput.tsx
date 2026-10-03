@@ -118,7 +118,7 @@ export const BaseMessageInput = ({
     };
   };
 
-  // 送信中に入力欄を離れても送った本文が下書きに残らないよう、送る時点で消す。消した下書きの取り直しで入力欄が空にならないよう本文を固定する
+  // 送った本文を下書きに残さないよう送る時点で消し、その取り直しで入力欄が空にならないよう本文を固定する
   const discardComposerDraft = () => {
     setTypedBody(body);
     notifyStopTyping();
