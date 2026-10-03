@@ -85,10 +85,10 @@ func (r *fakeChannelRepo) FindByNames(_ context.Context, _ string, names []strin
 	return result, nil
 }
 
-func (r *fakeChannelRepo) FindDescendants(_ context.Context, parent *entity.Channel) ([]*entity.Channel, error) {
+func (r *fakeChannelRepo) FindDescendants(_ context.Context, parents []*entity.Channel) ([]*entity.Channel, error) {
 	var result []*entity.Channel
 	for _, ch := range r.channels {
-		if strings.HasPrefix(ch.Name, parent.Name+"/") {
+		if slices.ContainsFunc(parents, func(parent *entity.Channel) bool { return strings.HasPrefix(ch.Name, parent.Name+"/") }) {
 			result = append(result, ch)
 		}
 	}
@@ -103,6 +103,15 @@ func (r *fakeChannelRepo) Create(_ context.Context, ch *entity.Channel) error {
 
 func (r *fakeChannelRepo) Update(_ context.Context, ch *entity.Channel) error {
 	r.channels[ch.ID] = ch
+	return nil
+}
+
+func (r *fakeChannelRepo) RenameDescendants(_ context.Context, _ string, from string, to string) error {
+	for _, ch := range r.channels {
+		if strings.HasPrefix(ch.Name, from+"/") {
+			ch.Name = to + strings.TrimPrefix(ch.Name, from)
+		}
+	}
 	return nil
 }
 

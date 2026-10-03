@@ -442,15 +442,8 @@ func (i *Interactor) renameDescendants(ctx context.Context, ch *entity.Channel, 
 	if slices.ContainsFunc(conflicts, func(c *entity.Channel) bool { return c.ID != ch.ID }) {
 		return ErrChannelNameExists
 	}
-	descendants, err := i.channelRepo.FindDescendants(ctx, &entity.Channel{WorkspaceID: ch.WorkspaceID, Name: originalName})
-	if err != nil {
-		return fmt.Errorf("failed to fetch descendant channels: %w", err)
-	}
-	for _, d := range descendants {
-		d.Name = ch.Name + strings.TrimPrefix(d.Name, originalName)
-		if err := i.channelRepo.Update(ctx, d); err != nil {
-			return fmt.Errorf("failed to rename descendant channel: %w", err)
-		}
+	if err := i.channelRepo.RenameDescendants(ctx, ch.WorkspaceID, originalName, ch.Name); err != nil {
+		return fmt.Errorf("failed to rename descendant channels: %w", err)
 	}
 	return nil
 }

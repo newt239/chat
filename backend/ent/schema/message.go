@@ -98,6 +98,10 @@ func (Message) Indexes() []ent.Index {
 		// タイムラインと未読数は削除済みを読まないため部分インデックスにする
 		index.Fields("channel_id", "created_at").
 			Annotations(entsql.IndexWhere("deleted_at IS NULL")),
+		// まとめて閲覧するタイムラインはスレッドの返信を読まない
+		index.Fields("channel_id", "created_at").
+			Annotations(entsql.IndexWhere("deleted_at IS NULL AND parent_id IS NULL")).
+			StorageKey("message_channel_id_created_at_top_level"),
 		index.Fields("parent_id", "created_at"),
 		index.Fields("user_id"),
 	}
