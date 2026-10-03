@@ -1,5 +1,7 @@
 package entity
 
+import "time"
+
 // UnusablePasswordHash はパスワードでログインできないユーザー（Google アカウントのみ・ボット）に設定します
 const UnusablePasswordHash = "!"
 
@@ -16,8 +18,12 @@ type User struct {
 	IsApp bool
 	// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
 	IsOfficial  bool
+	DeletedAt   *time.Time
 	Preferences UserPreferences
 }
+
+// DeletedUserDisplayName は退会したユーザーの表示名です
+const DeletedUserDisplayName = "削除されたユーザー"
 
 type SidebarStyle string
 

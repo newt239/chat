@@ -61,6 +61,13 @@ func TestCreateDMRejectsNonMemberRequester(t *testing.T) {
 	}
 }
 
+func TestListDMsRejectsNonWorkspaceMember(t *testing.T) {
+	_, err := newInteractor("bob").ListDMs(context.Background(), ListDMsInput{WorkspaceID: "general", UserID: "outsider"})
+	if !errors.Is(err, domerr.ErrUnauthorized) {
+		t.Fatalf("ワークスペース外からの DM 一覧の取得が拒否されていません: %v", err)
+	}
+}
+
 func TestCreateGroupDMRejectsTooManyMembers(t *testing.T) {
 	uc := newInteractor()
 
@@ -130,7 +137,8 @@ func (stubFlags) GetUnreadMentionCountBatch(context.Context, []string, string) (
 
 func TestListDMsLoadsMembersAtOnce(t *testing.T) {
 	users := &stubUserRepo{}
-	uc := New(stubDMChannelRepo{}, stubMemberRepo{}, stubFlags{}, stubFlags{}, stubFlags{}, users, nil)
+	ws := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{"alice": {Role: entity.WorkspaceRoleMember}}}
+	uc := New(stubDMChannelRepo{}, stubMemberRepo{}, stubFlags{}, stubFlags{}, stubFlags{}, users, ws)
 
 	dms, err := uc.ListDMs(context.Background(), ListDMsInput{WorkspaceID: "ws", UserID: "alice"})
 	if err != nil {

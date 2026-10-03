@@ -30,6 +30,7 @@ type PresignInput struct {
 	WorkspaceID string
 	Purpose     Purpose
 	ContentType string
+	SizeBytes   int64
 }
 
 type PresignOutput struct {
@@ -63,7 +64,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	key := KeyPrefix + dir + "/" + uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(ctx, key, input.ContentType, domainservice.UploadURLExpires)
+	url, err := i.storage.GenerateUploadURL(ctx, key, input.ContentType, input.SizeBytes, domainservice.UploadURLExpires)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}

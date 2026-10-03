@@ -39,6 +39,7 @@ const (
 	AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_DELETED AuditAction = 15
 	AuditAction_AUDIT_ACTION_APP_CREATED          AuditAction = 16
 	AuditAction_AUDIT_ACTION_APP_DELETED          AuditAction = 17
+	AuditAction_AUDIT_ACTION_MEMBER_REMOVED       AuditAction = 18
 )
 
 // Enum value maps for AuditAction.
@@ -57,6 +58,7 @@ var (
 		15: "AUDIT_ACTION_CUSTOM_EMOJI_DELETED",
 		16: "AUDIT_ACTION_APP_CREATED",
 		17: "AUDIT_ACTION_APP_DELETED",
+		18: "AUDIT_ACTION_MEMBER_REMOVED",
 	}
 	AuditAction_value = map[string]int32{
 		"AUDIT_ACTION_UNSPECIFIED":          0,
@@ -72,6 +74,7 @@ var (
 		"AUDIT_ACTION_CUSTOM_EMOJI_DELETED": 15,
 		"AUDIT_ACTION_APP_CREATED":          16,
 		"AUDIT_ACTION_APP_DELETED":          17,
+		"AUDIT_ACTION_MEMBER_REMOVED":       18,
 	}
 )
 
@@ -982,7 +985,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x13ResumeMemberRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\x16\n" +
-	"\x14ResumeMemberResponse*\xc2\x03\n" +
+	"\x14ResumeMemberResponse*\xe3\x03\n" +
 	"\vAuditAction\x12\x1c\n" +
 	"\x18AUDIT_ACTION_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12AUDIT_ACTION_LOGIN\x10\x01\x12\x1d\n" +
@@ -997,7 +1000,8 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"!AUDIT_ACTION_CUSTOM_EMOJI_CREATED\x10\x0e\x12%\n" +
 	"!AUDIT_ACTION_CUSTOM_EMOJI_DELETED\x10\x0f\x12\x1c\n" +
 	"\x18AUDIT_ACTION_APP_CREATED\x10\x10\x12\x1c\n" +
-	"\x18AUDIT_ACTION_APP_DELETED\x10\x112\xaa\x03\n" +
+	"\x18AUDIT_ACTION_APP_DELETED\x10\x11\x12\x1f\n" +
+	"\x1bAUDIT_ACTION_MEMBER_REMOVED\x10\x122\xaa\x03\n" +
 	"\fAdminService\x12N\n" +
 	"\rListAuditLogs\x12\x1d.chat.v1.ListAuditLogsRequest\x1a\x1e.chat.v1.ListAuditLogsResponse\x12T\n" +
 	"\x0fExportAuditLogs\x12\x1f.chat.v1.ExportAuditLogsRequest\x1a .chat.v1.ExportAuditLogsResponse\x12W\n" +

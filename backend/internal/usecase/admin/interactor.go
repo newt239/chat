@@ -163,6 +163,7 @@ func (i *Interactor) RemoveMember(ctx context.Context, input MemberActionInput) 
 		return fmt.Errorf("failed to remove member: %w", err)
 	}
 	i.memberCloser.CloseWorkspaceUser(input.WorkspaceID, input.TargetUserID)
+	i.recordMemberAction(ctx, input, target.label, entity.AuditActionMemberRemoved, nil)
 	return nil
 }
 

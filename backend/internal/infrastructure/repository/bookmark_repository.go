@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/newt239/chat/ent"
+	"github.com/newt239/chat/ent/channel"
+	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/messagebookmark"
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -57,13 +59,13 @@ func (r *bookmarkRepository) RemoveBookmark(ctx context.Context, userID, message
 	return err
 }
 
-func (r *bookmarkRepository) FindByUserID(ctx context.Context, userID string) ([]*entity.MessageBookmark, error) {
+func (r *bookmarkRepository) FindByUserID(ctx context.Context, userID, workspaceID string) ([]*entity.MessageBookmark, error) {
 	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 	bookmarks, err := transaction.ResolveClient(ctx, r.client).MessageBookmark.Query().
-		Where(messagebookmark.UserID(uid)).
+		Where(messagebookmark.UserID(uid), messagebookmark.HasMessageWith(message.DeletedAtIsNil(), message.HasChannelWith(channel.WorkspaceID(workspaceID)))).
 		WithMessage().
 		Order(ent.Desc(messagebookmark.FieldCreatedAt)).
 		All(ctx)

@@ -97,6 +97,9 @@ func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput
 }
 
 func (i *Interactor) ListDMs(ctx context.Context, input ListDMsInput) ([]*DMOutput, error) {
+	if err := i.ensureWorkspaceMembers(ctx, input.WorkspaceID, input.UserID); err != nil {
+		return nil, err
+	}
 	channels, err := i.channelRepo.FindUserDMs(ctx, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, err

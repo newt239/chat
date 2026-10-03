@@ -14,6 +14,7 @@ var AuditActions = map[entity.AuditAction]chatv1.AuditAction{
 	entity.AuditActionMemberRoleChanged:  chatv1.AuditAction_AUDIT_ACTION_MEMBER_ROLE_CHANGED,
 	entity.AuditActionMemberSuspended:    chatv1.AuditAction_AUDIT_ACTION_MEMBER_SUSPENDED,
 	entity.AuditActionMemberResumed:      chatv1.AuditAction_AUDIT_ACTION_MEMBER_RESUMED,
+	entity.AuditActionMemberRemoved:      chatv1.AuditAction_AUDIT_ACTION_MEMBER_REMOVED,
 	entity.AuditActionChannelCreated:     chatv1.AuditAction_AUDIT_ACTION_CHANNEL_CREATED,
 	entity.AuditActionPermissionChanged:  chatv1.AuditAction_AUDIT_ACTION_PERMISSION_CHANGED,
 	entity.AuditActionAuditLogExported:   chatv1.AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED,

@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next";
 import { toast } from "#/components/ui/ToastRegion/toast";
 import { BookmarkService } from "#/gen/chat/v1/bookmark_service_pb";
 
-export const useBookmarks = () =>
+export const useBookmarks = (workspaceId: string) =>
   useQuery(
     BookmarkService.method.listBookmarks,
-    {},
+    { workspaceId },
     {
-      // メッセージが削除されたブックマークは表示できないため除く
+      // サーバーは常に message を入れるが、proto の型では省略可能なため絞り込む
       select: (res) =>
         res.bookmarks.flatMap(({ message, ...bookmark }) =>
           message === undefined ? [] : [{ ...bookmark, message }],
@@ -19,10 +19,10 @@ export const useBookmarks = () =>
   );
 
 // 付いていなければ付け、付いていれば外す
-export const useToggleBookmark = (messageId: string) => {
+export const useToggleBookmark = (messageId: string, workspaceId: string) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data: bookmarks } = useBookmarks();
+  const { data: bookmarks } = useBookmarks(workspaceId);
   const onSuccess = () =>
     queryClient.invalidateQueries({
       queryKey: createConnectQueryKey({

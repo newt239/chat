@@ -69,7 +69,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	uploadID := uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, domainservice.UploadURLExpires)
+	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, domainservice.UploadURLExpires)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}

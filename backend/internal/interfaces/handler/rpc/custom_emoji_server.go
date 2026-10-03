@@ -25,6 +25,7 @@ func (s *CustomEmojiServer) PresignCustomEmojiUpload(ctx context.Context, req *c
 		WorkspaceID: req.WorkspaceId,
 		UserID:      userIDFrom(ctx),
 		ContentType: req.ContentType,
+		SizeBytes:   req.SizeBytes,
 	})
 	if err != nil {
 		return nil, err

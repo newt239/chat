@@ -23,6 +23,11 @@ const claimDueRemindersSQL = `
 	)
 	RETURNING id`
 
+// 送信中のまま残ったリマインダーを失敗にする ($1: 現在時刻, $2: これより前から送信中なら止まったとみなす時刻)
+const failStaleSendingRemindersSQL = `
+	UPDATE reminder SET status = 'failed', updated_at = $1
+	WHERE status = 'sending' AND updated_at < $2`
+
 type reminderRepository struct {
 	client *ent.Client
 }
@@ -51,12 +56,16 @@ func (r *reminderRepository) Create(ctx context.Context, rem *entity.Reminder) e
 	return nil
 }
 
-func (r *reminderRepository) ClaimDue(ctx context.Context, now time.Time, limit int) ([]*entity.Reminder, error) {
+func (r *reminderRepository) ClaimDue(ctx context.Context, now, staleBefore time.Time, limit int) ([]*entity.Reminder, error) {
+	client := transaction.ResolveClient(ctx, r.client)
+	if _, err := client.ExecContext(ctx, failStaleSendingRemindersSQL, now, staleBefore); err != nil {
+		return nil, err
+	}
 	ids, err := queryUUIDs(ctx, r.client, claimDueRemindersSQL, now, limit)
 	if err != nil {
 		return nil, err
 	}
-	found, err := transaction.ResolveClient(ctx, r.client).Reminder.Query().
+	found, err := client.Reminder.Query().
 		Where(reminder.IDIn(ids...)).
 		Order(ent.Asc(reminder.FieldRemindAt)).
 		All(ctx)

@@ -33,11 +33,12 @@ func (p *PresignService) DeleteObject(ctx context.Context, key string) error {
 	return err
 }
 
-func (p *PresignService) GenerateUploadURL(ctx context.Context, key, contentType string, expires time.Duration) (string, error) {
+func (p *PresignService) GenerateUploadURL(ctx context.Context, key, contentType string, sizeBytes int64, expires time.Duration) (string, error) {
 	request, err := p.presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(p.bucket),
-		Key:         aws.String(key),
-		ContentType: aws.String(contentType),
+		Bucket:        aws.String(p.bucket),
+		Key:           aws.String(key),
+		ContentType:   aws.String(contentType),
+		ContentLength: aws.Int64(sizeBytes),
 	}, s3.WithPresignExpires(expires))
 	if err != nil {
 		return "", err

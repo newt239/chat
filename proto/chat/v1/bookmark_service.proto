@@ -17,7 +17,9 @@ message Bookmark {
   google.protobuf.Timestamp created_at = 2;
 }
 
-message ListBookmarksRequest {}
+message ListBookmarksRequest {
+  string workspace_id = 1 [(buf.validate.field).string.min_len = 1];
+}
 
 message ListBookmarksResponse {
   repeated Bookmark bookmarks = 1;

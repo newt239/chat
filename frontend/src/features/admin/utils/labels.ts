@@ -8,6 +8,7 @@ export const auditActions = [
   { action: AuditAction.MEMBER_ROLE_CHANGED, key: "memberRoleChanged" },
   { action: AuditAction.MEMBER_SUSPENDED, key: "memberSuspended" },
   { action: AuditAction.MEMBER_RESUMED, key: "memberResumed" },
+  { action: AuditAction.MEMBER_REMOVED, key: "memberRemoved" },
   { action: AuditAction.CHANNEL_CREATED, key: "channelCreated" },
   { action: AuditAction.PERMISSION_CHANGED, key: "permissionChanged" },
   { action: AuditAction.AUDIT_LOG_EXPORTED, key: "auditLogExported" },
@@ -25,6 +26,7 @@ export const sensitiveAuditActions: ReadonlySet<AuditAction> = new Set([
   AuditAction.LOGIN_FAILED,
   AuditAction.MEMBER_ROLE_CHANGED,
   AuditAction.MEMBER_SUSPENDED,
+  AuditAction.MEMBER_REMOVED,
   AuditAction.PERMISSION_CHANGED,
   AuditAction.AUDIT_LOG_EXPORTED,
 ]);

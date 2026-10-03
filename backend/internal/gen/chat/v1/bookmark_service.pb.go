@@ -77,6 +77,7 @@ func (x *Bookmark) GetCreatedAt() *timestamppb.Timestamp {
 
 type ListBookmarksRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	WorkspaceId   string                 `protobuf:"bytes,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -109,6 +110,13 @@ func (x *ListBookmarksRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListBookmarksRequest.ProtoReflect.Descriptor instead.
 func (*ListBookmarksRequest) Descriptor() ([]byte, []int) {
 	return file_chat_v1_bookmark_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListBookmarksRequest) GetWorkspaceId() string {
+	if x != nil {
+		return x.WorkspaceId
+	}
+	return ""
 }
 
 type ListBookmarksResponse struct {
@@ -323,8 +331,9 @@ const file_chat_v1_bookmark_service_proto_rawDesc = "" +
 	"\bBookmark\x12*\n" +
 	"\amessage\x18\x01 \x01(\v2\x10.chat.v1.MessageR\amessage\x129\n" +
 	"\n" +
-	"created_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x16\n" +
-	"\x14ListBookmarksRequest\"H\n" +
+	"created_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"B\n" +
+	"\x14ListBookmarksRequest\x12*\n" +
+	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"H\n" +
 	"\x15ListBookmarksResponse\x12/\n" +
 	"\tbookmarks\x18\x01 \x03(\v2\x11.chat.v1.BookmarkR\tbookmarks\"=\n" +
 	"\x12AddBookmarkRequest\x12'\n" +

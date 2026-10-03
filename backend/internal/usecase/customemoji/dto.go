@@ -11,6 +11,7 @@ type PresignInput struct {
 	WorkspaceID string
 	UserID      string
 	ContentType string
+	SizeBytes   int64
 }
 
 type CreateInput struct {

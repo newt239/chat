@@ -3,6 +3,7 @@ package bookmark
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -48,11 +49,21 @@ func (i *Interactor) RemoveBookmark(ctx context.Context, input message.MessageIn
 	return nil
 }
 
-func (i *Interactor) ListBookmarks(ctx context.Context, userID string) ([]Output, error) {
-	bookmarks, err := i.bookmarkRepo.FindByUserID(ctx, userID)
+// ListBookmarks はワークスペース内で今も閲覧できるメッセージのブックマークだけを返します
+func (i *Interactor) ListBookmarks(ctx context.Context, userID, workspaceID string) ([]Output, error) {
+	bookmarks, err := i.bookmarkRepo.FindByUserID(ctx, userID, workspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch bookmarks: %w", err)
 	}
+	channelIDs := make([]string, len(bookmarks))
+	for idx, bookmark := range bookmarks {
+		channelIDs[idx] = bookmark.Message.ChannelID
+	}
+	channels, err := i.channelAccessSvc.AccessibleChannelsByIDs(ctx, channelIDs, userID)
+	if err != nil {
+		return nil, err
+	}
+	bookmarks = slices.DeleteFunc(bookmarks, func(b *entity.MessageBookmark) bool { return channels[b.Message.ChannelID] == nil })
 	messages := make([]*entity.Message, len(bookmarks))
 	for idx, bookmark := range bookmarks {
 		messages[idx] = bookmark.Message

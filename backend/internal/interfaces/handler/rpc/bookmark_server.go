@@ -15,8 +15,8 @@ type BookmarkServer struct {
 	UC *bookmarkuc.Interactor
 }
 
-func (s *BookmarkServer) ListBookmarks(ctx context.Context, _ *chatv1.ListBookmarksRequest) (*chatv1.ListBookmarksResponse, error) {
-	out, err := s.UC.ListBookmarks(ctx, userIDFrom(ctx))
+func (s *BookmarkServer) ListBookmarks(ctx context.Context, req *chatv1.ListBookmarksRequest) (*chatv1.ListBookmarksResponse, error) {
+	out, err := s.UC.ListBookmarks(ctx, userIDFrom(ctx), req.WorkspaceId)
 	if err != nil {
 		return nil, err
 	}

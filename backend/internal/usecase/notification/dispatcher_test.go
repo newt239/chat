@@ -202,6 +202,28 @@ func TestDispatchDM(t *testing.T) {
 	}
 }
 
+func TestDispatchChannelMention(t *testing.T) {
+	channel := &entity.Channel{ID: "c1", WorkspaceID: "ws", Name: "general", Type: entity.ChannelTypePublic}
+	f := fixture{
+		levels: map[string]entity.NotificationLevel{
+			"sender": entity.NotificationLevelAll, "mentions": entity.NotificationLevelMentions,
+			"muted": entity.NotificationLevelAll, "silent": entity.NotificationLevelNone,
+		},
+		members: []string{"sender", "mentions", "muted", "silent"},
+		mutedBy: "muted",
+	}
+
+	sender, _ := f.run(t, channel, messageuc.MessageOutput{ID: "m1", UserID: "sender", Body: "<@channel> hi", MentionsChannel: true})
+	if got := recipients(sender.sent); !reflect.DeepEqual(got, []string{"token-mentions"}) {
+		t.Errorf("@channel がミュート・本人・通知オフ以外のメンバーに送られていません: %v", got)
+	}
+
+	sender, _ = f.run(t, channel, messageuc.MessageOutput{ID: "m2", UserID: "sender", Body: "<@here> hi", MentionsHere: true})
+	if len(sender.sent) != 0 {
+		t.Errorf("@here はプッシュで送らないはず: %v", recipients(sender.sent))
+	}
+}
+
 func TestNotifyNewMessageWithoutSenderDoesNothing(t *testing.T) {
 	d := NewDispatcher(nil, nil, nil, nil, nil, nil, nil, nil)
 	if err := d.NotifyNewMessage(context.Background(), &entity.Channel{}, messageuc.MessageOutput{}); err != nil {

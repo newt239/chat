@@ -25,10 +25,13 @@ func (fakeWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) 
 	return &entity.WorkspaceMember{UserID: userID}, nil
 }
 
-type fakeStorage struct{ key string }
+type fakeStorage struct {
+	key  string
+	size int64
+}
 
-func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ time.Duration) (string, error) {
-	s.key = key
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, sizeBytes int64, _ time.Duration) (string, error) {
+	s.key, s.size = key, sizeBytes
 	return "https://storage.example.com/" + key, nil
 }
 func (*fakeStorage) GenerateDownloadURL(context.Context, string, time.Duration) (string, error) {
@@ -40,12 +43,12 @@ func TestPresign(t *testing.T) {
 	storage := &fakeStorage{}
 	uc := New(fakeWorkspaceRepo{}, storage, "https://api.example.com/")
 
-	out, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, Purpose: PurposeAvatar, ContentType: "image/png"})
+	out, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, Purpose: PurposeAvatar, ContentType: "image/png", SizeBytes: 2048})
 	if err != nil {
 		t.Fatalf("発行できません: %v", err)
 	}
-	if !strings.HasPrefix(storage.key, "images/avatars/"+memberID+"/") || out.ImageURL != "https://api.example.com/"+storage.key {
-		t.Fatalf("置き場所か配信 URL が正しくありません: key=%s url=%s", storage.key, out.ImageURL)
+	if !strings.HasPrefix(storage.key, "images/avatars/"+memberID+"/") || out.ImageURL != "https://api.example.com/"+storage.key || storage.size != 2048 {
+		t.Fatalf("置き場所・配信 URL・サイズが正しくありません: key=%s url=%s size=%d", storage.key, out.ImageURL, storage.size)
 	}
 
 	if _, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, WorkspaceID: "ws", Purpose: PurposeWorkspaceIcon}); err != nil || !strings.HasPrefix(storage.key, "images/workspaces/ws/") {

@@ -18,7 +18,11 @@ import (
 
 var ErrUnknownCommand = domerr.New(domerr.ErrValidation, "不明なコマンドです")
 
-const dispatchBatchSize = 50
+const (
+	dispatchBatchSize = 50
+	// 送信中のまま staleSendingAfter を過ぎたリマインダーは、送信の途中でサーバーが止まったものとして失敗にする
+	staleSendingAfter = 5 * time.Minute
+)
 
 // OfficialPoster は公式アプリの名義で投稿します
 type OfficialPoster interface {
@@ -154,7 +158,8 @@ func (i *Interactor) userLocation(ctx context.Context, userID string) (*time.Loc
 
 // DispatchDue は期限の来たリマインダーを公式アプリから届け、処理した件数を返します
 func (i *Interactor) DispatchDue(ctx context.Context) (int, error) {
-	reminders, err := i.reminderRepo.ClaimDue(ctx, i.now(), dispatchBatchSize)
+	now := i.now()
+	reminders, err := i.reminderRepo.ClaimDue(ctx, now, now.Add(-staleSendingAfter), dispatchBatchSize)
 	if err != nil {
 		return 0, fmt.Errorf("failed to claim due reminders: %w", err)
 	}

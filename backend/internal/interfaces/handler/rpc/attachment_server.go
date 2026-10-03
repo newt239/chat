@@ -22,7 +22,7 @@ func (s *AttachmentServer) PresignUpload(ctx context.Context, req *chatv1.Presig
 		Media:     entity.MediaMetadata{Width: req.Width, Height: req.Height, DurationSeconds: req.DurationSeconds},
 	}
 	if t := req.Thumbnail; t != nil {
-		input.Thumbnail = &attachmentuc.ThumbnailInput{MimeType: t.ContentType, Width: t.Width, Height: t.Height}
+		input.Thumbnail = &attachmentuc.ThumbnailInput{MimeType: t.ContentType, SizeBytes: t.SizeBytes, Width: t.Width, Height: t.Height}
 	}
 	out, err := s.UC.Presign(ctx, input)
 	if err != nil {

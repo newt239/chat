@@ -48,6 +48,10 @@ func (User) Fields() []ent.Field {
 		// 公式アプリの投稿名義。この名義の投稿は誰も削除・編集できない
 		field.Bool("is_official").
 			Default(false),
+		// 退会済み。投稿の名義として行だけ残し、個人情報は匿名化する
+		field.Time("deleted_at").
+			Optional().
+			Nillable(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

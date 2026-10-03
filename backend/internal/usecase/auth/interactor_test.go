@@ -212,6 +212,7 @@ var google = stubGoogle{
 	"invited":  {Sub: "sub-new", Email: "New@Example.com", EmailVerified: true, Name: "New User"},
 	"stranger": {Sub: "sub-stranger", Email: "stranger@example.com", EmailVerified: true},
 	"bob":      {Sub: "sub-bob", Email: "bob@example.com", EmailVerified: false},
+	"gone":     {Sub: "sub-gone", Email: "gone@example.com", EmailVerified: true},
 	// 認可コードフローで発行された ID トークンには nonce が入る
 	"alice-nonce": {Sub: "sub-alice", Email: "alice@example.com", EmailVerified: true, Nonce: "nonce-1"},
 }
@@ -283,6 +284,27 @@ func TestPasswordAuthCanBeDisabled(t *testing.T) {
 	}
 	if len(f.sessions.created) != 0 || len(f.users.created) != 0 {
 		t.Errorf("セッションやユーザーが作られました")
+	}
+}
+
+func TestDeletedUserCannotLoginOrRefresh(t *testing.T) {
+	f := newFixture(true)
+	deletedAt, sub := time.Now(), "sub-gone"
+	f.users.users = append(f.users.users, &entity.User{ID: "gone", Email: "gone@example.com", PasswordHash: "password123", GoogleSub: &sub, DeletedAt: &deletedAt})
+	f.sessions.active = []*entity.Session{{ID: "s1", UserID: "gone", RefreshTokenHash: entity.HashSecretToken("refresh")}}
+	ctx := context.Background()
+
+	if _, err := f.uc.Login(ctx, LoginInput{Email: "gone@example.com", Password: "password123"}); !errors.Is(err, domerr.ErrInvalidCredentials) {
+		t.Errorf("退会済みのユーザーがパスワードでログインできました: %v", err)
+	}
+	if _, err := f.uc.LoginWithGoogle(ctx, LoginWithGoogleInput{IDToken: "gone"}); !errors.Is(err, domerr.ErrInvalidCredentials) {
+		t.Errorf("退会済みのユーザーが Google でログインできました: %v", err)
+	}
+	if _, err := f.uc.RefreshToken(ctx, RefreshTokenInput{RefreshToken: "refresh"}); !errors.Is(err, domerr.ErrInvalidToken) {
+		t.Errorf("退会済みのユーザーのトークンを更新できました: %v", err)
+	}
+	if len(f.sessions.created) != 0 || len(f.sessions.rotated) != 0 {
+		t.Errorf("退会済みのユーザーのセッションが作られました")
 	}
 }
 

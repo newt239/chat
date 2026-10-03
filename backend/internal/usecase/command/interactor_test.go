@@ -67,7 +67,7 @@ func (r *fakeReminderRepo) Create(_ context.Context, rem *entity.Reminder) error
 	return nil
 }
 
-func (r *fakeReminderRepo) ClaimDue(context.Context, time.Time, int) ([]*entity.Reminder, error) {
+func (r *fakeReminderRepo) ClaimDue(context.Context, time.Time, time.Time, int) ([]*entity.Reminder, error) {
 	return r.created, nil
 }
 

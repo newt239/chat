@@ -12,7 +12,7 @@ import { useBookmarks } from "../hooks/useBookmarks";
 export const BookmarksPage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
-  const { data: bookmarks, isLoading, error } = useBookmarks();
+  const { data: bookmarks, isLoading, error } = useBookmarks(workspaceId);
 
   const renderBody = () => {
     if (isLoading) {

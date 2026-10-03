@@ -10,6 +10,7 @@ const (
 	AuditActionMemberRoleChanged  AuditAction = "member_role_changed"
 	AuditActionMemberSuspended    AuditAction = "member_suspended"
 	AuditActionMemberResumed      AuditAction = "member_resumed"
+	AuditActionMemberRemoved      AuditAction = "member_removed"
 	AuditActionChannelCreated     AuditAction = "channel_created"
 	AuditActionPermissionChanged  AuditAction = "permission_changed"
 	AuditActionAuditLogExported   AuditAction = "audit_log_exported"

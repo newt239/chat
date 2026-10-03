@@ -158,6 +158,7 @@ func userToEntity(u *ent.User) *entity.User {
 		Links:        convertAll(u.Edges.Links, func(l *ent.UserLink) string { return l.URL }),
 		IsApp:        u.IsApp,
 		IsOfficial:   u.IsOfficial,
+		DeletedAt:    u.DeletedAt,
 		Preferences:  preferences,
 	}
 }

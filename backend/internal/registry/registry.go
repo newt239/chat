@@ -160,7 +160,7 @@ func New(client *ent.Client, cfg *config.Config, rdb *goredis.Client, ready func
 		cfg.Auth.PasswordAuthEnabled)}, opts...))
 	mux.Handle(chatv1connect.NewInvitationServiceHandler(&rpc.InvitationServer{UC: invitationuc.New(invitationRepo, workspaceRepo, userRepo, permissionSvc)}, opts...))
 	mux.Handle(chatv1connect.NewUserServiceHandler(&rpc.UserServer{
-		UC:     useruc.New(userRepo, sessionRepo, passwordSvc, hub),
+		UC:     useruc.New(userRepo, sessionRepo, workspaceRepo, passwordSvc, hub),
 		NoteUC: usernoteuc.New(userNoteRepo, userRepo),
 	}, opts...))
 	mux.Handle(chatv1connect.NewNotificationServiceHandler(&rpc.NotificationServer{UC: notificationuc.New(pushTokenRepo)}, opts...))

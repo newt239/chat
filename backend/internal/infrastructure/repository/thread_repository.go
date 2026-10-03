@@ -27,10 +27,10 @@ func NewThreadRepository(client *ent.Client) domainrepository.ThreadRepository {
 	return &threadRepository{client: client}
 }
 
-// 親ごとの返信数（削除済みを含む）と最新の返信を 1 本の SQL で求める ($1: 親メッセージ ID の配列)
+// 親ごとの削除されていない返信の数と最新の返信を 1 本の SQL で求める ($1: 親メッセージ ID の配列)
 const threadReplySummarySQL = `
 	SELECT DISTINCT ON (parent_id) parent_id, COUNT(*) OVER (PARTITION BY parent_id), created_at, user_id
-	FROM message WHERE parent_id = ANY($1::uuid[])
+	FROM message WHERE parent_id = ANY($1::uuid[]) AND deleted_at IS NULL
 	ORDER BY parent_id, created_at DESC`
 
 // CalculateMetadataByMessageIDs は複数のメッセージIDのスレッドメタデータを一括計算します

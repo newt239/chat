@@ -106,7 +106,7 @@ func (i *Interactor) Login(ctx context.Context, input LoginInput) (*AuthOutput, 
 	if err != nil {
 		return nil, err
 	}
-	if user == nil || user.IsApp {
+	if user == nil || user.IsApp || user.DeletedAt != nil {
 		return nil, domerr.ErrInvalidCredentials
 	}
 
@@ -152,6 +152,9 @@ func (i *Interactor) loginWithGoogleIdentity(ctx context.Context, identity *Goog
 	if err != nil {
 		return nil, err
 	}
+	if user != nil && user.DeletedAt != nil {
+		return nil, domerr.ErrInvalidCredentials
+	}
 	if user == nil {
 		user, err = i.linkGoogleAccount(ctx, identity)
 		if err != nil {
@@ -174,8 +177,8 @@ func (i *Interactor) linkGoogleAccount(ctx context.Context, identity *GoogleIden
 	if err != nil || user == nil {
 		return nil, err
 	}
-	// 別の Google アカウントに紐付いたユーザーやボットは乗っ取れないようにする
-	if user.IsApp || user.GoogleSub != nil {
+	// 別の Google アカウントに紐付いたユーザーやボット、退会済みのユーザーは乗っ取れないようにする
+	if user.IsApp || user.GoogleSub != nil || user.DeletedAt != nil {
 		return nil, domerr.ErrInvalidCredentials
 	}
 	user.GoogleSub = &identity.Sub
@@ -390,7 +393,7 @@ func (i *Interactor) RefreshToken(ctx context.Context, input RefreshTokenInput) 
 	if err != nil {
 		return nil, err
 	}
-	if user == nil {
+	if user == nil || user.DeletedAt != nil {
 		return nil, domerr.ErrInvalidToken
 	}
 

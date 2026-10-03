@@ -14,5 +14,6 @@ type UserRepository interface {
 	FindByGoogleSub(ctx context.Context, sub string) (*entity.User, error)
 	Create(ctx context.Context, user *entity.User) error
 	Update(ctx context.Context, user *entity.User) error
+	// Delete は本人だけのデータを消し、行を匿名化して退会済みにします
 	Delete(ctx context.Context, id string) error
 }

@@ -10,6 +10,7 @@ export const admin = {
       customEmojiDeleted: "カスタム絵文字を削除",
       login: "ログイン",
       loginFailed: "ログインに失敗",
+      memberRemoved: "メンバーを外す",
       memberResumed: "メンバーを再開",
       memberRoleChanged: "ロールを変更",
       memberSuspended: "メンバーを停止",

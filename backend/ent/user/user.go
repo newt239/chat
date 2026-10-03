@@ -31,6 +31,8 @@ const (
 	FieldIsApp = "is_app"
 	// FieldIsOfficial holds the string denoting the is_official field in the database.
 	FieldIsOfficial = "is_official"
+	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
+	FieldDeletedAt = "deleted_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -77,6 +79,7 @@ var Columns = []string{
 	FieldAvatarURL,
 	FieldIsApp,
 	FieldIsOfficial,
+	FieldDeletedAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -158,6 +161,11 @@ func ByIsApp(opts ...sql.OrderTermOption) OrderOption {
 // ByIsOfficial orders the results by the is_official field.
 func ByIsOfficial(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsOfficial, opts...).ToFunc()
+}
+
+// ByDeletedAt orders the results by the deleted_at field.
+func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

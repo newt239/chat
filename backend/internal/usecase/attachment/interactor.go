@@ -33,9 +33,10 @@ type PresignInput struct {
 
 // ThumbnailInput は動画と一緒にアップロードするサムネイル画像です
 type ThumbnailInput struct {
-	MimeType string
-	Width    int32
-	Height   int32
+	MimeType  string
+	SizeBytes int64
+	Width     int32
+	Height    int32
 }
 
 type PresignOutput struct {
@@ -77,7 +78,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 	attachmentID := uuid.NewString()
 	storageKey := fmt.Sprintf("attachments/%s/%s", input.ChannelID, attachmentID)
 	mimeType := normalizeMimeType(input.MimeType, input.FileName)
-	uploadURL, err := i.storageService.GenerateUploadURL(ctx, storageKey, mimeType, service.UploadURLExpires)
+	uploadURL, err := i.storageService.GenerateUploadURL(ctx, storageKey, mimeType, input.SizeBytes, service.UploadURLExpires)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 			return nil, ErrThumbnailNotAllowed
 		}
 		thumbnailKey := storageKey + "-thumbnail"
-		url, err := i.storageService.GenerateUploadURL(ctx, thumbnailKey, t.MimeType, service.UploadURLExpires)
+		url, err := i.storageService.GenerateUploadURL(ctx, thumbnailKey, t.MimeType, t.SizeBytes, service.UploadURLExpires)
 		if err != nil {
 			return nil, err
 		}

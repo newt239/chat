@@ -130,13 +130,18 @@ func (d *Dispatcher) candidates(ctx context.Context, channel *entity.Channel, me
 	for _, m := range message.Mentions {
 		add(m.UserID, reasonMention)
 	}
-	if channel.IsDM() {
+	// @channel はメンバー全員へのメンションとして送る。@here はオンラインの人向けのため、プッシュでは送らない
+	if channel.IsDM() || message.MentionsChannel {
 		members, err := d.channelMemberRepo.FindMembersByChannelIDs(ctx, []string{channel.ID})
 		if err != nil {
-			return nil, fmt.Errorf("failed to load DM members: %w", err)
+			return nil, fmt.Errorf("failed to load channel members: %w", err)
+		}
+		r := reasonMention
+		if channel.IsDM() {
+			r = reasonDM
 		}
 		for _, m := range members {
-			add(m.UserID, reasonDM)
+			add(m.UserID, r)
 		}
 	}
 

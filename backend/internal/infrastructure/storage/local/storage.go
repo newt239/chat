@@ -16,8 +16,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/newt239/chat/internal/domain/service"
 )
 
 const (
@@ -39,12 +37,12 @@ func New(dir, baseURL, secret string) *Storage {
 	return &Storage{dir: dir, baseURL: baseURL, secret: secret, now: time.Now}
 }
 
-func (s *Storage) GenerateUploadURL(_ context.Context, key, _ string, expires time.Duration) (string, error) {
-	return s.signedURL(opPut, key, expires)
+func (s *Storage) GenerateUploadURL(_ context.Context, key, _ string, sizeBytes int64, expires time.Duration) (string, error) {
+	return s.signedURL(opPut, key, strconv.FormatInt(sizeBytes, 10), expires)
 }
 
 func (s *Storage) GenerateDownloadURL(_ context.Context, key string, expires time.Duration) (string, error) {
-	return s.signedURL(opGet, key, expires)
+	return s.signedURL(opGet, key, "", expires)
 }
 
 func (s *Storage) DeleteObject(_ context.Context, key string) error {
@@ -77,7 +75,12 @@ func (s *Storage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if op == opPut {
-		s.put(w, r, path)
+		size, err := strconv.ParseInt(r.URL.Query().Get("size"), 10, 64)
+		if err != nil || r.ContentLength != size {
+			http.Error(w, "content length does not match the signed size", http.StatusBadRequest)
+			return
+		}
+		s.put(w, r, path, size)
 		return
 	}
 	file, err := os.Open(path)
@@ -97,7 +100,7 @@ func (s *Storage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, "", stat.ModTime(), file)
 }
 
-func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string) {
+func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string, size int64) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -107,9 +110,12 @@ func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_, err = io.Copy(file, http.MaxBytesReader(w, r.Body, service.MaxUploadSize))
+	written, err := io.Copy(file, http.MaxBytesReader(w, r.Body, size))
 	if closeErr := file.Close(); err == nil {
 		err = closeErr
+	}
+	if err == nil && written != size {
+		err = errors.New("body is shorter than the signed size")
 	}
 	if err != nil {
 		_ = os.Remove(path)
@@ -123,12 +129,16 @@ func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Storage) signedURL(op, key string, expires time.Duration) (string, error) {
+// signedURL は書き込みなら size も署名に含め、本文の大きさを変えられないようにする
+func (s *Storage) signedURL(op, key, size string, expires time.Duration) (string, error) {
 	if _, err := s.path(key); err != nil {
 		return "", err
 	}
 	exp := strconv.FormatInt(s.now().Add(expires).Unix(), 10)
-	query := url.Values{"exp": {exp}, "op": {op}, "sig": {s.sign(op, key, exp)}}
+	query := url.Values{"exp": {exp}, "op": {op}, "sig": {s.sign(op, key, exp, size)}}
+	if size != "" {
+		query.Set("size", size)
+	}
 	return fmt.Sprintf("%s/storage/%s?%s", strings.TrimRight(s.baseURL, "/"), key, query.Encode()), nil
 }
 
@@ -137,12 +147,12 @@ func (s *Storage) verify(op, key string, query url.Values) bool {
 	if err != nil || s.now().Unix() > exp || query.Get("op") != op {
 		return false
 	}
-	return hmac.Equal([]byte(query.Get("sig")), []byte(s.sign(op, key, query.Get("exp"))))
+	return hmac.Equal([]byte(query.Get("sig")), []byte(s.sign(op, key, query.Get("exp"), query.Get("size"))))
 }
 
-func (s *Storage) sign(op, key, exp string) string {
+func (s *Storage) sign(op, key, exp, size string) string {
 	mac := hmac.New(sha256.New, []byte(s.secret))
-	mac.Write([]byte(op + "\n" + key + "\n" + exp))
+	mac.Write([]byte(op + "\n" + key + "\n" + exp + "\n" + size))
 	return hex.EncodeToString(mac.Sum(nil))
 }
 

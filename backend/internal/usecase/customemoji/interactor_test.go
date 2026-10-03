@@ -100,12 +100,14 @@ func (fakeUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*enti
 
 type fakeStorage struct {
 	domainservice.StorageService
-	uploadKeys []string
-	deleted    []string
+	uploadKeys  []string
+	uploadSizes []int64
+	deleted     []string
 }
 
-func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ time.Duration) (string, error) {
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, sizeBytes int64, _ time.Duration) (string, error) {
 	s.uploadKeys = append(s.uploadKeys, key)
+	s.uploadSizes = append(s.uploadSizes, sizeBytes)
 	return "https://storage/put/" + key, nil
 }
 
@@ -173,12 +175,12 @@ func TestList(t *testing.T) {
 func TestPresign(t *testing.T) {
 	t.Run("アップロード先はワークスペースごとの場所にする", func(t *testing.T) {
 		f := newFixture()
-		out, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: otherID, ContentType: "image/png"})
+		out, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: otherID, ContentType: "image/png", SizeBytes: 512})
 		if err != nil {
 			t.Fatal(err)
 		}
-		if f.storage.uploadKeys[0] != "custom-emojis/ws/"+out.UploadID {
-			t.Fatalf("unexpected key: %s", f.storage.uploadKeys[0])
+		if f.storage.uploadKeys[0] != "custom-emojis/ws/"+out.UploadID || f.storage.uploadSizes[0] != 512 {
+			t.Fatalf("unexpected key or size: %s %v", f.storage.uploadKeys[0], f.storage.uploadSizes)
 		}
 	})
 

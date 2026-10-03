@@ -39,7 +39,7 @@ func TestUploadAndDownload(t *testing.T) {
 	storage, _ := newTestStorage(t)
 	key := "attachments/ch/file"
 
-	uploadURL, err := storage.GenerateUploadURL(t.Context(), key, "image/png", time.Minute)
+	uploadURL, err := storage.GenerateUploadURL(t.Context(), key, "image/png", 5, time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,10 +86,27 @@ func TestRejectsInvalidRequests(t *testing.T) {
 		t.Fatalf("expired = %d", res.StatusCode)
 	}
 
-	if _, err := storage.GenerateUploadURL(t.Context(), "../escape", "", time.Minute); err == nil {
+	if _, err := storage.GenerateUploadURL(t.Context(), "../escape", "", 1, time.Minute); err == nil {
 		t.Fatal("path traversal key must be rejected")
 	}
 	if res := do(t, http.MethodGet, server.URL+"/storage/a/../../x?op=get", "", ""); res.StatusCode != http.StatusForbidden {
 		t.Fatalf("unsigned traversal = %d", res.StatusCode)
+	}
+}
+
+func TestRejectsBodyOtherThanSignedSize(t *testing.T) {
+	storage, _ := newTestStorage(t)
+
+	uploadURL, err := storage.GenerateUploadURL(t.Context(), "a/b", "image/png", 5, time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, body := range []string{"hello world", "hi"} {
+		if res := do(t, http.MethodPut, uploadURL, "image/png", body); res.StatusCode != http.StatusBadRequest {
+			t.Errorf("署名と違う大きさ %d バイトの本文を受け付けました: %d", len(body), res.StatusCode)
+		}
+	}
+	if res := do(t, http.MethodPut, strings.Replace(uploadURL, "size=5", "size=11", 1), "image/png", "hello world"); res.StatusCode != http.StatusForbidden {
+		t.Errorf("署名後に書き換えたサイズを受け付けました: %d", res.StatusCode)
 	}
 }

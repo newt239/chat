@@ -37,12 +37,17 @@ func (stubChannelAccess) EnsureChannelAccess(_ context.Context, channelID string
 
 type stubStorage struct {
 	uploadedMimeType string
+	sizes            map[string]int64
 }
 
-func (s *stubStorage) GenerateUploadURL(_ context.Context, key string, mimeType string, _ time.Duration) (string, error) {
+func (s *stubStorage) GenerateUploadURL(_ context.Context, key string, mimeType string, sizeBytes int64, _ time.Duration) (string, error) {
 	if !strings.HasSuffix(key, "-thumbnail") {
 		s.uploadedMimeType = mimeType
 	}
+	if s.sizes == nil {
+		s.sizes = map[string]int64{}
+	}
+	s.sizes[key] = sizeBytes
 	return "https://storage.example.com/" + key, nil
 }
 
@@ -100,8 +105,9 @@ func TestNormalizeMimeType(t *testing.T) {
 
 func TestPresignThumbnail(t *testing.T) {
 	repo := &stubAttachmentRepo{}
-	interactor := New(repo, nil, stubChannelAccess{}, &stubStorage{})
-	thumbnail := &ThumbnailInput{MimeType: "image/jpeg", Width: 640, Height: 360}
+	storage := &stubStorage{}
+	interactor := New(repo, nil, stubChannelAccess{}, storage)
+	thumbnail := &ThumbnailInput{MimeType: "image/jpeg", SizeBytes: 300, Width: 640, Height: 360}
 
 	out, err := interactor.Presign(context.Background(), PresignInput{
 		UserID: "u1", ChannelID: "ch1", FileName: "demo.mp4", MimeType: "video/mp4", SizeBytes: 1024, Thumbnail: thumbnail,
@@ -115,6 +121,9 @@ func TestPresignThumbnail(t *testing.T) {
 	}
 	if out.ThumbnailUploadURL == nil || !strings.HasSuffix(*out.ThumbnailUploadURL, saved.StorageKey) {
 		t.Errorf("サムネイルのアップロード URL がありません: %v", out.ThumbnailUploadURL)
+	}
+	if storage.sizes[repo.created.StorageKey] != 1024 || storage.sizes[saved.StorageKey] != 300 {
+		t.Errorf("申告したサイズでアップロード URL を発行していません: %v", storage.sizes)
 	}
 
 	_, err = interactor.Presign(context.Background(), PresignInput{

@@ -12,6 +12,7 @@ export const admin: Messages["admin"] = {
       customEmojiDeleted: "Deleted a custom emoji",
       login: "Signed in",
       loginFailed: "Failed sign-in",
+      memberRemoved: "Removed a member",
       memberResumed: "Resumed a member",
       memberRoleChanged: "Changed a role",
       memberSuspended: "Suspended a member",

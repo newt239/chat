@@ -25,20 +25,25 @@ type UserCloser interface {
 	CloseUser(userID string)
 }
 
+// ErrOwnerCannotDelete はオーナーのいないワークスペースを残さないためのエラーです
+var ErrOwnerCannotDelete = domerr.New(domerr.ErrFailedPrecondition, "ワークスペースのオーナーはアカウントを削除できません。先にワークスペースを削除してください")
+
 type Interactor struct {
-	userRepo    domainrepository.UserRepository
-	sessionRepo domainrepository.SessionRepository
-	passwordSvc auth.PasswordService
-	userCloser  UserCloser
+	userRepo      domainrepository.UserRepository
+	sessionRepo   domainrepository.SessionRepository
+	workspaceRepo domainrepository.WorkspaceRepository
+	passwordSvc   auth.PasswordService
+	userCloser    UserCloser
 }
 
 func New(
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
+	workspaceRepo domainrepository.WorkspaceRepository,
 	passwordSvc auth.PasswordService,
 	userCloser UserCloser,
 ) *Interactor {
-	return &Interactor{userRepo: userRepo, sessionRepo: sessionRepo, passwordSvc: passwordSvc, userCloser: userCloser}
+	return &Interactor{userRepo: userRepo, sessionRepo: sessionRepo, workspaceRepo: workspaceRepo, passwordSvc: passwordSvc, userCloser: userCloser}
 }
 
 // UpdatePassword は現在のパスワードを確認した上でパスワードを変更し、全セッションを失効させます
@@ -72,17 +77,26 @@ func (i *Interactor) revokeAllSessions(ctx context.Context, userID string) error
 	return nil
 }
 
-// DeleteMe はアカウントを削除します
+// DeleteMe は投稿などを残したまま本人のデータを消して退会させます
 func (i *Interactor) DeleteMe(ctx context.Context, userID string) error {
 	if _, err := i.findMe(ctx, userID); err != nil {
 		return err
 	}
-
-	if err := i.revokeAllSessions(ctx, userID); err != nil {
+	memberships, err := i.workspaceRepo.FindMembershipsByUserID(ctx, userID)
+	if err != nil {
 		return err
 	}
+	for _, m := range memberships {
+		if m.Role == entity.WorkspaceRoleOwner {
+			return ErrOwnerCannotDelete
+		}
+	}
 
-	return i.userRepo.Delete(ctx, userID)
+	if err := i.userRepo.Delete(ctx, userID); err != nil {
+		return err
+	}
+	i.userCloser.CloseUser(userID)
+	return nil
 }
 
 func (i *Interactor) GetMe(ctx context.Context, userID string) (*entity.User, error) {
@@ -150,7 +164,7 @@ func (i *Interactor) findMe(ctx context.Context, userID string) (*entity.User, e
 	if err != nil {
 		return nil, err
 	}
-	if u == nil {
+	if u == nil || u.DeletedAt != nil {
 		return nil, domerr.ErrUserNotFound
 	}
 	return u, nil

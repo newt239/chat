@@ -64,7 +64,7 @@ export const useMessageMenuActions = ({
   const { toText } = useMentionDirectory();
   const router = useRouter();
   const { workspaceId } = workspaceRoute.useParams();
-  const { isBookmarked, toggleBookmark } = useToggleBookmark(message.id);
+  const { isBookmarked, toggleBookmark } = useToggleBookmark(message.id, workspaceId);
   const isPinned = message.pin !== undefined;
   const togglePin = useTogglePin(message);
   const canModify = isAuthor && !message.isDeleted;

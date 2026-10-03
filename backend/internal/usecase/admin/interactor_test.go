@@ -38,6 +38,11 @@ func (r *stubWorkspaceRepo) FindMemberIncludingSuspended(_ context.Context, _ st
 	return r.members[userID], nil
 }
 
+func (r *stubWorkspaceRepo) RemoveMember(_ context.Context, _ string, userID string) error {
+	delete(r.members, userID)
+	return nil
+}
+
 func (r *stubWorkspaceRepo) SetMemberSuspended(_ context.Context, _ string, userID string, at *time.Time) error {
 	r.members[userID].SuspendedAt = at
 	return nil
@@ -175,6 +180,19 @@ func TestSuspendMember(t *testing.T) {
 				t.Errorf("監査ログが期待と異なります: %v", f.recorder.Actions())
 			}
 		})
+	}
+}
+
+func TestRemoveMemberRecordsAuditLog(t *testing.T) {
+	f := newFixture()
+	if err := f.uc.RemoveMember(context.Background(), MemberActionInput{WorkspaceID: "ws", TargetUserID: "member", OperatorID: "admin"}); err != nil {
+		t.Fatalf("除外に失敗しました: %v", err)
+	}
+	if _, ok := f.members["member"]; ok || !slices.Equal(f.closer.closed, []string{"ws/member"}) {
+		t.Errorf("除外と接続の切断が行われていません: %v", f.closer.closed)
+	}
+	if !slices.Equal(f.recorder.Actions(), []entity.AuditAction{entity.AuditActionMemberRemoved}) || f.recorder.Logs[0].TargetID != "member" {
+		t.Errorf("監査ログが期待と異なります: %+v", f.recorder.Logs)
 	}
 }
 
