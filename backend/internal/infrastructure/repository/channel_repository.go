@@ -12,6 +12,7 @@ import (
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
+	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
@@ -246,8 +247,28 @@ func (r *channelRepository) FindByIDs(ctx context.Context, ids []string) ([]*ent
 	return r.all(ctx, r.query(ctx).Where(channel.IDIn(parsedIDs...)))
 }
 
-func (r *channelRepository) FindDescendants(ctx context.Context, ch *entity.Channel) ([]*entity.Channel, error) {
+func (r *channelRepository) FindDescendants(ctx context.Context, parents []*entity.Channel) ([]*entity.Channel, error) {
+	if len(parents) == 0 {
+		return nil, nil
+	}
+	prefixes := make([]predicate.Channel, len(parents))
+	for idx, parent := range parents {
+		prefixes[idx] = channel.And(channel.WorkspaceID(parent.WorkspaceID), channel.NameHasPrefix(parent.Name+"/"))
+	}
 	return r.all(ctx, r.query(ctx).
-		Where(channel.WorkspaceID(ch.WorkspaceID), channel.NameHasPrefix(ch.Name+"/"), namedChannelTypes).
+		Where(channel.Or(prefixes...), namedChannelTypes).
 		Order(ent.Asc(channel.FieldName)))
+}
+
+// LIKE の前方一致で使う。名前に含まれる _ をワイルドカードとして扱わない
+var likeEscaper = strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
+
+const renameDescendantsSQL = `
+UPDATE channel SET name = $3 || substr(name, char_length($2) + 1), updated_at = now()
+WHERE workspace_id = $1 AND name LIKE $4 AND channel_type IN ('public', 'private')`
+
+func (r *channelRepository) RenameDescendants(ctx context.Context, workspaceID, from, to string) error {
+	_, err := transaction.ResolveClient(ctx, r.client).
+		ExecContext(ctx, renameDescendantsSQL, workspaceID, from, to, likeEscaper.Replace(from+"/")+"%")
+	return err
 }

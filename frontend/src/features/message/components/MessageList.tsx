@@ -11,12 +11,11 @@ import { myUserIdAtom } from "#/providers/store/auth";
 
 import { useHighlightedMessage } from "../hooks/useHighlightedMessage";
 import { DateDivider } from "./DateDivider";
-import { SystemMessageItem } from "./SystemMessageItem";
 
 import type { Direction } from "../hooks/useBidirectionalPages";
 import type { TimelineRow } from "../utils/timelineRows";
 
-import type { Message } from "#/gen/chat/v1/message_pb";
+import type { Message, SystemMessage } from "#/gen/chat/v1/message_pb";
 
 type MessageListProps = {
   rows: TimelineRow[];
@@ -28,6 +27,7 @@ type MessageListProps = {
   onLoad: (direction: Direction) => void;
   onJumpToLatest: () => void;
   renderMessage: (message: Message, isHighlighted: boolean) => ReactNode;
+  renderSystemMessage: (message: SystemMessage) => ReactNode;
   // kind が header の行に描画する内容
   header: ReactNode;
 };
@@ -53,6 +53,7 @@ export const MessageList = ({
   onLoad,
   onJumpToLatest,
   renderMessage,
+  renderSystemMessage,
   header,
 }: MessageListProps) => {
   const myId = useAtomValue(myUserIdAtom);
@@ -210,7 +211,7 @@ export const MessageList = ({
                 {row.kind === "date" && <DateDivider dateKey={row.dateKey} floating={false} />}
                 {row.kind === "user" &&
                   renderMessage(row.message, row.message.id === highlightedId)}
-                {row.kind === "system" && <SystemMessageItem message={row.message} />}
+                {row.kind === "system" && renderSystemMessage(row.message)}
               </div>
             );
           })}

@@ -1,8 +1,6 @@
 export const dm = {
   create: {
     callout: "10 人を超えるため、非公開チャンネルとして作成します。",
-    count: "あなたを含めて {{count}} / {{max}} 人",
-    limitHint: "DM は最大 {{max}} 人まで。超える場合は非公開チャンネルとして作成します",
     members: "メンバー",
     noResults: "一致するメンバーがいません",
     removeSelected: "{{name}} を外す",

@@ -44,15 +44,22 @@ export const useChannelMemberActions = (workspaceId: string) => {
   };
 
   const invite = useMutation(ChannelMemberService.method.inviteChannelMember, { onSuccess });
-  const remove = useMutation(ChannelMemberService.method.removeChannelMember, { onSuccess });
+  const remove = useMutation(ChannelMemberService.method.removeChannelMember, {
+    onError: toastError,
+    onSuccess,
+  });
   const updateRole = useMutation(ChannelMemberService.method.updateChannelMemberRole, {
+    onError: toastError,
     onSuccess,
   });
   const join = useMutation(ChannelMemberService.method.joinChannel, {
     onError: toastError,
     onSuccess,
   });
-  const leave = useMutation(ChannelMemberService.method.leaveChannel, { onSuccess });
+  const leave = useMutation(ChannelMemberService.method.leaveChannel, {
+    onError: toastError,
+    onSuccess,
+  });
 
   return { invite, join, leave, remove, updateRole };
 };

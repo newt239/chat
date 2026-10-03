@@ -1,6 +1,9 @@
+import { useState } from "react";
+
 import { useQuery } from "@connectrpc/connect-query";
 import { useTranslation } from "react-i18next";
 
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
 import { cn } from "#/components/ui/styles/styles";
 import { toast } from "#/components/ui/ToastRegion/toast";
@@ -13,6 +16,8 @@ import { toDate } from "#/lib/timestamp";
 
 import { useAdminActions } from "../hooks/useAdminActions";
 import { InviteMemberForm } from "./InviteMemberForm";
+
+import type { Invitation } from "#/gen/chat/v1/invitation_service_pb";
 
 const columns = ["email", "role", "invitedBy", "expiresAt"] as const;
 
@@ -29,6 +34,7 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
     { select: (res) => res.invitations },
   );
   const { revokeInvitation } = useAdminActions();
+  const [revoking, setRevoking] = useState<Invitation | null>(null);
 
   return (
     <div className="flex flex-col gap-5">
@@ -73,14 +79,7 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
                         variant="ghost"
                         aria-label={t("admin.invitations.revokeLabel", { email: invitation.email })}
                         onPress={() => {
-                          revokeInvitation.mutate(
-                            { invitationId: invitation.id, workspaceId },
-                            {
-                              onSuccess: () => {
-                                toast(t("admin.invitations.revoked"), { tone: "success" });
-                              },
-                            },
-                          );
+                          setRevoking(invitation);
                         }}
                       >
                         {t("admin.invitations.revoke")}
@@ -93,6 +92,34 @@ export const AdminInvitationsTab = ({ workspaceId }: AdminInvitationsTabProps) =
           </div>
         )}
       </section>
+      <AlertDialog
+        isOpen={revoking !== null}
+        onOpenChange={() => {
+          setRevoking(null);
+        }}
+        title={t("admin.invitations.revokeTitle", { email: revoking?.email ?? "" })}
+        confirmLabel={t("admin.invitations.revoke")}
+        tone="danger"
+        isPending={revokeInvitation.isPending}
+        onConfirm={() => {
+          if (revoking === null) {
+            return;
+          }
+          revokeInvitation.mutate(
+            { invitationId: revoking.id, workspaceId },
+            {
+              onSettled: () => {
+                setRevoking(null);
+              },
+              onSuccess: () => {
+                toast(t("admin.invitations.revoked"), { tone: "success" });
+              },
+            },
+          );
+        }}
+      >
+        <p className="m-0">{t("admin.invitations.revokeBody")}</p>
+      </AlertDialog>
     </div>
   );
 };

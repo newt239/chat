@@ -4,16 +4,13 @@ import { useTranslation } from "react-i18next";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { Skeleton } from "#/components/ui/Skeleton/Skeleton";
 import { surfaceNavTone } from "#/components/ui/styles/navTone";
-import { Switch } from "#/components/ui/Switch/Switch";
 import { ChannelAppsSection } from "#/features/app/components/ChannelAppsSection";
-import { ChannelMemberManager } from "#/features/channel/components/ChannelMemberManager";
 import { ChannelSettingsPanel } from "#/features/channel/components/ChannelSettingsPanel";
 import { canHaveChildChannel } from "#/features/channel/utils/channelPath";
 import { openDialog } from "#/lib/overlaySearch";
 
 import { useChannelAggregation } from "../hooks/useChannelAggregation";
 import { useChannelById } from "../hooks/useChannelById";
-import { useChannelListActions } from "../hooks/useChannelListActions";
 import { relativePath } from "../utils/channelTree";
 import { ChannelLinksSection } from "./ChannelLinksSection";
 import { ChannelNavItem } from "./ChannelNavItem";
@@ -27,7 +24,6 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
   const { t } = useTranslation();
   const { channel: activeChannel, isError, isPending } = useChannelById(workspaceId, channelId);
   const { descendants } = useChannelAggregation(workspaceId, channelId);
-  const { setMuted, setStarred } = useChannelListActions(workspaceId);
 
   if (isPending && !isError) {
     return (
@@ -118,25 +114,6 @@ export const ChannelInfoPanel = ({ workspaceId, channelId }: ChannelInfoPanelPro
           )}
         </section>
       )}
-      <section className="flex flex-col gap-3 border-b border-border px-4 py-3">
-        <Switch
-          isSelected={activeChannel.isStarred}
-          onChange={(isSelected) => {
-            setStarred(activeChannel.id, isSelected);
-          }}
-        >
-          {t("channel.info.star")}
-        </Switch>
-        <Switch
-          isSelected={activeChannel.isMuted}
-          onChange={(isSelected) => {
-            setMuted(activeChannel.id, isSelected);
-          }}
-        >
-          {t("channel.info.mute")}
-        </Switch>
-      </section>
-      <ChannelMemberManager channelId={activeChannel.id} workspaceId={workspaceId} />
       <ChannelAppsSection workspaceId={workspaceId} channelId={activeChannel.id} />
       <ChannelSettingsPanel
         key={activeChannel.id}

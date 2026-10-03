@@ -112,3 +112,49 @@ func TestAddMemberReportsDuplicate(t *testing.T) {
 		t.Fatalf("メンバーが重複していないことを期待しましたが %d 人, %v でした", len(members), err)
 	}
 }
+
+func TestFindDescendantsOfSeveralParents(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	repo := NewChannelRepository(client)
+	ctx := context.Background()
+	for _, name := range []string{"dev/web/ui", "general/random"} {
+		client.Channel.Create().SetName(name).SetChannelType(string(entity.ChannelTypePublic)).SetWorkspaceID(f.workspaceID).SetCreatedBy(f.bob).SaveX(ctx)
+	}
+
+	descendants, err := repo.FindDescendants(ctx, []*entity.Channel{
+		{WorkspaceID: f.workspaceID, Name: "dev"},
+		{WorkspaceID: f.workspaceID, Name: "general"},
+	})
+	if err != nil {
+		t.Fatalf("子孫を取得できません: %v", err)
+	}
+	names := make([]string, len(descendants))
+	for i, ch := range descendants {
+		names[i] = ch.Name
+	}
+	if want := []string{"dev/web", "dev/web/ui", "general/random"}; !reflect.DeepEqual(names, want) {
+		t.Errorf("子孫 = %v, want %v", names, want)
+	}
+}
+
+func TestRenameDescendantsTreatsUnderscoreLiterally(t *testing.T) {
+	client := openTestClient(t)
+	f := newSearchFixture(t, client)
+	repo := NewChannelRepository(client)
+	ctx := context.Background()
+	for _, name := range []string{"a_b/x", "a_b/x/y", "acb/z"} {
+		client.Channel.Create().SetName(name).SetChannelType(string(entity.ChannelTypePublic)).SetWorkspaceID(f.workspaceID).SetCreatedBy(f.bob).SaveX(ctx)
+	}
+
+	if err := repo.RenameDescendants(ctx, f.workspaceID, "a_b", "team"); err != nil {
+		t.Fatalf("付け替えに失敗しました: %v", err)
+	}
+	renamed, err := repo.FindByNames(ctx, f.workspaceID, []string{"team/x", "team/x/y", "acb/z"})
+	if err != nil {
+		t.Fatalf("チャンネルを取得できません: %v", err)
+	}
+	if len(renamed) != 3 {
+		t.Errorf("付け替え後に見つかったチャンネル = %d 件, want 3", len(renamed))
+	}
+}

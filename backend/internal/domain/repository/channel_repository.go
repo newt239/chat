@@ -49,6 +49,8 @@ type ChannelRepository interface {
 	FindUserDMs(ctx context.Context, workspaceID string, userID string) ([]*entity.Channel, error)
 	FindByNames(ctx context.Context, workspaceID string, names []string) ([]*entity.Channel, error)
 	FindByIDs(ctx context.Context, ids []string) ([]*entity.Channel, error)
-	// FindDescendants はパスの前方一致で子孫チャンネルを返します
-	FindDescendants(ctx context.Context, ch *entity.Channel) ([]*entity.Channel, error)
+	// FindDescendants はパスの前方一致で、いずれかのチャンネルの子孫を 1 回のクエリで返します
+	FindDescendants(ctx context.Context, parents []*entity.Channel) ([]*entity.Channel, error)
+	// RenameDescendants は from の子孫のパスの先頭を to に付け替えます
+	RenameDescendants(ctx context.Context, workspaceID string, from string, to string) error
 }

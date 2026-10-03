@@ -190,7 +190,7 @@ func (s *channelAccessService) FilterUsersWithAccess(ctx context.Context, ch *en
 }
 
 func (s *channelAccessService) AccessibleDescendants(ctx context.Context, ch *entity.Channel, userID string) ([]*entity.Channel, error) {
-	descendants, err := s.channelRepo.FindDescendants(ctx, ch)
+	descendants, err := s.channelRepo.FindDescendants(ctx, []*entity.Channel{ch})
 	if err != nil {
 		return nil, fmt.Errorf("failed to load descendant channels: %w", err)
 	}

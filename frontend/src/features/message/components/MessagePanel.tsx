@@ -14,10 +14,12 @@ import { useDateFormat } from "#/hooks/useDateFormat";
 import { usePreferences } from "#/hooks/usePreferences";
 import { toDate } from "#/lib/timestamp";
 
+import { AggregatedSystemMessageItem } from "./AggregatedSystemMessageItem";
 import { MessageItem } from "./MessageItem";
 import { MessageList } from "./MessageList";
+import { SystemMessageItem } from "./SystemMessageItem";
 
-import type { Message } from "#/gen/chat/v1/message_pb";
+import type { Message, SystemMessage } from "#/gen/chat/v1/message_pb";
 
 type MessagePanelProps = {
   workspaceId: string;
@@ -66,7 +68,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     ? [
         ...descendants.map((descendant) => descendant.id),
         ...(items ?? []).flatMap((item) =>
-          item.content.case === "userMessage" && item.content.value.channelId !== channelId
+          item.content.value !== undefined && item.content.value.channelId !== channelId
             ? [item.content.value.channelId]
             : [],
         ),
@@ -118,6 +120,17 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
     </div>
   );
 
+  const renderSystemMessage = (msg: SystemMessage) =>
+    channel && includesDescendants ? (
+      <AggregatedSystemMessageItem
+        workspaceId={workspaceId}
+        parentName={channel.name}
+        message={msg}
+      />
+    ) : (
+      <SystemMessageItem message={msg} channelLabel={null} />
+    );
+
   const renderBody = () => {
     if (isLoading) {
       return (
@@ -161,6 +174,7 @@ export const MessagePanel = ({ workspaceId, channelId }: MessagePanelProps) => {
           void navigate({ search: (prev) => ({ ...prev, date: undefined }), to: "." });
         }}
         renderMessage={renderMessage}
+        renderSystemMessage={renderSystemMessage}
         header={null}
       />
     );

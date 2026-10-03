@@ -29,10 +29,15 @@ export const auth: Messages["auth"] = {
     title: "Join {{workspace}}",
   },
   login: {
+    configFailed: "Couldn't load sign-in options",
     invitationOnly: "Accounts are created by an admin's invitation or from a workspace join link",
     or: "or",
     submit: "Log in",
     title: "Log in",
+  },
+  logoutConfirm: {
+    body: "You will be signed out on this device. You will need to sign in again to continue.",
+    title: "Log out?",
   },
   password: "Password",
   passwordRule: "At least 8 characters",

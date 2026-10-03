@@ -50,10 +50,10 @@ func (r *stubChannelRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.
 	return found, nil
 }
 
-func (r *stubChannelRepo) FindDescendants(_ context.Context, parent *entity.Channel) ([]*entity.Channel, error) {
+func (r *stubChannelRepo) FindDescendants(_ context.Context, parents []*entity.Channel) ([]*entity.Channel, error) {
 	var found []*entity.Channel
 	for _, ch := range r.channels {
-		if strings.HasPrefix(ch.Name, parent.Name+"/") {
+		if slices.ContainsFunc(parents, func(parent *entity.Channel) bool { return strings.HasPrefix(ch.Name, parent.Name+"/") }) {
 			found = append(found, ch)
 		}
 	}

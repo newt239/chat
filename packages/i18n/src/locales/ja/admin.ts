@@ -83,8 +83,10 @@ export const admin = {
     note: "登録済みのメールアドレスはすぐにメンバーに追加されます。未登録の場合は招待リンクを発行します。",
     pending: "保留中の招待",
     revoke: "取り消す",
+    revokeBody: "取り消すと、送った招待リンクは使えなくなります。",
     revokeLabel: "{{email}} への招待を取り消す",
     revoked: "招待を取り消しました",
+    revokeTitle: "{{email}} への招待を取り消しますか？",
   },
   loadFailed: "読み込めませんでした",
   members: {

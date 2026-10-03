@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { IconChevronRight, IconLogout, IconUser } from "@tabler/icons-react";
 import { useParams } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
@@ -8,7 +10,7 @@ import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { Link } from "#/components/ui/Link/Link";
 import { mobileNavTone, navItemClassName } from "#/components/ui/styles/navTone";
 import { cn, focusRing } from "#/components/ui/styles/styles";
-import { useLogout } from "#/features/auth/hooks/useLogout";
+import { LogoutConfirmDialog } from "#/features/auth/components/LogoutConfirmDialog";
 import { InstallAppRow } from "#/features/layout/components/InstallAppRow";
 import { settingsSections } from "#/features/settings/schemas";
 import { settingsSectionIcons } from "#/features/settings/utils/sectionIcons";
@@ -25,7 +27,7 @@ export const MePage = () => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ from: "/app/$workspaceId" });
   const { data: user } = useMe();
-  const logout = useLogout();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   return (
     <>
@@ -67,12 +69,13 @@ export const MePage = () => {
         <Button
           className={cn(rowClassName, "mt-3 text-danger [&_svg]:text-danger")}
           onPress={() => {
-            logout.mutate({});
+            setIsLoggingOut(true);
           }}
         >
           <IconLogout aria-hidden />
           {t("shell.me.logout")}
         </Button>
+        <LogoutConfirmDialog isOpen={isLoggingOut} onOpenChange={setIsLoggingOut} />
       </div>
     </>
   );

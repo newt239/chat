@@ -11,6 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Badge } from "#/components/ui/Badge/Badge";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
@@ -50,6 +51,7 @@ export const ScheduledMessageItem = ({
   const mentionCodec = useMentionCodec();
   const [body, setBody] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { status, channelId, parentId, sentMessageId } = message;
   const isSent = status === ScheduledMessageStatus.SENT;
   const isEditable =
@@ -138,7 +140,7 @@ export const ScheduledMessageItem = ({
             icon={<IconTrash aria-hidden />}
             tone="danger"
             onAction={() => {
-              remove.mutate({ id: message.id });
+              setIsDeleting(true);
             }}
           >
             {t("common.delete")}
@@ -171,6 +173,26 @@ export const ScheduledMessageItem = ({
           <TextArea label={t("schedule.list.body")} value={body} onChange={setBody} rows={4} />
         </ScheduleDialog>
       )}
+      <AlertDialog
+        isOpen={isDeleting}
+        onOpenChange={setIsDeleting}
+        title={t("schedule.list.deleteTitle")}
+        confirmLabel={t("common.delete")}
+        tone="danger"
+        isPending={remove.isPending}
+        onConfirm={() => {
+          remove.mutate(
+            { id: message.id },
+            {
+              onSettled: () => {
+                setIsDeleting(false);
+              },
+            },
+          );
+        }}
+      >
+        <p className="m-0">{t("schedule.list.deleteBody")}</p>
+      </AlertDialog>
     </article>
   );
 };

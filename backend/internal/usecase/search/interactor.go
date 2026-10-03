@@ -224,15 +224,13 @@ func (s *Interactor) withDescendantChannelIDs(ctx context.Context, ids []string)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load channels: %w", err)
 	}
+	descendants, err := s.channelRepo.FindDescendants(ctx, selected)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load descendant channels: %w", err)
+	}
 	result := slices.Clone(ids)
-	for _, ch := range selected {
-		descendants, err := s.channelRepo.FindDescendants(ctx, ch)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load descendant channels: %w", err)
-		}
-		for _, d := range descendants {
-			result = append(result, d.ID)
-		}
+	for _, d := range descendants {
+		result = append(result, d.ID)
 	}
 	return result, nil
 }

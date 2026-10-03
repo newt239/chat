@@ -225,6 +225,21 @@ var (
 				Unique:  true,
 				Columns: []*schema.Column{ChannelColumns[7], ChannelColumns[4]},
 			},
+			{
+				Name:    "channel_workspace_id_name_pattern",
+				Unique:  false,
+				Columns: []*schema.Column{ChannelColumns[7], ChannelColumns[1]},
+				Annotation: &entsql.IndexAnnotation{
+					OpClassColumns: map[string]string{
+						ChannelColumns[1].Name: "text_pattern_ops",
+					},
+				},
+			},
+			{
+				Name:    "channel_parent_id",
+				Unique:  false,
+				Columns: []*schema.Column{ChannelColumns[9]},
+			},
 		},
 	}
 	// ChannelCategoryColumns holds the columns for the "channel_category" table.
@@ -715,6 +730,14 @@ var (
 				Columns: []*schema.Column{MessageColumns[12], MessageColumns[2]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "deleted_at IS NULL",
+				},
+			},
+			{
+				Name:    "message_channel_id_created_at_top_level",
+				Unique:  false,
+				Columns: []*schema.Column{MessageColumns[12], MessageColumns[2]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "deleted_at IS NULL AND parent_id IS NULL",
 				},
 			},
 			{

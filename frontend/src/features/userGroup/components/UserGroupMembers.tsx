@@ -1,7 +1,10 @@
+import { useState } from "react";
+
 import { IconUserMinus } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Avatar } from "#/components/ui/Avatar/Avatar";
 import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { MemberPickerForm } from "#/features/member/components/MemberPickerForm";
@@ -27,6 +30,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
   const canManage = useIsWorkspaceAdmin(workspaceId);
   const displayName = useDisplayName();
   const myId = useAtomValue(myUserIdAtom);
+  const [removing, setRemoving] = useState<{ userId: string; name: string } | null>(null);
 
   const memberIds = new Set(members?.map((member) => member.userId));
 
@@ -50,7 +54,7 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
                 <IconButton
                   label={t("userGroup.removeMember", { name })}
                   onPress={() => {
-                    remove.mutate({ groupId, userId });
+                    setRemoving({ name, userId });
                   }}
                 >
                   <IconUserMinus />
@@ -73,6 +77,31 @@ export const UserGroupMembers = ({ groupId, workspaceId }: UserGroupMembersProps
           }}
         />
       )}
+      <AlertDialog
+        isOpen={removing !== null}
+        onOpenChange={() => {
+          setRemoving(null);
+        }}
+        title={t("userGroup.removeMemberTitle", { name: removing?.name ?? "" })}
+        confirmLabel={t("userGroup.remove")}
+        tone="danger"
+        isPending={remove.isPending}
+        onConfirm={() => {
+          if (removing === null) {
+            return;
+          }
+          remove.mutate(
+            { groupId, userId: removing.userId },
+            {
+              onSettled: () => {
+                setRemoving(null);
+              },
+            },
+          );
+        }}
+      >
+        <p className="m-0">{t("userGroup.removeMemberBody")}</p>
+      </AlertDialog>
     </div>
   );
 };

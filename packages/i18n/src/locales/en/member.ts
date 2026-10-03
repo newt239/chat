@@ -5,7 +5,6 @@ export const member: Messages["member"] = {
     memo: "Note",
     memoPlaceholder: "Their role, how they like to talk, things to remember",
     nickname: "Display name",
-    private: "Only you can see this. They won't be notified",
     realName: "Real name: {{name}}",
     saved: "Saved the nickname and note",
     title: "Only visible to you",

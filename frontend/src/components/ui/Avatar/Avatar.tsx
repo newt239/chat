@@ -5,7 +5,8 @@ import { useColorMode } from "#/providers/theme/colorMode";
 type AvatarProps = {
   name: string;
   src?: string | null;
-  size?: number;
+  // "fill" なら親の幅いっぱいの正方形にする
+  size?: number | "fill";
   isOnline?: boolean;
 };
 
@@ -26,27 +27,32 @@ const initialOf = (name: string) => {
 export const Avatar = ({ name, src, size = 32, isOnline }: AvatarProps) => {
   const isDark = useColorMode() === "dark";
   const hue = hueOf(name);
-  const dotSize = Math.max(9, Math.round(size * 0.28));
+  const isFill = size === "fill";
+  const dotSize = isFill ? 0 : Math.max(9, Math.round(size * 0.28));
   return (
     <span
       role="img"
       aria-label={name}
-      className="relative inline-grid shrink-0 place-items-center font-sans leading-none font-bold select-none"
+      className={`relative inline-grid shrink-0 place-items-center font-sans leading-none font-bold select-none ${isFill ? "@container aspect-square w-full rounded-xl" : ""}`}
       style={{
         backgroundColor: oklchToHex(isDark ? 0.38 : 0.88, isDark ? 0.07 : 0.06, hue),
-        borderRadius: Math.round(size * 0.28),
         color: oklchToHex(isDark ? 0.92 : 0.36, 0.09, hue),
-        fontSize: Math.round(size * 0.42),
-        height: size,
-        width: size,
+        ...(!isFill && {
+          borderRadius: Math.round(size * 0.28),
+          fontSize: Math.round(size * 0.42),
+          height: size,
+          width: size,
+        }),
       }}
     >
       {src ? (
         <img src={src} alt="" className="size-full rounded-[inherit] object-cover" />
       ) : (
-        <span aria-hidden>{initialOf(name)}</span>
+        <span aria-hidden className={isFill ? "text-[42cqw]" : undefined}>
+          {initialOf(name)}
+        </span>
       )}
-      {isOnline && (
+      {isOnline && !isFill && (
         <span
           data-online
           className="absolute -right-0.5 -bottom-0.5 rounded-full border-2 border-(--dot-ring,var(--c-surface)) bg-success"

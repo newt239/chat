@@ -153,73 +153,7 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
           submit();
         }}
       >
-        <div className="flex flex-col gap-1.5">
-          <SearchField value={query} onChange={setQuery} label={t("dm.create.search")} />
-          {selectedMembers.length > 0 && (
-            <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-              {selectedMembers.map((member) => (
-                <li
-                  key={member.userId}
-                  className="inline-flex items-center gap-1 rounded-full bg-accent-soft py-0.5 pr-1 pl-2.5 text-xs font-semibold text-accent-text"
-                >
-                  {member.nickname ?? member.displayName}
-                  <AriaButton
-                    aria-label={t("dm.create.removeSelected", {
-                      name: member.nickname ?? member.displayName,
-                    })}
-                    onPress={() => {
-                      toggle(member.userId);
-                    }}
-                    className={cn(
-                      "grid size-4.5 cursor-pointer place-items-center rounded-full data-hovered:bg-accent/20",
-                      focusRing,
-                    )}
-                  >
-                    <IconX aria-hidden className="size-3" />
-                  </AriaButton>
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className={cn("m-0 text-caption", isOverLimit ? "text-danger" : "text-muted")}>
-            {t("dm.create.count", { count: total, max: DM_MAX })} ·{" "}
-            {t("dm.create.limitHint", { max: DM_MAX })}
-          </p>
-        </div>
-
-        <AnimatePresence initial={false}>
-          {isOverLimit && (
-            <motion.div
-              key="over"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={transitions.base}
-              className="overflow-hidden"
-            >
-              <div className="flex flex-col gap-2.5 rounded-lg border border-mention-bar bg-mention-bg px-3 py-2.5">
-                <span className="flex items-center gap-1.5 text-body-strong">
-                  <IconLock aria-hidden className="size-3.5" />
-                  {t("dm.create.callout")}
-                </span>
-                <ChannelNameField
-                  label={t("channel.create.name")}
-                  prefix="#"
-                  value={channelName}
-                  onChange={setChannelName}
-                  placeholder="release-war-room"
-                  description={t("channel.create.nameHint")}
-                  errorMessage={
-                    isTouched && nameError !== null
-                      ? t(`channel.name.${nameError}`, { name: channelName })
-                      : null
-                  }
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+        <SearchField value={query} onChange={setQuery} label={t("dm.create.search")} />
         <ListBox
           aria-label={t("dm.create.members")}
           selectionMode="multiple"
@@ -268,6 +202,65 @@ export const CreateDMModal = ({ workspaceId, onClose }: CreateDMModalProps) => {
             </ListBoxItem>
           )}
         </ListBox>
+
+        {selectedMembers.length > 0 && (
+          <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+            {selectedMembers.map((member) => (
+              <li
+                key={member.userId}
+                className="inline-flex items-center gap-1 rounded-full bg-accent-soft py-0.5 pr-1 pl-2.5 text-xs font-semibold text-accent-text"
+              >
+                {member.nickname ?? member.displayName}
+                <AriaButton
+                  aria-label={t("dm.create.removeSelected", {
+                    name: member.nickname ?? member.displayName,
+                  })}
+                  onPress={() => {
+                    toggle(member.userId);
+                  }}
+                  className={cn(
+                    "grid size-4.5 cursor-pointer place-items-center rounded-full data-hovered:bg-accent/20",
+                    focusRing,
+                  )}
+                >
+                  <IconX aria-hidden className="size-3" />
+                </AriaButton>
+              </li>
+            ))}
+          </ul>
+        )}
+        <AnimatePresence initial={false}>
+          {isOverLimit && (
+            <motion.div
+              key="over"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={transitions.base}
+              className="overflow-hidden"
+            >
+              <div className="flex flex-col gap-2.5 rounded-lg border border-mention-bar bg-mention-bg px-3 py-2.5">
+                <span className="flex items-center gap-1.5 text-body-strong">
+                  <IconLock aria-hidden className="size-3.5" />
+                  {t("dm.create.callout")}
+                </span>
+                <ChannelNameField
+                  label={t("channel.create.name")}
+                  prefix="#"
+                  value={channelName}
+                  onChange={setChannelName}
+                  placeholder="release-war-room"
+                  description={t("channel.create.nameHint")}
+                  errorMessage={
+                    isTouched && nameError !== null
+                      ? t(`channel.name.${nameError}`, { name: channelName })
+                      : null
+                  }
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {isTouched && selectedIds.length === 0 && (
           <p className="m-0 text-caption text-danger">{t("dm.create.selectAtLeastOne")}</p>

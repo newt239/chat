@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
-import { ensureSession, refreshOrSignOut } from "#/lib/session";
+import { navigateTo } from "#/lib/navigation";
+import { ensureSession, refreshOrSignOut, signOut } from "#/lib/session";
+import { queryClient } from "#/providers/query/query";
 import { sessionAtom } from "#/providers/store/auth";
 import { store } from "#/providers/store/store";
 
@@ -46,5 +48,13 @@ describe("session", () => {
     respondRefresh(unauthenticated);
     await expect(refreshOrSignOut()).rejects.toThrow();
     expect(store.get(sessionAtom)).toBeNull();
+  });
+
+  test("ログアウト済みならキャッシュを消さず、ログイン画面へも移らない", () => {
+    vi.mocked(navigateTo).mockClear();
+    queryClient.setQueryData(["auth-config"], { passwordAuthEnabled: true });
+    signOut();
+    expect(queryClient.getQueryData(["auth-config"])).toEqual({ passwordAuthEnabled: true });
+    expect(navigateTo).not.toHaveBeenCalled();
   });
 });

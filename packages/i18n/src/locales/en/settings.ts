@@ -52,6 +52,7 @@ export const settings: Messages["settings"] = {
     close: "Close panel or dialog",
     newTab: "Open in new tab",
     newline: "New line",
+    nextUnread: "Go to next unread",
     search: "Search",
     send: "Send",
     settings: "Open settings",

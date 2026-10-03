@@ -1,121 +1,39 @@
-import { IconCheck, IconDots, IconUserMinus } from "@tabler/icons-react";
+import { useState } from "react";
+
 import { useAtomValue } from "jotai";
 import { useTranslation } from "react-i18next";
 
-import { Avatar } from "#/components/ui/Avatar/Avatar";
-import { Badge } from "#/components/ui/Badge/Badge";
+import { AlertDialog } from "#/components/ui/AlertDialog/AlertDialog";
 import { Button } from "#/components/ui/Button/Button";
-import { IconButton } from "#/components/ui/IconButton/IconButton";
-import { Menu } from "#/components/ui/Menu/Menu";
-import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
-import { MenuSeparator } from "#/components/ui/MenuSeparator/MenuSeparator";
 import { useChannelMemberActions } from "#/features/channel/hooks/useChannelMemberActions";
-import { useChannelMembers } from "#/features/channel/hooks/useChannelMembers";
 import { MemberPickerForm } from "#/features/member/components/MemberPickerForm";
-import { useDisplayName } from "#/features/member/hooks/useDisplayName";
 import { ChannelRole } from "#/gen/chat/v1/channel_member_service_pb";
 import { myUserIdAtom } from "#/providers/store/auth";
 
-const ROLES = [ChannelRole.MEMBER, ChannelRole.ADMIN];
+import type { ChannelMember } from "#/gen/chat/v1/channel_member_service_pb";
 
 type ChannelMemberManagerProps = {
   channelId: string;
   workspaceId: string;
+  members: ChannelMember[];
 };
 
-export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberManagerProps) => {
+// メンバーパネルの下に置く、参加・退出と招待の操作
+export const ChannelMemberManager = ({
+  channelId,
+  workspaceId,
+  members,
+}: ChannelMemberManagerProps) => {
   const { t } = useTranslation();
   const myId = useAtomValue(myUserIdAtom);
-  const { data: channelMembers } = useChannelMembers(channelId);
-  const { invite, join, leave, remove, updateRole } = useChannelMemberActions(workspaceId);
-  const displayName = useDisplayName();
+  const { invite, join, leave } = useChannelMemberActions(workspaceId);
+  const [isLeaving, setIsLeaving] = useState(false);
 
-  const memberIds = new Set(channelMembers?.map((member) => member.userId));
+  const memberIds = new Set(members.map((member) => member.userId));
   const isJoined = myId !== null && memberIds.has(myId);
-  const failedAction = [remove, updateRole, leave].find((action) => action.isError);
 
   return (
-    <section className="flex flex-col gap-2 border-b border-border px-4 py-3">
-      <h4 className="m-0 flex items-center justify-between gap-2 text-xs font-semibold text-muted">
-        {t("channel.members.title", { count: channelMembers?.length ?? 0 })}
-        {isJoined ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-danger"
-            isPending={leave.isPending}
-            onPress={() => {
-              leave.mutate({ channelId });
-            }}
-          >
-            {t("channel.members.leave")}
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="secondary"
-            isPending={join.isPending}
-            onPress={() => {
-              join.mutate({ channelId });
-            }}
-          >
-            {t("channel.members.join")}
-          </Button>
-        )}
-      </h4>
-
-      <ul className="m-0 -mx-2 flex list-none flex-col p-0">
-        {channelMembers?.map((member) => {
-          const name = displayName(member.userId, member.displayName);
-          return (
-            <li
-              key={member.userId}
-              className="flex items-center gap-2.5 rounded-md px-2 py-1 text-body-sm"
-            >
-              <Avatar name={member.displayName} src={member.avatarUrl} size={28} />
-              <span className="min-w-0 flex-1 truncate">{name}</span>
-              {member.role === ChannelRole.ADMIN && (
-                <Badge tone="tag">{t("channel.roles.admin")}</Badge>
-              )}
-              <Menu
-                trigger={
-                  <IconButton label={t("channel.members.menu", { name })}>
-                    <IconDots />
-                  </IconButton>
-                }
-              >
-                {ROLES.map((role) => (
-                  <MenuItem
-                    key={role}
-                    icon={
-                      member.role === role ? <IconCheck aria-hidden /> : <span className="size-4" />
-                    }
-                    onAction={() => {
-                      updateRole.mutate({ channelId, role, userId: member.userId });
-                    }}
-                  >
-                    {t(role === ChannelRole.ADMIN ? "channel.roles.admin" : "channel.roles.member")}
-                  </MenuItem>
-                ))}
-                <MenuSeparator />
-                <MenuItem
-                  tone="danger"
-                  icon={<IconUserMinus aria-hidden />}
-                  onAction={() => {
-                    remove.mutate({ channelId, userId: member.userId });
-                  }}
-                >
-                  {t("channel.members.remove")}
-                </MenuItem>
-              </Menu>
-            </li>
-          );
-        })}
-      </ul>
-      {channelMembers?.length === 0 && (
-        <p className="m-0 text-caption text-muted">{t("channel.members.empty")}</p>
-      )}
-
+    <section className="flex flex-col gap-2 border-t border-border px-2 pt-3 pb-2">
       <MemberPickerForm
         workspaceId={workspaceId}
         memberIds={memberIds}
@@ -127,11 +45,51 @@ export const ChannelMemberManager = ({ channelId, workspaceId }: ChannelMemberMa
           invite.mutate({ channelId, role: ChannelRole.MEMBER, userId });
         }}
       />
-
       {invite.isError && <p className="m-0 text-caption text-danger">{invite.error.message}</p>}
-      {failedAction && (
-        <p className="m-0 text-caption text-danger">{t("channel.members.actionFailed")}</p>
+      {isJoined ? (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="self-start text-danger"
+          onPress={() => {
+            setIsLeaving(true);
+          }}
+        >
+          {t("channel.members.leave")}
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          variant="secondary"
+          className="self-start"
+          isPending={join.isPending}
+          onPress={() => {
+            join.mutate({ channelId });
+          }}
+        >
+          {t("channel.members.join")}
+        </Button>
       )}
+      <AlertDialog
+        isOpen={isLeaving}
+        onOpenChange={setIsLeaving}
+        title={t("channel.members.leaveTitle")}
+        confirmLabel={t("channel.members.leave")}
+        tone="danger"
+        isPending={leave.isPending}
+        onConfirm={() => {
+          leave.mutate(
+            { channelId },
+            {
+              onSettled: () => {
+                setIsLeaving(false);
+              },
+            },
+          );
+        }}
+      >
+        <p className="m-0">{t("channel.members.leaveBody")}</p>
+      </AlertDialog>
     </section>
   );
 };

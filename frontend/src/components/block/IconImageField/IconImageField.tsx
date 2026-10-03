@@ -24,6 +24,8 @@ type IconImageFieldProps = {
   onChange: (url: string) => void;
   purpose: ImagePurpose;
   workspaceId: string | null;
+  // stacked は画像を幅いっぱいに出し、その下にボタンを並べる
+  layout?: "row" | "stacked";
 };
 
 // アイコン画像を選んで切り抜き、アップロードした URL を返す。設定済みならリセットできる
@@ -34,6 +36,7 @@ export const IconImageField = ({
   onChange,
   purpose,
   workspaceId,
+  layout = "row",
 }: IconImageFieldProps) => {
   const { t } = useTranslation();
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -52,8 +55,9 @@ export const IconImageField = ({
       <span id={labelId} className={fieldStyles.label}>
         {label}
       </span>
+      {layout === "stacked" && <Avatar name={name} src={value || null} size="fill" />}
       <div className="flex flex-wrap items-center gap-3">
-        <Avatar name={name} src={value || null} size={56} />
+        {layout === "row" && <Avatar name={name} src={value || null} size={56} />}
         <FileTrigger
           acceptedFileTypes={IMAGE_TYPES}
           onSelect={(files) => {

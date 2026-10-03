@@ -110,7 +110,9 @@ export const message = {
   system: {
     descriptionChanged: "チャンネルの説明が更新されました",
     memberAdded: "{{user}} が {{by}} によって追加されました",
+    memberAddedChannel: "#{{channel}} に {{user}} が {{by}} によって追加されました",
     memberJoined: "{{user}} が参加しました",
+    memberJoinedChannel: "#{{channel}} に {{user}} が参加しました",
     messagePinned: "{{user}} が<target>メッセージ</target>をピン留めしました",
     nameChanged: "チャンネル名が「{{from}}」から「{{to}}」に変わりました",
     privacyChanged: "チャンネルの公開設定が {{from}} から {{to}} に変わりました",

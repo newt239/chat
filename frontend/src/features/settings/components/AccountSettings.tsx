@@ -9,7 +9,8 @@ import { Button } from "#/components/ui/Button/Button";
 import { LinkButton } from "#/components/ui/LinkButton/LinkButton";
 import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
-import { useDisablePushBeforeSignOut, useLogout } from "#/features/auth/hooks/useLogout";
+import { LogoutConfirmDialog } from "#/features/auth/components/LogoutConfirmDialog";
+import { useDisablePushBeforeSignOut } from "#/features/auth/hooks/useLogout";
 import { UserService } from "#/gen/chat/v1/user_service_pb";
 import { useMe } from "#/hooks/useMe";
 import { openPanel } from "#/lib/overlaySearch";
@@ -24,6 +25,7 @@ export const AccountSettings = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   // 変更後はサーバー側の全セッションが失効する
   const updatePassword = useMutation(UserService.method.updatePassword);
   const disablePush = useDisablePushBeforeSignOut();
@@ -37,7 +39,6 @@ export const AccountSettings = () => {
       signOut();
     },
   });
-  const logout = useLogout();
 
   return (
     <div className="flex flex-col gap-5">
@@ -50,14 +51,14 @@ export const AccountSettings = () => {
         <SettingRow title={t("auth.email")} description={user?.email ?? null}>
           <Button
             variant="secondary"
-            isPending={logout.isPending}
             onPress={() => {
-              logout.mutate({});
+              setIsLoggingOut(true);
             }}
           >
             {t("shell.me.logout")}
           </Button>
         </SettingRow>
+        <LogoutConfirmDialog isOpen={isLoggingOut} onOpenChange={setIsLoggingOut} />
       </section>
 
       <Form

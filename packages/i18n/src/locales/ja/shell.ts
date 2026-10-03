@@ -3,6 +3,7 @@ export const shell = {
   channel: {
     links: "関連リンク",
     muted: "ミュート中",
+    nextUnread: "次の未読へ（⌥⇧↓ / Alt+Shift+↓）",
     private: "非公開チャンネル",
     public: "公開チャンネル",
   },

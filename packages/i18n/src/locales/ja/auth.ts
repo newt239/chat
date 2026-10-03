@@ -27,10 +27,15 @@ export const auth = {
     title: "{{workspace}} に参加",
   },
   login: {
+    configFailed: "ログイン方法を読み込めませんでした",
     invitationOnly: "アカウントは管理者からの招待か、ワークスペースの参加リンクから作成できます",
     or: "または",
     submit: "ログイン",
     title: "ログイン",
+  },
+  logoutConfirm: {
+    body: "この端末からログアウトします。続けて使うには再びログインしてください。",
+    title: "ログアウトしますか？",
   },
   password: "パスワード",
   passwordRule: "8 文字以上",

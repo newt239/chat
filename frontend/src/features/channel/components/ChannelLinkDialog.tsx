@@ -8,6 +8,7 @@ import { TextField } from "#/components/ui/TextField/TextField";
 import { toast } from "#/components/ui/ToastRegion/toast";
 
 import { useChannelLinkActions } from "../hooks/useChannelLinks";
+import { ChannelLinkDeleteDialog } from "./ChannelLinkDeleteDialog";
 
 import type { ChannelLink } from "#/gen/chat/v1/channel_link_service_pb";
 
@@ -32,7 +33,8 @@ export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialo
   const [url, setUrl] = useState(link?.url ?? "https://");
   const [title, setTitle] = useState(link?.title ?? "");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { create, update, remove } = useChannelLinkActions(channelId);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { create, update } = useChannelLinkActions(channelId);
   const host = hostOf(url.trim());
   const failed = [create, update].find((mutation) => mutation.isError);
 
@@ -64,17 +66,8 @@ export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialo
             <Button
               variant="ghost"
               className="mr-auto text-danger"
-              isPending={remove.isPending}
               onPress={() => {
-                remove.mutate(
-                  { linkId: link.id },
-                  {
-                    onSuccess: () => {
-                      toast(t("channel.links.deleted"));
-                      onClose();
-                    },
-                  },
-                );
+                setIsDeleting(true);
               }}
             >
               {t("common.delete")}
@@ -107,6 +100,14 @@ export const ChannelLinkDialog = ({ channelId, link, onClose }: ChannelLinkDialo
         maxLength={100}
       />
       {failed && <p className="m-0 text-caption text-danger">{failed.error.message}</p>}
+      <ChannelLinkDeleteDialog
+        channelId={channelId}
+        link={isDeleting ? link : null}
+        onClose={() => {
+          setIsDeleting(false);
+        }}
+        onDeleted={onClose}
+      />
     </Dialog>
   );
 };

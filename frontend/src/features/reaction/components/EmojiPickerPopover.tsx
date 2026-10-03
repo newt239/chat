@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "#/components/ui/Button/Button";
 import { Dialog } from "#/components/ui/Dialog/Dialog";
-import { Popover } from "#/components/ui/Popover/Popover";
+import { ResponsivePopover } from "#/components/ui/ResponsivePopover/ResponsivePopover";
 import { CustomEmojiForm } from "#/features/customEmoji/components/CustomEmojiForm";
 import { toCustomEmojiValue } from "#/features/customEmoji/utils/customEmoji";
 import { Permission, PermissionService } from "#/gen/chat/v1/permission_service_pb";
@@ -51,7 +51,13 @@ export const EmojiPickerPopover = ({
     <>
       <DialogTrigger isOpen={isOpen} onOpenChange={changeOpen}>
         {trigger}
-        <Popover aria-label={label} placement={placement} className="flex flex-col overflow-hidden">
+        <ResponsivePopover
+          aria-label={label}
+          placement={placement}
+          isOpen={isOpen}
+          onOpenChange={changeOpen}
+          className="flex flex-col overflow-hidden"
+        >
           <EmojiPicker
             onEmojiSelect={(emoji) => {
               onSelect(emoji);
@@ -74,7 +80,7 @@ export const EmojiPickerPopover = ({
               </Button>
             </div>
           )}
-        </Popover>
+        </ResponsivePopover>
       </DialogTrigger>
       {workspaceId !== undefined && (
         <Dialog isOpen={isAddOpen} onOpenChange={setIsAddOpen} title={t("workspace.emoji.add")}>

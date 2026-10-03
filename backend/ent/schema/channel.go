@@ -79,5 +79,10 @@ func (Channel) Indexes() []ent.Index {
 			Annotations(entsql.IndexWhere("dm_key IS NULL")),
 		index.Fields("workspace_id", "dm_key").
 			Unique(),
+		// 照合順序に依らず name LIKE 'parent/%' で子孫を引けるようにする
+		index.Fields("workspace_id", "name").
+			Annotations(entsql.OpClassColumn("name", "text_pattern_ops")).
+			StorageKey("channel_workspace_id_name_pattern"),
+		index.Fields("parent_id"),
 	}
 }

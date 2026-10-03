@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { IconEdit, IconLink, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Link } from "react-aria-components";
@@ -8,10 +10,12 @@ import { IconButton } from "#/components/ui/IconButton/IconButton";
 import { MenuItem } from "#/components/ui/MenuItem/MenuItem";
 import { MenuItemLink } from "#/components/ui/MenuItemLink/MenuItemLink";
 import { focusRing } from "#/components/ui/styles/styles";
-import { toast } from "#/components/ui/ToastRegion/toast";
 import { openDialog } from "#/lib/overlaySearch";
 
-import { useChannelLinkActions, useChannelLinks } from "../hooks/useChannelLinks";
+import { useChannelLinks } from "../hooks/useChannelLinks";
+import { ChannelLinkDeleteDialog } from "./ChannelLinkDeleteDialog";
+
+import type { ChannelLink } from "#/gen/chat/v1/channel_link_service_pb";
 
 type ChannelLinkBarProps = {
   channelId: string;
@@ -21,7 +25,7 @@ type ChannelLinkBarProps = {
 export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
   const { t } = useTranslation();
   const { data } = useChannelLinks(channelId);
-  const { remove } = useChannelLinkActions(channelId);
+  const [deleting, setDeleting] = useState<ChannelLink | null>(null);
   const navigate = useNavigate();
   const links = data?.links ?? [];
 
@@ -60,14 +64,7 @@ export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
                   icon={<IconTrash />}
                   tone="danger"
                   onAction={() => {
-                    remove.mutate(
-                      { linkId: link.id },
-                      {
-                        onSuccess: () => {
-                          toast(t("channel.links.deleted"));
-                        },
-                      },
-                    );
+                    setDeleting(link);
                   }}
                 >
                   {t("common.delete")}
@@ -92,6 +89,16 @@ export const ChannelLinkBar = ({ channelId }: ChannelLinkBarProps) => {
           <IconPlus />
         </IconButton>
       )}
+      <ChannelLinkDeleteDialog
+        channelId={channelId}
+        link={deleting}
+        onClose={() => {
+          setDeleting(null);
+        }}
+        onDeleted={() => {
+          setDeleting(null);
+        }}
+      />
     </nav>
   );
 };

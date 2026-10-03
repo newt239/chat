@@ -76,11 +76,12 @@ describe("CreateDMModal", () => {
 
   test("選んだ相手をチップで表示し、1 人なら DM を作って開く", async () => {
     const { createDM, router } = await setup();
-    expect(screen.getByText(/あなたを含めて 1 \/ 10 人/)).toBeInTheDocument();
-
     await pick("User 01");
-    expect(screen.getByText(/あなたを含めて 2 \/ 10 人/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "User 01 を外す" })).toBeInTheDocument();
+    const chip = screen.getByRole("button", { name: "User 01 を外す" });
+    // 選んでも一覧の位置がずれないよう、チップは一覧の後ろに並べる
+    expect(screen.getByRole("listbox").compareDocumentPosition(chip)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "DM を開始" }));
     await waitFor(() => {
@@ -114,7 +115,6 @@ describe("CreateDMModal", () => {
     for (const member of others.slice(0, 10)) {
       await pick(member.displayName);
     }
-    expect(screen.getByText(/あなたを含めて 11 \/ 10 人/)).toBeInTheDocument();
     expect(
       screen.getByText("10 人を超えるため、非公開チャンネルとして作成します。"),
     ).toBeInTheDocument();

@@ -24,7 +24,7 @@ export const ToastRegion = () => {
     <AriaToastRegion
       queue={toastQueue}
       aria-label={t("ui.toast.region")}
-      className="fixed bottom-5 left-1/2 max-md:bottom-[calc(88px+env(safe-area-inset-bottom))] z-toast flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
+      className="fixed bottom-5 left-1/2 max-md:bottom-[calc(76px+max(10px,env(safe-area-inset-bottom)))] z-toast flex -translate-x-1/2 flex-col items-center gap-1.5 outline-none"
     >
       {({ toast }) => (
         <Toast

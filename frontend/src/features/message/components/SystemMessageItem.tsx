@@ -18,11 +18,13 @@ import type { JsonValue } from "@bufbuild/protobuf";
 
 type SystemMessageItemProps = {
   message: SystemMessage;
+  // 参加のお知らせに添えるチャンネル名。null なら添えない
+  channelLabel: string | null;
 };
 
 const textOf = (value: JsonValue | undefined) => (typeof value === "string" ? value : "");
 
-export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
+export const SystemMessageItem = ({ message, channelLabel }: SystemMessageItemProps) => {
   const { t } = useTranslation();
   const { workspaceId } = useParams({ strict: false });
   const displayName = useDisplayName();
@@ -48,11 +50,14 @@ export const SystemMessageItem = ({ message }: SystemMessageItemProps) => {
     );
 
   const texts: Partial<Record<SystemMessageKind, ReactNode>> = {
-    [SystemMessageKind.MEMBER_JOINED]: t("message.system.memberJoined", { user }),
-    [SystemMessageKind.MEMBER_ADDED]: t("message.system.memberAdded", {
-      by: actor,
-      user,
-    }),
+    [SystemMessageKind.MEMBER_JOINED]:
+      channelLabel === null
+        ? t("message.system.memberJoined", { user })
+        : t("message.system.memberJoinedChannel", { channel: channelLabel, user }),
+    [SystemMessageKind.MEMBER_ADDED]:
+      channelLabel === null
+        ? t("message.system.memberAdded", { by: actor, user })
+        : t("message.system.memberAddedChannel", { by: actor, channel: channelLabel, user }),
     [SystemMessageKind.CHANNEL_PRIVACY_CHANGED]: t("message.system.privacyChanged", {
       from: from || "public",
       to: to || "public",
