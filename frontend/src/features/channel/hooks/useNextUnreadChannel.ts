@@ -15,7 +15,10 @@ export const useNextUnreadChannel = (workspaceId: string) => {
   const { data: channels = [] } = useChannels(workspaceId);
   const { data: dms = [] } = useDMs(workspaceId);
   const { data: categories = [] } = useChannelCategories(workspaceId);
-  const nextId = nextUnreadId(sidebarOrder(channels, dms, categories, channelSortOrder), channelId);
+  const nextId = nextUnreadId(
+    sidebarOrder({ categories, channels, dms, order: channelSortOrder }),
+    channelId,
+  );
 
   const goNext = () => {
     if (nextId !== undefined) {

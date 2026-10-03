@@ -22,19 +22,14 @@ const categories = [create(ChannelCategorySchema, { channelIds: ["work"], id: "c
 
 describe("sidebarOrder", () => {
   test("スター、カテゴリ、チャンネルのツリー、DM の順に重複なく並べる", () => {
-    expect(sidebarOrder(channels, dms, categories, "default").map(({ id }) => id)).toEqual([
-      "g",
-      "work",
-      "dev",
-      "fe",
-      "muted",
-      "dm",
-    ]);
+    expect(
+      sidebarOrder({ categories, channels, dms, order: "default" }).map(({ id }) => id),
+    ).toEqual(["g", "work", "dev", "fe", "muted", "dm"]);
   });
 });
 
 describe("nextUnreadId", () => {
-  const items = sidebarOrder(channels, dms, categories, "default");
+  const items = sidebarOrder({ categories, channels, dms, order: "default" });
 
   test("現在の会話より後ろの未読を返し、ミュート中は飛ばす", () => {
     expect(nextUnreadId(items, "fe")).toBe("dm");

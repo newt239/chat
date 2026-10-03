@@ -20,7 +20,7 @@ describe("LogoutConfirmDialog", () => {
 
   test("確定したときだけログアウトする", async () => {
     const logout = vi.fn(() => ({}));
-    const onOpenChange = vi.fn();
+    const onOpenChange = vi.fn<(isOpen: boolean) => void>();
     await renderWithProviders(
       <LogoutConfirmDialog isOpen onOpenChange={onOpenChange} />,
       "/app/ws1",

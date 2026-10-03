@@ -13,12 +13,12 @@ import type { DeleteChannelLinkRequest } from "#/gen/chat/v1/channel_link_servic
 describe("ChannelLinkDeleteDialog", () => {
   test("確定するとリンクを削除して onDeleted を呼ぶ", async () => {
     const remove = vi.fn<(req: DeleteChannelLinkRequest) => void>();
-    const onDeleted = vi.fn();
+    const onDeleted = vi.fn<() => void>();
     await renderWithProviders(
       <ChannelLinkDeleteDialog
         channelId="c1"
         link={create(ChannelLinkSchema, { id: "l1", title: "Figma" })}
-        onClose={vi.fn()}
+        onClose={vi.fn<() => void>()}
         onDeleted={onDeleted}
       />,
       "/app/ws1",

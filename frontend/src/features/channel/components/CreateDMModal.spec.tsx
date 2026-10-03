@@ -79,9 +79,9 @@ describe("CreateDMModal", () => {
     await pick("User 01");
     const chip = screen.getByRole("button", { name: "User 01 を外す" });
     // 選んでも一覧の位置がずれないよう、チップは一覧の後ろに並べる
-    expect(
-      screen.getByRole("listbox").compareDocumentPosition(chip) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(screen.getByRole("listbox").compareDocumentPosition(chip)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "DM を開始" }));
     await waitFor(() => {

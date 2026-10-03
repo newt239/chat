@@ -10,14 +10,23 @@ import type { Preferences } from "#/providers/store/preferences";
 const flatten = (nodes: ChannelTreeNode[]): Channel[] =>
   nodes.flatMap((node) => [node.channel, ...flatten(node.children)]);
 
-// サイドバーの上から順（スター → カテゴリ → チャンネル → DM）に会話を並べ、未読かを添える。2 か所に出る会話は先の位置だけ残す
 // ミュート中のチャンネルはメンションがあるときだけ未読とみなす
-export const sidebarOrder = (
-  channels: readonly Channel[],
-  dms: readonly DirectMessage[],
-  categories: readonly ChannelCategory[],
-  order: Preferences["channelSortOrder"],
-) => {
+const channelItem = (channel: Channel) => ({
+  id: channel.id,
+  isUnread: channel.mentionCount > 0 || (!channel.isMuted && channel.unreadCount > 0),
+});
+
+const dmItem = (dm: DirectMessage) => ({ id: dm.id, isUnread: !dm.isMuted && dm.unreadCount > 0 });
+
+type SidebarOrderInput = {
+  channels: readonly Channel[];
+  dms: readonly DirectMessage[];
+  categories: readonly ChannelCategory[];
+  order: Preferences["channelSortOrder"];
+};
+
+// サイドバーの上から順（スター → カテゴリ → チャンネル → DM）に会話を並べ、未読かを添える。2 か所に出る会話は先の位置だけ残す
+export const sidebarOrder = ({ channels, dms, categories, order }: SidebarOrderInput) => {
   const inCategory = (categoryId: string | null) => {
     const listed = channels.filter(
       (channel) => categoryOfChannel(channel, channels, categories) === categoryId,
@@ -26,20 +35,15 @@ export const sidebarOrder = (
       ? sortChannelsByActivity(listed)
       : flatten(buildChannelTree(listed));
   };
-  const toItem = (channel: Channel) => ({
-    id: channel.id,
-    isUnread: channel.mentionCount > 0 || (!channel.isMuted && channel.unreadCount > 0),
-  });
-  const toDMItem = (dm: DirectMessage) => ({
-    id: dm.id,
-    isUnread: !dm.isMuted && dm.unreadCount > 0,
-  });
   const all = [
-    ...channels.filter((channel) => channel.isStarred && channel.isMember).map(toItem),
-    ...dms.filter((dm) => dm.isStarred).map(toDMItem),
-    ...categories.flatMap((category) => inCategory(category.id)).map(toItem),
-    ...inCategory(null).map(toItem),
-    ...dms.map(toDMItem),
+    ...channels
+      .filter((channel) => channel.isStarred && channel.isMember)
+      .map((channel) => channelItem(channel)),
+    ...dms.filter((dm) => dm.isStarred).map((dm) => dmItem(dm)),
+    ...[...categories.flatMap((category) => inCategory(category.id)), ...inCategory(null)].map(
+      (channel) => channelItem(channel),
+    ),
+    ...dms.map((dm) => dmItem(dm)),
   ];
   return all.filter((item, index) => all.findIndex(({ id }) => id === item.id) === index);
 };
