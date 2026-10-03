@@ -45,10 +45,10 @@ func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error)
 	return &entity.User{ID: id, DisplayName: "name-" + id}, nil
 }
 
-func (stubUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
-	users := make([]*entity.User, 0, len(ids))
+func (stubUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
+	users := make(map[string]*entity.User, len(ids))
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, DisplayName: "name-" + id})
+		users[id] = &entity.User{ID: id, DisplayName: "name-" + id}
 	}
 	return users, nil
 }
@@ -68,8 +68,8 @@ type stubAuditLogRepo struct {
 	logs []*entity.AuditLog
 }
 
-func (r *stubAuditLogRepo) List(_ context.Context, _ entity.AuditLogFilter) (*entity.AuditLogPage, error) {
-	return &entity.AuditLogPage{Logs: r.logs}, nil
+func (r *stubAuditLogRepo) List(_ context.Context, _ entity.AuditLogFilter, _, offset int) ([]*entity.AuditLog, error) {
+	return r.logs[min(offset, len(r.logs)):], nil
 }
 
 type stubPermissionRepo struct {
@@ -116,13 +116,12 @@ func newFixture() *fixture {
 		closer:      &stubCloser{},
 	}
 	workspaceRepo := &stubWorkspaceRepo{members: f.members}
-	f.uc = NewInteractor(
+	f.uc = New(
 		workspaceRepo,
 		stubUserRepo{},
 		f.sessions,
 		f.auditLogs,
 		f.permissions,
-		nil,
 		domainservice.NewPermissionService(workspaceRepo, f.permissions),
 		f.recorder,
 		f.closer,

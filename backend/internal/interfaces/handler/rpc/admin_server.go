@@ -26,18 +26,16 @@ func auditLogQuery(ctx context.Context, req auditLogFilterRequest) adminuc.Audit
 	q := adminuc.AuditLogQuery{
 		WorkspaceID: req.GetWorkspaceId(),
 		RequesterID: userIDFrom(ctx),
-		Actions:     presenter.AuditActionNames(req.GetActions()),
+		Since:       optionalTime(req.GetSince()),
+		Until:       optionalTime(req.GetUntil()),
 	}
 	if actorID := req.GetActorId(); actorID != "" {
 		q.ActorID = &actorID
 	}
-	if since := req.GetSince(); since != nil {
-		t := since.AsTime()
-		q.Since = &t
-	}
-	if until := req.GetUntil(); until != nil {
-		t := until.AsTime()
-		q.Until = &t
+	for _, a := range req.GetActions() {
+		if action := fromProto(presenter.AuditActions, a); action != "" {
+			q.Actions = append(q.Actions, action)
+		}
 	}
 	return q
 }
@@ -68,18 +66,12 @@ func (s *AdminServer) ListAdminMembers(ctx context.Context, req *chatv1.ListAdmi
 
 func (s *AdminServer) SuspendMember(ctx context.Context, req *chatv1.SuspendMemberRequest) (*chatv1.SuspendMemberResponse, error) {
 	input := adminuc.MemberActionInput{WorkspaceID: req.WorkspaceId, TargetUserID: req.UserId, OperatorID: userIDFrom(ctx)}
-	if err := s.UC.SuspendMember(ctx, input); err != nil {
-		return nil, err
-	}
-	return &chatv1.SuspendMemberResponse{}, nil
+	return &chatv1.SuspendMemberResponse{}, s.UC.SuspendMember(ctx, input)
 }
 
 func (s *AdminServer) ResumeMember(ctx context.Context, req *chatv1.ResumeMemberRequest) (*chatv1.ResumeMemberResponse, error) {
 	input := adminuc.MemberActionInput{WorkspaceID: req.WorkspaceId, TargetUserID: req.UserId, OperatorID: userIDFrom(ctx)}
-	if err := s.UC.ResumeMember(ctx, input); err != nil {
-		return nil, err
-	}
-	return &chatv1.ResumeMemberResponse{}, nil
+	return &chatv1.ResumeMemberResponse{}, s.UC.ResumeMember(ctx, input)
 }
 
 type PermissionServer struct {
@@ -91,19 +83,15 @@ func (s *PermissionServer) GetPermissions(ctx context.Context, req *chatv1.GetPe
 	if err != nil {
 		return nil, err
 	}
-	return presenter.Permissions(*out), nil
+	return presenter.PermissionsResponse(*out), nil
 }
 
 func (s *PermissionServer) UpdatePermission(ctx context.Context, req *chatv1.UpdatePermissionRequest) (*chatv1.UpdatePermissionResponse, error) {
-	err := s.UC.UpdatePermission(ctx, adminuc.UpdatePermissionInput{
+	return &chatv1.UpdatePermissionResponse{}, s.UC.UpdatePermission(ctx, adminuc.UpdatePermissionInput{
 		WorkspaceID: req.WorkspaceId,
 		OperatorID:  userIDFrom(ctx),
-		Role:        presenter.WorkspaceRoleFromProto(req.Role),
-		Permission:  presenter.PermissionName(req.Permission),
+		Role:        fromProto(presenter.WorkspaceRoles, req.Role),
+		Permission:  fromProto(presenter.Permissions, req.Permission),
 		Allowed:     req.Allowed,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.UpdatePermissionResponse{}, nil
 }

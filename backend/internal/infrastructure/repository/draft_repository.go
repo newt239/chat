@@ -14,7 +14,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type draftRepository struct {
@@ -31,23 +30,15 @@ type draftKey struct {
 }
 
 func parseDraftTarget(t domainrepository.DraftTarget) (draftKey, error) {
-	userID, err := utils.ParseUUID(t.UserID, "user ID")
+	userID, err := parseUUID(t.UserID, "user ID")
 	if err != nil {
 		return draftKey{}, err
 	}
-	channelID, err := utils.ParseUUID(t.ChannelID, "channel ID")
+	channelID, err := parseUUID(t.ChannelID, "channel ID")
 	if err != nil {
 		return draftKey{}, err
 	}
-	key := draftKey{userID: userID, channelID: channelID}
-	if t.ParentID != nil {
-		parentID, err := utils.ParseUUID(*t.ParentID, "parent ID")
-		if err != nil {
-			return draftKey{}, err
-		}
-		key.parentID = &parentID
-	}
-	return key, nil
+	return draftKey{userID: userID, channelID: channelID, parentID: parseUUIDPtr(t.ParentID)}, nil
 }
 
 func (k draftKey) predicate() predicate.Draft {
@@ -63,18 +54,15 @@ func (r *draftRepository) Find(ctx context.Context, target domainrepository.Draf
 	if err != nil {
 		return nil, err
 	}
-	d, err := transaction.ResolveClient(ctx, r.client).Draft.Query().Where(key.predicate()).Only(ctx)
-	if ent.IsNotFound(err) {
-		return nil, nil
-	}
-	if err != nil {
+	d, err := orNil(transaction.ResolveClient(ctx, r.client).Draft.Query().Where(key.predicate()).Only(ctx))
+	if d == nil {
 		return nil, err
 	}
 	return draftToEntity(d), nil
 }
 
 func (r *draftRepository) FindByWorkspace(ctx context.Context, userID string, workspaceID string) ([]*entity.Draft, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +73,7 @@ func (r *draftRepository) FindByWorkspace(ctx context.Context, userID string, wo
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*entity.Draft, 0, len(drafts))
-	for _, d := range drafts {
-		result = append(result, draftToEntity(d))
-	}
-	return result, nil
+	return convertAll(drafts, draftToEntity), nil
 }
 
 func (r *draftRepository) Upsert(ctx context.Context, d *entity.Draft) error {
@@ -133,16 +117,11 @@ func (r *draftRepository) Delete(ctx context.Context, target domainrepository.Dr
 }
 
 func draftToEntity(d *ent.Draft) *entity.Draft {
-	var parentID *string
-	if d.ParentID != nil {
-		pid := d.ParentID.String()
-		parentID = &pid
-	}
 	return &entity.Draft{
 		ID:        d.ID.String(),
 		UserID:    d.UserID.String(),
 		ChannelID: d.ChannelID.String(),
-		ParentID:  parentID,
+		ParentID:  optionalString(d.ParentID),
 		Body:      d.Body,
 		UpdatedAt: d.UpdatedAt,
 	}

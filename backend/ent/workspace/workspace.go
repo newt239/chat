@@ -36,10 +36,6 @@ const (
 	EdgeCreatedBy = "created_by"
 	// EdgeMembers holds the string denoting the members edge name in mutations.
 	EdgeMembers = "members"
-	// EdgeChannels holds the string denoting the channels edge name in mutations.
-	EdgeChannels = "channels"
-	// EdgeUserGroups holds the string denoting the user_groups edge name in mutations.
-	EdgeUserGroups = "user_groups"
 	// Table holds the table name of the workspace in the database.
 	Table = "workspace"
 	// CreatedByTable is the table that holds the created_by relation/edge.
@@ -56,20 +52,6 @@ const (
 	MembersInverseTable = "workspace_member"
 	// MembersColumn is the table column denoting the members relation/edge.
 	MembersColumn = "workspace_id"
-	// ChannelsTable is the table that holds the channels relation/edge.
-	ChannelsTable = "channel"
-	// ChannelsInverseTable is the table name for the Channel entity.
-	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	ChannelsInverseTable = "channel"
-	// ChannelsColumn is the table column denoting the channels relation/edge.
-	ChannelsColumn = "workspace_id"
-	// UserGroupsTable is the table that holds the user_groups relation/edge.
-	UserGroupsTable = "user_group"
-	// UserGroupsInverseTable is the table name for the UserGroup entity.
-	// It exists in this package in order to avoid circular dependency with the "usergroup" package.
-	UserGroupsInverseTable = "user_group"
-	// UserGroupsColumn is the table column denoting the user_groups relation/edge.
-	UserGroupsColumn = "workspace_id"
 )
 
 // Columns holds all SQL columns for workspace fields.
@@ -188,34 +170,6 @@ func ByMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByChannelsCount orders the results by channels count.
-func ByChannelsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newChannelsStep(), opts...)
-	}
-}
-
-// ByChannels orders the results by channels terms.
-func ByChannels(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newChannelsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByUserGroupsCount orders the results by user_groups count.
-func ByUserGroupsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUserGroupsStep(), opts...)
-	}
-}
-
-// ByUserGroups orders the results by user_groups terms.
-func ByUserGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newCreatedByStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -228,19 +182,5 @@ func newMembersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MembersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, MembersTable, MembersColumn),
-	)
-}
-func newChannelsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ChannelsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ChannelsTable, ChannelsColumn),
-	)
-}
-func newUserGroupsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserGroupsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, UserGroupsTable, UserGroupsColumn),
 	)
 }

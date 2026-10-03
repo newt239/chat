@@ -2,12 +2,10 @@ package redis
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
-
-	"github.com/newt239/chat/internal/domain/service"
-	"github.com/newt239/chat/internal/infrastructure/logger"
 )
 
 // tokenBucketScript はトークンバケットの補充と消費をアトミックに行い、{許可なら 1, 待つべきミリ秒} を返す
@@ -54,7 +52,7 @@ func (l *RateLimiter) Allow(ctx context.Context, key string) (bool, time.Duratio
 	res, err := tokenBucketScript.Run(ctx, l.client, []string{"chat:ratelimit:" + l.prefix + ":" + key},
 		l.rate, l.burst, l.now().UnixMilli()).Int64Slice()
 	if err != nil || len(res) != 2 {
-		logger.NewLogger().Warn("レート制限を Redis で確認できないため受け付けます", service.LogField{Key: "error", Value: err})
+		slog.WarnContext(ctx, "レート制限を Redis で確認できないため受け付けます", "error", err)
 		return true, 0
 	}
 	return res[0] == 1, time.Duration(res[1]) * time.Millisecond

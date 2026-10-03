@@ -87,10 +87,10 @@ func (stubTxManager) Do(ctx context.Context, fn func(ctx context.Context) error)
 	return fn(ctx)
 }
 
-func newInteractor() (UseCase, *fakeLinkRepo) {
+func newInteractor() (*Interactor, *fakeLinkRepo) {
 	repo := &fakeLinkRepo{}
 	permissionSvc := domainservice.NewPermissionService(stubWorkspaceRepo{}, stubPermissionRepo{})
-	return NewInteractor(repo, stubAccess{}, permissionSvc, stubTxManager{}), repo
+	return New(repo, stubAccess{}, permissionSvc, stubTxManager{}), repo
 }
 
 func TestCreateLinkPermission(t *testing.T) {
@@ -98,20 +98,20 @@ func TestCreateLinkPermission(t *testing.T) {
 	ctx := context.Background()
 
 	for _, userID := range []string{memberID, adminID} {
-		if _, err := uc.Create(ctx, CreateInput{ChannelID: channelID, UserID: userID, Title: userID, URL: "https://example.com"}); err != nil {
+		if _, err := uc.Create(ctx, LinkInput{ID: channelID, UserID: userID, Title: userID, URL: "https://example.com"}); err != nil {
 			t.Fatalf("%s がリンクを追加できません: %v", userID, err)
 		}
 	}
-	if _, err := uc.Create(ctx, CreateInput{ChannelID: channelID, UserID: guestID, Title: "x", URL: "https://example.com"}); !errors.Is(err, domerr.ErrUnauthorized) {
+	if _, err := uc.Create(ctx, LinkInput{ID: channelID, UserID: guestID, Title: "x", URL: "https://example.com"}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("既定ではゲストがリンクを追加できないはず: %v", err)
 	}
 	if repo.links[1].Position != 1 {
 		t.Fatalf("新しいリンクが末尾に追加されていません: %d", repo.links[1].Position)
 	}
 
-	list, err := uc.List(ctx, ListInput{ChannelID: channelID, UserID: guestID})
-	if err != nil || list.CanEdit || len(list.Links) != 2 {
-		t.Fatalf("閲覧のみのユーザーへの一覧が正しくありません: %+v err=%v", list, err)
+	links, canEdit, err := uc.List(ctx, channelID, guestID)
+	if err != nil || canEdit || len(links) != 2 {
+		t.Fatalf("閲覧のみのユーザーへの一覧が正しくありません: %+v err=%v", links, err)
 	}
 }
 
@@ -119,12 +119,12 @@ func TestReorderLinks(t *testing.T) {
 	uc, _ := newInteractor()
 	ctx := context.Background()
 	for _, title := range []string{"a", "b", "c"} {
-		if _, err := uc.Create(ctx, CreateInput{ChannelID: channelID, UserID: memberID, Title: title, URL: "https://example.com"}); err != nil {
+		if _, err := uc.Create(ctx, LinkInput{ID: channelID, UserID: memberID, Title: title, URL: "https://example.com"}); err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	out, err := uc.Reorder(ctx, ReorderInput{ChannelID: channelID, UserID: memberID, LinkIDs: []string{"c", "a", "b"}})
+	out, err := uc.Reorder(ctx, channelID, memberID, []string{"c", "a", "b"})
 	if err != nil {
 		t.Fatalf("並び替えできません: %v", err)
 	}
@@ -132,7 +132,7 @@ func TestReorderLinks(t *testing.T) {
 		t.Fatalf("並び順が反映されていません: %+v", out)
 	}
 
-	_, err = uc.Reorder(ctx, ReorderInput{ChannelID: channelID, UserID: memberID, LinkIDs: []string{"c", "a"}})
+	_, err = uc.Reorder(ctx, channelID, memberID, []string{"c", "a"})
 	if !errors.Is(err, domerr.ErrValidation) {
 		t.Fatalf("一部のリンクだけの並び替えが拒否されていません: %v", err)
 	}

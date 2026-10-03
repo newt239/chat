@@ -17,7 +17,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 // 検索用文書は関連テーブルを配列やフラグにまとめて 1 本の SQL で読む。WHERE 句は呼び出し側で足す
@@ -36,17 +35,16 @@ const searchDocumentSQL = `
 	WHERE m.deleted_at IS NULL AND `
 
 func (r *messageRepository) FindSearchScope(ctx context.Context, workspaceID string, userID string) (*domainrepository.MessageSearchScope, error) {
-	uid, err := utils.ParseUUID(userID, "user ID")
+	uid, err := parseUUID(userID, "user ID")
 	if err != nil {
 		return nil, err
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	viewable, err := client.Channel.Query().Where(viewableChannel(workspaceID, uid)).IDs(ctx)
+	viewable, err := transaction.ResolveClient(ctx, r.client).Channel.Query().Where(viewableChannel(workspaceID, uid)).IDs(ctx)
 	if err != nil {
 		return nil, err
 	}
-	joined, err := client.Channel.Query().
+	joined, err := transaction.ResolveClient(ctx, r.client).Channel.Query().
 		Where(channel.WorkspaceID(workspaceID), channel.HasMembersWith(channelmember.UserID(uid))).
 		IDs(ctx)
 	if err != nil {
@@ -63,7 +61,7 @@ func (r *messageRepository) FindSearchDocuments(ctx context.Context, messageIDs 
 	if len(messageIDs) == 0 {
 		return []domainrepository.MessageSearchDocument{}, nil
 	}
-	if _, err := utils.ParseUUIDs(messageIDs, "message ID"); err != nil {
+	if _, err := parseUUIDs(messageIDs, "message ID"); err != nil {
 		return nil, err
 	}
 	return r.querySearchDocuments(ctx, "m.id = ANY($1::uuid[])", pq.Array(messageIDs))
@@ -72,7 +70,7 @@ func (r *messageRepository) FindSearchDocuments(ctx context.Context, messageIDs 
 func (r *messageRepository) FindSearchDocumentsAfter(ctx context.Context, afterID string, limit int) ([]domainrepository.MessageSearchDocument, error) {
 	after := uuid.Nil
 	if afterID != "" {
-		parsed, err := utils.ParseUUID(afterID, "message ID")
+		parsed, err := parseUUID(afterID, "message ID")
 		if err != nil {
 			return nil, err
 		}
@@ -119,8 +117,7 @@ func (r *messageRepository) querySearchDocuments(ctx context.Context, where stri
 			CreatedAt:         createdAt,
 		}
 		if parentID.Valid {
-			pid := parentID.UUID.String()
-			doc.ParentID = &pid
+			doc.ParentID = new(parentID.UUID.String())
 		}
 		docs = append(docs, doc)
 	}
@@ -157,16 +154,8 @@ func contentKinds(body string, mimeTypes []string, hasLink, hasLocation bool) []
 	return kinds
 }
 
-func uuidStrings(ids []uuid.UUID) []string {
-	result := make([]string, len(ids))
-	for i, id := range ids {
-		result[i] = id.String()
-	}
-	return result
-}
-
 func (r *messageRepository) FindMentions(ctx context.Context, input domainrepository.FindMentionsInput) ([]*entity.Message, error) {
-	userID, err := utils.ParseUUID(input.UserID, "user ID")
+	userID, err := parseUUID(input.UserID, "user ID")
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +167,7 @@ func (r *messageRepository) FindMentions(ctx context.Context, input domainreposi
 		mentionsUser(userID),
 	}
 	if input.Cursor != nil {
-		cursorID, err := utils.ParseUUID(input.Cursor.MessageID, "cursor message ID")
+		cursorID, err := parseUUID(input.Cursor.MessageID, "cursor message ID")
 		if err != nil {
 			return nil, err
 		}
@@ -188,8 +177,7 @@ func (r *messageRepository) FindMentions(ctx context.Context, input domainreposi
 		))
 	}
 
-	client := transaction.ResolveClient(ctx, r.client)
-	messages, err := client.Message.Query().
+	messages, err := r.query(ctx).
 		Where(preds...).
 		Order(ent.Desc(message.FieldCreatedAt), ent.Desc(message.FieldID)).
 		Limit(input.Limit).
@@ -197,7 +185,7 @@ func (r *messageRepository) FindMentions(ctx context.Context, input domainreposi
 	if err != nil {
 		return nil, err
 	}
-	return toMessageEntities(messages), nil
+	return convertAll(messages, messageToEntity), nil
 }
 
 // viewableChannel はワークスペース内の公開チャンネルと、参加している非公開チャンネル（DM を含む）に一致します

@@ -74,12 +74,6 @@ func init() {
 	appDescCreatedAt := appFields[14].Descriptor()
 	// app.DefaultCreatedAt holds the default value on creation for the created_at field.
 	app.DefaultCreatedAt = appDescCreatedAt.Default.(func() time.Time)
-	// appDescUpdatedAt is the schema descriptor for updated_at field.
-	appDescUpdatedAt := appFields[15].Descriptor()
-	// app.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	app.DefaultUpdatedAt = appDescUpdatedAt.Default.(func() time.Time)
-	// app.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	app.UpdateDefaultUpdatedAt = appDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// appDescID is the schema descriptor for id field.
 	appDescID := appFields[0].Descriptor()
 	// app.DefaultID holds the default value on creation for the id field.
@@ -107,7 +101,7 @@ func init() {
 	// attachment.DefaultStatus holds the default value on creation for the status field.
 	attachment.DefaultStatus = attachmentDescStatus.Default.(string)
 	// attachmentDescCreatedAt is the schema descriptor for created_at field.
-	attachmentDescCreatedAt := attachmentFields[17].Descriptor()
+	attachmentDescCreatedAt := attachmentFields[15].Descriptor()
 	// attachment.DefaultCreatedAt holds the default value on creation for the created_at field.
 	attachment.DefaultCreatedAt = attachmentDescCreatedAt.Default.(func() time.Time)
 	// attachmentDescID is the schema descriptor for id field.
@@ -163,11 +157,11 @@ func init() {
 	// channel.DefaultChannelType holds the default value on creation for the channel_type field.
 	channel.DefaultChannelType = channelDescChannelType.Default.(string)
 	// channelDescCreatedAt is the schema descriptor for created_at field.
-	channelDescCreatedAt := channelFields[9].Descriptor()
+	channelDescCreatedAt := channelFields[8].Descriptor()
 	// channel.DefaultCreatedAt holds the default value on creation for the created_at field.
 	channel.DefaultCreatedAt = channelDescCreatedAt.Default.(func() time.Time)
 	// channelDescUpdatedAt is the schema descriptor for updated_at field.
-	channelDescUpdatedAt := channelFields[10].Descriptor()
+	channelDescUpdatedAt := channelFields[9].Descriptor()
 	// channel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	channel.DefaultUpdatedAt = channelDescUpdatedAt.Default.(func() time.Time)
 	// channel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -384,10 +378,6 @@ func init() {
 	messagebookmark.DefaultID = messagebookmarkDescID.Default.(func() uuid.UUID)
 	messagegroupmentionFields := schema.MessageGroupMention{}.Fields()
 	_ = messagegroupmentionFields
-	// messagegroupmentionDescCreatedAt is the schema descriptor for created_at field.
-	messagegroupmentionDescCreatedAt := messagegroupmentionFields[3].Descriptor()
-	// messagegroupmention.DefaultCreatedAt holds the default value on creation for the created_at field.
-	messagegroupmention.DefaultCreatedAt = messagegroupmentionDescCreatedAt.Default.(func() time.Time)
 	// messagegroupmentionDescID is the schema descriptor for id field.
 	messagegroupmentionDescID := messagegroupmentionFields[0].Descriptor()
 	// messagegroupmention.DefaultID holds the default value on creation for the id field.
@@ -432,10 +422,6 @@ func init() {
 	messagereaction.DefaultID = messagereactionDescID.Default.(func() uuid.UUID)
 	messageusermentionFields := schema.MessageUserMention{}.Fields()
 	_ = messageusermentionFields
-	// messageusermentionDescCreatedAt is the schema descriptor for created_at field.
-	messageusermentionDescCreatedAt := messageusermentionFields[4].Descriptor()
-	// messageusermention.DefaultCreatedAt holds the default value on creation for the created_at field.
-	messageusermention.DefaultCreatedAt = messageusermentionDescCreatedAt.Default.(func() time.Time)
 	// messageusermentionDescID is the schema descriptor for id field.
 	messageusermentionDescID := messageusermentionFields[0].Descriptor()
 	// messageusermention.DefaultID holds the default value on creation for the id field.
@@ -492,10 +478,6 @@ func init() {
 	pushtokenDescLastSeenAt := pushtokenFields[5].Descriptor()
 	// pushtoken.DefaultLastSeenAt holds the default value on creation for the last_seen_at field.
 	pushtoken.DefaultLastSeenAt = pushtokenDescLastSeenAt.Default.(func() time.Time)
-	// pushtokenDescCreatedAt is the schema descriptor for created_at field.
-	pushtokenDescCreatedAt := pushtokenFields[6].Descriptor()
-	// pushtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
-	pushtoken.DefaultCreatedAt = pushtokenDescCreatedAt.Default.(func() time.Time)
 	// pushtokenDescID is the schema descriptor for id field.
 	pushtokenDescID := pushtokenFields[0].Descriptor()
 	// pushtoken.DefaultID holds the default value on creation for the id field.
@@ -578,16 +560,6 @@ func init() {
 	threadreadstateDescLastReadAt := threadreadstateFields[3].Descriptor()
 	// threadreadstate.DefaultLastReadAt holds the default value on creation for the last_read_at field.
 	threadreadstate.DefaultLastReadAt = threadreadstateDescLastReadAt.Default.(func() time.Time)
-	// threadreadstateDescCreatedAt is the schema descriptor for created_at field.
-	threadreadstateDescCreatedAt := threadreadstateFields[4].Descriptor()
-	// threadreadstate.DefaultCreatedAt holds the default value on creation for the created_at field.
-	threadreadstate.DefaultCreatedAt = threadreadstateDescCreatedAt.Default.(func() time.Time)
-	// threadreadstateDescUpdatedAt is the schema descriptor for updated_at field.
-	threadreadstateDescUpdatedAt := threadreadstateFields[5].Descriptor()
-	// threadreadstate.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	threadreadstate.DefaultUpdatedAt = threadreadstateDescUpdatedAt.Default.(func() time.Time)
-	// threadreadstate.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	threadreadstate.UpdateDefaultUpdatedAt = threadreadstateDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// threadreadstateDescID is the schema descriptor for id field.
 	threadreadstateDescID := threadreadstateFields[0].Descriptor()
 	// threadreadstate.DefaultID holds the default value on creation for the id field.

@@ -59,7 +59,6 @@ type messageDocument struct {
 	CreatedAt         int64                                 `json:"created_at"`
 }
 
-// EnsureSettings はインデックスを作成し、検索に必要な設定が反映されるまで待ちます
 func (i *MessageIndex) EnsureSettings(ctx context.Context) error {
 	task, err := i.index.UpdateSettingsWithContext(ctx, messageIndexSettings)
 	if err != nil {
@@ -68,7 +67,6 @@ func (i *MessageIndex) EnsureSettings(ctx context.Context) error {
 	return i.wait(ctx, task)
 }
 
-// IsEmpty はインデックスに文書が 1 件もないかを返します
 func (i *MessageIndex) IsEmpty(ctx context.Context) (bool, error) {
 	stats, err := i.index.GetStatsWithContext(ctx, nil)
 	if err != nil {

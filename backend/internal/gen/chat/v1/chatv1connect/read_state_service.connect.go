@@ -36,15 +36,11 @@ const (
 	// ReadStateServiceUpdateReadStateProcedure is the fully-qualified name of the ReadStateService's
 	// UpdateReadState RPC.
 	ReadStateServiceUpdateReadStateProcedure = "/chat.v1.ReadStateService/UpdateReadState"
-	// ReadStateServiceGetUnreadCountProcedure is the fully-qualified name of the ReadStateService's
-	// GetUnreadCount RPC.
-	ReadStateServiceGetUnreadCountProcedure = "/chat.v1.ReadStateService/GetUnreadCount"
 )
 
 // ReadStateServiceClient is a client for the chat.v1.ReadStateService service.
 type ReadStateServiceClient interface {
 	UpdateReadState(context.Context, *v1.UpdateReadStateRequest) (*v1.UpdateReadStateResponse, error)
-	GetUnreadCount(context.Context, *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error)
 }
 
 // NewReadStateServiceClient constructs a client for the chat.v1.ReadStateService service. By
@@ -64,19 +60,12 @@ func NewReadStateServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(readStateServiceMethods.ByName("UpdateReadState")),
 			connect.WithClientOptions(opts...),
 		),
-		getUnreadCount: connect.NewClient[v1.GetUnreadCountRequest, v1.GetUnreadCountResponse](
-			httpClient,
-			baseURL+ReadStateServiceGetUnreadCountProcedure,
-			connect.WithSchema(readStateServiceMethods.ByName("GetUnreadCount")),
-			connect.WithClientOptions(opts...),
-		),
 	}
 }
 
 // readStateServiceClient implements ReadStateServiceClient.
 type readStateServiceClient struct {
 	updateReadState *connect.Client[v1.UpdateReadStateRequest, v1.UpdateReadStateResponse]
-	getUnreadCount  *connect.Client[v1.GetUnreadCountRequest, v1.GetUnreadCountResponse]
 }
 
 // UpdateReadState calls chat.v1.ReadStateService.UpdateReadState.
@@ -88,19 +77,9 @@ func (c *readStateServiceClient) UpdateReadState(ctx context.Context, req *v1.Up
 	return nil, err
 }
 
-// GetUnreadCount calls chat.v1.ReadStateService.GetUnreadCount.
-func (c *readStateServiceClient) GetUnreadCount(ctx context.Context, req *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error) {
-	response, err := c.getUnreadCount.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
 // ReadStateServiceHandler is an implementation of the chat.v1.ReadStateService service.
 type ReadStateServiceHandler interface {
 	UpdateReadState(context.Context, *v1.UpdateReadStateRequest) (*v1.UpdateReadStateResponse, error)
-	GetUnreadCount(context.Context, *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error)
 }
 
 // NewReadStateServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -116,18 +95,10 @@ func NewReadStateServiceHandler(svc ReadStateServiceHandler, opts ...connect.Han
 		connect.WithSchema(readStateServiceMethods.ByName("UpdateReadState")),
 		connect.WithHandlerOptions(opts...),
 	)
-	readStateServiceGetUnreadCountHandler := connect.NewUnaryHandlerSimple(
-		ReadStateServiceGetUnreadCountProcedure,
-		svc.GetUnreadCount,
-		connect.WithSchema(readStateServiceMethods.ByName("GetUnreadCount")),
-		connect.WithHandlerOptions(opts...),
-	)
 	return "/chat.v1.ReadStateService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ReadStateServiceUpdateReadStateProcedure:
 			readStateServiceUpdateReadStateHandler.ServeHTTP(w, r)
-		case ReadStateServiceGetUnreadCountProcedure:
-			readStateServiceGetUnreadCountHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -139,8 +110,4 @@ type UnimplementedReadStateServiceHandler struct{}
 
 func (UnimplementedReadStateServiceHandler) UpdateReadState(context.Context, *v1.UpdateReadStateRequest) (*v1.UpdateReadStateResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReadStateService.UpdateReadState is not implemented"))
-}
-
-func (UnimplementedReadStateServiceHandler) GetUnreadCount(context.Context, *v1.GetUnreadCountRequest) (*v1.GetUnreadCountResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReadStateService.GetUnreadCount is not implemented"))
 }

@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
@@ -12,7 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// MessageGroupMention holds the schema definition for the MessageGroupMention entity.
 type MessageGroupMention struct {
 	ent.Schema
 }
@@ -21,7 +18,6 @@ func (MessageGroupMention) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "message_group_mention"}}
 }
 
-// Fields of the MessageGroupMention.
 func (MessageGroupMention) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -29,13 +25,9 @@ func (MessageGroupMention) Fields() []ent.Field {
 			Immutable(),
 		field.UUID("message_id", uuid.UUID{}),
 		field.UUID("group_id", uuid.UUID{}),
-		field.Time("created_at").
-			Default(time.Now).
-			Immutable(),
 	}
 }
 
-// Edges of the MessageGroupMention.
 func (MessageGroupMention) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("message", Message.Type).
@@ -49,7 +41,6 @@ func (MessageGroupMention) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the MessageGroupMention.
 func (MessageGroupMention) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("message_id"),

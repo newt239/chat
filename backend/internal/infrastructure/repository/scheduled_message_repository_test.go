@@ -29,7 +29,7 @@ func TestScheduledMessageClaimDueSkipsLockedRows(t *testing.T) {
 	future := schedule(now.Add(time.Hour))
 
 	// 1 つ目のトランザクションが取り出して確定させる前は、他のワーカーには見えない
-	err := transaction.NewTransactionManager(client).Do(ctx, func(txCtx context.Context) error {
+	err := transaction.NewManager(client).Do(ctx, func(txCtx context.Context) error {
 		claimed, err := repo.ClaimDue(txCtx, now, now.Add(-time.Hour), 10)
 		if err != nil {
 			return err

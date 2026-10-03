@@ -8,27 +8,22 @@ import (
 	adminuc "github.com/newt239/chat/internal/usecase/admin"
 )
 
-var auditActions = map[entity.AuditAction]chatv1.AuditAction{
+var AuditActions = map[entity.AuditAction]chatv1.AuditAction{
 	entity.AuditActionLogin:              chatv1.AuditAction_AUDIT_ACTION_LOGIN,
 	entity.AuditActionLoginFailed:        chatv1.AuditAction_AUDIT_ACTION_LOGIN_FAILED,
 	entity.AuditActionMemberRoleChanged:  chatv1.AuditAction_AUDIT_ACTION_MEMBER_ROLE_CHANGED,
 	entity.AuditActionMemberSuspended:    chatv1.AuditAction_AUDIT_ACTION_MEMBER_SUSPENDED,
 	entity.AuditActionMemberResumed:      chatv1.AuditAction_AUDIT_ACTION_MEMBER_RESUMED,
 	entity.AuditActionChannelCreated:     chatv1.AuditAction_AUDIT_ACTION_CHANNEL_CREATED,
-	entity.AuditActionChannelDeleted:     chatv1.AuditAction_AUDIT_ACTION_CHANNEL_DELETED,
-	entity.AuditActionChannelArchived:    chatv1.AuditAction_AUDIT_ACTION_CHANNEL_ARCHIVED,
-	entity.AuditActionChannelUnarchived:  chatv1.AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED,
 	entity.AuditActionPermissionChanged:  chatv1.AuditAction_AUDIT_ACTION_PERMISSION_CHANGED,
 	entity.AuditActionAuditLogExported:   chatv1.AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED,
-	entity.AuditActionWebhookCreated:     chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_CREATED,
-	entity.AuditActionWebhookDeleted:     chatv1.AuditAction_AUDIT_ACTION_WEBHOOK_DELETED,
 	entity.AuditActionCustomEmojiCreated: chatv1.AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_CREATED,
 	entity.AuditActionCustomEmojiDeleted: chatv1.AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_DELETED,
 	entity.AuditActionAppCreated:         chatv1.AuditAction_AUDIT_ACTION_APP_CREATED,
 	entity.AuditActionAppDeleted:         chatv1.AuditAction_AUDIT_ACTION_APP_DELETED,
 }
 
-var permissions = map[entity.Permission]chatv1.Permission{
+var Permissions = map[entity.Permission]chatv1.Permission{
 	entity.PermissionCreatePublicChannel:  chatv1.Permission_PERMISSION_CREATE_PUBLIC_CHANNEL,
 	entity.PermissionCreatePrivateChannel: chatv1.Permission_PERMISSION_CREATE_PRIVATE_CHANNEL,
 	entity.PermissionInviteMembers:        chatv1.Permission_PERMISSION_INVITE_MEMBERS,
@@ -38,26 +33,10 @@ var permissions = map[entity.Permission]chatv1.Permission{
 	entity.PermissionCreateCustomEmoji:    chatv1.Permission_PERMISSION_CREATE_CUSTOM_EMOJI,
 }
 
-// AuditActionNames はリクエストの操作の種類をユースケースが扱う値に変換します
-func AuditActionNames(actions []chatv1.AuditAction) []entity.AuditAction {
-	names := make([]entity.AuditAction, 0, len(actions))
-	for _, a := range actions {
-		if name := reverseLookup(auditActions, a); name != "" {
-			names = append(names, name)
-		}
-	}
-	return names
-}
-
-// PermissionName はリクエストの権限をユースケースが扱う値に変換します
-func PermissionName(p chatv1.Permission) entity.Permission {
-	return reverseLookup(permissions, p)
-}
-
 func AuditLog(l adminuc.AuditLogOutput) *chatv1.AuditLog {
 	log := &chatv1.AuditLog{
 		Id:          l.ID,
-		Action:      auditActions[l.Action],
+		Action:      AuditActions[l.Action],
 		TargetType:  string(l.TargetType),
 		TargetId:    l.TargetID,
 		TargetLabel: l.TargetLabel,
@@ -78,7 +57,7 @@ func AdminMember(m adminuc.MemberOutput) *chatv1.AdminMember {
 		Email:              m.Email,
 		DisplayName:        m.DisplayName,
 		AvatarUrl:          m.AvatarURL,
-		Role:               workspaceRoles[m.Role],
+		Role:               WorkspaceRoles[m.Role],
 		JoinedAt:           timestamppb.New(m.JoinedAt),
 		SuspendedAt:        optionalTimestamp(m.SuspendedAt),
 		RecentMessageCount: int32(m.Activity.MessageCount),
@@ -93,20 +72,20 @@ func AdminMember(m adminuc.MemberOutput) *chatv1.AdminMember {
 	return member
 }
 
-func Permissions(out adminuc.PermissionsOutput) *chatv1.GetPermissionsResponse {
+func PermissionsResponse(out adminuc.PermissionsOutput) *chatv1.GetPermissionsResponse {
 	res := &chatv1.GetPermissionsResponse{}
 	for _, role := range entity.ConfigurableRoles {
 		for _, p := range entity.AllPermissions {
 			res.Grants = append(res.Grants, &chatv1.PermissionGrant{
-				Role:       workspaceRoles[role],
-				Permission: permissions[p],
+				Role:       WorkspaceRoles[role],
+				Permission: Permissions[p],
 				Allowed:    out.Matrix.Allows(role, p),
 			})
 		}
 	}
 	for _, p := range entity.AllPermissions {
 		if out.Matrix.Allows(out.RequesterRole, p) {
-			res.MyPermissions = append(res.MyPermissions, permissions[p])
+			res.MyPermissions = append(res.MyPermissions, Permissions[p])
 		}
 	}
 	return res

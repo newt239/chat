@@ -6,16 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"google.golang.org/protobuf/encoding/protojson"
+
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	"github.com/newt239/chat/internal/domain/service"
-
-	"github.com/alicebob/miniredis/v2"
-	goredis "github.com/redis/go-redis/v9"
-	"google.golang.org/protobuf/encoding/protojson"
-
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
-	"github.com/newt239/chat/internal/infrastructure/redis"
 	"github.com/newt239/chat/internal/interfaces/handler/websocket"
 )
 
@@ -32,30 +28,12 @@ func (a stubAccess) EnsureChannelAccess(_ context.Context, channelID, userID str
 	return &entity.Channel{ID: channelID, WorkspaceID: "ws"}, nil
 }
 
-// startReplicas は同じ Redis を共有する 2 つのハブを、レプリカに見立てて起動します
 func startReplicas(t *testing.T) (*websocket.Hub, *websocket.Hub) {
-	t.Helper()
-	mr := miniredis.RunT(t)
-	rdb := goredis.NewClient(&goredis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
-
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-	hubs := make([]*websocket.Hub, 2)
-	for i := range hubs {
-		hubs[i] = websocket.NewHub(stubAccess{denied: "alice"}, websocket.WithBroker(redis.NewBroker(rdb)), websocket.WithPresenceStore(redis.NewPresenceStore(rdb)))
-		go hubs[i].Run(ctx)
-	}
-
-	deadline := time.Now().Add(2 * time.Second)
-	for mr.PubSubNumSub("chat:ws:events")["chat:ws:events"] < len(hubs) {
-		if time.Now().After(deadline) {
-			t.Fatal("ハブが Redis を購読しませんでした")
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
+	hubs := websocket.StartTestHubs(t, stubAccess{denied: "alice"}, 2)
 	return hubs[0], hubs[1]
 }
+
+var testEvent = &chatv1.ServerEvent{Event: &chatv1.ServerEvent_Ack{Ack: &chatv1.AckEvent{Event: "test"}}}
 
 func receive(t *testing.T, c *websocket.Client) []byte {
 	t.Helper()
@@ -83,20 +61,16 @@ func TestBroadcastReachesClientsOnOtherReplicas(t *testing.T) {
 	bob := websocket.NewTestClient(h2, "ws", "bob", "general")
 	carol := websocket.NewTestClient(h2, "ws", "carol")
 
-	h1.BroadcastToChannel("ws", "general", []byte(`{"n":1}`), "")
+	h1.BroadcastToChannel("ws", "general", testEvent)
 	for _, c := range []*websocket.Client{alice, bob} {
-		if got := string(receive(t, c)); got != `{"n":1}` {
-			t.Fatalf("配信内容が変わっています: %s", got)
+		var got chatv1.ServerEvent
+		if err := protojson.Unmarshal(receive(t, c), &got); err != nil || got.GetAck().GetEvent() != "test" {
+			t.Fatalf("配信内容が変わっています: %v %v", &got, err)
 		}
 	}
 	assertNothing(t, carol)
 
-	// 入力中の通知は本人を除いて届く
-	h2.BroadcastToChannel("ws", "general", []byte(`{"n":2}`), "alice")
-	receive(t, bob)
-	assertNothing(t, alice)
-
-	h2.BroadcastToUsers("ws", []string{"alice"}, []byte(`{"n":3}`))
+	h2.BroadcastToUsers("ws", []string{"alice"}, testEvent)
 	receive(t, alice)
 	assertNothing(t, bob)
 }
@@ -127,7 +101,7 @@ func TestRevokeChannelStopsDelivery(t *testing.T) {
 	h1.RevokeChannel("ws", "general", "")
 	deadline := time.Now().Add(2 * time.Second)
 	for {
-		h1.BroadcastToChannel("ws", "general", []byte(`{"n":1}`), "")
+		h1.BroadcastToChannel("ws", "general", testEvent)
 		receive(t, bob)
 		select {
 		case <-alice.Sent():
@@ -198,5 +172,35 @@ func TestViewersAreAggregatedAcrossReplicas(t *testing.T) {
 	lastViewers(t, alice, []string{"alice", "bob"})
 
 	h2.SetViewingChannel(bob, "")
+	lastViewers(t, alice, []string{"alice"})
+}
+
+func TestViewersReachViewerAndSubscribers(t *testing.T) {
+	h, _ := startReplicas(t)
+	alice := websocket.NewTestClient(h, "ws", "alice", "general")
+	bob := websocket.NewTestClient(h, "ws", "bob")
+
+	// 購読していない本人にも一覧が届く
+	h.SetViewingChannel(bob, "general")
+	lastViewers(t, bob, []string{"bob"})
+	lastViewers(t, alice, []string{"bob"})
+
+	h.SetViewingChannel(alice, "general")
+	lastViewers(t, alice, []string{"alice", "bob"})
+
+	// 別チャンネルへ移ると元のチャンネルの購読者に減った一覧が届く
+	h.SetViewingChannel(bob, "random")
+	lastViewers(t, alice, []string{"alice"})
+}
+
+func TestClearViewingChannelOnDisconnect(t *testing.T) {
+	h, _ := startReplicas(t)
+	alice := websocket.NewTestClient(h, "ws", "alice", "general")
+	bob := websocket.NewTestClient(h, "ws", "bob")
+	h.SetViewingChannel(alice, "general")
+	h.SetViewingChannel(bob, "general")
+	lastViewers(t, alice, []string{"alice", "bob"})
+
+	bob.Disconnect()
 	lastViewers(t, alice, []string{"alice"})
 }

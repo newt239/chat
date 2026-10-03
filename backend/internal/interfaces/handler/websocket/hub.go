@@ -3,32 +3,17 @@ package websocket
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
-	"go.uber.org/zap"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/newt239/chat/internal/domain/service"
-	"github.com/newt239/chat/internal/infrastructure/logger"
+	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
+	"github.com/newt239/chat/internal/infrastructure/redis"
 )
-
-// Broker はイベントを全レプリカに配ります。Subscribe は ctx が終わるまで受信を続けます
-type Broker interface {
-	Publish(ctx context.Context, payload []byte) error
-	Subscribe(ctx context.Context, handle func([]byte)) error
-}
-
-// HubOption は Hub の配信とチャンネル閲覧者の共有先を切り替えます。指定しなければプロセス内で完結します
-type HubOption func(*Hub)
-
-func WithBroker(b Broker) HubOption {
-	return func(h *Hub) { h.broker = b }
-}
-
-func WithPresenceStore(p service.PresenceStore) HubOption {
-	return func(h *Hub) { h.presence = p }
-}
 
 // アプリ独自の切断コード。クライアントは 4401 ならトークンを更新し、4403 ならワークスペースから離れる
 const (
@@ -58,11 +43,10 @@ type Hub struct {
 	pumps sync.WaitGroup
 
 	channelAccess service.ChannelAccessService
-	// nil ならこのプロセスの接続にだけ配信する
-	broker Broker
-	outbox chan envelope
-	// nil ならこのプロセスの接続から閲覧者を数える
-	presence service.PresenceStore
+	// 全レプリカへの配信とチャンネル閲覧者の共有に使う
+	broker   *redis.Broker
+	outbox   chan envelope
+	presence *redis.PresenceStore
 }
 
 type target string
@@ -93,26 +77,21 @@ type envelope struct {
 	Data          json.RawMessage `json:"data,omitempty"`
 }
 
-// NewHub は新しいHubを作成します
-func NewHub(channelAccess service.ChannelAccessService, opts ...HubOption) *Hub {
-	h := &Hub{
+func NewHub(channelAccess service.ChannelAccessService, broker *redis.Broker, presence *redis.PresenceStore) *Hub {
+	return &Hub{
 		workspaces:    make(map[string]map[string]clientSet),
 		subscribers:   make(map[string]map[string]clientSet),
 		channelAccess: channelAccess,
+		broker:        broker,
 		outbox:        make(chan envelope, outboxSize),
+		presence:      presence,
 	}
-	for _, opt := range opts {
-		opt(h)
-	}
-	return h
 }
 
 // Run は他のレプリカとの送受信と閲覧の延長を、ctx が終わるまで続けます
 func (h *Hub) Run(ctx context.Context) {
-	if h.broker != nil {
-		go h.runSubscriber(ctx)
-		go h.runPublisher(ctx)
-	}
+	go h.runSubscriber(ctx)
+	go h.runPublisher(ctx)
 	h.runPresenceRefresh(ctx)
 }
 
@@ -221,7 +200,7 @@ func (h *Hub) canAccess(c *Client, channelID string) bool {
 	defer cancel()
 	ch, err := h.channelAccess.EnsureChannelAccess(ctx, channelID, c.userID)
 	if err != nil {
-		logger.Get().Debug("チャンネルへのアクセスを拒否しました", zap.String("user", c.userID), zap.String("channel", channelID), zap.Error(err))
+		slog.Debug("チャンネルへのアクセスを拒否しました", "user", c.userID, "channel", channelID, "error", err)
 		return false
 	}
 	return ch.WorkspaceID == c.workspaceID
@@ -233,7 +212,7 @@ func (h *Hub) runSubscriber(ctx context.Context) {
 		err := h.broker.Subscribe(ctx, func(payload []byte) {
 			var env envelope
 			if err := json.Unmarshal(payload, &env); err != nil {
-				logger.Get().Error("配信内容を読めません", zap.Error(err))
+				slog.Error("配信内容を読めません", "error", err)
 				return
 			}
 			h.deliver(&env)
@@ -241,7 +220,7 @@ func (h *Hub) runSubscriber(ctx context.Context) {
 		if ctx.Err() != nil {
 			return
 		}
-		logger.Get().Warn("イベントの購読が切れたため再開します", zap.Error(err))
+		slog.Warn("イベントの購読が切れたため再開します", "error", err)
 		select {
 		case <-ctx.Done():
 			return
@@ -265,7 +244,7 @@ func (h *Hub) runPublisher(ctx context.Context) {
 			}
 			if err != nil {
 				// 送れなかったときはせめてこのプロセスの接続には届ける
-				logger.Get().Error("他のレプリカへの配信に失敗しました", zap.String("target", string(env.Target)), zap.Error(err))
+				slog.Error("他のレプリカへの配信に失敗しました", "target", env.Target, "error", err)
 				h.deliver(&env)
 			}
 		}
@@ -274,14 +253,10 @@ func (h *Hub) runPublisher(ctx context.Context) {
 
 // publish は全レプリカに配信します
 func (h *Hub) publish(env envelope) {
-	if h.broker == nil {
-		h.deliver(&env)
-		return
-	}
 	select {
 	case h.outbox <- env:
 	default:
-		logger.Get().Warn("他のレプリカへの配信が詰まっているため、このプロセスの接続にだけ届けます", zap.String("target", string(env.Target)))
+		slog.Warn("他のレプリカへの配信が詰まっているため、このプロセスの接続にだけ届けます", "target", env.Target)
 		h.deliver(&env)
 	}
 }
@@ -402,19 +377,34 @@ func (h *Hub) revokeChannel(workspaceID, channelID, userID string) {
 	}
 }
 
-// BroadcastToWorkspace はWorkspace内の全クライアントにメッセージを送信します
-func (h *Hub) BroadcastToWorkspace(workspaceID string, message []byte) {
-	h.publish(envelope{Target: targetWorkspace, WorkspaceID: workspaceID, Data: message})
+// encodeServerEvent はイベントを JSON に変換します。失敗した場合は nil を返します
+func encodeServerEvent(event *chatv1.ServerEvent) []byte {
+	data, err := protojson.Marshal(event)
+	if err != nil {
+		slog.Error("イベントのエンコードに失敗しました", "error", err)
+		return nil
+	}
+	return data
 }
 
-// BroadcastToChannel はチャンネルを購読している接続に送信します。excludeUserID が空でなければそのユーザーには送りません
-func (h *Hub) BroadcastToChannel(workspaceID string, channelID string, message []byte, excludeUserID string) {
-	h.publish(envelope{Target: targetChannel, WorkspaceID: workspaceID, ChannelID: channelID, ExcludeUserID: excludeUserID, Data: message})
+// broadcast は env にエンコードしたイベントを載せて全レプリカに配信します
+func (h *Hub) broadcast(env envelope, event *chatv1.ServerEvent) {
+	if env.Data = encodeServerEvent(event); env.Data != nil {
+		h.publish(env)
+	}
 }
 
-// BroadcastToUsers は指定したユーザーの全接続に送信します
-func (h *Hub) BroadcastToUsers(workspaceID string, userIDs []string, message []byte) {
-	h.publish(envelope{Target: targetUsers, WorkspaceID: workspaceID, UserIDs: userIDs, Data: message})
+func (h *Hub) BroadcastToWorkspace(workspaceID string, event *chatv1.ServerEvent) {
+	h.broadcast(envelope{Target: targetWorkspace, WorkspaceID: workspaceID}, event)
+}
+
+// BroadcastToChannel はチャンネルを購読している接続に送信します
+func (h *Hub) BroadcastToChannel(workspaceID string, channelID string, event *chatv1.ServerEvent) {
+	h.broadcast(envelope{Target: targetChannel, WorkspaceID: workspaceID, ChannelID: channelID}, event)
+}
+
+func (h *Hub) BroadcastToUsers(workspaceID string, userIDs []string, event *chatv1.ServerEvent) {
+	h.broadcast(envelope{Target: targetUsers, WorkspaceID: workspaceID, UserIDs: userIDs}, event)
 }
 
 // RevokeChannel はチャンネルを見られなくなった接続の購読を外します。userID が空なら購読者全員を確かめ直します
@@ -437,14 +427,13 @@ func (h *Hub) CloseUser(userID string) {
 	h.publish(envelope{Target: targetCloseUser, UserID: userID})
 }
 
-// Shutdown は全接続に Going Away の close フレームを送り、クライアントが他のレプリカへつなぎ直すのを促します
-// ctx が終わるまでに送り終えなかった接続は待たずに戻ります
+// Shutdown は全接続に Going Away を送って他のレプリカへのつなぎ直しを促し、ctx が終わったら待たずに戻ります
 func (h *Hub) Shutdown(ctx context.Context) {
 	clients := h.clients()
 	for _, c := range clients {
 		h.disconnect(c, websocket.CloseGoingAway, "server shutting down")
 	}
-	logger.Get().Info("停止のため接続に切断を通知しました", zap.Int("connections", len(clients)))
+	slog.Info("停止のため接続に切断を通知しました", "connections", len(clients))
 
 	done := make(chan struct{})
 	go func() {

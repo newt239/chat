@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/linkpreview"
@@ -12,7 +11,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type linkRepository struct {
@@ -31,16 +29,15 @@ func (r *linkRepository) CreateBulk(ctx context.Context, links []*entity.Message
 	client := transaction.ResolveClient(ctx, r.client)
 	builders := make([]*ent.MessageLinkCreate, 0, len(links))
 	for _, link := range links {
-		mid, err := utils.ParseUUID(link.MessageID, "message ID")
+		mid, err := parseUUID(link.MessageID, "message ID")
 		if err != nil {
 			return err
 		}
 		builders = append(builders, client.MessageLink.Create().
 			SetMessageID(mid).
 			SetURL(link.URL).
-			SetNillableLinkPreviewID(utils.ParseUUIDPtr(link.LinkPreviewID)).
-			SetNillableLinkedMessageID(utils.ParseUUIDPtr(link.LinkedMessageID)).
-			SetNillableCreatedAt(nonZeroTime(link.CreatedAt)))
+			SetNillableLinkPreviewID(parseUUIDPtr(link.LinkPreviewID)).
+			SetNillableLinkedMessageID(parseUUIDPtr(link.LinkedMessageID)))
 	}
 	saved, err := client.MessageLink.CreateBulk(builders...).Save(ctx)
 	if err != nil {
@@ -67,7 +64,7 @@ func (r *linkRepository) FindPreviewsByURLs(ctx context.Context, urls []string) 
 		return nil, err
 	}
 	for _, lp := range previews {
-		result[lp.URL] = &entity.LinkPreview{ID: lp.ID.String(), URL: lp.URL, OGP: utils.LinkPreviewToOGP(lp), FetchedAt: lp.FetchedAt}
+		result[lp.URL] = &entity.LinkPreview{ID: lp.ID.String(), URL: lp.URL, OGP: linkPreviewToOGP(lp), FetchedAt: lp.FetchedAt}
 	}
 	return result, nil
 }
@@ -123,10 +120,7 @@ func (r *linkRepository) UpsertPreview(ctx context.Context, preview *entity.Link
 }
 
 func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) ([]*entity.MessageLink, error) {
-	if len(messageIDs) == 0 {
-		return []*entity.MessageLink{}, nil
-	}
-	parsedIDs, err := utils.ParseUUIDs(messageIDs, "message ID")
+	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
 	if err != nil {
 		return nil, err
 	}
@@ -139,15 +133,21 @@ func (r *linkRepository) FindByMessageIDs(ctx context.Context, messageIDs []stri
 		return nil, err
 	}
 
-	result := make([]*entity.MessageLink, 0, len(links))
-	for _, ml := range links {
-		result = append(result, utils.MessageLinkToEntity(ml))
-	}
-	return result, nil
+	return convertAll(links, func(ml *ent.MessageLink) *entity.MessageLink {
+		return &entity.MessageLink{
+			ID:              ml.ID.String(),
+			MessageID:       ml.MessageID.String(),
+			URL:             ml.URL,
+			OGP:             linkPreviewToOGP(ml.Edges.LinkPreview),
+			LinkPreviewID:   optionalString(ml.LinkPreviewID),
+			LinkedMessageID: optionalString(ml.LinkedMessageID),
+			CreatedAt:       ml.CreatedAt,
+		}
+	}), nil
 }
 
 func (r *linkRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
-	mid, err := utils.ParseUUID(messageID, "message ID")
+	mid, err := parseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}
@@ -156,12 +156,4 @@ func (r *linkRepository) DeleteByMessageID(ctx context.Context, messageID string
 		Where(messagelink.MessageID(mid)).
 		Exec(ctx)
 	return err
-}
-
-// nonZeroTime は未設定の日時を nil にして DB の既定値を使わせます
-func nonZeroTime(t time.Time) *time.Time {
-	if t.IsZero() {
-		return nil
-	}
-	return &t
 }

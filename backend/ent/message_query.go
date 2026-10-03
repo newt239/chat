@@ -13,17 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/message"
-	"github.com/newt239/chat/ent/messagebookmark"
-	"github.com/newt239/chat/ent/messagegroupmention"
-	"github.com/newt239/chat/ent/messagelink"
-	"github.com/newt239/chat/ent/messagepin"
-	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
-	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/userthreadfollow"
 )
@@ -39,15 +32,8 @@ type MessageQuery struct {
 	withUser              *UserQuery
 	withParent            *MessageQuery
 	withReplies           *MessageQuery
-	withReactions         *MessageReactionQuery
-	withBookmarks         *MessageBookmarkQuery
 	withUserMentions      *MessageUserMentionQuery
-	withGroupMentions     *MessageGroupMentionQuery
-	withLinks             *MessageLinkQuery
-	withAttachments       *AttachmentQuery
-	withPins              *MessagePinQuery
 	withUserThreadFollows *UserThreadFollowQuery
-	withThreadReadStates  *ThreadReadStateQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -172,50 +158,6 @@ func (_q *MessageQuery) QueryReplies() *MessageQuery {
 	return query
 }
 
-// QueryReactions chains the current query on the "reactions" edge.
-func (_q *MessageQuery) QueryReactions() *MessageReactionQuery {
-	query := (&MessageReactionClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, selector),
-			sqlgraph.To(messagereaction.Table, messagereaction.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.ReactionsTable, message.ReactionsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryBookmarks chains the current query on the "bookmarks" edge.
-func (_q *MessageQuery) QueryBookmarks() *MessageBookmarkQuery {
-	query := (&MessageBookmarkClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, selector),
-			sqlgraph.To(messagebookmark.Table, messagebookmark.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.BookmarksTable, message.BookmarksColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryUserMentions chains the current query on the "user_mentions" edge.
 func (_q *MessageQuery) QueryUserMentions() *MessageUserMentionQuery {
 	query := (&MessageUserMentionClient{config: _q.config}).Query()
@@ -238,94 +180,6 @@ func (_q *MessageQuery) QueryUserMentions() *MessageUserMentionQuery {
 	return query
 }
 
-// QueryGroupMentions chains the current query on the "group_mentions" edge.
-func (_q *MessageQuery) QueryGroupMentions() *MessageGroupMentionQuery {
-	query := (&MessageGroupMentionClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, selector),
-			sqlgraph.To(messagegroupmention.Table, messagegroupmention.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.GroupMentionsTable, message.GroupMentionsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryLinks chains the current query on the "links" edge.
-func (_q *MessageQuery) QueryLinks() *MessageLinkQuery {
-	query := (&MessageLinkClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, selector),
-			sqlgraph.To(messagelink.Table, messagelink.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.LinksTable, message.LinksColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAttachments chains the current query on the "attachments" edge.
-func (_q *MessageQuery) QueryAttachments() *AttachmentQuery {
-	query := (&AttachmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, selector),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.AttachmentsTable, message.AttachmentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryPins chains the current query on the "pins" edge.
-func (_q *MessageQuery) QueryPins() *MessagePinQuery {
-	query := (&MessagePinClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, selector),
-			sqlgraph.To(messagepin.Table, messagepin.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.PinsTable, message.PinsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryUserThreadFollows chains the current query on the "user_thread_follows" edge.
 func (_q *MessageQuery) QueryUserThreadFollows() *UserThreadFollowQuery {
 	query := (&UserThreadFollowClient{config: _q.config}).Query()
@@ -341,28 +195,6 @@ func (_q *MessageQuery) QueryUserThreadFollows() *UserThreadFollowQuery {
 			sqlgraph.From(message.Table, message.FieldID, selector),
 			sqlgraph.To(userthreadfollow.Table, userthreadfollow.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, message.UserThreadFollowsTable, message.UserThreadFollowsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryThreadReadStates chains the current query on the "thread_read_states" edge.
-func (_q *MessageQuery) QueryThreadReadStates() *ThreadReadStateQuery {
-	query := (&ThreadReadStateClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, selector),
-			sqlgraph.To(threadreadstate.Table, threadreadstate.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.ThreadReadStatesTable, message.ThreadReadStatesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -566,15 +398,8 @@ func (_q *MessageQuery) Clone() *MessageQuery {
 		withUser:              _q.withUser.Clone(),
 		withParent:            _q.withParent.Clone(),
 		withReplies:           _q.withReplies.Clone(),
-		withReactions:         _q.withReactions.Clone(),
-		withBookmarks:         _q.withBookmarks.Clone(),
 		withUserMentions:      _q.withUserMentions.Clone(),
-		withGroupMentions:     _q.withGroupMentions.Clone(),
-		withLinks:             _q.withLinks.Clone(),
-		withAttachments:       _q.withAttachments.Clone(),
-		withPins:              _q.withPins.Clone(),
 		withUserThreadFollows: _q.withUserThreadFollows.Clone(),
-		withThreadReadStates:  _q.withThreadReadStates.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -625,28 +450,6 @@ func (_q *MessageQuery) WithReplies(opts ...func(*MessageQuery)) *MessageQuery {
 	return _q
 }
 
-// WithReactions tells the query-builder to eager-load the nodes that are connected to
-// the "reactions" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MessageQuery) WithReactions(opts ...func(*MessageReactionQuery)) *MessageQuery {
-	query := (&MessageReactionClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withReactions = query
-	return _q
-}
-
-// WithBookmarks tells the query-builder to eager-load the nodes that are connected to
-// the "bookmarks" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MessageQuery) WithBookmarks(opts ...func(*MessageBookmarkQuery)) *MessageQuery {
-	query := (&MessageBookmarkClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withBookmarks = query
-	return _q
-}
-
 // WithUserMentions tells the query-builder to eager-load the nodes that are connected to
 // the "user_mentions" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *MessageQuery) WithUserMentions(opts ...func(*MessageUserMentionQuery)) *MessageQuery {
@@ -658,50 +461,6 @@ func (_q *MessageQuery) WithUserMentions(opts ...func(*MessageUserMentionQuery))
 	return _q
 }
 
-// WithGroupMentions tells the query-builder to eager-load the nodes that are connected to
-// the "group_mentions" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MessageQuery) WithGroupMentions(opts ...func(*MessageGroupMentionQuery)) *MessageQuery {
-	query := (&MessageGroupMentionClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withGroupMentions = query
-	return _q
-}
-
-// WithLinks tells the query-builder to eager-load the nodes that are connected to
-// the "links" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MessageQuery) WithLinks(opts ...func(*MessageLinkQuery)) *MessageQuery {
-	query := (&MessageLinkClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withLinks = query
-	return _q
-}
-
-// WithAttachments tells the query-builder to eager-load the nodes that are connected to
-// the "attachments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MessageQuery) WithAttachments(opts ...func(*AttachmentQuery)) *MessageQuery {
-	query := (&AttachmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAttachments = query
-	return _q
-}
-
-// WithPins tells the query-builder to eager-load the nodes that are connected to
-// the "pins" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MessageQuery) WithPins(opts ...func(*MessagePinQuery)) *MessageQuery {
-	query := (&MessagePinClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withPins = query
-	return _q
-}
-
 // WithUserThreadFollows tells the query-builder to eager-load the nodes that are connected to
 // the "user_thread_follows" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *MessageQuery) WithUserThreadFollows(opts ...func(*UserThreadFollowQuery)) *MessageQuery {
@@ -710,17 +469,6 @@ func (_q *MessageQuery) WithUserThreadFollows(opts ...func(*UserThreadFollowQuer
 		opt(query)
 	}
 	_q.withUserThreadFollows = query
-	return _q
-}
-
-// WithThreadReadStates tells the query-builder to eager-load the nodes that are connected to
-// the "thread_read_states" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *MessageQuery) WithThreadReadStates(opts ...func(*ThreadReadStateQuery)) *MessageQuery {
-	query := (&ThreadReadStateClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withThreadReadStates = query
 	return _q
 }
 
@@ -802,20 +550,13 @@ func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 	var (
 		nodes       = []*Message{}
 		_spec       = _q.querySpec()
-		loadedTypes = [13]bool{
+		loadedTypes = [6]bool{
 			_q.withChannel != nil,
 			_q.withUser != nil,
 			_q.withParent != nil,
 			_q.withReplies != nil,
-			_q.withReactions != nil,
-			_q.withBookmarks != nil,
 			_q.withUserMentions != nil,
-			_q.withGroupMentions != nil,
-			_q.withLinks != nil,
-			_q.withAttachments != nil,
-			_q.withPins != nil,
 			_q.withUserThreadFollows != nil,
-			_q.withThreadReadStates != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -861,52 +602,10 @@ func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 			return nil, err
 		}
 	}
-	if query := _q.withReactions; query != nil {
-		if err := _q.loadReactions(ctx, query, nodes,
-			func(n *Message) { n.Edges.Reactions = []*MessageReaction{} },
-			func(n *Message, e *MessageReaction) { n.Edges.Reactions = append(n.Edges.Reactions, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withBookmarks; query != nil {
-		if err := _q.loadBookmarks(ctx, query, nodes,
-			func(n *Message) { n.Edges.Bookmarks = []*MessageBookmark{} },
-			func(n *Message, e *MessageBookmark) { n.Edges.Bookmarks = append(n.Edges.Bookmarks, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withUserMentions; query != nil {
 		if err := _q.loadUserMentions(ctx, query, nodes,
 			func(n *Message) { n.Edges.UserMentions = []*MessageUserMention{} },
 			func(n *Message, e *MessageUserMention) { n.Edges.UserMentions = append(n.Edges.UserMentions, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withGroupMentions; query != nil {
-		if err := _q.loadGroupMentions(ctx, query, nodes,
-			func(n *Message) { n.Edges.GroupMentions = []*MessageGroupMention{} },
-			func(n *Message, e *MessageGroupMention) { n.Edges.GroupMentions = append(n.Edges.GroupMentions, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withLinks; query != nil {
-		if err := _q.loadLinks(ctx, query, nodes,
-			func(n *Message) { n.Edges.Links = []*MessageLink{} },
-			func(n *Message, e *MessageLink) { n.Edges.Links = append(n.Edges.Links, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withAttachments; query != nil {
-		if err := _q.loadAttachments(ctx, query, nodes,
-			func(n *Message) { n.Edges.Attachments = []*Attachment{} },
-			func(n *Message, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withPins; query != nil {
-		if err := _q.loadPins(ctx, query, nodes,
-			func(n *Message) { n.Edges.Pins = []*MessagePin{} },
-			func(n *Message, e *MessagePin) { n.Edges.Pins = append(n.Edges.Pins, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -916,13 +615,6 @@ func (_q *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 			func(n *Message, e *UserThreadFollow) {
 				n.Edges.UserThreadFollows = append(n.Edges.UserThreadFollows, e)
 			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withThreadReadStates; query != nil {
-		if err := _q.loadThreadReadStates(ctx, query, nodes,
-			func(n *Message) { n.Edges.ThreadReadStates = []*ThreadReadState{} },
-			func(n *Message, e *ThreadReadState) { n.Edges.ThreadReadStates = append(n.Edges.ThreadReadStates, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1052,66 +744,6 @@ func (_q *MessageQuery) loadReplies(ctx context.Context, query *MessageQuery, no
 	}
 	return nil
 }
-func (_q *MessageQuery) loadReactions(ctx context.Context, query *MessageReactionQuery, nodes []*Message, init func(*Message), assign func(*Message, *MessageReaction)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Message)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(messagereaction.FieldMessageID)
-	}
-	query.Where(predicate.MessageReaction(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(message.ReactionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.MessageID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *MessageQuery) loadBookmarks(ctx context.Context, query *MessageBookmarkQuery, nodes []*Message, init func(*Message), assign func(*Message, *MessageBookmark)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Message)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(messagebookmark.FieldMessageID)
-	}
-	query.Where(predicate.MessageBookmark(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(message.BookmarksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.MessageID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *MessageQuery) loadUserMentions(ctx context.Context, query *MessageUserMentionQuery, nodes []*Message, init func(*Message), assign func(*Message, *MessageUserMention)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Message)
@@ -1142,129 +774,6 @@ func (_q *MessageQuery) loadUserMentions(ctx context.Context, query *MessageUser
 	}
 	return nil
 }
-func (_q *MessageQuery) loadGroupMentions(ctx context.Context, query *MessageGroupMentionQuery, nodes []*Message, init func(*Message), assign func(*Message, *MessageGroupMention)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Message)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(messagegroupmention.FieldMessageID)
-	}
-	query.Where(predicate.MessageGroupMention(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(message.GroupMentionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.MessageID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *MessageQuery) loadLinks(ctx context.Context, query *MessageLinkQuery, nodes []*Message, init func(*Message), assign func(*Message, *MessageLink)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Message)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(messagelink.FieldMessageID)
-	}
-	query.Where(predicate.MessageLink(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(message.LinksColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.MessageID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *MessageQuery) loadAttachments(ctx context.Context, query *AttachmentQuery, nodes []*Message, init func(*Message), assign func(*Message, *Attachment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Message)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(attachment.FieldMessageID)
-	}
-	query.Where(predicate.Attachment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(message.AttachmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.MessageID
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "message_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *MessageQuery) loadPins(ctx context.Context, query *MessagePinQuery, nodes []*Message, init func(*Message), assign func(*Message, *MessagePin)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Message)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(messagepin.FieldMessageID)
-	}
-	query.Where(predicate.MessagePin(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(message.PinsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.MessageID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "message_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *MessageQuery) loadUserThreadFollows(ctx context.Context, query *UserThreadFollowQuery, nodes []*Message, init func(*Message), assign func(*Message, *UserThreadFollow)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Message)
@@ -1280,36 +789,6 @@ func (_q *MessageQuery) loadUserThreadFollows(ctx context.Context, query *UserTh
 	}
 	query.Where(predicate.UserThreadFollow(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(message.UserThreadFollowsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ThreadID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "thread_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *MessageQuery) loadThreadReadStates(ctx context.Context, query *ThreadReadStateQuery, nodes []*Message, init func(*Message), assign func(*Message, *ThreadReadState)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Message)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(threadreadstate.FieldThreadID)
-	}
-	query.Where(predicate.ThreadReadState(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(message.ThreadReadStatesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

@@ -5,8 +5,6 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { MediaMetadata } from "./message_pb";
-import { file_chat_v1_message } from "./message_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -15,69 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/attachment_service.proto.
  */
 export const file_chat_v1_attachment_service: GenFile = /*@__PURE__*/
-  fileDesc("CiBjaGF0L3YxL2F0dGFjaG1lbnRfc2VydmljZS5wcm90bxIHY2hhdC52MSKKAgoKQXR0YWNobWVudBIKCgJpZBgBIAEoCRIXCgptZXNzYWdlX2lkGAIgASgJSACIAQESEwoLdXBsb2FkZXJfaWQYAyABKAkSEgoKY2hhbm5lbF9pZBgEIAEoCRIRCglmaWxlX25hbWUYBSABKAkSEQoJbWltZV90eXBlGAYgASgJEhIKCnNpemVfYnl0ZXMYByABKAMSDgoGc3RhdHVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBW1lZGlhGAogASgLMhYuY2hhdC52MS5NZWRpYU1ldGFkYXRhQg0KC19tZXNzYWdlX2lkIt4CChRQcmVzaWduVXBsb2FkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIaCglmaWxlX25hbWUYAiABKAlCB7pIBHICEAESHQoMY29udGVudF90eXBlGAMgASgJQge6SARyAhABEhsKCnNpemVfYnl0ZXMYBCABKANCB7pIBCICIAASHwoFd2lkdGgYBSABKAVCC7pICBoGGKCNBiAASACIAQESIAoGaGVpZ2h0GAYgASgFQgu6SAgaBhigjQYgAEgBiAEBEjYKEGR1cmF0aW9uX3NlY29uZHMYByABKAFCF7pIFBISGQAAAAAAGPVAKQAAAAAAAAAASAKIAQESKwoJdGh1bWJuYWlsGAggASgLMhguY2hhdC52MS5UaHVtYm5haWxVcGxvYWRCCAoGX3dpZHRoQgkKB19oZWlnaHRCEwoRX2R1cmF0aW9uX3NlY29uZHMiqgEKD1RodW1ibmFpbFVwbG9hZBI+Cgxjb250ZW50X3R5cGUYASABKAlCKLpIJXIjUgppbWFnZS9qcGVnUglpbWFnZS9wbmdSCmltYWdlL3dlYnASIAoKc2l6ZV9ieXRlcxgCIAEoA0IMukgJIgcYgIDAAiAAEhkKBXdpZHRoGAMgASgFQgq6SAcaBRiAICAAEhoKBmhlaWdodBgEIAEoBUIKukgHGgUYgCAgACKuAQoVUHJlc2lnblVwbG9hZFJlc3BvbnNlEhUKDWF0dGFjaG1lbnRfaWQYASABKAkSEgoKdXBsb2FkX3VybBgCIAEoCRIuCgpleHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIhChR0aHVtYm5haWxfdXBsb2FkX3VybBgEIAEoCUgAiAEBQhcKFV90aHVtYm5haWxfdXBsb2FkX3VybCI3ChRHZXRBdHRhY2htZW50UmVxdWVzdBIfCg1hdHRhY2htZW50X2lkGAEgASgJQgi6SAVyA7ABASJAChVHZXRBdHRhY2htZW50UmVzcG9uc2USJwoKYXR0YWNobWVudBgBIAEoCzITLmNoYXQudjEuQXR0YWNobWVudCJLChVHZXREb3dubG9hZFVybFJlcXVlc3QSHwoNYXR0YWNobWVudF9pZBgBIAEoCUIIukgFcgOwAQESEQoJdGh1bWJuYWlsGAIgASgIIjkKFkdldERvd25sb2FkVXJsUmVzcG9uc2USCwoDdXJsGAEgASgJEhIKCmV4cGlyZXNfaW4YAiABKAUiOgoXRGVsZXRlQXR0YWNobWVudFJlcXVlc3QSHwoNYXR0YWNobWVudF9pZBgBIAEoCUIIukgFcgOwAQEiGgoYRGVsZXRlQXR0YWNobWVudFJlc3BvbnNlMt8CChFBdHRhY2htZW50U2VydmljZRJOCg1QcmVzaWduVXBsb2FkEh0uY2hhdC52MS5QcmVzaWduVXBsb2FkUmVxdWVzdBoeLmNoYXQudjEuUHJlc2lnblVwbG9hZFJlc3BvbnNlEk4KDUdldEF0dGFjaG1lbnQSHS5jaGF0LnYxLkdldEF0dGFjaG1lbnRSZXF1ZXN0Gh4uY2hhdC52MS5HZXRBdHRhY2htZW50UmVzcG9uc2USUQoOR2V0RG93bmxvYWRVcmwSHi5jaGF0LnYxLkdldERvd25sb2FkVXJsUmVxdWVzdBofLmNoYXQudjEuR2V0RG93bmxvYWRVcmxSZXNwb25zZRJXChBEZWxldGVBdHRhY2htZW50EiAuY2hhdC52MS5EZWxldGVBdHRhY2htZW50UmVxdWVzdBohLmNoYXQudjEuRGVsZXRlQXR0YWNobWVudFJlc3BvbnNlQpcBCgtjb20uY2hhdC52MUIWQXR0YWNobWVudFNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_chat_v1_message, file_google_protobuf_timestamp]);
-
-/**
- * @generated from message chat.v1.Attachment
- */
-export type Attachment = Message<"chat.v1.Attachment"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * @generated from field: optional string message_id = 2;
-   */
-  messageId?: string | undefined;
-
-  /**
-   * @generated from field: string uploader_id = 3;
-   */
-  uploaderId: string;
-
-  /**
-   * @generated from field: string channel_id = 4;
-   */
-  channelId: string;
-
-  /**
-   * @generated from field: string file_name = 5;
-   */
-  fileName: string;
-
-  /**
-   * @generated from field: string mime_type = 6;
-   */
-  mimeType: string;
-
-  /**
-   * @generated from field: int64 size_bytes = 7;
-   */
-  sizeBytes: bigint;
-
-  /**
-   * @generated from field: string status = 8;
-   */
-  status: string;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 9;
-   */
-  createdAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: chat.v1.MediaMetadata media = 10;
-   */
-  media?: MediaMetadata | undefined;
-};
-
-/**
- * Describes the message chat.v1.Attachment.
- * Use `create(AttachmentSchema)` to create a new message.
- */
-export const AttachmentSchema: GenMessage<Attachment> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 0);
+  fileDesc("CiBjaGF0L3YxL2F0dGFjaG1lbnRfc2VydmljZS5wcm90bxIHY2hhdC52MSLeAgoUUHJlc2lnblVwbG9hZFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESGgoJZmlsZV9uYW1lGAIgASgJQge6SARyAhABEh0KDGNvbnRlbnRfdHlwZRgDIAEoCUIHukgEcgIQARIbCgpzaXplX2J5dGVzGAQgASgDQge6SAQiAiAAEh8KBXdpZHRoGAUgASgFQgu6SAgaBhigjQYgAEgAiAEBEiAKBmhlaWdodBgGIAEoBUILukgIGgYYoI0GIABIAYgBARI2ChBkdXJhdGlvbl9zZWNvbmRzGAcgASgBQhe6SBQSEhkAAAAAABj1QCkAAAAAAAAAAEgCiAEBEisKCXRodW1ibmFpbBgIIAEoCzIYLmNoYXQudjEuVGh1bWJuYWlsVXBsb2FkQggKBl93aWR0aEIJCgdfaGVpZ2h0QhMKEV9kdXJhdGlvbl9zZWNvbmRzIqoBCg9UaHVtYm5haWxVcGxvYWQSPgoMY29udGVudF90eXBlGAEgASgJQii6SCVyI1IKaW1hZ2UvanBlZ1IJaW1hZ2UvcG5nUgppbWFnZS93ZWJwEiAKCnNpemVfYnl0ZXMYAiABKANCDLpICSIHGICAwAIgABIZCgV3aWR0aBgDIAEoBUIKukgHGgUYgCAgABIaCgZoZWlnaHQYBCABKAVCCrpIBxoFGIAgIAAirgEKFVByZXNpZ25VcGxvYWRSZXNwb25zZRIVCg1hdHRhY2htZW50X2lkGAEgASgJEhIKCnVwbG9hZF91cmwYAiABKAkSLgoKZXhwaXJlc19hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASIQoUdGh1bWJuYWlsX3VwbG9hZF91cmwYBCABKAlIAIgBAUIXChVfdGh1bWJuYWlsX3VwbG9hZF91cmwiSwoVR2V0RG93bmxvYWRVcmxSZXF1ZXN0Eh8KDWF0dGFjaG1lbnRfaWQYASABKAlCCLpIBXIDsAEBEhEKCXRodW1ibmFpbBgCIAEoCCI5ChZHZXREb3dubG9hZFVybFJlc3BvbnNlEgsKA3VybBgBIAEoCRISCgpleHBpcmVzX2luGAIgASgFMrYBChFBdHRhY2htZW50U2VydmljZRJOCg1QcmVzaWduVXBsb2FkEh0uY2hhdC52MS5QcmVzaWduVXBsb2FkUmVxdWVzdBoeLmNoYXQudjEuUHJlc2lnblVwbG9hZFJlc3BvbnNlElEKDkdldERvd25sb2FkVXJsEh4uY2hhdC52MS5HZXREb3dubG9hZFVybFJlcXVlc3QaHy5jaGF0LnYxLkdldERvd25sb2FkVXJsUmVzcG9uc2VClwEKC2NvbS5jaGF0LnYxQhZBdHRhY2htZW50U2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.PresignUploadRequest
@@ -133,7 +69,7 @@ export type PresignUploadRequest = Message<"chat.v1.PresignUploadRequest"> & {
  * Use `create(PresignUploadRequestSchema)` to create a new message.
  */
 export const PresignUploadRequestSchema: GenMessage<PresignUploadRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 1);
+  messageDesc(file_chat_v1_attachment_service, 0);
 
 /**
  * @generated from message chat.v1.ThumbnailUpload
@@ -165,7 +101,7 @@ export type ThumbnailUpload = Message<"chat.v1.ThumbnailUpload"> & {
  * Use `create(ThumbnailUploadSchema)` to create a new message.
  */
 export const ThumbnailUploadSchema: GenMessage<ThumbnailUpload> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 2);
+  messageDesc(file_chat_v1_attachment_service, 1);
 
 /**
  * @generated from message chat.v1.PresignUploadResponse
@@ -197,41 +133,7 @@ export type PresignUploadResponse = Message<"chat.v1.PresignUploadResponse"> & {
  * Use `create(PresignUploadResponseSchema)` to create a new message.
  */
 export const PresignUploadResponseSchema: GenMessage<PresignUploadResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 3);
-
-/**
- * @generated from message chat.v1.GetAttachmentRequest
- */
-export type GetAttachmentRequest = Message<"chat.v1.GetAttachmentRequest"> & {
-  /**
-   * @generated from field: string attachment_id = 1;
-   */
-  attachmentId: string;
-};
-
-/**
- * Describes the message chat.v1.GetAttachmentRequest.
- * Use `create(GetAttachmentRequestSchema)` to create a new message.
- */
-export const GetAttachmentRequestSchema: GenMessage<GetAttachmentRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 4);
-
-/**
- * @generated from message chat.v1.GetAttachmentResponse
- */
-export type GetAttachmentResponse = Message<"chat.v1.GetAttachmentResponse"> & {
-  /**
-   * @generated from field: chat.v1.Attachment attachment = 1;
-   */
-  attachment?: Attachment | undefined;
-};
-
-/**
- * Describes the message chat.v1.GetAttachmentResponse.
- * Use `create(GetAttachmentResponseSchema)` to create a new message.
- */
-export const GetAttachmentResponseSchema: GenMessage<GetAttachmentResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 5);
+  messageDesc(file_chat_v1_attachment_service, 2);
 
 /**
  * @generated from message chat.v1.GetDownloadUrlRequest
@@ -255,7 +157,7 @@ export type GetDownloadUrlRequest = Message<"chat.v1.GetDownloadUrlRequest"> & {
  * Use `create(GetDownloadUrlRequestSchema)` to create a new message.
  */
 export const GetDownloadUrlRequestSchema: GenMessage<GetDownloadUrlRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 6);
+  messageDesc(file_chat_v1_attachment_service, 3);
 
 /**
  * @generated from message chat.v1.GetDownloadUrlResponse
@@ -277,37 +179,7 @@ export type GetDownloadUrlResponse = Message<"chat.v1.GetDownloadUrlResponse"> &
  * Use `create(GetDownloadUrlResponseSchema)` to create a new message.
  */
 export const GetDownloadUrlResponseSchema: GenMessage<GetDownloadUrlResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 7);
-
-/**
- * @generated from message chat.v1.DeleteAttachmentRequest
- */
-export type DeleteAttachmentRequest = Message<"chat.v1.DeleteAttachmentRequest"> & {
-  /**
-   * @generated from field: string attachment_id = 1;
-   */
-  attachmentId: string;
-};
-
-/**
- * Describes the message chat.v1.DeleteAttachmentRequest.
- * Use `create(DeleteAttachmentRequestSchema)` to create a new message.
- */
-export const DeleteAttachmentRequestSchema: GenMessage<DeleteAttachmentRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 8);
-
-/**
- * @generated from message chat.v1.DeleteAttachmentResponse
- */
-export type DeleteAttachmentResponse = Message<"chat.v1.DeleteAttachmentResponse"> & {
-};
-
-/**
- * Describes the message chat.v1.DeleteAttachmentResponse.
- * Use `create(DeleteAttachmentResponseSchema)` to create a new message.
- */
-export const DeleteAttachmentResponseSchema: GenMessage<DeleteAttachmentResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_attachment_service, 9);
+  messageDesc(file_chat_v1_attachment_service, 4);
 
 /**
  * @generated from service chat.v1.AttachmentService
@@ -322,28 +194,12 @@ export const AttachmentService: GenService<{
     output: typeof PresignUploadResponseSchema;
   },
   /**
-   * @generated from rpc chat.v1.AttachmentService.GetAttachment
-   */
-  getAttachment: {
-    methodKind: "unary";
-    input: typeof GetAttachmentRequestSchema;
-    output: typeof GetAttachmentResponseSchema;
-  },
-  /**
    * @generated from rpc chat.v1.AttachmentService.GetDownloadUrl
    */
   getDownloadUrl: {
     methodKind: "unary";
     input: typeof GetDownloadUrlRequestSchema;
     output: typeof GetDownloadUrlResponseSchema;
-  },
-  /**
-   * @generated from rpc chat.v1.AttachmentService.DeleteAttachment
-   */
-  deleteAttachment: {
-    methodKind: "unary";
-    input: typeof DeleteAttachmentRequestSchema;
-    output: typeof DeleteAttachmentResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_chat_v1_attachment_service, 0);

@@ -27,11 +27,9 @@ type Channel struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 	// ChannelType holds the value of the "channel_type" field.
 	ChannelType string `json:"channel_type,omitempty"`
-	// ArchivedAt holds the value of the "archived_at" field.
-	ArchivedAt *time.Time `json:"archived_at,omitempty"`
 	// ParentID holds the value of the "parent_id" field.
 	ParentID *uuid.UUID `json:"parent_id,omitempty"`
 	// DmKey holds the value of the "dm_key" field.
@@ -54,19 +52,13 @@ type ChannelEdges struct {
 	CreatedBy *User `json:"created_by,omitempty"`
 	// Members holds the value of the members edge.
 	Members []*ChannelMember `json:"members,omitempty"`
-	// Messages holds the value of the messages edge.
-	Messages []*Message `json:"messages,omitempty"`
-	// Attachments holds the value of the attachments edge.
-	Attachments []*Attachment `json:"attachments,omitempty"`
-	// ReadStates holds the value of the read_states edge.
-	ReadStates []*ChannelReadState `json:"read_states,omitempty"`
 	// Parent holds the value of the parent edge.
 	Parent *Channel `json:"parent,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*Channel `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [5]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -100,39 +92,12 @@ func (e ChannelEdges) MembersOrErr() ([]*ChannelMember, error) {
 	return nil, &NotLoadedError{edge: "members"}
 }
 
-// MessagesOrErr returns the Messages value or an error if the edge
-// was not loaded in eager-loading.
-func (e ChannelEdges) MessagesOrErr() ([]*Message, error) {
-	if e.loadedTypes[3] {
-		return e.Messages, nil
-	}
-	return nil, &NotLoadedError{edge: "messages"}
-}
-
-// AttachmentsOrErr returns the Attachments value or an error if the edge
-// was not loaded in eager-loading.
-func (e ChannelEdges) AttachmentsOrErr() ([]*Attachment, error) {
-	if e.loadedTypes[4] {
-		return e.Attachments, nil
-	}
-	return nil, &NotLoadedError{edge: "attachments"}
-}
-
-// ReadStatesOrErr returns the ReadStates value or an error if the edge
-// was not loaded in eager-loading.
-func (e ChannelEdges) ReadStatesOrErr() ([]*ChannelReadState, error) {
-	if e.loadedTypes[5] {
-		return e.ReadStates, nil
-	}
-	return nil, &NotLoadedError{edge: "read_states"}
-}
-
 // ParentOrErr returns the Parent value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ChannelEdges) ParentOrErr() (*Channel, error) {
 	if e.Parent != nil {
 		return e.Parent, nil
-	} else if e.loadedTypes[6] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: channel.Label}
 	}
 	return nil, &NotLoadedError{edge: "parent"}
@@ -141,7 +106,7 @@ func (e ChannelEdges) ParentOrErr() (*Channel, error) {
 // ChildrenOrErr returns the Children value or an error if the edge
 // was not loaded in eager-loading.
 func (e ChannelEdges) ChildrenOrErr() ([]*Channel, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[4] {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
@@ -156,7 +121,7 @@ func (*Channel) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case channel.FieldWorkspaceID, channel.FieldName, channel.FieldDescription, channel.FieldChannelType, channel.FieldDmKey:
 			values[i] = new(sql.NullString)
-		case channel.FieldArchivedAt, channel.FieldCreatedAt, channel.FieldUpdatedAt:
+		case channel.FieldCreatedAt, channel.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case channel.FieldID, channel.FieldCreatedByID:
 			values[i] = new(uuid.UUID)
@@ -203,20 +168,14 @@ func (_m *Channel) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				_m.Description = value.String
+				_m.Description = new(string)
+				*_m.Description = value.String
 			}
 		case channel.FieldChannelType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field channel_type", values[i])
 			} else if value.Valid {
 				_m.ChannelType = value.String
-			}
-		case channel.FieldArchivedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field archived_at", values[i])
-			} else if value.Valid {
-				_m.ArchivedAt = new(time.Time)
-				*_m.ArchivedAt = value.Time
 			}
 		case channel.FieldParentID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -272,21 +231,6 @@ func (_m *Channel) QueryMembers() *ChannelMemberQuery {
 	return NewChannelClient(_m.config).QueryMembers(_m)
 }
 
-// QueryMessages queries the "messages" edge of the Channel entity.
-func (_m *Channel) QueryMessages() *MessageQuery {
-	return NewChannelClient(_m.config).QueryMessages(_m)
-}
-
-// QueryAttachments queries the "attachments" edge of the Channel entity.
-func (_m *Channel) QueryAttachments() *AttachmentQuery {
-	return NewChannelClient(_m.config).QueryAttachments(_m)
-}
-
-// QueryReadStates queries the "read_states" edge of the Channel entity.
-func (_m *Channel) QueryReadStates() *ChannelReadStateQuery {
-	return NewChannelClient(_m.config).QueryReadStates(_m)
-}
-
 // QueryParent queries the "parent" edge of the Channel entity.
 func (_m *Channel) QueryParent() *ChannelQuery {
 	return NewChannelClient(_m.config).QueryParent(_m)
@@ -329,16 +273,13 @@ func (_m *Channel) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
+	if v := _m.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("channel_type=")
 	builder.WriteString(_m.ChannelType)
-	builder.WriteString(", ")
-	if v := _m.ArchivedAt; v != nil {
-		builder.WriteString("archived_at=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
 	builder.WriteString(", ")
 	if v := _m.ParentID; v != nil {
 		builder.WriteString("parent_id=")

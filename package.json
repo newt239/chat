@@ -21,12 +21,11 @@
     "codecheck": "turbo run codecheck",
     "clean": "./scripts/clean.sh",
     "claude": "claude --setting-sources project,local --permission-mode bypassPermissions",
-    "migrate:generate": "docker compose exec backend go run cmd/migrate/main.go",
     "generate:proto": "buf generate proto --template proto/buf.gen.yaml",
     "proto:format": "buf format -w proto",
     "proto:lint": "buf lint proto",
     "db:reset": "docker compose run --rm reset",
-    "db:seed": "docker compose exec backend go run cmd/seed/main.go"
+    "db:seed:bulk": "docker compose exec backend go run cmd/seed/main.go"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.73.0",

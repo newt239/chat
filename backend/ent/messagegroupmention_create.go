@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -35,20 +34,6 @@ func (_c *MessageGroupMentionCreate) SetMessageID(v uuid.UUID) *MessageGroupMent
 // SetGroupID sets the "group_id" field.
 func (_c *MessageGroupMentionCreate) SetGroupID(v uuid.UUID) *MessageGroupMentionCreate {
 	_c.mutation.SetGroupID(v)
-	return _c
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_c *MessageGroupMentionCreate) SetCreatedAt(v time.Time) *MessageGroupMentionCreate {
-	_c.mutation.SetCreatedAt(v)
-	return _c
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *MessageGroupMentionCreate) SetNillableCreatedAt(v *time.Time) *MessageGroupMentionCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
 	return _c
 }
 
@@ -111,10 +96,6 @@ func (_c *MessageGroupMentionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *MessageGroupMentionCreate) defaults() {
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		v := messagegroupmention.DefaultCreatedAt()
-		_c.mutation.SetCreatedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := messagegroupmention.DefaultID()
 		_c.mutation.SetID(v)
@@ -128,9 +109,6 @@ func (_c *MessageGroupMentionCreate) check() error {
 	}
 	if _, ok := _c.mutation.GroupID(); !ok {
 		return &ValidationError{Name: "group_id", err: errors.New(`ent: missing required field "MessageGroupMention.group_id"`)}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "MessageGroupMention.created_at"`)}
 	}
 	if len(_c.mutation.MessageIDs()) == 0 {
 		return &ValidationError{Name: "message", err: errors.New(`ent: missing required edge "MessageGroupMention.message"`)}
@@ -173,10 +151,6 @@ func (_c *MessageGroupMentionCreate) createSpec() (*MessageGroupMention, *sqlgra
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(messagegroupmention.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
 	}
 	if nodes := _c.mutation.MessageIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -304,9 +278,6 @@ func (u *MessageGroupMentionUpsertOne) UpdateNewValues() *MessageGroupMentionUps
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(messagegroupmention.FieldID)
-		}
-		if _, exists := u.create.mutation.CreatedAt(); exists {
-			s.SetIgnore(messagegroupmention.FieldCreatedAt)
 		}
 	}))
 	return u
@@ -549,9 +520,6 @@ func (u *MessageGroupMentionUpsertBulk) UpdateNewValues() *MessageGroupMentionUp
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(messagegroupmention.FieldID)
-			}
-			if _, exists := b.mutation.CreatedAt(); exists {
-				s.SetIgnore(messagegroupmention.FieldCreatedAt)
 			}
 		}
 	}))

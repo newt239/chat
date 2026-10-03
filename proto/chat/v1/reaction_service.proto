@@ -3,20 +3,10 @@ syntax = "proto3";
 package chat.v1;
 
 import "buf/validate/validate.proto";
-import "chat/v1/message.proto";
 
 service ReactionService {
-  rpc ListReactions(ListReactionsRequest) returns (ListReactionsResponse);
   rpc AddReaction(AddReactionRequest) returns (AddReactionResponse);
   rpc RemoveReaction(RemoveReactionRequest) returns (RemoveReactionResponse);
-}
-
-message ListReactionsRequest {
-  string message_id = 1 [(buf.validate.field).string.uuid = true];
-}
-
-message ListReactionsResponse {
-  repeated Reaction reactions = 1;
 }
 
 message AddReactionRequest {

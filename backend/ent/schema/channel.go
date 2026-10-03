@@ -30,13 +30,11 @@ func (Channel) Fields() []ent.Field {
 		field.String("name").
 			NotEmpty(),
 		field.String("description").
-			Optional(),
+			Optional().
+			Nillable(),
 		// public / private / dm / group_dm。public 以外は参加者だけが閲覧できる
 		field.String("channel_type").
 			Default("public"),
-		field.Time("archived_at").
-			Optional().
-			Nillable(),
 		field.UUID("parent_id", uuid.UUID{}).
 			Optional().
 			Nillable(),
@@ -65,12 +63,6 @@ func (Channel) Edges() []ent.Edge {
 			Unique().
 			Required(),
 		edge.From("members", ChannelMember.Type).
-			Ref("channel"),
-		edge.From("messages", Message.Type).
-			Ref("channel"),
-		edge.From("attachments", Attachment.Type).
-			Ref("channel"),
-		edge.From("read_states", ChannelReadState.Type).
 			Ref("channel"),
 		edge.To("children", Channel.Type).
 			From("parent").

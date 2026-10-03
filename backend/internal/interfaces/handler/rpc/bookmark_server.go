@@ -3,33 +3,33 @@ package rpc
 import (
 	"context"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	bookmarkuc "github.com/newt239/chat/internal/usecase/bookmark"
+	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
 type BookmarkServer struct {
-	UC bookmarkuc.BookmarkUseCase
+	UC *bookmarkuc.Interactor
 }
 
 func (s *BookmarkServer) ListBookmarks(ctx context.Context, _ *chatv1.ListBookmarksRequest) (*chatv1.ListBookmarksResponse, error) {
-	out, err := s.UC.ListBookmarks(ctx, userIDFrom(ctx))
+	userID := userIDFrom(ctx)
+	out, err := s.UC.ListBookmarks(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	return &chatv1.ListBookmarksResponse{Bookmarks: presenter.ConvertAll(out.Bookmarks, presenter.Bookmark)}, nil
+	return &chatv1.ListBookmarksResponse{Bookmarks: presenter.ConvertAll(out, func(b bookmarkuc.Output) *chatv1.Bookmark {
+		return &chatv1.Bookmark{UserId: userID, Message: presenter.Message(b.Message), CreatedAt: timestamppb.New(b.CreatedAt)}
+	})}, nil
 }
 
 func (s *BookmarkServer) AddBookmark(ctx context.Context, req *chatv1.AddBookmarkRequest) (*chatv1.AddBookmarkResponse, error) {
-	if err := s.UC.AddBookmark(ctx, bookmarkuc.AddBookmarkInput{UserID: userIDFrom(ctx), MessageID: req.MessageId}); err != nil {
-		return nil, err
-	}
-	return &chatv1.AddBookmarkResponse{}, nil
+	return &chatv1.AddBookmarkResponse{}, s.UC.AddBookmark(ctx, messageuc.MessageInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
 }
 
 func (s *BookmarkServer) RemoveBookmark(ctx context.Context, req *chatv1.RemoveBookmarkRequest) (*chatv1.RemoveBookmarkResponse, error) {
-	if err := s.UC.RemoveBookmark(ctx, bookmarkuc.RemoveBookmarkInput{UserID: userIDFrom(ctx), MessageID: req.MessageId}); err != nil {
-		return nil, err
-	}
-	return &chatv1.RemoveBookmarkResponse{}, nil
+	return &chatv1.RemoveBookmarkResponse{}, s.UC.RemoveBookmark(ctx, messageuc.MessageInput{MessageID: req.MessageId, UserID: userIDFrom(ctx)})
 }

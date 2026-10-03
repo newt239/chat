@@ -44,10 +44,10 @@ func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error)
 
 func TestUpdateUserNote(t *testing.T) {
 	repo := &fakeNoteRepo{}
-	uc := NewInteractor(repo, stubUserRepo{})
+	uc := New(repo, stubUserRepo{})
 	ctx := context.Background()
 
-	out, err := uc.Update(ctx, UpdateInput{OwnerID: "me", TargetID: "bob", Nickname: "  ボブ  ", Memo: ""})
+	out, err := uc.Update(ctx, entity.UserNote{OwnerID: "me", TargetID: "bob", Nickname: new("  ボブ  "), Memo: new("")})
 	if err != nil {
 		t.Fatalf("保存できません: %v", err)
 	}
@@ -55,12 +55,12 @@ func TestUpdateUserNote(t *testing.T) {
 		t.Fatalf("空白の除去や空文字の扱いが正しくありません: %+v", out)
 	}
 
-	out, err = uc.Update(ctx, UpdateInput{OwnerID: "me", TargetID: "bob"})
+	out, err = uc.Update(ctx, entity.UserNote{OwnerID: "me", TargetID: "bob"})
 	if err != nil || out != nil || !repo.deleted {
 		t.Fatalf("両方とも空のときに削除されていません: out=%+v err=%v", out, err)
 	}
 
-	if _, err := uc.Update(ctx, UpdateInput{OwnerID: "me", TargetID: "missing", Nickname: "x"}); !errors.Is(err, domerr.ErrUserNotFound) {
+	if _, err := uc.Update(ctx, entity.UserNote{OwnerID: "me", TargetID: "missing", Nickname: new("x")}); !errors.Is(err, domerr.ErrUserNotFound) {
 		t.Fatalf("存在しないユーザーへのメモが拒否されていません: %v", err)
 	}
 }

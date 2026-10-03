@@ -9,8 +9,6 @@ type Settings struct {
 	PasswordAuthEnabled bool
 }
 
-// Input DTOs
-
 type LoginInput struct {
 	Email    string
 	Password string
@@ -63,18 +61,16 @@ type GoogleIdentity struct {
 	Nonce string
 }
 
-// Output DTOs
-
 type AuthOutput struct {
-	AccessToken  string    `json:"accessToken"`
-	RefreshToken string    `json:"refreshToken"`
-	ExpiresAt    time.Time `json:"expiresAt"`
-	User         UserInfo  `json:"user"`
+	AccessToken  string
+	RefreshToken string
+	ExpiresAt    time.Time
+	User         UserInfo
 }
 
 type UserInfo struct {
-	ID          string  `json:"id"`
-	Email       string  `json:"email"`
-	DisplayName string  `json:"displayName"`
-	AvatarURL   *string `json:"avatarUrl,omitempty"`
+	ID          string
+	Email       string
+	DisplayName string
+	AvatarURL   *string
 }

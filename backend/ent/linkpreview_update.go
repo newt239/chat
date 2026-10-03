@@ -15,7 +15,6 @@ import (
 	"github.com/newt239/chat/ent/linkpreview"
 	"github.com/newt239/chat/ent/linkpreviewxpost"
 	"github.com/newt239/chat/ent/linkpreviewyoutube"
-	"github.com/newt239/chat/ent/messagelink"
 	"github.com/newt239/chat/ent/predicate"
 )
 
@@ -252,21 +251,6 @@ func (_u *LinkPreviewUpdate) SetXPost(v *LinkPreviewXPost) *LinkPreviewUpdate {
 	return _u.SetXPostID(v.ID)
 }
 
-// AddMessageLinkIDs adds the "message_links" edge to the MessageLink entity by IDs.
-func (_u *LinkPreviewUpdate) AddMessageLinkIDs(ids ...uuid.UUID) *LinkPreviewUpdate {
-	_u.mutation.AddMessageLinkIDs(ids...)
-	return _u
-}
-
-// AddMessageLinks adds the "message_links" edges to the MessageLink entity.
-func (_u *LinkPreviewUpdate) AddMessageLinks(v ...*MessageLink) *LinkPreviewUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMessageLinkIDs(ids...)
-}
-
 // Mutation returns the LinkPreviewMutation object of the builder.
 func (_u *LinkPreviewUpdate) Mutation() *LinkPreviewMutation {
 	return _u.mutation
@@ -282,27 +266,6 @@ func (_u *LinkPreviewUpdate) ClearYoutube() *LinkPreviewUpdate {
 func (_u *LinkPreviewUpdate) ClearXPost() *LinkPreviewUpdate {
 	_u.mutation.ClearXPost()
 	return _u
-}
-
-// ClearMessageLinks clears all "message_links" edges to the MessageLink entity.
-func (_u *LinkPreviewUpdate) ClearMessageLinks() *LinkPreviewUpdate {
-	_u.mutation.ClearMessageLinks()
-	return _u
-}
-
-// RemoveMessageLinkIDs removes the "message_links" edge to MessageLink entities by IDs.
-func (_u *LinkPreviewUpdate) RemoveMessageLinkIDs(ids ...uuid.UUID) *LinkPreviewUpdate {
-	_u.mutation.RemoveMessageLinkIDs(ids...)
-	return _u
-}
-
-// RemoveMessageLinks removes "message_links" edges to MessageLink entities.
-func (_u *LinkPreviewUpdate) RemoveMessageLinks(v ...*MessageLink) *LinkPreviewUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveMessageLinkIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -459,51 +422,6 @@ func (_u *LinkPreviewUpdate) sqlSave(ctx context.Context) (_node int, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(linkpreviewxpost.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.MessageLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   linkpreview.MessageLinksTable,
-			Columns: []string{linkpreview.MessageLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMessageLinksIDs(); len(nodes) > 0 && !_u.mutation.MessageLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   linkpreview.MessageLinksTable,
-			Columns: []string{linkpreview.MessageLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MessageLinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   linkpreview.MessageLinksTable,
-			Columns: []string{linkpreview.MessageLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -751,21 +669,6 @@ func (_u *LinkPreviewUpdateOne) SetXPost(v *LinkPreviewXPost) *LinkPreviewUpdate
 	return _u.SetXPostID(v.ID)
 }
 
-// AddMessageLinkIDs adds the "message_links" edge to the MessageLink entity by IDs.
-func (_u *LinkPreviewUpdateOne) AddMessageLinkIDs(ids ...uuid.UUID) *LinkPreviewUpdateOne {
-	_u.mutation.AddMessageLinkIDs(ids...)
-	return _u
-}
-
-// AddMessageLinks adds the "message_links" edges to the MessageLink entity.
-func (_u *LinkPreviewUpdateOne) AddMessageLinks(v ...*MessageLink) *LinkPreviewUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMessageLinkIDs(ids...)
-}
-
 // Mutation returns the LinkPreviewMutation object of the builder.
 func (_u *LinkPreviewUpdateOne) Mutation() *LinkPreviewMutation {
 	return _u.mutation
@@ -781,27 +684,6 @@ func (_u *LinkPreviewUpdateOne) ClearYoutube() *LinkPreviewUpdateOne {
 func (_u *LinkPreviewUpdateOne) ClearXPost() *LinkPreviewUpdateOne {
 	_u.mutation.ClearXPost()
 	return _u
-}
-
-// ClearMessageLinks clears all "message_links" edges to the MessageLink entity.
-func (_u *LinkPreviewUpdateOne) ClearMessageLinks() *LinkPreviewUpdateOne {
-	_u.mutation.ClearMessageLinks()
-	return _u
-}
-
-// RemoveMessageLinkIDs removes the "message_links" edge to MessageLink entities by IDs.
-func (_u *LinkPreviewUpdateOne) RemoveMessageLinkIDs(ids ...uuid.UUID) *LinkPreviewUpdateOne {
-	_u.mutation.RemoveMessageLinkIDs(ids...)
-	return _u
-}
-
-// RemoveMessageLinks removes "message_links" edges to MessageLink entities.
-func (_u *LinkPreviewUpdateOne) RemoveMessageLinks(v ...*MessageLink) *LinkPreviewUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveMessageLinkIDs(ids...)
 }
 
 // Where appends a list predicates to the LinkPreviewUpdate builder.
@@ -988,51 +870,6 @@ func (_u *LinkPreviewUpdateOne) sqlSave(ctx context.Context) (_node *LinkPreview
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(linkpreviewxpost.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.MessageLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   linkpreview.MessageLinksTable,
-			Columns: []string{linkpreview.MessageLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMessageLinksIDs(); len(nodes) > 0 && !_u.mutation.MessageLinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   linkpreview.MessageLinksTable,
-			Columns: []string{linkpreview.MessageLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MessageLinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   linkpreview.MessageLinksTable,
-			Columns: []string{linkpreview.MessageLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

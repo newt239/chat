@@ -502,52 +502,6 @@ func HasMembersWith(preds ...predicate.WorkspaceMember) predicate.Workspace {
 	})
 }
 
-// HasChannels applies the HasEdge predicate on the "channels" edge.
-func HasChannels() predicate.Workspace {
-	return predicate.Workspace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ChannelsTable, ChannelsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasChannelsWith applies the HasEdge predicate on the "channels" edge with a given conditions (other predicates).
-func HasChannelsWith(preds ...predicate.Channel) predicate.Workspace {
-	return predicate.Workspace(func(s *sql.Selector) {
-		step := newChannelsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasUserGroups applies the HasEdge predicate on the "user_groups" edge.
-func HasUserGroups() predicate.Workspace {
-	return predicate.Workspace(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, UserGroupsTable, UserGroupsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasUserGroupsWith applies the HasEdge predicate on the "user_groups" edge with a given conditions (other predicates).
-func HasUserGroupsWith(preds ...predicate.UserGroup) predicate.Workspace {
-	return predicate.Workspace(func(s *sql.Selector) {
-		step := newUserGroupsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Workspace) predicate.Workspace {
 	return predicate.Workspace(sql.AndPredicates(predicates...))

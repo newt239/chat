@@ -12,9 +12,9 @@ type SearchIndexer interface {
 	Sync(ctx context.Context, messageIDs ...string)
 }
 
-// NewMessageObserver は新着メッセージをプッシュ通知やアプリの送信 Webhook で外へ知らせます。失敗しても呼び出し元へは返さない
+// NewMessageObserver は新着メッセージをプッシュ通知やアプリの送信 Webhook で外へ知らせます
 type NewMessageObserver interface {
-	NotifyNewMessage(ctx context.Context, channel *entity.Channel, message MessageOutput)
+	NotifyNewMessage(ctx context.Context, channel *entity.Channel, message MessageOutput) error
 }
 
 // Notifier はメッセージの変更をチャンネルの参加者へ配信します
@@ -22,6 +22,7 @@ type Notifier interface {
 	NotifyNewMessage(workspaceID, channelID string, message MessageOutput)
 	NotifyUpdatedMessage(workspaceID, channelID string, message MessageOutput)
 	NotifyDeletedMessage(workspaceID, channelID string, deletion MessageDeletion)
+	NotifySystemMessageCreated(workspaceID, channelID string, message *entity.SystemMessage)
 }
 
 // MessageDeletion は削除されたメッセージの通知内容です

@@ -8,7 +8,7 @@ import (
 	appuc "github.com/newt239/chat/internal/usecase/app"
 )
 
-var appPermissions = map[entity.AppPermission]chatv1.AppPermission{
+var AppPermissions = map[entity.AppPermission]chatv1.AppPermission{
 	entity.AppPermissionPostJoinedChannels: chatv1.AppPermission_APP_PERMISSION_POST_JOINED_CHANNELS,
 	entity.AppPermissionPostPublicChannels: chatv1.AppPermission_APP_PERMISSION_POST_PUBLIC_CHANNELS,
 	entity.AppPermissionPostThreadReplies:  chatv1.AppPermission_APP_PERMISSION_POST_THREAD_REPLIES,
@@ -22,7 +22,7 @@ func App(a appuc.Output) *chatv1.App {
 		Name:             a.Name,
 		Description:      a.Description,
 		AvatarUrl:        a.AvatarURL,
-		Permissions:      ConvertAll(a.Permissions, func(p entity.AppPermission) chatv1.AppPermission { return appPermissions[p] }),
+		Permissions:      ConvertAll(a.Permissions, func(p entity.AppPermission) chatv1.AppPermission { return AppPermissions[p] }),
 		DefaultChannelId: a.DefaultChannelID,
 		OutgoingUrl:      a.OutgoingURL,
 		OutgoingSecret:   a.OutgoingSecret,
@@ -33,21 +33,4 @@ func App(a appuc.Output) *chatv1.App {
 		LastUsedAt:       optionalTimestamp(a.LastUsedAt),
 		CanManage:        a.CanManage,
 	}
-}
-
-// AppSettingsFromProto は未定義の権限を除いて読み替えます。権限の値は protovalidate で検証済み
-func AppSettingsFromProto(s *chatv1.AppSettings) appuc.SettingsInput {
-	input := appuc.SettingsInput{
-		Name:             s.Name,
-		Description:      s.Description,
-		AvatarURL:        s.AvatarUrl,
-		DefaultChannelID: s.DefaultChannelId,
-		OutgoingURL:      s.OutgoingUrl,
-	}
-	for _, p := range s.Permissions {
-		if permission := reverseLookup(appPermissions, p); permission != "" {
-			input.Permissions = append(input.Permissions, permission)
-		}
-	}
-	return input
 }

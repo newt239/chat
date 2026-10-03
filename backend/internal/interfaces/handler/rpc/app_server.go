@@ -12,6 +12,23 @@ type AppServer struct {
 	UC *appuc.Interactor
 }
 
+// appSettings は未定義の権限を除いて読み替えます。権限の値は protovalidate で検証済み
+func appSettings(s *chatv1.AppSettings) appuc.SettingsInput {
+	input := appuc.SettingsInput{
+		Name:             s.Name,
+		Description:      s.Description,
+		AvatarURL:        s.AvatarUrl,
+		DefaultChannelID: s.DefaultChannelId,
+		OutgoingURL:      s.OutgoingUrl,
+	}
+	for _, p := range s.Permissions {
+		if permission := fromProto(presenter.AppPermissions, p); permission != "" {
+			input.Permissions = append(input.Permissions, permission)
+		}
+	}
+	return input
+}
+
 func (s *AppServer) ListApps(ctx context.Context, req *chatv1.ListAppsRequest) (*chatv1.ListAppsResponse, error) {
 	out, err := s.UC.List(ctx, appuc.ListInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx)})
 	if err != nil {
@@ -29,7 +46,7 @@ func (s *AppServer) ListChannelApps(ctx context.Context, req *chatv1.ListChannel
 }
 
 func (s *AppServer) CreateApp(ctx context.Context, req *chatv1.CreateAppRequest) (*chatv1.CreateAppResponse, error) {
-	out, err := s.UC.Create(ctx, appuc.CreateInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Settings: presenter.AppSettingsFromProto(req.Settings)})
+	out, err := s.UC.Create(ctx, appuc.CreateInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), Settings: appSettings(req.Settings)})
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +54,7 @@ func (s *AppServer) CreateApp(ctx context.Context, req *chatv1.CreateAppRequest)
 }
 
 func (s *AppServer) UpdateApp(ctx context.Context, req *chatv1.UpdateAppRequest) (*chatv1.UpdateAppResponse, error) {
-	out, err := s.UC.Update(ctx, appuc.UpdateInput{AppID: req.AppId, UserID: userIDFrom(ctx), Settings: presenter.AppSettingsFromProto(req.Settings)})
+	out, err := s.UC.Update(ctx, appuc.UpdateInput{AppID: req.AppId, UserID: userIDFrom(ctx), Settings: appSettings(req.Settings)})
 	if err != nil {
 		return nil, err
 	}
@@ -53,22 +70,13 @@ func (s *AppServer) RegenerateAppToken(ctx context.Context, req *chatv1.Regenera
 }
 
 func (s *AppServer) DeleteApp(ctx context.Context, req *chatv1.DeleteAppRequest) (*chatv1.DeleteAppResponse, error) {
-	if err := s.UC.Delete(ctx, appuc.TargetInput{AppID: req.AppId, UserID: userIDFrom(ctx)}); err != nil {
-		return nil, err
-	}
-	return &chatv1.DeleteAppResponse{}, nil
+	return &chatv1.DeleteAppResponse{}, s.UC.Delete(ctx, appuc.TargetInput{AppID: req.AppId, UserID: userIDFrom(ctx)})
 }
 
 func (s *AppServer) AddAppToChannel(ctx context.Context, req *chatv1.AddAppToChannelRequest) (*chatv1.AddAppToChannelResponse, error) {
-	if err := s.UC.AddToChannel(ctx, appuc.ChannelInput{AppID: req.AppId, ChannelID: req.ChannelId, UserID: userIDFrom(ctx)}); err != nil {
-		return nil, err
-	}
-	return &chatv1.AddAppToChannelResponse{}, nil
+	return &chatv1.AddAppToChannelResponse{}, s.UC.AddToChannel(ctx, appuc.ChannelInput{AppID: req.AppId, ChannelID: req.ChannelId, UserID: userIDFrom(ctx)})
 }
 
 func (s *AppServer) RemoveAppFromChannel(ctx context.Context, req *chatv1.RemoveAppFromChannelRequest) (*chatv1.RemoveAppFromChannelResponse, error) {
-	if err := s.UC.RemoveFromChannel(ctx, appuc.ChannelInput{AppID: req.AppId, ChannelID: req.ChannelId, UserID: userIDFrom(ctx)}); err != nil {
-		return nil, err
-	}
-	return &chatv1.RemoveAppFromChannelResponse{}, nil
+	return &chatv1.RemoveAppFromChannelResponse{}, s.UC.RemoveFromChannel(ctx, appuc.ChannelInput{AppID: req.AppId, ChannelID: req.ChannelId, UserID: userIDFrom(ctx)})
 }

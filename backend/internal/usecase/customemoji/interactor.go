@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,9 +21,10 @@ import (
 const imageURLExpires = 12 * time.Hour
 
 var (
-	ErrEmojiNotFound = errors.New("指定されたカスタム絵文字が見つかりません")
-	ErrNameExists    = errors.New("同じ名前のカスタム絵文字がすでにあります")
-	ErrInvalidName   = fmt.Errorf("%w: 名前は英小文字・数字・_・- の 32 文字以内で指定してください", domerr.ErrValidation)
+	ErrEmojiNotFound = domerr.New(domerr.ErrNotFound, "指定されたカスタム絵文字が見つかりません")
+	ErrNameExists    = domerr.New(domerr.ErrAlreadyExists, "同じ名前のカスタム絵文字がすでにあります")
+	ErrInvalidName   = domerr.New(domerr.ErrValidation, "名前は英小文字・数字・_・- の 32 文字以内で指定してください")
+	errInvalidUpload = domerr.New(domerr.ErrValidation, "upload_id が不正です")
 )
 
 type Interactor struct {
@@ -33,10 +35,9 @@ type Interactor struct {
 	storage       domainservice.StorageService
 	notifier      Notifier
 	recorder      audit.Recorder
-	logger        domainservice.Logger
 }
 
-func NewInteractor(
+func New(
 	emojiRepo domainrepository.CustomEmojiRepository,
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -44,7 +45,6 @@ func NewInteractor(
 	storage domainservice.StorageService,
 	notifier Notifier,
 	recorder audit.Recorder,
-	logger domainservice.Logger,
 ) *Interactor {
 	return &Interactor{
 		emojiRepo:     emojiRepo,
@@ -54,12 +54,11 @@ func NewInteractor(
 		storage:       storage,
 		notifier:      notifier,
 		recorder:      recorder,
-		logger:        logger,
 	}
 }
 
 func (i *Interactor) List(ctx context.Context, input ListInput) (*ListOutput, error) {
-	member, err := i.ensureMember(ctx, input.WorkspaceID, input.UserID)
+	member, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +80,7 @@ func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignO
 		return nil, err
 	}
 	uploadID := uuid.NewString()
-	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, input.SizeBytes, 0)
+	url, err := i.storage.GenerateUploadURL(ctx, storageKey(input.WorkspaceID, uploadID), input.ContentType, domainservice.UploadURLExpires)
 	if err != nil {
 		return nil, fmt.Errorf("failed to presign upload: %w", err)
 	}
@@ -97,7 +96,7 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 		return nil, ErrInvalidName
 	}
 	if uuid.Validate(input.UploadID) != nil {
-		return nil, fmt.Errorf("%w: upload_id が不正です", domerr.ErrValidation)
+		return nil, errInvalidUpload
 	}
 	// アップロード先はサーバーで組み立て直し、他のワークスペースの画像を指せないようにする
 	emoji := &entity.CustomEmoji{
@@ -124,7 +123,7 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*Output, er
 }
 
 func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
-	member, err := i.ensureMember(ctx, input.WorkspaceID, input.UserID)
+	member, err := domainservice.EnsureMember(ctx, i.workspaceRepo, input.WorkspaceID, input.UserID)
 	if err != nil {
 		return err
 	}
@@ -143,25 +142,11 @@ func (i *Interactor) Delete(ctx context.Context, input DeleteInput) error {
 	}
 	// 画像が残っても表示されることはないため、削除の失敗は記録だけにとどめる
 	if err := i.storage.DeleteObject(ctx, emoji.StorageKey); err != nil {
-		i.logger.Warn("カスタム絵文字の画像の削除に失敗しました",
-			domainservice.LogField{Key: "storageKey", Value: emoji.StorageKey},
-			domainservice.LogField{Key: "error", Value: err.Error()},
-		)
+		slog.WarnContext(ctx, "カスタム絵文字の画像の削除に失敗しました", "storageKey", emoji.StorageKey, "error", err)
 	}
 	i.record(ctx, emoji, input.UserID, entity.AuditActionCustomEmojiDeleted)
 	i.notifier.NotifyCustomEmojiDeleted(emoji.WorkspaceID, Notification{ID: emoji.ID, Name: emoji.Name})
 	return nil
-}
-
-func (i *Interactor) ensureMember(ctx context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
-	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, domerr.ErrUnauthorized
-	}
-	return member, nil
 }
 
 func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji, viewer *entity.WorkspaceMember) ([]Output, error) {
@@ -172,10 +157,6 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 	creators, err := i.userRepo.FindByIDs(ctx, creatorIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load creators: %w", err)
-	}
-	byID := make(map[string]*entity.User, len(creators))
-	for _, u := range creators {
-		byID[u.ID] = u
 	}
 
 	outputs := make([]Output, 0, len(emojis))
@@ -188,7 +169,7 @@ func (i *Interactor) toOutputs(ctx context.Context, emojis []*entity.CustomEmoji
 			ID:        e.ID,
 			Name:      e.Name,
 			ImageURL:  url,
-			CreatedBy: messageuc.UserInfoOf(e.CreatedBy, byID),
+			CreatedBy: messageuc.UserInfoOf(e.CreatedBy, creators),
 			CreatedAt: e.CreatedAt,
 			CanDelete: canDelete(e, viewer),
 		})

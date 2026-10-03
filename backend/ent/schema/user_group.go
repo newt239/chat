@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserGroup holds the schema definition for the UserGroup entity.
 type UserGroup struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (UserGroup) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "user_group"}}
 }
 
-// Fields of the UserGroup.
 func (UserGroup) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -32,7 +30,8 @@ func (UserGroup) Fields() []ent.Field {
 		field.String("name").
 			NotEmpty(),
 		field.String("description").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
@@ -42,7 +41,6 @@ func (UserGroup) Fields() []ent.Field {
 	}
 }
 
-// Edges of the UserGroup.
 func (UserGroup) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("workspace", Workspace.Type).
@@ -53,14 +51,9 @@ func (UserGroup) Edges() []ent.Edge {
 			Field("created_by_id").
 			Unique().
 			Required(),
-		edge.From("members", UserGroupMember.Type).
-			Ref("group"),
-		edge.From("group_mentions", MessageGroupMention.Type).
-			Ref("group"),
 	}
 }
 
-// Indexes of the UserGroup.
 func (UserGroup) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("workspace_id", "name").

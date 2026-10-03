@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ThreadReadState holds the schema definition for the ThreadReadState entity.
 type ThreadReadState struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (ThreadReadState) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "thread_read_state"}}
 }
 
-// Fields of the ThreadReadState.
 func (ThreadReadState) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -31,16 +29,9 @@ func (ThreadReadState) Fields() []ent.Field {
 		field.UUID("thread_id", uuid.UUID{}),
 		field.Time("last_read_at").
 			Default(time.Now),
-		field.Time("created_at").
-			Default(time.Now).
-			Immutable(),
-		field.Time("updated_at").
-			Default(time.Now).
-			UpdateDefault(time.Now),
 	}
 }
 
-// Edges of the ThreadReadState.
 func (ThreadReadState) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
@@ -54,7 +45,6 @@ func (ThreadReadState) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the ThreadReadState.
 func (ThreadReadState) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("user_id", "thread_id").

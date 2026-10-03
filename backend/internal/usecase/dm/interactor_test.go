@@ -30,7 +30,7 @@ func newInteractor(memberIDs ...string) *Interactor {
 	for _, id := range memberIDs {
 		members[id] = &entity.WorkspaceMember{Role: entity.WorkspaceRoleMember}
 	}
-	return NewInteractor(nil, nil, nil, nil, nil, nil, &stubWorkspaceRepo{members: members})
+	return New(nil, nil, nil, nil, nil, nil, &stubWorkspaceRepo{members: members})
 }
 
 func TestCreateDMRejectsNonWorkspaceMember(t *testing.T) {
@@ -97,11 +97,11 @@ type stubUserRepo struct {
 	calls int
 }
 
-func (r *stubUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
+func (r *stubUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
 	r.calls++
-	users := make([]*entity.User, 0, len(ids))
+	users := make(map[string]*entity.User, len(ids))
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, DisplayName: id})
+		users[id] = &entity.User{ID: id, DisplayName: id}
 	}
 	return users, nil
 }
@@ -130,7 +130,7 @@ func (stubFlags) GetUnreadMentionCountBatch(context.Context, []string, string) (
 
 func TestListDMsLoadsMembersAtOnce(t *testing.T) {
 	users := &stubUserRepo{}
-	uc := NewInteractor(stubDMChannelRepo{}, stubMemberRepo{}, stubFlags{}, stubFlags{}, stubFlags{}, users, nil)
+	uc := New(stubDMChannelRepo{}, stubMemberRepo{}, stubFlags{}, stubFlags{}, stubFlags{}, users, nil)
 
 	dms, err := uc.ListDMs(context.Background(), ListDMsInput{WorkspaceID: "ws", UserID: "alice"})
 	if err != nil {

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,25 +12,21 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
-	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/workspace"
 )
 
 // UserGroupQuery is the builder for querying UserGroup entities.
 type UserGroupQuery struct {
 	config
-	ctx               *QueryContext
-	order             []usergroup.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.UserGroup
-	withWorkspace     *WorkspaceQuery
-	withCreatedBy     *UserQuery
-	withMembers       *UserGroupMemberQuery
-	withGroupMentions *MessageGroupMentionQuery
+	ctx           *QueryContext
+	order         []usergroup.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.UserGroup
+	withWorkspace *WorkspaceQuery
+	withCreatedBy *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -105,50 +100,6 @@ func (_q *UserGroupQuery) QueryCreatedBy() *UserQuery {
 			sqlgraph.From(usergroup.Table, usergroup.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, usergroup.CreatedByTable, usergroup.CreatedByColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryMembers chains the current query on the "members" edge.
-func (_q *UserGroupQuery) QueryMembers() *UserGroupMemberQuery {
-	query := (&UserGroupMemberClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(usergroup.Table, usergroup.FieldID, selector),
-			sqlgraph.To(usergroupmember.Table, usergroupmember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, usergroup.MembersTable, usergroup.MembersColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryGroupMentions chains the current query on the "group_mentions" edge.
-func (_q *UserGroupQuery) QueryGroupMentions() *MessageGroupMentionQuery {
-	query := (&MessageGroupMentionClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(usergroup.Table, usergroup.FieldID, selector),
-			sqlgraph.To(messagegroupmention.Table, messagegroupmention.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, usergroup.GroupMentionsTable, usergroup.GroupMentionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -343,15 +294,13 @@ func (_q *UserGroupQuery) Clone() *UserGroupQuery {
 		return nil
 	}
 	return &UserGroupQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]usergroup.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.UserGroup{}, _q.predicates...),
-		withWorkspace:     _q.withWorkspace.Clone(),
-		withCreatedBy:     _q.withCreatedBy.Clone(),
-		withMembers:       _q.withMembers.Clone(),
-		withGroupMentions: _q.withGroupMentions.Clone(),
+		config:        _q.config,
+		ctx:           _q.ctx.Clone(),
+		order:         append([]usergroup.OrderOption{}, _q.order...),
+		inters:        append([]Interceptor{}, _q.inters...),
+		predicates:    append([]predicate.UserGroup{}, _q.predicates...),
+		withWorkspace: _q.withWorkspace.Clone(),
+		withCreatedBy: _q.withCreatedBy.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -377,28 +326,6 @@ func (_q *UserGroupQuery) WithCreatedBy(opts ...func(*UserQuery)) *UserGroupQuer
 		opt(query)
 	}
 	_q.withCreatedBy = query
-	return _q
-}
-
-// WithMembers tells the query-builder to eager-load the nodes that are connected to
-// the "members" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserGroupQuery) WithMembers(opts ...func(*UserGroupMemberQuery)) *UserGroupQuery {
-	query := (&UserGroupMemberClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withMembers = query
-	return _q
-}
-
-// WithGroupMentions tells the query-builder to eager-load the nodes that are connected to
-// the "group_mentions" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserGroupQuery) WithGroupMentions(opts ...func(*MessageGroupMentionQuery)) *UserGroupQuery {
-	query := (&MessageGroupMentionClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withGroupMentions = query
 	return _q
 }
 
@@ -480,11 +407,9 @@ func (_q *UserGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Us
 	var (
 		nodes       = []*UserGroup{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [2]bool{
 			_q.withWorkspace != nil,
 			_q.withCreatedBy != nil,
-			_q.withMembers != nil,
-			_q.withGroupMentions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -514,20 +439,6 @@ func (_q *UserGroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Us
 	if query := _q.withCreatedBy; query != nil {
 		if err := _q.loadCreatedBy(ctx, query, nodes, nil,
 			func(n *UserGroup, e *User) { n.Edges.CreatedBy = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withMembers; query != nil {
-		if err := _q.loadMembers(ctx, query, nodes,
-			func(n *UserGroup) { n.Edges.Members = []*UserGroupMember{} },
-			func(n *UserGroup, e *UserGroupMember) { n.Edges.Members = append(n.Edges.Members, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withGroupMentions; query != nil {
-		if err := _q.loadGroupMentions(ctx, query, nodes,
-			func(n *UserGroup) { n.Edges.GroupMentions = []*MessageGroupMention{} },
-			func(n *UserGroup, e *MessageGroupMention) { n.Edges.GroupMentions = append(n.Edges.GroupMentions, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -589,66 +500,6 @@ func (_q *UserGroupQuery) loadCreatedBy(ctx context.Context, query *UserQuery, n
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (_q *UserGroupQuery) loadMembers(ctx context.Context, query *UserGroupMemberQuery, nodes []*UserGroup, init func(*UserGroup), assign func(*UserGroup, *UserGroupMember)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*UserGroup)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(usergroupmember.FieldGroupID)
-	}
-	query.Where(predicate.UserGroupMember(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(usergroup.MembersColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.GroupID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "group_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *UserGroupQuery) loadGroupMentions(ctx context.Context, query *MessageGroupMentionQuery, nodes []*UserGroup, init func(*UserGroup), assign func(*UserGroup, *MessageGroupMention)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*UserGroup)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(messagegroupmention.FieldGroupID)
-	}
-	query.Where(predicate.MessageGroupMention(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(usergroup.GroupMentionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.GroupID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "group_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

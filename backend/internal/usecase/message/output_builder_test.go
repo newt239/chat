@@ -38,8 +38,12 @@ type builderUserRepo struct {
 	users []*entity.User
 }
 
-func (r *builderUserRepo) FindByIDs(_ context.Context, _ []string) ([]*entity.User, error) {
-	return r.users, nil
+func (r *builderUserRepo) FindByIDs(_ context.Context, _ []string) (map[string]*entity.User, error) {
+	users := make(map[string]*entity.User, len(r.users))
+	for _, u := range r.users {
+		users[u.ID] = u
+	}
+	return users, nil
 }
 
 type builderUserMentionRepo struct {

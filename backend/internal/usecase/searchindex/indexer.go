@@ -3,6 +3,7 @@ package searchindex
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
@@ -19,11 +20,10 @@ type Indexer struct {
 	messageRepo domainrepository.MessageRepository
 	index       domainrepository.MessageSearchIndex
 	mentionSvc  service.MentionService
-	logger      service.Logger
 }
 
-func NewIndexer(messageRepo domainrepository.MessageRepository, index domainrepository.MessageSearchIndex, mentionSvc service.MentionService, logger service.Logger) *Indexer {
-	return &Indexer{messageRepo: messageRepo, index: index, mentionSvc: mentionSvc, logger: logger}
+func NewIndexer(messageRepo domainrepository.MessageRepository, index domainrepository.MessageSearchIndex, mentionSvc service.MentionService) *Indexer {
+	return &Indexer{messageRepo: messageRepo, index: index, mentionSvc: mentionSvc}
 }
 
 // upsert は本文の ID 記法を名前に置き換え、名前で検索できるようにして登録します
@@ -38,13 +38,12 @@ func (i *Indexer) upsert(ctx context.Context, docs []domainrepository.MessageSea
 	return i.index.Upsert(ctx, docs)
 }
 
-// Sync は指定したメッセージを登録し直し、削除済みのものはインデックスから外します。
-// 検索は補助機能のため、失敗してもログに残すだけで呼び出し元の処理は失敗させない
+// Sync は指定したメッセージを登録し直し、削除済みのものは外します。検索は補助機能のため失敗してもログに残すだけにする
 func (i *Indexer) Sync(ctx context.Context, messageIDs ...string) {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), syncTimeout)
 	defer cancel()
 	if err := i.sync(ctx, messageIDs); err != nil {
-		i.logger.Warn("検索インデックスの更新に失敗しました", service.LogField{Key: "messageIDs", Value: messageIDs}, service.LogField{Key: "error", Value: err.Error()})
+		slog.WarnContext(ctx, "検索インデックスの更新に失敗しました", "messageIDs", messageIDs, "error", err)
 	}
 }
 
@@ -73,8 +72,21 @@ func (i *Indexer) sync(ctx context.Context, messageIDs []string) error {
 	return nil
 }
 
-// Reindex はインデックスを空にし、削除されていない全メッセージを登録し直して件数を返します
-func (i *Indexer) Reindex(ctx context.Context) (int, error) {
+// Prepare は検索に必要な設定を反映し、インデックスが空か force なら削除されていない全メッセージを登録し直して件数を返します
+func (i *Indexer) Prepare(ctx context.Context, force bool) (int, error) {
+	if err := i.index.EnsureSettings(ctx); err != nil {
+		return 0, fmt.Errorf("failed to configure index: %w", err)
+	}
+	if !force {
+		empty, err := i.index.IsEmpty(ctx)
+		if err != nil || !empty {
+			return 0, err
+		}
+	}
+	return i.reindex(ctx)
+}
+
+func (i *Indexer) reindex(ctx context.Context) (int, error) {
 	if err := i.index.DeleteAll(ctx); err != nil {
 		return 0, fmt.Errorf("failed to clear index: %w", err)
 	}

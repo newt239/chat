@@ -59,8 +59,6 @@ func (LinkPreview) Edges() []ent.Edge {
 		edge.To("x_post", LinkPreviewXPost.Type).
 			Unique().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
-		edge.From("message_links", MessageLink.Type).
-			Ref("link_preview"),
 	}
 }
 

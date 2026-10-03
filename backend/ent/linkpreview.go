@@ -50,11 +50,9 @@ type LinkPreviewEdges struct {
 	Youtube *LinkPreviewYoutube `json:"youtube,omitempty"`
 	// XPost holds the value of the x_post edge.
 	XPost *LinkPreviewXPost `json:"x_post,omitempty"`
-	// MessageLinks holds the value of the message_links edge.
-	MessageLinks []*MessageLink `json:"message_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // YoutubeOrErr returns the Youtube value or an error if the edge
@@ -77,15 +75,6 @@ func (e LinkPreviewEdges) XPostOrErr() (*LinkPreviewXPost, error) {
 		return nil, &NotFoundError{label: linkpreviewxpost.Label}
 	}
 	return nil, &NotLoadedError{edge: "x_post"}
-}
-
-// MessageLinksOrErr returns the MessageLinks value or an error if the edge
-// was not loaded in eager-loading.
-func (e LinkPreviewEdges) MessageLinksOrErr() ([]*MessageLink, error) {
-	if e.loadedTypes[2] {
-		return e.MessageLinks, nil
-	}
-	return nil, &NotLoadedError{edge: "message_links"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -204,11 +193,6 @@ func (_m *LinkPreview) QueryYoutube() *LinkPreviewYoutubeQuery {
 // QueryXPost queries the "x_post" edge of the LinkPreview entity.
 func (_m *LinkPreview) QueryXPost() *LinkPreviewXPostQuery {
 	return NewLinkPreviewClient(_m.config).QueryXPost(_m)
-}
-
-// QueryMessageLinks queries the "message_links" edge of the LinkPreview entity.
-func (_m *LinkPreview) QueryMessageLinks() *MessageLinkQuery {
-	return NewLinkPreviewClient(_m.config).QueryMessageLinks(_m)
 }
 
 // Update returns a builder for updating this LinkPreview.

@@ -22,7 +22,6 @@ var (
 		{Name: "is_official", Type: field.TypeBool, Default: false},
 		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "workspace_id", Type: field.TypeString, Size: 12},
 		{Name: "created_by_id", Type: field.TypeUUID},
 		{Name: "bot_user_id", Type: field.TypeUUID},
@@ -36,25 +35,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "app_workspace_workspace",
-				Columns:    []*schema.Column{AppColumns[12]},
+				Columns:    []*schema.Column{AppColumns[11]},
 				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "app_user_created_by",
-				Columns:    []*schema.Column{AppColumns[13]},
+				Columns:    []*schema.Column{AppColumns[12]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "app_user_bot_user",
-				Columns:    []*schema.Column{AppColumns[14]},
+				Columns:    []*schema.Column{AppColumns[13]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "app_channel_default_channel",
-				Columns:    []*schema.Column{AppColumns[15]},
+				Columns:    []*schema.Column{AppColumns[14]},
 				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -63,12 +62,12 @@ var (
 			{
 				Name:    "app_workspace_id",
 				Unique:  false,
-				Columns: []*schema.Column{AppColumns[12]},
+				Columns: []*schema.Column{AppColumns[11]},
 			},
 			{
 				Name:    "app_official_workspace_id",
 				Unique:  true,
-				Columns: []*schema.Column{AppColumns[12]},
+				Columns: []*schema.Column{AppColumns[11]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "is_official",
 				},
@@ -89,8 +88,6 @@ var (
 		{Name: "thumbnail_width", Type: field.TypeInt32, Nullable: true},
 		{Name: "thumbnail_height", Type: field.TypeInt32, Nullable: true},
 		{Name: "status", Type: field.TypeString, Default: "pending"},
-		{Name: "uploaded_at", Type: field.TypeTime, Nullable: true},
-		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "uploader_id", Type: field.TypeUUID},
@@ -104,19 +101,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "attachment_message_message",
-				Columns:    []*schema.Column{AttachmentColumns[15]},
+				Columns:    []*schema.Column{AttachmentColumns[13]},
 				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "attachment_user_uploader",
-				Columns:    []*schema.Column{AttachmentColumns[16]},
+				Columns:    []*schema.Column{AttachmentColumns[14]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "attachment_channel_channel",
-				Columns:    []*schema.Column{AttachmentColumns[17]},
+				Columns:    []*schema.Column{AttachmentColumns[15]},
 				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -130,12 +127,12 @@ var (
 			{
 				Name:    "attachment_message_id",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentColumns[15]},
+				Columns: []*schema.Column{AttachmentColumns[13]},
 			},
 			{
 				Name:    "attachment_channel_id",
 				Unique:  false,
-				Columns: []*schema.Column{AttachmentColumns[17]},
+				Columns: []*schema.Column{AttachmentColumns[15]},
 			},
 		},
 	}
@@ -182,7 +179,6 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "channel_type", Type: field.TypeString, Default: "public"},
-		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
 		{Name: "dm_key", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -198,19 +194,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "channel_workspace_workspace",
-				Columns:    []*schema.Column{ChannelColumns[8]},
+				Columns:    []*schema.Column{ChannelColumns[7]},
 				RefColumns: []*schema.Column{WorkspaceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "channel_user_created_by",
-				Columns:    []*schema.Column{ChannelColumns[9]},
+				Columns:    []*schema.Column{ChannelColumns[8]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "channel_channel_children",
-				Columns:    []*schema.Column{ChannelColumns[10]},
+				Columns:    []*schema.Column{ChannelColumns[9]},
 				RefColumns: []*schema.Column{ChannelColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -219,12 +215,12 @@ var (
 			{
 				Name:    "channel_workspace_id_channel_type",
 				Unique:  false,
-				Columns: []*schema.Column{ChannelColumns[8], ChannelColumns[3]},
+				Columns: []*schema.Column{ChannelColumns[7], ChannelColumns[3]},
 			},
 			{
 				Name:    "channel_workspace_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelColumns[8], ChannelColumns[1]},
+				Columns: []*schema.Column{ChannelColumns[7], ChannelColumns[1]},
 				Annotation: &entsql.IndexAnnotation{
 					Where: "dm_key IS NULL",
 				},
@@ -232,7 +228,7 @@ var (
 			{
 				Name:    "channel_workspace_id_dm_key",
 				Unique:  true,
-				Columns: []*schema.Column{ChannelColumns[8], ChannelColumns[5]},
+				Columns: []*schema.Column{ChannelColumns[7], ChannelColumns[4]},
 			},
 		},
 	}
@@ -379,11 +375,6 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "channelmember_role",
-				Unique:  false,
-				Columns: []*schema.Column{ChannelMemberColumns[1]},
-			},
-			{
 				Name:    "channelmember_channel_id_user_id",
 				Unique:  true,
 				Columns: []*schema.Column{ChannelMemberColumns[3], ChannelMemberColumns[4]},
@@ -456,11 +447,6 @@ var (
 			},
 		},
 		Indexes: []*schema.Index{
-			{
-				Name:    "channelreadstate_last_read_at",
-				Unique:  false,
-				Columns: []*schema.Column{ChannelReadStateColumns[1]},
-			},
 			{
 				Name:    "channelreadstate_channel_id_user_id",
 				Unique:  true,
@@ -731,11 +717,6 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "message_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MessageColumns[2]},
-			},
-			{
 				Name:    "message_channel_id_created_at",
 				Unique:  false,
 				Columns: []*schema.Column{MessageColumns[12], MessageColumns[2]},
@@ -783,11 +764,6 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "messagebookmark_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MessageBookmarkColumns[1]},
-			},
-			{
 				Name:    "messagebookmark_user_id_message_id",
 				Unique:  true,
 				Columns: []*schema.Column{MessageBookmarkColumns[2], MessageBookmarkColumns[3]},
@@ -797,7 +773,6 @@ var (
 	// MessageGroupMentionColumns holds the columns for the "message_group_mention" table.
 	MessageGroupMentionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_id", Type: field.TypeUUID},
 		{Name: "group_id", Type: field.TypeUUID},
 	}
@@ -809,13 +784,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "message_group_mention_message_message",
-				Columns:    []*schema.Column{MessageGroupMentionColumns[2]},
+				Columns:    []*schema.Column{MessageGroupMentionColumns[1]},
 				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "message_group_mention_user_group_group",
-				Columns:    []*schema.Column{MessageGroupMentionColumns[3]},
+				Columns:    []*schema.Column{MessageGroupMentionColumns[2]},
 				RefColumns: []*schema.Column{UserGroupColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -824,12 +799,12 @@ var (
 			{
 				Name:    "messagegroupmention_message_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessageGroupMentionColumns[2]},
+				Columns: []*schema.Column{MessageGroupMentionColumns[1]},
 			},
 			{
 				Name:    "messagegroupmention_group_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessageGroupMentionColumns[3]},
+				Columns: []*schema.Column{MessageGroupMentionColumns[2]},
 			},
 		},
 	}
@@ -904,11 +879,6 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "messagepin_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MessagePinColumns[1]},
-			},
-			{
 				Name:    "messagepin_channel_id_message_id",
 				Unique:  true,
 				Columns: []*schema.Column{MessagePinColumns[2], MessagePinColumns[3]},
@@ -964,7 +934,6 @@ var (
 	MessageUserMentionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "via_group_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
 		{Name: "message_id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
@@ -976,13 +945,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "message_user_mention_message_message",
-				Columns:    []*schema.Column{MessageUserMentionColumns[3]},
+				Columns:    []*schema.Column{MessageUserMentionColumns[2]},
 				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "message_user_mention_user_user",
-				Columns:    []*schema.Column{MessageUserMentionColumns[4]},
+				Columns:    []*schema.Column{MessageUserMentionColumns[3]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -991,12 +960,12 @@ var (
 			{
 				Name:    "messageusermention_message_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionColumns[3]},
+				Columns: []*schema.Column{MessageUserMentionColumns[2]},
 			},
 			{
 				Name:    "messageusermention_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{MessageUserMentionColumns[4]},
+				Columns: []*schema.Column{MessageUserMentionColumns[3]},
 			},
 		},
 	}
@@ -1102,7 +1071,6 @@ var (
 		{Name: "platform", Type: field.TypeEnum, Enums: []string{"web", "ios", "android"}},
 		{Name: "user_agent", Type: field.TypeString, Default: ""},
 		{Name: "last_seen_at", Type: field.TypeTime},
-		{Name: "created_at", Type: field.TypeTime},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// PushTokenTable holds the schema information for the "push_token" table.
@@ -1113,7 +1081,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "push_token_user_user",
-				Columns:    []*schema.Column{PushTokenColumns[6]},
+				Columns:    []*schema.Column{PushTokenColumns[5]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -1122,7 +1090,7 @@ var (
 			{
 				Name:    "pushtoken_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{PushTokenColumns[6]},
+				Columns: []*schema.Column{PushTokenColumns[5]},
 			},
 		},
 	}
@@ -1302,14 +1270,9 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "systemmessage_created_at",
+				Name:    "systemmessage_channel_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{SystemMessageColumns[3]},
-			},
-			{
-				Name:    "systemmessage_kind",
-				Unique:  false,
-				Columns: []*schema.Column{SystemMessageColumns[1]},
+				Columns: []*schema.Column{SystemMessageColumns[4], SystemMessageColumns[3]},
 			},
 		},
 	}
@@ -1317,8 +1280,6 @@ var (
 	ThreadReadStateColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "last_read_at", Type: field.TypeTime},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "thread_id", Type: field.TypeUUID},
 	}
@@ -1330,13 +1291,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "thread_read_state_user_user",
-				Columns:    []*schema.Column{ThreadReadStateColumns[4]},
+				Columns:    []*schema.Column{ThreadReadStateColumns[2]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "thread_read_state_message_thread",
-				Columns:    []*schema.Column{ThreadReadStateColumns[5]},
+				Columns:    []*schema.Column{ThreadReadStateColumns[3]},
 				RefColumns: []*schema.Column{MessageColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1345,7 +1306,7 @@ var (
 			{
 				Name:    "threadreadstate_user_id_thread_id",
 				Unique:  true,
-				Columns: []*schema.Column{ThreadReadStateColumns[4], ThreadReadStateColumns[5]},
+				Columns: []*schema.Column{ThreadReadStateColumns[2], ThreadReadStateColumns[3]},
 			},
 		},
 	}
@@ -1566,11 +1527,6 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "userthreadfollow_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{UserThreadFollowColumns[1]},
-			},
-			{
 				Name:    "userthreadfollow_user_id_thread_id",
 				Unique:  true,
 				Columns: []*schema.Column{UserThreadFollowColumns[2], UserThreadFollowColumns[3]},
@@ -1609,11 +1565,6 @@ var (
 			},
 		},
 		Indexes: []*schema.Index{
-			{
-				Name:    "workspace_id",
-				Unique:  true,
-				Columns: []*schema.Column{WorkspaceColumns[0]},
-			},
 			{
 				Name:    "workspace_is_public",
 				Unique:  false,

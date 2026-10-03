@@ -26,8 +26,6 @@ const (
 	FieldUserAgent = "user_agent"
 	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
 	FieldLastSeenAt = "last_seen_at"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the pushtoken in the database.
@@ -49,7 +47,6 @@ var Columns = []string{
 	FieldPlatform,
 	FieldUserAgent,
 	FieldLastSeenAt,
-	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -69,8 +66,6 @@ var (
 	DefaultUserAgent string
 	// DefaultLastSeenAt holds the default value on creation for the "last_seen_at" field.
 	DefaultLastSeenAt func() time.Time
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -130,11 +125,6 @@ func ByUserAgent(opts ...sql.OrderTermOption) OrderOption {
 // ByLastSeenAt orders the results by the last_seen_at field.
 func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

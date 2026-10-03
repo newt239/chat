@@ -8,16 +8,11 @@ import (
 	workspaceuc "github.com/newt239/chat/internal/usecase/workspace"
 )
 
-var workspaceRoles = map[entity.WorkspaceRole]chatv1.WorkspaceRole{
+var WorkspaceRoles = map[entity.WorkspaceRole]chatv1.WorkspaceRole{
 	entity.WorkspaceRoleOwner:  chatv1.WorkspaceRole_WORKSPACE_ROLE_OWNER,
 	entity.WorkspaceRoleAdmin:  chatv1.WorkspaceRole_WORKSPACE_ROLE_ADMIN,
 	entity.WorkspaceRoleMember: chatv1.WorkspaceRole_WORKSPACE_ROLE_MEMBER,
 	entity.WorkspaceRoleGuest:  chatv1.WorkspaceRole_WORKSPACE_ROLE_GUEST,
-}
-
-// WorkspaceRoleFromProto はリクエストのロールをエンティティのロールに変換します
-func WorkspaceRoleFromProto(role chatv1.WorkspaceRole) entity.WorkspaceRole {
-	return reverseLookup(workspaceRoles, role)
 }
 
 func Workspace(w workspaceuc.WorkspaceOutput) *chatv1.Workspace {
@@ -29,7 +24,7 @@ func Workspace(w workspaceuc.WorkspaceOutput) *chatv1.Workspace {
 		IsPublic:           w.IsPublic,
 		SignupEnabled:      w.SignupEnabled,
 		EmailSignupEnabled: w.EmailSignupEnabled,
-		Role:               workspaceRoles[w.Role],
+		Role:               WorkspaceRoles[w.Role],
 		CreatedBy:          w.CreatedBy,
 		CreatedAt:          timestamppb.New(w.CreatedAt),
 		UpdatedAt:          timestamppb.New(w.UpdatedAt),
@@ -43,7 +38,7 @@ func WorkspaceMember(m workspaceuc.MemberInfo) *chatv1.WorkspaceMember {
 		DisplayName: m.DisplayName,
 		AvatarUrl:   m.AvatarURL,
 		Bio:         m.Bio,
-		Role:        workspaceRoles[m.Role],
+		Role:        WorkspaceRoles[m.Role],
 		JoinedAt:    timestamppb.New(m.JoinedAt),
 		SuspendedAt: optionalTimestamp(m.SuspendedAt),
 		Nickname:    m.Nickname,

@@ -35,66 +35,14 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeSessions holds the string denoting the sessions edge name in mutations.
-	EdgeSessions = "sessions"
-	// EdgeCreatedWorkspaces holds the string denoting the created_workspaces edge name in mutations.
-	EdgeCreatedWorkspaces = "created_workspaces"
-	// EdgeWorkspaceMembers holds the string denoting the workspace_members edge name in mutations.
-	EdgeWorkspaceMembers = "workspace_members"
-	// EdgeCreatedChannels holds the string denoting the created_channels edge name in mutations.
-	EdgeCreatedChannels = "created_channels"
 	// EdgeChannelMembers holds the string denoting the channel_members edge name in mutations.
 	EdgeChannelMembers = "channel_members"
-	// EdgeMessages holds the string denoting the messages edge name in mutations.
-	EdgeMessages = "messages"
-	// EdgeMessageReactions holds the string denoting the message_reactions edge name in mutations.
-	EdgeMessageReactions = "message_reactions"
-	// EdgeMessageBookmarks holds the string denoting the message_bookmarks edge name in mutations.
-	EdgeMessageBookmarks = "message_bookmarks"
-	// EdgeUserMentions holds the string denoting the user_mentions edge name in mutations.
-	EdgeUserMentions = "user_mentions"
-	// EdgeUserGroupMembers holds the string denoting the user_group_members edge name in mutations.
-	EdgeUserGroupMembers = "user_group_members"
-	// EdgeCreatedUserGroups holds the string denoting the created_user_groups edge name in mutations.
-	EdgeCreatedUserGroups = "created_user_groups"
-	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
-	EdgeAttachments = "attachments"
-	// EdgeChannelReadStates holds the string denoting the channel_read_states edge name in mutations.
-	EdgeChannelReadStates = "channel_read_states"
 	// EdgePreference holds the string denoting the preference edge name in mutations.
 	EdgePreference = "preference"
 	// EdgeLinks holds the string denoting the links edge name in mutations.
 	EdgeLinks = "links"
 	// Table holds the table name of the user in the database.
 	Table = "user"
-	// SessionsTable is the table that holds the sessions relation/edge.
-	SessionsTable = "session"
-	// SessionsInverseTable is the table name for the Session entity.
-	// It exists in this package in order to avoid circular dependency with the "session" package.
-	SessionsInverseTable = "session"
-	// SessionsColumn is the table column denoting the sessions relation/edge.
-	SessionsColumn = "user_id"
-	// CreatedWorkspacesTable is the table that holds the created_workspaces relation/edge.
-	CreatedWorkspacesTable = "workspace"
-	// CreatedWorkspacesInverseTable is the table name for the Workspace entity.
-	// It exists in this package in order to avoid circular dependency with the "workspace" package.
-	CreatedWorkspacesInverseTable = "workspace"
-	// CreatedWorkspacesColumn is the table column denoting the created_workspaces relation/edge.
-	CreatedWorkspacesColumn = "created_by_id"
-	// WorkspaceMembersTable is the table that holds the workspace_members relation/edge.
-	WorkspaceMembersTable = "workspace_member"
-	// WorkspaceMembersInverseTable is the table name for the WorkspaceMember entity.
-	// It exists in this package in order to avoid circular dependency with the "workspacemember" package.
-	WorkspaceMembersInverseTable = "workspace_member"
-	// WorkspaceMembersColumn is the table column denoting the workspace_members relation/edge.
-	WorkspaceMembersColumn = "user_id"
-	// CreatedChannelsTable is the table that holds the created_channels relation/edge.
-	CreatedChannelsTable = "channel"
-	// CreatedChannelsInverseTable is the table name for the Channel entity.
-	// It exists in this package in order to avoid circular dependency with the "channel" package.
-	CreatedChannelsInverseTable = "channel"
-	// CreatedChannelsColumn is the table column denoting the created_channels relation/edge.
-	CreatedChannelsColumn = "created_by_id"
 	// ChannelMembersTable is the table that holds the channel_members relation/edge.
 	ChannelMembersTable = "channel_member"
 	// ChannelMembersInverseTable is the table name for the ChannelMember entity.
@@ -102,62 +50,6 @@ const (
 	ChannelMembersInverseTable = "channel_member"
 	// ChannelMembersColumn is the table column denoting the channel_members relation/edge.
 	ChannelMembersColumn = "user_id"
-	// MessagesTable is the table that holds the messages relation/edge.
-	MessagesTable = "message"
-	// MessagesInverseTable is the table name for the Message entity.
-	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessagesInverseTable = "message"
-	// MessagesColumn is the table column denoting the messages relation/edge.
-	MessagesColumn = "user_id"
-	// MessageReactionsTable is the table that holds the message_reactions relation/edge.
-	MessageReactionsTable = "message_reaction"
-	// MessageReactionsInverseTable is the table name for the MessageReaction entity.
-	// It exists in this package in order to avoid circular dependency with the "messagereaction" package.
-	MessageReactionsInverseTable = "message_reaction"
-	// MessageReactionsColumn is the table column denoting the message_reactions relation/edge.
-	MessageReactionsColumn = "user_id"
-	// MessageBookmarksTable is the table that holds the message_bookmarks relation/edge.
-	MessageBookmarksTable = "message_bookmark"
-	// MessageBookmarksInverseTable is the table name for the MessageBookmark entity.
-	// It exists in this package in order to avoid circular dependency with the "messagebookmark" package.
-	MessageBookmarksInverseTable = "message_bookmark"
-	// MessageBookmarksColumn is the table column denoting the message_bookmarks relation/edge.
-	MessageBookmarksColumn = "user_id"
-	// UserMentionsTable is the table that holds the user_mentions relation/edge.
-	UserMentionsTable = "message_user_mention"
-	// UserMentionsInverseTable is the table name for the MessageUserMention entity.
-	// It exists in this package in order to avoid circular dependency with the "messageusermention" package.
-	UserMentionsInverseTable = "message_user_mention"
-	// UserMentionsColumn is the table column denoting the user_mentions relation/edge.
-	UserMentionsColumn = "user_id"
-	// UserGroupMembersTable is the table that holds the user_group_members relation/edge.
-	UserGroupMembersTable = "user_group_member"
-	// UserGroupMembersInverseTable is the table name for the UserGroupMember entity.
-	// It exists in this package in order to avoid circular dependency with the "usergroupmember" package.
-	UserGroupMembersInverseTable = "user_group_member"
-	// UserGroupMembersColumn is the table column denoting the user_group_members relation/edge.
-	UserGroupMembersColumn = "user_id"
-	// CreatedUserGroupsTable is the table that holds the created_user_groups relation/edge.
-	CreatedUserGroupsTable = "user_group"
-	// CreatedUserGroupsInverseTable is the table name for the UserGroup entity.
-	// It exists in this package in order to avoid circular dependency with the "usergroup" package.
-	CreatedUserGroupsInverseTable = "user_group"
-	// CreatedUserGroupsColumn is the table column denoting the created_user_groups relation/edge.
-	CreatedUserGroupsColumn = "created_by_id"
-	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "attachment"
-	// AttachmentsInverseTable is the table name for the Attachment entity.
-	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "attachment"
-	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "uploader_id"
-	// ChannelReadStatesTable is the table that holds the channel_read_states relation/edge.
-	ChannelReadStatesTable = "channel_read_state"
-	// ChannelReadStatesInverseTable is the table name for the ChannelReadState entity.
-	// It exists in this package in order to avoid circular dependency with the "channelreadstate" package.
-	ChannelReadStatesInverseTable = "channel_read_state"
-	// ChannelReadStatesColumn is the table column denoting the channel_read_states relation/edge.
-	ChannelReadStatesColumn = "user_id"
 	// PreferenceTable is the table that holds the preference relation/edge.
 	PreferenceTable = "user_preference"
 	// PreferenceInverseTable is the table name for the UserPreference entity.
@@ -278,62 +170,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// BySessionsCount orders the results by sessions count.
-func BySessionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSessionsStep(), opts...)
-	}
-}
-
-// BySessions orders the results by sessions terms.
-func BySessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedWorkspacesCount orders the results by created_workspaces count.
-func ByCreatedWorkspacesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedWorkspacesStep(), opts...)
-	}
-}
-
-// ByCreatedWorkspaces orders the results by created_workspaces terms.
-func ByCreatedWorkspaces(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedWorkspacesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByWorkspaceMembersCount orders the results by workspace_members count.
-func ByWorkspaceMembersCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newWorkspaceMembersStep(), opts...)
-	}
-}
-
-// ByWorkspaceMembers orders the results by workspace_members terms.
-func ByWorkspaceMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newWorkspaceMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedChannelsCount orders the results by created_channels count.
-func ByCreatedChannelsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedChannelsStep(), opts...)
-	}
-}
-
-// ByCreatedChannels orders the results by created_channels terms.
-func ByCreatedChannels(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedChannelsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByChannelMembersCount orders the results by channel_members count.
 func ByChannelMembersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -345,118 +181,6 @@ func ByChannelMembersCount(opts ...sql.OrderTermOption) OrderOption {
 func ByChannelMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newChannelMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByMessagesCount orders the results by messages count.
-func ByMessagesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMessagesStep(), opts...)
-	}
-}
-
-// ByMessages orders the results by messages terms.
-func ByMessages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMessagesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByMessageReactionsCount orders the results by message_reactions count.
-func ByMessageReactionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMessageReactionsStep(), opts...)
-	}
-}
-
-// ByMessageReactions orders the results by message_reactions terms.
-func ByMessageReactions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMessageReactionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByMessageBookmarksCount orders the results by message_bookmarks count.
-func ByMessageBookmarksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMessageBookmarksStep(), opts...)
-	}
-}
-
-// ByMessageBookmarks orders the results by message_bookmarks terms.
-func ByMessageBookmarks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMessageBookmarksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByUserMentionsCount orders the results by user_mentions count.
-func ByUserMentionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUserMentionsStep(), opts...)
-	}
-}
-
-// ByUserMentions orders the results by user_mentions terms.
-func ByUserMentions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserMentionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByUserGroupMembersCount orders the results by user_group_members count.
-func ByUserGroupMembersCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUserGroupMembersStep(), opts...)
-	}
-}
-
-// ByUserGroupMembers orders the results by user_group_members terms.
-func ByUserGroupMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserGroupMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByCreatedUserGroupsCount orders the results by created_user_groups count.
-func ByCreatedUserGroupsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCreatedUserGroupsStep(), opts...)
-	}
-}
-
-// ByCreatedUserGroups orders the results by created_user_groups terms.
-func ByCreatedUserGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCreatedUserGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByAttachmentsCount orders the results by attachments count.
-func ByAttachmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAttachmentsStep(), opts...)
-	}
-}
-
-// ByAttachments orders the results by attachments terms.
-func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByChannelReadStatesCount orders the results by channel_read_states count.
-func ByChannelReadStatesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newChannelReadStatesStep(), opts...)
-	}
-}
-
-// ByChannelReadStates orders the results by channel_read_states terms.
-func ByChannelReadStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newChannelReadStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -480,95 +204,11 @@ func ByLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newSessionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SessionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SessionsTable, SessionsColumn),
-	)
-}
-func newCreatedWorkspacesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedWorkspacesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CreatedWorkspacesTable, CreatedWorkspacesColumn),
-	)
-}
-func newWorkspaceMembersStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(WorkspaceMembersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, WorkspaceMembersTable, WorkspaceMembersColumn),
-	)
-}
-func newCreatedChannelsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedChannelsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CreatedChannelsTable, CreatedChannelsColumn),
-	)
-}
 func newChannelMembersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ChannelMembersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ChannelMembersTable, ChannelMembersColumn),
-	)
-}
-func newMessagesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MessagesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, MessagesTable, MessagesColumn),
-	)
-}
-func newMessageReactionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MessageReactionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, MessageReactionsTable, MessageReactionsColumn),
-	)
-}
-func newMessageBookmarksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MessageBookmarksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, MessageBookmarksTable, MessageBookmarksColumn),
-	)
-}
-func newUserMentionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserMentionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, UserMentionsTable, UserMentionsColumn),
-	)
-}
-func newUserGroupMembersStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserGroupMembersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, UserGroupMembersTable, UserGroupMembersColumn),
-	)
-}
-func newCreatedUserGroupsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CreatedUserGroupsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CreatedUserGroupsTable, CreatedUserGroupsColumn),
-	)
-}
-func newAttachmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AttachmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AttachmentsTable, AttachmentsColumn),
-	)
-}
-func newChannelReadStatesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ChannelReadStatesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ChannelReadStatesTable, ChannelReadStatesColumn),
 	)
 }
 func newPreferenceStep() *sqlgraph.Step {

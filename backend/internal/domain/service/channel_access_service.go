@@ -11,6 +11,8 @@ import (
 
 type ChannelAccessService interface {
 	EnsureChannelAccess(ctx context.Context, channelID string, userID string) (*entity.Channel, error)
+	// EnsureMessageAccess はメッセージがあり、そのチャンネルを閲覧できることを確かめます
+	EnsureMessageAccess(ctx context.Context, messageID string, userID string) (*entity.Message, *entity.Channel, error)
 	// EnsureChannelMember は閲覧権限に加えて、チャンネルに参加していることを確かめます
 	EnsureChannelMember(ctx context.Context, channelID string, userID string) (*entity.Channel, error)
 	// FilterAccessible は公開チャンネルと参加中の非公開チャンネルだけを残します
@@ -24,17 +26,20 @@ type ChannelAccessService interface {
 }
 
 type channelAccessService struct {
+	messageRepo       domainrepository.MessageRepository
 	channelRepo       domainrepository.ChannelRepository
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	workspaceRepo     domainrepository.WorkspaceRepository
 }
 
 func NewChannelAccessService(
+	messageRepo domainrepository.MessageRepository,
 	channelRepo domainrepository.ChannelRepository,
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 ) ChannelAccessService {
 	return &channelAccessService{
+		messageRepo:       messageRepo,
 		channelRepo:       channelRepo,
 		channelMemberRepo: channelMemberRepo,
 		workspaceRepo:     workspaceRepo,
@@ -50,13 +55,9 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 		return nil, domerr.ErrChannelNotFound
 	}
 
-	// 停止中のメンバーは FindMember で除外されるため非公開チャンネルでも先に確認する
-	member, err := s.workspaceRepo.FindMember(ctx, ch.WorkspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if member == nil {
-		return nil, domerr.ErrUnauthorized
+	// 停止中のメンバーは除外されるため非公開チャンネルでも先に確認する
+	if _, err := EnsureMember(ctx, s.workspaceRepo, ch.WorkspaceID, userID); err != nil {
+		return nil, err
 	}
 
 	if ch.IsPrivate() {
@@ -70,6 +71,21 @@ func (s *channelAccessService) EnsureChannelAccess(ctx context.Context, channelI
 	}
 
 	return ch, nil
+}
+
+func (s *channelAccessService) EnsureMessageAccess(ctx context.Context, messageID string, userID string) (*entity.Message, *entity.Channel, error) {
+	msg, err := s.messageRepo.FindByID(ctx, messageID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to load message: %w", err)
+	}
+	if msg == nil {
+		return nil, nil, domerr.ErrMessageNotFound
+	}
+	ch, err := s.EnsureChannelAccess(ctx, msg.ChannelID, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return msg, ch, nil
 }
 
 func (s *channelAccessService) EnsureChannelMember(ctx context.Context, channelID string, userID string) (*entity.Channel, error) {

@@ -8,7 +8,6 @@ import "google/protobuf/timestamp.proto";
 service UserGroupService {
   rpc CreateUserGroup(CreateUserGroupRequest) returns (CreateUserGroupResponse);
   rpc ListUserGroups(ListUserGroupsRequest) returns (ListUserGroupsResponse);
-  rpc GetUserGroup(GetUserGroupRequest) returns (GetUserGroupResponse);
   rpc UpdateUserGroup(UpdateUserGroupRequest) returns (UpdateUserGroupResponse);
   rpc DeleteUserGroup(DeleteUserGroupRequest) returns (DeleteUserGroupResponse);
   rpc ListUserGroupMembers(ListUserGroupMembersRequest) returns (ListUserGroupMembersResponse);
@@ -49,14 +48,6 @@ message ListUserGroupsRequest {
 
 message ListUserGroupsResponse {
   repeated UserGroup user_groups = 1;
-}
-
-message GetUserGroupRequest {
-  string group_id = 1 [(buf.validate.field).string.uuid = true];
-}
-
-message GetUserGroupResponse {
-  UserGroup user_group = 1;
 }
 
 message UpdateUserGroupRequest {

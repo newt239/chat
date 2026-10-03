@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// ChannelReadState holds the schema definition for the ChannelReadState entity.
 type ChannelReadState struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (ChannelReadState) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "channel_read_state"}}
 }
 
-// Fields of the ChannelReadState.
 func (ChannelReadState) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -34,7 +32,6 @@ func (ChannelReadState) Fields() []ent.Field {
 	}
 }
 
-// Edges of the ChannelReadState.
 func (ChannelReadState) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("channel", Channel.Type).
@@ -48,10 +45,8 @@ func (ChannelReadState) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the ChannelReadState.
 func (ChannelReadState) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("last_read_at"),
 		index.Fields("channel_id", "user_id").
 			Unique(),
 	}

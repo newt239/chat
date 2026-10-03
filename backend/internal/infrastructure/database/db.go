@@ -17,17 +17,6 @@ import (
 // migrationLockKey はスキーマ移行を 1 レプリカずつ行うための advisory lock のキー
 const migrationLockKey = 0x63686174
 
-// NewConnection creates a new ent client connection
-func NewConnection(dsn string) (*ent.Client, error) {
-	drv, err := entsql.Open("postgres", dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	client := ent.NewClient(ent.Driver(drv))
-	return client, nil
-}
-
 // InitDB は接続プールを設定し、DB が応答するまで待ってから接続を返します
 func InitDB(cfg config.DatabaseConfig) (*ent.Client, *sql.DB, error) {
 	drv, err := entsql.Open("postgres", cfg.URL)

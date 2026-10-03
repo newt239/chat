@@ -4,14 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/reminder"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 // 期限の来たリマインダーを他のワーカーがロック中のものを飛ばして取り出し、同じ文で送信中にする
@@ -35,15 +32,15 @@ func NewReminderRepository(client *ent.Client) domainrepository.ReminderReposito
 }
 
 func (r *reminderRepository) Create(ctx context.Context, rem *entity.Reminder) error {
-	creatorID, err := utils.ParseUUID(rem.CreatorID, "user ID")
+	creatorID, err := parseUUID(rem.CreatorID, "user ID")
 	if err != nil {
 		return err
 	}
 	created, err := transaction.ResolveClient(ctx, r.client).Reminder.Create().
 		SetWorkspaceID(rem.WorkspaceID).
 		SetCreatorID(creatorID).
-		SetNillableTargetUserID(utils.ParseUUIDPtr(rem.TargetUserID)).
-		SetNillableTargetChannelID(utils.ParseUUIDPtr(rem.TargetChannelID)).
+		SetNillableTargetUserID(parseUUIDPtr(rem.TargetUserID)).
+		SetNillableTargetChannelID(parseUUIDPtr(rem.TargetChannelID)).
 		SetText(rem.Text).
 		SetRemindAt(rem.RemindAt).
 		Save(ctx)
@@ -56,44 +53,29 @@ func (r *reminderRepository) Create(ctx context.Context, rem *entity.Reminder) e
 }
 
 func (r *reminderRepository) ClaimDue(ctx context.Context, now time.Time, limit int) ([]*entity.Reminder, error) {
-	client := transaction.ResolveClient(ctx, r.client)
-	rows, err := client.QueryContext(ctx, claimDueRemindersSQL, now, limit)
+	ids, err := queryUUIDs(ctx, r.client, claimDueRemindersSQL, now, limit)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = rows.Close() }()
-	ids := []uuid.UUID{}
-	for rows.Next() {
-		var id uuid.UUID
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		ids = append(ids, id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	if len(ids) == 0 {
-		return []*entity.Reminder{}, nil
-	}
-	found, err := client.Reminder.Query().Where(reminder.IDIn(ids...)).Order(ent.Asc(reminder.FieldRemindAt)).All(ctx)
+	found, err := transaction.ResolveClient(ctx, r.client).Reminder.Query().
+		Where(reminder.IDIn(ids...)).
+		Order(ent.Asc(reminder.FieldRemindAt)).
+		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*entity.Reminder, 0, len(found))
-	for _, rem := range found {
-		result = append(result, &entity.Reminder{
+	return convertAll(found, func(rem *ent.Reminder) *entity.Reminder {
+		return &entity.Reminder{
 			ID:              rem.ID.String(),
 			WorkspaceID:     rem.WorkspaceID,
 			CreatorID:       rem.CreatorID.String(),
-			TargetUserID:    utils.UUIDPtrToStringPtr(rem.TargetUserID),
-			TargetChannelID: utils.UUIDPtrToStringPtr(rem.TargetChannelID),
+			TargetUserID:    optionalString(rem.TargetUserID),
+			TargetChannelID: optionalString(rem.TargetChannelID),
 			Text:            rem.Text,
 			RemindAt:        rem.RemindAt,
 			CreatedAt:       rem.CreatedAt,
-		})
-	}
-	return result, nil
+		}
+	}), nil
 }
 
 func (r *reminderRepository) MarkSent(ctx context.Context, id string) error {
@@ -105,7 +87,7 @@ func (r *reminderRepository) MarkFailed(ctx context.Context, id string) error {
 }
 
 func (r *reminderRepository) setStatus(ctx context.Context, id string, status reminder.Status) error {
-	rid, err := utils.ParseUUID(id, "reminder ID")
+	rid, err := parseUUID(id, "reminder ID")
 	if err != nil {
 		return err
 	}

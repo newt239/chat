@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Attachment holds the schema definition for the Attachment entity.
 type Attachment struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (Attachment) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "attachment"}}
 }
 
-// Fields of the Attachment.
 func (Attachment) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -60,17 +58,12 @@ func (Attachment) Fields() []ent.Field {
 			Nillable(),
 		field.String("status").
 			Default("pending"),
-		field.Time("uploaded_at").
-			Optional(),
-		field.Time("expires_at").
-			Optional(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),
 	}
 }
 
-// Edges of the Attachment.
 func (Attachment) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("message", Message.Type).
@@ -87,7 +80,6 @@ func (Attachment) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the Attachment.
 func (Attachment) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("status"),

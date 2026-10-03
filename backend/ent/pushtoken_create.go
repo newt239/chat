@@ -71,20 +71,6 @@ func (_c *PushTokenCreate) SetNillableLastSeenAt(v *time.Time) *PushTokenCreate 
 	return _c
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_c *PushTokenCreate) SetCreatedAt(v time.Time) *PushTokenCreate {
-	_c.mutation.SetCreatedAt(v)
-	return _c
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *PushTokenCreate) SetNillableCreatedAt(v *time.Time) *PushTokenCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *PushTokenCreate) SetID(v uuid.UUID) *PushTokenCreate {
 	_c.mutation.SetID(v)
@@ -147,10 +133,6 @@ func (_c *PushTokenCreate) defaults() {
 		v := pushtoken.DefaultLastSeenAt()
 		_c.mutation.SetLastSeenAt(v)
 	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		v := pushtoken.DefaultCreatedAt()
-		_c.mutation.SetCreatedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := pushtoken.DefaultID()
 		_c.mutation.SetID(v)
@@ -183,9 +165,6 @@ func (_c *PushTokenCreate) check() error {
 	}
 	if _, ok := _c.mutation.LastSeenAt(); !ok {
 		return &ValidationError{Name: "last_seen_at", err: errors.New(`ent: missing required field "PushToken.last_seen_at"`)}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PushToken.created_at"`)}
 	}
 	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "PushToken.user"`)}
@@ -241,10 +220,6 @@ func (_c *PushTokenCreate) createSpec() (*PushToken, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.LastSeenAt(); ok {
 		_spec.SetField(pushtoken.FieldLastSeenAt, field.TypeTime, value)
 		_node.LastSeenAt = value
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(pushtoken.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -391,9 +366,6 @@ func (u *PushTokenUpsertOne) UpdateNewValues() *PushTokenUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(pushtoken.FieldID)
-		}
-		if _, exists := u.create.mutation.CreatedAt(); exists {
-			s.SetIgnore(pushtoken.FieldCreatedAt)
 		}
 	}))
 	return u
@@ -678,9 +650,6 @@ func (u *PushTokenUpsertBulk) UpdateNewValues() *PushTokenUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(pushtoken.FieldID)
-			}
-			if _, exists := b.mutation.CreatedAt(); exists {
-				s.SetIgnore(pushtoken.FieldCreatedAt)
 			}
 		}
 	}))

@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"cmp"
 	"context"
 	"encoding/csv"
 	"fmt"
@@ -11,8 +12,12 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
+	domerr "github.com/newt239/chat/internal/domain/errors"
+	domainservice "github.com/newt239/chat/internal/domain/service"
 	"github.com/newt239/chat/internal/usecase/message"
 )
+
+var errInvalidPageToken = domerr.New(domerr.ErrValidation, "ページトークンが不正です")
 
 const (
 	// CSV の書き出しは 1 回あたりこの件数までに抑える
@@ -20,36 +25,45 @@ const (
 	defaultAuditLogLimit = 50
 )
 
+// ListAuditLogs はページトークンに次のページの先頭の位置を入れて返します
 func (i *Interactor) ListAuditLogs(ctx context.Context, input ListAuditLogsInput) (*ListAuditLogsOutput, error) {
-	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.RequesterID); err != nil {
+	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
 	}
-	if input.Limit <= 0 {
-		input.Limit = defaultAuditLogLimit
+	limit := cmp.Or(input.Limit, defaultAuditLogLimit)
+	offset := 0
+	if input.PageToken != "" {
+		var err error
+		if offset, err = strconv.Atoi(input.PageToken); err != nil || offset < 0 {
+			return nil, errInvalidPageToken
+		}
 	}
-
-	page, err := i.auditLogRepo.List(ctx, input.filter(input.Limit, input.PageToken))
+	// 続きがあるかを知るため 1 件多く取る
+	logs, err := i.auditLogRepo.List(ctx, input.filter(), limit+1, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list audit logs: %w", err)
 	}
-	outputs, err := i.withActors(ctx, page.Logs)
-	if err != nil {
+	output := &ListAuditLogsOutput{}
+	if len(logs) > limit {
+		logs = logs[:limit]
+		output.NextPageToken = strconv.Itoa(offset + limit)
+	}
+	if output.Logs, err = i.withActors(ctx, logs); err != nil {
 		return nil, err
 	}
-	return &ListAuditLogsOutput{Logs: outputs, NextPageToken: page.NextPageToken}, nil
+	return output, nil
 }
 
 // ExportAuditLogs は絞り込んだ監査ログを CSV で返し、書き出したこと自体も監査ログに残します
 func (i *Interactor) ExportAuditLogs(ctx context.Context, input AuditLogQuery) (*ExportOutput, error) {
-	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.RequesterID); err != nil {
+	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
 	}
-
-	page, err := i.auditLogRepo.List(ctx, input.filter(maxExportAuditLogs, ""))
+	logs, err := i.auditLogRepo.List(ctx, input.filter(), maxExportAuditLogs, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list audit logs: %w", err)
 	}
-	outputs, err := i.withActors(ctx, page.Logs)
+	outputs, err := i.withActors(ctx, logs)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +72,6 @@ func (i *Interactor) ExportAuditLogs(ctx context.Context, input AuditLogQuery) (
 		return nil, err
 	}
 
-	now := i.now()
 	i.recorder.Record(ctx, entity.AuditLog{
 		WorkspaceID: input.WorkspaceID,
 		ActorID:     &input.RequesterID,
@@ -67,43 +80,32 @@ func (i *Interactor) ExportAuditLogs(ctx context.Context, input AuditLogQuery) (
 	})
 	return &ExportOutput{
 		Content:  content,
-		FileName: fmt.Sprintf("audit-log-%s-%s.csv", input.WorkspaceID, now.Format("20060102-150405")),
+		FileName: fmt.Sprintf("audit-log-%s-%s.csv", input.WorkspaceID, time.Now().Format("20060102-150405")),
 	}, nil
 }
 
-func (q AuditLogQuery) filter(limit int, pageToken string) entity.AuditLogFilter {
-	return entity.AuditLogFilter{
-		WorkspaceID: q.WorkspaceID,
-		ActorID:     q.ActorID,
-		Actions:     q.Actions,
-		Since:       q.Since,
-		Until:       q.Until,
-		Limit:       limit,
-		PageToken:   pageToken,
-	}
+func (q AuditLogQuery) filter() entity.AuditLogFilter {
+	return entity.AuditLogFilter{WorkspaceID: q.WorkspaceID, ActorID: q.ActorID, Actions: q.Actions, Since: q.Since, Until: q.Until}
 }
 
 func (i *Interactor) withActors(ctx context.Context, logs []*entity.AuditLog) ([]AuditLogOutput, error) {
 	actorIDs := make([]string, 0, len(logs))
 	for _, l := range logs {
-		if l.ActorID != nil && !slices.Contains(actorIDs, *l.ActorID) {
+		if l.ActorID != nil {
 			actorIDs = append(actorIDs, *l.ActorID)
 		}
 	}
-	users, err := i.userRepo.FindByIDs(ctx, actorIDs)
+	actors, err := i.userRepo.FindByIDs(ctx, actorIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load actors: %w", err)
 	}
-	actors := make(map[string]*message.UserInfo, len(users))
-	for _, u := range users {
-		actors[u.ID] = new(message.NewUserInfo(u))
-	}
-
 	outputs := make([]AuditLogOutput, 0, len(logs))
 	for _, l := range logs {
 		out := AuditLogOutput{AuditLog: *l}
 		if l.ActorID != nil {
-			out.Actor = actors[*l.ActorID]
+			if u := actors[*l.ActorID]; u != nil {
+				out.Actor = new(message.NewUserInfo(u))
+			}
 		}
 		outputs = append(outputs, out)
 	}

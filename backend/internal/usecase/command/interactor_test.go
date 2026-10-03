@@ -110,7 +110,7 @@ func (r *fakeMemberRepo) AddMember(_ context.Context, m *entity.ChannelMember) e
 
 func newInteractor() (*Interactor, *fakeReminderRepo, *stubChannelRepo, *fakePoster, *fakeMemberRepo) {
 	reminders, channels, poster, members := &fakeReminderRepo{}, &stubChannelRepo{}, &fakePoster{}, &fakeMemberRepo{}
-	i := NewInteractor(reminders, stubUserRepo{}, stubWorkspaceRepo{}, channels, members, stubAccess{}, poster, nil)
+	i := New(reminders, stubUserRepo{}, stubWorkspaceRepo{}, channels, members, stubAccess{}, poster)
 	i.now = func() time.Time { return time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC) }
 	return i, reminders, channels, poster, members
 }

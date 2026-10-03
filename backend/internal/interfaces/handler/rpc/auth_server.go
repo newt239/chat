@@ -2,14 +2,72 @@ package rpc
 
 import (
 	"context"
+	"net/http"
+	"time"
+
+	"connectrpc.com/connect"
 
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	authuc "github.com/newt239/chat/internal/usecase/auth"
 )
 
+const (
+	// ClientHeader が nativeClient のリクエストは Cookie を扱えないネイティブアプリからの呼び出しとして、リフレッシュトークンを本文で受け渡す
+	ClientHeader           = "X-Chat-Client"
+	nativeClient           = "native"
+	refreshTokenCookieName = "__Secure-chat_rt"
+	refreshTokenCookiePath = "/chat.v1.AuthService/"
+)
+
+// authUseCase はテストで差し替えるため、AuthServer が使う操作だけを持ちます
+type authUseCase interface {
+	PasswordAuthEnabled() bool
+	Login(ctx context.Context, input authuc.LoginInput) (*authuc.AuthOutput, error)
+	LoginWithGoogle(ctx context.Context, input authuc.LoginWithGoogleInput) (*authuc.AuthOutput, error)
+	LoginWithGoogleCode(ctx context.Context, input authuc.LoginWithGoogleCodeInput) (*authuc.AuthOutput, error)
+	SignUp(ctx context.Context, input authuc.SignUpInput) (*authuc.AuthOutput, error)
+	SignUpWithInvitation(ctx context.Context, input authuc.SignUpWithInvitationInput) (*authuc.AuthOutput, error)
+	RefreshToken(ctx context.Context, input authuc.RefreshTokenInput) (*authuc.AuthOutput, error)
+	Logout(ctx context.Context, input authuc.LogoutInput) error
+}
+
 type AuthServer struct {
-	UC authuc.AuthUseCase
+	UC authUseCase
+}
+
+func isNativeClient(ctx context.Context) bool {
+	info, ok := connect.CallInfoForHandlerContext(ctx)
+	return ok && info.RequestHeader().Get(ClientHeader) == nativeClient
+}
+
+func refreshTokenFromCookie(ctx context.Context) string {
+	info, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return ""
+	}
+	cookie, err := (&http.Request{Header: info.RequestHeader()}).Cookie(refreshTokenCookieName)
+	if err != nil {
+		return ""
+	}
+	return cookie.Value
+}
+
+func writeRefreshTokenCookie(ctx context.Context, value string, maxAge int) {
+	info, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return
+	}
+	cookie := &http.Cookie{
+		Name:     refreshTokenCookieName,
+		Value:    value,
+		Path:     refreshTokenCookiePath,
+		MaxAge:   maxAge,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}
+	info.ResponseHeader().Add("Set-Cookie", cookie.String())
 }
 
 // handOverRefreshToken はブラウザには Cookie で渡し、ネイティブアプリにだけ本文で返すリフレッシュトークンを返します
@@ -17,7 +75,7 @@ func handOverRefreshToken(ctx context.Context, out *authuc.AuthOutput) *string {
 	if isNativeClient(ctx) {
 		return &out.RefreshToken
 	}
-	setRefreshTokenCookie(ctx, out.RefreshToken, out.ExpiresAt)
+	writeRefreshTokenCookie(ctx, out.RefreshToken, int(time.Until(out.ExpiresAt).Seconds()))
 	return nil
 }
 
@@ -79,7 +137,7 @@ func (s *AuthServer) Refresh(ctx context.Context, req *chatv1.RefreshRequest) (*
 
 // Logout は公開 RPC で、Cookie のリフレッシュトークンか、あればアクセストークンのセッションを失効させます
 func (s *AuthServer) Logout(ctx context.Context, _ *chatv1.LogoutRequest) (*chatv1.LogoutResponse, error) {
-	clearRefreshTokenCookie(ctx)
+	writeRefreshTokenCookie(ctx, "", -1)
 	input := authuc.LogoutInput{RefreshToken: refreshTokenFromCookie(ctx), SessionID: claimsFrom(ctx).SessionID}
 	if err := s.UC.Logout(ctx, input); err != nil {
 		return nil, err

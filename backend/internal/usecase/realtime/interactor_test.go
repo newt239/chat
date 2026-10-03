@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -31,10 +32,26 @@ func (r *stubSessionRepo) FindByID(_ context.Context, id string) (*entity.Sessio
 	return r.sessions[id], nil
 }
 
+type memoryTicketStore map[string]Ticket
+
+func (s memoryTicketStore) Save(_ context.Context, hash string, ticket Ticket, _ time.Duration) error {
+	s[hash] = ticket
+	return nil
+}
+
+func (s memoryTicketStore) Consume(_ context.Context, hash string) (*Ticket, error) {
+	ticket, ok := s[hash]
+	if !ok {
+		return nil, nil
+	}
+	delete(s, hash)
+	return &ticket, nil
+}
+
 func newInteractor() (*Interactor, *stubWorkspaceRepo) {
 	workspaces := &stubWorkspaceRepo{members: map[string]bool{"ws/alice": true}}
 	sessions := &stubSessionRepo{sessions: map[string]*entity.Session{"s1": {ID: "s1", UserID: "alice"}}}
-	return NewInteractor(NewMemoryTicketStore(), workspaces, sessions), workspaces
+	return New(memoryTicketStore{}, workspaces, sessions), workspaces
 }
 
 func TestTicketCanBeUsedOnlyOnce(t *testing.T) {

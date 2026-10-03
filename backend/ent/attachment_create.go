@@ -175,34 +175,6 @@ func (_c *AttachmentCreate) SetNillableStatus(v *string) *AttachmentCreate {
 	return _c
 }
 
-// SetUploadedAt sets the "uploaded_at" field.
-func (_c *AttachmentCreate) SetUploadedAt(v time.Time) *AttachmentCreate {
-	_c.mutation.SetUploadedAt(v)
-	return _c
-}
-
-// SetNillableUploadedAt sets the "uploaded_at" field if the given value is not nil.
-func (_c *AttachmentCreate) SetNillableUploadedAt(v *time.Time) *AttachmentCreate {
-	if v != nil {
-		_c.SetUploadedAt(*v)
-	}
-	return _c
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (_c *AttachmentCreate) SetExpiresAt(v time.Time) *AttachmentCreate {
-	_c.mutation.SetExpiresAt(v)
-	return _c
-}
-
-// SetNillableExpiresAt sets the "expires_at" field if the given value is not nil.
-func (_c *AttachmentCreate) SetNillableExpiresAt(v *time.Time) *AttachmentCreate {
-	if v != nil {
-		_c.SetExpiresAt(*v)
-	}
-	return _c
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (_c *AttachmentCreate) SetCreatedAt(v time.Time) *AttachmentCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -426,14 +398,6 @@ func (_c *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(attachment.FieldStatus, field.TypeString, value)
 		_node.Status = value
-	}
-	if value, ok := _c.mutation.UploadedAt(); ok {
-		_spec.SetField(attachment.FieldUploadedAt, field.TypeTime, value)
-		_node.UploadedAt = value
-	}
-	if value, ok := _c.mutation.ExpiresAt(); ok {
-		_spec.SetField(attachment.FieldExpiresAt, field.TypeTime, value)
-		_node.ExpiresAt = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(attachment.FieldCreatedAt, field.TypeTime, value)
@@ -788,42 +752,6 @@ func (u *AttachmentUpsert) UpdateStatus() *AttachmentUpsert {
 	return u
 }
 
-// SetUploadedAt sets the "uploaded_at" field.
-func (u *AttachmentUpsert) SetUploadedAt(v time.Time) *AttachmentUpsert {
-	u.Set(attachment.FieldUploadedAt, v)
-	return u
-}
-
-// UpdateUploadedAt sets the "uploaded_at" field to the value that was provided on create.
-func (u *AttachmentUpsert) UpdateUploadedAt() *AttachmentUpsert {
-	u.SetExcluded(attachment.FieldUploadedAt)
-	return u
-}
-
-// ClearUploadedAt clears the value of the "uploaded_at" field.
-func (u *AttachmentUpsert) ClearUploadedAt() *AttachmentUpsert {
-	u.SetNull(attachment.FieldUploadedAt)
-	return u
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (u *AttachmentUpsert) SetExpiresAt(v time.Time) *AttachmentUpsert {
-	u.Set(attachment.FieldExpiresAt, v)
-	return u
-}
-
-// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
-func (u *AttachmentUpsert) UpdateExpiresAt() *AttachmentUpsert {
-	u.SetExcluded(attachment.FieldExpiresAt)
-	return u
-}
-
-// ClearExpiresAt clears the value of the "expires_at" field.
-func (u *AttachmentUpsert) ClearExpiresAt() *AttachmentUpsert {
-	u.SetNull(attachment.FieldExpiresAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1159,48 +1087,6 @@ func (u *AttachmentUpsertOne) SetStatus(v string) *AttachmentUpsertOne {
 func (u *AttachmentUpsertOne) UpdateStatus() *AttachmentUpsertOne {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.UpdateStatus()
-	})
-}
-
-// SetUploadedAt sets the "uploaded_at" field.
-func (u *AttachmentUpsertOne) SetUploadedAt(v time.Time) *AttachmentUpsertOne {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.SetUploadedAt(v)
-	})
-}
-
-// UpdateUploadedAt sets the "uploaded_at" field to the value that was provided on create.
-func (u *AttachmentUpsertOne) UpdateUploadedAt() *AttachmentUpsertOne {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.UpdateUploadedAt()
-	})
-}
-
-// ClearUploadedAt clears the value of the "uploaded_at" field.
-func (u *AttachmentUpsertOne) ClearUploadedAt() *AttachmentUpsertOne {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.ClearUploadedAt()
-	})
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (u *AttachmentUpsertOne) SetExpiresAt(v time.Time) *AttachmentUpsertOne {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.SetExpiresAt(v)
-	})
-}
-
-// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
-func (u *AttachmentUpsertOne) UpdateExpiresAt() *AttachmentUpsertOne {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.UpdateExpiresAt()
-	})
-}
-
-// ClearExpiresAt clears the value of the "expires_at" field.
-func (u *AttachmentUpsertOne) ClearExpiresAt() *AttachmentUpsertOne {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.ClearExpiresAt()
 	})
 }
 
@@ -1706,48 +1592,6 @@ func (u *AttachmentUpsertBulk) SetStatus(v string) *AttachmentUpsertBulk {
 func (u *AttachmentUpsertBulk) UpdateStatus() *AttachmentUpsertBulk {
 	return u.Update(func(s *AttachmentUpsert) {
 		s.UpdateStatus()
-	})
-}
-
-// SetUploadedAt sets the "uploaded_at" field.
-func (u *AttachmentUpsertBulk) SetUploadedAt(v time.Time) *AttachmentUpsertBulk {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.SetUploadedAt(v)
-	})
-}
-
-// UpdateUploadedAt sets the "uploaded_at" field to the value that was provided on create.
-func (u *AttachmentUpsertBulk) UpdateUploadedAt() *AttachmentUpsertBulk {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.UpdateUploadedAt()
-	})
-}
-
-// ClearUploadedAt clears the value of the "uploaded_at" field.
-func (u *AttachmentUpsertBulk) ClearUploadedAt() *AttachmentUpsertBulk {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.ClearUploadedAt()
-	})
-}
-
-// SetExpiresAt sets the "expires_at" field.
-func (u *AttachmentUpsertBulk) SetExpiresAt(v time.Time) *AttachmentUpsertBulk {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.SetExpiresAt(v)
-	})
-}
-
-// UpdateExpiresAt sets the "expires_at" field to the value that was provided on create.
-func (u *AttachmentUpsertBulk) UpdateExpiresAt() *AttachmentUpsertBulk {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.UpdateExpiresAt()
-	})
-}
-
-// ClearExpiresAt clears the value of the "expires_at" field.
-func (u *AttachmentUpsertBulk) ClearExpiresAt() *AttachmentUpsertBulk {
-	return u.Update(func(s *AttachmentUpsert) {
-		s.ClearExpiresAt()
 	})
 }
 

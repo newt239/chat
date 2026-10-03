@@ -240,12 +240,6 @@ func (_u *AppUpdate) ClearLastUsedAt() *AppUpdate {
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *AppUpdate) SetUpdatedAt(v time.Time) *AppUpdate {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // SetCreatedBy sets the "created_by" edge to the User entity.
 func (_u *AppUpdate) SetCreatedBy(v *User) *AppUpdate {
 	return _u.SetCreatedByID(v.ID)
@@ -286,7 +280,6 @@ func (_u *AppUpdate) ClearDefaultChannel() *AppUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *AppUpdate) Save(ctx context.Context) (int, error) {
-	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -309,14 +302,6 @@ func (_u *AppUpdate) Exec(ctx context.Context) error {
 func (_u *AppUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (_u *AppUpdate) defaults() {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		v := app.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -400,9 +385,6 @@ func (_u *AppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LastUsedAtCleared() {
 		_spec.ClearField(app.FieldLastUsedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(app.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.CreatedByCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -719,12 +701,6 @@ func (_u *AppUpdateOne) ClearLastUsedAt() *AppUpdateOne {
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *AppUpdateOne) SetUpdatedAt(v time.Time) *AppUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
 // SetCreatedBy sets the "created_by" edge to the User entity.
 func (_u *AppUpdateOne) SetCreatedBy(v *User) *AppUpdateOne {
 	return _u.SetCreatedByID(v.ID)
@@ -778,7 +754,6 @@ func (_u *AppUpdateOne) Select(field string, fields ...string) *AppUpdateOne {
 
 // Save executes the query and returns the updated App entity.
 func (_u *AppUpdateOne) Save(ctx context.Context) (*App, error) {
-	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -801,14 +776,6 @@ func (_u *AppUpdateOne) Exec(ctx context.Context) error {
 func (_u *AppUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (_u *AppUpdateOne) defaults() {
-	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		v := app.UpdateDefaultUpdatedAt()
-		_u.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -909,9 +876,6 @@ func (_u *AppUpdateOne) sqlSave(ctx context.Context) (_node *App, err error) {
 	}
 	if _u.mutation.LastUsedAtCleared() {
 		_spec.ClearField(app.FieldLastUsedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(app.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.CreatedByCleared() {
 		edge := &sqlgraph.EdgeSpec{

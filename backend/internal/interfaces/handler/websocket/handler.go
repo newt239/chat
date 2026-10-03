@@ -1,25 +1,18 @@
 package websocket
 
 import (
-	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"slices"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
-	"go.uber.org/zap"
 
 	domerr "github.com/newt239/chat/internal/domain/errors"
-	"github.com/newt239/chat/internal/infrastructure/logger"
 	realtimeuc "github.com/newt239/chat/internal/usecase/realtime"
 )
-
-// TicketConsumer は接続に使われたチケットを使用済みにし、接続者を返します
-type TicketConsumer interface {
-	ConsumeTicket(ctx context.Context, ticket string) (*realtimeuc.Ticket, error)
-}
 
 // newUpgrader は許可オリジンのみ受け付ける Upgrader を作ります
 func newUpgrader(allowedOrigins []string) websocket.Upgrader {
@@ -36,7 +29,7 @@ func newUpgrader(allowedOrigins []string) websocket.Upgrader {
 }
 
 // Handler は RealtimeService で発行した 1 回限りのチケットで認証し、WebSocket に切り替えます
-func Handler(hub *Hub, tickets TicketConsumer, allowedOrigins []string) echo.HandlerFunc {
+func Handler(hub *Hub, tickets *realtimeuc.Interactor, allowedOrigins []string) echo.HandlerFunc {
 	upgrader := newUpgrader(allowedOrigins)
 
 	return func(c echo.Context) error {
@@ -46,7 +39,7 @@ func Handler(hub *Hub, tickets TicketConsumer, allowedOrigins []string) echo.Han
 		}
 		if err != nil {
 			if !errors.Is(err, domerr.ErrInvalidToken) {
-				logger.Get().Error("WebSocket のチケットを確認できません", zap.Error(err))
+				slog.Error("WebSocket のチケットを確認できません", "error", err)
 			}
 			return echo.NewHTTPError(http.StatusUnauthorized, "チケットが無効か期限切れです")
 		}

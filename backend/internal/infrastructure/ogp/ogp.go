@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -188,29 +187,4 @@ func resolveURL(urlStr *string, baseURL *url.URL) *string {
 	}
 	resolved := resolvedURL.String()
 	return &resolved
-}
-
-// ExtractURLs はテキストからURLを抽出します
-func (s *OGPService) ExtractURLs(text string) []string {
-	return ExtractURLs(text)
-}
-
-// URLを抽出する正規表現
-var urlRegex = regexp.MustCompile(`https?://[^\s<>"{}|\\^` + "`" + `\[\]]+`)
-
-func ExtractURLs(text string) []string {
-	matches := urlRegex.FindAllString(text, -1)
-
-	// 重複を除去
-	urlSet := make(map[string]bool)
-	var uniqueURLs []string
-
-	for _, match := range matches {
-		if !urlSet[match] {
-			urlSet[match] = true
-			uniqueURLs = append(uniqueURLs, match)
-		}
-	}
-
-	return uniqueURLs
 }

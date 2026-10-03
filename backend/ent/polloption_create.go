@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/poll"
 	"github.com/newt239/chat/ent/polloption"
-	"github.com/newt239/chat/ent/pollvote"
 )
 
 // PollOptionCreate is the builder for creating a PollOption entity.
@@ -97,21 +96,6 @@ func (_c *PollOptionCreate) SetNillableID(v *uuid.UUID) *PollOptionCreate {
 // SetPoll sets the "poll" edge to the Poll entity.
 func (_c *PollOptionCreate) SetPoll(v *Poll) *PollOptionCreate {
 	return _c.SetPollID(v.ID)
-}
-
-// AddVoteIDs adds the "votes" edge to the PollVote entity by IDs.
-func (_c *PollOptionCreate) AddVoteIDs(ids ...uuid.UUID) *PollOptionCreate {
-	_c.mutation.AddVoteIDs(ids...)
-	return _c
-}
-
-// AddVotes adds the "votes" edges to the PollVote entity.
-func (_c *PollOptionCreate) AddVotes(v ...*PollVote) *PollOptionCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddVoteIDs(ids...)
 }
 
 // Mutation returns the PollOptionMutation object of the builder.
@@ -247,22 +231,6 @@ func (_c *PollOptionCreate) createSpec() (*PollOption, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.PollID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.VotesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   polloption.VotesTable,
-			Columns: []string{polloption.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(pollvote.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -44,8 +44,8 @@ pnpm stop
 # データベーススキーマをリセット
 pnpm db:reset
 
-# シードデータを投入（通常は自動実行されます）
-pnpm db:seed
+# 性能検証用に大量のメッセージを投入（初期データは起動時に自動で作られます）
+pnpm db:seed:bulk
 
 # バックエンドコードのリント
 docker compose exec backend golangci-lint run
@@ -128,7 +128,7 @@ chat/
 │   ├── cmd/
 │   │   ├── server/  # Main application entry point
 │   │   ├── reset/   # Database schema reset tool
-│   │   └── seed/    # Seed data tool
+│   │   └── seed/    # 大量データの投入
 │   ├── internal/
 │   │   ├── domain/         # Domain entities & repository interfaces
 │   │   ├── usecase/        # Business logic
@@ -219,8 +219,8 @@ cp backend/.env.example backend/.env
 # データベーススキーマをリセット（全テーブルを再作成）
 docker compose exec backend go run cmd/reset/main.go
 
-# シードデータを投入（通常は自動実行されます）
-docker compose exec backend go run cmd/seed/main.go
+# 性能検証用に大量のメッセージを投入（初期データは起動時に自動で作られます）
+docker compose exec backend go run cmd/seed/main.go -messages 1000
 ```
 
 ### スキーマの変更

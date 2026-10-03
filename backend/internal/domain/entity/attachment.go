@@ -7,7 +7,6 @@ type AttachmentStatus string
 const (
 	AttachmentStatusPending  AttachmentStatus = "pending"
 	AttachmentStatusAttached AttachmentStatus = "attached"
-	AttachmentStatusDeleted  AttachmentStatus = "deleted"
 )
 
 type Attachment struct {
@@ -21,8 +20,6 @@ type Attachment struct {
 	Media      MediaMetadata
 	StorageKey string
 	Status     AttachmentStatus
-	UploadedAt *time.Time
-	ExpiresAt  *time.Time
 	CreatedAt  time.Time
 }
 

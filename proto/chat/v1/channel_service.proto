@@ -10,13 +10,9 @@ service ChannelService {
   rpc CreateChannel(CreateChannelRequest) returns (CreateChannelResponse);
   rpc GetChannel(GetChannelRequest) returns (GetChannelResponse);
   rpc UpdateChannel(UpdateChannelRequest) returns (UpdateChannelResponse);
-  rpc DeleteChannel(DeleteChannelRequest) returns (DeleteChannelResponse);
   rpc SetChannelStarred(SetChannelStarredRequest) returns (SetChannelStarredResponse);
   // 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
   rpc SetChannelMuted(SetChannelMutedRequest) returns (SetChannelMutedResponse);
-  // チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
-  rpc ArchiveChannel(ArchiveChannelRequest) returns (ArchiveChannelResponse);
-  rpc UnarchiveChannel(UnarchiveChannelRequest) returns (UnarchiveChannelResponse);
   // 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
   rpc ListBrowsableChannels(ListBrowsableChannelsRequest) returns (ListBrowsableChannelsResponse);
   // 閲覧できるチャンネルを検索・絞り込み・並べ替えしてページ単位で返す
@@ -39,8 +35,6 @@ message Channel {
   bool is_starred = 12;
   // false の場合はツリーを組み立てるために返している未参加の祖先チャンネル
   bool is_member = 13;
-  // アーカイブ中の場合だけ設定される
-  optional google.protobuf.Timestamp archived_at = 14;
   bool is_muted = 15;
   // 最後のメッセージ（スレッドの返信を除く）の投稿日時。ListChannels でだけ設定する
   optional google.protobuf.Timestamp last_message_at = 16;
@@ -96,12 +90,6 @@ message UpdateChannelResponse {
   Channel channel = 1;
 }
 
-message DeleteChannelRequest {
-  string channel_id = 1 [(buf.validate.field).string.uuid = true];
-}
-
-message DeleteChannelResponse {}
-
 message SetChannelStarredRequest {
   string channel_id = 1 [(buf.validate.field).string.uuid = true];
   bool starred = 2;
@@ -115,22 +103,6 @@ message SetChannelMutedRequest {
 }
 
 message SetChannelMutedResponse {}
-
-message ArchiveChannelRequest {
-  string channel_id = 1 [(buf.validate.field).string.uuid = true];
-}
-
-message ArchiveChannelResponse {
-  Channel channel = 1;
-}
-
-message UnarchiveChannelRequest {
-  string channel_id = 1 [(buf.validate.field).string.uuid = true];
-}
-
-message UnarchiveChannelResponse {
-  Channel channel = 1;
-}
 
 message ListBrowsableChannelsRequest {
   string workspace_id = 1 [(buf.validate.field).string.min_len = 1];

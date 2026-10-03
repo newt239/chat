@@ -12,11 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/channel"
 	"github.com/newt239/chat/ent/channelmember"
-	"github.com/newt239/chat/ent/channelreadstate"
-	"github.com/newt239/chat/ent/message"
 	"github.com/newt239/chat/ent/predicate"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/workspace"
@@ -111,26 +108,6 @@ func (_u *ChannelUpdate) SetNillableChannelType(v *string) *ChannelUpdate {
 	return _u
 }
 
-// SetArchivedAt sets the "archived_at" field.
-func (_u *ChannelUpdate) SetArchivedAt(v time.Time) *ChannelUpdate {
-	_u.mutation.SetArchivedAt(v)
-	return _u
-}
-
-// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
-func (_u *ChannelUpdate) SetNillableArchivedAt(v *time.Time) *ChannelUpdate {
-	if v != nil {
-		_u.SetArchivedAt(*v)
-	}
-	return _u
-}
-
-// ClearArchivedAt clears the value of the "archived_at" field.
-func (_u *ChannelUpdate) ClearArchivedAt() *ChannelUpdate {
-	_u.mutation.ClearArchivedAt()
-	return _u
-}
-
 // SetParentID sets the "parent_id" field.
 func (_u *ChannelUpdate) SetParentID(v uuid.UUID) *ChannelUpdate {
 	_u.mutation.SetParentID(v)
@@ -180,51 +157,6 @@ func (_u *ChannelUpdate) AddMembers(v ...*ChannelMember) *ChannelUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddMemberIDs(ids...)
-}
-
-// AddMessageIDs adds the "messages" edge to the Message entity by IDs.
-func (_u *ChannelUpdate) AddMessageIDs(ids ...uuid.UUID) *ChannelUpdate {
-	_u.mutation.AddMessageIDs(ids...)
-	return _u
-}
-
-// AddMessages adds the "messages" edges to the Message entity.
-func (_u *ChannelUpdate) AddMessages(v ...*Message) *ChannelUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMessageIDs(ids...)
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_u *ChannelUpdate) AddAttachmentIDs(ids ...uuid.UUID) *ChannelUpdate {
-	_u.mutation.AddAttachmentIDs(ids...)
-	return _u
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_u *ChannelUpdate) AddAttachments(v ...*Attachment) *ChannelUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAttachmentIDs(ids...)
-}
-
-// AddReadStateIDs adds the "read_states" edge to the ChannelReadState entity by IDs.
-func (_u *ChannelUpdate) AddReadStateIDs(ids ...uuid.UUID) *ChannelUpdate {
-	_u.mutation.AddReadStateIDs(ids...)
-	return _u
-}
-
-// AddReadStates adds the "read_states" edges to the ChannelReadState entity.
-func (_u *ChannelUpdate) AddReadStates(v ...*ChannelReadState) *ChannelUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddReadStateIDs(ids...)
 }
 
 // SetParent sets the "parent" edge to the Channel entity.
@@ -283,69 +215,6 @@ func (_u *ChannelUpdate) RemoveMembers(v ...*ChannelMember) *ChannelUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMemberIDs(ids...)
-}
-
-// ClearMessages clears all "messages" edges to the Message entity.
-func (_u *ChannelUpdate) ClearMessages() *ChannelUpdate {
-	_u.mutation.ClearMessages()
-	return _u
-}
-
-// RemoveMessageIDs removes the "messages" edge to Message entities by IDs.
-func (_u *ChannelUpdate) RemoveMessageIDs(ids ...uuid.UUID) *ChannelUpdate {
-	_u.mutation.RemoveMessageIDs(ids...)
-	return _u
-}
-
-// RemoveMessages removes "messages" edges to Message entities.
-func (_u *ChannelUpdate) RemoveMessages(v ...*Message) *ChannelUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveMessageIDs(ids...)
-}
-
-// ClearAttachments clears all "attachments" edges to the Attachment entity.
-func (_u *ChannelUpdate) ClearAttachments() *ChannelUpdate {
-	_u.mutation.ClearAttachments()
-	return _u
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
-func (_u *ChannelUpdate) RemoveAttachmentIDs(ids ...uuid.UUID) *ChannelUpdate {
-	_u.mutation.RemoveAttachmentIDs(ids...)
-	return _u
-}
-
-// RemoveAttachments removes "attachments" edges to Attachment entities.
-func (_u *ChannelUpdate) RemoveAttachments(v ...*Attachment) *ChannelUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAttachmentIDs(ids...)
-}
-
-// ClearReadStates clears all "read_states" edges to the ChannelReadState entity.
-func (_u *ChannelUpdate) ClearReadStates() *ChannelUpdate {
-	_u.mutation.ClearReadStates()
-	return _u
-}
-
-// RemoveReadStateIDs removes the "read_states" edge to ChannelReadState entities by IDs.
-func (_u *ChannelUpdate) RemoveReadStateIDs(ids ...uuid.UUID) *ChannelUpdate {
-	_u.mutation.RemoveReadStateIDs(ids...)
-	return _u
-}
-
-// RemoveReadStates removes "read_states" edges to ChannelReadState entities.
-func (_u *ChannelUpdate) RemoveReadStates(v ...*ChannelReadState) *ChannelUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveReadStateIDs(ids...)
 }
 
 // ClearParent clears the "parent" edge to the Channel entity.
@@ -451,12 +320,6 @@ func (_u *ChannelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.ChannelType(); ok {
 		_spec.SetField(channel.FieldChannelType, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ArchivedAt(); ok {
-		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ArchivedAtCleared() {
-		_spec.ClearField(channel.FieldArchivedAt, field.TypeTime)
-	}
 	if _u.mutation.DmKeyCleared() {
 		_spec.ClearField(channel.FieldDmKey, field.TypeString)
 	}
@@ -559,141 +422,6 @@ func (_u *ChannelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channelmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.MessagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.MessagesTable,
-			Columns: []string{channel.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.MessagesTable,
-			Columns: []string{channel.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.MessagesTable,
-			Columns: []string{channel.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.AttachmentsTable,
-			Columns: []string{channel.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !_u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.AttachmentsTable,
-			Columns: []string{channel.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.AttachmentsTable,
-			Columns: []string{channel.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.ReadStatesTable,
-			Columns: []string{channel.ReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedReadStatesIDs(); len(nodes) > 0 && !_u.mutation.ReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.ReadStatesTable,
-			Columns: []string{channel.ReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ReadStatesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.ReadStatesTable,
-			Columns: []string{channel.ReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -871,26 +599,6 @@ func (_u *ChannelUpdateOne) SetNillableChannelType(v *string) *ChannelUpdateOne 
 	return _u
 }
 
-// SetArchivedAt sets the "archived_at" field.
-func (_u *ChannelUpdateOne) SetArchivedAt(v time.Time) *ChannelUpdateOne {
-	_u.mutation.SetArchivedAt(v)
-	return _u
-}
-
-// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
-func (_u *ChannelUpdateOne) SetNillableArchivedAt(v *time.Time) *ChannelUpdateOne {
-	if v != nil {
-		_u.SetArchivedAt(*v)
-	}
-	return _u
-}
-
-// ClearArchivedAt clears the value of the "archived_at" field.
-func (_u *ChannelUpdateOne) ClearArchivedAt() *ChannelUpdateOne {
-	_u.mutation.ClearArchivedAt()
-	return _u
-}
-
 // SetParentID sets the "parent_id" field.
 func (_u *ChannelUpdateOne) SetParentID(v uuid.UUID) *ChannelUpdateOne {
 	_u.mutation.SetParentID(v)
@@ -940,51 +648,6 @@ func (_u *ChannelUpdateOne) AddMembers(v ...*ChannelMember) *ChannelUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddMemberIDs(ids...)
-}
-
-// AddMessageIDs adds the "messages" edge to the Message entity by IDs.
-func (_u *ChannelUpdateOne) AddMessageIDs(ids ...uuid.UUID) *ChannelUpdateOne {
-	_u.mutation.AddMessageIDs(ids...)
-	return _u
-}
-
-// AddMessages adds the "messages" edges to the Message entity.
-func (_u *ChannelUpdateOne) AddMessages(v ...*Message) *ChannelUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddMessageIDs(ids...)
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_u *ChannelUpdateOne) AddAttachmentIDs(ids ...uuid.UUID) *ChannelUpdateOne {
-	_u.mutation.AddAttachmentIDs(ids...)
-	return _u
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_u *ChannelUpdateOne) AddAttachments(v ...*Attachment) *ChannelUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAttachmentIDs(ids...)
-}
-
-// AddReadStateIDs adds the "read_states" edge to the ChannelReadState entity by IDs.
-func (_u *ChannelUpdateOne) AddReadStateIDs(ids ...uuid.UUID) *ChannelUpdateOne {
-	_u.mutation.AddReadStateIDs(ids...)
-	return _u
-}
-
-// AddReadStates adds the "read_states" edges to the ChannelReadState entity.
-func (_u *ChannelUpdateOne) AddReadStates(v ...*ChannelReadState) *ChannelUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddReadStateIDs(ids...)
 }
 
 // SetParent sets the "parent" edge to the Channel entity.
@@ -1043,69 +706,6 @@ func (_u *ChannelUpdateOne) RemoveMembers(v ...*ChannelMember) *ChannelUpdateOne
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMemberIDs(ids...)
-}
-
-// ClearMessages clears all "messages" edges to the Message entity.
-func (_u *ChannelUpdateOne) ClearMessages() *ChannelUpdateOne {
-	_u.mutation.ClearMessages()
-	return _u
-}
-
-// RemoveMessageIDs removes the "messages" edge to Message entities by IDs.
-func (_u *ChannelUpdateOne) RemoveMessageIDs(ids ...uuid.UUID) *ChannelUpdateOne {
-	_u.mutation.RemoveMessageIDs(ids...)
-	return _u
-}
-
-// RemoveMessages removes "messages" edges to Message entities.
-func (_u *ChannelUpdateOne) RemoveMessages(v ...*Message) *ChannelUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveMessageIDs(ids...)
-}
-
-// ClearAttachments clears all "attachments" edges to the Attachment entity.
-func (_u *ChannelUpdateOne) ClearAttachments() *ChannelUpdateOne {
-	_u.mutation.ClearAttachments()
-	return _u
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
-func (_u *ChannelUpdateOne) RemoveAttachmentIDs(ids ...uuid.UUID) *ChannelUpdateOne {
-	_u.mutation.RemoveAttachmentIDs(ids...)
-	return _u
-}
-
-// RemoveAttachments removes "attachments" edges to Attachment entities.
-func (_u *ChannelUpdateOne) RemoveAttachments(v ...*Attachment) *ChannelUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAttachmentIDs(ids...)
-}
-
-// ClearReadStates clears all "read_states" edges to the ChannelReadState entity.
-func (_u *ChannelUpdateOne) ClearReadStates() *ChannelUpdateOne {
-	_u.mutation.ClearReadStates()
-	return _u
-}
-
-// RemoveReadStateIDs removes the "read_states" edge to ChannelReadState entities by IDs.
-func (_u *ChannelUpdateOne) RemoveReadStateIDs(ids ...uuid.UUID) *ChannelUpdateOne {
-	_u.mutation.RemoveReadStateIDs(ids...)
-	return _u
-}
-
-// RemoveReadStates removes "read_states" edges to ChannelReadState entities.
-func (_u *ChannelUpdateOne) RemoveReadStates(v ...*ChannelReadState) *ChannelUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveReadStateIDs(ids...)
 }
 
 // ClearParent clears the "parent" edge to the Channel entity.
@@ -1241,12 +841,6 @@ func (_u *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err er
 	if value, ok := _u.mutation.ChannelType(); ok {
 		_spec.SetField(channel.FieldChannelType, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ArchivedAt(); ok {
-		_spec.SetField(channel.FieldArchivedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ArchivedAtCleared() {
-		_spec.ClearField(channel.FieldArchivedAt, field.TypeTime)
-	}
 	if _u.mutation.DmKeyCleared() {
 		_spec.ClearField(channel.FieldDmKey, field.TypeString)
 	}
@@ -1349,141 +943,6 @@ func (_u *ChannelUpdateOne) sqlSave(ctx context.Context) (_node *Channel, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(channelmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.MessagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.MessagesTable,
-			Columns: []string{channel.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.MessagesTable,
-			Columns: []string{channel.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.MessagesTable,
-			Columns: []string{channel.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(message.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.AttachmentsTable,
-			Columns: []string{channel.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !_u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.AttachmentsTable,
-			Columns: []string{channel.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.AttachmentsTable,
-			Columns: []string{channel.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.ReadStatesTable,
-			Columns: []string{channel.ReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedReadStatesIDs(); len(nodes) > 0 && !_u.mutation.ReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.ReadStatesTable,
-			Columns: []string{channel.ReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ReadStatesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   channel.ReadStatesTable,
-			Columns: []string{channel.ReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(channelreadstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

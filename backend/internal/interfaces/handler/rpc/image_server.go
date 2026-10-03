@@ -23,7 +23,6 @@ func (s *ImageServer) PresignImageUpload(ctx context.Context, req *chatv1.Presig
 		WorkspaceID: req.WorkspaceId,
 		Purpose:     imagePurposes[req.Purpose],
 		ContentType: req.ContentType,
-		SizeBytes:   req.SizeBytes,
 	})
 	if err != nil {
 		return nil, err

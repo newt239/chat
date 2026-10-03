@@ -18,10 +18,10 @@ type stubUserRepo struct {
 	levels map[string]entity.NotificationLevel
 }
 
-func (r stubUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
-	users := []*entity.User{}
+func (r stubUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
+	users := map[string]*entity.User{}
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, Preferences: entity.UserPreferences{NotificationLevel: r.levels[id]}})
+		users[id] = &entity.User{ID: id, Preferences: entity.UserPreferences{NotificationLevel: r.levels[id]}}
 	}
 	return users, nil
 }
@@ -129,9 +129,8 @@ func (f fixture) run(t *testing.T, channel *entity.Channel, message messageuc.Me
 		stubMentionService{},
 		stubAccess{denied: f.denied},
 		sender,
-		nil,
 	)
-	if err := d.dispatch(context.Background(), channel, message); err != nil {
+	if err := d.NotifyNewMessage(context.Background(), channel, message); err != nil {
 		t.Fatalf("送信に失敗しました: %v", err)
 	}
 	return sender, tokens
@@ -204,6 +203,8 @@ func TestDispatchDM(t *testing.T) {
 }
 
 func TestNotifyNewMessageWithoutSenderDoesNothing(t *testing.T) {
-	d := NewDispatcher(nil, nil, nil, nil, nil, nil, nil, nil, nil)
-	d.NotifyNewMessage(context.Background(), &entity.Channel{}, messageuc.MessageOutput{})
+	d := NewDispatcher(nil, nil, nil, nil, nil, nil, nil, nil)
+	if err := d.NotifyNewMessage(context.Background(), &entity.Channel{}, messageuc.MessageOutput{}); err != nil {
+		t.Fatal(err)
+	}
 }

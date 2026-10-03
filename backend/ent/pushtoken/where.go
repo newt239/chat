@@ -76,11 +76,6 @@ func LastSeenAt(v time.Time) predicate.PushToken {
 	return predicate.PushToken(sql.FieldEQ(FieldLastSeenAt, v))
 }
 
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldEQ(FieldCreatedAt, v))
-}
-
 // UserIDEQ applies the EQ predicate on the "user_id" field.
 func UserIDEQ(v uuid.UUID) predicate.PushToken {
 	return predicate.PushToken(sql.FieldEQ(FieldUserID, v))
@@ -289,46 +284,6 @@ func LastSeenAtLT(v time.Time) predicate.PushToken {
 // LastSeenAtLTE applies the LTE predicate on the "last_seen_at" field.
 func LastSeenAtLTE(v time.Time) predicate.PushToken {
 	return predicate.PushToken(sql.FieldLTE(FieldLastSeenAt, v))
-}
-
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldNEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldNotIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldGT(FieldCreatedAt, v))
-}
-
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldGTE(FieldCreatedAt, v))
-}
-
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldLT(FieldCreatedAt, v))
-}
-
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.PushToken {
-	return predicate.PushToken(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

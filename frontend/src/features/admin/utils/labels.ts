@@ -9,7 +9,6 @@ export const auditActions = [
   { action: AuditAction.MEMBER_SUSPENDED, key: "memberSuspended" },
   { action: AuditAction.MEMBER_RESUMED, key: "memberResumed" },
   { action: AuditAction.CHANNEL_CREATED, key: "channelCreated" },
-  { action: AuditAction.CHANNEL_DELETED, key: "channelDeleted" },
   { action: AuditAction.PERMISSION_CHANGED, key: "permissionChanged" },
   { action: AuditAction.AUDIT_LOG_EXPORTED, key: "auditLogExported" },
   { action: AuditAction.CUSTOM_EMOJI_CREATED, key: "customEmojiCreated" },

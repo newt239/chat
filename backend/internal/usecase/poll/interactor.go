@@ -3,7 +3,6 @@ package poll
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"slices"
 	"time"
@@ -17,21 +16,16 @@ import (
 )
 
 var (
-	ErrPollNotFound = errors.New("投票が見つかりません")
-	ErrPollClosed   = errors.New("この投票は締め切られています")
-	ErrInvalidVote  = fmt.Errorf("%w: 選択肢が正しくありません", domerr.ErrValidation)
+	ErrPollNotFound = domerr.New(domerr.ErrNotFound, "投票が見つかりません")
+	ErrPollClosed   = domerr.New(domerr.ErrFailedPrecondition, "この投票は締め切られています")
+	ErrInvalidVote  = domerr.New(domerr.ErrValidation, "選択肢が正しくありません")
 )
 
-type VoteInput struct {
-	PollID string
-	UserID string
-	// 空にすると投票を取り消す
+// PollInput は締め切りでは OptionIDs を使いません。投票で空にすると投票を取り消します
+type PollInput struct {
+	PollID    string
+	UserID    string
 	OptionIDs []string
-}
-
-type CloseInput struct {
-	PollID string
-	UserID string
 }
 
 type Interactor struct {
@@ -44,7 +38,7 @@ type Interactor struct {
 	txManager        domaintransaction.Manager
 }
 
-func NewInteractor(
+func New(
 	pollRepo domainrepository.PollRepository,
 	messageRepo domainrepository.MessageRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -65,7 +59,7 @@ func NewInteractor(
 }
 
 // Vote は自分の票を選んだ選択肢に置き換え、集計を更新したメッセージを配信します
-func (i *Interactor) Vote(ctx context.Context, input VoteInput) (*messageuc.MessageOutput, error) {
+func (i *Interactor) Vote(ctx context.Context, input PollInput) (*messageuc.MessageOutput, error) {
 	poll, message, ch, err := i.find(ctx, input.PollID, input.UserID)
 	if err != nil {
 		return nil, err
@@ -100,18 +94,14 @@ func normalizeChoice(poll *entity.Poll, optionIDs []string) ([]string, error) {
 }
 
 // Close は投票を締め切ります。作成者とワークスペースの管理者だけができる
-func (i *Interactor) Close(ctx context.Context, input CloseInput) (*messageuc.MessageOutput, error) {
+func (i *Interactor) Close(ctx context.Context, input PollInput) (*messageuc.MessageOutput, error) {
 	poll, message, ch, err := i.find(ctx, input.PollID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
 	if message.UserID != input.UserID {
-		member, err := i.workspaceRepo.FindMember(ctx, ch.WorkspaceID, input.UserID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-		}
-		if member == nil || !member.IsAdmin() {
-			return nil, domerr.ErrUnauthorized
+		if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, ch.WorkspaceID, input.UserID); err != nil {
+			return nil, err
 		}
 	}
 	if poll.IsClosed(time.Now()) {

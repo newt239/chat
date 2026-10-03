@@ -6,7 +6,6 @@ export const admin = {
       appDeleted: "アプリを削除",
       auditLogExported: "監査ログを書き出し",
       channelCreated: "チャンネルを作成",
-      channelDeleted: "チャンネルを削除",
       customEmojiCreated: "カスタム絵文字を登録",
       customEmojiDeleted: "カスタム絵文字を削除",
       login: "ログイン",

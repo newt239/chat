@@ -13,10 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/ent/user"
 	"github.com/newt239/chat/ent/usergroup"
-	"github.com/newt239/chat/ent/usergroupmember"
 	"github.com/newt239/chat/ent/workspace"
 )
 
@@ -110,36 +108,6 @@ func (_c *UserGroupCreate) SetWorkspace(v *Workspace) *UserGroupCreate {
 // SetCreatedBy sets the "created_by" edge to the User entity.
 func (_c *UserGroupCreate) SetCreatedBy(v *User) *UserGroupCreate {
 	return _c.SetCreatedByID(v.ID)
-}
-
-// AddMemberIDs adds the "members" edge to the UserGroupMember entity by IDs.
-func (_c *UserGroupCreate) AddMemberIDs(ids ...uuid.UUID) *UserGroupCreate {
-	_c.mutation.AddMemberIDs(ids...)
-	return _c
-}
-
-// AddMembers adds the "members" edges to the UserGroupMember entity.
-func (_c *UserGroupCreate) AddMembers(v ...*UserGroupMember) *UserGroupCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddMemberIDs(ids...)
-}
-
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (_c *UserGroupCreate) AddGroupMentionIDs(ids ...uuid.UUID) *UserGroupCreate {
-	_c.mutation.AddGroupMentionIDs(ids...)
-	return _c
-}
-
-// AddGroupMentions adds the "group_mentions" edges to the MessageGroupMention entity.
-func (_c *UserGroupCreate) AddGroupMentions(v ...*MessageGroupMention) *UserGroupCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddGroupMentionIDs(ids...)
 }
 
 // Mutation returns the UserGroupMutation object of the builder.
@@ -261,7 +229,7 @@ func (_c *UserGroupCreate) createSpec() (*UserGroup, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(usergroup.FieldDescription, field.TypeString, value)
-		_node.Description = value
+		_node.Description = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(usergroup.FieldCreatedAt, field.TypeTime, value)
@@ -303,38 +271,6 @@ func (_c *UserGroupCreate) createSpec() (*UserGroup, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CreatedByID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.MembersTable,
-			Columns: []string{usergroup.MembersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(usergroupmember.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.GroupMentionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   usergroup.GroupMentionsTable,
-			Columns: []string{usergroup.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

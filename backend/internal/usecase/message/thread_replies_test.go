@@ -57,7 +57,7 @@ func TestFetchThreadReplies(t *testing.T) {
 	for i := range 10 {
 		repo.replies = append(repo.replies, &entity.Message{ID: fmt.Sprintf("r%d", i), ParentID: &parent, CreatedAt: base.Add(time.Duration(i) * time.Minute)})
 	}
-	lister := &MessageLister{messageRepo: repo}
+	lister := &Interactor{messageRepo: repo}
 	at := func(i int) *time.Time { return new(base.Add(time.Duration(i) * time.Minute)) }
 
 	tests := []struct {

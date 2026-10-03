@@ -27,7 +27,7 @@ func (fakeWorkspaceRepo) FindMember(_ context.Context, _ string, userID string) 
 
 type fakeStorage struct{ key string }
 
-func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, _ time.Duration) (string, error) {
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ time.Duration) (string, error) {
 	s.key = key
 	return "https://storage.example.com/" + key, nil
 }
@@ -38,9 +38,9 @@ func (*fakeStorage) DeleteObject(context.Context, string) error { return nil }
 
 func TestPresign(t *testing.T) {
 	storage := &fakeStorage{}
-	uc := NewInteractor(fakeWorkspaceRepo{}, storage, "https://api.example.com/")
+	uc := New(fakeWorkspaceRepo{}, storage, "https://api.example.com/")
 
-	out, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, Purpose: PurposeAvatar, ContentType: "image/png", SizeBytes: 10})
+	out, err := uc.Presign(context.Background(), PresignInput{UserID: memberID, Purpose: PurposeAvatar, ContentType: "image/png"})
 	if err != nil {
 		t.Fatalf("発行できません: %v", err)
 	}

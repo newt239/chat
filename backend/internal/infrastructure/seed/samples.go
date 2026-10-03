@@ -37,8 +37,7 @@ var sampleUserNames = []string{
 	"Eve Tanaka", "Frank Suzuki", "Grace Sato", "Hiro Yamada", "Ivy Kobayashi", "Jun Ito", "Ken Watanabe", "山田 花子",
 }
 
-// createRichSamples はメッセージの種類・システムメッセージ・スレッド・大量のメッセージなど、
-// 画面の確認に使うデータを追加します。alice の視点で並び順・ミュート・スターも確認できるようにします
+// createRichSamples はメッセージの種類・スレッド・大量のメッセージ・ミュート・スターなど画面の確認に使うデータを追加します
 func createRichSamples(
 	ctx context.Context,
 	client *ent.Client,
@@ -69,11 +68,11 @@ func createRichSamples(
 		}
 	}
 	for _, def := range sampleChannels {
-		params := entity.ChannelParams{
+		params := entity.Channel{
 			ID:          uuid.NewString(),
 			WorkspaceID: "general",
 			Name:        def.name,
-			Description: stringPtr(def.description),
+			Description: new(def.description),
 			CreatedBy:   users[1].ID,
 		}
 		if parent, ok := byName[def.parentName]; ok {
@@ -138,7 +137,7 @@ func createSampleUsers(ctx context.Context, passwordService authuc.PasswordServi
 			Email:        seed + "@example.com",
 			PasswordHash: mustHashPassword(passwordService, "password123"),
 			DisplayName:  name,
-			AvatarURL:    stringPtr("https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed),
+			AvatarURL:    new("https://api.dicebear.com/7.x/avataaars/svg?seed=" + seed),
 		}
 		if err := userRepo.Create(ctx, user); err != nil {
 			return nil, fmt.Errorf("failed to create user %s: %w", name, err)
@@ -202,9 +201,9 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		{userIndex: 4, body: longText, reactions: map[string]int{"👀": 3}},
 		{userIndex: 5, body: "🎉🎉🎉"},
 		{userIndex: 0, body: "<@" + users[1].ID + "> <@" + users[len(users)-len(sampleUserNames)].ID + "> レビューをお願いします。<@&" + developersGroupID + "> にも共有します。詳細は <#" + channelsByName["dev/frontend"].ID + "> と <#" + channelsByName["general"].ID + "> を見てください", reactions: map[string]int{"👍": 6, "🙏": 2, "✅": 1}},
-		{userIndex: 6, body: "参考資料です https://github.com/example/repo", link: &entity.MessageLink{URL: "https://github.com/example/repo", OGP: entity.OGPData{Title: stringPtr("Example Repository"), Description: stringPtr("A sample repository for demonstration"), SiteName: stringPtr("GitHub")}}},
+		{userIndex: 6, body: "参考資料です https://github.com/example/repo", link: &entity.MessageLink{URL: "https://github.com/example/repo", OGP: entity.OGPData{Title: new("Example Repository"), Description: new("A sample repository for demonstration"), SiteName: new("GitHub")}}},
 		{userIndex: 1, body: "最初の挨拶はここです " + permalink, link: &entity.MessageLink{URL: permalink, LinkedMessageID: &general.ID}},
-		{userIndex: 7, body: "今ここにいます", location: &entity.MessageLocation{Latitude: 35.681236, Longitude: 139.767125, Label: stringPtr("東京駅")}},
+		{userIndex: 7, body: "今ここにいます", location: &entity.MessageLocation{Latitude: 35.681236, Longitude: 139.767125, Label: new("東京駅")}},
 		{userIndex: 2, body: "この文章はあとから編集しました（編集済みの表示）", edited: true},
 		{userIndex: 3, body: "このメッセージは削除されました", deleted: true},
 		{userIndex: 0, body: "リリース日の相談をスレッドでしましょう", replies: []string{"金曜はどうでしょう？", "金曜は QA が間に合わないかもしれません", "では来週の火曜で", "了解です 👍", "カレンダーに入れておきます"}},
@@ -228,7 +227,6 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		return err
 	}
 
-	messageRepo := repository.NewMessageRepository(client)
 	linkRepo := repository.NewLinkRepository(client)
 	channelID := uuid.MustParse(ch.ID)
 	for _, sample := range samples {
@@ -255,8 +253,7 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		i := 0
 		for emoji, count := range sample.reactions {
 			for _, user := range users[:count] {
-				reaction := &entity.MessageReaction{MessageID: msg.ID.String(), UserID: user.ID, Emoji: emoji, CreatedAt: createdAt.Add(time.Duration(i) * time.Second)}
-				if err := messageRepo.AddReaction(ctx, reaction); err != nil {
+				if err := createReaction(ctx, client, msg.ID.String(), user.ID, emoji, createdAt.Add(time.Duration(i)*time.Second)); err != nil {
 					return fmt.Errorf("failed to create reaction: %w", err)
 				}
 				i++
@@ -264,7 +261,6 @@ func createShowcaseMessages(ctx context.Context, client *ent.Client, users []*en
 		}
 		if sample.link != nil {
 			sample.link.MessageID = msg.ID.String()
-			sample.link.CreatedAt = createdAt
 			if err := createLink(ctx, linkRepo, sample.link); err != nil {
 				return fmt.Errorf("failed to create link: %w", err)
 			}

@@ -2,7 +2,6 @@ package channelcategory
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -14,53 +13,28 @@ import (
 )
 
 var (
-	ErrCategoryNotFound = errors.New("カテゴリが見つかりません")
-	ErrInvalidOrder     = fmt.Errorf("%w: 並び替えにはすべてのカテゴリを指定してください", domerr.ErrValidation)
+	ErrCategoryNotFound = domerr.New(domerr.ErrNotFound, "カテゴリが見つかりません")
+	ErrInvalidOrder     = domerr.New(domerr.ErrValidation, "並び替えにはすべてのカテゴリを指定してください")
 )
 
-type UseCase interface {
-	List(ctx context.Context, input ListInput) ([]CategoryOutput, error)
-	Create(ctx context.Context, input CreateInput) (*CategoryOutput, error)
-	Update(ctx context.Context, input UpdateInput) (*CategoryOutput, error)
-	Delete(ctx context.Context, input DeleteInput) error
-	Reorder(ctx context.Context, input ReorderInput) ([]CategoryOutput, error)
-	SetChannel(ctx context.Context, input SetChannelInput) error
-}
-
-type interactor struct {
+type Interactor struct {
 	categoryRepo     domainrepository.ChannelCategoryRepository
 	workspaceRepo    domainrepository.WorkspaceRepository
 	channelAccessSvc domainservice.ChannelAccessService
 	txManager        domaintransaction.Manager
 }
 
-func NewInteractor(
+func New(
 	categoryRepo domainrepository.ChannelCategoryRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	channelAccessSvc domainservice.ChannelAccessService,
 	txManager domaintransaction.Manager,
-) UseCase {
-	return &interactor{
-		categoryRepo:     categoryRepo,
-		workspaceRepo:    workspaceRepo,
-		channelAccessSvc: channelAccessSvc,
-		txManager:        txManager,
-	}
-}
-
-func (i *interactor) ensureWorkspaceMember(ctx context.Context, workspaceID, userID string) error {
-	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
-	if err != nil {
-		return fmt.Errorf("failed to verify membership: %w", err)
-	}
-	if member == nil {
-		return domerr.ErrUnauthorized
-	}
-	return nil
+) *Interactor {
+	return &Interactor{categoryRepo: categoryRepo, workspaceRepo: workspaceRepo, channelAccessSvc: channelAccessSvc, txManager: txManager}
 }
 
 // findOwnCategory は他人のカテゴリを見つからないものとして扱います
-func (i *interactor) findOwnCategory(ctx context.Context, categoryID, userID string) (*entity.ChannelCategory, error) {
+func (i *Interactor) findOwnCategory(ctx context.Context, categoryID, userID string) (*entity.ChannelCategory, error) {
 	category, err := i.categoryRepo.FindByID(ctx, categoryID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load category: %w", err)
@@ -71,76 +45,69 @@ func (i *interactor) findOwnCategory(ctx context.Context, categoryID, userID str
 	return category, nil
 }
 
-func (i *interactor) List(ctx context.Context, input ListInput) ([]CategoryOutput, error) {
-	if err := i.ensureWorkspaceMember(ctx, input.WorkspaceID, input.UserID); err != nil {
+func (i *Interactor) List(ctx context.Context, workspaceID, userID string) ([]*entity.ChannelCategory, error) {
+	if _, err := domainservice.EnsureMember(ctx, i.workspaceRepo, workspaceID, userID); err != nil {
 		return nil, err
 	}
-	categories, err := i.categoryRepo.FindByUser(ctx, input.UserID, input.WorkspaceID)
+	categories, err := i.categoryRepo.FindByUser(ctx, userID, workspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load categories: %w", err)
 	}
-	return toOutputs(categories), nil
+	return categories, nil
 }
 
-func (i *interactor) Create(ctx context.Context, input CreateInput) (*CategoryOutput, error) {
-	if err := i.ensureWorkspaceMember(ctx, input.WorkspaceID, input.UserID); err != nil {
+func (i *Interactor) Create(ctx context.Context, workspaceID, userID, name string) (*entity.ChannelCategory, error) {
+	existing, err := i.List(ctx, workspaceID, userID)
+	if err != nil {
 		return nil, err
 	}
-	existing, err := i.categoryRepo.FindByUser(ctx, input.UserID, input.WorkspaceID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load categories: %w", err)
-	}
 	category := &entity.ChannelCategory{
-		UserID:      input.UserID,
-		WorkspaceID: input.WorkspaceID,
-		Name:        strings.TrimSpace(input.Name),
+		UserID:      userID,
+		WorkspaceID: workspaceID,
+		Name:        strings.TrimSpace(name),
 		Position:    len(existing),
 		ChannelIDs:  []string{},
 	}
 	if err := i.categoryRepo.Create(ctx, category); err != nil {
 		return nil, fmt.Errorf("failed to create category: %w", err)
 	}
-	out := toOutput(category)
-	return &out, nil
+	return category, nil
 }
 
-func (i *interactor) Update(ctx context.Context, input UpdateInput) (*CategoryOutput, error) {
-	category, err := i.findOwnCategory(ctx, input.CategoryID, input.UserID)
+func (i *Interactor) Update(ctx context.Context, categoryID, userID, name string) (*entity.ChannelCategory, error) {
+	category, err := i.findOwnCategory(ctx, categoryID, userID)
 	if err != nil {
 		return nil, err
 	}
-	category.Name = strings.TrimSpace(input.Name)
+	category.Name = strings.TrimSpace(name)
 	if err := i.categoryRepo.UpdateName(ctx, category.ID, category.Name); err != nil {
 		return nil, fmt.Errorf("failed to update category: %w", err)
 	}
-	out := toOutput(category)
-	return &out, nil
+	return category, nil
 }
 
-func (i *interactor) Delete(ctx context.Context, input DeleteInput) error {
-	if _, err := i.findOwnCategory(ctx, input.CategoryID, input.UserID); err != nil {
+func (i *Interactor) Delete(ctx context.Context, categoryID, userID string) error {
+	if _, err := i.findOwnCategory(ctx, categoryID, userID); err != nil {
 		return err
 	}
-	return i.txManager.Do(ctx, func(txCtx context.Context) error {
-		return i.categoryRepo.Delete(txCtx, input.CategoryID)
-	})
+	return i.categoryRepo.Delete(ctx, categoryID)
 }
 
-func (i *interactor) Reorder(ctx context.Context, input ReorderInput) ([]CategoryOutput, error) {
+func (i *Interactor) Reorder(ctx context.Context, workspaceID, userID string, categoryIDs []string) ([]*entity.ChannelCategory, error) {
 	var reordered []*entity.ChannelCategory
 	err := i.txManager.Do(ctx, func(txCtx context.Context) error {
-		categories, err := i.categoryRepo.FindByUser(txCtx, input.UserID, input.WorkspaceID)
+		categories, err := i.categoryRepo.FindByUser(txCtx, userID, workspaceID)
 		if err != nil {
 			return fmt.Errorf("failed to load categories: %w", err)
 		}
-		if len(categories) != len(input.CategoryIDs) {
+		if len(categories) != len(categoryIDs) {
 			return ErrInvalidOrder
 		}
 		byID := make(map[string]*entity.ChannelCategory, len(categories))
 		for _, category := range categories {
 			byID[category.ID] = category
 		}
-		for position, id := range input.CategoryIDs {
+		for position, id := range categoryIDs {
 			category, ok := byID[id]
 			if !ok {
 				return ErrInvalidOrder
@@ -148,21 +115,22 @@ func (i *interactor) Reorder(ctx context.Context, input ReorderInput) ([]Categor
 			category.Position = position
 			reordered = append(reordered, category)
 		}
-		return i.categoryRepo.UpdatePositions(txCtx, input.CategoryIDs)
+		return i.categoryRepo.UpdatePositions(txCtx, categoryIDs)
 	})
 	if err != nil {
 		return nil, err
 	}
-	return toOutputs(reordered), nil
+	return reordered, nil
 }
 
-func (i *interactor) SetChannel(ctx context.Context, input SetChannelInput) error {
-	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+// SetChannel はチャンネルをカテゴリに割り当てます。categoryID が nil なら割り当てを外します
+func (i *Interactor) SetChannel(ctx context.Context, channelID, userID string, categoryID *string) error {
+	ch, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID)
 	if err != nil {
 		return err
 	}
-	if input.CategoryID != nil {
-		category, err := i.findOwnCategory(ctx, *input.CategoryID, input.UserID)
+	if categoryID != nil {
+		category, err := i.findOwnCategory(ctx, *categoryID, userID)
 		if err != nil {
 			return err
 		}
@@ -170,24 +138,5 @@ func (i *interactor) SetChannel(ctx context.Context, input SetChannelInput) erro
 			return ErrCategoryNotFound
 		}
 	}
-	return i.txManager.Do(ctx, func(txCtx context.Context) error {
-		return i.categoryRepo.SetChannel(txCtx, input.UserID, ch.ID, input.CategoryID)
-	})
-}
-
-func toOutput(category *entity.ChannelCategory) CategoryOutput {
-	return CategoryOutput{
-		ID:         category.ID,
-		Name:       category.Name,
-		Position:   category.Position,
-		ChannelIDs: category.ChannelIDs,
-	}
-}
-
-func toOutputs(categories []*entity.ChannelCategory) []CategoryOutput {
-	outputs := make([]CategoryOutput, 0, len(categories))
-	for _, category := range categories {
-		outputs = append(outputs, toOutput(category))
-	}
-	return outputs
+	return i.categoryRepo.SetChannel(ctx, userID, ch.ID, categoryID)
 }

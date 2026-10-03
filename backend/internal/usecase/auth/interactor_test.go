@@ -193,7 +193,7 @@ type stubTx struct{}
 func (stubTx) Do(ctx context.Context, fn func(ctx context.Context) error) error { return fn(ctx) }
 
 type fixture struct {
-	uc          AuthUseCase
+	uc          *Interactor
 	users       *stubUserRepo
 	sessions    *stubSessionRepo
 	workspaces  *stubWorkspaceRepo
@@ -234,7 +234,7 @@ func newFixture(passwordAuthEnabled bool) fixture {
 		closer:   &stubCloser{},
 	}
 	settings := Settings{AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour, PasswordAuthEnabled: passwordAuthEnabled}
-	f.uc = NewAuthInteractor(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, settings)
+	f.uc = New(f.users, f.sessions, f.workspaces, f.invitations, stubJWT{}, stubPassword{}, google, googleCode, stubTx{}, f.recorder, f.closer, settings)
 	return f
 }
 

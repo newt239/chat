@@ -3,14 +3,11 @@ package repository
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/newt239/chat/ent"
 	"github.com/newt239/chat/ent/messagegroupmention"
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type messageGroupMentionRepository struct {
@@ -22,20 +19,10 @@ func NewMessageGroupMentionRepository(client *ent.Client) domainrepository.Messa
 }
 
 func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, messageIDs []string) ([]*entity.MessageGroupMention, error) {
-	if len(messageIDs) == 0 {
-		return []*entity.MessageGroupMention{}, nil
+	parsedIDs, err := parseUUIDs(messageIDs, "message ID")
+	if err != nil {
+		return nil, err
 	}
-
-	// Parse all message IDs
-	parsedIDs := make([]uuid.UUID, 0, len(messageIDs))
-	for _, id := range messageIDs {
-		parsedID, err := utils.ParseUUID(id, "message ID")
-		if err != nil {
-			return nil, err
-		}
-		parsedIDs = append(parsedIDs, parsedID)
-	}
-
 	client := transaction.ResolveClient(ctx, r.client)
 	mentions, err := client.MessageGroupMention.Query().
 		Where(messagegroupmention.MessageIDIn(parsedIDs...)).
@@ -44,12 +31,9 @@ func (r *messageGroupMentionRepository) FindByMessageIDs(ctx context.Context, me
 		return nil, err
 	}
 
-	result := make([]*entity.MessageGroupMention, 0, len(mentions))
-	for _, mgm := range mentions {
-		result = append(result, utils.MessageGroupMentionToEntity(mgm))
-	}
-
-	return result, nil
+	return convertAll(mentions, func(m *ent.MessageGroupMention) *entity.MessageGroupMention {
+		return &entity.MessageGroupMention{MessageID: m.MessageID.String(), GroupID: m.GroupID.String()}
+	}), nil
 }
 
 func (r *messageGroupMentionRepository) CreateBulk(ctx context.Context, mentions []*entity.MessageGroupMention) error {
@@ -59,11 +43,11 @@ func (r *messageGroupMentionRepository) CreateBulk(ctx context.Context, mentions
 	client := transaction.ResolveClient(ctx, r.client)
 	builders := make([]*ent.MessageGroupMentionCreate, 0, len(mentions))
 	for _, mention := range mentions {
-		mid, err := utils.ParseUUID(mention.MessageID, "message ID")
+		mid, err := parseUUID(mention.MessageID, "message ID")
 		if err != nil {
 			return err
 		}
-		gid, err := utils.ParseUUID(mention.GroupID, "group ID")
+		gid, err := parseUUID(mention.GroupID, "group ID")
 		if err != nil {
 			return err
 		}
@@ -73,7 +57,7 @@ func (r *messageGroupMentionRepository) CreateBulk(ctx context.Context, mentions
 }
 
 func (r *messageGroupMentionRepository) DeleteByMessageID(ctx context.Context, messageID string) error {
-	mid, err := utils.ParseUUID(messageID, "message ID")
+	mid, err := parseUUID(messageID, "message ID")
 	if err != nil {
 		return err
 	}

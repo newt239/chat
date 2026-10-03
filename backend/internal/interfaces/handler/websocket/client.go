@@ -1,14 +1,13 @@
 package websocket
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/gorilla/websocket"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
-	"github.com/newt239/chat/internal/infrastructure/logger"
 )
 
 const (
@@ -81,7 +80,7 @@ func (c *Client) readPump() {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				logger.Get().Warn("WebSocket が予期せず切断されました", zap.String("user", c.userID), zap.Error(err))
+				slog.Warn("WebSocket が予期せず切断されました", "user", c.userID, "error", err)
 			}
 			return
 		}
@@ -193,9 +192,7 @@ func (c *Client) notifyTyping(channelID string, typing bool) {
 	if typing {
 		event.Event = &chatv1.ServerEvent_Typing{Typing: payload}
 	}
-	if data := encodeServerEvent(event); data != nil {
-		c.hub.BroadcastToChannel(c.workspaceID, channelID, data, c.userID)
-	}
+	c.hub.broadcast(envelope{Target: targetChannel, WorkspaceID: c.workspaceID, ChannelID: channelID, ExcludeUserID: c.userID}, event)
 }
 
 // sendEvent は接続中のクライアントにだけイベントを送信します

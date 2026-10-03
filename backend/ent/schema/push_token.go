@@ -37,9 +37,6 @@ func (PushToken) Fields() []ent.Field {
 			Default(""),
 		field.Time("last_seen_at").
 			Default(time.Now),
-		field.Time("created_at").
-			Default(time.Now).
-			Immutable(),
 	}
 }
 

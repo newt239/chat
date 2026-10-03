@@ -30,7 +30,6 @@ func (s *CustomEmojiServer) PresignCustomEmojiUpload(ctx context.Context, req *c
 		WorkspaceID: req.WorkspaceId,
 		UserID:      userIDFrom(ctx),
 		ContentType: req.ContentType,
-		SizeBytes:   req.SizeBytes,
 	})
 	if err != nil {
 		return nil, err
@@ -52,8 +51,5 @@ func (s *CustomEmojiServer) CreateCustomEmoji(ctx context.Context, req *chatv1.C
 }
 
 func (s *CustomEmojiServer) DeleteCustomEmoji(ctx context.Context, req *chatv1.DeleteCustomEmojiRequest) (*chatv1.DeleteCustomEmojiResponse, error) {
-	if err := s.UC.Delete(ctx, customemojiuc.DeleteInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), EmojiID: req.EmojiId}); err != nil {
-		return nil, err
-	}
-	return &chatv1.DeleteCustomEmojiResponse{}, nil
+	return &chatv1.DeleteCustomEmojiResponse{}, s.UC.Delete(ctx, customemojiuc.DeleteInput{WorkspaceID: req.WorkspaceId, UserID: userIDFrom(ctx), EmojiID: req.EmojiId})
 }

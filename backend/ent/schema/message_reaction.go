@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// MessageReaction holds the schema definition for the MessageReaction entity.
 type MessageReaction struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (MessageReaction) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "message_reaction"}}
 }
 
-// Fields of the MessageReaction.
 func (MessageReaction) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -37,7 +35,6 @@ func (MessageReaction) Fields() []ent.Field {
 	}
 }
 
-// Edges of the MessageReaction.
 func (MessageReaction) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("message", Message.Type).
@@ -51,7 +48,6 @@ func (MessageReaction) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the MessageReaction.
 func (MessageReaction) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("message_id", "user_id", "emoji").

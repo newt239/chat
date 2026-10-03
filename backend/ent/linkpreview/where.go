@@ -727,29 +727,6 @@ func HasXPostWith(preds ...predicate.LinkPreviewXPost) predicate.LinkPreview {
 	})
 }
 
-// HasMessageLinks applies the HasEdge predicate on the "message_links" edge.
-func HasMessageLinks() predicate.LinkPreview {
-	return predicate.LinkPreview(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, MessageLinksTable, MessageLinksColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasMessageLinksWith applies the HasEdge predicate on the "message_links" edge with a given conditions (other predicates).
-func HasMessageLinksWith(preds ...predicate.MessageLink) predicate.LinkPreview {
-	return predicate.LinkPreview(func(s *sql.Selector) {
-		step := newMessageLinksStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.LinkPreview) predicate.LinkPreview {
 	return predicate.LinkPreview(sql.AndPredicates(predicates...))

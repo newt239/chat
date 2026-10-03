@@ -42,8 +42,8 @@ func TestUnreadCountBatch(t *testing.T) {
 	if err := repo.Upsert(ctx, &entity.ChannelReadState{ChannelID: general, UserID: alice, LastReadAt: time.Date(2026, 9, 2, 0, 0, 0, 0, time.UTC)}); err != nil {
 		t.Fatalf("既読位置の更新に失敗しました: %v", err)
 	}
-	if count, _ := repo.GetUnreadCount(ctx, general, alice); count != 0 {
-		t.Errorf("既読位置を更新しても未読が残っています: %d", count)
+	if counts, _ := repo.GetUnreadCountBatch(ctx, []string{general}, alice); counts[general] != 0 {
+		t.Errorf("既読位置を更新しても未読が残っています: %d", counts[general])
 	}
 }
 

@@ -76,7 +76,7 @@ func (n *stubNotifier) NotifyUpdatedMessage(string, string, messageuc.MessageOut
 // 出力の組み立て役は渡さず、組み立ての前に失敗する場合だけを確かめる
 func newInteractor(poll *entity.Poll) (*Interactor, *fakePollRepo) {
 	repo := &fakePollRepo{poll: poll}
-	return NewInteractor(repo, stubMessageRepo{}, stubWorkspaceRepo{}, stubAccess{}, nil, &stubNotifier{}, stubTx{}), repo
+	return New(repo, stubMessageRepo{}, stubWorkspaceRepo{}, stubAccess{}, nil, &stubNotifier{}, stubTx{}), repo
 }
 
 func TestVoteValidates(t *testing.T) {
@@ -95,7 +95,7 @@ func TestVoteValidates(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			i, _ := newInteractor(tt.poll)
-			if _, err := i.Vote(context.Background(), VoteInput{PollID: pollID, UserID: voterID, OptionIDs: tt.optionIDs}); !errors.Is(err, tt.want) {
+			if _, err := i.Vote(context.Background(), PollInput{PollID: pollID, UserID: voterID, OptionIDs: tt.optionIDs}); !errors.Is(err, tt.want) {
 				t.Fatalf("got=%v want=%v", err, tt.want)
 			}
 		})
@@ -115,7 +115,7 @@ func TestNormalizeChoiceRemovesDuplicates(t *testing.T) {
 
 func TestCloseRequiresAuthorOrAdmin(t *testing.T) {
 	i, _ := newInteractor(&entity.Poll{ID: pollID, MessageID: messageID})
-	if _, err := i.Close(context.Background(), CloseInput{PollID: pollID, UserID: voterID}); !errors.Is(err, domerr.ErrUnauthorized) {
+	if _, err := i.Close(context.Background(), PollInput{PollID: pollID, UserID: voterID}); !errors.Is(err, domerr.ErrUnauthorized) {
 		t.Fatalf("作成者と管理者以外の締め切りを拒否していません: %v", err)
 	}
 }

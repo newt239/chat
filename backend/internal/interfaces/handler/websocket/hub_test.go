@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 )
 
 // dialTestClient は実際の WebSocket 接続を 1 本張り、ハブに登録します
@@ -35,8 +37,28 @@ func dialTestClient(t *testing.T, h *Hub, sessionID string) *websocket.Conn {
 	return conn
 }
 
+func expectSent(t *testing.T, c *Client) {
+	t.Helper()
+	select {
+	case <-c.send:
+	case <-time.After(2 * time.Second):
+		t.Fatal("イベントが届きませんでした")
+	}
+}
+
+func expectNothing(t *testing.T, c *Client) {
+	t.Helper()
+	select {
+	case data := <-c.send:
+		t.Fatalf("届かないはずのイベントが届きました: %s", data)
+	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+var testEvent = &chatv1.ServerEvent{Event: &chatv1.ServerEvent_Ack{Ack: &chatv1.AckEvent{Event: "test"}}}
+
 func TestShutdownClosesConnectionsWithGoingAway(t *testing.T) {
-	h := NewHub(nil)
+	h := StartTestHubs(t, nil, 1)[0]
 	conn := dialTestClient(t, h, "s1")
 
 	done := make(chan struct{})
@@ -62,7 +84,7 @@ func TestShutdownClosesConnectionsWithGoingAway(t *testing.T) {
 }
 
 func TestCloseSessionSendsUnauthenticatedCode(t *testing.T) {
-	h := NewHub(nil)
+	h := StartTestHubs(t, nil, 1)[0]
 	conn := dialTestClient(t, h, "s1")
 
 	h.CloseSession("s1")
@@ -72,34 +94,30 @@ func TestCloseSessionSendsUnauthenticatedCode(t *testing.T) {
 }
 
 func TestSubscriptionsArePerConnection(t *testing.T) {
-	h := NewHub(nil)
+	h := StartTestHubs(t, nil, 1)[0]
 	tab1 := NewTestClient(h, "ws", "alice", "general")
 	tab2 := NewTestClient(h, "ws", "alice")
 
-	h.BroadcastToChannel("ws", "general", []byte("x"), "")
-	if len(tab1.send) != 1 || len(tab2.send) != 0 {
-		t.Fatalf("購読した接続にだけ届くはず: tab1=%d tab2=%d", len(tab1.send), len(tab2.send))
-	}
+	h.BroadcastToChannel("ws", "general", testEvent)
+	expectSent(t, tab1)
+	expectNothing(t, tab2)
 
 	h.unsubscribe(tab1, "general")
-	h.BroadcastToChannel("ws", "general", []byte("x"), "")
-	if len(tab1.send) != 1 {
-		t.Fatalf("購読をやめた接続に届いています")
-	}
+	h.BroadcastToChannel("ws", "general", testEvent)
+	expectNothing(t, tab1)
 }
 
 func TestTypingRequiresSubscription(t *testing.T) {
-	h := NewHub(nil)
+	h := StartTestHubs(t, nil, 1)[0]
 	alice := NewTestClient(h, "ws", "alice")
 	bob := NewTestClient(h, "ws", "bob", "general")
 
 	alice.notifyTyping("general", true)
-	if len(bob.send) != 0 {
-		t.Fatalf("購読していないチャンネルの入力中が配信されました")
-	}
+	expectNothing(t, bob)
 	h.subscribe(alice, "general")
+	<-alice.send
 	alice.notifyTyping("general", true)
-	if len(bob.send) != 1 {
-		t.Fatalf("購読中のチャンネルの入力中が配信されていません")
-	}
+	expectSent(t, bob)
+	// 入力中の通知は本人には届かない
+	expectNothing(t, alice)
 }

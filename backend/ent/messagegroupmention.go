@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -24,8 +23,6 @@ type MessageGroupMention struct {
 	MessageID uuid.UUID `json:"message_id,omitempty"`
 	// GroupID holds the value of the "group_id" field.
 	GroupID uuid.UUID `json:"group_id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageGroupMentionQuery when eager-loading is set.
 	Edges        MessageGroupMentionEdges `json:"edges"`
@@ -70,8 +67,6 @@ func (*MessageGroupMention) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case messagegroupmention.FieldCreatedAt:
-			values[i] = new(sql.NullTime)
 		case messagegroupmention.FieldID, messagegroupmention.FieldMessageID, messagegroupmention.FieldGroupID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -106,12 +101,6 @@ func (_m *MessageGroupMention) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field group_id", values[i])
 			} else if value != nil {
 				_m.GroupID = *value
-			}
-		case messagegroupmention.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				_m.CreatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -164,9 +153,6 @@ func (_m *MessageGroupMention) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("group_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.GroupID))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

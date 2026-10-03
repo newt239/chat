@@ -1,5 +1,4 @@
-// Package local は開発用のストレージ。署名付き URL で読み書きする点は S3 互換のストレージと同じにし、
-// フロントエンドはどちらでも同じ手順でアップロード・表示できる
+// Package local は開発用のストレージ。S3 互換のストレージと同じく署名付き URL で読み書きする
 package local
 
 import (
@@ -17,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/newt239/chat/internal/domain/service"
 )
 
 const (
@@ -26,36 +27,24 @@ const (
 	contentTypeSuffix = ".content-type"
 )
 
-type Config struct {
-	Dir             string
-	BaseURL         string
-	Secret          string
-	MaxFileSize     int64
-	UploadExpires   time.Duration
-	DownloadExpires time.Duration
-}
-
 type Storage struct {
-	config *Config
-	now    func() time.Time
+	dir     string
+	baseURL string
+	secret  string
+	now     func() time.Time
 }
 
-func New(cfg *Config) *Storage {
-	return &Storage{config: cfg, now: time.Now}
+// New は dir に保存し、baseURL を起点に secret で署名した URL を発行します
+func New(dir, baseURL, secret string) *Storage {
+	return &Storage{dir: dir, baseURL: baseURL, secret: secret, now: time.Now}
 }
 
-func (s *Storage) GetMaxFileSize() int64 { return s.config.MaxFileSize }
-
-func (s *Storage) GetUploadExpires() time.Duration { return s.config.UploadExpires }
-
-func (s *Storage) GetDownloadExpires() time.Duration { return s.config.DownloadExpires }
-
-func (s *Storage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, expires time.Duration) (string, error) {
-	return s.signedURL(opPut, key, durationOr(expires, s.config.UploadExpires))
+func (s *Storage) GenerateUploadURL(_ context.Context, key, _ string, expires time.Duration) (string, error) {
+	return s.signedURL(opPut, key, expires)
 }
 
 func (s *Storage) GenerateDownloadURL(_ context.Context, key string, expires time.Duration) (string, error) {
-	return s.signedURL(opGet, key, durationOr(expires, s.config.DownloadExpires))
+	return s.signedURL(opGet, key, expires)
 }
 
 func (s *Storage) DeleteObject(_ context.Context, key string) error {
@@ -118,7 +107,7 @@ func (s *Storage) put(w http.ResponseWriter, r *http.Request, path string) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_, err = io.Copy(file, http.MaxBytesReader(w, r.Body, s.config.MaxFileSize))
+	_, err = io.Copy(file, http.MaxBytesReader(w, r.Body, service.MaxUploadSize))
 	if closeErr := file.Close(); err == nil {
 		err = closeErr
 	}
@@ -140,7 +129,7 @@ func (s *Storage) signedURL(op, key string, expires time.Duration) (string, erro
 	}
 	exp := strconv.FormatInt(s.now().Add(expires).Unix(), 10)
 	query := url.Values{"exp": {exp}, "op": {op}, "sig": {s.sign(op, key, exp)}}
-	return fmt.Sprintf("%s/storage/%s?%s", strings.TrimRight(s.config.BaseURL, "/"), key, query.Encode()), nil
+	return fmt.Sprintf("%s/storage/%s?%s", strings.TrimRight(s.baseURL, "/"), key, query.Encode()), nil
 }
 
 func (s *Storage) verify(op, key string, query url.Values) bool {
@@ -152,7 +141,7 @@ func (s *Storage) verify(op, key string, query url.Values) bool {
 }
 
 func (s *Storage) sign(op, key, exp string) string {
-	mac := hmac.New(sha256.New, []byte(s.config.Secret))
+	mac := hmac.New(sha256.New, []byte(s.secret))
 	mac.Write([]byte(op + "\n" + key + "\n" + exp))
 	return hex.EncodeToString(mac.Sum(nil))
 }
@@ -163,12 +152,5 @@ func (s *Storage) path(key string) (string, error) {
 	if key == "" || cleaned != "/"+key || strings.HasSuffix(key, contentTypeSuffix) {
 		return "", fmt.Errorf("invalid storage key: %q", key)
 	}
-	return filepath.Join(s.config.Dir, filepath.FromSlash(cleaned)), nil
-}
-
-func durationOr(d, fallback time.Duration) time.Duration {
-	if d > 0 {
-		return d
-	}
-	return fallback
+	return filepath.Join(s.dir, filepath.FromSlash(cleaned)), nil
 }

@@ -1,8 +1,6 @@
 package message
 
 import (
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
@@ -10,10 +8,10 @@ import (
 )
 
 var (
-	ErrMessageAlreadyDeleted = errors.New("メッセージは既に削除されています")
-	ErrCannotEditDeleted     = errors.New("削除済みメッセージは編集できません")
-	ErrEmptyMessage          = fmt.Errorf("%w: 本文・添付・位置情報・投票のいずれかが必要です", domerr.ErrValidation)
-	ErrOfficialMessage       = errors.New("公式アプリの投稿は編集・削除できません")
+	ErrMessageAlreadyDeleted = domerr.New(domerr.ErrFailedPrecondition, "メッセージは既に削除されています")
+	ErrCannotEditDeleted     = domerr.New(domerr.ErrFailedPrecondition, "削除済みメッセージは編集できません")
+	ErrEmptyMessage          = domerr.New(domerr.ErrValidation, "本文・添付・位置情報・投票のいずれかが必要です")
+	ErrOfficialMessage       = domerr.New(domerr.ErrUnauthorized, "公式アプリの投稿は編集・削除できません")
 )
 
 const (
@@ -44,22 +42,21 @@ type CreateMessageInput struct {
 
 type UpdateMessageInput struct {
 	MessageID string
-	ChannelID string
 	EditorID  string
 	Body      string
 }
 
-type DeleteMessageInput struct {
-	MessageID  string
-	ChannelID  string
-	ExecutorID string
+// MessageInput は 1 件のメッセージに対する操作の入力です
+type MessageInput struct {
+	MessageID string
+	UserID    string
 }
 
 type UserInfo struct {
-	ID          string  `json:"id"`
-	DisplayName string  `json:"displayName"`
-	AvatarURL   *string `json:"avatarUrl,omitempty"`
-	IsApp       bool    `json:"isApp"`
+	ID          string
+	DisplayName string
+	AvatarURL   *string
+	IsApp       bool
 }
 
 type UserMention struct {
@@ -68,8 +65,8 @@ type UserMention struct {
 }
 
 type GroupMention struct {
-	GroupID string `json:"groupId"`
-	Name    string `json:"name"`
+	GroupID string
+	Name    string
 }
 
 type LinkInfo struct {
@@ -98,9 +95,9 @@ type PinInfo struct {
 }
 
 type ReactionInfo struct {
-	User      UserInfo  `json:"user"`
-	Emoji     string    `json:"emoji"`
-	CreatedAt time.Time `json:"createdAt"`
+	User      UserInfo
+	Emoji     string
+	CreatedAt time.Time
 }
 
 type AttachmentInfo struct {
@@ -112,24 +109,23 @@ type AttachmentInfo struct {
 }
 
 type MessageOutput struct {
-	ID              string                  `json:"id"`
-	ChannelID       string                  `json:"channelId"`
-	UserID          string                  `json:"userId"`
-	User            UserInfo                `json:"user"`
-	ParentID        *string                 `json:"parentId"`
-	Body            string                  `json:"body"`
-	Mentions        []UserMention           `json:"mentions"`
-	Groups          []GroupMention          `json:"groups"`
-	Links           []LinkInfo              `json:"links"`
-	Reactions       []ReactionInfo          `json:"reactions"`
-	Attachments     []AttachmentInfo        `json:"attachments"`
-	CreatedAt       time.Time               `json:"createdAt"`
-	EditedAt        *time.Time              `json:"editedAt"`
-	DeletedAt       *time.Time              `json:"deletedAt"`
-	IsDeleted       bool                    `json:"isDeleted"`
-	DeletedBy       *UserInfo               `json:"deletedBy,omitempty"`
-	Pin             *PinInfo                `json:"pin,omitempty"`
-	Location        *entity.MessageLocation `json:"location,omitempty"`
+	ID              string
+	ChannelID       string
+	UserID          string
+	User            UserInfo
+	ParentID        *string
+	Body            string
+	Mentions        []UserMention
+	Groups          []GroupMention
+	Links           []LinkInfo
+	Reactions       []ReactionInfo
+	Attachments     []AttachmentInfo
+	CreatedAt       time.Time
+	EditedAt        *time.Time
+	DeletedAt       *time.Time
+	DeletedBy       *UserInfo
+	Pin             *PinInfo
+	Location        *entity.MessageLocation
 	MentionsChannel bool
 	MentionsHere    bool
 	// 公式アプリの投稿。誰も編集・削除できない
@@ -137,8 +133,7 @@ type MessageOutput struct {
 	Poll       *PollOutput
 }
 
-// ForBroadcast は閲覧者ごとに変わる内容（引用カードと自分の投票）を除いたコピーを返します。
-// 投稿者や投票者の権限で組み立てた内容を、ほかの購読者へそのまま配信しないために使います
+// ForBroadcast は閲覧者ごとに変わる内容（引用カードと自分の投票）を除き、他の購読者へ配信できるコピーを返します
 func (m MessageOutput) ForBroadcast() MessageOutput {
 	links := make([]LinkInfo, len(m.Links))
 	for i, link := range m.Links {
@@ -155,17 +150,17 @@ func (m MessageOutput) ForBroadcast() MessageOutput {
 }
 
 type ListMessagesOutput struct {
-	Messages []TimelineItem `json:"messages"`
-	HasMore  bool           `json:"hasMore"`
-	HasNewer bool           `json:"hasNewer"`
+	Messages []TimelineItem
+	HasMore  bool
+	HasNewer bool
 }
 
 type ThreadMetadataOutput struct {
-	MessageID     string     `json:"messageId"`
-	ReplyCount    int        `json:"replyCount"`
-	LastReplyAt   *time.Time `json:"lastReplyAt"`
-	LastReplyUser *UserInfo  `json:"lastReplyUser"`
-	IsFollowing   bool       `json:"isFollowing"`
+	MessageID     string
+	ReplyCount    int
+	LastReplyAt   *time.Time
+	LastReplyUser *UserInfo
+	IsFollowing   bool
 }
 
 type GetThreadRepliesInput struct {
@@ -187,19 +182,9 @@ type GetThreadRepliesOutput struct {
 	ReplyCount int
 }
 
-type GetMessagePreviewInput struct {
-	MessageID string
-	UserID    string
-}
-
-type GetThreadMetadataInput struct {
-	MessageID string
-	UserID    string
-}
-
 type MessageWithThreadOutput struct {
 	MessageOutput
-	ThreadMetadata *ThreadMetadataOutput `json:"threadMetadata,omitempty"`
+	ThreadMetadata *ThreadMetadataOutput
 }
 
 type ListMessagesWithThreadOutput struct {
@@ -207,31 +192,9 @@ type ListMessagesWithThreadOutput struct {
 	HasMore  bool
 }
 
-// SystemMessageOutput はシステムメッセージの出力です
-type SystemMessageOutput struct {
-	ID        string                   `json:"id"`
-	ChannelID string                   `json:"channelId"`
-	Kind      entity.SystemMessageKind `json:"kind"`
-	Payload   map[string]any           `json:"payload"`
-	ActorID   *string                  `json:"actorId,omitempty"`
-	CreatedAt time.Time                `json:"createdAt"`
-}
-
-func NewSystemMessageOutput(sm *entity.SystemMessage) SystemMessageOutput {
-	return SystemMessageOutput{
-		ID:        sm.ID,
-		ChannelID: sm.ChannelID,
-		Kind:      sm.Kind,
-		Payload:   sm.Payload,
-		ActorID:   sm.ActorID,
-		CreatedAt: sm.CreatedAt,
-	}
-}
-
-// TimelineItem はユーザー/システム両メッセージの統合タイムライン項目です
+// TimelineItem はユーザーのメッセージかシステムメッセージのどちらか一方を持ちます
 type TimelineItem struct {
-	Type          string               `json:"type"` // "user" | "system"
-	UserMessage   *MessageOutput       `json:"userMessage,omitempty"`
-	SystemMessage *SystemMessageOutput `json:"systemMessage,omitempty"`
-	CreatedAt     time.Time            `json:"createdAt"`
+	UserMessage   *MessageOutput
+	SystemMessage *entity.SystemMessage
+	CreatedAt     time.Time
 }

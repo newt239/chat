@@ -112,7 +112,7 @@ func (b *MessageOutputBuilder) Build(ctx context.Context, viewerID string, messa
 	for _, pin := range related.pins {
 		userIDs = append(userIDs, pin.PinnedBy)
 	}
-	users, err := b.fetchUsers(ctx, userIDs)
+	users, err := b.userRepo.FindByIDs(ctx, userIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (b *MessageOutputBuilder) BuildPreview(ctx context.Context, viewerID, messa
 	if len(linked) == 0 {
 		return nil, domerr.ErrMessageNotFound
 	}
-	users, err := b.fetchUsers(ctx, []string{linked[0].UserID})
+	users, err := b.userRepo.FindByIDs(ctx, []string{linked[0].UserID})
 	if err != nil {
 		return nil, err
 	}
@@ -243,21 +243,6 @@ func (b *MessageOutputBuilder) fetchRelatedData(ctx context.Context, messageIDs 
 	}, nil
 }
 
-func (b *MessageOutputBuilder) fetchUsers(ctx context.Context, userIDs []string) (map[string]*entity.User, error) {
-	users := map[string]*entity.User{}
-	if len(userIDs) == 0 {
-		return users, nil
-	}
-	found, err := b.userRepo.FindByIDs(ctx, uniqueStrings(userIDs))
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch users: %w", err)
-	}
-	for _, u := range found {
-		users[u.ID] = u
-	}
-	return users, nil
-}
-
 func assemble(msg *entity.Message, related *relatedData, previews map[string]*MessagePreviewOutput, users map[string]*entity.User) MessageOutput {
 	output := MessageOutput{
 		ID:          msg.ID,
@@ -274,7 +259,6 @@ func assemble(msg *entity.Message, related *relatedData, previews map[string]*Me
 		CreatedAt:   msg.CreatedAt,
 		EditedAt:    msg.EditedAt,
 		DeletedAt:   msg.DeletedAt,
-		IsDeleted:   msg.DeletedAt != nil,
 		Location:    msg.Location,
 
 		MentionsChannel: msg.MentionsChannel,

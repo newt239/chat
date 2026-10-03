@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 	messageuc "github.com/newt239/chat/internal/usecase/message"
 )
 
-var ErrUnknownCommand = fmt.Errorf("%w: 不明なコマンドです", domerr.ErrValidation)
+var ErrUnknownCommand = domerr.New(domerr.ErrValidation, "不明なコマンドです")
 
 const dispatchBatchSize = 50
 
@@ -41,11 +42,10 @@ type Interactor struct {
 	channelMemberRepo domainrepository.ChannelMemberRepository
 	channelAccessSvc  domainservice.ChannelAccessService
 	poster            OfficialPoster
-	logger            domainservice.Logger
 	now               func() time.Time
 }
 
-func NewInteractor(
+func New(
 	reminderRepo domainrepository.ReminderRepository,
 	userRepo domainrepository.UserRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
@@ -53,7 +53,6 @@ func NewInteractor(
 	channelMemberRepo domainrepository.ChannelMemberRepository,
 	channelAccessSvc domainservice.ChannelAccessService,
 	poster OfficialPoster,
-	logger domainservice.Logger,
 ) *Interactor {
 	return &Interactor{
 		reminderRepo:      reminderRepo,
@@ -63,7 +62,6 @@ func NewInteractor(
 		channelMemberRepo: channelMemberRepo,
 		channelAccessSvc:  channelAccessSvc,
 		poster:            poster,
-		logger:            logger,
 		now:               time.Now,
 	}
 }
@@ -73,9 +71,6 @@ func (i *Interactor) Execute(ctx context.Context, input ExecuteInput) (*messageu
 	ch, err := i.channelAccessSvc.EnsureChannelMember(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
-	}
-	if ch.ArchivedAt != nil {
-		return nil, domerr.ErrChannelArchived
 	}
 	name, args, _ := strings.Cut(strings.TrimPrefix(strings.TrimSpace(input.Text), "/"), " ")
 	switch name {
@@ -135,13 +130,11 @@ func (i *Interactor) ensureTarget(ctx context.Context, workspaceID, userID strin
 		return nil
 	}
 	if target.UserID != nil {
-		member, err := i.workspaceRepo.FindMember(ctx, workspaceID, *target.UserID)
-		if err != nil {
-			return fmt.Errorf("failed to verify target: %w", err)
+		_, err := domainservice.EnsureMember(ctx, i.workspaceRepo, workspaceID, *target.UserID)
+		if errors.Is(err, domerr.ErrUnauthorized) {
+			return domerr.ErrUserNotFound
 		}
-		if member == nil {
-			return domerr.ErrNotFound
-		}
+		return err
 	}
 	return nil
 }
@@ -170,33 +163,17 @@ func (i *Interactor) DispatchDue(ctx context.Context) (int, error) {
 	}
 	for _, reminder := range reminders {
 		if err := i.deliver(ctx, reminder); err != nil {
-			i.logger.Error("リマインダーを届けられません", domainservice.LogField{Key: "id", Value: reminder.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
+			slog.ErrorContext(ctx, "リマインダーを届けられません", "id", reminder.ID, "error", err)
 			if err := i.reminderRepo.MarkFailed(ctx, reminder.ID); err != nil {
-				i.logger.Error("リマインダーの失敗を記録できません", domainservice.LogField{Key: "id", Value: reminder.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
+				slog.ErrorContext(ctx, "リマインダーの失敗を記録できません", "id", reminder.ID, "error", err)
 			}
 			continue
 		}
 		if err := i.reminderRepo.MarkSent(ctx, reminder.ID); err != nil {
-			i.logger.Error("リマインダーの送信済みを記録できません", domainservice.LogField{Key: "id", Value: reminder.ID}, domainservice.LogField{Key: "error", Value: err.Error()})
+			slog.ErrorContext(ctx, "リマインダーの送信済みを記録できません", "id", reminder.ID, "error", err)
 		}
 	}
 	return len(reminders), nil
-}
-
-// RunDispatcher は ctx が終わるまで interval ごとに期限の来たリマインダーを届けます
-func (i *Interactor) RunDispatcher(ctx context.Context, interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			if _, err := i.DispatchDue(ctx); err != nil {
-				i.logger.Error("リマインダーの送信処理に失敗しました", domainservice.LogField{Key: "error", Value: err.Error()})
-			}
-		}
-	}
 }
 
 // deliver はチャンネル宛てならそのチャンネルに、人宛てなら公式アプリとの DM に投稿します
@@ -220,7 +197,7 @@ func (i *Interactor) deliver(ctx context.Context, reminder *entity.Reminder) err
 	}
 	// 新しく作った DM にはメンバーがいないため、公式アプリと受け取る人を参加させる。参加済みなら何もしない
 	for _, userID := range []string{official.BotUserID, recipient} {
-		err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: dm.ID, UserID: userID, Role: entity.ChannelRoleMember, JoinedAt: time.Now()})
+		err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: dm.ID, UserID: userID, Role: entity.ChannelRoleMember})
 		if err != nil && !errors.Is(err, domerr.ErrAlreadyMember) {
 			return fmt.Errorf("failed to join DM: %w", err)
 		}

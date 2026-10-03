@@ -33,13 +33,8 @@ const (
 	AuditAction_AUDIT_ACTION_MEMBER_SUSPENDED     AuditAction = 4
 	AuditAction_AUDIT_ACTION_MEMBER_RESUMED       AuditAction = 5
 	AuditAction_AUDIT_ACTION_CHANNEL_CREATED      AuditAction = 6
-	AuditAction_AUDIT_ACTION_CHANNEL_DELETED      AuditAction = 7
-	AuditAction_AUDIT_ACTION_CHANNEL_ARCHIVED     AuditAction = 8
-	AuditAction_AUDIT_ACTION_CHANNEL_UNARCHIVED   AuditAction = 9
 	AuditAction_AUDIT_ACTION_PERMISSION_CHANGED   AuditAction = 10
 	AuditAction_AUDIT_ACTION_AUDIT_LOG_EXPORTED   AuditAction = 11
-	AuditAction_AUDIT_ACTION_WEBHOOK_CREATED      AuditAction = 12
-	AuditAction_AUDIT_ACTION_WEBHOOK_DELETED      AuditAction = 13
 	AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_CREATED AuditAction = 14
 	AuditAction_AUDIT_ACTION_CUSTOM_EMOJI_DELETED AuditAction = 15
 	AuditAction_AUDIT_ACTION_APP_CREATED          AuditAction = 16
@@ -56,13 +51,8 @@ var (
 		4:  "AUDIT_ACTION_MEMBER_SUSPENDED",
 		5:  "AUDIT_ACTION_MEMBER_RESUMED",
 		6:  "AUDIT_ACTION_CHANNEL_CREATED",
-		7:  "AUDIT_ACTION_CHANNEL_DELETED",
-		8:  "AUDIT_ACTION_CHANNEL_ARCHIVED",
-		9:  "AUDIT_ACTION_CHANNEL_UNARCHIVED",
 		10: "AUDIT_ACTION_PERMISSION_CHANGED",
 		11: "AUDIT_ACTION_AUDIT_LOG_EXPORTED",
-		12: "AUDIT_ACTION_WEBHOOK_CREATED",
-		13: "AUDIT_ACTION_WEBHOOK_DELETED",
 		14: "AUDIT_ACTION_CUSTOM_EMOJI_CREATED",
 		15: "AUDIT_ACTION_CUSTOM_EMOJI_DELETED",
 		16: "AUDIT_ACTION_APP_CREATED",
@@ -76,13 +66,8 @@ var (
 		"AUDIT_ACTION_MEMBER_SUSPENDED":     4,
 		"AUDIT_ACTION_MEMBER_RESUMED":       5,
 		"AUDIT_ACTION_CHANNEL_CREATED":      6,
-		"AUDIT_ACTION_CHANNEL_DELETED":      7,
-		"AUDIT_ACTION_CHANNEL_ARCHIVED":     8,
-		"AUDIT_ACTION_CHANNEL_UNARCHIVED":   9,
 		"AUDIT_ACTION_PERMISSION_CHANGED":   10,
 		"AUDIT_ACTION_AUDIT_LOG_EXPORTED":   11,
-		"AUDIT_ACTION_WEBHOOK_CREATED":      12,
-		"AUDIT_ACTION_WEBHOOK_DELETED":      13,
 		"AUDIT_ACTION_CUSTOM_EMOJI_CREATED": 14,
 		"AUDIT_ACTION_CUSTOM_EMOJI_DELETED": 15,
 		"AUDIT_ACTION_APP_CREATED":          16,
@@ -123,7 +108,7 @@ type AuditLog struct {
 	// ログインの失敗など実行者を特定できない場合は空
 	Actor  *UserSummary `protobuf:"bytes,2,opt,name=actor,proto3,oneof" json:"actor,omitempty"`
 	Action AuditAction  `protobuf:"varint,3,opt,name=action,proto3,enum=chat.v1.AuditAction" json:"action,omitempty"`
-	// user / channel / role / webhook / app / custom_emoji。対象がない操作（監査ログの書き出し）は空
+	// user / channel / role / app / custom_emoji。対象がない操作（監査ログの書き出し）は空
 	TargetType string `protobuf:"bytes,4,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty"`
 	TargetId   string `protobuf:"bytes,5,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	// 記録時点の対象の名前（ユーザーの表示名、チャンネル名、ロール名など）
@@ -1007,7 +992,7 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	"\x13ResumeMemberRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\x16\n" +
-	"\x14ResumeMemberResponse*\xf0\x04\n" +
+	"\x14ResumeMemberResponse*\xc2\x03\n" +
 	"\vAuditAction\x12\x1c\n" +
 	"\x18AUDIT_ACTION_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12AUDIT_ACTION_LOGIN\x10\x01\x12\x1d\n" +
@@ -1015,15 +1000,10 @@ const file_chat_v1_admin_service_proto_rawDesc = "" +
 	" AUDIT_ACTION_MEMBER_ROLE_CHANGED\x10\x03\x12!\n" +
 	"\x1dAUDIT_ACTION_MEMBER_SUSPENDED\x10\x04\x12\x1f\n" +
 	"\x1bAUDIT_ACTION_MEMBER_RESUMED\x10\x05\x12 \n" +
-	"\x1cAUDIT_ACTION_CHANNEL_CREATED\x10\x06\x12 \n" +
-	"\x1cAUDIT_ACTION_CHANNEL_DELETED\x10\a\x12!\n" +
-	"\x1dAUDIT_ACTION_CHANNEL_ARCHIVED\x10\b\x12#\n" +
-	"\x1fAUDIT_ACTION_CHANNEL_UNARCHIVED\x10\t\x12#\n" +
+	"\x1cAUDIT_ACTION_CHANNEL_CREATED\x10\x06\x12#\n" +
 	"\x1fAUDIT_ACTION_PERMISSION_CHANGED\x10\n" +
 	"\x12#\n" +
-	"\x1fAUDIT_ACTION_AUDIT_LOG_EXPORTED\x10\v\x12 \n" +
-	"\x1cAUDIT_ACTION_WEBHOOK_CREATED\x10\f\x12 \n" +
-	"\x1cAUDIT_ACTION_WEBHOOK_DELETED\x10\r\x12%\n" +
+	"\x1fAUDIT_ACTION_AUDIT_LOG_EXPORTED\x10\v\x12%\n" +
 	"!AUDIT_ACTION_CUSTOM_EMOJI_CREATED\x10\x0e\x12%\n" +
 	"!AUDIT_ACTION_CUSTOM_EMOJI_DELETED\x10\x0f\x12\x1c\n" +
 	"\x18AUDIT_ACTION_APP_CREATED\x10\x10\x12\x1c\n" +

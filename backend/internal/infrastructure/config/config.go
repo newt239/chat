@@ -30,7 +30,7 @@ type ScheduledMessageConfig struct {
 	DispatchInterval time.Duration
 }
 
-// RedisConfig はレプリカ間で WebSocket の配信・閲覧者一覧・レート制限を共有する Redis。未設定ならプロセス内で完結する
+// RedisConfig はレプリカ間で WebSocket の配信・閲覧者一覧・レート制限を共有する Redis
 type RedisConfig struct {
 	URL string
 }
@@ -71,8 +71,8 @@ type DatabaseConfig struct {
 
 type JWTConfig struct {
 	Secret          string
-	AccessTokenTTL  int // minutes
-	RefreshTokenTTL int // days
+	AccessTokenTTL  time.Duration
+	RefreshTokenTTL time.Duration
 }
 
 // AuthConfig は Google ログインとパスワード認証の設定。パスワード認証は production では既定で無効
@@ -97,11 +97,11 @@ type CORSConfig struct {
 	AllowedOrigins []string
 }
 
-func Load() (*Config, error) {
+func Load() *Config {
 	_ = godotenv.Load()
 
 	env := getEnv("ENV", "development")
-	cfg := &Config{
+	return &Config{
 		Server: ServerConfig{
 			Port:           getEnv("PORT", "8080"),
 			Env:            env,
@@ -116,8 +116,8 @@ func Load() (*Config, error) {
 		},
 		JWT: JWTConfig{
 			Secret:          getEnv("JWT_SECRET", "change-me-in-production"),
-			AccessTokenTTL:  getEnvInt("JWT_ACCESS_TOKEN_TTL", 15),
-			RefreshTokenTTL: getEnvInt("JWT_REFRESH_TOKEN_TTL", 30),
+			AccessTokenTTL:  time.Duration(getEnvInt("JWT_ACCESS_TOKEN_TTL", 15)) * time.Minute,
+			RefreshTokenTTL: time.Duration(getEnvInt("JWT_REFRESH_TOKEN_TTL", 30)) * 24 * time.Hour,
 		},
 		Auth: AuthConfig{
 			GoogleOAuthClientID: getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
@@ -156,8 +156,6 @@ func Load() (*Config, error) {
 			DispatchInterval: getEnvDuration("SCHEDULED_MESSAGE_DISPATCH_INTERVAL", 10*time.Second),
 		},
 	}
-
-	return cfg, nil
 }
 
 func getEnv(key, defaultVal string) string {
@@ -223,9 +221,8 @@ func (c *Config) Validate() error {
 	if c.Server.Env == "production" && os.Getenv("DATABASE_URL") == "" {
 		return fmt.Errorf("DATABASE_URL must be set in production")
 	}
-	// 本番は複数レプリカで動かすため、配信などを Redis で共有しないと他のレプリカの接続に届かない
-	if c.Server.Env == "production" && c.Redis.URL == "" {
-		return fmt.Errorf("REDIS_URL must be set in production")
+	if c.Redis.URL == "" {
+		return fmt.Errorf("REDIS_URL must be set")
 	}
 	return nil
 }

@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,8 +25,6 @@ type MessageUserMention struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// ViaGroupID holds the value of the "via_group_id" field.
 	ViaGroupID *uuid.UUID `json:"via_group_id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageUserMentionQuery when eager-loading is set.
 	Edges        MessageUserMentionEdges `json:"edges"`
@@ -74,8 +71,6 @@ func (*MessageUserMention) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case messageusermention.FieldViaGroupID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case messageusermention.FieldCreatedAt:
-			values[i] = new(sql.NullTime)
 		case messageusermention.FieldID, messageusermention.FieldMessageID, messageusermention.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -117,12 +112,6 @@ func (_m *MessageUserMention) assignValues(columns []string, values []any) error
 			} else if value.Valid {
 				_m.ViaGroupID = new(uuid.UUID)
 				*_m.ViaGroupID = *value.S.(*uuid.UUID)
-			}
-		case messageusermention.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				_m.CreatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -180,9 +169,6 @@ func (_m *MessageUserMention) String() string {
 		builder.WriteString("via_group_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

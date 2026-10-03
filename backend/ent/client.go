@@ -1229,54 +1229,6 @@ func (c *ChannelClient) QueryMembers(_m *Channel) *ChannelMemberQuery {
 	return query
 }
 
-// QueryMessages queries the messages edge of a Channel.
-func (c *ChannelClient) QueryMessages(_m *Channel) *MessageQuery {
-	query := (&MessageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(channel.Table, channel.FieldID, id),
-			sqlgraph.To(message.Table, message.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, channel.MessagesTable, channel.MessagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAttachments queries the attachments edge of a Channel.
-func (c *ChannelClient) QueryAttachments(_m *Channel) *AttachmentQuery {
-	query := (&AttachmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(channel.Table, channel.FieldID, id),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, channel.AttachmentsTable, channel.AttachmentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryReadStates queries the read_states edge of a Channel.
-func (c *ChannelClient) QueryReadStates(_m *Channel) *ChannelReadStateQuery {
-	query := (&ChannelReadStateClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(channel.Table, channel.FieldID, id),
-			sqlgraph.To(channelreadstate.Table, channelreadstate.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, channel.ReadStatesTable, channel.ReadStatesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryParent queries the parent edge of a Channel.
 func (c *ChannelClient) QueryParent(_m *Channel) *ChannelQuery {
 	query := (&ChannelClient{config: c.config}).Query()
@@ -3156,22 +3108,6 @@ func (c *LinkPreviewClient) QueryXPost(_m *LinkPreview) *LinkPreviewXPostQuery {
 	return query
 }
 
-// QueryMessageLinks queries the message_links edge of a LinkPreview.
-func (c *LinkPreviewClient) QueryMessageLinks(_m *LinkPreview) *MessageLinkQuery {
-	query := (&MessageLinkClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(linkpreview.Table, linkpreview.FieldID, id),
-			sqlgraph.To(messagelink.Table, messagelink.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, linkpreview.MessageLinksTable, linkpreview.MessageLinksColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *LinkPreviewClient) Hooks() []Hook {
 	return c.hooks.LinkPreview
@@ -3667,38 +3603,6 @@ func (c *MessageClient) QueryReplies(_m *Message) *MessageQuery {
 	return query
 }
 
-// QueryReactions queries the reactions edge of a Message.
-func (c *MessageClient) QueryReactions(_m *Message) *MessageReactionQuery {
-	query := (&MessageReactionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(messagereaction.Table, messagereaction.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.ReactionsTable, message.ReactionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryBookmarks queries the bookmarks edge of a Message.
-func (c *MessageClient) QueryBookmarks(_m *Message) *MessageBookmarkQuery {
-	query := (&MessageBookmarkClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(messagebookmark.Table, messagebookmark.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.BookmarksTable, message.BookmarksColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryUserMentions queries the user_mentions edge of a Message.
 func (c *MessageClient) QueryUserMentions(_m *Message) *MessageUserMentionQuery {
 	query := (&MessageUserMentionClient{config: c.config}).Query()
@@ -3715,70 +3619,6 @@ func (c *MessageClient) QueryUserMentions(_m *Message) *MessageUserMentionQuery 
 	return query
 }
 
-// QueryGroupMentions queries the group_mentions edge of a Message.
-func (c *MessageClient) QueryGroupMentions(_m *Message) *MessageGroupMentionQuery {
-	query := (&MessageGroupMentionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(messagegroupmention.Table, messagegroupmention.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.GroupMentionsTable, message.GroupMentionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryLinks queries the links edge of a Message.
-func (c *MessageClient) QueryLinks(_m *Message) *MessageLinkQuery {
-	query := (&MessageLinkClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(messagelink.Table, messagelink.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.LinksTable, message.LinksColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAttachments queries the attachments edge of a Message.
-func (c *MessageClient) QueryAttachments(_m *Message) *AttachmentQuery {
-	query := (&AttachmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.AttachmentsTable, message.AttachmentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryPins queries the pins edge of a Message.
-func (c *MessageClient) QueryPins(_m *Message) *MessagePinQuery {
-	query := (&MessagePinClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(messagepin.Table, messagepin.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.PinsTable, message.PinsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryUserThreadFollows queries the user_thread_follows edge of a Message.
 func (c *MessageClient) QueryUserThreadFollows(_m *Message) *UserThreadFollowQuery {
 	query := (&UserThreadFollowClient{config: c.config}).Query()
@@ -3788,22 +3628,6 @@ func (c *MessageClient) QueryUserThreadFollows(_m *Message) *UserThreadFollowQue
 			sqlgraph.From(message.Table, message.FieldID, id),
 			sqlgraph.To(userthreadfollow.Table, userthreadfollow.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, message.UserThreadFollowsTable, message.UserThreadFollowsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryThreadReadStates queries the thread_read_states edge of a Message.
-func (c *MessageClient) QueryThreadReadStates(_m *Message) *ThreadReadStateQuery {
-	query := (&ThreadReadStateClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(message.Table, message.FieldID, id),
-			sqlgraph.To(threadreadstate.Table, threadreadstate.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, message.ThreadReadStatesTable, message.ThreadReadStatesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -5131,22 +4955,6 @@ func (c *PollOptionClient) QueryPoll(_m *PollOption) *PollQuery {
 	return query
 }
 
-// QueryVotes queries the votes edge of a PollOption.
-func (c *PollOptionClient) QueryVotes(_m *PollOption) *PollVoteQuery {
-	query := (&PollVoteClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(polloption.Table, polloption.FieldID, id),
-			sqlgraph.To(pollvote.Table, pollvote.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, polloption.VotesTable, polloption.VotesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *PollOptionClient) Hooks() []Hook {
 	return c.hooks.PollOption
@@ -6435,70 +6243,6 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	return obj
 }
 
-// QuerySessions queries the sessions edge of a User.
-func (c *UserClient) QuerySessions(_m *User) *SessionQuery {
-	query := (&SessionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(session.Table, session.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.SessionsTable, user.SessionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedWorkspaces queries the created_workspaces edge of a User.
-func (c *UserClient) QueryCreatedWorkspaces(_m *User) *WorkspaceQuery {
-	query := (&WorkspaceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(workspace.Table, workspace.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.CreatedWorkspacesTable, user.CreatedWorkspacesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryWorkspaceMembers queries the workspace_members edge of a User.
-func (c *UserClient) QueryWorkspaceMembers(_m *User) *WorkspaceMemberQuery {
-	query := (&WorkspaceMemberClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.WorkspaceMembersTable, user.WorkspaceMembersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedChannels queries the created_channels edge of a User.
-func (c *UserClient) QueryCreatedChannels(_m *User) *ChannelQuery {
-	query := (&ChannelClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(channel.Table, channel.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.CreatedChannelsTable, user.CreatedChannelsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryChannelMembers queries the channel_members edge of a User.
 func (c *UserClient) QueryChannelMembers(_m *User) *ChannelMemberQuery {
 	query := (&ChannelMemberClient{config: c.config}).Query()
@@ -6508,134 +6252,6 @@ func (c *UserClient) QueryChannelMembers(_m *User) *ChannelMemberQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(channelmember.Table, channelmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.ChannelMembersTable, user.ChannelMembersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMessages queries the messages edge of a User.
-func (c *UserClient) QueryMessages(_m *User) *MessageQuery {
-	query := (&MessageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(message.Table, message.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.MessagesTable, user.MessagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMessageReactions queries the message_reactions edge of a User.
-func (c *UserClient) QueryMessageReactions(_m *User) *MessageReactionQuery {
-	query := (&MessageReactionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(messagereaction.Table, messagereaction.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.MessageReactionsTable, user.MessageReactionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMessageBookmarks queries the message_bookmarks edge of a User.
-func (c *UserClient) QueryMessageBookmarks(_m *User) *MessageBookmarkQuery {
-	query := (&MessageBookmarkClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(messagebookmark.Table, messagebookmark.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.MessageBookmarksTable, user.MessageBookmarksColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUserMentions queries the user_mentions edge of a User.
-func (c *UserClient) QueryUserMentions(_m *User) *MessageUserMentionQuery {
-	query := (&MessageUserMentionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(messageusermention.Table, messageusermention.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.UserMentionsTable, user.UserMentionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUserGroupMembers queries the user_group_members edge of a User.
-func (c *UserClient) QueryUserGroupMembers(_m *User) *UserGroupMemberQuery {
-	query := (&UserGroupMemberClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(usergroupmember.Table, usergroupmember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.UserGroupMembersTable, user.UserGroupMembersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCreatedUserGroups queries the created_user_groups edge of a User.
-func (c *UserClient) QueryCreatedUserGroups(_m *User) *UserGroupQuery {
-	query := (&UserGroupClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(usergroup.Table, usergroup.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.CreatedUserGroupsTable, user.CreatedUserGroupsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAttachments queries the attachments edge of a User.
-func (c *UserClient) QueryAttachments(_m *User) *AttachmentQuery {
-	query := (&AttachmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.AttachmentsTable, user.AttachmentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryChannelReadStates queries the channel_read_states edge of a User.
-func (c *UserClient) QueryChannelReadStates(_m *User) *ChannelReadStateQuery {
-	query := (&ChannelReadStateClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(channelreadstate.Table, channelreadstate.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.ChannelReadStatesTable, user.ChannelReadStatesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -6833,38 +6449,6 @@ func (c *UserGroupClient) QueryCreatedBy(_m *UserGroup) *UserQuery {
 			sqlgraph.From(usergroup.Table, usergroup.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, usergroup.CreatedByTable, usergroup.CreatedByColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMembers queries the members edge of a UserGroup.
-func (c *UserGroupClient) QueryMembers(_m *UserGroup) *UserGroupMemberQuery {
-	query := (&UserGroupMemberClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(usergroup.Table, usergroup.FieldID, id),
-			sqlgraph.To(usergroupmember.Table, usergroupmember.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, usergroup.MembersTable, usergroup.MembersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryGroupMentions queries the group_mentions edge of a UserGroup.
-func (c *UserGroupClient) QueryGroupMentions(_m *UserGroup) *MessageGroupMentionQuery {
-	query := (&MessageGroupMentionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(usergroup.Table, usergroup.FieldID, id),
-			sqlgraph.To(messagegroupmention.Table, messagegroupmention.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, usergroup.GroupMentionsTable, usergroup.GroupMentionsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -7823,38 +7407,6 @@ func (c *WorkspaceClient) QueryMembers(_m *Workspace) *WorkspaceMemberQuery {
 			sqlgraph.From(workspace.Table, workspace.FieldID, id),
 			sqlgraph.To(workspacemember.Table, workspacemember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, workspace.MembersTable, workspace.MembersColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryChannels queries the channels edge of a Workspace.
-func (c *WorkspaceClient) QueryChannels(_m *Workspace) *ChannelQuery {
-	query := (&ChannelClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(channel.Table, channel.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, workspace.ChannelsTable, workspace.ChannelsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUserGroups queries the user_groups edge of a Workspace.
-func (c *WorkspaceClient) QueryUserGroups(_m *Workspace) *UserGroupQuery {
-	query := (&UserGroupClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(workspace.Table, workspace.FieldID, id),
-			sqlgraph.To(usergroup.Table, usergroup.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, workspace.UserGroupsTable, workspace.UserGroupsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

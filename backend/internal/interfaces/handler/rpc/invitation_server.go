@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 
+	"github.com/newt239/chat/internal/domain/entity"
 	chatv1 "github.com/newt239/chat/internal/gen/chat/v1"
 	"github.com/newt239/chat/internal/interfaces/presenter"
 	invitationuc "github.com/newt239/chat/internal/usecase/invitation"
@@ -13,14 +14,14 @@ type InvitationServer struct {
 }
 
 func (s *InvitationServer) CreateInvitation(ctx context.Context, req *chatv1.CreateInvitationRequest) (*chatv1.CreateInvitationResponse, error) {
-	role := chatv1.WorkspaceRole_WORKSPACE_ROLE_MEMBER
+	role := entity.WorkspaceRoleMember
 	if req.Role != chatv1.WorkspaceRole_WORKSPACE_ROLE_UNSPECIFIED {
-		role = req.Role
+		role = fromProto(presenter.WorkspaceRoles, req.Role)
 	}
 	out, err := s.UC.Create(ctx, invitationuc.CreateInput{
 		WorkspaceID: req.WorkspaceId,
 		Email:       req.Email,
-		Role:        presenter.WorkspaceRoleFromProto(role),
+		Role:        role,
 		RequestedBy: userIDFrom(ctx),
 	})
 	if err != nil {
@@ -42,10 +43,7 @@ func (s *InvitationServer) ListInvitations(ctx context.Context, req *chatv1.List
 }
 
 func (s *InvitationServer) RevokeInvitation(ctx context.Context, req *chatv1.RevokeInvitationRequest) (*chatv1.RevokeInvitationResponse, error) {
-	if err := s.UC.Revoke(ctx, req.WorkspaceId, req.InvitationId, userIDFrom(ctx)); err != nil {
-		return nil, err
-	}
-	return &chatv1.RevokeInvitationResponse{}, nil
+	return &chatv1.RevokeInvitationResponse{}, s.UC.Revoke(ctx, req.WorkspaceId, req.InvitationId, userIDFrom(ctx))
 }
 
 func (s *InvitationServer) GetInvitation(ctx context.Context, req *chatv1.GetInvitationRequest) (*chatv1.GetInvitationResponse, error) {

@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserThreadFollow holds the schema definition for the UserThreadFollow entity.
 type UserThreadFollow struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (UserThreadFollow) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "user_thread_follow"}}
 }
 
-// Fields of the UserThreadFollow.
 func (UserThreadFollow) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -35,7 +33,6 @@ func (UserThreadFollow) Fields() []ent.Field {
 	}
 }
 
-// Edges of the UserThreadFollow.
 func (UserThreadFollow) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
@@ -49,10 +46,8 @@ func (UserThreadFollow) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the UserThreadFollow.
 func (UserThreadFollow) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("created_at"),
 		index.Fields("user_id", "thread_id").
 			Unique(),
 		index.Fields("thread_id"),

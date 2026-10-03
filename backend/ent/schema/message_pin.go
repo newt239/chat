@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// MessagePin holds the schema definition for the MessagePin entity.
 type MessagePin struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (MessagePin) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "message_pin"}}
 }
 
-// Fields of the MessagePin.
 func (MessagePin) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -36,7 +34,6 @@ func (MessagePin) Fields() []ent.Field {
 	}
 }
 
-// Edges of the MessagePin.
 func (MessagePin) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("channel", Channel.Type).
@@ -54,11 +51,8 @@ func (MessagePin) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the MessagePin.
 func (MessagePin) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("created_at"),
-		// channel + message のユニーク制約
 		index.Fields("channel_id", "message_id").
 			Unique(),
 		index.Fields("message_id"),

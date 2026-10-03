@@ -10,11 +10,6 @@ import (
 	domainservice "github.com/newt239/chat/internal/domain/service"
 )
 
-// Sender は招待メールの送信先です。当面はリンクを管理画面でコピーするため送信しない実装を使います
-type Sender interface {
-	SendInvitation(ctx context.Context, invitation *entity.Invitation, token string) error
-}
-
 type CreateInput struct {
 	WorkspaceID string
 	Email       string
@@ -43,22 +38,19 @@ type Interactor struct {
 	workspaceRepo  domainrepository.WorkspaceRepository
 	userRepo       domainrepository.UserRepository
 	permissionSvc  domainservice.PermissionService
-	sender         Sender
 }
 
-func NewInteractor(
+func New(
 	invitationRepo domainrepository.InvitationRepository,
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	permissionSvc domainservice.PermissionService,
-	sender Sender,
 ) *Interactor {
 	return &Interactor{
 		invitationRepo: invitationRepo,
 		workspaceRepo:  workspaceRepo,
 		userRepo:       userRepo,
 		permissionSvc:  permissionSvc,
-		sender:         sender,
 	}
 }
 
@@ -102,9 +94,6 @@ func (i *Interactor) Create(ctx context.Context, input CreateInput) (*CreateOutp
 	if err := i.invitationRepo.Create(ctx, invitation); err != nil {
 		return nil, err
 	}
-	if err := i.sender.SendInvitation(ctx, invitation, token); err != nil {
-		return nil, err
-	}
 	inviter, err := i.userRepo.FindByID(ctx, input.RequestedBy)
 	if err != nil {
 		return nil, err
@@ -125,7 +114,7 @@ func (i *Interactor) addExistingUser(ctx context.Context, input CreateInput, use
 	if existing != nil {
 		return nil, domerr.ErrAlreadyMember
 	}
-	member := &entity.WorkspaceMember{WorkspaceID: input.WorkspaceID, UserID: user.ID, Role: input.Role, JoinedAt: time.Now()}
+	member := &entity.WorkspaceMember{WorkspaceID: input.WorkspaceID, UserID: user.ID, Role: input.Role}
 	if err := i.workspaceRepo.AddMember(ctx, member); err != nil {
 		return nil, err
 	}
@@ -148,13 +137,13 @@ func (i *Interactor) List(ctx context.Context, workspaceID, requestedBy string) 
 	if err != nil {
 		return nil, err
 	}
-	names := make(map[string]string, len(inviters))
-	for _, u := range inviters {
-		names[u.ID] = u.DisplayName
-	}
 	result := make([]InvitationOutput, 0, len(invitations))
 	for _, inv := range invitations {
-		result = append(result, InvitationOutput{Invitation: inv, InvitedByName: names[inv.InvitedBy]})
+		out := InvitationOutput{Invitation: inv}
+		if u := inviters[inv.InvitedBy]; u != nil {
+			out.InvitedByName = u.DisplayName
+		}
+		result = append(result, out)
 	}
 	return result, nil
 }

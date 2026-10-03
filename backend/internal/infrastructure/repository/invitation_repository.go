@@ -11,7 +11,6 @@ import (
 	domerr "github.com/newt239/chat/internal/domain/errors"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type invitationRepository struct {
@@ -27,7 +26,7 @@ func (r *invitationRepository) query(ctx context.Context) *ent.InvitationQuery {
 }
 
 func (r *invitationRepository) Create(ctx context.Context, inv *entity.Invitation) error {
-	inviterID, err := utils.ParseUUID(inv.InvitedBy, "user ID")
+	inviterID, err := parseUUID(inv.InvitedBy, "user ID")
 	if err != nil {
 		return err
 	}
@@ -48,11 +47,8 @@ func (r *invitationRepository) Create(ctx context.Context, inv *entity.Invitatio
 }
 
 func (r *invitationRepository) FindByTokenHash(ctx context.Context, tokenHash string) (*entity.Invitation, error) {
-	found, err := r.query(ctx).Where(invitation.TokenHash(tokenHash)).Only(ctx)
-	if ent.IsNotFound(err) {
-		return nil, nil
-	}
-	if err != nil {
+	found, err := orNil(r.query(ctx).Where(invitation.TokenHash(tokenHash)).Only(ctx))
+	if found == nil {
 		return nil, err
 	}
 	return invitationToEntity(found), nil
@@ -74,15 +70,11 @@ func (r *invitationRepository) findPending(ctx context.Context, now time.Time, w
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*entity.Invitation, 0, len(found))
-	for _, i := range found {
-		result = append(result, invitationToEntity(i))
-	}
-	return result, nil
+	return convertAll(found, invitationToEntity), nil
 }
 
 func (r *invitationRepository) MarkAccepted(ctx context.Context, id string, acceptedAt time.Time) error {
-	invitationID, err := utils.ParseUUID(id, "invitation ID")
+	invitationID, err := parseUUID(id, "invitation ID")
 	if err != nil {
 		return err
 	}
@@ -90,7 +82,7 @@ func (r *invitationRepository) MarkAccepted(ctx context.Context, id string, acce
 }
 
 func (r *invitationRepository) Delete(ctx context.Context, workspaceID, id string) error {
-	invitationID, err := utils.ParseUUID(id, "invitation ID")
+	invitationID, err := parseUUID(id, "invitation ID")
 	if err != nil {
 		return err
 	}
@@ -107,7 +99,7 @@ func (r *invitationRepository) Delete(ctx context.Context, workspaceID, id strin
 }
 
 func invitationToEntity(i *ent.Invitation) *entity.Invitation {
-	result := &entity.Invitation{
+	return &entity.Invitation{
 		ID:          i.ID.String(),
 		Email:       i.Email,
 		Role:        entity.WorkspaceRole(i.Role),
@@ -118,5 +110,4 @@ func invitationToEntity(i *ent.Invitation) *entity.Invitation {
 		InvitedBy:   i.InvitedByID.String(),
 		CreatedAt:   i.CreatedAt,
 	}
-	return result
 }

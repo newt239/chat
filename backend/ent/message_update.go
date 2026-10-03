@@ -12,16 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/newt239/chat/ent/attachment"
 	"github.com/newt239/chat/ent/message"
-	"github.com/newt239/chat/ent/messagebookmark"
-	"github.com/newt239/chat/ent/messagegroupmention"
-	"github.com/newt239/chat/ent/messagelink"
-	"github.com/newt239/chat/ent/messagepin"
-	"github.com/newt239/chat/ent/messagereaction"
 	"github.com/newt239/chat/ent/messageusermention"
 	"github.com/newt239/chat/ent/predicate"
-	"github.com/newt239/chat/ent/threadreadstate"
 	"github.com/newt239/chat/ent/userthreadfollow"
 )
 
@@ -256,36 +249,6 @@ func (_u *MessageUpdate) AddReplies(v ...*Message) *MessageUpdate {
 	return _u.AddReplyIDs(ids...)
 }
 
-// AddReactionIDs adds the "reactions" edge to the MessageReaction entity by IDs.
-func (_u *MessageUpdate) AddReactionIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddReactionIDs(ids...)
-	return _u
-}
-
-// AddReactions adds the "reactions" edges to the MessageReaction entity.
-func (_u *MessageUpdate) AddReactions(v ...*MessageReaction) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddReactionIDs(ids...)
-}
-
-// AddBookmarkIDs adds the "bookmarks" edge to the MessageBookmark entity by IDs.
-func (_u *MessageUpdate) AddBookmarkIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddBookmarkIDs(ids...)
-	return _u
-}
-
-// AddBookmarks adds the "bookmarks" edges to the MessageBookmark entity.
-func (_u *MessageUpdate) AddBookmarks(v ...*MessageBookmark) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddBookmarkIDs(ids...)
-}
-
 // AddUserMentionIDs adds the "user_mentions" edge to the MessageUserMention entity by IDs.
 func (_u *MessageUpdate) AddUserMentionIDs(ids ...uuid.UUID) *MessageUpdate {
 	_u.mutation.AddUserMentionIDs(ids...)
@@ -301,66 +264,6 @@ func (_u *MessageUpdate) AddUserMentions(v ...*MessageUserMention) *MessageUpdat
 	return _u.AddUserMentionIDs(ids...)
 }
 
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (_u *MessageUpdate) AddGroupMentionIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddGroupMentionIDs(ids...)
-	return _u
-}
-
-// AddGroupMentions adds the "group_mentions" edges to the MessageGroupMention entity.
-func (_u *MessageUpdate) AddGroupMentions(v ...*MessageGroupMention) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddGroupMentionIDs(ids...)
-}
-
-// AddLinkIDs adds the "links" edge to the MessageLink entity by IDs.
-func (_u *MessageUpdate) AddLinkIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddLinkIDs(ids...)
-	return _u
-}
-
-// AddLinks adds the "links" edges to the MessageLink entity.
-func (_u *MessageUpdate) AddLinks(v ...*MessageLink) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddLinkIDs(ids...)
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_u *MessageUpdate) AddAttachmentIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddAttachmentIDs(ids...)
-	return _u
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_u *MessageUpdate) AddAttachments(v ...*Attachment) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAttachmentIDs(ids...)
-}
-
-// AddPinIDs adds the "pins" edge to the MessagePin entity by IDs.
-func (_u *MessageUpdate) AddPinIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddPinIDs(ids...)
-	return _u
-}
-
-// AddPins adds the "pins" edges to the MessagePin entity.
-func (_u *MessageUpdate) AddPins(v ...*MessagePin) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddPinIDs(ids...)
-}
-
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
 func (_u *MessageUpdate) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageUpdate {
 	_u.mutation.AddUserThreadFollowIDs(ids...)
@@ -374,21 +277,6 @@ func (_u *MessageUpdate) AddUserThreadFollows(v ...*UserThreadFollow) *MessageUp
 		ids[i] = v[i].ID
 	}
 	return _u.AddUserThreadFollowIDs(ids...)
-}
-
-// AddThreadReadStateIDs adds the "thread_read_states" edge to the ThreadReadState entity by IDs.
-func (_u *MessageUpdate) AddThreadReadStateIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.AddThreadReadStateIDs(ids...)
-	return _u
-}
-
-// AddThreadReadStates adds the "thread_read_states" edges to the ThreadReadState entity.
-func (_u *MessageUpdate) AddThreadReadStates(v ...*ThreadReadState) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddThreadReadStateIDs(ids...)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -417,48 +305,6 @@ func (_u *MessageUpdate) RemoveReplies(v ...*Message) *MessageUpdate {
 	return _u.RemoveReplyIDs(ids...)
 }
 
-// ClearReactions clears all "reactions" edges to the MessageReaction entity.
-func (_u *MessageUpdate) ClearReactions() *MessageUpdate {
-	_u.mutation.ClearReactions()
-	return _u
-}
-
-// RemoveReactionIDs removes the "reactions" edge to MessageReaction entities by IDs.
-func (_u *MessageUpdate) RemoveReactionIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemoveReactionIDs(ids...)
-	return _u
-}
-
-// RemoveReactions removes "reactions" edges to MessageReaction entities.
-func (_u *MessageUpdate) RemoveReactions(v ...*MessageReaction) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveReactionIDs(ids...)
-}
-
-// ClearBookmarks clears all "bookmarks" edges to the MessageBookmark entity.
-func (_u *MessageUpdate) ClearBookmarks() *MessageUpdate {
-	_u.mutation.ClearBookmarks()
-	return _u
-}
-
-// RemoveBookmarkIDs removes the "bookmarks" edge to MessageBookmark entities by IDs.
-func (_u *MessageUpdate) RemoveBookmarkIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemoveBookmarkIDs(ids...)
-	return _u
-}
-
-// RemoveBookmarks removes "bookmarks" edges to MessageBookmark entities.
-func (_u *MessageUpdate) RemoveBookmarks(v ...*MessageBookmark) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveBookmarkIDs(ids...)
-}
-
 // ClearUserMentions clears all "user_mentions" edges to the MessageUserMention entity.
 func (_u *MessageUpdate) ClearUserMentions() *MessageUpdate {
 	_u.mutation.ClearUserMentions()
@@ -480,90 +326,6 @@ func (_u *MessageUpdate) RemoveUserMentions(v ...*MessageUserMention) *MessageUp
 	return _u.RemoveUserMentionIDs(ids...)
 }
 
-// ClearGroupMentions clears all "group_mentions" edges to the MessageGroupMention entity.
-func (_u *MessageUpdate) ClearGroupMentions() *MessageUpdate {
-	_u.mutation.ClearGroupMentions()
-	return _u
-}
-
-// RemoveGroupMentionIDs removes the "group_mentions" edge to MessageGroupMention entities by IDs.
-func (_u *MessageUpdate) RemoveGroupMentionIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemoveGroupMentionIDs(ids...)
-	return _u
-}
-
-// RemoveGroupMentions removes "group_mentions" edges to MessageGroupMention entities.
-func (_u *MessageUpdate) RemoveGroupMentions(v ...*MessageGroupMention) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveGroupMentionIDs(ids...)
-}
-
-// ClearLinks clears all "links" edges to the MessageLink entity.
-func (_u *MessageUpdate) ClearLinks() *MessageUpdate {
-	_u.mutation.ClearLinks()
-	return _u
-}
-
-// RemoveLinkIDs removes the "links" edge to MessageLink entities by IDs.
-func (_u *MessageUpdate) RemoveLinkIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemoveLinkIDs(ids...)
-	return _u
-}
-
-// RemoveLinks removes "links" edges to MessageLink entities.
-func (_u *MessageUpdate) RemoveLinks(v ...*MessageLink) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveLinkIDs(ids...)
-}
-
-// ClearAttachments clears all "attachments" edges to the Attachment entity.
-func (_u *MessageUpdate) ClearAttachments() *MessageUpdate {
-	_u.mutation.ClearAttachments()
-	return _u
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
-func (_u *MessageUpdate) RemoveAttachmentIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemoveAttachmentIDs(ids...)
-	return _u
-}
-
-// RemoveAttachments removes "attachments" edges to Attachment entities.
-func (_u *MessageUpdate) RemoveAttachments(v ...*Attachment) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAttachmentIDs(ids...)
-}
-
-// ClearPins clears all "pins" edges to the MessagePin entity.
-func (_u *MessageUpdate) ClearPins() *MessageUpdate {
-	_u.mutation.ClearPins()
-	return _u
-}
-
-// RemovePinIDs removes the "pins" edge to MessagePin entities by IDs.
-func (_u *MessageUpdate) RemovePinIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemovePinIDs(ids...)
-	return _u
-}
-
-// RemovePins removes "pins" edges to MessagePin entities.
-func (_u *MessageUpdate) RemovePins(v ...*MessagePin) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemovePinIDs(ids...)
-}
-
 // ClearUserThreadFollows clears all "user_thread_follows" edges to the UserThreadFollow entity.
 func (_u *MessageUpdate) ClearUserThreadFollows() *MessageUpdate {
 	_u.mutation.ClearUserThreadFollows()
@@ -583,27 +345,6 @@ func (_u *MessageUpdate) RemoveUserThreadFollows(v ...*UserThreadFollow) *Messag
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUserThreadFollowIDs(ids...)
-}
-
-// ClearThreadReadStates clears all "thread_read_states" edges to the ThreadReadState entity.
-func (_u *MessageUpdate) ClearThreadReadStates() *MessageUpdate {
-	_u.mutation.ClearThreadReadStates()
-	return _u
-}
-
-// RemoveThreadReadStateIDs removes the "thread_read_states" edge to ThreadReadState entities by IDs.
-func (_u *MessageUpdate) RemoveThreadReadStateIDs(ids ...uuid.UUID) *MessageUpdate {
-	_u.mutation.RemoveThreadReadStateIDs(ids...)
-	return _u
-}
-
-// RemoveThreadReadStates removes "thread_read_states" edges to ThreadReadState entities.
-func (_u *MessageUpdate) RemoveThreadReadStates(v ...*ThreadReadState) *MessageUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveThreadReadStateIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -761,96 +502,6 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ReactionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ReactionsTable,
-			Columns: []string{message.ReactionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagereaction.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedReactionsIDs(); len(nodes) > 0 && !_u.mutation.ReactionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ReactionsTable,
-			Columns: []string{message.ReactionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagereaction.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ReactionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ReactionsTable,
-			Columns: []string{message.ReactionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagereaction.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.BookmarksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.BookmarksTable,
-			Columns: []string{message.BookmarksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagebookmark.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedBookmarksIDs(); len(nodes) > 0 && !_u.mutation.BookmarksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.BookmarksTable,
-			Columns: []string{message.BookmarksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagebookmark.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.BookmarksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.BookmarksTable,
-			Columns: []string{message.BookmarksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagebookmark.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserMentionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -896,186 +547,6 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.GroupMentionsTable,
-			Columns: []string{message.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedGroupMentionsIDs(); len(nodes) > 0 && !_u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.GroupMentionsTable,
-			Columns: []string{message.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.GroupMentionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.GroupMentionsTable,
-			Columns: []string{message.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.LinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.LinksTable,
-			Columns: []string{message.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedLinksIDs(); len(nodes) > 0 && !_u.mutation.LinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.LinksTable,
-			Columns: []string{message.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.LinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.LinksTable,
-			Columns: []string{message.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.AttachmentsTable,
-			Columns: []string{message.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !_u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.AttachmentsTable,
-			Columns: []string{message.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.AttachmentsTable,
-			Columns: []string{message.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.PinsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.PinsTable,
-			Columns: []string{message.PinsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedPinsIDs(); len(nodes) > 0 && !_u.mutation.PinsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.PinsTable,
-			Columns: []string{message.PinsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.PinsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.PinsTable,
-			Columns: []string{message.PinsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserThreadFollowsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1114,51 +585,6 @@ func (_u *MessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userthreadfollow.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ThreadReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadReadStatesTable,
-			Columns: []string{message.ThreadReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedThreadReadStatesIDs(); len(nodes) > 0 && !_u.mutation.ThreadReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadReadStatesTable,
-			Columns: []string{message.ThreadReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ThreadReadStatesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadReadStatesTable,
-			Columns: []string{message.ThreadReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1404,36 +830,6 @@ func (_u *MessageUpdateOne) AddReplies(v ...*Message) *MessageUpdateOne {
 	return _u.AddReplyIDs(ids...)
 }
 
-// AddReactionIDs adds the "reactions" edge to the MessageReaction entity by IDs.
-func (_u *MessageUpdateOne) AddReactionIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddReactionIDs(ids...)
-	return _u
-}
-
-// AddReactions adds the "reactions" edges to the MessageReaction entity.
-func (_u *MessageUpdateOne) AddReactions(v ...*MessageReaction) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddReactionIDs(ids...)
-}
-
-// AddBookmarkIDs adds the "bookmarks" edge to the MessageBookmark entity by IDs.
-func (_u *MessageUpdateOne) AddBookmarkIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddBookmarkIDs(ids...)
-	return _u
-}
-
-// AddBookmarks adds the "bookmarks" edges to the MessageBookmark entity.
-func (_u *MessageUpdateOne) AddBookmarks(v ...*MessageBookmark) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddBookmarkIDs(ids...)
-}
-
 // AddUserMentionIDs adds the "user_mentions" edge to the MessageUserMention entity by IDs.
 func (_u *MessageUpdateOne) AddUserMentionIDs(ids ...uuid.UUID) *MessageUpdateOne {
 	_u.mutation.AddUserMentionIDs(ids...)
@@ -1449,66 +845,6 @@ func (_u *MessageUpdateOne) AddUserMentions(v ...*MessageUserMention) *MessageUp
 	return _u.AddUserMentionIDs(ids...)
 }
 
-// AddGroupMentionIDs adds the "group_mentions" edge to the MessageGroupMention entity by IDs.
-func (_u *MessageUpdateOne) AddGroupMentionIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddGroupMentionIDs(ids...)
-	return _u
-}
-
-// AddGroupMentions adds the "group_mentions" edges to the MessageGroupMention entity.
-func (_u *MessageUpdateOne) AddGroupMentions(v ...*MessageGroupMention) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddGroupMentionIDs(ids...)
-}
-
-// AddLinkIDs adds the "links" edge to the MessageLink entity by IDs.
-func (_u *MessageUpdateOne) AddLinkIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddLinkIDs(ids...)
-	return _u
-}
-
-// AddLinks adds the "links" edges to the MessageLink entity.
-func (_u *MessageUpdateOne) AddLinks(v ...*MessageLink) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddLinkIDs(ids...)
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (_u *MessageUpdateOne) AddAttachmentIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddAttachmentIDs(ids...)
-	return _u
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (_u *MessageUpdateOne) AddAttachments(v ...*Attachment) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAttachmentIDs(ids...)
-}
-
-// AddPinIDs adds the "pins" edge to the MessagePin entity by IDs.
-func (_u *MessageUpdateOne) AddPinIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddPinIDs(ids...)
-	return _u
-}
-
-// AddPins adds the "pins" edges to the MessagePin entity.
-func (_u *MessageUpdateOne) AddPins(v ...*MessagePin) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddPinIDs(ids...)
-}
-
 // AddUserThreadFollowIDs adds the "user_thread_follows" edge to the UserThreadFollow entity by IDs.
 func (_u *MessageUpdateOne) AddUserThreadFollowIDs(ids ...uuid.UUID) *MessageUpdateOne {
 	_u.mutation.AddUserThreadFollowIDs(ids...)
@@ -1522,21 +858,6 @@ func (_u *MessageUpdateOne) AddUserThreadFollows(v ...*UserThreadFollow) *Messag
 		ids[i] = v[i].ID
 	}
 	return _u.AddUserThreadFollowIDs(ids...)
-}
-
-// AddThreadReadStateIDs adds the "thread_read_states" edge to the ThreadReadState entity by IDs.
-func (_u *MessageUpdateOne) AddThreadReadStateIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.AddThreadReadStateIDs(ids...)
-	return _u
-}
-
-// AddThreadReadStates adds the "thread_read_states" edges to the ThreadReadState entity.
-func (_u *MessageUpdateOne) AddThreadReadStates(v ...*ThreadReadState) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddThreadReadStateIDs(ids...)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -1565,48 +886,6 @@ func (_u *MessageUpdateOne) RemoveReplies(v ...*Message) *MessageUpdateOne {
 	return _u.RemoveReplyIDs(ids...)
 }
 
-// ClearReactions clears all "reactions" edges to the MessageReaction entity.
-func (_u *MessageUpdateOne) ClearReactions() *MessageUpdateOne {
-	_u.mutation.ClearReactions()
-	return _u
-}
-
-// RemoveReactionIDs removes the "reactions" edge to MessageReaction entities by IDs.
-func (_u *MessageUpdateOne) RemoveReactionIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemoveReactionIDs(ids...)
-	return _u
-}
-
-// RemoveReactions removes "reactions" edges to MessageReaction entities.
-func (_u *MessageUpdateOne) RemoveReactions(v ...*MessageReaction) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveReactionIDs(ids...)
-}
-
-// ClearBookmarks clears all "bookmarks" edges to the MessageBookmark entity.
-func (_u *MessageUpdateOne) ClearBookmarks() *MessageUpdateOne {
-	_u.mutation.ClearBookmarks()
-	return _u
-}
-
-// RemoveBookmarkIDs removes the "bookmarks" edge to MessageBookmark entities by IDs.
-func (_u *MessageUpdateOne) RemoveBookmarkIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemoveBookmarkIDs(ids...)
-	return _u
-}
-
-// RemoveBookmarks removes "bookmarks" edges to MessageBookmark entities.
-func (_u *MessageUpdateOne) RemoveBookmarks(v ...*MessageBookmark) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveBookmarkIDs(ids...)
-}
-
 // ClearUserMentions clears all "user_mentions" edges to the MessageUserMention entity.
 func (_u *MessageUpdateOne) ClearUserMentions() *MessageUpdateOne {
 	_u.mutation.ClearUserMentions()
@@ -1628,90 +907,6 @@ func (_u *MessageUpdateOne) RemoveUserMentions(v ...*MessageUserMention) *Messag
 	return _u.RemoveUserMentionIDs(ids...)
 }
 
-// ClearGroupMentions clears all "group_mentions" edges to the MessageGroupMention entity.
-func (_u *MessageUpdateOne) ClearGroupMentions() *MessageUpdateOne {
-	_u.mutation.ClearGroupMentions()
-	return _u
-}
-
-// RemoveGroupMentionIDs removes the "group_mentions" edge to MessageGroupMention entities by IDs.
-func (_u *MessageUpdateOne) RemoveGroupMentionIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemoveGroupMentionIDs(ids...)
-	return _u
-}
-
-// RemoveGroupMentions removes "group_mentions" edges to MessageGroupMention entities.
-func (_u *MessageUpdateOne) RemoveGroupMentions(v ...*MessageGroupMention) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveGroupMentionIDs(ids...)
-}
-
-// ClearLinks clears all "links" edges to the MessageLink entity.
-func (_u *MessageUpdateOne) ClearLinks() *MessageUpdateOne {
-	_u.mutation.ClearLinks()
-	return _u
-}
-
-// RemoveLinkIDs removes the "links" edge to MessageLink entities by IDs.
-func (_u *MessageUpdateOne) RemoveLinkIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemoveLinkIDs(ids...)
-	return _u
-}
-
-// RemoveLinks removes "links" edges to MessageLink entities.
-func (_u *MessageUpdateOne) RemoveLinks(v ...*MessageLink) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveLinkIDs(ids...)
-}
-
-// ClearAttachments clears all "attachments" edges to the Attachment entity.
-func (_u *MessageUpdateOne) ClearAttachments() *MessageUpdateOne {
-	_u.mutation.ClearAttachments()
-	return _u
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
-func (_u *MessageUpdateOne) RemoveAttachmentIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemoveAttachmentIDs(ids...)
-	return _u
-}
-
-// RemoveAttachments removes "attachments" edges to Attachment entities.
-func (_u *MessageUpdateOne) RemoveAttachments(v ...*Attachment) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAttachmentIDs(ids...)
-}
-
-// ClearPins clears all "pins" edges to the MessagePin entity.
-func (_u *MessageUpdateOne) ClearPins() *MessageUpdateOne {
-	_u.mutation.ClearPins()
-	return _u
-}
-
-// RemovePinIDs removes the "pins" edge to MessagePin entities by IDs.
-func (_u *MessageUpdateOne) RemovePinIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemovePinIDs(ids...)
-	return _u
-}
-
-// RemovePins removes "pins" edges to MessagePin entities.
-func (_u *MessageUpdateOne) RemovePins(v ...*MessagePin) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemovePinIDs(ids...)
-}
-
 // ClearUserThreadFollows clears all "user_thread_follows" edges to the UserThreadFollow entity.
 func (_u *MessageUpdateOne) ClearUserThreadFollows() *MessageUpdateOne {
 	_u.mutation.ClearUserThreadFollows()
@@ -1731,27 +926,6 @@ func (_u *MessageUpdateOne) RemoveUserThreadFollows(v ...*UserThreadFollow) *Mes
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUserThreadFollowIDs(ids...)
-}
-
-// ClearThreadReadStates clears all "thread_read_states" edges to the ThreadReadState entity.
-func (_u *MessageUpdateOne) ClearThreadReadStates() *MessageUpdateOne {
-	_u.mutation.ClearThreadReadStates()
-	return _u
-}
-
-// RemoveThreadReadStateIDs removes the "thread_read_states" edge to ThreadReadState entities by IDs.
-func (_u *MessageUpdateOne) RemoveThreadReadStateIDs(ids ...uuid.UUID) *MessageUpdateOne {
-	_u.mutation.RemoveThreadReadStateIDs(ids...)
-	return _u
-}
-
-// RemoveThreadReadStates removes "thread_read_states" edges to ThreadReadState entities.
-func (_u *MessageUpdateOne) RemoveThreadReadStates(v ...*ThreadReadState) *MessageUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveThreadReadStateIDs(ids...)
 }
 
 // Where appends a list predicates to the MessageUpdate builder.
@@ -1939,96 +1113,6 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ReactionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ReactionsTable,
-			Columns: []string{message.ReactionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagereaction.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedReactionsIDs(); len(nodes) > 0 && !_u.mutation.ReactionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ReactionsTable,
-			Columns: []string{message.ReactionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagereaction.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ReactionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ReactionsTable,
-			Columns: []string{message.ReactionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagereaction.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.BookmarksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.BookmarksTable,
-			Columns: []string{message.BookmarksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagebookmark.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedBookmarksIDs(); len(nodes) > 0 && !_u.mutation.BookmarksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.BookmarksTable,
-			Columns: []string{message.BookmarksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagebookmark.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.BookmarksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.BookmarksTable,
-			Columns: []string{message.BookmarksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagebookmark.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserMentionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2074,186 +1158,6 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.GroupMentionsTable,
-			Columns: []string{message.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedGroupMentionsIDs(); len(nodes) > 0 && !_u.mutation.GroupMentionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.GroupMentionsTable,
-			Columns: []string{message.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.GroupMentionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.GroupMentionsTable,
-			Columns: []string{message.GroupMentionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagegroupmention.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.LinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.LinksTable,
-			Columns: []string{message.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedLinksIDs(); len(nodes) > 0 && !_u.mutation.LinksCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.LinksTable,
-			Columns: []string{message.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.LinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.LinksTable,
-			Columns: []string{message.LinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.AttachmentsTable,
-			Columns: []string{message.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !_u.mutation.AttachmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.AttachmentsTable,
-			Columns: []string{message.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.AttachmentsTable,
-			Columns: []string{message.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(attachment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.PinsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.PinsTable,
-			Columns: []string{message.PinsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedPinsIDs(); len(nodes) > 0 && !_u.mutation.PinsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.PinsTable,
-			Columns: []string{message.PinsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.PinsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.PinsTable,
-			Columns: []string{message.PinsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagepin.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.UserThreadFollowsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -2292,51 +1196,6 @@ func (_u *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(userthreadfollow.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.ThreadReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadReadStatesTable,
-			Columns: []string{message.ThreadReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedThreadReadStatesIDs(); len(nodes) > 0 && !_u.mutation.ThreadReadStatesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadReadStatesTable,
-			Columns: []string{message.ThreadReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ThreadReadStatesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   message.ThreadReadStatesTable,
-			Columns: []string{message.ThreadReadStatesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(threadreadstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -3,7 +3,6 @@ package admin
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -15,12 +14,15 @@ import (
 )
 
 var (
-	ErrMemberNotFound       = errors.New("メンバーが見つかりません")
-	ErrCannotSuspendOwner   = errors.New("オーナーは停止できません")
-	ErrCannotSuspendSelf    = errors.New("自分自身は停止できません")
-	ErrInvalidPermission    = fmt.Errorf("%w: 無効な権限の指定です", domerr.ErrValidation)
-	ErrOwnerOnlyPermissions = errors.New("管理者の権限はオーナーだけが変更できます")
+	ErrMemberNotFound       = domerr.New(domerr.ErrNotFound, "メンバーが見つかりません")
+	ErrCannotSuspendOwner   = domerr.New(domerr.ErrFailedPrecondition, "オーナーは停止できません")
+	ErrCannotSuspendSelf    = domerr.New(domerr.ErrFailedPrecondition, "自分自身は停止できません")
+	ErrInvalidPermission    = domerr.New(domerr.ErrValidation, "無効な権限の指定です")
+	ErrOwnerOnlyPermissions = domerr.New(domerr.ErrUnauthorized, "管理者の権限はオーナーだけが変更できます")
 )
+
+// activityPeriod は管理画面に出すメンバーの投稿数を数える期間です
+const activityPeriod = 30 * 24 * time.Hour
 
 // MemberCloser は停止したメンバーのリアルタイム接続を切ります
 type MemberCloser interface {
@@ -33,20 +35,17 @@ type Interactor struct {
 	sessionRepo    domainrepository.SessionRepository
 	auditLogRepo   domainrepository.AuditLogRepository
 	permissionRepo domainrepository.PermissionRepository
-	insightRepo    domainrepository.InsightRepository
 	permissionSvc  domainservice.PermissionService
 	recorder       audit.Recorder
 	memberCloser   MemberCloser
-	now            func() time.Time
 }
 
-func NewInteractor(
+func New(
 	workspaceRepo domainrepository.WorkspaceRepository,
 	userRepo domainrepository.UserRepository,
 	sessionRepo domainrepository.SessionRepository,
 	auditLogRepo domainrepository.AuditLogRepository,
 	permissionRepo domainrepository.PermissionRepository,
-	insightRepo domainrepository.InsightRepository,
 	permissionSvc domainservice.PermissionService,
 	recorder audit.Recorder,
 	memberCloser MemberCloser,
@@ -57,31 +56,16 @@ func NewInteractor(
 		sessionRepo:    sessionRepo,
 		auditLogRepo:   auditLogRepo,
 		permissionRepo: permissionRepo,
-		insightRepo:    insightRepo,
 		permissionSvc:  permissionSvc,
 		recorder:       recorder,
 		memberCloser:   memberCloser,
-		now:            time.Now,
 	}
-}
-
-// ensureAdmin は管理画面を操作できる owner / admin であることを確認します
-func (i *Interactor) ensureAdmin(ctx context.Context, workspaceID, userID string) (*entity.WorkspaceMember, error) {
-	member, err := i.workspaceRepo.FindMember(ctx, workspaceID, userID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to verify workspace membership: %w", err)
-	}
-	if !member.IsAdmin() {
-		return nil, domerr.ErrUnauthorized
-	}
-	return member, nil
 }
 
 func (i *Interactor) ListMembers(ctx context.Context, input WorkspaceInput) ([]MemberOutput, error) {
-	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.RequesterID); err != nil {
+	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.RequesterID); err != nil {
 		return nil, err
 	}
-
 	members, err := i.workspaceRepo.FindMembersByWorkspaceID(ctx, input.WorkspaceID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list members: %w", err)
@@ -95,24 +79,15 @@ func (i *Interactor) ListMembers(ctx context.Context, input WorkspaceInput) ([]M
 	if err != nil {
 		return nil, fmt.Errorf("failed to load users: %w", err)
 	}
-	userMap := make(map[string]*entity.User, len(users))
-	for _, u := range users {
-		userMap[u.ID] = u
-	}
 
 	sessions, err := i.sessionRepo.FindLatestByUserIDs(ctx, userIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load sessions: %w", err)
 	}
 
-	now := i.now()
-	activities, err := i.insightRepo.MemberActivities(ctx, input.WorkspaceID, now.Add(-entity.InsightPeriod), now)
+	activities, err := i.workspaceRepo.FindMemberActivities(ctx, input.WorkspaceID, time.Now().Add(-activityPeriod))
 	if err != nil {
 		return nil, fmt.Errorf("failed to aggregate member activities: %w", err)
-	}
-	activityMap := make(map[string]entity.MemberActivity, len(activities))
-	for _, a := range activities {
-		activityMap[a.UserID] = a
 	}
 
 	output := make([]MemberOutput, 0, len(members))
@@ -123,9 +98,9 @@ func (i *Interactor) ListMembers(ctx context.Context, input WorkspaceInput) ([]M
 			JoinedAt:    m.JoinedAt,
 			SuspendedAt: m.SuspendedAt,
 			LastLogin:   sessions[m.UserID],
-			Activity:    activityMap[m.UserID],
+			Activity:    activities[m.UserID],
 		}
-		if u := userMap[m.UserID]; u != nil {
+		if u := users[m.UserID]; u != nil {
 			out.Email = u.Email
 			out.DisplayName = u.DisplayName
 			out.AvatarURL = u.AvatarURL
@@ -147,8 +122,7 @@ func (i *Interactor) SuspendMember(ctx context.Context, input MemberActionInput)
 		return ErrCannotSuspendOwner
 	}
 
-	now := i.now()
-	if err := i.workspaceRepo.SetMemberSuspended(ctx, input.WorkspaceID, input.TargetUserID, &now); err != nil {
+	if err := i.workspaceRepo.SetMemberSuspended(ctx, input.WorkspaceID, input.TargetUserID, new(time.Now())); err != nil {
 		return fmt.Errorf("failed to suspend member: %w", err)
 	}
 	// 他のワークスペースでは使い続けられるようセッションは失効させず、このワークスペースの接続だけを切る
@@ -177,7 +151,7 @@ type memberTarget struct {
 }
 
 func (i *Interactor) findTarget(ctx context.Context, input MemberActionInput) (*memberTarget, error) {
-	if _, err := i.ensureAdmin(ctx, input.WorkspaceID, input.OperatorID); err != nil {
+	if _, err := domainservice.EnsureAdmin(ctx, i.workspaceRepo, input.WorkspaceID, input.OperatorID); err != nil {
 		return nil, err
 	}
 	member, err := i.workspaceRepo.FindMemberIncludingSuspended(ctx, input.WorkspaceID, input.TargetUserID)

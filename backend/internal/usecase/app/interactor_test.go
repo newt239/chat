@@ -107,11 +107,11 @@ func (r *fakeUserRepo) Create(_ context.Context, u *entity.User) error {
 	return nil
 }
 
-func (r *fakeUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
-	found := []*entity.User{}
+func (r *fakeUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
+	found := map[string]*entity.User{}
 	for _, id := range ids {
 		if u := r.users[id]; u != nil {
-			found = append(found, u)
+			found[id] = u
 		}
 	}
 	return found, nil
@@ -175,10 +175,6 @@ type fixture struct {
 	recorder *audittest.Recorder
 }
 
-type nopLogger struct{ domainservice.Logger }
-
-func (nopLogger) Warn(string, ...domainservice.LogField) {}
-
 // post は着信 Webhook と同じくトークンを確かめてから投稿します
 func (f *fixture) post(token string, out *CreateOutput, input PostInput) (*messageuc.MessageOutput, error) {
 	app, err := f.uc.Authenticate(context.Background(), out.App.ID, token)
@@ -196,7 +192,7 @@ func newFixture() *fixture {
 		poster:   &fakePoster{},
 		recorder: &audittest.Recorder{},
 	}
-	f.uc = NewInteractor(f.apps, f.users, stubWorkspaceRepo{}, stubChannelRepo{}, f.members, stubMessageRepo{}, stubAccess{}, f.poster, stubTxManager{}, f.recorder, nopLogger{})
+	f.uc = New(f.apps, f.users, stubWorkspaceRepo{}, stubChannelRepo{}, f.members, stubMessageRepo{}, stubAccess{}, f.poster, stubTxManager{}, f.recorder)
 	return f
 }
 

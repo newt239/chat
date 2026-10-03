@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// MessageBookmark holds the schema definition for the MessageBookmark entity.
 type MessageBookmark struct {
 	ent.Schema
 }
@@ -21,7 +20,6 @@ func (MessageBookmark) Annotations() []schema.Annotation {
 	return []schema.Annotation{entsql.Annotation{Table: "message_bookmark"}}
 }
 
-// Fields of the MessageBookmark.
 func (MessageBookmark) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -35,7 +33,6 @@ func (MessageBookmark) Fields() []ent.Field {
 	}
 }
 
-// Edges of the MessageBookmark.
 func (MessageBookmark) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
@@ -49,10 +46,8 @@ func (MessageBookmark) Edges() []ent.Edge {
 	}
 }
 
-// Indexes of the MessageBookmark.
 func (MessageBookmark) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("created_at"),
 		index.Fields("user_id", "message_id").
 			Unique(),
 	}

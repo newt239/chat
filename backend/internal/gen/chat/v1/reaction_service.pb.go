@@ -22,94 +22,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ListReactionsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListReactionsRequest) Reset() {
-	*x = ListReactionsRequest{}
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListReactionsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListReactionsRequest) ProtoMessage() {}
-
-func (x *ListReactionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListReactionsRequest.ProtoReflect.Descriptor instead.
-func (*ListReactionsRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *ListReactionsRequest) GetMessageId() string {
-	if x != nil {
-		return x.MessageId
-	}
-	return ""
-}
-
-type ListReactionsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Reactions     []*Reaction            `protobuf:"bytes,1,rep,name=reactions,proto3" json:"reactions,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListReactionsResponse) Reset() {
-	*x = ListReactionsResponse{}
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListReactionsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListReactionsResponse) ProtoMessage() {}
-
-func (x *ListReactionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListReactionsResponse.ProtoReflect.Descriptor instead.
-func (*ListReactionsResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *ListReactionsResponse) GetReactions() []*Reaction {
-	if x != nil {
-		return x.Reactions
-	}
-	return nil
-}
-
 type AddReactionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
@@ -120,7 +32,7 @@ type AddReactionRequest struct {
 
 func (x *AddReactionRequest) Reset() {
 	*x = AddReactionRequest{}
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[2]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -132,7 +44,7 @@ func (x *AddReactionRequest) String() string {
 func (*AddReactionRequest) ProtoMessage() {}
 
 func (x *AddReactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[2]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -145,7 +57,7 @@ func (x *AddReactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddReactionRequest.ProtoReflect.Descriptor instead.
 func (*AddReactionRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{2}
+	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *AddReactionRequest) GetMessageId() string {
@@ -170,7 +82,7 @@ type AddReactionResponse struct {
 
 func (x *AddReactionResponse) Reset() {
 	*x = AddReactionResponse{}
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[3]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -182,7 +94,7 @@ func (x *AddReactionResponse) String() string {
 func (*AddReactionResponse) ProtoMessage() {}
 
 func (x *AddReactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[3]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -195,7 +107,7 @@ func (x *AddReactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddReactionResponse.ProtoReflect.Descriptor instead.
 func (*AddReactionResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{3}
+	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{1}
 }
 
 type RemoveReactionRequest struct {
@@ -208,7 +120,7 @@ type RemoveReactionRequest struct {
 
 func (x *RemoveReactionRequest) Reset() {
 	*x = RemoveReactionRequest{}
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[4]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -220,7 +132,7 @@ func (x *RemoveReactionRequest) String() string {
 func (*RemoveReactionRequest) ProtoMessage() {}
 
 func (x *RemoveReactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[4]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -233,7 +145,7 @@ func (x *RemoveReactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveReactionRequest.ProtoReflect.Descriptor instead.
 func (*RemoveReactionRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{4}
+	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RemoveReactionRequest) GetMessageId() string {
@@ -258,7 +170,7 @@ type RemoveReactionResponse struct {
 
 func (x *RemoveReactionResponse) Reset() {
 	*x = RemoveReactionResponse{}
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[5]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -270,7 +182,7 @@ func (x *RemoveReactionResponse) String() string {
 func (*RemoveReactionResponse) ProtoMessage() {}
 
 func (x *RemoveReactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_reaction_service_proto_msgTypes[5]
+	mi := &file_chat_v1_reaction_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -283,19 +195,14 @@ func (x *RemoveReactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveReactionResponse.ProtoReflect.Descriptor instead.
 func (*RemoveReactionResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{5}
+	return file_chat_v1_reaction_service_proto_rawDescGZIP(), []int{3}
 }
 
 var File_chat_v1_reaction_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_reaction_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1echat/v1/reaction_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x15chat/v1/message.proto\"?\n" +
-	"\x14ListReactionsRequest\x12'\n" +
-	"\n" +
-	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\"H\n" +
-	"\x15ListReactionsResponse\x12/\n" +
-	"\treactions\x18\x01 \x03(\v2\x11.chat.v1.ReactionR\treactions\"\\\n" +
+	"\x1echat/v1/reaction_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\"\\\n" +
 	"\x12AddReactionRequest\x12'\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\x12\x1d\n" +
@@ -305,9 +212,8 @@ const file_chat_v1_reaction_service_proto_rawDesc = "" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tmessageId\x12\x1d\n" +
 	"\x05emoji\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05emoji\"\x18\n" +
-	"\x16RemoveReactionResponse2\xfe\x01\n" +
-	"\x0fReactionService\x12N\n" +
-	"\rListReactions\x12\x1d.chat.v1.ListReactionsRequest\x1a\x1e.chat.v1.ListReactionsResponse\x12H\n" +
+	"\x16RemoveReactionResponse2\xae\x01\n" +
+	"\x0fReactionService\x12H\n" +
 	"\vAddReaction\x12\x1b.chat.v1.AddReactionRequest\x1a\x1c.chat.v1.AddReactionResponse\x12Q\n" +
 	"\x0eRemoveReaction\x12\x1e.chat.v1.RemoveReactionRequest\x1a\x1f.chat.v1.RemoveReactionResponseB\x95\x01\n" +
 	"\vcom.chat.v1B\x14ReactionServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
@@ -324,29 +230,23 @@ func file_chat_v1_reaction_service_proto_rawDescGZIP() []byte {
 	return file_chat_v1_reaction_service_proto_rawDescData
 }
 
-var file_chat_v1_reaction_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_chat_v1_reaction_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_chat_v1_reaction_service_proto_goTypes = []any{
-	(*ListReactionsRequest)(nil),   // 0: chat.v1.ListReactionsRequest
-	(*ListReactionsResponse)(nil),  // 1: chat.v1.ListReactionsResponse
-	(*AddReactionRequest)(nil),     // 2: chat.v1.AddReactionRequest
-	(*AddReactionResponse)(nil),    // 3: chat.v1.AddReactionResponse
-	(*RemoveReactionRequest)(nil),  // 4: chat.v1.RemoveReactionRequest
-	(*RemoveReactionResponse)(nil), // 5: chat.v1.RemoveReactionResponse
-	(*Reaction)(nil),               // 6: chat.v1.Reaction
+	(*AddReactionRequest)(nil),     // 0: chat.v1.AddReactionRequest
+	(*AddReactionResponse)(nil),    // 1: chat.v1.AddReactionResponse
+	(*RemoveReactionRequest)(nil),  // 2: chat.v1.RemoveReactionRequest
+	(*RemoveReactionResponse)(nil), // 3: chat.v1.RemoveReactionResponse
 }
 var file_chat_v1_reaction_service_proto_depIdxs = []int32{
-	6, // 0: chat.v1.ListReactionsResponse.reactions:type_name -> chat.v1.Reaction
-	0, // 1: chat.v1.ReactionService.ListReactions:input_type -> chat.v1.ListReactionsRequest
-	2, // 2: chat.v1.ReactionService.AddReaction:input_type -> chat.v1.AddReactionRequest
-	4, // 3: chat.v1.ReactionService.RemoveReaction:input_type -> chat.v1.RemoveReactionRequest
-	1, // 4: chat.v1.ReactionService.ListReactions:output_type -> chat.v1.ListReactionsResponse
-	3, // 5: chat.v1.ReactionService.AddReaction:output_type -> chat.v1.AddReactionResponse
-	5, // 6: chat.v1.ReactionService.RemoveReaction:output_type -> chat.v1.RemoveReactionResponse
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 0: chat.v1.ReactionService.AddReaction:input_type -> chat.v1.AddReactionRequest
+	2, // 1: chat.v1.ReactionService.RemoveReaction:input_type -> chat.v1.RemoveReactionRequest
+	1, // 2: chat.v1.ReactionService.AddReaction:output_type -> chat.v1.AddReactionResponse
+	3, // 3: chat.v1.ReactionService.RemoveReaction:output_type -> chat.v1.RemoveReactionResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
+	0, // [0:0] is the sub-list for extension type_name
+	0, // [0:0] is the sub-list for extension extendee
+	0, // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_reaction_service_proto_init() }
@@ -354,14 +254,13 @@ func file_chat_v1_reaction_service_proto_init() {
 	if File_chat_v1_reaction_service_proto != nil {
 		return
 	}
-	file_chat_v1_message_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_reaction_service_proto_rawDesc), len(file_chat_v1_reaction_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

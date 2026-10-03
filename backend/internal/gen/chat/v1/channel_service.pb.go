@@ -138,9 +138,7 @@ type Channel struct {
 	IsStarred   bool                   `protobuf:"varint,12,opt,name=is_starred,json=isStarred,proto3" json:"is_starred,omitempty"`
 	// false の場合はツリーを組み立てるために返している未参加の祖先チャンネル
 	IsMember bool `protobuf:"varint,13,opt,name=is_member,json=isMember,proto3" json:"is_member,omitempty"`
-	// アーカイブ中の場合だけ設定される
-	ArchivedAt *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=archived_at,json=archivedAt,proto3,oneof" json:"archived_at,omitempty"`
-	IsMuted    bool                   `protobuf:"varint,15,opt,name=is_muted,json=isMuted,proto3" json:"is_muted,omitempty"`
+	IsMuted  bool `protobuf:"varint,15,opt,name=is_muted,json=isMuted,proto3" json:"is_muted,omitempty"`
 	// 最後のメッセージ（スレッドの返信を除く）の投稿日時。ListChannels でだけ設定する
 	LastMessageAt *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=last_message_at,json=lastMessageAt,proto3,oneof" json:"last_message_at,omitempty"`
 	// 未読のうち自分宛てのメンションの数。ミュート中でも数える
@@ -268,13 +266,6 @@ func (x *Channel) GetIsMember() bool {
 		return x.IsMember
 	}
 	return false
-}
-
-func (x *Channel) GetArchivedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ArchivedAt
-	}
-	return nil
 }
 
 func (x *Channel) GetIsMuted() bool {
@@ -709,86 +700,6 @@ func (x *UpdateChannelResponse) GetChannel() *Channel {
 	return nil
 }
 
-type DeleteChannelRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteChannelRequest) Reset() {
-	*x = DeleteChannelRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteChannelRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteChannelRequest) ProtoMessage() {}
-
-func (x *DeleteChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteChannelRequest.ProtoReflect.Descriptor instead.
-func (*DeleteChannelRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *DeleteChannelRequest) GetChannelId() string {
-	if x != nil {
-		return x.ChannelId
-	}
-	return ""
-}
-
-type DeleteChannelResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteChannelResponse) Reset() {
-	*x = DeleteChannelResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteChannelResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteChannelResponse) ProtoMessage() {}
-
-func (x *DeleteChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteChannelResponse.ProtoReflect.Descriptor instead.
-func (*DeleteChannelResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{10}
-}
-
 type SetChannelStarredRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
@@ -799,7 +710,7 @@ type SetChannelStarredRequest struct {
 
 func (x *SetChannelStarredRequest) Reset() {
 	*x = SetChannelStarredRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -811,7 +722,7 @@ func (x *SetChannelStarredRequest) String() string {
 func (*SetChannelStarredRequest) ProtoMessage() {}
 
 func (x *SetChannelStarredRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,7 +735,7 @@ func (x *SetChannelStarredRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetChannelStarredRequest.ProtoReflect.Descriptor instead.
 func (*SetChannelStarredRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{11}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SetChannelStarredRequest) GetChannelId() string {
@@ -849,7 +760,7 @@ type SetChannelStarredResponse struct {
 
 func (x *SetChannelStarredResponse) Reset() {
 	*x = SetChannelStarredResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -861,7 +772,7 @@ func (x *SetChannelStarredResponse) String() string {
 func (*SetChannelStarredResponse) ProtoMessage() {}
 
 func (x *SetChannelStarredResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -874,7 +785,7 @@ func (x *SetChannelStarredResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetChannelStarredResponse.ProtoReflect.Descriptor instead.
 func (*SetChannelStarredResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{12}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{10}
 }
 
 type SetChannelMutedRequest struct {
@@ -887,7 +798,7 @@ type SetChannelMutedRequest struct {
 
 func (x *SetChannelMutedRequest) Reset() {
 	*x = SetChannelMutedRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -899,7 +810,7 @@ func (x *SetChannelMutedRequest) String() string {
 func (*SetChannelMutedRequest) ProtoMessage() {}
 
 func (x *SetChannelMutedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -912,7 +823,7 @@ func (x *SetChannelMutedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetChannelMutedRequest.ProtoReflect.Descriptor instead.
 func (*SetChannelMutedRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{13}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SetChannelMutedRequest) GetChannelId() string {
@@ -937,7 +848,7 @@ type SetChannelMutedResponse struct {
 
 func (x *SetChannelMutedResponse) Reset() {
 	*x = SetChannelMutedResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -949,7 +860,7 @@ func (x *SetChannelMutedResponse) String() string {
 func (*SetChannelMutedResponse) ProtoMessage() {}
 
 func (x *SetChannelMutedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -962,183 +873,7 @@ func (x *SetChannelMutedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetChannelMutedResponse.ProtoReflect.Descriptor instead.
 func (*SetChannelMutedResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{14}
-}
-
-type ArchiveChannelRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ArchiveChannelRequest) Reset() {
-	*x = ArchiveChannelRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ArchiveChannelRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ArchiveChannelRequest) ProtoMessage() {}
-
-func (x *ArchiveChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ArchiveChannelRequest.ProtoReflect.Descriptor instead.
-func (*ArchiveChannelRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *ArchiveChannelRequest) GetChannelId() string {
-	if x != nil {
-		return x.ChannelId
-	}
-	return ""
-}
-
-type ArchiveChannelResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Channel       *Channel               `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ArchiveChannelResponse) Reset() {
-	*x = ArchiveChannelResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ArchiveChannelResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ArchiveChannelResponse) ProtoMessage() {}
-
-func (x *ArchiveChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ArchiveChannelResponse.ProtoReflect.Descriptor instead.
-func (*ArchiveChannelResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *ArchiveChannelResponse) GetChannel() *Channel {
-	if x != nil {
-		return x.Channel
-	}
-	return nil
-}
-
-type UnarchiveChannelRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ChannelId     string                 `protobuf:"bytes,1,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UnarchiveChannelRequest) Reset() {
-	*x = UnarchiveChannelRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UnarchiveChannelRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnarchiveChannelRequest) ProtoMessage() {}
-
-func (x *UnarchiveChannelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnarchiveChannelRequest.ProtoReflect.Descriptor instead.
-func (*UnarchiveChannelRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *UnarchiveChannelRequest) GetChannelId() string {
-	if x != nil {
-		return x.ChannelId
-	}
-	return ""
-}
-
-type UnarchiveChannelResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Channel       *Channel               `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UnarchiveChannelResponse) Reset() {
-	*x = UnarchiveChannelResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UnarchiveChannelResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnarchiveChannelResponse) ProtoMessage() {}
-
-func (x *UnarchiveChannelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnarchiveChannelResponse.ProtoReflect.Descriptor instead.
-func (*UnarchiveChannelResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *UnarchiveChannelResponse) GetChannel() *Channel {
-	if x != nil {
-		return x.Channel
-	}
-	return nil
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{12}
 }
 
 type ListBrowsableChannelsRequest struct {
@@ -1150,7 +885,7 @@ type ListBrowsableChannelsRequest struct {
 
 func (x *ListBrowsableChannelsRequest) Reset() {
 	*x = ListBrowsableChannelsRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[19]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1162,7 +897,7 @@ func (x *ListBrowsableChannelsRequest) String() string {
 func (*ListBrowsableChannelsRequest) ProtoMessage() {}
 
 func (x *ListBrowsableChannelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[19]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1175,7 +910,7 @@ func (x *ListBrowsableChannelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBrowsableChannelsRequest.ProtoReflect.Descriptor instead.
 func (*ListBrowsableChannelsRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{19}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListBrowsableChannelsRequest) GetWorkspaceId() string {
@@ -1195,7 +930,7 @@ type BrowsableChannel struct {
 
 func (x *BrowsableChannel) Reset() {
 	*x = BrowsableChannel{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[20]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1207,7 +942,7 @@ func (x *BrowsableChannel) String() string {
 func (*BrowsableChannel) ProtoMessage() {}
 
 func (x *BrowsableChannel) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[20]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1220,7 +955,7 @@ func (x *BrowsableChannel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BrowsableChannel.ProtoReflect.Descriptor instead.
 func (*BrowsableChannel) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{20}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BrowsableChannel) GetChannel() *Channel {
@@ -1246,7 +981,7 @@ type ListBrowsableChannelsResponse struct {
 
 func (x *ListBrowsableChannelsResponse) Reset() {
 	*x = ListBrowsableChannelsResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[21]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1258,7 +993,7 @@ func (x *ListBrowsableChannelsResponse) String() string {
 func (*ListBrowsableChannelsResponse) ProtoMessage() {}
 
 func (x *ListBrowsableChannelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[21]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1271,7 +1006,7 @@ func (x *ListBrowsableChannelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBrowsableChannelsResponse.ProtoReflect.Descriptor instead.
 func (*ListBrowsableChannelsResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{21}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListBrowsableChannelsResponse) GetChannels() []*BrowsableChannel {
@@ -1296,7 +1031,7 @@ type SearchBrowsableChannelsRequest struct {
 
 func (x *SearchBrowsableChannelsRequest) Reset() {
 	*x = SearchBrowsableChannelsRequest{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[22]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1308,7 +1043,7 @@ func (x *SearchBrowsableChannelsRequest) String() string {
 func (*SearchBrowsableChannelsRequest) ProtoMessage() {}
 
 func (x *SearchBrowsableChannelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[22]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1321,7 +1056,7 @@ func (x *SearchBrowsableChannelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchBrowsableChannelsRequest.ProtoReflect.Descriptor instead.
 func (*SearchBrowsableChannelsRequest) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{22}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *SearchBrowsableChannelsRequest) GetWorkspaceId() string {
@@ -1377,7 +1112,7 @@ type SearchBrowsableChannelsResponse struct {
 
 func (x *SearchBrowsableChannelsResponse) Reset() {
 	*x = SearchBrowsableChannelsResponse{}
-	mi := &file_chat_v1_channel_service_proto_msgTypes[23]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1389,7 +1124,7 @@ func (x *SearchBrowsableChannelsResponse) String() string {
 func (*SearchBrowsableChannelsResponse) ProtoMessage() {}
 
 func (x *SearchBrowsableChannelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_chat_v1_channel_service_proto_msgTypes[23]
+	mi := &file_chat_v1_channel_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1402,7 +1137,7 @@ func (x *SearchBrowsableChannelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchBrowsableChannelsResponse.ProtoReflect.Descriptor instead.
 func (*SearchBrowsableChannelsResponse) Descriptor() ([]byte, []int) {
-	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{23}
+	return file_chat_v1_channel_service_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *SearchBrowsableChannelsResponse) GetChannels() []*BrowsableChannel {
@@ -1423,7 +1158,7 @@ var File_chat_v1_channel_service_proto protoreflect.FileDescriptor
 
 const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x05\n" +
+	"\x1dchat/v1/channel_service.proto\x12\achat.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x88\x05\n" +
 	"\aChannel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fworkspace_id\x18\x02 \x01(\tR\vworkspaceId\x12\x12\n" +
@@ -1444,16 +1179,13 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\tparent_id\x18\v \x01(\tH\x01R\bparentId\x88\x01\x01\x12\x1d\n" +
 	"\n" +
 	"is_starred\x18\f \x01(\bR\tisStarred\x12\x1b\n" +
-	"\tis_member\x18\r \x01(\bR\bisMember\x12@\n" +
-	"\varchived_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampH\x02R\n" +
-	"archivedAt\x88\x01\x01\x12\x19\n" +
+	"\tis_member\x18\r \x01(\bR\bisMember\x12\x19\n" +
 	"\bis_muted\x18\x0f \x01(\bR\aisMuted\x12G\n" +
-	"\x0flast_message_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampH\x03R\rlastMessageAt\x88\x01\x01\x12#\n" +
+	"\x0flast_message_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampH\x02R\rlastMessageAt\x88\x01\x01\x12#\n" +
 	"\rmention_count\x18\x11 \x01(\x05R\fmentionCountB\x0e\n" +
 	"\f_descriptionB\f\n" +
 	"\n" +
-	"_parent_idB\x0e\n" +
-	"\f_archived_atB\x12\n" +
+	"_parent_idB\x12\n" +
 	"\x10_last_message_at\"A\n" +
 	"\x13ListChannelsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"D\n" +
@@ -1487,11 +1219,7 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\f_descriptionB\r\n" +
 	"\v_is_private\"C\n" +
 	"\x15UpdateChannelResponse\x12*\n" +
-	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"?\n" +
-	"\x14DeleteChannelRequest\x12'\n" +
-	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"\x17\n" +
-	"\x15DeleteChannelResponse\"]\n" +
+	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"]\n" +
 	"\x18SetChannelStarredRequest\x12'\n" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x18\n" +
@@ -1501,17 +1229,7 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"\n" +
 	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\x12\x14\n" +
 	"\x05muted\x18\x02 \x01(\bR\x05muted\"\x19\n" +
-	"\x17SetChannelMutedResponse\"@\n" +
-	"\x15ArchiveChannelRequest\x12'\n" +
-	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"D\n" +
-	"\x16ArchiveChannelResponse\x12*\n" +
-	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"B\n" +
-	"\x17UnarchiveChannelRequest\x12'\n" +
-	"\n" +
-	"channel_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tchannelId\"F\n" +
-	"\x18UnarchiveChannelResponse\x12*\n" +
-	"\achannel\x18\x01 \x01(\v2\x10.chat.v1.ChannelR\achannel\"J\n" +
+	"\x17SetChannelMutedResponse\"J\n" +
 	"\x1cListBrowsableChannelsRequest\x12*\n" +
 	"\fworkspace_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vworkspaceId\"a\n" +
 	"\x10BrowsableChannel\x12*\n" +
@@ -1537,18 +1255,15 @@ const file_chat_v1_channel_service_proto_rawDesc = "" +
 	"'BROWSABLE_CHANNEL_MEMBERSHIP_NOT_JOINED\x10\x02*g\n" +
 	"\x14BrowsableChannelSort\x12&\n" +
 	"\"BROWSABLE_CHANNEL_SORT_UNSPECIFIED\x10\x00\x12'\n" +
-	"#BROWSABLE_CHANNEL_SORT_MEMBER_COUNT\x10\x012\xc8\a\n" +
+	"#BROWSABLE_CHANNEL_SORT_MEMBER_COUNT\x10\x012\xcc\x05\n" +
 	"\x0eChannelService\x12K\n" +
 	"\fListChannels\x12\x1c.chat.v1.ListChannelsRequest\x1a\x1d.chat.v1.ListChannelsResponse\x12N\n" +
 	"\rCreateChannel\x12\x1d.chat.v1.CreateChannelRequest\x1a\x1e.chat.v1.CreateChannelResponse\x12E\n" +
 	"\n" +
 	"GetChannel\x12\x1a.chat.v1.GetChannelRequest\x1a\x1b.chat.v1.GetChannelResponse\x12N\n" +
-	"\rUpdateChannel\x12\x1d.chat.v1.UpdateChannelRequest\x1a\x1e.chat.v1.UpdateChannelResponse\x12N\n" +
-	"\rDeleteChannel\x12\x1d.chat.v1.DeleteChannelRequest\x1a\x1e.chat.v1.DeleteChannelResponse\x12Z\n" +
+	"\rUpdateChannel\x12\x1d.chat.v1.UpdateChannelRequest\x1a\x1e.chat.v1.UpdateChannelResponse\x12Z\n" +
 	"\x11SetChannelStarred\x12!.chat.v1.SetChannelStarredRequest\x1a\".chat.v1.SetChannelStarredResponse\x12T\n" +
-	"\x0fSetChannelMuted\x12\x1f.chat.v1.SetChannelMutedRequest\x1a .chat.v1.SetChannelMutedResponse\x12Q\n" +
-	"\x0eArchiveChannel\x12\x1e.chat.v1.ArchiveChannelRequest\x1a\x1f.chat.v1.ArchiveChannelResponse\x12W\n" +
-	"\x10UnarchiveChannel\x12 .chat.v1.UnarchiveChannelRequest\x1a!.chat.v1.UnarchiveChannelResponse\x12f\n" +
+	"\x0fSetChannelMuted\x12\x1f.chat.v1.SetChannelMutedRequest\x1a .chat.v1.SetChannelMutedResponse\x12f\n" +
 	"\x15ListBrowsableChannels\x12%.chat.v1.ListBrowsableChannelsRequest\x1a&.chat.v1.ListBrowsableChannelsResponse\x12l\n" +
 	"\x17SearchBrowsableChannels\x12'.chat.v1.SearchBrowsableChannelsRequest\x1a(.chat.v1.SearchBrowsableChannelsResponseB\x94\x01\n" +
 	"\vcom.chat.v1B\x13ChannelServiceProtoP\x01Z3github.com/newt239/chat/internal/gen/chat/v1;chatv1\xa2\x02\x03CXX\xaa\x02\aChat.V1\xca\x02\aChat\\V1\xe2\x02\x13Chat\\V1\\GPBMetadata\xea\x02\bChat::V1b\x06proto3"
@@ -1566,7 +1281,7 @@ func file_chat_v1_channel_service_proto_rawDescGZIP() []byte {
 }
 
 var file_chat_v1_channel_service_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_chat_v1_channel_service_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_chat_v1_channel_service_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_chat_v1_channel_service_proto_goTypes = []any{
 	(BrowsableChannelMembership)(0),         // 0: chat.v1.BrowsableChannelMembership
 	(BrowsableChannelSort)(0),               // 1: chat.v1.BrowsableChannelSort
@@ -1579,66 +1294,51 @@ var file_chat_v1_channel_service_proto_goTypes = []any{
 	(*GetChannelResponse)(nil),              // 8: chat.v1.GetChannelResponse
 	(*UpdateChannelRequest)(nil),            // 9: chat.v1.UpdateChannelRequest
 	(*UpdateChannelResponse)(nil),           // 10: chat.v1.UpdateChannelResponse
-	(*DeleteChannelRequest)(nil),            // 11: chat.v1.DeleteChannelRequest
-	(*DeleteChannelResponse)(nil),           // 12: chat.v1.DeleteChannelResponse
-	(*SetChannelStarredRequest)(nil),        // 13: chat.v1.SetChannelStarredRequest
-	(*SetChannelStarredResponse)(nil),       // 14: chat.v1.SetChannelStarredResponse
-	(*SetChannelMutedRequest)(nil),          // 15: chat.v1.SetChannelMutedRequest
-	(*SetChannelMutedResponse)(nil),         // 16: chat.v1.SetChannelMutedResponse
-	(*ArchiveChannelRequest)(nil),           // 17: chat.v1.ArchiveChannelRequest
-	(*ArchiveChannelResponse)(nil),          // 18: chat.v1.ArchiveChannelResponse
-	(*UnarchiveChannelRequest)(nil),         // 19: chat.v1.UnarchiveChannelRequest
-	(*UnarchiveChannelResponse)(nil),        // 20: chat.v1.UnarchiveChannelResponse
-	(*ListBrowsableChannelsRequest)(nil),    // 21: chat.v1.ListBrowsableChannelsRequest
-	(*BrowsableChannel)(nil),                // 22: chat.v1.BrowsableChannel
-	(*ListBrowsableChannelsResponse)(nil),   // 23: chat.v1.ListBrowsableChannelsResponse
-	(*SearchBrowsableChannelsRequest)(nil),  // 24: chat.v1.SearchBrowsableChannelsRequest
-	(*SearchBrowsableChannelsResponse)(nil), // 25: chat.v1.SearchBrowsableChannelsResponse
-	(*timestamppb.Timestamp)(nil),           // 26: google.protobuf.Timestamp
+	(*SetChannelStarredRequest)(nil),        // 11: chat.v1.SetChannelStarredRequest
+	(*SetChannelStarredResponse)(nil),       // 12: chat.v1.SetChannelStarredResponse
+	(*SetChannelMutedRequest)(nil),          // 13: chat.v1.SetChannelMutedRequest
+	(*SetChannelMutedResponse)(nil),         // 14: chat.v1.SetChannelMutedResponse
+	(*ListBrowsableChannelsRequest)(nil),    // 15: chat.v1.ListBrowsableChannelsRequest
+	(*BrowsableChannel)(nil),                // 16: chat.v1.BrowsableChannel
+	(*ListBrowsableChannelsResponse)(nil),   // 17: chat.v1.ListBrowsableChannelsResponse
+	(*SearchBrowsableChannelsRequest)(nil),  // 18: chat.v1.SearchBrowsableChannelsRequest
+	(*SearchBrowsableChannelsResponse)(nil), // 19: chat.v1.SearchBrowsableChannelsResponse
+	(*timestamppb.Timestamp)(nil),           // 20: google.protobuf.Timestamp
 }
 var file_chat_v1_channel_service_proto_depIdxs = []int32{
-	26, // 0: chat.v1.Channel.created_at:type_name -> google.protobuf.Timestamp
-	26, // 1: chat.v1.Channel.updated_at:type_name -> google.protobuf.Timestamp
-	26, // 2: chat.v1.Channel.archived_at:type_name -> google.protobuf.Timestamp
-	26, // 3: chat.v1.Channel.last_message_at:type_name -> google.protobuf.Timestamp
-	2,  // 4: chat.v1.ListChannelsResponse.channels:type_name -> chat.v1.Channel
-	2,  // 5: chat.v1.CreateChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 6: chat.v1.GetChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 7: chat.v1.UpdateChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 8: chat.v1.ArchiveChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 9: chat.v1.UnarchiveChannelResponse.channel:type_name -> chat.v1.Channel
-	2,  // 10: chat.v1.BrowsableChannel.channel:type_name -> chat.v1.Channel
-	22, // 11: chat.v1.ListBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
-	0,  // 12: chat.v1.SearchBrowsableChannelsRequest.membership:type_name -> chat.v1.BrowsableChannelMembership
-	1,  // 13: chat.v1.SearchBrowsableChannelsRequest.sort:type_name -> chat.v1.BrowsableChannelSort
-	22, // 14: chat.v1.SearchBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
-	3,  // 15: chat.v1.ChannelService.ListChannels:input_type -> chat.v1.ListChannelsRequest
-	5,  // 16: chat.v1.ChannelService.CreateChannel:input_type -> chat.v1.CreateChannelRequest
-	7,  // 17: chat.v1.ChannelService.GetChannel:input_type -> chat.v1.GetChannelRequest
-	9,  // 18: chat.v1.ChannelService.UpdateChannel:input_type -> chat.v1.UpdateChannelRequest
-	11, // 19: chat.v1.ChannelService.DeleteChannel:input_type -> chat.v1.DeleteChannelRequest
-	13, // 20: chat.v1.ChannelService.SetChannelStarred:input_type -> chat.v1.SetChannelStarredRequest
-	15, // 21: chat.v1.ChannelService.SetChannelMuted:input_type -> chat.v1.SetChannelMutedRequest
-	17, // 22: chat.v1.ChannelService.ArchiveChannel:input_type -> chat.v1.ArchiveChannelRequest
-	19, // 23: chat.v1.ChannelService.UnarchiveChannel:input_type -> chat.v1.UnarchiveChannelRequest
-	21, // 24: chat.v1.ChannelService.ListBrowsableChannels:input_type -> chat.v1.ListBrowsableChannelsRequest
-	24, // 25: chat.v1.ChannelService.SearchBrowsableChannels:input_type -> chat.v1.SearchBrowsableChannelsRequest
-	4,  // 26: chat.v1.ChannelService.ListChannels:output_type -> chat.v1.ListChannelsResponse
-	6,  // 27: chat.v1.ChannelService.CreateChannel:output_type -> chat.v1.CreateChannelResponse
-	8,  // 28: chat.v1.ChannelService.GetChannel:output_type -> chat.v1.GetChannelResponse
-	10, // 29: chat.v1.ChannelService.UpdateChannel:output_type -> chat.v1.UpdateChannelResponse
-	12, // 30: chat.v1.ChannelService.DeleteChannel:output_type -> chat.v1.DeleteChannelResponse
-	14, // 31: chat.v1.ChannelService.SetChannelStarred:output_type -> chat.v1.SetChannelStarredResponse
-	16, // 32: chat.v1.ChannelService.SetChannelMuted:output_type -> chat.v1.SetChannelMutedResponse
-	18, // 33: chat.v1.ChannelService.ArchiveChannel:output_type -> chat.v1.ArchiveChannelResponse
-	20, // 34: chat.v1.ChannelService.UnarchiveChannel:output_type -> chat.v1.UnarchiveChannelResponse
-	23, // 35: chat.v1.ChannelService.ListBrowsableChannels:output_type -> chat.v1.ListBrowsableChannelsResponse
-	25, // 36: chat.v1.ChannelService.SearchBrowsableChannels:output_type -> chat.v1.SearchBrowsableChannelsResponse
-	26, // [26:37] is the sub-list for method output_type
-	15, // [15:26] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	20, // 0: chat.v1.Channel.created_at:type_name -> google.protobuf.Timestamp
+	20, // 1: chat.v1.Channel.updated_at:type_name -> google.protobuf.Timestamp
+	20, // 2: chat.v1.Channel.last_message_at:type_name -> google.protobuf.Timestamp
+	2,  // 3: chat.v1.ListChannelsResponse.channels:type_name -> chat.v1.Channel
+	2,  // 4: chat.v1.CreateChannelResponse.channel:type_name -> chat.v1.Channel
+	2,  // 5: chat.v1.GetChannelResponse.channel:type_name -> chat.v1.Channel
+	2,  // 6: chat.v1.UpdateChannelResponse.channel:type_name -> chat.v1.Channel
+	2,  // 7: chat.v1.BrowsableChannel.channel:type_name -> chat.v1.Channel
+	16, // 8: chat.v1.ListBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
+	0,  // 9: chat.v1.SearchBrowsableChannelsRequest.membership:type_name -> chat.v1.BrowsableChannelMembership
+	1,  // 10: chat.v1.SearchBrowsableChannelsRequest.sort:type_name -> chat.v1.BrowsableChannelSort
+	16, // 11: chat.v1.SearchBrowsableChannelsResponse.channels:type_name -> chat.v1.BrowsableChannel
+	3,  // 12: chat.v1.ChannelService.ListChannels:input_type -> chat.v1.ListChannelsRequest
+	5,  // 13: chat.v1.ChannelService.CreateChannel:input_type -> chat.v1.CreateChannelRequest
+	7,  // 14: chat.v1.ChannelService.GetChannel:input_type -> chat.v1.GetChannelRequest
+	9,  // 15: chat.v1.ChannelService.UpdateChannel:input_type -> chat.v1.UpdateChannelRequest
+	11, // 16: chat.v1.ChannelService.SetChannelStarred:input_type -> chat.v1.SetChannelStarredRequest
+	13, // 17: chat.v1.ChannelService.SetChannelMuted:input_type -> chat.v1.SetChannelMutedRequest
+	15, // 18: chat.v1.ChannelService.ListBrowsableChannels:input_type -> chat.v1.ListBrowsableChannelsRequest
+	18, // 19: chat.v1.ChannelService.SearchBrowsableChannels:input_type -> chat.v1.SearchBrowsableChannelsRequest
+	4,  // 20: chat.v1.ChannelService.ListChannels:output_type -> chat.v1.ListChannelsResponse
+	6,  // 21: chat.v1.ChannelService.CreateChannel:output_type -> chat.v1.CreateChannelResponse
+	8,  // 22: chat.v1.ChannelService.GetChannel:output_type -> chat.v1.GetChannelResponse
+	10, // 23: chat.v1.ChannelService.UpdateChannel:output_type -> chat.v1.UpdateChannelResponse
+	12, // 24: chat.v1.ChannelService.SetChannelStarred:output_type -> chat.v1.SetChannelStarredResponse
+	14, // 25: chat.v1.ChannelService.SetChannelMuted:output_type -> chat.v1.SetChannelMutedResponse
+	17, // 26: chat.v1.ChannelService.ListBrowsableChannels:output_type -> chat.v1.ListBrowsableChannelsResponse
+	19, // 27: chat.v1.ChannelService.SearchBrowsableChannels:output_type -> chat.v1.SearchBrowsableChannelsResponse
+	20, // [20:28] is the sub-list for method output_type
+	12, // [12:20] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_chat_v1_channel_service_proto_init() }
@@ -1655,7 +1355,7 @@ func file_chat_v1_channel_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chat_v1_channel_service_proto_rawDesc), len(file_chat_v1_channel_service_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   24,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

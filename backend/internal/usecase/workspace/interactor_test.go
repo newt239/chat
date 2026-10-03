@@ -56,7 +56,7 @@ func (stubUserRepo) FindByID(_ context.Context, id string) (*entity.User, error)
 }
 
 type fixture struct {
-	uc       WorkspaceUseCase
+	uc       *Interactor
 	repo     *stubWorkspaceRepo
 	recorder *audittest.Recorder
 }
@@ -64,10 +64,10 @@ type fixture struct {
 func newFixture(members map[string]*entity.WorkspaceMember) fixture {
 	repo := &stubWorkspaceRepo{members: members}
 	recorder := &audittest.Recorder{}
-	return fixture{uc: NewWorkspaceInteractor(repo, stubUserRepo{}, nil, recorder, stubCloser{}), repo: repo, recorder: recorder}
+	return fixture{uc: New(repo, stubUserRepo{}, nil, nil, recorder, stubCloser{}), repo: repo, recorder: recorder}
 }
 
-func newInteractor(members map[string]*entity.WorkspaceMember) (WorkspaceUseCase, *stubWorkspaceRepo) {
+func newInteractor(members map[string]*entity.WorkspaceMember) (*Interactor, *stubWorkspaceRepo) {
 	f := newFixture(members)
 	return f.uc, f.repo
 }
@@ -80,7 +80,7 @@ func TestUpdateMemberRole(t *testing.T) {
 	tests := []struct {
 		name      string
 		members   map[string]*entity.WorkspaceMember
-		input     UpdateMemberRoleInput
+		input     MemberInput
 		wantErr   error
 		wantCalls int
 	}{
@@ -90,7 +90,7 @@ func TestUpdateMemberRole(t *testing.T) {
 				"admin": member(entity.WorkspaceRoleAdmin),
 				"owner": member(entity.WorkspaceRoleOwner),
 			},
-			input:   UpdateMemberRoleInput{UpdaterID: "admin", UserID: "owner", Role: "member"},
+			input:   MemberInput{OperatorID: "admin", UserID: "owner", Role: "member"},
 			wantErr: ErrCannotChangeOwnerRole,
 		},
 		{
@@ -99,7 +99,7 @@ func TestUpdateMemberRole(t *testing.T) {
 				"admin":  member(entity.WorkspaceRoleAdmin),
 				"member": member(entity.WorkspaceRoleMember),
 			},
-			input:   UpdateMemberRoleInput{UpdaterID: "admin", UserID: "member", Role: "owner"},
+			input:   MemberInput{OperatorID: "admin", UserID: "member", Role: "owner"},
 			wantErr: ErrCannotChangeOwnerRole,
 		},
 		{
@@ -107,7 +107,7 @@ func TestUpdateMemberRole(t *testing.T) {
 			members: map[string]*entity.WorkspaceMember{
 				"admin": member(entity.WorkspaceRoleAdmin),
 			},
-			input:   UpdateMemberRoleInput{UpdaterID: "admin", UserID: "admin", Role: "owner"},
+			input:   MemberInput{OperatorID: "admin", UserID: "admin", Role: "owner"},
 			wantErr: ErrCannotChangeOwnerRole,
 		},
 		{
@@ -116,7 +116,7 @@ func TestUpdateMemberRole(t *testing.T) {
 				"user":   member(entity.WorkspaceRoleMember),
 				"target": member(entity.WorkspaceRoleMember),
 			},
-			input:   UpdateMemberRoleInput{UpdaterID: "user", UserID: "target", Role: "admin"},
+			input:   MemberInput{OperatorID: "user", UserID: "target", Role: "admin"},
 			wantErr: domerr.ErrUnauthorized,
 		},
 		{
@@ -125,7 +125,7 @@ func TestUpdateMemberRole(t *testing.T) {
 				"admin":  member(entity.WorkspaceRoleAdmin),
 				"target": member(entity.WorkspaceRoleMember),
 			},
-			input:     UpdateMemberRoleInput{UpdaterID: "admin", UserID: "target", Role: "admin"},
+			input:     MemberInput{OperatorID: "admin", UserID: "target", Role: "admin"},
 			wantCalls: 1,
 		},
 		{
@@ -134,7 +134,7 @@ func TestUpdateMemberRole(t *testing.T) {
 				"owner":  member(entity.WorkspaceRoleOwner),
 				"target": member(entity.WorkspaceRoleMember),
 			},
-			input:     UpdateMemberRoleInput{UpdaterID: "owner", UserID: "target", Role: "owner"},
+			input:     MemberInput{OperatorID: "owner", UserID: "target", Role: "owner"},
 			wantCalls: 1,
 		},
 	}
@@ -142,7 +142,7 @@ func TestUpdateMemberRole(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			uc, repo := newInteractor(tt.members)
-			_, err := uc.UpdateMemberRole(context.Background(), tt.input)
+			err := uc.UpdateMemberRole(context.Background(), tt.input)
 
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
@@ -159,7 +159,7 @@ func TestUpdateMemberRoleRecordsAuditLog(t *testing.T) {
 		"admin":  member(entity.WorkspaceRoleAdmin),
 		"target": member(entity.WorkspaceRoleMember),
 	})
-	_, err := f.uc.UpdateMemberRole(context.Background(), UpdateMemberRoleInput{WorkspaceID: "ws", UpdaterID: "admin", UserID: "target", Role: "admin"})
+	err := f.uc.UpdateMemberRole(context.Background(), MemberInput{WorkspaceID: "ws", OperatorID: "admin", UserID: "target", Role: "admin"})
 	if err != nil {
 		t.Fatalf("予期しないエラー: %v", err)
 	}
@@ -190,7 +190,7 @@ func TestSignupEnabledWorkspace(t *testing.T) {
 			f.repo.workspace = tt.workspace
 
 			info, err := f.uc.GetSignupInfo(context.Background(), "ws")
-			_, joinErr := f.uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "u1"})
+			joinErr := f.uc.JoinPublicWorkspace(context.Background(), "ws", "u1")
 			if tt.wantErr {
 				if !errors.Is(err, domerr.ErrWorkspaceNotFound) || joinErr == nil || len(f.repo.members) != 0 {
 					t.Errorf("登録を許可していないのに情報を返したか参加できました: err=%v joinErr=%v", err, joinErr)
@@ -215,9 +215,9 @@ func TestSuspendedMemberCannotRejoin(t *testing.T) {
 	suspended := member(entity.WorkspaceRoleMember)
 	suspended.SuspendedAt = new(time.Now())
 	repo := &stubWorkspaceRepo{members: map[string]*entity.WorkspaceMember{"bob": suspended}, workspace: &entity.Workspace{ID: "ws", IsPublic: true}}
-	uc := NewWorkspaceInteractor(repo, stubUserRepo{}, nil, &audittest.Recorder{}, stubCloser{})
+	uc := New(repo, stubUserRepo{}, nil, nil, &audittest.Recorder{}, stubCloser{})
 
-	if _, err := uc.JoinPublicWorkspace(context.Background(), JoinPublicWorkspaceInput{WorkspaceID: "ws", UserID: "bob"}); !errors.Is(err, domerr.ErrAlreadyMember) {
+	if err := uc.JoinPublicWorkspace(context.Background(), "ws", "bob"); !errors.Is(err, domerr.ErrAlreadyMember) {
 		t.Fatalf("停止中のメンバーが参加し直せています: %v", err)
 	}
 	if repo.members["bob"].SuspendedAt == nil {

@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,9 +24,9 @@ type RemindRequest struct {
 const maxRemindAhead = 366 * 24 * time.Hour
 
 var (
-	ErrRemindUsage    = fmt.Errorf("%w: 使い方: /remind [me|@ユーザー|#チャンネル] 内容 日時（例: /remind me 資料を送る 明日 9:00）", domerr.ErrValidation)
-	ErrRemindInPast   = fmt.Errorf("%w: リマインドする日時は今より後にしてください", domerr.ErrValidation)
-	ErrRemindTooFar   = fmt.Errorf("%w: リマインドは 1 年以内にしてください", domerr.ErrValidation)
+	ErrRemindUsage    = domerr.New(domerr.ErrValidation, "使い方: /remind [me|@ユーザー|#チャンネル] 内容 日時（例: /remind me 資料を送る 明日 9:00）")
+	ErrRemindInPast   = domerr.New(domerr.ErrValidation, "リマインドする日時は今より後にしてください")
+	ErrRemindTooFar   = domerr.New(domerr.ErrValidation, "リマインドは 1 年以内にしてください")
 	remindTargetToken = regexp.MustCompile(`^(?:me|<@([0-9a-f-]{36})>|<#([0-9a-f-]{36})>)(?:\s+|$)`)
 	clock             = `(\d{1,2}):(\d{2})`
 	// 本文の末尾にある日時。前から順に試す

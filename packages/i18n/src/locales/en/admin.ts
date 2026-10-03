@@ -8,7 +8,6 @@ export const admin: Messages["admin"] = {
       appDeleted: "Deleted an app",
       auditLogExported: "Exported the audit log",
       channelCreated: "Created a channel",
-      channelDeleted: "Deleted a channel",
       customEmojiCreated: "Added a custom emoji",
       customEmojiDeleted: "Deleted a custom emoji",
       login: "Signed in",

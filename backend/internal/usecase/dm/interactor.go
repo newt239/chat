@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
 	domerr "github.com/newt239/chat/internal/domain/errors"
@@ -21,7 +20,7 @@ type Interactor struct {
 	workspaceRepo     repository.WorkspaceRepository
 }
 
-func NewInteractor(
+func New(
 	channelRepo repository.ChannelRepository,
 	channelMemberRepo repository.ChannelMemberRepository,
 	channelStarRepo repository.ChannelStarRepository,
@@ -124,7 +123,7 @@ func (i *Interactor) CreateGroupDM(ctx context.Context, input CreateGroupDMInput
 // joinMembers は DM の参加者を揃えます。同時に作られて既に参加していても成功させる
 func (i *Interactor) joinMembers(ctx context.Context, channelID string, userIDs ...string) error {
 	for _, userID := range userIDs {
-		err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: channelID, UserID: userID, Role: entity.ChannelRoleMember, JoinedAt: time.Now().UTC()})
+		err := i.channelMemberRepo.AddMember(ctx, &entity.ChannelMember{ChannelID: channelID, UserID: userID, Role: entity.ChannelRoleMember})
 		if err != nil && !errors.Is(err, domerr.ErrAlreadyMember) {
 			return err
 		}
@@ -192,10 +191,6 @@ func (i *Interactor) buildDMOutputs(ctx context.Context, channels []*entity.Chan
 	if err != nil {
 		return nil, err
 	}
-	userMap := make(map[string]*entity.User, len(users))
-	for _, u := range users {
-		userMap[u.ID] = u
-	}
 
 	outputs := make([]*DMOutput, 0, len(channels))
 	byID := make(map[string]*DMOutput, len(channels))
@@ -214,7 +209,7 @@ func (i *Interactor) buildDMOutputs(ctx context.Context, channels []*entity.Chan
 		byID[ch.ID] = output
 	}
 	for _, m := range members {
-		if u := userMap[m.UserID]; u != nil && m.UserID != requestUserID {
+		if u := users[m.UserID]; u != nil && m.UserID != requestUserID {
 			output := byID[m.ChannelID]
 			output.Members = append(output.Members, DMMemberOutput{UserID: u.ID, DisplayName: u.DisplayName, AvatarURL: u.AvatarURL})
 		}

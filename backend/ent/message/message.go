@@ -51,24 +51,10 @@ const (
 	EdgeParent = "parent"
 	// EdgeReplies holds the string denoting the replies edge name in mutations.
 	EdgeReplies = "replies"
-	// EdgeReactions holds the string denoting the reactions edge name in mutations.
-	EdgeReactions = "reactions"
-	// EdgeBookmarks holds the string denoting the bookmarks edge name in mutations.
-	EdgeBookmarks = "bookmarks"
 	// EdgeUserMentions holds the string denoting the user_mentions edge name in mutations.
 	EdgeUserMentions = "user_mentions"
-	// EdgeGroupMentions holds the string denoting the group_mentions edge name in mutations.
-	EdgeGroupMentions = "group_mentions"
-	// EdgeLinks holds the string denoting the links edge name in mutations.
-	EdgeLinks = "links"
-	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
-	EdgeAttachments = "attachments"
-	// EdgePins holds the string denoting the pins edge name in mutations.
-	EdgePins = "pins"
 	// EdgeUserThreadFollows holds the string denoting the user_thread_follows edge name in mutations.
 	EdgeUserThreadFollows = "user_thread_follows"
-	// EdgeThreadReadStates holds the string denoting the thread_read_states edge name in mutations.
-	EdgeThreadReadStates = "thread_read_states"
 	// Table holds the table name of the message in the database.
 	Table = "message"
 	// ChannelTable is the table that holds the channel relation/edge.
@@ -93,20 +79,6 @@ const (
 	RepliesTable = "message"
 	// RepliesColumn is the table column denoting the replies relation/edge.
 	RepliesColumn = "parent_id"
-	// ReactionsTable is the table that holds the reactions relation/edge.
-	ReactionsTable = "message_reaction"
-	// ReactionsInverseTable is the table name for the MessageReaction entity.
-	// It exists in this package in order to avoid circular dependency with the "messagereaction" package.
-	ReactionsInverseTable = "message_reaction"
-	// ReactionsColumn is the table column denoting the reactions relation/edge.
-	ReactionsColumn = "message_id"
-	// BookmarksTable is the table that holds the bookmarks relation/edge.
-	BookmarksTable = "message_bookmark"
-	// BookmarksInverseTable is the table name for the MessageBookmark entity.
-	// It exists in this package in order to avoid circular dependency with the "messagebookmark" package.
-	BookmarksInverseTable = "message_bookmark"
-	// BookmarksColumn is the table column denoting the bookmarks relation/edge.
-	BookmarksColumn = "message_id"
 	// UserMentionsTable is the table that holds the user_mentions relation/edge.
 	UserMentionsTable = "message_user_mention"
 	// UserMentionsInverseTable is the table name for the MessageUserMention entity.
@@ -114,34 +86,6 @@ const (
 	UserMentionsInverseTable = "message_user_mention"
 	// UserMentionsColumn is the table column denoting the user_mentions relation/edge.
 	UserMentionsColumn = "message_id"
-	// GroupMentionsTable is the table that holds the group_mentions relation/edge.
-	GroupMentionsTable = "message_group_mention"
-	// GroupMentionsInverseTable is the table name for the MessageGroupMention entity.
-	// It exists in this package in order to avoid circular dependency with the "messagegroupmention" package.
-	GroupMentionsInverseTable = "message_group_mention"
-	// GroupMentionsColumn is the table column denoting the group_mentions relation/edge.
-	GroupMentionsColumn = "message_id"
-	// LinksTable is the table that holds the links relation/edge.
-	LinksTable = "message_link"
-	// LinksInverseTable is the table name for the MessageLink entity.
-	// It exists in this package in order to avoid circular dependency with the "messagelink" package.
-	LinksInverseTable = "message_link"
-	// LinksColumn is the table column denoting the links relation/edge.
-	LinksColumn = "message_id"
-	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "attachment"
-	// AttachmentsInverseTable is the table name for the Attachment entity.
-	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "attachment"
-	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "message_id"
-	// PinsTable is the table that holds the pins relation/edge.
-	PinsTable = "message_pin"
-	// PinsInverseTable is the table name for the MessagePin entity.
-	// It exists in this package in order to avoid circular dependency with the "messagepin" package.
-	PinsInverseTable = "message_pin"
-	// PinsColumn is the table column denoting the pins relation/edge.
-	PinsColumn = "message_id"
 	// UserThreadFollowsTable is the table that holds the user_thread_follows relation/edge.
 	UserThreadFollowsTable = "user_thread_follow"
 	// UserThreadFollowsInverseTable is the table name for the UserThreadFollow entity.
@@ -149,13 +93,6 @@ const (
 	UserThreadFollowsInverseTable = "user_thread_follow"
 	// UserThreadFollowsColumn is the table column denoting the user_thread_follows relation/edge.
 	UserThreadFollowsColumn = "thread_id"
-	// ThreadReadStatesTable is the table that holds the thread_read_states relation/edge.
-	ThreadReadStatesTable = "thread_read_state"
-	// ThreadReadStatesInverseTable is the table name for the ThreadReadState entity.
-	// It exists in this package in order to avoid circular dependency with the "threadreadstate" package.
-	ThreadReadStatesInverseTable = "thread_read_state"
-	// ThreadReadStatesColumn is the table column denoting the thread_read_states relation/edge.
-	ThreadReadStatesColumn = "thread_id"
 )
 
 // Columns holds all SQL columns for message fields.
@@ -311,34 +248,6 @@ func ByReplies(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByReactionsCount orders the results by reactions count.
-func ByReactionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newReactionsStep(), opts...)
-	}
-}
-
-// ByReactions orders the results by reactions terms.
-func ByReactions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newReactionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByBookmarksCount orders the results by bookmarks count.
-func ByBookmarksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newBookmarksStep(), opts...)
-	}
-}
-
-// ByBookmarks orders the results by bookmarks terms.
-func ByBookmarks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newBookmarksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByUserMentionsCount orders the results by user_mentions count.
 func ByUserMentionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -353,62 +262,6 @@ func ByUserMentions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByGroupMentionsCount orders the results by group_mentions count.
-func ByGroupMentionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newGroupMentionsStep(), opts...)
-	}
-}
-
-// ByGroupMentions orders the results by group_mentions terms.
-func ByGroupMentions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newGroupMentionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByLinksCount orders the results by links count.
-func ByLinksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newLinksStep(), opts...)
-	}
-}
-
-// ByLinks orders the results by links terms.
-func ByLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByAttachmentsCount orders the results by attachments count.
-func ByAttachmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAttachmentsStep(), opts...)
-	}
-}
-
-// ByAttachments orders the results by attachments terms.
-func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByPinsCount orders the results by pins count.
-func ByPinsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newPinsStep(), opts...)
-	}
-}
-
-// ByPins orders the results by pins terms.
-func ByPins(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPinsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByUserThreadFollowsCount orders the results by user_thread_follows count.
 func ByUserThreadFollowsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -420,20 +273,6 @@ func ByUserThreadFollowsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByUserThreadFollows(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUserThreadFollowsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByThreadReadStatesCount orders the results by thread_read_states count.
-func ByThreadReadStatesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newThreadReadStatesStep(), opts...)
-	}
-}
-
-// ByThreadReadStates orders the results by thread_read_states terms.
-func ByThreadReadStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newThreadReadStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newChannelStep() *sqlgraph.Step {
@@ -464,20 +303,6 @@ func newRepliesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, RepliesTable, RepliesColumn),
 	)
 }
-func newReactionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ReactionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ReactionsTable, ReactionsColumn),
-	)
-}
-func newBookmarksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(BookmarksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, BookmarksTable, BookmarksColumn),
-	)
-}
 func newUserMentionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -485,45 +310,10 @@ func newUserMentionsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, UserMentionsTable, UserMentionsColumn),
 	)
 }
-func newGroupMentionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(GroupMentionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, GroupMentionsTable, GroupMentionsColumn),
-	)
-}
-func newLinksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(LinksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, LinksTable, LinksColumn),
-	)
-}
-func newAttachmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AttachmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AttachmentsTable, AttachmentsColumn),
-	)
-}
-func newPinsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PinsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, PinsTable, PinsColumn),
-	)
-}
 func newUserThreadFollowsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserThreadFollowsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, UserThreadFollowsTable, UserThreadFollowsColumn),
-	)
-}
-func newThreadReadStatesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ThreadReadStatesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ThreadReadStatesTable, ThreadReadStatesColumn),
 	)
 }

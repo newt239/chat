@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/channel_service.proto.
  */
 export const file_chat_v1_channel_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch1jaGF0L3YxL2NoYW5uZWxfc2VydmljZS5wcm90bxIHY2hhdC52MSKgBAoHQ2hhbm5lbBIKCgJpZBgBIAEoCRIUCgx3b3Jrc3BhY2VfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIYCgtkZXNjcmlwdGlvbhgEIAEoCUgAiAEBEhIKCmlzX3ByaXZhdGUYBSABKAgSEgoKY3JlYXRlZF9ieRgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgx1bnJlYWRfY291bnQYCSABKAUSEwoLaGFzX21lbnRpb24YCiABKAgSFgoJcGFyZW50X2lkGAsgASgJSAGIAQESEgoKaXNfc3RhcnJlZBgMIAEoCBIRCglpc19tZW1iZXIYDSABKAgSNAoLYXJjaGl2ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAKIAQESEAoIaXNfbXV0ZWQYDyABKAgSOAoPbGFzdF9tZXNzYWdlX2F0GBAgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgDiAEBEhUKDW1lbnRpb25fY291bnQYESABKAVCDgoMX2Rlc2NyaXB0aW9uQgwKCl9wYXJlbnRfaWRCDgoMX2FyY2hpdmVkX2F0QhIKEF9sYXN0X21lc3NhZ2VfYXQiNAoTTGlzdENoYW5uZWxzUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAEiOgoUTGlzdENoYW5uZWxzUmVzcG9uc2USIgoIY2hhbm5lbHMYASADKAsyEC5jaGF0LnYxLkNoYW5uZWwi2gEKFENyZWF0ZUNoYW5uZWxSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARJCCgRuYW1lGAIgASgJQjS6SDFyLxjIATIqXlthLXowLTlfLV17MSwzMn0oL1thLXowLTlfLV17MSwzMn0pezAsM30kEhgKC2Rlc2NyaXB0aW9uGAMgASgJSACIAQESEgoKaXNfcHJpdmF0ZRgEIAEoCBIhCgptZW1iZXJfaWRzGAUgAygJQg26SAqSAQciBXIDsAEBQg4KDF9kZXNjcmlwdGlvbiI6ChVDcmVhdGVDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCIxChFHZXRDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASI3ChJHZXRDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCLYAQoUVXBkYXRlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQESRwoEbmFtZRgCIAEoCUI0ukgxci8YyAEyKl5bYS16MC05Xy1dezEsMzJ9KC9bYS16MC05Xy1dezEsMzJ9KXswLDN9JEgAiAEBEhgKC2Rlc2NyaXB0aW9uGAMgASgJSAGIAQESFwoKaXNfcHJpdmF0ZRgEIAEoCEgCiAEBQgcKBV9uYW1lQg4KDF9kZXNjcmlwdGlvbkINCgtfaXNfcHJpdmF0ZSI6ChVVcGRhdGVDaGFubmVsUmVzcG9uc2USIQoHY2hhbm5lbBgBIAEoCzIQLmNoYXQudjEuQ2hhbm5lbCI0ChREZWxldGVDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASIXChVEZWxldGVDaGFubmVsUmVzcG9uc2UiSQoYU2V0Q2hhbm5lbFN0YXJyZWRSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEg8KB3N0YXJyZWQYAiABKAgiGwoZU2V0Q2hhbm5lbFN0YXJyZWRSZXNwb25zZSJFChZTZXRDaGFubmVsTXV0ZWRSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBEg0KBW11dGVkGAIgASgIIhkKF1NldENoYW5uZWxNdXRlZFJlc3BvbnNlIjUKFUFyY2hpdmVDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABASI7ChZBcmNoaXZlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiNwoXVW5hcmNoaXZlQ2hhbm5lbFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiPQoYVW5hcmNoaXZlQ2hhbm5lbFJlc3BvbnNlEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwiPQocTGlzdEJyb3dzYWJsZUNoYW5uZWxzUmVxdWVzdBIdCgx3b3Jrc3BhY2VfaWQYASABKAlCB7pIBHICEAEiSwoQQnJvd3NhYmxlQ2hhbm5lbBIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsEhQKDG1lbWJlcl9jb3VudBgCIAEoBSJMCh1MaXN0QnJvd3NhYmxlQ2hhbm5lbHNSZXNwb25zZRIrCghjaGFubmVscxgBIAMoCzIZLmNoYXQudjEuQnJvd3NhYmxlQ2hhbm5lbCKFAgoeU2VhcmNoQnJvd3NhYmxlQ2hhbm5lbHNSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARIWCgVxdWVyeRgCIAEoCUIHukgEcgIYZBJBCgptZW1iZXJzaGlwGAMgASgOMiMuY2hhdC52MS5Ccm93c2FibGVDaGFubmVsTWVtYmVyc2hpcEIIukgFggECEAESNQoEc29ydBgEIAEoDjIdLmNoYXQudjEuQnJvd3NhYmxlQ2hhbm5lbFNvcnRCCLpIBYIBAhABEhUKBHBhZ2UYBSABKAVCB7pIBBoCKAESGwoIcGVyX3BhZ2UYBiABKAVCCbpIBhoEGGQoASJdCh9TZWFyY2hCcm93c2FibGVDaGFubmVsc1Jlc3BvbnNlEisKCGNoYW5uZWxzGAEgAygLMhkuY2hhdC52MS5Ccm93c2FibGVDaGFubmVsEg0KBXRvdGFsGAIgASgFKqABChpCcm93c2FibGVDaGFubmVsTWVtYmVyc2hpcBIsCihCUk9XU0FCTEVfQ0hBTk5FTF9NRU1CRVJTSElQX1VOU1BFQ0lGSUVEEAASJwojQlJPV1NBQkxFX0NIQU5ORUxfTUVNQkVSU0hJUF9KT0lORUQQARIrCidCUk9XU0FCTEVfQ0hBTk5FTF9NRU1CRVJTSElQX05PVF9KT0lORUQQAipnChRCcm93c2FibGVDaGFubmVsU29ydBImCiJCUk9XU0FCTEVfQ0hBTk5FTF9TT1JUX1VOU1BFQ0lGSUVEEAASJwojQlJPV1NBQkxFX0NIQU5ORUxfU09SVF9NRU1CRVJfQ09VTlQQATLIBwoOQ2hhbm5lbFNlcnZpY2USSwoMTGlzdENoYW5uZWxzEhwuY2hhdC52MS5MaXN0Q2hhbm5lbHNSZXF1ZXN0Gh0uY2hhdC52MS5MaXN0Q2hhbm5lbHNSZXNwb25zZRJOCg1DcmVhdGVDaGFubmVsEh0uY2hhdC52MS5DcmVhdGVDaGFubmVsUmVxdWVzdBoeLmNoYXQudjEuQ3JlYXRlQ2hhbm5lbFJlc3BvbnNlEkUKCkdldENoYW5uZWwSGi5jaGF0LnYxLkdldENoYW5uZWxSZXF1ZXN0GhsuY2hhdC52MS5HZXRDaGFubmVsUmVzcG9uc2USTgoNVXBkYXRlQ2hhbm5lbBIdLmNoYXQudjEuVXBkYXRlQ2hhbm5lbFJlcXVlc3QaHi5jaGF0LnYxLlVwZGF0ZUNoYW5uZWxSZXNwb25zZRJOCg1EZWxldGVDaGFubmVsEh0uY2hhdC52MS5EZWxldGVDaGFubmVsUmVxdWVzdBoeLmNoYXQudjEuRGVsZXRlQ2hhbm5lbFJlc3BvbnNlEloKEVNldENoYW5uZWxTdGFycmVkEiEuY2hhdC52MS5TZXRDaGFubmVsU3RhcnJlZFJlcXVlc3QaIi5jaGF0LnYxLlNldENoYW5uZWxTdGFycmVkUmVzcG9uc2USVAoPU2V0Q2hhbm5lbE11dGVkEh8uY2hhdC52MS5TZXRDaGFubmVsTXV0ZWRSZXF1ZXN0GiAuY2hhdC52MS5TZXRDaGFubmVsTXV0ZWRSZXNwb25zZRJRCg5BcmNoaXZlQ2hhbm5lbBIeLmNoYXQudjEuQXJjaGl2ZUNoYW5uZWxSZXF1ZXN0Gh8uY2hhdC52MS5BcmNoaXZlQ2hhbm5lbFJlc3BvbnNlElcKEFVuYXJjaGl2ZUNoYW5uZWwSIC5jaGF0LnYxLlVuYXJjaGl2ZUNoYW5uZWxSZXF1ZXN0GiEuY2hhdC52MS5VbmFyY2hpdmVDaGFubmVsUmVzcG9uc2USZgoVTGlzdEJyb3dzYWJsZUNoYW5uZWxzEiUuY2hhdC52MS5MaXN0QnJvd3NhYmxlQ2hhbm5lbHNSZXF1ZXN0GiYuY2hhdC52MS5MaXN0QnJvd3NhYmxlQ2hhbm5lbHNSZXNwb25zZRJsChdTZWFyY2hCcm93c2FibGVDaGFubmVscxInLmNoYXQudjEuU2VhcmNoQnJvd3NhYmxlQ2hhbm5lbHNSZXF1ZXN0GiguY2hhdC52MS5TZWFyY2hCcm93c2FibGVDaGFubmVsc1Jlc3BvbnNlQpQBCgtjb20uY2hhdC52MUITQ2hhbm5lbFNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("Ch1jaGF0L3YxL2NoYW5uZWxfc2VydmljZS5wcm90bxIHY2hhdC52MSLaAwoHQ2hhbm5lbBIKCgJpZBgBIAEoCRIUCgx3b3Jrc3BhY2VfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIYCgtkZXNjcmlwdGlvbhgEIAEoCUgAiAEBEhIKCmlzX3ByaXZhdGUYBSABKAgSEgoKY3JlYXRlZF9ieRgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgx1bnJlYWRfY291bnQYCSABKAUSEwoLaGFzX21lbnRpb24YCiABKAgSFgoJcGFyZW50X2lkGAsgASgJSAGIAQESEgoKaXNfc3RhcnJlZBgMIAEoCBIRCglpc19tZW1iZXIYDSABKAgSEAoIaXNfbXV0ZWQYDyABKAgSOAoPbGFzdF9tZXNzYWdlX2F0GBAgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgCiAEBEhUKDW1lbnRpb25fY291bnQYESABKAVCDgoMX2Rlc2NyaXB0aW9uQgwKCl9wYXJlbnRfaWRCEgoQX2xhc3RfbWVzc2FnZV9hdCI0ChNMaXN0Q2hhbm5lbHNSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQASI6ChRMaXN0Q2hhbm5lbHNSZXNwb25zZRIiCghjaGFubmVscxgBIAMoCzIQLmNoYXQudjEuQ2hhbm5lbCLaAQoUQ3JlYXRlQ2hhbm5lbFJlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABEkIKBG5hbWUYAiABKAlCNLpIMXIvGMgBMipeW2EtejAtOV8tXXsxLDMyfSgvW2EtejAtOV8tXXsxLDMyfSl7MCwzfSQSGAoLZGVzY3JpcHRpb24YAyABKAlIAIgBARISCgppc19wcml2YXRlGAQgASgIEiEKCm1lbWJlcl9pZHMYBSADKAlCDbpICpIBByIFcgOwAQFCDgoMX2Rlc2NyaXB0aW9uIjoKFUNyZWF0ZUNoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsIjEKEUdldENoYW5uZWxSZXF1ZXN0EhwKCmNoYW5uZWxfaWQYASABKAlCCLpIBXIDsAEBIjcKEkdldENoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsItgBChRVcGRhdGVDaGFubmVsUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARJHCgRuYW1lGAIgASgJQjS6SDFyLxjIATIqXlthLXowLTlfLV17MSwzMn0oL1thLXowLTlfLV17MSwzMn0pezAsM30kSACIAQESGAoLZGVzY3JpcHRpb24YAyABKAlIAYgBARIXCgppc19wcml2YXRlGAQgASgISAKIAQFCBwoFX25hbWVCDgoMX2Rlc2NyaXB0aW9uQg0KC19pc19wcml2YXRlIjoKFVVwZGF0ZUNoYW5uZWxSZXNwb25zZRIhCgdjaGFubmVsGAEgASgLMhAuY2hhdC52MS5DaGFubmVsIkkKGFNldENoYW5uZWxTdGFycmVkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARIPCgdzdGFycmVkGAIgASgIIhsKGVNldENoYW5uZWxTdGFycmVkUmVzcG9uc2UiRQoWU2V0Q2hhbm5lbE11dGVkUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARINCgVtdXRlZBgCIAEoCCIZChdTZXRDaGFubmVsTXV0ZWRSZXNwb25zZSI9ChxMaXN0QnJvd3NhYmxlQ2hhbm5lbHNSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQASJLChBCcm93c2FibGVDaGFubmVsEiEKB2NoYW5uZWwYASABKAsyEC5jaGF0LnYxLkNoYW5uZWwSFAoMbWVtYmVyX2NvdW50GAIgASgFIkwKHUxpc3RCcm93c2FibGVDaGFubmVsc1Jlc3BvbnNlEisKCGNoYW5uZWxzGAEgAygLMhkuY2hhdC52MS5Ccm93c2FibGVDaGFubmVsIoUCCh5TZWFyY2hCcm93c2FibGVDaGFubmVsc1JlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABEhYKBXF1ZXJ5GAIgASgJQge6SARyAhhkEkEKCm1lbWJlcnNoaXAYAyABKA4yIy5jaGF0LnYxLkJyb3dzYWJsZUNoYW5uZWxNZW1iZXJzaGlwQgi6SAWCAQIQARI1CgRzb3J0GAQgASgOMh0uY2hhdC52MS5Ccm93c2FibGVDaGFubmVsU29ydEIIukgFggECEAESFQoEcGFnZRgFIAEoBUIHukgEGgIoARIbCghwZXJfcGFnZRgGIAEoBUIJukgGGgQYZCgBIl0KH1NlYXJjaEJyb3dzYWJsZUNoYW5uZWxzUmVzcG9uc2USKwoIY2hhbm5lbHMYASADKAsyGS5jaGF0LnYxLkJyb3dzYWJsZUNoYW5uZWwSDQoFdG90YWwYAiABKAUqoAEKGkJyb3dzYWJsZUNoYW5uZWxNZW1iZXJzaGlwEiwKKEJST1dTQUJMRV9DSEFOTkVMX01FTUJFUlNISVBfVU5TUEVDSUZJRUQQABInCiNCUk9XU0FCTEVfQ0hBTk5FTF9NRU1CRVJTSElQX0pPSU5FRBABEisKJ0JST1dTQUJMRV9DSEFOTkVMX01FTUJFUlNISVBfTk9UX0pPSU5FRBACKmcKFEJyb3dzYWJsZUNoYW5uZWxTb3J0EiYKIkJST1dTQUJMRV9DSEFOTkVMX1NPUlRfVU5TUEVDSUZJRUQQABInCiNCUk9XU0FCTEVfQ0hBTk5FTF9TT1JUX01FTUJFUl9DT1VOVBABMswFCg5DaGFubmVsU2VydmljZRJLCgxMaXN0Q2hhbm5lbHMSHC5jaGF0LnYxLkxpc3RDaGFubmVsc1JlcXVlc3QaHS5jaGF0LnYxLkxpc3RDaGFubmVsc1Jlc3BvbnNlEk4KDUNyZWF0ZUNoYW5uZWwSHS5jaGF0LnYxLkNyZWF0ZUNoYW5uZWxSZXF1ZXN0Gh4uY2hhdC52MS5DcmVhdGVDaGFubmVsUmVzcG9uc2USRQoKR2V0Q2hhbm5lbBIaLmNoYXQudjEuR2V0Q2hhbm5lbFJlcXVlc3QaGy5jaGF0LnYxLkdldENoYW5uZWxSZXNwb25zZRJOCg1VcGRhdGVDaGFubmVsEh0uY2hhdC52MS5VcGRhdGVDaGFubmVsUmVxdWVzdBoeLmNoYXQudjEuVXBkYXRlQ2hhbm5lbFJlc3BvbnNlEloKEVNldENoYW5uZWxTdGFycmVkEiEuY2hhdC52MS5TZXRDaGFubmVsU3RhcnJlZFJlcXVlc3QaIi5jaGF0LnYxLlNldENoYW5uZWxTdGFycmVkUmVzcG9uc2USVAoPU2V0Q2hhbm5lbE11dGVkEh8uY2hhdC52MS5TZXRDaGFubmVsTXV0ZWRSZXF1ZXN0GiAuY2hhdC52MS5TZXRDaGFubmVsTXV0ZWRSZXNwb25zZRJmChVMaXN0QnJvd3NhYmxlQ2hhbm5lbHMSJS5jaGF0LnYxLkxpc3RCcm93c2FibGVDaGFubmVsc1JlcXVlc3QaJi5jaGF0LnYxLkxpc3RCcm93c2FibGVDaGFubmVsc1Jlc3BvbnNlEmwKF1NlYXJjaEJyb3dzYWJsZUNoYW5uZWxzEicuY2hhdC52MS5TZWFyY2hCcm93c2FibGVDaGFubmVsc1JlcXVlc3QaKC5jaGF0LnYxLlNlYXJjaEJyb3dzYWJsZUNoYW5uZWxzUmVzcG9uc2VClAEKC2NvbS5jaGF0LnYxQhNDaGFubmVsU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.Channel
@@ -87,13 +87,6 @@ export type Channel = Message<"chat.v1.Channel"> & {
    * @generated from field: bool is_member = 13;
    */
   isMember: boolean;
-
-  /**
-   * アーカイブ中の場合だけ設定される
-   *
-   * @generated from field: optional google.protobuf.Timestamp archived_at = 14;
-   */
-  archivedAt?: Timestamp | undefined;
 
   /**
    * @generated from field: bool is_muted = 15;
@@ -300,36 +293,6 @@ export const UpdateChannelResponseSchema: GenMessage<UpdateChannelResponse> = /*
   messageDesc(file_chat_v1_channel_service, 8);
 
 /**
- * @generated from message chat.v1.DeleteChannelRequest
- */
-export type DeleteChannelRequest = Message<"chat.v1.DeleteChannelRequest"> & {
-  /**
-   * @generated from field: string channel_id = 1;
-   */
-  channelId: string;
-};
-
-/**
- * Describes the message chat.v1.DeleteChannelRequest.
- * Use `create(DeleteChannelRequestSchema)` to create a new message.
- */
-export const DeleteChannelRequestSchema: GenMessage<DeleteChannelRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 9);
-
-/**
- * @generated from message chat.v1.DeleteChannelResponse
- */
-export type DeleteChannelResponse = Message<"chat.v1.DeleteChannelResponse"> & {
-};
-
-/**
- * Describes the message chat.v1.DeleteChannelResponse.
- * Use `create(DeleteChannelResponseSchema)` to create a new message.
- */
-export const DeleteChannelResponseSchema: GenMessage<DeleteChannelResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 10);
-
-/**
  * @generated from message chat.v1.SetChannelStarredRequest
  */
 export type SetChannelStarredRequest = Message<"chat.v1.SetChannelStarredRequest"> & {
@@ -349,7 +312,7 @@ export type SetChannelStarredRequest = Message<"chat.v1.SetChannelStarredRequest
  * Use `create(SetChannelStarredRequestSchema)` to create a new message.
  */
 export const SetChannelStarredRequestSchema: GenMessage<SetChannelStarredRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 11);
+  messageDesc(file_chat_v1_channel_service, 9);
 
 /**
  * @generated from message chat.v1.SetChannelStarredResponse
@@ -362,7 +325,7 @@ export type SetChannelStarredResponse = Message<"chat.v1.SetChannelStarredRespon
  * Use `create(SetChannelStarredResponseSchema)` to create a new message.
  */
 export const SetChannelStarredResponseSchema: GenMessage<SetChannelStarredResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 12);
+  messageDesc(file_chat_v1_channel_service, 10);
 
 /**
  * @generated from message chat.v1.SetChannelMutedRequest
@@ -384,7 +347,7 @@ export type SetChannelMutedRequest = Message<"chat.v1.SetChannelMutedRequest"> &
  * Use `create(SetChannelMutedRequestSchema)` to create a new message.
  */
 export const SetChannelMutedRequestSchema: GenMessage<SetChannelMutedRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 13);
+  messageDesc(file_chat_v1_channel_service, 11);
 
 /**
  * @generated from message chat.v1.SetChannelMutedResponse
@@ -397,75 +360,7 @@ export type SetChannelMutedResponse = Message<"chat.v1.SetChannelMutedResponse">
  * Use `create(SetChannelMutedResponseSchema)` to create a new message.
  */
 export const SetChannelMutedResponseSchema: GenMessage<SetChannelMutedResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 14);
-
-/**
- * @generated from message chat.v1.ArchiveChannelRequest
- */
-export type ArchiveChannelRequest = Message<"chat.v1.ArchiveChannelRequest"> & {
-  /**
-   * @generated from field: string channel_id = 1;
-   */
-  channelId: string;
-};
-
-/**
- * Describes the message chat.v1.ArchiveChannelRequest.
- * Use `create(ArchiveChannelRequestSchema)` to create a new message.
- */
-export const ArchiveChannelRequestSchema: GenMessage<ArchiveChannelRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 15);
-
-/**
- * @generated from message chat.v1.ArchiveChannelResponse
- */
-export type ArchiveChannelResponse = Message<"chat.v1.ArchiveChannelResponse"> & {
-  /**
-   * @generated from field: chat.v1.Channel channel = 1;
-   */
-  channel?: Channel | undefined;
-};
-
-/**
- * Describes the message chat.v1.ArchiveChannelResponse.
- * Use `create(ArchiveChannelResponseSchema)` to create a new message.
- */
-export const ArchiveChannelResponseSchema: GenMessage<ArchiveChannelResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 16);
-
-/**
- * @generated from message chat.v1.UnarchiveChannelRequest
- */
-export type UnarchiveChannelRequest = Message<"chat.v1.UnarchiveChannelRequest"> & {
-  /**
-   * @generated from field: string channel_id = 1;
-   */
-  channelId: string;
-};
-
-/**
- * Describes the message chat.v1.UnarchiveChannelRequest.
- * Use `create(UnarchiveChannelRequestSchema)` to create a new message.
- */
-export const UnarchiveChannelRequestSchema: GenMessage<UnarchiveChannelRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 17);
-
-/**
- * @generated from message chat.v1.UnarchiveChannelResponse
- */
-export type UnarchiveChannelResponse = Message<"chat.v1.UnarchiveChannelResponse"> & {
-  /**
-   * @generated from field: chat.v1.Channel channel = 1;
-   */
-  channel?: Channel | undefined;
-};
-
-/**
- * Describes the message chat.v1.UnarchiveChannelResponse.
- * Use `create(UnarchiveChannelResponseSchema)` to create a new message.
- */
-export const UnarchiveChannelResponseSchema: GenMessage<UnarchiveChannelResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 18);
+  messageDesc(file_chat_v1_channel_service, 12);
 
 /**
  * @generated from message chat.v1.ListBrowsableChannelsRequest
@@ -482,7 +377,7 @@ export type ListBrowsableChannelsRequest = Message<"chat.v1.ListBrowsableChannel
  * Use `create(ListBrowsableChannelsRequestSchema)` to create a new message.
  */
 export const ListBrowsableChannelsRequestSchema: GenMessage<ListBrowsableChannelsRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 19);
+  messageDesc(file_chat_v1_channel_service, 13);
 
 /**
  * @generated from message chat.v1.BrowsableChannel
@@ -504,7 +399,7 @@ export type BrowsableChannel = Message<"chat.v1.BrowsableChannel"> & {
  * Use `create(BrowsableChannelSchema)` to create a new message.
  */
 export const BrowsableChannelSchema: GenMessage<BrowsableChannel> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 20);
+  messageDesc(file_chat_v1_channel_service, 14);
 
 /**
  * @generated from message chat.v1.ListBrowsableChannelsResponse
@@ -521,7 +416,7 @@ export type ListBrowsableChannelsResponse = Message<"chat.v1.ListBrowsableChanne
  * Use `create(ListBrowsableChannelsResponseSchema)` to create a new message.
  */
 export const ListBrowsableChannelsResponseSchema: GenMessage<ListBrowsableChannelsResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 21);
+  messageDesc(file_chat_v1_channel_service, 15);
 
 /**
  * @generated from message chat.v1.SearchBrowsableChannelsRequest
@@ -565,7 +460,7 @@ export type SearchBrowsableChannelsRequest = Message<"chat.v1.SearchBrowsableCha
  * Use `create(SearchBrowsableChannelsRequestSchema)` to create a new message.
  */
 export const SearchBrowsableChannelsRequestSchema: GenMessage<SearchBrowsableChannelsRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 22);
+  messageDesc(file_chat_v1_channel_service, 16);
 
 /**
  * @generated from message chat.v1.SearchBrowsableChannelsResponse
@@ -589,7 +484,7 @@ export type SearchBrowsableChannelsResponse = Message<"chat.v1.SearchBrowsableCh
  * Use `create(SearchBrowsableChannelsResponseSchema)` to create a new message.
  */
 export const SearchBrowsableChannelsResponseSchema: GenMessage<SearchBrowsableChannelsResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_channel_service, 23);
+  messageDesc(file_chat_v1_channel_service, 17);
 
 /**
  * @generated from enum chat.v1.BrowsableChannelMembership
@@ -681,14 +576,6 @@ export const ChannelService: GenService<{
     output: typeof UpdateChannelResponseSchema;
   },
   /**
-   * @generated from rpc chat.v1.ChannelService.DeleteChannel
-   */
-  deleteChannel: {
-    methodKind: "unary";
-    input: typeof DeleteChannelRequestSchema;
-    output: typeof DeleteChannelResponseSchema;
-  },
-  /**
    * @generated from rpc chat.v1.ChannelService.SetChannelStarred
    */
   setChannelStarred: {
@@ -705,24 +592,6 @@ export const ChannelService: GenService<{
     methodKind: "unary";
     input: typeof SetChannelMutedRequestSchema;
     output: typeof SetChannelMutedResponseSchema;
-  },
-  /**
-   * チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
-   *
-   * @generated from rpc chat.v1.ChannelService.ArchiveChannel
-   */
-  archiveChannel: {
-    methodKind: "unary";
-    input: typeof ArchiveChannelRequestSchema;
-    output: typeof ArchiveChannelResponseSchema;
-  },
-  /**
-   * @generated from rpc chat.v1.ChannelService.UnarchiveChannel
-   */
-  unarchiveChannel: {
-    methodKind: "unary";
-    input: typeof UnarchiveChannelRequestSchema;
-    output: typeof UnarchiveChannelResponseSchema;
   },
   /**
    * 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す

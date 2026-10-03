@@ -25,8 +25,6 @@ const (
 	FieldDescription = "description"
 	// FieldChannelType holds the string denoting the channel_type field in the database.
 	FieldChannelType = "channel_type"
-	// FieldArchivedAt holds the string denoting the archived_at field in the database.
-	FieldArchivedAt = "archived_at"
 	// FieldParentID holds the string denoting the parent_id field in the database.
 	FieldParentID = "parent_id"
 	// FieldDmKey holds the string denoting the dm_key field in the database.
@@ -41,12 +39,6 @@ const (
 	EdgeCreatedBy = "created_by"
 	// EdgeMembers holds the string denoting the members edge name in mutations.
 	EdgeMembers = "members"
-	// EdgeMessages holds the string denoting the messages edge name in mutations.
-	EdgeMessages = "messages"
-	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
-	EdgeAttachments = "attachments"
-	// EdgeReadStates holds the string denoting the read_states edge name in mutations.
-	EdgeReadStates = "read_states"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -74,27 +66,6 @@ const (
 	MembersInverseTable = "channel_member"
 	// MembersColumn is the table column denoting the members relation/edge.
 	MembersColumn = "channel_id"
-	// MessagesTable is the table that holds the messages relation/edge.
-	MessagesTable = "message"
-	// MessagesInverseTable is the table name for the Message entity.
-	// It exists in this package in order to avoid circular dependency with the "message" package.
-	MessagesInverseTable = "message"
-	// MessagesColumn is the table column denoting the messages relation/edge.
-	MessagesColumn = "channel_id"
-	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "attachment"
-	// AttachmentsInverseTable is the table name for the Attachment entity.
-	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "attachment"
-	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "channel_id"
-	// ReadStatesTable is the table that holds the read_states relation/edge.
-	ReadStatesTable = "channel_read_state"
-	// ReadStatesInverseTable is the table name for the ChannelReadState entity.
-	// It exists in this package in order to avoid circular dependency with the "channelreadstate" package.
-	ReadStatesInverseTable = "channel_read_state"
-	// ReadStatesColumn is the table column denoting the read_states relation/edge.
-	ReadStatesColumn = "channel_id"
 	// ParentTable is the table that holds the parent relation/edge.
 	ParentTable = "channel"
 	// ParentColumn is the table column denoting the parent relation/edge.
@@ -113,7 +84,6 @@ var Columns = []string{
 	FieldName,
 	FieldDescription,
 	FieldChannelType,
-	FieldArchivedAt,
 	FieldParentID,
 	FieldDmKey,
 	FieldCreatedAt,
@@ -178,11 +148,6 @@ func ByChannelType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChannelType, opts...).ToFunc()
 }
 
-// ByArchivedAt orders the results by the archived_at field.
-func ByArchivedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldArchivedAt, opts...).ToFunc()
-}
-
 // ByParentID orders the results by the parent_id field.
 func ByParentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldParentID, opts...).ToFunc()
@@ -231,48 +196,6 @@ func ByMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByMessagesCount orders the results by messages count.
-func ByMessagesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMessagesStep(), opts...)
-	}
-}
-
-// ByMessages orders the results by messages terms.
-func ByMessages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMessagesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByAttachmentsCount orders the results by attachments count.
-func ByAttachmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAttachmentsStep(), opts...)
-	}
-}
-
-// ByAttachments orders the results by attachments terms.
-func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByReadStatesCount orders the results by read_states count.
-func ByReadStatesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newReadStatesStep(), opts...)
-	}
-}
-
-// ByReadStates orders the results by read_states terms.
-func ByReadStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newReadStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByParentField orders the results by parent field.
 func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -312,27 +235,6 @@ func newMembersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MembersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, MembersTable, MembersColumn),
-	)
-}
-func newMessagesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MessagesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, MessagesTable, MessagesColumn),
-	)
-}
-func newAttachmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AttachmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AttachmentsTable, AttachmentsColumn),
-	)
-}
-func newReadStatesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ReadStatesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ReadStatesTable, ReadStatesColumn),
 	)
 }
 func newParentStep() *sqlgraph.Step {

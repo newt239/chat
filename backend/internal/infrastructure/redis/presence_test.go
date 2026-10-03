@@ -7,8 +7,6 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	goredis "github.com/redis/go-redis/v9"
-
-	"github.com/newt239/chat/internal/domain/service"
 )
 
 func newTestClient(t *testing.T) *goredis.Client {
@@ -25,10 +23,10 @@ func TestPresenceStoreExpiresEntriesNotRefreshed(t *testing.T) {
 	now := time.Unix(1000, 0)
 	store.now = func() time.Time { return now }
 
-	alicePC := service.PresenceEntry{WorkspaceID: "ws", ChannelID: "general", ConnID: "1", UserID: "alice"}
-	alicePhone := service.PresenceEntry{WorkspaceID: "ws", ChannelID: "general", ConnID: "2", UserID: "alice"}
-	bob := service.PresenceEntry{WorkspaceID: "ws", ChannelID: "general", ConnID: "3", UserID: "bob"}
-	for _, e := range []service.PresenceEntry{alicePC, alicePhone, bob} {
+	alicePC := PresenceEntry{WorkspaceID: "ws", ChannelID: "general", ConnID: "1", UserID: "alice"}
+	alicePhone := PresenceEntry{WorkspaceID: "ws", ChannelID: "general", ConnID: "2", UserID: "alice"}
+	bob := PresenceEntry{WorkspaceID: "ws", ChannelID: "general", ConnID: "3", UserID: "bob"}
+	for _, e := range []PresenceEntry{alicePC, alicePhone, bob} {
 		if err := store.Add(ctx, e); err != nil {
 			t.Fatal(err)
 		}
@@ -41,7 +39,7 @@ func TestPresenceStoreExpiresEntriesNotRefreshed(t *testing.T) {
 
 	// bob の接続を持つレプリカが落ちて延長されなくなった状態
 	now = now.Add(presenceTTL - time.Second)
-	if err := store.Refresh(ctx, []service.PresenceEntry{alicePC}); err != nil {
+	if err := store.Refresh(ctx, []PresenceEntry{alicePC}); err != nil {
 		t.Fatal(err)
 	}
 	now = now.Add(2 * time.Second)

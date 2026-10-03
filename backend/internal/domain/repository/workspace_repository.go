@@ -29,4 +29,6 @@ type WorkspaceRepository interface {
 	CountMembersBatch(ctx context.Context, workspaceIDs []string) (map[string]int, error)
 	// FindMembershipsByUserID は停止されずに参加しているワークスペースのメンバー情報を返します
 	FindMembershipsByUserID(ctx context.Context, userID string) ([]*entity.WorkspaceMember, error)
+	// FindMemberActivities は since 以降の投稿数・アップロードした添付の合計サイズ・最後の投稿日時をユーザーごとに返します
+	FindMemberActivities(ctx context.Context, workspaceID string, since time.Time) (map[string]entity.MemberActivity, error)
 }

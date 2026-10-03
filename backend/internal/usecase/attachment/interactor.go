@@ -2,7 +2,6 @@ package attachment
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"mime"
 	"path/filepath"
@@ -18,75 +17,89 @@ import (
 )
 
 var (
-	ErrThumbnailNotAllowed = errors.New("サムネイルは動画にだけ付けられます")
-	ErrThumbnailNotFound   = errors.New("サムネイルがありません")
-	ErrFileTooLarge        = fmt.Errorf("%w: ファイルサイズが上限を超えています", domerr.ErrValidation)
+	ErrThumbnailNotAllowed = domerr.New(domerr.ErrValidation, "サムネイルは動画にだけ付けられます")
+	ErrThumbnailNotFound   = domerr.New(domerr.ErrNotFound, "サムネイルがありません")
+	ErrFileTooLarge        = domerr.New(domerr.ErrValidation, "ファイルサイズが上限を超えています")
 )
+
+type PresignInput struct {
+	UserID    string
+	ChannelID string
+	FileName  string
+	MimeType  string
+	SizeBytes int64
+	Media     entity.MediaMetadata
+	Thumbnail *ThumbnailInput
+}
+
+// ThumbnailInput は動画と一緒にアップロードするサムネイル画像です
+type ThumbnailInput struct {
+	MimeType string
+	Width    int32
+	Height   int32
+}
+
+type PresignOutput struct {
+	AttachmentID string
+	UploadURL    string
+	// サムネイルを指定したときだけ返します
+	ThumbnailUploadURL *string
+	ExpiresAt          time.Time
+}
 
 type Interactor struct {
 	attachmentRepo   repository.AttachmentRepository
 	messageRepo      repository.MessageRepository
 	channelAccessSvc service.ChannelAccessService
 	storageService   service.StorageService
-	config           service.StorageConfig
 }
 
-func NewInteractor(
+func New(
 	attachmentRepo repository.AttachmentRepository,
 	messageRepo repository.MessageRepository,
 	channelAccessSvc service.ChannelAccessService,
 	storageService service.StorageService,
-	config service.StorageConfig,
 ) *Interactor {
 	return &Interactor{
 		attachmentRepo:   attachmentRepo,
 		messageRepo:      messageRepo,
 		channelAccessSvc: channelAccessSvc,
 		storageService:   storageService,
-		config:           config,
 	}
 }
 
-func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*PresignOutput, error) {
-	if input.SizeBytes > i.config.GetMaxFileSize() {
+func (i *Interactor) Presign(ctx context.Context, input PresignInput) (*PresignOutput, error) {
+	if input.SizeBytes > service.MaxUploadSize {
 		return nil, ErrFileTooLarge
 	}
-
 	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID); err != nil {
 		return nil, err
 	}
 
-	attachmentID := uuid.New().String()
+	attachmentID := uuid.NewString()
 	storageKey := fmt.Sprintf("attachments/%s/%s", input.ChannelID, attachmentID)
-
-	expires := time.Duration(input.ExpiresMin) * time.Minute
-	if expires == 0 {
-		expires = i.config.GetUploadExpires()
-	}
-	expiresAt := time.Now().Add(expires)
-
 	mimeType := normalizeMimeType(input.MimeType, input.FileName)
-	uploadURL, err := i.storageService.GenerateUploadURL(ctx, storageKey, mimeType, input.SizeBytes, expires)
+	uploadURL, err := i.storageService.GenerateUploadURL(ctx, storageKey, mimeType, service.UploadURLExpires)
 	if err != nil {
 		return nil, err
 	}
 
 	media := input.Media
 	var thumbnailUploadURL *string
-	if input.Thumbnail != nil {
+	if t := input.Thumbnail; t != nil {
 		if !strings.HasPrefix(mimeType, "video/") {
 			return nil, ErrThumbnailNotAllowed
 		}
 		thumbnailKey := storageKey + "-thumbnail"
-		url, err := i.storageService.GenerateUploadURL(ctx, thumbnailKey, input.Thumbnail.MimeType, input.Thumbnail.SizeBytes, expires)
+		url, err := i.storageService.GenerateUploadURL(ctx, thumbnailKey, t.MimeType, service.UploadURLExpires)
 		if err != nil {
 			return nil, err
 		}
 		thumbnailUploadURL = &url
-		media.Thumbnail = &entity.Thumbnail{StorageKey: thumbnailKey, Width: input.Thumbnail.Width, Height: input.Thumbnail.Height}
+		media.Thumbnail = &entity.Thumbnail{StorageKey: thumbnailKey, Width: t.Width, Height: t.Height}
 	}
 
-	attachment := &entity.Attachment{
+	if err := i.attachmentRepo.CreatePending(ctx, &entity.Attachment{
 		ID:         attachmentID,
 		UploaderID: input.UserID,
 		ChannelID:  input.ChannelID,
@@ -95,118 +108,49 @@ func (i *Interactor) Presign(ctx context.Context, input *PresignInput) (*Presign
 		SizeBytes:  input.SizeBytes,
 		Media:      media,
 		StorageKey: storageKey,
-		Status:     entity.AttachmentStatusPending,
-		ExpiresAt:  &expiresAt,
-	}
-
-	if err := i.attachmentRepo.CreatePending(ctx, attachment); err != nil {
+	}); err != nil {
 		return nil, err
 	}
-
 	return &PresignOutput{
-		AttachmentID:       attachment.ID,
+		AttachmentID:       attachmentID,
 		UploadURL:          uploadURL,
 		ThumbnailUploadURL: thumbnailUploadURL,
-		StorageKey:         storageKey,
-		ExpiresAt:          expiresAt,
+		ExpiresAt:          time.Now().Add(service.UploadURLExpires),
 	}, nil
 }
 
-// findAccessible は閲覧者が参照できるチャンネルの添付だけを返します
-func (i *Interactor) findAccessible(ctx context.Context, userID, attachmentID string) (*entity.Attachment, error) {
+// GetDownloadURL は閲覧できるチャンネルの添付の、thumbnail が true のときはサムネイル画像の署名付き URL を返します
+func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID string, thumbnail bool) (string, error) {
 	attachment, err := i.attachmentRepo.FindByID(ctx, attachmentID)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if attachment == nil {
-		return nil, domerr.ErrAttachmentNotFound
+		return "", domerr.ErrAttachmentNotFound
 	}
-
 	channelID := attachment.ChannelID
 	if attachment.MessageID != nil {
 		message, err := i.messageRepo.FindByID(ctx, *attachment.MessageID)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		if message == nil {
-			return nil, domerr.ErrMessageNotFound
+			return "", domerr.ErrMessageNotFound
 		}
 		channelID = message.ChannelID
 	}
 	if _, err := i.channelAccessSvc.EnsureChannelAccess(ctx, channelID, userID); err != nil {
-		return nil, err
-	}
-	return attachment, nil
-}
-
-func (i *Interactor) GetMetadata(ctx context.Context, userID, attachmentID string) (*AttachmentOutput, error) {
-	attachment, err := i.findAccessible(ctx, userID, attachmentID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &AttachmentOutput{
-		ID:         attachment.ID,
-		MessageID:  attachment.MessageID,
-		UploaderID: attachment.UploaderID,
-		ChannelID:  attachment.ChannelID,
-		FileName:   attachment.FileName,
-		MimeType:   attachment.MimeType,
-		SizeBytes:  attachment.SizeBytes,
-		Media:      attachment.Media,
-		Status:     string(attachment.Status),
-		CreatedAt:  attachment.CreatedAt,
-	}, nil
-}
-
-// GetDownloadURL は本体、thumbnail が true のときはサムネイル画像の署名付き URL を返します
-func (i *Interactor) GetDownloadURL(ctx context.Context, userID, attachmentID string, thumbnail bool) (*DownloadURLOutput, error) {
-	attachment, err := i.findAccessible(ctx, userID, attachmentID)
-	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	storageKey := attachment.StorageKey
 	if thumbnail {
 		if attachment.Media.Thumbnail == nil {
-			return nil, ErrThumbnailNotFound
+			return "", ErrThumbnailNotFound
 		}
 		storageKey = attachment.Media.Thumbnail.StorageKey
 	}
-	downloadURL, err := i.storageService.GenerateDownloadURL(ctx, storageKey, 0)
-	if err != nil {
-		return nil, err
-	}
-
-	return &DownloadURLOutput{
-		URL:       downloadURL,
-		ExpiresIn: int(i.config.GetDownloadExpires().Seconds()),
-	}, nil
-}
-
-// Delete は添付ファイルを削除します。削除できるのはアップロードした本人のみです
-func (i *Interactor) Delete(ctx context.Context, userID, attachmentID string) error {
-	attachment, err := i.attachmentRepo.FindByID(ctx, attachmentID)
-	if err != nil {
-		return err
-	}
-	if attachment == nil {
-		return domerr.ErrAttachmentNotFound
-	}
-	if attachment.UploaderID != userID {
-		return domerr.ErrUnauthorized
-	}
-
-	if err := i.attachmentRepo.Delete(ctx, attachmentID); err != nil {
-		return err
-	}
-
-	if t := attachment.Media.Thumbnail; t != nil {
-		if err := i.storageService.DeleteObject(ctx, t.StorageKey); err != nil {
-			return err
-		}
-	}
-	return i.storageService.DeleteObject(ctx, attachment.StorageKey)
+	return i.storageService.GenerateDownloadURL(ctx, storageKey, service.DownloadURLExpires)
 }
 
 // normalizeMimeType はパラメータを除いて小文字にし、判別できない種別はファイル名の拡張子から推定します

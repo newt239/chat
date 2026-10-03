@@ -16,7 +16,6 @@ import (
 	"github.com/newt239/chat/ent/linkpreview"
 	"github.com/newt239/chat/ent/linkpreviewxpost"
 	"github.com/newt239/chat/ent/linkpreviewyoutube"
-	"github.com/newt239/chat/ent/messagelink"
 )
 
 // LinkPreviewCreate is the builder for creating a LinkPreview entity.
@@ -189,21 +188,6 @@ func (_c *LinkPreviewCreate) SetXPost(v *LinkPreviewXPost) *LinkPreviewCreate {
 	return _c.SetXPostID(v.ID)
 }
 
-// AddMessageLinkIDs adds the "message_links" edge to the MessageLink entity by IDs.
-func (_c *LinkPreviewCreate) AddMessageLinkIDs(ids ...uuid.UUID) *LinkPreviewCreate {
-	_c.mutation.AddMessageLinkIDs(ids...)
-	return _c
-}
-
-// AddMessageLinks adds the "message_links" edges to the MessageLink entity.
-func (_c *LinkPreviewCreate) AddMessageLinks(v ...*MessageLink) *LinkPreviewCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddMessageLinkIDs(ids...)
-}
-
 // Mutation returns the LinkPreviewMutation object of the builder.
 func (_c *LinkPreviewCreate) Mutation() *LinkPreviewMutation {
 	return _c.mutation
@@ -355,22 +339,6 @@ func (_c *LinkPreviewCreate) createSpec() (*LinkPreview, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(linkpreviewxpost.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.MessageLinksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   linkpreview.MessageLinksTable,
-			Columns: []string{linkpreview.MessageLinksColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(messagelink.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

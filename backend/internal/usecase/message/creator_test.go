@@ -47,10 +47,7 @@ func TestVerifyAttachments(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			creator := &MessageCreator{attachmentRepo: &stubAttachmentRepo{attachments: tt.attachments}}
-			input := CreateMessageInput{UserID: "u1", AttachmentIDs: []string{"a1"}}
-
-			err := creator.verifyAttachments(context.Background(), input, "ch1")
+			err := VerifyAttachments(context.Background(), &stubAttachmentRepo{attachments: tt.attachments}, "u1", "ch1", []string{"a1"})
 
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("エラーが期待と異なります: got=%v want=%v", err, tt.wantErr)
@@ -60,7 +57,7 @@ func TestVerifyAttachments(t *testing.T) {
 }
 
 func TestCreateMessageRejectsEmptyContent(t *testing.T) {
-	_, err := (&MessageCreator{}).CreateMessage(context.Background(), CreateMessageInput{ChannelID: "ch1", UserID: "u1", Body: " \n "})
+	_, err := (&Interactor{}).CreateMessage(context.Background(), CreateMessageInput{ChannelID: "ch1", UserID: "u1", Body: " \n "})
 
 	if !errors.Is(err, ErrEmptyMessage) {
 		t.Fatalf("空のメッセージを拒否していません: %v", err)

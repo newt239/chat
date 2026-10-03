@@ -43,10 +43,6 @@ const (
 	FieldThumbnailHeight = "thumbnail_height"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// FieldUploadedAt holds the string denoting the uploaded_at field in the database.
-	FieldUploadedAt = "uploaded_at"
-	// FieldExpiresAt holds the string denoting the expires_at field in the database.
-	FieldExpiresAt = "expires_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeMessage holds the string denoting the message edge name in mutations.
@@ -97,8 +93,6 @@ var Columns = []string{
 	FieldThumbnailWidth,
 	FieldThumbnailHeight,
 	FieldStatus,
-	FieldUploadedAt,
-	FieldExpiresAt,
 	FieldCreatedAt,
 }
 
@@ -205,16 +199,6 @@ func ByThumbnailHeight(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
-}
-
-// ByUploadedAt orders the results by the uploaded_at field.
-func ByUploadedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUploadedAt, opts...).ToFunc()
-}
-
-// ByExpiresAt orders the results by the expires_at field.
-func ByExpiresAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExpiresAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

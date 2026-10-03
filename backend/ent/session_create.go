@@ -245,7 +245,7 @@ func (_c *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.RevokedAt(); ok {
 		_spec.SetField(session.FieldRevokedAt, field.TypeTime, value)
-		_node.RevokedAt = value
+		_node.RevokedAt = &value
 	}
 	if value, ok := _c.mutation.IPAddress(); ok {
 		_spec.SetField(session.FieldIPAddress, field.TypeString, value)

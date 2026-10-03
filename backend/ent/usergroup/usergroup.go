@@ -31,10 +31,6 @@ const (
 	EdgeWorkspace = "workspace"
 	// EdgeCreatedBy holds the string denoting the created_by edge name in mutations.
 	EdgeCreatedBy = "created_by"
-	// EdgeMembers holds the string denoting the members edge name in mutations.
-	EdgeMembers = "members"
-	// EdgeGroupMentions holds the string denoting the group_mentions edge name in mutations.
-	EdgeGroupMentions = "group_mentions"
 	// Table holds the table name of the usergroup in the database.
 	Table = "user_group"
 	// WorkspaceTable is the table that holds the workspace relation/edge.
@@ -51,20 +47,6 @@ const (
 	CreatedByInverseTable = "user"
 	// CreatedByColumn is the table column denoting the created_by relation/edge.
 	CreatedByColumn = "created_by_id"
-	// MembersTable is the table that holds the members relation/edge.
-	MembersTable = "user_group_member"
-	// MembersInverseTable is the table name for the UserGroupMember entity.
-	// It exists in this package in order to avoid circular dependency with the "usergroupmember" package.
-	MembersInverseTable = "user_group_member"
-	// MembersColumn is the table column denoting the members relation/edge.
-	MembersColumn = "group_id"
-	// GroupMentionsTable is the table that holds the group_mentions relation/edge.
-	GroupMentionsTable = "message_group_mention"
-	// GroupMentionsInverseTable is the table name for the MessageGroupMention entity.
-	// It exists in this package in order to avoid circular dependency with the "messagegroupmention" package.
-	GroupMentionsInverseTable = "message_group_mention"
-	// GroupMentionsColumn is the table column denoting the group_mentions relation/edge.
-	GroupMentionsColumn = "group_id"
 )
 
 // Columns holds all SQL columns for usergroup fields.
@@ -152,34 +134,6 @@ func ByCreatedByField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCreatedByStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByMembersCount orders the results by members count.
-func ByMembersCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMembersStep(), opts...)
-	}
-}
-
-// ByMembers orders the results by members terms.
-func ByMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByGroupMentionsCount orders the results by group_mentions count.
-func ByGroupMentionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newGroupMentionsStep(), opts...)
-	}
-}
-
-// ByGroupMentions orders the results by group_mentions terms.
-func ByGroupMentions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newGroupMentionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newWorkspaceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -192,19 +146,5 @@ func newCreatedByStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatedByInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, CreatedByTable, CreatedByColumn),
-	)
-}
-func newMembersStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MembersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, MembersTable, MembersColumn),
-	)
-}
-func newGroupMentionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(GroupMentionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, GroupMentionsTable, GroupMentionsColumn),
 	)
 }

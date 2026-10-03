@@ -7,7 +7,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 )
 
-// ThreadMetadata はスレッドのメタデータを表します（計算結果）
 type ThreadMetadata struct {
 	MessageID       string
 	ReplyCount      int
@@ -18,8 +17,6 @@ type ThreadMetadata struct {
 type ThreadRepository interface {
 	// CalculateMetadataByMessageIDs は返信のないメッセージも含め、指定した全メッセージのメタデータを返します
 	CalculateMetadataByMessageIDs(ctx context.Context, messageIDs []string) (map[string]*ThreadMetadata, error)
-
-	// 参加中スレッド一覧取得
 	FindParticipatingThreads(ctx context.Context, input FindParticipatingThreadsInput) (*FindParticipatingThreadsOutput, error)
 
 	UpsertReadState(ctx context.Context, userID, threadID string, lastReadAt time.Time) error
@@ -33,16 +30,15 @@ type ThreadRepository interface {
 }
 
 type FindParticipatingThreadsInput struct {
-	WorkspaceID          string
-	UserID               string
-	CursorLastActivityAt *time.Time
-	CursorThreadID       *string
-	Limit                int
+	WorkspaceID string
+	UserID      string
+	Cursor      *ThreadCursor
+	Limit       int
 }
 
 type ParticipatingThread struct {
 	ThreadID       string
-	ChannelID      *string
+	ChannelID      string
 	FirstMessage   *entity.Message
 	LatestReplies  []*entity.Message
 	ReplyCount     int

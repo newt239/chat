@@ -10,9 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/newt239/chat/ent/polloption"
-	"github.com/newt239/chat/ent/pollvote"
 	"github.com/newt239/chat/ent/predicate"
 )
 
@@ -29,45 +27,9 @@ func (_u *PollOptionUpdate) Where(ps ...predicate.PollOption) *PollOptionUpdate 
 	return _u
 }
 
-// AddVoteIDs adds the "votes" edge to the PollVote entity by IDs.
-func (_u *PollOptionUpdate) AddVoteIDs(ids ...uuid.UUID) *PollOptionUpdate {
-	_u.mutation.AddVoteIDs(ids...)
-	return _u
-}
-
-// AddVotes adds the "votes" edges to the PollVote entity.
-func (_u *PollOptionUpdate) AddVotes(v ...*PollVote) *PollOptionUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddVoteIDs(ids...)
-}
-
 // Mutation returns the PollOptionMutation object of the builder.
 func (_u *PollOptionUpdate) Mutation() *PollOptionMutation {
 	return _u.mutation
-}
-
-// ClearVotes clears all "votes" edges to the PollVote entity.
-func (_u *PollOptionUpdate) ClearVotes() *PollOptionUpdate {
-	_u.mutation.ClearVotes()
-	return _u
-}
-
-// RemoveVoteIDs removes the "votes" edge to PollVote entities by IDs.
-func (_u *PollOptionUpdate) RemoveVoteIDs(ids ...uuid.UUID) *PollOptionUpdate {
-	_u.mutation.RemoveVoteIDs(ids...)
-	return _u
-}
-
-// RemoveVotes removes "votes" edges to PollVote entities.
-func (_u *PollOptionUpdate) RemoveVotes(v ...*PollVote) *PollOptionUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveVoteIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -120,51 +82,6 @@ func (_u *PollOptionUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	if _u.mutation.StartsAtCleared() {
 		_spec.ClearField(polloption.FieldStartsAt, field.TypeTime)
 	}
-	if _u.mutation.VotesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   polloption.VotesTable,
-			Columns: []string{polloption.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(pollvote.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedVotesIDs(); len(nodes) > 0 && !_u.mutation.VotesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   polloption.VotesTable,
-			Columns: []string{polloption.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(pollvote.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.VotesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   polloption.VotesTable,
-			Columns: []string{polloption.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(pollvote.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{polloption.Label}
@@ -185,45 +102,9 @@ type PollOptionUpdateOne struct {
 	mutation *PollOptionMutation
 }
 
-// AddVoteIDs adds the "votes" edge to the PollVote entity by IDs.
-func (_u *PollOptionUpdateOne) AddVoteIDs(ids ...uuid.UUID) *PollOptionUpdateOne {
-	_u.mutation.AddVoteIDs(ids...)
-	return _u
-}
-
-// AddVotes adds the "votes" edges to the PollVote entity.
-func (_u *PollOptionUpdateOne) AddVotes(v ...*PollVote) *PollOptionUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddVoteIDs(ids...)
-}
-
 // Mutation returns the PollOptionMutation object of the builder.
 func (_u *PollOptionUpdateOne) Mutation() *PollOptionMutation {
 	return _u.mutation
-}
-
-// ClearVotes clears all "votes" edges to the PollVote entity.
-func (_u *PollOptionUpdateOne) ClearVotes() *PollOptionUpdateOne {
-	_u.mutation.ClearVotes()
-	return _u
-}
-
-// RemoveVoteIDs removes the "votes" edge to PollVote entities by IDs.
-func (_u *PollOptionUpdateOne) RemoveVoteIDs(ids ...uuid.UUID) *PollOptionUpdateOne {
-	_u.mutation.RemoveVoteIDs(ids...)
-	return _u
-}
-
-// RemoveVotes removes "votes" edges to PollVote entities.
-func (_u *PollOptionUpdateOne) RemoveVotes(v ...*PollVote) *PollOptionUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveVoteIDs(ids...)
 }
 
 // Where appends a list predicates to the PollOptionUpdate builder.
@@ -305,51 +186,6 @@ func (_u *PollOptionUpdateOne) sqlSave(ctx context.Context) (_node *PollOption, 
 	}
 	if _u.mutation.StartsAtCleared() {
 		_spec.ClearField(polloption.FieldStartsAt, field.TypeTime)
-	}
-	if _u.mutation.VotesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   polloption.VotesTable,
-			Columns: []string{polloption.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(pollvote.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedVotesIDs(); len(nodes) > 0 && !_u.mutation.VotesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   polloption.VotesTable,
-			Columns: []string{polloption.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(pollvote.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.VotesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   polloption.VotesTable,
-			Columns: []string{polloption.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(pollvote.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &PollOption{config: _u.config}
 	_spec.Assign = _node.assignValues

@@ -27,7 +27,7 @@ type UserGroup struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -44,13 +44,9 @@ type UserGroupEdges struct {
 	Workspace *Workspace `json:"workspace,omitempty"`
 	// CreatedBy holds the value of the created_by edge.
 	CreatedBy *User `json:"created_by,omitempty"`
-	// Members holds the value of the members edge.
-	Members []*UserGroupMember `json:"members,omitempty"`
-	// GroupMentions holds the value of the group_mentions edge.
-	GroupMentions []*MessageGroupMention `json:"group_mentions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [2]bool
 }
 
 // WorkspaceOrErr returns the Workspace value or an error if the edge
@@ -73,24 +69,6 @@ func (e UserGroupEdges) CreatedByOrErr() (*User, error) {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "created_by"}
-}
-
-// MembersOrErr returns the Members value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserGroupEdges) MembersOrErr() ([]*UserGroupMember, error) {
-	if e.loadedTypes[2] {
-		return e.Members, nil
-	}
-	return nil, &NotLoadedError{edge: "members"}
-}
-
-// GroupMentionsOrErr returns the GroupMentions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserGroupEdges) GroupMentionsOrErr() ([]*MessageGroupMention, error) {
-	if e.loadedTypes[3] {
-		return e.GroupMentions, nil
-	}
-	return nil, &NotLoadedError{edge: "group_mentions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -147,7 +125,8 @@ func (_m *UserGroup) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				_m.Description = value.String
+				_m.Description = new(string)
+				*_m.Description = value.String
 			}
 		case usergroup.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -184,16 +163,6 @@ func (_m *UserGroup) QueryCreatedBy() *UserQuery {
 	return NewUserGroupClient(_m.config).QueryCreatedBy(_m)
 }
 
-// QueryMembers queries the "members" edge of the UserGroup entity.
-func (_m *UserGroup) QueryMembers() *UserGroupMemberQuery {
-	return NewUserGroupClient(_m.config).QueryMembers(_m)
-}
-
-// QueryGroupMentions queries the "group_mentions" edge of the UserGroup entity.
-func (_m *UserGroup) QueryGroupMentions() *MessageGroupMentionQuery {
-	return NewUserGroupClient(_m.config).QueryGroupMentions(_m)
-}
-
 // Update returns a builder for updating this UserGroup.
 // Note that you need to call UserGroup.Unwrap() before calling this method if this UserGroup
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -226,8 +195,10 @@ func (_m *UserGroup) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
+	if v := _m.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"slices"
+	"time"
+)
 
 type PollMode string
 
@@ -50,10 +53,5 @@ func (p *Poll) IsClosed(now time.Time) bool {
 
 // HasOption は選択肢がこの投票のものかを返します
 func (p *Poll) HasOption(optionID string) bool {
-	for _, o := range p.Options {
-		if o.ID == optionID {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(p.Options, func(o PollOption) bool { return o.ID == optionID })
 }

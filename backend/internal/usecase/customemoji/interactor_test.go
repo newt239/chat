@@ -90,10 +90,10 @@ type fakeUserRepo struct {
 	domainrepository.UserRepository
 }
 
-func (fakeUserRepo) FindByIDs(_ context.Context, ids []string) ([]*entity.User, error) {
-	users := make([]*entity.User, 0, len(ids))
+func (fakeUserRepo) FindByIDs(_ context.Context, ids []string) (map[string]*entity.User, error) {
+	users := make(map[string]*entity.User, len(ids))
 	for _, id := range ids {
-		users = append(users, &entity.User{ID: id, DisplayName: id})
+		users[id] = &entity.User{ID: id, DisplayName: id}
 	}
 	return users, nil
 }
@@ -104,7 +104,7 @@ type fakeStorage struct {
 	deleted    []string
 }
 
-func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ int64, _ time.Duration) (string, error) {
+func (s *fakeStorage) GenerateUploadURL(_ context.Context, key, _ string, _ time.Duration) (string, error) {
 	s.uploadKeys = append(s.uploadKeys, key)
 	return "https://storage/put/" + key, nil
 }
@@ -130,12 +130,6 @@ func (n *fakeNotifier) NotifyCustomEmojiDeleted(_ string, e Notification) {
 	n.deleted = append(n.deleted, e.Name)
 }
 
-type nopLogger struct {
-	domainservice.Logger
-}
-
-func (nopLogger) Warn(string, ...domainservice.LogField) {}
-
 type fixture struct {
 	uc       *Interactor
 	repo     *fakeEmojiRepo
@@ -152,7 +146,7 @@ func newFixture() fixture {
 	storage := &fakeStorage{}
 	notifier := &fakeNotifier{}
 	recorder := &audittest.Recorder{}
-	uc := NewInteractor(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, notifier, recorder, nopLogger{})
+	uc := New(repo, fakeUserRepo{}, stubWorkspaceRepo{}, stubPermission{}, storage, notifier, recorder)
 	return fixture{uc: uc, repo: repo, storage: storage, notifier: notifier, recorder: recorder}
 }
 
@@ -183,7 +177,7 @@ func TestList(t *testing.T) {
 func TestPresign(t *testing.T) {
 	t.Run("アップロード先はワークスペースごとの場所にする", func(t *testing.T) {
 		f := newFixture()
-		out, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: otherID, ContentType: "image/png", SizeBytes: 100})
+		out, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: otherID, ContentType: "image/png"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -194,7 +188,7 @@ func TestPresign(t *testing.T) {
 
 	t.Run("登録の権限がなければ発行しない", func(t *testing.T) {
 		f := newFixture()
-		_, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: guestID, ContentType: "image/png", SizeBytes: 100})
+		_, err := f.uc.Presign(context.Background(), PresignInput{WorkspaceID: workspaceID, UserID: guestID, ContentType: "image/png"})
 		if !errors.Is(err, domerr.ErrUnauthorized) {
 			t.Fatalf("got %v", err)
 		}

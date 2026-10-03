@@ -1,6 +1,7 @@
 package message
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"slices"
@@ -8,58 +9,20 @@ import (
 	"time"
 
 	"github.com/newt239/chat/internal/domain/entity"
-	domerr "github.com/newt239/chat/internal/domain/errors"
-	domainrepository "github.com/newt239/chat/internal/domain/repository"
-	"github.com/newt239/chat/internal/domain/service"
 )
 
-// MessageLister はメッセージ一覧取得を担当するユースケースです
-type MessageLister struct {
-	messageRepo      domainrepository.MessageRepository
-	systemMsgRepo    domainrepository.SystemMessageRepository
-	userRepo         domainrepository.UserRepository
-	threadRepo       domainrepository.ThreadRepository
-	outputBuilder    *MessageOutputBuilder
-	channelAccessSvc service.ChannelAccessService
-}
-
-// NewMessageLister は新しいMessageListerを作成します
-func NewMessageLister(
-	messageRepo domainrepository.MessageRepository,
-	systemMsgRepo domainrepository.SystemMessageRepository,
-	userRepo domainrepository.UserRepository,
-	threadRepo domainrepository.ThreadRepository,
-	outputBuilder *MessageOutputBuilder,
-	channelAccessSvc service.ChannelAccessService,
-) *MessageLister {
-	return &MessageLister{
-		messageRepo:      messageRepo,
-		systemMsgRepo:    systemMsgRepo,
-		userRepo:         userRepo,
-		threadRepo:       threadRepo,
-		outputBuilder:    outputBuilder,
-		channelAccessSvc: channelAccessSvc,
-	}
-}
-
 // ListMessages はメッセージ一覧を取得します
-func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInput) (*ListMessagesOutput, error) {
-	channel, err := l.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
+func (i *Interactor) ListMessages(ctx context.Context, input ListMessagesInput) (*ListMessagesOutput, error) {
+	channel, err := i.channelAccessSvc.EnsureChannelAccess(ctx, input.ChannelID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	// リミット正規化
-	limit := input.Limit
-	if limit <= 0 {
-		limit = defaultMessageLimit
-	} else if limit > maxMessageLimit {
-		limit = maxMessageLimit
-	}
+	limit := min(cmp.Or(input.Limit, defaultMessageLimit), maxMessageLimit)
 
 	channelIDs := []string{channel.ID}
 	if input.IncludeDescendants {
-		descendants, err := l.channelAccessSvc.AccessibleDescendants(ctx, channel, input.UserID)
+		descendants, err := i.channelAccessSvc.AccessibleDescendants(ctx, channel, input.UserID)
 		if err != nil {
 			return nil, err
 		}
@@ -69,13 +32,13 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 	}
 
 	if input.Around != nil {
-		older, hasMore, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, nil, input.Around, false)
+		older, hasMore, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, nil, input.Around, false)
 		if err != nil {
 			return nil, err
 		}
 		// 指定日時ちょうどの投稿も後ろ側に含める。created_at はマイクロ秒精度
 		since := input.Around.Add(-time.Microsecond)
-		newer, hasNewer, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, &since, nil, true)
+		newer, hasNewer, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, &since, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +48,7 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 
 	// since だけの指定は続きの読み込みなので、since の直後から古い順に取る
 	if input.Since != nil && input.Until == nil {
-		newer, hasNewer, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, nil, true)
+		newer, hasNewer, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +56,7 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 		return &ListMessagesOutput{Messages: newer, HasNewer: hasNewer}, nil
 	}
 
-	timeline, hasMore, err := l.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, input.Until, false)
+	timeline, hasMore, err := i.fetchTimeline(ctx, input.UserID, channelIDs, limit, input.Since, input.Until, false)
 	if err != nil {
 		return nil, err
 	}
@@ -101,12 +64,12 @@ func (l *MessageLister) ListMessages(ctx context.Context, input ListMessagesInpu
 }
 
 // fetchTimeline はユーザー・システムメッセージを合わせて limit 件取り、取得した向きに続きがあるかを返します
-func (l *MessageLister) fetchTimeline(ctx context.Context, userID string, channelIDs []string, limit int, since, until *time.Time, ascending bool) ([]TimelineItem, bool, error) {
-	messages, err := l.messageRepo.FindByChannelIDs(ctx, channelIDs, limit+1, since, until, ascending)
+func (i *Interactor) fetchTimeline(ctx context.Context, userID string, channelIDs []string, limit int, since, until *time.Time, ascending bool) ([]TimelineItem, bool, error) {
+	messages, err := i.messageRepo.FindByChannelIDs(ctx, channelIDs, limit+1, since, until, ascending)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to fetch messages: %w", err)
 	}
-	systemMessages, err := l.systemMsgRepo.FindByChannelIDs(ctx, channelIDs, limit+1, since, until, ascending)
+	systemMessages, err := i.systemMsgRepo.FindByChannelIDs(ctx, channelIDs, limit+1, since, until, ascending)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to fetch system messages: %w", err)
 	}
@@ -114,17 +77,17 @@ func (l *MessageLister) fetchTimeline(ctx context.Context, userID string, channe
 	if hasMore {
 		messages = messages[:limit]
 	}
-	userOutputs, err := l.outputBuilder.Build(ctx, userID, messages)
+	userOutputs, err := i.outputBuilder.Build(ctx, userID, messages)
 	if err != nil {
 		return nil, false, err
 	}
 
 	timeline := make([]TimelineItem, 0, len(userOutputs)+len(systemMessages))
 	for _, m := range userOutputs {
-		timeline = append(timeline, TimelineItem{Type: "user", UserMessage: &m, CreatedAt: m.CreatedAt})
+		timeline = append(timeline, TimelineItem{UserMessage: &m, CreatedAt: m.CreatedAt})
 	}
 	for _, sm := range systemMessages {
-		timeline = append(timeline, TimelineItem{Type: "system", SystemMessage: new(NewSystemMessageOutput(sm)), CreatedAt: sm.CreatedAt})
+		timeline = append(timeline, TimelineItem{SystemMessage: sm, CreatedAt: sm.CreatedAt})
 	}
 	sort.SliceStable(timeline, func(i, j int) bool {
 		if ascending {
@@ -140,8 +103,8 @@ func (l *MessageLister) fetchTimeline(ctx context.Context, userID string, channe
 }
 
 // ListMessagesWithThread はユーザーのメッセージだけを、閲覧者から見たスレッドの情報付きで返します
-func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) (*ListMessagesWithThreadOutput, error) {
-	list, err := l.ListMessages(ctx, input)
+func (i *Interactor) ListMessagesWithThread(ctx context.Context, input ListMessagesInput) (*ListMessagesWithThreadOutput, error) {
+	list, err := i.ListMessages(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +117,7 @@ func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMe
 			messageIDs = append(messageIDs, item.UserMessage.ID)
 		}
 	}
-	metadata, err := l.buildThreadMetadata(ctx, input.UserID, messageIDs)
+	metadata, err := i.buildThreadMetadata(ctx, input.UserID, messageIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -167,29 +130,25 @@ func (l *MessageLister) ListMessagesWithThread(ctx context.Context, input ListMe
 }
 
 // buildThreadMetadata はメッセージごとのスレッドの返信数・最新の返信者・閲覧者のフォロー状態をまとめて求めます
-func (l *MessageLister) buildThreadMetadata(ctx context.Context, userID string, messageIDs []string) (map[string]*ThreadMetadataOutput, error) {
-	metadataMap, err := l.threadRepo.CalculateMetadataByMessageIDs(ctx, messageIDs)
+func (i *Interactor) buildThreadMetadata(ctx context.Context, userID string, messageIDs []string) (map[string]*ThreadMetadataOutput, error) {
+	metadataMap, err := i.threadRepo.CalculateMetadataByMessageIDs(ctx, messageIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to calculate thread metadata: %w", err)
 	}
-	followed, err := l.threadRepo.FindFollowedThreadIDs(ctx, userID, messageIDs)
+	followed, err := i.threadRepo.FindFollowedThreadIDs(ctx, userID, messageIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find followed threads: %w", err)
 	}
 
 	var replierIDs []string
 	for _, metadata := range metadataMap {
-		if metadata.LastReplyUserID != nil && !slices.Contains(replierIDs, *metadata.LastReplyUserID) {
+		if metadata.LastReplyUserID != nil {
 			replierIDs = append(replierIDs, *metadata.LastReplyUserID)
 		}
 	}
-	repliers, err := l.userRepo.FindByIDs(ctx, replierIDs)
+	repliers, err := i.userRepo.FindByIDs(ctx, replierIDs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load last repliers: %w", err)
-	}
-	replierMap := make(map[string]*entity.User, len(repliers))
-	for _, u := range repliers {
-		replierMap[u.ID] = u
 	}
 
 	result := make(map[string]*ThreadMetadataOutput, len(metadataMap))
@@ -201,7 +160,8 @@ func (l *MessageLister) buildThreadMetadata(ctx context.Context, userID string, 
 			IsFollowing: followed[id],
 		}
 		if metadata.LastReplyUserID != nil {
-			out.LastReplyUser = new(UserInfoOf(*metadata.LastReplyUserID, replierMap))
+			info := UserInfoOf(*metadata.LastReplyUserID, repliers)
+			out.LastReplyUser = &info
 		}
 		result[id] = out
 	}
@@ -209,32 +169,22 @@ func (l *MessageLister) buildThreadMetadata(ctx context.Context, userID string, 
 }
 
 // GetThreadReplies はスレッド返信を取得します
-func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRepliesInput) (*GetThreadRepliesOutput, error) {
-	// 親メッセージを取得
-	parentMessage, err := l.messageRepo.FindByID(ctx, input.MessageID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch parent message: %w", err)
-	}
-	if parentMessage == nil {
-		return nil, domerr.ErrParentMessageNotFound
-	}
-
-	// チャンネルアクセス権限を確認
-	_, err = l.channelAccessSvc.EnsureChannelAccess(ctx, parentMessage.ChannelID, input.UserID)
+func (i *Interactor) GetThreadReplies(ctx context.Context, input GetThreadRepliesInput) (*GetThreadRepliesOutput, error) {
+	parentMessage, _, err := i.channelAccessSvc.EnsureMessageAccess(ctx, input.MessageID, input.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	replies, hasMore, hasNewer, err := l.fetchThreadReplies(ctx, input)
+	replies, hasMore, hasNewer, err := i.fetchThreadReplies(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch thread replies: %w", err)
 	}
 
-	outputs, err := l.outputBuilder.Build(ctx, input.UserID, append([]*entity.Message{parentMessage}, replies...))
+	outputs, err := i.outputBuilder.Build(ctx, input.UserID, append([]*entity.Message{parentMessage}, replies...))
 	if err != nil {
 		return nil, err
 	}
-	metadata, err := l.threadRepo.CalculateMetadataByMessageIDs(ctx, []string{input.MessageID})
+	metadata, err := i.threadRepo.CalculateMetadataByMessageIDs(ctx, []string{input.MessageID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to calculate thread metadata: %w", err)
 	}
@@ -249,15 +199,10 @@ func (l *MessageLister) GetThreadReplies(ctx context.Context, input GetThreadRep
 }
 
 // fetchThreadReplies は返信を古い順に limit 件ずつ取り、前後に続きがあるかを返します。範囲の指定がなければ最新の返信を返します
-func (l *MessageLister) fetchThreadReplies(ctx context.Context, input GetThreadRepliesInput) (replies []*entity.Message, hasMore, hasNewer bool, err error) {
-	limit := input.Limit
-	if limit <= 0 {
-		limit = defaultMessageLimit
-	} else if limit > maxMessageLimit {
-		limit = maxMessageLimit
-	}
+func (i *Interactor) fetchThreadReplies(ctx context.Context, input GetThreadRepliesInput) (replies []*entity.Message, hasMore, hasNewer bool, err error) {
+	limit := min(cmp.Or(input.Limit, defaultMessageLimit), maxMessageLimit)
 	page := func(since, until *time.Time, ascending bool) ([]*entity.Message, bool, error) {
-		found, err := l.messageRepo.FindThreadReplies(ctx, input.MessageID, limit+1, since, until, ascending)
+		found, err := i.messageRepo.FindThreadReplies(ctx, input.MessageID, limit+1, since, until, ascending)
 		if err != nil || len(found) <= limit {
 			return found, false, err
 		}
@@ -266,7 +211,7 @@ func (l *MessageLister) fetchThreadReplies(ctx context.Context, input GetThreadR
 
 	since, until := input.Since, input.Until
 	if input.AroundReplyID != nil {
-		target, err := l.messageRepo.FindByID(ctx, *input.AroundReplyID)
+		target, err := i.messageRepo.FindByID(ctx, *input.AroundReplyID)
 		if err != nil {
 			return nil, false, false, err
 		}
@@ -292,24 +237,17 @@ func (l *MessageLister) fetchThreadReplies(ctx context.Context, input GetThreadR
 }
 
 // GetMessagePreview はメッセージリンクの引用カードを取得します
-func (l *MessageLister) GetMessagePreview(ctx context.Context, input GetMessagePreviewInput) (*MessagePreviewOutput, error) {
-	return l.outputBuilder.BuildPreview(ctx, input.UserID, input.MessageID)
+func (i *Interactor) GetMessagePreview(ctx context.Context, input MessageInput) (*MessagePreviewOutput, error) {
+	return i.outputBuilder.BuildPreview(ctx, input.UserID, input.MessageID)
 }
 
 // GetThreadMetadata はスレッドの情報を閲覧者のフォロー状態付きで返します
-func (l *MessageLister) GetThreadMetadata(ctx context.Context, input GetThreadMetadataInput) (*ThreadMetadataOutput, error) {
-	message, err := l.messageRepo.FindByID(ctx, input.MessageID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch message: %w", err)
-	}
-	if message == nil {
-		return nil, domerr.ErrParentMessageNotFound
-	}
-	if _, err := l.channelAccessSvc.EnsureChannelAccess(ctx, message.ChannelID, input.UserID); err != nil {
+func (i *Interactor) GetThreadMetadata(ctx context.Context, input MessageInput) (*ThreadMetadataOutput, error) {
+	if _, _, err := i.channelAccessSvc.EnsureMessageAccess(ctx, input.MessageID, input.UserID); err != nil {
 		return nil, err
 	}
 
-	metadata, err := l.buildThreadMetadata(ctx, input.UserID, []string{input.MessageID})
+	metadata, err := i.buildThreadMetadata(ctx, input.UserID, []string{input.MessageID})
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/user_group_service.proto.
  */
 export const file_chat_v1_user_group_service: GenFile = /*@__PURE__*/
-  fileDesc("CiBjaGF0L3YxL3VzZXJfZ3JvdXBfc2VydmljZS5wcm90bxIHY2hhdC52MSLZAQoJVXNlckdyb3VwEgoKAmlkGAEgASgJEhQKDHdvcmtzcGFjZV9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhgKC2Rlc2NyaXB0aW9uGAQgASgJSACIAQESEgoKY3JlYXRlZF9ieRgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIOCgxfZGVzY3JpcHRpb24ijwEKD1VzZXJHcm91cE1lbWJlchIPCgd1c2VyX2lkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIXCgphdmF0YXJfdXJsGAMgASgJSACIAQESLQoJam9pbmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEINCgtfYXZhdGFyX3VybCJ4ChZDcmVhdGVVc2VyR3JvdXBSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARIVCgRuYW1lGAIgASgJQge6SARyAhABEhgKC2Rlc2NyaXB0aW9uGAMgASgJSACIAQFCDgoMX2Rlc2NyaXB0aW9uIkEKF0NyZWF0ZVVzZXJHcm91cFJlc3BvbnNlEiYKCnVzZXJfZ3JvdXAYASABKAsyEi5jaGF0LnYxLlVzZXJHcm91cCI2ChVMaXN0VXNlckdyb3Vwc1JlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABIkEKFkxpc3RVc2VyR3JvdXBzUmVzcG9uc2USJwoLdXNlcl9ncm91cHMYASADKAsyEi5jaGF0LnYxLlVzZXJHcm91cCIxChNHZXRVc2VyR3JvdXBSZXF1ZXN0EhoKCGdyb3VwX2lkGAEgASgJQgi6SAVyA7ABASI+ChRHZXRVc2VyR3JvdXBSZXNwb25zZRImCgp1c2VyX2dyb3VwGAEgASgLMhIuY2hhdC52MS5Vc2VyR3JvdXAigwEKFlVwZGF0ZVVzZXJHcm91cFJlcXVlc3QSGgoIZ3JvdXBfaWQYASABKAlCCLpIBXIDsAEBEhoKBG5hbWUYAiABKAlCB7pIBHICEAFIAIgBARIYCgtkZXNjcmlwdGlvbhgDIAEoCUgBiAEBQgcKBV9uYW1lQg4KDF9kZXNjcmlwdGlvbiJBChdVcGRhdGVVc2VyR3JvdXBSZXNwb25zZRImCgp1c2VyX2dyb3VwGAEgASgLMhIuY2hhdC52MS5Vc2VyR3JvdXAiNAoWRGVsZXRlVXNlckdyb3VwUmVxdWVzdBIaCghncm91cF9pZBgBIAEoCUIIukgFcgOwAQEiGQoXRGVsZXRlVXNlckdyb3VwUmVzcG9uc2UiOQobTGlzdFVzZXJHcm91cE1lbWJlcnNSZXF1ZXN0EhoKCGdyb3VwX2lkGAEgASgJQgi6SAVyA7ABASJJChxMaXN0VXNlckdyb3VwTWVtYmVyc1Jlc3BvbnNlEikKB21lbWJlcnMYASADKAsyGC5jaGF0LnYxLlVzZXJHcm91cE1lbWJlciJSChlBZGRVc2VyR3JvdXBNZW1iZXJSZXF1ZXN0EhoKCGdyb3VwX2lkGAEgASgJQgi6SAVyA7ABARIZCgd1c2VyX2lkGAIgASgJQgi6SAVyA7ABASIcChpBZGRVc2VyR3JvdXBNZW1iZXJSZXNwb25zZSJVChxSZW1vdmVVc2VyR3JvdXBNZW1iZXJSZXF1ZXN0EhoKCGdyb3VwX2lkGAEgASgJQgi6SAVyA7ABARIZCgd1c2VyX2lkGAIgASgJQgi6SAVyA7ABASIfCh1SZW1vdmVVc2VyR3JvdXBNZW1iZXJSZXNwb25zZTLgBQoQVXNlckdyb3VwU2VydmljZRJUCg9DcmVhdGVVc2VyR3JvdXASHy5jaGF0LnYxLkNyZWF0ZVVzZXJHcm91cFJlcXVlc3QaIC5jaGF0LnYxLkNyZWF0ZVVzZXJHcm91cFJlc3BvbnNlElEKDkxpc3RVc2VyR3JvdXBzEh4uY2hhdC52MS5MaXN0VXNlckdyb3Vwc1JlcXVlc3QaHy5jaGF0LnYxLkxpc3RVc2VyR3JvdXBzUmVzcG9uc2USSwoMR2V0VXNlckdyb3VwEhwuY2hhdC52MS5HZXRVc2VyR3JvdXBSZXF1ZXN0Gh0uY2hhdC52MS5HZXRVc2VyR3JvdXBSZXNwb25zZRJUCg9VcGRhdGVVc2VyR3JvdXASHy5jaGF0LnYxLlVwZGF0ZVVzZXJHcm91cFJlcXVlc3QaIC5jaGF0LnYxLlVwZGF0ZVVzZXJHcm91cFJlc3BvbnNlElQKD0RlbGV0ZVVzZXJHcm91cBIfLmNoYXQudjEuRGVsZXRlVXNlckdyb3VwUmVxdWVzdBogLmNoYXQudjEuRGVsZXRlVXNlckdyb3VwUmVzcG9uc2USYwoUTGlzdFVzZXJHcm91cE1lbWJlcnMSJC5jaGF0LnYxLkxpc3RVc2VyR3JvdXBNZW1iZXJzUmVxdWVzdBolLmNoYXQudjEuTGlzdFVzZXJHcm91cE1lbWJlcnNSZXNwb25zZRJdChJBZGRVc2VyR3JvdXBNZW1iZXISIi5jaGF0LnYxLkFkZFVzZXJHcm91cE1lbWJlclJlcXVlc3QaIy5jaGF0LnYxLkFkZFVzZXJHcm91cE1lbWJlclJlc3BvbnNlEmYKFVJlbW92ZVVzZXJHcm91cE1lbWJlchIlLmNoYXQudjEuUmVtb3ZlVXNlckdyb3VwTWVtYmVyUmVxdWVzdBomLmNoYXQudjEuUmVtb3ZlVXNlckdyb3VwTWVtYmVyUmVzcG9uc2VClgEKC2NvbS5jaGF0LnYxQhVVc2VyR3JvdXBTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("CiBjaGF0L3YxL3VzZXJfZ3JvdXBfc2VydmljZS5wcm90bxIHY2hhdC52MSLZAQoJVXNlckdyb3VwEgoKAmlkGAEgASgJEhQKDHdvcmtzcGFjZV9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhgKC2Rlc2NyaXB0aW9uGAQgASgJSACIAQESEgoKY3JlYXRlZF9ieRgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIOCgxfZGVzY3JpcHRpb24ijwEKD1VzZXJHcm91cE1lbWJlchIPCgd1c2VyX2lkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIXCgphdmF0YXJfdXJsGAMgASgJSACIAQESLQoJam9pbmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEINCgtfYXZhdGFyX3VybCJ4ChZDcmVhdGVVc2VyR3JvdXBSZXF1ZXN0Eh0KDHdvcmtzcGFjZV9pZBgBIAEoCUIHukgEcgIQARIVCgRuYW1lGAIgASgJQge6SARyAhABEhgKC2Rlc2NyaXB0aW9uGAMgASgJSACIAQFCDgoMX2Rlc2NyaXB0aW9uIkEKF0NyZWF0ZVVzZXJHcm91cFJlc3BvbnNlEiYKCnVzZXJfZ3JvdXAYASABKAsyEi5jaGF0LnYxLlVzZXJHcm91cCI2ChVMaXN0VXNlckdyb3Vwc1JlcXVlc3QSHQoMd29ya3NwYWNlX2lkGAEgASgJQge6SARyAhABIkEKFkxpc3RVc2VyR3JvdXBzUmVzcG9uc2USJwoLdXNlcl9ncm91cHMYASADKAsyEi5jaGF0LnYxLlVzZXJHcm91cCKDAQoWVXBkYXRlVXNlckdyb3VwUmVxdWVzdBIaCghncm91cF9pZBgBIAEoCUIIukgFcgOwAQESGgoEbmFtZRgCIAEoCUIHukgEcgIQAUgAiAEBEhgKC2Rlc2NyaXB0aW9uGAMgASgJSAGIAQFCBwoFX25hbWVCDgoMX2Rlc2NyaXB0aW9uIkEKF1VwZGF0ZVVzZXJHcm91cFJlc3BvbnNlEiYKCnVzZXJfZ3JvdXAYASABKAsyEi5jaGF0LnYxLlVzZXJHcm91cCI0ChZEZWxldGVVc2VyR3JvdXBSZXF1ZXN0EhoKCGdyb3VwX2lkGAEgASgJQgi6SAVyA7ABASIZChdEZWxldGVVc2VyR3JvdXBSZXNwb25zZSI5ChtMaXN0VXNlckdyb3VwTWVtYmVyc1JlcXVlc3QSGgoIZ3JvdXBfaWQYASABKAlCCLpIBXIDsAEBIkkKHExpc3RVc2VyR3JvdXBNZW1iZXJzUmVzcG9uc2USKQoHbWVtYmVycxgBIAMoCzIYLmNoYXQudjEuVXNlckdyb3VwTWVtYmVyIlIKGUFkZFVzZXJHcm91cE1lbWJlclJlcXVlc3QSGgoIZ3JvdXBfaWQYASABKAlCCLpIBXIDsAEBEhkKB3VzZXJfaWQYAiABKAlCCLpIBXIDsAEBIhwKGkFkZFVzZXJHcm91cE1lbWJlclJlc3BvbnNlIlUKHFJlbW92ZVVzZXJHcm91cE1lbWJlclJlcXVlc3QSGgoIZ3JvdXBfaWQYASABKAlCCLpIBXIDsAEBEhkKB3VzZXJfaWQYAiABKAlCCLpIBXIDsAEBIh8KHVJlbW92ZVVzZXJHcm91cE1lbWJlclJlc3BvbnNlMpMFChBVc2VyR3JvdXBTZXJ2aWNlElQKD0NyZWF0ZVVzZXJHcm91cBIfLmNoYXQudjEuQ3JlYXRlVXNlckdyb3VwUmVxdWVzdBogLmNoYXQudjEuQ3JlYXRlVXNlckdyb3VwUmVzcG9uc2USUQoOTGlzdFVzZXJHcm91cHMSHi5jaGF0LnYxLkxpc3RVc2VyR3JvdXBzUmVxdWVzdBofLmNoYXQudjEuTGlzdFVzZXJHcm91cHNSZXNwb25zZRJUCg9VcGRhdGVVc2VyR3JvdXASHy5jaGF0LnYxLlVwZGF0ZVVzZXJHcm91cFJlcXVlc3QaIC5jaGF0LnYxLlVwZGF0ZVVzZXJHcm91cFJlc3BvbnNlElQKD0RlbGV0ZVVzZXJHcm91cBIfLmNoYXQudjEuRGVsZXRlVXNlckdyb3VwUmVxdWVzdBogLmNoYXQudjEuRGVsZXRlVXNlckdyb3VwUmVzcG9uc2USYwoUTGlzdFVzZXJHcm91cE1lbWJlcnMSJC5jaGF0LnYxLkxpc3RVc2VyR3JvdXBNZW1iZXJzUmVxdWVzdBolLmNoYXQudjEuTGlzdFVzZXJHcm91cE1lbWJlcnNSZXNwb25zZRJdChJBZGRVc2VyR3JvdXBNZW1iZXISIi5jaGF0LnYxLkFkZFVzZXJHcm91cE1lbWJlclJlcXVlc3QaIy5jaGF0LnYxLkFkZFVzZXJHcm91cE1lbWJlclJlc3BvbnNlEmYKFVJlbW92ZVVzZXJHcm91cE1lbWJlchIlLmNoYXQudjEuUmVtb3ZlVXNlckdyb3VwTWVtYmVyUmVxdWVzdBomLmNoYXQudjEuUmVtb3ZlVXNlckdyb3VwTWVtYmVyUmVzcG9uc2VClgEKC2NvbS5jaGF0LnYxQhVVc2VyR3JvdXBTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.UserGroup
@@ -173,40 +173,6 @@ export const ListUserGroupsResponseSchema: GenMessage<ListUserGroupsResponse> = 
   messageDesc(file_chat_v1_user_group_service, 5);
 
 /**
- * @generated from message chat.v1.GetUserGroupRequest
- */
-export type GetUserGroupRequest = Message<"chat.v1.GetUserGroupRequest"> & {
-  /**
-   * @generated from field: string group_id = 1;
-   */
-  groupId: string;
-};
-
-/**
- * Describes the message chat.v1.GetUserGroupRequest.
- * Use `create(GetUserGroupRequestSchema)` to create a new message.
- */
-export const GetUserGroupRequestSchema: GenMessage<GetUserGroupRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 6);
-
-/**
- * @generated from message chat.v1.GetUserGroupResponse
- */
-export type GetUserGroupResponse = Message<"chat.v1.GetUserGroupResponse"> & {
-  /**
-   * @generated from field: chat.v1.UserGroup user_group = 1;
-   */
-  userGroup?: UserGroup | undefined;
-};
-
-/**
- * Describes the message chat.v1.GetUserGroupResponse.
- * Use `create(GetUserGroupResponseSchema)` to create a new message.
- */
-export const GetUserGroupResponseSchema: GenMessage<GetUserGroupResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 7);
-
-/**
  * @generated from message chat.v1.UpdateUserGroupRequest
  */
 export type UpdateUserGroupRequest = Message<"chat.v1.UpdateUserGroupRequest"> & {
@@ -231,7 +197,7 @@ export type UpdateUserGroupRequest = Message<"chat.v1.UpdateUserGroupRequest"> &
  * Use `create(UpdateUserGroupRequestSchema)` to create a new message.
  */
 export const UpdateUserGroupRequestSchema: GenMessage<UpdateUserGroupRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 8);
+  messageDesc(file_chat_v1_user_group_service, 6);
 
 /**
  * @generated from message chat.v1.UpdateUserGroupResponse
@@ -248,7 +214,7 @@ export type UpdateUserGroupResponse = Message<"chat.v1.UpdateUserGroupResponse">
  * Use `create(UpdateUserGroupResponseSchema)` to create a new message.
  */
 export const UpdateUserGroupResponseSchema: GenMessage<UpdateUserGroupResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 9);
+  messageDesc(file_chat_v1_user_group_service, 7);
 
 /**
  * @generated from message chat.v1.DeleteUserGroupRequest
@@ -265,7 +231,7 @@ export type DeleteUserGroupRequest = Message<"chat.v1.DeleteUserGroupRequest"> &
  * Use `create(DeleteUserGroupRequestSchema)` to create a new message.
  */
 export const DeleteUserGroupRequestSchema: GenMessage<DeleteUserGroupRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 10);
+  messageDesc(file_chat_v1_user_group_service, 8);
 
 /**
  * @generated from message chat.v1.DeleteUserGroupResponse
@@ -278,7 +244,7 @@ export type DeleteUserGroupResponse = Message<"chat.v1.DeleteUserGroupResponse">
  * Use `create(DeleteUserGroupResponseSchema)` to create a new message.
  */
 export const DeleteUserGroupResponseSchema: GenMessage<DeleteUserGroupResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 11);
+  messageDesc(file_chat_v1_user_group_service, 9);
 
 /**
  * @generated from message chat.v1.ListUserGroupMembersRequest
@@ -295,7 +261,7 @@ export type ListUserGroupMembersRequest = Message<"chat.v1.ListUserGroupMembersR
  * Use `create(ListUserGroupMembersRequestSchema)` to create a new message.
  */
 export const ListUserGroupMembersRequestSchema: GenMessage<ListUserGroupMembersRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 12);
+  messageDesc(file_chat_v1_user_group_service, 10);
 
 /**
  * @generated from message chat.v1.ListUserGroupMembersResponse
@@ -312,7 +278,7 @@ export type ListUserGroupMembersResponse = Message<"chat.v1.ListUserGroupMembers
  * Use `create(ListUserGroupMembersResponseSchema)` to create a new message.
  */
 export const ListUserGroupMembersResponseSchema: GenMessage<ListUserGroupMembersResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 13);
+  messageDesc(file_chat_v1_user_group_service, 11);
 
 /**
  * @generated from message chat.v1.AddUserGroupMemberRequest
@@ -334,7 +300,7 @@ export type AddUserGroupMemberRequest = Message<"chat.v1.AddUserGroupMemberReque
  * Use `create(AddUserGroupMemberRequestSchema)` to create a new message.
  */
 export const AddUserGroupMemberRequestSchema: GenMessage<AddUserGroupMemberRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 14);
+  messageDesc(file_chat_v1_user_group_service, 12);
 
 /**
  * @generated from message chat.v1.AddUserGroupMemberResponse
@@ -347,7 +313,7 @@ export type AddUserGroupMemberResponse = Message<"chat.v1.AddUserGroupMemberResp
  * Use `create(AddUserGroupMemberResponseSchema)` to create a new message.
  */
 export const AddUserGroupMemberResponseSchema: GenMessage<AddUserGroupMemberResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 15);
+  messageDesc(file_chat_v1_user_group_service, 13);
 
 /**
  * @generated from message chat.v1.RemoveUserGroupMemberRequest
@@ -369,7 +335,7 @@ export type RemoveUserGroupMemberRequest = Message<"chat.v1.RemoveUserGroupMembe
  * Use `create(RemoveUserGroupMemberRequestSchema)` to create a new message.
  */
 export const RemoveUserGroupMemberRequestSchema: GenMessage<RemoveUserGroupMemberRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 16);
+  messageDesc(file_chat_v1_user_group_service, 14);
 
 /**
  * @generated from message chat.v1.RemoveUserGroupMemberResponse
@@ -382,7 +348,7 @@ export type RemoveUserGroupMemberResponse = Message<"chat.v1.RemoveUserGroupMemb
  * Use `create(RemoveUserGroupMemberResponseSchema)` to create a new message.
  */
 export const RemoveUserGroupMemberResponseSchema: GenMessage<RemoveUserGroupMemberResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_user_group_service, 17);
+  messageDesc(file_chat_v1_user_group_service, 15);
 
 /**
  * @generated from service chat.v1.UserGroupService
@@ -403,14 +369,6 @@ export const UserGroupService: GenService<{
     methodKind: "unary";
     input: typeof ListUserGroupsRequestSchema;
     output: typeof ListUserGroupsResponseSchema;
-  },
-  /**
-   * @generated from rpc chat.v1.UserGroupService.GetUserGroup
-   */
-  getUserGroup: {
-    methodKind: "unary";
-    input: typeof GetUserGroupRequestSchema;
-    output: typeof GetUserGroupResponseSchema;
   },
   /**
    * @generated from rpc chat.v1.UserGroupService.UpdateUserGroup

@@ -45,21 +45,12 @@ const (
 	// ChannelServiceUpdateChannelProcedure is the fully-qualified name of the ChannelService's
 	// UpdateChannel RPC.
 	ChannelServiceUpdateChannelProcedure = "/chat.v1.ChannelService/UpdateChannel"
-	// ChannelServiceDeleteChannelProcedure is the fully-qualified name of the ChannelService's
-	// DeleteChannel RPC.
-	ChannelServiceDeleteChannelProcedure = "/chat.v1.ChannelService/DeleteChannel"
 	// ChannelServiceSetChannelStarredProcedure is the fully-qualified name of the ChannelService's
 	// SetChannelStarred RPC.
 	ChannelServiceSetChannelStarredProcedure = "/chat.v1.ChannelService/SetChannelStarred"
 	// ChannelServiceSetChannelMutedProcedure is the fully-qualified name of the ChannelService's
 	// SetChannelMuted RPC.
 	ChannelServiceSetChannelMutedProcedure = "/chat.v1.ChannelService/SetChannelMuted"
-	// ChannelServiceArchiveChannelProcedure is the fully-qualified name of the ChannelService's
-	// ArchiveChannel RPC.
-	ChannelServiceArchiveChannelProcedure = "/chat.v1.ChannelService/ArchiveChannel"
-	// ChannelServiceUnarchiveChannelProcedure is the fully-qualified name of the ChannelService's
-	// UnarchiveChannel RPC.
-	ChannelServiceUnarchiveChannelProcedure = "/chat.v1.ChannelService/UnarchiveChannel"
 	// ChannelServiceListBrowsableChannelsProcedure is the fully-qualified name of the ChannelService's
 	// ListBrowsableChannels RPC.
 	ChannelServiceListBrowsableChannelsProcedure = "/chat.v1.ChannelService/ListBrowsableChannels"
@@ -74,13 +65,9 @@ type ChannelServiceClient interface {
 	CreateChannel(context.Context, *v1.CreateChannelRequest) (*v1.CreateChannelResponse, error)
 	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
-	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
 	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
 	// 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
 	SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error)
-	// チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
-	ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error)
-	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
 	// 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
 	ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error)
 	// 閲覧できるチャンネルを検索・絞り込み・並べ替えしてページ単位で返す
@@ -122,12 +109,6 @@ func NewChannelServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(channelServiceMethods.ByName("UpdateChannel")),
 			connect.WithClientOptions(opts...),
 		),
-		deleteChannel: connect.NewClient[v1.DeleteChannelRequest, v1.DeleteChannelResponse](
-			httpClient,
-			baseURL+ChannelServiceDeleteChannelProcedure,
-			connect.WithSchema(channelServiceMethods.ByName("DeleteChannel")),
-			connect.WithClientOptions(opts...),
-		),
 		setChannelStarred: connect.NewClient[v1.SetChannelStarredRequest, v1.SetChannelStarredResponse](
 			httpClient,
 			baseURL+ChannelServiceSetChannelStarredProcedure,
@@ -138,18 +119,6 @@ func NewChannelServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			httpClient,
 			baseURL+ChannelServiceSetChannelMutedProcedure,
 			connect.WithSchema(channelServiceMethods.ByName("SetChannelMuted")),
-			connect.WithClientOptions(opts...),
-		),
-		archiveChannel: connect.NewClient[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse](
-			httpClient,
-			baseURL+ChannelServiceArchiveChannelProcedure,
-			connect.WithSchema(channelServiceMethods.ByName("ArchiveChannel")),
-			connect.WithClientOptions(opts...),
-		),
-		unarchiveChannel: connect.NewClient[v1.UnarchiveChannelRequest, v1.UnarchiveChannelResponse](
-			httpClient,
-			baseURL+ChannelServiceUnarchiveChannelProcedure,
-			connect.WithSchema(channelServiceMethods.ByName("UnarchiveChannel")),
 			connect.WithClientOptions(opts...),
 		),
 		listBrowsableChannels: connect.NewClient[v1.ListBrowsableChannelsRequest, v1.ListBrowsableChannelsResponse](
@@ -173,11 +142,8 @@ type channelServiceClient struct {
 	createChannel           *connect.Client[v1.CreateChannelRequest, v1.CreateChannelResponse]
 	getChannel              *connect.Client[v1.GetChannelRequest, v1.GetChannelResponse]
 	updateChannel           *connect.Client[v1.UpdateChannelRequest, v1.UpdateChannelResponse]
-	deleteChannel           *connect.Client[v1.DeleteChannelRequest, v1.DeleteChannelResponse]
 	setChannelStarred       *connect.Client[v1.SetChannelStarredRequest, v1.SetChannelStarredResponse]
 	setChannelMuted         *connect.Client[v1.SetChannelMutedRequest, v1.SetChannelMutedResponse]
-	archiveChannel          *connect.Client[v1.ArchiveChannelRequest, v1.ArchiveChannelResponse]
-	unarchiveChannel        *connect.Client[v1.UnarchiveChannelRequest, v1.UnarchiveChannelResponse]
 	listBrowsableChannels   *connect.Client[v1.ListBrowsableChannelsRequest, v1.ListBrowsableChannelsResponse]
 	searchBrowsableChannels *connect.Client[v1.SearchBrowsableChannelsRequest, v1.SearchBrowsableChannelsResponse]
 }
@@ -218,15 +184,6 @@ func (c *channelServiceClient) UpdateChannel(ctx context.Context, req *v1.Update
 	return nil, err
 }
 
-// DeleteChannel calls chat.v1.ChannelService.DeleteChannel.
-func (c *channelServiceClient) DeleteChannel(ctx context.Context, req *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error) {
-	response, err := c.deleteChannel.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
 // SetChannelStarred calls chat.v1.ChannelService.SetChannelStarred.
 func (c *channelServiceClient) SetChannelStarred(ctx context.Context, req *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error) {
 	response, err := c.setChannelStarred.CallUnary(ctx, connect.NewRequest(req))
@@ -239,24 +196,6 @@ func (c *channelServiceClient) SetChannelStarred(ctx context.Context, req *v1.Se
 // SetChannelMuted calls chat.v1.ChannelService.SetChannelMuted.
 func (c *channelServiceClient) SetChannelMuted(ctx context.Context, req *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error) {
 	response, err := c.setChannelMuted.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// ArchiveChannel calls chat.v1.ChannelService.ArchiveChannel.
-func (c *channelServiceClient) ArchiveChannel(ctx context.Context, req *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error) {
-	response, err := c.archiveChannel.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// UnarchiveChannel calls chat.v1.ChannelService.UnarchiveChannel.
-func (c *channelServiceClient) UnarchiveChannel(ctx context.Context, req *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error) {
-	response, err := c.unarchiveChannel.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -287,13 +226,9 @@ type ChannelServiceHandler interface {
 	CreateChannel(context.Context, *v1.CreateChannelRequest) (*v1.CreateChannelResponse, error)
 	GetChannel(context.Context, *v1.GetChannelRequest) (*v1.GetChannelResponse, error)
 	UpdateChannel(context.Context, *v1.UpdateChannelRequest) (*v1.UpdateChannelResponse, error)
-	DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error)
 	SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error)
 	// 自分だけに効くミュート。通知の抑制はクライアントが is_muted を見て行う
 	SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error)
-	// チャンネルの作成者かワークスペースの管理者が実行できる。アーカイブ中は投稿できない
-	ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error)
-	UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error)
 	// 参加していなくても閲覧できるチャンネル（公開と参加中の非公開）をすべて返す
 	ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error)
 	// 閲覧できるチャンネルを検索・絞り込み・並べ替えしてページ単位で返す
@@ -331,12 +266,6 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 		connect.WithSchema(channelServiceMethods.ByName("UpdateChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
-	channelServiceDeleteChannelHandler := connect.NewUnaryHandlerSimple(
-		ChannelServiceDeleteChannelProcedure,
-		svc.DeleteChannel,
-		connect.WithSchema(channelServiceMethods.ByName("DeleteChannel")),
-		connect.WithHandlerOptions(opts...),
-	)
 	channelServiceSetChannelStarredHandler := connect.NewUnaryHandlerSimple(
 		ChannelServiceSetChannelStarredProcedure,
 		svc.SetChannelStarred,
@@ -347,18 +276,6 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 		ChannelServiceSetChannelMutedProcedure,
 		svc.SetChannelMuted,
 		connect.WithSchema(channelServiceMethods.ByName("SetChannelMuted")),
-		connect.WithHandlerOptions(opts...),
-	)
-	channelServiceArchiveChannelHandler := connect.NewUnaryHandlerSimple(
-		ChannelServiceArchiveChannelProcedure,
-		svc.ArchiveChannel,
-		connect.WithSchema(channelServiceMethods.ByName("ArchiveChannel")),
-		connect.WithHandlerOptions(opts...),
-	)
-	channelServiceUnarchiveChannelHandler := connect.NewUnaryHandlerSimple(
-		ChannelServiceUnarchiveChannelProcedure,
-		svc.UnarchiveChannel,
-		connect.WithSchema(channelServiceMethods.ByName("UnarchiveChannel")),
 		connect.WithHandlerOptions(opts...),
 	)
 	channelServiceListBrowsableChannelsHandler := connect.NewUnaryHandlerSimple(
@@ -383,16 +300,10 @@ func NewChannelServiceHandler(svc ChannelServiceHandler, opts ...connect.Handler
 			channelServiceGetChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceUpdateChannelProcedure:
 			channelServiceUpdateChannelHandler.ServeHTTP(w, r)
-		case ChannelServiceDeleteChannelProcedure:
-			channelServiceDeleteChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceSetChannelStarredProcedure:
 			channelServiceSetChannelStarredHandler.ServeHTTP(w, r)
 		case ChannelServiceSetChannelMutedProcedure:
 			channelServiceSetChannelMutedHandler.ServeHTTP(w, r)
-		case ChannelServiceArchiveChannelProcedure:
-			channelServiceArchiveChannelHandler.ServeHTTP(w, r)
-		case ChannelServiceUnarchiveChannelProcedure:
-			channelServiceUnarchiveChannelHandler.ServeHTTP(w, r)
 		case ChannelServiceListBrowsableChannelsProcedure:
 			channelServiceListBrowsableChannelsHandler.ServeHTTP(w, r)
 		case ChannelServiceSearchBrowsableChannelsProcedure:
@@ -422,24 +333,12 @@ func (UnimplementedChannelServiceHandler) UpdateChannel(context.Context, *v1.Upd
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.UpdateChannel is not implemented"))
 }
 
-func (UnimplementedChannelServiceHandler) DeleteChannel(context.Context, *v1.DeleteChannelRequest) (*v1.DeleteChannelResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.DeleteChannel is not implemented"))
-}
-
 func (UnimplementedChannelServiceHandler) SetChannelStarred(context.Context, *v1.SetChannelStarredRequest) (*v1.SetChannelStarredResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.SetChannelStarred is not implemented"))
 }
 
 func (UnimplementedChannelServiceHandler) SetChannelMuted(context.Context, *v1.SetChannelMutedRequest) (*v1.SetChannelMutedResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.SetChannelMuted is not implemented"))
-}
-
-func (UnimplementedChannelServiceHandler) ArchiveChannel(context.Context, *v1.ArchiveChannelRequest) (*v1.ArchiveChannelResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.ArchiveChannel is not implemented"))
-}
-
-func (UnimplementedChannelServiceHandler) UnarchiveChannel(context.Context, *v1.UnarchiveChannelRequest) (*v1.UnarchiveChannelResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ChannelService.UnarchiveChannel is not implemented"))
 }
 
 func (UnimplementedChannelServiceHandler) ListBrowsableChannels(context.Context, *v1.ListBrowsableChannelsRequest) (*v1.ListBrowsableChannelsResponse, error) {

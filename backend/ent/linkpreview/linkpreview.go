@@ -35,8 +35,6 @@ const (
 	EdgeYoutube = "youtube"
 	// EdgeXPost holds the string denoting the x_post edge name in mutations.
 	EdgeXPost = "x_post"
-	// EdgeMessageLinks holds the string denoting the message_links edge name in mutations.
-	EdgeMessageLinks = "message_links"
 	// Table holds the table name of the linkpreview in the database.
 	Table = "link_preview"
 	// YoutubeTable is the table that holds the youtube relation/edge.
@@ -53,13 +51,6 @@ const (
 	XPostInverseTable = "link_preview_x_post"
 	// XPostColumn is the table column denoting the x_post relation/edge.
 	XPostColumn = "link_preview_id"
-	// MessageLinksTable is the table that holds the message_links relation/edge.
-	MessageLinksTable = "message_link"
-	// MessageLinksInverseTable is the table name for the MessageLink entity.
-	// It exists in this package in order to avoid circular dependency with the "messagelink" package.
-	MessageLinksInverseTable = "message_link"
-	// MessageLinksColumn is the table column denoting the message_links relation/edge.
-	MessageLinksColumn = "link_preview_id"
 )
 
 // Columns holds all SQL columns for linkpreview fields.
@@ -159,20 +150,6 @@ func ByXPostField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newXPostStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByMessageLinksCount orders the results by message_links count.
-func ByMessageLinksCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMessageLinksStep(), opts...)
-	}
-}
-
-// ByMessageLinks orders the results by message_links terms.
-func ByMessageLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMessageLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newYoutubeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -185,12 +162,5 @@ func newXPostStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(XPostInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, XPostTable, XPostColumn),
-	)
-}
-func newMessageLinksStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MessageLinksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, MessageLinksTable, MessageLinksColumn),
 	)
 }

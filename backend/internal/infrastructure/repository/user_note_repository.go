@@ -11,7 +11,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 	domainrepository "github.com/newt239/chat/internal/domain/repository"
 	"github.com/newt239/chat/internal/infrastructure/transaction"
-	"github.com/newt239/chat/internal/infrastructure/utils"
 )
 
 type userNoteRepository struct {
@@ -27,11 +26,11 @@ func notePredicate(ownerID, targetID uuid.UUID) predicate.UserNote {
 }
 
 func parseNoteUsers(ownerID, targetID string) (uuid.UUID, uuid.UUID, error) {
-	oid, err := utils.ParseUUID(ownerID, "owner ID")
+	oid, err := parseUUID(ownerID, "owner ID")
 	if err != nil {
 		return uuid.Nil, uuid.Nil, err
 	}
-	tid, err := utils.ParseUUID(targetID, "target user ID")
+	tid, err := parseUUID(targetID, "target user ID")
 	if err != nil {
 		return uuid.Nil, uuid.Nil, err
 	}
@@ -62,7 +61,7 @@ func (r *userNoteRepository) Find(ctx context.Context, ownerID string, targetID 
 }
 
 func (r *userNoteRepository) FindNicknames(ctx context.Context, ownerID string) (map[string]string, error) {
-	oid, err := utils.ParseUUID(ownerID, "owner ID")
+	oid, err := parseUUID(ownerID, "owner ID")
 	if err != nil {
 		return nil, err
 	}

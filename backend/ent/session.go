@@ -26,7 +26,7 @@ type Session struct {
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// RevokedAt holds the value of the "revoked_at" field.
-	RevokedAt time.Time `json:"revoked_at,omitempty"`
+	RevokedAt *time.Time `json:"revoked_at,omitempty"`
 	// IPAddress holds the value of the "ip_address" field.
 	IPAddress string `json:"ip_address,omitempty"`
 	// UserAgent holds the value of the "user_agent" field.
@@ -113,7 +113,8 @@ func (_m *Session) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field revoked_at", values[i])
 			} else if value.Valid {
-				_m.RevokedAt = value.Time
+				_m.RevokedAt = new(time.Time)
+				*_m.RevokedAt = value.Time
 			}
 		case session.FieldIPAddress:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -183,8 +184,10 @@ func (_m *Session) String() string {
 	builder.WriteString("expires_at=")
 	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("revoked_at=")
-	builder.WriteString(_m.RevokedAt.Format(time.ANSIC))
+	if v := _m.RevokedAt; v != nil {
+		builder.WriteString("revoked_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("ip_address=")
 	builder.WriteString(_m.IPAddress)

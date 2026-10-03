@@ -1,5 +1,7 @@
 package entity
 
+import "slices"
+
 type Permission string
 
 const (
@@ -27,21 +29,11 @@ var AllPermissions = []Permission{
 var ConfigurableRoles = []WorkspaceRole{WorkspaceRoleAdmin, WorkspaceRoleMember, WorkspaceRoleGuest}
 
 func (p Permission) IsValid() bool {
-	for _, known := range AllPermissions {
-		if p == known {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(AllPermissions, p)
 }
 
 func IsConfigurableRole(role WorkspaceRole) bool {
-	for _, r := range ConfigurableRoles {
-		if r == role {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(ConfigurableRoles, role)
 }
 
 // PermissionMatrix はロールごとに許可された操作を表します

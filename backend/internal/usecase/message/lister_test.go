@@ -56,7 +56,7 @@ func TestListMessagesIncludeDescendants(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			messages := &recordingMessageRepo{}
 			systemMessages := &recordingSystemMessageRepo{}
-			lister := &MessageLister{
+			lister := &Interactor{
 				messageRepo:      messages,
 				systemMsgRepo:    systemMessages,
 				channelAccessSvc: stubAccess{},
@@ -101,7 +101,7 @@ func TestListMessagesAround(t *testing.T) {
 	for i := -5; i < 5; i++ {
 		systemMessages.messages = append(systemMessages.messages, &entity.SystemMessage{ID: base.Add(time.Duration(i) * time.Hour).Format("15"), CreatedAt: base.Add(time.Duration(i) * time.Hour)})
 	}
-	lister := &MessageLister{
+	lister := &Interactor{
 		messageRepo:      &recordingMessageRepo{},
 		systemMsgRepo:    systemMessages,
 		channelAccessSvc: stubAccess{},

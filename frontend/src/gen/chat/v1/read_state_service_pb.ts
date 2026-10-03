@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file chat/v1/read_state_service.proto.
  */
 export const file_chat_v1_read_state_service: GenFile = /*@__PURE__*/
-  fileDesc("CiBjaGF0L3YxL3JlYWRfc3RhdGVfc2VydmljZS5wcm90bxIHY2hhdC52MSKNAQoWVXBkYXRlUmVhZFN0YXRlUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARI4CgxsYXN0X3JlYWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQga6SAPIAQESGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgDIAEoCCIZChdVcGRhdGVSZWFkU3RhdGVSZXNwb25zZSI1ChVHZXRVbnJlYWRDb3VudFJlcXVlc3QSHAoKY2hhbm5lbF9pZBgBIAEoCUIIukgFcgOwAQEiJwoWR2V0VW5yZWFkQ291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBTK7AQoQUmVhZFN0YXRlU2VydmljZRJUCg9VcGRhdGVSZWFkU3RhdGUSHy5jaGF0LnYxLlVwZGF0ZVJlYWRTdGF0ZVJlcXVlc3QaIC5jaGF0LnYxLlVwZGF0ZVJlYWRTdGF0ZVJlc3BvbnNlElEKDkdldFVucmVhZENvdW50Eh4uY2hhdC52MS5HZXRVbnJlYWRDb3VudFJlcXVlc3QaHy5jaGF0LnYxLkdldFVucmVhZENvdW50UmVzcG9uc2VClgEKC2NvbS5jaGF0LnYxQhVSZWFkU3RhdGVTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("CiBjaGF0L3YxL3JlYWRfc3RhdGVfc2VydmljZS5wcm90bxIHY2hhdC52MSKNAQoWVXBkYXRlUmVhZFN0YXRlUmVxdWVzdBIcCgpjaGFubmVsX2lkGAEgASgJQgi6SAVyA7ABARI4CgxsYXN0X3JlYWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQga6SAPIAQESGwoTaW5jbHVkZV9kZXNjZW5kYW50cxgDIAEoCCIZChdVcGRhdGVSZWFkU3RhdGVSZXNwb25zZTJoChBSZWFkU3RhdGVTZXJ2aWNlElQKD1VwZGF0ZVJlYWRTdGF0ZRIfLmNoYXQudjEuVXBkYXRlUmVhZFN0YXRlUmVxdWVzdBogLmNoYXQudjEuVXBkYXRlUmVhZFN0YXRlUmVzcG9uc2VClgEKC2NvbS5jaGF0LnYxQhVSZWFkU3RhdGVTZXJ2aWNlUHJvdG9QAVozZ2l0aHViLmNvbS9uZXd0MjM5L2NoYXQvaW50ZXJuYWwvZ2VuL2NoYXQvdjE7Y2hhdHYxogIDQ1hYqgIHQ2hhdC5WMcoCB0NoYXRcVjHiAhNDaGF0XFYxXEdQQk1ldGFkYXRh6gIIQ2hhdDo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message chat.v1.UpdateReadStateRequest
@@ -58,40 +58,6 @@ export const UpdateReadStateResponseSchema: GenMessage<UpdateReadStateResponse> 
   messageDesc(file_chat_v1_read_state_service, 1);
 
 /**
- * @generated from message chat.v1.GetUnreadCountRequest
- */
-export type GetUnreadCountRequest = Message<"chat.v1.GetUnreadCountRequest"> & {
-  /**
-   * @generated from field: string channel_id = 1;
-   */
-  channelId: string;
-};
-
-/**
- * Describes the message chat.v1.GetUnreadCountRequest.
- * Use `create(GetUnreadCountRequestSchema)` to create a new message.
- */
-export const GetUnreadCountRequestSchema: GenMessage<GetUnreadCountRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_read_state_service, 2);
-
-/**
- * @generated from message chat.v1.GetUnreadCountResponse
- */
-export type GetUnreadCountResponse = Message<"chat.v1.GetUnreadCountResponse"> & {
-  /**
-   * @generated from field: int32 count = 1;
-   */
-  count: number;
-};
-
-/**
- * Describes the message chat.v1.GetUnreadCountResponse.
- * Use `create(GetUnreadCountResponseSchema)` to create a new message.
- */
-export const GetUnreadCountResponseSchema: GenMessage<GetUnreadCountResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_read_state_service, 3);
-
-/**
  * @generated from service chat.v1.ReadStateService
  */
 export const ReadStateService: GenService<{
@@ -102,14 +68,6 @@ export const ReadStateService: GenService<{
     methodKind: "unary";
     input: typeof UpdateReadStateRequestSchema;
     output: typeof UpdateReadStateResponseSchema;
-  },
-  /**
-   * @generated from rpc chat.v1.ReadStateService.GetUnreadCount
-   */
-  getUnreadCount: {
-    methodKind: "unary";
-    input: typeof GetUnreadCountRequestSchema;
-    output: typeof GetUnreadCountResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_chat_v1_read_state_service, 0);

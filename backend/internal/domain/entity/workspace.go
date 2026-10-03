@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"fmt"
 	"regexp"
 	"time"
 
@@ -41,15 +40,18 @@ type WorkspaceMember struct {
 
 // IsAdmin はワークスペースの管理画面を操作できるロールかを返します
 func (m *WorkspaceMember) IsAdmin() bool {
-	if m == nil {
-		return false
-	}
-
 	return m.Role == WorkspaceRoleOwner || m.Role == WorkspaceRoleAdmin
 }
 
+// MemberActivity は管理画面に出すメンバーの直近の投稿数と添付の合計サイズです
+type MemberActivity struct {
+	MessageCount  int
+	StorageBytes  int64
+	LastMessageAt *time.Time
+}
+
 var (
-	ErrWorkspaceSlugInvalid = fmt.Errorf("%w: ワークスペースIDは英小文字・数字・ハイフンの 3〜12 文字で指定してください", domerr.ErrValidation)
+	ErrWorkspaceSlugInvalid = domerr.New(domerr.ErrValidation, "ワークスペースIDは英小文字・数字・ハイフンの 3〜12 文字で指定してください")
 	workspaceSlugPattern    = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*[a-z0-9]$`)
 )
 

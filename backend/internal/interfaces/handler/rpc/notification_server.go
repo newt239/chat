@@ -10,7 +10,7 @@ import (
 )
 
 type NotificationServer struct {
-	UC notificationuc.UseCase
+	UC *notificationuc.Interactor
 }
 
 var pushPlatforms = map[chatv1.PushPlatform]entity.PushPlatform{
@@ -20,21 +20,14 @@ var pushPlatforms = map[chatv1.PushPlatform]entity.PushPlatform{
 }
 
 func (s *NotificationServer) RegisterPushToken(ctx context.Context, req *chatv1.RegisterPushTokenRequest) (*chatv1.RegisterPushTokenResponse, error) {
-	err := s.UC.RegisterPushToken(ctx, notificationuc.RegisterPushTokenInput{
+	return &chatv1.RegisterPushTokenResponse{}, s.UC.RegisterPushToken(ctx, entity.PushToken{
 		UserID:    userIDFrom(ctx),
 		Token:     req.Token,
 		Platform:  pushPlatforms[req.Platform],
 		UserAgent: audit.ClientInfoFrom(ctx).UserAgent,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return &chatv1.RegisterPushTokenResponse{}, nil
 }
 
 func (s *NotificationServer) UnregisterPushToken(ctx context.Context, req *chatv1.UnregisterPushTokenRequest) (*chatv1.UnregisterPushTokenResponse, error) {
-	if err := s.UC.UnregisterPushToken(ctx, notificationuc.UnregisterPushTokenInput{UserID: userIDFrom(ctx), Token: req.Token}); err != nil {
-		return nil, err
-	}
-	return &chatv1.UnregisterPushTokenResponse{}, nil
+	return &chatv1.UnregisterPushTokenResponse{}, s.UC.UnregisterPushToken(ctx, userIDFrom(ctx), req.Token)
 }

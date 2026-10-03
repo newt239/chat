@@ -5,49 +5,13 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Reaction } from "./message_pb";
-import { file_chat_v1_message } from "./message_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file chat/v1/reaction_service.proto.
  */
 export const file_chat_v1_reaction_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch5jaGF0L3YxL3JlYWN0aW9uX3NlcnZpY2UucHJvdG8SB2NoYXQudjEiNAoUTGlzdFJlYWN0aW9uc1JlcXVlc3QSHAoKbWVzc2FnZV9pZBgBIAEoCUIIukgFcgOwAQEiPQoVTGlzdFJlYWN0aW9uc1Jlc3BvbnNlEiQKCXJlYWN0aW9ucxgBIAMoCzIRLmNoYXQudjEuUmVhY3Rpb24iSgoSQWRkUmVhY3Rpb25SZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBEhYKBWVtb2ppGAIgASgJQge6SARyAhABIhUKE0FkZFJlYWN0aW9uUmVzcG9uc2UiTQoVUmVtb3ZlUmVhY3Rpb25SZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBEhYKBWVtb2ppGAIgASgJQge6SARyAhABIhgKFlJlbW92ZVJlYWN0aW9uUmVzcG9uc2Uy/gEKD1JlYWN0aW9uU2VydmljZRJOCg1MaXN0UmVhY3Rpb25zEh0uY2hhdC52MS5MaXN0UmVhY3Rpb25zUmVxdWVzdBoeLmNoYXQudjEuTGlzdFJlYWN0aW9uc1Jlc3BvbnNlEkgKC0FkZFJlYWN0aW9uEhsuY2hhdC52MS5BZGRSZWFjdGlvblJlcXVlc3QaHC5jaGF0LnYxLkFkZFJlYWN0aW9uUmVzcG9uc2USUQoOUmVtb3ZlUmVhY3Rpb24SHi5jaGF0LnYxLlJlbW92ZVJlYWN0aW9uUmVxdWVzdBofLmNoYXQudjEuUmVtb3ZlUmVhY3Rpb25SZXNwb25zZUKVAQoLY29tLmNoYXQudjFCFFJlYWN0aW9uU2VydmljZVByb3RvUAFaM2dpdGh1Yi5jb20vbmV3dDIzOS9jaGF0L2ludGVybmFsL2dlbi9jaGF0L3YxO2NoYXR2MaICA0NYWKoCB0NoYXQuVjHKAgdDaGF0XFYx4gITQ2hhdFxWMVxHUEJNZXRhZGF0YeoCCENoYXQ6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_chat_v1_message]);
-
-/**
- * @generated from message chat.v1.ListReactionsRequest
- */
-export type ListReactionsRequest = Message<"chat.v1.ListReactionsRequest"> & {
-  /**
-   * @generated from field: string message_id = 1;
-   */
-  messageId: string;
-};
-
-/**
- * Describes the message chat.v1.ListReactionsRequest.
- * Use `create(ListReactionsRequestSchema)` to create a new message.
- */
-export const ListReactionsRequestSchema: GenMessage<ListReactionsRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_reaction_service, 0);
-
-/**
- * @generated from message chat.v1.ListReactionsResponse
- */
-export type ListReactionsResponse = Message<"chat.v1.ListReactionsResponse"> & {
-  /**
-   * @generated from field: repeated chat.v1.Reaction reactions = 1;
-   */
-  reactions: Reaction[];
-};
-
-/**
- * Describes the message chat.v1.ListReactionsResponse.
- * Use `create(ListReactionsResponseSchema)` to create a new message.
- */
-export const ListReactionsResponseSchema: GenMessage<ListReactionsResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_reaction_service, 1);
+  fileDesc("Ch5jaGF0L3YxL3JlYWN0aW9uX3NlcnZpY2UucHJvdG8SB2NoYXQudjEiSgoSQWRkUmVhY3Rpb25SZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBEhYKBWVtb2ppGAIgASgJQge6SARyAhABIhUKE0FkZFJlYWN0aW9uUmVzcG9uc2UiTQoVUmVtb3ZlUmVhY3Rpb25SZXF1ZXN0EhwKCm1lc3NhZ2VfaWQYASABKAlCCLpIBXIDsAEBEhYKBWVtb2ppGAIgASgJQge6SARyAhABIhgKFlJlbW92ZVJlYWN0aW9uUmVzcG9uc2UyrgEKD1JlYWN0aW9uU2VydmljZRJICgtBZGRSZWFjdGlvbhIbLmNoYXQudjEuQWRkUmVhY3Rpb25SZXF1ZXN0GhwuY2hhdC52MS5BZGRSZWFjdGlvblJlc3BvbnNlElEKDlJlbW92ZVJlYWN0aW9uEh4uY2hhdC52MS5SZW1vdmVSZWFjdGlvblJlcXVlc3QaHy5jaGF0LnYxLlJlbW92ZVJlYWN0aW9uUmVzcG9uc2VClQEKC2NvbS5jaGF0LnYxQhRSZWFjdGlvblNlcnZpY2VQcm90b1ABWjNnaXRodWIuY29tL25ld3QyMzkvY2hhdC9pbnRlcm5hbC9nZW4vY2hhdC92MTtjaGF0djGiAgNDWFiqAgdDaGF0LlYxygIHQ2hhdFxWMeICE0NoYXRcVjFcR1BCTWV0YWRhdGHqAghDaGF0OjpWMWIGcHJvdG8z", [file_buf_validate_validate]);
 
 /**
  * @generated from message chat.v1.AddReactionRequest
@@ -69,7 +33,7 @@ export type AddReactionRequest = Message<"chat.v1.AddReactionRequest"> & {
  * Use `create(AddReactionRequestSchema)` to create a new message.
  */
 export const AddReactionRequestSchema: GenMessage<AddReactionRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_reaction_service, 2);
+  messageDesc(file_chat_v1_reaction_service, 0);
 
 /**
  * @generated from message chat.v1.AddReactionResponse
@@ -82,7 +46,7 @@ export type AddReactionResponse = Message<"chat.v1.AddReactionResponse"> & {
  * Use `create(AddReactionResponseSchema)` to create a new message.
  */
 export const AddReactionResponseSchema: GenMessage<AddReactionResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_reaction_service, 3);
+  messageDesc(file_chat_v1_reaction_service, 1);
 
 /**
  * @generated from message chat.v1.RemoveReactionRequest
@@ -104,7 +68,7 @@ export type RemoveReactionRequest = Message<"chat.v1.RemoveReactionRequest"> & {
  * Use `create(RemoveReactionRequestSchema)` to create a new message.
  */
 export const RemoveReactionRequestSchema: GenMessage<RemoveReactionRequest> = /*@__PURE__*/
-  messageDesc(file_chat_v1_reaction_service, 4);
+  messageDesc(file_chat_v1_reaction_service, 2);
 
 /**
  * @generated from message chat.v1.RemoveReactionResponse
@@ -117,20 +81,12 @@ export type RemoveReactionResponse = Message<"chat.v1.RemoveReactionResponse"> &
  * Use `create(RemoveReactionResponseSchema)` to create a new message.
  */
 export const RemoveReactionResponseSchema: GenMessage<RemoveReactionResponse> = /*@__PURE__*/
-  messageDesc(file_chat_v1_reaction_service, 5);
+  messageDesc(file_chat_v1_reaction_service, 3);
 
 /**
  * @generated from service chat.v1.ReactionService
  */
 export const ReactionService: GenService<{
-  /**
-   * @generated from rpc chat.v1.ReactionService.ListReactions
-   */
-  listReactions: {
-    methodKind: "unary";
-    input: typeof ListReactionsRequestSchema;
-    output: typeof ListReactionsResponseSchema;
-  },
   /**
    * @generated from rpc chat.v1.ReactionService.AddReaction
    */

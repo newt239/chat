@@ -437,52 +437,6 @@ func HasCreatedByWith(preds ...predicate.User) predicate.UserGroup {
 	})
 }
 
-// HasMembers applies the HasEdge predicate on the "members" edge.
-func HasMembers() predicate.UserGroup {
-	return predicate.UserGroup(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, MembersTable, MembersColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasMembersWith applies the HasEdge predicate on the "members" edge with a given conditions (other predicates).
-func HasMembersWith(preds ...predicate.UserGroupMember) predicate.UserGroup {
-	return predicate.UserGroup(func(s *sql.Selector) {
-		step := newMembersStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasGroupMentions applies the HasEdge predicate on the "group_mentions" edge.
-func HasGroupMentions() predicate.UserGroup {
-	return predicate.UserGroup(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, GroupMentionsTable, GroupMentionsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasGroupMentionsWith applies the HasEdge predicate on the "group_mentions" edge with a given conditions (other predicates).
-func HasGroupMentionsWith(preds ...predicate.MessageGroupMention) predicate.UserGroup {
-	return predicate.UserGroup(func(s *sql.Selector) {
-		step := newGroupMentionsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.UserGroup) predicate.UserGroup {
 	return predicate.UserGroup(sql.AndPredicates(predicates...))

@@ -33,9 +33,6 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// ReactionServiceListReactionsProcedure is the fully-qualified name of the ReactionService's
-	// ListReactions RPC.
-	ReactionServiceListReactionsProcedure = "/chat.v1.ReactionService/ListReactions"
 	// ReactionServiceAddReactionProcedure is the fully-qualified name of the ReactionService's
 	// AddReaction RPC.
 	ReactionServiceAddReactionProcedure = "/chat.v1.ReactionService/AddReaction"
@@ -46,7 +43,6 @@ const (
 
 // ReactionServiceClient is a client for the chat.v1.ReactionService service.
 type ReactionServiceClient interface {
-	ListReactions(context.Context, *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error)
 	AddReaction(context.Context, *v1.AddReactionRequest) (*v1.AddReactionResponse, error)
 	RemoveReaction(context.Context, *v1.RemoveReactionRequest) (*v1.RemoveReactionResponse, error)
 }
@@ -62,12 +58,6 @@ func NewReactionServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 	baseURL = strings.TrimRight(baseURL, "/")
 	reactionServiceMethods := v1.File_chat_v1_reaction_service_proto.Services().ByName("ReactionService").Methods()
 	return &reactionServiceClient{
-		listReactions: connect.NewClient[v1.ListReactionsRequest, v1.ListReactionsResponse](
-			httpClient,
-			baseURL+ReactionServiceListReactionsProcedure,
-			connect.WithSchema(reactionServiceMethods.ByName("ListReactions")),
-			connect.WithClientOptions(opts...),
-		),
 		addReaction: connect.NewClient[v1.AddReactionRequest, v1.AddReactionResponse](
 			httpClient,
 			baseURL+ReactionServiceAddReactionProcedure,
@@ -85,18 +75,8 @@ func NewReactionServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // reactionServiceClient implements ReactionServiceClient.
 type reactionServiceClient struct {
-	listReactions  *connect.Client[v1.ListReactionsRequest, v1.ListReactionsResponse]
 	addReaction    *connect.Client[v1.AddReactionRequest, v1.AddReactionResponse]
 	removeReaction *connect.Client[v1.RemoveReactionRequest, v1.RemoveReactionResponse]
-}
-
-// ListReactions calls chat.v1.ReactionService.ListReactions.
-func (c *reactionServiceClient) ListReactions(ctx context.Context, req *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error) {
-	response, err := c.listReactions.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
 }
 
 // AddReaction calls chat.v1.ReactionService.AddReaction.
@@ -119,7 +99,6 @@ func (c *reactionServiceClient) RemoveReaction(ctx context.Context, req *v1.Remo
 
 // ReactionServiceHandler is an implementation of the chat.v1.ReactionService service.
 type ReactionServiceHandler interface {
-	ListReactions(context.Context, *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error)
 	AddReaction(context.Context, *v1.AddReactionRequest) (*v1.AddReactionResponse, error)
 	RemoveReaction(context.Context, *v1.RemoveReactionRequest) (*v1.RemoveReactionResponse, error)
 }
@@ -131,12 +110,6 @@ type ReactionServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewReactionServiceHandler(svc ReactionServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	reactionServiceMethods := v1.File_chat_v1_reaction_service_proto.Services().ByName("ReactionService").Methods()
-	reactionServiceListReactionsHandler := connect.NewUnaryHandlerSimple(
-		ReactionServiceListReactionsProcedure,
-		svc.ListReactions,
-		connect.WithSchema(reactionServiceMethods.ByName("ListReactions")),
-		connect.WithHandlerOptions(opts...),
-	)
 	reactionServiceAddReactionHandler := connect.NewUnaryHandlerSimple(
 		ReactionServiceAddReactionProcedure,
 		svc.AddReaction,
@@ -151,8 +124,6 @@ func NewReactionServiceHandler(svc ReactionServiceHandler, opts ...connect.Handl
 	)
 	return "/chat.v1.ReactionService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case ReactionServiceListReactionsProcedure:
-			reactionServiceListReactionsHandler.ServeHTTP(w, r)
 		case ReactionServiceAddReactionProcedure:
 			reactionServiceAddReactionHandler.ServeHTTP(w, r)
 		case ReactionServiceRemoveReactionProcedure:
@@ -165,10 +136,6 @@ func NewReactionServiceHandler(svc ReactionServiceHandler, opts ...connect.Handl
 
 // UnimplementedReactionServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedReactionServiceHandler struct{}
-
-func (UnimplementedReactionServiceHandler) ListReactions(context.Context, *v1.ListReactionsRequest) (*v1.ListReactionsResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReactionService.ListReactions is not implemented"))
-}
 
 func (UnimplementedReactionServiceHandler) AddReaction(context.Context, *v1.AddReactionRequest) (*v1.AddReactionResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.ReactionService.AddReaction is not implemented"))

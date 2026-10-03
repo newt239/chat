@@ -38,7 +38,7 @@ func (fakeJWTService) VerifyToken(token string) (*authuc.TokenClaims, error) {
 
 // stubAuthUseCase は渡された入力を記録し、固定のトークンを返します
 type stubAuthUseCase struct {
-	authuc.AuthUseCase
+	authUseCase
 	refreshed []string
 	loggedOut []authuc.LogoutInput
 }
@@ -71,10 +71,11 @@ func (s stubRealtimeServer) IssueWebSocketTicket(ctx context.Context, _ *chatv1.
 
 func newTestServer(t *testing.T, uc *stubAuthUseCase, realtime stubRealtimeServer) *httptest.Server {
 	t.Helper()
-	ts := httptest.NewServer(NewHandler(fakeJWTService{}, []string{allowedOrigin},
-		Register(chatv1connect.NewAuthServiceHandler, chatv1connect.AuthServiceHandler(&AuthServer{UC: uc})),
-		Register(chatv1connect.NewRealtimeServiceHandler, chatv1connect.RealtimeServiceHandler(realtime)),
-	))
+	opts := HandlerOptions(fakeJWTService{}, []string{allowedOrigin})
+	mux := http.NewServeMux()
+	mux.Handle(chatv1connect.NewAuthServiceHandler(&AuthServer{UC: uc}, opts...))
+	mux.Handle(chatv1connect.NewRealtimeServiceHandler(realtime, opts...))
+	ts := httptest.NewServer(mux)
 	t.Cleanup(ts.Close)
 	return ts
 }

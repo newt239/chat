@@ -6,8 +6,6 @@ import (
 	"github.com/newt239/chat/internal/domain/entity"
 )
 
-// Input DTOs
-
 type CreateWorkspaceInput struct {
 	ID          string
 	Name        string
@@ -25,121 +23,57 @@ type UpdateWorkspaceInput struct {
 	IsPublic           *bool
 	SignupEnabled      *bool
 	EmailSignupEnabled *bool
-	UserID             string // For authorization check
+	UserID             string
 }
 
-type DeleteWorkspaceInput struct {
-	ID     string
-	UserID string // For authorization check
-}
-
-type GetWorkspaceInput struct {
-	ID     string
-	UserID string // For authorization check
-}
-
-type UpdateMemberRoleInput struct {
+// MemberInput は OperatorID のユーザーが UserID のメンバーのロールを変えたり外したりします。Role は削除では使わない
+type MemberInput struct {
 	WorkspaceID string
 	UserID      string
-	UpdaterID   string // User performing the action
+	OperatorID  string
 	Role        entity.WorkspaceRole
 }
 
-type RemoveMemberInput struct {
-	WorkspaceID string
-	UserID      string
-	RemoverID   string // User performing the action
-}
-
-type ListMembersInput struct {
-	WorkspaceID string
-	RequesterID string // For authorization check
-}
-
-// Output DTOs
-
-// WorkspaceOutput represents a workspace in the response
 type WorkspaceOutput struct {
-	ID                 string               `json:"id"`
-	Name               string               `json:"name"`
-	Description        *string              `json:"description"`
-	IconURL            *string              `json:"iconUrl"`
-	IsPublic           bool                 `json:"isPublic"`
-	SignupEnabled      bool                 `json:"signupEnabled"`
-	EmailSignupEnabled bool                 `json:"emailSignupEnabled"`
-	Role               entity.WorkspaceRole `json:"role"`
-	CreatedBy          string               `json:"createdBy"`
-	CreatedAt          time.Time            `json:"createdAt"`
-	UpdatedAt          time.Time            `json:"updatedAt"`
-}
-
-// GetWorkspacesOutput represents the output of getting workspaces
-type GetWorkspacesOutput struct {
-	Workspaces []WorkspaceOutput `json:"workspaces"`
-}
-
-type GetWorkspaceOutput struct {
-	Workspace WorkspaceOutput `json:"workspace"`
-}
-
-type CreateWorkspaceOutput struct {
-	Workspace WorkspaceOutput `json:"workspace"`
-}
-
-type UpdateWorkspaceOutput struct {
-	Workspace WorkspaceOutput `json:"workspace"`
-}
-
-type DeleteWorkspaceOutput struct {
-	Success bool `json:"success"`
+	*entity.Workspace
+	Role entity.WorkspaceRole
 }
 
 type MemberInfo struct {
-	UserID      string               `json:"userId"`
-	Email       string               `json:"email"`
-	DisplayName string               `json:"displayName"`
-	AvatarURL   *string              `json:"avatarUrl,omitempty"`
-	Bio         *string              `json:"bio,omitempty"`
-	Role        entity.WorkspaceRole `json:"role"`
-	JoinedAt    time.Time            `json:"joinedAt"`
-	SuspendedAt *time.Time           `json:"suspendedAt,omitempty"`
-	// 取得したユーザーだけに見えるニックネーム
-	Nickname *string  `json:"nickname,omitempty"`
-	Timezone string   `json:"timezone"`
-	Links    []string `json:"links"`
-}
-
-type ListMembersOutput struct {
-	Members []MemberInfo `json:"members"`
-}
-
-type MemberActionOutput struct {
-	Success bool `json:"success"`
-}
-
-// Public workspaces
-type PublicWorkspaceItem struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
-	IconURL     *string   `json:"iconUrl"`
-	MemberCount int       `json:"memberCount"`
-	IsJoined    bool      `json:"isJoined"`
-	CreatedAt   time.Time `json:"createdAt"`
-}
-
-type ListPublicWorkspacesOutput struct {
-	Workspaces []PublicWorkspaceItem `json:"workspaces"`
-}
-
-type JoinPublicWorkspaceInput struct {
-	WorkspaceID string
 	UserID      string
+	Email       string
+	DisplayName string
+	AvatarURL   *string
+	Bio         *string
+	Role        entity.WorkspaceRole
+	JoinedAt    time.Time
+	SuspendedAt *time.Time
+	// 取得したユーザーだけに見えるニックネーム
+	Nickname *string
+	Timezone string
+	Links    []string
 }
 
-type SignupInfoOutput struct {
-	ID                 string
-	Name               string
-	IconURL            *string
-	EmailSignupEnabled bool
+// NewMemberInfos は users にないメンバーをユーザー情報なしで返します
+func NewMemberInfos(members []*entity.WorkspaceMember, users map[string]*entity.User) []MemberInfo {
+	infos := make([]MemberInfo, 0, len(members))
+	for _, m := range members {
+		info := MemberInfo{UserID: m.UserID, Role: m.Role, JoinedAt: m.JoinedAt, SuspendedAt: m.SuspendedAt}
+		if user := users[m.UserID]; user != nil {
+			info.Email = user.Email
+			info.DisplayName = user.DisplayName
+			info.AvatarURL = user.AvatarURL
+			info.Bio = user.Bio
+			info.Timezone = user.Preferences.Timezone
+			info.Links = user.Links
+		}
+		infos = append(infos, info)
+	}
+	return infos
+}
+
+type PublicWorkspaceItem struct {
+	*entity.Workspace
+	MemberCount int
+	IsJoined    bool
 }

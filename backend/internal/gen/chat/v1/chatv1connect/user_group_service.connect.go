@@ -39,9 +39,6 @@ const (
 	// UserGroupServiceListUserGroupsProcedure is the fully-qualified name of the UserGroupService's
 	// ListUserGroups RPC.
 	UserGroupServiceListUserGroupsProcedure = "/chat.v1.UserGroupService/ListUserGroups"
-	// UserGroupServiceGetUserGroupProcedure is the fully-qualified name of the UserGroupService's
-	// GetUserGroup RPC.
-	UserGroupServiceGetUserGroupProcedure = "/chat.v1.UserGroupService/GetUserGroup"
 	// UserGroupServiceUpdateUserGroupProcedure is the fully-qualified name of the UserGroupService's
 	// UpdateUserGroup RPC.
 	UserGroupServiceUpdateUserGroupProcedure = "/chat.v1.UserGroupService/UpdateUserGroup"
@@ -63,7 +60,6 @@ const (
 type UserGroupServiceClient interface {
 	CreateUserGroup(context.Context, *v1.CreateUserGroupRequest) (*v1.CreateUserGroupResponse, error)
 	ListUserGroups(context.Context, *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error)
-	GetUserGroup(context.Context, *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error)
 	UpdateUserGroup(context.Context, *v1.UpdateUserGroupRequest) (*v1.UpdateUserGroupResponse, error)
 	DeleteUserGroup(context.Context, *v1.DeleteUserGroupRequest) (*v1.DeleteUserGroupResponse, error)
 	ListUserGroupMembers(context.Context, *v1.ListUserGroupMembersRequest) (*v1.ListUserGroupMembersResponse, error)
@@ -92,12 +88,6 @@ func NewUserGroupServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			httpClient,
 			baseURL+UserGroupServiceListUserGroupsProcedure,
 			connect.WithSchema(userGroupServiceMethods.ByName("ListUserGroups")),
-			connect.WithClientOptions(opts...),
-		),
-		getUserGroup: connect.NewClient[v1.GetUserGroupRequest, v1.GetUserGroupResponse](
-			httpClient,
-			baseURL+UserGroupServiceGetUserGroupProcedure,
-			connect.WithSchema(userGroupServiceMethods.ByName("GetUserGroup")),
 			connect.WithClientOptions(opts...),
 		),
 		updateUserGroup: connect.NewClient[v1.UpdateUserGroupRequest, v1.UpdateUserGroupResponse](
@@ -137,7 +127,6 @@ func NewUserGroupServiceClient(httpClient connect.HTTPClient, baseURL string, op
 type userGroupServiceClient struct {
 	createUserGroup       *connect.Client[v1.CreateUserGroupRequest, v1.CreateUserGroupResponse]
 	listUserGroups        *connect.Client[v1.ListUserGroupsRequest, v1.ListUserGroupsResponse]
-	getUserGroup          *connect.Client[v1.GetUserGroupRequest, v1.GetUserGroupResponse]
 	updateUserGroup       *connect.Client[v1.UpdateUserGroupRequest, v1.UpdateUserGroupResponse]
 	deleteUserGroup       *connect.Client[v1.DeleteUserGroupRequest, v1.DeleteUserGroupResponse]
 	listUserGroupMembers  *connect.Client[v1.ListUserGroupMembersRequest, v1.ListUserGroupMembersResponse]
@@ -157,15 +146,6 @@ func (c *userGroupServiceClient) CreateUserGroup(ctx context.Context, req *v1.Cr
 // ListUserGroups calls chat.v1.UserGroupService.ListUserGroups.
 func (c *userGroupServiceClient) ListUserGroups(ctx context.Context, req *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error) {
 	response, err := c.listUserGroups.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// GetUserGroup calls chat.v1.UserGroupService.GetUserGroup.
-func (c *userGroupServiceClient) GetUserGroup(ctx context.Context, req *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error) {
-	response, err := c.getUserGroup.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -221,7 +201,6 @@ func (c *userGroupServiceClient) RemoveUserGroupMember(ctx context.Context, req 
 type UserGroupServiceHandler interface {
 	CreateUserGroup(context.Context, *v1.CreateUserGroupRequest) (*v1.CreateUserGroupResponse, error)
 	ListUserGroups(context.Context, *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error)
-	GetUserGroup(context.Context, *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error)
 	UpdateUserGroup(context.Context, *v1.UpdateUserGroupRequest) (*v1.UpdateUserGroupResponse, error)
 	DeleteUserGroup(context.Context, *v1.DeleteUserGroupRequest) (*v1.DeleteUserGroupResponse, error)
 	ListUserGroupMembers(context.Context, *v1.ListUserGroupMembersRequest) (*v1.ListUserGroupMembersResponse, error)
@@ -246,12 +225,6 @@ func NewUserGroupServiceHandler(svc UserGroupServiceHandler, opts ...connect.Han
 		UserGroupServiceListUserGroupsProcedure,
 		svc.ListUserGroups,
 		connect.WithSchema(userGroupServiceMethods.ByName("ListUserGroups")),
-		connect.WithHandlerOptions(opts...),
-	)
-	userGroupServiceGetUserGroupHandler := connect.NewUnaryHandlerSimple(
-		UserGroupServiceGetUserGroupProcedure,
-		svc.GetUserGroup,
-		connect.WithSchema(userGroupServiceMethods.ByName("GetUserGroup")),
 		connect.WithHandlerOptions(opts...),
 	)
 	userGroupServiceUpdateUserGroupHandler := connect.NewUnaryHandlerSimple(
@@ -290,8 +263,6 @@ func NewUserGroupServiceHandler(svc UserGroupServiceHandler, opts ...connect.Han
 			userGroupServiceCreateUserGroupHandler.ServeHTTP(w, r)
 		case UserGroupServiceListUserGroupsProcedure:
 			userGroupServiceListUserGroupsHandler.ServeHTTP(w, r)
-		case UserGroupServiceGetUserGroupProcedure:
-			userGroupServiceGetUserGroupHandler.ServeHTTP(w, r)
 		case UserGroupServiceUpdateUserGroupProcedure:
 			userGroupServiceUpdateUserGroupHandler.ServeHTTP(w, r)
 		case UserGroupServiceDeleteUserGroupProcedure:
@@ -317,10 +288,6 @@ func (UnimplementedUserGroupServiceHandler) CreateUserGroup(context.Context, *v1
 
 func (UnimplementedUserGroupServiceHandler) ListUserGroups(context.Context, *v1.ListUserGroupsRequest) (*v1.ListUserGroupsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.ListUserGroups is not implemented"))
-}
-
-func (UnimplementedUserGroupServiceHandler) GetUserGroup(context.Context, *v1.GetUserGroupRequest) (*v1.GetUserGroupResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("chat.v1.UserGroupService.GetUserGroup is not implemented"))
 }
 
 func (UnimplementedUserGroupServiceHandler) UpdateUserGroup(context.Context, *v1.UpdateUserGroupRequest) (*v1.UpdateUserGroupResponse, error) {
